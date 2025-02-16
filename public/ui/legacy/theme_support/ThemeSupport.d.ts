@@ -16,7 +16,6 @@ export declare class ThemeSupport extends EventTarget {
      */
     addDocumentToTheme(document: Document): void;
     getComputedValue(propertyName: string, target?: Element | null): string;
-    hasTheme(): boolean;
     themeName(): string;
     appendStyle(node: Node, { cssContent }: {
         cssContent: string;

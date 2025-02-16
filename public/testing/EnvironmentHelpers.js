@@ -10,6 +10,7 @@ import * as Bindings from '../models/bindings/bindings.js';
 import * as IssuesManager from '../models/issues_manager/issues_manager.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
+import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
 // Don't import UI at this stage because it will fail without
 // the environment. Instead we do the import at the end of the
@@ -109,7 +110,6 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
     "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
     "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
-    "timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -248,6 +248,7 @@ export async function deinitializeGlobalVars() {
     Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
     IssuesManager.IssuesManager.IssuesManager.removeInstance();
     Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.removeInstance();
+    ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.removeInstance();
     Common.Settings.resetSettings();
     // Protect against the dynamic import not having happened.
     if (UI) {
@@ -385,78 +386,18 @@ export function expectConsoleLogs(expectedLogs) {
         }
     });
 }
-// This is needed as trying to stub a stub throws
-let hostConfigStub;
-export function getGetHostConfigStub(config) {
-    const settings = Common.Settings.Settings.instance();
-    if (settings.getHostConfig !== hostConfigStub) {
-        hostConfigStub = sinon.stub(settings, 'getHostConfig');
+export function resetHostConfig() {
+    for (const key of Object.keys(Root.Runtime.hostConfig)) {
+        // @ts-expect-error
+        delete Root.Runtime.hostConfig[key];
     }
-    return hostConfigStub.returns({
-        aidaAvailability: {
-            disallowLogging: false,
-            enterprisePolicyValue: 0,
-            ...config.aidaAvailability,
-        },
-        devToolsConsoleInsights: {
-            enabled: false,
-            modelId: '',
-            temperature: -1,
-            ...config.devToolsConsoleInsights,
-        },
-        devToolsFreestyler: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            ...config.devToolsFreestyler,
-        },
-        devToolsAiAssistanceNetworkAgent: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            ...config.devToolsAiAssistanceNetworkAgent,
-        },
-        devToolsAiAssistanceFileAgent: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            ...config.devToolsAiAssistanceFileAgent,
-        },
-        devToolsAiAssistancePerformanceAgent: {
-            modelId: '',
-            temperature: -1,
-            enabled: false,
-            insightsEnabled: false,
-            ...config.devToolsAiAssistancePerformanceAgent,
-        },
-        devToolsImprovedWorkspaces: {
-            enabled: false,
-        },
-        devToolsVeLogging: {
-            enabled: true,
-            testing: false,
-        },
-        devToolsPrivacyUI: {
-            enabled: false,
-            ...config.devToolsPrivacyUI,
-        },
-        devToolsEnableOriginBoundCookies: {
-            portBindingEnabled: false,
-            schemeBindingEnabled: false,
-            ...config.devToolsEnableOriginBoundCookies,
-        },
-        devToolsAnimationStylesInStylesTab: {
-            enabled: false,
-            ...config.devToolsAnimationStylesInStylesTab,
-        },
-        isOffTheRecord: false,
-        thirdPartyCookieControls: {
-            thirdPartyCookieRestrictionEnabled: false,
-            thirdPartyCookieMetadataEnabled: true,
-            thirdPartyCookieHeuristicsEnabled: true,
-            managedBlockThirdPartyCookies: 'Unset',
-            ...config.thirdPartyCookieControls,
-        },
-    });
+}
+/**
+ * Update `Root.Runtime.hostConfig` for testing.
+ * `Root.Runtime.hostConfig` is automatically cleaned-up between unit
+ * tests.
+ */
+export function updateHostConfig(config) {
+    Object.assign(Root.Runtime.hostConfig, config);
 }
 //# sourceMappingURL=EnvironmentHelpers.js.map

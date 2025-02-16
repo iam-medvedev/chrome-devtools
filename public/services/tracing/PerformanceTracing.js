@@ -46,9 +46,6 @@ export class PerformanceTracing {
         return this.#tracingManager?.stop();
     }
     // Start of implementation of SDK.TracingManager.TracingManagerClient
-    getTraceEvents() {
-        return this.#traceEvents;
-    }
     traceEventsCollected(events) {
         this.#traceEvents.push(...events);
     }

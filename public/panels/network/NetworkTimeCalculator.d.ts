@@ -21,7 +21,6 @@ export declare class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWr
     private workingArea?;
     constructor(startAtZero: boolean);
     setWindow(window: NetworkTimeBoundary | null): void;
-    setInitialUserFriendlyBoundaries(): void;
     computePosition(time: number): number;
     formatValue(value: number, precision?: number): string;
     minimumBoundary(): number;
@@ -37,8 +36,6 @@ export declare class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWr
         middle: number;
         end: number;
     };
-    computePercentageFromEventTime(eventTime: number): number;
-    percentageToTime(percentage: number): number;
     boundaryChanged(): void;
     updateBoundariesForEventTime(eventTime: number): void;
     computeBarGraphLabels(request: SDK.NetworkRequest.NetworkRequest): Label;

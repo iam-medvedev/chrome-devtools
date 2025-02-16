@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './Table.js';
+import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
@@ -23,32 +24,28 @@ export class LCPPhases extends BaseInsightComponent {
         const { ttfb, loadDelay, loadTime, renderDelay } = phases;
         if (loadDelay && loadTime) {
             const phaseData = [
-                { phase: i18nString(UIStrings.timeToFirstByte), timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
+                { phase: i18nString(UIStrings.timeToFirstByte), timing: ttfb },
                 {
                     phase: i18nString(UIStrings.resourceLoadDelay),
                     timing: loadDelay,
-                    percent: `${(100 * loadDelay / timing).toFixed(0)}%`,
                 },
                 {
                     phase: i18nString(UIStrings.resourceLoadDuration),
                     timing: loadTime,
-                    percent: `${(100 * loadTime / timing).toFixed(0)}%`,
                 },
                 {
                     phase: i18nString(UIStrings.elementRenderDelay),
                     timing: renderDelay,
-                    percent: `${(100 * renderDelay / timing).toFixed(0)}%`,
                 },
             ];
             return phaseData;
         }
         // If the lcp is text, we only have ttfb and render delay.
         const phaseData = [
-            { phase: i18nString(UIStrings.timeToFirstByte), timing: ttfb, percent: `${(100 * ttfb / timing).toFixed(0)}%` },
+            { phase: i18nString(UIStrings.timeToFirstByte), timing: ttfb },
             {
                 phase: i18nString(UIStrings.elementRenderDelay),
                 timing: renderDelay,
-                percent: `${(100 * renderDelay / timing).toFixed(0)}%`,
             },
         ];
         return phaseData;
@@ -103,10 +100,10 @@ export class LCPPhases extends BaseInsightComponent {
         if (!phaseData.length) {
             return html `<div class="insight-section">${i18nString(UIStrings.noLcp)}</div>`;
         }
-        const rows = phaseData.map(({ phase, percent }) => {
+        const rows = phaseData.map(({ phase, timing }) => {
             const section = this.#overlay?.sections.find(section => phase === section.label);
             return {
-                values: [phase, percent],
+                values: [phase, i18n.TimeUtilities.preciseMillisToString(timing)],
                 overlays: section && [{
                         type: 'TIMESPAN_BREAKDOWN',
                         sections: [section],
@@ -119,7 +116,7 @@ export class LCPPhases extends BaseInsightComponent {
         ${html `<devtools-performance-table
           .data=${{
             insight: this,
-            headers: [i18nString(UIStrings.phase), i18nString(UIStrings.percentLCP)],
+            headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
             rows,
         }}>
         </devtools-performance-table>`}

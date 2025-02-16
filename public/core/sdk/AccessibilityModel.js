@@ -267,9 +267,6 @@ export class AccessibilityModel extends SDKModel {
     setRootAXNodeForFrameId(frameId, axNode) {
         this.#frameIdToAXNode.set(frameId, axNode);
     }
-    axNodeForFrameId(frameId) {
-        return this.#frameIdToAXNode.get(frameId) ?? null;
-    }
     setAXNodeForAXId(axId, axNode) {
         this.#axIdToAXNode.set(axId, axNode);
     }

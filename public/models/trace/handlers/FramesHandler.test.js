@@ -25,7 +25,7 @@ async function processTrace(events) {
     }
     for (const handlerName of handlersInOrder) {
         const handler = Trace.Handlers.ModelHandlers[handlerName];
-        await handler.finalize();
+        await handler.finalize({});
     }
 }
 describeWithMockConnection('FramesHandler', () => {

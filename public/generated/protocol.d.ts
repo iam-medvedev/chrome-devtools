@@ -893,6 +893,7 @@ export declare namespace Audits {
         KInlineViolation = "kInlineViolation",
         KEvalViolation = "kEvalViolation",
         KURLViolation = "kURLViolation",
+        KSRIViolation = "kSRIViolation",
         KTrustedTypesSinkViolation = "kTrustedTypesSinkViolation",
         KTrustedTypesPolicyViolation = "kTrustedTypesPolicyViolation",
         KWasmEvalViolation = "kWasmEvalViolation"
@@ -1154,7 +1155,8 @@ export declare namespace Audits {
         InvalidFieldsSpecified = "InvalidFieldsSpecified",
         RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque",
         TypeNotMatching = "TypeNotMatching",
-        UiDismissedNoEmbargo = "UiDismissedNoEmbargo"
+        UiDismissedNoEmbargo = "UiDismissedNoEmbargo",
+        CorsError = "CorsError"
     }
     interface FederatedAuthUserInfoRequestIssueDetails {
         federatedAuthUserInfoRequestIssueReason: FederatedAuthUserInfoRequestIssueReason;
@@ -1193,6 +1195,20 @@ export declare namespace Audits {
          */
         failureMessage: string;
         requestId?: Network.RequestId;
+    }
+    const enum PartitioningBlobURLInfo {
+        BlockedCrossPartitionFetching = "BlockedCrossPartitionFetching",
+        EnforceNoopenerForNavigation = "EnforceNoopenerForNavigation"
+    }
+    interface PartitioningBlobURLIssueDetails {
+        /**
+         * The BlobURL that failed to load.
+         */
+        url: string;
+        /**
+         * Additional information about the Partitioning Blob URL issue.
+         */
+        partitioningBlobURLInfo: PartitioningBlobURLInfo;
     }
     const enum SelectElementAccessibilityIssueReason {
         DisallowedSelectChild = "DisallowedSelectChild",
@@ -1270,6 +1286,7 @@ export declare namespace Audits {
         CorsIssue = "CorsIssue",
         AttributionReportingIssue = "AttributionReportingIssue",
         QuirksModeIssue = "QuirksModeIssue",
+        PartitioningBlobURLIssue = "PartitioningBlobURLIssue",
         NavigatorUserAgentIssue = "NavigatorUserAgentIssue",
         GenericIssue = "GenericIssue",
         DeprecationIssue = "DeprecationIssue",
@@ -1299,6 +1316,7 @@ export declare namespace Audits {
         corsIssueDetails?: CorsIssueDetails;
         attributionReportingIssueDetails?: AttributionReportingIssueDetails;
         quirksModeIssueDetails?: QuirksModeIssueDetails;
+        partitioningBlobURLIssueDetails?: PartitioningBlobURLIssueDetails;
         navigatorUserAgentIssueDetails?: NavigatorUserAgentIssueDetails;
         genericIssueDetails?: GenericIssueDetails;
         deprecationIssueDetails?: DeprecationIssueDetails;
@@ -4395,7 +4413,8 @@ export declare namespace DOM {
         nodeIds: NodeId[];
     }
     const enum GetElementByRelationRequestRelation {
-        PopoverTarget = "PopoverTarget"
+        PopoverTarget = "PopoverTarget",
+        InterestTarget = "InterestTarget"
     }
     interface GetElementByRelationRequest {
         /**
@@ -11034,6 +11053,17 @@ export declare namespace Page {
         tokensWithStatus: OriginTrialTokenWithStatus[];
     }
     /**
+     * Additional information about the frame document's security origin.
+     */
+    interface SecurityOriginDetails {
+        /**
+         * Indicates whether the frame document's security origin is one
+         * of the local hostnames (e.g. "localhost") or IP addresses (IPv4
+         * 127.0.0.0/8 or IPv6 ::1).
+         */
+        isLocalhost: boolean;
+    }
+    /**
      * Information about the Frame on the page.
      */
     interface Frame {
@@ -11072,6 +11102,10 @@ export declare namespace Page {
          * Frame document's security origin.
          */
         securityOrigin: string;
+        /**
+         * Additional details about the frame document's security origin.
+         */
+        securityOriginDetails?: SecurityOriginDetails;
         /**
          * Frame document's mimeType as determined by the browser.
          */
@@ -14660,6 +14694,10 @@ export declare namespace Target {
          * Binding name, 'cdp' if not specified.
          */
         bindingName?: string;
+        /**
+         * If true, inherits the current root session's permissions (default: false).
+         */
+        inheritPermissions?: boolean;
     }
     interface CreateBrowserContextRequest {
         /**
@@ -16288,7 +16326,8 @@ export declare namespace Preload {
         SlowNetwork = "SlowNetwork",
         OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated",
         V8OptimizerDisabled = "V8OptimizerDisabled",
-        PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch"
+        PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch",
+        BrowsingDataRemoved = "BrowsingDataRemoved"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

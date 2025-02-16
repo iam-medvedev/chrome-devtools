@@ -1,7 +1,7 @@
 import '../../../ui/components/icon_button/icon_button.js';
 import type { HighlightInfo } from './LinearMemoryViewerUtils.js';
 export interface LinearMemoryHighlightChipListData {
-    highlightInfos: Array<HighlightInfo>;
+    highlightInfos: HighlightInfo[];
     focusedMemoryHighlight?: HighlightInfo;
 }
 export declare class DeleteMemoryHighlightEvent extends Event {

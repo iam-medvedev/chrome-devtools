@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/web_audio/WebAudioView.test.ts",
     "../../../../../../front_end/panels/web_audio/web_audio.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

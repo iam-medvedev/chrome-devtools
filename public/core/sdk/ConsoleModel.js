@@ -360,13 +360,6 @@ export class ConsoleModel extends SDKModel {
     violations() {
         return this.#violationsInternal;
     }
-    static allViolations() {
-        let violations = 0;
-        for (const target of TargetManager.instance().targets()) {
-            violations += target.model(ConsoleModel)?.violations() || 0;
-        }
-        return violations;
-    }
     async saveToTempVariable(currentExecutionContext, remoteObject) {
         if (!remoteObject || !currentExecutionContext) {
             failedToSave(null);

@@ -167,9 +167,7 @@ export class ContextMenuProvider {
         const deployedName = Bindings.ResourceUtils.displayNameForURL(deployedUrl);
         const originalUrl = originalUiSourceCode.url();
         const originalName = Bindings.ResourceUtils.displayNameForURL(originalUrl);
-        const warningMessage = i18nString(UIStrings.overrideSourceMappedFileWarning, { PH1: deployedName }) + '\n' +
-            i18nString(UIStrings.overrideSourceMappedFileExplanation, { PH1: originalName });
-        const shouldJumpToDeployedFile = await UI.UIUtils.ConfirmDialog.show(warningMessage, undefined, { jslogContext: 'override-source-mapped-file-warning' });
+        const shouldJumpToDeployedFile = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.overrideSourceMappedFileExplanation, { PH1: originalName }), i18nString(UIStrings.overrideSourceMappedFileWarning, { PH1: deployedName }), undefined, { jslogContext: 'override-source-mapped-file-warning' });
         if (shouldJumpToDeployedFile) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.OverrideContentContextMenuRedirectToDeployed);
             await this.handleOverrideContent(deployedUiSourceCode, deployedUiSourceCode);

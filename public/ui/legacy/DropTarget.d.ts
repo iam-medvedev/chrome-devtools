@@ -5,10 +5,10 @@ export declare class DropTarget {
     private readonly handleDrop;
     private enabled;
     private dragMaskElement;
-    constructor(element: Element, transferTypes: {
+    constructor(element: Element, transferTypes: Array<{
         kind: string;
         type: RegExp;
-    }[], messageText: string, handleDrop: (arg0: DataTransfer) => void);
+    }>, messageText: string, handleDrop: (arg0: DataTransfer) => void);
     setEnabled(enabled: boolean): void;
     private onDragEnter;
     private hasMatchingType;

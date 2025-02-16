@@ -1,6 +1,6 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
-import { buildGroupStyle, buildTrackHeader, getFormattedTime } from './AppenderUtils.js';
+import { buildGroupStyle, buildTrackHeader, getDurationString } from './AppenderUtils.js';
 import * as Extensions from './extensions/extensions.js';
 import { TimelineFlameChartMarker } from './TimelineFlameChartView.js';
 import { TimelinePanel } from './TimelinePanel.js';
@@ -229,7 +229,7 @@ export class TimingsTrackAppender {
         if (Trace.Types.Events.isMarkerEvent(event) || Trace.Types.Events.isPerformanceMark(event) ||
             Trace.Types.Events.isConsoleTimeStamp(event)) {
             const timeOfEvent = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, this.#parsedTrace.Meta.traceBounds, this.#parsedTrace.Meta.navigationsByNavigationId, this.#parsedTrace.Meta.navigationsByFrameId);
-            info.formattedTime = getFormattedTime(timeOfEvent);
+            info.formattedTime = getDurationString(timeOfEvent);
         }
     }
 }

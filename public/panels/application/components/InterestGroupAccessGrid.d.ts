@@ -4,7 +4,7 @@ export declare const i18nString: (id: string, values?: import("../../../core/i18
 export declare class InterestGroupAccessGrid extends HTMLElement {
     #private;
     connectedCallback(): void;
-    set data(data: Array<Protocol.Storage.InterestGroupAccessedEvent>);
+    set data(data: Protocol.Storage.InterestGroupAccessedEvent[]);
 }
 declare global {
     interface HTMLElementTagNameMap {

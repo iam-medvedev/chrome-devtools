@@ -12,6 +12,9 @@ export default {
 
 .timeline-flamechart-popover {
   overflow: hidden;
+  /* extend padding into the parent element to avoid clipping the focus-visible outline. */
+  padding: 4px;
+  margin: -4px;
 }
 
 .timeline-flamechart-popover devtools-interaction-breakdown {

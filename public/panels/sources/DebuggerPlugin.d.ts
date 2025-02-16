@@ -94,25 +94,25 @@ export declare class DebuggerPlugin extends Plugin {
 export declare class BreakpointLocationRevealer implements Common.Revealer.Revealer<Breakpoints.BreakpointManager.BreakpointLocation> {
     reveal(breakpointLocation: Breakpoints.BreakpointManager.BreakpointLocation, omitFocus?: boolean | undefined): Promise<void>;
 }
-export declare function getVariableNamesByLine(editorState: CodeMirror.EditorState, fromPos: number, toPos: number, currentPos: number): {
+export declare function getVariableNamesByLine(editorState: CodeMirror.EditorState, fromPos: number, toPos: number, currentPos: number): Array<{
     line: number;
     from: number;
     id: string;
-}[];
-export declare function computeScopeMappings(callFrame: SDK.DebuggerModel.CallFrame, rawLocationToEditorOffset: (l: SDK.DebuggerModel.Location | null) => Promise<number | null>): Promise<{
+}>;
+export declare function computeScopeMappings(callFrame: SDK.DebuggerModel.CallFrame, rawLocationToEditorOffset: (l: SDK.DebuggerModel.Location | null) => Promise<number | null>): Promise<Array<{
     scopeStart: number;
     scopeEnd: number;
     variableMap: Map<string, SDK.RemoteObject.RemoteObject>;
-}[]>;
-export declare function getVariableValuesByLine(scopeMappings: {
+}>>;
+export declare function getVariableValuesByLine(scopeMappings: Array<{
     scopeStart: number;
     scopeEnd: number;
     variableMap: Map<string, SDK.RemoteObject.RemoteObject>;
-}[], variableNames: {
+}>, variableNames: Array<{
     line: number;
     from: number;
     id: string;
-}[]): Map<number, Map<string, SDK.RemoteObject.RemoteObject>> | null;
+}>): Map<number, Map<string, SDK.RemoteObject.RemoteObject>> | null;
 export declare function computePopoverHighlightRange(state: CodeMirror.EditorState, mimeType: string, cursorPos: number): {
     from: number;
     to: number;

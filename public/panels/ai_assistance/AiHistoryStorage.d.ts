@@ -3,7 +3,8 @@ export declare const enum ConversationType {
     STYLING = "freestyler",
     FILE = "drjones-file",
     NETWORK = "drjones-network-request",
-    PERFORMANCE = "drjones-performance"
+    PERFORMANCE = "drjones-performance",
+    PERFORMANCE_INSIGHT = "performance-insight"
 }
 export interface SerializedConversation {
     id: string;

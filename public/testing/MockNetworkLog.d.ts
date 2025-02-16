@@ -7,7 +7,7 @@ interface MockNetworkRequest {
 export declare function createNetworkRequest(requestId: string): SDK.NetworkRequest.NetworkRequest;
 export declare class MockNetworkLog extends Common.ObjectWrapper.ObjectWrapper<Logs.NetworkLog.EventTypes> {
     private mockRequests;
-    constructor(mockRequests: Array<MockNetworkRequest>);
+    constructor(mockRequests: MockNetworkRequest[]);
     requestsForId(requestId: string): MockNetworkRequest[];
     addRequest(mockRequest: MockNetworkRequest): void;
 }

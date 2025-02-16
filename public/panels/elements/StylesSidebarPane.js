@@ -723,7 +723,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.#resetUpdateIfNotEditing();
     }
     onComputedStyleChanged() {
-        if (!Common.Settings.Settings.instance().getHostConfig().devToolsAnimationStylesInStylesTab?.enabled) {
+        if (!Root.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled) {
             return;
         }
         void this.computedStyleUpdateThrottler.schedule(async () => {
@@ -1427,7 +1427,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         copyAllChangesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, async () => {
             const allChanges = await this.getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-            Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.ALL_CHANGES_VIA_STYLES_TAB */);
             if (timeout) {
                 clearTimeout(timeout);
                 timeout = undefined;

@@ -49,6 +49,6 @@ export declare class Quantizer {
     private readonly callback;
     private counters;
     private remainder;
-    constructor(startTime: number, quantDuration: number, callback: (arg0: Array<number>) => void);
+    constructor(startTime: number, quantDuration: number, callback: (arg0: number[]) => void);
     appendInterval(time: number, group: number): void;
 }

@@ -255,9 +255,6 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
         this.coverageUpdateTimes.add(timestamp);
         return this.backlogOrProcessJSCoverage(coverage, timestamp);
     }
-    getCoverageUpdateTimes() {
-        return this.coverageUpdateTimes;
-    }
     async backlogOrProcessJSCoverage(freshRawCoverageData, freshTimestamp) {
         if (freshRawCoverageData.length > 0) {
             this.jsBacklog.push({ rawCoverageData: freshRawCoverageData, stamp: freshTimestamp });
@@ -808,9 +805,6 @@ export class CoverageInfo {
             this.updateSourceCoverage();
         }
         return this.usedSize - oldUsedSize;
-    }
-    usedByTimestamp() {
-        return this.statsByTimestamp;
     }
     getSize() {
         return this.size;

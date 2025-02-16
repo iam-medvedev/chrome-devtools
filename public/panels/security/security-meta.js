@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Security from './security.js';
 const UIStrings = {
@@ -35,10 +36,9 @@ async function loadSecurityModule() {
 UI.ViewManager.registerViewExtension({
     location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
     id: 'security',
-    title: () => Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled ?
-        i18nLazyString(UIStrings.PrivacyAndSecurity)() :
+    title: () => Root.Runtime.hostConfig.devToolsPrivacyUI?.enabled ? i18nLazyString(UIStrings.PrivacyAndSecurity)() :
         i18nLazyString(UIStrings.security)(),
-    commandPrompt: () => Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled ?
+    commandPrompt: () => Root.Runtime.hostConfig.devToolsPrivacyUI?.enabled ?
         i18nLazyString(UIStrings.showPrivacyAndSecurity)() :
         i18nLazyString(UIStrings.showSecurity)(),
     order: 80,

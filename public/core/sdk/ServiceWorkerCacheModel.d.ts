@@ -16,8 +16,8 @@ export declare class ServiceWorkerCacheModel extends SDKModel<EventTypes> implem
     refreshCacheNames(): void;
     deleteCache(cache: Cache): Promise<void>;
     deleteCacheEntry(cache: Cache, request: string): Promise<void>;
-    loadCacheData(cache: Cache, skipCount: number, pageSize: number, pathFilter: string, callback: (arg0: Array<Protocol.CacheStorage.DataEntry>, arg1: number) => void): void;
-    loadAllCacheData(cache: Cache, pathFilter: string, callback: (arg0: Array<Protocol.CacheStorage.DataEntry>, arg1: number) => void): void;
+    loadCacheData(cache: Cache, skipCount: number, pageSize: number, pathFilter: string, callback: (arg0: Protocol.CacheStorage.DataEntry[], arg1: number) => void): void;
+    loadAllCacheData(cache: Cache, pathFilter: string, callback: (arg0: Protocol.CacheStorage.DataEntry[], arg1: number) => void): void;
     caches(): Cache[];
     dispose(): void;
     private addStorageBucket;

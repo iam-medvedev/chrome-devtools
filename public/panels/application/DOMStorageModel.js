@@ -77,9 +77,6 @@ export class DOMStorageModel extends SDK.SDKModel.SDKModel {
         this.storagesInternal = {};
         this.agent = target.domstorageAgent();
     }
-    get storageKeyManagerForTest() {
-        return this.storageKeyManagerInternal;
-    }
     enable() {
         if (this.enabled) {
             return;

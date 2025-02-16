@@ -6,6 +6,7 @@ import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import { Cookie } from './Cookie.js';
 import { Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
@@ -96,9 +97,9 @@ export class NetworkManager extends SDKModel {
         if (Common.Settings.Settings.instance().moduleSetting('cache-disabled').get()) {
             void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: true });
         }
-        if (Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled &&
-            Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls?.managedBlockThirdPartyCookies !==
-                true &&
+        const { hostConfig } = Root.Runtime;
+        if (hostConfig.devToolsPrivacyUI?.enabled &&
+            hostConfig.thirdPartyCookieControls?.managedBlockThirdPartyCookies !== true &&
             (Common.Settings.Settings.instance().createSetting('cookie-control-override-enabled', undefined).get() ||
                 Common.Settings.Settings.instance().createSetting('grace-period-mitigation-disabled', undefined).get() ||
                 Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', undefined).get())) {

@@ -34,10 +34,6 @@ export declare class FilteredListWidget extends FilteredListWidget_base implemen
     setCommandPrefix(commandPrefix: string): void;
     setCommandSuggestion(suggestion: string): void;
     setHintElement(hint: string): void;
-    /**
-     * Sets the text prompt's accessible title. By default, it is "Quick open prompt".
-     */
-    setPromptTitle(title: string): void;
     showAsDialog(dialogTitle?: string): void;
     setPrefix(prefix: string): void;
     setProvider(provider: Provider | null): void;

@@ -183,17 +183,20 @@ describeWithEnvironment('AiAgent', () => {
                     {
                         type: "user-query" /* ResponseType.USER_QUERY */,
                         query: 'query',
+                        imageInput: undefined,
                     },
                     {
                         type: "querying" /* ResponseType.QUERYING */,
                     },
                     {
                         type: "answer" /* ResponseType.ANSWER */,
+                        complete: false,
                         text: 'Partial ans',
                     },
                     {
                         type: "answer" /* ResponseType.ANSWER */,
                         text: 'Partial answer is now completed',
+                        complete: true,
                         rpcId: undefined,
                         suggestions: undefined,
                     },
@@ -232,6 +235,7 @@ describeWithEnvironment('AiAgent', () => {
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'query',
+                    imageInput: undefined,
                 },
                 {
                     type: "querying" /* ResponseType.QUERYING */,

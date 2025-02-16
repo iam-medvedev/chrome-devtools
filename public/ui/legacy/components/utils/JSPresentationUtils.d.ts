@@ -1,7 +1,7 @@
 import * as SDK from '../../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../../generated/protocol.js';
 import { Linkifier } from './Linkifier.js';
-export declare function buildStackTraceRows(stackTrace: Protocol.Runtime.StackTrace, target: SDK.Target.Target | null, linkifier: Linkifier, tabStops: boolean | undefined, updateCallback?: (arg0: (StackTraceRegularRow | StackTraceAsyncRow)[]) => void, showColumnNumber?: boolean): (StackTraceRegularRow | StackTraceAsyncRow)[];
+export declare function buildStackTraceRows(stackTrace: Protocol.Runtime.StackTrace, target: SDK.Target.Target | null, linkifier: Linkifier, tabStops: boolean | undefined, updateCallback?: (arg0: Array<StackTraceRegularRow | StackTraceAsyncRow>) => void, showColumnNumber?: boolean): Array<StackTraceRegularRow | StackTraceAsyncRow>;
 export declare function buildStackTracePreviewContents(target: SDK.Target.Target | null, linkifier: Linkifier, options?: Options): {
     element: HTMLElement;
     links: HTMLElement[];

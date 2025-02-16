@@ -329,11 +329,11 @@ export class SidebarSingleInsightSet extends HTMLElement {
         </${componentClass.litTagName}>
       </div>`;
             // clang-format on
-            if (model.shouldShow) {
-                shownInsights.push(component);
+            if (model.state === 'pass') {
+                passedInsights.push(component);
             }
             else {
-                passedInsights.push(component);
+                shownInsights.push(component);
             }
         }
         // clang-format off

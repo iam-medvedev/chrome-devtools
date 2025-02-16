@@ -5,17 +5,18 @@ import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { StylingAgent, ErrorType } = AiAssistance;
 describeWithEnvironment('StylingAgent', () => {
-    function mockHostConfig(modelId, temperature, userTier, executionMode) {
-        getGetHostConfigStub({
+    function mockHostConfig(modelId, temperature, userTier, executionMode, multimodal) {
+        updateHostConfig({
             devToolsFreestyler: {
                 modelId,
                 temperature,
                 userTier,
                 executionMode,
+                multimodal,
             },
         });
     }
@@ -583,6 +584,7 @@ STOP`,
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -600,6 +602,7 @@ STOP`,
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
                     text: 'this is the answer',
+                    complete: true,
                     suggestions: undefined,
                     rpcId: undefined,
                 },
@@ -677,6 +680,7 @@ STOP`,
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -694,6 +698,7 @@ STOP`,
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
                     text: 'this is the answer',
+                    complete: true,
                     suggestions: undefined,
                     rpcId: 123,
                 },
@@ -703,10 +708,10 @@ STOP`,
             const agent = new StylingAgent({
                 aidaClient: mockAidaClient([[
                         {
-                            explanation: 'ANSWER: this is the answer',
+                            explanation: 'ANSWER: this is the partial answer',
                         },
                         {
-                            explanation: 'ANSWER: this is another answer',
+                            explanation: 'ANSWER: this is the partial answer and now it\'s complete',
                             metadata: {
                                 attributionMetadata: {
                                     attributionAction: Host.AidaClient.RecitationAction.BLOCK,
@@ -722,6 +727,7 @@ STOP`,
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -737,8 +743,9 @@ STOP`,
                     type: "querying" /* AiAssistance.ResponseType.QUERYING */,
                 },
                 {
-                    text: 'this is the answer',
+                    text: 'this is the partial answer',
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                    complete: false,
                 },
                 {
                     type: "error" /* AiAssistance.ResponseType.ERROR */,
@@ -765,6 +772,7 @@ STOP`,
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -782,6 +790,7 @@ STOP`,
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
                     text: 'this is the answer',
+                    complete: true,
                     suggestions: undefined,
                     rpcId: 123,
                 },
@@ -825,6 +834,7 @@ STOP
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -874,6 +884,7 @@ STOP
                 {
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -905,6 +916,7 @@ STOP
                 {
                     type: "answer" /* AiAssistance.ResponseType.ANSWER */,
                     text: 'this is the actual answer',
+                    complete: true,
                     suggestions: undefined,
                     rpcId: undefined,
                 },
@@ -991,6 +1003,49 @@ STOP
             controller.abort();
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element), signal: controller.signal }));
             assert.isUndefined(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts);
+        });
+    });
+    describe('enhanceQuery', () => {
+        const agent = new StylingAgent({
+            aidaClient: mockAidaClient(),
+        });
+        beforeEach(() => {
+            element.simpleSelector.returns('div#myElement');
+            element.getChildNodesPromise.resolves(null);
+        });
+        it('does not add multimodal input evaluation prompt when multimodal is disabled', async () => {
+            mockHostConfig('test model');
+            const enhancedQuery = await agent.enhanceQuery('test query', new AiAssistance.NodeContext(element), true);
+            assert.strictEqual(enhancedQuery, '# Inspected element\n\n* Its selector is `div#myElement`\n\n# User request\n\nQUERY: test query');
+        });
+        it('does not add multimodal input evaluation prompt when multimodal is enabled but hasImageInput is false', async () => {
+            mockHostConfig('test model', 1, 'PUBLIC', Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS, true);
+            const enhancedQuery = await agent.enhanceQuery('test query', new AiAssistance.NodeContext(element), false);
+            assert.strictEqual(enhancedQuery, '# Inspected element\n\n* Its selector is `div#myElement`\n\n# User request\n\nQUERY: test query');
+        });
+        it('adds multimodal input evaluation prompt when multimodal is enabled and hasImageInput is true', async () => {
+            mockHostConfig('test model', 1, 'PUBLIC', Root.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS, true);
+            const enhancedQuery = await agent.enhanceQuery('test query', new AiAssistance.NodeContext(element), true);
+            assert.strictEqual(enhancedQuery, `The user has provided you a screenshot of the page (as visible in the viewport) in base64-encoded format. You SHOULD use it while answering user's queries.
+
+# Considerations for evaluating image:
+* Pay close attention to the spatial details as well as the visual appearance of the selected element in the image, particularly in relation to layout, spacing, and styling.
+* Try to connect the screenshot to actual DOM elements in the page.
+* Analyze the image to identify the layout structure surrounding the element, including the positioning of neighboring elements.
+* Extract visual information from the image, such as colors, fonts, spacing, and sizes, that might be relevant to the user's query.
+* If the image suggests responsiveness issues (e.g., cropped content, overlapping elements), consider those in your response.
+* Consider the surrounding elements and overall layout in the image, but prioritize the selected element's styling and positioning.
+
+* As part of THOUGHT, evaluate the image to gather data that might be needed to answer the question.
+In case query is related to the image, ALWAYS first use image evaluation to get all details from the image. ONLY after you have all data needed from image, you should move to other steps.
+
+# Inspected element
+
+* Its selector is \`div#myElement\`
+
+# User request
+
+QUERY: test query`);
         });
     });
     describe('HostConfigFreestylerExecutionMode', () => {

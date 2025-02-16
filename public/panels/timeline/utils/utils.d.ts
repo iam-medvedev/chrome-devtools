@@ -5,5 +5,6 @@ import * as EntryStyles from './EntryStyles.js';
 import * as Helpers from './Helpers.js';
 import * as IgnoreList from './IgnoreList.js';
 import * as ImageCache from './ImageCache.js';
+import * as InsightAIContext from './InsightAIContext.js';
 import * as SourceMapsResolver from './SourceMapsResolver.js';
-export { AICallTree, EntityMapper, EntryName, EntryStyles, Helpers, IgnoreList, ImageCache, SourceMapsResolver, };
+export { AICallTree, EntityMapper, EntryName, EntryStyles, Helpers, IgnoreList, ImageCache, InsightAIContext, SourceMapsResolver, };

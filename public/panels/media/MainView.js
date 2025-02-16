@@ -1,11 +1,37 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { MediaModel } from './MediaModel.js';
 import { PlayerDetailView } from './PlayerDetailView.js';
 import { PlayerListView } from './PlayerListView.js';
+const UIStrings = {
+    /**
+     *@description Text to show if no media player has been selected
+     * A media player can be an audio and video source of a page.
+     */
+    noPlayerDetailsSelected: 'No media player selected',
+    /**
+     *@description Text to instruct the user on how to view media player details
+     * A media player can be an audio and video source of a page.
+     */
+    selectToViewDetails: 'Select a media player to inspect its details.',
+    /**
+     *@description Text to show if no player can be shown
+     * A media player can be an audio and video source of a page.
+     */
+    noMediaPlayer: 'No media player',
+    /**
+     *@description Text to explain this panel
+     * A media player can be an audio and video source of a page.
+     */
+    mediaPlayerDescription: 'On this page you can view and export media player details.',
+};
+const str_ = i18n.i18n.registerUIStrings('panels/media/MainView.ts', UIStrings);
+const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const MEDIA_PLAYER_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/media-panel#hide-show';
 class PlayerDataCollection {
     properties;
     messages;
@@ -85,6 +111,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     deletedPlayers;
     downloadStore;
     sidebar;
+    #placeholder;
     constructor(downloadStore = new PlayerDataDownloadManager()) {
         super('media');
         this.detailPanels = new Map();
@@ -92,6 +119,10 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.downloadStore = downloadStore;
         this.sidebar = new PlayerListView(this);
         this.sidebar.show(this.panelSidebarElement());
+        this.#placeholder =
+            new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMediaPlayer), UIStrings.mediaPlayerDescription);
+        this.#placeholder.show(this.mainElement());
+        this.#placeholder.appendLink(MEDIA_PLAYER_EXPLANATION_URL);
         SDK.TargetManager.TargetManager.instance().observeModels(MediaModel, this, { scoped: true });
     }
     renderMainPanel(playerID) {
@@ -142,6 +173,10 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.sidebar.addMediaElementItem(playerID);
         this.detailPanels.set(playerID, new PlayerDetailView());
         this.downloadStore.addPlayer(playerID);
+        if (this.detailPanels.size === 1) {
+            this.#placeholder.header = i18nString(UIStrings.noPlayerDetailsSelected);
+            this.#placeholder.text = i18nString(UIStrings.selectToViewDetails);
+        }
     }
     propertiesChanged(event) {
         for (const property of event.data.properties) {
@@ -212,6 +247,10 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.detailPanels.delete(playerID);
         this.sidebar.deletePlayer(playerID);
         this.downloadStore.deletePlayer(playerID);
+        if (this.detailPanels.size === 0) {
+            this.#placeholder.header = i18nString(UIStrings.noMediaPlayer);
+            this.#placeholder.text = i18nString(UIStrings.mediaPlayerDescription);
+        }
     }
     markOtherPlayersForDeletion(playerID) {
         for (const keyID of this.detailPanels.keys()) {

@@ -550,9 +550,6 @@ export class SourcesPanel extends UI.Panel.Panel {
         this.addExperimentMenuItem(contextMenu.viewSection(), "authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, i18nString(UIStrings.groupByAuthored));
         this.addExperimentMenuItem(contextMenu.viewSection(), "just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, i18nString(UIStrings.hideIgnoreListed));
     }
-    setIgnoreExecutionLineEvents(ignoreExecutionLineEvents) {
-        this.ignoreExecutionLineEvents = ignoreExecutionLineEvents;
-    }
     updateLastModificationTime() {
         this.lastModificationTime = window.performance.now();
     }
@@ -568,12 +565,6 @@ export class SourcesPanel extends UI.Panel.Panel {
             return;
         }
         this.sourcesViewInternal.showSourceLocation(uiLocation.uiSourceCode, uiLocation, undefined, true);
-    }
-    lastModificationTimeoutPassedForTest() {
-        lastModificationTimeout = Number.MIN_VALUE;
-    }
-    updateLastModificationTimeForTest() {
-        lastModificationTimeout = Number.MAX_VALUE;
     }
     async callFrameChanged() {
         const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
@@ -1069,7 +1060,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
     }
 }
-export let lastModificationTimeout = 200;
+export const lastModificationTimeout = 200;
 export const minToolbarWidth = 215;
 export class UILocationRevealer {
     async reveal(uiLocation, omitFocus) {

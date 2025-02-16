@@ -688,7 +688,6 @@ export class History {
         }
         return serializedHistoryItems;
     }
-    // eslint-disable-next-line rulesdir/prefer-readonly-keyword
     keys() {
         return this.items;
     }

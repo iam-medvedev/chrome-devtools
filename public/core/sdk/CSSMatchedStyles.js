@@ -5,6 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
+import { BaseVariableMatcher } from './CSSPropertyParserMatchers.js';
 import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -147,9 +148,6 @@ export class CSSRegisteredProperty {
     constructor(cssModel, registration) {
         this.#cssModel = cssModel;
         this.#registration = registration;
-    }
-    isAtProperty() {
-        return this.#registration instanceof CSSPropertyRule;
     }
     propertyName() {
         return this.#registration instanceof CSSPropertyRule ? this.#registration.propertyName().text :
@@ -955,7 +953,7 @@ class DOMInheritanceCascade {
         // corresponding SCC, which is the node in that component with the smallest discovery time. This is determined by
         // bubbling up the minimum discovery time whenever we close a cycle.
         const record = sccRecord.add(nodeCascade, variableName);
-        const matching = PropertyParser.BottomUpTreeMatching.walk(ast, [new PropertyParser.VariableMatcher((match) => {
+        const matching = PropertyParser.BottomUpTreeMatching.walk(ast, [new BaseVariableMatcher(match => {
                 const parentStyle = definedValue.declaration.style;
                 const nodeCascade = this.#styleToNodeCascade.get(parentStyle);
                 if (!nodeCascade) {

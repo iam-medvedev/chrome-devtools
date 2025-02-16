@@ -2,15 +2,15 @@ import type * as Platform from '../../core/platform/platform.js';
 export interface ReleaseNote {
     version: number;
     header: string;
-    markdownLinks: {
+    markdownLinks: Array<{
         key: string;
         link: string;
-    }[];
-    videoLinks: {
+    }>;
+    videoLinks: Array<{
         description: string;
         link: Platform.DevToolsPath.UrlString;
         type?: VideoType;
-    }[];
+    }>;
     link: string;
 }
 export declare const enum VideoType {

@@ -113,7 +113,7 @@ export declare class History {
     update(keys: HistoryItemKey[]): void;
     remove(key: HistoryItemKey): void;
     toObject(): SerializedHistoryItem[];
-    keys(): ReadonlyArray<HistoryItemKey>;
+    keys(): HistoryItemKey[];
 }
 export declare class EditorContainerTabDelegate implements UI.TabbedPane.TabbedPaneTabDelegate {
     private readonly editorContainer;

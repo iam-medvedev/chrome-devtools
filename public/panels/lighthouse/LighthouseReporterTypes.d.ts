@@ -10,7 +10,7 @@ export interface AuditResultJSON {
     description: string;
     explanation?: string;
     errorMessage?: string;
-    displayValue?: string | (string | number)[];
+    displayValue?: string | Array<string | number>;
     scoreDisplayMode: string;
     error: boolean;
     score: number | null;
@@ -49,7 +49,7 @@ export interface ReportJSON {
     artifacts: {
         traces: {
             defaultPass: {
-                traceEvents: Array<unknown>;
+                traceEvents: unknown[];
             };
         };
     };

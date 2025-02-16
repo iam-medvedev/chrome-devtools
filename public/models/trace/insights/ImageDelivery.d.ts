@@ -11,24 +11,20 @@ export declare const UIStrings: {
     description: string;
     /**
      * @description Message displayed in a chip explaining that an image file size is large for the # of pixels it has and recommends possible adjustments to improve the image size.
-     * @example {50 MB} PH1
      */
     useCompression: string;
     /**
      * @description Message displayed in a chip explaining that an image file size is large for the # of pixels it has and recommends possible adjustments to improve the image size.
-     * @example {50 MB} PH1
      */
     useModernFormat: string;
     /**
      * @description Message displayed in a chip advising the user to use video formats instead of GIFs because videos generally have smaller file sizes.
-     * @example {50 MB} PH1
      */
     useVideoFormat: string;
     /**
      * @description Message displayed in a chip explaining that an image was displayed on the page with dimensions much smaller than the image file dimensions.
-     * @example {50 MB} PH1
-     * @example {1000x500} PH2
-     * @example {100x50} PH3
+     * @example {1000x500} PH1
+     * @example {100x50} PH2
      */
     useResponsiveSize: string;
     /**
@@ -44,6 +40,12 @@ export declare const UIStrings: {
      * @description Text status indicating that no potential optimizations were found for any image file
      */
     noOptimizableImages: string;
+    /**
+     * @description Text describing the estimated number of bytes that an image file optimization can save. This text is appended to another block of text describing the image optimization in more detail. "Est" means "Estimated".
+     * @example {Use the correct image dimensions to reduce the image file size.} PH1
+     * @example {50 MB} PH2
+     */
+    estimatedSavings: string;
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export declare function deps(): ['NetworkRequests', 'Meta', 'ImagePainting'];
@@ -85,4 +87,6 @@ export type ImageDeliveryInsightModel = InsightModel<typeof UIStrings, {
     optimizableImages: OptimizableImage[];
     totalByteSavings: number;
 }>;
+export declare function getOptimizationMessage(optimization: ImageOptimization): string;
+export declare function getOptimizationMessageWithBytes(optimization: ImageOptimization): string;
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): ImageDeliveryInsightModel;

@@ -104,13 +104,6 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
         this.filterButtonInternal.setEnabled(enabled);
         this.updateFilterBar();
     }
-    forceShowFilterBar() {
-        this.alwaysShowFilters = true;
-        this.updateFilterBar();
-    }
-    showOnce() {
-        this.stateSetting.set(true);
-    }
     filterChanged() {
         this.updateFilterButton();
         this.dispatchEventToListeners("Changed" /* FilterBarEvents.CHANGED */);
@@ -275,11 +268,11 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.typeFilterElementTypeNames = new WeakMap();
         this.allowedTypes = new Set();
         this.typeFilterElements = [];
-        this.addBit(NamedBitSetFilterUI.ALL_TYPES, i18nString(UIStrings.allStrings));
+        this.addBit(NamedBitSetFilterUI.ALL_TYPES, i18nString(UIStrings.allStrings), NamedBitSetFilterUI.ALL_TYPES);
         this.typeFilterElements[0].tabIndex = 0;
         this.filtersElement.createChild('div', 'filter-bitset-filter-divider');
         for (let i = 0; i < items.length; ++i) {
-            this.addBit(items[i].name, items[i].label(), items[i].title);
+            this.addBit(items[i].name, items[i].label(), items[i].jslogContext, items[i].title);
         }
         if (setting) {
             this.setting = setting;
@@ -326,7 +319,7 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */);
     }
-    addBit(name, label, title) {
+    addBit(name, label, jslogContext, title) {
         const typeFilterElement = this.filtersElement.createChild('span', name);
         typeFilterElement.tabIndex = -1;
         this.typeFilterElementTypeNames.set(typeFilterElement, name);
@@ -337,7 +330,7 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         }
         typeFilterElement.addEventListener('click', this.onTypeFilterClicked.bind(this), false);
         typeFilterElement.addEventListener('keydown', this.onTypeFilterKeydown.bind(this), false);
-        typeFilterElement.setAttribute('jslog', `${VisualLogging.item(name).track({ click: true })}`);
+        typeFilterElement.setAttribute('jslog', `${VisualLogging.item(jslogContext).track({ click: true })}`);
         this.typeFilterElements.push(typeFilterElement);
     }
     onTypeFilterClicked(event) {

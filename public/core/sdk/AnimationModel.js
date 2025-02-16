@@ -457,9 +457,6 @@ export class AnimationImpl {
     playState() {
         return this.#playStateInternal || this.#payloadInternal.playState;
     }
-    setPlayState(playState) {
-        this.#playStateInternal = playState;
-    }
     playbackRate() {
         return this.#payloadInternal.playbackRate;
     }

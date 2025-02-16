@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { ExtensionStorage } from './ExtensionStorageModel.js';
-import { KeyValueStorageItemsView } from './KeyValueStorageItemsView.js';
+import { KeyValueStorageItemsView, type View as KeyValueStorageItemsViewFunction } from './KeyValueStorageItemsView.js';
 export declare namespace ExtensionStorageItemsDispatcher {
     const enum Events {
         ITEM_EDITED = "ItemEdited",
@@ -15,7 +15,7 @@ export declare namespace ExtensionStorageItemsDispatcher {
 export declare class ExtensionStorageItemsView extends KeyValueStorageItemsView {
     #private;
     readonly extensionStorageItemsDispatcher: Common.ObjectWrapper.ObjectWrapper<ExtensionStorageItemsDispatcher.EventTypes>;
-    constructor(extensionStorage: ExtensionStorage);
+    constructor(extensionStorage: ExtensionStorage, view?: KeyValueStorageItemsViewFunction);
     /**
      * When parsing a value provided by the user, attempt to treat it as JSON,
      * falling back to a string otherwise.
@@ -28,8 +28,4 @@ export declare class ExtensionStorageItemsView extends KeyValueStorageItemsView 
     deleteSelectedItem(): void;
     refreshItems(): void;
     deleteAllItems(): void;
-    getEntriesForTesting(): Array<{
-        key: string;
-        value: string;
-    }>;
 }

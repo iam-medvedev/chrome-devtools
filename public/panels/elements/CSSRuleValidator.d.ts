@@ -16,7 +16,7 @@ export declare abstract class CSSRuleValidator {
     getMetricType(): Host.UserMetrics.CSSHintType;
     constructor(affectedProperties: string[]);
     getApplicableProperties(): string[];
-    abstract getHint(propertyName: string, computedStyles?: Map<string, string>, parentComputedStyles?: Map<string, string>, nodeName?: string, fontFaces?: Array<SDK.CSSFontFace.CSSFontFace>): Hint | undefined;
+    abstract getHint(propertyName: string, computedStyles?: Map<string, string>, parentComputedStyles?: Map<string, string>, nodeName?: string, fontFaces?: SDK.CSSFontFace.CSSFontFace[]): Hint | undefined;
 }
 export declare class AlignContentValidator extends CSSRuleValidator {
     constructor();
@@ -89,6 +89,6 @@ export declare class SizingValidator extends CSSRuleValidator {
 export declare class FontVariationSettingsValidator extends CSSRuleValidator {
     constructor();
     getMetricType(): Host.UserMetrics.CSSHintType;
-    getHint(propertyName: string, computedStyles?: Map<string, string>, parentComputedStyles?: Map<string, string>, nodeName?: string, fontFaces?: Array<SDK.CSSFontFace.CSSFontFace>): Hint | undefined;
+    getHint(propertyName: string, computedStyles?: Map<string, string>, parentComputedStyles?: Map<string, string>, nodeName?: string, fontFaces?: SDK.CSSFontFace.CSSFontFace[]): Hint | undefined;
 }
 export declare const cssRuleValidatorsMap: Map<string, CSSRuleValidator[]>;

@@ -48,7 +48,6 @@ export declare class DOMStorageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     readonly agent: ProtocolProxyApi.DOMStorageApi;
     private enabled?;
     constructor(target: SDK.Target.Target);
-    get storageKeyManagerForTest(): SDK.StorageKeyManager.StorageKeyManager | null;
     enable(): void;
     clearForStorageKey(storageKey: string): void;
     private storageKeyAdded;

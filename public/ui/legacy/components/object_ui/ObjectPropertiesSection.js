@@ -188,13 +188,6 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         }
         return objectPropertiesSection;
     }
-    static getPropertyValuesByNames(properties) {
-        const map = new Map();
-        for (const property of properties) {
-            map.set(property.name, property.value);
-        }
-        return map;
-    }
     static compareProperties(propertyA, propertyB) {
         if (!propertyA.synthetic && propertyB.synthetic) {
             return 1;
@@ -531,13 +524,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
 }
 /** @const */
 const ARRAY_LOAD_THRESHOLD = 100;
-let maxRenderableStringLength = 10000;
-export function setMaxRenderableStringLength(value) {
-    maxRenderableStringLength = value;
-}
-export function getMaxRenderableStringLength() {
-    return maxRenderableStringLength;
-}
+const maxRenderableStringLength = 10000;
 export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
     editable;
     constructor(options) {

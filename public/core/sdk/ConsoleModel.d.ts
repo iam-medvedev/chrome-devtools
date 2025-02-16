@@ -34,7 +34,6 @@ export declare class ConsoleModel extends SDKModel<EventTypes> {
     warnings(): number;
     static allWarnings(): number;
     violations(): number;
-    static allViolations(): number;
     saveToTempVariable(currentExecutionContext: ExecutionContext | null, remoteObject: RemoteObject | null): Promise<void>;
 }
 export declare enum Events {
@@ -63,7 +62,7 @@ export interface ConsoleMessageDetails {
     url?: Platform.DevToolsPath.UrlString;
     line?: number;
     column?: number;
-    parameters?: (string | RemoteObject | Protocol.Runtime.RemoteObject)[];
+    parameters?: Array<string | RemoteObject | Protocol.Runtime.RemoteObject>;
     stackTrace?: Protocol.Runtime.StackTrace;
     timestamp?: number;
     executionContextId?: number;
@@ -83,7 +82,7 @@ export declare class ConsoleMessage {
     url: Platform.DevToolsPath.UrlString | undefined;
     line: number;
     column: number;
-    parameters: (string | RemoteObject | Protocol.Runtime.RemoteObject)[] | undefined;
+    parameters: Array<string | RemoteObject | Protocol.Runtime.RemoteObject> | undefined;
     stackTrace: Protocol.Runtime.StackTrace | undefined;
     timestamp: number;
     scriptId?: Protocol.Runtime.ScriptId;

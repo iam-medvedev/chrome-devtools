@@ -43,13 +43,6 @@ export declare class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<Ev
     constructor(showThirdPartyIssuesSetting?: Common.Settings.Setting<boolean> | undefined, hideIssueSetting?: Common.Settings.Setting<HideIssueMenuSetting> | undefined);
     static instance(opts?: IssuesManagerCreationOptions): IssuesManager;
     static removeInstance(): void;
-    /**
-     * Once we have seen at least one `PrimaryPageChanged` event, we can be reasonably sure
-     * that we also collected issues that were reported during the navigation to the current
-     * page. If we haven't seen a main frame navigated, we might have missed issues that arose
-     * during navigation.
-     */
-    reloadForAccurateInformationRequired(): boolean;
     modelAdded(issuesModel: SDK.IssuesModel.IssuesModel): void;
     modelRemoved(issuesModel: SDK.IssuesModel.IssuesModel): void;
     addIssue(issuesModel: SDK.IssuesModel.IssuesModel, issue: Issue): void;

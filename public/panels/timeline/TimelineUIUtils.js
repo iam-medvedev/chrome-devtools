@@ -47,6 +47,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import imagePreviewStylesRaw from '../../ui/legacy/components/utils/imagePreview.css.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { getDurationString } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
 import * as Extensions from './extensions/extensions.js';
 import { Tracker } from './FreshRecording.js';
@@ -152,14 +153,6 @@ const UIStrings = {
      *@description Text to inform the user that the script they are looking at was not eligible to be loaded from the browser's cache.
      */
     scriptNotEligibleToBeLoadedFromCache: 'script not eligible',
-    /**
-     *@description Text for the total time of something
-     */
-    totalTime: 'Total time',
-    /**
-     *@description Time of a single activity, as opposed to the total time
-     */
-    selfTime: 'Self time',
     /**
      *@description Label in the summary view in the Performance panel for a number which indicates how much managed memory has been reclaimed by performing Garbage Collection
      */
@@ -505,7 +498,7 @@ const UIStrings = {
     /**
      * @description Text to refer to a 3rd Party entity.
      */
-    entity: 'Third party',
+    entity: '3rd party',
     /**
      * @description Label for third party table.
      */
@@ -969,9 +962,9 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptNotEligibleToBeLoadedFromCache));
         }
     }
-    static async buildTraceEventDetails(parsedTrace, event, linkifier, detailed, entityMapper) {
+    static async buildTraceEventDetails(parsedTrace, event, linkifier, canShowPieChart, entityMapper) {
         const maybeTarget = targetForEvent(parsedTrace, event);
-        const { duration } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
+        const { duration } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
         const selfTime = getEventSelfTime(event, parsedTrace);
         const relatedNodesMap = await Trace.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(parsedTrace, event);
         if (maybeTarget) {
@@ -992,10 +985,6 @@ export class TimelineUIUtils {
                 // @ts-ignore TODO(crbug.com/1011811): Remove symbol usage.
                 event[previewElementSymbol] = previewElement;
             }
-        }
-        if (Trace.Types.Events.isSyntheticLayoutShift(event)) {
-            // Ensure that there are no pie charts or extended info for layout shifts.
-            detailed = false;
         }
         // This message may vary per event.name;
         let relatedNodeLabel;
@@ -1025,9 +1014,9 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.timestamp), i18n.TimeUtilities.preciseMillisToString(adjustedEventTimeStamp, 1));
         }
         // Only show total time and self time for events with non-zero durations.
-        if (detailed && !Number.isNaN(duration || 0) && duration !== 0) {
-            contentHelper.appendTextRow(i18nString(UIStrings.totalTime), i18n.TimeUtilities.millisToString(duration || 0, true));
-            contentHelper.appendTextRow(i18nString(UIStrings.selfTime), i18n.TimeUtilities.millisToString(selfTime, true));
+        if (duration !== 0 && !Number.isNaN(duration)) {
+            const timeStr = getDurationString(duration, selfTime);
+            contentHelper.appendTextRow(i18nString(UIStrings.duration), timeStr);
         }
         if (Trace.Types.Events.isPerformanceMark(event) && event.args.data?.detail) {
             const detailContainer = TimelineUIUtils.renderObjectJson(JSON.parse(event.args.data?.detail));
@@ -1411,7 +1400,8 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.entity), entity.name);
         }
         const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(event);
-        if (Trace.Types.Events.isProfileCall(event) || initiator || initiatorFor || stackTrace ||
+        if (Trace.Types.Events.isUserTiming(event) || Trace.Types.Extensions.isSyntheticExtensionEntry(event) ||
+            Trace.Types.Events.isProfileCall(event) || initiator || initiatorFor || stackTrace ||
             parsedTrace?.Invalidations.invalidationsForEvent.get(event)) {
             await TimelineUIUtils.generateCauses(event, contentHelper, parsedTrace);
         }
@@ -1419,7 +1409,7 @@ export class TimelineUIUtils {
             TimelineUIUtils.renderEventJson(event, contentHelper);
         }
         const stats = {};
-        const showPieChart = detailed && parsedTrace && TimelineUIUtils.aggregatedStatsForTraceEvent(stats, parsedTrace, event);
+        const showPieChart = canShowPieChart && parsedTrace && TimelineUIUtils.aggregatedStatsForTraceEvent(stats, parsedTrace, event);
         if (showPieChart) {
             contentHelper.addSection(i18nString(UIStrings.aggregatedTime));
             const pieChart = TimelineUIUtils.generatePieChart(stats, TimelineUIUtils.eventStyle(event).category, selfTime);
@@ -1725,13 +1715,14 @@ export class TimelineUIUtils {
             contentHelper.appendElementRow(reason, text);
         }
     }
+    /** Populates the passed object then returns true/false if it makes sense to show the pie chart */
     static aggregatedStatsForTraceEvent(total, parsedTrace, event) {
         const events = parsedTrace.Renderer?.allTraceEntries || [];
         const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
         function eventComparator(startTime, e) {
-            const { startTime: eventStartTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(e);
-            return startTime - eventStartTime;
+            return startTime - e.ts;
         }
+        // Find index of selected event amongst allTraceEntries.
         const index = Platform.ArrayUtilities.binaryIndexOf(events, startTime, eventComparator);
         // Not a main thread event?
         if (index < 0) {
@@ -1741,8 +1732,7 @@ export class TimelineUIUtils {
         if (endTime) {
             for (let i = index; i < events.length; i++) {
                 const nextEvent = events[i];
-                const { startTime: nextEventStartTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(nextEvent);
-                if (nextEventStartTime >= endTime) {
+                if (nextEvent.ts >= endTime) {
                     break;
                 }
                 const nextEventSelfTime = getEventSelfTime(nextEvent, parsedTrace);
@@ -1765,10 +1755,15 @@ export class TimelineUIUtils {
                 for (const categoryName in total) {
                     aggregatedTotal += total[categoryName];
                 }
-                const deltaInMillis = Trace.Helpers.Timing.microToMilli((endTime - startTime));
-                total['idle'] = Math.max(0, deltaInMillis - aggregatedTotal);
+                const deltaInMicro = (endTime - startTime);
+                total['idle'] = Math.max(0, deltaInMicro - aggregatedTotal);
             }
             return false;
+        }
+        for (const categoryName in total) {
+            const value = total[categoryName];
+            // Up until now we've kept the math all in micro integers. Finally switch these sums to milli.
+            total[categoryName] = Trace.Helpers.Timing.microToMilli(value);
         }
         return hasChildren;
     }
@@ -1857,12 +1852,13 @@ export class TimelineUIUtils {
         }
         // In case of self time, first add self, then children of the same category.
         if (selfCategory) {
+            const selfTimeMilli = Trace.Helpers.Timing.microToMilli(selfTime || 0);
             if (selfTime) {
-                appendLegendRow(selfCategory.name, i18nString(UIStrings.sSelf, { PH1: selfCategory.title }), selfTime, selfCategory.getCSSValue());
+                appendLegendRow(selfCategory.name, i18nString(UIStrings.sSelf, { PH1: selfCategory.title }), selfTimeMilli, selfCategory.getCSSValue());
             }
             // Children of the same category.
             const categoryTime = aggregatedStats[selfCategory.name];
-            const value = categoryTime - (selfTime || 0);
+            const value = categoryTime - (selfTimeMilli || 0);
             if (value > 0) {
                 appendLegendRow(selfCategory.name, i18nString(UIStrings.sChildren, { PH1: selfCategory.title }), value, selfCategory.getCSSValue());
             }
@@ -1928,13 +1924,11 @@ export class TimelineUIUtils {
             selectedEvents,
         };
         element.append(categorySummaryTable);
-        if (Root.Runtime.experiments.isEnabled("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */)) {
-            // Add the 3p datagrid
-            const treeView = new ThirdPartyTreeView.ThirdPartyTreeElement();
-            treeView.treeView = thirdPartyTree;
-            UI.ARIAUtils.setLabel(treeView, i18nString(UIStrings.thirdPartyTable));
-            element.append(treeView);
-        }
+        // Add the 3p datagrid
+        const treeView = new ThirdPartyTreeView.ThirdPartyTreeElement();
+        treeView.treeView = thirdPartyTree;
+        UI.ARIAUtils.setLabel(treeView, i18nString(UIStrings.thirdPartyTable));
+        element.append(treeView);
         return element;
     }
     static generateDetailsContentForFrame(frame, filmStrip, filmStripFrame) {
@@ -2237,6 +2231,6 @@ function getEventSelfTime(event, parsedTrace) {
         parsedTrace.ExtensionTraceData.entryToNode :
         parsedTrace.Renderer.entryToNode;
     const selfTime = mapToUse.get(event)?.selfTime;
-    return selfTime ? Trace.Helpers.Timing.microToMilli(selfTime) : Trace.Types.Timing.Milli(0);
+    return selfTime ? selfTime : Trace.Types.Timing.Micro(0);
 }
 //# sourceMappingURL=TimelineUIUtils.js.map

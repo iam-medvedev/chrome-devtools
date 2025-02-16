@@ -99,8 +99,9 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
         const match = this.#matchedResult.getMatch(node);
         const renderer = match &&
             this.#context.renderers.get(match.constructor);
-        if (renderer || match instanceof SDK.CSSPropertyParser.TextMatch) {
-            const output = renderer ? renderer.render(match, this.#context) : match.render();
+        if (renderer || match instanceof SDK.CSSPropertyParserMatchers.TextMatch) {
+            const output = renderer ? renderer.render(match, this.#context) :
+                match.render();
             this.renderedMatchForTest(output, match);
             this.#output = mergeWithSpacing(this.#output, output);
             return false;
@@ -127,30 +128,25 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     //
     // More general, longer matches take precedence over shorter, more specific matches. Whitespaces are normalized, for
     // unmatched text and around rendered matching results.
-    static renderValueElement(propertyName, propertyValue, renderers) {
+    static renderValueElement(name, value, matchedResult, renderers) {
         const valueElement = document.createElement('span');
         valueElement.setAttribute('jslog', `${VisualLogging.value().track({
             change: true,
             keydown: 'ArrowLeft|ArrowUp|PageUp|Home|PageDown|ArrowRight|ArrowDown|End|Space|Tab|Enter|Escape',
         })}`);
-        UI.ARIAUtils.setLabel(valueElement, i18nString(UIStrings.cssPropertyValue, { PH1: propertyValue }));
+        UI.ARIAUtils.setLabel(valueElement, i18nString(UIStrings.cssPropertyValue, { PH1: value }));
         valueElement.className = 'value';
-        const ast = SDK.CSSPropertyParser.tokenizeDeclaration(propertyName, propertyValue);
-        if (!ast) {
-            valueElement.appendChild(document.createTextNode(propertyValue));
+        if (!matchedResult) {
+            valueElement.appendChild(document.createTextNode(value));
             return valueElement;
         }
-        const matchers = [];
         const rendererMap = new Map();
         for (const renderer of renderers) {
-            const matcher = renderer.matcher();
-            matchers.push(matcher);
             rendererMap.set(renderer.matchType, renderer);
         }
-        const matchedResult = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, matchers);
-        ast.trailingNodes.forEach(n => matchedResult.matchText(n));
-        const context = new RenderingContext(ast, rendererMap, matchedResult);
-        Renderer.render([ast.tree, ...ast.trailingNodes], context).nodes.forEach(node => valueElement.appendChild(node));
+        const context = new RenderingContext(matchedResult.ast, rendererMap, matchedResult);
+        Renderer.render([matchedResult.ast.tree, ...matchedResult.ast.trailingNodes], context)
+            .nodes.forEach(node => valueElement.appendChild(node));
         valueElement.normalize();
         return valueElement;
     }

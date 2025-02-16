@@ -5,9 +5,9 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 export const AI_ASSISTANCE_CSS_CLASS_NAME = 'ai-style-change';
-function formatStyles(styles) {
+function formatStyles(styles, indent = 2) {
     const kebabStyles = Platform.StringUtilities.toKebabCaseKeys(styles);
-    const lines = Object.entries(kebabStyles).map(([key, value]) => `  ${key}: ${value};`);
+    const lines = Object.entries(kebabStyles).map(([key, value]) => `${' '.repeat(indent)}${key}: ${value};`);
     return lines.join('\n');
 }
 /**
@@ -28,11 +28,12 @@ export class ChangeManager {
             }
             let stylesheetId = frameToStylesheet.get(frameId);
             if (!stylesheetId) {
-                const styleSheetHeader = await cssModel.createInspectorStylesheet(frameId);
+                const styleSheetHeader = await cssModel.createInspectorStylesheet(frameId, /* force */ true);
                 if (!styleSheetHeader) {
                     throw new Error('inspector-stylesheet is not found');
                 }
                 stylesheetId = styleSheetHeader.id;
+                frameToStylesheet.set(frameId, stylesheetId);
             }
             return stylesheetId;
         });
@@ -97,7 +98,7 @@ ${formatStyles(change.styles)}
             .map(change => {
             return `.${change.className} {
   ${change.selector}& {
-  ${formatStyles(change.styles)}
+${formatStyles(change.styles, 4)}
   }
 }`;
         })

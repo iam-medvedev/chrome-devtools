@@ -4,12 +4,15 @@
 import '../../../../ui/components/markdown_view/markdown_view.js';
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Root from '../../../../core/root/root.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
+import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import { md } from '../../utils/Helpers.js';
+import * as Utils from '../../utils/utils.js';
 import baseInsightComponentStylesRaw from './baseInsightComponent.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
@@ -45,6 +48,7 @@ export class BaseInsightComponent extends HTMLElement {
     #selected = false;
     #model = null;
     #parsedTrace = null;
+    #insightsAskAiEnabled = false;
     get model() {
         return this.#model;
     }
@@ -66,6 +70,9 @@ export class BaseInsightComponent extends HTMLElement {
         this.setAttribute('jslog', `${VisualLogging.section(`timeline.insights.${this.internalName}`)}`);
         // Used for unit test purposes when querying the DOM.
         this.dataset.insightName = this.internalName;
+        const { devToolsAiAssistancePerformanceAgent } = Root.Runtime.hostConfig;
+        this.#insightsAskAiEnabled =
+            Boolean(devToolsAiAssistancePerformanceAgent?.enabled && devToolsAiAssistancePerformanceAgent?.insightsEnabled);
     }
     set selected(selected) {
         if (!this.#selected && selected) {
@@ -98,6 +105,7 @@ export class BaseInsightComponent extends HTMLElement {
     #dispatchInsightToggle() {
         if (this.#selected) {
             this.dispatchEvent(new SidebarInsight.InsightDeactivated());
+            UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, null);
             return;
         }
         if (!this.data.insightSetKey) {
@@ -215,6 +223,21 @@ export class BaseInsightComponent extends HTMLElement {
         });
         return html `${Lit.Directives.until(domNodePromise, fallback)}`;
     }
+    #askAIButtonClick() {
+        if (!this.#model || !this.#parsedTrace) {
+            return;
+        }
+        // matches the one in ai_assistance-meta.ts
+        const actionId = 'drjones.performance-insight-context';
+        if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
+            return;
+        }
+        const context = new Utils.InsightAIContext.ActiveInsight(this.#model, this.#parsedTrace);
+        UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, context);
+        // Trigger the AI Assistance panel to open.
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
+        void action.execute();
+    }
     #renderWithContent(content) {
         if (!this.#model) {
             Lit.render(Lit.nothing, this.#shadowRoot, { host: this });
@@ -250,6 +273,9 @@ export class BaseInsightComponent extends HTMLElement {
           <div class="insight-body">
             <div class="insight-description">${md(this.#model.description)}</div>
             <div class="insight-content">${content}</div>
+            ${this.#insightsAskAiEnabled ? html `
+               <devtools-button data-ask-ai @click=${this.#askAIButtonClick}>Ask AI (placeholder UX)</devtools-button>
+             ` : Lit.nothing}
           </div>`
             : Lit.nothing}
       </div>

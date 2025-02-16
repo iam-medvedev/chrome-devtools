@@ -9,7 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
-import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getFormattedTime, } from './AppenderUtils.js';
+import { addDecorationToEvent, buildGroupStyle, buildTrackHeader, getDurationString, } from './AppenderUtils.js';
 import { entryIsVisibleInTimeline, } from './CompatibilityTracksAppender.js';
 import * as ModificationsManager from './ModificationsManager.js';
 import * as Utils from './utils/utils.js';
@@ -511,7 +511,7 @@ export class ThreadAppender {
             info.title += ` - ${url} [${range}]`;
         }
         const selfTime = this.#parsedTrace.Renderer.entryToNode.get(event)?.selfTime;
-        info.formattedTime = getFormattedTime(event.dur, selfTime);
+        info.formattedTime = getDurationString(event.dur, selfTime);
     }
 }
 //# sourceMappingURL=ThreadAppender.js.map

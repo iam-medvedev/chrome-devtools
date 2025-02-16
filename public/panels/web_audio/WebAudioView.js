@@ -13,12 +13,18 @@ import webAudioStyles from './webAudio.css.js';
 import { WebAudioModel } from './WebAudioModel.js';
 const UIStrings = {
     /**
+     *@description Text in Web Audio View if there is nothing to show.
+     * Web Audio API is an API for controlling audio on the web.
+     */
+    noWebAudio: 'No web audio API usage detected',
+    /**
      *@description Text in Web Audio View
      */
-    openAPageThatUsesWebAudioApiTo: 'Open a page that uses Web Audio API to start monitoring.',
+    openAPageThatUsesWebAudioApiTo: 'Open a page that uses web audio API to start monitoring.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/web_audio/WebAudioView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const WEBAUDIO_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/webaudio';
 export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
     contextSelector;
     contentContainer;
@@ -47,13 +53,8 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         this.detailViewContainer = this.contentContainer.createChild('div', 'web-audio-details-container vbox flex-auto');
         this.graphManager = new GraphVisualizer.GraphManager.GraphManager();
         // Creates the landing page.
-        this.landingPage = new UI.Widget.VBox();
-        this.landingPage.contentElement.classList.add('web-audio-landing-page', 'fill');
-        this.landingPage.contentElement.appendChild(UI.Fragment.html `
-  <div>
-  <p>${i18nString(UIStrings.openAPageThatUsesWebAudioApiTo)}</p>
-  </div>
-  `);
+        this.landingPage = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWebAudio), i18nString(UIStrings.openAPageThatUsesWebAudioApiTo));
+        this.landingPage.appendLink(WEBAUDIO_EXPLANATION_URL);
         this.landingPage.show(this.detailViewContainer);
         // Creates the summary bar.
         this.summaryBarContainer = this.contentContainer.createChild('div', 'web-audio-summary-container');

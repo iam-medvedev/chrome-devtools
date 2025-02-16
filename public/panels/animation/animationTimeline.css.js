@@ -150,8 +150,8 @@ circle.animation-keyframe-point:active {
   cursor: pointer;
 }
 
-.animation-timeline-buffer,
-.animation-timeline-buffer-hint {
+.animation-timeline-buffer
+ {
   height: 48px;
   flex: 0 0 auto;
   border-bottom: 1px solid var(--sys-color-divider);
@@ -159,17 +159,8 @@ circle.animation-keyframe-point:active {
   padding: 0 2px;
 }
 
-.animation-timeline-buffer:empty,
 .animation-timeline-buffer-hint {
   display: none;
-}
-
-.animation-timeline-buffer:empty ~ .animation-timeline-buffer-hint {
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  z-index: 101;
-  display: flex;
 }
 
 .animation-time-overlay {
@@ -358,7 +349,8 @@ text.animation-timeline-grid-label {
 }
 
 .animation-timeline-rows,
-.animation-timeline-rows-hint {
+.animation-timeline-rows-hint,
+.animation-timeline-buffer-hint {
   flex-grow: 1;
   overflow: hidden auto;
   z-index: 1;
@@ -372,7 +364,12 @@ text.animation-timeline-grid-label {
   flex-grow: 0;
 }
 
-.animation-timeline-buffer:not(:empty) ~ .animation-timeline-rows:empty ~ .animation-timeline-rows-hint {
+.animation-timeline-rows:empty {
+  display: none;
+}
+
+.animation-timeline-buffer:not(:empty) ~ .animation-timeline-rows:empty ~.animation-timeline-buffer-hint:not(:empty) ~ .animation-timeline-rows-hint,
+.animation-timeline-buffer:empty ~ .animation-timeline-buffer-hint {
   font-size: 14px;
   display: flex;
   align-items: center;

@@ -78,7 +78,6 @@ export declare class AnimationImpl {
     name(): string;
     paused(): boolean;
     playState(): string;
-    setPlayState(playState: string): void;
     playbackRate(): number;
     startTime(): number;
     iterationDuration(): number;

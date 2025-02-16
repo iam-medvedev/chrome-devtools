@@ -9,7 +9,6 @@ export declare class IsolateManager extends Common.ObjectWrapper.ObjectWrapper<E
         forceNew: boolean;
     }): IsolateManager;
     observeIsolates(observer: Observer): void;
-    unobserveIsolates(observer: Observer): void;
     modelAdded(model: RuntimeModel): void;
     private modelAddedInternal;
     modelRemoved(model: RuntimeModel): void;

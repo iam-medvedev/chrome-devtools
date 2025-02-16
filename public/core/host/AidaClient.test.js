@@ -1,12 +1,16 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment, getGetHostConfigStub } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import * as Host from './host.js';
 const TEST_MODEL_ID = 'testModelId';
 describeWithEnvironment('AidaClient', () => {
     it('adds no model temperature if console insights is not enabled', () => {
-        const stub = getGetHostConfigStub({});
+        updateHostConfig({
+            aidaAvailability: {
+                disallowLogging: false,
+            },
+        });
         const request = Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo');
         assert.deepEqual(request, {
             current_message: { parts: [{ text: 'foo' }], role: Host.AidaClient.Role.USER },
@@ -14,10 +18,12 @@ describeWithEnvironment('AidaClient', () => {
             client_feature: 1,
             functionality_type: 2,
         });
-        stub.restore();
     });
     it('adds a model temperature', () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
+            aidaAvailability: {
+                disallowLogging: false,
+            },
             devToolsConsoleInsights: {
                 enabled: true,
                 temperature: 0.5,
@@ -33,10 +39,12 @@ describeWithEnvironment('AidaClient', () => {
             client_feature: 1,
             functionality_type: 2,
         });
-        stub.restore();
     });
     it('adds a model temperature of 0', () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
+            aidaAvailability: {
+                disallowLogging: false,
+            },
             devToolsConsoleInsights: {
                 enabled: true,
                 temperature: 0,
@@ -52,10 +60,12 @@ describeWithEnvironment('AidaClient', () => {
             client_feature: 1,
             functionality_type: 2,
         });
-        stub.restore();
     });
     it('ignores a negative model temperature', () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
+            aidaAvailability: {
+                disallowLogging: false,
+            },
             devToolsConsoleInsights: {
                 enabled: true,
                 temperature: -1,
@@ -68,10 +78,12 @@ describeWithEnvironment('AidaClient', () => {
             client_feature: 1,
             functionality_type: 2,
         });
-        stub.restore();
     });
     it('adds a model id and temperature', () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
+            aidaAvailability: {
+                disallowLogging: false,
+            },
             devToolsConsoleInsights: {
                 enabled: true,
                 modelId: TEST_MODEL_ID,
@@ -89,10 +101,9 @@ describeWithEnvironment('AidaClient', () => {
             client_feature: 1,
             functionality_type: 2,
         });
-        stub.restore();
     });
     it('adds metadata to disallow logging', () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
             aidaAvailability: {
                 disallowLogging: true,
             },
@@ -114,7 +125,6 @@ describeWithEnvironment('AidaClient', () => {
             client_feature: 1,
             functionality_type: 2,
         });
-        stub.restore();
     });
     async function getAllResults(provider) {
         const results = [];

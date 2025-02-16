@@ -497,9 +497,6 @@ export class UILocation {
     lineId() {
         return this.uiSourceCode.project().id() + ':' + this.uiSourceCode.url() + ':' + this.lineNumber;
     }
-    toUIString() {
-        return this.uiSourceCode.url() + ':' + (this.lineNumber + 1);
-    }
     static comparator(location1, location2) {
         return location1.compareTo(location2);
     }
@@ -573,25 +570,6 @@ export class Message {
     }
     isEqual(another) {
         return this.text() === another.text() && this.level() === another.level() && this.range.equal(another.range);
-    }
-}
-export class LineMarker {
-    rangeInternal;
-    typeInternal;
-    dataInternal;
-    constructor(range, type, data) {
-        this.rangeInternal = range;
-        this.typeInternal = type;
-        this.dataInternal = data;
-    }
-    range() {
-        return this.rangeInternal;
-    }
-    type() {
-        return this.typeInternal;
-    }
-    data() {
-        return this.dataInternal;
     }
 }
 export class UISourceCodeMetadata {

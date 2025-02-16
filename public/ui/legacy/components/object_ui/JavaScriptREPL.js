@@ -95,11 +95,5 @@ export class JavaScriptREPL {
         return fragment;
     }
 }
-let maxLengthForEvaluation = 2000;
-export function setMaxLengthForEvaluation(value) {
-    maxLengthForEvaluation = value;
-}
-export function getMaxLengthForEvaluation() {
-    return maxLengthForEvaluation;
-}
+const maxLengthForEvaluation = 2000;
 //# sourceMappingURL=JavaScriptREPL.js.map

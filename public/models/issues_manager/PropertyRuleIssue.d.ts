@@ -5,7 +5,7 @@ import type { MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class PropertyRuleIssue extends Issue {
     #private;
     constructor(issueDetails: Protocol.Audits.PropertyRuleIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
-    sources(): Array<Protocol.Audits.SourceCodeLocation>;
+    sources(): Protocol.Audits.SourceCodeLocation[];
     details(): Protocol.Audits.PropertyRuleIssueDetails;
     primaryKey(): string;
     getPropertyName(): string;

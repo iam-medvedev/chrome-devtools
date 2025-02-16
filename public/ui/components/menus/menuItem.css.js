@@ -11,7 +11,7 @@ export default {
  */
 
 .menu-item {
-  padding: 4px 30px 4px calc(10px + var(--menu-checkmark-width));
+  padding: var(--sys-size-3) 0 var(--sys-size-3) var(--sys-size-9);
   font-size: 12px;
   line-height: 16px;
   position: relative;
@@ -23,18 +23,22 @@ export default {
   outline: none;
 }
 
+:host(.no-checkmark) .menu-item {
+  padding-left: 0;
+}
+
 :host(:not(:first-child)) .menu-item {
   border-top: var(--override-divider-line);
 }
 
 :host-context(devtools-menu-group) .menu-item {
-  padding: 4px 30px 4px 36px;
+  padding: var(--sys-size-3) 0 var(--sys-size-3) var(--sys-size-9);
 }
 
 .is-selected-item::before {
   content: "";
   position: absolute;
-  left: 10px;
+  left: var(--sys-size-2);
   top: 50%;
   transform: translateY(-50%);
   display: inline-block;

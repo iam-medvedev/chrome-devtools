@@ -17,10 +17,10 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
     profileGroups: {};
     launcherView: ProfileLauncherView;
     visibleView: UI.Widget.Widget | undefined;
-    readonly profileToView: {
+    readonly profileToView: Array<{
         profile: ProfileHeader;
         view: UI.Widget.Widget;
-    }[];
+    }>;
     typeIdToSidebarSection: {
         [x: string]: ProfileTypeSidebarSection;
     };

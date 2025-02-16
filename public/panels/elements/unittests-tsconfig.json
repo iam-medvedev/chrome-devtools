@@ -40,6 +40,7 @@
   "files": [
     "../../../../../../front_end/panels/elements/AccessibilityTreeView.test.ts",
     "../../../../../../front_end/panels/elements/CSSRuleValidator.test.ts",
+    "../../../../../../front_end/panels/elements/CSSValueTraceView.test.ts",
     "../../../../../../front_end/panels/elements/ClassesPaneWidget.test.ts",
     "../../../../../../front_end/panels/elements/ColorSwatchPopoverIcon.test.ts",
     "../../../../../../front_end/panels/elements/ComputedStyleModel.test.ts",

@@ -27,7 +27,7 @@ type SuggestionFilter = (option: string, query: string) => boolean;
 declare class SuggestionBox extends LitElement {
     #private;
     static styles: CSSStyleSheet[];
-    options: Readonly<string[]>;
+    options: readonly string[];
     expression: string;
     suggestionFilter?: SuggestionFilter;
     private cursor;
@@ -48,7 +48,7 @@ export declare class SuggestionInput extends LitElement {
     /**
      * State passed to devtools-suggestion-box.
      */
-    options: Readonly<string[]>;
+    options: readonly string[];
     autocomplete?: boolean;
     suggestionFilter?: SuggestionFilter;
     expression: string;

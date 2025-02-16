@@ -7,7 +7,6 @@ export declare class ReportingApiReportsView extends UI.SplitWidget.SplitWidget 
     private readonly reportsGrid;
     private reports;
     constructor(networkManager: SDK.NetworkManager.NetworkManager);
-    wasShown(): void;
     private onReportAdded;
     private onReportUpdated;
     private onFocus;

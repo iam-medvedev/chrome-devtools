@@ -54,6 +54,7 @@
     "../../../../../../../front_end/models/trace/handlers/RendererHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/SamplesHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/ScreenshotsHandler.ts",
+    "../../../../../../../front_end/models/trace/handlers/ScriptsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/SelectorStatsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/ServerTimingsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/Threads.ts",

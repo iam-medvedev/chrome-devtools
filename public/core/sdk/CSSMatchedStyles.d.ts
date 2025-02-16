@@ -28,7 +28,6 @@ export interface CSSMatchedStylesPayload {
 export declare class CSSRegisteredProperty {
     #private;
     constructor(cssModel: CSSModel, registration: CSSPropertyRule | Protocol.CSS.CSSPropertyRegistration);
-    isAtProperty(): boolean;
     propertyName(): string;
     initialValue(): string | null;
     inherits(): boolean;

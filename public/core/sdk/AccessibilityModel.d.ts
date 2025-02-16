@@ -61,7 +61,6 @@ export declare class AccessibilityModel extends SDKModel<EventTypes> implements 
     requestAndLoadSubTreeToNode(node: DOMNode): Promise<AccessibilityNode[] | null>;
     axNodeForId(axId: Protocol.Accessibility.AXNodeId): AccessibilityNode | null;
     setRootAXNodeForFrameId(frameId: Protocol.Page.FrameId, axNode: AccessibilityNode): void;
-    axNodeForFrameId(frameId: Protocol.Page.FrameId): AccessibilityNode | null;
     setAXNodeForAXId(axId: string, axNode: AccessibilityNode): void;
     axNodeForDOMNode(domNode: DOMNode | null): AccessibilityNode | null;
     setAXNodeForBackendDOMNodeId(backendDOMNodeId: Protocol.DOM.BackendNodeId, axNode: AccessibilityNode): void;

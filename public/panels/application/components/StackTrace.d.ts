@@ -5,7 +5,7 @@ import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../ui/lit/lit.js';
 export interface StackTraceData {
     frame: SDK.ResourceTreeModel.ResourceTreeFrame;
-    buildStackTraceRows: (stackTrace: Protocol.Runtime.StackTrace, target: SDK.Target.Target | null, linkifier: Components.Linkifier.Linkifier, tabStops: boolean | undefined, updateCallback?: (arg0: (Components.JSPresentationUtils.StackTraceRegularRow | Components.JSPresentationUtils.StackTraceAsyncRow)[]) => void) => (Components.JSPresentationUtils.StackTraceRegularRow | Components.JSPresentationUtils.StackTraceAsyncRow)[];
+    buildStackTraceRows: (stackTrace: Protocol.Runtime.StackTrace, target: SDK.Target.Target | null, linkifier: Components.Linkifier.Linkifier, tabStops: boolean | undefined, updateCallback?: (arg0: Array<Components.JSPresentationUtils.StackTraceRegularRow | Components.JSPresentationUtils.StackTraceAsyncRow>) => void) => Array<Components.JSPresentationUtils.StackTraceRegularRow | Components.JSPresentationUtils.StackTraceAsyncRow>;
 }
 interface StackTraceRowData {
     stackTraceRowItem: Components.JSPresentationUtils.StackTraceRegularRow;

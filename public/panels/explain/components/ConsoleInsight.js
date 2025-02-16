@@ -300,7 +300,7 @@ export class ConsoleInsight extends HTMLElement {
         this.#shadow.adoptedStyleSheets = [styles, Input.checkboxStyles];
         this.classList.add('opening');
         this.#consoleInsightsEnabledSetting?.addChangeListener(this.#onConsoleInsightsSettingChanged, this);
-        const blockedByAge = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.blockedByAge === true;
+        const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
         if (this.#state.type === "loading" /* State.LOADING */ && this.#consoleInsightsEnabledSetting?.getIfNotDisabled() === true &&
             !blockedByAge && this.#state.consentOnboardingCompleted) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.GeneratingInsightWithoutDisclaimer);
@@ -362,7 +362,7 @@ export class ConsoleInsight extends HTMLElement {
         if (this.#state.type !== "loading" /* State.LOADING */) {
             return;
         }
-        const blockedByAge = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.blockedByAge === true;
+        const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
         if (this.#consoleInsightsEnabledSetting?.getIfNotDisabled() !== true || blockedByAge) {
             this.#transitionTo({
                 type: "setting-is-not-true" /* State.SETTING_IS_NOT_TRUE */,
@@ -410,7 +410,7 @@ export class ConsoleInsight extends HTMLElement {
         else {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRatedNegative);
         }
-        const disallowLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.disallowLogging ?? true;
+        const disallowLogging = Root.Runtime.hostConfig.aidaAvailability?.disallowLogging ?? true;
         void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: this.#state.metadata.rpcGlobalId,
             disable_user_content_logging: disallowLogging,
@@ -654,7 +654,7 @@ export class ConsoleInsight extends HTMLElement {
     }
     #renderMain() {
         const jslog = `${VisualLogging.section(this.#state.type).track({ resize: true })}`;
-        const noLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.enterprisePolicyValue ===
+        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         // clang-format off
         switch (this.#state.type) {
@@ -795,7 +795,7 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format on
     }
     #renderDisclaimer() {
-        const noLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.enterprisePolicyValue ===
+        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         // clang-format off
         return html `<span>
@@ -812,7 +812,7 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format on
     }
     #renderFooter() {
-        const showThumbsUpDownButtons = !(Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.disallowLogging ?? true);
+        const showThumbsUpDownButtons = !(Root.Runtime.hostConfig.aidaAvailability?.disallowLogging ?? true);
         const disclaimer = this.#renderDisclaimer();
         // clang-format off
         switch (this.#state.type) {

@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
-import * as Freestyler from '../ai_assistance.js';
+import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('UserActionRow', () => {
     function createComponent(props) {
         const view = sinon.stub();
-        const component = new Freestyler.UserActionRow(undefined, view);
+        const component = new AiAssistance.UserActionRow(undefined, view);
         Object.assign(component, props);
         component.wasShown();
         return [view, component];

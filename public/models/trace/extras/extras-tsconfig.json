@@ -33,6 +33,7 @@
     "../../../../../../../front_end/models/trace/extras/FilmStrip.ts",
     "../../../../../../../front_end/models/trace/extras/MainThreadActivity.ts",
     "../../../../../../../front_end/models/trace/extras/Metadata.ts",
+    "../../../../../../../front_end/models/trace/extras/ScriptDuplication.ts",
     "../../../../../../../front_end/models/trace/extras/StackTraceForEvent.ts",
     "../../../../../../../front_end/models/trace/extras/ThirdParties.ts",
     "../../../../../../../front_end/models/trace/extras/TimelineJSProfile.ts",

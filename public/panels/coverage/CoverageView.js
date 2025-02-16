@@ -9,6 +9,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CoverageDecorationManager } from './CoverageDecorationManager.js';
@@ -58,14 +59,26 @@ const UIStrings = {
     contentScripts: 'Content scripts',
     /**
      *@description Message in Coverage View of the Coverage tab
-     *@example {record button icon} PH1
      */
-    clickTheReloadButtonSToReloadAnd: 'Click the reload button {PH1} to reload and start capturing coverage.',
+    noCoverageData: 'No coverage data',
     /**
      *@description Message in Coverage View of the Coverage tab
-     *@example {record button icon} PH1
      */
-    clickTheRecordButtonSToStart: 'Click the record button {PH1} to start capturing coverage.',
+    reloadPage: 'Reload page',
+    /**
+     *@description Message in Coverage View of the Coverage tab
+     */
+    startRecording: 'Start recording',
+    /**
+     *@description Message in Coverage View of the Coverage tab
+     *@example {Reload page} PH1
+     */
+    clickTheReloadButtonSToReloadAnd: 'Click the "{PH1}" button to reload and start capturing coverage.',
+    /**
+     *@description Message in Coverage View of the Coverage tab
+     *@example {Start recording} PH1
+     */
+    clickTheRecordButtonSToStart: 'Click the "{PH1}" button to start capturing coverage.',
     /**
      *@description Message in the Coverage View explaining that DevTools could not capture coverage.
      */
@@ -226,20 +239,21 @@ export class CoverageView extends UI.Widget.VBox {
         coverageViewInstance = undefined;
     }
     buildLandingPage() {
-        const widget = new UI.Widget.VBox();
-        let message;
+        const widget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noCoverageData), '');
+        widget.appendLink('https://developer.chrome.com/docs/devtools/coverage');
         if (this.startWithReloadButton) {
-            this.inlineReloadButton =
-                UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton('coverage.start-with-reload'));
-            message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheReloadButtonSToReloadAnd, { PH1: this.inlineReloadButton });
+            const action = UI.ActionRegistry.ActionRegistry.instance().getAction('coverage.start-with-reload');
+            if (action) {
+                widget.text = i18nString(UIStrings.clickTheReloadButtonSToReloadAnd, { PH1: i18nString(UIStrings.reloadPage) });
+                const button = UI.UIUtils.createTextButton(i18nString(UIStrings.reloadPage), () => action.execute(), { jslogContext: action.id(), variant: "tonal" /* Buttons.Button.Variant.TONAL */ });
+                widget.contentElement.append(button);
+            }
         }
         else {
-            const recordButton = UI.UIUtils.createInlineButton(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
-            message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheRecordButtonSToStart, { PH1: recordButton });
+            widget.text = i18nString(UIStrings.clickTheRecordButtonSToStart, { PH1: i18nString(UIStrings.startRecording) });
+            const button = UI.UIUtils.createTextButton(i18nString(UIStrings.startRecording), () => this.toggleRecordAction.execute(), { jslogContext: this.toggleRecordAction.id(), variant: "tonal" /* Buttons.Button.Variant.TONAL */ });
+            widget.contentElement.append(button);
         }
-        message.classList.add('message');
-        widget.contentElement.appendChild(message);
-        widget.element.classList.add('landing-page');
         return widget;
     }
     buildReloadPromptPage(message, className) {
@@ -297,13 +311,6 @@ export class CoverageView extends UI.Widget.VBox {
     }
     onCoverageTypeComboBoxSelectionChanged() {
         this.coverageTypeComboBoxSetting.set(this.coverageTypeComboBox.selectedIndex());
-    }
-    async ensureRecordingStarted() {
-        const enabled = this.toggleRecordAction.toggled();
-        if (enabled) {
-            await this.stopRecording();
-        }
-        await this.startRecording({ reload: false, jsCoveragePerBlock: false });
     }
     async startRecording(options) {
         let hadFocus, reloadButtonFocused;
@@ -395,9 +402,6 @@ export class CoverageView extends UI.Widget.VBox {
             this.toggleRecordButton.setVisible(false);
         }
         this.clearAction.setEnabled(true);
-    }
-    processBacklog() {
-        this.model && void this.model.processJSBacklog();
     }
     async onPrimaryPageChanged(event) {
         const frame = event.data.frame;

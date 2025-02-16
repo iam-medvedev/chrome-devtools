@@ -26,7 +26,7 @@ export interface EventTypes {
 }
 export declare function registerListener(registration: ContextFlavorListenerRegistration): void;
 export interface ContextFlavorListenerRegistration {
-    contextTypes: () => Array<Function>;
+    contextTypes: () => Function[];
     loadListener: () => Promise<ContextFlavorListener>;
 }
 export {};

@@ -18,7 +18,6 @@ export declare class Config<T> {
     pasteHandler?: EventHandler;
     postKeydownFinishHandler?: EventHandler;
     constructor(commitHandler: CommitHandler<T>, cancelHandler: CancelHandler<T>, context: T, blurHandler?: BlurHandler);
-    setPasteHandler(pasteHandler: EventHandler): void;
     setPostKeydownFinishHandler(postKeydownFinishHandler: EventHandler): void;
 }
 export type EventHandler = (event: Event) => string | undefined;

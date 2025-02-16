@@ -76,3 +76,4 @@ export declare class TraceLoader {
         insights: Trace.Insights.Types.TraceInsightSets | null;
     }>;
 }
+export declare function fetchFixture(url: URL): Promise<string>;

@@ -12,6 +12,8 @@ export default {
 
 :host {
   padding: 20px;
+  height: 100%;
+  display: flex;
 }
 
 .heading {

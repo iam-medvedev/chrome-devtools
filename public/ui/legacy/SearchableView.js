@@ -383,9 +383,6 @@ export class SearchableView extends VBox {
         const untypedSearchProvider = this.searchProvider;
         this.updateSearchMatchesCountAndCurrentMatchIndex(untypedSearchProvider.currentSearchMatches, currentMatchIndex);
     }
-    isSearchVisible() {
-        return Boolean(this.searchIsVisible);
-    }
     closeSearch() {
         this.cancelSearch();
         if (this.footerElementContainer.hasFocus()) {

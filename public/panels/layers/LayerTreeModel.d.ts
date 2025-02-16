@@ -71,7 +71,7 @@ export declare class AgentLayer implements SDK.LayerTreeBase.Layer {
     requestCompositingReasonIds(): Promise<string[]>;
     drawsContent(): boolean;
     gpuMemoryUsage(): number;
-    snapshots(): Promise<SDK.PaintProfiler.SnapshotWithRect | null>[];
+    snapshots(): Array<Promise<SDK.PaintProfiler.SnapshotWithRect | null>>;
     didPaint(rect: Protocol.DOM.Rect): void;
     reset(layerPayload: Protocol.LayerTree.Layer): void;
     private matrixFromArray;

@@ -16,7 +16,6 @@ export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.Thro
     static instance(): WatchExpressionsSidebarPane;
     toolbarItems(): UI.Toolbar.ToolbarItem[];
     focus(): void;
-    hasExpressions(): boolean;
     private saveExpressions;
     private addButtonClicked;
     doUpdate(): Promise<void>;

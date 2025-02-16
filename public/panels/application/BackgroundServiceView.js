@@ -6,6 +6,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 // eslint-disable-next-line rulesdir/es-modules-import
 import emptyWidgetStyles from '../../ui/legacy/emptyWidget.css.js';
@@ -91,10 +92,6 @@ const UIStrings = {
      */
     backgroundServices: 'Background services',
     /**
-     *@description Text that is usually a hyperlink to more documentation
-     */
-    learnMore: 'Learn more',
-    /**
      *@description Text in Background Service View of the Application panel
      */
     selectAnEntryToViewMetadata: 'Select an entry to view metadata',
@@ -104,16 +101,22 @@ const UIStrings = {
      */
     recordingSActivity: 'Recording {PH1} activity...',
     /**
+     *@description Text in Background Service View of the Application panel
+     */
+    noRecording: 'No recording yet',
+    /**
      *@description Inform users that DevTools are recording/waiting for events in the Periodic Background Sync tool of the Application panel
      *@example {Background Fetch} PH1
      */
     devtoolsWillRecordAllSActivity: 'DevTools will record all {PH1} activity for up to 3 days, even when closed.',
     /**
-     *@description Text in Background Service View of the Application panel
-     *@example {record} PH1
-     *@example {Ctrl + R} PH2
+     *@description Text in Background Service View of the Application panel to instruct the user on how to start a recording for
+     * background services.
+     *
+     *@example {Start recording events} PH1
+     *@example {Ctrl + E} PH2
      */
-    clickTheRecordButtonSOrHitSTo: 'Click the record button {PH1} or hit {PH2} to start recording.',
+    startRecordingToDebug: 'Start to debug background services by using the "{PH1}" button or by hitting {PH2}.',
     /**
      *@description Text to show an item is empty
      */
@@ -381,7 +384,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             default:
                 break;
         }
-        return UI.XLink.XLink.create(url, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
+        return url;
     }
     showPreview(dataNode) {
         if (this.selectedEventNode && this.selectedEventNode === dataNode) {
@@ -406,20 +409,16 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         else if (this.recordButton.isToggled()) {
             // Inform users that we are recording/waiting for events.
             const featureName = BackgroundServiceView.getUIString(this.serviceName).toLowerCase();
-            centered.createChild('p').textContent = i18nString(UIStrings.recordingSActivity, { PH1: featureName });
-            centered.createChild('p').textContent = i18nString(UIStrings.devtoolsWillRecordAllSActivity, { PH1: featureName });
+            const emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.recordingSActivity, { PH1: featureName }), i18nString(UIStrings.devtoolsWillRecordAllSActivity, { PH1: featureName }));
+            emptyWidget.show(centered);
         }
         else {
-            const landingRecordButton = UI.Toolbar.Toolbar.createActionButton(this.recordAction);
-            const recordKey = document.createElement('b');
-            recordKey.classList.add('background-service-shortcut');
-            recordKey.textContent = UI.ShortcutRegistry.ShortcutRegistry.instance()
-                .shortcutsForAction('background-service.toggle-recording')[0]
-                .title();
-            const inlineButton = UI.UIUtils.createInlineButton(landingRecordButton);
-            inlineButton.classList.add('background-service-record-inline-button');
-            centered.createChild('p').appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.clickTheRecordButtonSOrHitSTo, { PH1: inlineButton, PH2: recordKey }));
-            centered.appendChild(this.createLearnMoreLink());
+            const recordShortcuts = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('background-service.toggle-recording')[0];
+            const emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noRecording), i18nString(UIStrings.startRecordingToDebug, { PH1: i18nString(UIStrings.startRecordingEvents), PH2: recordShortcuts.title() }));
+            emptyWidget.appendLink(this.createLearnMoreLink());
+            emptyWidget.show(centered);
+            const button = UI.UIUtils.createTextButton(i18nString(UIStrings.startRecordingEvents), () => this.toggleRecording(), { jslogContext: 'start-recording', variant: "tonal" /* Buttons.Button.Variant.TONAL */ });
+            emptyWidget.contentElement.appendChild(button);
         }
         this.preview.show(this.previewPanel.contentElement);
     }

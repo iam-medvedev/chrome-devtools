@@ -612,11 +612,6 @@ export class ElementsPanel extends UI.Panel.Panel {
             treeOutline.setWordWrap(event.data);
         }
     }
-    switchToAndFocus(node) {
-        // Reset search restore.
-        this.searchableViewInternal.cancelSearch();
-        void UI.ViewManager.ViewManager.instance().showView('elements').then(() => this.selectDOMNode(node, true));
-    }
     jumpToSearchResult(index) {
         if (!this.searchResults) {
             return;

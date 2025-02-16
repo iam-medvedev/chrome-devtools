@@ -2,8 +2,8 @@ import type * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import type { SettingStorageType } from './Settings.js';
 export declare function registerSettingExtension(registration: SettingRegistration): void;
-export declare function getRegisteredSettings(config: Root.Runtime.HostConfig): Array<SettingRegistration>;
-export declare function registerSettingsForTest(settings: Array<SettingRegistration>, forceReset?: boolean): void;
+export declare function getRegisteredSettings(): SettingRegistration[];
+export declare function registerSettingsForTest(settings: SettingRegistration[], forceReset?: boolean): void;
 export declare function resetSettings(): void;
 export declare function maybeRemoveSettingExtension(settingName: string): boolean;
 export declare const enum SettingCategory {
@@ -88,7 +88,7 @@ export interface SettingRegistration {
     /**
      * The possible values the setting can have, each with a description composed of a title and an optional text.
      */
-    options?: Array<SettingExtensionOption>;
+    options?: SettingExtensionOption[];
     /**
      * Whether DevTools must be reloaded for a change in the setting to take effect.
      */

@@ -19,12 +19,11 @@ export declare class ShortcutRegistry {
     static removeInstance(): void;
     private applicableActions;
     shortcutsForAction(action: string): KeyboardShortcut[];
-    actionsForDescriptors(descriptors: {
+    actionsForDescriptors(descriptors: Array<{
         key: number;
         name: string;
-    }[]): string[];
+    }>): string[];
     globalShortcutKeys(): number[];
-    keysForActions(actionIds: string[]): number[];
     shortcutTitleForAction(actionId: string): string | undefined;
     handleShortcut(event: KeyboardEvent, handlers?: {
         [x: string]: () => Promise<boolean>;

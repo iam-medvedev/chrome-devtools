@@ -5,7 +5,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     displayName: string;
     editCallback: ((node: any, columnId: string, valueBeforeEditing: any, newText: any, moveDirection?: string) => void) | undefined;
     deleteCallback: ((arg0: any) => void) | undefined;
-    private readonly refreshCallback;
+    refreshCallback: (() => void) | undefined;
     private dataTableHeaders;
     scrollContainerInternal: Element;
     private dataContainerInternal;
@@ -80,6 +80,8 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     private autoSizeWidths;
     /**
      * The range of |minPercent| and |maxPercent| is [0, 100].
+     *
+     * FYI: Only used in test: chromium/src/third_party/blink/web_tests/http/tests/devtools/components/datagrid.js
      */
     autoSizeColumns(minPercent: number, maxPercent?: number, maxDescentLevel?: number): void;
     private enumerateChildren;
@@ -181,7 +183,7 @@ export declare class DataGridNode<T> {
     private shouldRefreshChildrenInternal;
     private dataInternal;
     private hasChildrenInternal;
-    children: DataGridNode<T>[];
+    children: Array<DataGridNode<T>>;
     dataGrid: DataGridImpl<T> | null;
     parent: DataGridNode<T> | null;
     previousSibling: DataGridNode<T> | null;
@@ -203,7 +205,6 @@ export declare class DataGridNode<T> {
     set revealed(x: boolean);
     isDirty(): boolean;
     setDirty(dirty: boolean): void;
-    isInactive(): boolean;
     setInactive(inactive: boolean): void;
     hasChildren(): boolean;
     setHasChildren(x: boolean): void;
@@ -260,19 +261,6 @@ export declare class DataGridWidget<T> extends UI.Widget.VBox {
     willHide(): void;
     onResize(): void;
     elementsToRestoreScrollPositionsFor(): Element[];
-}
-export type DataGridWidgetOptions<T> = Parameters & {
-    markAsRoot?: boolean;
-    striped?: boolean;
-    nodes: DataGridNode<T>[];
-    rowContextMenuCallback?: ((arg0: UI.ContextMenu.ContextMenu, arg1: DataGridNode<T>) => void);
-};
-export declare class DataGridWidgetElement<T> extends UI.Widget.WidgetElement<DataGridWidget<T>> {
-    #private;
-    widget?: DataGridWidget<T>;
-    constructor();
-    set options(options: DataGridWidgetOptions<T>);
-    createWidget(): DataGridWidget<T>;
 }
 export interface Parameters {
     displayName: string;

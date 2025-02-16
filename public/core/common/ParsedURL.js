@@ -448,9 +448,6 @@ export class ParsedURL {
     isDataURL() {
         return this.scheme === 'data';
     }
-    isHttpOrHttps() {
-        return this.scheme === 'http' || this.scheme === 'https';
-    }
     isBlobURL() {
         return this.url.startsWith('blob:');
     }

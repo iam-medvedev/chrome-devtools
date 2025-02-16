@@ -192,7 +192,6 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     contentType(): Common.ResourceType.ResourceType;
     requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
-    isHttpFamily(): boolean;
     requestContentType(): string | undefined;
     hasErrorStatusCode(): boolean;
     setInitialPriority(priority: Protocol.Network.ResourcePriority): void;
@@ -323,10 +322,10 @@ export interface EventSourceMessage {
     data: string;
 }
 export interface ExtraRequestInfo {
-    blockedRequestCookies: {
+    blockedRequestCookies: Array<{
         blockedReasons: Protocol.Network.CookieBlockedReason[];
         cookie: Cookie;
-    }[];
+    }>;
     requestHeaders: NameValue[];
     includedRequestCookies: IncludedCookieWithReason[];
     clientSecurityState?: Protocol.Network.ClientSecurityState;
@@ -334,22 +333,22 @@ export interface ExtraRequestInfo {
     siteHasCookieInOtherPartition?: boolean;
 }
 export interface ExtraResponseInfo {
-    blockedResponseCookies: {
+    blockedResponseCookies: Array<{
         blockedReasons: Protocol.Network.SetCookieBlockedReason[];
         cookieLine: string;
         cookie: Cookie | null;
-    }[];
+    }>;
     responseHeaders: NameValue[];
     responseHeadersText?: string;
     resourceIPAddressSpace: Protocol.Network.IPAddressSpace;
     statusCode: number | undefined;
     cookiePartitionKey?: Protocol.Network.CookiePartitionKey;
     cookiePartitionKeyOpaque: boolean | undefined;
-    exemptedResponseCookies: {
+    exemptedResponseCookies: Array<{
         cookie: Cookie;
         cookieLine: string;
         exemptionReason: Protocol.Network.CookieExemptionReason;
-    }[] | undefined;
+    }> | undefined;
 }
 export interface EarlyHintsInfo {
     responseHeaders: NameValue[];

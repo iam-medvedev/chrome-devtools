@@ -26,16 +26,17 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint no-return-assign: "off" */
 import * as i18n from '../../core/i18n/i18n.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives as LitDirectives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { StorageItemsView } from './StorageItemsView.js';
 const { ARIAUtils } = UI;
 const { EmptyWidget } = UI.EmptyWidget;
-const { SplitWidget } = UI.SplitWidget;
-const { Widget, VBox } = UI.Widget;
-const { DataGridImpl, DataGridNode, Events } = DataGrid.DataGrid;
+const { VBox, widgetConfig } = UI.Widget;
+const { Size } = UI.Geometry;
+const { repeat } = LitDirectives;
 const UIStrings = {
     /**
      *@description Text that shows in the Applicaiton Panel if no value is selected for preview
@@ -66,167 +67,201 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * between a DataGrid displaying key-value pairs and a preview Widget.
  */
 export class KeyValueStorageItemsView extends StorageItemsView {
-    #dataGrid;
-    #splitWidget;
-    #previewPanel;
     #preview;
     #previewValue;
-    constructor(title, id, editable) {
-        super(title, id);
-        this.#dataGrid = new DataGridImpl({
-            displayName: title,
-            columns: [
-                { id: 'key', title: i18nString(UIStrings.key), sortable: true, editable, longText: true, weight: 50 },
-                { id: 'value', title: i18nString(UIStrings.value), sortable: false, editable, longText: true, weight: 50 }
-            ],
-            refreshCallback: this.refreshItems.bind(this),
-            ...(editable ? {
-                editCallback: this.#editingCallback.bind(this),
-                deleteCallback: this.#deleteCallback.bind(this),
-            } :
-                {}),
-        });
-        this.#dataGrid.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, event => {
-            void this.#previewEntry(event.data);
-        });
-        this.#dataGrid.addEventListener("DeselectedNode" /* Events.DESELECTED_NODE */, () => {
-            void this.#previewEntry(null);
-        });
-        this.#dataGrid.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, this.refreshItems, this);
-        this.#dataGrid.setStriped(true);
-        this.#dataGrid.setName(`${id}-datagrid-with-preview`);
-        this.#splitWidget = new SplitWidget(
-        /* isVertical: */ false, /* secondIsSidebar: */ true, `${id}-split-view-state`);
-        this.#splitWidget.show(this.contentElement);
-        this.#previewPanel = new VBox();
-        this.#previewPanel.setMinimumSize(0, 50);
-        this.#previewPanel.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
-        const resizer = this.#previewPanel.element.createChild('div', 'preview-panel-resizer');
-        const dataGridWidget = this.#dataGrid.asWidget();
-        dataGridWidget.setMinimumSize(0, 50);
-        this.#splitWidget.setMainWidget(dataGridWidget);
-        this.#splitWidget.setSidebarWidget(this.#previewPanel);
-        this.#splitWidget.installResizer(resizer);
-        this.#preview = null;
+    #items = [];
+    #selectedKey = null;
+    #view;
+    #isSortOrderAscending = true;
+    #editable;
+    constructor(title, id, editable, view, metadataView) {
+        if (!view) {
+            view = (input, output, target) => {
+                // clang-format off
+                render(html `
+            <devtools-split-widget
+                .options=${{ vertical: false, secondIsSidebar: true, settingName: `${id}-split-view-state` }}>
+               <devtools-widget
+                  slot="main"
+                  .widgetConfig=${widgetConfig(VBox, { minimumSize: new Size(0, 50) })}>
+                <devtools-data-grid
+                  .name=${`${id}-datagrid-with-preview`}
+                  striped
+                  style="flex: auto"
+                  @select=${input.onSelect}
+                  @sort=${input.onSort}
+                  @refresh=${input.onReferesh}
+                  @create=${input.onCreate}
+                  @edit=${input.onEdit}
+                  @delete=${input.onDelete}
+                >
+                  <table>
+                    <tr>
+                      <th id="key" sortable ?editable=${input.editable}>
+                        ${i18nString(UIStrings.key)}
+                      </th>
+                      <th id="value" ?editable=${input.editable}>
+                        ${i18nString(UIStrings.value)}
+                      </th>
+                    </tr>
+                    ${repeat(input.items, item => item.key, item => html `
+                      <tr data-key=${item.key} data-value=${item.value}
+                          selected=${(input.selectedKey === item.key) || nothing}>
+                        <td>${item.key}</td>
+                        <td>${item.value}</td>
+                      </tr>`)}
+                      <tr placeholder></tr>
+                  </table>
+                </devtools-data-grid>
+              </devtools-widget>
+              <devtools-widget
+                  slot="sidebar"
+                  .widgetConfig=${widgetConfig(VBox, { minimumSize: new Size(0, 50) })}
+                  jslog=${VisualLogging.pane('preview').track({ resize: true })}>
+               ${input.preview?.element}
+              </devtools-widget>
+            </devtools-split-widget>`, 
+                // clang-format on
+                target, { host: input });
+            };
+        }
+        super(title, id, metadataView);
+        this.#editable = editable;
+        this.#view = view;
+        this.performUpdate();
+        this.#preview =
+            new EmptyWidget(i18nString(UIStrings.noPreviewSelected), i18nString(UIStrings.selectAValueToPreview));
         this.#previewValue = null;
         this.showPreview(null, null);
     }
-    get dataGridForTesting() {
-        return this.#dataGrid;
-    }
-    get previewPanelForTesting() {
-        return this.#previewPanel;
+    performUpdate() {
+        const viewInput = {
+            items: this.#items,
+            selectedKey: this.#selectedKey,
+            editable: this.#editable,
+            preview: this.#preview,
+            onSelect: (event) => {
+                this.setCanDeleteSelected(Boolean(event.detail));
+                if (!event.detail) {
+                    void this.#previewEntry(null);
+                }
+                else {
+                    void this.#previewEntry({ key: event.detail.dataset.key || '', value: event.detail.dataset.value || '' });
+                }
+            },
+            onSort: (event) => {
+                this.#isSortOrderAscending = event.detail.ascending;
+            },
+            onCreate: (event) => {
+                this.#createCallback(event.detail.key, event.detail.value);
+            },
+            onEdit: (event) => {
+                this.#editingCallback(event.detail.node, event.detail.columnId, event.detail.valueBeforeEditing, event.detail.newText);
+            },
+            onDelete: (event) => {
+                this.#deleteCallback(event.detail.dataset.key || '');
+            },
+            onReferesh: () => {
+                this.refreshItems();
+            },
+        };
+        this.#view(viewInput, {}, this.contentElement);
     }
     itemsCleared() {
-        this.#dataGrid.rootNode().removeChildren();
-        this.#dataGrid.addCreationNode(false);
+        this.#items = [];
+        this.performUpdate();
         this.setCanDeleteSelected(false);
     }
     itemRemoved(key) {
-        const rootNode = this.#dataGrid.rootNode();
-        const children = rootNode.children;
-        for (let i = 0; i < children.length; ++i) {
-            const childNode = children[i];
-            if (childNode.data.key === key) {
-                rootNode.removeChild(childNode);
-                this.setCanDeleteSelected(children.length > 1);
-                return;
-            }
-        }
-    }
-    itemAdded(key, value) {
-        const rootNode = this.#dataGrid.rootNode();
-        const children = rootNode.children;
-        for (let i = 0; i < children.length; ++i) {
-            if (children[i].data.key === key) {
-                return;
-            }
-        }
-        const childNode = new DataGridNode({ key, value }, false);
-        rootNode.insertChild(childNode, children.length - 1);
-    }
-    itemUpdated(key, value) {
-        const childNode = this.#dataGrid.rootNode().children.find((child) => child.data.key === key);
-        if (!childNode) {
+        const index = this.#items.findIndex(item => item.key === key);
+        if (index === -1) {
             return;
         }
-        if (childNode.data.value !== value) {
-            childNode.data.value = value;
-            childNode.refresh();
+        this.#items.splice(index, 1);
+        this.performUpdate();
+        this.setCanDeleteSelected(this.#items.length > 1);
+    }
+    itemAdded(key, value) {
+        if (this.#items.some(item => item.key === key)) {
+            return;
         }
-        if (!childNode.selected) {
+        this.#items.push({ key, value });
+        this.performUpdate();
+    }
+    itemUpdated(key, value) {
+        const item = this.#items.find(item => item.key === key);
+        if (!item) {
+            return;
+        }
+        if (item.value === value) {
+            return;
+        }
+        item.value = value;
+        this.performUpdate();
+        if (this.#selectedKey !== key) {
             return;
         }
         if (this.#previewValue !== value) {
-            void this.#previewEntry(childNode);
+            void this.#previewEntry({ key, value });
         }
         this.setCanDeleteSelected(true);
     }
     showItems(items) {
-        const rootNode = this.#dataGrid.rootNode();
-        let selectedKey = null;
-        for (const node of rootNode.children) {
-            if (!node.selected) {
-                continue;
-            }
-            selectedKey = node.data.key;
-            break;
+        const sortDirection = this.#isSortOrderAscending ? 1 : -1;
+        this.#items = [...items].sort((item1, item2) => sortDirection * (item1.key > item2.key ? 1 : -1));
+        const selectedItem = this.#items.find(item => item.key === this.#selectedKey);
+        if (!selectedItem) {
+            this.#selectedKey = null;
         }
-        rootNode.removeChildren();
-        let selectedNode = null;
-        const sortDirection = this.#dataGrid.isSortOrderAscending() ? 1 : -1;
-        // Make a copy to avoid sorting the original array.
-        const filteredList = [...items].sort((item1, item2) => {
-            return sortDirection * (item1.key > item2.key ? 1 : -1);
-        });
-        for (const { key, value } of filteredList) {
-            const node = new DataGridNode({ key, value }, false);
-            node.selectable = true;
-            rootNode.appendChild(node);
-            if (!selectedNode || key === selectedKey) {
-                selectedNode = node;
-            }
+        else {
+            void this.#previewEntry(selectedItem);
         }
-        if (selectedNode) {
-            selectedNode.selected = true;
-        }
-        this.#dataGrid.addCreationNode(false);
-        this.setCanDeleteSelected(Boolean(selectedNode));
-        ARIAUtils.alert(i18nString(UIStrings.numberEntries, { PH1: filteredList.length }));
+        this.performUpdate();
+        this.setCanDeleteSelected(Boolean(this.#selectedKey));
+        ARIAUtils.alert(i18nString(UIStrings.numberEntries, { PH1: this.#items.length }));
     }
     deleteSelectedItem() {
-        if (!this.#dataGrid.selectedNode) {
+        if (!this.#selectedKey) {
             return;
         }
-        this.#deleteCallback(this.#dataGrid.selectedNode);
+        this.#deleteCallback(this.#selectedKey);
+    }
+    #createCallback(key, value) {
+        this.setItem(key, value);
+        this.#removeDupes(key, value);
+        void this.#previewEntry({ key, value });
+    }
+    isEditAllowed(_columnIdentifier, _oldText, _newText) {
+        return true;
     }
     #editingCallback(editingNode, columnIdentifier, oldText, newText) {
+        if (!this.isEditAllowed(columnIdentifier, oldText, newText)) {
+            return;
+        }
         if (columnIdentifier === 'key') {
             if (typeof oldText === 'string') {
                 this.removeItem(oldText);
             }
-            this.setItem(newText, editingNode.data.value || '');
-            this.#removeDupes(editingNode);
+            this.setItem(newText, editingNode.dataset.value || '');
+            this.#removeDupes(newText, editingNode.dataset.value || '');
+            editingNode.dataset.key = newText;
+            void this.#previewEntry({ key: newText, value: editingNode.dataset.value || '' });
         }
         else {
-            this.setItem(editingNode.data.key || '', newText);
+            this.setItem(editingNode.dataset.key || '', newText);
+            void this.#previewEntry({ key: editingNode.dataset.key || '', value: newText });
         }
     }
-    #removeDupes(masterNode) {
-        const rootNode = this.#dataGrid.rootNode();
-        const children = rootNode.children;
-        for (let i = children.length - 1; i >= 0; --i) {
-            const childNode = children[i];
-            if ((childNode.data.key === masterNode.data.key) && (masterNode !== childNode)) {
-                rootNode.removeChild(childNode);
+    #removeDupes(key, value) {
+        for (let i = this.#items.length - 1; i >= 0; --i) {
+            const child = this.#items[i];
+            if ((child.key === key) && (value !== child.value)) {
+                this.#items.splice(i, 1);
             }
         }
     }
-    #deleteCallback(node) {
-        if (!node || node.isCreationNode) {
-            return;
-        }
-        this.removeItem(node.data.key);
+    #deleteCallback(key) {
+        this.removeItem(key);
     }
     showPreview(preview, value) {
         if (this.#preview && this.#previewValue === value) {
@@ -240,30 +275,29 @@ export class KeyValueStorageItemsView extends StorageItemsView {
         }
         this.#previewValue = value;
         this.#preview = preview;
-        preview.show(this.#previewPanel.contentElement);
+        this.performUpdate();
     }
     async #previewEntry(entry) {
-        const value = entry && entry.data && entry.data.value;
-        if (entry && entry.data && entry.data.value) {
-            const preview = await this.createPreview(entry.data.key, value);
+        const value = entry && entry.value;
+        if (value) {
+            this.#selectedKey = entry.key;
+            const preview = await this.createPreview(entry.key, value);
             // Selection could've changed while the preview was loaded
-            if (entry.selected) {
+            if (this.#selectedKey === entry.key) {
                 this.showPreview(preview, value);
             }
         }
         else {
+            this.#selectedKey = null;
             this.showPreview(null, value);
         }
     }
     set editable(editable) {
-        if (editable) {
-            this.#dataGrid.editCallback = this.#editingCallback.bind(this);
-            this.#dataGrid.deleteCallback = this.#deleteCallback.bind(this);
-        }
-        else {
-            this.#dataGrid.editCallback = undefined;
-            this.#dataGrid.deleteCallback = undefined;
-        }
+        this.#editable = editable;
+        this.performUpdate();
+    }
+    keys() {
+        return this.#items.map(item => item.key);
     }
 }
 //# sourceMappingURL=KeyValueStorageItemsView.js.map

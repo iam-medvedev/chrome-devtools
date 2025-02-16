@@ -27,9 +27,9 @@ export interface Calculator {
     boundarySpan(): number;
 }
 export interface DividersData {
-    offsets: {
+    offsets: Array<{
         position: number;
         time: number;
-    }[];
+    }>;
     precision: number;
 }

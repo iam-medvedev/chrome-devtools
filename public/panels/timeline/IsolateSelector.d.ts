@@ -5,10 +5,10 @@ import * as UI from '../../ui/legacy/legacy.js';
 export declare class IsolateSelector extends UI.Toolbar.ToolbarItem implements SDK.IsolateManager.Observer {
     #private;
     menu: Menus.SelectMenu.SelectMenu;
-    options?: {
+    options?: Array<{
         index: number;
         isolate: SDK.IsolateManager.Isolate;
-    }[];
+    }>;
     items?: Menus.Menu.MenuItem[];
     readonly itemByIsolate: Map<SDK.IsolateManager.Isolate, Menus.Menu.MenuItem>;
     constructor();

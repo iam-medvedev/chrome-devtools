@@ -51,8 +51,9 @@ export class AiAgent {
         return query;
     }
     buildRequest(part, role) {
+        const parts = Array.isArray(part) ? part : [part];
         const currentMessage = {
-            parts: [part],
+            parts,
             role,
         };
         const history = [...this.#history];
@@ -128,7 +129,7 @@ export class AiAgent {
     handleAction() {
         throw new Error('Unexpected action found');
     }
-    async *run(initialQuery, options) {
+    async *run(initialQuery, options, imageInput) {
         await options.selected?.refresh();
         // First context set on the agent determines its origin from now on.
         if (options.selected && this.#origin === undefined && options.selected) {
@@ -138,14 +139,16 @@ export class AiAgent {
         if (options.selected && !this.#context) {
             this.#context = options.selected;
         }
-        const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected);
+        const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, Boolean(imageInput));
         Host.userMetrics.freestylerQueryLength(enhancedQuery.length);
-        let query = { text: enhancedQuery };
+        let query;
+        query = imageInput ? [{ text: enhancedQuery }, imageInput] : [{ text: enhancedQuery }];
         // Request is built here to capture history up to this point.
         let request = this.buildRequest(query, Host.AidaClient.Role.USER);
         yield {
             type: "user-query" /* ResponseType.USER_QUERY */,
             query: initialQuery,
+            imageInput,
         };
         yield* this.handleContextDetails(options.selected);
         for (let i = 0; i < MAX_STEPS; i++) {
@@ -166,6 +169,7 @@ export class AiAgent {
                         yield {
                             type: "answer" /* ResponseType.ANSWER */,
                             text: parsedResponse.answer,
+                            complete: false,
                         };
                     }
                 }
@@ -195,6 +199,7 @@ export class AiAgent {
                     type: "answer" /* ResponseType.ANSWER */,
                     text: parsedResponse.answer,
                     suggestions: parsedResponse.suggestions,
+                    complete: true,
                     rpcId,
                 };
                 break;

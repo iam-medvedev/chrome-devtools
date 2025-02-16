@@ -6,8 +6,8 @@ export declare const lateImportStylesheetLoadingCode: string;
 export declare class StylesheetLoadingIssue extends Issue {
     #private;
     constructor(issueDetails: Protocol.Audits.StylesheetLoadingIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
-    sources(): Array<Protocol.Audits.SourceCodeLocation>;
-    requests(): Array<Protocol.Audits.AffectedRequest>;
+    sources(): Protocol.Audits.SourceCodeLocation[];
+    requests(): Protocol.Audits.AffectedRequest[];
     details(): Protocol.Audits.StylesheetLoadingIssueDetails;
     primaryKey(): string;
     getDescription(): MarkdownIssueDescription;

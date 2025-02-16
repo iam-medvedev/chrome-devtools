@@ -1095,8 +1095,8 @@ export type PairableUserTiming = UserTiming & PairableAsync;
 export interface PerformanceMeasureBegin extends PairableUserTiming {
     args: Args & {
         detail?: string;
-        stackTrace?: CallFrame[];
         callTime?: Micro;
+        traceId?: number;
     };
     ph: Phase.ASYNC_NESTABLE_START;
 }
@@ -1106,7 +1106,6 @@ export interface PerformanceMark extends UserTiming {
     args: Args & {
         data?: ArgsData & {
             detail?: string;
-            stackTrace?: CallFrame[];
             callTime?: Micro;
         };
     };
@@ -1138,6 +1137,15 @@ export interface ConsoleTimeStamp extends Event {
 export interface SyntheticConsoleTimeStamp extends Event, SyntheticBased {
     cat: 'disabled-by-default-v8.inspector';
     ph: Phase.COMPLETE;
+}
+export interface UserTimingMeasure extends Event {
+    cat: 'devtools.timeline';
+    ph: Phase.COMPLETE;
+    name: Name.USER_TIMING_MEASURE;
+    args: Args & {
+        sampleTraceId: number;
+        traceId: number;
+    };
 }
 /** ChromeFrameReporter args for PipelineReporter event.
     Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
@@ -1597,6 +1605,7 @@ export declare function isPerformanceMeasureBegin(event: Event): event is Perfor
 export declare function isPerformanceMark(event: Event): event is PerformanceMark;
 export declare function isConsoleTime(event: Event): event is ConsoleTime;
 export declare function isConsoleTimeStamp(event: Event): event is ConsoleTimeStamp;
+export declare function isUserTimingMeasure(event: Event): event is UserTimingMeasure;
 export declare function isParseHTML(event: Event): event is ParseHTML;
 export interface Async extends Event {
     ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_INSTANT | Phase.ASYNC_NESTABLE_END | Phase.ASYNC_STEP_INTO | Phase.ASYNC_BEGIN | Phase.ASYNC_END | Phase.ASYNC_STEP_PAST;
@@ -2139,7 +2148,8 @@ export declare const enum Name {
     BEGIN_REMOTE_FONT_LOAD = "BeginRemoteFontLoad",
     ANIMATION_FRAME = "AnimationFrame",
     ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation",
-    SYNTHETIC_NETWORK_REQUEST = "SyntheticNetworkRequest"
+    SYNTHETIC_NETWORK_REQUEST = "SyntheticNetworkRequest",
+    USER_TIMING_MEASURE = "UserTiming::Measure"
 }
 export declare const Categories: {
     readonly Console: "blink.console";
@@ -2185,7 +2195,56 @@ export interface LegacyLayerPaintEvent {
     picture(): LegacyLayerPaintEventPicture | null;
 }
 export interface LegacyLayerPaintEventPicture {
-    rect: Array<number>;
+    rect: number[];
     serializedPicture: string;
 }
+export interface TargetRundownEvent extends Event {
+    cat: 'disabled-by-default-devtools.v8-source-rundown';
+    args: Args & {
+        data: {
+            frame: Protocol.Page.FrameId;
+            frameType: string;
+            url: string;
+            isolate: string;
+            v8context: string;
+            origin: string;
+            scriptId: Protocol.Runtime.ScriptId;
+            isDefault?: boolean;
+            contextType?: string;
+        };
+    };
+}
+export declare function isTargetRundownEvent(event: Event): event is TargetRundownEvent;
+export interface ScriptRundownEvent extends Event {
+    cat: 'disabled-by-default-devtools.v8-source-rundown';
+    args: Args & {
+        data: {
+            isolate: string;
+            executionContextId: Protocol.Runtime.ExecutionContextId;
+            scriptId: Protocol.Runtime.ScriptId;
+            startLine: number;
+            startColumn: number;
+            endLine: number;
+            endColumn: number;
+            url: string;
+            hash: string;
+            isModule: boolean;
+            hasSourceUrl: boolean;
+            sourceMapUrl?: string;
+        };
+    };
+}
+export declare function isScriptRundownEvent(event: Event): event is ScriptRundownEvent;
+export interface ScriptSourceRundownEvent extends Event {
+    cat: 'disabled-by-default-devtools.v8-source-rundown-sources';
+    args: Args & {
+        data: {
+            isolate: string;
+            scriptId: Protocol.Runtime.ScriptId;
+            length?: number;
+            sourceText?: string;
+        };
+    };
+}
+export declare function isScriptSourceRundownEvent(event: Event): event is ScriptSourceRundownEvent;
 export {};

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, getGetHostConfigStub, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
@@ -56,7 +56,7 @@ describeWithMockConnection('ComputedStyleModel', () => {
         sinon.assert.calledWith(trackComputedStyleUpdatesForNodeSpy, 1);
     });
     it('should track computed style updates when styles tab is shown and DevToolsAnimationStylesInStylesTab is enabled', async () => {
-        const hostConfigStub = getGetHostConfigStub({
+        updateHostConfig({
             devToolsAnimationStylesInStylesTab: {
                 enabled: true,
             },
@@ -65,7 +65,6 @@ describeWithMockConnection('ComputedStyleModel', () => {
         UI.Context.Context.instance().setFlavor(Elements.StylesSidebarPane.StylesSidebarPane, sinon.createStubInstance(Elements.StylesSidebarPane.StylesSidebarPane));
         await waitForTrackComputedStyleUpdatesForNodeCall();
         sinon.assert.calledWith(trackComputedStyleUpdatesForNodeSpy, 1);
-        hostConfigStub.restore();
     });
     it('should track computed style updates when the node is changed', async () => {
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, createNode(target, { nodeId: 1 }));
@@ -88,7 +87,7 @@ describeWithMockConnection('ComputedStyleModel', () => {
         sinon.assert.calledWith(trackComputedStyleUpdatesForNodeSpy, undefined);
     });
     it('should stop tracking when computed widget is hidden and styles tab is shown but the flag is not enabled', async () => {
-        const hostConfigStub = getGetHostConfigStub({
+        updateHostConfig({
             devToolsAnimationStylesInStylesTab: {
                 enabled: false,
             },
@@ -102,7 +101,6 @@ describeWithMockConnection('ComputedStyleModel', () => {
         UI.Context.Context.instance().setFlavor(Elements.StylesSidebarPane.StylesSidebarPane, sinon.createStubInstance(Elements.StylesSidebarPane.StylesSidebarPane));
         await waitForTrackComputedStyleUpdatesForNodeCall();
         sinon.assert.calledWith(trackComputedStyleUpdatesForNodeSpy, undefined);
-        hostConfigStub.restore();
     });
 });
 //# sourceMappingURL=ComputedStyleModel.test.js.map

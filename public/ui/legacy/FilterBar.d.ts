@@ -24,8 +24,6 @@ export declare class FilterBar extends FilterBar_base {
     addDivider(): void;
     addFilter(filter: FilterUI): void;
     setEnabled(enabled: boolean): void;
-    forceShowFilterBar(): void;
-    showOnce(): void;
     private filterChanged;
     wasShown(): void;
     private updateFilterBar;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import { dispatchClickEvent, renderElementIntoDOM, resetTestDOM, } from '../../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as MarkdownView from './markdown_view.js';
 describeWithEnvironment('CodeBlock', () => {
@@ -34,34 +34,23 @@ describeWithEnvironment('CodeBlock', () => {
         }
         finally {
             clock.restore();
-            resetTestDOM();
         }
     });
     it('renders no legal notice by default', () => {
-        try {
-            const component = new MarkdownView.CodeBlock.CodeBlock();
-            component.code = 'test';
-            renderElementIntoDOM(component);
-            const notice = component.shadowRoot.querySelector('.notice');
-            assert(notice === null, '.notice was found');
-        }
-        finally {
-            resetTestDOM();
-        }
+        const component = new MarkdownView.CodeBlock.CodeBlock();
+        component.code = 'test';
+        renderElementIntoDOM(component);
+        const notice = component.shadowRoot.querySelector('.notice');
+        assert(notice === null, '.notice was found');
     });
     it('renders legal notice if configured', () => {
-        try {
-            const component = new MarkdownView.CodeBlock.CodeBlock();
-            component.code = 'test';
-            component.displayNotice = true;
-            renderElementIntoDOM(component);
-            const notice = component.shadowRoot.querySelector('.notice');
-            assert.exists(notice);
-            assert.strictEqual(notice.innerText, 'Use code snippets with caution');
-        }
-        finally {
-            resetTestDOM();
-        }
+        const component = new MarkdownView.CodeBlock.CodeBlock();
+        component.code = 'test';
+        component.displayNotice = true;
+        renderElementIntoDOM(component);
+        const notice = component.shadowRoot.querySelector('.notice');
+        assert.exists(notice);
+        assert.strictEqual(notice.innerText, 'Use code snippets with caution');
     });
 });
 //# sourceMappingURL=CodeBlock.test.js.map

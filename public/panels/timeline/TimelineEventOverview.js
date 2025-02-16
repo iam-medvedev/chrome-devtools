@@ -73,11 +73,6 @@ export class TimelineEventOverview extends PerfUI.TimelineOverviewPane.TimelineO
         ctx.fillRect(x, position, width, height);
     }
 }
-const HIGH_NETWORK_PRIORITIES = new Set([
-    "VeryHigh" /* Protocol.Network.ResourcePriority.VeryHigh */,
-    "High" /* Protocol.Network.ResourcePriority.High */,
-    "Medium" /* Protocol.Network.ResourcePriority.Medium */,
-]);
 export class TimelineEventOverviewNetwork extends TimelineEventOverview {
     #parsedTrace;
     constructor(parsedTrace) {
@@ -111,7 +106,7 @@ export class TimelineEventOverviewNetwork extends TimelineEventOverview {
         const highPath = new Path2D();
         const lowPath = new Path2D();
         for (const request of this.#parsedTrace.NetworkRequests.byTime) {
-            const path = HIGH_NETWORK_PRIORITIES.has(request.args.data.priority) ? highPath : lowPath;
+            const path = Trace.Helpers.Network.isSyntheticNetworkRequestHighPriority(request) ? highPath : lowPath;
             const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(request);
             const rectStart = Math.max(Math.floor((startTime - traceBoundsMilli.min) * scale), 0);
             const rectEnd = Math.min(Math.ceil((endTime - traceBoundsMilli.min) * scale + 1), canvasWidth);

@@ -416,6 +416,9 @@ export function isConsoleTime(event) {
 export function isConsoleTimeStamp(event) {
     return event.ph === "X" /* Phase.COMPLETE */ && event.name === "V8Console::TimeStamp" /* Name.CONSOLE_TIME_STAMP */;
 }
+export function isUserTimingMeasure(event) {
+    return event.name === "UserTiming::Measure" /* Name.USER_TIMING_MEASURE */;
+}
 export function isParseHTML(event) {
     return event.name === 'ParseHTML';
 }
@@ -555,5 +558,14 @@ export const Categories = {
 };
 export function isLegacyTimelineFrame(data) {
     return 'idle' in data && typeof data.idle === 'boolean';
+}
+export function isTargetRundownEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.target-rundown';
+}
+export function isScriptRundownEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown';
+}
+export function isScriptSourceRundownEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';
 }
 //# sourceMappingURL=TraceEvents.js.map

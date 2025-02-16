@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
-import { resetTestDOM } from './DOMHelpers.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from './EnvironmentHelpers.js';
 import { setMockResourceTree } from './ResourceTreeHelpers.js';
 // Note that we can't set the Function to the correct handler on the basis
@@ -14,9 +13,6 @@ export function setMockConnectionResponseHandler(command, handler) {
         throw new Error(`Response handler already set for ${command}`);
     }
     responseMap.set(command, handler);
-}
-export function getMockConnectionResponseHandler(method) {
-    return responseMap.get(method);
 }
 export function clearMockConnectionResponseHandler(method) {
     responseMap.delete(method);
@@ -92,7 +88,6 @@ async function disable() {
     if (outgoingMessageListenerEntryMap.size > 0) {
         throw new Error('MockConnection still has pending listeners. All promises should be awaited.');
     }
-    resetTestDOM();
     await deinitializeGlobalVars();
     // @ts-ignore Setting back to undefined as a hard reset.
     ProtocolClient.InspectorBackend.Connection.setFactory(undefined);

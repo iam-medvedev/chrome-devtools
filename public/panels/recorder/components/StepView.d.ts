@@ -111,7 +111,7 @@ export interface ViewInput extends StepViewData {
     extensionConverters: Converters.Converter.Converter[];
     isSelected: boolean;
     recorderSettings?: Models.RecorderSettings.RecorderSettings;
-    actions: Array<Action>;
+    actions: Action[];
     stepEdited: (event: StepEditedEvent) => void;
     onBreakpointClick: () => void;
     handleStepAction: (event: Menus.Menu.MenuItemSelectedEvent) => void;

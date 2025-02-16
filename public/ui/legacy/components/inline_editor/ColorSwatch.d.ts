@@ -17,7 +17,6 @@ export declare class ColorSwatch extends HTMLElement {
     private readonly;
     constructor(tooltip?: string);
     static isColorSwatch(element: Element): element is ColorSwatch;
-    getReadonly(): boolean;
     setReadonly(readonly: boolean): void;
     getColor(): Common.Color.Color | null;
     get anchorBox(): AnchorBox | null;

@@ -64,7 +64,7 @@ export declare class ViewportDataGridNode<T> extends DataGridNode<ViewportDataGr
     setStriped(isStriped: boolean): void;
     isStriped(): boolean;
     clearFlatNodes(): void;
-    flatChildren(): ViewportDataGridNode<T>[];
+    flatChildren(): Array<ViewportDataGridNode<T>>;
     insertChild(child: DataGridNode<ViewportDataGridNode<T>>, index: number): void;
     removeChild(child: DataGridNode<ViewportDataGridNode<T>>): void;
     removeChildren(): void;

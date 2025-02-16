@@ -342,10 +342,6 @@ export class NetworkPanel extends UI.Panel.Panel {
         panel.networkLogView.setTextFilterValue(filterString);
         return UI.ViewManager.ViewManager.instance().showView('network');
     }
-    static async selectAndShowRequest(request, tab, options) {
-        const panel = NetworkPanel.instance();
-        await panel.selectAndActivateRequest(request, tab, options);
-    }
     throttlingSelectForTest() {
         return this.throttlingSelect;
     }
@@ -559,9 +555,6 @@ export class NetworkPanel extends UI.Panel.Panel {
     }
     handleFilterChanged() {
         this.hideRequestPanel();
-    }
-    onRowSizeChanged() {
-        this.updateUI();
     }
     onRequestSelected(event) {
         const request = event.data;

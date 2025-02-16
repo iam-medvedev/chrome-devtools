@@ -73,12 +73,12 @@ describeWithMockConnection('TrustTokensView', () => {
             ['sub.domain.org', '14', ''],
         ]);
     });
-    it('hides trust token table when there are no trust tokens', async () => {
+    it('shows empty state when there are no trust tokens', async () => {
         sinon.stub(target.storageAgent(), 'invoke_getTrustTokens').resolves({ tokens: [], getError: () => undefined });
         const component = await renderTrustTokensView();
         const nullGridElement = component.shadowRoot.querySelector('devtools-data-grid-controller');
         assert.isNull(nullGridElement);
-        const noTrustTokensElement = component.shadowRoot.querySelector('div.no-tt-message');
+        const noTrustTokensElement = component.shadowRoot.querySelector('.empty-state');
         assert.instanceOf(noTrustTokensElement, HTMLDivElement);
     });
     it('calls the delete handler with the right issuer when the delete button is clicked in a row', async () => {

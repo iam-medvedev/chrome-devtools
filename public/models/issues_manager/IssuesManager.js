@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { AttributionReportingIssue } from './AttributionReportingIssue.js';
 import { BounceTrackingIssue } from './BounceTrackingIssue.js';
@@ -153,7 +154,6 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     #filteredIssues = new Map();
     #issueCounts = new Map();
     #hiddenIssueCount = new Map();
-    #hasSeenPrimaryPageChanged = false;
     #issuesById = new Map();
     #issuesByOutermostTarget = new Map();
     #thirdPartyCookiePhaseoutIssueMessageSent = false;
@@ -193,15 +193,6 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     static removeInstance() {
         issuesManagerInstance = null;
     }
-    /**
-     * Once we have seen at least one `PrimaryPageChanged` event, we can be reasonably sure
-     * that we also collected issues that were reported during the navigation to the current
-     * page. If we haven't seen a main frame navigated, we might have missed issues that arose
-     * during navigation.
-     */
-    reloadForAccurateInformationRequired() {
-        return !this.#hasSeenPrimaryPageChanged;
-    }
     #onPrimaryPageChanged(event) {
         const { frame, type } = event.data;
         const keptIssues = new Map();
@@ -225,7 +216,6 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         this.#allIssues = keptIssues;
-        this.#hasSeenPrimaryPageChanged = true;
         this.#updateFilteredIssues();
     }
     #onFrameAddedToTarget(event) {
@@ -250,7 +240,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     #onIssueAddedEvent(event) {
         const { issuesModel, inspectorIssue } = event.data;
-        const isPrivacyUiEnabled = Common.Settings.Settings.instance().getHostConfig().devToolsPrivacyUI?.enabled;
+        const isPrivacyUiEnabled = Root.Runtime.hostConfig.devToolsPrivacyUI?.enabled;
         const issues = createIssuesFromProtocolIssue(issuesModel, inspectorIssue);
         for (const issue of issues) {
             this.addIssue(issuesModel, issue);

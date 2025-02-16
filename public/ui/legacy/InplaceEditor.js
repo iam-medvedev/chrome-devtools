@@ -174,9 +174,6 @@ export class Config {
         this.context = context;
         this.blurHandler = blurHandler;
     }
-    setPasteHandler(pasteHandler) {
-        this.pasteHandler = pasteHandler;
-    }
     setPostKeydownFinishHandler(postKeydownFinishHandler) {
         this.postKeydownFinishHandler = postKeydownFinishHandler;
     }

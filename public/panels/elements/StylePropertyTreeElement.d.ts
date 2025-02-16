@@ -41,18 +41,15 @@ export declare class CSSWideKeywordRenderer extends CSSWideKeywordRenderer_base 
     render(match: SDK.CSSPropertyParserMatchers.CSSWideKeywordMatch, context: RenderingContext): Node[];
 }
 declare const VariableRenderer_base: abstract new () => {
-    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParser.VariableMatch>;
-    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParser.VariableMatch>;
-    render(_match: SDK.CSSPropertyParser.VariableMatch, _context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.VariableMatch>;
+    readonly matchType: SDK.CSSPropertyParser.Constructor<SDK.CSSPropertyParserMatchers.VariableMatch>;
+    render(_match: SDK.CSSPropertyParserMatchers.VariableMatch, _context: RenderingContext): Node[];
 };
 export declare class VariableRenderer extends VariableRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration);
-    matcher(): SDK.CSSPropertyParser.VariableMatcher;
-    resolveVariable(match: SDK.CSSPropertyParser.VariableMatch): SDK.CSSMatchedStyles.CSSVariableValue | null;
-    fallbackValue(match: SDK.CSSPropertyParser.VariableMatch): string | null;
-    computedText(match: SDK.CSSPropertyParser.VariableMatch): string | null;
-    render(match: SDK.CSSPropertyParser.VariableMatch, context: RenderingContext): Node[];
+    matcher(): SDK.CSSPropertyParserMatchers.VariableMatcher;
+    render(match: SDK.CSSPropertyParserMatchers.VariableMatch, context: RenderingContext): Node[];
 }
 declare const LinearGradientRenderer_base: abstract new () => {
     matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.LinearGradientMatch>;

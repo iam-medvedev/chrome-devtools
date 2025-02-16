@@ -13,7 +13,7 @@ export declare class TimespanBreakdownOverlay extends HTMLElement {
     connectedCallback(): void;
     set isBelowEntry(isBelow: boolean);
     set canvasRect(rect: DOMRect | null);
-    set sections(sections: Array<EntryBreakdown> | null);
+    set sections(sections: EntryBreakdown[] | null);
     /**
      * We use this method after the overlay has been positioned in order to move
      * the section label as required to keep it on screen.

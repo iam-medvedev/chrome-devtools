@@ -1,3 +1,4 @@
+import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as File from './File.js';
 export interface Configuration {
     /**
@@ -49,4 +50,5 @@ export interface ParseOptions {
      */
     isCPUProfile?: boolean;
     metadata?: File.MetaData;
+    resolveSourceMap?: (url: string) => Promise<SDK.SourceMap.SourceMap>;
 }

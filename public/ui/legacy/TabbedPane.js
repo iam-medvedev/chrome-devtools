@@ -201,10 +201,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     tabbedPaneContentElement() {
         return this.contentElementInternal;
     }
-    isTabCloseable(id) {
-        const tab = this.tabsById.get(id);
-        return tab ? tab.isCloseable() : false;
-    }
     setTabDelegate(delegate) {
         const tabs = this.tabs.slice();
         for (let i = 0; i < tabs.length; ++i) {
@@ -409,12 +405,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         const tab = this.tabsById.get(id);
         const disabled = tab?.tabElement.classList.contains('disabled') ?? false;
         return !disabled;
-    }
-    toggleTabClass(id, className, force) {
-        const tab = this.tabsById.get(id);
-        if (tab && tab.toggleClass(className, force)) {
-            this.updateTabElements();
-        }
     }
     zoomChanged() {
         this.clearMeasuredWidths();

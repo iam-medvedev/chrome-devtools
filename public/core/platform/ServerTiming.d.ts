@@ -21,9 +21,9 @@ export declare class ServerTiming {
      * TODO(crbug.com/1011811): Instead of using !Object<string, *> we should have a proper type
      *                          with #name, desc and dur properties.
      */
-    static createFromHeaderValue(valueString: string, warningMessages?: ServerTimingParsingWarningMessage): {
+    static createFromHeaderValue(valueString: string, warningMessages?: ServerTimingParsingWarningMessage): Array<{
         [x: string]: any;
-    }[];
+    }>;
     static getParserForParameter(paramName: string, warningMessages: ServerTimingParsingWarningMessage): ((arg0: {
         [x: string]: any;
     }, arg1: string | null) => void) | null;

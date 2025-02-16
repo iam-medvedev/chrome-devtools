@@ -70,7 +70,6 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
     private domWordWrapSettingChanged;
-    switchToAndFocus(node: SDK.DOMModel.DOMNode): void;
     private jumpToSearchResult;
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;

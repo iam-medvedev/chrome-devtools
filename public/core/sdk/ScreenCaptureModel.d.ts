@@ -13,13 +13,6 @@ export declare class ScreenCaptureModel extends SDKModel<void> implements Protoc
     startScreencast(format: Protocol.Page.StartScreencastRequestFormat, quality: number, maxWidth: number | undefined, maxHeight: number | undefined, everyNthFrame: number | undefined, onFrame: (arg0: Protocol.binary, arg1: Protocol.Page.ScreencastFrameMetadata) => void, onVisibilityChanged: (arg0: boolean) => void): void;
     stopScreencast(): void;
     captureScreenshot(format: Protocol.Page.CaptureScreenshotRequestFormat, quality: number, mode: ScreenshotMode, clip?: Protocol.Page.Viewport): Promise<string | null>;
-    fetchLayoutMetrics(): Promise<{
-        viewportX: number;
-        viewportY: number;
-        viewportScale: number;
-        contentWidth: number;
-        contentHeight: number;
-    } | null>;
     screencastFrame({ data, metadata, sessionId }: Protocol.Page.ScreencastFrameEvent): void;
     screencastVisibilityChanged({ visible }: Protocol.Page.ScreencastVisibilityChangedEvent): void;
     backForwardCacheNotUsed(_params: Protocol.Page.BackForwardCacheNotUsedEvent): void;

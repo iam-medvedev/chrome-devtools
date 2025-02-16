@@ -39,7 +39,7 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     renderedMatchForTest(_nodes: Node[], _match: SDK.CSSPropertyParser.Match): void;
     protected enter({ node }: SDK.CSSPropertyParser.SyntaxNodeRef): boolean;
     static renderNameElement(name: string): HTMLElement;
-    static renderValueElement(propertyName: string, propertyValue: string, renderers: MatchRenderer<SDK.CSSPropertyParser.Match>[]): HTMLElement;
+    static renderValueElement(name: string, value: string, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>): HTMLElement;
 }
 declare const URLRenderer_base: abstract new () => {
     matcher(): SDK.CSSPropertyParser.Matcher<SDK.CSSPropertyParserMatchers.URLMatch>;

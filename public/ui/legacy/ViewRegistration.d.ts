@@ -98,7 +98,7 @@ export interface ViewRegistration {
     /**
      * The names of the settings the registered view performs as UI for.
      */
-    settings?: Array<string>;
+    settings?: string[];
     /**
      * Words used to find the view in the Command Menu.
      */
@@ -109,10 +109,10 @@ export interface ViewRegistration {
     iconName?: string;
 }
 export declare function registerViewExtension(registration: ViewRegistration): void;
-export declare function getRegisteredViewExtensions(config: Root.Runtime.HostConfig): Array<PreRegisteredView>;
+export declare function getRegisteredViewExtensions(): PreRegisteredView[];
 export declare function maybeRemoveViewExtension(viewId: string): boolean;
 export declare function registerLocationResolver(registration: LocationResolverRegistration): void;
-export declare function getRegisteredLocationResolvers(): Array<LocationResolverRegistration>;
+export declare function getRegisteredLocationResolvers(): LocationResolverRegistration[];
 export declare function resetViewRegistration(): void;
 export declare const enum ViewLocationCategory {
     NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.

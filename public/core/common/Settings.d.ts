@@ -19,11 +19,8 @@ export declare class Settings {
         syncedStorage: SettingsStorage | null;
         globalStorage: SettingsStorage | null;
         localStorage: SettingsStorage | null;
-        config?: Root.Runtime.HostConfig;
     }): Settings;
     static removeInstance(): void;
-    getHostConfig(): Root.Runtime.HostConfig;
-    setHostConfig(config: Root.Runtime.HostConfig): void;
     private registerModuleSetting;
     static normalizeSettingName(name: string): string;
     /**

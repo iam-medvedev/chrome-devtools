@@ -38,7 +38,8 @@ export class LanguageExtensionEndpoint {
             return !url || this.allowFileAccess || new URL(url).protocol !== 'file:';
         }
         catch {
-            return false;
+            // If the URL isn't valid, it also isn't a valid file url and it's safe to tell the extensions about it.
+            return true;
         }
     }
     handleScript(script) {

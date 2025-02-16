@@ -1,6 +1,3 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
 // Important: we purposefully treat `potentially_blocking` as
 // non-render-blocking here because:
 // 1. An async script can run on the main thread at any point, including before
@@ -20,5 +17,13 @@ const NON_RENDER_BLOCKING_VALUES = new Set([
 ]);
 export function isSyntheticNetworkRequestEventRenderBlocking(event) {
     return !NON_RENDER_BLOCKING_VALUES.has(event.args.data.renderBlocking);
+}
+const HIGH_NETWORK_PRIORITIES = new Set([
+    "VeryHigh" /* Protocol.Network.ResourcePriority.VeryHigh */,
+    "High" /* Protocol.Network.ResourcePriority.High */,
+    "Medium" /* Protocol.Network.ResourcePriority.Medium */,
+]);
+export function isSyntheticNetworkRequestHighPriority(event) {
+    return HIGH_NETWORK_PRIORITIES.has(event.args.data.priority);
 }
 //# sourceMappingURL=Network.js.map

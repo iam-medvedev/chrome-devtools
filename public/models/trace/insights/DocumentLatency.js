@@ -142,7 +142,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
-        shouldShow: hasFailure,
+        state: hasFailure ? 'fail' : 'pass',
         ...partialModel,
     };
 }

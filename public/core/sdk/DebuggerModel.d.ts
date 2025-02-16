@@ -70,7 +70,7 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     private setDebuggerPausedDetails;
     private resetDebuggerPausedDetails;
     setBeforePausedCallback(callback: ((arg0: DebuggerPausedDetails, autoSteppingContext: Location | null) => Promise<boolean>) | null): void;
-    setExpandCallFramesCallback(callback: ((arg0: Array<CallFrame>) => Promise<Array<CallFrame>>) | null): void;
+    setExpandCallFramesCallback(callback: ((arg0: CallFrame[]) => Promise<CallFrame[]>) | null): void;
     setEvaluateOnCallFrameCallback(callback: ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult | null>) | null): void;
     setSynchronizeBreakpointsCallback(callback: ((script: Script) => Promise<void>) | null): void;
     pausedScript(callFrames: Protocol.Debugger.CallFrame[], reason: Protocol.Debugger.PausedEventReason, auxData: Object | undefined, breakpointIds: string[], asyncStackTrace?: Protocol.Runtime.StackTrace, asyncStackTraceId?: Protocol.Runtime.StackTraceId): Promise<void>;
@@ -101,7 +101,6 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     suspendModel(): Promise<void>;
     resumeModel(): Promise<void>;
     private static shouldResyncDebuggerId;
-    getContinueToLocationCallback(): ((arg0: DebuggerPausedDetails) => boolean) | null;
     getEvaluateOnCallFrameCallback(): ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult | null>) | null;
 }
 /**

@@ -1,8 +1,5 @@
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
-import * as Marked from '../../../third_party/marked/marked.js';
-import * as MarkdownView from '../../../ui/components/markdown_view/markdown_view.js';
-import * as Lit from '../../../ui/lit/lit.js';
 import { AgentType, type ContextDetail, type ConversationContext, ErrorType } from '../agents/AiAgent.js';
 export interface Step {
     isLoading: boolean;
@@ -24,6 +21,7 @@ export declare const enum ChatMessageEntity {
 export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
     text: string;
+    imageInput?: Host.AidaClient.Part;
 }
 export interface ModelChatMessage {
     entity: ChatMessageEntity.MODEL;
@@ -39,13 +37,15 @@ export declare const enum State {
     CHAT_VIEW = "chat-view"
 }
 export interface Props {
-    onTextSubmit: (text: string) => void;
+    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part) => Promise<void> | void;
     onInspectElementClick: () => void;
-    onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;
+    onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => Promise<void> | void;
     onCancelClick: () => void;
     onContextClick: () => void | Promise<void>;
     onNewConversation: () => void;
     onCancelCrossOriginChat?: () => void;
+    onTakeScreenshot?: () => Promise<void>;
+    onRemoveImageInput?: () => void;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
@@ -59,13 +59,12 @@ export interface Props {
     blockedByCrossOrigin: boolean;
     stripLinks: boolean;
     changeSummary?: string;
-}
-declare class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
-    #private;
-    constructor(opts?: {
-        stripLinks?: boolean;
-    });
-    templateForToken(token: Marked.Marked.MarkedToken): Lit.TemplateResult | null;
+    patchSuggestion?: string;
+    patchSuggestionLoading?: boolean;
+    projectName?: string;
+    multimodalInputEnabled?: boolean;
+    imageInput?: string;
+    onApplyToWorkspace?: () => void;
 }
 export declare class ChatView extends HTMLElement {
     #private;
@@ -83,7 +82,4 @@ declare global {
         'devtools-ai-chat-view': ChatView;
     }
 }
-export declare const FOR_TEST: {
-    MarkdownRendererWithCodeBlock: typeof MarkdownRendererWithCodeBlock;
-};
 export {};

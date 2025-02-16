@@ -58,10 +58,14 @@ const UIStrings = {
      */
     refreshDatabase: 'Refresh database',
     /**
-     *@description Text in Indexed DBViews of the Application panel
+     *@description Text in Application panel IndexedDB delete confirmation dialog
      *@example {msb} PH1
      */
-    pleaseConfirmDeleteOfSDatabase: 'Please confirm delete of "{PH1}" database.',
+    confirmDeleteDatabase: 'Delete "{PH1}" database?',
+    /**
+     *@description Explanation text in Application panel IndexedDB delete confirmation dialog
+     */
+    databaseWillBeRemoved: 'The selected database and contained data will be removed.',
     /**
      *@description Text in Indexed DBViews of the Application panel
      */
@@ -205,7 +209,7 @@ export class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.S
         // Sniffed in tests.
     }
     async deleteDatabase() {
-        const ok = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.pleaseConfirmDeleteOfSDatabase, { PH1: this.database.databaseId.name }), this, { jslogContext: 'delete-database-confirmation' });
+        const ok = await UI.UIUtils.ConfirmDialog.show(i18nString(UIStrings.databaseWillBeRemoved), i18nString(UIStrings.confirmDeleteDatabase, { PH1: this.database.databaseId.name }), this, { jslogContext: 'delete-database-confirmation' });
         if (ok) {
             void this.model.deleteDatabase(this.database.databaseId);
         }

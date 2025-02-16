@@ -320,10 +320,6 @@ export class ResourceCategory {
         this.title = title;
         this.shortTitle = shortTitle;
     }
-    static categoryByTitle(title) {
-        const allCategories = Object.values(resourceCategories);
-        return allCategories.find(category => category.title() === title) || null;
-    }
 }
 export const resourceCategories = {
     XHR: new ResourceCategory('Fetch and XHR', i18nLazyString(UIStrings.fetchAndXHR), i18n.i18n.lockedLazyString('Fetch/XHR')),

@@ -22,7 +22,7 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
     colorForEvent(event: Trace.Types.Events.Event): string;
     setPopoverInfo(event: Trace.Types.Events.Event, info: PopoverInfo): void;
     getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
-    preloadScreenshots(events: Trace.Types.Events.SyntheticLayoutShift[]): Promise<(void | undefined)[]>;
+    preloadScreenshots(events: Trace.Types.Events.SyntheticLayoutShift[]): Promise<Array<void | undefined>>;
     titleForEvent(_event: Trace.Types.Events.Event): string;
     static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.Handlers.Types.ParsedTrace, maxSize: UI.Geometry.Size): HTMLElement | undefined;
 }

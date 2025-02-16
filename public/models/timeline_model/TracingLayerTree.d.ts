@@ -60,7 +60,7 @@ export declare class TracingLayer implements SDK.LayerTreeBase.Layer {
     scrollRects(): Protocol.LayerTree.ScrollRect[];
     stickyPositionConstraint(): SDK.LayerTreeBase.StickyPositionConstraint | null;
     gpuMemoryUsage(): number;
-    snapshots(): Promise<SDK.PaintProfiler.SnapshotWithRect | null>[];
+    snapshots(): Array<Promise<SDK.PaintProfiler.SnapshotWithRect | null>>;
     pictureForRect(targetRect: number[]): Promise<SDK.PaintProfiler.SnapshotWithRect | null>;
     private scrollRectsFromParams;
     private createScrollRects;

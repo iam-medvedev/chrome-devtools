@@ -71,11 +71,8 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     revealInNavigator(uiSourceCode: Workspace.UISourceCode.UISourceCode, skipReveal?: boolean): Promise<void>;
     private addExperimentMenuItem;
     private populateNavigatorMenu;
-    setIgnoreExecutionLineEvents(ignoreExecutionLineEvents: boolean): void;
     updateLastModificationTime(): void;
     private executionLineChanged;
-    private lastModificationTimeoutPassedForTest;
-    private updateLastModificationTimeForTest;
     private callFrameChanged;
     private updateDebuggerButtonsAndStatus;
     private updateDebuggerButtonsAndStatusForTest;
@@ -113,7 +110,7 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     sourcesView(): SourcesView;
     private handleDrop;
 }
-export declare let lastModificationTimeout: number;
+export declare const lastModificationTimeout = 200;
 export declare const minToolbarWidth = 215;
 export declare class UILocationRevealer implements Common.Revealer.Revealer<Workspace.UISourceCode.UILocation> {
     reveal(uiLocation: Workspace.UISourceCode.UILocation, omitFocus?: boolean): Promise<void>;

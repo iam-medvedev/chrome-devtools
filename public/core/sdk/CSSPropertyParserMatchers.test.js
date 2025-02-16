@@ -50,7 +50,7 @@ function injectVariableSubstitutions(variables) {
         if (!resolvedValue) {
             return getMatch.call(this, node);
         }
-        return new SDK.CSSPropertyParser.VariableMatch(this.ast.text(node), node, resolvedValue.varName, [], this, () => resolvedValue.value);
+        return new SDK.CSSPropertyParserMatchers.BaseVariableMatch(this.ast.text(node), node, resolvedValue.varName, [], this, () => resolvedValue.value);
     });
 }
 describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {

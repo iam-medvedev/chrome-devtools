@@ -240,34 +240,6 @@ export class NestedPropertyRenderer extends PropertyRenderer {
         this.changeNestedContents(content);
     }
 }
-export class DimensionPropertyRenderer extends PropertyRenderer {
-    width;
-    height;
-    constructor(title) {
-        super(title);
-        this.width = 0;
-        this.height = 0;
-    }
-    updateDataInternal(propname, propvalue) {
-        let needsUpdate = false;
-        if (propname === 'width' && Number(propvalue) !== this.width) {
-            this.width = Number(propvalue);
-            needsUpdate = true;
-        }
-        if (propname === 'height' && Number(propvalue) !== this.height) {
-            this.height = Number(propvalue);
-            needsUpdate = true;
-        }
-        // If both properties arent set, don't bother updating, since
-        // temporarily showing ie: 1920x0 is meaningless.
-        if (this.width === 0 || this.height === 0) {
-            this.changeContents(null);
-        }
-        else if (needsUpdate) {
-            this.changeContents(`${this.width}×${this.height}`);
-        }
-    }
-}
 export class AttributesView extends UI.Widget.VBox {
     contentHash;
     constructor(elements) {

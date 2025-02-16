@@ -47,11 +47,10 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
         forceNew: boolean;
         displayScreenshotDelay?: number;
     }): NetworkPanel;
-    static revealAndFilter(filters: {
+    static revealAndFilter(filters: Array<{
         filterType: NetworkForward.UIFilter.FilterType | null;
         filterValue: string;
-    }[]): Promise<void>;
-    static selectAndShowRequest(request: SDK.NetworkRequest.NetworkRequest, tab: NetworkForward.UIRequestLocation.UIRequestTabs, options?: NetworkForward.UIRequestLocation.FilterOptions): Promise<void>;
+    }>): Promise<void>;
     throttlingSelectForTest(): UI.Toolbar.ToolbarComboBox;
     private onWindowChanged;
     private searchToggleClick;
@@ -74,7 +73,6 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
     revealAndHighlightRequestWithId(request: NetworkForward.NetworkRequestId.NetworkRequestId): void;
     selectAndActivateRequest(request: SDK.NetworkRequest.NetworkRequest, shownTab?: NetworkForward.UIRequestLocation.UIRequestTabs, options?: NetworkForward.UIRequestLocation.FilterOptions): Promise<NetworkItemView | null>;
     private handleFilterChanged;
-    private onRowSizeChanged;
     private onRequestSelected;
     private onRequestActivated;
     private showRequestPanel;

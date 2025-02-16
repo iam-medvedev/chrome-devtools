@@ -14,10 +14,10 @@ export declare class CookiesTable extends UI.Widget.VBox {
     private cookieToExemptionReason;
     constructor(renderInline?: boolean, saveCallback?: ((arg0: SDK.Cookie.Cookie, arg1: SDK.Cookie.Cookie | null) => Promise<boolean>), refreshCallback?: (() => void), selectedCallback?: (() => void), deleteCallback?: ((arg0: SDK.Cookie.Cookie, arg1: () => void) => void));
     setCookies(cookies: SDK.Cookie.Cookie[], cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>, cookieToExemptionReason?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.ExemptionReason>): void;
-    setCookieFolders(cookieFolders: {
+    setCookieFolders(cookieFolders: Array<{
         folderName: string | null;
-        cookies: Array<SDK.Cookie.Cookie> | null;
-    }[], cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>, cookieToExemptionReason?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.ExemptionReason>): void;
+        cookies: SDK.Cookie.Cookie[] | null;
+    }>, cookieToBlockedReasons?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.BlockedReason[]>, cookieToExemptionReason?: ReadonlyMap<SDK.Cookie.Cookie, SDK.CookieModel.ExemptionReason>): void;
     setCookieDomain(cookieDomain: string): void;
     selectedCookie(): SDK.Cookie.Cookie | null;
     private getSelectionCookies;

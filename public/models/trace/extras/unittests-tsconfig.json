@@ -42,6 +42,7 @@
     "../../../../../../../front_end/models/trace/extras/FilmStrip.test.ts",
     "../../../../../../../front_end/models/trace/extras/MainThreadActivity.test.ts",
     "../../../../../../../front_end/models/trace/extras/Metadata.test.ts",
+    "../../../../../../../front_end/models/trace/extras/ScriptDuplication.test.ts",
     "../../../../../../../front_end/models/trace/extras/StackTraceForEvent.test.ts",
     "../../../../../../../front_end/models/trace/extras/ThirdParties.test.ts",
     "../../../../../../../front_end/models/trace/extras/TraceFilter.test.ts",

@@ -50,8 +50,8 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ExtensionStorageItemsView extends KeyValueStorageItemsView {
     #extensionStorage;
     extensionStorageItemsDispatcher;
-    constructor(extensionStorage) {
-        super(i18nString(UIStrings.extensionStorageItems), 'extension-storage', true);
+    constructor(extensionStorage, view) {
+        super(i18nString(UIStrings.extensionStorageItems), 'extension-storage', true, view);
         this.element.setAttribute('jslog', `${VisualLogging.pane().context('extension-storage-data')}`);
         this.element.classList.add('storage-view', 'table');
         this.extensionStorageItemsDispatcher =
@@ -131,9 +131,6 @@ export class ExtensionStorageItemsView extends KeyValueStorageItemsView {
         }, () => {
             throw new Error('Unable to clear storage.');
         });
-    }
-    getEntriesForTesting() {
-        return this.dataGridForTesting.rootNode().children.filter(node => node.data.key).map(node => node.data);
     }
 }
 //# sourceMappingURL=ExtensionStorageItemsView.js.map

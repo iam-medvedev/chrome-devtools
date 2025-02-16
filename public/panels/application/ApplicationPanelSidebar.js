@@ -821,9 +821,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     showFrame(frame) {
         this.resourcesSection.revealAndSelectFrame(frame);
     }
-    showFileSystem(view) {
-        this.innerShowView(view);
-    }
     innerShowView(view) {
         this.panel.showView(view);
     }

@@ -6,7 +6,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Logs from '../../../models/logs/logs.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
+import { updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../../testing/NetworkHelpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
@@ -15,7 +15,7 @@ const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NetworkAgent', () => {
     let networkPanel;
     function mockHostConfig(modelId, temperature) {
-        getGetHostConfigStub({
+        updateHostConfig({
             devToolsAiAssistanceNetworkAgent: {
                 modelId,
                 temperature,
@@ -119,6 +119,7 @@ describeWithMockConnection('NetworkAgent', () => {
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,
@@ -151,6 +152,7 @@ describeWithMockConnection('NetworkAgent', () => {
                 {
                     type: "answer" /* ResponseType.ANSWER */,
                     text: 'This is the answer',
+                    complete: true,
                     suggestions: undefined,
                     rpcId: 123,
                 },

@@ -4,13 +4,15 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
 import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { activate, getMainFrame, navigate } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Coverage from './coverage.js';
 const isShowingLandingPage = (view) => {
-    return Boolean(view.contentElement.querySelector('.landing-page'));
+    return Boolean(view.contentElement.querySelector('.empty-state'));
 };
 const isShowingResults = (view) => {
     return Boolean(view.contentElement.querySelector('.coverage-results .vbox.flex-auto'));
@@ -75,6 +77,16 @@ describeWithMockConnection('CoverageView', () => {
             'coverage.toggle-recording',
             'inspector-main.reload',
         ]);
+    });
+    it('dispatches a record/reload action when the button is clicked', () => {
+        const view = Coverage.CoverageView.CoverageView.instance();
+        assert.isTrue(isShowingLandingPage(view));
+        const button = view.contentElement.querySelector('.empty-state devtools-button');
+        assert.exists(button);
+        const toggleSpy = sinon.spy(UI.ActionRegistry.ActionRegistry.instance().getAction('coverage.toggle-recording'), 'execute');
+        const reloadSpy = sinon.spy(UI.ActionRegistry.ActionRegistry.instance().getAction('coverage.start-with-reload'), 'execute');
+        dispatchClickEvent(button);
+        assert.isTrue(toggleSpy.calledOnce || reloadSpy.calledOnce);
     });
     it('can handle back/forward cache navigations', async () => {
         const { startSpy, stopSpy, target } = setupTargetAndModels();

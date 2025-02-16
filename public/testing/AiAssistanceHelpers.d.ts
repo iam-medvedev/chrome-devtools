@@ -3,7 +3,8 @@ import * as Host from '../core/host/host.js';
 import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
 import type * as Workspace from '../models/workspace/workspace.js';
-type MockAidaResponse = Omit<Host.AidaClient.AidaResponse, 'completed' | 'metadata'> & {
+import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
+export type MockAidaResponse = Omit<Host.AidaClient.AidaResponse, 'completed' | 'metadata'> & {
     metadata?: Host.AidaClient.AidaResponseMetadata;
 };
 /**
@@ -21,5 +22,17 @@ export declare function createUISourceCode(options?: {
     resourceType?: Common.ResourceType.ResourceType;
     requestContentData?: boolean;
 }): Promise<Workspace.UISourceCode.UISourceCode>;
-export declare function createNetworkRequest(): SDK.NetworkRequest.NetworkRequest;
-export {};
+export declare function createNetworkRequest(opts?: {
+    url?: Platform.DevToolsPath.UrlString;
+    includeInitiators?: boolean;
+}): SDK.NetworkRequest.NetworkRequest;
+export declare function createAiAssistancePanel(options?: {
+    aidaClient?: Host.AidaClient.AidaClient;
+    aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
+    syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation;
+}): Promise<{
+    panel: AiAssistance.AiAssistancePanel;
+    view: import("sinon").SinonStub<[AiAssistance.Props, unknown, HTMLElement], any>;
+    aidaClient: Host.AidaClient.AidaClient;
+}>;
+export declare function detachPanels(): void;

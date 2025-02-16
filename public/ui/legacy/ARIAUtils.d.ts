@@ -38,7 +38,6 @@ export declare function markAsRadioGroup(element: Element): void;
 export declare function markAsSlider(element: Element, min?: number | undefined, max?: number | undefined): void;
 export declare function markAsHeading(element: Element, level: number): void;
 export declare function markAsPoliteLiveRegion(element: Element, isAtomic: boolean): void;
-export declare function markAsLog(element: Element): void;
 export declare function hasRole(element: Element): boolean;
 export declare function removeRole(element: Element): void;
 export declare function setPlaceholder(element: Element, placeholder: string | null): void;

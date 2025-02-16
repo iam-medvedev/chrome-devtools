@@ -4,12 +4,12 @@ import type { Text } from './Text.js';
 export declare const Utils: {
     isSpaceChar: (char: string) => boolean;
     lineIndent: (line: string) => string;
-    splitStringByRegexes(text: string, regexes: RegExp[]): {
+    splitStringByRegexes(text: string, regexes: RegExp[]): Array<{
         value: string;
         position: number;
         regexIndex: number;
         captureGroups: Array<string | undefined>;
-    }[];
+    }>;
 };
 export declare class FilterParser {
     private readonly keys;
@@ -76,10 +76,10 @@ export declare const performSearchInContent: (text: Text, query: string, caseSen
  * @param matches is deliberatedly typed as an object literal so we can pass the
  *                CDP search result type.
  */
-export declare const performSearchInSearchMatches: (matches: {
+export declare const performSearchInSearchMatches: (matches: Array<{
     lineNumber: number;
     lineContent: string;
-}[], query: string, caseSensitive: boolean, isRegex: boolean) => SearchMatch[];
+}>, query: string, caseSensitive: boolean, isRegex: boolean) => SearchMatch[];
 export interface ParsedFilter {
     key?: string;
     text?: string | null;

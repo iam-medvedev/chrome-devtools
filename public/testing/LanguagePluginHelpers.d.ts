@@ -16,12 +16,12 @@ export declare class TestPlugin implements Bindings.DebuggerLanguagePlugins.Debu
     listVariablesInScope(_rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.Variable[]>;
     removeRawModule(_rawModuleId: string): Promise<void>;
     getFunctionInfo(_rawLocation: Chrome.DevTools.RawLocation): Promise<{
-        frames: Array<Chrome.DevTools.FunctionInfo>;
-        missingSymbolFiles: Array<string>;
+        frames: Chrome.DevTools.FunctionInfo[];
+        missingSymbolFiles: string[];
     } | {
-        frames: Array<Chrome.DevTools.FunctionInfo>;
+        frames: Chrome.DevTools.FunctionInfo[];
     } | {
-        missingSymbolFiles: Array<string>;
+        missingSymbolFiles: string[];
     }>;
     getInlinedFunctionRanges(_rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.RawLocationRange[]>;
     getInlinedCalleesRanges(_rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.RawLocationRange[]>;

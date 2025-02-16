@@ -7,6 +7,9 @@ import { Printer } from '../../testing/PropertyParser.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Elements from './elements.js';
 describeWithEnvironment('PropertyRenderer', () => {
+    function renderValueElement(name, value) {
+        return Elements.PropertyRenderer.Renderer.renderValueElement(name, value, SDK.CSSPropertyParser.matchDeclaration(name, value, []), []);
+    }
     describe('Renderer', () => {
         function textFragments(nodes) {
             return nodes.map(n => n.textContent);
@@ -14,11 +17,9 @@ describeWithEnvironment('PropertyRenderer', () => {
         it('parses text', () => {
             // Prevent normaliztaion to get an accurate representation of the parser result.
             sinon.stub(Element.prototype, 'normalize');
-            assert.deepEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', 'var(--v)', []).childNodes)), ['var', '(', '--v', ')']);
-            assert.deepEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', '/* comments are text */ 1px solid 4', [])
-                .childNodes)), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
-            assert.deepEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer
-                .renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)', [])
+            assert.deepEqual(textFragments(Array.from(renderValueElement('--p', 'var(--v)').childNodes)), ['var', '(', '--v', ')']);
+            assert.deepEqual(textFragments(Array.from(renderValueElement('--p', '/* comments are text */ 1px solid 4').childNodes)), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);
+            assert.deepEqual(textFragments(Array.from(renderValueElement('--p', '2px var(--double, var(--fallback, black)) #32a1ce rgb(124 125 21 0)')
                 .childNodes)), [
                 '2px', ' ', 'var', '(', '--double', ',', ' ', 'var', '(', '--fallback', ',', ' ', 'black', ')',
                 ')', ' ', '#32a1ce', ' ', 'rgb', '(', '124', ' ', '125', ' ', '21', ' ', '0', ')',
@@ -46,13 +47,11 @@ describeWithEnvironment('PropertyRenderer', () => {
         });
         it('renders trailing comments', () => {
             const property = '/* color: red */ blue /* color: red */';
-            assert.strictEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', property, []).childNodes))
-                .join(''), property);
+            assert.strictEqual(textFragments(Array.from(renderValueElement('--p', property).childNodes)).join(''), property);
         });
         it('renders malformed comments', () => {
             const property = 'red /* foo: bar';
-            assert.strictEqual(textFragments(Array.from(Elements.PropertyRenderer.Renderer.renderValueElement('--p', property, []).childNodes))
-                .join(''), property);
+            assert.strictEqual(textFragments(Array.from(renderValueElement('--p', property).childNodes)).join(''), property);
         });
     });
 });

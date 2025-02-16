@@ -36,7 +36,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     startCoverage(): Promise<Protocol.ProtocolResponseWithError>;
     takeCoverageDelta(): Promise<{
         timestamp: number;
-        coverage: Array<Protocol.CSS.RuleUsage>;
+        coverage: Protocol.CSS.RuleUsage[];
     }>;
     setLocalFontsEnabled(enabled: boolean): Promise<Protocol.ProtocolResponseWithError>;
     stopCoverage(): Promise<void>;
@@ -60,7 +60,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     setScopeText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, newScopeText: string): Promise<boolean>;
     addRule(styleSheetId: Protocol.CSS.StyleSheetId, ruleText: string, ruleLocation: TextUtils.TextRange.TextRange): Promise<CSSStyleRule | null>;
     requestViaInspectorStylesheet(maybeFrameId?: Protocol.Page.FrameId | null): Promise<CSSStyleSheetHeader | null>;
-    createInspectorStylesheet(frameId: Protocol.Page.FrameId): Promise<CSSStyleSheetHeader | null>;
+    createInspectorStylesheet(frameId: Protocol.Page.FrameId, force?: boolean): Promise<CSSStyleSheetHeader | null>;
     mediaQueryResultChanged(): void;
     fontsUpdated(fontFace?: Protocol.CSS.FontFace | null): void;
     fontFaces(): CSSFontFace[];
@@ -161,7 +161,7 @@ export declare const enum CSSPropertyTrackerEvents {
     TRACKED_CSS_PROPERTIES_UPDATED = "TrackedCSSPropertiesUpdated"
 }
 export interface CSSPropertyTrackerEventTypes {
-    [CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED]: (DOMNode | null)[];
+    [CSSPropertyTrackerEvents.TRACKED_CSS_PROPERTIES_UPDATED]: Array<DOMNode | null>;
 }
 export interface ContrastInfo {
     backgroundColors: string[] | null;

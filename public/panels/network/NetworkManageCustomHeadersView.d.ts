@@ -9,10 +9,10 @@ export declare class NetworkManageCustomHeadersView extends UI.Widget.VBox imple
     private changeHeaderColumnCallback;
     private readonly removeHeaderColumnCallback;
     private editor?;
-    constructor(columnData: {
+    constructor(columnData: Array<{
         title: string;
         editable: boolean;
-    }[], addHeaderColumnCallback: (arg0: string) => boolean, changeHeaderColumnCallback: (arg0: string, arg1: string) => boolean, removeHeaderColumnCallback: (arg0: string) => boolean);
+    }>, addHeaderColumnCallback: (arg0: string) => boolean, changeHeaderColumnCallback: (arg0: string, arg1: string) => boolean, removeHeaderColumnCallback: (arg0: string) => boolean);
     wasShown(): void;
     private headersUpdated;
     private addButtonClicked;

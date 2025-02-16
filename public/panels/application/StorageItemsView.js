@@ -34,8 +34,8 @@ export class StorageItemsView extends UI.Widget.VBox {
     filterItem;
     deleteAllButton;
     deleteSelectedButton;
-    metadataView = new ApplicationComponents.StorageMetadataView.StorageMetadataView();
-    constructor(_title, _filterName) {
+    metadataView;
+    constructor(_title, _filterName, metadataView) {
         super(false);
         this.filterRegex = null;
         this.refreshButton = this.addButton(i18nString(UIStrings.refresh), 'refresh', () => {
@@ -57,6 +57,7 @@ export class StorageItemsView extends UI.Widget.VBox {
         for (const item of toolbarItems) {
             this.mainToolbar.appendToolbarItem(item);
         }
+        this.metadataView = metadataView ?? new ApplicationComponents.StorageMetadataView.StorageMetadataView();
         this.contentElement.appendChild(this.metadataView);
     }
     setDeleteAllTitle(title) {
@@ -98,9 +99,6 @@ export class StorageItemsView extends UI.Widget.VBox {
     }
     setCanDeleteSelected(enabled) {
         this.deleteSelectedButton.setEnabled(enabled);
-    }
-    setCanRefresh(enabled) {
-        this.refreshButton.setEnabled(enabled);
     }
     setCanFilter(enabled) {
         this.filterItem.setEnabled(enabled);

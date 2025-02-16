@@ -36,6 +36,7 @@
     "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.ts",
     "../../../../../../../front_end/panels/timeline/utils/ImageCache.ts",
+    "../../../../../../../front_end/panels/timeline/utils/InsightAIContext.ts",
     "../../../../../../../front_end/panels/timeline/utils/SourceMapsResolver.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

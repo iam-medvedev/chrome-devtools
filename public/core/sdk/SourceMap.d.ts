@@ -16,7 +16,7 @@ export interface SourceMapV3Object {
     mappings: string;
     file?: string;
     sourceRoot?: string;
-    sourcesContent?: (string | null)[];
+    sourcesContent?: Array<string | null>;
     names?: string[];
     ignoreList?: number[];
     originalScopes?: string[];
@@ -38,7 +38,7 @@ export interface SourceMapV3Object {
 export type SourceMapV3 = SourceMapV3Object | {
     version: number;
     file?: string;
-    sections: ({
+    sections: Array<{
         offset: {
             line: number;
             column: number;
@@ -50,7 +50,7 @@ export type SourceMapV3 = SourceMapV3Object | {
             column: number;
         };
         url: string;
-    })[];
+    }>;
 };
 /**
  * Parses the {@link content} as JSON, ignoring BOM markers in the beginning, and

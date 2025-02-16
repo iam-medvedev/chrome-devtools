@@ -7,5 +7,3 @@ export declare class JavaScriptREPL {
     }>;
     private static buildEvaluationPreview;
 }
-export declare function setMaxLengthForEvaluation(value: number): void;
-export declare function getMaxLengthForEvaluation(): number;

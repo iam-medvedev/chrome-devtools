@@ -15,7 +15,7 @@ export declare class InterestGroupStorageView extends UI.SplitWidget.SplitWidget
     addEvent(event: Protocol.Storage.InterestGroupAccessedEvent): void;
     clearEvents(): void;
     private onFocus;
-    getEventsForTesting(): Array<Protocol.Storage.InterestGroupAccessedEvent>;
+    getEventsForTesting(): Protocol.Storage.InterestGroupAccessedEvent[];
     getInterestGroupGridForTesting(): ApplicationComponents.InterestGroupAccessGrid.InterestGroupAccessGrid;
     sidebarUpdatedForTesting(): void;
 }

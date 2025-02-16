@@ -10,7 +10,7 @@ interface BaseTreeNode<TreeNodeDataType> {
     jslogContext?: string;
 }
 export interface TreeNodeWithChildren<TreeNodeDataType> extends BaseTreeNode<TreeNodeDataType> {
-    children: () => Promise<TreeNode<TreeNodeDataType>[]>;
+    children: () => Promise<Array<TreeNode<TreeNodeDataType>>>;
 }
 interface LeafNode<TreeNodeDataType> extends BaseTreeNode<TreeNodeDataType> {
     children?: never;
@@ -28,7 +28,7 @@ declare class TrackDOMNodeToTreeNode extends Lit.Directive.Directive {
     render(_weakmap: WeakMap<HTMLLIElement, TreeNode<any>>, _treeNode: TreeNode<any>): void;
 }
 export declare const trackDOMNodeToTreeNode: (_weakmap: WeakMap<HTMLLIElement, TreeNode<any>>, _treeNode: TreeNode<any>) => Lit.Directive.DirectiveResult<typeof TrackDOMNodeToTreeNode>;
-export declare const getNodeChildren: <TreeNodeDataType>(node: TreeNode<TreeNodeDataType>) => Promise<TreeNode<TreeNodeDataType>[]>;
+export declare const getNodeChildren: <TreeNodeDataType>(node: TreeNode<TreeNodeDataType>) => Promise<Array<TreeNode<TreeNodeDataType>>>;
 /**
  * Searches the tree and returns a path to the given node.
  * e.g. if the tree is:
@@ -41,7 +41,7 @@ export declare const getNodeChildren: <TreeNodeDataType>(node: TreeNode<TreeNode
  *
  * And you look for F, you'll get back [A, D, F]
  */
-export declare const getPathToTreeNode: <TreeNodeDataType>(tree: readonly TreeNode<TreeNodeDataType>[], nodeIdToFind: TreeNodeId) => Promise<TreeNode<TreeNodeDataType>[] | null>;
+export declare const getPathToTreeNode: <TreeNodeDataType>(tree: ReadonlyArray<TreeNode<TreeNodeDataType>>, nodeIdToFind: TreeNodeId) => Promise<Array<TreeNode<TreeNodeDataType>> | null>;
 interface KeyboardNavigationOptions<TreeNodeDataType> {
     currentDOMNode: HTMLLIElement;
     currentTreeNode: TreeNode<TreeNodeDataType>;

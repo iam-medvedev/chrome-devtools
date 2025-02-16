@@ -37,9 +37,9 @@ export const UIStrings = {
      */
     phase: 'Phase',
     /**
-     *@description Label used for the percentage a single phase/component/stage/section takes up of a larger duration.
+     * @description Label used for the duration a single phase/component/stage/section takes up of a larger duration.
      */
-    percentLCP: '% of LCP',
+    duration: 'Duration',
     /**
      * @description Text status indicating that the the Largest Contentful Paint (LCP) metric timing was not found. "LCP" is an acronym and should not be translated.
      */
@@ -105,8 +105,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
-        // TODO: should move the component's "getPhaseData" to model.
-        shouldShow: Boolean(partialModel.phases) && (partialModel.lcpMs ?? 0) > 0,
+        state: partialModel.lcpEvent || partialModel.lcpRequest ? 'informative' : 'pass',
         ...partialModel,
         relatedEvents,
     };

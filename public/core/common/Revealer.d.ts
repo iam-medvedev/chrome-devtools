@@ -40,7 +40,7 @@ export declare class RevealerRegistry {
      * @param omitFocus whether to omit focusing on the presentation of `revealable` afterwards.
      */
     reveal(revealable: unknown, omitFocus: boolean): Promise<void>;
-    getApplicableRegisteredRevealers(revealable: unknown): RevealerRegistration<unknown>[];
+    getApplicableRegisteredRevealers(revealable: unknown): Array<RevealerRegistration<unknown>>;
 }
 export declare function revealDestination(revealable: unknown): string | null;
 /**

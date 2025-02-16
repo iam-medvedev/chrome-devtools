@@ -9,7 +9,7 @@ export declare class StorageItemsView extends UI.Widget.VBox {
     readonly deleteAllButton: UI.Toolbar.ToolbarButton;
     readonly deleteSelectedButton: UI.Toolbar.ToolbarButton;
     readonly metadataView: ApplicationComponents.StorageMetadataView.StorageMetadataView;
-    constructor(_title: string, _filterName: string);
+    constructor(_title: string, _filterName: string, metadataView?: ApplicationComponents.StorageMetadataView.StorageMetadataView);
     setDeleteAllTitle(title: string): void;
     setDeleteAllGlyph(glyph: string): void;
     appendToolbarItem(item: UI.Toolbar.ToolbarItem): void;
@@ -21,7 +21,6 @@ export declare class StorageItemsView extends UI.Widget.VBox {
     wasShown(): void;
     setCanDeleteAll(enabled: boolean): void;
     setCanDeleteSelected(enabled: boolean): void;
-    setCanRefresh(enabled: boolean): void;
     setCanFilter(enabled: boolean): void;
     deleteAllItems(): void;
     deleteSelectedItem(): void;

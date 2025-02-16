@@ -33,6 +33,7 @@
  */
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
+import * as Root from '../../../core/root/root.js';
 let themeSupportInstance;
 const themeValueByTargetByName = new Map();
 export class ThemeSupport extends EventTarget {
@@ -116,9 +117,6 @@ export class ThemeSupport extends EventTarget {
         }
         return themeValue;
     }
-    hasTheme() {
-        return this.themeNameInternal !== 'default';
-    }
     themeName() {
         return this.themeNameInternal;
     }
@@ -139,8 +137,7 @@ export class ThemeSupport extends EventTarget {
         this.themeNameInternal = useSystemPreferred ? systemPreferredTheme : this.setting.get();
         document.documentElement.classList.toggle('theme-with-dark-background', this.themeNameInternal === 'dark');
         const useChromeTheme = Common.Settings.moduleSetting('chrome-theme-colors').get();
-        const hostConfig = Common.Settings.Settings.instance().getHostConfig();
-        const isIncognito = !hostConfig || hostConfig.isOffTheRecord === true;
+        const isIncognito = Root.Runtime.hostConfig.isOffTheRecord === true;
         // Baseline is the name of Chrome's default color theme and there are two of these: default and grayscale.
         // The collective name for the rest of the color themes is dynamic.
         // In the baseline themes Chrome uses custom values for surface colors, whereas for dynamic themes these are color-mixed.
