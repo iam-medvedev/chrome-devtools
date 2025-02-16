@@ -46,6 +46,7 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Persistence from '../../models/persistence/persistence.js';
+import * as ProjectSettings from '../../models/project_settings/project_settings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Snippets from '../../panels/snippets/snippets.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -114,7 +115,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class MainImpl {
-    #lateInitDonePromise;
     #readyForTestPromise;
     #resolveReadyForTestPromise;
     constructor() {
@@ -139,19 +139,19 @@ export class MainImpl {
     async #loaded() {
         console.timeStamp('Main._loaded');
         Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
-        const prefsPromise = new Promise(resolve => {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(resolve);
-        });
-        const configPromise = new Promise(resolve => {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.getHostConfig(resolve);
-        });
-        const [prefs, config] = await Promise.all([prefsPromise, configPromise]);
+        const [config, prefs] = await Promise.all([
+            new Promise(resolve => {
+                Host.InspectorFrontendHost.InspectorFrontendHostInstance.getHostConfig(resolve);
+            }),
+            new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getPreferences(resolve)),
+        ]);
         console.timeStamp('Main._gotPreferences');
         this.#initializeGlobalsForLayoutTests();
-        this.createSettings(prefs, config);
+        Object.assign(Root.Runtime.hostConfig, config);
+        this.createSettings(prefs);
         await this.requestAndRegisterLocaleData();
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
-        const veLogging = Common.Settings.Settings.instance().getHostConfig()?.devToolsVeLogging;
+        const veLogging = config.devToolsVeLogging;
         if (veLogging?.enabled) {
             if (veLogging?.testing) {
                 VisualLogging.setVeDebugLoggingEnabled(true, "Test" /* VisualLogging.DebugLoggingFormat.TEST */);
@@ -212,7 +212,7 @@ export class MainImpl {
             devToolsLocale.forceFallbackLocale();
         }
     }
-    createSettings(prefs, config) {
+    createSettings(prefs) {
         this.#initializeExperiments();
         let storagePrefix = '';
         if (Host.Platform.isCustomDevtoolsFrontend()) {
@@ -253,7 +253,7 @@ export class MainImpl {
         // setting can't change storage buckets during a single DevTools session.
         const syncedStorage = new Common.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
         const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
-        Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage, config });
+        Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage });
         if (!Host.InspectorFrontendHost.isUnderTest()) {
             new Common.Settings.VersionController().updateVersion();
         }
@@ -301,13 +301,11 @@ export class MainImpl {
         Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.register("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */, 'Performance panel: enable dimming unrelated events in performance insights and search results');
         Root.Runtime.experiments.register("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */, 'Performance panel: enable a switch to an alternative timeline navigation option');
-        Root.Runtime.experiments.register("timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */, 'Performance panel: enable third party dependency features');
         Root.Runtime.experiments.enableExperimentsByDefault([
             "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
             "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
             "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
             "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
-            "timeline-third-party-dependencies" /* Root.Runtime.ExperimentName.TIMELINE_THIRD_PARTY_DEPENDENCIES */,
             "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
@@ -365,31 +363,32 @@ export class MainImpl {
         UI.DockController.DockController.instance({ forceNew: true, canDock });
         SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
         SDK.DOMDebuggerModel.DOMDebuggerManager.instance({ forceNew: true });
-        SDK.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#onSuspendStateChanged.bind(this));
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        targetManager.addEventListener("SuspendStateChanged" /* SDK.TargetManager.Events.SUSPEND_STATE_CHANGED */, this.#onSuspendStateChanged.bind(this));
         Workspace.FileManager.FileManager.instance({ forceNew: true });
         Workspace.Workspace.WorkspaceImpl.instance();
         Bindings.NetworkProject.NetworkProjectManager.instance();
-        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), Workspace.Workspace.WorkspaceImpl.instance());
+        const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
         new Bindings.PresentationConsoleMessageHelper.PresentationConsoleMessageManager();
         Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
-            targetManager: SDK.TargetManager.TargetManager.instance(),
+            targetManager,
         });
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
-            targetManager: SDK.TargetManager.TargetManager.instance(),
+            targetManager,
         });
-        SDK.TargetManager.TargetManager.instance().setScopeTarget(SDK.TargetManager.TargetManager.instance().primaryPageTarget());
+        targetManager.setScopeTarget(targetManager.primaryPageTarget());
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, ({ data }) => {
             const outermostTarget = data?.outermostTarget();
-            SDK.TargetManager.TargetManager.instance().setScopeTarget(outermostTarget);
+            targetManager.setScopeTarget(outermostTarget);
         });
         Breakpoints.BreakpointManager.BreakpointManager.instance({
             forceNew: true,
             workspace: Workspace.Workspace.WorkspaceImpl.instance(),
-            targetManager: SDK.TargetManager.TargetManager.instance(),
+            targetManager,
             debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
         });
         // @ts-ignore e2e test global
@@ -402,10 +401,16 @@ export class MainImpl {
             breakpointManager: Breakpoints.BreakpointManager.BreakpointManager.instance(),
         });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
-        new ExecutionContextSelector(SDK.TargetManager.TargetManager.instance(), UI.Context.Context.instance());
+        new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
         Bindings.IgnoreListManager.IgnoreListManager.instance({
             forceNew: true,
             debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
+        });
+        ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
+            forceNew: true,
+            hostConfig: Root.Runtime.hostConfig,
+            pageResourceLoader: SDK.PageResourceLoader.PageResourceLoader.instance(),
+            targetManager,
         });
         AutofillManager.AutofillManager.AutofillManager.instance();
         LiveMetrics.LiveMetrics.instance();
@@ -544,11 +549,7 @@ export class MainImpl {
         if (consoleInsightsSetting) {
             consoleInsightsSetting.addChangeListener(this.#onConsoleInsightsEnabledSettingChanged, this);
         }
-        this.#lateInitDonePromise = Promise.all(promises).then(() => undefined);
         MainImpl.timeEnd('Main._lateInitialization');
-    }
-    lateInitDonePromiseForTest() {
-        return this.#lateInitDonePromise;
     }
     readyForTest() {
         return this.#readyForTestPromise;
@@ -699,6 +700,7 @@ export class MainMenuItem {
           <devtools-button class="toolbar-button"
                            jslog=${VisualLogging.toggle().track({ click: true }).context('current-dock-state-undock')}
                            title=${i18nString(UIStrings.undockIntoSeparateWindow)}
+                           aria-label=${i18nString(UIStrings.undockIntoSeparateWindow)}
                            .iconName=${'dock-window'}
                            .toggled=${dockController.dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */}
                            .toggledIconName=${'dock-window'}
@@ -708,6 +710,7 @@ export class MainMenuItem {
           <devtools-button class="toolbar-button"
                            jslog=${VisualLogging.toggle().track({ click: true }).context('current-dock-state-left')}
                            title=${i18nString(UIStrings.dockToLeft)}
+                           aria-label=${i18nString(UIStrings.dockToLeft)}
                            .iconName=${'dock-left'}
                            .toggled=${dockController.dockSide() === "left" /* UI.DockController.DockState.LEFT */}
                            .toggledIconName=${'dock-left'}
@@ -717,6 +720,7 @@ export class MainMenuItem {
           <devtools-button class="toolbar-button"
                            jslog=${VisualLogging.toggle().track({ click: true }).context('current-dock-state-bottom')}
                            title=${i18nString(UIStrings.dockToBottom)}
+                           aria-label=${i18nString(UIStrings.dockToBottom)}
                            .iconName=${'dock-bottom'}
                            .toggled=${dockController.dockSide() === "bottom" /* UI.DockController.DockState.BOTTOM */}
                            .toggledIconName=${'dock-bottom'}
@@ -726,6 +730,7 @@ export class MainMenuItem {
           <devtools-button class="toolbar-button"
                            jslog=${VisualLogging.toggle().track({ click: true }).context('current-dock-state-right')}
                            title=${i18nString(UIStrings.dockToRight)}
+                           aria-label=${i18nString(UIStrings.dockToRight)}
                            .iconName=${'dock-right'}
                            .toggled=${dockController.dockSide() === "right" /* UI.DockController.DockState.RIGHT */}
                            .toggledIconName=${'dock-right'}
@@ -775,7 +780,7 @@ export class MainMenuItem {
             i18nString(UIStrings.showConsoleDrawer));
         contextMenu.appendItemsAtLocation('mainMenu');
         const moreTools = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.moreTools), false, 'more-tools');
-        const viewExtensions = UI.ViewManager.getRegisteredViewExtensions(Common.Settings.Settings.instance().getHostConfig());
+        const viewExtensions = UI.ViewManager.getRegisteredViewExtensions();
         viewExtensions.sort((extension1, extension2) => {
             const title1 = extension1.title();
             const title2 = extension2.title();
@@ -843,6 +848,7 @@ export class PauseListener {
         void Common.Revealer.reveal(debuggerPausedDetails);
     }
 }
+// Unused but mentioned at https://chromedevtools.github.io/devtools-protocol/#:~:text=use%20Main.MainImpl.-,sendOverProtocol,-()%20in%20the
 export function sendOverProtocol(method, params) {
     return new Promise((resolve, reject) => {
         const sendRawMessage = ProtocolClient.InspectorBackend.test.sendRawMessage;

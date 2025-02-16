@@ -14,7 +14,6 @@ export declare class RemoteArrayBufferWrapper implements LazyUint8Array {
     length(): number;
     getRange(start: number, end: number): Promise<Uint8Array<ArrayBuffer>>;
 }
-export declare function isDWARFMemoryObject(obj: SDK.RemoteObject.RemoteObject): boolean;
 export declare class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelObserver<SDK.RuntimeModel.RuntimeModel> implements Common.Revealer.Revealer<SDK.RemoteObject.LinearMemoryInspectable>, UI.ContextMenu.Provider<ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement> {
     #private;
     private constructor();

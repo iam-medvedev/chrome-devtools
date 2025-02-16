@@ -27,7 +27,7 @@ export declare class IsolatedFileSystemManager extends Common.ObjectWrapper.Obje
     fileSystems(): PlatformFileSystem[];
     fileSystem(fileSystemPath: Platform.DevToolsPath.UrlString): PlatformFileSystem | null;
     workspaceFolderExcludePatternSetting(): Common.Settings.RegExpSetting;
-    registerCallback(callback: (arg0: Array<Platform.DevToolsPath.RawPathString>) => void): number;
+    registerCallback(callback: (arg0: Platform.DevToolsPath.RawPathString[]) => void): number;
     registerProgress(progress: Common.Progress.Progress): number;
     private onIndexingTotalWorkCalculated;
     private onIndexingWorked;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
+import * as Root from '../root/root.js';
 import { InspectorFrontendHostInstance } from './InspectorFrontendHost.js';
 import { bindOutputStream } from './ResourceLoader.js';
 export var Role;
@@ -39,6 +40,8 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
     // Chrome AI Patch Agent.
     ClientFeature[ClientFeature["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
+    // Chrome AI Assistance Performance Insights Agent.
+    ClientFeature[ClientFeature["CHROME_PERFORMANCE_INSIGHTS_AGENT"] = 14] = "CHROME_PERFORMANCE_INSIGHTS_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {
@@ -81,14 +84,14 @@ export class AidaClient {
             functionality_type: FunctionalityType.EXPLAIN_ERROR,
             client_feature: ClientFeature.CHROME_CONSOLE_INSIGHTS,
         };
-        const config = Common.Settings.Settings.instance().getHostConfig();
+        const { hostConfig } = Root.Runtime;
         let temperature = -1;
         let modelId = '';
-        if (config.devToolsConsoleInsights?.enabled) {
-            temperature = config.devToolsConsoleInsights.temperature ?? -1;
-            modelId = config.devToolsConsoleInsights.modelId || '';
+        if (hostConfig.devToolsConsoleInsights?.enabled) {
+            temperature = hostConfig.devToolsConsoleInsights.temperature ?? -1;
+            modelId = hostConfig.devToolsConsoleInsights.modelId || '';
         }
-        const disallowLogging = config.aidaAvailability?.disallowLogging ?? true;
+        const disallowLogging = hostConfig.aidaAvailability?.disallowLogging ?? true;
         if (temperature >= 0) {
             request.options ??= {};
             request.options.temperature = temperature;
@@ -297,8 +300,8 @@ export class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper {
         const currentAidaAvailability = await AidaClient.checkAccessPreconditions();
         if (currentAidaAvailability !== this.#aidaAvailability) {
             this.#aidaAvailability = currentAidaAvailability;
-            const config = await new Promise(resolve => InspectorFrontendHostInstance.getHostConfig(config => resolve(config)));
-            Common.Settings.Settings.instance().setHostConfig(config);
+            const config = await new Promise(resolve => InspectorFrontendHostInstance.getHostConfig(resolve));
+            Object.assign(Root.Runtime.hostConfig, config);
             this.dispatchEventToListeners("aidaAvailabilityChanged" /* Events.AIDA_AVAILABILITY_CHANGED */);
         }
     }

@@ -103,14 +103,6 @@ export class ServiceWorkerManager extends SDKModel {
     registrations() {
         return this.#registrationsInternal;
     }
-    hasRegistrationForURLs(urls) {
-        for (const registration of this.#registrationsInternal.values()) {
-            if (urls.filter(url => url && url.startsWith(registration.scopeURL)).length === urls.length) {
-                return true;
-            }
-        }
-        return false;
-    }
     findVersion(versionId) {
         for (const registration of this.registrations().values()) {
             const version = registration.versions.get(versionId);
@@ -228,9 +220,6 @@ export class ServiceWorkerManager extends SDKModel {
         }
         registration.errors.push(payload);
         this.dispatchEventToListeners("RegistrationErrorAdded" /* Events.REGISTRATION_ERROR_ADDED */, { registration, error: payload });
-    }
-    forceUpdateOnReloadSetting() {
-        return this.#forceUpdateSetting;
     }
     forceUpdateSettingChanged() {
         const forceUpdateOnPageLoad = this.#forceUpdateSetting.get();
@@ -469,10 +458,6 @@ export class ServiceWorkerRegistration {
     }
     canBeRemoved() {
         return this.isDeleted || this.deleting;
-    }
-    clearErrors() {
-        this.#fingerprintInternal = Symbol('fingerprint');
-        this.errors = [];
     }
 }
 class ServiceWorkerContextNamer {

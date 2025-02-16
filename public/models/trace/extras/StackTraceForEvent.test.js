@@ -148,10 +148,14 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         ]);
         bottomFrame.functionName = originalName;
     });
-    it('correctly builds the stack trace of an extension entry', async function () {
+    it('uses the stack trace of the profile call that contains an the raw trace event of the extension entry call', async function () {
         const jsCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
         assert.exists(jsCall);
         const stackTraceForExtensionProfileCall = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
+        const measureTraceId = [...parsedTrace.UserTimings.measureTraceByTraceId.keys()].at(0);
+        if (!measureTraceId) {
+            throw new Error('Performance measure trace was not found');
+        }
         assert.exists(stackTraceForExtensionProfileCall);
         // Create an extension entry right next to our profile call (based
         // on its callTime property).
@@ -164,64 +168,13 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
             tid: jsCall.tid,
             rawSourceEvent: {
                 cat: 'blink.user_timing',
-                args: { stackTrace: [{ functionName: jsCall.callFrame.functionName }], callTime: jsCall.ts - 1 },
+                args: { stackTrace: [{ functionName: jsCall.callFrame.functionName }], traceId: measureTraceId },
                 ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
             },
         };
         const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, parsedTrace);
         assert.exists(stackTraceForExtensionEntry);
-        assert.strictEqual(stackTraceForExtensionEntry, stackTraceForExtensionProfileCall);
-    });
-    it('uses the stack trace of the profile call that contains an extension entry call time', async function () {
-        const bar = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'bar');
-        assert.exists(bar);
-        const stackTraceForExtensionProfileCall = Trace.Extras.StackTraceForEvent.get(bar, parsedTrace);
-        assert.exists(stackTraceForExtensionProfileCall);
-        // Create an extension entry contained by the profile call (based on
-        // its callTime property).
-        // Test the profile call's stack strace is returned as
-        // the extension entry's stack trace.
-        const mockExtensionEntry = {
-            cat: 'devtools.extension',
-            ts: bar.ts,
-            pid: bar.pid,
-            tid: bar.tid,
-            rawSourceEvent: {
-                cat: 'blink.user_timing',
-                args: { stackTrace: [{ functionName: bar.callFrame.functionName }], callTime: bar.ts + 1 },
-                ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
-            },
-        };
-        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, parsedTrace);
-        assert.exists(stackTraceForExtensionEntry);
-        assert.strictEqual(stackTraceForExtensionEntry, stackTraceForExtensionProfileCall);
-    });
-    it('picks the stack trace of the closest profile call when no profile call contains the extension entry call time', async function () {
-        const bazCalls = parsedTrace.Renderer.allTraceEntries.filter(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
-        const firstBaz = bazCalls.at(0);
-        assert.exists(firstBaz);
-        const secondBaz = bazCalls.at(1);
-        assert.exists(secondBaz);
-        const middlePoint = (secondBaz.ts + firstBaz.ts) / 2;
-        const stackTraceForSecondBaz = Trace.Extras.StackTraceForEvent.get(secondBaz, parsedTrace);
-        assert.exists(stackTraceForSecondBaz);
-        // Create an extension entry contained closer to the second
-        // baz call (based on its callTime property).
-        // Test the stack trace of baz is used for it.
-        const mockExtensionEntry = {
-            cat: 'devtools.extension',
-            ts: middlePoint,
-            pid: secondBaz.pid,
-            tid: secondBaz.tid,
-            rawSourceEvent: {
-                cat: 'blink.user_timing',
-                args: { stackTrace: [{ functionName: secondBaz.callFrame.functionName }], callTime: middlePoint + 1 },
-                ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
-            },
-        };
-        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, parsedTrace);
-        assert.exists(stackTraceForExtensionEntry);
-        assert.strictEqual(stackTraceForExtensionEntry, stackTraceForSecondBaz);
+        assert.deepEqual(stackTraceForExtensionEntry, stackTraceForExtensionProfileCall);
     });
 });
 //# sourceMappingURL=StackTraceForEvent.test.js.map

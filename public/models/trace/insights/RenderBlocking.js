@@ -117,7 +117,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
-        shouldShow: partialModel.renderBlockingRequests.length > 0,
+        state: partialModel.renderBlockingRequests.length > 0 ? 'fail' : 'pass',
         ...partialModel,
     };
 }

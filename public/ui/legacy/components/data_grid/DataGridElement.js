@@ -58,6 +58,9 @@ class DataGridElement extends HTMLElement {
         this.#shadowRoot.appendChild(this.#dataGrid.element);
         this.#dataGrid.addEventListener("SelectedNode" /* DataGridEvents.SELECTED_NODE */, e => this.dispatchEvent(new CustomEvent('select', { detail: e.data.configElement })));
         this.#dataGrid.addEventListener("DeselectedNode" /* DataGridEvents.DESELECTED_NODE */, () => this.dispatchEvent(new CustomEvent('select', { detail: null })));
+        this.#dataGrid.addEventListener("SortingChanged" /* DataGridEvents.SORTING_CHANGED */, () => this.dispatchEvent(new CustomEvent('sort', {
+            detail: { columnId: this.#dataGrid.sortColumnId(), ascending: this.#dataGrid.isSortOrderAscending() }
+        })));
         this.#dataGrid.setRowContextMenuCallback((menu, node) => {
             this.dispatchEvent(new CustomEvent('contextmenu', { detail: { menu, element: node.configElement } }));
         });
@@ -295,6 +298,15 @@ class DataGridElement extends HTMLElement {
     }
     #deleteCallback(node) {
         this.dispatchEvent(new CustomEvent('delete', { detail: node.configElement }));
+    }
+    addEventListener(...args) {
+        super.addEventListener(...args);
+        if (args[0] === 'refresh') {
+            this.#dataGrid.refreshCallback = this.#refreshCallback.bind(this);
+        }
+    }
+    #refreshCallback() {
+        this.dispatchEvent(new CustomEvent('refresh'));
     }
 }
 class DataGridElementNode extends SortableDataGridNode {

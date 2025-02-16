@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import { TextMatcher } from './CSSPropertyParserMatchers.js';
 const globalValues = new Set(['inherit', 'initial', 'unset']);
 const tagRegexp = /[\x20-\x7E]{4}/;
 const numRegexp = /[+-]?(?:\d*\.)?\d+(?:[eE]\d+)?/;
@@ -415,101 +416,6 @@ export var ASTUtils;
     }
     ASTUtils.equals = equals;
 })(ASTUtils || (ASTUtils = {}));
-export class VariableMatch {
-    text;
-    node;
-    name;
-    fallback;
-    matching;
-    computedTextCallback;
-    constructor(text, node, name, fallback, matching, computedTextCallback) {
-        this.text = text;
-        this.node = node;
-        this.name = name;
-        this.fallback = fallback;
-        this.matching = matching;
-        this.computedTextCallback = computedTextCallback;
-    }
-    computedText() {
-        return this.computedTextCallback(this, this.matching);
-    }
-}
-// clang-format off
-export class VariableMatcher extends matcherBase(VariableMatch) {
-    // clang-format on
-    #computedTextCallback;
-    constructor(computedTextCallback) {
-        super();
-        this.#computedTextCallback = computedTextCallback;
-    }
-    matches(node, matching) {
-        const callee = node.getChild('Callee');
-        const args = node.getChild('ArgList');
-        if (node.name !== 'CallExpression' || !callee || (matching.ast.text(callee) !== 'var') || !args) {
-            return null;
-        }
-        const [lparenNode, nameNode, ...fallbackOrRParenNodes] = ASTUtils.children(args);
-        if (lparenNode?.name !== '(' || nameNode?.name !== 'VariableName') {
-            return null;
-        }
-        if (fallbackOrRParenNodes.length <= 1 && fallbackOrRParenNodes[0]?.name !== ')') {
-            return null;
-        }
-        let fallback = [];
-        if (fallbackOrRParenNodes.length > 1) {
-            if (fallbackOrRParenNodes.shift()?.name !== ',') {
-                return null;
-            }
-            if (fallbackOrRParenNodes.pop()?.name !== ')') {
-                return null;
-            }
-            fallback = fallbackOrRParenNodes;
-            if (fallback.length === 0) {
-                return null;
-            }
-            if (fallback.some(n => n.name === ',')) {
-                return null;
-            }
-        }
-        const varName = matching.ast.text(nameNode);
-        if (!varName.startsWith('--')) {
-            return null;
-        }
-        return new VariableMatch(matching.ast.text(node), node, varName, fallback, matching, this.#computedTextCallback);
-    }
-}
-export class TextMatch {
-    text;
-    node;
-    computedText;
-    constructor(text, node) {
-        this.text = text;
-        this.node = node;
-        if (node.name === 'Comment') {
-            this.computedText = () => '';
-        }
-    }
-    render() {
-        return [document.createTextNode(this.text)];
-    }
-}
-// clang-format off
-class TextMatcher extends matcherBase(TextMatch) {
-    // clang-format on
-    accepts() {
-        return true;
-    }
-    matches(node, matching) {
-        if (!node.firstChild || node.name === 'NumberLiteral' /* may have a Unit child */) {
-            // Leaf node, just emit text
-            const text = matching.ast.text(node);
-            if (text.length) {
-                return new TextMatch(text, node);
-            }
-        }
-        return null;
-    }
-}
 function declaration(rule) {
     return cssParser.parse(rule).topNode.getChild('RuleSet')?.getChild('Block')?.getChild('Declaration') ?? null;
 }
@@ -556,6 +462,12 @@ export function tokenizePropertyName(name) {
         return null;
     }
     return nodeText(propertyName, rule);
+}
+export function matchDeclaration(name, value, matchers) {
+    const ast = tokenizeDeclaration(name, value);
+    const matchedResult = ast && BottomUpTreeMatching.walk(ast, matchers);
+    ast?.trailingNodes.forEach(n => matchedResult?.matchText(n));
+    return matchedResult;
 }
 export class TreeSearch extends TreeWalker {
     #found = null;

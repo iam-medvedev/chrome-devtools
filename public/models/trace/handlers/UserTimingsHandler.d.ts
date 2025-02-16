@@ -21,6 +21,11 @@ export interface UserTimingsData {
      * https://developer.mozilla.org/en-US/docs/Web/API/console/timeStamp
      */
     timestampEvents: readonly Types.Events.ConsoleTimeStamp[];
+    /**
+     * Events triggered to trace the call to performance.measure itself,
+     * cached by trace_id.
+     */
+    measureTraceByTraceId: Map<number, Types.Events.UserTimingMeasure>;
 }
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;

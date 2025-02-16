@@ -66,7 +66,7 @@ export declare function extractConsoleAPIExtensionEntries(): void;
  *                `PerformanceMark` events, typically obtained from the
  *                `UserTimingsHandler`.
  */
-export declare function extractPerformanceAPIExtensionEntries(timings: (Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark)[]): void;
+export declare function extractPerformanceAPIExtensionEntries(timings: Array<Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark>): void;
 export declare function extensionDataInPerformanceTiming(timing: Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark): Types.Extensions.ExtensionDataPayload | null;
 /**
  * Extracts extension data from a `console.timeStamp` event.

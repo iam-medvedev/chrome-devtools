@@ -764,6 +764,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     }
     /**
      * The range of |minPercent| and |maxPercent| is [0, 100].
+     *
+     * FYI: Only used in test: chromium/src/third_party/blink/web_tests/http/tests/devtools/components/datagrid.js
      */
     autoSizeColumns(minPercent, maxPercent, maxDescentLevel) {
         let widths = [];
@@ -1623,9 +1625,6 @@ export class DataGridNode {
             this.elementInternal.classList.remove('dirty');
         }
     }
-    isInactive() {
-        return this.inactive;
-    }
     setInactive(inactive) {
         if (this.inactive === inactive) {
             return;
@@ -2147,70 +2146,4 @@ export class DataGridWidget extends UI.Widget.VBox {
         return [this.dataGrid.scrollContainer];
     }
 }
-export class DataGridWidgetElement extends UI.Widget.WidgetElement {
-    #options;
-    widget;
-    constructor() {
-        super();
-        // default values for options
-        this.#options = {
-            displayName: 'dataGrid',
-            columns: [],
-            nodes: [],
-        };
-    }
-    set options(options) {
-        this.#options = options;
-        this.#updateGrid();
-    }
-    createWidget() {
-        const dataGridImpl = new DataGridImpl(this.#options);
-        // Translate existing DataGridImpl ("ObjectWrapper") events to DOM CustomEvents so clients can
-        // use lit templates to bind listeners.
-        dataGridImpl.addEventListener("SelectedNode" /* Events.SELECTED_NODE */, this.#selectedNode.bind(this));
-        dataGridImpl.addEventListener("DeselectedNode" /* Events.DESELECTED_NODE */, this.#deselectedNode.bind(this));
-        dataGridImpl.addEventListener("OpenedNode" /* Events.OPENED_NODE */, this.#openedNode.bind(this));
-        dataGridImpl.addEventListener("SortingChanged" /* Events.SORTING_CHANGED */, this.#sortingChanged.bind(this));
-        dataGridImpl.addEventListener("PaddingChanged" /* Events.PADDING_CHANGED */, this.#paddingChanged.bind(this));
-        this.widget = dataGridImpl.asWidget(this);
-        if (this.#options.markAsRoot) {
-            this.widget.markAsRoot();
-        }
-        this.#updateGrid();
-        return this.widget;
-    }
-    #updateGrid() {
-        if (this.widget) {
-            this.widget.dataGrid.rootNode().removeChildren();
-            for (const node of this.#options.nodes) {
-                this.widget.dataGrid.rootNode().appendChild(node);
-            }
-            if (this.#options.striped) {
-                this.widget.dataGrid.setStriped(true);
-            }
-            this.widget.dataGrid.setRowContextMenuCallback(this.#options.rowContextMenuCallback ?? null);
-        }
-    }
-    #selectedNode(event) {
-        const domEvent = new CustomEvent('selectedNode', { detail: event.data });
-        this.dispatchEvent(domEvent);
-    }
-    #deselectedNode() {
-        const domEvent = new CustomEvent('deselectedNode');
-        this.dispatchEvent(domEvent);
-    }
-    #openedNode(event) {
-        const domEvent = new CustomEvent('openedNode', { detail: event.data });
-        this.dispatchEvent(domEvent);
-    }
-    #sortingChanged() {
-        const domEvent = new CustomEvent('sortingChanged');
-        this.dispatchEvent(domEvent);
-    }
-    #paddingChanged() {
-        const domEvent = new CustomEvent('paddingChanged');
-        this.dispatchEvent(domEvent);
-    }
-}
-customElements.define('devtools-data-grid-widget', DataGridWidgetElement);
 //# sourceMappingURL=DataGrid.js.map

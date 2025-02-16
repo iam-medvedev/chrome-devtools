@@ -32,8 +32,8 @@ export declare class IndexedDBModel extends SDK.SDKModel.SDKModel<EventTypes> im
     private databaseRemovedForStorageBucket;
     private loadDatabaseNamesByStorageBucket;
     private loadDatabase;
-    loadObjectStoreData(databaseId: DatabaseId, objectStoreName: string, idbKeyRange: IDBKeyRange | null, skipCount: number, pageSize: number, callback: (arg0: Array<Entry>, arg1: boolean) => void): void;
-    loadIndexData(databaseId: DatabaseId, objectStoreName: string, indexName: string, idbKeyRange: IDBKeyRange | null, skipCount: number, pageSize: number, callback: (arg0: Array<Entry>, arg1: boolean) => void): void;
+    loadObjectStoreData(databaseId: DatabaseId, objectStoreName: string, idbKeyRange: IDBKeyRange | null, skipCount: number, pageSize: number, callback: (arg0: Entry[], arg1: boolean) => void): void;
+    loadIndexData(databaseId: DatabaseId, objectStoreName: string, indexName: string, idbKeyRange: IDBKeyRange | null, skipCount: number, pageSize: number, callback: (arg0: Entry[], arg1: boolean) => void): void;
     private requestData;
     getMetadata(databaseId: DatabaseId, objectStore: ObjectStore): Promise<ObjectStoreMetadata | null>;
     private refreshDatabaseListForStorageBucket;

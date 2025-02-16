@@ -6,13 +6,13 @@ import * as Bindings from '../models/bindings/bindings.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as Workspace from '../models/workspace/workspace.js';
 export declare function createContentProviderUISourceCodes(options: {
-    items: {
+    items: Array<{
         url: Platform.DevToolsPath.UrlString;
         content?: string;
         mimeType: string;
         resourceType?: Common.ResourceType.ResourceType;
         metadata?: Workspace.UISourceCode.UISourceCodeMetadata;
-    }[];
+    }>;
     projectType?: Workspace.Workspace.projectTypes;
     projectId?: string;
     target?: SDK.Target.Target;

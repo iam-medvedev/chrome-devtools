@@ -61,7 +61,6 @@ export declare class TabbedPane extends TabbedPane_base {
     focusSelectedTabHeader(): void;
     headerElement(): Element;
     tabbedPaneContentElement(): Element;
-    isTabCloseable(id: string): boolean;
     setTabDelegate(delegate: TabbedPaneTabDelegate): void;
     appendTab(id: string, tabTitle: string, view: Widget, tabTooltip?: string, userGesture?: boolean, isCloseable?: boolean, isPreviewFeature?: boolean, index?: number, jslogContext?: string): void;
     closeTab(id: string, userGesture?: boolean): void;
@@ -85,7 +84,6 @@ export declare class TabbedPane extends TabbedPane_base {
     setTabEnabled(id: string, enabled: boolean): void;
     tabIsDisabled(id: string): boolean;
     tabIsEnabled(id: string): boolean;
-    toggleTabClass(id: string, className: string, force?: boolean): void;
     private zoomChanged;
     private clearMeasuredWidths;
     changeTabTitle(id: string, tabTitle: string, tabTooltip?: string): void;

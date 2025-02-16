@@ -13,7 +13,7 @@ export type ConnectionType = 'offline' | 'slow-2G' | '2G' | '3G' | '4G';
 export interface CrUXRequest {
     effectiveConnectionType?: ConnectionType;
     formFactor?: FormFactor;
-    metrics?: Array<MetricNames>;
+    metrics?: MetricNames[];
     origin?: string;
     url?: string;
 }

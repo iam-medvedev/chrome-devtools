@@ -1182,9 +1182,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
         return TextUtils.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
     }
-    isHttpFamily() {
-        return Boolean(this.url().match(/^https?:/i));
-    }
     requestContentType() {
         return this.requestHeaderValue('Content-Type');
     }

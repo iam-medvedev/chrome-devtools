@@ -57,7 +57,7 @@ export declare class RecorderController extends LitElement {
     getCurrentRecordingForTesting(): StoredRecording | undefined;
     getStepBreakpointIndexesForTesting(): number[];
     setCurrentRecordingForTesting(recording: StoredRecording | undefined): void;
-    getSectionsForTesting(): Array<Models.Section.Section> | undefined;
+    getSectionsForTesting(): Models.Section.Section[] | undefined;
     getUserFlow(): Models.Schema.UserFlow | undefined;
     handleActions(actionId: Actions.RecorderActions): void;
     isActionPossible(actionId: Actions.RecorderActions): boolean;

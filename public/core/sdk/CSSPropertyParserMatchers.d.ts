@@ -1,9 +1,70 @@
 import type * as Platform from '../../core/platform/platform.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
-import type { CSSMatchedStyles, CSSValueSource } from './CSSMatchedStyles.js';
+import type { CSSMatchedStyles, CSSValueSource, CSSVariableValue } from './CSSMatchedStyles.js';
 import { type CSSWideKeyword } from './CSSMetadata.js';
 import type { CSSProperty } from './CSSProperty.js';
 import { type BottomUpTreeMatching, type Match } from './CSSPropertyParser.js';
+import type { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
+export declare class BaseVariableMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly name: string;
+    readonly fallback: CodeMirror.SyntaxNode[];
+    readonly matching: BottomUpTreeMatching;
+    readonly computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null;
+    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching, computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null);
+    computedText(): string | null;
+}
+declare const BaseVariableMatcher_base: {
+    new (): {
+        matchType: import("./CSSPropertyParser.js").Constructor<BaseVariableMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): BaseVariableMatch | null;
+    };
+};
+export declare class BaseVariableMatcher extends BaseVariableMatcher_base {
+    #private;
+    constructor(computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null);
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): BaseVariableMatch | null;
+}
+export declare class VariableMatch extends BaseVariableMatch {
+    readonly matchedStyles: CSSMatchedStyles;
+    readonly style: CSSStyleDeclaration;
+    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching, matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration);
+    resolveVariable(): CSSVariableValue | null;
+    fallbackValue(): string | null;
+}
+declare const VariableMatcher_base: {
+    new (): {
+        matchType: import("./CSSPropertyParser.js").Constructor<VariableMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): VariableMatch | null;
+    };
+};
+export declare class VariableMatcher extends VariableMatcher_base {
+    readonly matchedStyles: CSSMatchedStyles;
+    readonly style: CSSStyleDeclaration;
+    constructor(matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration);
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): VariableMatch | null;
+}
+export declare class TextMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    computedText?: () => string;
+    constructor(text: string, node: CodeMirror.SyntaxNode);
+    render(): Node[];
+}
+declare const TextMatcher_base: {
+    new (): {
+        matchType: import("./CSSPropertyParser.js").Constructor<TextMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): TextMatch | null;
+    };
+};
+export declare class TextMatcher extends TextMatcher_base {
+    accepts(): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): TextMatch | null;
+}
 export declare class AngleMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;

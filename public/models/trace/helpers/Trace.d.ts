@@ -31,21 +31,21 @@ export declare function eventTimeComparator(a: TimeSpan, b: TimeSpan): -1 | 0 | 
  * Sorts all the events in place, in order, by their start time. If they have
  * the same start time, orders them by longest first.
  */
-export declare function sortTraceEventsInPlace(events: {
+export declare function sortTraceEventsInPlace(events: Array<{
     ts: Types.Timing.Micro;
     dur?: Types.Timing.Micro;
-}[]): void;
+}>): void;
 /**
  * Returns an array of ordered events that results after merging the two
  * ordered input arrays.
  */
-export declare function mergeEventsInOrder<T1 extends Types.Events.Event, T2 extends Types.Events.Event>(eventsArray1: readonly T1[], eventsArray2: readonly T2[]): (T1 | T2)[];
+export declare function mergeEventsInOrder<T1 extends Types.Events.Event, T2 extends Types.Events.Event>(eventsArray1: readonly T1[], eventsArray2: readonly T2[]): Array<T1 | T2>;
 export declare function getNavigationForTraceEvent(event: Types.Events.Event, eventFrameId: string, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Events.NavigationStart | null;
 export declare function extractId(event: Types.Events.PairableAsync | Types.Events.SyntheticEventPair<Types.Events.PairableAsync>): string | undefined;
-export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.Micro, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, {
+export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.Micro, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, Array<{
     frame: Types.Events.TraceFrame;
     window: Types.Timing.TraceWindowMicro;
-}[]>>): string | null;
+}>>>): string | null;
 /**
  * @param node the node attached to the profile call. Here a node represents a function in the call tree.
  * @param profileId the profile ID that the sample came from that backs this call.
@@ -69,8 +69,8 @@ export declare function createSortedSyntheticEvents<T extends Types.Events.Paira
     begin: Types.Events.PairableAsyncBegin | null;
     end: Types.Events.PairableAsyncEnd | null;
     instant?: Types.Events.PairableAsyncInstant[];
-}>, syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Types.Events.SyntheticEventPair<T>[];
-export declare function createMatchedSortedSyntheticEvents<T extends Types.Events.PairableAsync>(unpairedAsyncEvents: T[], syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Types.Events.SyntheticEventPair<T>[];
+}>, syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Array<Types.Events.SyntheticEventPair<T>>;
+export declare function createMatchedSortedSyntheticEvents<T extends Types.Events.PairableAsync>(unpairedAsyncEvents: T[], syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Array<Types.Events.SyntheticEventPair<T>>;
 /**
  * Different trace events return line/column numbers that are 1 or 0 indexed.
  * This function knows which events return 1 indexed numbers and normalizes

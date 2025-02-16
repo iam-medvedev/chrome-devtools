@@ -80,36 +80,36 @@ export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.
     private rawModuleIdAndPluginForScript;
     uiSourceCodeForURL(debuggerModel: SDK.DebuggerModel.DebuggerModel, url: Platform.DevToolsPath.UrlString): Workspace.UISourceCode.UISourceCode | null;
     rawLocationToUILocation(rawLocation: SDK.DebuggerModel.Location): Promise<Workspace.UISourceCode.UILocation | null>;
-    uiLocationToRawLocationRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber?: number | undefined): Promise<{
+    uiLocationToRawLocationRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber?: number | undefined): Promise<Array<{
         start: SDK.DebuggerModel.Location;
         end: SDK.DebuggerModel.Location;
-    }[] | null>;
+    }> | null>;
     uiLocationToRawLocations(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber?: number): Promise<SDK.DebuggerModel.Location[] | null>;
     uiLocationRangeToRawLocationRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, textRange: TextUtils.TextRange.TextRange): Promise<SDK.DebuggerModel.LocationRange[] | null>;
     scriptsForUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): SDK.Script.Script[];
     setDebugInfoURL(script: SDK.Script.Script, externalURL: Platform.DevToolsPath.UrlString): void;
     private parsedScriptSource;
     private debuggerResumed;
-    getSourcesForScript(script: SDK.Script.Script): Promise<Array<Platform.DevToolsPath.UrlString> | {
+    getSourcesForScript(script: SDK.Script.Script): Promise<Platform.DevToolsPath.UrlString[] | {
         missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | undefined>;
     resolveScopeChain(callFrame: SDK.DebuggerModel.CallFrame): Promise<SourceScope[] | null>;
     getFunctionInfo(script: SDK.Script.Script, location: SDK.DebuggerModel.Location): Promise<{
-        frames: Array<Chrome.DevTools.FunctionInfo>;
+        frames: Chrome.DevTools.FunctionInfo[];
         missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | {
-        frames: Array<Chrome.DevTools.FunctionInfo>;
+        frames: Chrome.DevTools.FunctionInfo[];
     } | {
         missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | null>;
-    getInlinedFunctionRanges(rawLocation: SDK.DebuggerModel.Location): Promise<{
+    getInlinedFunctionRanges(rawLocation: SDK.DebuggerModel.Location): Promise<Array<{
         start: SDK.DebuggerModel.Location;
         end: SDK.DebuggerModel.Location;
-    }[]>;
-    getInlinedCalleesRanges(rawLocation: SDK.DebuggerModel.Location): Promise<{
+    }>>;
+    getInlinedCalleesRanges(rawLocation: SDK.DebuggerModel.Location): Promise<Array<{
         start: SDK.DebuggerModel.Location;
         end: SDK.DebuggerModel.Location;
-    }[]>;
+    }>>;
     getMappedLines(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<Set<number> | null>;
 }
 export interface DebuggerLanguagePlugin extends Chrome.DevTools.LanguageExtensionPlugin {

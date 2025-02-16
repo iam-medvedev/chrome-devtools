@@ -14,7 +14,6 @@ export declare class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrappe
     subscribeToDiffChange(uiSourceCode: Workspace.UISourceCode.UISourceCode, callback: () => void, thisObj?: Object): void;
     unsubscribeFromDiffChange(uiSourceCode: Workspace.UISourceCode.UISourceCode, callback: () => void, thisObj?: Object): void;
     modifiedUISourceCodes(): Workspace.UISourceCode.UISourceCode[];
-    isUISourceCodeModified(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean;
     private uiSourceCodeDiff;
     private uiSourceCodeChanged;
     private uiSourceCodeAdded;

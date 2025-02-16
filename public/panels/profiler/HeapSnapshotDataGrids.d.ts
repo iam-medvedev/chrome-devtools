@@ -55,7 +55,7 @@ export declare class HeapSnapshotSortableDataGrid extends HeapSnapshotSortableDa
     recursiveSortingEnter(): void;
     recursiveSortingLeave(): void;
     updateVisibleNodes(_force: boolean): void;
-    allChildren(parent: DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>): DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>[];
+    allChildren(parent: DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>): Array<DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>>;
     insertChild(parent: HeapSnapshotGridNode, node: HeapSnapshotGridNode, index: number): void;
     removeChildByIndex(parent: HeapSnapshotGridNode, index: number): void;
     removeAllChildren(parent: HeapSnapshotGridNode): void;
@@ -90,7 +90,6 @@ export declare class HeapSnapshotViewportDataGrid extends HeapSnapshotSortableDa
     removeChildByIndex(parent: HeapSnapshotGridNode, index: number): void;
     removeAllChildren(parent: HeapSnapshotGridNode): void;
     removeTopLevelNodes(): void;
-    isScrolledIntoView(element: HTMLElement): boolean;
     onResize(): void;
     onScroll(_event: Event): void;
 }

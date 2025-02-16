@@ -31,6 +31,7 @@ export declare class PlayerDataDownloadManager implements TriggerDispatcher {
     deletePlayer(playerID: string): void;
 }
 export declare class MainView extends UI.Panel.PanelWithSidebar implements SDK.TargetManager.SDKModelObserver<MediaModel> {
+    #private;
     private detailPanels;
     private deletedPlayers;
     private readonly downloadStore;

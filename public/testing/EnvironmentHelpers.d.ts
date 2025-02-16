@@ -39,4 +39,10 @@ export declare function expectConsoleLogs(expectedLogs: {
     log?: string[];
     error?: string[];
 }): void;
-export declare function getGetHostConfigStub(config: Root.Runtime.HostConfig): sinon.SinonStub;
+export declare function resetHostConfig(): void;
+/**
+ * Update `Root.Runtime.hostConfig` for testing.
+ * `Root.Runtime.hostConfig` is automatically cleaned-up between unit
+ * tests.
+ */
+export declare function updateHostConfig(config: Root.Runtime.HostConfig): void;

@@ -911,19 +911,6 @@ export class NetworkRequestNode extends NetworkNode {
         super.select(supressSelectedEvent);
         this.parentView().dispatchEventToListeners("RequestSelected" /* Events.RequestSelected */, this.requestInternal);
     }
-    highlightMatchedSubstring(regexp) {
-        if (!regexp || !this.nameCell || this.nameCell.textContent === null) {
-            return [];
-        }
-        // Ensure element is created.
-        this.element();
-        const domChanges = [];
-        const matchInfo = this.nameCell.textContent.match(regexp);
-        if (matchInfo) {
-            UI.UIUtils.highlightSearchResult(this.nameCell, matchInfo.index || 0, matchInfo[0].length, domChanges);
-        }
-        return domChanges;
-    }
     openInNewTab() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.requestInternal.url());
     }

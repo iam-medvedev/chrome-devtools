@@ -49,9 +49,6 @@ export class ColorSwatch extends HTMLElement {
     static isColorSwatch(element) {
         return element.localName === 'devtools-color-swatch';
     }
-    getReadonly() {
-        return this.readonly;
-    }
     setReadonly(readonly) {
         if (this.readonly === readonly) {
             return;

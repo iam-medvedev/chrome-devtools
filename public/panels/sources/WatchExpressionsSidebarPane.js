@@ -140,9 +140,6 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
             this.treeOutline.forceSelect();
         }
     }
-    hasExpressions() {
-        return Boolean(this.watchExpressionsSetting.get().length);
-    }
     saveExpressions() {
         const toSave = [];
         for (let i = 0; i < this.watchExpressions.length; i++) {

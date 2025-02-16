@@ -4,7 +4,7 @@ export declare const extensionPalette: readonly ["primary", "primary-light", "pr
 export type ExtensionColorFromPalette = typeof extensionPalette[number];
 export interface ExtensionDataPayloadBase {
     color?: ExtensionColorFromPalette;
-    properties?: [string, string][];
+    properties?: Array<[string, string]>;
     tooltipText?: string;
 }
 export type ExtensionDataPayload = ExtensionTrackEntryPayload | ExtensionMarkerPayload;

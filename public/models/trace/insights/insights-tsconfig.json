@@ -33,6 +33,7 @@
     "../../../../../../../front_end/models/trace/insights/Common.ts",
     "../../../../../../../front_end/models/trace/insights/DOMSize.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.ts",
+    "../../../../../../../front_end/models/trace/insights/DuplicateJavaScript.ts",
     "../../../../../../../front_end/models/trace/insights/FontDisplay.ts",
     "../../../../../../../front_end/models/trace/insights/ForcedReflow.ts",
     "../../../../../../../front_end/models/trace/insights/ImageDelivery.ts",

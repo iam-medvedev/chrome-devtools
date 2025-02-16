@@ -273,14 +273,6 @@ export class DebuggerWorkspaceBinding {
         }
         return [];
     }
-    uiLocationToRawLocationsForUnformattedJavaScript(uiSourceCode, lineNumber, columnNumber) {
-        console.assert(uiSourceCode.contentType().isScript());
-        const locations = [];
-        for (const modelData of this.#debuggerModelToData.values()) {
-            locations.push(...modelData.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber));
-        }
-        return locations;
-    }
     async normalizeUILocation(uiLocation) {
         const rawLocations = await this.uiLocationToRawLocations(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
         for (const location of rawLocations) {

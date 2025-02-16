@@ -9,15 +9,15 @@ import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory } from './types.js';
 export const UIStrings = {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
-    title: 'Third parties',
+    title: '3rd parties',
     /**
      * @description Description of a DevTools insight that identifies the code on the page that the user doesn't control.
      * This is displayed after a user expands the section to see more. No character length limits.
      */
-    description: 'Third party code can significantly impact load performance. ' +
-        '[Reduce and defer loading of third party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page\'s content.',
+    description: '3rd party code can significantly impact load performance. ' +
+        '[Reduce and defer loading of 3rd party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page\'s content.',
     /** Label for a table column that displays the name of a third-party provider. */
-    columnThirdParty: 'Third party',
+    columnThirdParty: '3rd party',
     /** Label for a column in a data table; entries will be the download size of a web resource in kilobytes. */
     columnTransferSize: 'Transfer size',
     /** Label for a table column that displays how much time each row spent running on the main thread, entries will be the number of milliseconds spent. */
@@ -47,7 +47,9 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
-        shouldShow: Boolean([...partialModel.summaryByEntity.entries()].find(kv => kv[0] !== partialModel.firstPartyEntity)),
+        state: [...partialModel.summaryByEntity.entries()].find(kv => kv[0] !== partialModel.firstPartyEntity) ?
+            'informative' :
+            'pass',
         ...partialModel,
     };
 }

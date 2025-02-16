@@ -747,6 +747,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
           ${repeat(this.targets, target => {
             return html `
                 <devtools-menu-item
+                  class="no-checkmark"
                   .value=${target.id()}>
                     ${this.#computeTargetLabel(target)}
                 </devtools-menu-item>

@@ -15,7 +15,6 @@ export declare class ColorConverter {
     static xyzd50ToRec2020(x: number, y: number, z: number): [number, number, number];
     static xyzd50ToD65(x: number, y: number, z: number): [number, number, number];
     static xyzd65ToD50(x: number, y: number, z: number): [number, number, number];
-    static xyzd65TosRGBLinear(x: number, y: number, z: number): [number, number, number];
     static xyzd50TosRGBLinear(x: number, y: number, z: number): [number, number, number];
     static srgbLinearToXyzd50(r: number, g: number, b: number): [number, number, number];
     static srgbToXyzd50(r: number, g: number, b: number): [number, number, number];

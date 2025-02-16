@@ -30,8 +30,8 @@ export interface MetaHandlerData {
     viewportRect?: DOMRect;
     devicePixelRatio?: number;
 }
-export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, {
+export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, Array<{
     frame: Types.Events.TraceFrame;
     window: Types.Timing.TraceWindowMicro;
-}[]>>;
+}>>>;
 export declare function data(): MetaHandlerData;

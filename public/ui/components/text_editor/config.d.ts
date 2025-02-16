@@ -9,7 +9,7 @@ export declare class DynamicSetting<T> {
     instance(): CM.Extension;
     sync(state: CM.EditorState, value: T): CM.StateEffect<unknown> | null;
     static bool(name: string, enabled: CM.Extension, disabled?: CM.Extension): DynamicSetting<boolean>;
-    static none: readonly DynamicSetting<unknown>[];
+    static none: ReadonlyArray<DynamicSetting<unknown>>;
 }
 export declare const tabMovesFocus: DynamicSetting<boolean>;
 export declare const conservativeCompletion: CM.StateField<boolean>;

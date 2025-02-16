@@ -5,7 +5,7 @@ export declare class ServiceWorkerUpdateCycleView {
     private selectedRowIndex;
     tableElement: HTMLElement;
     constructor(registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration);
-    calculateServiceWorkerUpdateRanges(): Array<ServiceWorkerUpdateRange>;
+    calculateServiceWorkerUpdateRanges(): ServiceWorkerUpdateRange[];
     private createTimingTable;
     private createTimingTableHead;
     private removeRows;

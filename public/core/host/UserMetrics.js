@@ -217,9 +217,6 @@ export class UserMetrics {
     recordingCopiedToClipboard(value) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingCopiedToClipboard" /* EnumeratedHistogram.RecordingCopiedToClipboard */, value, 9 /* RecordingCopiedToClipboard.MAX_VALUE */);
     }
-    styleTextCopied(value) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.StyleTextCopied" /* EnumeratedHistogram.StyleTextCopied */, value, 11 /* StyleTextCopied.MAX_VALUE */);
-    }
     cssHintShown(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSHintShown" /* EnumeratedHistogram.CSSHintShown */, type, 14 /* CSSHintType.MAX_VALUE */);
     }
@@ -446,7 +443,8 @@ export var Action;
     Action[Action["AiAssistanceSideEffectConfirmed"] = 179] = "AiAssistanceSideEffectConfirmed";
     Action[Action["AiAssistanceSideEffectRejected"] = 180] = "AiAssistanceSideEffectRejected";
     Action[Action["AiAssistanceError"] = 181] = "AiAssistanceError";
-    Action[Action["MAX_VALUE"] = 182] = "MAX_VALUE";
+    Action[Action["AiAssistanceOpenedFromPerformanceInsight"] = 182] = "AiAssistanceOpenedFromPerformanceInsight";
+    Action[Action["MAX_VALUE"] = 183] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -884,10 +882,11 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
     DevtoolsExperiments[DevtoolsExperiments["timeline-dim-unrelated-events"] = 103] = "timeline-dim-unrelated-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-alternative-navigation"] = 104] = "timeline-alternative-navigation";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-third-party-dependencies"] = 106] = "timeline-third-party-dependencies";
+    // 106 was historically used [https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/6230097]
+    // next experiment should be 107
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 107] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 106] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

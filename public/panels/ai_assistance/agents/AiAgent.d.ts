@@ -21,6 +21,7 @@ export declare const enum ErrorType {
 export interface AnswerResponse {
     type: ResponseType.ANSWER;
     text: string;
+    complete: boolean;
     rpcId?: Host.AidaClient.RpcGlobalId;
     suggestions?: [string, ...string[]];
 }
@@ -66,10 +67,12 @@ export interface ActionResponse {
 export interface QueryResponse {
     type: ResponseType.QUERYING;
     query?: string;
+    imageInput?: Host.AidaClient.Part;
 }
 export interface UserQuery {
     type: ResponseType.USER_QUERY;
     query: string;
+    imageInput?: Host.AidaClient.Part;
 }
 export type ResponseData = AnswerResponse | SuggestionsResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
 export type FunctionCallResponseData = TitleResponse | ThoughtResponse | ActionResponse | SideEffectResponse | SuggestionsResponse;
@@ -100,6 +103,7 @@ export declare const enum AgentType {
     FILE = "drjones-file",
     NETWORK = "drjones-network-request",
     PERFORMANCE = "drjones-performance",
+    PERFORMANCE_INSIGHT = "performance-insight",
     PATCH = "patch"
 }
 export declare const MAX_STEPS = 10;
@@ -168,8 +172,8 @@ export declare abstract class AiAgent<T> {
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     readonly confirmSideEffect: typeof Promise.withResolvers;
     constructor(opts: AgentOptions);
-    enhanceQuery(query: string, selected: ConversationContext<T> | null): Promise<string>;
-    buildRequest(part: Host.AidaClient.Part, role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.AidaRequest;
+    enhanceQuery(query: string, selected: ConversationContext<T> | null, hasImageInput?: boolean): Promise<string>;
+    buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.AidaRequest;
     get id(): string;
     get isEmpty(): boolean;
     get origin(): string | undefined;
@@ -193,5 +197,5 @@ export declare abstract class AiAgent<T> {
     run(initialQuery: string, options: {
         signal?: AbortSignal;
         selected: ConversationContext<T> | null;
-    }): AsyncGenerator<ResponseData, void, void>;
+    }, imageInput?: Host.AidaClient.Part): AsyncGenerator<ResponseData, void, void>;
 }

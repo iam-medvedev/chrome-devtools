@@ -17,9 +17,9 @@ export declare class Runtime {
     static setPlatform(platform: string): void;
     static platform(): string;
     static isDescriptorEnabled(descriptor: {
-        experiment: ((string | undefined) | null);
+        experiment?: string | null;
         condition?: Condition;
-    }, config?: HostConfig): boolean;
+    }): boolean;
     loadLegacyModule(modulePath: string): Promise<void>;
 }
 export interface Option {
@@ -78,8 +78,7 @@ export declare const enum ExperimentName {
     FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance",
     TIMELINE_EXPERIMENTAL_INSIGHTS = "timeline-experimental-insights",
     TIMELINE_DIM_UNRELATED_EVENTS = "timeline-dim-unrelated-events",
-    TIMELINE_ALTERNATIVE_NAVIGATION = "timeline-alternative-navigation",
-    TIMELINE_THIRD_PARTY_DEPENDENCIES = "timeline-third-party-dependencies"
+    TIMELINE_ALTERNATIVE_NAVIGATION = "timeline-alternative-navigation"
 }
 export declare enum GenAiEnterprisePolicyValue {
     ALLOW = 0,
@@ -133,12 +132,24 @@ export interface HostConfigAiAssistanceFileAgent {
     enabled: boolean;
     userTier: string;
 }
+/**
+ * @see http://go/chrome-devtools:automatic-workspace-folders-design
+ */
+export interface HostConfigAutomaticFileSystems {
+    enabled: boolean;
+}
 export interface HostConfigImprovedWorkspaces {
     enabled: boolean;
 }
 export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
+}
+/**
+ * @see https://goo.gle/devtools-json-design
+ */
+export interface HostConfigWellKnown {
+    enabled: boolean;
 }
 export interface HostConfigPrivacyUI {
     enabled: boolean;
@@ -156,6 +167,19 @@ export interface HostConfigThirdPartyCookieControls {
     thirdPartyCookieHeuristicsEnabled: boolean;
     managedBlockThirdPartyCookies: string | boolean;
 }
+/**
+ * The host configuration that we expect from the DevTools back-end.
+ *
+ * We use `RecursivePartial` here to enforce that DevTools code is able to
+ * handle `HostConfig` objects of an unexpected shape. This can happen if
+ * the implementation in the Chromium backend is changed without correctly
+ * updating the DevTools frontend. Or if remote debugging a different version
+ * of Chrome, resulting in the local browser window and the local DevTools
+ * window being of different versions, and consequently potentially having
+ * differently shaped `HostConfig`s.
+ *
+ * @see hostConfig
+ */
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     devToolsConsoleInsights: HostConfigConsoleInsights;
@@ -163,8 +187,10 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
+    devToolsAutomaticFileSystems: HostConfigAutomaticFileSystems;
     devToolsImprovedWorkspaces: HostConfigImprovedWorkspaces;
     devToolsVeLogging: HostConfigVeLogging;
+    devToolsWellKnown: HostConfigWellKnown;
     devToolsPrivacyUI: HostConfigPrivacyUI;
     /**
      * OffTheRecord here indicates that the user's profile is either incognito,
@@ -175,6 +201,21 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
     thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
 }>;
+/**
+ * The host configuration for this DevTools instance.
+ *
+ * This is initialized early during app startup and should not be modified
+ * afterwards. In some cases it can be necessary to re-request the host
+ * configuration from Chrome while DevTools is already running. In these
+ * cases, the new host configuration should be reflected here, e.g.:
+ *
+ * ```js
+ * const config = await new Promise<Root.Runtime.HostConfig>(
+ *   resolve => InspectorFrontendHostInstance.getHostConfig(resolve));
+ * Object.assign(Root.runtime.hostConfig, config);
+ * ```
+ */
+export declare const hostConfig: HostConfig;
 /**
  * When defining conditions make sure that objects used by the function have
  * been instantiated.

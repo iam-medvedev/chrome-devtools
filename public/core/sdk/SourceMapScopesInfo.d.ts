@@ -4,7 +4,7 @@ import type { GeneratedRange, OriginalPosition, OriginalScope, Position } from '
 export declare class SourceMapScopesInfo {
     #private;
     constructor(sourceMap: SourceMap, originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
-    addOriginalScopes(scopes: (OriginalScope | undefined)[]): void;
+    addOriginalScopes(scopes: Array<OriginalScope | undefined>): void;
     addGeneratedRanges(ranges: GeneratedRange[]): void;
     hasOriginalScopes(sourceIdx: number): boolean;
     addOriginalScopesAtIndex(sourceIdx: number, scope: OriginalScope): void;
@@ -75,10 +75,10 @@ export declare class SourceMapScopesInfo {
  * The inlined functions are sorted from inner to outer (or top to bottom on the stack).
  */
 export interface InlineInfo {
-    inlinedFunctions: {
+    inlinedFunctions: Array<{
         name: string;
         callsite: OriginalPosition;
-    }[];
+    }>;
     originalFunctionName: string;
 }
 export declare function contains(range: Pick<GeneratedRange, 'start' | 'end'>, line: number, column: number): boolean;

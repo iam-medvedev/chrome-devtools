@@ -1,6 +1,6 @@
 import '../../core/dom_extension/dom_extension.js';
 import * as Lit from '../../ui/lit/lit.js';
-import { Constraints } from './Geometry.js';
+import { Constraints, Size } from './Geometry.js';
 interface WidgetConstructor<WidgetT extends Widget & WidgetParams, WidgetParams> {
     new (element: WidgetElement<WidgetT, WidgetParams>): WidgetT;
 }
@@ -15,6 +15,10 @@ export declare class WidgetElement<WidgetT extends Widget & WidgetParams, Widget
     createWidget(): WidgetT;
     set widgetConfig(config: WidgetConfig<WidgetT, WidgetParams>);
     connectedCallback(): void;
+    appendChild<T extends Node>(child: T): T;
+    insertBefore<T extends Node>(child: T, referenceChild: Node): T;
+    removeChild<T extends Node>(child: T): T;
+    removeChildren(): void;
 }
 interface Constructor<T, Args extends unknown[]> {
     new (...args: Args): T;
@@ -84,9 +88,9 @@ export declare class Widget {
     restoreScrollPositions(): void;
     doResize(): void;
     doLayout(): void;
-    registerRequiredCSS(...cssFiles: {
+    registerRequiredCSS(...cssFiles: Array<{
         cssContent: string;
-    }[]): void;
+    }>): void;
     printWidgetHierarchy(): void;
     private collectWidgetHierarchy;
     setDefaultFocusedElement(element: Element | null): void;
@@ -97,6 +101,7 @@ export declare class Widget {
     constraints(): Constraints;
     setMinimumAndPreferredSizes(width: number, height: number, preferredWidth: number, preferredHeight: number): void;
     setMinimumSize(width: number, height: number): void;
+    set minimumSize(size: Size);
     private hasNonZeroConstraints;
     suspendInvalidations(): void;
     resumeInvalidations(): void;
@@ -149,7 +154,7 @@ export declare class Widget {
     get updateComplete(): Promise<boolean>;
 }
 export declare class VBox extends Widget {
-    constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
+    constructor(useShadowDom?: boolean | HTMLElement, delegatesFocus?: boolean, element?: HTMLElement);
     calculateConstraints(): Constraints;
 }
 export declare class HBox extends Widget {

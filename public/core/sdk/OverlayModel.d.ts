@@ -76,9 +76,6 @@ export declare class OverlayModel extends SDKModel<EventTypes> implements Protoc
     hideSourceOrderInOverlay(): void;
     setSourceOrderActive(isActive: boolean): void;
     sourceOrderModeActive(): boolean;
-    highlightIsolatedElementInPersistentOverlay(nodeId: Protocol.DOM.NodeId): void;
-    hideIsolatedElementInPersistentOverlay(nodeId: Protocol.DOM.NodeId): void;
-    isHighlightedIsolatedElementInPersistentOverlay(nodeId: Protocol.DOM.NodeId): boolean;
     private delayedHideHighlight;
     highlightFrame(frameId: Protocol.Page.FrameId): void;
     showHingeForDualScreen(hinge: Hinge | null): void;

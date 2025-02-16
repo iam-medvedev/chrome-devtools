@@ -9,9 +9,6 @@ export declare class XWidget extends XElement {
     private onResizedCallback;
     constructor();
     isShowing(): boolean;
-    setOnShown(callback: (() => void) | null): void;
-    setOnHidden(callback: (() => void) | null): void;
-    setOnResized(callback: (() => void) | null): void;
     setElementsToRestoreScrollPositionsFor(elements: Element[]): void;
     restoreScrollPositions(): void;
     private static storeScrollPosition;

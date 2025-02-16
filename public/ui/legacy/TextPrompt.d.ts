@@ -82,14 +82,12 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     ownerElement(): Element;
     setDOMSelection(startColumn: number, endColumn: number): void;
     isSuggestBoxVisible(): boolean;
-    isCaretInsidePrompt(): boolean;
     private isCaretAtEndOfPrompt;
     moveCaretToEndOfPrompt(): void;
     /** -1 if no caret can be found in text prompt
      */
     private getCaretPosition;
     tabKeyPressed(_event: Event): boolean;
-    proxyElementForTests(): Element | null;
     /**
      * Try matching the most recent open parenthesis with the given right
      * parenthesis, and closes the matched left parenthesis if found.

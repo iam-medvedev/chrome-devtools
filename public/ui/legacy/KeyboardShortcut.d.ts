@@ -13,7 +13,7 @@ export declare class KeyboardShortcut {
     equals(shortcut: KeyboardShortcut): boolean;
     static createShortcutFromSettingObject(settingObject: {
         action: string;
-        descriptors: Array<Descriptor>;
+        descriptors: Descriptor[];
         type: Type;
     }): KeyboardShortcut;
     /**
@@ -22,7 +22,6 @@ export declare class KeyboardShortcut {
      */
     static makeKey(keyCode: string | number, modifiers?: number): number;
     static makeKeyFromEvent(keyboardEvent: KeyboardEvent): number;
-    static makeKeyFromEventIgnoringModifiers(keyboardEvent: KeyboardEvent): number;
     static eventHasCtrlEquivalentKey(event: KeyboardEvent | MouseEvent): boolean;
     static eventHasEitherCtrlOrMeta(event: KeyboardEvent | MouseEvent): boolean;
     static hasNoModifiers(event: Event): boolean;

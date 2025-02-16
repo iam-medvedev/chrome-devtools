@@ -4,11 +4,11 @@
 import { raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
-import { selectNodeByKey, } from '../../testing/StorageItemsViewHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Application from './application.js';
 describeWithEnvironment('KeyValueStorageItemsView', () => {
     let keyValueStorageItemsView;
+    let viewFunction;
     const MOCK_ITEMS = [
         { key: 'foo', value: 'value1' },
         { key: 'bar', value: 'value2' },
@@ -41,7 +41,14 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         renderElementIntoDOM(div);
         container.markAsRoot();
         container.show(div);
-        keyValueStorageItemsView = new TestKeyValueStorageItemsView('Items', 'key-value-storage-items-view', true);
+        viewFunction = sinon.stub();
+        viewFunction.callsFake((_input, output, _target) => {
+            output.splitWidget = sinon.createStubInstance(UI.SplitWidget.SplitWidget);
+            output.preview = new UI.Widget.VBox();
+            output.resizer = sinon.createStubInstance(HTMLElement);
+        });
+        keyValueStorageItemsView =
+            new TestKeyValueStorageItemsView('Items', 'key-value-storage-items-view', true, viewFunction);
         keyValueStorageItemsView.showItems(MOCK_ITEMS);
     });
     afterEach(() => {
@@ -51,31 +58,23 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         const { key, value } = MOCK_ITEMS[0];
         const createPreviewPromise = expectCreatePreviewCalled(key, value);
         // Select the first item by key.
-        const node = selectNodeByKey(keyValueStorageItemsView.dataGridForTesting, key);
-        assert.isNotNull(node);
+        viewFunction.lastCall.firstArg.onSelect(new CustomEvent('select', { detail: { dataset: { key, value } } }));
         // Check createPreview function was called.
         await createPreviewPromise;
-        // Check preview was updated.
-        await raf();
-        assert.include(keyValueStorageItemsView.previewPanelForTesting.element.innerText, `${key}:${value}`);
+        assert.include(viewFunction.lastCall.firstArg.preview.element.innerText, `${key}:${value}`);
     });
     it('shows empty preview when no row is selected', async () => {
-        // Select the first item by key.
-        const node = selectNodeByKey(keyValueStorageItemsView.dataGridForTesting, MOCK_ITEMS[0].key);
-        assert.isNotNull(node);
+        viewFunction.lastCall.firstArg.onSelect(new CustomEvent('select', { detail: { dataset: { key: MOCK_ITEMS[0].key } } }));
         await raf();
-        // Deselect node.
-        node.deselect();
-        await raf();
+        viewFunction.lastCall.firstArg.onSelect(new CustomEvent('select', { detail: null }));
         // Check preview was updated.
-        assert.include(keyValueStorageItemsView.previewPanelForTesting.element.innerText, 'No value selectedSelect a value to preview');
+        assert.include(viewFunction.lastCall.firstArg.preview.element.innerText, 'No value selectedSelect a value to preview');
     });
     it('preview changed when value changes', async () => {
         const { key, value } = MOCK_ITEMS[0];
         let createPreviewPromise = expectCreatePreviewCalled(key, value);
         // Select the first item.
-        const node = selectNodeByKey(keyValueStorageItemsView.dataGridForTesting, key);
-        assert.isNotNull(node);
+        viewFunction.lastCall.firstArg.onSelect(new CustomEvent('select', { detail: { dataset: { key, value } } }));
         // Check createPreview function was called.
         await createPreviewPromise;
         // Update the item data (in reality, this would happen since a user edit
@@ -89,7 +88,7 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         await createPreviewPromise;
         // Check preview was updated.
         await raf();
-        assert.include(keyValueStorageItemsView.previewPanelForTesting.element.innerText, `${key}:newValue`);
+        assert.include(viewFunction.lastCall.firstArg.preview.element.innerText, `${key}:newValue`);
     });
 });
 //# sourceMappingURL=KeyValueStorageItemsView.test.js.map

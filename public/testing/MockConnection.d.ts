@@ -8,7 +8,6 @@ export type ProtocolCommandHandler<C extends ProtocolCommand> = (...params: Prot
 };
 export type MessageCallback = (result: string | Object) => void;
 export declare function setMockConnectionResponseHandler<C extends ProtocolCommand>(command: C, handler: ProtocolCommandHandler<C>): void;
-export declare function getMockConnectionResponseHandler(method: ProtocolCommand): Function | undefined;
 export declare function clearMockConnectionResponseHandler(method: ProtocolCommand): void;
 export declare function clearAllMockConnectionResponseHandlers(): void;
 export declare function registerListenerOnOutgoingMessage(method: ProtocolCommand): Promise<void>;

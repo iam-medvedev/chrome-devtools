@@ -49,7 +49,6 @@ export declare class DOMNode {
     hasAttributes(): boolean;
     childNodeCount(): number;
     setChildNodeCount(childNodeCount: number): void;
-    hasShadowRoots(): boolean;
     shadowRoots(): DOMNode[];
     templateContent(): DOMNode | null;
     contentDocument(): DOMDocument | null;
@@ -92,7 +91,7 @@ export declare class DOMNode {
     attributes(): Attribute[];
     removeAttribute(name: string): Promise<void>;
     getChildNodesPromise(): Promise<DOMNode[] | null>;
-    getChildNodes(callback: (arg0: Array<DOMNode> | null) => void): void;
+    getChildNodes(callback: (arg0: DOMNode[] | null) => void): void;
     getSubtree(depth: number, pierce: boolean): Promise<DOMNode[] | null>;
     getOuterHTML(): Promise<string | null>;
     setOuterHTML(html: string, callback?: ((arg0: string | null) => void)): void;
@@ -206,10 +205,10 @@ export declare class DOMModel extends SDKModel<EventTypes> {
     pseudoElementRemoved(parentId: Protocol.DOM.NodeId, pseudoElementId: Protocol.DOM.NodeId): void;
     distributedNodesUpdated(insertionPointId: Protocol.DOM.NodeId, distributedNodes: Protocol.DOM.BackendNode[]): void;
     private unbind;
-    getNodesByStyle(computedStyles: {
+    getNodesByStyle(computedStyles: Array<{
         name: string;
         value: string;
-    }[], pierce?: boolean): Promise<Protocol.DOM.NodeId[]>;
+    }>, pierce?: boolean): Promise<Protocol.DOM.NodeId[]>;
     performSearch(query: string, includeUserAgentShadowDOM: boolean): Promise<number>;
     searchResult(index: number): Promise<DOMNode | null>;
     private cancelSearch;

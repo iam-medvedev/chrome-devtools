@@ -14,6 +14,9 @@ interface LinkifyLocationOptions {
     isFreshRecording?: boolean;
     columnNumber?: number;
 }
+interface TimeRangeCategoryStats {
+    [categoryName: string]: number;
+}
 export declare class TimelineUIUtils {
     static frameDisplayName(frame: Protocol.Runtime.CallFrame): string;
     static testContentMatching(traceEvent: Trace.Types.Events.Event, regExp: RegExp, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
@@ -31,10 +34,8 @@ export declare class TimelineUIUtils {
         cacheRejected?: boolean;
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
-    static buildTraceEventDetails(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event, linkifier: LegacyComponents.Linkifier.Linkifier, detailed: boolean, entityMapper: Utils.EntityMapper.EntityMapper | null): Promise<DocumentFragment>;
-    static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): {
-        [x: string]: number;
-    };
+    static buildTraceEventDetails(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event, linkifier: LegacyComponents.Linkifier.Linkifier, canShowPieChart: boolean, entityMapper: Utils.EntityMapper.EntityMapper | null): Promise<DocumentFragment>;
+    static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): TimeRangeCategoryStats;
     private static renderEventJson;
     private static renderObjectJson;
     static stackTraceFromCallFrames(callFrames: Protocol.Runtime.CallFrame[] | Trace.Types.Events.CallFrame[]): Protocol.Runtime.StackTrace;
@@ -42,14 +43,13 @@ export declare class TimelineUIUtils {
     private static createEntryLink;
     private static generateInvalidationsList;
     private static generateInvalidationsForReason;
+    /** Populates the passed object then returns true/false if it makes sense to show the pie chart */
     private static aggregatedStatsForTraceEvent;
     static buildPicturePreviewContent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Paint, target: SDK.Target.Target): Promise<Element | null>;
     static createEventDivider(event: Trace.Types.Events.Event, zeroTime: number): HTMLDivElement;
     static visibleEventsFilter(): Trace.Extras.TraceFilter.TraceFilter;
     static categories(): Utils.EntryStyles.CategoryPalette;
-    static generatePieChart(aggregatedStats: {
-        [x: string]: number;
-    }, selfCategory?: Utils.EntryStyles.TimelineCategory, selfTime?: number): Element;
+    static generatePieChart(aggregatedStats: TimeRangeCategoryStats, selfCategory?: Utils.EntryStyles.TimelineCategory, selfTime?: Trace.Types.Timing.Micro): Element;
     static generateSummaryDetails(aggregatedStats: Record<string, number>, rangeStart: number, rangeEnd: number, selectedEvents: Trace.Types.Events.Event[], thirdPartyTree: ThirdPartyTreeView.ThirdPartyTreeViewWidget): Element;
     static generateDetailsContentForFrame(frame: Trace.Types.Events.LegacyTimelineFrame, filmStrip: Trace.Extras.FilmStrip.Data | null, filmStripFrame: Trace.Extras.FilmStrip.Frame | null): DocumentFragment;
     static frameDuration(frame: Trace.Types.Events.LegacyTimelineFrame): Element;

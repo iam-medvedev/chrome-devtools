@@ -57,12 +57,12 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     static registerLinkHandler(title: string, handler: LinkHandler): void;
     static unregisterLinkHandler(title: string): void;
     static uiLocation(link: Element): Workspace.UISourceCode.UILocation | null;
-    static linkActions(info: LinkInfo): {
+    static linkActions(info: LinkInfo): Array<{
         section: string;
         title: string;
         jslogContext: string;
         handler: () => Promise<void> | void;
-    }[];
+    }>;
 }
 export interface LinkDecorator extends Common.EventTarget.EventTarget<LinkDecorator.EventTypes> {
     linkIcon(uiSourceCode: Workspace.UISourceCode.UISourceCode): IconButton.Icon.Icon | null;

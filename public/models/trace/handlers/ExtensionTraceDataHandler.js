@@ -153,7 +153,8 @@ export function extractPerformanceAPIExtensionEntries(timings) {
         }
         const extensionSyntheticEntry = {
             name: timing.name,
-            ph: "X" /* Types.Events.Phase.COMPLETE */,
+            ph: Types.Extensions.isExtensionPayloadMarker(extensionPayload) ? "I" /* Types.Events.Phase.INSTANT */ :
+                "X" /* Types.Events.Phase.COMPLETE */,
             pid: timing.pid,
             tid: timing.tid,
             ts: timing.ts,

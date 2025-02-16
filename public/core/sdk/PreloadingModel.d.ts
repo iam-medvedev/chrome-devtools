@@ -17,11 +17,11 @@ export declare class PreloadingModel extends SDKModel<EventTypes> {
     private currentLoaderId;
     private currentDocument;
     getRuleSetById(id: Protocol.Preload.RuleSetId): Protocol.Preload.RuleSet | null;
-    getAllRuleSets(): WithId<Protocol.Preload.RuleSetId, Protocol.Preload.RuleSet>[];
+    getAllRuleSets(): Array<WithId<Protocol.Preload.RuleSetId, Protocol.Preload.RuleSet>>;
     getPreloadCountsByRuleSetId(): Map<Protocol.Preload.RuleSetId | null, Map<PreloadingStatus, number>>;
     getPreloadingAttemptById(id: PreloadingAttemptId): PreloadingAttempt | null;
-    getRepresentativePreloadingAttempts(ruleSetId: Protocol.Preload.RuleSetId | null): WithId<PreloadingAttemptId, PreloadingAttempt>[];
-    getRepresentativePreloadingAttemptsOfPreviousPage(): WithId<PreloadingAttemptId, PreloadingAttempt>[];
+    getRepresentativePreloadingAttempts(ruleSetId: Protocol.Preload.RuleSetId | null): Array<WithId<PreloadingAttemptId, PreloadingAttempt>>;
+    getRepresentativePreloadingAttemptsOfPreviousPage(): Array<WithId<PreloadingAttemptId, PreloadingAttempt>>;
     private getPipelineById;
     getPipeline(attempt: PreloadingAttempt): PreloadPipeline;
     private onPrimaryPageChanged;

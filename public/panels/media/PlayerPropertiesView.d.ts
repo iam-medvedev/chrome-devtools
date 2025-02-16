@@ -55,12 +55,6 @@ export declare class DefaultPropertyRenderer extends PropertyRenderer {
 export declare class NestedPropertyRenderer extends PropertyRenderer {
     constructor(title: Platform.UIString.LocalizedString, content: object);
 }
-export declare class DimensionPropertyRenderer extends PropertyRenderer {
-    private width;
-    private height;
-    constructor(title: Platform.UIString.LocalizedString);
-    updateDataInternal(propname: string, propvalue: string | null): void;
-}
 export declare class AttributesView extends UI.Widget.VBox {
     private readonly contentHash;
     constructor(elements: UI.Widget.Widget[]);

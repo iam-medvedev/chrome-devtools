@@ -69,9 +69,9 @@ export declare class TreeOutlineInShadow extends TreeOutline {
     private readonly disclosureElement;
     renderSelection: boolean;
     constructor(variant?: TreeVariant);
-    registerRequiredCSS(...cssFiles: {
+    registerRequiredCSS(...cssFiles: Array<{
         cssContent: string;
-    }[]): void;
+    }>): void;
     hideOverflow(): void;
     makeDense(): void;
     onStartedEditingTitle(treeElement: TreeElement): void;
@@ -130,7 +130,6 @@ export declare class TreeElement {
     titleAsText(): string;
     startEditingTitle<T>(editingConfig: Config<T>): void;
     setLeadingIcons(icons: IconButton.Icon.Icon[] | IconButton.FileSourceIcon.FileSourceIcon[]): void;
-    setTrailingIcons(icons: IconButton.Icon.Icon[]): void;
     get tooltip(): string;
     set tooltip(x: string);
     isExpandable(): boolean;

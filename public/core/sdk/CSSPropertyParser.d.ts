@@ -3,10 +3,10 @@ import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.j
  * Extracts information about font variation settings assuming
  * value is valid according to the spec: https://drafts.csswg.org/css-fonts-4/#font-variation-settings-def
  */
-export declare function parseFontVariationSettings(value: string): {
+export declare function parseFontVariationSettings(value: string): Array<{
     tag: string;
     value: number;
-}[];
+}>;
 /**
  * Extracts font families assuming the value is valid according to
  * the spec: https://drafts.csswg.org/css-fonts-4/#font-family-prop
@@ -67,7 +67,7 @@ export declare function matcherBase<MatchT extends Match>(matchT: Constructor<Ma
 export declare class BottomUpTreeMatching extends TreeWalker {
     #private;
     readonly computedText: ComputedText;
-    constructor(ast: SyntaxTree, matchers: Matcher<Match>[]);
+    constructor(ast: SyntaxTree, matchers: Array<Matcher<Match>>);
     protected leave({ node }: SyntaxNodeRef): void;
     matchText(node: CodeMirror.SyntaxNode): void;
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
@@ -105,37 +105,9 @@ export declare namespace ASTUtils {
     function callArgs(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode[][];
     function equals(a: CodeMirror.SyntaxNode, b: CodeMirror.SyntaxNode): boolean;
 }
-export declare class VariableMatch implements Match {
-    readonly text: string;
-    readonly node: CodeMirror.SyntaxNode;
-    readonly name: string;
-    readonly fallback: CodeMirror.SyntaxNode[];
-    readonly matching: BottomUpTreeMatching;
-    readonly computedTextCallback: (match: VariableMatch, matching: BottomUpTreeMatching) => string | null;
-    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching, computedTextCallback: (match: VariableMatch, matching: BottomUpTreeMatching) => string | null);
-    computedText(): string | null;
-}
-declare const VariableMatcher_base: {
-    new (): {
-        matchType: Constructor<VariableMatch>;
-        accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): VariableMatch | null;
-    };
-};
-export declare class VariableMatcher extends VariableMatcher_base {
-    #private;
-    constructor(computedTextCallback: (match: VariableMatch, matching: BottomUpTreeMatching) => string | null);
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): VariableMatch | null;
-}
-export declare class TextMatch implements Match {
-    readonly text: string;
-    readonly node: CodeMirror.SyntaxNode;
-    computedText?: () => string;
-    constructor(text: string, node: CodeMirror.SyntaxNode);
-    render(): Node[];
-}
 export declare function tokenizeDeclaration(propertyName: string, propertyValue: string): SyntaxTree | null;
 export declare function tokenizePropertyName(name: string): string | null;
+export declare function matchDeclaration(name: string, value: string, matchers: Array<Matcher<Match>>): BottomUpTreeMatching | null;
 export declare class TreeSearch extends TreeWalker {
     #private;
     constructor(ast: SyntaxTree, predicate: (node: CodeMirror.SyntaxNode) => boolean);
@@ -143,4 +115,3 @@ export declare class TreeSearch extends TreeWalker {
     static find(ast: SyntaxTree, predicate: (node: CodeMirror.SyntaxNode) => boolean): CodeMirror.SyntaxNode | null;
     static findAll(ast: SyntaxTree, predicate: (node: CodeMirror.SyntaxNode) => boolean): CodeMirror.SyntaxNode[];
 }
-export {};

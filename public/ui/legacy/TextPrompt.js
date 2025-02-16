@@ -587,15 +587,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     isSuggestBoxVisible() {
         return this.suggestBox !== undefined && this.suggestBox.visible();
     }
-    isCaretInsidePrompt() {
-        const selection = this.element().getComponentSelection();
-        if (!selection || selection.rangeCount === 0 || !selection.isCollapsed) {
-            return false;
-        }
-        // @see crbug.com/602541
-        const selectionRange = selection.getRangeAt(0);
-        return selectionRange.startContainer.isSelfOrDescendant(this.element());
-    }
     isCaretAtEndOfPrompt() {
         const selection = this.element().getComponentSelection();
         if (!selection || selection.rangeCount === 0 || !selection.isCollapsed) {
@@ -661,9 +652,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     }
     tabKeyPressed(_event) {
         return this.acceptAutoComplete();
-    }
-    proxyElementForTests() {
-        return this.proxyElement || null;
     }
     /**
      * Try matching the most recent open parenthesis with the given right

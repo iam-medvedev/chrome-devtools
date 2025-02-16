@@ -11,7 +11,8 @@ export default {
  */
 
 .widget {
-  box-shadow: var(--drop-shadow);
+  border-radius: var(--sys-shape-corner-small);
+  box-shadow: var(--sys-elevation-level3);
   background: var(--sys-color-cdt-base-container);
   justify-content: flex-start;
   align-items: stretch;

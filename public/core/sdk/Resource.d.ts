@@ -30,7 +30,6 @@ export declare class Resource implements TextUtils.ContentProvider.ContentProvid
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     populateImageSource(image: HTMLImageElement): Promise<void>;
     private innerRequestContent;
-    hasTextContent(): boolean;
     frame(): ResourceTreeFrame | null;
     statusCode(): number;
 }

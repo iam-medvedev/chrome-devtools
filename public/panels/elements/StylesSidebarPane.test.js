@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, describeWithLocale, getGetHostConfigStub, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, describeWithLocale, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { getMatchedStyles } from '../../testing/StyleHelpers.js';
@@ -85,17 +85,13 @@ describe('StylesSidebarPane', () => {
             function mockGetAnimatedComputedStyles(response) {
                 setMockConnectionResponseHandler('CSS.getAnimatedStylesForNode', () => response);
             }
-            let hostConfigStub;
             beforeEach(() => {
                 sinon.stub(Common.Linkifier.Linkifier, 'linkify').returns(Promise.resolve(document.createTextNode('link')));
-                hostConfigStub = getGetHostConfigStub({
+                updateHostConfig({
                     devToolsAnimationStylesInStylesTab: {
                         enabled: true,
                     },
                 });
-            });
-            afterEach(() => {
-                hostConfigStub.restore();
             });
             it('should render transition & animation styles in the styles tab', async () => {
                 const stylesSidebarPane = new Elements.StylesSidebarPane.StylesSidebarPane(new Elements.ComputedStyleModel.ComputedStyleModel());

@@ -804,9 +804,6 @@ export class DebuggerModel extends SDKModel {
         await this.enableDebugger();
     }
     static shouldResyncDebuggerId = false;
-    getContinueToLocationCallback() {
-        return this.continueToLocationCallback;
-    }
     getEvaluateOnCallFrameCallback() {
         return this.evaluateOnCallFrameCallback;
     }

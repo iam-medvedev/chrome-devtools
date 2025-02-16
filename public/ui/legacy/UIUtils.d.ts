@@ -31,9 +31,9 @@ export declare function openLinkExternallyLabel(): string;
 export declare function copyLinkAddressLabel(): string;
 export declare function copyFileNameLabel(): string;
 export declare function anotherProfilerActiveLabel(): string;
-export declare function asyncStackTraceLabel(description: string | undefined, previousCallFrames: {
+export declare function asyncStackTraceLabel(description: string | undefined, previousCallFrames: Array<{
     functionName: string;
-}[]): string;
+}>): string;
 export declare function addPlatformClass(element: HTMLElement): void;
 export declare function installComponentRootStyles(element: HTMLElement): void;
 export declare class ElementFocusRestorer {
@@ -52,10 +52,10 @@ export declare function measurePreferredSize(element: Element, containerElement?
 export declare function startBatchUpdate(): void;
 export declare function endBatchUpdate(): void;
 export declare function invokeOnceAfterBatchUpdate(object: Object, method: () => void): void;
-export declare function animateFunction(window: Window, func: Function, params: {
+export declare function animateFunction(window: Window, func: Function, params: Array<{
     from: number;
     to: number;
-}[], duration: number, animationComplete?: (() => void)): () => void;
+}>, duration: number, animationComplete?: (() => void)): () => void;
 export declare class LongClickController {
     private readonly element;
     private readonly callback;
@@ -81,7 +81,7 @@ export declare function createTextButton(text: string, clickHandler?: ((arg0: Ev
 }): Buttons.Button.Button;
 export declare function createInput(className?: string, type?: string, jslogContext?: string): HTMLInputElement;
 export declare function createHistoryInput(type?: string, className?: string): HTMLInputElement;
-export declare function createSelect(name: string, options: string[] | Map<string, string[]>[] | Set<string>): HTMLSelectElement;
+export declare function createSelect(name: string, options: string[] | Array<Map<string, string[]>> | Set<string>): HTMLSelectElement;
 export declare function createOption(title: string, value?: string, jslogContext?: string): HTMLOptionElement;
 export declare function createLabel(title: string, className?: string, associatedControl?: Element): Element;
 export declare function createIconLabel(options: {
@@ -189,10 +189,10 @@ export declare function loadImage(url: string): Promise<HTMLImageElement | null>
 export declare function createFileSelectorElement(callback: (arg0: File) => void, accept?: string): HTMLInputElement;
 export declare const MaxLengthForDisplayedURLs = 150;
 export declare class MessageDialog {
-    static show(message: string, where?: Element | Document, jslogContext?: string): Promise<void>;
+    static show(header: string, message: string, where?: Element | Document, jslogContext?: string): Promise<void>;
 }
 export declare class ConfirmDialog {
-    static show(message: string, where?: Element | Document, options?: ConfirmDialogOptions): Promise<boolean>;
+    static show(message: string, header?: string, where?: Element | Document, options?: ConfirmDialogOptions): Promise<boolean>;
 }
 export declare function createInlineButton(toolbarButton: ToolbarButton): Element;
 export declare abstract class Renderer {
@@ -228,7 +228,7 @@ export declare function registerRenderer(registration: RendererRegistration): vo
 export declare function getApplicableRegisteredRenderers(object: Object): RendererRegistration[];
 export interface RendererRegistration {
     loadRenderer: () => Promise<Renderer>;
-    contextTypes: () => Array<Function>;
+    contextTypes: () => Function[];
 }
 export interface ConfirmDialogOptions {
     okButtonLabel?: string;
@@ -246,9 +246,9 @@ export declare function injectCoreStyles(elementOrShadowRoot: Element | ShadowRo
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
  */
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
-    cssFile?: ({
+    cssFile?: Array<{
         cssContent: string;
-    })[] | {
+    }> | {
         cssContent: string;
     };
     delegatesFocus?: boolean;

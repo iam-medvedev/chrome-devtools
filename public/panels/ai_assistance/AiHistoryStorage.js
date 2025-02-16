@@ -28,7 +28,13 @@ export class Conversation {
         return this.history.length === 0;
     }
     addHistoryItem(item) {
-        this.history.push(item);
+        if (item.type === "user-query" /* ResponseType.USER_QUERY */) {
+            const historyItem = { ...item, imageInput: undefined };
+            this.history.push(historyItem);
+        }
+        else {
+            this.history.push(item);
+        }
         void AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
     }
     serialize() {

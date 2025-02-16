@@ -45,7 +45,7 @@ export declare class SelectButton extends HTMLElement {
     get items(): SelectButtonItem[];
     set items(items: SelectButtonItem[]);
     set buttonLabel(buttonLabel: LocalizedString);
-    set groups(groups: Array<SelectMenuGroup>);
+    set groups(groups: SelectMenuGroup[]);
     get value(): string;
     set value(value: string);
     get variant(): Variant;

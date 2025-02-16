@@ -510,7 +510,8 @@ export class ResourceTreeFrame {
     #nameInternal;
     #urlInternal;
     #domainAndRegistryInternal;
-    #securityOriginInternal;
+    #securityOrigin;
+    #securityOriginDetails;
     #storageKeyInternal;
     #unreachableUrlInternal;
     #adFrameStatusInternal;
@@ -536,7 +537,8 @@ export class ResourceTreeFrame {
         this.#urlInternal =
             payload && payload.url || Platform.DevToolsPath.EmptyUrlString;
         this.#domainAndRegistryInternal = (payload && payload.domainAndRegistry) || '';
-        this.#securityOriginInternal = payload && payload.securityOrigin;
+        this.#securityOrigin = payload && payload.securityOrigin;
+        this.#securityOriginDetails = payload?.securityOriginDetails;
         this.#unreachableUrlInternal =
             (payload && payload.unreachableUrl) || Platform.DevToolsPath.EmptyUrlString;
         this.#adFrameStatusInternal = payload?.adFrameStatus;
@@ -577,7 +579,8 @@ export class ResourceTreeFrame {
         this.#nameInternal = framePayload.name;
         this.#urlInternal = framePayload.url;
         this.#domainAndRegistryInternal = framePayload.domainAndRegistry;
-        this.#securityOriginInternal = framePayload.securityOrigin;
+        this.#securityOrigin = framePayload.securityOrigin;
+        this.#securityOriginDetails = framePayload.securityOriginDetails;
         void this.getStorageKey(/* forceFetch */ true);
         this.#unreachableUrlInternal =
             framePayload.unreachableUrl || Platform.DevToolsPath.EmptyUrlString;
@@ -617,7 +620,10 @@ export class ResourceTreeFrame {
         return res.adScriptId || null;
     }
     get securityOrigin() {
-        return this.#securityOriginInternal;
+        return this.#securityOrigin;
+    }
+    get securityOriginDetails() {
+        return this.#securityOriginDetails ?? null;
     }
     getStorageKey(forceFetch) {
         if (!this.#storageKeyInternal || forceFetch) {

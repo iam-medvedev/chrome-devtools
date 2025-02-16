@@ -13,13 +13,12 @@ export declare class CPUProfilerModel extends SDKModel<EventTypes> implements Pr
     consoleProfileStarted({ id, location, title }: Protocol.Profiler.ConsoleProfileStartedEvent): void;
     consoleProfileFinished({ id, location, profile, title }: Protocol.Profiler.ConsoleProfileFinishedEvent): void;
     private createEventDataFrom;
-    isRecordingProfile(): boolean;
     startRecording(): Promise<unknown>;
     stopRecording(): Promise<Protocol.Profiler.Profile | null>;
-    startPreciseCoverage(jsCoveragePerBlock: boolean, preciseCoverageDeltaUpdateCallback: ((arg0: number, arg1: string, arg2: Array<Protocol.Profiler.ScriptCoverage>) => Promise<void>) | null): Promise<unknown>;
+    startPreciseCoverage(jsCoveragePerBlock: boolean, preciseCoverageDeltaUpdateCallback: ((arg0: number, arg1: string, arg2: Protocol.Profiler.ScriptCoverage[]) => Promise<void>) | null): Promise<unknown>;
     takePreciseCoverage(): Promise<{
         timestamp: number;
-        coverage: Array<Protocol.Profiler.ScriptCoverage>;
+        coverage: Protocol.Profiler.ScriptCoverage[];
     }>;
     stopPreciseCoverage(): Promise<unknown>;
     preciseCoverageDeltaUpdate({ timestamp, occasion, result }: Protocol.Profiler.PreciseCoverageDeltaUpdateEvent): void;

@@ -40,7 +40,7 @@ declare const enum OpCodes {
     PING_FRAME = 9,
     PONG_FRAME = 10
 }
-export declare const opCodeDescriptions: (() => string)[];
+export declare const opCodeDescriptions: Array<() => string>;
 export declare class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.SortableDataGridNode<unknown> {
     private readonly url;
     readonly frame: SDK.NetworkRequest.WebSocketFrame;

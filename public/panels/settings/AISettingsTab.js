@@ -212,27 +212,27 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         }
     }
     #getAiAssistanceSettingDescription() {
-        const config = Common.Settings.Settings.instance().getHostConfig();
-        if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
+        const { hostConfig } = Root.Runtime;
+        if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingNetworkPerformanceAndFile);
         }
-        if (config.devToolsAiAssistanceFileAgent?.enabled) {
+        if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingNetworkAndFile);
         }
-        if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
+        if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
             return i18nString(UIStrings.helpUnderstandStylingAndNetworkRequest);
         }
         return i18nString(UIStrings.helpUnderstandStyling);
     }
     #getAiAssistanceSettingInfo() {
-        const config = Common.Settings.Settings.instance().getHostConfig();
-        if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
+        const { hostConfig } = Root.Runtime;
+        if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
             return i18nString(UIStrings.explainStylingNetworkPerformanceAndFile);
         }
-        if (config.devToolsAiAssistanceFileAgent?.enabled) {
+        if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
             return i18nString(UIStrings.explainStylingNetworkAndFile);
         }
-        if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
+        if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
             return i18nString(UIStrings.explainStylingAndNetworkRequest);
         }
         return i18nString(UIStrings.explainStyling);
@@ -307,7 +307,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     #renderSharedDisclaimer() {
         const tosLink = UI.XLink.XLink.create('https://policies.google.com/terms', i18nString(UIStrings.termsOfService), undefined, undefined, 'terms-of-service');
         const privacyNoticeLink = UI.XLink.XLink.create('https://policies.google.com/privacy', i18nString(UIStrings.privacyNotice), undefined, undefined, 'privacy-notice');
-        const noLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.enterprisePolicyValue ===
+        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         const bulletPoints = [
             { icon: 'psychiatry', text: i18nString(UIStrings.experimentalFeatures) },
@@ -365,8 +365,8 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
                 reasons.push(i18nString(UIStrings.offline));
             case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */: {
                 // No age check if there is no logged in user. Age check would always fail in that case.
-                const config = Common.Settings.Settings.instance().getHostConfig();
-                if (config?.aidaAvailability?.blockedByAge === true) {
+                const { hostConfig } = Root.Runtime;
+                if (hostConfig?.aidaAvailability?.blockedByAge === true) {
                     reasons.push(i18nString(UIStrings.ageRestricted));
                 }
             }
@@ -384,7 +384,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             open: this.#isConsoleInsightsSettingExpanded,
         };
         const tabindex = this.#isConsoleInsightsSettingExpanded ? '0' : '-1';
-        const noLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.enterprisePolicyValue ===
+        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
@@ -454,7 +454,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             open: this.#isAiAssistanceSettingExpanded,
         };
         const tabindex = this.#isAiAssistanceSettingExpanded ? '0' : '-1';
-        const noLogging = Common.Settings.Settings.instance().getHostConfig().aidaAvailability?.enterprisePolicyValue ===
+        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off

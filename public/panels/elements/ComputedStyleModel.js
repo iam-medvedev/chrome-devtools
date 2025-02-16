@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ComputedStyleWidget } from './ComputedStyleWidget.js';
@@ -44,7 +45,7 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
             }
             return;
         }
-        const hostConfig = Common.Settings.Settings.instance().getHostConfig();
+        const { hostConfig } = Root.Runtime;
         const isComputedStyleWidgetVisible = Boolean(UI.Context.Context.instance().flavor(ComputedStyleWidget));
         const isStylesTabVisible = Boolean(UI.Context.Context.instance().flavor(StylesSidebarPane));
         const shouldTrackComputedStyleUpdates = isComputedStyleWidgetVisible || (isStylesTabVisible && hostConfig.devToolsAnimationStylesInStylesTab?.enabled);

@@ -122,7 +122,6 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes,
     setBackgroundImage(iconURL: string): void;
     setSecondary(): void;
     setDarkText(): void;
-    turnIntoSelect(shrinkable?: boolean | undefined): void;
     clicked(event: Event): void;
 }
 export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventTypes> {
@@ -179,7 +178,6 @@ export declare class ToolbarToggle extends ToolbarButton {
     setToggleOnClick(toggleOnClick: boolean): void;
     setToggled(toggled: boolean): void;
     setChecked(checked: boolean): void;
-    setDefaultWithRedColor(withRedColor: boolean): void;
     enableToggleWithRedColor(): void;
 }
 export declare class ToolbarMenuButton extends ToolbarCombobox {

@@ -49,19 +49,6 @@ export class ScreenCaptureModel extends SDKModel {
         await OverlayModel.unmuteHighlight();
         return result.data;
     }
-    async fetchLayoutMetrics() {
-        const response = await this.#agent.invoke_getLayoutMetrics();
-        if (response.getError()) {
-            return null;
-        }
-        return {
-            viewportX: response.cssVisualViewport.pageX,
-            viewportY: response.cssVisualViewport.pageY,
-            viewportScale: response.cssVisualViewport.scale,
-            contentWidth: response.cssContentSize.width,
-            contentHeight: response.cssContentSize.height,
-        };
-    }
     screencastFrame({ data, metadata, sessionId }) {
         void this.#agent.invoke_screencastFrameAck({ sessionId });
         if (this.#onScreencastFrame) {

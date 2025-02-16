@@ -109,7 +109,6 @@ export declare class ContextMenu extends SubMenu {
     discard(): void;
     private registerLoggablesWithin;
     private innerShow;
-    setContextMenuLabel(label: string): void;
     setX(x: number): void;
     setY(y: number): void;
     setHandler(id: number, handler: () => void): void;

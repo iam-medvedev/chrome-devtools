@@ -16,21 +16,21 @@ import { type AidaClientResult, type CanShowSurveyResult, type ChangeEvent, type
 export declare class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     #private;
     events: Common.EventTarget.EventTarget<EventTypes>;
-    recordedCountHistograms: {
+    recordedCountHistograms: Array<{
         histogramName: string;
         sample: number;
         min: number;
         exclusiveMax: number;
         bucketSize: number;
-    }[];
-    recordedEnumeratedHistograms: {
+    }>;
+    recordedEnumeratedHistograms: Array<{
         actionName: EnumeratedHistogram;
         actionCode: number;
-    }[];
-    recordedPerformanceHistograms: {
+    }>;
+    recordedPerformanceHistograms: Array<{
         histogramName: string;
         duration: number;
-    }[];
+    }>;
     constructor();
     platform(): string;
     loadCompleted(): void;
@@ -79,7 +79,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     removePreference(name: string): void;
     clearPreferences(): void;
     getSyncInformation(callback: (arg0: SyncInformation) => void): void;
-    getHostConfig(callback: (arg0: Root.Runtime.HostConfig) => void): void;
+    getHostConfig(callback: (hostConfig: Root.Runtime.HostConfig) => void): void;
     upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void;
     indexPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, excludedFolders: string): void;
     stopIndexing(requestId: number): void;

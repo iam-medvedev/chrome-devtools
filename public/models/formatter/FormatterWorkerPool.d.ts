@@ -15,7 +15,7 @@ export declare class FormatterWorkerPool {
     javaScriptSubstitute(expression: string, mapping: Map<string, string | null>): Promise<string>;
     javaScriptScopeTree(expression: string, sourceType?: 'module' | 'script'): Promise<FormatterActions.ScopeTreeNode | null>;
     evaluatableJavaScriptSubstring(content: string): Promise<string>;
-    parseCSS(content: string, callback: (arg0: boolean, arg1: Array<CSSRule>) => void): void;
+    parseCSS(content: string, callback: (arg0: boolean, arg1: CSSRule[]) => void): void;
 }
 interface CSSProperty {
     name: string;

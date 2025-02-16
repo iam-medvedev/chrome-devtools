@@ -3,7 +3,142 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import { CSSMetadata, cssMetadata, CubicBezierKeywordValues, FontFamilyRegex, FontPropertiesRegex } from './CSSMetadata.js';
-import { ASTUtils, matcherBase, tokenizeDeclaration, VariableMatch } from './CSSPropertyParser.js';
+import { ASTUtils, matcherBase, tokenizeDeclaration } from './CSSPropertyParser.js';
+export class BaseVariableMatch {
+    text;
+    node;
+    name;
+    fallback;
+    matching;
+    computedTextCallback;
+    constructor(text, node, name, fallback, matching, computedTextCallback) {
+        this.text = text;
+        this.node = node;
+        this.name = name;
+        this.fallback = fallback;
+        this.matching = matching;
+        this.computedTextCallback = computedTextCallback;
+    }
+    computedText() {
+        return this.computedTextCallback(this, this.matching);
+    }
+}
+// This matcher provides matching for var() functions and basic computedText support. Computed text is resolved by a
+// callback. This matcher is intended to be used directly only in environments where CSSMatchedStyles is not available.
+// A more ergonomic version of this matcher exists in VariableMatcher, which uses CSSMatchedStyles to correctly resolve
+// variable references automatically.
+// clang-format off
+export class BaseVariableMatcher extends matcherBase(BaseVariableMatch) {
+    // clang-format on
+    #computedTextCallback;
+    constructor(computedTextCallback) {
+        super();
+        this.#computedTextCallback = computedTextCallback;
+    }
+    matches(node, matching) {
+        const callee = node.getChild('Callee');
+        const args = node.getChild('ArgList');
+        if (node.name !== 'CallExpression' || !callee || (matching.ast.text(callee) !== 'var') || !args) {
+            return null;
+        }
+        const [lparenNode, nameNode, ...fallbackOrRParenNodes] = ASTUtils.children(args);
+        if (lparenNode?.name !== '(' || nameNode?.name !== 'VariableName') {
+            return null;
+        }
+        if (fallbackOrRParenNodes.length <= 1 && fallbackOrRParenNodes[0]?.name !== ')') {
+            return null;
+        }
+        let fallback = [];
+        if (fallbackOrRParenNodes.length > 1) {
+            if (fallbackOrRParenNodes.shift()?.name !== ',') {
+                return null;
+            }
+            if (fallbackOrRParenNodes.pop()?.name !== ')') {
+                return null;
+            }
+            fallback = fallbackOrRParenNodes;
+            if (fallback.length === 0) {
+                return null;
+            }
+            if (fallback.some(n => n.name === ',')) {
+                return null;
+            }
+        }
+        const varName = matching.ast.text(nameNode);
+        if (!varName.startsWith('--')) {
+            return null;
+        }
+        return new BaseVariableMatch(matching.ast.text(node), node, varName, fallback, matching, this.#computedTextCallback);
+    }
+}
+export class VariableMatch extends BaseVariableMatch {
+    matchedStyles;
+    style;
+    constructor(text, node, name, fallback, matching, matchedStyles, style) {
+        super(text, node, name, fallback, matching, () => this.resolveVariable()?.value ?? this.fallbackValue());
+        this.matchedStyles = matchedStyles;
+        this.style = style;
+    }
+    resolveVariable() {
+        return this.matchedStyles.computeCSSVariable(this.style, this.name);
+    }
+    fallbackValue() {
+        if (this.fallback.length === 0 ||
+            this.matching.hasUnresolvedVarsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
+            return null;
+        }
+        return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
+    }
+}
+// clang-format off
+export class VariableMatcher extends matcherBase(VariableMatch) {
+    matchedStyles;
+    style;
+    // clang-format on
+    constructor(matchedStyles, style) {
+        super();
+        this.matchedStyles = matchedStyles;
+        this.style = style;
+    }
+    matches(node, matching) {
+        const match = new BaseVariableMatcher(() => null).matches(node, matching);
+        return match ?
+            new VariableMatch(match.text, match.node, match.name, match.fallback, match.matching, this.matchedStyles, this.style) :
+            null;
+    }
+}
+export class TextMatch {
+    text;
+    node;
+    computedText;
+    constructor(text, node) {
+        this.text = text;
+        this.node = node;
+        if (node.name === 'Comment') {
+            this.computedText = () => '';
+        }
+    }
+    render() {
+        return [document.createTextNode(this.text)];
+    }
+}
+// clang-format off
+export class TextMatcher extends matcherBase(TextMatch) {
+    // clang-format on
+    accepts() {
+        return true;
+    }
+    matches(node, matching) {
+        if (!node.firstChild || node.name === 'NumberLiteral' /* may have a Unit child */) {
+            // Leaf node, just emit text
+            const text = matching.ast.text(node);
+            if (text.length) {
+                return new TextMatch(text, node);
+            }
+        }
+        return null;
+    }
+}
 export class AngleMatch {
     text;
     node;
@@ -602,7 +737,7 @@ export class GridTemplateMatcher extends matcherBase(GridTemplateMatch) {
         // be rendered into separate lines.
         function parseNodes(nodes, varParsingMode = false) {
             for (const curNode of nodes) {
-                if (matching.getMatch(curNode) instanceof VariableMatch) {
+                if (matching.getMatch(curNode) instanceof BaseVariableMatch) {
                     const computedValueTree = tokenizeDeclaration('--property', matching.getComputedText(curNode));
                     if (!computedValueTree) {
                         continue;

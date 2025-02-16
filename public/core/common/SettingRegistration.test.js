@@ -1,7 +1,7 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { deinitializeGlobalVars, initializeGlobalVars, } from '../../testing/EnvironmentHelpers.js';
+import { deinitializeGlobalVars, initializeGlobalVars, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Common from './common.js';
@@ -87,6 +87,13 @@ describe('SettingRegistration', () => {
     });
     it('can handle settings with condition which depends on host config', () => {
         const configSettingName = 'mock-setting-with-host-config';
+        updateHostConfig({
+            devToolsConsoleInsights: {
+                modelId: 'mockModel',
+                temperature: -1,
+                enabled: true,
+            },
+        });
         Common.Settings.registerSettingExtension({
             settingName: configSettingName,
             settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
@@ -102,13 +109,6 @@ describe('SettingRegistration', () => {
             syncedStorage: dummyStorage,
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
-            config: {
-                devToolsConsoleInsights: {
-                    modelId: 'mockModel',
-                    temperature: -1,
-                    enabled: true,
-                },
-            },
         });
         const setting = Common.Settings.Settings.instance().moduleSetting(configSettingName);
         assert.isNotNull(setting);

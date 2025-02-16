@@ -76,9 +76,9 @@ export declare class ConsoleViewMessage implements ConsoleViewportElement {
     private formatParameterAsFunction;
     private formattedParameterAsFunctionForTest;
     private contextMenuEventFired;
-    protected renderPropertyPreviewOrAccessor(object: SDK.RemoteObject.RemoteObject | null, property: Protocol.Runtime.PropertyPreview, propertyPath: {
+    protected renderPropertyPreviewOrAccessor(object: SDK.RemoteObject.RemoteObject | null, property: Protocol.Runtime.PropertyPreview, propertyPath: Array<{
         name: (string | symbol);
-    }[]): HTMLElement;
+    }>): HTMLElement;
     private formatParameterAsNode;
     private formattedParameterAsNodeForTest;
     private formatParameterAsString;

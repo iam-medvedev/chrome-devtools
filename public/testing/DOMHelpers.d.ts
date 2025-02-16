@@ -13,10 +13,15 @@ interface RenderOptions {
  **/
 export declare function renderElementIntoDOM<E extends Element>(element: E, renderOptions?: RenderOptions): E;
 /**
+ * Sets up the DOM for testing,
+ * If not clean logs an error and cleans itself
+ **/
+export declare const setupTestDOM: () => Promise<void>;
+/**
  * Completely cleans out the test DOM to ensure it's empty for the next test run.
  * This is run automatically between tests - you should not be manually calling this yourself.
  **/
-export declare const resetTestDOM: () => void;
+export declare const cleanTestDOM: () => Promise<void>;
 interface Constructor<T> {
     new (...args: unknown[]): T;
 }

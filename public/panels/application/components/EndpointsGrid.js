@@ -3,18 +3,29 @@
 // found in the LICENSE file.
 import '../../../ui/legacy/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+// inspectorCommonStyles is imported for the empty state styling that is used for the start view
+// eslint-disable-next-line rulesdir/es-modules-import
+import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import reportingApiGridStylesRaw from './reportingApiGrid.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportingApiGridStyles = new CSSStyleSheet();
 reportingApiGridStyles.replaceSync(reportingApiGridStylesRaw.cssContent);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const inspectorCommonStyles = new CSSStyleSheet();
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
 const UIStrings = {
     /**
      *@description Placeholder text when there are no Reporting API endpoints.
      *(https://developers.google.com/web/updates/2018/09/reportingapi#tldr)
      */
     noEndpointsToDisplay: 'No endpoints to display',
+    /**
+     *@description Placeholder text when there are no Reporting API endpoints.
+     *(https://developers.google.com/web/updates/2018/09/reportingapi#tldr)
+     */
+    endpointsDescription: 'Here you will find the list of endpoints that receive the reports'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/components/EndpointsGrid.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -23,7 +34,7 @@ export class EndpointsGrid extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #endpoints = new Map();
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportingApiGridStyles];
+        this.#shadow.adoptedStyleSheets = [reportingApiGridStyles, inspectorCommonStyles];
         this.#render();
     }
     set data(data) {
@@ -53,8 +64,9 @@ export class EndpointsGrid extends HTMLElement {
             </table>
           </devtools-data-grid>
         ` : html `
-          <div class="reporting-placeholder">
-            <div>${i18nString(UIStrings.noEndpointsToDisplay)}</div>
+          <div class="empty-state">
+            <span class="empty-state-header">${i18nString(UIStrings.noEndpointsToDisplay)}</span>
+            <span class="empty-state-description">${i18nString(UIStrings.endpointsDescription)}</span>
           </div>
         `}
       </div>

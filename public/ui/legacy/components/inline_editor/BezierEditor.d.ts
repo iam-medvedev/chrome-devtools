@@ -46,10 +46,10 @@ export declare const Presets: {
     value: string;
 }[][];
 export interface PresetCategory {
-    presets: {
+    presets: Array<{
         name: string;
         value: string;
-    }[];
+    }>;
     icon: Element;
     presetIndex: number;
 }

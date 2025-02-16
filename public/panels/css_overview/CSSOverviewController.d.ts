@@ -16,9 +16,9 @@ export type PopulateNodesEvent = {
     type: 'color';
     color: string;
     section: string | undefined;
-    nodes: {
+    nodes: Array<{
         nodeId: Protocol.DOM.BackendNodeId;
-    }[];
+    }>;
 } | {
     type: 'unused-declarations';
     declaration: string;
@@ -30,9 +30,9 @@ export type PopulateNodesEvent = {
 } | {
     type: 'font-info';
     name: string;
-    nodes: {
+    nodes: Array<{
         nodeId: Protocol.DOM.BackendNodeId;
-    }[];
+    }>;
 };
 export type PopulateNodesEventNodes = PopulateNodesEvent['nodes'];
 export type PopulateNodesEventNodeTypes = PopulateNodesEventNodes[0];

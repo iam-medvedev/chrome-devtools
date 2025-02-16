@@ -507,7 +507,7 @@ export class Revealer {
             }
         }
         // Reveal settings views
-        for (const view of UI.ViewManager.getRegisteredViewExtensions(Common.Settings.Settings.instance().getHostConfig())) {
+        for (const view of UI.ViewManager.getRegisteredViewExtensions()) {
             const id = view.viewId();
             const location = view.location();
             if (location !== "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */) {

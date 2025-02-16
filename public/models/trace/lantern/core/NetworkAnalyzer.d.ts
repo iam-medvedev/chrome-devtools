@@ -101,8 +101,8 @@ declare class NetworkAnalyzer {
         serverResponseTimeByOrigin: Map<string, number>;
     };
     static analyze(records: Lantern.NetworkRequest[]): Lantern.Simulation.Settings['networkAnalysis'] | null;
-    static findResourceForUrl<T extends Lantern.NetworkRequest>(records: Array<T>, resourceUrl: string): T | undefined;
-    static findLastDocumentForUrl<T extends Lantern.NetworkRequest>(records: Array<T>, resourceUrl: string): T | undefined;
+    static findResourceForUrl<T extends Lantern.NetworkRequest>(records: T[], resourceUrl: string): T | undefined;
+    static findLastDocumentForUrl<T extends Lantern.NetworkRequest>(records: T[], resourceUrl: string): T | undefined;
     /**
      * Resolves redirect chain given a main document.
      * See: {@link NetworkAnalyzer.findLastDocumentForUrl} for how to retrieve main document.

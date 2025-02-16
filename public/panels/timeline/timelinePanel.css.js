@@ -209,6 +209,7 @@ export default {
 .timeline-details-view-row {
   padding-left: 10px;
   min-height: 20px;
+  line-height: 16px; /* Vertically center text within row, important for background-color rows like .timeline-details-warning */
 }
 
 .timeline-details-view-block .timeline-details-stack-values {

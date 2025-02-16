@@ -51,7 +51,7 @@ export default {
   flex-shrink: 0;
 }
 
-.data-grid {
+devtools-data-grid {
   flex: auto;
   margin-left: -1px;
 }

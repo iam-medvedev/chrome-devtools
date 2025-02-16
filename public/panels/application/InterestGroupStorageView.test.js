@@ -57,7 +57,8 @@ describeWithMockConnection('InterestGroupStorageView', () => {
     it('initially has placeholder sidebar', () => {
         const view = new View.InterestGroupStorageView(new InterestGroupDetailsGetter());
         assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
-        assert.isTrue(view.sidebarWidget()?.contentElement.firstChild?.textContent?.includes('Click'));
+        const placeholder = view.sidebarWidget()?.contentElement;
+        assert.deepEqual(placeholder?.textContent, 'No interest group selectedSelect any interest group event to display the group\'s current state');
     });
     // Disabled due to flakiness
     it.skip('[crbug.com/1473557]: updates sidebarWidget upon receiving cellFocusedEvent when InterestGroupGetter succeeds', async function () {

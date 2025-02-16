@@ -4,7 +4,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import { dispatchClickEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-import { describeWithEnvironment, getGetHostConfigStub } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import * as Explain from '../explain.js';
 describeWithEnvironment('ConsoleInsight', () => {
     let component;
@@ -54,7 +54,7 @@ describeWithEnvironment('ConsoleInsight', () => {
         ]);
     });
     it('shows opt-in teaser when blocked by age', async () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
             aidaAvailability: {
                 blockedByAge: true,
             },
@@ -69,7 +69,6 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.deepEqual(getCleanTextContentFromElements(component.shadowRoot, 'main'), [
             'Turn on Console insights in Settings to receive AI assistance for understanding and addressing console warnings and errors. Learn more',
         ]);
-        stub.restore();
     });
     it('generates an explanation when the user logs in', async () => {
         component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
@@ -147,7 +146,11 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.strictEqual(component.shadowRoot.querySelector('.error-message')?.textContent, 'Generating a response took too long. Please try again.');
     });
     const reportsRating = (positive) => async () => {
-        const stub = getGetHostConfigStub({});
+        updateHostConfig({
+            aidaAvailability: {
+                disallowLogging: false,
+            },
+        });
         const actionTaken = sinon.stub(Host.userMetrics, 'actionTaken');
         const aidaClient = getTestAidaClient();
         component = new Explain.ConsoleInsight(getTestPromptBuilder(), aidaClient, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
@@ -171,12 +174,11 @@ describeWithEnvironment('ConsoleInsight', () => {
         });
         // Can only rate once.
         assert(aidaClient.registerClientEvent.calledOnce);
-        stub.restore();
     };
     it('reports positive rating', reportsRating(true));
     it('reports negative rating', reportsRating(false));
     it('has no thumbs up/down buttons if logging is disabled', async () => {
-        const stub = getGetHostConfigStub({
+        updateHostConfig({
             aidaAvailability: {
                 disallowLogging: true,
             },
@@ -191,7 +193,6 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.isNull(thumbsUpButton);
         const thumbsDownButton = component.shadowRoot.querySelector('.rating [data-rating="false"]');
         assert.isNull(thumbsDownButton);
-        stub.restore();
     });
     it('report if the user is not logged in', async () => {
         component = new Explain.ConsoleInsight(getTestPromptBuilder(), getTestAidaClient(), "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);

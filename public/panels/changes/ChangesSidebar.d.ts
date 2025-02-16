@@ -16,7 +16,6 @@ export declare class ChangesSidebar extends ChangesSidebar_base {
     private readonly treeElements;
     private readonly workspaceDiff;
     constructor(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
-    selectUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode, omitFocus?: boolean | undefined): void;
     selectedUISourceCode(): Workspace.UISourceCode.UISourceCode | null;
     private selectionChanged;
     private uiSourceCodeMofiedStatusChanged;

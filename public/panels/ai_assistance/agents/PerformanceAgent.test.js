@@ -4,13 +4,13 @@
 import * as Host from '../../../core/host/host.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, getGetHostConfigStub } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
 import { CallTreeContext, PerformanceAgent } from '../ai_assistance.js';
 describeWithEnvironment('PerformanceAgent', () => {
     function mockHostConfig(modelId, temperature) {
-        getGetHostConfigStub({
+        updateHostConfig({
             devToolsAiAssistancePerformanceAgent: {
                 modelId,
                 temperature,
@@ -133,6 +133,7 @@ self: 3
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'test',
+                    imageInput: undefined,
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,
@@ -147,6 +148,7 @@ self: 3
                 {
                     type: "answer" /* ResponseType.ANSWER */,
                     text: 'This is the answer',
+                    complete: true,
                     suggestions: undefined,
                     rpcId: 123,
                 },

@@ -820,12 +820,6 @@ export class HeapSnapshot {
     get totalSize() {
         return this.rootNode().retainedSize() + (this.profile.snapshot.extra_native_bytes ?? 0);
     }
-    getDominatedIndex(nodeIndex) {
-        if (nodeIndex % this.nodeFieldCount) {
-            throw new Error('Invalid nodeIndex: ' + nodeIndex);
-        }
-        return this.firstDominatedNodeIndex[nodeIndex / this.nodeFieldCount];
-    }
     createFilter(nodeFilter) {
         const { minNodeId, maxNodeId, allocationNodeId, filterName } = nodeFilter;
         let filter;
@@ -2596,7 +2590,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
         const worklist = [];
         const node = this.createNode(0);
         for (let i = 0; i < nodeCount; ++i) {
-            if (node.isHidden() || node.isArray()) {
+            if (node.isHidden() || node.isArray() || (node.isNative() && node.rawName() === 'system / ExternalStringData')) {
                 owners[i] = kUnvisited;
             }
             else {
@@ -3070,6 +3064,9 @@ export class JSHeapSnapshotNode extends HeapSnapshotNode {
     }
     isSynthetic() {
         return this.rawType() === this.snapshot.nodeSyntheticType;
+    }
+    isNative() {
+        return this.rawType() === this.snapshot.nodeNativeType;
     }
     isUserRoot() {
         return !this.isSynthetic();

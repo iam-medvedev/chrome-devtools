@@ -34,7 +34,6 @@ export class NetworkManageCustomHeadersView extends UI.Widget.VBox {
     constructor(columnData, addHeaderColumnCallback, changeHeaderColumnCallback, removeHeaderColumnCallback) {
         super(true);
         this.registerRequiredCSS(networkManageCustomHeadersViewStyles);
-        this.contentElement.classList.add('custom-headers-wrapper');
         this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.manageHeaderColumns);
         this.list = new UI.ListWidget.ListWidget(this);
         this.list.registerRequiredCSS(networkManageCustomHeadersViewStyles);

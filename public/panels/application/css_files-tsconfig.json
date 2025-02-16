@@ -12,7 +12,6 @@
         "openedWindowDetailsView.css.js",
         "preloading/preloadingView.css.js",
         "preloading/preloadingViewDropDown.css.js",
-        "reportingApiReportsView.css.js",
         "resourcesPanel.css.js",
         "resourcesSidebar.css.js",
         "serviceWorkerCacheViews.css.js",

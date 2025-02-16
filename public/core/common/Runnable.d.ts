@@ -8,7 +8,7 @@ export interface LateInitializableRunnableSetting {
 }
 export declare function registerLateInitializationRunnable(setting: LateInitializableRunnableSetting): void;
 export declare function maybeRemoveLateInitializationRunnable(runnableId: string): boolean;
-export declare function lateInitializationRunnables(): Array<LateInitializationLoader>;
+export declare function lateInitializationRunnables(): LateInitializationLoader[];
 export declare function registerEarlyInitializationRunnable(runnable: () => Runnable): void;
-export declare function earlyInitializationRunnables(): (() => Runnable)[];
+export declare function earlyInitializationRunnables(): Array<() => Runnable>;
 export {};

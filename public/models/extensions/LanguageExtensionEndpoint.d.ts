@@ -9,7 +9,7 @@ export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLangu
     readonly name: string;
     constructor(allowFileAccess: boolean, extensionOrigin: string, name: string, supportedScriptTypes: {
         language: string;
-        symbol_types: Array<string>;
+        symbol_types: string[];
     }, port: MessagePort);
     canAccessURL(url: string): boolean;
     handleScript(script: SDK.Script.Script): boolean;
@@ -34,7 +34,7 @@ export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLangu
     /** List all function names (including inlined frames) at location
      */
     getFunctionInfo(rawLocation: Chrome.DevTools.RawLocation): Promise<{
-        frames: Array<Chrome.DevTools.FunctionInfo>;
+        frames: Chrome.DevTools.FunctionInfo[];
     }>;
     /** Find locations in raw modules corresponding to the inline function
      *  that rawLocation is in.

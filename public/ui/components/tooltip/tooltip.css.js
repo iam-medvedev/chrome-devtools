@@ -11,6 +11,7 @@ export default {
  */
 
 :host {
+  --tooltip-viewport-distance: var(--sys-size-5);
   /* Reset the browser's default styles for [popover] elements. */
   margin: 0;
   background: none;
@@ -22,6 +23,8 @@ export default {
   position-try-fallbacks: flip-inline, flip-block, flip-inline flip-block;
 
   & .container {
+    width: max-content;
+    margin: var(--sys-size-2);
     color: var(--sys-color-inverse-on-surface);
     background-color: var(--sys-color-inverse-surface);
     box-shadow: var(--sys-elevation-level2);
@@ -32,9 +35,13 @@ export default {
 
 :host([variant="rich"]) {
   justify-self: unset;
+  margin: 0 var(--tooltip-viewport-distance) var(--tooltip-viewport-distance) 0;
   position-area: bottom span-right;
+  position-try-fallbacks: --bottom-left, --top-right, --top-left;
 
   & .container {
+    margin-inline: 0;
+    margin-block: var(--sys-size-3);
     color: var(--sys-color-on-surface);
     background-color: var(--sys-color-base-container-elevated);
     border-radius: var(--sys-shape-corner-small);
@@ -42,8 +49,19 @@ export default {
   }
 }
 
-.container {
-  margin: var(--sys-size-2);
+@position-try --bottom-left {
+  position-area: bottom span-left;
+  margin: 0 0 var(--tooltip-viewport-distance) var(--tooltip-viewport-distance);
+}
+
+@position-try --top-right {
+  position-area: top span-right;
+  margin: var(--tooltip-viewport-distance) var(--tooltip-viewport-distance) 0 0;
+}
+
+@position-try --top-left {
+  position-area: top span-left;
+  margin: var(--tooltip-viewport-distance) 0 0 var(--tooltip-viewport-distance);
 }
 
 /*# sourceURL=${import.meta.resolve('./tooltip.css')} */

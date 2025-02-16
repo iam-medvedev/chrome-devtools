@@ -10,7 +10,7 @@ export interface TreeOutlineData<TreeNodeDataType> {
      * node is expanded or not), and providing the same object multiple times will
      * cause issues in the TreeOutline.
      */
-    tree: readonly TreeNode<TreeNodeDataType>[];
+    tree: ReadonlyArray<TreeNode<TreeNodeDataType>>;
     filter?: (node: TreeNodeDataType) => FilterOption;
     compact?: boolean;
 }

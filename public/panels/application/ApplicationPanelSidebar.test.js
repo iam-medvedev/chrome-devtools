@@ -223,6 +223,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         addEventListener: () => { },
         securityOrigin: 'https://example.com',
         databaseId: new Application.IndexedDBModel.DatabaseId({ storageKey: '' }, ''),
+        getEntries: () => Promise.resolve([]),
     };
     const testUiUpdate = (event, modelClass, expectedCallString, inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);

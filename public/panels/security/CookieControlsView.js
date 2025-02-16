@@ -7,6 +7,7 @@ import '../../ui/components/chrome_link/chrome_link.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as ChromeLink from '../../ui/components/chrome_link/chrome_link.js';
@@ -264,7 +265,7 @@ export class CookieControlsView extends UI.Widget.VBox {
         super(true, undefined, element);
         this.#view = view;
         this.#isGracePeriodActive = false;
-        this.#thirdPartyControlsDict = Common.Settings.Settings.instance().getHostConfig().thirdPartyCookieControls;
+        this.#thirdPartyControlsDict = Root.Runtime.hostConfig.thirdPartyCookieControls;
         this.registerRequiredCSS(Input.checkboxStylesRaw, cookieControlsViewStyles);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.ResourceAdded, this.checkGracePeriodActive, this);

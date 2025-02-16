@@ -89,7 +89,8 @@ export declare enum ClientFeature {
     CHROME_NETWORK_AGENT = 7,
     CHROME_PERFORMANCE_AGENT = 8,
     CHROME_FILE_AGENT = 9,
-    CHROME_PATCH_AGENT = 12
+    CHROME_PATCH_AGENT = 12,
+    CHROME_PERFORMANCE_INSIGHTS_AGENT = 14
 }
 export declare enum UserTier {
     USER_TIER_UNSPECIFIED = 0,

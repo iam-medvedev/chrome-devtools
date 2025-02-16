@@ -489,9 +489,6 @@ export class ContextMenu extends SubMenu {
             queueMicrotask(listenToEvents.bind(this));
         }
     }
-    setContextMenuLabel(label) {
-        this.contextMenuLabel = label;
-    }
     setX(x) {
         this.x = x;
     }

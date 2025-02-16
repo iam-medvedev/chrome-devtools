@@ -129,7 +129,6 @@ export declare class NetworkRequestNode extends NetworkNode {
     renderCell(c: Element, columnId: string): void;
     private arrayLength;
     select(supressSelectedEvent?: boolean): void;
-    highlightMatchedSubstring(regexp: RegExp | null): Object[];
     private openInNewTab;
     private isFailed;
     private renderPrimaryCell;

@@ -21,7 +21,7 @@ export declare class CoverageDecorationManager {
      *                     in this array represents one line and the range specifies where it's found in
      *                     the original content.
      */
-    usageByLine(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineMappings: TextUtils.TextRange.TextRange[]): Promise<(boolean | undefined)[]>;
+    usageByLine(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineMappings: TextUtils.TextRange.TextRange[]): Promise<Array<boolean | undefined>>;
     private updateTexts;
     private updateTextForProvider;
     private rawLocationsForSourceLocation;

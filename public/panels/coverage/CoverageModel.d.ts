@@ -72,7 +72,6 @@ export declare class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     private clearCSS;
     private takeAllCoverage;
     private takeJSCoverage;
-    getCoverageUpdateTimes(): Set<number>;
     private backlogOrProcessJSCoverage;
     processJSBacklog(): Promise<void>;
     private processJSCoverage;
@@ -89,10 +88,10 @@ export declare class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
 }
 export interface EntryForExport {
     url: Platform.DevToolsPath.UrlString;
-    ranges: {
+    ranges: Array<{
         start: number;
         end: number;
-    }[];
+    }>;
     text: string | null;
 }
 export declare class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper<URLCoverageInfo.EventTypes> {
@@ -164,16 +163,15 @@ export declare class CoverageInfo {
      * Returns the delta by which usedSize increased.
      */
     mergeCoverage(segments: CoverageSegment[]): number;
-    usedByTimestamp(): Map<number, number>;
     getSize(): number;
     getUsedSize(): number;
     usageForRange(start: number, end: number): boolean;
     private updateStats;
     private updateSourceCoverage;
-    rangesForExport(offset?: number): {
+    rangesForExport(offset?: number): Array<{
         start: number;
         end: number;
-    }[];
+    }>;
 }
 export interface RangeUseCount {
     startOffset: number;

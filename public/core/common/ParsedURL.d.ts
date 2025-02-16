@@ -73,7 +73,6 @@ export declare class ParsedURL {
     dataURLDisplayName(): string;
     isAboutBlank(): boolean;
     isDataURL(): boolean;
-    isHttpOrHttps(): boolean;
     isBlobURL(): boolean;
     lastPathComponentWithFragment(): string;
     domain(): string;

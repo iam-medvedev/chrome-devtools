@@ -56,7 +56,7 @@ export class Runtime {
     static platform() {
         return runtimePlatform;
     }
-    static isDescriptorEnabled(descriptor, config) {
+    static isDescriptorEnabled(descriptor) {
         const { experiment } = descriptor;
         if (experiment === '*') {
             return true;
@@ -68,7 +68,7 @@ export class Runtime {
             return false;
         }
         const { condition } = descriptor;
-        return condition ? condition(config) : true;
+        return condition ? condition(hostConfig) : true;
     }
     loadLegacyModule(modulePath) {
         const importPath = `../../${modulePath}`; // Extracted as a variable so esbuild doesn't attempt to bundle all the things.
@@ -234,6 +234,21 @@ export var HostConfigFreestylerExecutionMode;
     HostConfigFreestylerExecutionMode["SIDE_EFFECT_FREE_SCRIPTS_ONLY"] = "SIDE_EFFECT_FREE_SCRIPTS_ONLY";
     HostConfigFreestylerExecutionMode["NO_SCRIPTS"] = "NO_SCRIPTS";
 })(HostConfigFreestylerExecutionMode || (HostConfigFreestylerExecutionMode = {}));
+/**
+ * The host configuration for this DevTools instance.
+ *
+ * This is initialized early during app startup and should not be modified
+ * afterwards. In some cases it can be necessary to re-request the host
+ * configuration from Chrome while DevTools is already running. In these
+ * cases, the new host configuration should be reflected here, e.g.:
+ *
+ * ```js
+ * const config = await new Promise<Root.Runtime.HostConfig>(
+ *   resolve => InspectorFrontendHostInstance.getHostConfig(resolve));
+ * Object.assign(Root.runtime.hostConfig, config);
+ * ```
+ */
+export const hostConfig = Object.create(null);
 export const conditions = {
     canDock: () => Boolean(Runtime.queryParam('can_dock')),
 };

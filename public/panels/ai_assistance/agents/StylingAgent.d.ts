@@ -36,6 +36,7 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     get userTier(): string | undefined;
     get executionMode(): Root.Runtime.HostConfigFreestylerExecutionMode;
     get options(): RequestOptions;
+    get multimodalInputEnabled(): boolean;
     parseResponse(response: Host.AidaClient.AidaResponse): ParsedResponse;
     changes: ChangeManager;
     createExtensionScope: CreateExtensionScopeFunction;
@@ -57,7 +58,7 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
         signal?: AbortSignal;
     }): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
     handleContextDetails(selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): Promise<string>;
+    enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null, hasImageInput?: boolean): Promise<string>;
     formatParsedAnswer({ answer }: ParsedAnswer): string;
 }
 export declare class StylingAgentWithFunctionCalling extends StylingAgent {

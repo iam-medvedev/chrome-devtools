@@ -5,7 +5,7 @@ export declare class ThrottlingPresets {
     static getLowEndMobileConditions(): Conditions;
     static getMidTierMobileConditions(): Conditions;
     static getCustomConditions(): PlaceholderConditions;
-    static getMobilePresets(): (Conditions | PlaceholderConditions)[];
+    static getMobilePresets(): Array<Conditions | PlaceholderConditions>;
     static getAdvancedMobilePresets(): Conditions[];
     static getRecommendedNetworkPreset(rtt: number): SDK.NetworkManager.Conditions | null;
     static networkPresets: SDK.NetworkManager.Conditions[];
@@ -24,9 +24,9 @@ export interface NetworkThrottlingConditionsGroup {
 }
 export interface MobileThrottlingConditionsGroup {
     title: string;
-    items: (Conditions | PlaceholderConditions)[];
+    items: Array<Conditions | PlaceholderConditions>;
 }
-export type ConditionsList = (Conditions | PlaceholderConditions | null)[];
+export type ConditionsList = Array<Conditions | PlaceholderConditions | null>;
 export interface PlaceholderConditions {
     title: string;
     description: string;

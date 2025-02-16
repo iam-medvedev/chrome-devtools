@@ -716,6 +716,7 @@ export function highlightRangesWithStyleClass(element, resultRanges, styleClass,
     }
     return highlightNodes;
 }
+// Used in chromium/src/third_party/blink/web_tests/http/tests/devtools/components/utilities-highlight-results.js
 export function applyDomChanges(domChanges) {
     for (let i = 0, size = domChanges.length; i < size; ++i) {
         const entry = domChanges[i];
@@ -1384,7 +1385,7 @@ export function createFileSelectorElement(callback, accept) {
 }
 export const MaxLengthForDisplayedURLs = 150;
 export class MessageDialog {
-    static async show(message, where, jslogContext) {
+    static async show(header, message, where, jslogContext) {
         const dialog = new Dialog(jslogContext);
         dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         dialog.setDimmed(true);
@@ -1392,6 +1393,7 @@ export class MessageDialog {
         const content = shadowRoot.createChild('div', 'widget');
         await new Promise(resolve => {
             const okButton = createTextButton(i18nString(UIStrings.ok), resolve, { jslogContext: 'confirm', variant: "primary" /* Buttons.Button.Variant.PRIMARY */ });
+            content.createChild('span', 'header').textContent = header;
             content.createChild('div', 'message').createChild('span').textContent = message;
             content.createChild('div', 'button').appendChild(okButton);
             dialog.setOutsideClickCallback(event => {
@@ -1405,13 +1407,16 @@ export class MessageDialog {
     }
 }
 export class ConfirmDialog {
-    static async show(message, where, options) {
+    static async show(message, header, where, options) {
         const dialog = new Dialog(options?.jslogContext);
         dialog.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
         dialog.setDimmed(true);
         ARIAUtils.setLabel(dialog.contentElement, message);
         const shadowRoot = createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: confirmDialogStyles });
         const content = shadowRoot.createChild('div', 'widget');
+        if (header) {
+            content.createChild('span', 'header').textContent = header;
+        }
         content.createChild('div', 'message').createChild('span').textContent = message;
         const buttonsBar = content.createChild('div', 'button');
         const result = await new Promise(resolve => {

@@ -8,7 +8,7 @@ export declare class Trie<T extends ArrayLike<ElementType<T>>> {
     #private;
     constructor(traitImpl: TrieableTrait<T>);
     static newStringTrie(): Trie<string>;
-    static newArrayTrie<T extends ElementType<T>[]>(): Trie<ElementType<T>[]>;
+    static newArrayTrie<T extends Array<ElementType<T>>>(): Trie<Array<ElementType<T>>>;
     add(word: T): void;
     remove(word: T): boolean;
     has(word: T): boolean;

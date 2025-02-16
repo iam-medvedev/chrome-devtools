@@ -708,22 +708,6 @@ export class TreeElement {
             this.leadingIconsElement.appendChild(icon);
         }
     }
-    setTrailingIcons(icons) {
-        if (!this.trailingIconsElement && !icons.length) {
-            return;
-        }
-        if (!this.trailingIconsElement) {
-            this.trailingIconsElement = document.createElement('div');
-            this.trailingIconsElement.classList.add('trailing-icons');
-            this.trailingIconsElement.classList.add('icons-container');
-            this.listItemNode.appendChild(this.trailingIconsElement);
-            this.ensureSelection();
-        }
-        this.trailingIconsElement.removeChildren();
-        for (const icon of icons) {
-            this.trailingIconsElement.appendChild(icon);
-        }
-    }
     get tooltip() {
         return this.tooltipInternal;
     }

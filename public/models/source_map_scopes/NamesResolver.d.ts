@@ -6,14 +6,14 @@ import type * as Workspace from '../workspace/workspace.js';
 export declare function getTextFor(contentProvider: TextUtils.ContentProvider.ContentProvider): Promise<TextUtils.Text.Text | null>;
 export declare class IdentifierPositions {
     name: string;
-    positions: {
+    positions: Array<{
         lineNumber: number;
         columnNumber: number;
-    }[];
-    constructor(name: string, positions?: {
+    }>;
+    constructor(name: string, positions?: Array<{
         lineNumber: number;
         columnNumber: number;
-    }[]);
+    }>);
     addPosition(lineNumber: number, columnNumber: number): void;
 }
 export declare function findScopeChainForDebuggerScope(scope: SDK.DebuggerModel.ScopeChainEntry): Promise<Formatter.FormatterWorkerPool.ScopeTreeNode[]>;

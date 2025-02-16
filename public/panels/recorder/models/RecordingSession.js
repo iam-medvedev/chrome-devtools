@@ -584,10 +584,7 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async #waitForDOMContentLoadedWithTimeout(resourceTreeModel, timeout) {
-        let resolver = () => Promise.resolve();
-        const contentLoadedPromise = new Promise(resolve => {
-            resolver = resolve;
-        });
+        const { resolve: resolver, promise: contentLoadedPromise } = Promise.withResolvers();
         const onDomContentLoaded = () => {
             resourceTreeModel.removeEventListener(SDK.ResourceTreeModel.Events.DOMContentLoaded, onDomContentLoaded);
             resolver();

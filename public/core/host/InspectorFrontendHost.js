@@ -309,45 +309,15 @@ export class InspectorFrontendHostStub {
         });
     }
     getHostConfig(callback) {
-        const result = {
-            aidaAvailability: {
-                enabled: true,
-                blockedByAge: false,
-                blockedByEnterprisePolicy: false,
-                blockedByGeo: false,
-                disallowLogging: true,
-                enterprisePolicyValue: 0,
-            },
-            devToolsConsoleInsights: {
-                modelId: '',
-                temperature: -1,
-                enabled: false,
-            },
-            devToolsFreestyler: {
-                modelId: '',
-                temperature: -1,
-                enabled: false,
-            },
-            devToolsImprovedWorkspaces: {
-                enabled: false,
-            },
+        // This HostConfig config is used in the hosted mode (see the
+        // comment on top of this class). Only add non-default config params
+        // here that you want to also apply in the hosted mode. For tests
+        // use the hostConfigForTesting override.
+        const hostConfigForHostedMode = {
             devToolsVeLogging: {
                 enabled: true,
-                testing: false,
             },
-            devToolsPrivacyUI: {
-                enabled: false,
-            },
-            devToolsEnableOriginBoundCookies: {
-                portBindingEnabled: false,
-                schemeBindingEnabled: false,
-            },
-            devToolsAnimationStylesInStylesTab: {
-                enabled: false,
-            },
-            isOffTheRecord: false,
             thirdPartyCookieControls: {
-                thirdPartyCookieRestrictionEnabled: false,
                 thirdPartyCookieMetadataEnabled: true,
                 thirdPartyCookieHeuristicsEnabled: true,
                 managedBlockThirdPartyCookies: 'Unset',
@@ -357,20 +327,20 @@ export class InspectorFrontendHostStub {
             const { hostConfigForTesting } = globalThis;
             for (const key of Object.keys(hostConfigForTesting)) {
                 const mergeEntry = (key) => {
-                    if (typeof result[key] === 'object' && typeof hostConfigForTesting[key] === 'object') {
+                    if (typeof hostConfigForHostedMode[key] === 'object' && typeof hostConfigForTesting[key] === 'object') {
                         // If the config is an object, merge the settings, but preferring
                         // the hostConfigForTesting values over the result values.
-                        result[key] = { ...result[key], ...hostConfigForTesting[key] };
+                        hostConfigForHostedMode[key] = { ...hostConfigForHostedMode[key], ...hostConfigForTesting[key] };
                     }
                     else {
                         // Override with the testing config if the value is present + not null/undefined.
-                        result[key] = hostConfigForTesting[key] ?? result[key];
+                        hostConfigForHostedMode[key] = hostConfigForTesting[key] ?? hostConfigForHostedMode[key];
                     }
                 };
                 mergeEntry(key);
             }
         }
-        callback(result);
+        callback(hostConfigForHostedMode);
     }
     upgradeDraggedFileSystemPermissions(fileSystem) {
     }

@@ -124,7 +124,6 @@ export declare class UILocation {
     lineAndColumnText(showColumnNumber?: boolean): string | undefined;
     id(): string;
     lineId(): string;
-    toUIString(): string;
     static comparator(location1: UILocation, location2: UILocation): number;
     compareTo(other: UILocation): number;
 }
@@ -165,15 +164,6 @@ export declare namespace Message {
         ISSUE = "Issue",
         WARNING = "Warning"
     }
-}
-export declare class LineMarker {
-    private readonly rangeInternal;
-    private readonly typeInternal;
-    private readonly dataInternal;
-    constructor(range: TextUtils.TextRange.TextRange, type: string, data: any);
-    range(): TextUtils.TextRange.TextRange;
-    type(): string;
-    data(): any;
 }
 export declare class UISourceCodeMetadata {
     modificationTime: Date | null;

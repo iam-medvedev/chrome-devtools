@@ -79,22 +79,6 @@ export async function stopLogging() {
     pendingResize.clear();
     pendingChange.clear();
 }
-export function pendingWorkComplete() {
-    return Promise
-        .all([
-        processingThrottler,
-        keyboardLogThrottler,
-        hoverLogThrottler,
-        dragLogThrottler,
-        clickLogThrottler,
-        resizeLogThrottler,
-    ].map(async (throttler) => {
-        for (let i = 0; throttler.process && i < 3; ++i) {
-            await throttler.processCompleted;
-        }
-    }))
-        .then(() => { });
-}
 async function yieldToResize() {
     while (resizeLogThrottler.process) {
         await resizeLogThrottler.processCompleted;

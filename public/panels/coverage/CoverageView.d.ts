@@ -35,7 +35,6 @@ export declare class CoverageView extends UI.Widget.VBox {
     isBlockCoverageSelected(): boolean;
     private selectCoverageType;
     private onCoverageTypeComboBoxSelectionChanged;
-    ensureRecordingStarted(): Promise<void>;
     startRecording(options: {
         reload: (boolean | undefined);
         jsCoveragePerBlock: (boolean | undefined);
@@ -43,7 +42,6 @@ export declare class CoverageView extends UI.Widget.VBox {
     private onCoverageDataReceived;
     private updateListView;
     stopRecording(): Promise<void>;
-    processBacklog(): void;
     private onPrimaryPageChanged;
     private updateViews;
     private updateStats;

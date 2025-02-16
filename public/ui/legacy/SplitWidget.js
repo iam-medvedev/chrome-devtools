@@ -267,13 +267,6 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             this.secondIsSidebar = !secondIsSidebar;
         }
     }
-    sidebarSide() {
-        if (this.showModeInternal !== "Both" /* ShowMode.BOTH */) {
-            return null;
-        }
-        return this.isVerticalInternal ? (this.secondIsSidebar ? 'right' : 'left') :
-            (this.secondIsSidebar ? 'bottom' : 'top');
-    }
     resizerElement() {
         return this.resizerElementInternal;
     }
@@ -376,6 +369,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     setResizable(resizable) {
         this.resizerWidget.setEnabled(resizable);
     }
+    // Currently unused
     forceSetSidebarWidth(width) {
         this.defaultSidebarWidth = width;
         this.savedSidebarSizeDIP = width;
@@ -664,10 +658,6 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     }
     uninstallResizer(resizerElement) {
         this.resizerWidget.removeElement(resizerElement);
-    }
-    hasCustomResizer() {
-        const elements = this.resizerWidget.elements();
-        return elements.length > 1 || (elements.length === 1 && elements[0] !== this.resizerElementInternal);
     }
     toggleResizer(resizer, on) {
         if (on) {

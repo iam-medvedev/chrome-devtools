@@ -157,7 +157,7 @@ export class CSSWideKeywordRenderer extends rendererBase(SDK.CSSPropertyParserMa
     }
 }
 // clang-format off
-export class VariableRenderer extends rendererBase(SDK.CSSPropertyParser.VariableMatch) {
+export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.VariableMatch) {
     // clang-format on
     #treeElement;
     #style;
@@ -167,26 +167,13 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParser.Variabl
         this.#style = style;
     }
     matcher() {
-        return new SDK.CSSPropertyParser.VariableMatcher(this.computedText.bind(this));
-    }
-    resolveVariable(match) {
-        return this.#matchedStyles.computeCSSVariable(this.#style, match.name);
-    }
-    fallbackValue(match) {
-        if (match.fallback.length === 0 ||
-            match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
-            return null;
-        }
-        return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
-    }
-    computedText(match) {
-        return this.resolveVariable(match)?.value ?? this.fallbackValue(match);
+        return new SDK.CSSPropertyParserMatchers.VariableMatcher(this.#treeElement.matchedStyles(), this.#style);
     }
     render(match, context) {
         const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
-        const { declaration, value: variableValue } = this.resolveVariable(match) ?? {};
+        const { declaration, value: variableValue } = match.resolveVariable() ?? {};
         const fromFallback = variableValue === undefined;
-        const computedValue = variableValue ?? this.fallbackValue(match);
+        const computedValue = variableValue ?? match.fallbackValue();
         const varSwatch = new InlineEditor.LinkSwatch.CSSVarSwatch();
         varSwatch.data = {
             computedValue,
@@ -229,9 +216,6 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParser.Variabl
     }
     get #pane() {
         return this.#treeElement.parentPane();
-    }
-    get #matchedStyles() {
-        return this.#treeElement.matchedStyles();
     }
     #handleVarDefinitionActivate(variable) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CustomPropertyLinkClicked);
@@ -422,7 +406,7 @@ export class LightDarkColorRenderer extends rendererBase(SDK.CSSPropertyParserMa
         const inactiveColor = (activeColor === match.light) ? dark : light;
         const colorText = context.matchedResult.getComputedTextRange(activeColor[0], activeColor[activeColor.length - 1]);
         const color = colorText && Common.Color.parse(colorText);
-        inactiveColor.style.textDecoration = 'line-through';
+        inactiveColor.classList.add('inactive-value');
         if (color) {
             colorSwatch.renderColor(color);
         }
@@ -710,10 +694,10 @@ export class AutoBaseRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         Renderer.renderInto(match.base, context, base);
         const activeAppearance = this.#treeElement.getComputedStyle('appearance');
         if (activeAppearance?.startsWith('base')) {
-            auto.style.textDecoration = 'line-through';
+            auto.classList.add('inactive-value');
         }
         else {
-            base.style.textDecoration = 'line-through';
+            base.classList.add('inactive-value');
         }
         return [content];
     }
@@ -885,7 +869,7 @@ export class ShadowRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.S
                 }
                 properties.push({ value, source, length, propertyType, expansionContext });
             }
-            else if (match instanceof SDK.CSSPropertyParser.VariableMatch) {
+            else if (match instanceof SDK.CSSPropertyParserMatchers.VariableMatch) {
                 // This doesn't come from any computed text, so we can rely on context here
                 const computedValue = context.matchedResult.getComputedText(value);
                 const computedValueAst = SDK.CSSPropertyParser.tokenizeDeclaration('--property', computedValue);
@@ -1100,7 +1084,7 @@ export class SelectFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMa
         }
         for (let i = 0; i < renderedArgs.length; ++i) {
             if (evaledArgs.results[i] !== functionResult) {
-                renderedArgs[i].style.textDecoration = 'line-through';
+                renderedArgs[i].classList.add('inactive-value');
             }
         }
     }
@@ -1212,7 +1196,7 @@ export class PositionTryRenderer extends rendererBase(SDK.CSSPropertyParserMatch
                 fallbackContent.appendChild(document.createTextNode(', '));
             }
             if (i !== this.#treeElement.matchedStyles().activePositionFallbackIndex()) {
-                fallbackContent.style.textDecoration = 'line-through';
+                fallbackContent.classList.add('inactive-value');
             }
             Renderer.renderInto(fallback, context, fallbackContent);
             content.push(fallbackContent);
@@ -1564,17 +1548,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (!ast) {
             return null;
         }
-        const matching = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new SDK.CSSPropertyParser.VariableMatcher((match) => {
-                const variableValue = this.matchedStylesInternal.computeCSSVariable(style, match.name)?.value;
-                if (variableValue !== undefined) {
-                    return variableValue;
-                }
-                if (match.fallback.length === 0 ||
-                    match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
-                    return null;
-                }
-                return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
-            })]);
+        const matching = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new SDK.CSSPropertyParserMatchers.VariableMatcher(this.matchedStylesInternal, style)]);
         const decl = SDK.CSSPropertyParser.ASTUtils.siblings(SDK.CSSPropertyParser.ASTUtils.declValue(matching.ast.tree));
         return decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
     }
@@ -1625,7 +1599,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             renderers.push(new FontRenderer(this));
         }
         this.listItemElement.removeChildren();
-        this.valueElement = Renderer.renderValueElement(this.name, this.value, renderers);
+        const matchedResult = this.property.parseValue(this.matchedStyles(), this.computedStyles);
+        this.valueElement = Renderer.renderValueElement(this.name, this.value, matchedResult, renderers);
         this.nameElement = Renderer.renderNameElement(this.name);
         if (this.property.name.startsWith('--') && this.nameElement) {
             this.parentPaneInternal.addPopover(this.nameElement, {
@@ -1699,7 +1674,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             copyIcon.addEventListener('click', () => {
                 const propertyText = `${this.property.name}: ${this.property.value};`;
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyText);
-                Host.userMetrics.styleTextCopied(1 /* Host.UserMetrics.StyleTextCopied.DECLARATION_VIA_CHANGED_LINE */);
             });
             this.listItemElement.append(copyIcon);
             this.listItemElement.insertBefore(enabledCheckboxElement, this.listItemElement.firstChild);
@@ -1814,33 +1788,27 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyDeclaration), () => {
             const propertyText = `${this.property.name}: ${this.property.value};`;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(propertyText);
-            Host.userMetrics.styleTextCopied(3 /* Host.UserMetrics.StyleTextCopied.DECLARATION_VIA_CONTEXT_MENU */);
         }, { jslogContext: 'copy-declaration' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyProperty), () => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.property.name);
-            Host.userMetrics.styleTextCopied(4 /* Host.UserMetrics.StyleTextCopied.PROPERTY_VIA_CONTEXT_MENU */);
         }, { jslogContext: 'copy-property' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyValue), () => {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.property.value);
-            Host.userMetrics.styleTextCopied(5 /* Host.UserMetrics.StyleTextCopied.VALUE_VIA_CONTEXT_MENU */);
         }, { jslogContext: 'copy-value' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyRule), () => {
             const ruleText = StylesSidebarPane.formatLeadingProperties(this.#parentSection).ruleText;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(ruleText);
-            Host.userMetrics.styleTextCopied(7 /* Host.UserMetrics.StyleTextCopied.RULE_VIA_CONTEXT_MENU */);
         }, { jslogContext: 'copy-rule' });
         contextMenu.headerSection().appendItem(i18nString(UIStrings.copyCssDeclarationAsJs), this.copyCssDeclarationAsJs.bind(this), { jslogContext: 'copy-css-declaration-as-js' });
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllDeclarations), () => {
             const allDeclarationText = StylesSidebarPane.formatLeadingProperties(this.#parentSection).allDeclarationText;
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
-            Host.userMetrics.styleTextCopied(8 /* Host.UserMetrics.StyleTextCopied.ALL_DECLARATIONS_VIA_CONTEXT_MENU */);
         }, { jslogContext: 'copy-all-declarations' });
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllCssDeclarationsAsJs), this.copyAllCssDeclarationAsJs.bind(this), { jslogContext: 'copy-all-css-declarations-as-js' });
         // TODO(changhaohan): conditionally add this item only when there are changes to copy
         contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyAllCSSChanges), async () => {
             const allChanges = await this.parentPane().getFormattedChanges();
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-            Host.userMetrics.styleTextCopied(2 /* Host.UserMetrics.StyleTextCopied.ALL_CHANGES_VIA_STYLES_TAB */);
         }, { jslogContext: 'copy-all-css-changes' });
         contextMenu.footerSection().appendItem(i18nString(UIStrings.viewComputedValue), () => {
             void this.viewComputedValue();
@@ -1867,13 +1835,11 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     copyCssDeclarationAsJs() {
         const cssDeclarationValue = getCssDeclarationAsJavascriptProperty(this.property);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(cssDeclarationValue);
-        Host.userMetrics.styleTextCopied(6 /* Host.UserMetrics.StyleTextCopied.DECLARATION_AS_JS_VIA_CONTEXT_MENU */);
     }
     copyAllCssDeclarationAsJs() {
         const leadingProperties = this.#parentSection.style().leadingProperties();
         const cssDeclarationsAsJsProperties = leadingProperties.filter(property => !property.disabled).map(getCssDeclarationAsJavascriptProperty);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(cssDeclarationsAsJsProperties.join(',\n'));
-        Host.userMetrics.styleTextCopied(9 /* Host.UserMetrics.StyleTextCopied.ALL_DECLARATINS_AS_JS_VIA_CONTEXT_MENU */);
     }
     navigateToSource(element, omitFocus) {
         if (!this.#parentSection.navigable) {

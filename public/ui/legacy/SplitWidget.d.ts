@@ -60,7 +60,6 @@ export declare class SplitWidget extends SplitWidget_base {
     showMode(): string;
     sidebarIsShowing(): boolean;
     setSecondIsSidebar(secondIsSidebar: boolean): void;
-    sidebarSide(): string | null;
     resizerElement(): Element;
     hideMain(animate?: boolean): void;
     hideSidebar(animate?: boolean): void;
@@ -95,7 +94,6 @@ export declare class SplitWidget extends SplitWidget_base {
     hideDefaultResizer(noSplitter?: boolean): void;
     installResizer(resizerElement: Element): void;
     uninstallResizer(resizerElement: Element): void;
-    hasCustomResizer(): boolean;
     toggleResizer(resizer: Element, on: boolean): void;
     private settingForOrientation;
     private preferredSidebarSizeDIP;

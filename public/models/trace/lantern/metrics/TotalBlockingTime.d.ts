@@ -7,10 +7,10 @@ declare class TotalBlockingTime extends Metric {
     static getPessimisticGraph(dependencyGraph: Graph.Node): Graph.Node;
     static getEstimateFromSimulation(simulation: Simulation.Result, extras: Extras): Simulation.Result;
     static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): MetricResult;
-    static getTopLevelEvents(nodeTimings: Simulation.Result['nodeTimings'], minDurationMs: number): {
+    static getTopLevelEvents(nodeTimings: Simulation.Result['nodeTimings'], minDurationMs: number): Array<{
         start: number;
         end: number;
         duration: number;
-    }[];
+    }>;
 }
 export { TotalBlockingTime };

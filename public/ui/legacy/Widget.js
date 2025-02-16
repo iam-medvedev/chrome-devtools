@@ -92,6 +92,37 @@ export class WidgetElement extends HTMLElement {
         // treated as a root instance if no root widget was found.
         Widget.getOrCreateWidget(this).show(this.parentElement, undefined, /* suppressOrphanWidgetError= */ true);
     }
+    appendChild(child) {
+        if (child instanceof HTMLElement && child.tagName !== 'STYLE') {
+            Widget.getOrCreateWidget(child).show(this);
+            return child;
+        }
+        return super.appendChild(child);
+    }
+    insertBefore(child, referenceChild) {
+        if (child instanceof HTMLElement && child.tagName !== 'STYLE') {
+            Widget.getOrCreateWidget(child).show(this, referenceChild);
+            return child;
+        }
+        return super.insertBefore(child, referenceChild);
+    }
+    removeChild(child) {
+        const childWidget = Widget.get(child);
+        if (childWidget) {
+            childWidget.detach();
+            return child;
+        }
+        return super.removeChild(child);
+    }
+    removeChildren() {
+        for (const child of this.children) {
+            const childWidget = Widget.get(child);
+            if (childWidget) {
+                childWidget.detach();
+            }
+        }
+        super.removeChildren();
+    }
 }
 customElements.define('devtools-widget', WidgetElement);
 export function widgetRef(type, callback) {
@@ -504,6 +535,7 @@ export class Widget {
             ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot ?? this.element, cssFile);
         }
     }
+    // Unused, but useful for debugging.
     printWidgetHierarchy() {
         const lines = [];
         this.collectWidgetHierarchy('', lines);
@@ -576,7 +608,10 @@ export class Widget {
         this.invalidateConstraints();
     }
     setMinimumSize(width, height) {
-        this.constraintsInternal = new Constraints(new Size(width, height));
+        this.minimumSize = new Size(width, height);
+    }
+    set minimumSize(size) {
+        this.constraintsInternal = new Constraints(size);
         this.invalidateConstraints();
     }
     hasNonZeroConstraints() {
@@ -692,6 +727,10 @@ export class Widget {
 const storedScrollPositions = new WeakMap();
 export class VBox extends Widget {
     constructor(useShadowDom, delegatesFocus, element) {
+        if (useShadowDom instanceof HTMLElement) {
+            element = useShadowDom;
+            useShadowDom = false;
+        }
         super(useShadowDom, delegatesFocus, element);
         this.contentElement.classList.add('vbox');
     }

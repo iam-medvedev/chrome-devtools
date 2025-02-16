@@ -23,10 +23,10 @@ export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventType
     title(): Common.UIString.LocalizedString;
     toggled(): boolean;
     setToggled(toggled: boolean): void;
-    options(): undefined | Array<ExtensionOption>;
-    contextTypes(): undefined | Array<Function>;
+    options(): undefined | ExtensionOption[];
+    contextTypes(): undefined | Function[];
     canInstantiate(): boolean;
-    bindings(): Array<Binding> | undefined;
+    bindings(): Binding[] | undefined;
     experiment(): string | undefined;
     setting(): string | undefined;
     condition(): Root.Runtime.Condition | undefined;
@@ -34,7 +34,7 @@ export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventType
 }
 export declare function registerActionExtension(registration: ActionRegistration): void;
 export declare function reset(): void;
-export declare function getRegisteredActionExtensions(): Array<Action>;
+export declare function getRegisteredActionExtensions(): Action[];
 export declare function maybeRemoveActionExtension(actionId: string): boolean;
 export declare const enum Platforms {
     ALL = "All platforms",
@@ -114,7 +114,7 @@ export interface ExtensionOption {
 export interface Binding {
     platform?: Platforms;
     shortcut: string;
-    keybindSets?: Array<KeybindSet>;
+    keybindSets?: KeybindSet[];
 }
 /**
  * The representation of an action extension to be registered.
@@ -217,11 +217,11 @@ export interface ActionRegistration {
      * });
      * ```
      */
-    contextTypes?: () => Array<Function>;
+    contextTypes?: () => Function[];
     /**
      * The descriptions for each of the two states in which a toggleable action can be.
      */
-    options?: Array<ExtensionOption>;
+    options?: ExtensionOption[];
     /**
      * The description of the variables (e.g. platform, keys and keybind sets) under which a keyboard shortcut triggers the action.
      * If a keybind must be available on all platforms, its 'platform' property must be undefined. The same applies to keybind sets
@@ -230,7 +230,7 @@ export interface ActionRegistration {
      * Keybinds also depend on the context types of their corresponding action, and so they will only be available when such context types
      * are flavors of the current appliaction context.
      */
-    bindings?: Array<Binding>;
+    bindings?: Binding[];
     /**
      * The name of the experiment an action is associated with. Enabling and disabling the declared
      * experiment will enable and disable the action respectively.

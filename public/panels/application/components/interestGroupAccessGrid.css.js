@@ -10,7 +10,9 @@ export default {
  * found in the LICENSE file.
  */
 :host {
+  display: flex;
   padding: 20px;
+  height: 100%;
 }
 
 .heading {

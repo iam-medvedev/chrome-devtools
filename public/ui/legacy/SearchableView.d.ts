@@ -33,7 +33,6 @@ export declare class SearchableView extends VBox {
     setReplaceable(replaceable: boolean): void;
     updateSearchMatchesCount(matches: number): void;
     updateCurrentMatchIndex(currentMatchIndex: number): void;
-    isSearchVisible(): boolean;
     closeSearch(): void;
     private toggleSearchBar;
     cancelSearch(): void;

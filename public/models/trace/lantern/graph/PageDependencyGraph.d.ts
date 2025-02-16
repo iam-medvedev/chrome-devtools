@@ -3,9 +3,9 @@ import type { Node } from './BaseNode.js';
 import { CPUNode } from './CPUNode.js';
 import { NetworkNode } from './NetworkNode.js';
 interface NetworkNodeOutput {
-    nodes: Array<NetworkNode>;
+    nodes: NetworkNode[];
     idToNodeMap: Map<string, NetworkNode>;
-    urlToNodeMap: Map<string, Array<NetworkNode>>;
+    urlToNodeMap: Map<string, NetworkNode[]>;
     frameIdToNodeMap: Map<string, NetworkNode | null>;
 }
 declare class PageDependencyGraph {

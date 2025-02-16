@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { makeCompleteEvent, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describeWithEnvironment('UserTimingsHandler', function () {
@@ -153,6 +154,17 @@ describeWithEnvironment('UserTimingsHandler', function () {
                 assert.strictEqual(timingsData.timestampEvents[1].args.data?.name, 'another timestamp');
                 assert.strictEqual(timingsData.timestampEvents[2].args.data?.name, 'yet another timestamp');
             });
+        });
+    });
+    describe('UserTiming::Measure events parsing', function () {
+        it('stores user timing events by trace id', async function () {
+            const userTimingMeasure = makeCompleteEvent("UserTiming::Measure" /* Trace.Types.Events.Name.USER_TIMING_MEASURE */, 0, 100, 'cat', 0, 0);
+            userTimingMeasure.args.traceId = 1;
+            Trace.Handlers.ModelHandlers.UserTimings.handleEvent(userTimingMeasure);
+            await Trace.Handlers.ModelHandlers.UserTimings.finalize();
+            const data = Trace.Handlers.ModelHandlers.UserTimings.data();
+            assert.lengthOf(data.measureTraceByTraceId, 1);
+            assert.deepEqual([...data.measureTraceByTraceId.entries()][0], [1, userTimingMeasure]);
         });
     });
 });

@@ -19,11 +19,11 @@ export declare class NetworkConfigView extends UI.Widget.VBox {
 }
 interface UserAgentGroup {
     title: string;
-    values: {
+    values: Array<{
         title: string;
         value: string;
         metadata: Protocol.Emulation.UserAgentMetadata | null;
-    }[];
+    }>;
 }
 export declare const userAgentGroups: UserAgentGroup[];
 export {};

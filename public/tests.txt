@@ -155,6 +155,7 @@ models/persistence/NetworkPersistenceManager.test.js
 models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
 models/persistence/PlatformFileSystem.test.js
+models/project_settings/ProjectSettingsModel.test.js
 models/source_map_scopes/NamesResolver.test.js
 models/source_map_scopes/ScopeChainModel.test.js
 models/source_map_scopes/ScopeTreeCache.test.js
@@ -173,6 +174,7 @@ models/trace/extras/FetchNodes.test.js
 models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
 models/trace/extras/Metadata.test.js
+models/trace/extras/ScriptDuplication.test.js
 models/trace/extras/StackTraceForEvent.test.js
 models/trace/extras/ThirdParties.test.js
 models/trace/extras/TraceFilter.test.js
@@ -201,6 +203,7 @@ models/trace/handlers/PageLoadMetricsHandler.test.js
 models/trace/handlers/RendererHandler.test.js
 models/trace/handlers/SamplesHandler.test.js
 models/trace/handlers/ScreenshotsHandler.test.js
+models/trace/handlers/ScriptsHandler.test.js
 models/trace/handlers/SelectorStatsHandler.test.js
 models/trace/handlers/ServerTimingsHandler.test.js
 models/trace/handlers/Threads.test.js
@@ -256,9 +259,11 @@ panels/ai_assistance/EvaluateAction.test.js
 panels/ai_assistance/agents/AiAgent.test.js
 panels/ai_assistance/agents/FileAgent.test.js
 panels/ai_assistance/agents/NetworkAgent.test.js
+panels/ai_assistance/agents/PatchAgent.test.js
 panels/ai_assistance/agents/PerformanceAgent.test.js
 panels/ai_assistance/agents/StylingAgent.test.js
 panels/ai_assistance/components/ChatView.test.js
+panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
 panels/ai_assistance/components/UserActionRow.test.js
 panels/ai_assistance/data_formatters/FileFormatter.test.js
 panels/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
@@ -341,6 +346,7 @@ panels/elements/components/QueryContainer.test.js
 panels/elements/components/StylePropertyEditor.test.js
 panels/elements/AccessibilityTreeView.test.js
 panels/elements/CSSRuleValidator.test.js
+panels/elements/CSSValueTraceView.test.js
 panels/elements/ClassesPaneWidget.test.js
 panels/elements/ColorSwatchPopoverIcon.test.js
 panels/elements/ComputedStyleModel.test.js
@@ -519,8 +525,10 @@ panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js
+panels/timeline/utils/InsightAIContext.test.js
 panels/timeline/utils/SourceMapsResolver.test.js
 panels/utils/utils.test.js
+panels/web_audio/WebAudioView.test.js
 panels/web_audio/web_audio.test.js
 panels/webauthn/WebauthnPane.test.js
 panels/whats_new/ReleaseNote.test.js
@@ -595,7 +603,6 @@ ui/legacy/Widget.test.js
 ui/legacy/XLink.test.js
 ui/legacy/components/color_picker/ColorFormatSpec.test.js
 ui/legacy/components/color_picker/Spectrum.test.js
-ui/legacy/components/data_grid/DataGrid.test.js
 ui/legacy/components/data_grid/DataGridElement.test.js
 ui/legacy/components/inline_editor/AnimationTimingModel.test.js
 ui/legacy/components/inline_editor/AnimationTimingUI.test.js

@@ -35,10 +35,10 @@ export declare class ProfileView extends UI.View.SimpleView implements UI.Search
     searchableElement?: ProfileDataGridTree | ProfileFlameChart;
     profileDataGridTree?: ProfileDataGridTree;
     constructor();
-    static buildPopoverTable(popoverInfo: {
+    static buildPopoverTable(popoverInfo: Array<{
         title: string;
         value: string;
-    }[]): Element;
+    }>): Element;
     setProfile(profile: CPUProfile.ProfileTreeModel.ProfileTreeModel): void;
     profile(): CPUProfile.ProfileTreeModel.ProfileTreeModel | null;
     initialize(nodeFormatter: Formatter): void;

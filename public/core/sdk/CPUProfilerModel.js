@@ -40,7 +40,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('core/sdk/CPUProfilerModel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CPUProfilerModel extends SDKModel {
-    #isRecording;
     #nextAnonymousConsoleProfileNumber;
     #anonymousConsoleProfileIdToTitle;
     #profilerAgent;
@@ -49,7 +48,6 @@ export class CPUProfilerModel extends SDKModel {
     registeredConsoleProfileMessages = [];
     constructor(target) {
         super(target);
-        this.#isRecording = false;
         this.#nextAnonymousConsoleProfileNumber = 1;
         this.#anonymousConsoleProfileIdToTitle = new Map();
         this.#profilerAgent = target.profilerAgent();
@@ -94,17 +92,12 @@ export class CPUProfilerModel extends SDKModel {
             cpuProfilerModel: this,
         };
     }
-    isRecordingProfile() {
-        return this.#isRecording;
-    }
     startRecording() {
-        this.#isRecording = true;
         const intervalUs = 100;
         void this.#profilerAgent.invoke_setSamplingInterval({ interval: intervalUs });
         return this.#profilerAgent.invoke_start();
     }
     stopRecording() {
-        this.#isRecording = false;
         return this.#profilerAgent.invoke_stop().then(response => response.profile || null);
     }
     startPreciseCoverage(jsCoveragePerBlock, preciseCoverageDeltaUpdateCallback) {

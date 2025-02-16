@@ -19,10 +19,10 @@ export declare class MockProtocolBackend {
         url: string;
         content: string | SDK.SourceMap.SourceMapV3;
     } | null): Promise<SDK.Script.Script>;
-    createSimpleRemoteObject(properties: {
+    createSimpleRemoteObject(properties: Array<{
         name: string;
         value?: number;
-    }[]): Protocol.Runtime.RemoteObject;
+    }>): Protocol.Runtime.RemoteObject;
     createCallFrame(target: SDK.Target.Target, script: {
         url: string;
         content: string;

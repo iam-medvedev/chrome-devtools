@@ -6,12 +6,12 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { createUISourceCode, mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { getGetHostConfigStub, } from '../../../testing/EnvironmentHelpers.js';
+import { updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { FileAgent, FileContext } from '../ai_assistance.js';
 describeWithMockConnection('FileAgent', () => {
     function mockHostConfig(modelId, temperature) {
-        getGetHostConfigStub({
+        updateHostConfig({
             devToolsAiAssistanceFileAgent: {
                 modelId,
                 temperature,
@@ -117,6 +117,7 @@ describeWithMockConnection('FileAgent', () => {
                     {
                         type: "user-query" /* ResponseType.USER_QUERY */,
                         query: 'test',
+                        imageInput: undefined,
                     },
                     {
                         type: "context" /* ResponseType.CONTEXT */,
@@ -148,6 +149,7 @@ content
                     {
                         type: "answer" /* ResponseType.ANSWER */,
                         text: 'This is the answer',
+                        complete: true,
                         suggestions: undefined,
                         rpcId: 123,
                     },

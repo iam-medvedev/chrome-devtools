@@ -41,14 +41,14 @@ export declare class ResourceTreeModel extends SDKModel<EventTypes> {
     navigate(url: Platform.DevToolsPath.UrlString): Promise<Protocol.Page.NavigateResponse>;
     navigationHistory(): Promise<{
         currentIndex: number;
-        entries: Array<Protocol.Page.NavigationEntry>;
+        entries: Protocol.Page.NavigationEntry[];
     } | null>;
     navigateToHistoryEntry(entry: Protocol.Page.NavigationEntry): void;
     setLifecycleEventsEnabled(enabled: boolean): Promise<Protocol.ProtocolResponseWithError>;
     fetchAppManifest(): Promise<{
         url: Platform.DevToolsPath.UrlString;
         data: string | null;
-        errors: Array<Protocol.Page.AppManifestError>;
+        errors: Protocol.Page.AppManifestError[];
     }>;
     getInstallabilityErrors(): Promise<Protocol.Page.InstallabilityError[]>;
     getAppId(): Promise<Protocol.Page.GetAppIdResponse>;
@@ -141,6 +141,7 @@ export declare class ResourceTreeFrame {
     domainAndRegistry(): string;
     getAdScriptId(frameId: Protocol.Page.FrameId): Promise<Protocol.Page.AdScriptId | null>;
     get securityOrigin(): string | null;
+    get securityOriginDetails(): Protocol.Page.SecurityOriginDetails | null;
     getStorageKey(forceFetch: boolean): Promise<string | null>;
     unreachableUrl(): Platform.DevToolsPath.UrlString;
     get loaderId(): Protocol.Network.LoaderId;

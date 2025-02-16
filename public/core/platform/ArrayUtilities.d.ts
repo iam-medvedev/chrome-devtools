@@ -62,5 +62,5 @@ export declare function nearestIndexFromBeginning<T>(arr: T[], predicate: (array
  * Please note: this presupposes that the array is already ordered.
  */
 export declare function nearestIndexFromEnd<T>(arr: readonly T[], predicate: (arrayItem: T) => boolean): number | null;
-export declare function arrayDoesNotContainNullOrUndefined<T>(arr: (T | null | undefined)[]): arr is T[];
+export declare function arrayDoesNotContainNullOrUndefined<T>(arr: Array<T | null | undefined>): arr is T[];
 export {};

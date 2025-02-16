@@ -28,7 +28,7 @@ export declare function extractRelatedDOMNodesFromEvent(modelData: Handlers.Type
  * Takes a set of Protocol.DOM.BackendNodeId ids and will return a map of NodeId=>DOMNode.
  * Results are cached based on 1) the provided ParsedTrace and 2) the provided set of IDs.
  */
-export declare function domNodesForMultipleBackendNodeIds(modelData: Handlers.Types.ParsedTrace, nodeIds: Array<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;
+export declare function domNodesForMultipleBackendNodeIds(modelData: Handlers.Types.ParsedTrace, nodeIds: Protocol.DOM.BackendNodeId[]): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;
 export interface LayoutShiftSource {
     previousRect: DOMRect;
     currentRect: DOMRect;

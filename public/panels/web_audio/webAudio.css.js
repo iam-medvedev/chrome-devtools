@@ -20,10 +20,6 @@ export default {
   min-height: fit-content;
 }
 
-.web-audio-toolbar {
-  display: inline-block;
-}
-
 .web-audio-landing-page {
   position: absolute;
   background-color: var(--sys-color-cdt-base-container);

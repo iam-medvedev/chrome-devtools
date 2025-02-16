@@ -11,7 +11,7 @@ export default {
  */
 
 :host {
-  padding: 10px;
+  padding: var(--sys-size-7) var(--sys-size-8);
 }
 
 .widget {

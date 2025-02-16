@@ -343,9 +343,6 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     addScopeChangeListener(listener) {
         this.#scopeChangeListeners.add(listener);
     }
-    removeScopeChangeListener(listener) {
-        this.#scopeChangeListeners.delete(listener);
-    }
     scopeTarget() {
         return this.#scopeTarget;
     }

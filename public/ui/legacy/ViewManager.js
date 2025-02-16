@@ -116,7 +116,7 @@ export class ViewManager {
         // Views may define their initial ordering within a location. When the user has not reordered, we use the
         // default ordering as defined by the views themselves.
         const viewsByLocation = new Map();
-        for (const view of getRegisteredViewExtensions(Common.Settings.Settings.instance().getHostConfig())) {
+        for (const view of getRegisteredViewExtensions()) {
             const location = view.location() || 'none';
             const views = viewsByLocation.get(location) || [];
             views.push(view);

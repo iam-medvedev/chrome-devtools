@@ -126,9 +126,6 @@ export function markAsPoliteLiveRegion(element, isAtomic) {
         element.setAttribute('aria-atomic', 'true');
     }
 }
-export function markAsLog(element) {
-    element.setAttribute('role', 'log');
-}
 export function hasRole(element) {
     return element.hasAttribute('role');
 }

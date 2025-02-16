@@ -217,4 +217,19 @@ function codec(buffer, codecStream) {
 function decodeGzipBuffer(buffer) {
     return codec(buffer, new DecompressionStream('gzip'));
 }
+export async function fetchFixture(url) {
+    const response = await fetch(url);
+    if (response.status !== 200) {
+        throw new Error(`Unable to load ${url}`);
+    }
+    const contentType = response.headers.get('content-type');
+    const isGzipEncoded = contentType !== null && contentType.includes('gzip');
+    let buffer = await response.arrayBuffer();
+    if (isGzipEncoded) {
+        buffer = await decodeGzipBuffer(buffer);
+    }
+    const decoder = new TextDecoder('utf-8');
+    const contents = decoder.decode(buffer);
+    return contents;
+}
 //# sourceMappingURL=TraceLoader.js.map

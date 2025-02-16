@@ -5,8 +5,10 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as HostModule from '../host/host.js';
 import * as Platform from '../platform/platform.js';
+import * as Root from '../root/root.js';
 import { cssMetadata, GridAreaRowRegex } from './CSSMetadata.js';
-import { stripComments } from './CSSPropertyParser.js';
+import { matchDeclaration, stripComments } from './CSSPropertyParser.js';
+import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BezierMatcher, ColorMatcher, ColorMixMatcher, CSSWideKeywordMatcher, FlexGridMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, PositionTryMatcher, SelectFunctionMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
     ownerStyle;
     index;
@@ -62,6 +64,37 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
         // disabled: false
         const result = new CSSProperty(ownerStyle, index, payload.name, payload.value, payload.important || false, payload.disabled || false, ('parsedOk' in payload) ? Boolean(payload.parsedOk) : true, Boolean(payload.implicit), payload.text, payload.range, payload.longhandProperties);
         return result;
+    }
+    parseValue(matchedStyles, computedStyles) {
+        if (!this.parsedOk) {
+            return null;
+        }
+        const matchers = [
+            new VariableMatcher(matchedStyles, this.ownerStyle),
+            new ColorMatcher(() => computedStyles?.get('color') ?? null),
+            new ColorMixMatcher(),
+            new URLMatcher(),
+            new AngleMatcher(),
+            new LinkableNameMatcher(),
+            new BezierMatcher(),
+            new StringMatcher(),
+            new ShadowMatcher(),
+            new CSSWideKeywordMatcher(this, matchedStyles),
+            new LightDarkColorMatcher(),
+            new GridTemplateMatcher(),
+            new LinearGradientMatcher(),
+            new AnchorFunctionMatcher(),
+            new PositionAnchorMatcher(),
+            new FlexGridMatcher(),
+            new PositionTryMatcher(),
+            new LengthMatcher(),
+            new SelectFunctionMatcher(),
+            new AutoBaseMatcher(),
+        ];
+        if (Root.Runtime.experiments.isEnabled('font-editor')) {
+            matchers.push(new FontMatcher());
+        }
+        return matchDeclaration(this.name, this.value, matchers);
     }
     ensureRanges() {
         if (this.#nameRangeInternal && this.#valueRangeInternal) {
@@ -121,10 +154,6 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
     }
     activeInStyle() {
         return this.#active;
-    }
-    trimmedValueWithoutImportant() {
-        const important = '!important';
-        return this.value.endsWith(important) ? this.value.slice(0, -important.length).trim() : this.value.trim();
     }
     async setText(propertyText, majorChange, overwrite) {
         if (!this.ownerStyle) {

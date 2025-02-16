@@ -29,11 +29,11 @@ export declare const enum DefinitionKind {
     FIXED = 3
 }
 export interface ScopeTreeNode {
-    variables: {
+    variables: Array<{
         name: string;
         kind: DefinitionKind;
         offsets: number[];
-    }[];
+    }>;
     start: number;
     end: number;
     children: ScopeTreeNode[];

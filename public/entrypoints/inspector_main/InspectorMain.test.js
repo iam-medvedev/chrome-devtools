@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, getGetHostConfigStub, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, stubNoopSettings, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -55,7 +55,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             Common.Settings.Settings.instance({ forceNew: true, syncedStorage: storage, globalStorage: storage, localStorage: storage });
         });
         function setBrowserConfig(thirdPartyCookieRestrictionEnabled, thirdPartyCookieMetadataEnabled, thirdPartyCookieHeuristicsEnabled, managedBlockThirdPartyCookies) {
-            getGetHostConfigStub({
+            updateHostConfig({
                 thirdPartyCookieControls: {
                     thirdPartyCookieRestrictionEnabled,
                     thirdPartyCookieHeuristicsEnabled,
@@ -129,7 +129,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
     describe('withNoopSettings', () => {
         beforeEach(() => {
             stubNoopSettings();
-            getGetHostConfigStub({ devToolsPrivacyUI: { enabled: false } });
+            updateHostConfig({ devToolsPrivacyUI: { enabled: false } });
         });
         it('continues only after primary page target is available', async () => {
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', 'tab');

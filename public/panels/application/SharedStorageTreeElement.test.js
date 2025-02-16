@@ -32,7 +32,6 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
     let target;
     let sharedStorageModel;
     let sharedStorage;
-    let treeElement;
     const METADATA = {
         creationTime: 100,
         length: 3,
@@ -78,8 +77,10 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         panel.markAsRoot();
         panel.show(document.body);
-        treeElement =
-            await Application.SharedStorageTreeElement.SharedStorageTreeElement.createElement(panel, sharedStorage);
+        const viewFunction = sinon.stub();
+        const treeElement = new Application.SharedStorageTreeElement.SharedStorageTreeElement(panel, sharedStorage);
+        treeElement.view =
+            await Application.SharedStorageItemsView.SharedStorageItemsView.createView(sharedStorage, viewFunction);
         await RenderCoordinator.done({ waitForWork: true });
         assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: SECURITY_ORIGIN }));
         const { view } = treeElement;
@@ -92,8 +93,8 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
         await refreshedPromise;
         assert.isTrue(getMetadataSpy.calledTwice);
         assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: SECURITY_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: SECURITY_ORIGIN }));
-        assert.deepEqual(view.getEntriesForTesting(), ENTRIES);
+        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: SECURITY_ORIGIN }));
+        assert.deepEqual(viewFunction.lastCall.firstArg.items, ENTRIES);
         panel.detach();
     });
 });

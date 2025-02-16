@@ -78,6 +78,9 @@
       "path": "../../models/persistence/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/project_settings/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {

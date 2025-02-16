@@ -20,7 +20,7 @@ export declare class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode<
     populated: boolean;
     savedSelf?: number;
     savedTotal?: number;
-    savedChildren?: DataGrid.DataGrid.DataGridNode<unknown>[];
+    savedChildren?: Array<DataGrid.DataGrid.DataGridNode<unknown>>;
     constructor(profileNode: CPUProfile.ProfileTreeModel.ProfileNode, owningTree: ProfileDataGridTree, hasChildren: boolean);
     static sort<T>(gridNodeGroups: ProfileDataGridNode[][], comparator: (arg0: T, arg1: T) => number, force: boolean): void;
     static merge(container: ProfileDataGridTree | ProfileDataGridNode, child: ProfileDataGridNode, shouldAbsorb: boolean): void;
@@ -55,9 +55,9 @@ export declare class ProfileDataGridTree implements UI.SearchableView.Searchable
     childrenByCallUID: Map<string, ProfileDataGridNode>;
     deepSearch: boolean;
     populated: boolean;
-    searchResults: {
+    searchResults: Array<{
         profileNode: ProfileDataGridNode;
-    }[];
+    }>;
     savedTotal?: number;
     savedChildren?: ProfileDataGridNode[] | null;
     searchResultIndex: number;

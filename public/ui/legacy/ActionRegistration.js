@@ -230,7 +230,7 @@ export function getRegisteredActionExtensions() {
         return Root.Runtime.Runtime.isDescriptorEnabled({
             experiment: action.experiment(),
             condition: action.condition(),
-        }, Common.Settings.Settings.instance().getHostConfig());
+        });
     })
         .sort((firstAction, secondAction) => {
         const order1 = firstAction.order() || 0;

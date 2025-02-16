@@ -1,9 +1,9 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Root from '../../../core/root/root.js';
 import * as PanelUtils from '../../utils/utils.js';
 import { FileFormatter } from '../data_formatters/FileFormatter.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
@@ -85,13 +85,13 @@ export class FileAgent extends AiAgent {
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_FILE_AGENT;
     get userTier() {
-        const config = Common.Settings.Settings.instance().getHostConfig();
-        return config.devToolsAiAssistanceFileAgent?.userTier;
+        const { hostConfig } = Root.Runtime;
+        return hostConfig.devToolsAiAssistanceFileAgent?.userTier;
     }
     get options() {
-        const config = Common.Settings.Settings.instance().getHostConfig();
-        const temperature = config.devToolsAiAssistanceFileAgent?.temperature;
-        const modelId = config.devToolsAiAssistanceFileAgent?.modelId;
+        const { hostConfig } = Root.Runtime;
+        const temperature = hostConfig.devToolsAiAssistanceFileAgent?.temperature;
+        const modelId = hostConfig.devToolsAiAssistanceFileAgent?.modelId;
         return {
             temperature,
             modelId,

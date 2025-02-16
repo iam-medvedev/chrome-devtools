@@ -56,12 +56,6 @@ async function getBufferFromObject(obj) {
     obj = obj.runtimeModel().createRemoteObject(response.result);
     return new SDK.RemoteObject.RemoteArrayBuffer(obj);
 }
-export function isDWARFMemoryObject(obj) {
-    if (obj instanceof Bindings.DebuggerLanguagePlugins.ExtensionRemoteObject) {
-        return obj.linearMemoryAddress !== undefined;
-    }
-    return false;
-}
 export class LinearMemoryInspectorController extends SDK.TargetManager.SDKModelObserver {
     #paneInstance = LinearMemoryInspectorPane.instance();
     #bufferIdToRemoteObject = new Map();

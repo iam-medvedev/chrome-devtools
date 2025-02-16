@@ -105,7 +105,6 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private sharedStorageAccess;
     showResource(resource: SDK.Resource.Resource, line?: number, column?: number): Promise<void>;
     showFrame(frame: SDK.ResourceTreeModel.ResourceTreeFrame): void;
-    showFileSystem(view: UI.Widget.Widget): void;
     private innerShowView;
     showPreloadingRuleSetView(revealInfo: PreloadingHelper.PreloadingForward.RuleSetView): void;
     showPreloadingAttemptViewWithFilter(filter: PreloadingHelper.PreloadingForward.AttemptViewWithFilter): void;

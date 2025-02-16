@@ -251,7 +251,6 @@ export declare abstract class HeapSnapshot {
     rootNode(): HeapSnapshotNode;
     get rootNodeIndex(): number;
     get totalSize(): number;
-    private getDominatedIndex;
     private createFilter;
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): number[];
     aggregatesWithFilter(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): {
@@ -437,6 +436,7 @@ export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     isHidden(): boolean;
     isArray(): boolean;
     isSynthetic(): boolean;
+    isNative(): boolean;
     isUserRoot(): boolean;
     isDocumentDOMTreesRoot(): boolean;
     serialize(): HeapSnapshotModel.HeapSnapshotModel.Node;

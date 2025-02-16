@@ -38,15 +38,6 @@ export class XWidget extends XElement {
     isShowing() {
         return this.visible;
     }
-    setOnShown(callback) {
-        this.onShownCallback = callback;
-    }
-    setOnHidden(callback) {
-        this.onHiddenCallback = callback;
-    }
-    setOnResized(callback) {
-        this.onResizedCallback = callback;
-    }
     setElementsToRestoreScrollPositionsFor(elements) {
         for (const element of this.elementsToRestoreScrollPositionsFor) {
             element.removeEventListener('scroll', XWidget.storeScrollPosition, { capture: false });

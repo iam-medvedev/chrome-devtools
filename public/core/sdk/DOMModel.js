@@ -233,9 +233,6 @@ export class DOMNode {
     setChildNodeCount(childNodeCount) {
         this.childNodeCountInternal = childNodeCount;
     }
-    hasShadowRoots() {
-        return Boolean(this.shadowRootsInternal.length);
-    }
     shadowRoots() {
         return this.shadowRootsInternal.slice();
     }

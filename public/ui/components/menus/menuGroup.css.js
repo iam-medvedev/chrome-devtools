@@ -11,7 +11,6 @@ export default {
  */
 
 .menu-group-label {
-  margin: 4px 30px 4px 10px;
   font-size: 12px;
   line-height: 16px;
   position: relative;

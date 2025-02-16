@@ -16,5 +16,5 @@ export declare class ChangeManager {
     clear(): Promise<void>;
     addChange(cssModel: SDK.CSSModel.CSSModel, frameId: Protocol.Page.FrameId, change: Change): Promise<string>;
     formatChanges(groupId: string): string;
-    buildChanges(changes: Array<Change>): string;
+    buildChanges(changes: Change[]): string;
 }

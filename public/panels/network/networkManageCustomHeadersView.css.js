@@ -12,17 +12,14 @@ export default {
 
 .custom-headers-list {
   height: 272px;
-  width: 250px;
-}
-
-.custom-headers-wrapper {
-  margin: 10px;
+  width: var(--sys-size-29);
+  margin: 0 var(--sys-size-8);
 }
 
 .header {
-  padding: 0 0 6px;
-  font-size: 18px;
-  font-weight: normal;
+  margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) var(--sys-size-8);
+  padding-top: var(--sys-size-3);
+  font: var(--sys-typescale-body2-medium);
   flex: none;
 }
 
@@ -39,9 +36,8 @@ export default {
 }
 
 .add-button {
-  width: 150px;
-  margin: auto;
-  margin-top: 5px;
+  margin: var(--sys-size-6) auto var(--sys-size-8) var(--sys-size-8);
+  align-items: flex-start;
 }
 
 /*# sourceURL=${import.meta.resolve('./networkManageCustomHeadersView.css')} */

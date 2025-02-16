@@ -10,7 +10,7 @@ export declare class EventListenersView extends UI.Widget.VBox {
     private readonly treeItemMap;
     constructor(changeCallback: () => void, enableDefaultTreeFocus?: boolean | undefined);
     focus(): void;
-    addObjects(objects: (SDK.RemoteObject.RemoteObject | null)[]): Promise<void>;
+    addObjects(objects: Array<SDK.RemoteObject.RemoteObject | null>): Promise<void>;
     private addObject;
     private addObjectEventListeners;
     showFrameworkListeners(showFramework: boolean, showPassive: boolean, showBlocking: boolean): void;

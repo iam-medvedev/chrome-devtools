@@ -8,7 +8,7 @@ export declare function getOrQueue(screenshot: Trace.Types.Events.LegacySyntheti
 /** Load an image (probably data URI). If it fails, resolve with null. */
 declare function loadImage(url: string): Promise<HTMLImageElement | null>;
 /** Populate the cache ahead of use, to allow for getOrQueue to synchronously return images. */
-export declare function preload(screenshots: (Trace.Types.Events.LegacySyntheticScreenshot | Trace.Types.Events.Screenshot)[]): Promise<void[]>;
+export declare function preload(screenshots: Array<Trace.Types.Events.LegacySyntheticScreenshot | Trace.Types.Events.Screenshot>): Promise<void[]>;
 export declare const cacheForTesting: WeakMap<Trace.Types.Events.LegacySyntheticScreenshot | Trace.Types.Events.Screenshot, HTMLImageElement | null>;
 export declare const loadImageForTesting: typeof loadImage;
 export {};

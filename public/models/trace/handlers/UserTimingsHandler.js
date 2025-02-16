@@ -9,6 +9,17 @@ import * as Types from '../types/types.js';
  * UserTimings and the trace events we parse currently.
  **/
 let syntheticEvents = [];
+// There are two events dispatched for performance.measure calls: one to
+// represent the measured timing in the tracing clock (which we type as
+// PerformanceMeasure) and another one for the call itself (which we
+// type as UserTimingMeasure). The two events corresponding to the same
+// call are linked together by a common trace_id. The reason two events
+// are dispatched is because the first was originally added with the
+// implementation of the performance.measure API and it uses an
+// overridden timestamp and duration. To prevent breaking potential deps
+// created since then, a second event was added instead of changing the
+// params of the first.
+const measureTraceByTraceId = new Map();
 const performanceMeasureEvents = [];
 const performanceMarkEvents = [];
 const consoleTimings = [];
@@ -19,6 +30,7 @@ export function reset() {
     performanceMarkEvents.length = 0;
     consoleTimings.length = 0;
     timestampEvents.length = 0;
+    measureTraceByTraceId.clear();
 }
 const resourceTimingNames = [
     'workerStart',
@@ -109,6 +121,9 @@ export function handleEvent(event) {
     if (ignoredNames.includes(event.name)) {
         return;
     }
+    if (Types.Events.isUserTimingMeasure(event)) {
+        measureTraceByTraceId.set(event.args.traceId, event);
+    }
     if (Types.Events.isPerformanceMeasure(event)) {
         performanceMeasureEvents.push(event);
         return;
@@ -135,6 +150,7 @@ export function data() {
         // TODO(crbug/41484172): UserTimingsHandler.test.ts fails if this is not copied.
         performanceMarks: [...performanceMarkEvents],
         timestampEvents: [...timestampEvents],
+        measureTraceByTraceId: new Map(measureTraceByTraceId),
     };
 }
 //# sourceMappingURL=UserTimingsHandler.js.map

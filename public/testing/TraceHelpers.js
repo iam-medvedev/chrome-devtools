@@ -586,6 +586,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
             performanceMarks: [],
             performanceMeasures: [],
             timestampEvents: [],
+            measureTraceByTraceId: new Map(),
         },
         LargestImagePaint: { lcpRequestByNavigation: new Map() },
         LargestTextPaint: new Map(),
@@ -647,6 +648,9 @@ export function getBaseTraceParseModelData(overrides = {}) {
         AsyncJSCalls: {
             schedulerToRunEntryPoints: new Map(),
             asyncCallToScheduler: new Map(),
+        },
+        Scripts: {
+            scripts: new Map(),
         },
         ...overrides,
     };

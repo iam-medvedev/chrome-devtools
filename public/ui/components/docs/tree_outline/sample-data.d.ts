@@ -4,4 +4,4 @@ export declare const belgraveHouse: {
     treeNodeData: string;
     id: string;
 };
-export declare const officesAndProductsData: TreeOutline.TreeOutlineUtils.TreeNode<string>[];
+export declare const officesAndProductsData: Array<TreeOutline.TreeOutlineUtils.TreeNode<string>>;

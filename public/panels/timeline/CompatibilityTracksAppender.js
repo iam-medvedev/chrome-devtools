@@ -7,7 +7,7 @@ import * as Root from '../../core/root/root.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
-import { getEventLevel, getFormattedTime } from './AppenderUtils.js';
+import { getDurationString, getEventLevel } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
 import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
@@ -472,7 +472,7 @@ export class CompatibilityTracksAppender {
         // Defaults here, though tracks may chose to redefine title/formattedTime
         const info = {
             title: this.titleForEvent(event, level),
-            formattedTime: getFormattedTime(event.dur),
+            formattedTime: getDurationString(event.dur),
             warningElements: TimelineComponents.DetailsView.buildWarningElementsForEvent(event, this.#parsedTrace),
             additionalElements: [],
             url: null,

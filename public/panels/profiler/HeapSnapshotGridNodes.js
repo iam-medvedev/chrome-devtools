@@ -164,9 +164,6 @@ export class HeapSnapshotGridNode extends Common.ObjectWrapper.eventMixin(HeapSn
     get name() {
         return undefined;
     }
-    heapSnapshotDataGrid() {
-        return this.dataGridInternal;
-    }
     createProvider() {
         throw new Error('Not implemented.');
     }

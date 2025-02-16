@@ -60,11 +60,11 @@ export interface Request {
     method: string;
     url: Platform.DevToolsPath.UrlString;
     httpVersion: string;
-    headers: {
+    headers: Array<{
         name: string;
         value: string;
         comment?: string;
-    }[];
+    }>;
     queryString: Parameter[];
     cookies: CookieDTO[];
     headersSize: number;
@@ -75,11 +75,11 @@ export interface Response {
     status: number;
     statusText: string;
     httpVersion: string;
-    headers: {
+    headers: Array<{
         name: string;
         value: string;
         comment?: string;
-    }[];
+    }>;
     cookies: CookieDTO[];
     content: Content;
     redirectURL: string;

@@ -13,7 +13,6 @@ export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     enable(): Promise<void>;
     disable(): Promise<void>;
     registrations(): Map<string, ServiceWorkerRegistration>;
-    hasRegistrationForURLs(urls: string[]): boolean;
     findVersion(versionId: string): ServiceWorkerVersion | null;
     deleteRegistration(registrationId: string): void;
     updateRegistration(registrationId: string): Promise<void>;
@@ -28,7 +27,6 @@ export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     workerRegistrationUpdated(registrations: Protocol.ServiceWorker.ServiceWorkerRegistration[]): void;
     workerVersionUpdated(versions: Protocol.ServiceWorker.ServiceWorkerVersion[]): void;
     workerErrorReported(payload: Protocol.ServiceWorker.ServiceWorkerErrorMessage): void;
-    forceUpdateOnReloadSetting(): Common.Settings.Setting<boolean>;
     private forceUpdateSettingChanged;
 }
 export declare const enum Events {
@@ -134,5 +132,4 @@ export declare class ServiceWorkerRegistration {
     isRedundant(): boolean;
     shouldBeRemoved(): boolean;
     canBeRemoved(): boolean;
-    clearErrors(): void;
 }

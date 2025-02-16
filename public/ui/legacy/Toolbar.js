@@ -555,14 +555,6 @@ export class ToolbarButton extends ToolbarItem {
     setDarkText() {
         this.element.classList.add('dark-text');
     }
-    turnIntoSelect(shrinkable = false) {
-        this.element.classList.add('toolbar-has-dropdown');
-        if (shrinkable) {
-            this.element.classList.add('toolbar-has-dropdown-shrinkable');
-        }
-        const dropdownArrowIcon = IconButton.Icon.create('triangle-down', 'toolbar-dropdown-arrow');
-        this.element.appendChild(dropdownArrowIcon);
-    }
     clicked(event) {
         if (!this.enabled) {
             return;
@@ -775,14 +767,6 @@ export class ToolbarToggle extends ToolbarButton {
     }
     setChecked(checked) {
         this.checked(checked);
-    }
-    setDefaultWithRedColor(withRedColor) {
-        if (withRedColor) {
-            this.setToggleType("red-toggle" /* Buttons.Button.ToggleType.RED */);
-            this.setGlyph(this.toggledGlyph || '');
-            this.setToggledIcon(this.untoggledGlyph || '');
-            this.toggled(true);
-        }
     }
     enableToggleWithRedColor() {
         this.setToggleType("red-toggle" /* Buttons.Button.ToggleType.RED */);

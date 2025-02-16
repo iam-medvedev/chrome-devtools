@@ -46,7 +46,6 @@ export declare class TargetManager extends Common.ObjectWrapper.ObjectWrapper<Ev
     isInScope(arg: SDKModel | Target | Common.EventTarget.EventTargetEvent<any, any> | null): boolean;
     setScopeTarget(scopeTarget: Target | null): void;
     addScopeChangeListener(listener: () => void): void;
-    removeScopeChangeListener(listener: () => void): void;
     scopeTarget(): Target | null;
 }
 export declare const enum Events {

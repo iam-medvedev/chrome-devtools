@@ -117,7 +117,7 @@ export class CSSStyleSheetHeader {
         return urlPath;
     }
     viaInspectorResourceURL() {
-        return `inspector://${this.getFrameURLPath()}inspector-stylesheet`;
+        return `inspector://${this.getFrameURLPath()}inspector-stylesheet#${this.id}`;
     }
     dynamicStyleURL() {
         return `stylesheet://${this.getFrameURLPath()}style#${this.id}`;

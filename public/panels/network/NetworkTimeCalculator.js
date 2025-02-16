@@ -93,10 +93,6 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
         this.window = window;
         this.boundaryChanged();
     }
-    setInitialUserFriendlyBoundaries() {
-        this.minimumBoundaryInternal = 0;
-        this.maximumBoundaryInternal = 1;
-    }
     computePosition(time) {
         return (time - this.minimumBoundary()) / this.boundarySpan() * (this.workingArea || 0);
     }
@@ -157,18 +153,6 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
             start = 0;
         }
         return { start, middle, end };
-    }
-    computePercentageFromEventTime(eventTime) {
-        // This function computes a percentage in terms of the total loading time
-        // of a specific event. If startAtZero is set, then this is useless, and we
-        // want to return 0.
-        if (eventTime !== -1 && !this.startAtZero) {
-            return ((eventTime - this.minimumBoundary()) / this.boundarySpan()) * 100;
-        }
-        return 0;
-    }
-    percentageToTime(percentage) {
-        return percentage * this.boundarySpan() / 100 + this.minimumBoundary();
     }
     boundaryChanged() {
         void this.boundryChangedEventThrottler.schedule(async () => {

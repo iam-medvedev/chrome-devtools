@@ -1855,6 +1855,15 @@ export const generatedProperties = [
         "name": "corner-end-start-shape"
     },
     {
+        "longhands": [
+            "corner-top-left-shape",
+            "corner-top-right-shape",
+            "corner-bottom-right-shape",
+            "corner-bottom-left-shape"
+        ],
+        "name": "corner-shape"
+    },
+    {
         "name": "corner-start-end-shape"
     },
     {

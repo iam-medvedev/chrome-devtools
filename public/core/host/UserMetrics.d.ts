@@ -34,7 +34,6 @@ export declare class UserMetrics {
     recordingExported(value: RecordingExported): void;
     recordingCodeToggled(value: RecordingCodeToggled): void;
     recordingCopiedToClipboard(value: RecordingCopiedToClipboard): void;
-    styleTextCopied(value: StyleTextCopied): void;
     cssHintShown(type: CSSHintType): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;
@@ -236,7 +235,8 @@ export declare enum Action {
     AiAssistanceSideEffectConfirmed = 179,
     AiAssistanceSideEffectRejected = 180,
     AiAssistanceError = 181,
-    MAX_VALUE = 182
+    AiAssistanceOpenedFromPerformanceInsight = 182,
+    MAX_VALUE = 183
 }
 export declare enum PanelCodes {
     elements = 1,
@@ -662,8 +662,7 @@ export declare enum DevtoolsExperiments {
     'timeline-experimental-insights' = 102,
     'timeline-dim-unrelated-events' = 103,
     'timeline-alternative-navigation' = 104,
-    'timeline-third-party-dependencies' = 106,
-    MAX_VALUE = 107
+    MAX_VALUE = 106
 }
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,
@@ -963,19 +962,6 @@ export declare const enum RecordingCopiedToClipboard {
     COPIED_STEP_WITH_REPLAY = 7,
     COPIED_STEP_WITH_EXTENSION = 8,
     MAX_VALUE = 9
-}
-export declare const enum StyleTextCopied {
-    DECLARATION_VIA_CHANGED_LINE = 1,
-    ALL_CHANGES_VIA_STYLES_TAB = 2,
-    DECLARATION_VIA_CONTEXT_MENU = 3,
-    PROPERTY_VIA_CONTEXT_MENU = 4,
-    VALUE_VIA_CONTEXT_MENU = 5,
-    DECLARATION_AS_JS_VIA_CONTEXT_MENU = 6,
-    RULE_VIA_CONTEXT_MENU = 7,
-    ALL_DECLARATIONS_VIA_CONTEXT_MENU = 8,
-    ALL_DECLARATINS_AS_JS_VIA_CONTEXT_MENU = 9,
-    SELECTOR_VIA_CONTEXT_MENU = 10,
-    MAX_VALUE = 11
 }
 export declare enum ManifestSectionCodes {
     OtherSection = 0,

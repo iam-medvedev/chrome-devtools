@@ -14,6 +14,10 @@ export default {
   color: inherit;
 }
 
+.inactive-value:not(:hover) {
+  text-decoration: line-through;
+}
+
 .tree-outline {
   padding: 0;
 }

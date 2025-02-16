@@ -74,10 +74,10 @@ export interface MetricInfo {
 }
 export interface ChartInfo {
     title: Common.UIString.LocalizedString;
-    metrics: {
+    metrics: Array<{
         name: string;
         color: string;
-    }[];
+    }>;
     max?: number;
     currentMax?: number;
     format?: Format;

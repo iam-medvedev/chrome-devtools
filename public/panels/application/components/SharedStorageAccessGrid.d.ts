@@ -4,7 +4,7 @@ export declare const i18nString: (id: string, values?: import("../../../core/i18
 export declare class SharedStorageAccessGrid extends HTMLElement {
     #private;
     connectedCallback(): void;
-    set data(data: Array<Protocol.Storage.SharedStorageAccessedEvent>);
+    set data(data: Protocol.Storage.SharedStorageAccessedEvent[]);
 }
 declare global {
     interface HTMLElementTagNameMap {

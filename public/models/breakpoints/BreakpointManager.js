@@ -613,14 +613,6 @@ export class Breakpoint {
     bound() {
         return this.#uiLocations.size !== 0;
     }
-    hasBoundScript() {
-        for (const uiSourceCode of this.uiSourceCodes) {
-            if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network) {
-                return true;
-            }
-        }
-        return false;
-    }
     setEnabled(enabled) {
         this.updateState({ ...this.#storageState, enabled });
     }

@@ -350,9 +350,6 @@ export class InspectorView extends VBox {
     isDrawerMinimized() {
         return this.drawerSplitWidget.isSidebarMinimized();
     }
-    closeDrawerTab(id, userGesture) {
-        this.drawerTabbedPane.closeTab(id, userGesture);
-    }
     keyDown(event) {
         const keyboardEvent = event;
         if (!KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) || keyboardEvent.altKey || keyboardEvent.shiftKey) {

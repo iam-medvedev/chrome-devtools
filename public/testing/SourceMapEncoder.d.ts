@@ -31,11 +31,11 @@ export declare class GeneratedRangeBuilder {
             line: number;
             column: number;
         };
-        bindings?: (string | undefined | {
+        bindings?: Array<string | undefined | Array<{
             line: number;
             column: number;
             name: string | undefined;
-        }[])[];
+        }>>;
     }): this;
     end(line: number, column: number): this;
     build(): string;

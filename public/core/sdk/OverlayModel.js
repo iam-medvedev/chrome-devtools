@@ -353,24 +353,6 @@ export class OverlayModel extends SDKModel {
     sourceOrderModeActive() {
         return this.#sourceOrderModeActiveInternal;
     }
-    highlightIsolatedElementInPersistentOverlay(nodeId) {
-        if (!this.#persistentHighlighter) {
-            return;
-        }
-        this.#persistentHighlighter.highlightIsolatedElementInOverlay(nodeId);
-    }
-    hideIsolatedElementInPersistentOverlay(nodeId) {
-        if (!this.#persistentHighlighter) {
-            return;
-        }
-        this.#persistentHighlighter.hideIsolatedElementInOverlay(nodeId);
-    }
-    isHighlightedIsolatedElementInPersistentOverlay(nodeId) {
-        if (!this.#persistentHighlighter) {
-            return false;
-        }
-        return this.#persistentHighlighter.isIsolatedElementHighlighted(nodeId);
-    }
     delayedHideHighlight(delay) {
         if (this.#hideHighlightTimeout === null) {
             this.#hideHighlightTimeout = window.setTimeout(() => this.highlightInOverlay({ clear: true }), delay);

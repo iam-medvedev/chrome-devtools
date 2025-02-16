@@ -47,7 +47,6 @@ export default {
   flex: auto;
 }
 
-.landing-page,
 .bfcache-page,
 .prerender-page {
   justify-content: center;
@@ -55,7 +54,6 @@ export default {
   padding: 20px;
 }
 
-.landing-page .message,
 .bfcache-page .message,
 .prerender-page .message {
   white-space: pre-line;

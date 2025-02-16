@@ -17,7 +17,6 @@ export declare class FileSystemWorkspaceBinding {
     static fileSystemSupportsAutomapping(project: Workspace.Workspace.Project): boolean;
     static completeURL(project: Workspace.Workspace.Project, relativePath: string): Platform.DevToolsPath.UrlString;
     static fileSystemPath(projectId: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString;
-    fileSystemManager(): IsolatedFileSystemManager;
     private onFileSystemsLoaded;
     private onFileSystemAdded;
     private addFileSystem;
