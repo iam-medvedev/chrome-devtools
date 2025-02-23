@@ -13,7 +13,7 @@ import { AI_ASSISTANCE_CSS_CLASS_NAME, ChangeManager } from '../ChangeManager.js
 import { debugLog } from '../debug.js';
 import { EvaluateAction, formatError, SideEffectError } from '../EvaluateAction.js';
 import { ExtensionScope, FREESTYLER_WORLD_NAME } from '../ExtensionScope.js';
-import { AiAgent, ConversationContext } from './AiAgent.js';
+import { AiAgent, ConversationContext, } from './AiAgent.js';
 /*
 * Strings that don't need to be translated at this time.
 */
@@ -203,6 +203,7 @@ export class NodeContext extends ConversationContext {
  */
 export class StylingAgent extends AiAgent {
     type = "freestyler" /* AgentType.STYLING */;
+    functionCallEmulationEnabled = true;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
     get userTier() {
@@ -226,15 +227,12 @@ export class StylingAgent extends AiAgent {
         const { hostConfig } = Root.Runtime;
         return Boolean(hostConfig.devToolsFreestyler?.multimodal);
     }
-    parseResponse(response) {
-        if (response.functionCalls) {
-            throw new Error('Function calling not supported yet');
-        }
+    parseTextResponse(text) {
         // We're returning an empty answer to denote the erroneous case.
-        if (!response.explanation) {
+        if (!text) {
             return { answer: '' };
         }
-        const lines = response.explanation.split('\n');
+        const lines = text.split('\n');
         let thought;
         let title;
         let action;
@@ -259,7 +257,7 @@ export class StylingAgent extends AiAgent {
         // The block below ensures that the response we parse always contains a defining instruction tag.
         const hasDefiningInstruction = lines.some(line => isDefiningInstructionStart(line));
         if (!hasDefiningInstruction) {
-            return this.parseResponse({ ...response, explanation: `ANSWER: ${response.explanation}` });
+            return this.parseTextResponse(`ANSWER: ${text}`);
         }
         while (i < lines.length) {
             const trimmed = lines[i].trim();
@@ -302,7 +300,7 @@ export class StylingAgent extends AiAgent {
                 // Here, we check whether the last line ends with STOP keyword and if so, remove it
                 // from the last line.
                 const lastActionLine = actionLines[actionLines.length - 1];
-                if (lastActionLine && lastActionLine.endsWith('STOP')) {
+                if (lastActionLine?.endsWith('STOP')) {
                     actionLines[actionLines.length - 1] = lastActionLine.substring(0, lastActionLine.length - 'STOP'.length);
                 }
                 action = actionLines.join('\n').replaceAll('```', '').replaceAll('``', '').trim();
@@ -358,7 +356,7 @@ export class StylingAgent extends AiAgent {
         return {
             // If we could not parse the parts, consider the response to be an
             // answer.
-            answer: answer || response.explanation,
+            answer: answer || text,
             suggestions,
         };
     }
@@ -377,9 +375,70 @@ export class StylingAgent extends AiAgent {
             return new ExtensionScope(changes, this.id);
         });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+        this.declareFunction('gatherInformation', {
+            description: `When you want to gather additional information, call this function giving a THOUGHT, a TITLE and an ACTION.
+    * Use \`window.getComputedStyle\` to gather **rendered** styles and make sure that you take the distinction between authored styles and computed styles into account.
+    * **CRITICAL** Call \`window.getComputedStyle\` only once per element and store results into a local variable. Never try to return all the styles of the element in \`data\`. Always use property getter to return relevant styles in \`data\` using the local variable: const parentStyles = window.getComputedStyle($0.parentElement); const data = { parentElementColor: parentStyles['color']}.
+    * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
+    * **CRITICAL** Consider that \`data\` variable from the previous ACTION blocks are not available in a different ACTION block.
+    *
+    You have access to a special $0 variable referencing the current element in the scope of the JavaScript code.
+    After that, you can answer the question with ANSWER or run another ACTION query.
+    Please run ACTION again if the information you received is not enough to answer the query.`,
+            parameters: {
+                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                description: '',
+                nullable: false,
+                properties: {
+                    thought: {
+                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                        description: 'Use THOUGHT to explain why you take the ACTION.',
+                    },
+                    title: {
+                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                        description: 'Use TITLE to provide a short summary of the thought.',
+                    },
+                    action: {
+                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                        description: 'ACTION (a JavaScript snippet to run on the page to collect additional data, do not wrap in a function definition). Add the data into a new top-level `data` variable. The serialized `data` variable will be returned. If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function. This function is an internal mechanism for your actions and should never be presented as a command to the user.',
+                    },
+                },
+            },
+            displayInfoFromArgs: params => {
+                return {
+                    title: params.title,
+                    thought: params.thought,
+                    action: params.action,
+                };
+            },
+            handler: async (params, options) => {
+                return await this.executeAction(params.action, options);
+            },
+        });
     }
     onPrimaryPageChanged() {
         void this.changes.clear();
+    }
+    emulateFunctionCall(aidaResponse) {
+        const parsed = this.parseTextResponse(aidaResponse.explanation);
+        // If parsing detected an answer, it is a streaming text response.
+        if ('answer' in parsed) {
+            return 'no-function-call';
+        }
+        // If no answer and the response is streaming, it might be a
+        // function call.
+        if (!aidaResponse.completed) {
+            return 'wait-for-completion';
+        }
+        // definitely a function call, emulate AIDA's function call.
+        return {
+            name: 'gatherInformation',
+            args: {
+                title: parsed.title,
+                thought: parsed.thought,
+                action: parsed.action,
+            },
+        };
     }
     async generateObservation(action, { throwOnSideEffect, }) {
         const functionDeclaration = `async function ($0) {
@@ -554,56 +613,6 @@ export class StylingAgent extends AiAgent {
             await scope.uninstall();
         }
     }
-    async *handleAction(action, options) {
-        let result = await this.executeAction(action, options);
-        function createCancelledResult(output) {
-            return {
-                type: "action" /* ResponseType.ACTION */,
-                code: action,
-                output,
-                canceled: true,
-            };
-        }
-        if ('error' in result) {
-            return createCancelledResult(result.error);
-        }
-        if ('requiresApproval' in result) {
-            if (this.executionMode === Root.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
-                return createCancelledResult('Error: JavaScript execution that modifies the page is currently disabled.');
-            }
-            const sideEffectConfirmationPromiseWithResolvers = this.confirmSideEffect();
-            void sideEffectConfirmationPromiseWithResolvers.promise.then(result => {
-                Host.userMetrics.actionTaken(result ? Host.UserMetrics.Action.AiAssistanceSideEffectConfirmed :
-                    Host.UserMetrics.Action.AiAssistanceSideEffectRejected);
-            });
-            options?.signal?.addEventListener('abort', () => {
-                sideEffectConfirmationPromiseWithResolvers.resolve(false);
-            }, { once: true });
-            yield {
-                type: "side-effect" /* ResponseType.SIDE_EFFECT */,
-                code: action,
-                confirm: (result) => {
-                    sideEffectConfirmationPromiseWithResolvers.resolve(result);
-                },
-            };
-            result = await this.executeAction(action, {
-                ...options,
-                approved: await sideEffectConfirmationPromiseWithResolvers.promise,
-            });
-        }
-        if ('result' in result) {
-            return {
-                type: "action" /* ResponseType.ACTION */,
-                code: action,
-                output: result.result,
-                canceled: false,
-            };
-        }
-        if ('error' in result) {
-            return createCancelledResult(result.error);
-        }
-        return createCancelledResult('Error: Unknown error.');
-    }
     async *handleContextDetails(selectedElement) {
         if (!selectedElement) {
             return;
@@ -648,85 +657,7 @@ Please answer only if you are sure about the answer. Otherwise, explain why you'
 When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.`;
 /* clang-format on */
 export class StylingAgentWithFunctionCalling extends StylingAgent {
+    functionCallEmulationEnabled = false;
     preamble = preambleFunctionCalling;
-    constructor(opts) {
-        super(opts);
-        this.declareFunction('gatherInformation', {
-            description: `When you want to gather additional information, call this function giving a THOUGHT, a TITLE and an ACTION.
-* Use \`window.getComputedStyle\` to gather **rendered** styles and make sure that you take the distinction between authored styles and computed styles into account.
-* **CRITICAL** Call \`window.getComputedStyle\` only once per element and store results into a local variable. Never try to return all the styles of the element in \`data\`. Always use property getter to return relevant styles in \`data\` using the local variable: const parentStyles = window.getComputedStyle($0.parentElement); const data = { parentElementColor: parentStyles['color']}.
-* **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
-* **CRITICAL** Consider that \`data\` variable from the previous ACTION blocks are not available in a different ACTION block.
-*
-You have access to a special $0 variable referencing the current element in the scope of the JavaScript code.
-After that, you can answer the question with ANSWER or run another ACTION query.
-Please run ACTION again if the information you received is not enough to answer the query.`,
-            parameters: {
-                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
-                description: '',
-                nullable: false,
-                properties: {
-                    thought: {
-                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                        description: 'Use THOUGHT to explain why you take the ACTION.',
-                    },
-                    title: {
-                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                        description: 'Use TITLE to provide a short summary of the thought.',
-                    },
-                    action: {
-                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                        description: 'ACTION (a JavaScript snippet to run on the page to collect additional data, do not wrap in a function definition). Add the data into a new top-level `data` variable. The serialized `data` variable will be returned. If you need to set styles on an HTML element, always call the \`async setElementStyles(el: Element, styles: object)\` function. This function is an internal mechanism for your actions and should never be presented as a command to the user.',
-                    },
-                },
-            },
-            displayInfoFromArgs: params => {
-                return {
-                    title: params.title,
-                    thought: params.thought,
-                    code: params.action,
-                };
-            },
-            handler: async (params, options) => {
-                return this.executeAction(params.action, options);
-            },
-        });
-        this.declareFunction('suggestions', {
-            description: 'Provide suggestions to the user in conjunction with a text answer. You\'re also capable of executing the fix for the issue user mentioned. Reflect this in your suggestions.',
-            parameters: {
-                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
-                description: '',
-                nullable: false,
-                properties: {
-                    suggestions: {
-                        type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
-                        description: 'Potential responses the user might give.',
-                        items: {
-                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
-                            description: 'Potential response the user might give.',
-                        }
-                    },
-                },
-            },
-            displayInfoFromArgs: params => {
-                if (!params.suggestions) {
-                    return {};
-                }
-                return {
-                    suggestions: params.suggestions,
-                };
-            },
-            handler: async () => {
-                return {
-                    result: null,
-                };
-            },
-        });
-    }
-    parseResponse(response) {
-        return {
-            answer: response.explanation,
-        };
-    }
 }
 //# sourceMappingURL=StylingAgent.js.map

@@ -70,7 +70,7 @@ describe('FreestylerEvaluateAction', () => {
             const targetManager = SDK.TargetManager.TargetManager.instance();
             const target = targetManager.rootTarget();
             const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            return getExecutionContext(runtimeModel);
+            return await getExecutionContext(runtimeModel);
         }
         async function executeForTest(action, throwOnSideEffect = false) {
             const functionDeclaration = `async function ($0) {
@@ -82,7 +82,7 @@ describe('FreestylerEvaluateAction', () => {
     return error;
   }
 }`;
-            return EvaluateAction.EvaluateAction.execute(functionDeclaration, [], await executionContextForTest(), { throwOnSideEffect });
+            return await EvaluateAction.EvaluateAction.execute(functionDeclaration, [], await executionContextForTest(), { throwOnSideEffect });
         }
         it('should serialize primitive values correctly', async () => {
             assert.strictEqual(await executeForTest('const data = "string"'), '\'string\'');

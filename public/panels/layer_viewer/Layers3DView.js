@@ -39,7 +39,11 @@ const UIStrings = {
     /**
      *@description Text of a DOM element in DView of the Layers panel
      */
-    layerInformationIsNotYet: 'Layer information is not yet available.',
+    noLayerInformation: 'No layers detected yet',
+    /**
+     *@description Text of a DOM element in DView of the Layers panel that explains the panel
+     */
+    layerExplanation: 'On this page you will be able to view and inspect document layers.',
     /**
      *@description Accessibility label for canvas view in Layers tool
      */
@@ -47,7 +51,7 @@ const UIStrings = {
     /**
      *@description Text in DView of the Layers panel
      */
-    cantDisplayLayers: 'Can\'t display layers,',
+    cantDisplayLayers: 'Can\'t display layers',
     /**
      *@description Text in DView of the Layers panel
      */
@@ -118,9 +122,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.registerRequiredCSS(layers3DViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('layers-3d-view')}`);
         this.contentElement.classList.add('layers-3d-view');
-        this.failBanner = new UI.Widget.VBox();
-        this.failBanner.element.classList.add('full-widget-dimmed-banner');
-        UI.UIUtils.createTextChild(this.failBanner.element, i18nString(UIStrings.layerInformationIsNotYet));
+        this.failBanner = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noLayerInformation), i18nString(UIStrings.layerExplanation));
         this.layerViewHost = layerViewHost;
         this.layerViewHost.registerView(this);
         this.transformController = new TransformController(this.contentElement);
@@ -651,14 +653,14 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         }
     }
     innerUpdate() {
-        if (!this.layerTree || !this.layerTree.root()) {
+        if (!this.layerTree?.root()) {
             this.failBanner.show(this.contentElement);
             return;
         }
         const gl = this.initGLIfNecessary();
         if (!gl) {
-            this.failBanner.element.removeChildren();
-            this.failBanner.element.appendChild(this.webglDisabledBanner());
+            this.failBanner.detach();
+            this.failBanner = this.webglDisabledBanner();
             this.failBanner.show(this.contentElement);
             return;
         }
@@ -674,11 +676,9 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.drawViewportAndChrome();
     }
     webglDisabledBanner() {
-        const fragment = this.contentElement.ownerDocument.createDocumentFragment();
-        fragment.createChild('div').textContent = i18nString(UIStrings.cantDisplayLayers);
-        fragment.createChild('div').textContent = i18nString(UIStrings.webglSupportIsDisabledInYour);
-        fragment.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.checkSForPossibleReasons, { PH1: UI.XLink.XLink.create('about:gpu', undefined, undefined, undefined, 'about-gpu') }));
-        return fragment;
+        const emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.cantDisplayLayers), i18nString(UIStrings.webglSupportIsDisabledInYour));
+        emptyWidget.contentElement.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.checkSForPossibleReasons, { PH1: UI.XLink.XLink.create('about:gpu', undefined, undefined, undefined, 'about-gpu') }));
+        return emptyWidget;
     }
     selectionFromEventPoint(event) {
         const mouseEvent = event;

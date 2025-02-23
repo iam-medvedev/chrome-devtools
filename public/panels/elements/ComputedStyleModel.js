@@ -32,7 +32,7 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
         return this.nodeInternal;
     }
     cssModel() {
-        return this.cssModelInternal && this.cssModelInternal.isEnabled() ? this.cssModelInternal : null;
+        return this.cssModelInternal?.isEnabled() ? this.cssModelInternal : null;
     }
     // This is a debounced method because the user might be navigated from Styles tab to Computed Style tab and vice versa.
     // For that case, we want to only run this function once.
@@ -148,7 +148,7 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.computedStylePromise) {
             this.computedStylePromise = cssModel.getComputedStyle(nodeId).then(verifyOutdated.bind(this, elementNode));
         }
-        return this.computedStylePromise;
+        return await this.computedStylePromise;
         function verifyOutdated(elementNode, style) {
             return elementNode === this.elementNode() && style ? new ComputedStyle(elementNode, style) :
                 null;

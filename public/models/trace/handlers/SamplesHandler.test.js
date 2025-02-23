@@ -19,7 +19,7 @@ async function handleEventsFromTraceFile(context, name) {
 }
 async function handleEventsFromCpuProfile(context, name) {
     const profile = await TraceLoader.rawCPUProfile(context, name);
-    const contents = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
+    const contents = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
     Trace.Handlers.ModelHandlers.Samples.reset();
     for (const event of contents.traceEvents) {
         Trace.Handlers.ModelHandlers.Meta.handleEvent(event);

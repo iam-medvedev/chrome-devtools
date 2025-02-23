@@ -84,12 +84,12 @@ export class InspectorBackend {
     }
     registerEnum(type, values) {
         const [domain, name] = splitQualifiedName(type);
-        // @ts-ignore globalThis global namespace pollution
+        // @ts-expect-error globalThis global namespace pollution
         if (!globalThis.Protocol[domain]) {
-            // @ts-ignore globalThis global namespace pollution
+            // @ts-expect-error globalThis global namespace pollution
             globalThis.Protocol[domain] = {};
         }
-        // @ts-ignore globalThis global namespace pollution
+        // @ts-expect-error globalThis global namespace pollution
         globalThis.Protocol[domain][name] = values;
         this.enumMap.set(type, values);
         this.#initialized = true;
@@ -373,7 +373,7 @@ export class TargetBase {
             throw new Error('Either connection or sessionId (but not both) must be supplied for a child target');
         }
         let router;
-        if (sessionId && parentTarget && parentTarget.routerInternal) {
+        if (sessionId && parentTarget?.routerInternal) {
             router = parentTarget.routerInternal;
         }
         else if (connection) {
@@ -385,7 +385,7 @@ export class TargetBase {
         this.routerInternal = router;
         router.registerSession(this, this.sessionId);
         for (const [domain, agentPrototype] of inspectorBackend.agentPrototypes) {
-            const agent = Object.create(agentPrototype);
+            const agent = Object.create((agentPrototype));
             agent.target = this;
             this.#agents.set(domain, agent);
         }
@@ -695,13 +695,13 @@ class AgentPrototype {
         function sendMessagePromise(...args) {
             return AgentPrototype.prototype.sendMessageToBackendPromise.call(this, domainAndMethod, parameters, args);
         }
-        // @ts-ignore Method code generation
+        // @ts-expect-error Method code generation
         this[methodName] = sendMessagePromise;
         this.metadata[domainAndMethod] = { parameters, description, replyArgs };
         function invoke(request = {}) {
             return this.invoke(domainAndMethod, request);
         }
-        // @ts-ignore Method code generation
+        // @ts-expect-error Method code generation
         this['invoke_' + methodName] = invoke;
         this.replyArgs[domainAndMethod] = replyArgs;
     }
@@ -826,7 +826,7 @@ class DispatcherManager {
             const dispatcher = this.#dispatchers[index];
             if (event in dispatcher) {
                 const f = dispatcher[event];
-                // @ts-ignore Can't type check the dispatch.
+                // @ts-expect-error Can't type check the dispatch.
                 f.call(dispatcher, messageParams);
             }
         }

@@ -14,7 +14,7 @@ export default {
   padding: 0 0 0 5px;
   overflow: hidden;
   display: flex;
-  min-height: var(--sys-size-9);
+  min-height: var(--sys-size-8);
   align-items: center;
 }
 
@@ -39,7 +39,7 @@ export default {
 
 .event-listener-details {
   display: flex;
-  min-height: var(--sys-size-9);
+  min-height: var(--sys-size-8);
   align-items: center;
   gap: var(--sys-size-2);
 
@@ -70,6 +70,29 @@ export default {
 
   &:active {
     background-color: var(--sys-color-state-ripple-neutral-on-subtle);
+  }
+}
+
+.placeholder:not(.hidden) + .event-listener-tree {
+  display: none;
+}
+
+.placeholder {
+  display: flex;
+  margin: auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.sources.panel .empty-view-scroller {
+  display: none;
+}
+
+.elements.panel .placeholder {
+  display: block;
+
+  .gray-info-message {
+    display: none;
   }
 }
 

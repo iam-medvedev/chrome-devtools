@@ -303,6 +303,10 @@ devtools-icon.open-in-animations-panel {
   }
 }
 
+.value :focus {
+  outline: 1px solid var(--sys-color-outline);
+}
+
 /*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */
 `
 };

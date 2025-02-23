@@ -137,7 +137,7 @@ export class PanelUtils {
             const previewImage = document.createElement('img');
             previewImage.classList.add('image-network-icon-preview');
             previewImage.alt = request.resourceType().title();
-            void request.populateImageSource(previewImage);
+            void request.populateImageSource((previewImage));
             iconElement = document.createElement('div');
             iconElement.classList.add('image', 'icon');
             iconElement.appendChild(previewImage);

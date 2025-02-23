@@ -27,6 +27,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             const component = new TestInsightComponent();
             component.selected = false;
             component.model = {
+                insightKey: 'LCPPhases',
                 strings: {},
                 title: 'LCP by Phase',
                 description: 'some description',
@@ -48,6 +49,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             const component = new TestInsightComponent();
             component.selected = true;
             component.model = {
+                insightKey: 'LCPPhases',
                 strings: {},
                 title: 'LCP by Phase',
                 description: 'some description',
@@ -72,6 +74,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
     describe('Ask AI Insights', () => {
         const FAKE_PARSED_TRACE = {};
         const FAKE_LCP_MODEL = {
+            insightKey: 'LCPPhases',
             strings: {},
             title: 'LCP by Phase',
             description: 'some description',

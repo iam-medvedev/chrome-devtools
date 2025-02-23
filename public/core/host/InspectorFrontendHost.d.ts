@@ -63,6 +63,10 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     recordEnumeratedHistogram(actionName: EnumeratedHistogram, actionCode: number, bucketSize: number): void;
     recordPerformanceHistogram(histogramName: string, duration: number): void;
     recordUserMetricsAction(umaName: string): void;
+    connectAutomaticFileSystem(_fileSystemPath: Platform.DevToolsPath.RawPathString, _fileSystemUUID: string, _addIfMissing: boolean, callback: (result: {
+        success: boolean;
+    }) => void): void;
+    disconnectAutomaticFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     requestFileSystems(): void;
     addFileSystem(type?: string): void;
     removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;

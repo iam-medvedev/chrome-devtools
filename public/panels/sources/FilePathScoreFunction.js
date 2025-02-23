@@ -72,7 +72,7 @@ export class FilePathScoreFunction {
             this.sequence = new Int32Array(queryLength * dataLength * 2);
         }
         const score = this.score;
-        const sequence = this.sequence;
+        const sequence = (this.sequence);
         this.dataUpperCase = data.toUpperCase();
         this.fileNameIndex = data.lastIndexOf('/');
         for (let i = 0; i < queryLength; ++i) {

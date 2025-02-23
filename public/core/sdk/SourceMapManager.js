@@ -154,7 +154,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
-async function loadSourceMap(url, initiator) {
+export async function loadSourceMap(url, initiator) {
     try {
         const { content } = await PageResourceLoader.instance().loadResource(url, initiator);
         return parseSourceMap(content);

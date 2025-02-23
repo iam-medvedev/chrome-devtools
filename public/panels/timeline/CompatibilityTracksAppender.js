@@ -30,7 +30,7 @@ function isShowPostMessageEventsEnabled() {
     return showPostMessageEvents;
 }
 export function entryIsVisibleInTimeline(entry, parsedTrace) {
-    if (parsedTrace && parsedTrace.Meta.traceIsGeneric) {
+    if (parsedTrace?.Meta.traceIsGeneric) {
         return true;
     }
     if (Trace.Types.Events.isUpdateCounters(entry)) {
@@ -88,6 +88,7 @@ export class CompatibilityTracksAppender {
     #layoutShiftsTrackAppender;
     #threadAppenders = [];
     #serverTimingsTrackAppender;
+    #entityMapper;
     /**
      * @param flameChartData the data used by the flame chart renderer on
      * which the track data will be appended.
@@ -100,10 +101,12 @@ export class CompatibilityTracksAppender {
      * is needed only for compatibility with the legacy flamechart
      * architecture and should be removed once all tracks use the new
      * system.
+     * @param entityMapper 3P entity data for the trace.
      */
-    constructor(flameChartData, parsedTrace, entryData, legacyEntryTypeByLevel) {
+    constructor(flameChartData, parsedTrace, entryData, legacyEntryTypeByLevel, entityMapper) {
         this.#flameChartData = flameChartData;
         this.#parsedTrace = parsedTrace;
+        this.#entityMapper = entityMapper;
         this.#entryData = entryData;
         this.#colorGenerator = new Common.Color.Generator(
         /* hueSpace= */ { min: 30, max: 55, count: undefined }, 
@@ -486,12 +489,14 @@ export class CompatibilityTracksAppender {
             '');
         if (url) {
             const MAX_PATH_LENGTH = 45;
-            const MAX_ORIGIN_LENGTH = 30;
             const path = Platform.StringUtilities.trimMiddle(url.href.replace(url.origin, ''), MAX_PATH_LENGTH);
-            const origin = Platform.StringUtilities.trimEndWithMaxLength(url.origin.replace('https://', ''), MAX_ORIGIN_LENGTH);
             const urlElems = document.createElement('div');
             urlElems.createChild('span', 'popoverinfo-url-path').textContent = path;
-            urlElems.createChild('span', 'popoverinfo-url-origin').textContent = `(${origin})`;
+            const entity = this.#entityMapper ? this.#entityMapper.entityForEvent(event) : null;
+            // Include entity with origin if it's non made-up entity, otherwise there'd be
+            // repetition with the origin.
+            const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity);
+            urlElems.createChild('span', 'popoverinfo-url-origin').textContent = `(${originWithEntity})`;
             info.additionalElements.push(urlElems);
         }
         return info;

@@ -105,6 +105,17 @@ const UIStrings = {
      *@description Text to save content as a specific file type
      */
     saveAs: 'Save as...',
+    /**
+     * @description Text in Workspaces tab in the Sources panel when an automatic
+     *              workspace folder is detected.
+     * @example {/path/to/foo} PH1
+     */
+    automaticWorkspaceFolderDetected: 'Workspace folder {PH1} detected.',
+    /**
+     * @description Button description in Workspaces tab in the Sources panel
+     *              to connect to an automatic workspace folder.
+     */
+    automaticWorkspaceFolderConnect: 'Connect...',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesNavigator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -166,6 +177,9 @@ export class NetworkNavigatorView extends NavigatorView {
     }
 }
 export class FilesNavigatorView extends NavigatorView {
+    #automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
+    #infobar = null;
+    #eventListeners = [];
     constructor() {
         super('navigator-files');
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWorkspace), i18nString(UIStrings.explainWorkspace));
@@ -178,6 +192,18 @@ export class FilesNavigatorView extends NavigatorView {
                 this.contentElement.insertBefore(toolbar, this.contentElement.firstChild);
             }
         });
+    }
+    wasShown() {
+        super.wasShown();
+        this.#eventListeners = [
+            this.#automaticFileSystemManager.addEventListener("AutomaticFileSystemChanged" /* Persistence.AutomaticFileSystemManager.Events.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#automaticFileSystemChanged, this),
+        ];
+        this.#automaticFileSystemChanged({ data: this.#automaticFileSystemManager.automaticFileSystem });
+    }
+    willHide() {
+        Common.EventTarget.removeEventListeners(this.#eventListeners);
+        this.#automaticFileSystemChanged({ data: null });
+        super.willHide();
     }
     sourceSelected(uiSourceCode, focusSource) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.WorkspaceSourceSelected);
@@ -192,6 +218,25 @@ export class FilesNavigatorView extends NavigatorView {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.defaultSection().appendAction('sources.add-folder-to-workspace', undefined, true);
         void contextMenu.show();
+    }
+    #automaticFileSystemChanged(event) {
+        const automaticFileSystem = event.data;
+        if (automaticFileSystem === null || automaticFileSystem.state !== 'disconnected') {
+            this.#infobar?.dispose();
+            this.#infobar = null;
+        }
+        else {
+            this.#infobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.INFO */, i18nString(UIStrings.automaticWorkspaceFolderDetected, { PH1: automaticFileSystem.root }), [{
+                    text: i18nString(UIStrings.automaticWorkspaceFolderConnect),
+                    highlight: true,
+                    delegate: () => this.#automaticFileSystemManager.connectAutomaticFileSystem(/* addIfMissing= */ true),
+                    dismiss: true,
+                    jslogContext: 'automatic-workspace-folders.connect',
+                }], Common.Settings.Settings.instance().moduleSetting('persistence-automatic-workspace-folders'), 'automatic-workspace-folders');
+            if (this.#infobar) {
+                this.contentElement.append(this.#infobar.element);
+            }
+        }
     }
 }
 let overridesNavigatorViewInstance;

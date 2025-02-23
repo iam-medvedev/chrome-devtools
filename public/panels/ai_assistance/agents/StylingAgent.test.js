@@ -5,7 +5,7 @@ import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { StylingAgent, ErrorType } = AiAssistance;
 describeWithEnvironment('StylingAgent', () => {
@@ -38,11 +38,7 @@ describeWithEnvironment('StylingAgent', () => {
             aidaClient: {},
         });
         function getParsedTextResponse(explanation) {
-            return agent.parseResponse({
-                explanation,
-                metadata: {},
-                completed: false,
-            });
+            return agent.parseTextResponse(explanation);
         }
         it('parses a thought', async () => {
             const payload = 'some response';
@@ -363,6 +359,7 @@ c`;
             });
             sinon.stub(agent, 'preamble').value('preamble');
             await Array.fromAsync(agent.run('question', { selected: null }));
+            setUserAgentForTesting();
             assert.deepEqual(agent.buildRequest({
                 text: 'test input',
             }, Host.AidaClient.Role.USER), {
@@ -383,6 +380,7 @@ c`;
                     disable_user_content_logging: false,
                     string_session_id: 'sessionId',
                     user_tier: 2,
+                    client_version: 'unit_test',
                 },
                 options: {
                     model_id: 'test model',
@@ -391,6 +389,7 @@ c`;
                 client_feature: 2,
                 functionality_type: 1,
             });
+            restoreUserAgentForTesting();
         });
         it('builds a request with aborted query in history before a real request', async () => {
             const execJs = sinon.mock().once();
@@ -511,7 +510,7 @@ STOP`,
                 });
                 promise.resolve(false);
                 const responses = await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-                const actionStep = responses.find(response => response.type === "action" /* AiAssistance.ResponseType.ACTION */);
+                const actionStep = responses.findLast(response => response.type === "action" /* AiAssistance.ResponseType.ACTION */);
                 assert.strictEqual(actionStep.output, 'Error: User denied code execution with side effects.');
                 assert.lengthOf(execJs.getCalls(), 1);
             });
@@ -585,6 +584,7 @@ STOP`,
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -681,6 +681,7 @@ STOP`,
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -728,6 +729,7 @@ STOP`,
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -773,6 +775,7 @@ STOP`,
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -835,6 +838,7 @@ STOP
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -885,6 +889,7 @@ STOP
                     type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* AiAssistance.ResponseType.CONTEXT */,
@@ -902,7 +907,6 @@ STOP
                 {
                     type: "thought" /* AiAssistance.ResponseType.THOUGHT */,
                     thought: 'I am thinking.',
-                    rpcId: undefined,
                 },
                 {
                     type: "action" /* AiAssistance.ResponseType.ACTION */,

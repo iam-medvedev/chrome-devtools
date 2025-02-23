@@ -43,7 +43,7 @@ export async function getInitializedResourceTreeModel(target) {
     const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
     return resourceTreeModel.cachedResourcesLoaded() ?
         resourceTreeModel :
-        resourceTreeModel.once(SDK.ResourceTreeModel.Events.CachedResourcesLoaded);
+        await resourceTreeModel.once(SDK.ResourceTreeModel.Events.CachedResourcesLoaded);
 }
 function getEffectivePayload(id, base, framePayload) {
     const effectivePayload = { ...base, id };

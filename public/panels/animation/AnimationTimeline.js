@@ -236,7 +236,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
             await this.addAnimationGroup(animationGroup);
         }
         this.#showPanelInDrawer();
-        return this.selectAnimationGroup(animationGroup);
+        return await this.selectAnimationGroup(animationGroup);
     }
     modelAdded(animationModel) {
         if (this.isShowing()) {
@@ -960,9 +960,9 @@ export class AnimationTimeline extends UI.Widget.VBox {
             return;
         }
         if (this.#selectedGroup?.scrollOrientation() === "vertical" /* Protocol.DOM.ScrollOrientation.Vertical */) {
-            return node.setScrollTop(offset);
+            return await node.setScrollTop(offset);
         }
-        return node.setScrollLeft(offset);
+        return await node.setScrollLeft(offset);
     }
     setTimelineScrubberPosition(time) {
         this.#timelineScrubber.style.transform = `translateX(${time * this.pixelTimeRatio()}px)`;

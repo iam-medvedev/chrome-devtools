@@ -349,7 +349,7 @@ export class NetworkNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
         return bgColors.Default;
     }
     updateBackgroundColor() {
-        const element = this.existingElement();
+        const element = (this.existingElement());
         if (!element) {
             return;
         }
@@ -546,8 +546,8 @@ export class NetworkRequestNode extends NetworkNode {
             return !aHasInitiatorCell ? -1 : 1;
         }
         // `a` and `b` are guaranteed NetworkRequestNodes with present initiatorCell elements.
-        const networkRequestNodeA = a;
-        const networkRequestNodeB = b;
+        const networkRequestNodeA = (a);
+        const networkRequestNodeB = (b);
         const aText = networkRequestNodeA.linkifiedInitiatorAnchor ?
             networkRequestNodeA.linkifiedInitiatorAnchor.textContent || '' :
             networkRequestNodeA.initiatorCell.title;
@@ -1129,7 +1129,7 @@ export class NetworkRequestNode extends NetworkNode {
         const request = this.requestInternal;
         const initiator = Logs.NetworkLog.NetworkLog.instance().initiatorInfoForRequest(request);
         const timing = request.timing;
-        if (timing && timing.pushStart) {
+        if (timing?.pushStart) {
             cell.appendChild(document.createTextNode(i18nString(UIStrings.push)));
         }
         switch (initiator.type) {

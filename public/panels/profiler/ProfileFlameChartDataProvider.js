@@ -57,10 +57,10 @@ export class ProfileFlameChartDataProvider {
         return colorGeneratorInstance;
     }
     minimumBoundary() {
-        throw 'Not implemented.';
+        throw new Error('Not implemented');
     }
     totalTime() {
-        throw 'Not implemented.';
+        throw new Error('Not implemented');
     }
     formatValue(value, precision) {
         return i18n.TimeUtilities.preciseMillisToString(value, precision);
@@ -75,10 +75,10 @@ export class ProfileFlameChartDataProvider {
         return this.timelineDataInternal || this.calculateTimelineData();
     }
     calculateTimelineData() {
-        throw 'Not implemented.';
+        throw new Error('Not implemented');
     }
     preparePopoverElement(_entryIndex) {
-        throw 'Not implemented.';
+        throw new Error('Not implemented');
     }
     canJumpToEntry(entryIndex) {
         return this.entryNodes[entryIndex].scriptId !== '0';
@@ -92,7 +92,7 @@ export class ProfileFlameChartDataProvider {
         return this.entryHasDeoptReason(entryIndex) ? boldFont : this.#font;
     }
     entryHasDeoptReason(_entryIndex) {
-        throw 'Not implemented.';
+        throw new Error('Not implemented');
     }
     entryColor(entryIndex) {
         const node = this.entryNodes[entryIndex];

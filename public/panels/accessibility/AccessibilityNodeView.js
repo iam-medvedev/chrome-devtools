@@ -240,7 +240,7 @@ export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {
     appendNameElement(name) {
         const nameElement = document.createElement('span');
         if (name in AXAttributes) {
-            // @ts-ignore TS can't cast name here but we checked it's valid.
+            // @ts-expect-error TS can't cast name here but we checked it's valid.
             const attribute = AXAttributes[name];
             nameElement.textContent = attribute.name();
             UI.Tooltip.Tooltip.install(nameElement, attribute.description());
@@ -590,7 +590,7 @@ export class AXNodeIgnoredReasonTreeElement extends AXNodePropertyTreeElement {
                 reasonElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.elementIsNotVisible, {});
                 break;
             case 'presentationalRole': {
-                const role = axNode && axNode.role()?.value || '';
+                const role = axNode?.role()?.value || '';
                 const rolePresentationSpan = document.createElement('span', { is: 'source-code' }).textContent = 'role=' + role;
                 reasonElement =
                     i18n.i18n.getFormatLocalizedString(str_, UIStrings.elementHasPlaceholder, { PH1: rolePresentationSpan });

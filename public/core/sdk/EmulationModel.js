@@ -372,7 +372,7 @@ export class EmulationModel extends SDKModel {
                 value: this.#mediaConfiguration.get('prefers-reduced-transparency') ?? '',
             },
         ];
-        return this.emulateCSSMedia(type, features);
+        return await this.emulateCSSMedia(type, features);
     }
 }
 export class Location {

@@ -286,15 +286,15 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #convertObjectParameter(key, value, schema, initialSchema) {
         const description = schema?.description ?? '';
         if (typeof value !== 'object' || value === null) {
-            throw Error('The value is not an object');
+            throw new Error('The value is not an object');
         }
         const typeRef = schema?.typeRef;
         if (!typeRef) {
-            throw Error('Every object parameters should have a type ref');
+            throw new Error('Every object parameters should have a type ref');
         }
         const nestedType = typeRef === DUMMY_DATA ? initialSchema : this.typesByName.get(typeRef);
         if (!nestedType) {
-            throw Error('No nested type for keys were found');
+            throw new Error('No nested type for keys were found');
         }
         const objectValues = [];
         for (const objectKey of Object.keys(value)) {
@@ -316,10 +316,10 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const optional = schema?.optional ?? true;
         const typeRef = schema?.typeRef;
         if (!typeRef) {
-            throw Error('Every array parameters should have a type ref');
+            throw new Error('Every array parameters should have a type ref');
         }
         if (!Array.isArray(value)) {
-            throw Error('The value is not an array');
+            throw new Error('The value is not an array');
         }
         const nestedType = this.#isTypePrimitive(typeRef) ? undefined : {
             optional: true,
@@ -609,7 +609,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             case "array" /* ParameterType.ARRAY */: {
                 const typeRef = parameter.typeRef;
                 if (!typeRef) {
-                    throw Error('Every array parameter must have a typeRef');
+                    throw new Error('Every array parameter must have a typeRef');
                 }
                 const nestedType = this.typesByName.get(typeRef) ?? [];
                 const nestedValue = nestedType.map(type => this.#createNestedParameter(type, type.name));
@@ -685,7 +685,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.requestUpdate();
     }
     #handleClearParameter(parameter, isParentArray) {
-        if (!parameter || parameter.value === undefined) {
+        if (parameter?.value === undefined) {
             return;
         }
         switch (parameter.type) {

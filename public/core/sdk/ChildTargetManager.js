@@ -80,7 +80,7 @@ export class ChildTargetManager extends SDKModel {
             if (target.targetInfo()?.subtype === 'prerender' && !targetInfo.subtype) {
                 const resourceTreeModel = target.model(ResourceTreeModel);
                 target.updateTargetInfo(targetInfo);
-                if (resourceTreeModel && resourceTreeModel.mainFrame) {
+                if (resourceTreeModel?.mainFrame) {
                     resourceTreeModel.primaryPageChanged(resourceTreeModel.mainFrame, "Activation" /* PrimaryPageChangeType.ACTIVATION */);
                 }
                 target.setName(i18nString(UIStrings.main));

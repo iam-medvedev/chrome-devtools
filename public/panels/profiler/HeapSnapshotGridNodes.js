@@ -657,7 +657,7 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         }
         if (heapProfilerModel) {
             contextMenu.revealSection().appendItem(i18nString(UIStrings.storeAsGlobalVariable), async () => {
-                const remoteObject = await this.tryQueryObjectContent(heapProfilerModel, '');
+                const remoteObject = await this.tryQueryObjectContent((heapProfilerModel), '');
                 if (!remoteObject) {
                     Common.Console.Console.instance().error(i18nString(UIStrings.previewIsNotAvailable));
                 }
@@ -964,7 +964,7 @@ export class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
             return [];
         }
         await this.populateChildren(nodePosition, null);
-        const node = this.childForPosition(nodePosition);
+        const node = (this.childForPosition(nodePosition));
         return node ? [this, node] : [];
     }
     filteredOut(filterValue) {
@@ -1090,7 +1090,7 @@ export class HeapSnapshotDiffNode extends HeapSnapshotGridNode {
     }
     createProvider() {
         const tree = this.dataGridInternal;
-        if (tree.snapshot === null || tree.baseSnapshot === undefined || tree.baseSnapshot.uid === undefined) {
+        if (tree.snapshot === null || tree.baseSnapshot?.uid === undefined) {
             throw new Error('Data sources have not been set correctly');
         }
         const addedNodesProvider = tree.snapshot.createAddedNodesProvider(tree.baseSnapshot.uid, this.classKey);

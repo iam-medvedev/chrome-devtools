@@ -4,53 +4,53 @@ import * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
-    title: string;
+    readonly title: "Layout shift culprits";
     /**
      * @description Description of a DevTools insight that identifies the reasons that elements shift on the page.
      * This is displayed after a user expands the section to see more. No character length limits.
      */
-    description: string;
+    readonly description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.";
     /**
      *@description Text indicating the worst layout shift cluster.
      */
-    worstLayoutShiftCluster: string;
+    readonly worstLayoutShiftCluster: "Worst layout shift cluster";
     /**
      * @description Text indicating the worst layout shift cluster.
      */
-    worstCluster: string;
+    readonly worstCluster: "Worst cluster";
     /**
      * @description Text indicating a layout shift cluster and its start time.
      * @example {32 ms} PH1
      */
-    layoutShiftCluster: string;
+    readonly layoutShiftCluster: "Layout shift cluster @ {PH1}";
     /**
      *@description Text indicating the biggest reasons for the layout shifts.
      */
-    topCulprits: string;
+    readonly topCulprits: "Top layout shift culprits";
     /**
      * @description Text for a culprit type of Injected iframe.
      */
-    injectedIframe: string;
+    readonly injectedIframe: "Injected iframe";
     /**
      * @description Text for a culprit type of Font request.
      */
-    fontRequest: string;
+    readonly fontRequest: "Font request";
     /**
      * @description Text for a culprit type of Animation.
      */
-    animation: string;
+    readonly animation: "Animation";
     /**
      * @description Text for a culprit type of Unsized images.
      */
-    unsizedImages: string;
+    readonly unsizedImages: "Unsized Images";
     /**
      * @description Text status when there were no layout shifts detected.
      */
-    noLayoutShifts: string;
+    readonly noLayoutShifts: "No layout shifts";
     /**
      * @description Text status when there no layout shifts culprits/root causes were found.
      */
-    noCulprits: string;
+    readonly noCulprits: "Could not detect any layout shift culprits";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
 export type CLSCulpritsInsightModel = InsightModel<typeof UIStrings, {

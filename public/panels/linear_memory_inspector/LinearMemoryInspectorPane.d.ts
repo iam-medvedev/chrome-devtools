@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import type * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LinearMemoryInspectorComponents from './components/components.js';
 import { type LazyUint8Array } from './LinearMemoryInspectorController.js';
@@ -8,11 +9,12 @@ declare const LinearMemoryInspectorPane_base: (new (...args: any[]) => {
     once<T extends Events.VIEW_CLOSED>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends Events.VIEW_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: Events.VIEW_CLOSED): boolean;
-    dispatchEventToListeners<T extends Events.VIEW_CLOSED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    dispatchEventToListeners<T extends Events.VIEW_CLOSED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class LinearMemoryInspectorPane extends LinearMemoryInspectorPane_base {
     #private;
     constructor();
+    createPlaceholder(): HTMLElement;
     static instance(): LinearMemoryInspectorPane;
     create(tabId: string, title: string, arrayWrapper: LazyUint8Array, address?: number): void;
     close(tabId: string): void;

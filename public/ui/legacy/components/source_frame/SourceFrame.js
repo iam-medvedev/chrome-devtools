@@ -715,7 +715,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         }
         const editor = this.textEditor;
         const currentActiveSearch = editor.state.field(activeSearchState);
-        if (currentActiveSearch && currentActiveSearch.currentRange) {
+        if (currentActiveSearch?.currentRange) {
             editor.dispatch({ effects: setActiveSearch.of(new ActiveSearch(currentActiveSearch.regexp, null)) });
         }
     }
@@ -904,7 +904,7 @@ class SearchMatch {
                 return this.match[0];
             }
             if (selector[0] === '<') {
-                return (this.match.groups && this.match.groups[selector.slice(1, selector.length - 1)]) || '';
+                return (this.match.groups?.[selector.slice(1, selector.length - 1)]) || '';
             }
             return this.match[Number.parseInt(selector, 10)] || '';
         });
@@ -919,14 +919,16 @@ export class SelfXssWarningDialog {
         const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: selfXssDialogStyles });
         const content = shadowRoot.createChild('div', 'widget');
         const result = await new Promise(resolve => {
-            const closeButton = content.createChild('dt-close-button', 'dialog-close-button');
+            const header = content.createChild('div', 'header');
+            header.createChild('div', 'title').textContent = i18nString(UIStrings.doYouTrustThisCode);
+            const closeButton = header.createChild('dt-close-button', 'dialog-close-button');
             closeButton.setTabbable(true);
             self.onInvokeElement(closeButton, event => {
                 dialog.hide();
                 event.consume(true);
                 resolve(false);
             });
-            content.createChild('div', 'title').textContent = i18nString(UIStrings.doYouTrustThisCode);
+            closeButton.setSize("SMALL" /* Buttons.Button.Size.SMALL */);
             content.createChild('div', 'message').textContent =
                 i18nString(UIStrings.doNotPaste, { PH1: i18nString(UIStrings.allowPasting) });
             const input = UI.UIUtils.createInput('text-input', 'text', 'allow-pasting');
@@ -979,13 +981,13 @@ class ActiveSearch {
                 a.regexp.regex.source === b.regexp.regex.source && a.regexp.regex.flags === b.regexp.regex.flags);
     }
 }
-const setActiveSearch = CodeMirror.StateEffect.define({ map: (value, mapping) => value && value.map(mapping) });
+const setActiveSearch = CodeMirror.StateEffect.define({ map: (value, mapping) => value?.map(mapping) });
 const activeSearchState = CodeMirror.StateField.define({
     create() {
         return null;
     },
     update(state, tr) {
-        return tr.effects.reduce((state, effect) => effect.is(setActiveSearch) ? effect.value : state, state && state.map(tr.changes));
+        return tr.effects.reduce((state, effect) => effect.is(setActiveSearch) ? effect.value : state, state?.map(tr.changes) ?? null);
     },
 });
 const searchMatchDeco = CodeMirror.Decoration.mark({ class: 'cm-searchMatch' });

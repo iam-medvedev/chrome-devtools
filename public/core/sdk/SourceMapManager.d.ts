@@ -1,7 +1,8 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import type { FrameAssociated } from './FrameAssociated.js';
-import { SourceMap } from './SourceMap.js';
+import { type PageResourceLoadInitiator } from './PageResourceLoader.js';
+import { SourceMap, type SourceMapV3 } from './SourceMap.js';
 import { type Target } from './Target.js';
 export declare class SourceMapManager<T extends FrameAssociated> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
     #private;
@@ -16,6 +17,7 @@ export declare class SourceMapManager<T extends FrameAssociated> extends Common.
     cancelAttachSourceMap(client: T): void;
     detachSourceMap(client: T): void;
 }
+export declare function loadSourceMap(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): Promise<SourceMapV3>;
 export declare enum Events {
     SourceMapWillAttach = "SourceMapWillAttach",
     SourceMapFailedToAttach = "SourceMapFailedToAttach",

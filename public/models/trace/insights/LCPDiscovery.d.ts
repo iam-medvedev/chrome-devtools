@@ -4,40 +4,40 @@ export declare const UIStrings: {
     /**
      *@description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
      */
-    title: string;
+    readonly title: "LCP request discovery";
     /**
      *@description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
      */
-    description: string;
+    readonly description: "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)";
     /**
      * @description Text to tell the user how long after the earliest discovery time their LCP element loaded.
      * @example {401ms} PH1
      */
-    lcpLoadDelay: string;
+    readonly lcpLoadDelay: "LCP image loaded {PH1} after earliest start point.";
     /**
      * @description Text to tell the user that a fetchpriority property value of "high" is applied to the LCP request.
      */
-    fetchPriorityApplied: string;
+    readonly fetchPriorityApplied: "fetchpriority=high applied";
     /**
      * @description Text to tell the user that a fetchpriority property value of "high" should be applied to the LCP request.
      */
-    fetchPriorityShouldBeApplied: string;
+    readonly fetchPriorityShouldBeApplied: "fetchpriority=high should be applied";
     /**
      * @description Text to tell the user that the LCP request is discoverable in the initial document.
      */
-    requestDiscoverable: string;
+    readonly requestDiscoverable: "Request is discoverable in initial document";
     /**
      * @description Text to tell the user that the LCP request does not have the lazy load property applied.
      */
-    lazyLoadNotApplied: string;
+    readonly lazyLoadNotApplied: "lazy load not applied";
     /**
      * @description Text status indicating that the the Largest Contentful Paint (LCP) metric timing was not found. "LCP" is an acronym and should not be translated.
      */
-    noLcp: string;
+    readonly noLcp: "No LCP detected";
     /**
      * @description Text status indicating that the Largest Contentful Paint (LCP) metric was text rather than an image. "LCP" is an acronym and should not be translated.
      */
-    noLcpResource: string;
+    readonly noLcpResource: "No LCP resource detected because the LCP is not an image";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export declare function deps(): ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];

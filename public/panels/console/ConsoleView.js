@@ -845,7 +845,7 @@ export class ConsoleView extends UI.Widget.VBox {
             return;
         }
         const currentGroup = viewMessage.consoleGroup();
-        if (!currentGroup || !currentGroup.messagesHidden()) {
+        if (!currentGroup?.messagesHidden()) {
             const originatingMessage = viewMessage.consoleMessage().originatingMessage();
             const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
             viewMessage.setAdjacentUserCommandResult(adjacent);
@@ -1227,7 +1227,7 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     innerSearch(index) {
         delete this.innerSearchTimeoutId;
-        if (this.searchProgressIndicator && this.searchProgressIndicator.isCanceled()) {
+        if (this.searchProgressIndicator?.isCanceled()) {
             this.cleanupAfterSearch();
             return;
         }
@@ -1344,9 +1344,9 @@ export class ConsoleView extends UI.Widget.VBox {
         return distanceToPromptEditorBottom <= 2;
     }
 }
-// @ts-ignore exported for Tests.js
+// @ts-expect-error exported for Tests.js
 globalThis.Console = globalThis.Console || {};
-// @ts-ignore exported for Tests.js
+// @ts-expect-error exported for Tests.js
 globalThis.Console.ConsoleView = ConsoleView;
 export class ConsoleViewFilter {
     filterChanged;

@@ -58,7 +58,7 @@ export class JavaScriptFormatter {
         });
         this.#tokenizer = new AcornTokenizer(this.#content, tokens);
         const walker = new ESTreeWalker(this.#beforeVisit.bind(this), this.#afterVisit.bind(this));
-        // @ts-ignore Technically, the acorn Node type is a subclass of Acorn.ESTree.Node.
+        // @ts-expect-error Technically, the acorn Node type is a subclass of Acorn.ESTree.Node.
         // However, the acorn package currently exports its type without specifying
         // this relationship. So while this is allowed on runtime, we can't properly
         // typecheck it.
@@ -102,7 +102,7 @@ export class JavaScriptFormatter {
         let token;
         while ((token = this.#tokenizer.peekToken()) && token.start < node.start) {
             const token = this.#tokenizer.nextToken();
-            // @ts-ignore Same reason as above about Acorn types and ESTree types
+            // @ts-expect-error Same reason as above about Acorn types and ESTree types
             const format = this.#formatToken(node.parent, token);
             this.#push(token, format);
         }
@@ -261,7 +261,7 @@ export class JavaScriptFormatter {
                 let allVariablesInitialized = true;
                 const declarations = node.declarations;
                 for (let i = 0; i < declarations.length; ++i) {
-                    // @ts-ignore We are doing a subtype check, without properly checking whether
+                    // @ts-expect-error We are doing a subtype check, without properly checking whether
                     // it exists. We can't fix that, unless we use proper typechecking
                     allVariablesInitialized = allVariablesInitialized && Boolean(declarations[i].init);
                 }
@@ -440,9 +440,9 @@ export class JavaScriptFormatter {
             }
             if (node.parent && node.parent.type === 'CatchClause') {
                 const parentNode = node.parent;
-                // @ts-ignore We are doing a subtype check, without properly checking whether
+                // @ts-expect-error We are doing a subtype check, without properly checking whether
                 // it exists. We can't fix that, unless we use proper typechecking
-                if (parentNode.parent && parentNode.parent.finalizer) {
+                if (parentNode.parent?.finalizer) {
                     return 's';
                 }
             }

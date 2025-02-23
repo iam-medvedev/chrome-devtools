@@ -168,7 +168,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
             this.#popupHelper = new UI.PopoverHelper.PopoverHelper(this.elementInternal, event => {
                 const hoveredNode = event.composedPath()[0];
-                if (!hoveredNode || !hoveredNode.matches('.violating-element')) {
+                if (!hoveredNode?.matches('.violating-element')) {
                     return null;
                 }
                 const issue = this.#nodeElementToIssue.get(hoveredNode);
@@ -323,9 +323,9 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     }
     onCopyOrCut(isCut, event) {
         this.setClipboardData(null);
-        // @ts-ignore this bound in the main entry point
+        // @ts-expect-error this bound in the main entry point
         const originalEvent = event['original'];
-        if (!originalEvent || !originalEvent.target) {
+        if (!originalEvent?.target) {
             return;
         }
         // Don't prevent the normal copy if the user has a selection.
@@ -446,7 +446,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             return;
         }
         this.rootDOMNodeInternal = x;
-        this.isXMLMimeTypeInternal = x && x.isXMLNode();
+        this.isXMLMimeTypeInternal = x?.isXMLNode();
         this.update();
     }
     get isXMLMimeType() {
@@ -703,7 +703,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         if (!(treeElement instanceof ElementsTreeElement)) {
             return null;
         }
-        const elementsTreeElement = treeElement;
+        const elementsTreeElement = (treeElement);
         const node = elementsTreeElement.node();
         if (!node.parentNode || node.parentNode.nodeType() !== Node.ELEMENT_NODE) {
             return null;
@@ -769,7 +769,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             return;
         }
         let textNode = node.enclosingNodeOrSelfWithClass('webkit-html-text-node');
-        if (textNode && textNode.classList.contains('bogus')) {
+        if (textNode?.classList.contains('bogus')) {
             textNode = null;
         }
         const commentNode = node.enclosingNodeOrSelfWithClass('webkit-html-comment');
@@ -826,7 +826,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     }
     toggleEditAsHTML(node, startEditing, callback) {
         const treeElement = this.treeElementByNode.get(node);
-        if (!treeElement || !treeElement.hasEditableNode()) {
+        if (!treeElement?.hasEditableNode()) {
             return;
         }
         if (node.pseudoType()) {
@@ -848,7 +848,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             if (!index) {
                 return;
             }
-            const children = parentNode && parentNode.children();
+            const children = parentNode?.children();
             const newNode = children ? children[index] || parentNode : parentNode;
             if (!newNode) {
                 return;
@@ -1058,17 +1058,17 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             this.elementInternal.classList.add('hidden');
         }
         const rootNodeUpdateRecords = this.rootDOMNodeInternal && this.updateRecords.get(this.rootDOMNodeInternal);
-        if (rootNodeUpdateRecords && rootNodeUpdateRecords.hasChangedChildren()) {
+        if (rootNodeUpdateRecords?.hasChangedChildren()) {
             // Document's children have changed, perform total update.
             this.update();
         }
         else {
             for (const [node, record] of this.updateRecords) {
                 if (record.hasChangedChildren()) {
-                    this.updateModifiedParentNode(node);
+                    this.updateModifiedParentNode((node));
                 }
                 else {
-                    this.updateModifiedNode(node);
+                    this.updateModifiedNode((node));
                 }
             }
         }
@@ -1241,7 +1241,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                 return;
             }
             const selectedTreeElement = treeElement.treeOutline.selectedTreeElement;
-            if (selectedTreeElement && selectedTreeElement.hasAncestor(treeElement)) {
+            if (selectedTreeElement?.hasAncestor(treeElement)) {
                 treeElement.select(true);
             }
             treeElement.removeChildren();
@@ -1289,7 +1289,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                 treeElement.removeChildAtIndex(i);
                 continue;
             }
-            const elementsTreeElement = existingTreeElement;
+            const elementsTreeElement = (existingTreeElement);
             const existingNode = elementsTreeElement.node();
             if (visibleChildrenSet.has(existingNode)) {
                 existingTreeElements.set(existingNode, existingTreeElement);
@@ -1412,20 +1412,20 @@ export class UpdateRecord {
     hasRemovedChildrenInternal;
     charDataModifiedInternal;
     attributeModified(attrName) {
-        if (this.removedAttributes && this.removedAttributes.has(attrName)) {
+        if (this.removedAttributes?.has(attrName)) {
             this.removedAttributes.delete(attrName);
         }
         if (!this.modifiedAttributes) {
-            this.modifiedAttributes = new Set();
+            this.modifiedAttributes = (new Set());
         }
         this.modifiedAttributes.add(attrName);
     }
     attributeRemoved(attrName) {
-        if (this.modifiedAttributes && this.modifiedAttributes.has(attrName)) {
+        if (this.modifiedAttributes?.has(attrName)) {
             this.modifiedAttributes.delete(attrName);
         }
         if (!this.removedAttributes) {
-            this.removedAttributes = new Set();
+            this.removedAttributes = (new Set());
         }
         this.removedAttributes.add(attrName);
     }
@@ -1443,8 +1443,7 @@ export class UpdateRecord {
         this.hasChangedChildrenInternal = true;
     }
     isAttributeModified(attributeName) {
-        return this.modifiedAttributes !== null && this.modifiedAttributes !== undefined &&
-            this.modifiedAttributes.has(attributeName);
+        return this.modifiedAttributes?.has(attributeName) ?? false;
     }
     hasRemovedAttributes() {
         return this.removedAttributes !== null && this.removedAttributes !== undefined &&
@@ -1472,10 +1471,10 @@ export class Renderer {
     async render(object) {
         let node = null;
         if (object instanceof SDK.DOMModel.DOMNode) {
-            node = object;
+            node = (object);
         }
         else if (object instanceof SDK.DOMModel.DeferredDOMNode) {
-            node = await object.resolvePromise();
+            node = await (object).resolvePromise();
         }
         if (!node) {
             // Can't render not-a-node, or couldn't resolve deferred node.
@@ -1489,7 +1488,7 @@ export class Renderer {
             treeOutline.element.classList.add('single-node');
         }
         treeOutline.setVisible(true);
-        // @ts-ignore used in console_test_runner
+        // @ts-expect-error used in console_test_runner
         treeOutline.element.treeElementForTest = firstChild;
         treeOutline.setShowSelectionOnKeyboardFocus(/* show: */ true, /* preventTabOrder: */ true);
         return { node: treeOutline.element, tree: treeOutline };

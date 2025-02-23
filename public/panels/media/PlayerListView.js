@@ -92,7 +92,7 @@ export class PlayerListView extends UI.Widget.VBox {
             return;
         }
         const fragment = this.playerEntryFragments.get(playerID);
-        if (fragment === undefined || fragment.element() === undefined) {
+        if (fragment?.element() === undefined) {
             return;
         }
         fragment.$('frame-title').textContent = frameTitle;
@@ -142,7 +142,7 @@ export class PlayerListView extends UI.Widget.VBox {
             return;
         }
         const fragment = this.playerEntryFragments.get(playerID);
-        if (fragment === undefined || fragment.element() === undefined) {
+        if (fragment?.element() === undefined) {
             return;
         }
         this.contentElement.removeChild(fragment.element());

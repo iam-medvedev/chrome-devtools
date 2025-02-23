@@ -22,6 +22,10 @@ export default {
 .diff-container {
   flex: 1;
   overflow: auto;
+
+  & .widget:first-child {
+    height: 100%;
+  }
 }
 
 :focus.selected {

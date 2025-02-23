@@ -5,6 +5,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as RenderCoordinator from '../../../components/render_coordinator/render_coordinator.js';
 import { DataGridImpl, DataGridNode } from './DataGrid.js';
+let nextId = 0;
 export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridImpl) {
     onScrollBound;
     visibleNodes;
@@ -22,6 +23,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
     firstVisibleIsStriped;
     isStriped;
     filters = [];
+    id = nextId++;
     constructor(dataGridParameters) {
         super(dataGridParameters);
         this.onScrollBound = this.onScroll.bind(this);
@@ -79,7 +81,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
     }
     scheduleUpdate(isFromUser) {
         this.updateIsFromUser = this.updateIsFromUser || Boolean(isFromUser);
-        void RenderCoordinator.write('ViewportDataGrid.render', this.update.bind(this));
+        void RenderCoordinator.write(`ViewportDataGrid.render ${this.id}`, this.update.bind(this));
     }
     // TODO(allada) This should be fixed to never be needed. It is needed right now for network because removing
     // elements happens followed by a scheduleRefresh() which causes white space to be visible, but the waterfall
@@ -217,7 +219,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         this.firstVisibleIsStriped = Boolean(offset % 2);
         for (let i = 0; i < visibleNodes.length; ++i) {
             const node = visibleNodes[i];
-            const element = node.element();
+            const element = (node.element());
             node.setStriped((offset + i) % 2 === 0);
             if (element !== previousElement.nextSibling) {
                 tBody.insertBefore(element, previousElement.nextSibling);
@@ -362,7 +364,7 @@ export class ViewportDataGridNode extends DataGridNode {
             child.nextSibling.previousSibling = child.previousSibling;
         }
         if (child.parent !== this) {
-            throw 'removeChild: Node is not a child of this node.';
+            throw new Error('removeChild: Node is not a child of this node.');
         }
         Platform.ArrayUtilities.removeElement(this.children, child, true);
         child.unlink();
@@ -435,7 +437,7 @@ export class ViewportDataGridNode extends DataGridNode {
     }
     attached() {
         const existingElement = this.existingElement();
-        return Boolean(this.dataGrid && existingElement && existingElement.parentElement);
+        return Boolean(this.dataGrid && existingElement?.parentElement);
     }
     refresh() {
         if (this.attached()) {

@@ -284,7 +284,7 @@ export class EditorState {
         return Object.freeze(state);
     }
     static async defaultByAttribute(_state, attribute) {
-        return this.#puppeteer.run(puppeteer => {
+        return await this.#puppeteer.run(puppeteer => {
             switch (attribute) {
                 case 'assertedEvents': {
                     return immutableDeepAssign(defaultValuesByAttribute.assertedEvents, new ArrayAssignments({
@@ -314,7 +314,7 @@ export class EditorState {
         const state = structuredClone(step);
         for (const key of ['parameters', 'properties']) {
             if (key in step && step[key] !== undefined) {
-                // @ts-ignore Potential infinite type instantiation.
+                // @ts-expect-error Potential infinite type instantiation.
                 state[key] = JSON.stringify(step[key]);
             }
         }

@@ -108,14 +108,14 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         // If the main target hasn't attached yet, block callers until it appears.
         if (!target) {
             if (existingCallback) {
-                return new Promise(r => {
+                return await new Promise(r => {
                     this.#pendingMainTargetPromise = (result) => {
                         r(result);
                         existingCallback(result);
                     };
                 });
             }
-            return new Promise(r => {
+            return await new Promise(r => {
                 this.#pendingMainTargetPromise = r;
             });
         }

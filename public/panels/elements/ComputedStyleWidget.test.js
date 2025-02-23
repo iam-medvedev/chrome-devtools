@@ -9,7 +9,7 @@ async function waitForTraceElement(treeOutline) {
     if (element) {
         return element;
     }
-    return new Promise(resolve => {
+    return await new Promise(resolve => {
         requestAnimationFrame(async () => {
             const result = await waitForTraceElement(treeOutline);
             resolve(result);

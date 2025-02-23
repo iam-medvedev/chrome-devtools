@@ -54,6 +54,7 @@
     "../../../../../../front_end/models/issues_manager/PropertyRuleIssue.ts",
     "../../../../../../front_end/models/issues_manager/QuirksModeIssue.ts",
     "../../../../../../front_end/models/issues_manager/RelatedIssue.ts",
+    "../../../../../../front_end/models/issues_manager/SRIMessageSignatureIssue.ts",
     "../../../../../../front_end/models/issues_manager/SelectElementAccessibilityIssue.ts",
     "../../../../../../front_end/models/issues_manager/SharedArrayBufferIssue.ts",
     "../../../../../../front_end/models/issues_manager/SharedDictionaryIssue.ts",

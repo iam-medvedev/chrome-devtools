@@ -10,9 +10,27 @@ export default {
  * found in the LICENSE file.
  */
 
+.empty-state {
+  display: none;
+}
+
+.empty {
+  .empty-state {
+    display: flex;
+  }
+
+  devtools-split-view, .pretty-print-button, devtools-toolbar {
+    display: none;
+  }
+}
+
 .preloading-toolbar {
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);
+
+  button.toolbar-has-dropdown {
+    margin: var(--sys-size-2) 0;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./preloading/preloadingView.css')} */

@@ -151,7 +151,7 @@ export function allowHeader(header) {
 }
 export function lineWhitespace(line) {
     const matches = /^\s*/.exec(line);
-    if (!matches || !matches.length) {
+    if (!matches?.length) {
         // This should not happen
         return null;
     }

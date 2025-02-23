@@ -44,7 +44,7 @@ export class BaseInsightComponent extends HTMLElement {
     // So we can use the TypeScript BaseInsight class without getting warnings
     // about litTagName. Every child should overrwrite this.
     static litTagName = Lit.StaticHtml.literal ``;
-    #shadowRoot = this.attachShadow({ mode: 'open' });
+    shadow = this.attachShadow({ mode: 'open' });
     #selected = false;
     #model = null;
     #parsedTrace = null;
@@ -66,7 +66,7 @@ export class BaseInsightComponent extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
     }
     connectedCallback() {
-        this.#shadowRoot.adoptedStyleSheets.push(baseInsightComponentStyles);
+        this.shadow.adoptedStyleSheets.push(baseInsightComponentStyles);
         this.setAttribute('jslog', `${VisualLogging.section(`timeline.insights.${this.internalName}`)}`);
         // Used for unit test purposes when querying the DOM.
         this.dataset.insightName = this.internalName;
@@ -173,8 +173,7 @@ export class BaseInsightComponent extends HTMLElement {
         if (!this.model) {
             return;
         }
-        const output = this.renderContent();
-        this.#renderWithContent(output);
+        this.#renderWithContent();
     }
     getEstimatedSavingsTime() {
         return null;
@@ -238,9 +237,27 @@ export class BaseInsightComponent extends HTMLElement {
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
         void action.execute();
     }
-    #renderWithContent(content) {
+    #renderInsightContent(insightModel) {
+        if (!this.#selected) {
+            return Lit.nothing;
+        }
+        // Only render the insight body content if it is selected.
+        // To avoid re-rendering triggered from elsewhere.
+        const content = this.renderContent();
+        // clang-format off
+        return html `
+      <div class="insight-body">
+        <div class="insight-description">${md(insightModel.description)}</div>
+        <div class="insight-content">${content}</div>
+        ${this.#insightsAskAiEnabled ? html `
+          <devtools-button data-ask-ai @click=${this.#askAIButtonClick}>Ask AI (placeholder UX)</devtools-button>
+        ` : Lit.nothing}
+      </div>`;
+        // clang-format on
+    }
+    #renderWithContent() {
         if (!this.#model) {
-            Lit.render(Lit.nothing, this.#shadowRoot, { host: this });
+            Lit.render(Lit.nothing, this.shadow, { host: this });
             return;
         }
         const containerClasses = Lit.Directives.classMap({
@@ -269,19 +286,11 @@ export class BaseInsightComponent extends HTMLElement {
           </div>`
             : Lit.nothing}
         </header>
-        ${this.#selected ? html `
-          <div class="insight-body">
-            <div class="insight-description">${md(this.#model.description)}</div>
-            <div class="insight-content">${content}</div>
-            ${this.#insightsAskAiEnabled ? html `
-               <devtools-button data-ask-ai @click=${this.#askAIButtonClick}>Ask AI (placeholder UX)</devtools-button>
-             ` : Lit.nothing}
-          </div>`
-            : Lit.nothing}
+        ${this.#renderInsightContent(this.#model)}
       </div>
     `;
         // clang-format on
-        Lit.render(output, this.#shadowRoot, { host: this });
+        Lit.render(output, this.shadow, { host: this });
         if (this.#selected) {
             requestAnimationFrame(() => requestAnimationFrame(() => this.scrollIntoViewIfNeeded()));
         }

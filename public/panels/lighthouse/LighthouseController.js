@@ -340,7 +340,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         return categoryIDs;
     }
     async getInspectedURL(options) {
-        if (options && options.force || !this.inspectedURL) {
+        if (options?.force || !this.inspectedURL) {
             this.inspectedURL = await this.evaluateInspectedURL();
         }
         return this.inspectedURL;

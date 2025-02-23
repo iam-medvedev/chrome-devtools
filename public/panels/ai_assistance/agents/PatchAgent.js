@@ -3,27 +3,8 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as TextUtils from '../../../models/text_utils/text_utils.js';
-import { AiAgent, ConversationContext, } from './AiAgent.js';
-export class ProjectContext extends ConversationContext {
-    #project;
-    constructor(project) {
-        super();
-        this.#project = project;
-    }
-    getOrigin() {
-        // TODO
-        return 'test';
-    }
-    getItem() {
-        return this.#project;
-    }
-    getIcon() {
-        return document.createElement('span');
-    }
-    getTitle() {
-        return this.#project.displayName();
-    }
-}
+import { debugLog } from '../debug.js';
+import { AiAgent, } from './AiAgent.js';
 function getFiles(project) {
     const files = [];
     const map = new Map();
@@ -40,10 +21,11 @@ function getFiles(project) {
 }
 export class PatchAgent extends AiAgent {
     #project;
+    #fileUpdateAgent;
+    #changeSummary = '';
     async *
     // eslint-disable-next-line require-yield
     handleContextDetails(_select) {
-        // TODO: Implement
         return;
     }
     type = "patch" /* AgentType.PATCH */;
@@ -60,6 +42,8 @@ export class PatchAgent extends AiAgent {
     }
     constructor(opts) {
         super(opts);
+        this.#project = opts.project;
+        this.#fileUpdateAgent = opts.fileUpdateAgent ?? new FileUpdateAgent(opts);
         this.declareFunction('listFiles', {
             description: 'Returns a list of all files in the project.',
             parameters: {
@@ -74,7 +58,7 @@ export class PatchAgent extends AiAgent {
                         error: 'No project available',
                     };
                 }
-                const project = this.#project.getItem();
+                const project = this.#project;
                 const { files } = getFiles(project);
                 return {
                     result: {
@@ -113,12 +97,16 @@ export class PatchAgent extends AiAgent {
                         error: 'No project available',
                     };
                 }
-                const project = this.#project.getItem();
+                const project = this.#project;
                 const { map } = getFiles(project);
                 const matches = [];
                 for (const [filepath, file] of map.entries()) {
-                    const results = TextUtils.TextUtils.performSearchInContentData(file.workingCopyContentData(), params.query, params.caseSensitive ?? true, params.isRegex ?? false);
+                    await file.requestContentData();
+                    debugLog('searching in', filepath, 'for', params.query);
+                    const content = file.isDirty() ? file.workingCopyContentData() : await file.requestContentData();
+                    const results = TextUtils.TextUtils.performSearchInContentData(content, params.query, params.caseSensitive ?? true, params.isRegex ?? false);
                     for (const result of results) {
+                        debugLog('matches in', filepath);
                         matches.push({
                             filepath,
                             lineNumber: result.lineNumber,
@@ -134,10 +122,106 @@ export class PatchAgent extends AiAgent {
                 };
             },
         });
+        this.declareFunction('updateFiles', {
+            description: 'When called this function performs necesary updates to files',
+            parameters: {
+                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                description: '',
+                nullable: false,
+                properties: {
+                    files: {
+                        type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
+                        description: 'List of file names from the project',
+                        nullable: false,
+                        items: { type: 1 /* Host.AidaClient.ParametersTypes.STRING */, description: 'File name' }
+                    }
+                },
+            },
+            handler: async (args) => {
+                debugLog('updateFiles', args.files);
+                if (!this.#project) {
+                    return {
+                        error: 'No project available',
+                    };
+                }
+                const project = this.#project;
+                const { map } = getFiles(project);
+                for (const file of args.files.slice(0, 3)) {
+                    debugLog('updating', file);
+                    const uiSourceCode = map.get(file);
+                    if (!uiSourceCode) {
+                        debugLog(file, 'not found');
+                        continue;
+                    }
+                    const prompt = `I have applied the following CSS changes to my page in Chrome DevTools.
+
+\`\`\`css
+${this.#changeSummary}
+\`\`\`
+
+Following '===' I provide the source code file. Update the file to apply the same change to it.
+CRITICAL: Output the entire file with changes without any other modifications! DO NOT USE MARKDOWN.
+
+===
+${uiSourceCode.workingCopyContentData().text}
+`;
+                    let response;
+                    for await (response of this.#fileUpdateAgent.run(prompt, { selected: null })) {
+                    }
+                    debugLog('response', response);
+                    if (response?.type !== "answer" /* ResponseType.ANSWER */) {
+                        debugLog('wrong response type', response);
+                        continue;
+                    }
+                    const updated = response.text;
+                    uiSourceCode.setWorkingCopy(updated);
+                    debugLog('updated', updated);
+                }
+                return {
+                    result: {
+                        success: true,
+                    }
+                };
+            },
+        });
     }
-    async *run(initialQuery, options) {
-        this.#project = options.selected ?? undefined;
-        return yield* super.run(initialQuery, options);
+    async *applyChanges(changeSummary) {
+        this.#changeSummary = changeSummary;
+        const prompt = `I have applied the following CSS changes to my page in Chrome DevTools, what are the files in my source code that I need to change to apply the same change?
+
+\`\`\`css
+${changeSummary}
+\`\`\`
+
+Try searching using the selectors and if nothing matches, try to find a semantically appropriate place to change.
+Consider updating files containing styles like CSS files first!
+Call the updateFiles with the list of files to be updated once you are done.
+`;
+        yield* this.run(prompt, {
+            selected: null,
+        });
+    }
+}
+/**
+ * This is an inner "agent" to apply a change to one file.
+ */
+export class FileUpdateAgent extends AiAgent {
+    async *
+    // eslint-disable-next-line require-yield
+    handleContextDetails(_select) {
+        return;
+    }
+    type = "patch" /* AgentType.PATCH */;
+    preamble = undefined;
+    clientFeature = Host.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+    get userTier() {
+        return 'TESTERS';
+    }
+    get options() {
+        return {
+            temperature: undefined,
+            modelId: undefined,
+        };
     }
 }
 //# sourceMappingURL=PatchAgent.js.map

@@ -13,6 +13,8 @@ export default {
 .list {
   border: none !important; /* stylelint-disable-line declaration-no-important */
   border-top: 1px solid var(--sys-color-divider) !important; /* stylelint-disable-line declaration-no-important */
+  display: flex;
+  height: 100%;
 }
 
 .blocking-disabled {
@@ -23,21 +25,8 @@ export default {
   padding: 0 4px;
 }
 
-.no-blocked-urls,
 .blocked-urls {
   overflow: hidden auto;
-}
-
-.no-blocked-urls {
-  display: flex;
-  justify-content: center;
-  padding: 10px;
-
-  & devtools-button {
-    display: flex;
-    justify-content: center;
-    margin-top: var(--sys-size-8);
-  }
 }
 
 .no-blocked-urls > span {

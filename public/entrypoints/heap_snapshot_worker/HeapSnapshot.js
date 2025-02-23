@@ -828,17 +828,17 @@ export class HeapSnapshot {
             if (!filter) {
                 throw new Error('Unable to create filter');
             }
-            // @ts-ignore key can be added as a static property
+            // @ts-expect-error key can be added as a static property
             filter.key = 'AllocationNodeId: ' + allocationNodeId;
         }
         else if (typeof minNodeId === 'number' && typeof maxNodeId === 'number') {
             filter = this.createNodeIdFilter(minNodeId, maxNodeId);
-            // @ts-ignore key can be added as a static property
+            // @ts-expect-error key can be added as a static property
             filter.key = 'NodeIdRange: ' + minNodeId + '..' + maxNodeId;
         }
         else if (filterName !== undefined) {
             filter = this.createNamedFilter(filterName);
-            // @ts-ignore key can be added as a static property
+            // @ts-expect-error key can be added as a static property
             filter.key = 'NamedFilter: ' + filterName;
         }
         return filter;
@@ -900,7 +900,7 @@ export class HeapSnapshot {
     }
     aggregatesWithFilter(nodeFilter) {
         const filter = this.createFilter(nodeFilter);
-        // @ts-ignore key is added in createFilter
+        // @ts-expect-error key is added in createFilter
         const key = filter ? filter.key : 'allObjects';
         return this.getAggregatesByClassKey(false, key, filter);
     }
@@ -1955,7 +1955,7 @@ export class HeapSnapshot {
     }
     buildSamples() {
         const samples = this.#rawSamples;
-        if (!samples || !samples.length) {
+        if (!samples?.length) {
             return;
         }
         const sampleCount = samples.length / 2;
@@ -3099,7 +3099,7 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
         if (!this.isShortcut()) {
             return this.hasStringNameInternal();
         }
-        // @ts-ignore parseInt is successful against numbers.
+        // @ts-expect-error parseInt is successful against numbers.
         return isNaN(parseInt(this.nameInternal(), 10));
     }
     isElement() {
@@ -3125,7 +3125,7 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
         if (!this.isShortcut()) {
             return String(name);
         }
-        // @ts-ignore parseInt is successful against numbers.
+        // @ts-expect-error parseInt is successful against numbers.
         const numName = parseInt(name, 10);
         return String(isNaN(numName) ? name : numName);
     }

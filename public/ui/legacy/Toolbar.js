@@ -148,7 +148,7 @@ export class Toolbar extends HTMLElement {
         return button;
         function updateOptions() {
             const buttons = action.toggled() ? (toggledOptions || null) : (untoggledOptions || null);
-            if (buttons && buttons.length) {
+            if (buttons?.length) {
                 if (!longClickController) {
                     longClickController = new LongClickController(button.element, showOptions);
                     button.setLongClickable(true);
@@ -375,7 +375,7 @@ export class Toolbar extends HTMLElement {
             if (!loadItem) {
                 throw new Error('Could not load a toolbar item registration with no loadItem function');
             }
-            return loadItem().then(p => p.item());
+            return loadItem().then(p => (p).item());
         }));
         for (const item of items) {
             if (item) {
@@ -424,7 +424,7 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
         this.applyEnabledState(this.enabled && (!this.toolbar || this.toolbar.enabled));
     }
     applyEnabledState(enabled) {
-        // @ts-ignore: Ignoring in favor of an `instanceof` check for all the different
+        // @ts-expect-error: Ignoring in favor of an `instanceof` check for all the different
         //             kind of HTMLElement classes that have a disabled attribute.
         this.element.disabled = !enabled;
     }
@@ -882,13 +882,15 @@ export class ToolbarComboBox extends ToolbarItem {
     addOption(option) {
         this.element.appendChild(option);
     }
-    createOption(label, value) {
+    createOption(label, value, jslogContext) {
         const option = this.element.createChild('option');
         option.text = label;
         if (typeof value !== 'undefined') {
             option.value = value;
         }
-        const jslogContext = value ? Platform.StringUtilities.toKebabCase(value) : undefined;
+        if (!jslogContext) {
+            jslogContext = value ? Platform.StringUtilities.toKebabCase(value) : undefined;
+        }
         option.setAttribute('jslog', `${VisualLogging.item(jslogContext).track({ click: true })}`);
         return option;
     }

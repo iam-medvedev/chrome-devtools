@@ -10,8 +10,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenuItemLabels, } from '../../testing/ContextMenuHelpers.js';
-import { dispatchMouseUpEvent, raf, } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { dispatchClickEvent, dispatchMouseUpEvent, raf, } from '../../testing/DOMHelpers.js';
+import { createTarget, registerNoopActions, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
@@ -39,6 +39,7 @@ describeWithMockConnection('NetworkLogView', () => {
             globalStorage: dummyStorage,
             localStorage: dummyStorage,
         });
+        registerNoopActions(['network.toggle-recording', 'inspector-main.reload']);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => { },
             shortcutsForAction: () => [],
@@ -128,12 +129,6 @@ describeWithMockConnection('NetworkLogView', () => {
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'unix'), 'curl \'http://localhost\' -b $\'query=evil\\n\\n & cmd /c calc.exe \\n\\n\'');
         assert.strictEqual(await Network.NetworkLogView.NetworkLogView.generateCurlCommand(request, 'win'), 'curl ^\"http://localhost^\" -b ^\"query=evil^\n\n^\n\n ^& cmd /c calc.exe ^\n\n^\n\n^\"');
     });
-    function createNetworkLogView(filterBar) {
-        if (!filterBar) {
-            filterBar = { addFilter: () => { }, filterButton: () => ({ addEventListener: () => { } }), addDivider: () => { } };
-        }
-        return new Network.NetworkLogView.NetworkLogView(filterBar, document.createElement('div'), Common.Settings.Settings.instance().createSetting('network-log-large-rows', false));
-    }
     const tests = (inScope) => () => {
         beforeEach(() => {
             networkLogView = createNetworkLogView();
@@ -453,7 +448,7 @@ describeWithMockConnection('NetworkLogView', () => {
         let columns = networkLogView.columns();
         let networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
         assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
-        assert.strictEqual(networkColumnWidget.showMode(), "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */);
+        assert.strictEqual((networkColumnWidget).showMode(), "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */);
         columnSettings.set({
             waterfall: { visible: true, title: 'waterfall' },
         });
@@ -462,7 +457,7 @@ describeWithMockConnection('NetworkLogView', () => {
         columns.switchViewMode(true);
         networkColumnWidget = columns.dataGrid().asWidget().parentWidget();
         assert.instanceOf(networkColumnWidget, UI.SplitWidget.SplitWidget);
-        assert.strictEqual(networkColumnWidget.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
+        assert.strictEqual((networkColumnWidget).showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
     });
     function createOverrideRequests() {
         const urlNotOverridden = urlString `url-not-overridden`;
@@ -720,6 +715,57 @@ Invoke-WebRequest -UseBasicParsing -Uri "url-header-und-content-overridden"`]);
         assert.exists(customHeaderItem);
     });
 });
+describeWithMockConnection('NetworkLogView placeholder', () => {
+    const START_RECORDING_ID = 'network.toggle-recording';
+    const RELOAD_ID = 'inspector-main.reload';
+    beforeEach(() => {
+        stubNoopSettings();
+        UI.ActionRegistration.registerActionExtension({
+            actionId: START_RECORDING_ID,
+            category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
+            title: () => 'mock',
+            toggleable: true,
+        });
+        UI.ActionRegistration.registerActionExtension({
+            actionId: RELOAD_ID,
+            category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
+            title: () => 'mock',
+            toggleable: true,
+        });
+        sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
+            shortcutTitleForAction: () => 'Ctrl',
+            shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: UI.KeyboardShortcut.Keys.Ctrl.code, name: 'Ctrl' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */)],
+        });
+    });
+    it('shows instruction to start recording', async () => {
+        const networkLogView = createNetworkLogView();
+        testPlaceholderText(networkLogView, 'No network activity recorded', 'Record network log to display network activity by using the \"Start recording\" button or by hitting Ctrl.');
+        testPlaceholderButton(networkLogView, 'Start recording', START_RECORDING_ID);
+    });
+    it('shows placeholder with instruction to reload page if already recording', async () => {
+        const networkLogView = createNetworkLogView();
+        networkLogView.setRecording(true);
+        testPlaceholderText(networkLogView, 'Currently recording network activity', 'Perform a request or reload the page by using the \"Reload page\" button or by hitting Ctrl.');
+        testPlaceholderButton(networkLogView, 'Reload page', RELOAD_ID);
+    });
+});
+function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescriptionText) {
+    const emptyWidget = networkLogView.element.querySelector('.empty-state');
+    const header = emptyWidget?.querySelector('.empty-state-header')?.textContent;
+    const description = emptyWidget?.querySelector('.empty-state-description > span')?.textContent;
+    assert.deepEqual(header, expectedHeaderText);
+    assert.deepEqual(description, expectedDescriptionText);
+}
+function testPlaceholderButton(networkLogView, expectedButtonText, actionId) {
+    const button = networkLogView.element.querySelector('.empty-state devtools-button');
+    assert.exists(button);
+    assert.deepEqual(button.textContent, expectedButtonText);
+    const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
+    const spy = sinon.spy(action, 'execute');
+    assert.isTrue(spy.notCalled);
+    dispatchClickEvent(button);
+    assert.isTrue(spy.calledOnce);
+}
 function clickCheckbox(checkbox) {
     checkbox.checked = true;
     const event = new Event('change');
@@ -763,5 +809,11 @@ async function selectMoreFiltersOption(softMenu, option) {
     const item = getDropdownItem(softMenu, option);
     dispatchMouseUpEvent(item);
     await raf();
+}
+function createNetworkLogView(filterBar) {
+    if (!filterBar) {
+        filterBar = { addFilter: () => { }, filterButton: () => ({ addEventListener: () => { } }), addDivider: () => { } };
+    }
+    return new Network.NetworkLogView.NetworkLogView(filterBar, document.createElement('div'), Common.Settings.Settings.instance().createSetting('network-log-large-rows', false));
 }
 //# sourceMappingURL=NetworkLogView.test.js.map

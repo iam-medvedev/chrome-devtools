@@ -505,7 +505,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (!this.noMatchesElement.classList.contains('hidden')) {
             return;
         }
-        if (this.sectionBlocks[0] && this.sectionBlocks[0].sections[0]) {
+        if (this.sectionBlocks[0]?.sections[0]) {
             const firstVisibleSection = this.sectionBlocks[0].sections[0].findCurrentOrNextVisible(/* willIterateForward= */ true);
             if (firstVisibleSection) {
                 firstVisibleSection.element.tabIndex = this.sectionsContainer.hasFocus() ? -1 : 0;
@@ -1662,7 +1662,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         if (!isEditingName) {
             this.disableDefaultSuggestionForEmptyInput();
             // If a CSS value is being edited that has a numeric or hex substring, hint that precision modifier shortcuts are available.
-            if (treeElement && treeElement.valueElement) {
+            if (treeElement?.valueElement) {
                 const cssValueText = treeElement.valueElement.textContent;
                 const cmdOrCtrl = Host.Platform.isMac() ? 'Cmd' : 'Ctrl';
                 const optionOrAlt = Host.Platform.isMac() ? 'Option' : 'Alt';
@@ -1753,7 +1753,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
         const lowerQuery = query.toLowerCase();
         const editingVariable = !this.isEditingName && expression.trim().endsWith('var(');
         if (!query && !force && !editingVariable && (this.isEditingName || expression)) {
-            return Promise.resolve([]);
+            return await Promise.resolve([]);
         }
         const prefixResults = [];
         const anywhereResults = [];
@@ -1872,7 +1872,7 @@ export class CSSPropertyPrompt extends UI.TextPrompt.TextPrompt {
                 return a.isCSSVariableColor ? -1 : 1;
             });
         }
-        return Promise.resolve(results);
+        return await Promise.resolve(results);
         function filterCompletions(completion, variable, nameValue) {
             const index = completion.toLowerCase().indexOf(lowerQuery);
             const result = {

@@ -42,7 +42,7 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/InteractionToNextPaint.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",
-    "../../../../../../../../front_end/panels/timeline/components/insights/LongCriticalNetworkTree.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/NetworkDependencyTree.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/NodeLink.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/RenderBlocking.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/SidebarInsight.ts",

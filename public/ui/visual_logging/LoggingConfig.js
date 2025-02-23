@@ -114,7 +114,7 @@ export function parseJsLog(jslog) {
     }
     const config = { ve };
     const context = getComponent('context:');
-    if (context && context.trim().length) {
+    if (context?.trim().length) {
         checkContextValue(context);
         config.context = context;
     }

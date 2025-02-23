@@ -14,7 +14,7 @@ export class ReportingApiView extends UI.SplitWidget.SplitWidget {
         this.endpointsGrid = endpointsGrid;
         this.endpoints = new Map();
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-        const networkManager = mainTarget && mainTarget.model(SDK.NetworkManager.NetworkManager);
+        const networkManager = mainTarget?.model(SDK.NetworkManager.NetworkManager);
         if (networkManager) {
             networkManager.addEventListener(SDK.NetworkManager.Events.ReportingApiEndpointsChangedForOrigin, event => this.onEndpointsChangedForOrigin(event.data), this);
             const reportingApiReportsView = new ReportingApiReportsView(networkManager);

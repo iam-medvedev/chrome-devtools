@@ -47,6 +47,9 @@ export class EntityMapper {
         // As a starting point, we consider the first navigation as the 1P.
         const nav = Array.from(this.#parsedTrace.Meta.navigationsByNavigationId.values()).sort((a, b) => a.ts - b.ts)[0];
         const firstPartyUrl = nav?.args.data?.documentLoaderURL ?? this.#parsedTrace.Meta.mainFrameURL;
+        if (!firstPartyUrl) {
+            return null;
+        }
         return Trace.Handlers.Helpers.getEntityForUrl(firstPartyUrl, this.#entityMappings.createdEntityCache) ?? null;
     }
     #getThirdPartyEvents() {
@@ -140,6 +143,17 @@ export class EntityMapper {
         });
         // Update our CallFrame cache when we've got a resolved entity.
         this.#resolvedCallFrames.add(callFrame);
+    }
+    // Update entities with proper Chrome Extension names.
+    updateExtensionEntitiesWithName(executionContextNamesByOrigin) {
+        const entities = Array.from(this.#entityMappings.eventsByEntity.keys());
+        for (const [origin, name] of executionContextNamesByOrigin) {
+            // In makeUpChromeExtensionEntity, the extension origin is set as the only domain for the entity.
+            const entity = entities.find(e => e.domains[0] === origin);
+            if (entity) {
+                entity.name = entity.company = name;
+            }
+        }
     }
 }
 //# sourceMappingURL=EntityMapper.js.map

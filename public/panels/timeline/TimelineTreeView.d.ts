@@ -68,7 +68,7 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     sortingChanged(): void;
     getSortingFunction(columnId: string): ((a: DataGrid.SortableDataGrid.SortableDataGridNode<GridNode>, b: DataGrid.SortableDataGrid.SortableDataGridNode<GridNode>) => number) | null;
     private onShowModeChanged;
-    private updateDetailsForSelection;
+    protected updateDetailsForSelection(): void;
     showDetailsForNode(_node: Trace.Extras.TraceTree.Node): boolean;
     private onMouseMove;
     onHover(node: Trace.Extras.TraceTree.Node | null): void;
@@ -116,12 +116,10 @@ export declare class TreeGridNode extends GridNode {
 }
 export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     protected readonly groupBySetting: Common.Settings.Setting<AggregatedTimelineTreeView.GroupBy>;
-    private readonly stackView;
-    private executionContextNamesByOrigin;
+    readonly stackView: TimelineStackView;
     constructor();
     setGroupBySetting(groupBy: AggregatedTimelineTreeView.GroupBy): void;
     updateContents(selection: TimelineSelection): void;
-    private updateExtensionResolver;
     private beautifyDomainName;
     displayInfoForGroupNode(node: Trace.Extras.TraceTree.Node): {
         name: string;
@@ -162,25 +160,28 @@ export declare class BottomUpTimelineTreeView extends AggregatedTimelineTreeView
 }
 declare const TimelineStackView_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineStackView.EventTypes>;
-    addEventListener<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineStackView.EventTypes, T>;
-    once<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: T): Promise<TimelineStackView.EventTypes[T]>;
-    removeEventListener<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: TimelineStackView.Events.SELECTION_CHANGED): boolean;
-    dispatchEventToListeners<T extends TimelineStackView.Events.SELECTION_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineStackView.EventTypes, T>): void;
+    addEventListener<T extends keyof TimelineStackView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineStackView.EventTypes, T>;
+    once<T extends keyof TimelineStackView.EventTypes>(eventType: T): Promise<TimelineStackView.EventTypes[T]>;
+    removeEventListener<T extends keyof TimelineStackView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineStackView.EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: keyof TimelineStackView.EventTypes): boolean;
+    dispatchEventToListeners<T extends keyof TimelineStackView.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineStackView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineStackView extends TimelineStackView_base {
     private readonly treeView;
     private readonly dataGrid;
     constructor(treeView: TimelineTreeView);
     setStack(stack: Trace.Extras.TraceTree.Node[], selectedNode: Trace.Extras.TraceTree.Node): void;
+    onMouseMove(event: Event): void;
     selectedTreeNode(): Trace.Extras.TraceTree.Node | null;
     private onSelectionChanged;
 }
 export declare namespace TimelineStackView {
     const enum Events {
-        SELECTION_CHANGED = "SelectionChanged"
+        SELECTION_CHANGED = "SelectionChanged",
+        TREE_ROW_HOVERED = "TreeRowHovered"
     }
     interface EventTypes {
+        [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
         [Events.SELECTION_CHANGED]: void;
     }
 }

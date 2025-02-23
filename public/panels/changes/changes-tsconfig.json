@@ -31,6 +31,7 @@
   "files": [
     "../../../../../../front_end/panels/changes/ChangesSidebar.ts",
     "../../../../../../front_end/panels/changes/ChangesView.ts",
+    "../../../../../../front_end/panels/changes/CombinedDiffView.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts",

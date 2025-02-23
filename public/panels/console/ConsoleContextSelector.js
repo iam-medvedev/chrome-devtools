@@ -70,7 +70,7 @@ export class ConsoleContextSelector {
         let label = maybeLabel ? target.decorateLabel(maybeLabel) : '';
         if (executionContext.frameId) {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            const frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
+            const frame = resourceTreeModel?.frameForId(executionContext.frameId);
             if (frame) {
                 label = label || frame.displayName();
             }
@@ -141,11 +141,11 @@ export class ConsoleContextSelector {
         this.dropDown.selectItem(executionContext);
     }
     isTopContext(executionContext) {
-        if (!executionContext || !executionContext.isDefault) {
+        if (!executionContext?.isDefault) {
             return false;
         }
         const resourceTreeModel = executionContext.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
-        const frame = executionContext.frameId && resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
+        const frame = executionContext.frameId && resourceTreeModel?.frameForId(executionContext.frameId);
         if (!frame) {
             return false;
         }
@@ -179,12 +179,12 @@ export class ConsoleContextSelector {
         let frame = null;
         if (executionContext.frameId) {
             const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
+            frame = resourceTreeModel?.frameForId(executionContext.frameId) ?? null;
         }
         if (Common.ParsedURL.schemeIs(executionContext.origin, 'chrome-extension:')) {
             return i18nString(UIStrings.extension);
         }
-        const sameTargetParentFrame = frame && frame.sameTargetParentFrame();
+        const sameTargetParentFrame = frame?.sameTargetParentFrame();
         // TODO(crbug.com/1159332): Understand why condition involves the sameTargetParentFrame.
         if (!frame || !sameTargetParentFrame || sameTargetParentFrame.securityOrigin !== executionContext.origin) {
             const url = Common.ParsedURL.ParsedURL.fromString(executionContext.origin);
@@ -192,7 +192,7 @@ export class ConsoleContextSelector {
                 return url.domain();
             }
         }
-        if (frame && frame.securityOrigin) {
+        if (frame?.securityOrigin) {
             const domain = new Common.ParsedURL.ParsedURL(frame.securityOrigin).domain();
             if (domain) {
                 return domain;
@@ -202,7 +202,7 @@ export class ConsoleContextSelector {
     }
     isItemSelectable(item) {
         const callFrame = item.debuggerModel.selectedCallFrame();
-        const callFrameContext = callFrame && callFrame.script.executionContext();
+        const callFrameContext = callFrame?.script.executionContext();
         return !callFrameContext || item === callFrameContext;
     }
     itemSelected(item) {
@@ -214,7 +214,7 @@ export class ConsoleContextSelector {
     }
     callFrameSelectedInUI() {
         const callFrame = UI.Context.Context.instance().flavor(SDK.DebuggerModel.CallFrame);
-        const callFrameContext = callFrame && callFrame.script.executionContext();
+        const callFrameContext = callFrame?.script.executionContext();
         if (callFrameContext) {
             UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, callFrameContext);
         }

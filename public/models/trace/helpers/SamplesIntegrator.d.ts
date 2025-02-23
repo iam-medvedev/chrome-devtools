@@ -48,7 +48,14 @@ export declare class SamplesIntegrator {
     callsFromProfileSamples(): Types.Events.SyntheticProfileCall[];
     static framesAreEqual(frame1: Protocol.Runtime.CallFrame, frame2: Protocol.Runtime.CallFrame): boolean;
     static showNativeName(name: string, runtimeCallStatsEnabled: boolean): boolean;
-    static nativeGroup(nativeName: string): 'Parse' | 'Compile' | null;
+    static nativeGroup(nativeName: string): SamplesIntegrator.NativeGroups | null;
     static isNativeRuntimeFrame(frame: Protocol.Runtime.CallFrame): boolean;
     static filterStackFrames(stack: Types.Events.SyntheticProfileCall[], engineConfig: Types.Configuration.Configuration): void;
+    static createFakeTraceFromCpuProfile(profile: Protocol.Profiler.Profile, tid: Types.Events.ThreadID): Types.File.TraceFile;
+}
+export declare namespace SamplesIntegrator {
+    const enum NativeGroups {
+        COMPILE = "Compile",
+        PARSE = "Parse"
+    }
 }

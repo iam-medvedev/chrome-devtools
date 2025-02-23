@@ -94,7 +94,7 @@ export function handleEvent(event) {
         }
         // 2. Find the last DecodeLazyPixelRef event and, if we find it, find its associated PaintImage event.
         const lastDecodeLazyPixelRef = decodeLazyPixelRefEvents.get(event.pid)?.get(event.tid)?.at(-1);
-        if (!lastDecodeLazyPixelRef || typeof lastDecodeLazyPixelRef.args?.LazyPixelRef === 'undefined') {
+        if (typeof lastDecodeLazyPixelRef?.args?.LazyPixelRef === 'undefined') {
             return;
         }
         const paintEvent = paintImageByLazyPixelRef.get(lastDecodeLazyPixelRef.args.LazyPixelRef);

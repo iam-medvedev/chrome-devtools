@@ -154,8 +154,13 @@ export class TimelineController {
         const optionDuringRecording = throttlingManager.cpuThrottlingOption();
         throttlingManager.setCPUThrottlingOption(SDK.CPUThrottlingManager.NoThrottlingOption);
         this.client.loadingStarted();
-        this.#fieldData = await this.fetchFieldData();
-        await this.waitForTracingToStop();
+        const [fieldData] = await Promise.all([
+            this.fetchFieldData(),
+            // TODO(crbug.com/366072294): Report the progress of this resumption, as it can be lengthy on heavy pages.
+            SDK.TargetManager.TargetManager.instance().resumeAllTargets(),
+            this.waitForTracingToStop(),
+        ]);
+        this.#fieldData = fieldData;
         // Now we re-enable throttling again to maintain the setting being persistent.
         throttlingManager.setCPUThrottlingOption(optionDuringRecording);
         await this.allSourcesFinished();
@@ -167,7 +172,7 @@ export class TimelineController {
             return null;
         }
         const urls = [...new Set(this.#navigationUrls)];
-        return Promise.all(urls.map(url => cruxManager.getFieldDataForPage(url)));
+        return await Promise.all(urls.map(url => cruxManager.getFieldDataForPage(url)));
     }
     async createMetadata() {
         const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
@@ -178,7 +183,7 @@ export class TimelineController {
         else if (deviceModeModel?.type() === EmulationModel.DeviceModeModel.Type.Responsive) {
             emulatedDeviceTitle = 'Responsive';
         }
-        return Trace.Extras.Metadata.forNewRecording(false, this.#recordingStartTime ?? undefined, emulatedDeviceTitle, this.#fieldData ?? undefined);
+        return await Trace.Extras.Metadata.forNewRecording(false, this.#recordingStartTime ?? undefined, emulatedDeviceTitle, this.#fieldData ?? undefined);
     }
     async waitForTracingToStop() {
         if (this.tracingManager) {
@@ -225,8 +230,6 @@ export class TimelineController {
         this.tracingCompletePromise = null;
     }
     async allSourcesFinished() {
-        // TODO(crbug.com/366072294): Report the progress of this resumption, as it can be lengthy on heavy pages.
-        await SDK.TargetManager.TargetManager.instance().resumeAllTargets();
         Extensions.ExtensionServer.ExtensionServer.instance().profilingStopped();
         this.client.processingStarted();
         const metadata = await this.createMetadata();

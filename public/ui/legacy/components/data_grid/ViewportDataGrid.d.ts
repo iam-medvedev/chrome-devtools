@@ -27,6 +27,7 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
     private firstVisibleIsStriped;
     private isStriped;
     private filters;
+    private id;
     constructor(dataGridParameters: Parameters);
     setStriped(striped: boolean): void;
     setFilters(filters: readonly TextUtils.TextUtils.ParsedFilter[]): void;

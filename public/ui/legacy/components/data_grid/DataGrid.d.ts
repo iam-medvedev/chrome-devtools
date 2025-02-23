@@ -1,9 +1,10 @@
 import * as Common from '../../../../core/common/common.js';
 import * as UI from '../../legacy.js';
+import type { DataGridInternalToken } from './DataGridElement.js';
 export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
     element: HTMLDivElement;
     displayName: string;
-    editCallback: ((node: any, columnId: string, valueBeforeEditing: any, newText: any, moveDirection?: string) => void) | undefined;
+    private editCallback;
     deleteCallback: ((arg0: any) => void) | undefined;
     refreshCallback: (() => void) | undefined;
     private dataTableHeaders;
@@ -43,6 +44,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     private currentResizer?;
     private dataGridWidget?;
     constructor(dataGridParameters: Parameters);
+    setEditCallback(editCallback: ((node: any, columnId: string, valueBeforeEditing: any, newText: any, moveDirection?: string) => void) | undefined, _internalToken: DataGridInternalToken): void;
     private firstSelectableNode;
     private lastSelectableNode;
     setElementContent(element: Element, value: string): void;
@@ -176,6 +178,7 @@ export declare class DataGridNode<T> {
     private selectedInternal;
     private dirty;
     private inactive;
+    private highlighted;
     private depthInternal;
     revealedInternal: boolean | undefined;
     protected attachedInternal: boolean;
@@ -206,6 +209,7 @@ export declare class DataGridNode<T> {
     isDirty(): boolean;
     setDirty(dirty: boolean): void;
     setInactive(inactive: boolean): void;
+    setHighlighted(highlighted: boolean): void;
     hasChildren(): boolean;
     setHasChildren(x: boolean): void;
     get depth(): number;
@@ -265,7 +269,6 @@ export declare class DataGridWidget<T> extends UI.Widget.VBox {
 export interface Parameters {
     displayName: string;
     columns: ColumnDescriptor[];
-    editCallback?: ((node: any, columnId: string, valueBeforeEditing: any, newText: any, moveDirection?: string) => void);
     deleteCallback?: ((arg0: any) => void);
     refreshCallback?: (() => void);
 }

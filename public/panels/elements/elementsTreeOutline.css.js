@@ -318,6 +318,8 @@ select {
   visibility: hidden;
   position: relative;
   left: -1px;
+  width: 16px;
+  height: 16px;
 }
 
 .elements-disclosure li.selected .gutter-container:not(.has-decorations) > devtools-icon {

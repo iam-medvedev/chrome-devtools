@@ -50,6 +50,9 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function deps() {
     return ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
 }
+export function isLCPPhases(model) {
+    return model.insightKey === 'LCPPhases';
+}
 function anyValuesNaN(...values) {
     return values.some(v => Number.isNaN(v));
 }
@@ -101,6 +104,7 @@ function finalize(partialModel) {
         relatedEvents.push(partialModel.lcpRequest);
     }
     return {
+        insightKey: "LCPPhases" /* InsightKeys.LCP_PHASES */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

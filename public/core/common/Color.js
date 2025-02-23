@@ -49,7 +49,7 @@ function normalizeHue(hue) {
 // and returns the canonicalized `degree`.
 function parseAngle(angleText) {
     const angle = angleText.replace(/(deg|g?rad|turn)$/, '');
-    // @ts-ignore: isNaN can accept strings
+    // @ts-expect-error: isNaN can accept strings
     if (isNaN(angle) || angleText.match(/\s+(deg|g?rad|turn)/)) {
         return null;
     }
@@ -276,7 +276,7 @@ function parseAlpha(value) {
  * - 20% in range [0, 1] is 0.5
  */
 function parsePercentOrNumber(value, range = [0, 1]) {
-    // @ts-ignore: isNaN can accept strings
+    // @ts-expect-error: isNaN can accept strings
     if (isNaN(value.replace('%', ''))) {
         return null;
     }
@@ -301,7 +301,7 @@ function parseRgbNumeric(value) {
 }
 export function parseHueNumeric(value) {
     const angle = value.replace(/(deg|g?rad|turn)$/, '');
-    // @ts-ignore: isNaN can accept strings
+    // @ts-expect-error: isNaN can accept strings
     if (isNaN(angle) || value.match(/\s+(deg|g?rad|turn)/)) {
         return null;
     }
@@ -318,7 +318,7 @@ export function parseHueNumeric(value) {
     return (number / 360) % 1;
 }
 function parseSatLightNumeric(value) {
-    // @ts-ignore: isNaN can accept strings
+    // @ts-expect-error: isNaN can accept strings
     if (value.indexOf('%') !== value.length - 1 || isNaN(value.replace('%', ''))) {
         return null;
     }

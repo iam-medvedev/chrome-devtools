@@ -223,7 +223,7 @@ export class ConsoleModel extends SDKModel {
         else if (call.args.length && call.args[0].description) {
             message = call.args[0].description;
         }
-        const callFrame = call.stackTrace && call.stackTrace.callFrames.length ? call.stackTrace.callFrames[0] : null;
+        const callFrame = call.stackTrace?.callFrames.length ? call.stackTrace.callFrames[0] : null;
         const details = {
             type: call.type,
             url: callFrame?.url,
@@ -235,7 +235,7 @@ export class ConsoleModel extends SDKModel {
             executionContextId: call.executionContextId,
             context: call.context,
         };
-        const consoleMessage = new ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, level, message, details);
+        const consoleMessage = new ConsoleMessage(runtimeModel, Common.Console.FrontendMessageSource.ConsoleAPI, level, (message), details);
         for (const msg of this.#messagesByTimestamp.get(consoleMessage.timestamp).values()) {
             if (consoleMessage.isEqual(msg)) {
                 return;
@@ -365,7 +365,7 @@ export class ConsoleModel extends SDKModel {
             failedToSave(null);
             return;
         }
-        const executionContext = currentExecutionContext;
+        const executionContext = (currentExecutionContext);
         const result = await executionContext.globalObject(/* objectGroup */ '', /* generatePreview */ false);
         if ('error' in result || Boolean(result.exceptionDetails) || !result.object) {
             failedToSave('object' in result && result.object || null);
@@ -392,7 +392,7 @@ export class ConsoleModel extends SDKModel {
                 ++index;
             }
             const name = prefix + index;
-            // @ts-ignore Assignment to global object
+            // @ts-expect-error Assignment to global object
             this[name] = value;
             return name;
         }
@@ -480,7 +480,7 @@ export class ConsoleMessage {
     constructor(runtimeModel, source, level, messageText, details) {
         this.#runtimeModelInternal = runtimeModel;
         this.source = source;
-        this.level = level;
+        this.level = (level);
         this.messageText = messageText;
         this.type = details?.type || "log" /* Protocol.Runtime.ConsoleAPICalledEventType.Log */;
         this.url = details?.url;

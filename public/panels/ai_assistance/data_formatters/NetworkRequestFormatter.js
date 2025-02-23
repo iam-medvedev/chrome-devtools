@@ -5,22 +5,26 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Logs from '../../../models/logs/logs.js';
 import * as Network from '../../network/network.js';
 const MAX_HEADERS_SIZE = 1000;
+/**
+ * Sanitizes the set of headers, removing values that are not on the allow-list and replacing them with '<redacted>'.
+ */
+function sanitizeHeaders(headers) {
+    return headers.map(header => {
+        if (NetworkRequestFormatter.allowHeader(header.name)) {
+            return header;
+        }
+        return { name: header.name, value: '<redacted>' };
+    });
+}
 export class NetworkRequestFormatter {
-    static allowHeader(header) {
-        return allowedHeaders.has(header.name.toLowerCase().trim());
+    static allowHeader(headerName) {
+        return allowedHeaders.has(headerName.toLowerCase().trim());
     }
-    static formatHeaders(title, headers) {
-        return formatLines(title, headers
-            .map(header => {
-            if (NetworkRequestFormatter.allowHeader(header)) {
-                return header;
-            }
-            return {
-                name: header.name,
-                value: '<redacted>',
-            };
-        })
-            .map(header => header.name + ': ' + header.value + '\n'), MAX_HEADERS_SIZE);
+    static formatHeaders(title, headers, addListPrefixToEachLine) {
+        return formatLines(title, sanitizeHeaders(headers).map(header => {
+            const prefix = addListPrefixToEachLine ? '- ' : '';
+            return prefix + header.name + ': ' + header.value + '\n';
+        }), MAX_HEADERS_SIZE);
     }
     static formatInitiatorUrl(initiatorUrl, allowedOrigin) {
         const initiatorOrigin = new URL(initiatorUrl).origin;

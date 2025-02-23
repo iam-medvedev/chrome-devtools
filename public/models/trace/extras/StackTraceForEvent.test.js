@@ -8,7 +8,7 @@ function shapeStackTraceAsArray(stackTrace) {
     const stackTraceAsArray = [];
     let currentStackTrace = stackTrace;
     while (currentStackTrace) {
-        // @ts-ignore `codeType` is not included in the protocol types but
+        // @ts-expect-error `codeType` is not included in the protocol types but
         // occasionally present
         currentStackTrace.callFrames.forEach(callFrame => delete callFrame.codeType);
         stackTraceAsArray.push({ callFrames: currentStackTrace.callFrames, description: currentStackTrace.description });

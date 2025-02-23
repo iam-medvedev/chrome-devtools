@@ -122,7 +122,7 @@ export class TreeOutline extends HTMLElement {
      * Takes a TreeNode, expands the outline to reveal it, and focuses it.
      */
     async expandToAndSelectTreeNode(targetTreeNode) {
-        return this.expandToAndSelectTreeNodeId(targetTreeNode.id);
+        return await this.expandToAndSelectTreeNodeId(targetTreeNode.id);
     }
     /**
      * Takes a TreeNode ID, expands the outline to reveal it, and focuses it.
@@ -447,7 +447,7 @@ export class TreeOutline extends HTMLElement {
         // to ensure we're not rendering any stale UI.
         if (this.#enqueuedRender) {
             this.#enqueuedRender = false;
-            return this.#render();
+            return await this.#render();
         }
     }
 }

@@ -198,7 +198,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.registerHandler("showRecorderView" /* PrivateAPI.Commands.ShowRecorderView */, this.onShowRecorderView.bind(this));
         this.registerHandler("showNetworkPanel" /* PrivateAPI.Commands.ShowNetworkPanel */, this.onShowNetworkPanel.bind(this));
         window.addEventListener('message', this.onWindowMessage, false); // Only for main window.
-        const existingTabId = window.DevToolsAPI && window.DevToolsAPI.getInspectedTabId && window.DevToolsAPI.getInspectedTabId();
+        const existingTabId = window.DevToolsAPI?.getInspectedTabId?.();
         if (existingTabId) {
             this.setInspectedTabId({ data: existingTabId });
         }
@@ -376,7 +376,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_BADARG('command', `expected ${"setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */}`);
         }
         const { scriptUrl, ranges } = message;
-        if (!scriptUrl || !ranges || !ranges.length) {
+        if (!scriptUrl || !ranges?.length) {
             return this.status.E_BADARG('command', 'expected valid scriptUrl and non-empty NamedFunctionRanges');
         }
         const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptUrl);
@@ -789,7 +789,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter(r => this.extensionAllowedOnURL(r.url(), port));
         const harLog = await HAR.Log.Log.build(requests, { sanitize: false });
         for (let i = 0; i < harLog.entries.length; ++i) {
-            // @ts-ignore
+            // @ts-expect-error
             harLog.entries[i]._requestId = this.requestId(requests[i]);
         }
         return harLog;
@@ -888,7 +888,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_FAILED('Permission denied');
         }
         const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-        if (!uiSourceCode || !uiSourceCode.contentType().isDocumentOrScriptOrStyleSheet()) {
+        if (!uiSourceCode?.contentType().isDocumentOrScriptOrStyleSheet()) {
             const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
             if (!resource) {
                 return this.status.E_NOTFOUND(url);
@@ -933,7 +933,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
                 shiftKey: entry.shiftKey,
                 metaKey: entry.metaKey,
             });
-            // @ts-ignore
+            // @ts-expect-error
             event.__keyCode = keyCodeForEntry(entry);
             document.dispatchEvent(event);
         }
@@ -1026,7 +1026,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         try {
-            const startPageURL = new URL(startPage);
+            const startPageURL = new URL((startPage));
             const extensionOrigin = startPageURL.origin;
             const name = extensionInfo.name || `Extension ${extensionOrigin}`;
             const extensionRegistration = new RegisteredExtension(name, hostsPolicy, Boolean(extensionInfo.allowFileAccess));
@@ -1147,8 +1147,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         }
         else {
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-            const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
-            frame = resourceTreeModel && resourceTreeModel.mainFrame;
+            const resourceTreeModel = target?.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            frame = resourceTreeModel?.mainFrame;
         }
         if (!frame) {
             if (options.frameURL) {
@@ -1234,9 +1234,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (!kPermittedSchemes.includes(parsedURL.protocol)) {
             return false;
         }
-        if ((window.DevToolsAPI && window.DevToolsAPI.getOriginsForbiddenForExtensions &&
-            window.DevToolsAPI.getOriginsForbiddenForExtensions() ||
-            []).includes(parsedURL.origin)) {
+        if ((window.DevToolsAPI?.getOriginsForbiddenForExtensions?.() || []).includes(parsedURL.origin)) {
             return false;
         }
         if (this.#isUrlFromChromeWebStore(parsedURL)) {

@@ -13,7 +13,10 @@ export declare class NetworkNavigatorView extends NavigatorView {
     uiSourceCodeAdded(uiSourceCode: Workspace.UISourceCode.UISourceCode): void;
 }
 export declare class FilesNavigatorView extends NavigatorView {
+    #private;
     constructor();
+    wasShown(): void;
+    willHide(): void;
     sourceSelected(uiSourceCode: Workspace.UISourceCode.UISourceCode, focusSource: boolean): void;
     acceptProject(project: Workspace.Workspace.Project): boolean;
     handleContextMenu(event: Event): void;

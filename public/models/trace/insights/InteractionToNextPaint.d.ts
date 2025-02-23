@@ -4,35 +4,35 @@ export declare const UIStrings: {
     /**
      * @description Text to tell the user about the longest user interaction.
      */
-    description: string;
+    readonly description: "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS.";
     /**
      * @description Title for the performance insight "INP by phase", which shows a breakdown of INP by phases / sections.
      */
-    title: string;
+    readonly title: "INP by phase";
     /**
      *@description Label used for the phase/component/stage/section of a larger duration.
      */
-    phase: string;
+    readonly phase: "Phase";
     /**
      *@description Label used for a time duration.
      */
-    duration: string;
+    readonly duration: "Duration";
     /**
      *@description Text shown next to the interaction event's input delay time in the detail view.
      */
-    inputDelay: string;
+    readonly inputDelay: "Input delay";
     /**
      *@description Text shown next to the interaction event's thread processing duration in the detail view.
      */
-    processingDuration: string;
+    readonly processingDuration: "Processing duration";
     /**
      *@description Text shown next to the interaction event's presentation delay time in the detail view.
      */
-    presentationDelay: string;
+    readonly presentationDelay: "Presentation delay";
     /**
      * @description Text status indicating that no user interactions were detected.
      */
-    noInteractions: string;
+    readonly noInteractions: "No interactions detected";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export declare function deps(): ['UserInteractions'];

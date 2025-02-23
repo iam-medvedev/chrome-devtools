@@ -119,7 +119,7 @@ export class Infobar {
         this.closeCallback = null;
     }
     static create(type, text, actions, disableSetting, jslogContext) {
-        if (disableSetting && disableSetting.get()) {
+        if (disableSetting?.get()) {
             return null;
         }
         return new Infobar(type, text, actions, disableSetting, jslogContext);

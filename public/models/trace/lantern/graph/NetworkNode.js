@@ -47,7 +47,7 @@ class NetworkNode extends BaseNode {
         return this._request;
     }
     get initiatorType() {
-        return this._request.initiator && this._request.initiator.type;
+        return this._request.initiator.type;
     }
     get fromDiskCache() {
         return Boolean(this._request.fromDiskCache);

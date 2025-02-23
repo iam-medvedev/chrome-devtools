@@ -45,6 +45,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Sources from '../../panels/sources/sources.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -117,25 +118,38 @@ const UIStrings = {
      */
     dropHarFilesHere: 'Drop HAR files here',
     /**
-     *@description Recording text text content in Network Log View of the Network panel
+     *@description Recording text content in Network Log View of the Network panel
      */
-    recordingNetworkActivity: 'Recording network activity…',
+    recordingNetworkActivity: 'Currently recording network activity',
     /**
-     *@description Text in Network Log View of the Network panel
-     *@example {Ctrl + R} PH1
+     *@description Shown in the Network Log View of the Network panel when the user has not yet
+     *             recorded any network activity. This is an instruction to the user to reload the page in order to
+     *             show network activity in the current UI.
+     *@example {Reload page} PH1
+     *@example {Ctrl + R} PH2
      */
-    performARequestOrHitSToRecordThe: 'Perform a request or hit {PH1} to record the reload.',
+    performARequestOrHitSToRecordThe: 'Perform a request or reload the page by using the "{PH1}" button or by hitting {PH2}.',
     /**
      *@description Shown in the Network Log View of the Network panel when the user has not yet
      * recorded any network activity. This is an instruction to the user to start recording in order to
      * show network activity in the current UI.
-     *@example {Ctrl + E} PH1
+     * @example {Start recording} PH1
+     * @example {Ctrl + E} PH2
      */
-    recordToDisplayNetworkActivity: 'Record network log ({PH1}) to display network activity.',
+    recordToDisplayNetworkActivity: 'Record network log to display network activity by using the "{PH1}" button or by hitting {PH2}.',
     /**
-     *@description Text that is usually a hyperlink to more documentation
+     *@description Label of a button in the Network Log View of the Network panel.
      */
-    learnMore: 'Learn more',
+    reloadPage: 'Reload page',
+    /**
+     *@description Label of a button in the Network Log View of the Network panel.
+     */
+    startRecording: 'Start recording',
+    /**
+     *@description Shown in the Network Log View of the Network panel when the user has not yet
+     *             recorded any network activity.
+     */
+    noNetworkActivityRecorded: 'No network activity recorded',
     /**
      *@description Text to announce to screen readers that network data is available.
      */
@@ -925,39 +939,36 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     showRecordingHint() {
         this.hideRecordingHint();
-        this.recordingHint = this.element.createChild('div', 'network-status-pane fill');
-        const hintText = this.recordingHint.createChild('div', 'recording-hint');
-        if (this.recording) {
-            let reloadShortcutNode = null;
-            const reloadShortcut = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('inspector-main.reload')[0];
-            if (reloadShortcut) {
-                reloadShortcutNode = this.recordingHint.createChild('b');
-                reloadShortcutNode.textContent = reloadShortcut.title();
-            }
-            const recordingText = hintText.createChild('span');
-            recordingText.textContent = i18nString(UIStrings.recordingNetworkActivity);
-            if (reloadShortcutNode) {
-                hintText.createChild('br');
-                hintText.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.performARequestOrHitSToRecordThe, { PH1: reloadShortcutNode }));
-            }
-        }
-        else {
-            const recordNode = hintText.createChild('b');
-            recordNode.textContent =
-                UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction('network.toggle-recording') || '';
-            hintText.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.recordToDisplayNetworkActivity, { PH1: recordNode }));
-        }
-        hintText.createChild('br');
-        hintText.appendChild(UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/network/?utm_source=devtools&utm_campaign=2019Q1', i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more'));
+        const actionName = this.recording ? 'inspector-main.reload' : 'network.toggle-recording';
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionName);
+        const shortcutTitle = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(actionName) ?? '';
+        const header = this.recording ? i18nString(UIStrings.recordingNetworkActivity) :
+            i18nString(UIStrings.noNetworkActivityRecorded);
+        const instruction = this.recording ? UIStrings.performARequestOrHitSToRecordThe : UIStrings.recordToDisplayNetworkActivity;
+        const buttonText = this.recording ? i18nString(UIStrings.reloadPage) : i18nString(UIStrings.startRecording);
+        // eslint-disable-next-line rulesdir/l10n-i18nString-call-only-with-uistrings
+        const description = i18nString(instruction, {
+            PH1: buttonText,
+            PH2: shortcutTitle,
+        });
+        this.recordingHint = new UI.EmptyWidget.EmptyWidget(header, shortcutTitle ? description : '');
+        this.recordingHint.element.classList.add('network-status-pane');
+        this.recordingHint.appendLink('https://developer.chrome.com/docs/devtools/network/');
+        const button = UI.UIUtils.createTextButton(buttonText, () => action.execute(), {
+            jslogContext: actionName,
+            variant: "tonal" /* Buttons.Button.Variant.TONAL */,
+        });
+        this.recordingHint.contentElement.appendChild(button);
+        this.recordingHint.show(this.element);
         this.setHidden(true);
     }
     hideRecordingHint() {
         this.setHidden(false);
         if (this.recordingHint) {
-            this.recordingHint.remove();
+            this.recordingHint.detach();
+            this.recordingHint = null;
         }
         UI.ARIAUtils.alert(i18nString(UIStrings.networkDataAvailable));
-        this.recordingHint = null;
     }
     setHidden(value) {
         this.columnsInternal.setHidden(value);
@@ -1813,7 +1824,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     reveal(request) {
         this.removeAllNodeHighlights();
         const node = networkRequestToNode.get(request);
-        if (!node || !node.dataGrid) {
+        if (!node?.dataGrid) {
             return null;
         }
         // Viewport datagrid nodes do not reveal if not in the root node
@@ -2252,8 +2263,7 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             useSoftMenu: true,
             keepOpen: true,
             x: this.dropDownButton.element.getBoundingClientRect().left,
-            y: this.dropDownButton.element.getBoundingClientRect().top +
-                this.dropDownButton.element.offsetHeight,
+            y: this.dropDownButton.element.getBoundingClientRect().top + (this.dropDownButton.element).offsetHeight,
         });
         this.contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.hideDataUrls), () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()), {
             checked: this.networkHideDataURLSetting.get(),

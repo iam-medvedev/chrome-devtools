@@ -830,7 +830,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         if (contentType.hasScripts()) {
             const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
             const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
-            if (debuggerModel && debuggerModel.isPaused()) {
+            if (debuggerModel?.isPaused()) {
                 contextMenu.debugSection().appendItem(i18nString(UIStrings.continueToHere), this.continueToLocation.bind(this, uiLocation), { jslogContext: 'continue-to-here' });
             }
             this.callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
@@ -937,7 +937,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             .then(this.didGetFunctionDetails.bind(this)));
     }
     async didGetFunctionDetails(response) {
-        if (!response || !response.location) {
+        if (!response?.location) {
             return;
         }
         const uiLocation = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(response.location);
@@ -971,7 +971,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         if (this.sidebarPaneView && vertically === !this.splitWidget.isVertical()) {
             return;
         }
-        if (this.sidebarPaneView && this.sidebarPaneView.shouldHideOnDetach()) {
+        if (this.sidebarPaneView?.shouldHideOnDetach()) {
             return;
         } // We can't reparent extension iframes.
         if (this.sidebarPaneView) {
@@ -1053,7 +1053,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             return;
         }
         const entry = items[0].webkitGetAsEntry();
-        if (entry && entry.isDirectory) {
+        if (entry?.isDirectory) {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.upgradeDraggedFileSystemPermissions(entry.filesystem);
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.WorkspaceDropFolder);
             void UI.ViewManager.ViewManager.instance().showView('navigator-files');
@@ -1096,7 +1096,7 @@ export class UISourceCodeRevealer {
 export class DebuggerPausedDetailsRevealer {
     async reveal(_object) {
         if (Common.Settings.Settings.instance().moduleSetting('auto-focus-on-debugger-paused-enabled').get()) {
-            return SourcesPanel.instance().setAsCurrentPanel();
+            return await SourcesPanel.instance().setAsCurrentPanel();
         }
     }
 }

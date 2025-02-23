@@ -117,7 +117,12 @@ export class CallTreeContext extends ConversationContext {
         this.#callTree = callTree;
     }
     getOrigin() {
-        const selectedEvent = this.#callTree.selectedNode.event;
+        // Although in this context we expect the call tree to have a selected node
+        // as the entrypoint into the "Ask AI" tool is via selecting a node, it is
+        // possible to build trees without a selected node, in which case we
+        // fallback to the root node.
+        const node = this.#callTree.selectedNode ?? this.#callTree.rootNode;
+        const selectedEvent = node.event;
         // Get the non-resolved (ignore sourcemaps) URL for the event. We use the
         // non-resolved URL as in the context of the AI Assistance panel, we care
         // about the origin it was served on.
@@ -150,7 +155,7 @@ export class CallTreeContext extends ConversationContext {
         return icon;
     }
     getTitle() {
-        const { event } = this.#callTree.selectedNode;
+        const event = this.#callTree.selectedNode?.event ?? this.#callTree.rootNode.event;
         if (!event) {
             return 'unknown';
         }

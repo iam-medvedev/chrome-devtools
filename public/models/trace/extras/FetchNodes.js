@@ -73,13 +73,13 @@ export function nodeIdsForEvent(modelData, event) {
         // done the work to build the relationship between a DecodeImage event and
         // the corresponding PaintImage event.
         const paintImageEvent = modelData.ImagePainting.paintImageForEvent.get(event);
-        if (paintImageEvent && typeof paintImageEvent.args.data.nodeId !== 'undefined') {
+        if (typeof paintImageEvent?.args.data.nodeId !== 'undefined') {
             foundIds.add(paintImageEvent.args.data.nodeId);
         }
     }
     else if (Types.Events.isDrawLazyPixelRef(event) && event.args?.LazyPixelRef) {
         const paintImageEvent = modelData.ImagePainting.paintImageByDrawLazyPixelRef.get(event.args.LazyPixelRef);
-        if (paintImageEvent && typeof paintImageEvent.args.data.nodeId !== 'undefined') {
+        if (typeof paintImageEvent?.args.data.nodeId !== 'undefined') {
             foundIds.add(paintImageEvent.args.data.nodeId);
         }
     }
@@ -98,7 +98,7 @@ export function nodeIdsForEvent(modelData, event) {
 export async function extractRelatedDOMNodesFromEvent(modelData, event) {
     const nodeIds = nodeIdsForEvent(modelData, event);
     if (nodeIds.size) {
-        return domNodesForMultipleBackendNodeIds(modelData, Array.from(nodeIds));
+        return await domNodesForMultipleBackendNodeIds(modelData, Array.from(nodeIds));
     }
     return null;
 }

@@ -28,7 +28,7 @@ export function setVeDebuggingEnabled(enabled, inspect) {
         highlightedElement.style.outline = '';
     }
 }
-// @ts-ignore
+// @ts-expect-error
 globalThis.setVeDebuggingEnabled = setVeDebuggingEnabled;
 export function processForDebugging(loggable) {
     const loggingState = getLoggingState(loggable);
@@ -557,7 +557,7 @@ export async function expectVeEvents(expectedEvents) {
                     .join('\n')));
         }
     }, EVENT_EXPECTATION_TIMEOUT);
-    return promise.finally(() => {
+    return await promise.finally(() => {
         clearTimeout(timeout);
     });
 }
@@ -592,18 +592,18 @@ function getUnmatchedVeEvents() {
         .map(e => 'interaction' in e ? e.interaction : formatImpressions(e.impressions))
         .join('\n');
 }
-// @ts-ignore
+// @ts-expect-error
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
-// @ts-ignore
+// @ts-expect-error
 globalThis.getUnmatchedVeEvents = getUnmatchedVeEvents;
-// @ts-ignore
+// @ts-expect-error
 globalThis.veDebugEventsLog = veDebugEventsLog;
-// @ts-ignore
+// @ts-expect-error
 globalThis.findVeDebugImpression = findVeDebugImpression;
-// @ts-ignore
+// @ts-expect-error
 globalThis.exportAdHocAnalysisLogForSql = exportAdHocAnalysisLogForSql;
-// @ts-ignore
+// @ts-expect-error
 globalThis.buildStateFlow = buildStateFlow;
-// @ts-ignore
+// @ts-expect-error
 globalThis.expectVeEvents = expectVeEvents;
 //# sourceMappingURL=Debugging.js.map

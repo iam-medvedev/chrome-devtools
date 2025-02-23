@@ -34,14 +34,6 @@ export default {
   margin-bottom: 16px;
   flex: none;
 }
-
-@media (forced-colors: active) {
-  td.flagged-cookie-attribute-cell .cookie-warning-icon {
-    forced-color-adjust: none;
-    filter: grayscale();
-  }
-}
-
 /*# sourceURL=${import.meta.resolve('./requestCookiesView.css')} */
 `
 };

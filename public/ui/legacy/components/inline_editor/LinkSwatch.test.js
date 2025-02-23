@@ -142,8 +142,8 @@ describeWithLocale('LinkSwatch', () => {
             },
             jslogContext: 'test',
         };
-        const element = renderElementIntoDOM(component).shadowRoot.querySelector('devtools-base-link-swatch').shadowRoot
-            .querySelector('.link-swatch-link');
+        const element = renderElementIntoDOM(component)
+            .shadowRoot.querySelector('devtools-base-link-swatch').shadowRoot.querySelector('.link-swatch-link');
         element.click();
         assert.isTrue(callbackCalled);
     });

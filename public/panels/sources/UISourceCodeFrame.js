@@ -91,7 +91,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         if (this.uiSourceCodeInternal.isDirty()) {
             return this.uiSourceCodeInternal.workingCopyContentData();
         }
-        return this.uiSourceCodeInternal.requestContentData();
+        return await this.uiSourceCodeInternal.requestContentData();
     }
     editorConfiguration(doc) {
         return [

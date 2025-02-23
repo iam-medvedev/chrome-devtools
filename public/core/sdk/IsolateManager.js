@@ -130,7 +130,7 @@ export class Isolate {
     }
     heapProfilerModel() {
         const runtimeModel = this.runtimeModel();
-        return runtimeModel && runtimeModel.heapProfilerModel();
+        return runtimeModel?.heapProfilerModel() ?? null;
     }
     async update() {
         const model = this.runtimeModel();

@@ -577,10 +577,10 @@ export class VersionController {
         const minimumVersion = Math.min(this.#globalVersionSetting.get(), this.#syncedVersionSetting.get(), this.#localVersionSetting.get());
         const methodsToRun = this.methodsToRunToUpdateVersion(minimumVersion, currentVersion);
         console.assert(
-        // @ts-ignore
+        // @ts-expect-error
         this[`updateVersionFrom${currentVersion}To${currentVersion + 1}`] === undefined, 'Unexpected migration method found. Increment CURRENT_VERSION or remove the method.');
         for (const method of methodsToRun) {
-            // @ts-ignore Special version method matching
+            // @ts-expect-error Special version method matching
             this[method].call(this);
         }
         this.resetToCurrent();
@@ -706,10 +706,10 @@ export class VersionController {
                 continue;
             }
             // Zero out saved percentage sizes, and they will be restored to defaults.
-            if (value.vertical && value.vertical.size && value.vertical.size < 1) {
+            if (value.vertical?.size && value.vertical.size < 1) {
                 value.vertical.size = 0;
             }
-            if (value.horizontal && value.horizontal.size && value.horizontal.size < 1) {
+            if (value.horizontal?.size && value.horizontal.size < 1) {
                 value.horizontal.size = 0;
             }
             setting.set(value);

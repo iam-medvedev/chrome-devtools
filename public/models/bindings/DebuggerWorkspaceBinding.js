@@ -144,13 +144,13 @@ export class DebuggerWorkspaceBinding {
         }
         const liveLocationPromise = modelData.createLiveLocation(rawLocation, updateDelegate, locationPool);
         this.recordLiveLocationChange(liveLocationPromise);
-        return liveLocationPromise;
+        return await liveLocationPromise;
     }
     async createStackTraceTopFrameLiveLocation(rawLocations, updateDelegate, locationPool) {
         console.assert(rawLocations.length > 0);
         const locationPromise = StackTraceTopFrameLocation.createStackTraceTopFrameLocation(rawLocations, this, updateDelegate, locationPool);
         this.recordLiveLocationChange(locationPromise);
-        return locationPromise;
+        return await locationPromise;
     }
     async createCallFrameLiveLocation(location, updateDelegate, locationPool) {
         const script = location.script();
@@ -190,11 +190,11 @@ export class DebuggerWorkspaceBinding {
     }
     async uiSourceCodeForSourceMapSourceURLPromise(debuggerModel, url, isContentScript) {
         const uiSourceCode = this.uiSourceCodeForSourceMapSourceURL(debuggerModel, url, isContentScript);
-        return uiSourceCode || this.waitForUISourceCodeAdded(url, debuggerModel.target());
+        return await (uiSourceCode || this.waitForUISourceCodeAdded(url, debuggerModel.target()));
     }
     async uiSourceCodeForDebuggerLanguagePluginSourceURLPromise(debuggerModel, url) {
         const uiSourceCode = this.pluginManager.uiSourceCodeForURL(debuggerModel, url);
-        return uiSourceCode || this.waitForUISourceCodeAdded(url, debuggerModel.target());
+        return await (uiSourceCode || this.waitForUISourceCodeAdded(url, debuggerModel.target()));
     }
     uiSourceCodeForScript(script) {
         const modelData = this.#debuggerModelToData.get(script.debuggerModel);
@@ -311,7 +311,7 @@ export class DebuggerWorkspaceBinding {
         this.pluginManager.scriptsForUISourceCode(uiSourceCode).forEach(script => scripts.add(script));
         for (const modelData of this.#debuggerModelToData.values()) {
             const resourceScriptFile = modelData.getResourceScriptMapping().scriptFile(uiSourceCode);
-            if (resourceScriptFile && resourceScriptFile.script) {
+            if (resourceScriptFile?.script) {
                 scripts.add(resourceScriptFile.script);
             }
             modelData.compilerMapping.scriptsForUISourceCode(uiSourceCode).forEach(script => scripts.add(script));
@@ -481,7 +481,7 @@ export class Location extends LiveLocationWithPool {
     }
     async uiLocation() {
         const debuggerModelLocation = this.rawLocation;
-        return this.#binding.rawLocationToUILocation(debuggerModelLocation);
+        return await this.#binding.rawLocationToUILocation(debuggerModelLocation);
     }
     dispose() {
         super.dispose();
@@ -513,10 +513,10 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
         return location;
     }
     async uiLocation() {
-        return this.#current ? this.#current.uiLocation() : null;
+        return this.#current ? await this.#current.uiLocation() : null;
     }
     async isIgnoreListed() {
-        return this.#current ? this.#current.isIgnoreListed() : false;
+        return this.#current ? await this.#current.isIgnoreListed() : false;
     }
     dispose() {
         super.dispose();

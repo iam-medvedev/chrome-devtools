@@ -6,7 +6,7 @@ import * as Network from '../panels/network/network.js';
 import * as RenderCoordinator from '../ui/components/render_coordinator/render_coordinator.js';
 import { registerNoopActions, } from './EnvironmentHelpers.js';
 export async function createNetworkPanelForMockConnection() {
-    registerNoopActions(['network.toggle-recording', 'network.clear']);
+    registerNoopActions(['network.toggle-recording', 'network.clear', 'inspector-main.reload']);
     const dummyStorage = new Common.Settings.SettingsStorage({});
     for (const settingName of ['network-color-code-resource-types', 'network.group-by-frame', 'network-record-film-strip-setting']) {
         Common.Settings.registerSettingExtension({

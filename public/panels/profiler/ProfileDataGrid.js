@@ -133,7 +133,7 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
             const orphanedChild = children[index];
             const existingChild = container.childrenByCallUID.get(orphanedChild.callUID);
             if (existingChild) {
-                existingChild.merge(orphanedChild, false);
+                existingChild.merge((orphanedChild), false);
             }
             else {
                 container.appendChild(orphanedChild);
@@ -211,7 +211,7 @@ export class ProfileDataGridNode extends DataGrid.DataGrid.DataGridNode {
     insertChild(child, index) {
         const profileDataGridNode = child;
         super.insertChild(profileDataGridNode, index);
-        this.childrenByCallUID.set(profileDataGridNode.callUID, profileDataGridNode);
+        this.childrenByCallUID.set(profileDataGridNode.callUID, (profileDataGridNode));
     }
     removeChild(profileDataGridNode) {
         super.removeChild(profileDataGridNode);
@@ -340,7 +340,7 @@ export class ProfileDataGridTree {
     exclude(_profileDataGridNode) {
     }
     insertChild(child, index) {
-        const childToInsert = child;
+        const childToInsert = (child);
         this.children.splice(index, 0, childToInsert);
         this.childrenByCallUID.set(childToInsert.callUID, child);
     }
@@ -380,7 +380,7 @@ export class ProfileDataGridTree {
         const children = this.children;
         const count = children.length;
         for (let index = 0; index < count; ++index) {
-            children[index].restore();
+            (children[index]).restore();
         }
         this.savedChildren = null;
     }
@@ -515,14 +515,14 @@ export class ProfileDataGridTree {
         this.searchResultIndex = -1;
     }
     jumpToNextSearchResult() {
-        if (!this.searchResults || !this.searchResults.length) {
+        if (!this.searchResults?.length) {
             return;
         }
         this.searchResultIndex = (this.searchResultIndex + 1) % this.searchResults.length;
         this.jumpToSearchResult(this.searchResultIndex);
     }
     jumpToPreviousSearchResult() {
-        if (!this.searchResults || !this.searchResults.length) {
+        if (!this.searchResults?.length) {
             return;
         }
         this.searchResultIndex = (this.searchResultIndex - 1 + this.searchResults.length) % this.searchResults.length;

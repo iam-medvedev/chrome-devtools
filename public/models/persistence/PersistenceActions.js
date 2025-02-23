@@ -53,7 +53,7 @@ export class ContextMenuProvider {
     appendApplicableItems(_event, contextMenu, contentProvider) {
         async function saveAs() {
             if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
-                contentProvider.commitWorkingCopy();
+                (contentProvider).commitWorkingCopy();
             }
             const url = contentProvider.contentURL();
             let content;

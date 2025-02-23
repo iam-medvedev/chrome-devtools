@@ -26,13 +26,19 @@ export declare function createNetworkRequest(opts?: {
     url?: Platform.DevToolsPath.UrlString;
     includeInitiators?: boolean;
 }): SDK.NetworkRequest.NetworkRequest;
+/**
+ * Creates and shows an AiAssistancePanel instance returning the view
+ * stubs and the initial view input caused by Widget.show().
+ */
 export declare function createAiAssistancePanel(options?: {
     aidaClient?: Host.AidaClient.AidaClient;
     aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
     syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation;
 }): Promise<{
+    initialViewInput: AiAssistance.ViewInput;
     panel: AiAssistance.AiAssistancePanel;
-    view: import("sinon").SinonStub<[AiAssistance.Props, unknown, HTMLElement], any>;
+    view: import("sinon").SinonStub<[AiAssistance.ViewInput, unknown, HTMLElement], any>;
     aidaClient: Host.AidaClient.AidaClient;
+    expectViewUpdate: (action: () => void) => Promise<AiAssistance.ViewInput>;
 }>;
 export declare function detachPanels(): void;

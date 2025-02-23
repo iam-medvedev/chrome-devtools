@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import type * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 /**
@@ -8,7 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
  */
 export interface ProjectSettings {
     readonly workspace?: {
-        readonly root: string;
+        readonly root: Platform.DevToolsPath.RawPathString;
         readonly uuid: string;
     };
 }

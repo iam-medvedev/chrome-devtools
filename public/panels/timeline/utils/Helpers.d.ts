@@ -1,6 +1,7 @@
 import '../../../ui/components/markdown_view/markdown_view.js';
 import type * as Common from '../../../core/common/common.js';
 import * as SDK from '../../../core/sdk/sdk.js';
+import type * as Trace from '../../../models/trace/trace.js';
 import * as Lit from '../../../ui/lit/lit.js';
 export declare function getThrottlingRecommendations(): {
     cpuOption: SDK.CPUThrottlingManager.CPUThrottlingOption | null;
@@ -32,3 +33,13 @@ export declare function shortenUrl(url: URL, maxChars?: number): string;
  * and not contain any user-generated content.
  */
 export declare function md(markdown: Common.UIString.LocalizedString): Lit.TemplateResult;
+/**
+ * Returns a string containing both the origin and its 3rd party entity.
+ *
+ * By default we construct by diving with a hyphen, but with an optional
+ * parenthesizeEntity to parenthesize the entity.
+ *
+ * @example 'uk-script.dotmetrics.net - DotMetrics'
+ * @example 'securepubads.g.doubleclick.net (Google/Doubleclick Ads)'
+ */
+export declare function formatOriginWithEntity(url: URL, entity: Trace.Handlers.Helpers.Entity | null, parenthesizeEntity?: boolean): string;

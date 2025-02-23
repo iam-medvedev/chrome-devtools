@@ -709,7 +709,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         }
     }
     setSelectedNodeForDetailsView(nodeItem) {
-        const dataSource = nodeItem && nodeItem.retainersDataSource();
+        const dataSource = nodeItem?.retainersDataSource();
         if (dataSource) {
             void this.retainmentDataGrid.setDataSource(dataSource.snapshot, dataSource.snapshotNodeIndex, dataSource.snapshotNodeId);
             if (this.allocationStackView) {
@@ -811,8 +811,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         }
         const node = this.dataGrid.dataGridNodeFromNode(row) || this.containmentDataGrid.dataGridNodeFromNode(row) ||
             this.constructorsDataGrid.dataGridNodeFromNode(row) || this.diffDataGrid.dataGridNodeFromNode(row) ||
-            (this.allocationDataGrid && this.allocationDataGrid.dataGridNodeFromNode(row)) ||
-            this.retainmentDataGrid.dataGridNodeFromNode(row);
+            (this.allocationDataGrid?.dataGridNodeFromNode(row)) || this.retainmentDataGrid.dataGridNodeFromNode(row);
         const heapProfilerModel = this.profile.heapProfilerModel();
         if (!node || !span || !heapProfilerModel) {
             return null;
@@ -890,7 +889,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         // Create a dividing line using em dashes.
         const dividerIndex = this.filterSelect.size();
         const divider = this.filterSelect.createOption('\u2014'.repeat(18));
-        divider.disabled = true;
+        (divider).disabled = true;
         for (const filter of HeapSnapshotView.ALWAYS_AVAILABLE_FILTERS) {
             this.filterSelect.createOption(filter.uiName);
         }
@@ -1157,6 +1156,14 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
         this.setProfileBeingRecorded(profile);
         this.addProfile(profile);
         profile.updateStatus(i18nString(UIStrings.snapshotting));
+        // Release all the animations before taking a heap snapshot.
+        // The animations are stored for replay in the animations panel and they might cause
+        // detached nodes to appear in snapshots. Because of this, we release
+        // all the animations first before taking a heap snapshot.
+        const animationModel = heapProfilerModel.target().model(SDK.AnimationModel.AnimationModel);
+        if (animationModel) {
+            await animationModel.releaseAllAnimations();
+        }
         await heapProfilerModel.takeHeapSnapshot({
             reportProgress: true,
             captureNumericValue: true,
@@ -1295,7 +1302,7 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
     }
     customContent() {
         const checkboxSetting = UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.recordAllocationStacksExtra), this.recordAllocationStacksSettingInternal);
-        this.customContentInternal = checkboxSetting;
+        this.customContentInternal = (checkboxSetting);
         return checkboxSetting;
     }
     setCustomContentEnabled(enable) {
@@ -1415,7 +1422,7 @@ export class HeapProfileHeader extends ProfileHeader {
         if (!this.snapshotProxy) {
             return null;
         }
-        return this.snapshotProxy.getLocation(nodeIndex);
+        return await this.snapshotProxy.getLocation(nodeIndex);
     }
     createSidebarTreeElement(dataDisplayDelegate) {
         return new ProfileSidebarTreeElement(dataDisplayDelegate, this, 'heap-snapshot-sidebar-tree-item');
@@ -1518,7 +1525,7 @@ export class HeapProfileHeader extends ProfileHeader {
         if (this.snapshotProxy && this.fulfillLoad) {
             this.fulfillLoad(this.snapshotProxy);
         }
-        this.profileType().snapshotReceived(this);
+        (this.profileType()).snapshotReceived(this);
     }
     canSaveToFile() {
         return !this.fromFile();
@@ -1641,7 +1648,7 @@ export class HeapAllocationStackView extends UI.Widget.Widget {
             return;
         }
         let navDown;
-        const keyboardEvent = event;
+        const keyboardEvent = (event);
         if (keyboardEvent.key === 'ArrowUp') {
             navDown = false;
         }

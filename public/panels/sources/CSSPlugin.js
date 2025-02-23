@@ -383,7 +383,7 @@ export class CSSPlugin extends Plugin {
         const cssModel = this.#cssModel;
         return CodeMirror.autocompletion({
             override: [async (cx) => {
-                    return (await specificCssCompletion(cx, uiSourceCode, cssModel)) || cssCompletionSource(cx);
+                    return await ((await specificCssCompletion(cx, uiSourceCode, cssModel)) || cssCompletionSource(cx));
                 }],
         });
     }

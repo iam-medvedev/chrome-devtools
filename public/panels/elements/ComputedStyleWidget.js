@@ -285,7 +285,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         if (!cssModel) {
             return null;
         }
-        return cssModel.cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
+        return await cssModel.cachedMatchedCascadeForNode(node).then(validateStyles.bind(this));
         function validateStyles(matchedStyles) {
             return matchedStyles && matchedStyles.node() === this.computedStyleModel.node() ? matchedStyles : null;
         }
@@ -381,7 +381,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
             compact: true,
             defaultRenderer,
         };
-        return this.filterGroupLists();
+        return await this.filterGroupLists();
     }
     buildTraceNode(property) {
         const rule = property.ownerStyle.parentRule;
@@ -488,7 +488,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
     async filterComputedStyles(regex) {
         this.filterRegex = regex;
         if (this.groupComputedStylesSetting.get()) {
-            return this.filterGroupLists();
+            return await this.filterGroupLists();
         }
         return this.filterAlphabeticalList();
     }

@@ -11,7 +11,7 @@ export class CSPViolationBreakpointsSidebarPane extends CategorizedBreakpointsSi
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.csp-violation-breakpoints')}`);
     }
     getBreakpointFromPausedDetails(details) {
-        const breakpointType = details.auxData && details.auxData['violationType'] ? details.auxData['violationType'] : '';
+        const breakpointType = details.auxData?.['violationType'] ? details.auxData['violationType'] : '';
         const breakpoints = SDK.DOMDebuggerModel.DOMDebuggerManager.instance().cspViolationBreakpoints();
         const breakpoint = breakpoints.find(x => x.type() === breakpointType);
         return breakpoint ? breakpoint : null;

@@ -146,7 +146,7 @@ export class SuggestBox {
             return true;
         }
         const suggestion = this.list.selectedItem();
-        if (suggestion && suggestion.text) {
+        if (suggestion?.text) {
             isIntermediateSuggestion ?
                 ARIAUtils.alert(i18nString(UIStrings.sSuggestionSOfS, {
                     PH1: suggestion.title || suggestion.text,
@@ -233,7 +233,7 @@ export class SuggestBox {
         event.consume(true);
     }
     canShowBox(completions, highestPriorityItem, canShowForSingleItem, userEnteredText) {
-        if (!completions || !completions.length) {
+        if (!completions?.length) {
             return false;
         }
         if (completions.length > 1) {

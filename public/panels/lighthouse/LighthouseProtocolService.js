@@ -123,7 +123,7 @@ export class ProtocolService {
         if (mode === 'timespan') {
             mode = 'endTimespan';
         }
-        return this.sendWithResponse(mode, {
+        return await this.sendWithResponse(mode, {
             url: inspectedURL,
             categoryIDs,
             flags,
@@ -165,7 +165,7 @@ export class ProtocolService {
         //   * the message does not have a sessionId (is for the "Main session"), but only for the Target domain
         //     (to kickstart autoAttach in LH).
         const protocolMessage = message;
-        if (protocolMessage.sessionId || (protocolMessage.method && protocolMessage.method.startsWith('Target'))) {
+        if (protocolMessage.sessionId || (protocolMessage.method?.startsWith('Target'))) {
             void this.send('dispatchProtocolMessage', { message });
         }
     }
@@ -236,7 +236,7 @@ export class ProtocolService {
             worker.addEventListener('message', workerListener);
         });
         worker.postMessage({ id: messageId, action, args: { ...args, id: messageId } });
-        return messageResult;
+        return await messageResult;
     }
 }
 //# sourceMappingURL=LighthouseProtocolService.js.map

@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/changes/CombinedDiffView.test.ts",
     "../../../../../../front_end/panels/changes/changes.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -47,6 +48,12 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/workspace_diff/bundle-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"

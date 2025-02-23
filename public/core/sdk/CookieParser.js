@@ -145,7 +145,7 @@ export class CookieParser {
             console.error('Failed parsing cookie header before: ' + this.#input);
             return null;
         }
-        const result = new KeyValue(keyValueMatch[1] && keyValueMatch[1].trim(), keyValueMatch[2] && keyValueMatch[2].trim(), this.#originalInputLength - this.#input.length);
+        const result = new KeyValue(keyValueMatch[1]?.trim(), keyValueMatch[2]?.trim(), (this.#originalInputLength) - this.#input.length);
         this.#lastCookieLine += keyValueMatch[0];
         this.#input = this.#input.slice(keyValueMatch[0].length);
         return result;

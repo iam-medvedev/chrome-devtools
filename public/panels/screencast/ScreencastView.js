@@ -105,7 +105,6 @@ export class ScreencastView extends UI.Widget.VBox {
     navigationBack;
     navigationForward;
     canvasContainerElement;
-    isCasting;
     checkerboardPattern;
     targetInactive;
     deferredCasting;
@@ -122,6 +121,8 @@ export class ScreencastView extends UI.Widget.VBox {
     mouseInputToggleIcon;
     historyIndex;
     historyEntries;
+    isCasting = false;
+    screencastOperationId;
     constructor(screenCaptureModel) {
         super();
         this.registerRequiredCSS(screencastViewStyles);
@@ -170,7 +171,6 @@ export class ScreencastView extends UI.Widget.VBox {
         this.titleElement.style.top = '0';
         this.titleElement.style.left = '0';
         this.imageElement = new Image();
-        this.isCasting = false;
         this.context = this.canvasElement.getContext('2d');
         this.checkerboardPattern = this.createCheckerboardPattern(this.context);
         this.shortcuts[UI.KeyboardShortcut.KeyboardShortcut.makeKey('l', UI.KeyboardShortcut.Modifiers.Ctrl.value)] =
@@ -181,7 +181,7 @@ export class ScreencastView extends UI.Widget.VBox {
     willHide() {
         this.stopCasting();
     }
-    startCasting() {
+    async startCasting() {
         if (SDK.TargetManager.TargetManager.instance().allTargetsSuspended()) {
             return;
         }
@@ -198,17 +198,18 @@ export class ScreencastView extends UI.Widget.VBox {
         dimensions.width *= window.devicePixelRatio;
         dimensions.height *= window.devicePixelRatio;
         // Note: startScreencast width and height are expected to be integers so must be floored.
-        this.screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, Math.floor(Math.min(maxImageDimension, dimensions.width)), Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this.screencastFrame.bind(this), this.screencastVisibilityChanged.bind(this));
+        this.screencastOperationId = await this.screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, Math.floor(Math.min(maxImageDimension, dimensions.width)), Math.floor(Math.min(maxImageDimension, dimensions.height)), undefined, this.screencastFrame.bind(this), this.screencastVisibilityChanged.bind(this));
         if (this.overlayModel) {
             this.overlayModel.setHighlighter(this);
         }
     }
     stopCasting() {
-        if (!this.isCasting) {
+        if (!this.screencastOperationId) {
             return;
         }
+        this.screenCaptureModel.stopScreencast(this.screencastOperationId);
+        this.screencastOperationId = undefined;
         this.isCasting = false;
-        this.screenCaptureModel.stopScreencast();
         for (const emulationModel of SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)) {
             void emulationModel.overrideEmulateTouch(false);
         }
@@ -250,7 +251,7 @@ export class ScreencastView extends UI.Widget.VBox {
             this.stopCasting();
         }
         else {
-            this.startCasting();
+            void this.startCasting();
         }
         this.updateGlasspane();
     }
@@ -318,7 +319,7 @@ export class ScreencastView extends UI.Widget.VBox {
         }
         const shortcutKey = UI.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
         const handler = this.shortcuts[shortcutKey];
-        if (handler && handler(event)) {
+        if (handler?.(event)) {
             event.consume();
             return;
         }

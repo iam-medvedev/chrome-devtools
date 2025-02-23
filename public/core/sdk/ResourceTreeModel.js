@@ -49,7 +49,7 @@ export class ResourceTreeModel extends SDKModel {
         void this.#buildResourceTree();
     }
     async #buildResourceTree() {
-        return this.agent.invoke_getResourceTree().then(event => {
+        return await this.agent.invoke_getResourceTree().then(event => {
             this.processCachedResources(event.getError() ? null : event.frameTree);
             if (this.mainFrame) {
                 this.processPendingEvents(this.mainFrame);
@@ -361,7 +361,7 @@ export class ResourceTreeModel extends SDKModel {
         return response.installabilityErrors || [];
     }
     async getAppId() {
-        return this.agent.invoke_getAppId();
+        return await this.agent.invoke_getAppId();
     }
     executionContextComparator(a, b) {
         function framePath(frame) {
@@ -449,7 +449,7 @@ export class ResourceTreeModel extends SDKModel {
         this.#storageKeyManager.updateStorageKeys(data.storageKeys);
     }
     async getMainStorageKey() {
-        return this.mainFrame ? this.mainFrame.getStorageKey(/* forceFetch */ false) : null;
+        return this.mainFrame ? await this.mainFrame.getStorageKey(/* forceFetch */ false) : null;
     }
     getMainSecurityOrigin() {
         const data = this.getSecurityOriginData();
@@ -533,18 +533,18 @@ export class ResourceTreeFrame {
         this.#idInternal = frameId;
         this.crossTargetParentFrameId = null;
         this.#loaderIdInternal = payload?.loaderId ?? '';
-        this.#nameInternal = payload && payload.name;
+        this.#nameInternal = payload?.name;
         this.#urlInternal =
             payload && payload.url || Platform.DevToolsPath.EmptyUrlString;
-        this.#domainAndRegistryInternal = (payload && payload.domainAndRegistry) || '';
-        this.#securityOrigin = payload && payload.securityOrigin;
+        this.#domainAndRegistryInternal = (payload?.domainAndRegistry) || '';
+        this.#securityOrigin = payload?.securityOrigin ?? null;
         this.#securityOriginDetails = payload?.securityOriginDetails;
         this.#unreachableUrlInternal =
             (payload && payload.unreachableUrl) || Platform.DevToolsPath.EmptyUrlString;
         this.#adFrameStatusInternal = payload?.adFrameStatus;
-        this.#secureContextType = payload && payload.secureContextType;
-        this.#crossOriginIsolatedContextType = payload && payload.crossOriginIsolatedContextType;
-        this.#gatedAPIFeatures = payload && payload.gatedAPIFeatures;
+        this.#secureContextType = payload?.secureContextType ?? null;
+        this.#crossOriginIsolatedContextType = payload?.crossOriginIsolatedContextType ?? null;
+        this.#gatedAPIFeatures = payload?.gatedAPIFeatures ?? null;
         this.#creationStackTrace = creationStackTrace;
         this.#creationStackTraceTarget = null;
         this.#childFramesInternal = new Set();
@@ -789,15 +789,15 @@ export class ResourceTreeFrame {
         if (!parentFrame) {
             return null;
         }
-        return parentFrame.resourceTreeModel().domModel().getOwnerNodeForFrame(this.#idInternal);
+        return await parentFrame.resourceTreeModel().domModel().getOwnerNodeForFrame(this.#idInternal);
     }
     async getOwnerDOMNodeOrDocument() {
         const deferredNode = await this.getOwnerDeferredDOMNode();
         if (deferredNode) {
-            return deferredNode.resolvePromise();
+            return await deferredNode.resolvePromise();
         }
         if (this.isOutermostFrame()) {
-            return this.resourceTreeModel().domModel().requestDocument();
+            return await this.resourceTreeModel().domModel().requestDocument();
         }
         return null;
     }
@@ -811,13 +811,13 @@ export class ResourceTreeFrame {
             }
         };
         if (parentFrame) {
-            return highlightFrameOwner(parentFrame.resourceTreeModel().domModel());
+            return await highlightFrameOwner(parentFrame.resourceTreeModel().domModel());
         }
         // Fenced frames.
         if (parentTarget?.type() === Type.FRAME) {
             const domModel = parentTarget.model(DOMModel);
             if (domModel) {
-                return highlightFrameOwner(domModel);
+                return await highlightFrameOwner(domModel);
             }
         }
         // For the outermost frame there is no owner node. Highlight the whole #document instead.

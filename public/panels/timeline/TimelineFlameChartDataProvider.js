@@ -123,6 +123,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     lastSelection = null;
     #font = `${PerfUI.Font.DEFAULT_FONT_SIZE} ${PerfUI.Font.getFontFamilyForCanvas()}`;
     #eventIndexByEvent = new WeakMap();
+    #entityMapper = null;
     constructor() {
         super();
         this.reset();
@@ -197,7 +198,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         const contextMenu = new UI.ContextMenu.ContextMenu(mouseEvent);
         if (perfAIEntryPointEnabled && this.parsedTrace) {
-            const aiCallTree = Utils.AICallTree.AICallTree.from(entry, this.parsedTrace);
+            const aiCallTree = Utils.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
             if (aiCallTree) {
                 const action = UI.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
                 contextMenu.footerSection().appendItem(action.title(), () => {
@@ -349,7 +350,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         };
         return Object.assign(defaultGroupStyle, extra);
     }
-    setModel(parsedTrace) {
+    setModel(parsedTrace, entityMapper) {
         this.reset();
         this.parsedTrace = parsedTrace;
         const { traceBounds } = parsedTrace.Meta;
@@ -357,6 +358,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         const maxTime = Trace.Helpers.Timing.microToMilli(traceBounds.max);
         this.#minimumBoundary = minTime;
         this.timeSpan = minTime === maxTime ? 1000 : maxTime - this.#minimumBoundary;
+        this.#entityMapper = entityMapper;
     }
     /**
      * Instances and caches a CompatibilityTracksAppender using the
@@ -371,7 +373,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 throw new Error('Attempted to instantiate a CompatibilityTracksAppender without having set the trace parse data first.');
             }
             this.timelineDataInternal = this.#instantiateTimelineData();
-            this.compatibilityTracksAppender = new CompatibilityTracksAppender(this.timelineDataInternal, this.parsedTrace, this.entryData, this.entryTypeByLevel);
+            this.compatibilityTracksAppender = new CompatibilityTracksAppender(this.timelineDataInternal, this.parsedTrace, this.entryData, this.entryTypeByLevel, this.#entityMapper);
         }
         return this.compatibilityTracksAppender;
     }
@@ -420,7 +422,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             const timelineData = this.timelineDataInternal;
             const eventLevel = timelineData.entryLevels[entryIndex];
-            const event = this.entryData[entryIndex];
+            const event = (this.entryData[entryIndex]);
             return this.compatibilityTracksAppender?.titleForEvent(event, eventLevel) || null;
         }
         let title = this.entryIndexToTitle[entryIndex];
@@ -473,6 +475,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.compatibilityTracksAppender = null;
         this.timelineDataInternal = null;
         this.parsedTrace = null;
+        this.#entityMapper = null;
     }
     maxStackDepth() {
         return this.currentLevel;
@@ -575,7 +578,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 }
             }
         }
-        if (this.timelineDataInternal && this.timelineDataInternal.selectedGroup) {
+        if (this.timelineDataInternal?.selectedGroup) {
             this.timelineDataInternal.selectedGroup.expanded = true;
         }
     }
@@ -682,7 +685,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             if (!this.compatibilityTracksAppender) {
                 return null;
             }
-            const event = this.entryData[entryIndex];
+            const event = (this.entryData[entryIndex]);
             const timelineData = this.timelineDataInternal;
             const eventLevel = timelineData.entryLevels[entryIndex];
             const popoverInfo = this.compatibilityTracksAppender.popoverInfo(event, eventLevel);
@@ -745,7 +748,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         const timelineData = this.timelineDataInternal;
         const eventLevel = timelineData.entryLevels[entryIndex];
-        const event = this.entryData[entryIndex];
+        const event = (this.entryData[entryIndex]);
         return this.compatibilityTracksAppender?.getDrawOverride(event, eventLevel);
     }
     #entryColorForFrame(entryIndex) {
@@ -773,7 +776,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (entryType === "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             const timelineData = this.timelineDataInternal;
             const eventLevel = timelineData.entryLevels[entryIndex];
-            const event = this.entryData[entryIndex];
+            const event = (this.entryData[entryIndex]);
             return this.compatibilityTracksAppender?.colorForEvent(event, eventLevel) || '';
         }
         return '';
@@ -972,7 +975,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         if (entryType === "Screenshot" /* EntryType.SCREENSHOT */) {
             return true;
         }
-        const event = this.entryData[entryIndex];
+        const event = (this.entryData[entryIndex]);
         if (Trace.Types.Events.isSyntheticInteraction(event)) {
             // We draw interactions with whiskers, which are done via the
             // decorateEntry() method, hence we always want to force these to be

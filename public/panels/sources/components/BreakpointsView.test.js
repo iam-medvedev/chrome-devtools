@@ -953,7 +953,7 @@ describeWithMockConnection('BreakpointsView', () => {
     });
     describe('group checkboxes', () => {
         async function waitForCheckboxToggledEventsWithCheckedUpdate(component, numBreakpointItems, checked) {
-            return new Promise(resolve => {
+            return await new Promise(resolve => {
                 let numCheckboxToggledEvents = 0;
                 const controller = SourcesComponents.BreakpointsView.BreakpointsSidebarController.instance();
                 sinon.stub(controller, 'breakpointStateChanged').callsFake((_, checkedArg) => {

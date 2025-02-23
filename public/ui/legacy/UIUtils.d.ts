@@ -161,6 +161,7 @@ export declare class DevToolsCloseButton extends HTMLElement {
     #private;
     constructor();
     setAccessibleName(name: string): void;
+    setSize(size: Buttons.Button.Size): void;
     setTabbable(tabbable: boolean): void;
 }
 export declare function bindInput(input: HTMLInputElement, apply: (arg0: string) => void, validate: (arg0: string) => {

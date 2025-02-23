@@ -25,14 +25,14 @@ export function resolveLazyDescription(lazyDescription) {
 export async function getFileContent(url) {
     try {
         const response = await fetch(url.toString());
-        return response.text();
+        return await response.text();
     }
     catch {
         throw new Error(`Markdown file ${url.toString()} not found. Make sure it is correctly listed in the relevant BUILD.gn files.`);
     }
 }
 export async function getMarkdownFileContent(filename) {
-    return getFileContent(new URL(`descriptions/${filename}`, import.meta.url));
+    return await getFileContent(new URL(`descriptions/${filename}`, import.meta.url));
 }
 export async function createIssueDescriptionFromMarkdown(description) {
     const rawMarkdown = await getMarkdownFileContent(description.file);

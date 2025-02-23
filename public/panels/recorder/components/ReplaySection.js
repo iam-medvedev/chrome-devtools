@@ -129,7 +129,7 @@ export class ReplaySection extends HTMLElement {
     }
     #handleSelectButtonClick(event) {
         event.stopPropagation();
-        if (event.value && event.value.startsWith(REPLAY_EXTENSION_PREFIX)) {
+        if (event.value?.startsWith(REPLAY_EXTENSION_PREFIX)) {
             if (this.#settings) {
                 this.#settings.replayExtension = event.value;
             }

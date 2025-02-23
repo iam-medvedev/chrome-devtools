@@ -59,9 +59,6 @@
       "path": "../../../core/sdk/bundle-tsconfig.json"
     },
     {
-      "path": "../../../models/timeline_model/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../models/trace/handlers/unittests-tsconfig.json"
     },
     {

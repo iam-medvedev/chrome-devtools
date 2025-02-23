@@ -66,7 +66,7 @@ async function setupHeaderEditing(headerOverridesFileContent, actualHeaders, ori
         getAssociatedData: () => null,
         setAssociatedData: () => { },
     };
-    return setupHeaderEditingWithRequest(headerOverridesFileContent, request);
+    return await setupHeaderEditingWithRequest(headerOverridesFileContent, request);
 }
 async function setupHeaderEditingWithRequest(headerOverridesFileContent, request) {
     const networkPersistenceManager = await createWorkspaceProject(urlString `file:///path/to/overrides`, [

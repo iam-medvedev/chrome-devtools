@@ -401,7 +401,7 @@ export class ChatView extends HTMLElement {
     #handleSubmit = (ev) => {
         ev.preventDefault();
         const textArea = this.#shadow.querySelector('.chat-input');
-        if (!textArea || !textArea.value) {
+        if (!textArea?.value) {
             return;
         }
         const imageInput = this.#props.imageInput ? { inlineData: { data: this.#props.imageInput, mimeType: 'image/jpeg' } } : undefined;
@@ -415,7 +415,7 @@ export class ChatView extends HTMLElement {
         // Go to a new line only when Shift + Enter is pressed.
         if (ev.key === 'Enter' && !ev.shiftKey) {
             ev.preventDefault();
-            if (!ev.target || !ev.target.value) {
+            if (!ev.target?.value) {
                 return;
             }
             const imageInput = this.#props.imageInput ? { inlineData: { data: this.#props.imageInput, mimeType: 'image/jpeg' } } : undefined;
@@ -689,7 +689,7 @@ function renderChangeSummary({ changeSummary, patchSuggestion, patchSuggestionLo
         <div>Selected folder: ${projectName}</div>
       </div>
       ${patchSuggestion ? html `<div class="patch-tmp-message">
-        I suggest changing these files ${patchSuggestion}
+        ${patchSuggestion}
       </div>` : Lit.nothing}
     </details>`;
     // clang-format on

@@ -40,7 +40,6 @@ export class HeapDetachedElementsDataGrid extends DataGrid.DataGrid.DataGridImpl
         super({
             displayName: i18nString(UIStrings.detachedElementsList),
             columns,
-            editCallback: undefined,
             deleteCallback: undefined,
             refreshCallback: undefined,
         });
@@ -105,7 +104,7 @@ export class HeapDetachedElementsDataGridNode extends DataGrid.DataGrid.DataGrid
             treeOutline.element.classList.add('single-node');
         }
         treeOutline.setVisible(true);
-        // @ts-ignore used in console_test_runner
+        // @ts-expect-error used in console_test_runner
         treeOutline.element.treeElementForTest = firstChild;
         treeOutline.setShowSelectionOnKeyboardFocus(/* show: */ true, /* preventTabOrder: */ true);
         const nodes = [node];

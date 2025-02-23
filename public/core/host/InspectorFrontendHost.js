@@ -80,7 +80,7 @@ export class InspectorFrontendHostStub {
             }
         }
         document.addEventListener('keydown', event => {
-            stopEventPropagation.call(this, event);
+            stopEventPropagation.call(this, (event));
         }, true);
     }
     platform() {
@@ -195,6 +195,11 @@ export class InspectorFrontendHostStub {
     }
     recordUserMetricsAction(umaName) {
     }
+    connectAutomaticFileSystem(_fileSystemPath, _fileSystemUUID, _addIfMissing, callback) {
+        queueMicrotask(() => callback({ success: false }));
+    }
+    disconnectAutomaticFileSystem(fileSystemPath) {
+    }
     requestFileSystems() {
         this.events.dispatchEventToListeners(Events.FileSystemsLoaded, []);
     }
@@ -300,7 +305,7 @@ export class InspectorFrontendHostStub {
     }
     getSyncInformation(callback) {
         if ('getSyncInformationForTesting' in globalThis) {
-            // @ts-ignore for testing
+            // @ts-expect-error for testing
             return callback(globalThis.getSyncInformationForTesting());
         }
         callback({
@@ -384,7 +389,7 @@ export class InspectorFrontendHostStub {
     openNodeFrontend() {
     }
     showContextMenuAtPoint(x, y, items, document) {
-        throw 'Soft context menu should be used';
+        throw new Error('Soft context menu should be used');
     }
     isHostedMode() {
         return true;
@@ -420,13 +425,13 @@ export class InspectorFrontendHostStub {
     recordKeyDown(event) {
     }
 }
-// @ts-ignore Global injected by devtools_compatibility.js
+// @ts-expect-error Global injected by devtools_compatibility.js
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export let InspectorFrontendHostInstance = globalThis.InspectorFrontendHost;
 class InspectorFrontendAPIImpl {
     constructor() {
         for (const descriptor of EventDescriptors) {
-            // @ts-ignore Dispatcher magic
+            // @ts-expect-error Dispatcher magic
             this[descriptor[1]] = this.dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
         }
     }
@@ -463,7 +468,7 @@ class InspectorFrontendAPIImpl {
         let proto;
         if (!InspectorFrontendHostInstance) {
             // Instantiate stub for web-hosted mode if necessary.
-            // @ts-ignore Global injected by devtools_compatibility.js
+            // @ts-expect-error Global injected by devtools_compatibility.js
             globalThis.InspectorFrontendHost = InspectorFrontendHostInstance = new InspectorFrontendHostStub();
         }
         else {
@@ -473,12 +478,12 @@ class InspectorFrontendAPIImpl {
                 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
                 // @ts-expect-error
                 const stub = proto[name];
-                // @ts-ignore Global injected by devtools_compatibility.js
+                // @ts-expect-error Global injected by devtools_compatibility.js
                 if (typeof stub !== 'function' || InspectorFrontendHostInstance[name]) {
                     continue;
                 }
                 console.error(`Incompatible embedder: method Host.InspectorFrontendHost.${name} is missing. Using stub instead.`);
-                // @ts-ignore Global injected by devtools_compatibility.js
+                // @ts-expect-error Global injected by devtools_compatibility.js
                 InspectorFrontendHostInstance[name] = stub;
             }
         }
@@ -488,7 +493,7 @@ class InspectorFrontendAPIImpl {
     // FIXME: This file is included into both apps, since the devtools_app needs the InspectorFrontendHostAPI only,
     // so the host instance should not be initialized there.
     initializeInspectorFrontendHost();
-    // @ts-ignore Global injected by devtools_compatibility.js
+    // @ts-expect-error Global injected by devtools_compatibility.js
     globalThis.InspectorFrontendAPI = new InspectorFrontendAPIImpl();
 })();
 export function isUnderTest(prefs) {

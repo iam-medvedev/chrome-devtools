@@ -108,6 +108,7 @@ export function getOptimizationMessageWithBytes(optimization) {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "ImageDelivery" /* InsightKeys.IMAGE_DELIVERY */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

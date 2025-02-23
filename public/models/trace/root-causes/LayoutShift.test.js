@@ -146,8 +146,7 @@ describeWithMockConnection('LayoutShift root causes', () => {
                 domNodeByBackendIdMapEntries.push([backendNodeId, fakeNode]);
                 domNodeByIdMap.set(nodeId, fakeNode);
             }
-            domNodeByBackendIdMap =
-                new Map(domNodeByBackendIdMapEntries);
+            domNodeByBackendIdMap = new Map(domNodeByBackendIdMapEntries);
             model = getBaseTraceParseModelData();
             modelMut = model;
             // Now fake out the relevant LayoutShift data

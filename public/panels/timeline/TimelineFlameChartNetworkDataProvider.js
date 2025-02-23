@@ -29,6 +29,7 @@ export class TimelineFlameChartNetworkDataProvider {
     // -1 means no entry is selected.
     #lastInitiatorEntry = -1;
     #lastInitiatorsData = [];
+    #entityMapper = null;
     constructor() {
         this.reset();
     }
@@ -47,9 +48,10 @@ export class TimelineFlameChartNetworkDataProvider {
         this.#parsedTrace = null;
         this.#networkTrackAppender = null;
     }
-    setModel(parsedTrace) {
+    setModel(parsedTrace, entityMapper) {
         this.reset();
         this.#parsedTrace = parsedTrace;
+        this.#entityMapper = entityMapper;
         this.setEvents(this.#parsedTrace);
         this.#setTimingBoundsData(this.#parsedTrace);
     }
@@ -347,7 +349,7 @@ export class TimelineFlameChartNetworkDataProvider {
             const root = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopoverStyles });
             const contents = root.createChild('div', 'timeline-flamechart-popover');
             const infoElement = new TimelineComponents.NetworkRequestTooltip.NetworkRequestTooltip();
-            infoElement.networkRequest = event;
+            infoElement.data = { networkRequest: event, entityMapper: this.#entityMapper };
             contents.appendChild(infoElement);
             return element;
         }

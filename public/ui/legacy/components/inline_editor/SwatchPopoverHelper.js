@@ -77,14 +77,14 @@ export class SwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrapper {
         if (this.anchorElement) {
             let anchorBox = this.anchorElement.boxInWindow();
             if (ColorSwatch.isColorSwatch(this.anchorElement)) {
-                const swatch = this.anchorElement;
+                const swatch = (this.anchorElement);
                 if (!swatch.anchorBox) {
                     return;
                 }
                 anchorBox = swatch.anchorBox;
             }
             this.popover.setContentAnchorBox(anchorBox);
-            this.popover.show(this.anchorElement.ownerDocument);
+            this.popover.show((this.anchorElement.ownerDocument));
         }
         this.view.contentElement.addEventListener('focusout', this.boundFocusOut, false);
         if (!this.focusRestorer) {

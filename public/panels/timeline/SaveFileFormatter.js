@@ -34,6 +34,13 @@ export function* arrayOfObjectsJsonGenerator(arrayOfObjects) {
  * version with one trace event per line.
  */
 export function* traceJsonGenerator(traceEvents, metadata) {
+    // Ensure that enhancedTraceVersion is placed at the top of metadata. See `maximumTraceFileLengthToDetermineEnhancedTraces`
+    if (metadata?.enhancedTraceVersion) {
+        metadata = {
+            enhancedTraceVersion: metadata.enhancedTraceVersion,
+            ...metadata,
+        };
+    }
     yield `{"metadata": ${JSON.stringify(metadata || {}, null, 2)}`;
     yield ',\n"traceEvents": ';
     yield* arrayOfObjectsJsonGenerator(traceEvents);

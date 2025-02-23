@@ -13,6 +13,7 @@ interface LinkifyLocationOptions {
     linkifier: LegacyComponents.Linkifier.Linkifier;
     isFreshRecording?: boolean;
     columnNumber?: number;
+    omitOrigin?: boolean;
 }
 interface TimeRangeCategoryStats {
     [categoryName: string]: number;
@@ -59,6 +60,7 @@ export declare class TimelineUIUtils {
     static markerStyleForEvent(event: Trace.Types.Events.Event): TimelineMarkerStyle;
     static colorForId(id: string): string;
     static displayNameForFrame(frame: Trace.Types.Events.TraceFrame, trimAt?: number): string;
+    static getOriginWithEntity(entityMapper: Utils.EntityMapper.EntityMapper | null, parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event): string | null;
 }
 export declare const aggregatedStatsKey: unique symbol;
 export declare const previewElementSymbol: unique symbol;
@@ -79,7 +81,7 @@ export declare class TimelineDetailsContentHelper {
     linkifier(): LegacyComponents.Linkifier.Linkifier | null;
     appendTextRow(title: string, value: string | number | boolean): void;
     appendElementRow(title: string, content: string | Node, isWarning?: boolean, isStacked?: boolean): void;
-    appendLocationRow(title: string, url: string, startLine: number, startColumn?: number): void;
+    appendLocationRow(title: string, url: string, startLine: number, startColumn?: number, text?: string, omitOrigin?: boolean): void;
     appendLocationRange(title: string, url: Platform.DevToolsPath.UrlString, startLine: number, endLine?: number): void;
     createChildStackTraceElement(stackTrace: Protocol.Runtime.StackTrace): void;
 }

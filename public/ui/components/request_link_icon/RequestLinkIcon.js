@@ -64,7 +64,7 @@ export class RequestLinkIcon extends HTMLElement {
         if (data.revealOverride) {
             this.#reveal = data.revealOverride;
         }
-        if (!this.#request && data.affectedRequest && typeof data.affectedRequest.requestId !== 'undefined') {
+        if (!this.#request && typeof data.affectedRequest?.requestId !== 'undefined') {
             if (!this.#requestResolver) {
                 throw new Error('A `RequestResolver` must be provided if an `affectedRequest` is provided.');
             }
@@ -142,7 +142,7 @@ export class RequestLinkIcon extends HTMLElement {
         return html `<span aria-label=${i18nString(UIStrings.shortenedURL)} title=${url}>${filename}</span>`;
     }
     async #render() {
-        return RenderCoordinator.write(() => {
+        return await RenderCoordinator.write(() => {
             // By default we render just the URL for the request link. If we also know
             // the concrete network request, or at least its request ID, we surround
             // the URL with a button, that opens the request in the Network panel.

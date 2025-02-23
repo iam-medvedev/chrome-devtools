@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /**
      * @description Text to tell the user about the longest user interaction.
@@ -46,6 +46,7 @@ export function deps() {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "InteractionToNextPaint" /* InsightKeys.INTERACTION_TO_NEXT_PAINT */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

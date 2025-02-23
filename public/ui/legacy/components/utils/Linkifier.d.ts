@@ -119,6 +119,7 @@ export interface LinkifyURLOptions {
     bypassURLTrimming?: boolean;
     userMetric?: Host.UserMetrics.Action;
     jslogContext?: string;
+    omitOrigin?: boolean;
 }
 export interface LinkifyOptions {
     className?: string;
@@ -128,6 +129,7 @@ export interface LinkifyOptions {
     tabStop?: boolean;
     userMetric?: Host.UserMetrics.Action;
     jslogContext?: string;
+    omitOrigin?: boolean;
     /**
      * {@link LinkDisplayOptions.revealBreakpoint}
      */

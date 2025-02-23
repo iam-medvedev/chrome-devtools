@@ -56,11 +56,11 @@ function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, 
 }
 export async function createTraceExtensionDataFromPerformanceAPITestInput(extensionData) {
     const events = extensionData.flatMap(makeTimingEventWithPerformanceExtensionData).sort((e1, e2) => e1.ts - e2.ts);
-    return createTraceExtensionDataFromEvents(events);
+    return await createTraceExtensionDataFromEvents(events);
 }
 async function createTraceExtensionDataFromConsoleAPITestInput(extensionData) {
     const events = extensionData.flatMap(makeTimingEventWithConsoleExtensionData).sort((e1, e2) => e1.ts - e2.ts);
-    return createTraceExtensionDataFromEvents(events);
+    return await createTraceExtensionDataFromEvents(events);
 }
 async function createTraceExtensionDataFromEvents(events) {
     Trace.Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(events);

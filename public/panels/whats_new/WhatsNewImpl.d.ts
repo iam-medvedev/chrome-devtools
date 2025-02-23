@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare const releaseVersionSeen = "releaseNoteVersionSeen";
-export declare const releaseNoteViewId: string;
+export declare const releaseNoteViewId = "release-note";
 export declare function showReleaseNoteIfNeeded(): boolean;
 export declare function getReleaseNoteVersionSetting(): Common.Settings.Setting<number>;
 export declare class HelpLateInitialization implements Common.Runnable.Runnable {

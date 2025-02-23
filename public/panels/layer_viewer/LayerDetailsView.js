@@ -266,7 +266,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.createStickyAncestorChild(i18nString(UIStrings.nearestLayerShiftingContaining), constraint.nearestLayerShiftingContainingBlock());
     }
     update() {
-        const layer = this.selection && this.selection.layer();
+        const layer = this.selection?.layer();
         if (!layer) {
             this.tableElement.remove();
             this.paintProfilerLink.remove();
@@ -318,7 +318,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         return tr.createChild('td');
     }
     updateCompositingReasons(compositingReasons) {
-        if (!compositingReasons || !compositingReasons.length) {
+        if (!compositingReasons?.length) {
             this.compositingReasonsCell.textContent = 'n/a';
             return;
         }

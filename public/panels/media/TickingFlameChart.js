@@ -341,7 +341,7 @@ class TickingFlameChartDataProvider {
     startEvent(properties) {
         properties['level'] = properties['level'] || 0;
         if (properties['level'] > this.maxLevel) {
-            throw `level ${properties['level']} is above the maximum allowed of ${this.maxLevel}`;
+            throw new Error(`level ${properties['level']} is above the maximum allowed of ${this.maxLevel}`);
         }
         const event = new Event(this.timelineDataInternal, {
             setLive: this.setLive.bind(this),

@@ -1,6 +1,6 @@
 import type * as SDK from '../../core/sdk/sdk.js';
-import type * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type { TracingFrameLayerTree } from './TracingLayerTree.js';
 export declare class TimelineLayersView extends UI.SplitWidget.SplitWidget {
     private readonly showPaintProfilerCallback;
     private readonly rightSplitWidget;
@@ -9,7 +9,7 @@ export declare class TimelineLayersView extends UI.SplitWidget.SplitWidget {
     private frameLayerTree?;
     private updateWhenVisible?;
     constructor(showPaintProfilerCallback: (arg0: SDK.PaintProfiler.PaintProfilerSnapshot) => void);
-    showLayerTree(frameLayerTree: TimelineModel.TracingLayerTree.TracingFrameLayerTree): void;
+    showLayerTree(frameLayerTree: TracingFrameLayerTree): void;
     wasShown(): void;
     private onPaintProfilerRequested;
     update(): void;

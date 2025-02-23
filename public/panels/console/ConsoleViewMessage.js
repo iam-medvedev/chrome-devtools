@@ -446,7 +446,7 @@ export class ConsoleViewMessage {
             const messageText = this.message.messageText;
             const fragment = this.linkifyWithCustomLinkifier(messageText, (text, url, lineNumber, columnNumber) => {
                 const linkElement = url === request.url() ?
-                    Components.Linkifier.Linkifier.linkifyRevealable(request, url, request.url(), undefined, undefined, 'network-request') :
+                    Components.Linkifier.Linkifier.linkifyRevealable((request), url, request.url(), undefined, undefined, 'network-request') :
                     Components.Linkifier.Linkifier.linkifyURL(url, { text, lineNumber, columnNumber });
                 linkElement.tabIndex = -1;
                 this.selectableChildren.push({ element: linkElement, forceSelect: () => linkElement.focus() });
@@ -516,7 +516,7 @@ export class ConsoleViewMessage {
             if (scriptId) {
                 return this.linkifier.linkifyScriptLocation(runtimeModel.target(), scriptId, url || Platform.DevToolsPath.EmptyUrlString, line, { columnNumber: column, inlineFrameIndex: 0, userMetric });
             }
-            if (stackTrace && stackTrace.callFrames.length) {
+            if (stackTrace?.callFrames.length) {
                 return this.linkifier.linkifyStackTraceTopFrame(runtimeModel.target(), stackTrace);
             }
             if (url && url !== 'undefined') {
@@ -586,7 +586,7 @@ export class ConsoleViewMessage {
             Common.Settings.Settings.instance().moduleSetting('console-trace-expand').get()) {
             this.expandTrace(true);
         }
-        // @ts-ignore
+        // @ts-expect-error
         toggleElement._expandStackTraceForTest = this.expandTrace.bind(this, true);
         return toggleElement;
     }
@@ -632,7 +632,7 @@ export class ConsoleViewMessage {
         // FIXME: Only pass runtime wrappers here.
         let parameters = rawParameters.map(parameterToRemoteObject(this.message.runtimeModel()));
         // There can be string log and string eval result. We distinguish between them based on message type.
-        const shouldFormatMessage = SDK.RemoteObject.RemoteObject.type(parameters[0]) === 'string' &&
+        const shouldFormatMessage = SDK.RemoteObject.RemoteObject.type((parameters)[0]) === 'string' &&
             (this.message.type !== SDK.ConsoleModel.FrontendMessageType.Result ||
                 this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */);
         // Multiple parameters with the first being a format string. Save unused substitutions.
@@ -854,8 +854,11 @@ export class ConsoleViewMessage {
             const error = SDK.RemoteObject.RemoteError.objectAsError(errorObj);
             const [details, cause] = await Promise.all([error.exceptionDetails(), error.cause()]);
             const errorElementType = includeCausedByPrefix ? 'div' : 'span';
-            const errorElement = this.tryFormatAsError(error.errorStack, details, errorElementType) ??
-                this.linkifyStringAsFragment(error.errorStack);
+            let errorElement = this.tryFormatAsError(error.errorStack, details, errorElementType);
+            if (!errorElement) {
+                errorElement = document.createElement(errorElementType);
+                errorElement.append(this.linkifyStringAsFragment(error.errorStack));
+            }
             if (includeCausedByPrefix) {
                 errorElement.prepend('Caused by: ');
             }
@@ -1440,7 +1443,7 @@ export class ConsoleViewMessage {
         return this.consoleMessage().messageText;
     }
     setSearchRegex(regex) {
-        if (this.searchHighlightNodeChanges && this.searchHighlightNodeChanges.length) {
+        if (this.searchHighlightNodeChanges?.length) {
             UI.UIUtils.revertDomChanges(this.searchHighlightNodeChanges);
         }
         this.searchRegexInternal = regex;
@@ -1777,7 +1780,7 @@ export class ConsoleGroupViewMessage extends ConsoleViewMessage {
             return true;
         }
         const parent = this.consoleGroup();
-        return Boolean(parent && parent.messagesHidden());
+        return Boolean(parent?.messagesHidden());
     }
     setGroupEnd(viewMessage) {
         if (viewMessage.consoleMessage().type !== "endGroup" /* Protocol.Runtime.ConsoleAPICalledEventType.EndGroup */) {
@@ -1887,12 +1890,12 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
         if (this.anchorElement) {
             formattedMessage.appendChild(this.anchorElement);
         }
-        const table = this.message.parameters && this.message.parameters.length ? this.message.parameters[0] : null;
+        const table = this.message.parameters?.length ? this.message.parameters[0] : null;
         if (!table) {
             return this.buildMessage();
         }
         const actualTable = parameterToRemoteObject(this.message.runtimeModel())(table);
-        if (!actualTable || !actualTable.preview) {
+        if (!actualTable?.preview) {
             return this.buildMessage();
         }
         const rawValueColumnSymbol = Symbol('rawValueColumn');
@@ -1902,7 +1905,7 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
         for (let i = 0; i < preview.properties.length; ++i) {
             const rowProperty = preview.properties[i];
             let rowSubProperties;
-            if (rowProperty.valuePreview && rowProperty.valuePreview.properties.length) {
+            if (rowProperty.valuePreview?.properties.length) {
                 rowSubProperties = rowProperty.valuePreview.properties;
             }
             else if (rowProperty.value || rowProperty.value === '') {
@@ -1963,7 +1966,7 @@ export class ConsoleTableMessageView extends ConsoleViewMessage {
         return formattedMessage;
     }
     approximateFastHeight() {
-        const table = this.message.parameters && this.message.parameters[0];
+        const table = this.message.parameters?.[0];
         if (table && typeof table !== 'string' && table.preview) {
             return defaultConsoleRowHeight * table.preview.properties.length;
         }

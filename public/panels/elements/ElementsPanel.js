@@ -292,7 +292,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             return Promise.resolve();
         }
         return this.sidebarPaneView.showView(this.stylesViewToReveal).then(() => {
-            this.stylesWidget.revealProperty(cssProperty);
+            this.stylesWidget.revealProperty((cssProperty));
         });
     }
     resolveLocation(_locationName) {
@@ -444,7 +444,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     selectedNodeChanged(event) {
         let selectedNode = event.data.node;
         // If the selectedNode is a pseudoNode, we want to ensure that it has a valid parentNode
-        if (selectedNode && (selectedNode.pseudoType() && !selectedNode.parentNode)) {
+        if (selectedNode?.pseudoType() && !selectedNode.parentNode) {
             selectedNode = null;
         }
         const { focus } = event.data;
@@ -514,7 +514,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             if (savedSelectedNodeOnReset !== this.selectedNodeOnReset) {
                 return;
             }
-            let node = restoredNodeId ? domModel.nodeForId(restoredNodeId) : null;
+            let node = domModel.nodeForId(restoredNodeId);
             if (!node) {
                 const inspectedDocument = domModel.existingDocument();
                 node = inspectedDocument ? inspectedDocument.body || inspectedDocument.documentElement : null;
@@ -674,7 +674,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
     }
     hideSearchHighlights() {
-        if (!this.searchResults || !this.searchResults.length || this.currentSearchResultIndex === -1) {
+        if (!this.searchResults?.length || this.currentSearchResultIndex === -1) {
             return;
         }
         const searchResult = this.searchResults[this.currentSearchResultIndex];
@@ -926,7 +926,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.splitWidget.setSidebarWidget(this.sidebarPaneView.tabbedPane());
     }
     updateSidebarPosition() {
-        if (this.sidebarPaneView && this.sidebarPaneView.tabbedPane().shouldHideOnDetach()) {
+        if (this.sidebarPaneView?.tabbedPane().shouldHideOnDetach()) {
             return;
         } // We can't reparent extension iframes.
         const position = Common.Settings.Settings.instance().moduleSetting('sidebar-position').get();
@@ -1030,9 +1030,9 @@ export class ElementsPanel extends UI.Panel.Panel {
     static firstInspectElementCompletedForTest = function () { };
     static firstInspectElementNodeNameForTest = '';
 }
-// @ts-ignore exported for Tests.js
+// @ts-expect-error exported for Tests.js
 globalThis.Elements = globalThis.Elements || {};
-// @ts-ignore exported for Tests.js
+// @ts-expect-error exported for Tests.js
 globalThis.Elements.ElementsPanel = ElementsPanel;
 const TrackedCSSProperties = [
     {
@@ -1094,10 +1094,10 @@ export class DOMNodeRevealer {
         });
         function revealPromise(resolve, reject) {
             if (node instanceof SDK.DOMModel.DOMNode) {
-                onNodeResolved(node);
+                onNodeResolved((node));
             }
             else if (node instanceof SDK.DOMModel.DeferredDOMNode) {
-                node.resolve(checkDeferredDOMNodeThenReveal);
+                (node).resolve(checkDeferredDOMNodeThenReveal);
             }
             else {
                 const domModel = node.runtimeModel().target().model(SDK.DOMModel.DOMModel);

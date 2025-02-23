@@ -5,7 +5,6 @@ import * as Common from '../../../core/common/common.js';
 let instance = null;
 class UUIDGenerator {
     next() {
-        // @ts-ignore
         return crypto.randomUUID();
     }
 }

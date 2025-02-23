@@ -376,7 +376,7 @@ function assertDataArgsStats(requests, url, stats) {
     for (const [name, value] of stats.entries()) {
         if (typeof request.args.data[name] === 'number') {
             const expectedValue = value;
-            const actualValueRounded = Number(request.args.data[name].toPrecision(5));
+            const actualValueRounded = Number((request.args.data[name]).toPrecision(5));
             assert.strictEqual(actualValueRounded, expectedValue, url);
         }
         else {

@@ -5,7 +5,6 @@ import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ThirdPartyWeb from '../../third_party/third-party-web/third-party-web.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -240,7 +239,6 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
             displayName: i18nString(UIStrings.performance),
             columns,
             refreshCallback: undefined,
-            editCallback: undefined,
             deleteCallback: undefined,
         });
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
@@ -335,12 +333,12 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         }
         for (let i = pathToRoot.length - 1; i > 0; --i) {
             const gridNode = this.dataGridNodeForTreeNode(pathToRoot[i]);
-            if (gridNode && gridNode.dataGrid) {
+            if (gridNode?.dataGrid) {
                 gridNode.expand();
             }
         }
         const gridNode = this.dataGridNodeForTreeNode(treeNode);
-        if (gridNode && gridNode.dataGrid) {
+        if (gridNode?.dataGrid) {
             gridNode.reveal();
             gridNode.select(suppressSelectedEvent);
         }
@@ -465,10 +463,10 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         }
     }
     #filterChanged() {
-        const searchQuery = this.textFilterUI && this.textFilterUI.value();
-        const caseSensitive = this.caseSensitiveButton !== undefined && this.caseSensitiveButton.isToggled();
-        const isRegex = this.regexButton !== undefined && this.regexButton.isToggled();
-        const matchWholeWord = this.matchWholeWord !== undefined && this.matchWholeWord.isToggled();
+        const searchQuery = this.textFilterUI?.value();
+        const caseSensitive = this.caseSensitiveButton?.isToggled() ?? false;
+        const isRegex = this.regexButton?.isToggled() ?? false;
+        const matchWholeWord = this.matchWholeWord?.isToggled() ?? false;
         this.textFilterInternal.setRegExp(searchQuery ? Platform.StringUtilities.createSearchRegex(searchQuery, caseSensitive, isRegex, matchWholeWord) :
             null);
         this.refreshTree();
@@ -485,12 +483,12 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         if (selectedNode === this.lastSelectedNodeInternal) {
             return;
         }
-        this.lastSelectedNodeInternal = selectedNode;
         if (this.splitWidget.showMode() === "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */) {
             return;
         }
         this.detailsView.detachChildWidgets();
         this.detailsView.element.removeChildren();
+        this.lastSelectedNodeInternal = selectedNode;
         if (selectedNode && this.showDetailsForNode(selectedNode)) {
             return;
         }
@@ -501,9 +499,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         return false;
     }
     onMouseMove(event) {
-        const gridNode = event.target && (event.target instanceof Node) ?
-            (this.dataGrid.dataGridNodeFromNode(event.target)) :
-            null;
+        const gridNode = event.target && (event.target instanceof Node) ? (this.dataGrid.dataGridNodeFromNode((event.target))) : null;
         const profileNode = gridNode?.profileNode;
         if (profileNode === this.lastHoveredProfileNode) {
             return;
@@ -518,6 +514,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     onGridNodeOpened() {
         const node = this.dataGrid.selectedNode;
         this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.profileNode);
+        this.updateDetailsForSelection();
     }
     onContextMenu(contextMenu, eventGridNode) {
         const gridNode = eventGridNode;
@@ -768,7 +765,6 @@ const treeNodeToGridNode = new WeakMap();
 export class AggregatedTimelineTreeView extends TimelineTreeView {
     groupBySetting;
     stackView;
-    executionContextNamesByOrigin = new Map();
     constructor() {
         super();
         this.groupBySetting = Common.Settings.Settings.instance().createSetting('timeline-tree-group-by', AggregatedTimelineTreeView.GroupBy.None);
@@ -781,22 +777,14 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         this.groupBySetting.set(groupBy);
     }
     updateContents(selection) {
-        this.updateExtensionResolver();
         super.updateContents(selection);
         const rootNode = this.dataGrid.rootNode();
         if (rootNode.children.length) {
             rootNode.children[0].select(/* suppressSelectedEvent */ true);
         }
+        this.updateDetailsForSelection();
     }
-    updateExtensionResolver() {
-        this.executionContextNamesByOrigin = new Map();
-        for (const runtimeModel of SDK.TargetManager.TargetManager.instance().models(SDK.RuntimeModel.RuntimeModel)) {
-            for (const context of runtimeModel.executionContexts()) {
-                this.executionContextNamesByOrigin.set(context.origin, context.name);
-            }
-        }
-    }
-    beautifyDomainName(name) {
+    beautifyDomainName(name, node) {
         if (AggregatedTimelineTreeView.isExtensionInternalURL(name)) {
             name = i18nString(UIStrings.chromeExtensionsOverhead);
         }
@@ -804,7 +792,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             name = i18nString(UIStrings.vRuntime);
         }
         else if (name.startsWith('chrome-extension')) {
-            name = this.executionContextNamesByOrigin.get(name) || name;
+            name = this.entityMapper()?.entityForEvent(node.event)?.name || name;
         }
         return name;
     }
@@ -822,7 +810,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case AggregatedTimelineTreeView.GroupBy.Domain:
             case AggregatedTimelineTreeView.GroupBy.Subdomain:
             case AggregatedTimelineTreeView.GroupBy.ThirdParties: {
-                const domainName = id ? this.beautifyDomainName(id) : undefined;
+                const domainName = id ? this.beautifyDomainName(id, node) : undefined;
                 return { name: domainName || unattributed, color, icon: undefined };
             }
             case AggregatedTimelineTreeView.GroupBy.EventName: {
@@ -869,11 +857,11 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         console.assert(Boolean(treeNode.parent), 'Attempt to build stack for tree root');
         let result = [];
         // Do not add root to the stack, as it's the tree itself.
-        for (let node = treeNode; node && node.parent; node = node.parent) {
+        for (let node = treeNode; node?.parent; node = node.parent) {
             result.push(node);
         }
         result = result.reverse();
-        for (let node = treeNode; node && node.children() && node.children().size;) {
+        for (let node = treeNode; node?.children()?.size;) {
             const children = Array.from(node.children().values());
             node = children.reduce((a, b) => a.totalTime > b.totalTime ? a : b);
             result.push(node);
@@ -959,7 +947,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             return parsedURL.host;
         }
         const domainMatch = /([^.]*\.)?[^.]*$/.exec(parsedURL.host);
-        return domainMatch && domainMatch[0] || '';
+        return domainMatch?.[0] || '';
     }
     static isExtensionInternalURL(url) {
         return url.startsWith(AggregatedTimelineTreeView.extensionInternalPrefix);
@@ -1028,11 +1016,13 @@ export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget
             displayName: i18nString(UIStrings.timelineStack),
             columns,
             deleteCallback: undefined,
-            editCallback: undefined,
             refreshCallback: undefined,
         });
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.onSelectionChanged, this);
+        // Hover dim behavior within stackview sidebar
+        this.dataGrid.element.addEventListener('mouseenter', this.onMouseMove.bind(this), true);
+        this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("TreeRowHovered" /* TimelineStackView.Events.TREE_ROW_HOVERED */, null));
         this.dataGrid.asWidget().show(this.element);
     }
     setStack(stack, selectedNode) {
@@ -1050,6 +1040,13 @@ export class TimelineStackView extends Common.ObjectWrapper.eventMixin(UI.Widget
         if (nodeToReveal) {
             nodeToReveal.revealAndSelect();
         }
+    }
+    onMouseMove(event) {
+        const gridNode = event.target && (event.target instanceof Node) ?
+            (this.dataGrid.dataGridNodeFromNode(event.target)) :
+            null;
+        const profileNode = gridNode?.profileNode;
+        this.dispatchEventToListeners("TreeRowHovered" /* TimelineStackView.Events.TREE_ROW_HOVERED */, profileNode);
     }
     selectedTreeNode() {
         const selectedNode = this.dataGrid.selectedNode;

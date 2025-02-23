@@ -212,8 +212,8 @@ export class CSSModel extends SDKModel {
     }
     async takeCoverageDelta() {
         const r = await this.agent.invoke_takeCoverageDelta();
-        const timestamp = (r && r.timestamp) || 0;
-        const coverage = (r && r.coverage) || [];
+        const timestamp = (r?.timestamp) || 0;
+        const coverage = (r?.coverage) || [];
         return { timestamp, coverage };
     }
     setLocalFontsEnabled(enabled) {
@@ -266,7 +266,7 @@ export class CSSModel extends SDKModel {
         }
         const payload = {
             cssModel: this,
-            node: node,
+            node,
             inlinePayload: matchedStylesResponse.inlineStyle || null,
             attributesPayload: matchedStylesResponse.attributesStyle || null,
             matchedPayload: matchedStylesResponse.matchedCSSRules || [],
@@ -294,7 +294,7 @@ export class CSSModel extends SDKModel {
         if (!this.isEnabled()) {
             await this.enable();
         }
-        return this.#styleLoader.computedStylePromise(nodeId);
+        return await this.#styleLoader.computedStylePromise(nodeId);
     }
     async getBackgroundColors(nodeId) {
         const response = await this.agent.invoke_getBackgroundColors({ nodeId });
@@ -667,7 +667,7 @@ export class CSSModel extends SDKModel {
         this.resetFontFaces();
     }
     async resumeModel() {
-        return this.enable();
+        return await this.enable();
     }
     setEffectivePropertyValueForNode(nodeId, propertyName, value) {
         void this.agent.invoke_setEffectivePropertyValueForNode({ nodeId, propertyName, value });
@@ -828,7 +828,7 @@ class ComputedStyleLoader {
         }
         promise = this.#cssModel.getAgent().invoke_getComputedStyleForNode({ nodeId }).then(({ computedStyle }) => {
             this.#nodeIdToPromise.delete(nodeId);
-            if (!computedStyle || !computedStyle.length) {
+            if (!computedStyle?.length) {
                 return null;
             }
             const result = new Map();

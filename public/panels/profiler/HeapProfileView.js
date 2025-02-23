@@ -151,7 +151,7 @@ export class HeapProfileView extends ProfileView {
         this.setSelectionRange(minId, maxId);
     }
     setSelectionRange(minId, maxId) {
-        const profileData = convertToSamplingHeapProfile(this.profileHeader);
+        const profileData = convertToSamplingHeapProfile((this.profileHeader));
         const profile = new SamplingHeapProfileModel(profileData, minId, maxId);
         this.adjustedTotal = profile.total;
         this.setProfile(profile);
@@ -249,7 +249,7 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
     async stopRecordingProfile() {
         this.recording = false;
         const recordedProfile = this.profileBeingRecorded();
-        if (!recordedProfile || !recordedProfile.heapProfilerModel()) {
+        if (!recordedProfile?.heapProfilerModel()) {
             return;
         }
         recordedProfile.updateStatus(i18nString(UIStrings.stopping));
@@ -281,10 +281,10 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
         void this.stopRecordingProfile();
     }
     startSampling() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     stopSampling() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
 }
 let samplingHeapProfileTypeInstance;
@@ -368,7 +368,7 @@ export class SamplingHeapProfileHeader extends WritableProfileHeader {
     heapProfilerModelInternal;
     protocolProfileInternal;
     constructor(heapProfilerModel, type, title) {
-        super(heapProfilerModel && heapProfilerModel.debuggerModel(), type, title || i18nString(UIStrings.profileD, { PH1: type.nextProfileUid() }));
+        super(heapProfilerModel?.debuggerModel() ?? null, type, title || i18nString(UIStrings.profileD, { PH1: type.nextProfileUid() }));
         this.heapProfilerModelInternal = heapProfilerModel;
         this.protocolProfileInternal = {
             head: {

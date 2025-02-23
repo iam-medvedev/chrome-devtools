@@ -38,7 +38,7 @@ export class Table extends HTMLElement {
             return;
         }
         const rowEl = e.target.closest('tr');
-        if (!rowEl || !rowEl.parentElement) {
+        if (!rowEl?.parentElement) {
             return;
         }
         const index = [...rowEl.parentElement.children].indexOf(rowEl);
@@ -54,7 +54,7 @@ export class Table extends HTMLElement {
             return;
         }
         const rowEl = e.target.closest('tr');
-        if (!rowEl || !rowEl.parentElement) {
+        if (!rowEl?.parentElement) {
             return;
         }
         const index = [...rowEl.parentElement.children].indexOf(rowEl);

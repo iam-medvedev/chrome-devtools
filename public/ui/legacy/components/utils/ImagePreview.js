@@ -67,7 +67,7 @@ export class ImagePreview {
         const contentSize = resource.contentSize();
         const resourceSize = contentSize ? contentSize : Platform.StringUtilities.base64ToSize(content);
         const resourceSizeText = resourceSize > 0 ? i18n.ByteUtilities.bytesToString(resourceSize) : '';
-        return new Promise(resolve => {
+        return await new Promise(resolve => {
             const imageElement = document.createElement('img');
             imageElement.addEventListener('load', buildContent, false);
             imageElement.addEventListener('error', () => resolve(null), false);

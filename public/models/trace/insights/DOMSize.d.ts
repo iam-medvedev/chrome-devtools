@@ -4,35 +4,35 @@ export declare const UIStrings: {
     /**
      * @description Title of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated.
      */
-    title: string;
+    readonly title: "Optimize DOM size";
     /**
      * @description Description of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated. "layout reflows" are when the browser will recompute the layout of content on the page.
      */
-    description: string;
+    readonly description: "A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/).";
     /**
      * @description Header for a column containing the names of statistics as opposed to the actual statistic values.
      */
-    statistic: string;
+    readonly statistic: "Statistic";
     /**
      * @description Header for a column containing the value of a statistic.
      */
-    value: string;
+    readonly value: "Value";
     /**
      * @description Header for a column containing the page element related to a statistic.
      */
-    element: string;
+    readonly element: "Element";
     /**
      * @description Label for a value representing the total number of elements on the page.
      */
-    totalElements: string;
+    readonly totalElements: "Total elements";
     /**
      * @description Label for a value representing the maximum depth of the Document Object Model (DOM). "DOM" is a acronym and should not be translated.
      */
-    maxDOMDepth: string;
+    readonly maxDOMDepth: "DOM depth";
     /**
      * @description Label for a value representing the maximum number of child elements of any parent element on the page.
      */
-    maxChildren: string;
+    readonly maxChildren: "Most children";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type DOMSizeInsightModel = InsightModel<typeof UIStrings, {

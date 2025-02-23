@@ -208,7 +208,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
         const breakpoints = this.breakpointManager.breakpointLocationsForUISourceCode(from).map(breakpointLocation => breakpointLocation.breakpoint);
         await Promise.all(breakpoints.map(async (breakpoint) => {
             await breakpoint.remove(false /* keepInStorage */);
-            return this.breakpointManager.setBreakpoint(to, breakpoint.lineNumber(), breakpoint.columnNumber(), breakpoint.condition(), breakpoint.enabled(), breakpoint.isLogpoint(), "RESTORED" /* BreakpointManager.BreakpointManager.BreakpointOrigin.OTHER */);
+            return await this.breakpointManager.setBreakpoint(to, breakpoint.lineNumber(), breakpoint.columnNumber(), breakpoint.condition(), breakpoint.enabled(), breakpoint.isLogpoint(), "RESTORED" /* BreakpointManager.BreakpointManager.BreakpointOrigin.OTHER */);
         }));
     }
     hasUnsavedCommittedChanges(uiSourceCode) {

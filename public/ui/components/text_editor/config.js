@@ -409,7 +409,7 @@ export const showCompletionHint = CM.ViewPlugin.fromClass(class {
 export function contentIncludingHint(view) {
     const plugin = view.plugin(showCompletionHint);
     let content = view.state.doc.toString();
-    if (plugin && plugin.currentHint) {
+    if (plugin?.currentHint) {
         const { head } = view.state.selection.main;
         content = content.slice(0, head) + plugin.currentHint + content.slice(head);
     }

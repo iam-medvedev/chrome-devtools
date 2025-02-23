@@ -25,6 +25,7 @@ export function deps() {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "FontDisplay" /* InsightKeys.FONT_DISPLAY */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

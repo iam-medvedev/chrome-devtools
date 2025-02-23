@@ -91,7 +91,7 @@ export class ExecutionContextSelector {
             return false;
         }
         const resourceTreeModel = executionContext.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
-        const frame = resourceTreeModel && resourceTreeModel.frameForId(executionContext.frameId);
+        const frame = resourceTreeModel?.frameForId(executionContext.frameId);
         return Boolean(frame?.isOutermostFrame());
     }
     #onExecutionContextCreated(event) {

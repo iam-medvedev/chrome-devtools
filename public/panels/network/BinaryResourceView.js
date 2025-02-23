@@ -135,7 +135,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
         this.binaryViewTypeCombobox.element.value = this.binaryViewTypeSetting.get();
     }
     binaryViewTypeChanged() {
-        const selectedOption = this.binaryViewTypeCombobox.selectedOption();
+        const selectedOption = (this.binaryViewTypeCombobox.selectedOption());
         if (!selectedOption) {
             return;
         }

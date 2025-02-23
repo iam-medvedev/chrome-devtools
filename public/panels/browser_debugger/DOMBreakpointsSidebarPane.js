@@ -38,7 +38,7 @@ const UIStrings = {
     /**
      *@description Header text to indicate there are no breakpoints
      */
-    noBreakpoints: 'No DOM breakpoints set',
+    noBreakpoints: 'No DOM breakpoints',
     /**
      *@description DOM breakpoints description that shows if no DOM breakpoints are set
      */
@@ -135,10 +135,11 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
         this.elementToCheckboxes = new WeakMap();
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.dom-breakpoints').track({ resize: true })}`);
         this.contentElement.classList.add('dom-breakpoints-container');
-        this.#emptyElement =
-            new UI.EmptyWidget.EmptyWidget(UIStrings.noBreakpoints, i18nString(UIStrings.domBreakpointsDescription));
-        this.#emptyElement.appendLink(DOM_BREAKPOINT_DOCUMENTATION_URL);
-        this.#emptyElement.show(this.contentElement);
+        this.#emptyElement = this.contentElement.createChild('div', 'placeholder');
+        this.#emptyElement.createChild('div', 'gray-info-message').textContent = i18nString(UIStrings.noBreakpoints);
+        const emptyWidget = new UI.EmptyWidget.EmptyWidget(UIStrings.noBreakpoints, i18nString(UIStrings.domBreakpointsDescription));
+        emptyWidget.appendLink(DOM_BREAKPOINT_DOCUMENTATION_URL);
+        emptyWidget.show(this.#emptyElement);
         this.#breakpoints = new UI.ListModel.ListModel();
         this.#list = new UI.ListControl.ListControl(this.#breakpoints, this, UI.ListControl.ListMode.NonViewport);
         this.contentElement.appendChild(this.#list.element);
@@ -213,7 +214,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
         else {
             UI.ARIAUtils.setDescription(element, checkedStateText);
         }
-        this.#emptyElement.hideWidget();
+        this.#emptyElement.classList.add('hidden');
         this.#list.element.classList.remove('hidden');
         return element;
     }
@@ -261,8 +262,8 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
             }
         }
         if (this.#breakpoints.length === 0) {
-            this.#emptyElement.showWidget();
-            this.setDefaultFocusedElement(this.#emptyElement.element);
+            this.#emptyElement.classList.remove('hidden');
+            this.setDefaultFocusedElement(this.#emptyElement);
             this.#list.element.classList.add('hidden');
         }
         else if (lastIndex >= 0) {
@@ -313,7 +314,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
             this.#highlightedBreakpoint = null;
             this.#list.refreshItem(oldHighlightedBreakpoint);
         }
-        if (!details || !details.auxData || details.reason !== "DOM" /* Protocol.Debugger.PausedEventReason.DOM */) {
+        if (!details?.auxData || details.reason !== "DOM" /* Protocol.Debugger.PausedEventReason.DOM */) {
             return;
         }
         const domDebuggerModel = details.debuggerModel.target().model(SDK.DOMDebuggerModel.DOMDebuggerModel);

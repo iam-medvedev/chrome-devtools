@@ -1,8 +1,11 @@
 import type * as SDK from '../../../core/sdk/sdk.js';
 export declare class NetworkRequestFormatter {
     #private;
-    static allowHeader(header: SDK.NetworkRequest.NameValue): boolean;
-    static formatHeaders(title: string, headers: SDK.NetworkRequest.NameValue[]): string;
+    static allowHeader(headerName: string): boolean;
+    static formatHeaders(title: string, headers: Array<{
+        name: string;
+        value: string;
+    }>, addListPrefixToEachLine?: boolean): string;
     static formatInitiatorUrl(initiatorUrl: string, allowedOrigin: string): string;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     formatRequestHeaders(): string;

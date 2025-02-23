@@ -64,11 +64,11 @@ export class AccessibilityTreeView extends UI.Widget.VBox {
         if (!this.root) {
             const frameId = SDK.FrameManager.FrameManager.instance().getOutermostFrame()?.id;
             if (!frameId) {
-                throw Error('No top frame');
+                throw new Error('No top frame');
             }
             this.root = await AccessibilityTreeUtils.getRootNode(frameId);
             if (!this.root) {
-                throw Error('No root');
+                throw new Error('No root');
             }
         }
         await this.renderTree();

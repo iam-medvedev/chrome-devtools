@@ -157,7 +157,6 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
         forceNew: boolean | null;
     }): MultitargetNetworkManager;
     static dispose(): void;
-    static getChromeVersion(): string;
     static patchUserAgentWithChromeVersion(uaString: string): string;
     static patchUserAgentMetadataWithChromeVersion(userAgentMetadata: Protocol.Emulation.UserAgentMetadata): void;
     modelAdded(networkManager: NetworkManager): void;

@@ -131,11 +131,11 @@ export class CSSStyleRule extends CSSRule {
     setSelectorText(newSelector) {
         const styleSheetId = this.styleSheetId;
         if (!styleSheetId) {
-            throw 'No rule stylesheet id';
+            throw new Error('No rule stylesheet id');
         }
         const range = this.selectorRange();
         if (!range) {
-            throw 'Rule selector is not editable';
+            throw new Error('Rule selector is not editable');
         }
         return this.cssModelInternal.setSelectorText(styleSheetId, range, newSelector);
     }
@@ -157,7 +157,7 @@ export class CSSStyleRule extends CSSRule {
     }
     lineNumberInSource(selectorIndex) {
         const selector = this.selectors[selectorIndex];
-        if (!selector || !selector.range || !this.styleSheetId) {
+        if (!selector?.range || !this.styleSheetId) {
             return 0;
         }
         const styleSheetHeader = this.getStyleSheetHeader(this.styleSheetId);
@@ -165,7 +165,7 @@ export class CSSStyleRule extends CSSRule {
     }
     columnNumberInSource(selectorIndex) {
         const selector = this.selectors[selectorIndex];
-        if (!selector || !selector.range || !this.styleSheetId) {
+        if (!selector?.range || !this.styleSheetId) {
             return undefined;
         }
         const styleSheetHeader = this.getStyleSheetHeader(this.styleSheetId);
@@ -176,7 +176,7 @@ export class CSSStyleRule extends CSSRule {
             return;
         }
         const range = this.selectorRange();
-        if (range && range.equal(edit.oldRange)) {
+        if (range?.equal(edit.oldRange)) {
             this.reinitializeSelectors(edit.payload);
         }
         else {
@@ -275,11 +275,11 @@ export class CSSKeyframeRule extends CSSRule {
     setKeyText(newKeyText) {
         const styleSheetId = this.styleSheetId;
         if (!styleSheetId) {
-            throw 'No rule stylesheet id';
+            throw new Error('No rule stylesheet id');
         }
         const range = this.#keyText.range;
         if (!range) {
-            throw 'Keyframe key is not editable';
+            throw new Error('Keyframe key is not editable');
         }
         return this.cssModelInternal.setKeyframeKey(styleSheetId, range, newKeyText);
     }

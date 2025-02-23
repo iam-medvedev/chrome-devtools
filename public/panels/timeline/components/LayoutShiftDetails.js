@@ -364,7 +364,7 @@ export class LayoutShiftDetails extends HTMLElement {
             return;
         }
         const rowEl = e.target.closest('tbody tr');
-        if (!rowEl || !rowEl.parentElement) {
+        if (!rowEl?.parentElement) {
             return;
         }
         // Grab the associated trace event of this row.

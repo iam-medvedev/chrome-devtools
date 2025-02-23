@@ -2,10 +2,19 @@ import '../../ui/legacy/legacy.js';
 import * as Host from '../../core/host/host.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ChatView, type Props as ChatViewProps } from './components/ChatView.js';
+interface ToolbarViewInput {
+    onNewChatClick: () => void;
+    onHistoryClick: (event: MouseEvent) => void;
+    onDeleteClick: () => void;
+    onHelpClick: () => void;
+    onSettingsClick: () => void;
+    isDeleteHistoryButtonVisible: boolean;
+}
+export type ViewInput = ChatViewProps & ToolbarViewInput;
 interface ViewOutput {
     chatView?: ChatView;
 }
-type View = (input: ChatViewProps, output: ViewOutput, target: HTMLElement) => void;
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class AiAssistancePanel extends UI.Panel.Panel {
     #private;
     private view;
@@ -20,7 +29,7 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     } | undefined): Promise<AiAssistancePanel>;
     wasShown(): void;
     willHide(): void;
-    doUpdate(): Promise<void>;
+    performUpdate(): Promise<void>;
     handleAction(actionId: string): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {

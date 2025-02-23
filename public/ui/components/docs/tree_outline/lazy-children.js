@@ -28,7 +28,7 @@ async function loadInSomeNodes() {
             ]),
         },
     ];
-    return new Promise(resolve => {
+    return await new Promise(resolve => {
         setTimeout(() => resolve(europeanOffices), 250);
     });
 }

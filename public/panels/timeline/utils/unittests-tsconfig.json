@@ -68,9 +68,6 @@
       "path": "../../../models/bindings/bundle-tsconfig.json"
     },
     {
-      "path": "../../../models/timeline_model/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../models/trace/bundle-tsconfig.json"
     },
     {

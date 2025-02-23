@@ -220,7 +220,7 @@ let RecorderController = class RecorderController extends LitElement {
         /* chunkSize */ 10000000);
         const success = await reader.read(outputStream);
         if (!success) {
-            throw reader.error();
+            throw reader.error() ?? new Error('Unknown');
         }
         let flow;
         try {
@@ -346,7 +346,7 @@ let RecorderController = class RecorderController extends LitElement {
             this.viewDescriptor = undefined;
         }
         if (event.data.extension) {
-            return this.#onPlayViaExtension(event.data.extension);
+            return await this.#onPlayViaExtension(event.data.extension);
         }
         Host.userMetrics.recordingReplayStarted(event.data.targetPanel !== "chrome-recorder" /* Components.RecordingView.TargetPanel.DEFAULT */ ?
             2 /* Host.UserMetrics.RecordingReplayStarted.REPLAY_WITH_PERFORMANCE_TRACING */ :

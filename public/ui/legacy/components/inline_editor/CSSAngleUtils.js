@@ -6,7 +6,7 @@ import * as UI from '../../legacy.js';
 export const CSSAngleRegex = /(?<value>[+-]?\d*\.?\d+)(?<unit>deg|grad|rad|turn)/;
 export const parseText = (text) => {
     const result = text.match(CSSAngleRegex);
-    if (!result || !result.groups) {
+    if (!result?.groups) {
         return null;
     }
     return {

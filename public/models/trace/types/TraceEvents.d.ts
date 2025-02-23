@@ -2199,52 +2199,70 @@ export interface LegacyLayerPaintEventPicture {
     serializedPicture: string;
 }
 export interface TargetRundownEvent extends Event {
-    cat: 'disabled-by-default-devtools.v8-source-rundown';
+    cat: 'disabled-by-default-devtools.target-rundown';
+    name: 'ScriptCompiled';
     args: Args & {
-        data: {
+        data?: {
             frame: Protocol.Page.FrameId;
             frameType: string;
             url: string;
             isolate: string;
             v8context: string;
             origin: string;
-            scriptId: Protocol.Runtime.ScriptId;
+            scriptId: number;
             isDefault?: boolean;
             contextType?: string;
         };
     };
 }
 export declare function isTargetRundownEvent(event: Event): event is TargetRundownEvent;
-export interface ScriptRundownEvent extends Event {
+export interface V8SourceRundownEvent extends Event {
     cat: 'disabled-by-default-devtools.v8-source-rundown';
+    name: 'ScriptCatchup';
     args: Args & {
         data: {
             isolate: string;
             executionContextId: Protocol.Runtime.ExecutionContextId;
-            scriptId: Protocol.Runtime.ScriptId;
+            scriptId: number;
             startLine: number;
             startColumn: number;
             endLine: number;
             endColumn: number;
-            url: string;
             hash: string;
             isModule: boolean;
             hasSourceUrl: boolean;
+            url?: string;
+            sourceUrl?: string;
             sourceMapUrl?: string;
         };
     };
 }
-export declare function isScriptRundownEvent(event: Event): event is ScriptRundownEvent;
-export interface ScriptSourceRundownEvent extends Event {
+export declare function isV8SourceRundownEvent(event: Event): event is V8SourceRundownEvent;
+export interface V8SourceRundownSourcesScriptCatchupEvent extends Event {
     cat: 'disabled-by-default-devtools.v8-source-rundown-sources';
+    name: 'ScriptCatchup';
     args: Args & {
         data: {
             isolate: string;
-            scriptId: Protocol.Runtime.ScriptId;
-            length?: number;
-            sourceText?: string;
+            scriptId: number;
+            length: number;
+            sourceText: string;
         };
     };
 }
-export declare function isScriptSourceRundownEvent(event: Event): event is ScriptSourceRundownEvent;
+export declare function isV8SourceRundownSourcesScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesScriptCatchupEvent;
+export interface V8SourceRundownSourcesLargeScriptCatchupEvent extends Event {
+    cat: 'disabled-by-default-devtools.v8-source-rundown-sources';
+    name: 'LargeScriptCatchup';
+    args: Args & {
+        data: {
+            isolate: string;
+            scriptId: number;
+            splitIndex: number;
+            splitCount: number;
+            sourceText: string;
+        };
+    };
+}
+export declare function isV8SourceRundownSourcesLargeScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesLargeScriptCatchupEvent;
 export {};

@@ -426,8 +426,7 @@ export class NavigatorView extends UI.Widget.VBox {
         const isFromSourceMap = uiSourceCode.contentType().isFromSourceMap();
         let path;
         if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
-            path =
-                Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode).slice(0, -1);
+            path = Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode).slice(0, -1);
         }
         else {
             path = Common.ParsedURL.ParsedURL.extractPath(uiSourceCode.url()).split('/').slice(1, -1);
@@ -701,7 +700,7 @@ export class NavigatorView extends UI.Widget.VBox {
     }
     #isUISourceCodeOrAnyAncestorSelected(node) {
         const selectedTreeElement = this.scriptsTree.selectedTreeElement;
-        const selectedNode = selectedTreeElement && selectedTreeElement.node;
+        const selectedNode = selectedTreeElement?.node;
         let currentNode = node;
         while (currentNode) {
             if (currentNode === selectedNode) {
@@ -800,8 +799,8 @@ export class NavigatorView extends UI.Widget.VBox {
     }
     async renameShortcut() {
         const selectedTreeElement = this.scriptsTree.selectedTreeElement;
-        const node = selectedTreeElement && selectedTreeElement.node;
-        if (!node || !node.uiSourceCode() || !node.uiSourceCode().canRename()) {
+        const node = selectedTreeElement?.node;
+        if (!node?.uiSourceCode()?.canRename()) {
             return false;
         }
         this.rename(node, false);
@@ -947,7 +946,7 @@ export class NavigatorView extends UI.Widget.VBox {
             if (!committed) {
                 uiSourceCode.remove();
             }
-            else if (node.treeElement && node.treeElement.listItemElement.hasFocus()) {
+            else if (node.treeElement?.listItemElement.hasFocus()) {
                 this.sourceSelected(uiSourceCode, true);
             }
         }
@@ -1293,7 +1292,7 @@ export class NavigatorTreeNode {
         };
     }
     treeNode() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     dispose() {
     }
@@ -1320,7 +1319,7 @@ export class NavigatorTreeNode {
     onattach() {
     }
     setTitle(_title) {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     populate() {
         if (this.isPopulated()) {
@@ -1335,17 +1334,17 @@ export class NavigatorTreeNode {
     wasPopulated() {
         const children = this.children();
         for (let i = 0; i < children.length; ++i) {
-            this.navigatorView.appendChild(this.treeNode(), children[i].treeNode());
+            this.navigatorView.appendChild(this.treeNode(), (children[i].treeNode()));
         }
     }
     didAddChild(node) {
         if (this.isPopulated()) {
-            this.navigatorView.appendChild(this.treeNode(), node.treeNode());
+            this.navigatorView.appendChild(this.treeNode(), (node.treeNode()));
         }
     }
     willRemoveChild(node) {
         if (this.isPopulated()) {
-            this.navigatorView.removeChild(this.treeNode(), node.treeNode());
+            this.navigatorView.removeChild(this.treeNode(), (node.treeNode()));
         }
     }
     isPopulated() {
@@ -1586,7 +1585,6 @@ export class NavigatorFolderTreeNode extends NavigatorTreeNode {
         return treeElement;
     }
     wasPopulated() {
-        // @ts-ignore These types are invalid, but removing this check causes wrong behavior
         if (!this.treeElement || this.treeElement.node !== this) {
             return;
         }
@@ -1622,7 +1620,7 @@ export class NavigatorFolderTreeNode extends NavigatorTreeNode {
         if (children.length === 2) {
             oldNode = children[0] !== node ? children[0] : children[1];
         }
-        if (oldNode && oldNode.isMerged) {
+        if (oldNode?.isMerged) {
             oldNode.isMerged = false;
             const mergedToNodes = [];
             mergedToNodes.push(this);
@@ -1641,7 +1639,7 @@ export class NavigatorFolderTreeNode extends NavigatorTreeNode {
                 nodes.push(treeNode);
                 children = treeNode.children();
                 treeNode = children.length === 1 ? children[0] : null;
-            } while (treeNode && treeNode.isMerged);
+            } while (treeNode?.isMerged);
             if (!this.isPopulated()) {
                 this.treeElement.title = titleText;
                 this.treeElement.setNode(this);

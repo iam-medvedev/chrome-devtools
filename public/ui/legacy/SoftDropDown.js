@@ -96,7 +96,7 @@ export class SoftDropDown {
             return;
         }
         this.glassPane.setContentAnchorBox(this.element.boxInWindow());
-        this.glassPane.show(this.element.ownerDocument);
+        this.glassPane.show((this.element.ownerDocument));
         this.list.element.focus();
         ARIAUtils.setExpanded(this.element, true);
         this.updateGlasspaneSize();
@@ -269,7 +269,7 @@ export class SoftDropDown {
             toElement.classList.add('highlighted');
         }
         ARIAUtils.setActiveDescendant(this.list.element, toElement);
-        this.delegate.highlightedItemChanged(from, to, fromElement && fromElement.firstElementChild, toElement && toElement.firstElementChild);
+        this.delegate.highlightedItemChanged(from, to, fromElement?.firstElementChild ?? null, toElement?.firstElementChild ?? null);
     }
     updateSelectedItemARIA(_fromElement, _toElement) {
         return false;

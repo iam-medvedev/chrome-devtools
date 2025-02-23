@@ -106,7 +106,7 @@ describe('RenderCoordinator', () => {
                 resolve();
             }, timeout));
         };
-        void RenderCoordinator.write(async () => delayedSet(expected, 100));
+        void RenderCoordinator.write(async () => await delayedSet(expected, 100));
         await RenderCoordinator.done();
         assert.strictEqual(targetValue, expected);
     });

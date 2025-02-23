@@ -324,7 +324,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     }
     async evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI) {
         const callFrame = executionContext.debuggerModel.selectedCallFrame();
-        if (callFrame && callFrame.script.isJavaScript()) {
+        if (callFrame?.script.isJavaScript()) {
             const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
             expression = await this.substituteNames(expression, nameMap);
         }

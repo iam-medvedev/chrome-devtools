@@ -311,7 +311,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         icon.classList.add('selected-call-frame-icon');
         element.appendChild(icon);
         element.tabIndex = item === this.list.selectedItem() ? 0 : -1;
-        if (callframe && callframe.missingDebugInfoDetails) {
+        if (callframe?.missingDebugInfoDetails) {
             const icon = new IconButton.Icon.Icon();
             icon.data = {
                 iconName: 'warning-filled',

@@ -58,7 +58,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
     }
     async start(jsCoveragePerBlock) {
         if (this.suspensionState !== "Active" /* SuspensionState.ACTIVE */) {
-            throw Error('Cannot start CoverageModel while it is not active.');
+            throw new Error('Cannot start CoverageModel while it is not active.');
         }
         const promises = [];
         if (this.cssModel) {
@@ -218,7 +218,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
     }
     usageForRange(contentProvider, startOffset, endOffset) {
         const coverageInfo = this.coverageByContentProvider.get(contentProvider);
-        return coverageInfo && coverageInfo.usageForRange(startOffset, endOffset);
+        return coverageInfo?.usageForRange(startOffset, endOffset);
     }
     clearCSS() {
         for (const entry of this.coverageByContentProvider.values()) {
@@ -253,7 +253,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
         }
         const { coverage, timestamp } = await this.cpuProfilerModel.takePreciseCoverage();
         this.coverageUpdateTimes.add(timestamp);
-        return this.backlogOrProcessJSCoverage(coverage, timestamp);
+        return await this.backlogOrProcessJSCoverage(coverage, timestamp);
     }
     async backlogOrProcessJSCoverage(freshRawCoverageData, freshTimestamp) {
         if (freshRawCoverageData.length > 0) {
@@ -314,7 +314,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
         }
         const { coverage, timestamp } = await this.cssModel.takeCoverageDelta();
         this.coverageUpdateTimes.add(timestamp);
-        return this.backlogOrProcessCSSCoverage(coverage, timestamp);
+        return await this.backlogOrProcessCSSCoverage(coverage, timestamp);
     }
     async backlogOrProcessCSSCoverage(freshRawCoverageData, freshTimestamp) {
         if (freshRawCoverageData.length > 0) {
@@ -629,7 +629,7 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
         let entry = this.coverageInfoByLocation.get(key);
         if ((type & 2 /* CoverageType.JAVA_SCRIPT */) && !this.coverageInfoByLocation.size &&
             contentProvider instanceof SDK.Script.Script) {
-            this.isContentScriptInternal = contentProvider.isContentScript();
+            this.isContentScriptInternal = (contentProvider).isContentScript();
         }
         this.typeInternal |= type;
         if (entry) {
@@ -638,7 +638,7 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
         }
         if ((type & 2 /* CoverageType.JAVA_SCRIPT */) && !this.coverageInfoByLocation.size &&
             contentProvider instanceof SDK.Script.Script) {
-            this.isContentScriptInternal = contentProvider.isContentScript();
+            this.isContentScriptInternal = (contentProvider).isContentScript();
         }
         entry = new CoverageInfo(contentProvider, contentLength, lineOffset, columnOffset, type, this);
         this.coverageInfoByLocation.set(key, entry);
@@ -704,7 +704,7 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
             return [await this.entriesForExportBasedOnFullText(fullText)];
         }
         // Fall back to the per-script operation.
-        return this.entriesForExportBasedOnContent();
+        return await this.entriesForExportBasedOnContent();
     }
 }
 export class SourceURLCoverageInfo extends URLCoverageInfo {

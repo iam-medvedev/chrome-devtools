@@ -1,3 +1,4 @@
+import type * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Trace from '../../../models/trace/trace.js';
 export declare class EntityMapper {
@@ -26,4 +27,5 @@ export declare class EntityMapper {
      * @param sourceURL
      */
     updateSourceMapEntities(callFrame: Protocol.Runtime.CallFrame, sourceURL: string): void;
+    updateExtensionEntitiesWithName(executionContextNamesByOrigin: Map<Platform.DevToolsPath.UrlString, string>): void;
 }

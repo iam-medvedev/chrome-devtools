@@ -83,7 +83,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             return null;
         }
         const fileSystem = new IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type);
-        return fileSystem.initializeFilePaths().then(() => fileSystem).catch(error => {
+        return await fileSystem.initializeFilePaths().then(() => fileSystem).catch(error => {
             console.error(error);
             return null;
         });
@@ -309,7 +309,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             }
         }
         function errorHandler(error) {
-            // @ts-ignore TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
+            // @ts-expect-error TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
             const errorMessage = IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + ' when setting content for file \'' + (this.path() + '/' + path) + '\'');
             resolve(undefined);
@@ -413,7 +413,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             return true;
         }
         const regex = (this.manager.workspaceFolderExcludePatternSetting()).asRegExp();
-        return Boolean(regex && regex.test(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
+        return Boolean(regex?.test(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
     }
     excludedFolders() {
         return this.excludedFoldersInternal;

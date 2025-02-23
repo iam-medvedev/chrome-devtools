@@ -184,7 +184,7 @@ export const withNoMutations = async (element, fn) => {
     return await withMutations([], element, fn);
 };
 export const someMutations = async (element) => {
-    return new Promise(resolve => {
+    return await new Promise(resolve => {
         const observer = new MutationObserver(() => {
             resolve();
             observer.disconnect();

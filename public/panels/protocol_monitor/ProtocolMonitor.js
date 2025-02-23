@@ -320,7 +320,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
             },
             onSelect: (e) => {
                 const index = parseInt(e.detail?.dataset?.index ?? '', 10);
-                this.#selectedMessage = index ? this.#messages[index] : undefined;
+                this.#selectedMessage = !isNaN(index) ? this.#messages[index] : undefined;
                 this.requestUpdate();
             },
             onContextMenu: (e) => {
@@ -395,7 +395,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         const syncTargets = () => {
             selector.removeOptions();
             for (const target of targetManager.targets()) {
-                selector.createOption(`${target.name()} (${target.inspectedURL()})`, target.id());
+                selector.createOption(`${target.name()} (${target.inspectedURL()})`, target.id(), 'target');
             }
         };
         targetManager.addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, syncTargets);
@@ -409,7 +409,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         const sessionId = selectedTarget ? selectedTarget.sessionId : '';
         // TS thinks that properties are read-only because
         // in TS test is defined as a namespace.
-        // @ts-ignore
+        // @ts-expect-error
         test.sendRawMessage(command, parameters, () => { }, sessionId);
     }
     wasShown() {
@@ -424,17 +424,12 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
     setRecording(recording) {
         const test = ProtocolClient.InspectorBackend.test;
         if (recording) {
-            // TODO: TS thinks that properties are read-only because
-            // in TS test is defined as a namespace.
-            // @ts-ignore
             test.onMessageSent = this.messageSent.bind(this);
-            // @ts-ignore
+            // @ts-expect-error
             test.onMessageReceived = this.messageReceived.bind(this);
         }
         else {
-            // @ts-ignore
             test.onMessageSent = null;
-            // @ts-ignore
             test.onMessageReceived = null;
         }
     }

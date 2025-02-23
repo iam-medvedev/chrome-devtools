@@ -41,7 +41,7 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
         this.workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeMofiedStatusChanged, this);
     }
     selectedUISourceCode() {
-        // @ts-ignore uiSourceCode seems to be dynamically attached.
+        // @ts-expect-error uiSourceCode seems to be dynamically attached.
         return this.treeoutline.selectedTreeElement ? this.treeoutline.selectedTreeElement.uiSourceCode : null;
     }
     selectionChanged() {

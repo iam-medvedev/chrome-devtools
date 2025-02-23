@@ -283,9 +283,9 @@ export class EventListener {
         if (this.#originInternal !== "FrameworkUser" /* EventListener.Origin.FRAMEWORK_USER */) {
             function removeListener(type, listener, useCapture) {
                 this.removeEventListener(type, listener, useCapture);
-                // @ts-ignore:
+                // @ts-expect-error:
                 if (this['on' + type]) {
-                    // @ts-ignore:
+                    // @ts-expect-error:
                     this['on' + type] = undefined;
                 }
             }

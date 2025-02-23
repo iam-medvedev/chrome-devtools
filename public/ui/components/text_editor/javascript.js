@@ -284,7 +284,7 @@ async function completeProperties(expression, quoted, hasBracket = false) {
     if (!quoted) {
         const cached = cache.get(expression);
         if (cached) {
-            return cached;
+            return await cached;
         }
     }
     const context = getExecutionContext();
@@ -295,7 +295,7 @@ async function completeProperties(expression, quoted, hasBracket = false) {
     if (!quoted) {
         cache.set(expression, result);
     }
-    return result;
+    return await result;
 }
 async function completePropertiesInner(expression, context, quoted, hasBracket = false) {
     const result = new CompletionSet();
@@ -359,7 +359,7 @@ async function completeExpressionGlobal() {
     const cache = PropertyCache.instance();
     const cached = cache.get('');
     if (cached) {
-        return cached;
+        return await cached;
     }
     const context = getExecutionContext();
     if (!context) {
@@ -378,7 +378,7 @@ async function completeExpressionGlobal() {
         });
     });
     cache.set('', fetchNames);
-    return fetchNames;
+    return await fetchNames;
 }
 export async function isExpressionComplete(expression) {
     const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
@@ -386,7 +386,7 @@ export async function isExpressionComplete(expression) {
         return true;
     }
     const result = await currentExecutionContext.runtimeModel.compileScript(expression, '', false, currentExecutionContext.id);
-    if (!result || !result.exceptionDetails || !result.exceptionDetails.exception) {
+    if (!result?.exceptionDetails?.exception) {
         return true;
     }
     const description = result.exceptionDetails.exception.description;
@@ -449,9 +449,9 @@ async function getArgumentsForExpression(callee, doc) {
         if (!first || callee.name !== 'MemberExpression') {
             return null;
         }
-        return evaluateExpression(context, doc.sliceString(first.from, first.to), 'argumentsHint');
+        return await evaluateExpression(context, doc.sliceString(first.from, first.to), 'argumentsHint');
     };
-    return getArgumentsForFunctionValue(result, objGetter, expression)
+    return await getArgumentsForFunctionValue(result, objGetter, expression)
         .finally(() => context.runtimeModel.releaseObjectGroup('argumentsHint'));
 }
 export function argumentsList(input) {
@@ -552,7 +552,7 @@ async function getArgumentsForFunctionValue(object, receiverObjGetter, functionN
     }
     const javaScriptMetadata = JavaScriptMetaData.JavaScriptMetadata.JavaScriptMetadataImpl.instance();
     const descriptionRegexResult = /^function ([^(]*)\(/.exec(description);
-    const name = descriptionRegexResult && descriptionRegexResult[1] || functionName;
+    const name = descriptionRegexResult?.[1] || functionName;
     if (!name) {
         return null;
     }
@@ -613,7 +613,7 @@ async function prototypesFromObject(object) {
     return await object.callFunctionJSON(function () {
         const result = [];
         for (let object = this; object; object = Object.getPrototypeOf(object)) {
-            if (typeof object === 'object' && object.constructor && object.constructor.name) {
+            if (typeof object === 'object' && object.constructor?.name) {
                 result[result.length] = object.constructor.name;
             }
         }

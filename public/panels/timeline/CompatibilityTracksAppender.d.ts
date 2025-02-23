@@ -8,6 +8,7 @@ import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
+import * as TimelineUtils from './utils/utils.js';
 export interface PopoverInfo {
     title: string;
     formattedTime: string;
@@ -113,8 +114,9 @@ export declare class CompatibilityTracksAppender {
      * is needed only for compatibility with the legacy flamechart
      * architecture and should be removed once all tracks use the new
      * system.
+     * @param entityMapper 3P entity data for the trace.
      */
-    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[]);
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[], entityMapper: TimelineUtils.EntityMapper.EntityMapper | null);
     reset(): void;
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;

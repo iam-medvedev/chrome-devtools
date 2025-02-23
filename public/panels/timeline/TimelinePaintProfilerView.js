@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TimelineModel from '../../models/timeline_model/timeline_model.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as LayerViewer from '../layer_viewer/layer_viewer.js';
 import timelinePaintProfilerStyles from './timelinePaintProfiler.css.js';
+import { TracingFrameLayerTree } from './TracingLayerTree.js';
 export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
     logAndImageSplitWidget;
     imageView;
@@ -60,7 +60,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
             return false;
         }
         const frame = this.#parsedTrace.Frames.framesById[data.sourceFrameNumber];
-        if (!frame || !frame.layerTree) {
+        if (!frame?.layerTree) {
             return false;
         }
         return true;
@@ -101,12 +101,12 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
             return null;
         }
         const frame = this.#parsedTrace.Frames.framesById[data.sourceFrameNumber];
-        if (!frame || !frame.layerTree) {
+        if (!frame?.layerTree) {
             return null;
         }
-        const layerTree = new TimelineModel.TracingLayerTree.TracingFrameLayerTree(target, frame.layerTree);
+        const layerTree = new TracingFrameLayerTree(target, frame.layerTree);
         const tracingLayerTree = await layerTree.layerTreePromise();
-        return tracingLayerTree ? tracingLayerTree.pictureForRasterTile(data.tileId.id_ref) : null;
+        return tracingLayerTree ? await tracingLayerTree.pictureForRasterTile(data.tileId.id_ref) : null;
     }
     update() {
         this.logTreeView.setCommandLog([]);
@@ -180,8 +180,7 @@ export class TimelinePaintImageView extends UI.Widget.Widget {
         this.imageElement = this.imageContainer.createChild('img');
         this.maskElement = this.imageContainer.createChild('div');
         this.imageElement.addEventListener('load', this.updateImagePosition.bind(this), false);
-        this.transformController =
-            new LayerViewer.TransformController.TransformController(this.contentElement, true);
+        this.transformController = new LayerViewer.TransformController.TransformController((this.contentElement), true);
         this.transformController.addEventListener("TransformChanged" /* LayerViewer.TransformController.Events.TRANSFORM_CHANGED */, this.updateImagePosition, this);
     }
     onResize() {

@@ -86,9 +86,7 @@ export class ConsoleFilter {
                         break;
                     }
                     case FilterType.Source: {
-                        const sourceNameForMessage = message.source ?
-                            SDK.ConsoleModel.MessageSourceDisplayName.get(message.source) :
-                            message.source;
+                        const sourceNameForMessage = message.source ? SDK.ConsoleModel.MessageSourceDisplayName.get((message.source)) : message.source;
                         if (!passesFilter(filter, sourceNameForMessage, true /* exactMatch */)) {
                             return false;
                         }
@@ -111,7 +109,7 @@ export class ConsoleFilter {
             if (!value) {
                 return !filter.text === !filter.negative;
             }
-            const filterText = filter.text.toLowerCase();
+            const filterText = (filter.text).toLowerCase();
             const lowerCaseValue = value.toLowerCase();
             if (exactMatch && (lowerCaseValue === filterText) === filter.negative) {
                 return false;

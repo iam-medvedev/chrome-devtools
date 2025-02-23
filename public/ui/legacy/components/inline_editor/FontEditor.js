@@ -298,7 +298,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     createSelector(field, label, options, currentValue, jslogContext) {
         const index = this.fontSelectors.length;
-        const selectInput = UI.UIUtils.createSelect(label, options);
+        const selectInput = (UI.UIUtils.createSelect(label, options));
         selectInput.value = currentValue;
         selectInput.setAttribute('jslog', `${VisualLogging.dropDown(jslogContext).track({ click: true, change: true })}`);
         const selectLabel = UI.UIUtils.createLabel(label, 'shadow-editor-label', selectInput);

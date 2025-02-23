@@ -67,7 +67,7 @@ export function encodeSourceMap(textMap, sourceRoot) {
             }
         }
         if (state.line < lastState.line) {
-            throw 'Line numbers must be increasing';
+            throw new Error('Line numbers must be increasing');
         }
         const isNewLine = state.line !== lastState.line;
         if (isNewLine) {

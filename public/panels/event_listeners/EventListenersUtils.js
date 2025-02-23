@@ -9,7 +9,7 @@ export async function frameworkEventListeners(object) {
         return { eventListeners: [], internalHandlers: null };
     }
     const listenersResult = { internalHandlers: null, eventListeners: [] };
-    return object.callFunction(frameworkEventListenersImpl, undefined)
+    return await object.callFunction(frameworkEventListenersImpl, undefined)
         .then(assertCallFunctionResult)
         .then(getOwnProperties)
         .then(createEventListeners)
@@ -177,9 +177,9 @@ export async function frameworkEventListeners(object) {
         let internalHandlers = [];
         let fetchers = [jQueryFetcher];
         try {
-            // @ts-ignore Here because of layout tests.
+            // @ts-expect-error Here because of layout tests.
             if (self.devtoolsFrameworkEventListeners && isArrayLike(self.devtoolsFrameworkEventListeners)) {
-                // @ts-ignore Here because of layout tests.
+                // @ts-expect-error Here because of layout tests.
                 fetchers = fetchers.concat(self.devtoolsFrameworkEventListeners);
             }
         }
@@ -327,7 +327,7 @@ export async function frameworkEventListeners(object) {
             }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const jQuery = window['jQuery'];
-            if (!jQuery || !jQuery.fn) {
+            if (!jQuery?.fn) {
                 return { eventListeners: [] };
             }
             const jQueryFunction = jQuery;
@@ -370,7 +370,7 @@ export async function frameworkEventListeners(object) {
                         }
                     }
                 }
-                if (entry && entry['$handle']) {
+                if (entry?.['$handle']) {
                     internalHandlers.push(entry['$handle']);
                 }
             }
@@ -383,7 +383,7 @@ export async function frameworkEventListeners(object) {
             const node = this;
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const jQuery = window['jQuery'];
-            if (!jQuery || !jQuery.fn) {
+            if (!jQuery?.fn) {
                 return;
             }
             const jQueryFunction = jQuery;

@@ -3,18 +3,18 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 export class Conversation {
-    static fromSerialized(serialized) {
-        return new Conversation(serialized.type, serialized.history, serialized.id, true);
-    }
     id;
-    history;
     type;
-    isReadOnly;
+    #isReadOnly;
+    history;
     constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true) {
         this.type = type;
-        this.history = data;
         this.id = id;
-        this.isReadOnly = isReadOnly;
+        this.#isReadOnly = isReadOnly;
+        this.history = this.#reconstructHistory(data);
+    }
+    get isReadOnly() {
+        return this.#isReadOnly;
     }
     get title() {
         return this.history
@@ -27,34 +27,66 @@ export class Conversation {
     get isEmpty() {
         return this.history.length === 0;
     }
+    #reconstructHistory(historyWithoutImages) {
+        const imageHistory = AiHistoryStorage.instance().getImageHistory();
+        if (imageHistory && imageHistory.length > 0) {
+            const history = [];
+            for (const data of historyWithoutImages) {
+                if (data.type === "user-query" /* ResponseType.USER_QUERY */ && data.imageId) {
+                    const image = imageHistory.find(item => item.id === data.imageId);
+                    const inlineData = image ? { data: image.data, mimeType: image.mimeType } : { data: '', mimeType: 'image/jpeg' };
+                    history.push({ ...data, imageInput: { inlineData } });
+                }
+                else {
+                    history.push(data);
+                }
+            }
+            return history;
+        }
+        return historyWithoutImages;
+    }
+    archiveConversation() {
+        this.#isReadOnly = true;
+    }
     addHistoryItem(item) {
         if (item.type === "user-query" /* ResponseType.USER_QUERY */) {
-            const historyItem = { ...item, imageInput: undefined };
-            this.history.push(historyItem);
+            if (item.imageId && item.imageInput && 'inlineData' in item.imageInput) {
+                const inlineData = item.imageInput.inlineData;
+                void AiHistoryStorage.instance().upsertImage({ id: item.imageId, data: inlineData.data, mimeType: inlineData.mimeType });
+            }
         }
-        else {
-            this.history.push(item);
-        }
+        this.history.push(item);
         void AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
     }
     serialize() {
         return {
             id: this.id,
-            history: this.history,
+            history: this.history.map(item => {
+                if (item.type === "user-query" /* ResponseType.USER_QUERY */) {
+                    return { ...item, imageInput: undefined };
+                }
+                return item;
+            }),
             type: this.type,
         };
     }
 }
 let instance = null;
+const DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
 export class AiHistoryStorage {
     #historySetting;
+    #imageHistorySettings;
     #mutex = new Common.Mutex.Mutex();
-    constructor() {
+    #maxStorageSize;
+    constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
         // This should not throw as we should be creating the setting in the `-meta.ts` file
         this.#historySetting = Common.Settings.Settings.instance().createSetting('ai-assistance-history-entries', []);
+        this.#imageHistorySettings = Common.Settings.Settings.instance().createSetting('ai-assistance-history-images', []);
+        this.#maxStorageSize = maxStorageSize;
     }
     clearForTest() {
         this.#historySetting.set([]);
+        this.#imageHistorySettings.set([]);
     }
     async upsertHistoryEntry(agentEntry) {
         const release = await this.#mutex.acquire();
@@ -73,11 +105,52 @@ export class AiHistoryStorage {
             release();
         }
     }
+    async upsertImage(image) {
+        const release = await this.#mutex.acquire();
+        try {
+            const imageHistory = structuredClone(await this.#imageHistorySettings.forceGet());
+            const imageHistoryEntryIndex = imageHistory.findIndex(entry => entry.id === image.id);
+            if (imageHistoryEntryIndex !== -1) {
+                imageHistory[imageHistoryEntryIndex] = image;
+            }
+            else {
+                imageHistory.push(image);
+            }
+            const imagesToBeStored = [];
+            let currentStorageSize = 0;
+            for (const [, serializedImage] of Array
+                .from(imageHistory.entries())
+                .reverse()) {
+                if (currentStorageSize >= this.#maxStorageSize) {
+                    break;
+                }
+                currentStorageSize += serializedImage.data.length;
+                imagesToBeStored.push(serializedImage);
+            }
+            this.#imageHistorySettings.set(imagesToBeStored.reverse());
+        }
+        finally {
+            release();
+        }
+    }
     async deleteHistoryEntry(id) {
         const release = await this.#mutex.acquire();
         try {
             const history = structuredClone(await this.#historySetting.forceGet());
+            const imageIdsForDeletion = history.find(entry => entry.id === id)
+                ?.history
+                .map(item => {
+                if (item.type === "user-query" /* ResponseType.USER_QUERY */ && item.imageId) {
+                    return item.imageId;
+                }
+                return undefined;
+            })
+                .filter(item => Boolean(item));
             this.#historySetting.set(history.filter(entry => entry.id !== id));
+            const images = structuredClone(await this.#imageHistorySettings.forceGet());
+            this.#imageHistorySettings.set(
+            // Filter images for which ids are not present in deletion list
+            images.filter(entry => !Boolean(imageIdsForDeletion?.find(id => id === entry.id))));
         }
         finally {
             release();
@@ -87,6 +160,7 @@ export class AiHistoryStorage {
         const release = await this.#mutex.acquire();
         try {
             this.#historySetting.set([]);
+            this.#imageHistorySettings.set([]);
         }
         finally {
             release();
@@ -95,9 +169,13 @@ export class AiHistoryStorage {
     getHistory() {
         return structuredClone(this.#historySetting.get());
     }
-    static instance(forceNew = false) {
+    getImageHistory() {
+        return structuredClone(this.#imageHistorySettings.get());
+    }
+    static instance(opts = { forceNew: false, maxStorageSize: DEFAULT_MAX_STORAGE_SIZE }) {
+        const { forceNew, maxStorageSize } = opts;
         if (!instance || forceNew) {
-            instance = new AiHistoryStorage();
+            instance = new AiHistoryStorage(maxStorageSize);
         }
         return instance;
     }

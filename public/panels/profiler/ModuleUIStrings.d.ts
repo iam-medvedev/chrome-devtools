@@ -2,102 +2,102 @@ export declare const UIStrings: {
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    buildingEdgeIndexes: string;
+    readonly buildingEdgeIndexes: "Building edge indexes…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    buildingRetainers: string;
+    readonly buildingRetainers: "Building retainers…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    propagatingDomState: string;
+    readonly propagatingDomState: "Propagating DOM state…";
     /**
      * @description Text to indicate the status of a heap snapshot in the Performance Pane. Flag here
      * refers to the programming concept for a piece of binary data (yes/no).
      */
-    calculatingNodeFlags: string;
+    readonly calculatingNodeFlags: "Calculating node flags…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    calculatingDistances: string;
+    readonly calculatingDistances: "Calculating distances…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    calculatingShallowSizes: string;
+    readonly calculatingShallowSizes: "Calculating shallow sizes…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    calculatingRetainedSizes: string;
+    readonly calculatingRetainedSizes: "Calculating retained sizes…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    buildingDominatedNodes: string;
+    readonly buildingDominatedNodes: "Building dominated nodes…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane.
      * During this step, names are assigned to objects in the heap snapshot.
      */
-    calculatingObjectNames: string;
+    readonly calculatingObjectNames: "Calculating object names…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    calculatingStatistics: string;
+    readonly calculatingStatistics: "Calculating statistics…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    calculatingSamples: string;
+    readonly calculatingSamples: "Calculating samples…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    buildingLocations: string;
+    readonly buildingLocations: "Building locations…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    finishedProcessing: string;
+    readonly finishedProcessing: "Finished processing.";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    buildingAllocationStatistics: string;
+    readonly buildingAllocationStatistics: "Building allocation statistics…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    done: string;
+    readonly done: "Done";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      */
-    processingSnapshot: string;
+    readonly processingSnapshot: "Processing snapshot…";
     /**
      *@description Text to indicate the status of a heap snapshot in the Performance Pane
      */
-    parsingStrings: string;
+    readonly parsingStrings: "Parsing strings…";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      */
-    loadingSnapshotInfo: string;
+    readonly loadingSnapshotInfo: "Loading snapshot info…";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      *@example {38} PH1
      */
-    loadingNodesD: string;
+    readonly loadingNodesD: "Loading nodes… {PH1}%";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      *@example {30} PH1
      */
-    loadingEdgesD: string;
+    readonly loadingEdgesD: "Loading edges… {PH1}%";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      *@example {30} PH1
      */
-    loadingAllocationTracesD: string;
+    readonly loadingAllocationTracesD: "Loading allocation traces… {PH1}%";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      */
-    loadingSamples: string;
+    readonly loadingSamples: "Loading samples…";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      */
-    loadingLocations: string;
+    readonly loadingLocations: "Loading locations…";
     /**
      *@description Text in Heap Snapshot Loader of the Memory panel when taking a heap snapshot
      */
-    loadingStrings: string;
+    readonly loadingStrings: "Loading strings…";
 };

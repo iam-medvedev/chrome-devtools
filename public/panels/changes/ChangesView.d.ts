@@ -9,8 +9,9 @@ export declare class ChangesView extends UI.Widget.VBox {
     private selectedUISourceCode;
     private readonly diffContainer;
     private readonly toolbar;
-    private readonly diffStats;
-    private readonly diffView;
+    private readonly diffStats?;
+    private readonly diffView?;
+    private readonly combinedDiffView?;
     constructor();
     private selectedUISourceCodeChanged;
     revert(): void;

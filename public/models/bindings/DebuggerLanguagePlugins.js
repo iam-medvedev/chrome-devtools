@@ -188,7 +188,7 @@ class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
             }
         }
         for (const namespace in namespaces) {
-            properties.push(makeProperty(namespace, namespaces[namespace]));
+            properties.push(makeProperty(namespace, (namespaces[namespace])));
         }
         return { properties, internalProperties: [] };
     }
@@ -501,7 +501,7 @@ export class DebuggerLanguagePluginManager {
     hasPluginForScript(script) {
         const rawModuleId = rawModuleIdForScript(script);
         const rawModuleHandle = this.#rawModuleHandles.get(rawModuleId);
-        return rawModuleHandle !== undefined && rawModuleHandle.scripts.includes(script);
+        return rawModuleHandle?.scripts.includes(script) ?? false;
     }
     /**
      * Returns the responsible language #plugin and the raw module ID for a script.
@@ -658,7 +658,7 @@ export class DebuggerLanguagePluginManager {
                 const sourceFileURLsPromise = (async () => {
                     const console = Common.Console.Console.instance();
                     const url = script.sourceURL;
-                    const symbolsUrl = (script.debugSymbols && script.debugSymbols.externalURL) || '';
+                    const symbolsUrl = (script.debugSymbols?.externalURL) || '';
                     if (symbolsUrl) {
                         console.log(i18nString(UIStrings.loadingDebugSymbolsForVia, { PH1: plugin.name, PH2: url, PH3: symbolsUrl }));
                     }
@@ -820,7 +820,7 @@ export class DebuggerLanguagePluginManager {
         };
         try {
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-ignore
+            // @ts-expect-error
             const locations = await plugin.getInlinedFunctionRanges(pluginLocation);
             return locations.map(m => ({
                 start: new SDK.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
@@ -849,7 +849,7 @@ export class DebuggerLanguagePluginManager {
         };
         try {
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-            // @ts-ignore
+            // @ts-expect-error
             const locations = await plugin.getInlinedCalleesRanges(pluginLocation);
             return locations.map(m => ({
                 start: new SDK.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),

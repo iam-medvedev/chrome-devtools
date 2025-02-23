@@ -32,7 +32,6 @@ export declare class ScreencastView extends UI.Widget.VBox implements SDK.Overla
     private navigationBack;
     private navigationForward;
     private canvasContainerElement?;
-    private isCasting?;
     private checkerboardPattern?;
     private targetInactive?;
     private deferredCasting?;
@@ -49,6 +48,8 @@ export declare class ScreencastView extends UI.Widget.VBox implements SDK.Overla
     private mouseInputToggleIcon?;
     private historyIndex?;
     private historyEntries?;
+    private isCasting;
+    private screencastOperationId?;
     constructor(screenCaptureModel: SDK.ScreenCaptureModel.ScreenCaptureModel);
     initialize(): void;
     willHide(): void;

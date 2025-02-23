@@ -267,7 +267,7 @@ export class InspectorView extends VBox {
         if (!view) {
             throw new Error(`Expected view for panel '${panelName}'`);
         }
-        return view.widget();
+        return await view.widget();
     }
     onSuspendStateChanged(allTargetsSuspended) {
         this.currentPanelLocked = allTargetsSuspended;
@@ -311,7 +311,7 @@ export class InspectorView extends VBox {
         return null;
     }
     currentPanelDeprecated() {
-        return ViewManager.instance().materializedWidget(this.tabbedPane.selectedTabId || '');
+        return (ViewManager.instance().materializedWidget(this.tabbedPane.selectedTabId || ''));
     }
     showDrawer({ focus, hasTargetDrawer }) {
         if (this.drawerTabbedPane.isShowing()) {

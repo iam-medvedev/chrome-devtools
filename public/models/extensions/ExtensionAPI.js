@@ -49,7 +49,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     EventSinkImpl.prototype = {
         addListener: function (callback) {
             if (typeof callback !== 'function') {
-                throw 'addListener: callback is not a function';
+                throw new Error('addListener: callback is not a function');
             }
             if (this._listeners.length === 0) {
                 extensionServer.sendRequest({ command: "subscribe" /* PrivateAPI.Commands.Subscribe */, type: this._type });
@@ -111,12 +111,12 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         getHAR: function (callback) {
             function callbackWrapper(response) {
                 const result = response;
-                const entries = (result && result.entries) || [];
+                const entries = (result?.entries) || [];
                 for (let i = 0; i < entries.length; ++i) {
                     entries[i].__proto__ = new (Constructor(Request))(entries[i]._requestId);
                     delete entries[i]._requestId;
                 }
-                callback && callback(result);
+                callback?.(result);
             }
             extensionServer.sendRequest({ command: "getHAR" /* PrivateAPI.Commands.GetHAR */ }, callback && callbackWrapper);
         },
@@ -131,7 +131,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         getContent: function (callback) {
             function callbackWrapper(response) {
                 const { content, encoding } = response;
-                callback && callback(content, encoding);
+                callback?.(content, encoding);
             }
             extensionServer.sendRequest({ command: "getRequestContent" /* PrivateAPI.Commands.GetRequestContent */, id: this._id }, callback && callbackWrapper);
         },
@@ -238,7 +238,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         createSidebarPane: function (title, callback) {
             const id = 'extension-sidebar-' + extensionServer.nextObjectId();
             function callbackWrapper() {
-                callback && callback(new (Constructor(ExtensionSidebarPane))(id));
+                callback?.(new (Constructor(ExtensionSidebarPane))(id));
             }
             extensionServer.sendRequest({ command: "createSidebarPane" /* PrivateAPI.Commands.CreateSidebarPane */, panel: this._hostPanelName, id, title }, callback && callbackWrapper);
         },
@@ -263,10 +263,10 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         async function dispatchMethodCall(request) {
             switch (request.method) {
                 case "stringify" /* PrivateAPI.RecorderExtensionPluginCommands.Stringify */:
-                    return plugin
+                    return await plugin
                         .stringify(request.parameters.recording);
                 case "stringifyStep" /* PrivateAPI.RecorderExtensionPluginCommands.StringifyStep */:
-                    return plugin
+                    return await plugin
                         .stringifyStep(request.parameters.step);
                 case "replay" /* PrivateAPI.RecorderExtensionPluginCommands.Replay */:
                     try {
@@ -412,13 +412,13 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             return new ArrayBuffer(0);
         },
         getWasmLocal: async function (local, stopId) {
-            return new Promise(resolve => extensionServer.sendRequest({ command: "getWasmLocal" /* PrivateAPI.Commands.GetWasmLocal */, local, stopId }, resolve));
+            return await new Promise(resolve => extensionServer.sendRequest({ command: "getWasmLocal" /* PrivateAPI.Commands.GetWasmLocal */, local, stopId }, resolve));
         },
         getWasmGlobal: async function (global, stopId) {
-            return new Promise(resolve => extensionServer.sendRequest({ command: "getWasmGlobal" /* PrivateAPI.Commands.GetWasmGlobal */, global, stopId }, resolve));
+            return await new Promise(resolve => extensionServer.sendRequest({ command: "getWasmGlobal" /* PrivateAPI.Commands.GetWasmGlobal */, global, stopId }, resolve));
         },
         getWasmOp: async function (op, stopId) {
-            return new Promise(resolve => extensionServer.sendRequest({ command: "getWasmOp" /* PrivateAPI.Commands.GetWasmOp */, op, stopId }, resolve));
+            return await new Promise(resolve => extensionServer.sendRequest({ command: "getWasmOp" /* PrivateAPI.Commands.GetWasmOp */, op, stopId }, resolve));
         },
         reportResourceLoad: function (resourceUrl, status) {
             return new Promise(resolve => extensionServer.sendRequest({
@@ -627,10 +627,10 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             function callbackWrapper(result) {
                 const { isError, isException, value } = result;
                 if (isError || isException) {
-                    callback && callback(undefined, result);
+                    callback?.(undefined, result);
                 }
                 else {
-                    callback && callback(value);
+                    callback?.(value);
                 }
             }
             extensionServer.sendRequest({
@@ -645,7 +645,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
                 return new (Constructor(Resource))(resourceData);
             }
             function callbackWrapper(resources) {
-                callback && callback(resources.filter(canAccessResource).map(wrapResource));
+                callback?.(resources.filter(canAccessResource).map(wrapResource));
             }
             extensionServer.sendRequest({ command: "getPageResources" /* PrivateAPI.Commands.GetPageResources */ }, callback && callbackWrapper);
         },
@@ -667,7 +667,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         getContent: function (callback) {
             function callbackWrapper(response) {
                 const { content, encoding } = response;
-                callback && callback(content, encoding);
+                callback?.(content, encoding);
             }
             extensionServer.sendRequest({ command: "getResourceContent" /* PrivateAPI.Commands.GetResourceContent */, url: this._url }, callback && callbackWrapper);
         },

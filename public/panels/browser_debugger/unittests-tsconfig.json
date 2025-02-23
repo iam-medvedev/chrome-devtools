@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/browser_debugger/DOMBreakpointsSidebarPane.test.ts",
     "../../../../../../front_end/panels/browser_debugger/browser_debugger.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

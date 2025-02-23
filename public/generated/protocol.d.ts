@@ -1002,6 +1002,28 @@ export declare namespace Audits {
         WriteErrorTooLongIdField = "WriteErrorTooLongIdField",
         WriteErrorUnsupportedType = "WriteErrorUnsupportedType"
     }
+    const enum SRIMessageSignatureError {
+        MissingSignatureHeader = "MissingSignatureHeader",
+        MissingSignatureInputHeader = "MissingSignatureInputHeader",
+        InvalidSignatureHeader = "InvalidSignatureHeader",
+        InvalidSignatureInputHeader = "InvalidSignatureInputHeader",
+        SignatureHeaderValueIsNotByteSequence = "SignatureHeaderValueIsNotByteSequence",
+        SignatureHeaderValueIsParameterized = "SignatureHeaderValueIsParameterized",
+        SignatureHeaderValueIsIncorrectLength = "SignatureHeaderValueIsIncorrectLength",
+        SignatureInputHeaderMissingLabel = "SignatureInputHeaderMissingLabel",
+        SignatureInputHeaderValueNotInnerList = "SignatureInputHeaderValueNotInnerList",
+        SignatureInputHeaderValueMissingComponents = "SignatureInputHeaderValueMissingComponents",
+        SignatureInputHeaderInvalidComponentType = "SignatureInputHeaderInvalidComponentType",
+        SignatureInputHeaderInvalidComponentName = "SignatureInputHeaderInvalidComponentName",
+        SignatureInputHeaderInvalidHeaderComponentParameter = "SignatureInputHeaderInvalidHeaderComponentParameter",
+        SignatureInputHeaderInvalidDerivedComponentParameter = "SignatureInputHeaderInvalidDerivedComponentParameter",
+        SignatureInputHeaderKeyIdLength = "SignatureInputHeaderKeyIdLength",
+        SignatureInputHeaderInvalidParameter = "SignatureInputHeaderInvalidParameter",
+        SignatureInputHeaderMissingRequiredParameters = "SignatureInputHeaderMissingRequiredParameters",
+        ValidationFailedSignatureExpired = "ValidationFailedSignatureExpired",
+        ValidationFailedInvalidLength = "ValidationFailedInvalidLength",
+        ValidationFailedSignatureMismatch = "ValidationFailedSignatureMismatch"
+    }
     /**
      * Details for issues around "Attribution Reporting API" usage.
      * Explainer: https://github.com/WICG/attribution-reporting-api
@@ -1033,6 +1055,10 @@ export declare namespace Audits {
     }
     interface SharedDictionaryIssueDetails {
         sharedDictionaryError: SharedDictionaryError;
+        request: AffectedRequest;
+    }
+    interface SRIMessageSignatureIssueDetails {
+        error: SRIMessageSignatureError;
         request: AffectedRequest;
     }
     const enum GenericIssueErrorType {
@@ -1298,7 +1324,8 @@ export declare namespace Audits {
         FederatedAuthUserInfoRequestIssue = "FederatedAuthUserInfoRequestIssue",
         PropertyRuleIssue = "PropertyRuleIssue",
         SharedDictionaryIssue = "SharedDictionaryIssue",
-        SelectElementAccessibilityIssue = "SelectElementAccessibilityIssue"
+        SelectElementAccessibilityIssue = "SelectElementAccessibilityIssue",
+        SRIMessageSignatureIssue = "SRIMessageSignatureIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1329,6 +1356,7 @@ export declare namespace Audits {
         federatedAuthUserInfoRequestIssueDetails?: FederatedAuthUserInfoRequestIssueDetails;
         sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails;
         selectElementAccessibilityIssueDetails?: SelectElementAccessibilityIssueDetails;
+        sriMessageSignatureIssueDetails?: SRIMessageSignatureIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.

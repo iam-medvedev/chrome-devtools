@@ -152,7 +152,6 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         void this.dialog.once("hidden" /* UI.Dialog.Events.HIDDEN */).then(() => {
             this.dispatchEventToListeners("hidden" /* Events.HIDDEN */);
         });
-        // @ts-ignore
         this.dialog.show();
     }
     setPrefix(prefix) {
@@ -239,7 +238,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         const wrapperElement = document.createElement('div');
         wrapperElement.className = 'filtered-list-widget-item-wrapper';
         const itemElement = wrapperElement.createChild('div');
-        const renderAsTwoRows = this.provider && this.provider.renderAsTwoRows();
+        const renderAsTwoRows = this.provider?.renderAsTwoRows();
         itemElement.className = 'filtered-list-widget-item ' + (renderAsTwoRows ? 'two-rows' : 'one-row');
         const titleElement = itemElement.createChild('div', 'filtered-list-widget-title');
         const subtitleElement = itemElement.createChild('div', 'filtered-list-widget-subtitle');

@@ -56,6 +56,7 @@ function finalize(partialModel) {
         [partialModel.lcpEvent, partialModel.lcpRequest] :
         [];
     return {
+        insightKey: "LCPDiscovery" /* InsightKeys.LCP_DISCOVERY */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
@@ -103,7 +104,7 @@ export function generateInsight(parsedTrace, context) {
     const imageLoadingAttr = lcpEvent.args.data?.loadingAttr;
     const imageFetchPriorityHint = lcpRequest?.args.data.fetchPriorityHint;
     // This is the earliest discovery time an LCP request could have - it's TTFB.
-    const earliestDiscoveryTime = docRequest && docRequest.args.data.timing ?
+    const earliestDiscoveryTime = docRequest?.args.data.timing ?
         Helpers.Timing.secondsToMicro(docRequest.args.data.timing.requestTime) +
             Helpers.Timing.milliToMicro(docRequest.args.data.timing.receiveHeadersStart) :
         undefined;

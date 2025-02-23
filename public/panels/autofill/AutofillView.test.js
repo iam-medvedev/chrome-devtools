@@ -124,16 +124,21 @@ describeWithMockConnection('AutofillView', () => {
         assertGridContents(view, expectedHeaders, expectedRows);
     };
     it('renders autofilled address and filled fields and clears content on navigation', async () => {
+        const expectedPlaceholderHeader = 'No autofill detected';
         const expectedPlaceholder = 'To start debugging autofill, use Chrome\'s autofill menu to fill an address form.';
         const view = await renderAutofillView();
-        let placeholderText = view.shadowRoot.querySelector('.placeholder div').textContent.trim();
+        let placeholderHeader = view.shadowRoot.querySelector('.empty-state-header').textContent.trim();
+        assert.strictEqual(placeholderHeader, expectedPlaceholderHeader);
+        let placeholderText = view.shadowRoot.querySelector('.empty-state-description > span').textContent.trim();
         assert.strictEqual(placeholderText, expectedPlaceholder);
         autofillModel.addressFormFilled(addressFormFilledEvent);
         await RenderCoordinator.done({ waitForWork: true });
         assertViewShowsEventData(view);
         navigate(getMainFrame(target));
         await RenderCoordinator.done();
-        placeholderText = view.shadowRoot.querySelector('.placeholder div').textContent.trim();
+        placeholderHeader = view.shadowRoot.querySelector('.empty-state-header').textContent.trim();
+        assert.strictEqual(placeholderHeader, expectedPlaceholderHeader);
+        placeholderText = view.shadowRoot.querySelector('.empty-state-description > span').textContent.trim();
         assert.strictEqual(placeholderText, expectedPlaceholder);
     });
     it('shows content if the view is created after the event was received', async () => {

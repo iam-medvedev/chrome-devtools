@@ -308,7 +308,7 @@ function gatherFinalLCPEvents() {
     for (let i = 0; i < dataForAllNavigations.length; i++) {
         const navigationData = dataForAllNavigations[i];
         const lcpInNavigation = navigationData.get("LCP" /* MetricName.LCP */);
-        if (!lcpInNavigation || !lcpInNavigation.event) {
+        if (!lcpInNavigation?.event) {
             continue;
         }
         allFinalLCPEvents.push(lcpInNavigation.event);

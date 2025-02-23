@@ -29,7 +29,7 @@ export class WebAudioModel extends SDK.SDKModel.SDKModel {
     }
     async resumeModel() {
         if (!this.enabled) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
         await this.agent.invoke_enable();
     }

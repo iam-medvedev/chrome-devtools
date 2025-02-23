@@ -45,10 +45,10 @@ describeWithEnvironment('DataGrid', () => {
         return container.querySelector('devtools-data-grid');
     }
     async function renderDataGridContent(template) {
-        return renderDataGrid(html `<devtools-data-grid striped name="Display Name">${template}</devtools-data-grid>`);
+        return await renderDataGrid(html `<devtools-data-grid striped name="Display Name">${template}</devtools-data-grid>`);
     }
     async function renderDataGridWithData(columns, rows) {
-        return renderDataGridContent(html `<table>${columns}${rows}</table>`);
+        return await renderDataGridContent(html `<table>${columns}${rows}</table>`);
     }
     it('can be configured from template', async () => {
         const element = await renderDataGrid(html `

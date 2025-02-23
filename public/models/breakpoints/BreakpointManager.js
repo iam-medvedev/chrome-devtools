@@ -483,7 +483,7 @@ export class Breakpoint {
             const modelBreakpoints = Array.from(this.#modelBreakpoints.values());
             await Promise.all(modelBreakpoints.map(async (modelBreakpoint) => {
                 await modelBreakpoint.resetBreakpoint();
-                return this.#updateModel(modelBreakpoint);
+                return await this.#updateModel(modelBreakpoint);
             }));
         }
     }
@@ -675,7 +675,7 @@ export class Breakpoint {
                 this.addAllUnboundLocations();
             }
         }
-        return this.#updateModels();
+        return await this.#updateModels();
     }
     async remove(keepInStorage) {
         if (this.getIsRemoved()) {
@@ -784,7 +784,7 @@ export class ModelBreakpoint {
     scriptDiverged() {
         for (const uiSourceCode of this.#breakpoint.getUiSourceCodes()) {
             const scriptFile = this.#debuggerWorkspaceBinding.scriptFile(uiSourceCode, this.#debuggerModel);
-            if (scriptFile && scriptFile.hasDivergedFromVM()) {
+            if (scriptFile?.hasDivergedFromVM()) {
                 return true;
             }
         }
