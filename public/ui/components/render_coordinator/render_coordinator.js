@@ -68,18 +68,18 @@ export async function read(labelOrCallback, callback) {
         if (!callback) {
             throw new Error('Read called with label but no callback');
         }
-        return enqueueHandler("read" /* ACTION.READ */, labelOrCallback, callback);
+        return await enqueueHandler("read" /* ACTION.READ */, labelOrCallback, callback);
     }
-    return enqueueHandler("read" /* ACTION.READ */, UNNAMED_READ, labelOrCallback);
+    return await enqueueHandler("read" /* ACTION.READ */, UNNAMED_READ, labelOrCallback);
 }
 export async function write(labelOrCallback, callback) {
     if (typeof labelOrCallback === 'string') {
         if (!callback) {
             throw new Error('Write called with label but no callback');
         }
-        return enqueueHandler("write" /* ACTION.WRITE */, labelOrCallback, callback);
+        return await enqueueHandler("write" /* ACTION.WRITE */, labelOrCallback, callback);
     }
-    return enqueueHandler("write" /* ACTION.WRITE */, UNNAMED_WRITE, labelOrCallback);
+    return await enqueueHandler("write" /* ACTION.WRITE */, UNNAMED_WRITE, labelOrCallback);
 }
 export function takeLoggingRecords() {
     const logs = [...loggingRecords];
@@ -91,9 +91,9 @@ export async function scroll(labelOrCallback, callback) {
         if (!callback) {
             throw new Error('Scroll called with label but no callback');
         }
-        return enqueueHandler("read" /* ACTION.READ */, labelOrCallback, callback);
+        return await enqueueHandler("read" /* ACTION.READ */, labelOrCallback, callback);
     }
-    return enqueueHandler("read" /* ACTION.READ */, UNNAMED_SCROLL, labelOrCallback);
+    return await enqueueHandler("read" /* ACTION.READ */, UNNAMED_SCROLL, labelOrCallback);
 }
 function enqueueHandler(action, label, callback) {
     const hasName = ![UNNAMED_READ, UNNAMED_WRITE, UNNAMED_SCROLL].includes(label);

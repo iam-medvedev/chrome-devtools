@@ -42,7 +42,7 @@ export class HeapProfilerModel extends SDKModel {
             throw new Error('Sampling profiler is not running.');
         }
         if (--this.#samplingProfilerDepth) {
-            return this.getSamplingProfile();
+            return await this.getSamplingProfile();
         }
         const response = await this.#heapProfilerAgent.invoke_stopSampling();
         if (response.getError()) {

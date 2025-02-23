@@ -12,7 +12,7 @@ function getModel(frameId) {
     const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
     const model = frame?.resourceTreeModel().target().model(SDK.AccessibilityModel.AccessibilityModel);
     if (!model) {
-        throw Error('Could not instantiate model for frameId');
+        throw new Error('Could not instantiate model for frameId');
     }
     return model;
 }
@@ -20,7 +20,7 @@ export async function getRootNode(frameId) {
     const model = getModel(frameId);
     const root = await model.requestRootNode(frameId);
     if (!root) {
-        throw Error('No accessibility root for frame');
+        throw new Error('No accessibility root for frame');
     }
     return root;
 }
@@ -33,7 +33,7 @@ function getFrameIdForNodeOrDocument(node) {
         frameId = node.frameId();
     }
     if (!frameId) {
-        throw Error('No frameId for DOM node');
+        throw new Error('No frameId for DOM node');
     }
     return frameId;
 }
@@ -42,7 +42,7 @@ export async function getNodeAndAncestorsFromDOMNode(domNode) {
     const model = getModel(frameId);
     const result = await model.requestAndLoadSubTreeToNode(domNode);
     if (!result) {
-        throw Error('Could not retrieve accessibility node for inspected DOM node');
+        throw new Error('Could not retrieve accessibility node for inspected DOM node');
     }
     const outermostFrameId = SDK.FrameManager.FrameManager.instance().getOutermostFrame()?.id;
     if (!outermostFrameId) {
@@ -68,12 +68,12 @@ async function getChildren(node) {
         }
         const frameId = domNode.frameOwnerFrameId();
         if (!frameId) {
-            throw Error('No owner frameId on iframe node');
+            throw new Error('No owner frameId on iframe node');
         }
         const localRoot = await getRootNode(frameId);
         return [localRoot];
     }
-    return node.accessibilityModel().requestAXChildren(node.id(), node.getFrameId() || undefined);
+    return await node.accessibilityModel().requestAXChildren(node.id(), node.getFrameId() || undefined);
 }
 export async function sdkNodeToAXTreeNodes(sdkNode) {
     const treeNodeData = sdkNode;

@@ -19,6 +19,7 @@ export function deps() {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "Viewport" /* InsightKeys.VIEWPORT */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

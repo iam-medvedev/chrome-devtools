@@ -30,11 +30,11 @@ export function expectCookie(cookie, cookieExpectation) {
     const date = cookie.expiresDate(requestDate);
     if (typeof expectation.expires === 'string') {
         assert.isNotNull(date);
-        assert.strictEqual(date.toISOString(), expectation.expires, 'expires');
+        assert.strictEqual((date).toISOString(), expectation.expires, 'expires');
     }
     else if (typeof expectation.expires === 'number') {
         assert.isNotNull(date);
-        assert.strictEqual(date.getTime(), expectation.expires, 'expires');
+        assert.strictEqual((date).getTime(), expectation.expires, 'expires');
     }
     else {
         assert.strictEqual(date, expectation.expires, 'expires');

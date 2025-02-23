@@ -53,6 +53,7 @@ export declare class AnimationModel extends SDKModel<EventTypes> {
     private matchExistingGroups;
     private createGroupFromPendingAnimations;
     setPlaybackRate(playbackRate: number): void;
+    releaseAllAnimations(): Promise<void>;
     releaseAnimations(animations: string[]): void;
     suspendModel(): Promise<void>;
     resumeModel(): Promise<void>;
@@ -162,7 +163,7 @@ export declare class AnimationDispatcher implements ProtocolProxyApi.AnimationDi
 export declare class ScreenshotCapture {
     #private;
     constructor(animationModel: AnimationModel, screenCaptureModel: ScreenCaptureModel);
-    captureScreenshots(duration: number, screenshots: string[]): void;
+    captureScreenshots(duration: number, screenshots: string[]): Promise<void>;
     private screencastFrame;
     private stopScreencast;
 }

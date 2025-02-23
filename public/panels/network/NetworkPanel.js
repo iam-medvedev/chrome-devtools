@@ -465,7 +465,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
     }
     load() {
-        if (this.filmStripRecorder && this.filmStripRecorder.isRecording()) {
+        if (this.filmStripRecorder?.isRecording()) {
             if (this.pendingStopTimer) {
                 window.clearTimeout(this.pendingStopTimer);
             }
@@ -656,7 +656,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
         if (target instanceof Workspace.UISourceCode.UISourceCode) {
             const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(target.url());
-            if (resource && resource.request) {
+            if (resource?.request) {
                 appendRevealItem(resource.request);
             }
             else {

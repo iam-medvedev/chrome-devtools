@@ -1,10 +1,16 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import * as Host from './host.js';
 const TEST_MODEL_ID = 'testModelId';
 describeWithEnvironment('AidaClient', () => {
+    beforeEach(() => {
+        setUserAgentForTesting();
+    });
+    afterEach(() => {
+        restoreUserAgentForTesting();
+    });
     it('adds no model temperature if console insights is not enabled', () => {
         updateHostConfig({
             aidaAvailability: {
@@ -17,6 +23,10 @@ describeWithEnvironment('AidaClient', () => {
             client: 'CHROME_DEVTOOLS',
             client_feature: 1,
             functionality_type: 2,
+            metadata: {
+                disable_user_content_logging: false,
+                client_version: 'unit_test',
+            },
         });
     });
     it('adds a model temperature', () => {
@@ -38,6 +48,10 @@ describeWithEnvironment('AidaClient', () => {
             },
             client_feature: 1,
             functionality_type: 2,
+            metadata: {
+                disable_user_content_logging: false,
+                client_version: 'unit_test',
+            },
         });
     });
     it('adds a model temperature of 0', () => {
@@ -59,6 +73,10 @@ describeWithEnvironment('AidaClient', () => {
             },
             client_feature: 1,
             functionality_type: 2,
+            metadata: {
+                disable_user_content_logging: false,
+                client_version: 'unit_test',
+            },
         });
     });
     it('ignores a negative model temperature', () => {
@@ -77,6 +95,10 @@ describeWithEnvironment('AidaClient', () => {
             client: 'CHROME_DEVTOOLS',
             client_feature: 1,
             functionality_type: 2,
+            metadata: {
+                disable_user_content_logging: false,
+                client_version: 'unit_test',
+            },
         });
     });
     it('adds a model id and temperature', () => {
@@ -100,6 +122,10 @@ describeWithEnvironment('AidaClient', () => {
             },
             client_feature: 1,
             functionality_type: 2,
+            metadata: {
+                disable_user_content_logging: false,
+                client_version: 'unit_test',
+            },
         });
     });
     it('adds metadata to disallow logging', () => {
@@ -118,6 +144,7 @@ describeWithEnvironment('AidaClient', () => {
             client: 'CHROME_DEVTOOLS',
             metadata: {
                 disable_user_content_logging: true,
+                client_version: 'unit_test',
             },
             options: {
                 temperature: 0.5,

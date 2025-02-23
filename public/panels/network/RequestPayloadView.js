@@ -391,12 +391,12 @@ export class RequestPayloadView extends UI.Widget.VBox {
     appendJSONPayloadParsed(rootListItem, parsedObject, sourceText) {
         const object = SDK.RemoteObject.RemoteObject.fromLocalObject(parsedObject);
         const section = new ObjectUI.ObjectPropertiesSection.RootElement(object);
-        section.title = object.description;
+        section.title = (object.description);
         section.expand();
         // `editable` is not a valid property for `ObjectUI.ObjectPropertiesSection.RootElement`. Only for
         // `ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection`. We do not know if this assignment is
         // safe to delete.
-        // @ts-ignore
+        // @ts-expect-error
         section.editable = false;
         rootListItem.childrenListElement.classList.add('source-code', 'object-properties-section');
         rootListItem.appendChild(section);

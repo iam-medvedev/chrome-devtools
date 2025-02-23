@@ -10,7 +10,9 @@ export interface Script {
     frame: string;
     ts: Types.Timing.Micro;
     url?: string;
+    sourceUrl?: string;
     content?: string;
+    /** Note: this is the literal text given as the sourceMappingURL value. It has not been resolved relative to the script url. */
     sourceMapUrl?: string;
     sourceMap?: SDK.SourceMap.SourceMap;
 }

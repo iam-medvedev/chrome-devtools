@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -107,7 +108,6 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private linkifyElementByRelation;
     private buildPseudoElementDOM;
     private buildTagDOM;
-    private convertWhitespaceToEntities;
     private nodeTitleInfo;
     remove(): void;
     toggleEditAsHTML(callback?: ((arg0: boolean) => void), startEditing?: boolean): void;
@@ -144,6 +144,10 @@ export declare const InitialChildrenLimit = 500;
 export declare const ForbiddenClosingTagElements: Set<string>;
 export declare const EditTagBlocklist: Set<string>;
 export declare function adornerComparator(adornerA: Adorners.Adorner.Adorner, adornerB: Adorners.Adorner.Adorner): number;
+export declare function convertUnicodeCharsToHTMLEntities(text: string): {
+    text: string;
+    entityRanges: TextUtils.TextRange.SourceRange[];
+};
 export interface EditorHandles {
     commit: () => void;
     cancel: () => void;

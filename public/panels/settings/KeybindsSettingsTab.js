@@ -172,8 +172,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
                 }
             }
             if (newDescriptors) {
-                UI.ShortcutRegistry.ShortcutRegistry.instance().registerUserShortcut(originalShortcut.changeKeys(newDescriptors)
-                    .changeType("UserShortcut" /* UI.KeyboardShortcut.Type.USER_SHORTCUT */));
+                UI.ShortcutRegistry.ShortcutRegistry.instance().registerUserShortcut(originalShortcut.changeKeys(newDescriptors).changeType("UserShortcut" /* UI.KeyboardShortcut.Type.USER_SHORTCUT */));
                 if (originalShortcut.type === "UnsetShortcut" /* UI.KeyboardShortcut.Type.UNSET_SHORTCUT */) {
                     Host.userMetrics.actionTaken(Host.UserMetrics.Action.UserShortcutAdded);
                 }

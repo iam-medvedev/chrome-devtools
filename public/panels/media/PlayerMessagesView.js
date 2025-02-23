@@ -144,7 +144,7 @@ class MessageLevelSelector {
         for (const [key, item] of this.itemMap) {
             if (!item.overwrite) {
                 const elementForItem = this.elementsForItems.get(item);
-                if (elementForItem && elementForItem.firstChild) {
+                if (elementForItem?.firstChild) {
                     elementForItem.firstChild.remove();
                 }
                 if (elementForItem && key & this.bitFieldValue) {
@@ -266,7 +266,7 @@ export class PlayerMessagesView extends UI.Widget.VBox {
             if (userString === '') {
                 message.classList.remove('media-messages-message-filtered');
             }
-            else if (message.textContent && message.textContent.includes(userString)) {
+            else if (message.textContent?.includes(userString)) {
                 message.classList.remove('media-messages-message-filtered');
             }
             else {

@@ -144,7 +144,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
             node = node.enclosingElementOrSelf();
         }
         this.classesContainer.removeChildren();
-        // @ts-ignore this.input is a div, not an input element. So this line makes no sense at all
+        // @ts-expect-error this.input is a div, not an input element. So this line makes no sense at all
         this.input.disabled = !node;
         if (!node) {
             return;
@@ -299,7 +299,7 @@ export class ClassNamePrompt extends UI.TextPrompt.TextPrompt {
             this.classNamesPromise = this.getClassNames(selectedNode);
         }
         let completions = await this.classNamesPromise;
-        const classesMap = this.nodeClasses(selectedNode);
+        const classesMap = this.nodeClasses((selectedNode));
         completions = completions.filter(value => !classesMap.get(value));
         if (prefix[0] === '.') {
             completions = completions.map(value => '.' + value);

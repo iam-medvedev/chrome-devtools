@@ -21,7 +21,7 @@ export function getInsight(insightName, insights, key) {
     return insight;
 }
 export function getLCP(insights, key) {
-    const insight = getInsight('LCPPhases', insights, key);
+    const insight = getInsight("LCPPhases" /* InsightKeys.LCP_PHASES */, insights, key);
     if (!insight || !insight.lcpMs || !insight.lcpEvent) {
         return null;
     }
@@ -29,7 +29,7 @@ export function getLCP(insights, key) {
     return { value, event: insight.lcpEvent };
 }
 export function getINP(insights, key) {
-    const insight = getInsight('InteractionToNextPaint', insights, key);
+    const insight = getInsight("InteractionToNextPaint" /* InsightKeys.INTERACTION_TO_NEXT_PAINT */, insights, key);
     if (!insight?.longestInteractionEvent?.dur) {
         return null;
     }
@@ -37,7 +37,7 @@ export function getINP(insights, key) {
     return { value, event: insight.longestInteractionEvent };
 }
 export function getCLS(insights, key) {
-    const insight = getInsight('CLSCulprits', insights, key);
+    const insight = getInsight("CLSCulprits" /* InsightKeys.CLS_CULPRITS */, insights, key);
     if (!insight) {
         // Unlike the other metrics, there is always a value for CLS even with no data.
         return { value: 0, worstClusterEvent: null };

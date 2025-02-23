@@ -74,7 +74,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * users. */
 const EXPERIMENTAL_INSIGHTS = new Set([
     'FontDisplay',
-    'LongCriticalNetworkTree',
+    'NetworkDependencyTree',
 ]);
 /**
  * Every insight (INCLUDING experimental ones).
@@ -90,7 +90,7 @@ const INSIGHT_NAME_TO_COMPONENT = {
     InteractionToNextPaint: Insights.InteractionToNextPaint.InteractionToNextPaint,
     LCPDiscovery: Insights.LCPDiscovery.LCPDiscovery,
     LCPPhases: Insights.LCPPhases.LCPPhases,
-    LongCriticalNetworkTree: Insights.LongCriticalNetworkTree.LongCriticalNetworkTree,
+    NetworkDependencyTree: Insights.NetworkDependencyTree.NetworkDependencyTree,
     RenderBlocking: Insights.RenderBlocking.RenderBlocking,
     SlowCSSSelector: Insights.SlowCSSSelector.SlowCSSSelector,
     ThirdParties: Insights.ThirdParties.ThirdParties,

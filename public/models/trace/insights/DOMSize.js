@@ -54,6 +54,7 @@ export function deps() {
 function finalize(partialModel) {
     const relatedEvents = [...partialModel.largeLayoutUpdates, ...partialModel.largeStyleRecalcs];
     return {
+        insightKey: "DOMSize" /* InsightKeys.DOM_SIZE */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

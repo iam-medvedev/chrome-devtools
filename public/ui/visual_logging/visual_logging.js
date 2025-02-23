@@ -10,7 +10,7 @@ export { addDocument, startLogging, stopLogging } from './LoggingDriver.js';
 export { logImpressions } from './LoggingEvents.js';
 export const logClick = (loggable, event, options = {}) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(loggable, event, options);
 export const logResize = (l, s) => LoggingEvents.logResize(l, s);
-export const logKeyDown = async (l, e, context) => LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
+export const logKeyDown = async (l, e, context) => await LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
 export function registerLoggable(loggable, config, parent) {
     if (!LoggingDriver.isLogging()) {

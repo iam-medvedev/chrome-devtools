@@ -39,7 +39,7 @@ describe('LoggingEvents', () => {
     });
     it('calls UI binding to log a click', async () => {
         const recordClick = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordClick');
-        // @ts-ignore
+        // @ts-expect-error
         const event = new MouseEvent('click', { button: 0, sourceCapabilities: new InputDeviceCapabilities() });
         VisualLogging.LoggingEvents.logClick(throttler)(element, event);
         await assertThrottled(recordClick);

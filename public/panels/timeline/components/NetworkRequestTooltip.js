@@ -7,6 +7,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Lit from '../../../ui/lit/lit.js';
+import * as TimelineUtils from '../utils/utils.js';
 import networkRequestTooltipStylesRaw from './networkRequestTooltip.css.js';
 import { colorForNetworkRequest, networkResourceCategory } from './Utils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
@@ -48,16 +49,19 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/NetworkRequ
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class NetworkRequestTooltip extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #networkRequest;
+    #data = { networkRequest: null, entityMapper: null };
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [networkRequestTooltipStyles];
         this.#render();
     }
-    set networkRequest(networkRequest) {
-        if (this.#networkRequest === networkRequest) {
+    set data(data) {
+        if (this.#data.networkRequest === data.networkRequest) {
             return;
         }
-        this.#networkRequest = networkRequest;
+        if (this.#data.entityMapper === data.entityMapper) {
+            return;
+        }
+        this.#data = { networkRequest: data.networkRequest, entityMapper: data.entityMapper };
         this.#render();
     }
     static renderPriorityValue(networkRequest) {
@@ -117,27 +121,29 @@ export class NetworkRequestTooltip extends HTMLElement {
     `;
     }
     #render() {
-        if (!this.#networkRequest) {
+        if (!this.#data.networkRequest) {
             return;
         }
         const chipStyle = {
-            backgroundColor: `${colorForNetworkRequest(this.#networkRequest)}`,
+            backgroundColor: `${colorForNetworkRequest(this.#data.networkRequest)}`,
         };
-        const url = new URL(this.#networkRequest.args.data.url);
+        const url = new URL(this.#data.networkRequest.args.data.url);
+        const entity = (this.#data.entityMapper) ? this.#data.entityMapper.entityForEvent(this.#data.networkRequest) : null;
+        const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
         // clang-format off
         const output = html `
       <div class="performance-card">
         <div class="url">${Platform.StringUtilities.trimMiddle(url.href.replace(url.origin, ''), MAX_URL_LENGTH)}</div>
-        <div class="url url--host">${url.origin.replace('https://', '')}</div>
+        <div class="url url--host">${originWithEntity}</div>
 
         <div class="divider"></div>
-        <div class="network-category"><span class="network-category-chip" style=${Lit.Directives.styleMap(chipStyle)}></span>${networkResourceCategory(this.#networkRequest)}</div>
-        <div class="priority-row">${i18nString(UIStrings.priority)}: ${NetworkRequestTooltip.renderPriorityValue(this.#networkRequest)}</div>
-        ${Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#networkRequest) ?
+        <div class="network-category"><span class="network-category-chip" style=${Lit.Directives.styleMap(chipStyle)}></span>${networkResourceCategory(this.#data.networkRequest)}</div>
+        <div class="priority-row">${i18nString(UIStrings.priority)}: ${NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
+        ${Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ?
             html `<div class="render-blocking"> ${i18nString(UIStrings.renderBlocking)} </div>` : Lit.nothing}
         <div class="divider"></div>
 
-        ${NetworkRequestTooltip.renderTimings(this.#networkRequest)}
+        ${NetworkRequestTooltip.renderTimings(this.#data.networkRequest)}
       </div>
     `;
         // clang-format on

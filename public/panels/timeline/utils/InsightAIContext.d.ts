@@ -1,4 +1,5 @@
-import type * as Trace from '../../../models/trace/trace.js';
+import * as Trace from '../../../models/trace/trace.js';
+import { AICallTree } from './AICallTree.js';
 /**
  * This class holds the Insight that is active when the user has entered the
  * Ask AI flow from the Insights sidebar.
@@ -10,5 +11,18 @@ import type * as Trace from '../../../models/trace/trace.js';
 export declare class ActiveInsight {
     #private;
     constructor(insight: Trace.Insights.Types.InsightModel<{}, {}>, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    get insight(): Readonly<Trace.Insights.Types.InsightModel<{}, {}>>;
+    get parsedTrace(): Trace.Handlers.Types.ParsedTrace;
     title(): string;
+}
+export declare class AIQueries {
+    /**
+     * Returns the set of network requests that occurred within the timeframe of this Insight.
+     */
+    static networkRequests(insight: Trace.Insights.Types.InsightModel<{}, {}>, parsedTrace: Trace.Handlers.Types.ParsedTrace): readonly Trace.Types.Events.SyntheticNetworkRequest[];
+    /**
+     * Returns an AI Call Tree representing the activity on the main thread for
+     * the relevant time range of the given insight.
+     */
+    static mainThreadActivity(insight: Trace.Insights.Types.InsightModel<{}, {}>, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
 }

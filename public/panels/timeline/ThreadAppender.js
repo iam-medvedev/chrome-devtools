@@ -504,7 +504,7 @@ export class ThreadAppender {
     setPopoverInfo(event, info) {
         if (Trace.Types.Events.isParseHTML(event)) {
             const startLine = event.args['beginData']['startLine'];
-            const endLine = event.args['endData'] && event.args['endData']['endLine'];
+            const endLine = event.args['endData']?.['endLine'];
             const eventURL = event.args['beginData']['url'];
             const url = Bindings.ResourceUtils.displayNameForURL(eventURL);
             const range = (endLine !== -1 || endLine === startLine) ? `${startLine}...${endLine}` : startLine;

@@ -16,6 +16,7 @@ export declare class SourceMappingsUpdated extends Event {
 export declare const resolvedCodeLocationDataNames: Map<string, ResolvedCodeLocationData | null>;
 export declare class SourceMapsResolver extends EventTarget {
     #private;
+    private executionContextNamesByOrigin;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace, entityMapper?: EntityMapper.EntityMapper);
     static clearResolvedNodeNames(): void;
     static keyForCodeLocation(callFrame: Protocol.Runtime.CallFrame): string;

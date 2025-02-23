@@ -46,7 +46,7 @@ export class JavaScriptREPL {
         }
         let expression = text;
         const callFrame = executionContext.debuggerModel.selectedCallFrame();
-        if (callFrame && callFrame.script.isJavaScript()) {
+        if (callFrame?.script.isJavaScript()) {
             const nameMap = await SourceMapScopes.NamesResolver.allVariablesInCallFrame(callFrame);
             try {
                 expression =
@@ -76,7 +76,7 @@ export class JavaScriptREPL {
         if ('error' in result) {
             return fragment;
         }
-        if (result.exceptionDetails && result.exceptionDetails.exception && result.exceptionDetails.exception.description) {
+        if (result.exceptionDetails?.exception?.description) {
             const exception = result.exceptionDetails.exception.description;
             if (exception.startsWith('TypeError: ') || allowErrors) {
                 fragment.createChild('span').textContent = result.exceptionDetails.text + ' ' + exception;

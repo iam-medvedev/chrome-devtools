@@ -47,7 +47,7 @@ describeWithMockConnection('CookieReportView', () => {
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 0);
     });
     it('should have row when there was a preexisting cookie issue', async () => {
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue());
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
         await view.updateComplete;
@@ -57,19 +57,19 @@ describeWithMockConnection('CookieReportView', () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 0);
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue());
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 1);
     });
     it('should ignore non-third-party-cookie related exclusionReason', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(undefined, "ExcludeSameSiteNoneInsecure" /* Protocol.Audits.CookieExclusionReason.ExcludeSameSiteNoneInsecure */));
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 0);
         // Make sure ExcludeThirdPartyPhaseout (default) is added.
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue());
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 1);
@@ -77,16 +77,16 @@ describeWithMockConnection('CookieReportView', () => {
     });
     it('should ignore non-third-party-cookie related warningReason', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnSameSiteLaxCrossDowngradeLax" /* Protocol.Audits.CookieWarningReason.WarnSameSiteLaxCrossDowngradeLax */));
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 0);
         // Make sure warning 3pc warning reasons are added
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */, 'metadata'));
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */, 'heuristic'));
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(undefined, undefined, "WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */, 'phaseout'));
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 3);
@@ -96,16 +96,16 @@ describeWithMockConnection('CookieReportView', () => {
     });
     it('should only have a single entry for same cookie with a read and a write operations', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(true));
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(false));
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 1);
     });
     it('should have zero entries after the primary page was changed', async () => {
         const view = new Security.CookieReportView.CookieReportView(undefined, mockView);
-        // @ts-ignore
+        // @ts-expect-error
         globalThis.addIssueForTest(getTestCookieIssue(true));
         await view.updateComplete;
         assert.lengthOf(mockView.lastCall.firstArg.cookieRows, 1);

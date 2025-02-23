@@ -154,6 +154,7 @@ function aggregateForcedReflow(data, entryToNodeMap) {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "ForcedReflow" /* InsightKeys.FORCED_REFLOW */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

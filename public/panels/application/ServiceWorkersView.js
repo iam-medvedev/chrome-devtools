@@ -237,8 +237,8 @@ export class ServiceWorkersView extends UI.Widget.VBox {
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
         this.updateListVisibility();
         const drawerChangeHandler = (event) => {
-            // @ts-ignore: No support for custom event listener
-            const isDrawerOpen = event.detail && event.detail.isDrawerOpen;
+            // @ts-expect-error: No support for custom event listener
+            const isDrawerOpen = event.detail?.isDrawerOpen;
             if (this.manager && !isDrawerOpen) {
                 const { serviceWorkerNetworkRequestsPanelStatus: { isOpen, openedAt } } = this.manager;
                 if (isOpen) {
@@ -509,7 +509,7 @@ export class Section {
     }
     targetForVersionId(versionId) {
         const version = this.manager.findVersion(versionId);
-        if (!version || !version.targetId) {
+        if (!version?.targetId) {
             return null;
         }
         return SDK.TargetManager.TargetManager.instance().targetById(version.targetId);
@@ -653,7 +653,7 @@ export class Section {
         const versions = this.registration.versionsByMode();
         const active = versions.get("active" /* SDK.ServiceWorkerManager.ServiceWorkerVersion.Modes.ACTIVE */);
         const title = i18nString(UIStrings.routers);
-        if (active && active.routerRules && active.routerRules.length > 0) {
+        if (active?.routerRules && active.routerRules.length > 0) {
             // If there is at least one registered rule in the active version, append the router filed.
             if (!this.routerField) {
                 this.routerField = this.wrapWidget(this.section.appendField(title));

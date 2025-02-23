@@ -34,7 +34,7 @@ export class ImagePreviewPopover {
             box: link.boxInWindow(),
             hide: undefined,
             show: async (popover) => {
-                const node = this.getDOMNode(link);
+                const node = this.getDOMNode((link));
                 if (!node) {
                     return false;
                 }

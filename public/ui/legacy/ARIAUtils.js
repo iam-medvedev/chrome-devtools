@@ -321,7 +321,7 @@ export function alertElementInstance(container = document.body) {
  */
 export function alert(message) {
     const dialog = Dialog.getInstance();
-    const element = alertElementInstance(dialog && dialog.isShowing() ? dialog.contentElement : undefined);
+    const element = alertElementInstance(dialog?.isShowing() ? dialog.contentElement : undefined);
     element.textContent = Platform.StringUtilities.trimEndWithMaxLength(message, 10000);
 }
 //# sourceMappingURL=ARIAUtils.js.map

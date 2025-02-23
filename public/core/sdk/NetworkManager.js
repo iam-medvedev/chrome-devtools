@@ -289,7 +289,7 @@ export class NetworkManager extends SDKModel {
         return result.status;
     }
     async enableReportingApi(enable = true) {
-        return this.#networkAgent.invoke_enableReportingApi({ enable });
+        return await this.#networkAgent.invoke_enableReportingApi({ enable });
     }
     async loadNetworkResource(frameId, url, options) {
         const result = await this.#networkAgent.invoke_loadNetworkResource({ frameId: frameId ?? undefined, url, options });
@@ -879,7 +879,7 @@ export class NetworkDispatcher {
         networkRequest.finished = true;
         if (encodedDataLength >= 0) {
             const redirectSource = networkRequest.redirectSource();
-            if (redirectSource && redirectSource.signedExchangeInfo()) {
+            if (redirectSource?.signedExchangeInfo()) {
                 networkRequest.setTransferSize(0);
                 redirectSource.setTransferSize(encodedDataLength);
                 this.updateNetworkRequest(redirectSource);
@@ -1066,18 +1066,10 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     static dispose() {
         multiTargetNetworkManagerInstance = null;
     }
-    static getChromeVersion() {
-        const chromeRegex = /(?:^|\W)(?:Chrome|HeadlessChrome)\/(\S+)/;
-        const chromeMatch = navigator.userAgent.match(chromeRegex);
-        if (chromeMatch && chromeMatch.length > 1) {
-            return chromeMatch[1];
-        }
-        return '';
-    }
     static patchUserAgentWithChromeVersion(uaString) {
         // Patches Chrome/ChrOS version from user #agent ("1.2.3.4" when user #agent is: "Chrome/1.2.3.4").
         // Otherwise, ignore it. This assumes additional appVersions appear after the Chrome version.
-        const chromeVersion = MultitargetNetworkManager.getChromeVersion();
+        const chromeVersion = Root.Runtime.getChromeVersion();
         if (chromeVersion.length > 0) {
             // "1.2.3.4" becomes "1.0.100.0"
             const additionalAppVersion = chromeVersion.split('.', 1)[0] + '.0.100.0';
@@ -1091,7 +1083,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         if (!userAgentMetadata.brands) {
             return;
         }
-        const chromeVersion = MultitargetNetworkManager.getChromeVersion();
+        const chromeVersion = Root.Runtime.getChromeVersion();
         if (chromeVersion.length === 0) {
             return;
         }
@@ -1136,11 +1128,11 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     }
     modelRemoved(networkManager) {
         for (const entry of this.inflightMainResourceRequests) {
-            const manager = NetworkManager.forRequest(entry[1]);
+            const manager = NetworkManager.forRequest((entry[1]));
             if (manager !== networkManager) {
                 continue;
             }
-            this.inflightMainResourceRequests.delete(entry[0]);
+            this.inflightMainResourceRequests.delete((entry[0]));
         }
         this.#networkAgents.delete(networkManager.target().networkAgent());
         this.#fetchAgents.delete(networkManager.target().fetchAgent());
@@ -1355,7 +1347,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             headers['Cache-Control'] = 'no-cache';
         }
         const allowRemoteFilePaths = Common.Settings.Settings.instance().moduleSetting('network.enable-remote-file-loading').get();
-        return new Promise(resolve => Host.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
+        return await new Promise(resolve => Host.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
             resolve({ success, content, errorDescription });
         }, allowRemoteFilePaths));
     }

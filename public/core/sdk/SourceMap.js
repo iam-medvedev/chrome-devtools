@@ -360,7 +360,7 @@ export class SourceMap {
                 }
             }
             const url = Common.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
-            const source = sourceMap.sourcesContent && sourceMap.sourcesContent[i];
+            const source = sourceMap.sourcesContent?.[i];
             const sourceInfo = {
                 sourceURL: url,
                 content: source ?? null,

@@ -4,11 +4,11 @@ export declare const UIStrings: {
     /**
      * @description Title of an insight that identifies multiple copies of the same JavaScript sources, and recommends removing the duplication.
      */
-    title: string;
+    readonly title: "Duplicate JavaScript";
     /**
      * @description Description of an insight that identifies multiple copies of the same JavaScript sources, and recommends removing the duplication.
      */
-    description: string;
+    readonly description: "Remove large, duplicate JavaScript modules from bundles to reduce unnecessary bytes consumed by network activity.";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type DuplicateJavaScriptInsightModel = InsightModel<typeof UIStrings, {

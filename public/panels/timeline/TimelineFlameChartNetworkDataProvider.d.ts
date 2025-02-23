@@ -2,11 +2,12 @@ import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type TimelineSelection } from './TimelineSelection.js';
+import * as TimelineUtils from './utils/utils.js';
 export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
     constructor();
     reset(): void;
-    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace): void;
+    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace, entityMapper: TimelineUtils.EntityMapper.EntityMapper): void;
     setEvents(parsedTrace: Trace.Handlers.Types.ParsedTrace): void;
     isEmpty(): boolean;
     maxStackDepth(): number;

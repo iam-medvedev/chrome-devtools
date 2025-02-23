@@ -6,6 +6,7 @@
     "files": [
         "baseInsightComponent.css.js",
         "checklist.css.js",
+        "networkDependencyTreeInsight.css.js",
         "table.css.js"
     ]
 }

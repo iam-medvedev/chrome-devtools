@@ -9,7 +9,7 @@ class UrlUtils {
      * As a result, the network URL (chrome://chrome/settings/) doesn't match the final document URL (chrome://settings/).
      */
     static rewriteChromeInternalUrl(url) {
-        if (!url || !url.startsWith('chrome://')) {
+        if (!url?.startsWith('chrome://')) {
             return url;
         }
         // Chrome adds a trailing slash to `chrome://` URLs, but the spec does not.
@@ -365,7 +365,7 @@ class NetworkAnalyzer {
      * estimated automatically if not provided.
      */
     static estimateServerResponseTimeByOrigin(records, options) {
-        let rttByOrigin = (options || {}).rttByOrigin;
+        let rttByOrigin = options?.rttByOrigin;
         if (!rttByOrigin) {
             rttByOrigin = new Map();
             const rttSummaryByOrigin = NetworkAnalyzer.estimateRTTByOrigin(records, options);

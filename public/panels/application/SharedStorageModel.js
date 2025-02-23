@@ -15,11 +15,11 @@ export class SharedStorageForOrigin extends Common.ObjectWrapper.ObjectWrapper {
         return this.#securityOrigin;
     }
     async getMetadata() {
-        return this.#model.storageAgent.invoke_getSharedStorageMetadata({ ownerOrigin: this.securityOrigin })
+        return await this.#model.storageAgent.invoke_getSharedStorageMetadata({ ownerOrigin: this.securityOrigin })
             .then(({ metadata }) => metadata);
     }
     async getEntries() {
-        return this.#model.storageAgent.invoke_getSharedStorageEntries({ ownerOrigin: this.securityOrigin })
+        return await this.#model.storageAgent.invoke_getSharedStorageEntries({ ownerOrigin: this.securityOrigin })
             .then(({ entries }) => entries);
     }
     async setEntry(key, value, ignoreIfPresent) {

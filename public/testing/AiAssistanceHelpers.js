@@ -8,6 +8,7 @@ import * as SDK from '../core/sdk/sdk.js';
 import * as Logs from '../models/logs/logs.js';
 import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
 import { createTarget, } from './EnvironmentHelpers.js';
+import { expectCall } from './ExpectStubCall.js';
 import { createContentProviderUISourceCodes } from './UISourceCodeHelpers.js';
 function createMockAidaClient(fetch) {
     const fetchStub = sinon.stub();
@@ -43,13 +44,16 @@ export function mockAidaClient(data = []) {
                 yield { ...chunk, metadata, completed: true };
                 break;
             }
+            const completed = idx === data[callId].length - 1;
+            if (completed) {
+                callId++;
+            }
             yield {
                 ...chunk,
                 metadata,
-                completed: idx === data[callId].length - 1,
+                completed,
             };
         }
-        callId++;
     }
     return createMockAidaClient(provideAnswer);
 }
@@ -115,6 +119,10 @@ export function createNetworkRequest(opts) {
     return networkRequest;
 }
 let panels = [];
+/**
+ * Creates and shows an AiAssistancePanel instance returning the view
+ * stubs and the initial view input caused by Widget.show().
+ */
 export async function createAiAssistancePanel(options) {
     const view = sinon.stub();
     const aidaClient = options?.aidaClient ?? mockAidaClient();
@@ -123,15 +131,22 @@ export async function createAiAssistancePanel(options) {
         aidaAvailability: options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
         syncInfo: options?.syncInfo ?? { isSyncActive: true },
     });
-    panel.markAsRoot();
-    panel.show(document.body);
     panels.push(panel);
-    await panel.updateComplete;
-    return {
-        panel,
-        view,
-        aidaClient,
-    };
+    /**
+     * Triggers the action and returns args of the next view function
+     * call.
+     */
+    async function expectViewUpdate(action) {
+        const result = expectCall(view);
+        action();
+        const viewArgs = await result;
+        return viewArgs[0];
+    }
+    const initialViewInput = await expectViewUpdate(() => {
+        panel.markAsRoot();
+        panel.show(document.body);
+    });
+    return { initialViewInput, panel, view, aidaClient, expectViewUpdate };
 }
 export function detachPanels() {
     for (const panel of panels) {

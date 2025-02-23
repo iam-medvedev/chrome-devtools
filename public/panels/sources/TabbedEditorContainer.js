@@ -458,9 +458,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     restoreEditorProperties(editorView, selection, firstLineNumber) {
-        const sourceFrame = editorView instanceof SourceFrame.SourceFrame.SourceFrameImpl ?
-            editorView :
-            null;
+        const sourceFrame = editorView instanceof SourceFrame.SourceFrame.SourceFrameImpl ? editorView : null;
         if (!sourceFrame) {
             return;
         }

@@ -386,6 +386,14 @@ export function expectConsoleLogs(expectedLogs) {
         }
     });
 }
+let originalUserAgent;
+export function setUserAgentForTesting() {
+    originalUserAgent = window.navigator.userAgent;
+    Object.defineProperty(window.navigator, 'userAgent', { value: 'Chrome/unit_test', configurable: true });
+}
+export function restoreUserAgentForTesting() {
+    Object.defineProperty(window.navigator, 'userAgent', { value: originalUserAgent });
+}
 export function resetHostConfig() {
     for (const key of Object.keys(Root.Runtime.hostConfig)) {
         // @ts-expect-error

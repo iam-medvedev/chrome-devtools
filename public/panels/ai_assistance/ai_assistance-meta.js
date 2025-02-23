@@ -98,7 +98,7 @@ UI.ViewManager.registerViewExtension({
     condition: config => isAnyFeatureAvailable(config) && !isPolicyRestricted(config),
     async loadView() {
         const AiAssistance = await loadAiAssistanceModule();
-        return AiAssistance.AiAssistancePanel.instance();
+        return await AiAssistance.AiAssistancePanel.instance();
     },
 });
 Common.Settings.registerSettingExtension({

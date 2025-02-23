@@ -114,10 +114,10 @@ export class LanguageExtensionEndpoint {
         return this.endpoint.sendRequest("getInlinedCalleesRanges" /* PrivateAPI.LanguageExtensionPluginCommands.GetInlinedCalleesRanges */, { rawLocation });
     }
     async getMappedLines(rawModuleId, sourceFileURL) {
-        return this.endpoint.sendRequest("getMappedLines" /* PrivateAPI.LanguageExtensionPluginCommands.GetMappedLines */, { rawModuleId, sourceFileURL });
+        return await this.endpoint.sendRequest("getMappedLines" /* PrivateAPI.LanguageExtensionPluginCommands.GetMappedLines */, { rawModuleId, sourceFileURL });
     }
     async evaluate(expression, context, stopId) {
-        return this.endpoint.sendRequest("formatValue" /* PrivateAPI.LanguageExtensionPluginCommands.FormatValue */, { expression, context, stopId });
+        return await this.endpoint.sendRequest("formatValue" /* PrivateAPI.LanguageExtensionPluginCommands.FormatValue */, { expression, context, stopId });
     }
     getProperties(objectId) {
         return this.endpoint.sendRequest("getProperties" /* PrivateAPI.LanguageExtensionPluginCommands.GetProperties */, { objectId });

@@ -424,7 +424,7 @@ export class DeviceModeView extends UI.Widget.VBox {
                 await this.paintImage(ctx, this.model.screenImage(), screenRect.relativeTo(outlineRect));
             }
             ctx.drawImage(pageImage, Math.floor(contentLeft), Math.floor(contentTop));
-            this.saveScreenshot(canvas);
+            this.saveScreenshot((canvas));
         };
     }
     async captureFullSizeScreenshot() {
@@ -456,7 +456,7 @@ export class DeviceModeView extends UI.Widget.VBox {
             }
             ctx.imageSmoothingEnabled = false;
             ctx.drawImage(pageImage, 0, 0);
-            this.saveScreenshot(canvas);
+            this.saveScreenshot((canvas));
         };
     }
     paintImage(ctx, src, rect) {

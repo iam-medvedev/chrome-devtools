@@ -12,7 +12,7 @@ class InjectedScript {
             this.#injectedScript = (await fetch(new URL('../injected/injected.generated.js', import.meta.url)))
                 .text();
         }
-        return this.#injectedScript;
+        return await this.#injectedScript;
     }
 }
 export { DEVTOOLS_RECORDER_WORLD_NAME, InjectedScript, isDebugBuild, SharedObject };

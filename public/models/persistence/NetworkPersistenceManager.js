@@ -452,7 +452,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         try {
             headerOverrides = JSON.parse(content);
             if (!headerOverrides.every(isHeaderOverride)) {
-                throw 'Type mismatch after parsing';
+                throw new Error('Type mismatch after parsing');
             }
         }
         catch {
@@ -568,7 +568,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     async #innerUpdateInterceptionPatterns() {
         this.#headerOverridesMap.clear();
         if (!this.activeInternal || !this.projectInternal) {
-            return SDK.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns([], this.interceptionHandlerBound);
+            return await SDK.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns([], this.interceptionHandlerBound);
         }
         let patterns = new Set();
         for (const uiSourceCode of this.projectInternal.uiSourceCodes()) {
@@ -597,7 +597,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
                 patterns.add(head);
             }
         }
-        return SDK.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns(Array.from(patterns).map(pattern => ({ urlPattern: pattern, requestStage: "Response" /* Protocol.Fetch.RequestStage.Response */ })), this.interceptionHandlerBound);
+        return await SDK.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns(Array.from(patterns).map(pattern => ({ urlPattern: pattern, requestStage: "Response" /* Protocol.Fetch.RequestStage.Response */ })), this.interceptionHandlerBound);
     }
     async onUISourceCodeRemoved(uiSourceCode) {
         await this.networkUISourceCodeRemoved(uiSourceCode);
@@ -810,7 +810,7 @@ const RESERVED_FILENAMES = new Set([
 export const HEADERS_FILENAME = '.headers';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isHeaderOverride(arg) {
-    if (!(arg && typeof arg.applyTo === 'string' && arg.headers && arg.headers.length && Array.isArray(arg.headers))) {
+    if (!(arg && typeof arg.applyTo === 'string' && arg.headers?.length && Array.isArray(arg.headers))) {
         return false;
     }
     return arg.headers.every((header) => typeof header.name === 'string' && typeof header.value === 'string');

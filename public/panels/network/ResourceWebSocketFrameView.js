@@ -177,7 +177,6 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
             displayName: i18nString(UIStrings.webSocketFrame),
             columns,
-            editCallback: undefined,
             deleteCallback: undefined,
             refreshCallback: undefined,
         });

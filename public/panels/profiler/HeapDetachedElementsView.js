@@ -115,7 +115,7 @@ export class DetachedElementsProfileHeader extends WritableProfileHeader {
     heapProfilerModelInternal;
     detachedElements;
     constructor(heapProfilerModel, type, detachedElements, title) {
-        super(heapProfilerModel && heapProfilerModel.debuggerModel(), type, title || i18nString(UIStrings.detachedElementProfile, { PH1: type.nextProfileUid() }));
+        super(heapProfilerModel?.debuggerModel() ?? null, type, title || i18nString(UIStrings.detachedElementProfile, { PH1: type.nextProfileUid() }));
         this.detachedElements = detachedElements;
         this.heapProfilerModelInternal = heapProfilerModel;
     }

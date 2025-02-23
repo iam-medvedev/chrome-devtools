@@ -88,7 +88,7 @@ export class JSONView extends UI.Widget.VBox {
     static parseJSON(text) {
         let returnObj = null;
         if (text) {
-            returnObj = JSONView.extractJSON(text);
+            returnObj = JSONView.extractJSON((text));
         }
         if (!returnObj) {
             return Promise.resolve(null);

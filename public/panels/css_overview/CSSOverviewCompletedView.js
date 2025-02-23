@@ -606,8 +606,8 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 minContrastIssue = issue;
             }
         }
-        const color = minContrastIssue.textColor.asString("hexa" /* Common.Color.Format.HEXA */);
-        const backgroundColor = minContrastIssue.backgroundColor.asString("hexa" /* Common.Color.Format.HEXA */);
+        const color = (minContrastIssue.textColor.asString("hexa" /* Common.Color.Format.HEXA */));
+        const backgroundColor = (minContrastIssue.backgroundColor.asString("hexa" /* Common.Color.Format.HEXA */));
         const showAPCA = Root.Runtime.experiments.isEnabled('apca');
         const title = i18nString(UIStrings.textColorSOverSBackgroundResults, {
             PH1: color,
@@ -806,7 +806,6 @@ export class ElementDetailsView extends UI.Widget.Widget {
         this.#elementGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
             displayName: i18nString(UIStrings.cssOverviewElements),
             columns: this.#elementGridColumns,
-            editCallback: undefined,
             deleteCallback: undefined,
             refreshCallback: undefined,
         });
@@ -827,7 +826,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
     #onMouseOver(evt) {
         // Traverse the event path on the grid to find the nearest element with a backend node ID attached. Use
         // that for the highlighting.
-        const node = evt.composedPath().find(el => el.dataset && el.dataset.backendNodeId);
+        const node = evt.composedPath().find(el => el.dataset?.backendNodeId);
         if (!node) {
             return;
         }

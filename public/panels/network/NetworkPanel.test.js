@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Trace from '../../models/trace/trace.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -55,6 +55,7 @@ describeWithMockConnection('NetworkPanel', () => {
 describeWithMockConnection('NetworkPanel', () => {
     let networkPanel;
     beforeEach(async () => {
+        registerNoopActions(['inspector-main.reload']);
         UI.ActionRegistration.maybeRemoveActionExtension('network.toggle-recording');
         UI.ActionRegistration.maybeRemoveActionExtension('network.clear');
         await import('./network-meta.js');

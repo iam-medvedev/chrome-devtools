@@ -138,6 +138,7 @@ function finalize(partialModel) {
             !partialModel.data.checklist.serverResponseIsFast.value || !partialModel.data.checklist.noRedirects.value;
     }
     return {
+        insightKey: "DocumentLatency" /* InsightKeys.DOCUMENT_LATENCY */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

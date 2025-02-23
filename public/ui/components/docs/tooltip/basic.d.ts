@@ -1,1 +1,1 @@
-import '../../tooltip/Tooltip.js';
+export {};

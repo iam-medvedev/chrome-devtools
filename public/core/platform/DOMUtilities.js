@@ -8,7 +8,7 @@
  */
 export function deepActiveElement(doc) {
     let activeElement = doc.activeElement;
-    while (activeElement && activeElement.shadowRoot && activeElement.shadowRoot.activeElement) {
+    while (activeElement?.shadowRoot?.activeElement) {
         activeElement = activeElement.shadowRoot.activeElement;
     }
     return activeElement;

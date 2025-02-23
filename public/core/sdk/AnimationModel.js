@@ -108,12 +108,12 @@ export class AnimationDOMNode {
                 return;
             }
             const scrollingElement = ('scrollingElement' in this ? this.scrollingElement : this);
-            // @ts-ignore We're setting a custom field on `Element` or `Document` for retaining the function on the page.
+            // @ts-expect-error We're setting a custom field on `Element` or `Document` for retaining the function on the page.
             this[scrollListenerNameInPage] = () => {
-                // @ts-ignore `reportScrollPosition` binding is injected to the page before calling the function.
+                // @ts-expect-error `reportScrollPosition` binding is injected to the page before calling the function.
                 globalThis[reportScrollPositionBindingName](JSON.stringify({ scrollTop: scrollingElement.scrollTop, scrollLeft: scrollingElement.scrollLeft, id }));
             };
-            // @ts-ignore We've already defined the function used below.
+            // @ts-expect-error We've already defined the function used below.
             this.addEventListener('scroll', this[scrollListenerNameInPage], true);
         }
     }
@@ -131,14 +131,14 @@ export class AnimationDOMNode {
             await this.#removeReportScrollPositionBinding();
         }
         function removeScrollListenerInPage(scrollListenerNameInPage) {
-            // @ts-ignore We've already set this custom field while adding scroll listener.
+            // @ts-expect-error We've already set this custom field while adding scroll listener.
             this.removeEventListener('scroll', this[scrollListenerNameInPage]);
-            // @ts-ignore We've already set this custom field while adding scroll listener.
+            // @ts-expect-error We've already set this custom field while adding scroll listener.
             delete this[scrollListenerNameInPage];
         }
     }
     async scrollTop() {
-        return this.#domNode.callFunction(scrollTopInPage).then(res => res?.value ?? null);
+        return await this.#domNode.callFunction(scrollTopInPage).then(res => res?.value ?? null);
         function scrollTopInPage() {
             if ('scrollingElement' in this) {
                 if (!this.scrollingElement) {
@@ -150,7 +150,7 @@ export class AnimationDOMNode {
         }
     }
     async scrollLeft() {
-        return this.#domNode.callFunction(scrollLeftInPage).then(res => res?.value ?? null);
+        return await this.#domNode.callFunction(scrollLeftInPage).then(res => res?.value ?? null);
         function scrollLeftInPage() {
             if ('scrollingElement' in this) {
                 if (!this.scrollingElement) {
@@ -190,7 +190,7 @@ export class AnimationDOMNode {
         }
     }
     async verticalScrollRange() {
-        return this.#domNode.callFunction(verticalScrollRangeInPage).then(res => res?.value ?? null);
+        return await this.#domNode.callFunction(verticalScrollRangeInPage).then(res => res?.value ?? null);
         function verticalScrollRangeInPage() {
             if ('scrollingElement' in this) {
                 if (!this.scrollingElement) {
@@ -202,7 +202,7 @@ export class AnimationDOMNode {
         }
     }
     async horizontalScrollRange() {
-        return this.#domNode.callFunction(horizontalScrollRangeInPage).then(res => res?.value ?? null);
+        return await this.#domNode.callFunction(horizontalScrollRangeInPage).then(res => res?.value ?? null);
         function horizontalScrollRangeInPage() {
             if ('scrollingElement' in this) {
                 if (!this.scrollingElement) {
@@ -339,7 +339,7 @@ export class AnimationModel extends SDKModel {
         if (!matchedGroup) {
             this.animationGroups.set(incomingGroup.id(), incomingGroup);
             if (this.#screenshotCapture) {
-                this.#screenshotCapture.captureScreenshots(incomingGroup.finiteDuration(), incomingGroup.screenshotsInternal);
+                void this.#screenshotCapture.captureScreenshots(incomingGroup.finiteDuration(), incomingGroup.screenshotsInternal);
             }
             this.dispatchEventToListeners(Events.AnimationGroupStarted, incomingGroup);
         }
@@ -375,6 +375,10 @@ export class AnimationModel extends SDKModel {
     setPlaybackRate(playbackRate) {
         this.playbackRate = playbackRate;
         void this.agent.invoke_setPlaybackRate({ playbackRate });
+    }
+    async releaseAllAnimations() {
+        const animationIds = [...this.animationGroups.values()].flatMap(animationGroup => animationGroup.animations().map(animation => animation.id()));
+        await this.agent.invoke_releaseAnimations({ animations: animationIds });
     }
     releaseAnimations(animations) {
         void this.agent.invoke_releaseAnimations({ animations });
@@ -870,16 +874,19 @@ export class ScreenshotCapture {
     #requests;
     #screenCaptureModel;
     #animationModel;
+    // This prevents multiple synchronous calls to captureScreenshots to result in one startScreencast call in model.
+    #isCapturing = false;
+    // Holds the id for capturing & cancelling the screencast operation.
+    #screencastOperationId;
     #stopTimer;
     #endTime;
-    #capturing;
     constructor(animationModel, screenCaptureModel) {
         this.#requests = [];
         this.#screenCaptureModel = screenCaptureModel;
         this.#animationModel = animationModel;
         this.#animationModel.addEventListener(Events.ModelReset, this.stopScreencast, this);
     }
-    captureScreenshots(duration, screenshots) {
+    async captureScreenshots(duration, screenshots) {
         const screencastDuration = Math.min(duration / this.#animationModel.playbackRate, 3000);
         const endTime = screencastDuration + window.performance.now();
         this.#requests.push({ endTime, screenshots });
@@ -888,17 +895,17 @@ export class ScreenshotCapture {
             this.#stopTimer = window.setTimeout(this.stopScreencast.bind(this), screencastDuration);
             this.#endTime = endTime;
         }
-        if (this.#capturing) {
+        if (this.#isCapturing) {
             return;
         }
-        this.#capturing = true;
-        this.#screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, undefined, 300, 2, this.screencastFrame.bind(this), _visible => { });
+        this.#isCapturing = true;
+        this.#screencastOperationId = await this.#screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, undefined, 300, 2, this.screencastFrame.bind(this), _visible => { });
     }
     screencastFrame(base64Data, _metadata) {
         function isAnimating(request) {
             return request.endTime >= now;
         }
-        if (!this.#capturing) {
+        if (!this.#isCapturing) {
             return;
         }
         const now = window.performance.now();
@@ -908,14 +915,15 @@ export class ScreenshotCapture {
         }
     }
     stopScreencast() {
-        if (!this.#capturing) {
+        if (!this.#screencastOperationId) {
             return;
         }
+        this.#screenCaptureModel.stopScreencast(this.#screencastOperationId);
         this.#stopTimer = undefined;
         this.#endTime = undefined;
         this.#requests = [];
-        this.#capturing = false;
-        this.#screenCaptureModel.stopScreencast();
+        this.#isCapturing = false;
+        this.#screencastOperationId = undefined;
     }
 }
 SDKModel.register(AnimationModel, { capabilities: 2 /* Capability.DOM */, autostart: true });

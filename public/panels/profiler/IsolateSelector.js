@@ -197,9 +197,9 @@ export class IsolateSelector extends UI.Widget.VBox {
         if (toElement) {
             toElement.classList.add('selected');
         }
-        const model = to && to.model();
-        UI.Context.Context.instance().setFlavor(SDK.HeapProfilerModel.HeapProfilerModel, model && model.heapProfilerModel());
-        UI.Context.Context.instance().setFlavor(SDK.CPUProfilerModel.CPUProfilerModel, model && model.target().model(SDK.CPUProfilerModel.CPUProfilerModel));
+        const model = to?.model();
+        UI.Context.Context.instance().setFlavor(SDK.HeapProfilerModel.HeapProfilerModel, model?.heapProfilerModel() ?? null);
+        UI.Context.Context.instance().setFlavor(SDK.CPUProfilerModel.CPUProfilerModel, model?.target().model(SDK.CPUProfilerModel.CPUProfilerModel) ?? null);
     }
     update() {
         this.updateTotal();

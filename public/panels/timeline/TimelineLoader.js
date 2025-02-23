@@ -74,7 +74,7 @@ export class TimelineLoader {
         const loader = new TimelineLoader(client);
         loader.#traceIsCPUProfile = true;
         try {
-            const contents = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
+            const contents = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
             window.setTimeout(async () => {
                 void loader.addEvents(contents.traceEvents);
             });
@@ -176,7 +176,7 @@ export class TimelineLoader {
      */
     async write(chunk, endOfFile) {
         if (!this.client) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
         this.buffer += chunk;
         if (this.firstRawChunk) {
@@ -198,12 +198,11 @@ export class TimelineLoader {
             try {
                 trace = JSON.parse(this.buffer);
                 this.#processParsedFile(trace);
-                return Promise.resolve();
             }
             catch (e) {
                 this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS, { PH1: e.toString() }));
-                return;
             }
+            return;
         }
     }
     reportErrorAndCancelLoading(message) {
@@ -230,7 +229,7 @@ export class TimelineLoader {
         return this.#traceFinalizedPromiseForTest;
     }
     #parseCPUProfileFormatFromFile(parsedTrace) {
-        const traceFile = Trace.Extras.TimelineJSProfile.TimelineJSProfileProcessor.createFakeTraceFromCpuProfile(parsedTrace, Trace.Types.Events.ThreadID(1));
+        const traceFile = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(parsedTrace, Trace.Types.Events.ThreadID(1));
         this.#collectEvents(traceFile.traceEvents);
     }
     #collectEvents(events) {

@@ -47,5 +47,8 @@ describe('Runtime', () => {
         const experiments = Root.Runtime.experiments.allConfigurableExperiments();
         assert.deepEqual(experiments.map(experiment => experiment.name), ['example', 'configurable']);
     });
+    it('getChromeVersion result has the correct shape', () => {
+        assert.isTrue(/^\d{3}\.0\.0\.0$/.test(Root.Runtime.getChromeVersion()));
+    });
 });
 //# sourceMappingURL=Runtime.test.js.map

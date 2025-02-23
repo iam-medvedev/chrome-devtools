@@ -324,7 +324,7 @@ export class LiveMetrics extends Common.ObjectWrapper.ObjectWrapper {
             return null;
         }
         const frameManager = SDK.FrameManager.FrameManager.instance();
-        return frameManager.getOrWaitForFrame(frameId);
+        return await frameManager.getOrWaitForFrame(frameId);
     }
     async #onBindingCalled(event) {
         const { data } = event;

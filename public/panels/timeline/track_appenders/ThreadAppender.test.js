@@ -15,7 +15,8 @@ import * as Timeline from '../timeline.js';
 const { urlString } = Platform.DevToolsPath;
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
     setupIgnoreListManagerEnvironment();
-    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
+    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel, entityMapper);
     return { threadAppenders: compatibilityTracksAppender.threadAppenders(), compatibilityTracksAppender };
 }
 async function renderThreadAppendersFromTrace(context, trace) {
@@ -400,7 +401,9 @@ describeWithEnvironment('ThreadAppender', function () {
                 AuctionWorklets: { worklets: new Map() },
                 Meta: {
                     traceIsGeneric: false,
+                    navigationsByNavigationId: new Map(),
                 },
+                NetworkRequests: { entityMappings: { entityByEvent: new Map(), eventsByEntity: new Map(), createdEntityCache: new Map() } },
                 ExtensionTraceData: { entryToNode: new Map(), extensionMarkers: [], extensionTrackData: [] },
             };
             // Add the script to ignore list and then append the flamechart data

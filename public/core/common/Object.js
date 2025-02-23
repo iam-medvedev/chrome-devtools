@@ -40,7 +40,7 @@ export class ObjectWrapper {
         }
     }
     hasEventListeners(eventType) {
-        return Boolean(this.listeners && this.listeners.has(eventType));
+        return Boolean(this.listeners?.has(eventType));
     }
     dispatchEventToListeners(eventType, ...[eventData]) {
         const listeners = this.listeners?.get(eventType);

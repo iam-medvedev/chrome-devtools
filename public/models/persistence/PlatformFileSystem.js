@@ -37,7 +37,7 @@ export class PlatformFileSystem {
         return this.typeInternal;
     }
     async createFile(_path, _name) {
-        return Promise.resolve(null);
+        return await Promise.resolve(null);
     }
     deleteFile(_path) {
         return Promise.resolve(false);

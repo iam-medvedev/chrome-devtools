@@ -39,6 +39,8 @@ export declare function expectConsoleLogs(expectedLogs: {
     log?: string[];
     error?: string[];
 }): void;
+export declare function setUserAgentForTesting(): void;
+export declare function restoreUserAgentForTesting(): void;
 export declare function resetHostConfig(): void;
 /**
  * Update `Root.Runtime.hostConfig` for testing.

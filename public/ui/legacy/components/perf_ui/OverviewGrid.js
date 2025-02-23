@@ -333,7 +333,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         delete this.overviewWindowSelector;
         const clickThreshold = 3;
         if (window.end - window.start < clickThreshold) {
-            if (this.clickHandler && this.clickHandler.call(null, event)) {
+            if (this.clickHandler?.call(null, event)) {
                 return;
             }
             const middle = window.end;

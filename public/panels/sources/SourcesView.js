@@ -138,7 +138,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
             listItemElement.classList.add('shortcut-line');
             UI.ARIAUtils.markAsListitem(listItemElement);
             // Take the first shortcut for display.
-            if (shortcutKeys && shortcutKeys[0]) {
+            if (shortcutKeys?.[0]) {
                 const button = listItemElement.createChild('button');
                 button.textContent = shortcut.description;
                 const action = UI.ActionRegistry.ActionRegistry.instance().getAction(shortcut.actionId);
@@ -204,7 +204,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (!(view instanceof UISourceCodeFrame)) {
             return null;
         }
-        return view;
+        return (view);
     }
     currentUISourceCode() {
         return this.editorContainer.currentFile();
@@ -383,7 +383,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         const sourceView = this.sourceViewByUISourceCode.get(uiSourceCode);
         this.sourceViewByUISourceCode.delete(uiSourceCode);
         if (sourceView && sourceView instanceof UISourceCodeFrame) {
-            sourceView.dispose();
+            (sourceView).dispose();
         }
         uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
     }
@@ -516,7 +516,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (!(sourceFrame instanceof UISourceCodeFrame)) {
             return;
         }
-        const uiSourceCodeFrame = sourceFrame;
+        const uiSourceCodeFrame = (sourceFrame);
         uiSourceCodeFrame.commitEditing();
     }
     toggleBreakpointsActiveState(active) {

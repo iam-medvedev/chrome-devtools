@@ -45,7 +45,7 @@ export const formatAsJSLiteral = (content) => {
     const escapePattern = (match, pattern, controlChar, loneSurrogate) => {
         if (controlChar) {
             if (escapedReplacements.has(controlChar)) {
-                // @ts-ignore https://github.com/microsoft/TypeScript/issues/13086
+                // @ts-expect-error https://github.com/microsoft/TypeScript/issues/13086
                 return escapedReplacements.get(controlChar);
             }
             const twoDigitHex = toHexadecimal(controlChar.charCodeAt(0), 2);

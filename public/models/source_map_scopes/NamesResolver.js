@@ -155,7 +155,7 @@ const resolveDebuggerScope = async (scope) => {
     }
     const script = scope.callFrame().script;
     const scopeChain = await findScopeChainForDebuggerScope(scope);
-    return resolveScope(script, scopeChain);
+    return await resolveScope(script, scopeChain);
 };
 const resolveScope = async (script, scopeChain) => {
     const parsedScope = scopeChain[scopeChain.length - 1];
@@ -178,7 +178,7 @@ const resolveScope = async (script, scopeChain) => {
                 // First see if we have a source map entry with a name for the identifier.
                 for (const position of id.positions) {
                     const entry = sourceMap.findEntry(position.lineNumber, position.columnNumber);
-                    if (entry && entry.name) {
+                    if (entry?.name) {
                         handler(entry.name);
                         return;
                     }
@@ -596,10 +596,10 @@ export class RemoteObject extends SDK.RemoteObject.RemoteObject {
                 break;
             }
         }
-        return this.object.setPropertyValue(actualName, value);
+        return await this.object.setPropertyValue(actualName, value);
     }
     async deleteProperty(name) {
-        return this.object.deleteProperty(name);
+        return await this.object.deleteProperty(name);
     }
     callFunction(functionDeclaration, args) {
         return this.object.callFunction(functionDeclaration, args);

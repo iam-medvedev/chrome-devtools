@@ -24,6 +24,7 @@ import { SelectElementAccessibilityIssue } from './SelectElementAccessibilityIss
 import { SharedArrayBufferIssue } from './SharedArrayBufferIssue.js';
 import { SharedDictionaryIssue } from './SharedDictionaryIssue.js';
 import { SourceFrameIssuesManager } from './SourceFrameIssuesManager.js';
+import { SRIMessageSignatureIssue } from './SRIMessageSignatureIssue.js';
 import { StylesheetLoadingIssue } from './StylesheetLoadingIssue.js';
 let issuesManagerInstance = null;
 function createIssuesForBlockedByResponseIssue(issuesModel, inspectorIssue) {
@@ -114,6 +115,10 @@ const issueCodeHandlers = new Map([
     [
         "SelectElementAccessibilityIssue" /* Protocol.Audits.InspectorIssueCode.SelectElementAccessibilityIssue */,
         SelectElementAccessibilityIssue.fromInspectorIssue,
+    ],
+    [
+        "SRIMessageSignatureIssue" /* Protocol.Audits.InspectorIssueCode.SRIMessageSignatureIssue */,
+        SRIMessageSignatureIssue.fromInspectorIssue,
     ],
 ]);
 /**
@@ -209,8 +214,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
             else if (issue.code() === "BounceTrackingIssue" /* Protocol.Audits.InspectorIssueCode.BounceTrackingIssue */ ||
                 issue.code() === "CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */) {
                 const networkManager = frame.resourceTreeModel().target().model(SDK.NetworkManager.NetworkManager);
-                if (networkManager?.requestForLoaderId(frame.loaderId)?.hasUserGesture() ===
-                    false) {
+                if (networkManager?.requestForLoaderId(frame.loaderId)?.hasUserGesture() === false) {
                     keptIssues.set(key, issue);
                 }
             }
@@ -335,7 +339,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         // IssueStatus is set in hidden issues menu.
         // In case a user wants to hide a specific issue, the issue code is added to "code" section
         // of our setting and its value is set to IssueStatus.Hidden. Then issue then gets hidden.
-        if (values && values[code]) {
+        if (values?.[code]) {
             if (values[code] === "Hidden" /* IssueStatus.HIDDEN */) {
                 issue.setHidden(true);
                 return;
@@ -378,7 +382,7 @@ export class IssuesManager extends Common.ObjectWrapper.ObjectWrapper {
         return this.#issuesById.get(id);
     }
 }
-// @ts-ignore
+// @ts-expect-error
 globalThis.addIssueForTest = (issue) => {
     const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
     const issuesModel = mainTarget?.model(SDK.IssuesModel.IssuesModel);

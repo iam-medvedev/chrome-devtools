@@ -75,7 +75,15 @@ const UIStrings = {
     /**
      *@description Search results message element text content in Search View of the Search tab
      */
-    noMatchesFound: 'No matches found.',
+    noMatchesFoundStatusbar: 'No matches found.',
+    /**
+     *@description Search results message element text content in Search View of the Search tab
+     */
+    noMatchesFound: 'No matches found',
+    /**
+     *@description Search results message element text content in Search View of the Search tab
+     */
+    nothingMatchedTheQuery: 'Nothing matched your search query',
     /**
      *@description Text in Search View of the Search tab
      */
@@ -148,7 +156,7 @@ export class SearchView extends UI.Widget.VBox {
         this.contentElement.setAttribute('jslog', `${VisualLogging.panel('search').track({ resize: true })}`);
         this.contentElement.classList.add('search-view');
         this.contentElement.addEventListener('keydown', event => {
-            this.onKeyDownOnPanel(event);
+            this.onKeyDownOnPanel((event));
         });
         this.searchPanelElement = this.contentElement.createChild('div', 'search-drawer-header');
         this.searchResultsElement = this.contentElement.createChild('div');
@@ -160,7 +168,7 @@ export class SearchView extends UI.Widget.VBox {
         searchElements.appendChild(searchIcon);
         this.search = UI.UIUtils.createHistoryInput('search', 'search-toolbar-input');
         this.search.addEventListener('keydown', event => {
-            this.onKeyDown(event);
+            this.onKeyDown((event));
         });
         this.search.setAttribute('jslog', `${VisualLogging.textField().track({ change: true, keydown: 'ArrowUp|ArrowDown|Enter' })}`);
         searchElements.appendChild(this.search);
@@ -289,7 +297,7 @@ export class SearchView extends UI.Widget.VBox {
         if (searchId !== this.searchId || !this.progressIndicator) {
             return;
         }
-        if (this.progressIndicator && this.progressIndicator.isCanceled()) {
+        if (this.progressIndicator?.isCanceled()) {
             this.onIndexingFinished();
             return;
         }
@@ -387,10 +395,10 @@ export class SearchView extends UI.Widget.VBox {
     }
     nothingFound() {
         if (!this.notFoundView) {
-            this.notFoundView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMatchesFound), '');
+            this.notFoundView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMatchesFound), i18nString(UIStrings.nothingMatchedTheQuery));
         }
         this.showPane(this.notFoundView);
-        this.searchResultsMessageElement.textContent = i18nString(UIStrings.noMatchesFound);
+        this.searchResultsMessageElement.textContent = i18nString(UIStrings.noMatchesFoundStatusbar);
     }
     addSearchResult(searchResult) {
         const matchesCount = searchResult.matchesCount();
@@ -470,7 +478,7 @@ export class SearchView extends UI.Widget.VBox {
     }
     onAction() {
         const searchConfig = this.buildSearchConfig();
-        if (!searchConfig.query() || !searchConfig.query().length) {
+        if (!searchConfig.query()?.length) {
             return;
         }
         this.resetSearch();

@@ -169,7 +169,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         if (!this.#request) {
             return;
         }
-        return RenderCoordinator.write(() => {
+        return await RenderCoordinator.write(() => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             render(html `

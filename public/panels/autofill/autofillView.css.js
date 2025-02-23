@@ -27,11 +27,6 @@ main {
   align-items: center;
 }
 
-.placeholder {
-  font-size: 15px;
-  text-align: center;
-}
-
 .address {
   padding: 10px;
   margin-right: auto;

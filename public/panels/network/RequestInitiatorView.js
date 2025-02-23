@@ -42,7 +42,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
     }
     static createStackTracePreview(request, linkifier, focusableLink) {
         const initiator = request.initiator();
-        if (!initiator || !initiator.stack) {
+        if (!initiator?.stack) {
             return null;
         }
         const networkManager = SDK.NetworkManager.NetworkManager.forRequest(request);
@@ -78,7 +78,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
             titleElement.style.fontWeight = 'bold';
         }
         const initiated = initiatorGraph.initiated;
-        this.depthFirstSearchTreeBuilder(initiated, parent, this.request);
+        this.depthFirstSearchTreeBuilder(initiated, (parent), this.request);
         return root;
     }
     depthFirstSearchTreeBuilder(initiated, parentElement, parentRequest) {

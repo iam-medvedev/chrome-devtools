@@ -457,8 +457,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         }, { scoped: true });
         this.sharedStorageTreeElementDispatcher =
             new Common.ObjectWrapper.ObjectWrapper();
-        // Work-around for crbug.com/1152713: Something is wrong with custom scrollbars and size containment.
-        // @ts-ignore
         this.contentElement.style.contain = 'layout style';
     }
     addSidebarSection(title, jslogContext) {
@@ -513,12 +511,12 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         for (const frame of SDK.ResourceTreeModel.ResourceTreeModel.frames()) {
             this.addCookieDocument(frame);
         }
-        const interestGroupModel = this.target && this.target.model(InterestGroupStorageModel);
+        const interestGroupModel = this.target?.model(InterestGroupStorageModel);
         if (interestGroupModel) {
             interestGroupModel.enable();
         }
         this.cacheStorageListTreeElement.initialize();
-        const backgroundServiceModel = this.target && this.target.model(BackgroundServiceModel) || null;
+        const backgroundServiceModel = this.target?.model(BackgroundServiceModel) || null;
         this.backgroundFetchTreeElement && this.backgroundFetchTreeElement.initialize(backgroundServiceModel);
         this.backgroundSyncTreeElement && this.backgroundSyncTreeElement.initialize(backgroundServiceModel);
         this.notificationsTreeElement.initialize(backgroundServiceModel);
@@ -661,7 +659,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         }
     }
     domStorageAdded(event) {
-        const domStorage = event.data;
+        const domStorage = (event.data);
         this.addDOMStorage(domStorage);
     }
     addDOMStorage(domStorage) {
@@ -682,7 +680,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         }
     }
     domStorageRemoved(event) {
-        const domStorage = event.data;
+        const domStorage = (event.data);
         this.removeDOMStorage(domStorage);
     }
     removeDOMStorage(domStorage) {
@@ -1020,7 +1018,7 @@ export class ManifestChildTreeElement extends ApplicationPanelTreeElement {
         }
         const checkBoxElement = this.#sectionFieldElement.querySelector('.mask-checkbox');
         let focusableElement = this.#sectionFieldElement.querySelector('[tabindex="0"]');
-        if (checkBoxElement && checkBoxElement.shadowRoot) {
+        if (checkBoxElement?.shadowRoot) {
             focusableElement = checkBoxElement.shadowRoot.querySelector('input') || null;
         }
         else if (!focusableElement) {
@@ -1335,8 +1333,8 @@ export class IDBObjectStoreTreeElement extends ApplicationPanelTreeElement {
         }
         for (const [indexName, treeElement] of this.idbIndexTreeElements.entries()) {
             if (!indexNames.has(indexName)) {
-                this.removeChild(treeElement);
-                this.idbIndexTreeElements.delete(indexName);
+                this.removeChild((treeElement));
+                this.idbIndexTreeElements.delete((indexName));
             }
         }
         if (this.childCount()) {

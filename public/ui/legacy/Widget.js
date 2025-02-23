@@ -258,14 +258,13 @@ export class Widget {
         this.hideOnDetach = true;
     }
     inNotification() {
-        return Boolean(this.notificationDepth) ||
-            Boolean(this.parentWidgetInternal && this.parentWidgetInternal.inNotification());
+        return Boolean(this.notificationDepth) || Boolean(this.parentWidgetInternal?.inNotification());
     }
     parentIsShowing() {
         if (this.isRoot) {
             return true;
         }
-        return this.parentWidgetInternal !== null && this.parentWidgetInternal.isShowing();
+        return this.parentWidgetInternal?.isShowing() ?? false;
     }
     callOnVisibleChildren(method) {
         const copy = this.childrenInternal.slice();
@@ -568,7 +567,7 @@ export class Widget {
             }
             return;
         }
-        if (this.defaultFocusedChild && this.defaultFocusedChild.visibleInternal) {
+        if (this.defaultFocusedChild?.visibleInternal) {
             this.defaultFocusedChild.focus();
         }
         else {

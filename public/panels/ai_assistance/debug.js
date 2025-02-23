@@ -22,6 +22,6 @@ function setDebugAiAssistanceEnabled(enabled) {
         localStorage.removeItem('debugAiAssistancePanelEnabled');
     }
 }
-// @ts-ignore
+// @ts-expect-error
 globalThis.setDebugAiAssistanceEnabled = setDebugAiAssistanceEnabled;
 //# sourceMappingURL=debug.js.map

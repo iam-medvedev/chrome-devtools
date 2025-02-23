@@ -48,6 +48,7 @@
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.test.ts",
     "../../../../../../../front_end/models/trace/insights/LCPDiscovery.test.ts",
     "../../../../../../../front_end/models/trace/insights/LCPPhases.test.ts",
+    "../../../../../../../front_end/models/trace/insights/NetworkDependencyTree.test.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.test.ts",
     "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.test.ts",
     "../../../../../../../front_end/models/trace/insights/Statistics.test.ts",

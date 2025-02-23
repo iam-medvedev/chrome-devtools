@@ -149,9 +149,9 @@ export class AdvancedApp {
     }
 }
 // Export required for usage in toolbox.ts
-// @ts-ignore Exported for Tests.js
+// @ts-expect-error Exported for Tests.js
 globalThis.Emulation = globalThis.Emulation || {};
-// @ts-ignore Exported for Tests.js
+// @ts-expect-error Exported for Tests.js
 globalThis.Emulation.AdvancedApp = AdvancedApp;
 let advancedAppProviderInstance;
 export class AdvancedAppProvider {

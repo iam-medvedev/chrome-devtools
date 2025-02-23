@@ -213,7 +213,7 @@ export declare class ToolbarComboBox extends ToolbarItem<void, HTMLSelectElement
     size(): number;
     options(): HTMLOptionElement[];
     addOption(option: Element): void;
-    createOption(label: string, value?: string): HTMLOptionElement;
+    createOption(label: string, value?: string, jslogContext?: string): HTMLOptionElement;
     applyEnabledState(enabled: boolean): void;
     removeOption(option: Element): void;
     removeOptions(): void;

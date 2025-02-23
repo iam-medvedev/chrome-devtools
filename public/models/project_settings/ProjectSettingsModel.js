@@ -84,7 +84,7 @@ export class ProjectSettingsModel extends Common.ObjectWrapper.ObjectWrapper {
     }
     async #loadAndValidateProjectSettings(target) {
         const frame = target.model(SDK.ResourceTreeModel.ResourceTreeModel)?.mainFrame;
-        if (!frame || !frame.securityOriginDetails?.isLocalhost) {
+        if (!frame?.securityOriginDetails?.isLocalhost) {
             return EMPTY_PROJECT_SETTINGS;
         }
         const initiatorUrl = frame.url;

@@ -9,15 +9,13 @@ import * as Workspace from '../../../models/workspace/workspace.js';
 export class SourceMappingsUpdated extends Event {
     static eventName = 'sourcemappingsupdated';
     constructor() {
-        super(SourceMappingsUpdated.eventName, {
-            composed: true,
-            bubbles: true,
-        });
+        super(SourceMappingsUpdated.eventName, { composed: true, bubbles: true });
     }
 }
 // The code location key is created as a concatenation of its fields.
 export const resolvedCodeLocationDataNames = new Map();
 export class SourceMapsResolver extends EventTarget {
+    executionContextNamesByOrigin = new Map();
     #parsedTrace;
     #entityMapper = null;
     #isResolving = false;
@@ -111,6 +109,7 @@ export class SourceMapsResolver extends EventTarget {
         for (const debuggerModel of this.#debuggerModelsToListen) {
             debuggerModel.sourceMapManager().addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.#onAttachedSourceMap, this);
         }
+        this.#updateExtensionNames();
         // Although we have added listeners for SourceMapAttached events, we also
         // immediately try to resolve function names. This ensures we use any
         // sourcemaps that were attached before we bound our event listener.
@@ -188,6 +187,14 @@ export class SourceMapsResolver extends EventTarget {
             return SDK.TargetManager.TargetManager.instance().targetById(maybeWorkerId);
         }
         return SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    }
+    #updateExtensionNames() {
+        for (const runtimeModel of SDK.TargetManager.TargetManager.instance().models(SDK.RuntimeModel.RuntimeModel)) {
+            for (const context of runtimeModel.executionContexts()) {
+                this.executionContextNamesByOrigin.set(context.origin, context.name);
+            }
+        }
+        this.#entityMapper?.updateExtensionEntitiesWithName(this.executionContextNamesByOrigin);
     }
 }
 //# sourceMappingURL=SourceMapsResolver.js.map

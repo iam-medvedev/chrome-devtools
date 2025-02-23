@@ -116,7 +116,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     }
     attachInternal(element) {
         if (this.proxyElement) {
-            throw 'Cannot attach an attached TextPrompt';
+            throw new Error('Cannot attach an attached TextPrompt');
         }
         this.elementInternal = element;
         this.boundOnKeyDown = this.onKeyDown.bind(this);
@@ -169,7 +169,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         if (this.focusRestorer) {
             this.focusRestorer.restore();
         }
-        if (this.proxyElement && this.proxyElement.parentElement) {
+        if (this.proxyElement?.parentElement) {
             this.proxyElement.parentElement.insertBefore(this.element(), this.proxyElement);
             this.proxyElement.remove();
         }
@@ -307,7 +307,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     onKeyDown(ev) {
         let handled = false;
         const event = ev;
-        if (this.isSuggestBoxVisible() && this.suggestBox && this.suggestBox.keyPressed(event)) {
+        if (this.isSuggestBoxVisible() && this.suggestBox?.keyPressed(event)) {
             void VisualLogging.logKeyDown(this.suggestBox.element, event);
             event.consume(true);
             return;
@@ -354,8 +354,8 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     acceptSuggestionOnStopCharacters(key) {
-        if (!this.currentSuggestion || !this.queryRange || key.length !== 1 || !this.completionStopCharacters ||
-            !this.completionStopCharacters.includes(key)) {
+        if (!this.currentSuggestion || !this.queryRange || key.length !== 1 ||
+            !this.completionStopCharacters?.includes(key)) {
             return false;
         }
         const query = this.text().substring(this.queryRange.startColumn, this.queryRange.endColumn);
@@ -432,7 +432,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.clearAutocomplete();
     }
     refreshGhostText() {
-        if (this.currentSuggestion && this.currentSuggestion.hideGhostText) {
+        if (this.currentSuggestion?.hideGhostText) {
             this.ghostTextElement.remove();
             return;
         }
@@ -484,7 +484,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         expressionRange.setStartBefore(this.element());
         const completionRequestId = ++this.completionRequestId;
         const completions = await this.loadCompletions.call(null, expressionRange.toString(), wordQueryRange.toString(), Boolean(force));
-        this.completionsReady(completionRequestId, selection, wordQueryRange, Boolean(force), completions);
+        this.completionsReady(completionRequestId, (selection), wordQueryRange, Boolean(force), completions);
     }
     disableDefaultSuggestionForEmptyInput() {
         this.disableDefaultSuggestionForEmptyInputInternal = true;
@@ -585,7 +585,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     isSuggestBoxVisible() {
-        return this.suggestBox !== undefined && this.suggestBox.visible();
+        return this.suggestBox?.visible() ?? false;
     }
     isCaretAtEndOfPrompt() {
         const selection = this.element().getComponentSelection();
@@ -605,7 +605,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
         let foundNextText = false;
         while (node) {
-            if (node.nodeType === Node.TEXT_NODE && node.nodeValue && node.nodeValue.length) {
+            if (node.nodeType === Node.TEXT_NODE && node.nodeValue?.length) {
                 if (foundNextText && !this.ghostTextElement.isAncestor(node)) {
                     return false;
                 }

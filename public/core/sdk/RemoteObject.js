@@ -38,15 +38,15 @@ export class RemoteObject {
         }
         // Array lengths in V8-generated descriptions switched from square brackets to parentheses.
         // Both formats are checked in case the front end is dealing with an old version of V8.
-        const parenMatches = object.description && object.description.match(descriptionLengthParenRegex);
-        const squareMatches = object.description && object.description.match(descriptionLengthSquareRegex);
+        const parenMatches = object.description?.match(descriptionLengthParenRegex);
+        const squareMatches = object.description?.match(descriptionLengthSquareRegex);
         return parenMatches ? parseInt(parenMatches[1], 10) : (squareMatches ? parseInt(squareMatches[1], 10) : 0);
     }
     static arrayBufferByteLength(object) {
         if (object.subtype !== 'arraybuffer') {
             return 0;
         }
-        const matches = object.description && object.description.match(descriptionLengthParenRegex);
+        const matches = object.description?.match(descriptionLengthParenRegex);
         return matches ? parseInt(matches[1], 10) : 0;
     }
     static unserializableDescription(object) {
@@ -147,32 +147,8 @@ export class RemoteObject {
     customPreview() {
         return null;
     }
-    get objectId() {
-        // TODO(crbug.com/1226471): Return undefined here.
-        return 'Not implemented';
-    }
-    get type() {
-        throw 'Not implemented';
-    }
-    get subtype() {
-        throw 'Not implemented';
-    }
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    get value() {
-        throw 'Not implemented';
-    }
     unserializableValue() {
-        throw 'Not implemented';
-    }
-    get description() {
-        throw 'Not implemented';
-    }
-    set description(description) {
-        throw 'Not implemented';
-    }
-    get hasChildren() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     get preview() {
         return undefined;
@@ -180,29 +156,20 @@ export class RemoteObject {
     get className() {
         return null;
     }
-    arrayLength() {
-        throw 'Not implemented';
-    }
-    arrayBufferByteLength() {
-        throw 'Not implemented';
-    }
-    getOwnProperties(_generatePreview, _nonIndexedPropertiesOnly) {
-        throw 'Not implemented';
-    }
-    getAllProperties(_accessorPropertiesOnly, _generatePreview, _nonIndexedPropertiesOnly) {
-        throw 'Not implemented';
-    }
-    async deleteProperty(_name) {
-        throw 'Not implemented';
-    }
-    async setPropertyValue(_name, _value) {
-        throw 'Not implemented';
-    }
     callFunction(_functionDeclaration, _args) {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     callFunctionJSON(_functionDeclaration, _args) {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
+    }
+    arrayBufferByteLength() {
+        throw new Error('Not implemented');
+    }
+    deleteProperty(_name) {
+        throw new Error('Not implemented');
+    }
+    setPropertyValue(_name, _value) {
+        throw new Error('Not implemented');
     }
     release() {
     }
@@ -396,7 +363,7 @@ export class RemoteObjectImpl extends RemoteObject {
         if (response.result.objectId) {
             void this.#runtimeAgent.invoke_releaseObject({ objectId: response.result.objectId });
         }
-        return resultPromise;
+        return await resultPromise;
     }
     async doSetObjectPropertyValue(result, name) {
         // This assignment may be for a regular (data) property, and for an accessor property (with getter/setter).

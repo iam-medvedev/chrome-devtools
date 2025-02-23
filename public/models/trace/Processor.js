@@ -279,7 +279,7 @@ export class TraceProcessor extends EventTarget {
             LCPDiscovery: null,
             CLSCulprits: null,
             RenderBlocking: null,
-            LongCriticalNetworkTree: null,
+            NetworkDependencyTree: null,
             ImageDelivery: null,
             DocumentLatency: null,
             FontDisplay: null,
@@ -350,17 +350,6 @@ export class TraceProcessor extends EventTarget {
         insightSet.model = newModel;
     }
     #computeInsightSet(insights, parsedTrace, insightRunners, context, options) {
-        const model = {};
-        for (const [name, insight] of Object.entries(insightRunners)) {
-            let insightResult;
-            try {
-                insightResult = insight.generateInsight(parsedTrace, context);
-            }
-            catch (err) {
-                insightResult = err;
-            }
-            Object.assign(model, { [name]: insightResult });
-        }
         let id, urlString, navigation;
         if (context.navigation) {
             id = context.navigationId;
@@ -370,6 +359,21 @@ export class TraceProcessor extends EventTarget {
         else {
             id = Types.Events.NO_NAVIGATION;
             urlString = parsedTrace.Meta.mainFrameURL;
+        }
+        const model = {};
+        for (const [name, insight] of Object.entries(insightRunners)) {
+            let insightResult;
+            try {
+                insightResult = insight.generateInsight(parsedTrace, context);
+                const navId = context.navigation?.args.data?.navigationId;
+                if (navId) {
+                    insightResult.navigationId = navId;
+                }
+            }
+            catch (err) {
+                insightResult = err;
+            }
+            Object.assign(model, { [name]: insightResult });
         }
         let url;
         try {

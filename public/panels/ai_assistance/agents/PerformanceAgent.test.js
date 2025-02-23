@@ -4,7 +4,7 @@
 import * as Host from '../../../core/host/host.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
 import { CallTreeContext, PerformanceAgent } from '../ai_assistance.js';
@@ -23,7 +23,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             // An Evaluate Script event, picked because it has a URL of googletagmanager.com/...
             const evalScriptEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
             assert.exists(evalScriptEvent);
-            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(evalScriptEvent, parsedTrace);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(evalScriptEvent, parsedTrace);
             assert.isOk(aiCallTree);
             const callTreeContext = new CallTreeContext(aiCallTree);
             assert.strictEqual(callTreeContext.getOrigin(), 'https://www.googletagmanager.com');
@@ -33,7 +33,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             // A random layout event with no URL associated
             const layoutEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "Layout" /* Trace.Types.Events.Name.LAYOUT */ && event.ts === 122411130078);
             assert.exists(layoutEvent);
-            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvent, parsedTrace);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(layoutEvent, parsedTrace);
             assert.isOk(aiCallTree);
             const callTreeContext = new CallTreeContext(aiCallTree);
             assert.strictEqual(callTreeContext.getOrigin(), 'Layout_90829_259_122411130078');
@@ -66,6 +66,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             });
             sinon.stub(agent, 'preamble').value('preamble');
             await Array.fromAsync(agent.run('question', { selected: null }));
+            setUserAgentForTesting();
             assert.deepEqual(agent.buildRequest({
                 text: 'test input',
             }, Host.AidaClient.Role.USER), {
@@ -86,6 +87,7 @@ describeWithEnvironment('PerformanceAgent', () => {
                     disable_user_content_logging: false,
                     string_session_id: 'sessionId',
                     user_tier: 2,
+                    client_version: 'unit_test',
                 },
                 options: {
                     model_id: 'test model',
@@ -94,6 +96,7 @@ describeWithEnvironment('PerformanceAgent', () => {
                 client_feature: 8,
                 functionality_type: 1,
             });
+            restoreUserAgentForTesting();
         });
     });
     describe('run', function () {
@@ -102,7 +105,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             // A basic Layout.
             const layoutEvt = parsedTrace.Renderer.allTraceEntries.find(event => event.ts === 465457096322);
             assert.exists(layoutEvt);
-            const aiCallTree = TimelineUtils.AICallTree.AICallTree.from(layoutEvt, parsedTrace);
+            const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(layoutEvt, parsedTrace);
             assert.exists(aiCallTree);
             const agent = new PerformanceAgent({
                 aidaClient: mockAidaClient([[{
@@ -134,6 +137,7 @@ self: 3
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,

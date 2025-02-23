@@ -135,7 +135,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     }
     static unbindUILocation(anchor) {
         const info = Linkifier.linkInfo(anchor);
-        if (!info || !info.uiLocation) {
+        if (!info?.uiLocation) {
             return;
         }
         const uiSourceCode = info.uiLocation.uiSourceCode;
@@ -165,7 +165,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
      */
     static unbindBreakpoint(anchor) {
         const info = Linkifier.linkInfo(anchor);
-        if (info && info.revealable) {
+        if (info?.revealable) {
             info.revealable = null;
         }
     }
@@ -210,6 +210,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             inlineFrameIndex: options?.inlineFrameIndex ?? 0,
             userMetric: options?.userMetric,
             jslogContext: options?.jslogContext || 'script-location',
+            omitOrigin: options?.omitOrigin,
         };
         const { columnNumber, className = '' } = linkifyURLOptions;
         if (sourceURL) {
@@ -234,7 +235,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             tabStop: options?.tabStop,
             jslogContext: 'script-location',
         };
-        const { link, linkInfo } = Linkifier.createLink(fallbackAnchor && fallbackAnchor.textContent ? fallbackAnchor.textContent : '', className, createLinkOptions);
+        const { link, linkInfo } = Linkifier.createLink(fallbackAnchor?.textContent ? fallbackAnchor.textContent : '', className, createLinkOptions);
         linkInfo.enableDecorator = this.useLinkDecorator;
         linkInfo.fallback = fallbackAnchor;
         linkInfo.userMetric = options?.userMetric;
@@ -384,8 +385,8 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         const uiLocation = await liveLocation.uiLocation();
         if (!uiLocation) {
             if (liveLocation instanceof Bindings.CSSWorkspaceBinding.LiveLocation) {
-                const header = liveLocation.header();
-                if (header && header.ownerNode) {
+                const header = (liveLocation).header();
+                if (header?.ownerNode) {
                     anchor.addEventListener('click', event => {
                         event.consume(true);
                         void Common.Revealer.reveal(header.ownerNode || null);
@@ -423,13 +424,13 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     }
     static updateLinkDecorations(anchor) {
         const info = Linkifier.linkInfo(anchor);
-        if (!info || !info.enableDecorator) {
+        if (!info?.enableDecorator) {
             return;
         }
         if (!decorator || !info.uiLocation) {
             return;
         }
-        if (info.icon && info.icon.parentElement) {
+        if (info.icon?.parentElement) {
             anchor.removeChild(info.icon);
         }
         const icon = decorator.linkIcon(info.uiLocation.uiSourceCode);
@@ -452,6 +453,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         const preventClick = options.preventClick;
         const maxLength = options.maxLength || UI.UIUtils.MaxLengthForDisplayedURLs;
         const bypassURLTrimming = options.bypassURLTrimming;
+        const omitOrigin = options.omitOrigin;
         if (!url || Common.ParsedURL.schemeIs(url, 'javascript:')) {
             const element = document.createElement('span');
             if (className) {
@@ -461,6 +463,12 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             return element;
         }
         let linkText = text || Bindings.ResourceUtils.displayNameForURL(url);
+        if (omitOrigin) {
+            const parsedUrl = URL.parse(url);
+            if (parsedUrl) {
+                linkText = url.replace(parsedUrl.origin, '');
+            }
+        }
         if (typeof lineNumber === 'number' && !text) {
             linkText += ':' + (lineNumber + 1);
             if (showColumnNumber && typeof columnNumber === 'number') {
@@ -512,7 +520,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             UI.Tooltip.Tooltip.install(link, title);
         }
         if (href) {
-            // @ts-ignore
+            // @ts-expect-error
             link.href = href;
         }
         link.setAttribute('jslog', `${VisualLogging.link(jslogContext).track({ click: true })}`);
@@ -712,7 +720,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
                 handler: () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(url),
             });
         }
-        if (uiLocation && uiLocation.uiSourceCode) {
+        if (uiLocation?.uiSourceCode) {
             const contentProvider = uiLocation.uiSourceCode;
             result.push({
                 section: 'clipboard',

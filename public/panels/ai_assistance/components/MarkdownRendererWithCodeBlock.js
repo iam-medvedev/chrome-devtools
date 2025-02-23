@@ -20,7 +20,7 @@ export class MarkdownRendererWithCodeBlock extends MarkdownView.MarkdownView.Mar
     }
     templateForToken(token) {
         if (token.type === 'code') {
-            const lines = token.text.split('\n');
+            const lines = (token.text).split('\n');
             if (lines[0]?.trim() === 'css') {
                 token.lang = 'css';
                 token.text = lines.slice(1).join('\n');

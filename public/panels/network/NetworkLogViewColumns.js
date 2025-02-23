@@ -238,7 +238,6 @@ export class NetworkLogViewColumns {
         this.dataGridInternal = new DataGrid.SortableDataGrid.SortableDataGrid(({
             displayName: i18nString(UIStrings.networkLog),
             columns: this.columns.map(NetworkLogViewColumns.convertToDataGridDescriptor),
-            editCallback: undefined,
             deleteCallback: undefined,
             refreshCallback: undefined,
         }));
@@ -430,7 +429,7 @@ export class NetworkLogViewColumns {
         this.waterfallColumnSortIcon.hidden = true;
         this.waterfallColumnSortIcon.name = null;
         const columnConfig = this.columns.find(columnConfig => columnConfig.id === columnId);
-        if (!columnConfig || !columnConfig.sortingFunction) {
+        if (!columnConfig?.sortingFunction) {
             return;
         }
         const sortingFunction = columnConfig.sortingFunction;
@@ -692,7 +691,7 @@ export class NetworkLogViewColumns {
                 this.popupLinkifier.addEventListener("liveLocationUpdated" /* Components.Linkifier.Events.LIVE_LOCATION_UPDATED */, () => {
                     popover.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
                 });
-                const content = RequestInitiatorView.createStackTracePreview(request, this.popupLinkifier, false);
+                const content = RequestInitiatorView.createStackTracePreview((request), this.popupLinkifier, false);
                 if (!content) {
                     return false;
                 }

@@ -1087,7 +1087,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
     }
     showSrgbOverlay() {
-        if ((this.contrastDetails && this.contrastDetails.expanded()) || this.gamut !== "display-p3" /* SpectrumGamut.DISPLAY_P3 */) {
+        if ((this.contrastDetails?.expanded()) || this.gamut !== "display-p3" /* SpectrumGamut.DISPLAY_P3 */) {
             return;
         }
         void this.srgbOverlay.render({

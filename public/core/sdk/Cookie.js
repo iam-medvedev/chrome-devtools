@@ -194,6 +194,12 @@ export class Cookie {
                 this.#attributes.set(key, value);
         }
     }
+    hasAttribute(key) {
+        return this.#attributes.has(key);
+    }
+    getAttribute(key) {
+        return this.#attributes.get(key);
+    }
     setCookieLine(cookieLine) {
         this.#cookieLine = cookieLine;
     }

@@ -186,7 +186,7 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
         const text = new TextUtils.Text.Text(this.ownerStyle.cssText || '');
         const newStyleText = text.replaceRange(range, Platform.StringUtilities.sprintf(';%s;', propertyText));
         const styleText = await CSSProperty.formatStyle(newStyleText, indentation, endIndentation);
-        return this.ownerStyle.setText(styleText, majorChange);
+        return await this.ownerStyle.setText(styleText, majorChange);
     }
     static async formatStyle(styleText, indentation, endIndentation) {
         const doubleIndent = indentation.substring(endIndentation.length) + indentation;
@@ -306,7 +306,7 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
         else {
             text = appendSemicolonIfMissing(this.text.substring(2, propertyText.length - 2).trim());
         }
-        return this.setText(text, true, true);
+        return await this.setText(text, true, true);
     }
     /**
      * This stores the warning string when a CSS Property is improperly parsed.

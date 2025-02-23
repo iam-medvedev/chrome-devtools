@@ -507,7 +507,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#endTimeInternal || -1;
     }
     set endTime(x) {
-        if (this.timing && this.timing.requestTime) {
+        if (this.timing?.requestTime) {
             // Check against accurate responseReceivedTime.
             this.#endTimeInternal = Math.max(x, this.responseReceivedTime);
         }
@@ -1174,7 +1174,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     async searchInContent(query, caseSensitive, isRegex) {
         if (!this.#contentDataProvider) {
-            return NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
+            return await NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
         }
         const contentData = await this.requestContentData();
         if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {

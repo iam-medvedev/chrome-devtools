@@ -167,7 +167,6 @@ export class CoverageListView extends UI.Widget.VBox {
         this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
             displayName: i18nString(UIStrings.codeCoverage),
             columns,
-            editCallback: undefined,
             refreshCallback: undefined,
             deleteCallback: undefined,
         });
@@ -435,7 +434,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             return;
         }
         const matches = this.highlightRegExp.exec(textContent);
-        if (!matches || !matches.length) {
+        if (!matches?.length) {
             return;
         }
         const range = new TextUtils.TextRange.SourceRange(matches.index, matches[0].length);

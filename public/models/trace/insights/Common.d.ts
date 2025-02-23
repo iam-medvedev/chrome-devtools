@@ -1,6 +1,6 @@
 import type * as CrUXManager from '../../crux-manager/crux-manager.js';
 import * as Types from '../types/types.js';
-import type { InsightModels, InsightSet, InsightSetContext, MetricSavings, TraceInsightSets } from './types.js';
+import { type InsightModels, type InsightSet, type InsightSetContext, type MetricSavings, type TraceInsightSets } from './types.js';
 export declare function getInsight<InsightName extends keyof InsightModels>(insightName: InsightName, insights: TraceInsightSets | null, key: string | null): InsightModels[InsightName] | null;
 export declare function getLCP(insights: TraceInsightSets | null, key: string | null): {
     value: Types.Timing.Micro;

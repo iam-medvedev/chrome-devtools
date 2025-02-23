@@ -124,14 +124,14 @@ export class ListWidget extends VBox {
         }
         const element = this.elements[index];
         const previous = element.previousElementSibling;
-        const previousIsSeparator = previous && previous.classList.contains('list-separator');
+        const previousIsSeparator = previous?.classList.contains('list-separator');
         const next = element.nextElementSibling;
-        const nextIsSeparator = next && next.classList.contains('list-separator');
+        const nextIsSeparator = next?.classList.contains('list-separator');
         if (previousIsSeparator && (nextIsSeparator || !next)) {
-            previous.remove();
+            previous?.remove();
         }
         if (nextIsSeparator && !previous) {
-            next.remove();
+            next?.remove();
         }
         element.remove();
         this.elements.splice(index, 1);
@@ -245,7 +245,7 @@ export class ListWidget extends VBox {
         if (this.editElement) {
             this.editElement.classList.remove('hidden');
         }
-        if (this.editor && this.editor.element.parentElement) {
+        if (this.editor?.element.parentElement) {
             this.editor.element.remove();
         }
         this.editor = null;
@@ -315,7 +315,7 @@ export class Editor {
         return this.contentElementInternal;
     }
     createInput(name, type, title, validator) {
-        const input = createInput('', type);
+        const input = (createInput('', type));
         input.placeholder = title;
         input.addEventListener('input', this.validateControls.bind(this, false), false);
         input.setAttribute('jslog', `${VisualLogging.textField().track({ change: true, keydown: 'Enter' }).context(name)}`);

@@ -62,6 +62,7 @@ import { AnnotationModifiedEvent, ModificationsManager } from './ModificationsMa
 import * as Overlays from './overlays/overlays.js';
 import { cpuprofileJsonGenerator, traceJsonGenerator } from './SaveFileFormatter.js';
 import { TimelineController } from './TimelineController.js';
+import { Tab } from './TimelineDetailsView.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineHistoryManager } from './TimelineHistoryManager.js';
 import { TimelineLoader } from './TimelineLoader.js';
@@ -469,8 +470,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
         this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
         this.traceLoadStart = null;
-        this.disableCaptureJSProfileSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false);
+        this.disableCaptureJSProfileSetting = Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
         this.captureLayersAndPicturesSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.captureLayersAndPicturesSetting.setTitle(i18nString(UIStrings.enableAdvancedPaint));
@@ -480,11 +480,10 @@ export class TimelinePanel extends UI.Panel.Panel {
             Common.Settings.Settings.instance().createSetting('timeline-show-screenshots', isNode ? false : true);
         this.showScreenshotsSetting.setTitle(i18nString(UIStrings.screenshots));
         this.showScreenshotsSetting.addChangeListener(this.updateMiniMap, this);
-        this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false);
+        this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.showMemorySetting.setTitle(i18nString(UIStrings.memory));
         this.showMemorySetting.addChangeListener(this.onMemoryModeChanged, this);
-        this.#dimThirdPartiesSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-dim-third-parties', false);
+        this.#dimThirdPartiesSetting = Common.Settings.Settings.instance().createSetting('timeline-dim-third-parties', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.#dimThirdPartiesSetting.setTitle(i18nString(UIStrings.dimThirdParties));
         this.#dimThirdPartiesSetting.addChangeListener(this.onDimThirdPartiesChanged, this);
         this.#thirdPartyTracksSetting = TimelinePanel.extensionDataVisibilitySetting();
@@ -554,6 +553,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightActivated.eventName, event => {
             const { model, insightSetKey } = event;
             this.#setActiveInsight({ model, insightSetKey });
+            // Open the summary panel for the 3p insight.
+            if (model.insightKey === "ThirdParties" /* Trace.Insights.Types.InsightKeys.THIRD_PARTIES */) {
+                this.#openSummaryTab();
+            }
         });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideOverlays.eventName, event => {
             const { overlays, options } = event;
@@ -565,10 +568,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             else {
                 this.#minimapComponent.clearBoundsHighlight();
             }
-        });
-        this.flameChart.element.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
-            const fromTraceEvent = selectionFromEvent(event.event);
-            this.flameChart.setSelectionAndReveal(fromTraceEvent);
         });
         this.#sideBar.contentElement.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
             this.select(selectionFromEvent(event.event));
@@ -1149,24 +1148,20 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         const traceEvents = this.#traceEngineModel.rawTraceEvents(this.#viewMode.traceIndex);
         const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex);
-        if (metadata && addModifications) {
-            metadata.modifications = ModificationsManager.activeManager()?.toJSON();
-        }
-        else if (metadata) {
-            delete metadata.modifications;
-        }
-        if (metadata && isEnhancedTraces) {
-            metadata.enhancedTraceVersion = SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion;
-        }
         if (!traceEvents) {
             return;
+        }
+        if (metadata) {
+            metadata.modifications = addModifications ? ModificationsManager.activeManager()?.toJSON() : undefined;
+            metadata.enhancedTraceVersion =
+                isEnhancedTraces ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
         }
         const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
         let fileName;
         if (metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
             fileName = `CPU-${traceStart}.cpuprofile`;
         }
-        else if (metadata && metadata.enhancedTraceVersion) {
+        else if (metadata?.enhancedTraceVersion) {
             fileName = `EnhancedTraces-${traceStart}.json`;
         }
         else {
@@ -1177,7 +1172,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             let traceAsString;
             if (metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
                 const profileEvent = traceEvents.find(e => e.name === 'CpuProfile');
-                if (!profileEvent || !profileEvent.args?.data) {
+                if (!profileEvent?.args?.data) {
                     return;
                 }
                 const profileEventData = profileEvent.args?.data;
@@ -1769,7 +1764,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         // Set up line level profiling with CPU profiles, if we found any.
         PerfUI.LineLevelProfile.Performance.instance().reset();
-        if (parsedTrace && parsedTrace.Samples.profilesInProcess.size) {
+        if (parsedTrace?.Samples.profilesInProcess.size) {
             const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             // Gather up all CPU Profiles we found when parsing this trace.
             const cpuProfiles = Array.from(parsedTrace.Samples.profilesInProcess).flatMap(([_processId, threadsInProcess]) => {
@@ -2095,10 +2090,66 @@ export class TimelinePanel extends UI.Panel.Panel {
             }, 0);
         });
     }
+    #createSourceMapResolver(isFreshRecording) {
+        // Currently, only experimental insights need source maps.
+        if (!Root.Runtime.experiments.isEnabled("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */)) {
+            return;
+        }
+        const debuggerModelForFrameId = new Map();
+        for (const target of SDK.TargetManager.TargetManager.instance().targets()) {
+            const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
+            if (!debuggerModel) {
+                continue;
+            }
+            const resourceModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+            const activeFrameIds = (resourceModel?.frames() ?? []).map(frame => frame.id);
+            for (const frameId of activeFrameIds) {
+                debuggerModelForFrameId.set(frameId, debuggerModel);
+            }
+        }
+        async function getExistingSourceMap(frame, scriptId, scriptUrl) {
+            const debuggerModel = debuggerModelForFrameId.get(frame);
+            if (!debuggerModel) {
+                return;
+            }
+            const script = debuggerModel.scriptForId(scriptId);
+            if (!script || (scriptUrl && scriptUrl !== script.sourceURL)) {
+                return;
+            }
+            return await debuggerModel.sourceMapManager().sourceMapForClientPromise(script);
+        }
+        return async function resolveSourceMap(params) {
+            const { scriptId, scriptUrl, sourceMapUrl, frame } = params;
+            // For still-active frames, the source map is likely already fetched or at least in-flight.
+            if (isFreshRecording) {
+                const map = await getExistingSourceMap(frame, scriptId, scriptUrl);
+                if (map) {
+                    return map;
+                }
+            }
+            // Else... fetch it!
+            if (!scriptUrl) {
+                return null;
+            }
+            // In all other cases, we must fetch the source map.
+            // For example, since the debugger model is disable during recording, any non-final navigations during
+            // the trace will never have their source maps fetched by the debugger model. That's only ever done here.
+            try {
+                const initiator = { target: null, frameId: frame, initiatorUrl: scriptUrl };
+                const payload = await SDK.SourceMapManager.loadSourceMap(sourceMapUrl, initiator);
+                return new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, payload);
+            }
+            catch (cause) {
+                console.error(`Could not load content for ${sourceMapUrl}: ${cause.message}`, { cause });
+            }
+            return null;
+        };
+    }
     async #executeNewTrace(collectedEvents, isFreshRecording, metadata) {
-        return this.#traceEngineModel.parse(collectedEvents, {
+        return await this.#traceEngineModel.parse(collectedEvents, {
             metadata: metadata ?? undefined,
             isFreshRecording,
+            resolveSourceMap: this.#createSourceMapResolver(isFreshRecording),
         });
     }
     loadingCompleteForTest() {
@@ -2269,6 +2320,11 @@ export class TimelinePanel extends UI.Panel.Panel {
             }
             void this.loadFromFile(file);
         }
+    }
+    #openSummaryTab() {
+        // If we have a selection, we should remove it.
+        this.flameChart.setSelectionAndReveal(null);
+        this.flameChart.selectDetailsViewTab(Tab.Details, null);
     }
 }
 // Define row and header height, should be in sync with styles for timeline graphs.

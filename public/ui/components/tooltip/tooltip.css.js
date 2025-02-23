@@ -25,6 +25,7 @@ export default {
   & .container {
     width: max-content;
     margin: var(--sys-size-2);
+    font: var(--sys-typescale-body4-regular);
     color: var(--sys-color-inverse-on-surface);
     background-color: var(--sys-color-inverse-surface);
     box-shadow: var(--sys-elevation-level2);

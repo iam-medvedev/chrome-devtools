@@ -210,7 +210,6 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
             columns,
             deleteCallback: this.deleteButtonClicked.bind(this),
             refreshCallback: this.updateData.bind(this, true),
-            editCallback: undefined,
         });
         dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
         dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, event => {
@@ -255,7 +254,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     }
     async deleteButtonClicked(node) {
         if (!node) {
-            node = this.dataGrid && this.dataGrid.selectedNode;
+            node = this.dataGrid?.selectedNode ?? null;
             if (!node) {
                 return;
             }
@@ -288,7 +287,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         if (!this.dataGrid) {
             return;
         }
-        const selected = this.dataGrid.selectedNode && this.dataGrid.selectedNode.data.url();
+        const selected = this.dataGrid.selectedNode?.data.url();
         this.refreshButton.setEnabled(true);
         this.entriesForTest = entries;
         this.returnCount = returnCount;
@@ -325,11 +324,11 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
     }
     async updateData(force) {
         if (!force && this.loadingPromise) {
-            return this.loadingPromise;
+            return await this.loadingPromise;
         }
         this.refreshButton.setEnabled(false);
         if (this.loadingPromise) {
-            return this.loadingPromise;
+            return await this.loadingPromise;
         }
         this.loadingPromise = new Promise(resolve => {
             this.model.loadAllCacheData(this.cache, this.entryPathFilter, (entries, returnCount) => {
@@ -358,7 +357,7 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
             networkRequestToPreview.set(request, preview);
         }
         // It is possible that table selection changes before the preview opens.
-        if (this.dataGrid && this.dataGrid.selectedNode && request === this.dataGrid.selectedNode.data) {
+        if (this.dataGrid?.selectedNode && request === this.dataGrid.selectedNode.data) {
             this.showPreview(preview);
         }
     }

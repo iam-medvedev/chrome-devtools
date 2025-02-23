@@ -229,7 +229,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         return {
             box: anchorBox,
             show: (popover) => {
-                const content = RequestTimingView.createTimingTable(request, this.calculator);
+                const content = RequestTimingView.createTimingTable((request), this.calculator);
                 popover.registerRequiredCSS(networkingTimingTableStyles);
                 popover.contentElement.appendChild(content);
                 return Promise.resolve(true);
@@ -247,7 +247,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         }
     }
     setSelectedNode(node) {
-        if (node && node.dataGrid) {
+        if (node?.dataGrid) {
             node.select();
             node.dataGrid.element.focus();
             return true;
@@ -329,7 +329,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         const useTimingBars = !Common.Settings.Settings.instance().moduleSetting('network-color-code-resource-types').get() &&
             !this.calculator.startAtZero;
         const nodes = this.nodes;
-        const context = this.canvas.getContext('2d');
+        const context = (this.canvas.getContext('2d'));
         if (!context) {
             return;
         }
@@ -380,8 +380,8 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     drawLayers(context, useTimingBars) {
         for (const entry of this.pathForStyle) {
-            const style = entry[0];
-            const path = entry[1];
+            const style = (entry[0]);
+            const path = (entry[1]);
             context.save();
             context.beginPath();
             if (style.lineWidth) {

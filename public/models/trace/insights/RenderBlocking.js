@@ -113,6 +113,7 @@ function computeSavings(parsedTrace, context, renderBlockingRequests) {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "RenderBlocking" /* InsightKeys.RENDER_BLOCKING */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

@@ -278,18 +278,17 @@ export class KeyValueStorageItemsView extends StorageItemsView {
         this.performUpdate();
     }
     async #previewEntry(entry) {
-        const value = entry && entry.value;
-        if (value) {
+        if (entry?.value) {
             this.#selectedKey = entry.key;
-            const preview = await this.createPreview(entry.key, value);
+            const preview = await this.createPreview(entry.key, entry.value);
             // Selection could've changed while the preview was loaded
             if (this.#selectedKey === entry.key) {
-                this.showPreview(preview, value);
+                this.showPreview(preview, entry.value);
             }
         }
         else {
             this.#selectedKey = null;
-            this.showPreview(null, value);
+            this.showPreview(null, null);
         }
     }
     set editable(editable) {

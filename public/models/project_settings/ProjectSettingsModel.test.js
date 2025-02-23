@@ -79,7 +79,12 @@ describe('ProjectSettingsModel', () => {
             targetManager,
         });
         const projectSettings = await projectSettingsModel.projectSettingsPromise;
-        assert.deepEqual(projectSettings, { workspace: { root: '/home/foo', uuid: 'foo' } });
+        assert.deepEqual(projectSettings, {
+            workspace: {
+                root: '/home/foo',
+                uuid: 'foo',
+            }
+        });
     });
     it('listens for navigations', () => {
         const hostConfig = { devToolsWellKnown: { enabled: true } };

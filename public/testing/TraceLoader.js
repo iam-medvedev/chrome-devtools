@@ -159,7 +159,7 @@ export class TraceLoader {
     static async executeTraceEngineOnFileContents(contents, emulateFreshRecording = false, traceEngineConfig) {
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;
         const metadata = 'metadata' in contents ? contents.metadata : {};
-        return new Promise((resolve, reject) => {
+        return await new Promise((resolve, reject) => {
             const model = Trace.TraceModel.Model.createWithAllHandlers(traceEngineConfig);
             model.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, (event) => {
                 const { data } = event;
@@ -195,7 +195,7 @@ async function loadTraceFileFromURL(url) {
         throw new Error(`Unable to load ${url}`);
     }
     const contentType = response.headers.get('content-type');
-    const isGzipEncoded = contentType !== null && contentType.includes('gzip');
+    const isGzipEncoded = contentType?.includes('gzip');
     let buffer = await response.arrayBuffer();
     if (isGzipEncoded) {
         buffer = await decodeGzipBuffer(buffer);
@@ -223,7 +223,7 @@ export async function fetchFixture(url) {
         throw new Error(`Unable to load ${url}`);
     }
     const contentType = response.headers.get('content-type');
-    const isGzipEncoded = contentType !== null && contentType.includes('gzip');
+    const isGzipEncoded = contentType?.includes('gzip');
     let buffer = await response.arrayBuffer();
     if (isGzipEncoded) {
         buffer = await decodeGzipBuffer(buffer);

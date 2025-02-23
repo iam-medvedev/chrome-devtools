@@ -14,6 +14,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getAnnotationEntries, getAnnotationWindow } from './AnnotationHelpers.js';
+import * as TimelineInsights from './components/insights/insights.js';
 import { CountersGraph } from './CountersGraph.js';
 import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { ModificationsManager } from './ModificationsManager.js';
@@ -320,10 +321,16 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.networkFlameChart.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, event => {
             this.updateLinkSelectionAnnotationWithToEntry(this.networkDataProvider, event.data);
         }, this);
+        // This listener is used for timings marker, when they are clicked, open the details view for them. They are
+        // rendered in the overlays system, not in flame chart (canvas), so need this extra handling.
         this.#overlays.addEventListener(Overlays.Overlays.EventReferenceClick.eventName, event => {
             const eventRef = event;
             const fromTraceEvent = selectionFromEvent(eventRef.event);
             this.openSelectionDetailsView(fromTraceEvent);
+        });
+        // This is for the detail view of layout shift.
+        this.element.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
+            this.setSelectionAndReveal(selectionFromEvent(event.event));
         });
         this.element.addEventListener('keydown', this.#keydownHandler.bind(this));
         this.element.addEventListener('pointerdown', this.#pointerDownHandler.bind(this));
@@ -934,8 +941,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#entityMapper = new Utils.EntityMapper.EntityMapper(this.#parsedTrace);
         // order is important: |reset| needs to be called after the trace
         // model has been set in the data providers.
-        this.mainDataProvider.setModel(this.#parsedTrace);
-        this.networkDataProvider.setModel(this.#parsedTrace);
+        this.mainDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
+        this.networkDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
         this.reset();
         this.setupWindowTimes();
         this.updateSearchResults(false, false);
@@ -1116,10 +1123,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     }
     setSelectionAndReveal(selection) {
         this.#currentSelection = selection;
-        const mainIndex = this.mainDataProvider.entryIndexForSelection(selection);
-        const networkIndex = this.networkDataProvider.entryIndexForSelection(selection);
-        this.mainFlameChart.setSelectedEntry(mainIndex);
-        this.networkFlameChart.setSelectedEntry(networkIndex);
         // Clear any existing entry selection.
         this.#overlays.removeOverlaysOfType('ENTRY_SELECTED');
         // If:
@@ -1132,10 +1135,16 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             ModificationsManager.activeManager()?.removeAnnotation(this.#timeRangeSelectionAnnotation);
             this.#timeRangeSelectionAnnotation = null;
         }
-        let index = this.mainDataProvider.entryIndexForSelection(selection);
-        this.mainFlameChart.setSelectedEntry(index);
-        index = this.networkDataProvider.entryIndexForSelection(selection);
-        this.networkFlameChart.setSelectedEntry(index);
+        // Check if this is an entry from main flame chart or network flame chart.
+        // If so build the initiators and select the entry.
+        // Otherwise clear the initiators and the selection.
+        //   - This is done by the same functions, when the index is -1, it will clear everything.
+        const mainIndex = this.mainDataProvider.entryIndexForSelection(selection);
+        this.mainDataProvider.buildFlowForInitiator(mainIndex);
+        this.mainFlameChart.setSelectedEntry(mainIndex);
+        const networkIndex = this.networkDataProvider.entryIndexForSelection(selection);
+        this.networkDataProvider.buildFlowForInitiator(networkIndex);
+        this.networkFlameChart.setSelectedEntry(networkIndex);
         if (this.detailsView) {
             // TODO(crbug.com/1459265):  Change to await after migration work.
             void this.detailsView.setSelection(selection);
@@ -1159,7 +1168,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         // an invalid event - we don't want to reset it back as it may be they are
         // clicking around in order to understand something.
         if (selectionIsEvent(selection) && this.#parsedTrace) {
-            const aiCallTree = Utils.AICallTree.AICallTree.from(selection.event, this.#parsedTrace);
+            const aiCallTree = Utils.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
             if (aiCallTree) {
                 UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
             }
@@ -1261,7 +1270,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         const entryLevel = data.entryLevels[entryIndex];
         // Find the group that contains this level and log a click for it.
         const group = groupForLevel(data.groups, entryLevel);
-        if (group && group.jslogContext) {
+        if (group?.jslogContext) {
             const loggable = this.#loggableForGroupByLogContext.get(group.jslogContext) ?? null;
             if (loggable) {
                 VisualLogging.logClick(loggable, new MouseEvent('click'));
@@ -1328,14 +1337,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         return this.searchResults.findIndex(result => result.index === index);
     }
     jumpToNextSearchResult() {
-        if (!this.searchResults || !this.searchResults.length) {
+        if (!this.searchResults?.length) {
             return;
         }
         const index = typeof this.selectedSearchResult !== 'undefined' ? this.searchResults.indexOf(this.selectedSearchResult) : -1;
         this.#selectSearchResult(Platform.NumberUtilities.mod(index + 1, this.searchResults.length));
     }
     jumpToPreviousSearchResult() {
-        if (!this.searchResults || !this.searchResults.length) {
+        if (!this.searchResults?.length) {
             return;
         }
         const index = typeof this.selectedSearchResult !== 'undefined' ? this.searchResults.indexOf(this.selectedSearchResult) : 0;
@@ -1458,6 +1467,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     }
     overlays() {
         return this.#overlays;
+    }
+    selectDetailsViewTab(tabName, node) {
+        this.detailsView.selectTab(tabName, node);
     }
 }
 export class Selection {

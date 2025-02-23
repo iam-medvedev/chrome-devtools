@@ -178,7 +178,7 @@ class DragHandler {
         if (this.elementDraggingEventListener) {
             return;
         }
-        if (elementDragStart && !elementDragStart(event)) {
+        if (elementDragStart && !elementDragStart((event))) {
             return;
         }
         const targetDocument = (event.target instanceof Node && event.target.ownerDocument);
@@ -441,7 +441,7 @@ export function createReplacementString(wordString, event, customNumberHandler) 
     let number;
     let replacementString = null;
     let matches = /(.*#)([\da-fA-F]+)(.*)/.exec(wordString);
-    if (matches && matches.length) {
+    if (matches?.length) {
         prefix = matches[1];
         suffix = matches[3];
         number = modifiedHexValue(matches[2], event);
@@ -451,7 +451,7 @@ export function createReplacementString(wordString, event, customNumberHandler) 
     }
     else {
         matches = /(.*?)(-?(?:\d+(?:\.\d+)?|\.\d+))(.*)/.exec(wordString);
-        if (matches && matches.length) {
+        if (matches?.length) {
             prefix = matches[1];
             suffix = matches[3];
             number = modifiedFloatNumber(parseFloat(matches[2]), event);
@@ -480,7 +480,7 @@ export function handleElementValueModifications(event, element, finishHandler, s
     }
     void VisualLogging.logKeyDown(event.currentTarget, event, 'element-value-modification');
     const selection = element.getComponentSelection();
-    if (!selection || !selection.rangeCount) {
+    if (!selection?.rangeCount) {
         return false;
     }
     const selectionRange = selection.getRangeAt(0);
@@ -490,7 +490,7 @@ export function handleElementValueModifications(event, element, finishHandler, s
     const originalValue = element.textContent;
     const wordRange = Platform.DOMUtilities.rangeOfWord(selectionRange.startContainer, selectionRange.startOffset, StyleValueDelimiters, element);
     const wordString = wordRange.toString();
-    if (suggestionHandler && suggestionHandler(wordString)) {
+    if (suggestionHandler?.(wordString)) {
         return false;
     }
     const replacementString = createReplacementString(wordString, event, customNumberHandler);
@@ -1209,6 +1209,9 @@ export class DevToolsCloseButton extends HTMLElement {
     setAccessibleName(name) {
         ARIAUtils.setLabel(this.#button, name);
     }
+    setSize(size) {
+        this.#button.size = size;
+    }
     setTabbable(tabbable) {
         if (tabbable) {
             this.#button.tabIndex = 0;
@@ -1453,7 +1456,7 @@ export class Renderer {
             return null;
         }
         const renderer = await extension.loadRenderer();
-        return renderer.render(object, options);
+        return await renderer.render(object, options);
     }
 }
 export function formatTimestamp(timestamp, full) {
@@ -1550,7 +1553,7 @@ function updateWidgetfocusWidgetForNode(node) {
         return;
     }
     let widget = Widget.get(node);
-    while (widget && widget.parentWidget()) {
+    while (widget?.parentWidget()) {
         const parentWidget = widget.parentWidget();
         if (!parentWidget) {
             break;
@@ -1560,7 +1563,7 @@ function updateWidgetfocusWidgetForNode(node) {
     }
 }
 function updateXWidgetfocusWidgetForNode(node) {
-    node = node && node.parentNodeOrShadowHost();
+    node = node?.parentNodeOrShadowHost() ?? null;
     const XWidgetCtor = customElements.get('x-widget');
     let widget = null;
     while (node) {

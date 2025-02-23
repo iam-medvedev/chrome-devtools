@@ -5,6 +5,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type * as TimelineComponents from './components/components.js';
 import * as Overlays from './overlays/overlays.js';
+import { type Tab } from './TimelineDetailsView.js';
 import { TimelineFlameChartDataProvider } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
@@ -140,6 +141,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
         show: boolean;
     }): void;
     overlays(): Overlays.Overlays.Overlays;
+    selectDetailsViewTab(tabName: Tab, node: Trace.Extras.TraceTree.Node | null): void;
 }
 export declare class Selection {
     timelineSelection: TimelineSelection;

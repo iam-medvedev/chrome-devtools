@@ -296,7 +296,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         });
     }
     viewHasFocus() {
-        if (this.visibleView && this.visibleView.hasFocus()) {
+        if (this.visibleView?.hasFocus()) {
             return true;
         }
         const root = this.contentElement.getComponentRoot();

@@ -9,7 +9,7 @@ export class SortableDataGrid extends ViewportDataGrid {
     constructor(dataGridParameters) {
         super(dataGridParameters);
         this.sortingFunction = SortableDataGrid.TrivialComparator;
-        this.setRootNode(new SortableDataGridNode());
+        this.setRootNode((new SortableDataGridNode()));
     }
     static TrivialComparator(_a, _b) {
         return 0;

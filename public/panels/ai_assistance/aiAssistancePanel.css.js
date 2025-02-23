@@ -27,6 +27,12 @@ export default {
   overflow: hidden;
 }
 
+.toolbar-feedback-link {
+  color: var(--sys-color-primary);
+  margin: 0 var(--sys-size-3);
+  height: auto;
+}
+
 /*# sourceURL=${import.meta.resolve('././aiAssistancePanel.css')} */
 `
 };

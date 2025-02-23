@@ -70,7 +70,7 @@ export class NetworkLog extends Common.ObjectWrapper.ObjectWrapper {
             if (!preserveLogSetting.get() && recordLogSetting.get()) {
                 this.reset(true);
             }
-            this.setIsRecording(recordLogSetting.get());
+            this.setIsRecording((recordLogSetting.get()));
         }, this);
         this.unresolvedPreflightRequests = new Map();
     }

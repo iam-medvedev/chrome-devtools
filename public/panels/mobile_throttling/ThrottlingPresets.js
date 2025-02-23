@@ -166,8 +166,8 @@ export class ThrottlingPresets {
         SDK.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption,
     ];
 }
-// @ts-ignore exported for Tests.js
+// @ts-expect-error exported for Tests.js
 globalThis.MobileThrottling = globalThis.MobileThrottling || {};
-// @ts-ignore exported for Tests.js
+// @ts-expect-error exported for Tests.js
 globalThis.MobileThrottling.networkPresets = ThrottlingPresets.networkPresets;
 //# sourceMappingURL=ThrottlingPresets.js.map

@@ -113,10 +113,10 @@ export class OverlayModel extends SDKModel {
         }
     }
     static async muteHighlight() {
-        return Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.suspendModel()));
+        return await Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.suspendModel()));
     }
     static async unmuteHighlight() {
-        return Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.resumeModel()));
+        return await Promise.all(TargetManager.instance().models(OverlayModel).map(model => model.resumeModel()));
     }
     static highlightRect(rect) {
         for (const overlayModel of TargetManager.instance().models(OverlayModel)) {
@@ -629,7 +629,7 @@ export class OverlayModel extends SDKModel {
         return this.overlayAgent;
     }
     async hasStyleSheetText(url) {
-        return this.#windowControls.initializeStyleSheetText(url);
+        return await this.#windowControls.initializeStyleSheetText(url);
     }
 }
 export class WindowControls {

@@ -9,6 +9,7 @@ import * as Marked from '../../../third_party/marked/marked.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 const { html } = Lit;
+const MAX_ORIGIN_LENGTH = 60;
 export function getThrottlingRecommendations() {
     let cpuOption = SDK.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption;
     if (cpuOption.rate() === 0) {
@@ -91,7 +92,7 @@ export function createUrlLabels(urls) {
  * If the last path component is larger than maxChars characters, the middle is elided.
  */
 export function shortenUrl(url, maxChars = 20) {
-    const parts = url.pathname.split('/');
+    const parts = url.pathname === '/' ? [url.host] : url.pathname.split('/');
     let shortenedUrl = parts.at(-1) ?? '';
     if (shortenedUrl.length > maxChars) {
         return Platform.StringUtilities.trimMiddle(shortenedUrl, maxChars);
@@ -114,5 +115,30 @@ export function md(markdown) {
     const tokens = Marked.Marked.lexer(markdown);
     const data = { tokens };
     return html `<devtools-markdown-view .data=${data}></devtools-markdown-view>`;
+}
+/**
+ * Returns a string containing both the origin and its 3rd party entity.
+ *
+ * By default we construct by diving with a hyphen, but with an optional
+ * parenthesizeEntity to parenthesize the entity.
+ *
+ * @example 'uk-script.dotmetrics.net - DotMetrics'
+ * @example 'securepubads.g.doubleclick.net (Google/Doubleclick Ads)'
+ */
+export function formatOriginWithEntity(url, entity, parenthesizeEntity) {
+    const origin = url.origin.replace('https://', '');
+    if (!entity) {
+        return origin;
+    }
+    let originWithEntity;
+    // If we have an unrecognized entity, entity name would be the same as the origin.
+    if (entity.isUnrecognized) {
+        originWithEntity = `${origin}`;
+    }
+    else {
+        originWithEntity = parenthesizeEntity ? `${origin} (${entity.name})` : `${origin} - ${entity.name}`;
+    }
+    originWithEntity = Platform.StringUtilities.trimEndWithMaxLength(originWithEntity, MAX_ORIGIN_LENGTH);
+    return originWithEntity;
 }
 //# sourceMappingURL=Helpers.js.map

@@ -66,13 +66,13 @@ export class CPUProfileDataModel extends ProfileTreeModel {
     #stackChildrenDuration;
     constructor(profile) {
         super();
-        // @ts-ignore Legacy types
+        // @ts-expect-error Legacy types
         const isLegacyFormat = Boolean(profile['head']);
         if (isLegacyFormat) {
             // Legacy format contains raw timestamps and start/stop times are in seconds.
             this.profileStartTime = profile.startTime * 1000;
             this.profileEndTime = profile.endTime * 1000;
-            // @ts-ignore Legacy types
+            // @ts-expect-error Legacy types
             this.timestamps = profile.timestamps;
             this.compatibilityConversionHeadToNodes(profile);
         }
@@ -103,19 +103,19 @@ export class CPUProfileDataModel extends ProfileTreeModel {
         }
     }
     compatibilityConversionHeadToNodes(profile) {
-        // @ts-ignore Legacy types
+        // @ts-expect-error Legacy types
         if (!profile.head || profile.nodes) {
             return;
         }
         const nodes = [];
-        // @ts-ignore Legacy types
+        // @ts-expect-error Legacy types
         convertNodesTree(profile.head);
         profile.nodes = nodes;
-        // @ts-ignore Legacy types
+        // @ts-expect-error Legacy types
         delete profile.head;
         function convertNodesTree(node) {
             nodes.push(node);
-            // @ts-ignore Legacy types
+            // @ts-expect-error Legacy types
             node.children = node.children.map(convertNodesTree);
             return node.id;
         }
@@ -154,7 +154,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             nodes[0].children = [];
             for (let i = 1; i < nodes.length; ++i) {
                 const node = nodes[i];
-                // @ts-ignore Legacy types
+                // @ts-expect-error Legacy types
                 const parentNode = protocolNodeById.get(node.parent);
                 if (!parentNode) {
                     continue;
@@ -185,7 +185,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             }
             for (let i = 0; i < samples.length; ++i) {
                 const node = protocolNodeById.get(samples[i]);
-                if (!node || node.hitCount === undefined) {
+                if (node?.hitCount === undefined) {
                     continue;
                 }
                 node.hitCount++;
@@ -346,7 +346,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             nodeId = nextNodeId;
         }
         function bottomNode(node) {
-            while (node.parent && node.parent.parent) {
+            while (node.parent?.parent) {
                 node = node.parent;
             }
             return node;
@@ -485,7 +485,7 @@ export class CPUProfileDataModel extends ProfileTreeModel {
             --stackTop;
             prevId = gcParentNode.id;
         }
-        for (let node = idToNode.get(prevId); node && node.parent; node = node.parent) {
+        for (let node = idToNode.get(prevId); node?.parent; node = node.parent) {
             const start = stackStartTimes[stackTop];
             const duration = sampleTime - start;
             stackChildrenDuration[stackTop - 1] += duration;

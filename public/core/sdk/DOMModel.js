@@ -165,7 +165,7 @@ export class DOMNode {
     async requestChildDocument(frameId, notInTarget) {
         const frame = await FrameManager.instance().getOrWaitForFrame(frameId, notInTarget);
         const childModel = frame.resourceTreeModel()?.target().model(DOMModel);
-        return childModel?.requestDocument() || null;
+        return await (childModel?.requestDocument() || null);
     }
     isAdFrameNode() {
         if (this.isIframe() && this.#frameOwnerFrameIdInternal) {
@@ -523,7 +523,7 @@ export class DOMNode {
         return false;
     }
     isDescendant(descendant) {
-        return descendant !== null && descendant.isAncestor(this);
+        return descendant.isAncestor(this);
     }
     frameOwnerFrameId() {
         return this.#frameOwnerFrameIdInternal;
@@ -771,7 +771,7 @@ export class DOMNode {
     }
     async setAsInspectedNode() {
         let node = this;
-        if (node && node.pseudoType()) {
+        if (node?.pseudoType()) {
             node = node.parentNode;
         }
         while (node) {
@@ -904,7 +904,7 @@ export class DeferredDOMNode {
     }
     async resolvePromise() {
         const nodeIds = await this.#domModelInternal.pushNodesByBackendIdsToFrontend(new Set([this.#backendNodeIdInternal]));
-        return nodeIds && nodeIds.get(this.#backendNodeIdInternal) || null;
+        return nodeIds?.get(this.#backendNodeIdInternal) || null;
     }
     backendNodeId() {
         return this.#backendNodeIdInternal;
@@ -1056,7 +1056,7 @@ export class DOMModel extends SDKModel {
     async pushNodeToFrontend(objectId) {
         await this.requestDocument();
         const { nodeId } = await this.agent.invoke_requestNode({ objectId });
-        return nodeId ? this.nodeForId(nodeId) : null;
+        return this.nodeForId(nodeId);
     }
     pushNodeByPathToFrontend(path) {
         return this.requestDocument()
@@ -1328,7 +1328,7 @@ export class DOMModel extends SDKModel {
         }
         const response = await this.agent.invoke_getNodesForSubtreeByStyle({ nodeId: this.#document.id, computedStyles, pierce });
         if (response.getError()) {
-            throw response.getError();
+            throw new Error(response.getError());
         }
         return response.nodeIds;
     }
@@ -1525,7 +1525,7 @@ export class DOMModelUndoStack {
     }
     async undo() {
         if (this.#index === 0) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
         --this.#index;
         this.#lastModelWithMinorChange = null;
@@ -1533,7 +1533,7 @@ export class DOMModelUndoStack {
     }
     async redo() {
         if (this.#index >= this.#stack.length) {
-            return Promise.resolve();
+            return await Promise.resolve();
         }
         ++this.#index;
         this.#lastModelWithMinorChange = null;

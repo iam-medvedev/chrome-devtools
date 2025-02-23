@@ -73,7 +73,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         this.toggleRecordButton.setToggled(this.setting.get());
         toolbar.appendToolbarItem(this.toggleRecordButton);
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-        if (mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel)) {
+        if (mainTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel)) {
             const startWithReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('live-heap-profile.start-with-reload');
             this.startWithReloadButton = UI.Toolbar.Toolbar.createActionButton(startWithReloadAction);
             toolbar.appendToolbarItem(this.startWithReloadButton);
@@ -140,7 +140,6 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         const dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
             displayName: i18nString(UIStrings.heapProfile),
             columns,
-            editCallback: undefined,
             deleteCallback: undefined,
             refreshCallback: undefined,
         });
@@ -197,9 +196,9 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         const rootNode = this.dataGrid.rootNode();
         const exisitingNodes = new Set();
         for (const pair of dataByUrl) {
-            const url = pair[0];
-            const size = pair[1].size;
-            const isolateCount = pair[1].isolates.size;
+            const url = (pair[0]);
+            const size = (pair[1].size);
+            const isolateCount = (pair[1].isolates.size);
             if (!url) {
                 console.info(`Node with empty URL: ${size} bytes`); // eslint-disable-line no-console
                 continue;
@@ -255,7 +254,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
     }
     revealSourceForSelectedNode() {
         const node = this.dataGrid.selectedNode;
-        if (!node || !node.url) {
+        if (!node?.url) {
             return;
         }
         const sourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(node.url);
@@ -295,7 +294,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
         if (!mainTarget) {
             return;
         }
-        const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const resourceTreeModel = (mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel));
         if (resourceTreeModel) {
             resourceTreeModel.reloadPage();
         }

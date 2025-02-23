@@ -203,6 +203,10 @@ const UIStrings = {
      */
     showPopoverTarget: 'Show popover target',
     /**
+     *@description Text of a tooltip to redirect to another element in the Elements panel
+     */
+    showInterestTarget: 'Show interest target',
+    /**
      *@description Text of the tooltip for scroll adorner.
      */
     elementHasScrollableOverflow: 'This element has a scrollable overflow',
@@ -247,12 +251,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.gutterContainer = this.contentElement.createChild('div', 'gutter-container');
         this.gutterContainer.addEventListener('click', this.showContextMenu.bind(this));
         const gutterMenuIcon = new IconButton.Icon.Icon();
-        gutterMenuIcon.data = {
-            color: 'var(--icon-default)',
-            iconName: 'dots-horizontal',
-            height: '16px',
-            width: '16px',
-        };
+        gutterMenuIcon.name = 'dots-horizontal';
         this.gutterContainer.append(gutterMenuIcon);
         this.decorationsElement = this.gutterContainer.createChild('div', 'hidden');
         this.searchQuery = null;
@@ -502,7 +501,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     }
     async onpopulate() {
         if (this.treeOutline) {
-            return this.treeOutline.populateTreeElement(this);
+            return await this.treeOutline.populateTreeElement(this);
         }
     }
     async expandRecursively() {
@@ -923,7 +922,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (this.editing) {
             return;
         }
-        const initialValue = this.convertWhitespaceToEntities(maybeInitialValue).text;
+        const initialValue = convertUnicodeCharsToHTMLEntities(maybeInitialValue).text;
         this.htmlEditElement = document.createElement('div');
         this.htmlEditElement.className = 'source-code elements-tree-editor';
         // Hide header items.
@@ -993,13 +992,13 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             }
         }
         function commit() {
-            if (this.editing && this.editing.editor) {
+            if (this.editing?.editor) {
                 commitCallback(initialValue, this.editing.editor.state.doc.toString());
             }
             dispose.call(this);
         }
         function dispose() {
-            if (!this.editing || !this.editing.editor) {
+            if (!this.editing?.editor) {
                 return;
             }
             this.editing = null;
@@ -1323,7 +1322,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         let highlightCount = 0;
         let additionalHighlightOffset = 0;
         function setValueWithEntities(element, value) {
-            const result = this.convertWhitespaceToEntities(value);
+            const result = convertUnicodeCharsToHTMLEntities(value);
             highlightCount = result.entityRanges.length;
             value = result.text.replace(closingPunctuationRegex, (match, replaceOffset) => {
                 while (highlightIndex < highlightCount && result.entityRanges[highlightIndex].offset < replaceOffset) {
@@ -1352,7 +1351,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             UI.UIUtils.createTextChild(attrSpanElement, '=\u200B"');
         }
         const attrValueElement = attrSpanElement.createChild('span', 'webkit-html-attribute-value');
-        if (updateRecord && updateRecord.isAttributeModified(name)) {
+        if (updateRecord?.isAttributeModified(name)) {
             UI.UIUtils.runCSSAnimationOnce(hasText ? attrValueElement : attrNameElement, 'dom-update-highlight');
         }
         function linkifyValue(value) {
@@ -1391,9 +1390,17 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         else {
             setValueWithEntities.call(this, attrValueElement, value);
         }
-        if (name === 'popovertarget') {
-            const linkedPart = value ? attrValueElement : attrNameElement;
-            void this.linkifyElementByRelation(linkedPart, "PopoverTarget" /* Protocol.DOM.GetElementByRelationRequestRelation.PopoverTarget */, i18nString(UIStrings.showPopoverTarget));
+        switch (name) {
+            case 'popovertarget': {
+                const linkedPart = value ? attrValueElement : attrNameElement;
+                void this.linkifyElementByRelation(linkedPart, "PopoverTarget" /* Protocol.DOM.GetElementByRelationRequestRelation.PopoverTarget */, i18nString(UIStrings.showPopoverTarget));
+                break;
+            }
+            case 'interesttarget': {
+                const linkedPart = value ? attrValueElement : attrNameElement;
+                void this.linkifyElementByRelation(linkedPart, "InterestTarget" /* Protocol.DOM.GetElementByRelationRequestRelation.InterestTarget */, i18nString(UIStrings.showInterestTarget));
+                break;
+            }
         }
         if (hasText) {
             UI.UIUtils.createTextChild(attrSpanElement, '"');
@@ -1508,26 +1515,6 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             UI.ARIAUtils.setLabel(tagElement, tagElement.textContent);
         }
     }
-    convertWhitespaceToEntities(text) {
-        let result = '';
-        let lastIndexAfterEntity = 0;
-        const entityRanges = [];
-        const charToEntity = MappedCharToEntity;
-        for (let i = 0, size = text.length; i < size; ++i) {
-            const char = text.charAt(i);
-            if (charToEntity.has(char)) {
-                result += text.substring(lastIndexAfterEntity, i);
-                const entityValue = '&' + charToEntity.get(char) + ';';
-                entityRanges.push(new TextUtils.TextRange.SourceRange(result.length, entityValue.length));
-                result += entityValue;
-                lastIndexAfterEntity = i + 1;
-            }
-        }
-        if (result) {
-            result += text.substring(lastIndexAfterEntity);
-        }
-        return { text: result || text, entityRanges };
-    }
     nodeTitleInfo(updateRecord) {
         const node = this.nodeInternal;
         const titleDOM = document.createDocumentFragment();
@@ -1580,20 +1567,20 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                     if (!firstChild) {
                         throw new Error('ElementsTreeElement._nodeTitleInfo expects node.firstChild to be defined.');
                     }
-                    const result = this.convertWhitespaceToEntities(firstChild.nodeValue());
+                    const result = convertUnicodeCharsToHTMLEntities(firstChild.nodeValue());
                     textNodeElement.textContent = Platform.StringUtilities.collapseWhitespace(result.text);
                     UI.UIUtils.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, 'webkit-html-entity-value');
                     UI.UIUtils.createTextChild(titleDOM, '\u200B');
                     this.buildTagDOM(titleDOM, tagName, true, false, updateRecord);
-                    if (updateRecord && updateRecord.hasChangedChildren()) {
+                    if (updateRecord?.hasChangedChildren()) {
                         UI.UIUtils.runCSSAnimationOnce(textNodeElement, 'dom-update-highlight');
                     }
-                    if (updateRecord && updateRecord.isCharDataModified()) {
+                    if (updateRecord?.isCharDataModified()) {
                         UI.UIUtils.runCSSAnimationOnce(textNodeElement, 'dom-update-highlight');
                     }
                     break;
                 }
-                if (this.treeOutline && this.treeOutline.isXMLMimeType || !ForbiddenClosingTagElements.has(tagName)) {
+                if (this.treeOutline?.isXMLMimeType || !ForbiddenClosingTagElements.has(tagName)) {
                     this.buildTagDOM(titleDOM, tagName, true, false, updateRecord);
                 }
                 break;
@@ -1617,11 +1604,11 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                     UI.UIUtils.createTextChild(titleDOM, '"');
                     const textNodeElement = titleDOM.createChild('span', 'webkit-html-text-node');
                     textNodeElement.setAttribute('jslog', `${VisualLogging.value('text-node').track({ change: true, dblclick: true })}`);
-                    const result = this.convertWhitespaceToEntities(node.nodeValue());
+                    const result = convertUnicodeCharsToHTMLEntities(node.nodeValue());
                     textNodeElement.textContent = Platform.StringUtilities.collapseWhitespace(result.text);
                     UI.UIUtils.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, 'webkit-html-entity-value');
                     UI.UIUtils.createTextChild(titleDOM, '"');
-                    if (updateRecord && updateRecord.isCharDataModified()) {
+                    if (updateRecord?.isCharDataModified()) {
                         UI.UIUtils.runCSSAnimationOnce(textNodeElement, 'dom-update-highlight');
                     }
                 }
@@ -1747,7 +1734,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                 if (cascade.isInherited(style) && !SDK.CSSMetadata.cssMetadata().isPropertyInherited(property.name)) {
                     continue;
                 }
-                if (style.parentRule && style.parentRule.isUserAgent()) {
+                if (style.parentRule?.isUserAgent()) {
                     continue;
                 }
                 if (cascade.propertyState(property) !== "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */) {
@@ -2129,6 +2116,26 @@ export function adornerComparator(adornerA, adornerB) {
         return adornerA.name.localeCompare(adornerB.name);
     }
     return compareCategories;
+}
+export function convertUnicodeCharsToHTMLEntities(text) {
+    let result = '';
+    let lastIndexAfterEntity = 0;
+    const entityRanges = [];
+    const charToEntity = MappedCharToEntity;
+    for (let i = 0, size = text.length; i < size; ++i) {
+        const char = text.charAt(i);
+        if (charToEntity.has(char)) {
+            result += text.substring(lastIndexAfterEntity, i);
+            const entityValue = '&' + charToEntity.get(char) + ';';
+            entityRanges.push(new TextUtils.TextRange.SourceRange(result.length, entityValue.length));
+            result += entityValue;
+            lastIndexAfterEntity = i + 1;
+        }
+    }
+    if (result) {
+        result += text.substring(lastIndexAfterEntity);
+    }
+    return { text: result || text, entityRanges };
 }
 // As a privacy measure we are logging elements tree outline as a flat list where every tree item is a
 // child of a tree outline.

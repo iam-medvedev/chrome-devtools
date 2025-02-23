@@ -164,7 +164,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const visibleView = this.visibleView;
-        return visibleView && visibleView.searchableView ? visibleView.searchableView() : null;
+        return visibleView?.searchableView ? visibleView.searchableView() : null;
     }
     createFileSelectorElement() {
         if (this.fileSelectorElement) {

@@ -14,7 +14,7 @@ import * as ImageDelivery from './ImageDelivery.js';
 import * as InteractionToNextPaint from './InteractionToNextPaint.js';
 import * as LCPDiscovery from './LCPDiscovery.js';
 import * as LCPPhases from './LCPPhases.js';
-import * as LongCriticalNetworkTree from './LongCriticalNetworkTree.js';
+import * as NetworkDependencyTree from './NetworkDependencyTree.js';
 import * as NodeLink from './NodeLink.js';
 import * as RenderBlocking from './RenderBlocking.js';
 import * as SidebarInsight from './SidebarInsight.js';
@@ -23,5 +23,5 @@ import * as Table from './Table.js';
 import * as ThirdParties from './ThirdParties.js';
 import * as Types from './types.js';
 import * as Viewport from './Viewport.js';
-export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, LongCriticalNetworkTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };
+export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, NetworkDependencyTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };
 //# sourceMappingURL=insights.js.map

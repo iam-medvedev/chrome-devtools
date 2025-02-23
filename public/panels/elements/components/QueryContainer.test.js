@@ -24,7 +24,7 @@ const containerTemplate = {
 };
 const assertContainerContent = (container, expectedContent) => {
     const nodeText = container.shadowRoot.querySelector('devtools-node-text');
-    if (!nodeText || !nodeText.shadowRoot) {
+    if (!nodeText?.shadowRoot) {
         assert.fail('node text element and its shadowRoot should exist');
         return;
     }

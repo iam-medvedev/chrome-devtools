@@ -336,7 +336,7 @@ export class OutlineQuickOpen extends QuickOpen.FilteredListWidget.Provider {
     }
     currentSourceFrame() {
         const sourcesView = UI.Context.Context.instance().flavor(SourcesView);
-        return sourcesView && sourcesView.currentSourceFrame();
+        return sourcesView?.currentSourceFrame() ?? null;
     }
     notFoundText() {
         if (!this.currentSourceFrame()) {

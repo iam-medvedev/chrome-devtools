@@ -95,6 +95,7 @@ export class Model extends EventTarget {
                 isFreshRecording,
                 isCPUProfile,
                 metadata,
+                resolveSourceMap: config?.resolveSourceMap,
             });
             this.#storeParsedFileData(file, this.#processor.parsedTrace, this.#processor.insights);
             // We only push the file onto this.#traces here once we know it's valid

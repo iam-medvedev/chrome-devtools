@@ -648,8 +648,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             if (hoverType === "INSIDE_TRACK_HEADER" /* HoverType.INSIDE_TRACK_HEADER */) {
                 this.#updatePopoverForGroup(groupIndex);
             }
-            if (groupIndex >= 0 && this.rawTimelineData && this.rawTimelineData.groups &&
-                this.rawTimelineData.groups[groupIndex].selectable) {
+            if (groupIndex >= 0 && this.rawTimelineData?.groups?.[groupIndex].selectable) {
                 // This means the mouse is in a selectable group's area, and not hovering any entry.
                 this.viewportElement.style.cursor = 'pointer';
             }
@@ -949,7 +948,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (groupIndex < 0 || !this.isGroupCollapsible(groupIndex)) {
             return;
         }
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             return;
         }
         this.expandGroup(groupIndex, !this.rawTimelineData.groups[groupIndex].expanded /* setExpanded */);
@@ -1000,7 +999,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (groupIndex < 0) {
             return;
         }
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             return;
         }
         if (!this.#groupTreeRoot) {
@@ -1026,7 +1025,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (groupIndex < 0) {
             return;
         }
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             return;
         }
         if (!this.#groupTreeRoot) {
@@ -1058,7 +1057,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (groupIndex < 0) {
             return;
         }
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             return;
         }
         const groups = this.rawTimelineData.groups;
@@ -1114,7 +1113,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #hasTrackConfigurationMode() {
         // Track Configuration mode is off by default: a provider must define the
         // function and have it return `true` to enable it.
-        return Boolean(this.dataProvider.hasTrackConfigurationMode && this.dataProvider.hasTrackConfigurationMode());
+        return Boolean(this.dataProvider.hasTrackConfigurationMode?.());
     }
     onContextMenu(event) {
         const { groupIndex, hoverType } = this.coordinatesToGroupIndexAndHoverType(event.offsetX, event.offsetY);
@@ -1236,7 +1235,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         let eventHandled = this.handleSelectionNavigation(e);
         // Handle keyboard navigation in groups
-        if (!eventHandled && this.rawTimelineData && this.rawTimelineData.groups) {
+        if (!eventHandled && this.rawTimelineData?.groups) {
             eventHandled = this.handleKeyboardGroupNavigation(e);
         }
         if (!eventHandled) {
@@ -1397,7 +1396,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return true;
     }
     selectNextGroup() {
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             return false;
         }
         if (this.keyboardFocusedGroup >= this.rawTimelineData.groups.length - 1) {
@@ -1408,7 +1407,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return true;
     }
     getGroupIndexToSelect(offset) {
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             throw new Error('No raw timeline data');
         }
         const allGroups = this.rawTimelineData.groups;
@@ -1424,7 +1423,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         return groupIndexToSelect;
     }
     selectFirstChild() {
-        if (!this.rawTimelineData || !this.rawTimelineData.groups) {
+        if (!this.rawTimelineData?.groups) {
             return;
         }
         const allGroups = this.rawTimelineData.groups;
@@ -1460,7 +1459,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const end2 = start2 + timelineData.entryTotalTimes[entry2];
             return start1 < end2 && start2 < end1;
         }
-        const keyboardEvent = event;
+        const keyboardEvent = (event);
         const keys = UI.KeyboardShortcut.Keys;
         if (keyboardEvent.keyCode === keys.Left.code || keyboardEvent.keyCode === keys.Right.code) {
             const level = timelineData.entryLevels[this.selectedEntryIndex];
@@ -1567,7 +1566,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // Check regular entries.
         const entryStartTimes = timelineData.entryStartTimes;
         const entriesOnLevel = this.timelineLevels ? this.timelineLevels[cursorLevel] : [];
-        if (!entriesOnLevel || !entriesOnLevel.length) {
+        if (!entriesOnLevel?.length) {
             return -1;
         }
         const cursorTime = this.chartViewport.pixelToTime(x);
@@ -1676,7 +1675,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      * undefined.
      */
     coordinatesToGroupIndexAndHoverType(x, y) {
-        if (!this.rawTimelineData || !this.rawTimelineData.groups || !this.groupOffsets) {
+        if (!this.rawTimelineData?.groups || !this.groupOffsets) {
             return { groupIndex: -1, hoverType: "ERROR" /* HoverType.ERROR */ };
         }
         if (x < 0 || y < 0) {
@@ -2167,7 +2166,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 this.levelToOffset(level) > top + this.offsetHeight) {
                 continue;
             }
-            if (!this.visibleLevels || !this.visibleLevels[level]) {
+            if (!this.visibleLevels?.[level]) {
                 continue;
             }
             if (!this.timelineLevels) {
@@ -2307,7 +2306,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 const labelBackgroundWidth = this.labelWidthForGroup(context, group);
                 const parsedColor = Common.Color.parse(group.style.backgroundColor);
                 if (parsedColor) {
-                    context.fillStyle = parsedColor.setAlpha(0.8).asString();
+                    context.fillStyle = (parsedColor.setAlpha(0.8).asString());
                 }
                 context.fillRect(iconsWidth + HEADER_LEFT_PADDING, offset + HEADER_LABEL_Y_PADDING, labelBackgroundWidth, group.style.height - 2 * HEADER_LABEL_Y_PADDING);
             }
@@ -2477,7 +2476,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             const barY = this.levelToOffset(barLevel);
             let text = this.dataProvider.entryTitle(entryIndex);
             const barHeight = this.#eventBarHeight(timelineData, entryIndex);
-            if (text && text.length) {
+            if (text?.length) {
                 context.font = this.#font;
                 const hasArrowDecoration = this.entryHasDecoration(entryIndex, "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */);
                 // Set the max width to be the width of the bar plus some padding. If the bar has an arrow decoration and the bar is wide enough for the larger
@@ -2491,7 +2490,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             if (this.dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, unclippedBarX, timeToPixel, color => this.#transformColor(entryIndex, color))) {
                 continue;
             }
-            if (!text || !text.length) {
+            if (!text?.length) {
                 continue;
             }
             context.fillStyle = this.#transformColor(entryIndex, this.dataProvider.textColor(entryIndex));
@@ -2759,8 +2758,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     drawCircleAroundCollapseArrow(entryIndex, context, timelineData) {
         const decorationsForEvent = timelineData.entryDecorations.at(entryIndex);
         // The circle is only drawn when the initiator arrow is going to/from some hidden entry. Make sure that the entry also has a decoration for hidden children.
-        if (!decorationsForEvent ||
-            !decorationsForEvent.find(decoration => decoration.type === "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */)) {
+        if (!decorationsForEvent?.find(decoration => decoration.type === "HIDDEN_DESCENDANTS_ARROW" /* FlameChartDecorationType.HIDDEN_DESCENDANTS_ARROW */)) {
             // This should not happen, break if it does.
             return {};
         }

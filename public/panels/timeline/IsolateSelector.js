@@ -62,7 +62,7 @@ export class IsolateSelector extends UI.Toolbar.ToolbarItem {
                 const selectedIsolateTitle = item.textContent?.slice(0, 29);
                 this.menu.buttonTitle = selectedIsolateTitle || i18nString(UIStrings.empty);
                 const model = isolate.runtimeModel();
-                UI.Context.Context.instance().setFlavor(SDK.CPUProfilerModel.CPUProfilerModel, model && model.target().model(SDK.CPUProfilerModel.CPUProfilerModel));
+                UI.Context.Context.instance().setFlavor(SDK.CPUProfilerModel.CPUProfilerModel, model?.target().model(SDK.CPUProfilerModel.CPUProfilerModel) ?? null);
             }
         });
     }

@@ -109,8 +109,9 @@ export interface AidaRequest {
         temperature?: number;
         model_id?: string;
     };
-    metadata?: {
+    metadata: {
         disable_user_content_logging: boolean;
+        client_version: string;
         string_session_id?: string;
         user_tier?: UserTier;
     };

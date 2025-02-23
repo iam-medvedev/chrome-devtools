@@ -184,6 +184,7 @@ describeWithEnvironment('AiAgent', () => {
                         type: "user-query" /* ResponseType.USER_QUERY */,
                         query: 'query',
                         imageInput: undefined,
+                        imageId: undefined,
                     },
                     {
                         type: "querying" /* ResponseType.QUERYING */,
@@ -236,6 +237,7 @@ describeWithEnvironment('AiAgent', () => {
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'query',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "querying" /* ResponseType.QUERYING */,

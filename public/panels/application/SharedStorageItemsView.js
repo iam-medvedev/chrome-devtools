@@ -109,7 +109,7 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
         UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemDeleted));
     }
     async createPreview(key, value) {
-        const wrappedEntry = key && { key: key, value: value || '' };
+        const wrappedEntry = key && { key, value: value || '' };
         return SourceFrame.JSONView.JSONView.createViewSync(wrappedEntry);
     }
 }

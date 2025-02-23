@@ -152,7 +152,7 @@ export class AnimationUI {
         if (keyframeIndex <= 0) {
             circle.style.fill = this.#color;
         }
-        this.#cachedElements[iteration].keyframePoints[keyframeIndex] = circle;
+        this.#cachedElements[iteration].keyframePoints[keyframeIndex] = (circle);
         if (!attachEvents) {
             return;
         }
@@ -241,7 +241,7 @@ export class AnimationUI {
         }
         while (iteration < this.#cachedElements.length) {
             const poppedElement = this.#cachedElements.pop();
-            if (poppedElement && poppedElement.group) {
+            if (poppedElement?.group) {
                 poppedElement.group.remove();
             }
         }

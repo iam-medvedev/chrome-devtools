@@ -4,23 +4,23 @@ export declare const UIStrings: {
     /**
      * @description Title of an insight that provides the user with the list of network requests that blocked and therefore slowed down the page rendering and becoming visible to the user.
      */
-    title: string;
+    readonly title: "Render blocking requests";
     /**
      * @description Text to describe that there are requests blocking rendering, which may affect LCP.
      */
-    description: string;
+    readonly description: string;
     /**
      * @description Label to describe a network request (that happens to be render-blocking).
      */
-    renderBlockingRequest: string;
+    readonly renderBlockingRequest: "Request";
     /**
      *@description Label used for a time duration.
      */
-    duration: string;
+    readonly duration: "Duration";
     /**
      * @description Text status indicating that no requests blocked the initial render of a navigation
      */
-    noRenderBlocking: string;
+    readonly noRenderBlocking: "No render blocking requests for this navigation";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type RenderBlockingInsightModel = InsightModel<typeof UIStrings, {

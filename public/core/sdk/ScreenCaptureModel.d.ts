@@ -7,11 +7,13 @@ export declare const enum ScreenshotMode {
     FROM_CLIP = "fromClip",
     FULLPAGE = "fullpage"
 }
+type ScreencastFrameCallback = ((arg0: Protocol.binary, arg1: Protocol.Page.ScreencastFrameMetadata) => void);
+type ScreencastVisibilityChangedCallback = ((arg0: boolean) => void);
 export declare class ScreenCaptureModel extends SDKModel<void> implements ProtocolProxyApi.PageDispatcher {
     #private;
     constructor(target: Target);
-    startScreencast(format: Protocol.Page.StartScreencastRequestFormat, quality: number, maxWidth: number | undefined, maxHeight: number | undefined, everyNthFrame: number | undefined, onFrame: (arg0: Protocol.binary, arg1: Protocol.Page.ScreencastFrameMetadata) => void, onVisibilityChanged: (arg0: boolean) => void): void;
-    stopScreencast(): void;
+    startScreencast(format: Protocol.Page.StartScreencastRequestFormat, quality: number, maxWidth: number | undefined, maxHeight: number | undefined, everyNthFrame: number | undefined, onFrame: ScreencastFrameCallback, onVisibilityChanged: ScreencastVisibilityChangedCallback): Promise<number>;
+    stopScreencast(id: number): void;
     captureScreenshot(format: Protocol.Page.CaptureScreenshotRequestFormat, quality: number, mode: ScreenshotMode, clip?: Protocol.Page.Viewport): Promise<string | null>;
     screencastFrame({ data, metadata, sessionId }: Protocol.Page.ScreencastFrameEvent): void;
     screencastVisibilityChanged({ visible }: Protocol.Page.ScreencastVisibilityChangedEvent): void;
@@ -44,3 +46,4 @@ export declare class ScreenCaptureModel extends SDKModel<void> implements Protoc
     prefetchStatusUpdated(_params: Protocol.Preload.PrefetchStatusUpdatedEvent): void;
     prerenderStatusUpdated(_params: Protocol.Preload.PrerenderStatusUpdatedEvent): void;
 }
+export {};

@@ -37,14 +37,14 @@ export declare const enum State {
     CHAT_VIEW = "chat-view"
 }
 export interface Props {
-    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part) => Promise<void> | void;
+    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part) => void;
     onInspectElementClick: () => void;
-    onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => Promise<void> | void;
+    onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onCancelClick: () => void;
-    onContextClick: () => void | Promise<void>;
+    onContextClick: () => void;
     onNewConversation: () => void;
     onCancelCrossOriginChat?: () => void;
-    onTakeScreenshot?: () => Promise<void>;
+    onTakeScreenshot?: () => void;
     onRemoveImageInput?: () => void;
     inspectElementToggled: boolean;
     state: State;

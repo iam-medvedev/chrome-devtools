@@ -38,12 +38,12 @@ class SharedStorageListener {
         return this.#changeEvents.size === 0;
     }
     #sharedStorageAdded(event) {
-        const storage = event.data;
+        const storage = (event.data);
         this.#storagesWatched.push(storage);
         storage.addEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, this.#sharedStorageChanged.bind(this, storage), this);
     }
     #sharedStorageRemoved(event) {
-        const storage = event.data;
+        const storage = (event.data);
         storage.removeEventListener("SharedStorageChanged" /* Resources.SharedStorageModel.SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, this.#sharedStorageChanged.bind(this, storage), this);
         const index = this.#storagesWatched.indexOf(storage);
         if (index === -1) {

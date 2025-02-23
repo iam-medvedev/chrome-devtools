@@ -127,7 +127,7 @@ export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async getFieldDataForCurrentPageForTesting() {
-        return this.#getFieldDataForCurrentPage();
+        return await this.#getFieldDataForCurrentPage();
     }
     /**
      * In general, this function should use the main document URL

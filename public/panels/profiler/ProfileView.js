@@ -183,7 +183,6 @@ export class ProfileView extends UI.View.SimpleView {
         this.dataGrid = new DataGrid.DataGrid.DataGridImpl({
             displayName: i18nString(UIStrings.profiler),
             columns,
-            editCallback: undefined,
             deleteCallback: undefined,
             refreshCallback: undefined,
         });
@@ -249,7 +248,7 @@ export class ProfileView extends UI.View.SimpleView {
         }
     }
     columnHeader(_columnId) {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     selectRange(timeLeft, timeRight) {
         if (!this.flameChart) {
@@ -294,7 +293,7 @@ export class ProfileView extends UI.View.SimpleView {
         }
         if (selectedProfileNode) {
             // TODO(crbug.com/1011811): Cleanup the added `selected` property to this SDK class.
-            // @ts-ignore
+            // @ts-expect-error
             selectedProfileNode.selected = true;
         }
     }
@@ -338,7 +337,7 @@ export class ProfileView extends UI.View.SimpleView {
         return this.linkifierInternal;
     }
     createFlameChartDataProvider() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     ensureFlameChartCreated() {
         if (this.flameChart) {
@@ -364,7 +363,7 @@ export class ProfileView extends UI.View.SimpleView {
         if (!script) {
             return;
         }
-        const location = debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber);
+        const location = (debuggerModel.createRawLocation(script, node.lineNumber, node.columnNumber));
         const uiLocation = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
         void Common.Revealer.reveal(uiLocation);
     }
@@ -530,7 +529,7 @@ export class WritableProfileHeader extends ProfileHeader {
         let error = null;
         try {
             this.profile = JSON.parse(this.jsonifiedProfile);
-            this.setProfile(this.profile);
+            this.setProfile((this.profile));
             this.updateStatus(i18nString(UIStrings.loaded), false);
         }
         catch (e) {

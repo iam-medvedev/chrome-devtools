@@ -19,6 +19,39 @@ describe('AiHistoryStorage', () => {
         type: "drjones-network-request" /* AiAssistance.ConversationType.NETWORK */,
         history: [],
     };
+    const agent4 = {
+        id: 'id4',
+        type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+        history: [
+            {
+                type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                query: 'text',
+                imageId: 'image-id1',
+                imageInput: undefined,
+            },
+            {
+                type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                text: 'answer',
+                complete: true,
+            },
+            {
+                type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                query: 'text',
+                imageId: 'image-id2',
+                imageInput: undefined,
+            },
+        ],
+    };
+    const serializedImage1 = {
+        id: 'image-id1',
+        data: 'imageInput',
+        mimeType: 'image/jpeg',
+    };
+    const serializedImage2 = {
+        id: 'image-id2',
+        data: 'imageInput',
+        mimeType: 'image/jpeg',
+    };
     beforeEach(() => {
         let data = {};
         const dummyStorage = new Common.Settings.SettingsStorage({}, {
@@ -43,8 +76,8 @@ describe('AiHistoryStorage', () => {
             localStorage: dummyStorage,
         });
     });
-    function getStorage() {
-        return AiAssistance.AiHistoryStorage.instance(true);
+    function getStorage(maxStorageSize) {
+        return AiAssistance.AiHistoryStorage.instance({ forceNew: true, maxStorageSize });
     }
     it('should create and retrieve history entry', async () => {
         const storage = getStorage();
@@ -121,6 +154,67 @@ describe('AiHistoryStorage', () => {
                 history: [],
             },
         ]);
+        assert.deepEqual(storage.getImageHistory(), []);
+        await storage.upsertImage(serializedImage1);
+        await storage.upsertImage(serializedImage2);
+        await storage.upsertHistoryEntry(agent4);
+        assert.deepEqual(storage.getHistory(), [
+            {
+                id: 'id1',
+                type: 'freestyler',
+                history: [
+                    {
+                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        query: 'text',
+                    },
+                ],
+            },
+            {
+                id: 'id2',
+                type: 'drjones-file',
+                history: [],
+            },
+            {
+                id: 'id3',
+                type: 'drjones-network-request',
+                history: [],
+            },
+            {
+                id: 'id4',
+                type: 'freestyler',
+                history: [
+                    {
+                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        query: 'text',
+                        imageId: 'image-id1',
+                        imageInput: undefined,
+                    },
+                    {
+                        type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                        text: 'answer',
+                        complete: true,
+                    },
+                    {
+                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        query: 'text',
+                        imageId: 'image-id2',
+                        imageInput: undefined,
+                    },
+                ],
+            },
+        ]);
+        assert.deepEqual(storage.getImageHistory(), [
+            {
+                id: 'image-id1',
+                data: 'imageInput',
+                mimeType: 'image/jpeg',
+            },
+            {
+                id: 'image-id2',
+                data: 'imageInput',
+                mimeType: 'image/jpeg',
+            }
+        ]);
     });
     it('should delete a single entry', async () => {
         const storage = getStorage();
@@ -141,13 +235,88 @@ describe('AiHistoryStorage', () => {
             },
         ]);
     });
+    it('should delete image history entry', async () => {
+        const storage = getStorage();
+        await storage.upsertHistoryEntry(agent1);
+        await storage.upsertHistoryEntry(agent2);
+        await storage.upsertHistoryEntry(agent3);
+        await storage.upsertImage(serializedImage1);
+        await storage.upsertImage(serializedImage2);
+        await storage.upsertHistoryEntry(agent4);
+        await storage.deleteHistoryEntry('id4');
+        assert.deepEqual(storage.getHistory(), [
+            {
+                id: 'id1',
+                type: 'freestyler',
+                history: [],
+            },
+            {
+                id: 'id2',
+                type: 'drjones-file',
+                history: [],
+            },
+            {
+                id: 'id3',
+                type: 'drjones-network-request',
+                history: [],
+            },
+        ]);
+        assert.deepEqual(storage.getImageHistory(), []);
+    });
     it('should delete all entries', async () => {
         const storage = getStorage();
         await storage.upsertHistoryEntry(agent1);
         await storage.upsertHistoryEntry(agent2);
         await storage.upsertHistoryEntry(agent3);
+        await storage.upsertImage(serializedImage1);
+        await storage.upsertImage(serializedImage2);
+        await storage.upsertHistoryEntry(agent4);
         await storage.deleteAll();
         assert.deepEqual(storage.getHistory(), []);
+        assert.deepEqual(storage.getImageHistory(), []);
+    });
+    it('should limit the amount of stored images', async () => {
+        const storage = getStorage(2);
+        await storage.upsertImage({
+            id: 'image-id1',
+            data: '1',
+            mimeType: 'image/jpeg',
+        });
+        await storage.upsertHistoryEntry(agent1);
+        await storage.upsertImage({
+            id: 'image-id2',
+            data: '2',
+            mimeType: 'image/jpeg',
+        });
+        await storage.upsertImage({
+            id: 'image-id3',
+            data: '3',
+            mimeType: 'image/jpeg',
+        });
+        await storage.upsertHistoryEntry(agent2);
+        await storage.upsertImage({
+            id: 'image-id4',
+            data: '4',
+            mimeType: 'image/jpeg',
+        });
+        await storage.upsertHistoryEntry(agent3);
+        const imageHistory = storage.getImageHistory();
+        const imageData1 = imageHistory.find(item => item.id === 'image-id1');
+        const imageData2 = imageHistory.find(item => item.id === 'image-id2');
+        const imageData3 = imageHistory.find(item => item.id === 'image-id3');
+        const imageData4 = imageHistory.find(item => item.id === 'image-id4');
+        assert.notExists(imageData1);
+        assert.notExists(imageData2);
+        assert.deepEqual(imageData3, {
+            id: 'image-id3',
+            data: '3',
+            mimeType: 'image/jpeg',
+        });
+        assert.deepEqual(imageData4, {
+            id: 'image-id4',
+            data: '4',
+            mimeType: 'image/jpeg',
+        });
     });
 });
 //# sourceMappingURL=AiHistoryStorage.test.js.map

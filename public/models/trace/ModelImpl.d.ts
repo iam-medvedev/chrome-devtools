@@ -5,6 +5,7 @@ import * as Types from './types/types.js';
 export interface ParseConfig {
     metadata?: Types.File.MetaData;
     isFreshRecording?: boolean;
+    resolveSourceMap?: Types.Configuration.ParseOptions['resolveSourceMap'];
 }
 /**
  * The Model is responsible for parsing arrays of raw trace events and storing the

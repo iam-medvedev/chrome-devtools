@@ -28,8 +28,8 @@ export class RuntimeModel extends SDKModel {
     }
     static isSideEffectFailure(response) {
         const exceptionDetails = 'exceptionDetails' in response && response.exceptionDetails;
-        return Boolean(exceptionDetails && exceptionDetails.exception && exceptionDetails.exception.description &&
-            exceptionDetails.exception.description.startsWith('EvalError: Possible side-effect in debug-evaluate'));
+        return Boolean(exceptionDetails &&
+            exceptionDetails.exception?.description?.startsWith('EvalError: Possible side-effect in debug-evaluate'));
     }
     debuggerModel() {
         return this.target().model(DebuggerModel);
@@ -97,7 +97,7 @@ export class RuntimeModel extends SDKModel {
         let unserializableValue = undefined;
         const unserializableDescription = RemoteObject.unserializableDescription(value);
         if (unserializableDescription !== null) {
-            unserializableValue = unserializableDescription;
+            unserializableValue = (unserializableDescription);
         }
         if (typeof unserializableValue !== 'undefined') {
             value = undefined;
@@ -117,7 +117,7 @@ export class RuntimeModel extends SDKModel {
         if ('object' in result && result.object) {
             result.object.release();
         }
-        if ('exceptionDetails' in result && result.exceptionDetails && result.exceptionDetails.exception) {
+        if ('exceptionDetails' in result && result.exceptionDetails?.exception) {
             const exception = result.exceptionDetails.exception;
             const exceptionObject = this.createRemoteObject({ type: exception.type, objectId: exception.objectId });
             exceptionObject.release();
@@ -205,7 +205,7 @@ export class RuntimeModel extends SDKModel {
         }
         function didGetDetails(response) {
             object.release();
-            if (!response || !response.location) {
+            if (!response?.location) {
                 return;
             }
             void Common.Revealer.reveal(response.location);
@@ -263,7 +263,7 @@ export class RuntimeModel extends SDKModel {
     }
     static simpleTextFromException(exceptionDetails) {
         let text = exceptionDetails.text;
-        if (exceptionDetails.exception && exceptionDetails.exception.description) {
+        if (exceptionDetails.exception?.description) {
             let description = exceptionDetails.exception.description;
             if (description.indexOf('\n') !== -1) {
                 description = description.substring(0, description.indexOf('\n'));
@@ -299,7 +299,7 @@ export class RuntimeModel extends SDKModel {
         while (currentStackTrace && !currentStackTrace.callFrames.length) {
             currentStackTrace = currentStackTrace.parent || null;
         }
-        if (!currentStackTrace || !currentStackTrace.callFrames.length) {
+        if (!currentStackTrace?.callFrames.length) {
             return 0;
         }
         return this.executionContextIdForScriptId(currentStackTrace.callFrames[0].scriptId);
@@ -446,9 +446,9 @@ export class ExecutionContext {
     async evaluate(options, userGesture, awaitPromise) {
         // FIXME: It will be moved to separate ExecutionContext.
         if (this.debuggerModel.selectedCallFrame()) {
-            return this.debuggerModel.evaluateOnSelectedCallFrame(options);
+            return await this.debuggerModel.evaluateOnSelectedCallFrame(options);
         }
-        return this.evaluateGlobal(options, userGesture, awaitPromise);
+        return await this.evaluateGlobal(options, userGesture, awaitPromise);
     }
     globalObject(objectGroup, generatePreview) {
         const evaluationOptions = {

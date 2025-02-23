@@ -22,7 +22,7 @@ export class Importer {
             const initiatorEntry = entry.customInitiator();
             if (initiatorEntry) {
                 initiator = {
-                    type: initiatorEntry.type,
+                    type: (initiatorEntry.type),
                     url: initiatorEntry.url,
                     lineNumber: initiatorEntry.lineNumber,
                     requestId: initiatorEntry.requestId,

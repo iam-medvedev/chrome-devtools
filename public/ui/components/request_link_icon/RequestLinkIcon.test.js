@@ -203,7 +203,7 @@ describeWithEnvironment('RequestLinkIcon', () => {
         before(() => {
             UI.ViewManager.resetViewRegistration();
             UI.ViewManager.registerViewExtension({
-                // @ts-ignore
+                // @ts-expect-error
                 location: 'mock-location',
                 id: 'network',
                 title: () => 'Network',

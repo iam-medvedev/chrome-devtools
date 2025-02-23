@@ -334,21 +334,11 @@ export default {
 }
 
 .network-status-pane {
-  color: var(--sys-color-token-subtle);
+  position: absolute;
+  inset: 0;
   background-color: var(--sys-color-cdt-base-container);
   z-index: 500;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 0 20px;
   overflow: auto;
-}
-
-.network-status-pane > .recording-hint {
-  font-size: 14px;
-  text-align: center;
-  line-height: 28px;
 }
 
 .network-waterfall-header {
@@ -428,10 +418,6 @@ export default {
 }
 
 @media (forced-colors: active) {
-  .network-status-pane > .recording-hint {
-    color: canvastext;
-  }
-
   .initiator-column .devtools-link {
     color: linktext;
   }
@@ -454,8 +440,8 @@ export default {
     --color-grid-focus-selected: Highlight;
   }
 
-  #network-container.no-node-selected:focus-within,
-  .network-status-pane {
+  #network-container.no-node-selected:focus-within
+  {
     forced-color-adjust: none;
     border-color: Highlight;
     background-color: canvas !important; /* stylelint-disable-line declaration-no-important */

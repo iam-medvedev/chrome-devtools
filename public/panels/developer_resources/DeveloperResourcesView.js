@@ -55,7 +55,7 @@ export class DeveloperResourcesRevealer {
         if (resource) {
             await UI.ViewManager.ViewManager.instance().showView('developer-resources');
             const developerResourcesView = await UI.ViewManager.ViewManager.instance().view('developer-resources').widget();
-            return developerResourcesView.select(resource);
+            return await developerResourcesView.select(resource);
         }
     }
 }

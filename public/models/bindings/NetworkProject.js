@@ -46,7 +46,7 @@ export class NetworkProjectManager extends Common.ObjectWrapper.ObjectWrapper {
 export class NetworkProject {
     static resolveFrame(uiSourceCode, frameId) {
         const target = NetworkProject.targetForUISourceCode(uiSourceCode);
-        const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const resourceTreeModel = target?.model(SDK.ResourceTreeModel.ResourceTreeModel);
         return resourceTreeModel ? resourceTreeModel.frameForId(frameId) : null;
     }
     static setInitialFrameAttribution(uiSourceCode, frameId) {
@@ -122,7 +122,7 @@ export class NetworkProject {
     }
     static framesForUISourceCode(uiSourceCode) {
         const target = NetworkProject.targetForUISourceCode(uiSourceCode);
-        const resourceTreeModel = target && target.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const resourceTreeModel = target?.model(SDK.ResourceTreeModel.ResourceTreeModel);
         const attribution = uiSourceCodeToAttributionMap.get(uiSourceCode);
         if (!resourceTreeModel || !attribution) {
             return [];

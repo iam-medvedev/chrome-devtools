@@ -120,6 +120,7 @@ describeWithMockConnection('NetworkAgent', () => {
                     type: "user-query" /* ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
+                    imageId: undefined,
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,

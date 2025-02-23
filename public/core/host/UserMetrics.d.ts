@@ -778,7 +778,27 @@ export declare enum IssueCreated {
     'SelectElementAccessibilityIssue::NonPhrasingContentOptionChild' = 88,
     'SelectElementAccessibilityIssue::InteractiveContentOptionChild' = 89,
     'SelectElementAccessibilityIssue::InteractiveContentLegendChild' = 90,
-    MAX_VALUE = 91
+    'SRIMessageSignatureIssue::MissingSignatureHeader' = 91,
+    'SRIMessageSignatureIssue::MissingSignatureInputHeader' = 92,
+    'SRIMessageSignatureIssue::InvalidSignatureHeader' = 93,
+    'SRIMessageSignatureIssue::InvalidSignatureInputHeader' = 94,
+    'SRIMessageSignatureIssue::SignatureHeaderValueIsNotByteSequence' = 95,
+    'SRIMessageSignatureIssue::SignatureHeaderValueIsParameterized' = 96,
+    'SRIMessageSignatureIssue::SignatureHeaderValueIsIncorrectLength' = 97,
+    'SRIMessageSignatureIssue::SignatureInputHeaderMissingLabel' = 98,
+    'SRIMessageSignatureIssue::SignatureInputHeaderValueNotInnerList' = 99,
+    'SRIMessageSignatureIssue::SignatureInputHeaderValueMissingComponents' = 100,
+    'SRIMessageSignatureIssue::SignatureInputHeaderInvalidComponentType' = 101,
+    'SRIMessageSignatureIssue::SignatureInputHeaderInvalidComponentName' = 102,
+    'SRIMessageSignatureIssue::SignatureInputHeaderInvalidHeaderComponentParameter' = 103,
+    'SRIMessageSignatureIssue::SignatureInputHeaderInvalidDerivedComponentParameter' = 104,
+    'SRIMessageSignatureIssue::SignatureInputHeaderKeyIdLength' = 105,
+    'SRIMessageSignatureIssue::SignatureInputHeaderInvalidParameter' = 106,
+    'SRIMessageSignatureIssue::SignatureInputHeaderMissingRequiredParameters' = 107,
+    'SRIMessageSignatureIssue::ValidationFailedSignatureExpired' = 108,
+    'SRIMessageSignatureIssue::ValidationFailedInvalidLength' = 109,
+    'SRIMessageSignatureIssue::ValidationFailedSignatureMismatch' = 110,
+    MAX_VALUE = 111
 }
 export declare const enum DeveloperResourceLoaded {
     LOAD_THROUGH_PAGE_VIA_TARGET = 0,

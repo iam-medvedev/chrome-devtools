@@ -242,7 +242,7 @@ export class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
                 context.stroke(paths[i]);
             }
         };
-        const backgroundContext = this.backgroundCanvas.getContext('2d');
+        const backgroundContext = (this.backgroundCanvas.getContext('2d'));
         if (!backgroundContext) {
             throw new Error('Could not find 2d canvas');
         }
@@ -388,7 +388,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
             if (this.drawGeneration !== drawGeneration) {
                 return;
             }
-            if (!image || !image.naturalWidth || !image.naturalHeight) {
+            if (!image?.naturalWidth || !image.naturalHeight) {
                 return;
             }
             const imageHeight = this.height() - 2 * TimelineFilmStripOverview.Padding;
@@ -406,7 +406,7 @@ export class TimelineFilmStripOverview extends TimelineEventOverview {
             imagePromise = UI.UIUtils.loadImage(uri);
             this.frameToImagePromise.set(frame, imagePromise);
         }
-        return imagePromise;
+        return await imagePromise;
     }
     drawFrames(imageWidth, imageHeight, customStartTime, customEndTime) {
         if (!imageWidth) {

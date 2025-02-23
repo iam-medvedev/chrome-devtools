@@ -322,7 +322,7 @@ export class FontEditorSectionManager {
         void this.updateFontProperty(propertyName, value, treeElement);
     }
     async updateFontProperty(propertyName, value, treeElement) {
-        if (treeElement && treeElement.treeOutline && treeElement.valueElement && treeElement.property.parsedOk &&
+        if (treeElement?.treeOutline && treeElement.valueElement && treeElement.property.parsedOk &&
             treeElement.property.range) {
             let elementRemoved = false;
             treeElement.valueElement.textContent = value;
@@ -370,7 +370,7 @@ export class FontEditorSectionManager {
     createPropertyValueMap() {
         const propertyMap = new Map();
         for (const fontProperty of this.treeElementMap) {
-            const propertyName = fontProperty[0];
+            const propertyName = (fontProperty[0]);
             const treeElement = fontProperty[1];
             if (treeElement.property.value.length) {
                 propertyMap.set(propertyName, treeElement.property.value);
@@ -385,7 +385,7 @@ export class FontEditorSectionManager {
         const propertyName = treeElement.property.name;
         if (this.treeElementMap.has(propertyName)) {
             const treeElementFromMap = this.treeElementMap.get(propertyName);
-            if (!treeElement.overloaded() || (treeElementFromMap && treeElementFromMap.overloaded())) {
+            if (!treeElement.overloaded() || (treeElementFromMap?.overloaded())) {
                 this.treeElementMap.set(propertyName, treeElement);
             }
         }

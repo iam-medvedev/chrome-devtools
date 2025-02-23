@@ -236,7 +236,7 @@ export class Script {
     async getWasmBytecode() {
         const base64 = await this.debuggerModel.target().debuggerAgent().invoke_getWasmBytecode({ scriptId: this.scriptId });
         const response = await fetch(`data:application/wasm;base64,${base64.bytecode}`);
-        return response.arrayBuffer();
+        return await response.arrayBuffer();
     }
     originalContentProvider() {
         return new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => this.requestContentData());
@@ -354,7 +354,7 @@ function frameIdForScript(script) {
     }
     // This is to overcome compilation cache which doesn't get reset.
     const resourceTreeModel = script.debuggerModel.target().model(ResourceTreeModel);
-    if (!resourceTreeModel || !resourceTreeModel.mainFrame) {
+    if (!resourceTreeModel?.mainFrame) {
         return null;
     }
     return resourceTreeModel.mainFrame.id;

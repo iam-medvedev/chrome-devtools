@@ -512,13 +512,13 @@ export class StylePropertiesSection {
         this.setSectionHovered(hasCtrlOrMeta);
         const treeElement = this.propertiesTreeOutline.treeElementFromEvent(event);
         if (treeElement instanceof StylePropertyTreeElement) {
-            this.parentPane.setActiveProperty(treeElement);
+            this.parentPane.setActiveProperty((treeElement));
         }
         else {
             this.parentPane.setActiveProperty(null);
         }
         const selection = this.element.getComponentSelection();
-        if (!this.selectedSinceMouseDown && selection && selection.toString()) {
+        if (!this.selectedSinceMouseDown && selection?.toString()) {
             this.selectedSinceMouseDown = true;
         }
     }
@@ -652,7 +652,7 @@ export class StylePropertiesSection {
     onNewRuleClick(event) {
         event.data.consume();
         const rule = this.styleInternal.parentRule;
-        if (!rule || !rule.style.range || rule.styleSheetId === undefined) {
+        if (!rule?.style.range || rule.styleSheetId === undefined) {
             return;
         }
         const range = TextUtils.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
@@ -869,7 +869,7 @@ export class StylePropertiesSection {
                 curSection = curSection.nextSibling();
             }
         }
-        return (curSection && curSection.editable) ? curSection : null;
+        return (curSection?.editable) ? curSection : null;
     }
     previousEditableSibling() {
         let curSection = this;
@@ -882,7 +882,7 @@ export class StylePropertiesSection {
                 curSection = curSection.previousSibling();
             }
         }
-        return (curSection && curSection.editable) ? curSection : null;
+        return (curSection?.editable) ? curSection : null;
     }
     refreshUpdate(editedTreeElement) {
         this.parentPane.refreshUpdate(this, editedTreeElement);
@@ -1034,7 +1034,7 @@ export class StylePropertiesSection {
         const selectors = this.selectorElement.getElementsByClassName('simple-selector');
         const regex = this.parentPane.filterRegex();
         for (let i = 0; i < selectors.length; ++i) {
-            const selectorMatchesFilter = regex !== null && regex.test(selectors[i].textContent || '');
+            const selectorMatchesFilter = regex?.test(selectors[i].textContent || '');
             selectors[i].classList.toggle('filter-match', selectorMatchesFilter);
         }
     }
@@ -1227,7 +1227,7 @@ export class StylePropertiesSection {
             return;
         }
         const rule = this.styleInternal.parentRule;
-        if (!rule || rule.styleSheetId === undefined) {
+        if (rule?.styleSheetId === undefined) {
             return;
         }
         const header = cssModel.styleSheetHeaderForId(rule.styleSheetId);
@@ -1283,7 +1283,7 @@ export class StylePropertiesSection {
         if (moveDirection === 'forward') {
             const firstChild = this.propertiesTreeOutline.firstChild();
             let currentChild = firstChild;
-            while (currentChild && currentChild.inherited()) {
+            while (currentChild?.inherited()) {
                 const sibling = currentChild.nextSibling;
                 currentChild = sibling instanceof StylePropertyTreeElement ? sibling : null;
             }
@@ -1391,8 +1391,7 @@ export class BlankStylePropertiesSection extends StylePropertiesSection {
         this.styleSheetId = styleSheetId;
         this.selectorRefElement.removeChildren();
         this.selectorRefElement.appendChild(StylePropertiesSection.linkifyRuleLocation(cssModel, this.parentPane.linkifier, styleSheetId, this.actualRuleLocation()));
-        if (insertAfterStyle && insertAfterStyle.parentRule &&
-            insertAfterStyle.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
+        if (insertAfterStyle?.parentRule && insertAfterStyle.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
             this.createAncestorRules(insertAfterStyle.parentRule);
         }
         this.element.classList.add('blank-section');

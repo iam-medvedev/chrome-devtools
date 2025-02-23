@@ -120,7 +120,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         let node = document;
         for (; node; node = node.traverseNextNode(document)) {
             if (node instanceof HTMLElement) {
-                const element = node;
+                const element = (node);
                 const tabIndex = element.tabIndex;
                 if (!exclusionSet?.has(element)) {
                     if (tabIndex >= 0) {
@@ -141,7 +141,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             return elementSet;
         }
         const mainWidget = splitWidget.mainWidget();
-        if (!mainWidget || !mainWidget.element) {
+        if (!mainWidget?.element) {
             return elementSet;
         }
         let node = mainWidget.element;
@@ -149,7 +149,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             if (!(node instanceof HTMLElement)) {
                 continue;
             }
-            const element = node;
+            const element = (node);
             const tabIndex = element.tabIndex;
             if (tabIndex < 0) {
                 continue;

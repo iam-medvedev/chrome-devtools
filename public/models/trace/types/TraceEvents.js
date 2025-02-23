@@ -560,12 +560,15 @@ export function isLegacyTimelineFrame(data) {
     return 'idle' in data && typeof data.idle === 'boolean';
 }
 export function isTargetRundownEvent(event) {
-    return event.cat === 'disabled-by-default-devtools.target-rundown';
+    return event.cat === 'disabled-by-default-devtools.target-rundown' && event.name === 'ScriptCompiled';
 }
-export function isScriptRundownEvent(event) {
-    return event.cat === 'disabled-by-default-devtools.v8-source-rundown';
+export function isV8SourceRundownEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown' && event.name === 'ScriptCatchup';
 }
-export function isScriptSourceRundownEvent(event) {
-    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';
+export function isV8SourceRundownSourcesScriptCatchupEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'ScriptCatchup';
+}
+export function isV8SourceRundownSourcesLargeScriptCatchupEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'LargeScriptCatchup';
 }
 //# sourceMappingURL=TraceEvents.js.map

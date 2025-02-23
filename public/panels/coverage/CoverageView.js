@@ -169,7 +169,7 @@ export class CoverageView extends UI.Widget.VBox {
         this.toggleRecordButton = UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction);
         toolbar.appendToolbarItem(this.toggleRecordButton);
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-        const mainTargetSupportsRecordOnReload = mainTarget && mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        const mainTargetSupportsRecordOnReload = mainTarget?.model(SDK.ResourceTreeModel.ResourceTreeModel);
         this.inlineReloadButton = null;
         if (mainTargetSupportsRecordOnReload) {
             this.startWithReloadButton = UI.Toolbar.Toolbar.createActionButton('coverage.start-with-reload');
@@ -314,8 +314,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
     async startRecording(options) {
         let hadFocus, reloadButtonFocused;
-        if ((this.startWithReloadButton && this.startWithReloadButton.element.hasFocus()) ||
-            (this.inlineReloadButton && this.inlineReloadButton.hasFocus())) {
+        if ((this.startWithReloadButton?.element.hasFocus()) || (this.inlineReloadButton?.hasFocus())) {
             reloadButtonFocused = true;
         }
         else if (this.hasFocus()) {
@@ -381,7 +380,7 @@ export class CoverageView extends UI.Widget.VBox {
         this.updateViews(data);
     }
     updateListView() {
-        this.listView.update(this.model && this.model.entries() || []);
+        this.listView.update(this.model?.entries() || []);
     }
     async stopRecording() {
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
@@ -446,7 +445,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
     updateViews(updatedEntries) {
         this.updateStats();
-        this.listView.update(this.model && this.model.entries() || []);
+        this.listView.update(this.model?.entries() || []);
         this.exportAction.setEnabled(this.model !== null && this.model.entries().length > 0);
         this.decorationManager && this.decorationManager.update(updatedEntries);
     }
@@ -504,7 +503,7 @@ export class CoverageView extends UI.Widget.VBox {
         }
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CoverageReportFiltered);
         const option = this.filterByTypeComboBox.selectedOption();
-        const type = option && option.value;
+        const type = option?.value;
         this.typeFilterValue = parseInt(type || '', 10) || null;
         this.listView.updateFilterAndHighlight(this.textFilterRegExp);
         this.updateStats();
@@ -559,7 +558,7 @@ export class ActionDelegate {
             .showView(coverageViewId, /** userGesture= */ false, /** omitFocus= */ true)
             .then(() => {
             const view = UI.ViewManager.ViewManager.instance().view(coverageViewId);
-            return view && view.widget();
+            return view?.widget();
         })
             .then(widget => this.innerHandleAction(widget, actionId));
         return true;

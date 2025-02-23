@@ -47,7 +47,7 @@ function positionToLocation(lineEndings, position) {
 }
 export async function format(contentType, mimeType, content, indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get()) {
     if (contentType.isDocumentOrScriptOrStyleSheet()) {
-        return formatScriptContent(mimeType, content, indent);
+        return await formatScriptContent(mimeType, content, indent);
     }
     return { formattedContent: content, formattedMapping: new IdentityFormatterSourceMapping() };
 }

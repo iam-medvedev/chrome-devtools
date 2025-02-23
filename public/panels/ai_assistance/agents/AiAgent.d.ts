@@ -68,11 +68,13 @@ export interface QueryResponse {
     type: ResponseType.QUERYING;
     query?: string;
     imageInput?: Host.AidaClient.Part;
+    imageId?: string;
 }
 export interface UserQuery {
     type: ResponseType.USER_QUERY;
     query: string;
     imageInput?: Host.AidaClient.Part;
+    imageId?: string;
 }
 export type ResponseData = AnswerResponse | SuggestionsResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryResponse | ContextResponse | UserQuery;
 export type FunctionCallResponseData = TitleResponse | ThoughtResponse | ActionResponse | SideEffectResponse | SuggestionsResponse;
@@ -140,13 +142,12 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
      */
     parameters: Host.AidaClient.FunctionObjectParam<keyof Args>;
     /**
-     * Provided a way to give information back to
-     * the UI before running the the handler
+     * Provided a way to give information back to the UI.
      */
     displayInfoFromArgs?: (args: Args) => {
         title?: string;
         thought?: string;
-        code?: string;
+        action?: string;
         suggestions?: [string, ...string[]];
     };
     /**
@@ -161,6 +162,16 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
         signal?: AbortSignal;
     }) => Promise<FunctionCallHandlerResult<ReturnType>>;
 }
+/**
+ * AiAgent is a base class for implementing an interaction with AIDA
+ * that involves one or more requests being sent to AIDA optionally
+ * utilizing function calling.
+ *
+ * TODO: missing a test that action code is yielded before the
+ * confirmation dialog.
+ * TODO: missing a test for an error if it took
+ * more than MAX_STEPS iterations.
+ */
 export declare abstract class AiAgent<T> {
     #private;
     /** Subclasses need to define these. */
@@ -177,7 +188,12 @@ export declare abstract class AiAgent<T> {
     get id(): string;
     get isEmpty(): boolean;
     get origin(): string | undefined;
-    parseResponse(response: Host.AidaClient.AidaResponse): ParsedResponse;
+    /**
+     * Parses a streaming text response into a
+     * though/action/title/answer/suggestions component. This is only used
+     * by StylingAgent.
+     */
+    parseTextResponse(response: string): ParsedResponse;
     /**
      * Declare a function that the AI model can call.
      * @param name - The name of the function
@@ -191,11 +207,14 @@ export declare abstract class AiAgent<T> {
      */
     protected declareFunction<Args extends Record<string, unknown>, ReturnType = unknown>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
     protected formatParsedAnswer({ answer }: ParsedAnswer): string;
-    protected handleAction(action: string, options?: {
-        signal?: AbortSignal;
-    }): AsyncGenerator<SideEffectResponse, ActionResponse, void>;
+    /**
+     * Special mode for StylingAgent that turns custom text output into a
+     * function call.
+     */
+    protected functionCallEmulationEnabled: boolean;
+    protected emulateFunctionCall(_aidaResponse: Host.AidaClient.AidaResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
     run(initialQuery: string, options: {
         signal?: AbortSignal;
         selected: ConversationContext<T> | null;
-    }, imageInput?: Host.AidaClient.Part): AsyncGenerator<ResponseData, void, void>;
+    }, imageInput?: Host.AidaClient.Part, imageId?: string): AsyncGenerator<ResponseData, void, void>;
 }

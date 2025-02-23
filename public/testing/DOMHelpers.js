@@ -197,10 +197,10 @@ export function getEventPromise(element, eventName) {
     });
 }
 export async function doubleRaf() {
-    return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
 }
 export async function raf() {
-    return new Promise(resolve => requestAnimationFrame(resolve));
+    return await new Promise(resolve => requestAnimationFrame(resolve));
 }
 /**
  * It's useful to use innerHTML in the tests to have full confidence in the

@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as TimelineUtils from '../../timeline/utils/utils.js';
 import * as PanelUtils from '../../utils/utils.js';
+import { PerformanceInsightFormatter, TraceEventFormatter } from '../data_formatters/PerformanceInsightFormatter.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 /* clang-format off */
 const preamble = `You are a performance expert deeply integrated within Chrome DevTools. You specialize in analyzing web application behaviour captured by Chrome DevTools Performance Panel.
@@ -14,7 +16,7 @@ You will be told the following information about the Insight:
 - The 'Insight description' which helps you understand what the insight is for and what the user is hoping to understand.
 - 'Insight details' which will be additional context and information to help you understand what the insight is showing the user. Use this information to suggest opportunities to improve the performance.
 
-You have a number of functions to get information about the page and its performance. Use these functions to help you gather information to perform the user's query. For every query it is important to understand the network activity and also the main thread activity.
+You will also be provided with external resources. Use these to ensure you give correct, accurate and up to date answers.
 
 ## Step-by-step instructions
 
@@ -56,11 +58,15 @@ export class InsightContext extends ConversationContext {
     }
 }
 export class PerformanceInsightsAgent extends AiAgent {
-    // TODO: make use of the Insight.
-    // eslint-disable-next-line no-unused-private-class-members
     #insight;
-    handleContextDetails(_activeContext) {
-        throw new Error('not implemented');
+    async *handleContextDetails(activeContext) {
+        if (!activeContext) {
+            return;
+        }
+        const title = activeContext.getItem().title();
+        // TODO: Provide proper text with useful context details.
+        const titleDetail = { title, text: title };
+        yield { type: "context" /* ResponseType.CONTEXT */, title, details: [titleDetail] };
     }
     type = "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */;
     preamble = preamble;
@@ -76,7 +82,33 @@ export class PerformanceInsightsAgent extends AiAgent {
     }
     constructor(opts) {
         super(opts);
-        // TODO: define the set of functions for the LLM.
+        this.declareFunction('getNetworkActivity', {
+            description: 'Returns relevant network requests for the selected insight',
+            parameters: {
+                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                description: '',
+                nullable: true,
+                properties: {},
+            },
+            handler: async () => {
+                if (!this.#insight) {
+                    return { error: 'No insight available' };
+                }
+                const activeInsight = this.#insight.getItem();
+                const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
+                const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace));
+                return { result: { requests: formatted } };
+            },
+        });
+    }
+    async enhanceQuery(query, selectedInsight) {
+        if (!selectedInsight) {
+            return query;
+        }
+        const formatter = new PerformanceInsightFormatter(selectedInsight.getItem().insight);
+        const extraQuery = `${formatter.formatInsight()}\n\n# User request:\n`;
+        const finalQuery = `${extraQuery}${query}`;
+        return finalQuery;
     }
     async *run(initialQuery, options) {
         this.#insight = options.selected ?? undefined;

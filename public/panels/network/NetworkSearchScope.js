@@ -32,7 +32,7 @@ export class NetworkSearchScope {
             promises.push(promise);
         }
         const resultsWithNull = await Promise.all(promises);
-        const results = resultsWithNull.filter(result => result !== null);
+        const results = (resultsWithNull.filter(result => result !== null));
         if (progress.isCanceled()) {
             searchFinishedCallback(false);
             return;
@@ -78,7 +78,7 @@ export class NetworkSearchScope {
             let pos = 0;
             for (const regExp of regExps) {
                 const match = string.substr(pos).match(regExp);
-                if (!match || match.index === undefined) {
+                if (match?.index === undefined) {
                     return false;
                 }
                 pos += match.index + match[0].length;

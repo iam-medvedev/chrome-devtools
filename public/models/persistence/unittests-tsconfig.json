@@ -38,6 +38,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/models/persistence/AutomaticFileSystemManager.test.ts",
     "../../../../../../front_end/models/persistence/NetworkPersistenceManager.test.ts",
     "../../../../../../front_end/models/persistence/PersistenceAction.test.ts",
     "../../../../../../front_end/models/persistence/PersistenceImpl.test.ts",

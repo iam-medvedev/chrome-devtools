@@ -223,7 +223,7 @@ export class CookieItemsView extends StorageItemsView {
         if (oldCookie && newCookie.key() !== oldCookie.key()) {
             await this.model.deleteCookie(oldCookie);
         }
-        return this.model.saveCookie(newCookie);
+        return await this.model.saveCookie(newCookie);
     }
     deleteCookie(cookie, callback) {
         void this.model.deleteCookie(cookie).then(callback);

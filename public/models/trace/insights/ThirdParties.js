@@ -43,6 +43,7 @@ function getRelatedEvents(summaries, firstPartyEntity) {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "ThirdParties" /* InsightKeys.THIRD_PARTIES */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

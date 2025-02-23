@@ -13,6 +13,12 @@ export default {
 .layers-3d-view {
   overflow: hidden;
   user-select: none;
+
+  > .empty-view-scroller{
+    inset: 0;
+    position: absolute;
+    background-color: var(--sys-color-cdt-base-container);
+  }
 }
 
 devtools-toolbar {

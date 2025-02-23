@@ -36,6 +36,8 @@ export declare class Cookie {
     setSize(size: number): void;
     expiresDate(requestDate: Date): Date | null;
     addAttribute(key: Attribute | null, value?: string | number | boolean): void;
+    hasAttribute(key: Attribute): boolean;
+    getAttribute(key: Attribute): string | number | boolean | undefined;
     setCookieLine(cookieLine: string): void;
     getCookieLine(): string | null;
     matchesSecurityOrigin(securityOrigin: string): boolean;

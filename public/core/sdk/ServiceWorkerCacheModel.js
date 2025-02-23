@@ -50,8 +50,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
     clearForStorageKey(storageKey) {
         for (const [opaqueId, cache] of this.#cachesInternal.entries()) {
             if (cache.storageKey === storageKey) {
-                this.#cachesInternal.delete(opaqueId);
-                this.cacheRemoved(cache);
+                this.#cachesInternal.delete((opaqueId));
+                this.cacheRemoved((cache));
             }
         }
         for (const storageBucket of this.#storageBucketModel.getBucketsForStorageKey(storageKey)) {
@@ -122,8 +122,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
             }
             if (cache.inBucket(storageBucket)) {
                 storageKeyCount--;
-                this.#cachesInternal.delete(opaqueId);
-                this.cacheRemoved(cache);
+                this.#cachesInternal.delete((opaqueId));
+                this.cacheRemoved((cache));
             }
         }
         if (storageKeyCount === 0) {

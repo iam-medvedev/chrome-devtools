@@ -64,7 +64,7 @@ export class StartView extends UI.Widget.Widget {
     }
     populateRuntimeSettingAsRadio(settingName, label, parentElement) {
         const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
-        if (!runtimeSetting || !runtimeSetting.options) {
+        if (!runtimeSetting?.options) {
             throw new Error(`${settingName} is not a setting with options`);
         }
         const labelEl = document.createElement('div');
@@ -81,7 +81,7 @@ export class StartView extends UI.Widget.Widget {
     }
     populateRuntimeSettingAsToolbarCheckbox(settingName, toolbar) {
         const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
-        if (!runtimeSetting || !runtimeSetting.title) {
+        if (!runtimeSetting?.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }
         runtimeSetting.setting.setTitle(runtimeSetting.title());
@@ -95,7 +95,7 @@ export class StartView extends UI.Widget.Widget {
     }
     populateRuntimeSettingAsToolbarDropdown(settingName, toolbar) {
         const runtimeSetting = RuntimeSettings.find(item => item.setting.name === settingName);
-        if (!runtimeSetting || !runtimeSetting.title) {
+        if (!runtimeSetting?.title) {
             throw new Error(`${settingName} is not a setting with a title`);
         }
         const options = runtimeSetting.options?.map(option => ({ label: option.label(), value: option.value })) || [];

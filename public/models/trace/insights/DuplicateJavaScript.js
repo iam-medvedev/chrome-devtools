@@ -22,6 +22,7 @@ export function deps() {
 }
 function finalize(partialModel) {
     return {
+        insightKey: "DuplicateJavaScript" /* InsightKeys.DUPLICATE_JAVASCRIPT */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

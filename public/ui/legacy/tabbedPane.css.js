@@ -53,11 +53,7 @@ export default {
 
 .tabbed-pane-placeholder {
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
+  align-content: center;
 }
 
 .tabbed-pane-placeholder-row {
@@ -72,7 +68,7 @@ export default {
     border: var(--sys-size-2) dashed var(--sys-color-divider);
     padding: var(--sys-size-8);
     border-radius: var(--sys-shape-corner-medium);
-    margin-bottom: var(--sys-size-11);
+    margin: var(--sys-size-8) var(--sys-size-8) var(--sys-size-11);
 
     > .icon-container {
       flex-shrink: 0;
@@ -111,6 +107,7 @@ export default {
 
       .keybinds-key {
         display: flex;
+        flex-shrink: 0;
         align-items: center;
         justify-content: center;
         height: var(--sys-size-11);
@@ -203,8 +200,8 @@ export default {
   line-height: 15px;
   border-radius: var(--sys-shape-corner-full);
   margin-left: var(--sys-size-2);
-  background-color: var(--sys-color-error);
-  color: var(--sys-color-on-error);
+  background-color: var(--sys-color-primary);
+  color: var(--sys-color-on-primary);
   font-size: var(--sys-typescale-body5-size);
   font-weight: var(--ref-typeface-weight-bold);
 
@@ -220,7 +217,7 @@ export default {
   height: var(--sys-size-4);
   width: var(--sys-size-4);
   border-radius: var(--sys-shape-corner-full);
-  background-color: var(--sys-color-error);
+  background-color: var(--sys-color-purple-bright);
   margin-left: var(--sys-size-1);
   justify-self: center;
   position: relative;

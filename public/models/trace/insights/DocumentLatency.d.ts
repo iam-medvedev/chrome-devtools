@@ -4,47 +4,47 @@ export declare const UIStrings: {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
      */
-    title: string;
+    readonly title: "Document request latency";
     /**
      *@description Description of an insight that provides a breakdown for how long it took to download the main document.
      */
-    description: string;
+    readonly description: "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.";
     /**
      * @description Text to tell the user that the document request does not have redirects.
      */
-    passingRedirects: string;
+    readonly passingRedirects: "Avoids redirects";
     /**
      * @description Text to tell the user that the document request had redirects.
      */
-    failedRedirects: string;
+    readonly failedRedirects: "Had redirects";
     /**
      * @description Text to tell the user that the time starting the document request to when the server started responding is acceptable.
      */
-    passingServerResponseTime: string;
+    readonly passingServerResponseTime: "Server responds quickly";
     /**
      * @description Text to tell the user that the time starting the document request to when the server started responding is not acceptable.
      */
-    failedServerResponseTime: string;
+    readonly failedServerResponseTime: "Server responded slowly";
     /**
      * @description Text to tell the user that text compression (like gzip) was applied.
      */
-    passingTextCompression: string;
+    readonly passingTextCompression: "Applies text compression";
     /**
      * @description Text to tell the user that text compression (like gzip) was not applied.
      */
-    failedTextCompression: string;
+    readonly failedTextCompression: "No compression applied";
     /**
      * @description Text for a label describing a network request event as having redirects.
      */
-    redirectsLabel: string;
+    readonly redirectsLabel: "Redirects";
     /**
      * @description Text for a label describing a network request event as taking too long to start delivery by the server.
      */
-    serverResponseTimeLabel: string;
+    readonly serverResponseTimeLabel: "Server response time";
     /**
      * @description Text for a label describing a network request event as taking longer to download because it wasn't compressed.
      */
-    uncompressedDownload: string;
+    readonly uncompressedDownload: "Uncompressed download";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type DocumentLatencyInsightModel = InsightModel<typeof UIStrings, {

@@ -71,7 +71,7 @@ export class ChunkedFileReader {
         }
         this.#output = output;
         void this.loadChunk();
-        return new Promise(resolve => {
+        return await new Promise(resolve => {
             this.#transferFinished = resolve;
         });
     }
@@ -151,7 +151,7 @@ export class ChunkedFileReader {
             if (done || !value) {
                 // Write empty string to inform of file end
                 await this.#output.write('', true);
-                return this.finishRead();
+                return await this.finishRead();
             }
             void this.decodeChunkBuffer(value.buffer, false);
         }

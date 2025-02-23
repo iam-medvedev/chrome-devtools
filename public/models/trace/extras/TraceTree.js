@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
+import { SamplesIntegrator } from '../helpers/SamplesIntegrator.js';
 import * as Types from '../types/types.js';
-import { TimelineJSProfileProcessor } from './TimelineJSProfile.js';
 export class Node {
     totalTime;
     selfTime;
@@ -32,17 +32,17 @@ export class Node {
         return this.isGroupNodeInternal;
     }
     hasChildren() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     setHasChildren(_value) {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     /**
      * Returns the direct descendants of this node.
      * @returns a map with ordered <nodeId, Node> tuples.
      */
     children() {
-        throw 'Not implemented';
+        throw new Error('Not implemented');
     }
     searchTree(matchFunction, results) {
         results = results || [];
@@ -62,7 +62,7 @@ export class TopDownNode extends Node {
     parent;
     constructor(id, event, parent) {
         super(id, event);
-        this.root = parent && parent.root;
+        this.root = parent?.root ?? null;
         this.hasChildrenInternal = false;
         this.childrenInternal = null;
         this.parent = parent;
@@ -80,7 +80,7 @@ export class TopDownNode extends Node {
         // Tracks the ancestor path of this node, includes the current node.
         const path = [];
         for (let node = this; node.parent && !node.isGroupNode(); node = node.parent) {
-            path.push(node);
+            path.push((node));
         }
         path.reverse();
         const children = new Map();
@@ -297,7 +297,7 @@ export class BottomUpRootNode extends Node {
         for (const [id, child] of children) {
             // to provide better context to user only filter first (top) level.
             if (child.event && child.depth <= 1 && !this.textFilter.accept(child.event)) {
-                children.delete(id);
+                children.delete((id));
             }
         }
         return children;
@@ -359,7 +359,7 @@ export class BottomUpRootNode extends Node {
         this.selfTime = selfTimeStack.pop() || 0;
         for (const pair of nodeById) {
             if (pair[1].selfTime <= 0) {
-                nodeById.delete(pair[0]);
+                nodeById.delete((pair[0]));
             }
         }
         return nodeById;
@@ -516,8 +516,8 @@ export function eventStackFrame(event) {
 }
 export function generateEventID(event) {
     if (Types.Events.isProfileCall(event)) {
-        const name = TimelineJSProfileProcessor.isNativeRuntimeFrame(event.callFrame) ?
-            TimelineJSProfileProcessor.nativeGroup(event.callFrame.functionName) :
+        const name = SamplesIntegrator.isNativeRuntimeFrame(event.callFrame) ?
+            SamplesIntegrator.nativeGroup(event.callFrame.functionName) :
             event.callFrame.functionName;
         const location = event.callFrame.scriptId || event.callFrame.url || '';
         return `f:${name}@${location}`;

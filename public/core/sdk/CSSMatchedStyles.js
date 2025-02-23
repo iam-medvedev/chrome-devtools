@@ -190,14 +190,14 @@ export class CSSRegisteredProperty {
 export class CSSMatchedStyles {
     #cssModelInternal;
     #nodeInternal;
-    #addedStyles;
-    #matchingSelectors;
-    #keyframesInternal;
+    #addedStyles = new Map();
+    #matchingSelectors = new Map();
+    #keyframesInternal = [];
     #registeredProperties;
     #registeredPropertyMap = new Map();
-    #nodeForStyleInternal;
-    #inheritedStyles;
-    #styleToDOMCascade;
+    #nodeForStyleInternal = new Map();
+    #inheritedStyles = new Set();
+    #styleToDOMCascade = new Map();
     #parentLayoutNodeId;
     #positionTryRules;
     #activePositionFallbackIndex;
@@ -213,13 +213,10 @@ export class CSSMatchedStyles {
     constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, activePositionFallbackIndex, }) {
         this.#cssModelInternal = cssModel;
         this.#nodeInternal = node;
-        this.#addedStyles = new Map();
-        this.#matchingSelectors = new Map();
         this.#registeredProperties = [
             ...propertyRules.map(rule => new CSSPropertyRule(cssModel, rule)),
             ...cssPropertyRegistrations,
         ].map(r => new CSSRegisteredProperty(cssModel, r));
-        this.#keyframesInternal = [];
         if (animationsPayload) {
             this.#keyframesInternal = animationsPayload.map(rule => new CSSKeyframesRule(cssModel, rule));
         }
@@ -227,10 +224,6 @@ export class CSSMatchedStyles {
         this.#parentLayoutNodeId = parentLayoutNodeId;
         this.#fontPaletteValuesRule =
             fontPaletteValuesRule ? new CSSFontPaletteValuesRule(cssModel, fontPaletteValuesRule) : undefined;
-        this.#nodeForStyleInternal = new Map();
-        this.#inheritedStyles = new Set();
-        this.#styleToDOMCascade = new Map();
-        this.#registeredPropertyMap = new Map();
         this.#activePositionFallbackIndex = activePositionFallbackIndex;
     }
     async init({ matchedPayload, inheritedPayload, inlinePayload, attributesPayload, pseudoPayload, inheritedPseudoPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload, }) {
@@ -529,7 +522,7 @@ export class CSSMatchedStyles {
             // MatchedStyleResult's lifetime.
             if (typeof node.id === 'number') {
                 const map = this.#matchingSelectors.get(node.id);
-                if (map && map.has(selectorText)) {
+                if (map?.has(selectorText)) {
                     return;
                 }
             }
@@ -653,15 +646,13 @@ class NodeCascade {
     styles;
     #isInherited;
     #isHighlightPseudoCascade;
-    propertiesState;
-    activeProperties;
+    propertiesState = new Map();
+    activeProperties = new Map();
     constructor(matchedStyles, styles, isInherited, isHighlightPseudoCascade = false) {
         this.#matchedStyles = matchedStyles;
         this.styles = styles;
         this.#isInherited = isInherited;
         this.#isHighlightPseudoCascade = isHighlightPseudoCascade;
-        this.propertiesState = new Map();
-        this.activeProperties = new Map();
     }
     computeActiveProperties() {
         this.propertiesState.clear();

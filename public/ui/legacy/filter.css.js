@@ -158,7 +158,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   height: var(--sys-size-9);
-  padding: 0 var(--sys-size-3) 0 var(--sys-size-5);
+  margin: 0 var(--sys-size-3) 0 var(--sys-size-5);
   border: none;
   border-radius: var(--sys-shape-corner-extra-small);
   display: flex;

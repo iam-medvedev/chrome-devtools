@@ -1,10 +1,11 @@
 import * as Common from '../../core/common/common.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
-import { TimelineTreeView } from './TimelineTreeView.js';
+import { AggregatedTimelineTreeView, TimelineTreeView } from './TimelineTreeView.js';
 import * as Utils from './utils/utils.js';
 declare const TimelineDetailsPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<TimelineTreeView.EventTypes>;
@@ -12,7 +13,7 @@ declare const TimelineDetailsPane_base: (new (...args: any[]) => {
     once<T extends keyof TimelineTreeView.EventTypes>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
     removeEventListener<T extends keyof TimelineTreeView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): void;
     hasEventListeners(eventType: keyof TimelineTreeView.EventTypes): boolean;
-    dispatchEventToListeners<T extends keyof TimelineTreeView.EventTypes>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
+    dispatchEventToListeners<T extends keyof TimelineTreeView.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     #private;
@@ -28,6 +29,12 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     private updateContentsScheduled;
     private lazySelectorStatsView;
     constructor(delegate: TimelineModeViewDelegate);
+    /**
+     * This selects a given tabbedPane tab.
+     * Additionally, if provided a node, we open that node and
+     * if a groupBySetting is included, we groupBy.
+     */
+    selectTab(tabName: Tab, node: Trace.Extras.TraceTree.Node | null, groupBySetting?: AggregatedTimelineTreeView.GroupBy): void;
     private selectorStatsView;
     getDetailsContentElementForTest(): HTMLElement;
     revealEventInTreeView(event: Trace.Types.Events.Event | null): void;

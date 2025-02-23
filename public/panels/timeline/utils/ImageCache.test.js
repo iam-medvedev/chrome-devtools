@@ -63,7 +63,7 @@ describe('ImageCache', () => {
             resolve(null);
         }, { once: true });
         assert.isNull(getOrQueue(syntheticScreenshot1));
-        return promise;
+        return await promise;
     });
     it('getOrQueue should return null (immediately and eventually) for an invalid image', async () => {
         // First attempt is null because empty cache.
@@ -78,7 +78,7 @@ describe('ImageCache', () => {
             assert.isNull(getOrQueue(badDataUriScreenshot));
             resolve(null);
         }, { once: true });
-        return promise;
+        return await promise;
     });
     it('preload should load all screenshots', async () => {
         await preload([syntheticScreenshot1, syntheticScreenshot2]);

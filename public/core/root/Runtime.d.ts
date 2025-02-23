@@ -5,6 +5,7 @@ export declare function getRemoteBase(location?: string): {
 } | null;
 export declare function getPathName(): string;
 export declare function isNodeEntry(pathname: string): boolean;
+export declare const getChromeVersion: () => string;
 export declare class Runtime {
     private constructor();
     static instance(opts?: {

@@ -331,7 +331,7 @@ export class SubMenu extends Item {
             }
             const itemLocation = item.location;
             const actionId = item.actionId;
-            if (!itemLocation || !itemLocation.startsWith(location + '/')) {
+            if (!itemLocation?.startsWith(location + '/')) {
                 continue;
             }
             const section = itemLocation.substr(location.length + 1);
@@ -470,13 +470,13 @@ export class ContextMenu extends SubMenu {
             // add another check of button value to differentiate mouse event with 'shift + f10' keyboard event
             const isMouseEvent = this.event.pointerType === 'mouse' && this.event.button >= 0;
             this.softMenu.setFocusOnTheFirstItem(!isMouseEvent);
-            this.softMenu.show(ownerDocument, new AnchorBox(this.x, this.y, 0, 0));
+            this.softMenu.show((ownerDocument), new AnchorBox(this.x, this.y, 0, 0));
             if (this.contextMenuLabel) {
                 this.softMenu.setContextMenuElementLabel(this.contextMenuLabel);
             }
         }
         else {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.showContextMenuAtPoint(this.x, this.y, menuObject, ownerDocument);
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.showContextMenuAtPoint(this.x, this.y, menuObject, (ownerDocument));
             function listenToEvents() {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuCleared, this.menuCleared, this);
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this.onItemSelected, this);
@@ -528,7 +528,7 @@ export class ContextMenu extends SubMenu {
                 return null;
             };
             const item = itemWithId(this.openHostedMenu, id);
-            if (item && item.jslogContext) {
+            if (item?.jslogContext) {
                 void VisualLogging.logClick(item, new MouseEvent('click'));
             }
         }

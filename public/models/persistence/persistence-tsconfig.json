@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../front_end/models/persistence/Automapping.ts",
+    "../../../../../../front_end/models/persistence/AutomaticFileSystemManager.ts",
     "../../../../../../front_end/models/persistence/EditFileSystemView.ts",
     "../../../../../../front_end/models/persistence/FileSystemWorkspaceBinding.ts",
     "../../../../../../front_end/models/persistence/IsolatedFileSystem.ts",
@@ -69,6 +70,9 @@
     },
     {
       "path": "../breakpoints/bundle-tsconfig.json"
+    },
+    {
+      "path": "../project_settings/bundle-tsconfig.json"
     },
     {
       "path": "../text_utils/bundle-tsconfig.json"

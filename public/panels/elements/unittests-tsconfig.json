@@ -48,6 +48,7 @@
     "../../../../../../front_end/panels/elements/DOMLinkifier.test.ts",
     "../../../../../../front_end/panels/elements/ElementStatePaneWidget.test.ts",
     "../../../../../../front_end/panels/elements/ElementsPanel.test.ts",
+    "../../../../../../front_end/panels/elements/ElementsTreeElement.test.ts",
     "../../../../../../front_end/panels/elements/ElementsTreeElementHighlighter.test.ts",
     "../../../../../../front_end/panels/elements/ElementsTreeOutline.test.ts",
     "../../../../../../front_end/panels/elements/InspectElementModeController.test.ts",
@@ -69,6 +70,9 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"

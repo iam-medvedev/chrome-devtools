@@ -159,7 +159,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     dataGridWidget;
     constructor(dataGridParameters) {
         super();
-        const { displayName, columns: columnsArray, editCallback, deleteCallback, refreshCallback } = dataGridParameters;
+        const { displayName, columns: columnsArray, deleteCallback, refreshCallback } = dataGridParameters;
         this.element = document.createElement('div');
         this.element.classList.add('data-grid');
         this.element.tabIndex = 0;
@@ -174,7 +174,6 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         });
         UI.ARIAUtils.markAsApplication(this.element);
         this.displayName = displayName;
-        this.editCallback = editCallback;
         this.deleteCallback = deleteCallback;
         this.refreshCallback = refreshCallback;
         this.dataTableHeaders = {};
@@ -216,6 +215,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.headerContextMenuCallback = null;
         this.rowContextMenuCallback = null;
         this.elementToDataGridNode = new WeakMap();
+    }
+    setEditCallback(editCallback, _internalToken) {
+        this.editCallback = editCallback;
     }
     firstSelectableNode() {
         let firstSelectableNode = this.rootNodeInternal;
@@ -318,8 +320,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     }
     announceSelectedGridNode() {
         // Only alert if the datagrid has focus
-        if (this.element === Platform.DOMUtilities.deepActiveElement(this.element.ownerDocument) && this.selectedNode &&
-            this.selectedNode.existingElement()) {
+        if (this.element === Platform.DOMUtilities.deepActiveElement(this.element.ownerDocument) &&
+            this.selectedNode?.existingElement()) {
             // Update the expand/collapse state for the current selected node
             let expandText;
             if (this.selectedNode.hasChildren()) {
@@ -336,7 +338,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         // When a grid gets focus
         // 1) If an item is selected - Read the content of the row
         let accessibleText;
-        if (this.selectedNode && this.selectedNode.existingElement()) {
+        if (this.selectedNode?.existingElement()) {
             // TODO(l10n): Don't concatenate strings.
             let expandText = '';
             if (this.selectedNode.hasChildren()) {
@@ -1268,7 +1270,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         headerSubMenu.defaultSection().appendItem(i18nString(UIStrings.resetColumns), this.resetColumnWeights.bind(this), { jslogContext: 'reset-columns' });
         const isContextMenuKey = (event.button === 0);
         const gridNode = isContextMenuKey ? this.selectedNode : this.dataGridNodeFromNode(target);
-        const selectedNodeElement = this.selectedNode && this.selectedNode.existingElement();
+        const selectedNodeElement = this.selectedNode?.existingElement();
         if (isContextMenuKey && selectedNodeElement) {
             const boundingRowRect = selectedNodeElement.getBoundingClientRect();
             if (boundingRowRect) {
@@ -1465,6 +1467,7 @@ export class DataGridNode {
     selectedInternal;
     dirty;
     inactive;
+    highlighted;
     depthInternal;
     revealedInternal;
     attachedInternal;
@@ -1489,6 +1492,7 @@ export class DataGridNode {
         this.selectedInternal = false;
         this.dirty = false;
         this.inactive = false;
+        this.highlighted = false;
         this.attachedInternal = false;
         this.savedPosition = null;
         this.shouldRefreshChildrenInternal = true;
@@ -1536,6 +1540,9 @@ export class DataGridNode {
         }
         if (this.inactive) {
             this.elementInternal.classList.add('inactive');
+        }
+        if (this.highlighted) {
+            this.elementInternal.classList.add('highlighted');
         }
         if (this.isCreationNode) {
             this.elementInternal.classList.add('creation-node');
@@ -1638,6 +1645,21 @@ export class DataGridNode {
         }
         else {
             this.elementInternal.classList.remove('inactive');
+        }
+    }
+    setHighlighted(highlighted) {
+        if (this.highlighted === highlighted) {
+            return;
+        }
+        this.highlighted = highlighted;
+        if (!this.elementInternal) {
+            return;
+        }
+        if (highlighted) {
+            this.elementInternal.classList.add('highlighted');
+        }
+        else {
+            this.elementInternal.classList.remove('highlighted');
         }
     }
     hasChildren() {
@@ -1797,7 +1819,7 @@ export class DataGridNode {
     }
     insertChild(child, index) {
         if (!child) {
-            throw 'insertChild: Node can\'t be undefined or null.';
+            throw new Error('insertChild: Node can\'t be undefined or null.');
         }
         if (child.parent === this) {
             const currentIndex = this.children.indexOf(child);
@@ -1840,10 +1862,10 @@ export class DataGridNode {
     }
     removeChild(child) {
         if (!child) {
-            throw 'removeChild: Node can\'t be undefined or null.';
+            throw new Error('removeChild: Node can\'t be undefined or null.');
         }
         if (child.parent !== this) {
-            throw 'removeChild: Node is not a child of this node.';
+            throw new Error('removeChild: Node is not a child of this node.');
         }
         if (this.dataGrid) {
             this.dataGrid.updateSelectionBeforeRemoval(child, false);
@@ -2040,7 +2062,7 @@ export class DataGridNode {
     }
     traversePreviousNode(skipHidden, dontPopulate) {
         let node = (!skipHidden || this.revealed) ? this.previousSibling : null;
-        if (!dontPopulate && node && node.hasChildrenInternal) {
+        if (!dontPopulate && node?.hasChildrenInternal) {
             node.populate();
         }
         while (node &&
@@ -2100,7 +2122,7 @@ export class DataGridNode {
             return;
         }
         if (!this.parent) {
-            throw 'savePosition: Node must have a parent.';
+            throw new Error('savePosition: Node must have a parent.');
         }
         this.savedPosition = { parent: this.parent, index: this.parent.children.indexOf(this) };
     }

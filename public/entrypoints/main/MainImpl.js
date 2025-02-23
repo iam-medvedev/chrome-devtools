@@ -172,17 +172,17 @@ export class MainImpl {
         void this.#createAppUI();
     }
     #initializeGlobalsForLayoutTests() {
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.Extensions ||= {};
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.Host ||= {};
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.Host.userMetrics ||= Host.userMetrics;
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.Host.UserMetrics ||= Host.UserMetrics;
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.ProtocolClient ||= {};
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.ProtocolClient.test ||= ProtocolClient.InspectorBackend.test;
     }
     async requestAndRegisterLocaleData() {
@@ -318,7 +318,7 @@ export class MainImpl {
         Root.Runtime.experiments.enableExperimentsTransiently([]);
         if (Host.InspectorFrontendHost.isUnderTest()) {
             const testParam = Root.Runtime.Runtime.queryParam('test');
-            if (testParam && testParam.includes('live-line-level-heap-profile.js')) {
+            if (testParam?.includes('live-line-level-heap-profile.js')) {
                 Root.Runtime.experiments.enableForTest('live-heap-profile');
             }
         }
@@ -391,7 +391,7 @@ export class MainImpl {
             targetManager,
             debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
         });
-        // @ts-ignore e2e test global
+        // @ts-expect-error e2e test global
         self.Extensions.extensionServer = Extensions.ExtensionServer.ExtensionServer.instance({ forceNew: true });
         new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(), Workspace.Workspace.WorkspaceImpl.instance());
         Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addPlatformFileSystem('snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
@@ -406,11 +406,17 @@ export class MainImpl {
             forceNew: true,
             debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
         });
-        ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
+        const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
             forceNew: true,
             hostConfig: Root.Runtime.hostConfig,
             pageResourceLoader: SDK.PageResourceLoader.PageResourceLoader.instance(),
             targetManager,
+        });
+        Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance({
+            forceNew: true,
+            hostConfig: Root.Runtime.hostConfig,
+            inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
+            projectSettingsModel,
         });
         AutofillManager.AutofillManager.AutofillManager.instance();
         LiveMetrics.LiveMetrics.instance();
@@ -524,7 +530,7 @@ export class MainImpl {
         Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
         const promises = Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
             const runnable = await lateInitializationLoader();
-            return runnable.run();
+            return await runnable.run();
         });
         if (Root.Runtime.experiments.isEnabled('live-heap-profile')) {
             const PerfUI = await import('../../ui/legacy/components/perf_ui/perf_ui.js');
@@ -585,7 +591,7 @@ export class MainImpl {
     }
     #redispatchClipboardEvent(event) {
         const eventCopy = new CustomEvent('clipboard-' + event.type, { bubbles: true });
-        // @ts-ignore Used in ElementsTreeOutline
+        // @ts-expect-error Used in ElementsTreeOutline
         eventCopy['original'] = event;
         const document = event.target && event.target.ownerDocument;
         const target = document ? Platform.DOMUtilities.deepActiveElement(document) : null;
@@ -615,9 +621,9 @@ export class MainImpl {
     }
     static instanceForTest = null;
 }
-// @ts-ignore Exported for Tests.js
+// @ts-expect-error Exported for Tests.js
 globalThis.Main = globalThis.Main || {};
-// @ts-ignore Exported for Tests.js
+// @ts-expect-error Exported for Tests.js
 globalThis.Main.Main = MainImpl;
 export class ZoomActionDelegate {
     handleAction(_context, actionId) {
@@ -643,7 +649,7 @@ export class SearchActionDelegate {
         let searchableView = UI.SearchableView.SearchableView.fromElement(Platform.DOMUtilities.deepActiveElement(document));
         if (!searchableView) {
             const currentPanel = UI.InspectorView.InspectorView.instance().currentPanelDeprecated();
-            if (currentPanel && currentPanel.searchableView) {
+            if (currentPanel?.searchableView) {
                 searchableView = currentPanel.searchableView();
             }
             if (!searchableView) {

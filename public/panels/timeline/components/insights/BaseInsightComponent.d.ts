@@ -14,6 +14,7 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}, {}
     #private;
     abstract internalName: string;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
+    protected readonly shadow: ShadowRoot;
     get model(): T | null;
     protected data: BaseInsightData;
     readonly sharedTableState: TableState;

@@ -9,6 +9,7 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.ThirdParties;
 const { html } = Lit;
+const MAX_TO_SHOW = 3;
 export class ThirdParties extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-third-parties`;
     internalName = 'third-parties';
@@ -45,8 +46,8 @@ export class ThirdParties extends BaseInsightComponent {
         if (!entries.length) {
             return html `<div class="insight-section">${i18nString(UIStrings.noThirdParties)}</div>`;
         }
-        const topTransferSizeEntries = entries.sort((a, b) => b[1].transferSize - a[1].transferSize).slice(0, 6);
-        const topMainThreadTimeEntries = entries.sort((a, b) => b[1].mainThreadTime - a[1].mainThreadTime).slice(0, 6);
+        const topTransferSizeEntries = entries.sort((a, b) => b[1].transferSize - a[1].transferSize).slice(0, MAX_TO_SHOW);
+        const topMainThreadTimeEntries = entries.sort((a, b) => b[1].mainThreadTime - a[1].mainThreadTime).slice(0, MAX_TO_SHOW);
         const sections = [];
         if (topTransferSizeEntries.length) {
             // clang-format off

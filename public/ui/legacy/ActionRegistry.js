@@ -42,7 +42,7 @@ export class ActionRegistry {
         const applicableActions = [];
         for (const actionId of actionIds) {
             const action = this.actionsById.get(actionId);
-            if (action && action.enabled()) {
+            if (action?.enabled()) {
                 if (isActionApplicableToContextTypes(action, context.flavors())) {
                     applicableActions.push(action);
                 }

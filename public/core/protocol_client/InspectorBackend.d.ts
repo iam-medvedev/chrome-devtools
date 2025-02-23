@@ -48,7 +48,7 @@ interface CallbackWithDebugInfo {
 }
 export declare class InspectorBackend {
     #private;
-    readonly agentPrototypes: Map<ProtocolDomainName, AgentPrototype>;
+    readonly agentPrototypes: Map<keyof ProtocolProxyApi.ProtocolApi, AgentPrototype>;
     readonly typeMap: Map<QualifiedName, CommandParameter[]>;
     readonly enumMap: Map<QualifiedName, Record<string, string>>;
     private getOrCreateEventParameterNamesForDomain;

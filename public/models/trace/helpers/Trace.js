@@ -327,6 +327,13 @@ export function getZeroIndexedLineAndColumnForEvent(event) {
                 columnNumber: typeof columnNumber === 'number' ? columnNumber - 1 : undefined,
             };
         }
+        case "ProfileCall" /* Types.Events.Name.PROFILE_CALL */: {
+            const callFrame = event.callFrame;
+            return {
+                lineNumber: typeof lineNumber === 'number' ? callFrame.lineNumber - 1 : undefined,
+                columnNumber: typeof columnNumber === 'number' ? callFrame.columnNumber - 1 : undefined,
+            };
+        }
         default: {
             return numbers;
         }
@@ -422,7 +429,7 @@ export function frameIDForEvent(event) {
 const DevToolsTimelineEventCategory = 'disabled-by-default-devtools.timeline';
 export function isTopLevelEvent(event) {
     if (event.name === 'JSRoot' && event.cat === 'toplevel') {
-        // This is used in TimelineJSProfile to insert a fake event prior to the
+        // This is used in createFakeTraceFromCpuProfile to insert a fake event prior to the
         // CPU Profile in order to ensure the trace isn't truncated. So if we see
         // this, we want to treat it as a top level event.
         // TODO(crbug.com/341234884): do we need this?

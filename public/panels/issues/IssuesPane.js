@@ -77,11 +77,15 @@ const UIStrings = {
     /**
      * @description Label on the issues tab
      */
-    onlyThirdpartyCookieIssues: 'Only third-party cookie issues detected so far',
+    onlyThirdpartyCookieIssues: 'Only third-party cookie issues detected',
     /**
      * @description Label in the issues panel
      */
-    noIssuesDetectedSoFar: 'No issues detected so far',
+    noIssues: 'No issues detected',
+    /**
+     * @description Text that explains the issues panel that is shown if no issues are shown.
+     */
+    issuesPanelDescription: 'On this page you can find warnings from the browser.',
     /**
      * @description Category title for the different 'Attribution Reporting API' issues. The
      * Attribution Reporting API is a newly proposed web API (see https://github.com/WICG/conversion-measurement-api).
@@ -100,6 +104,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/issues/IssuesPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const ISSUES_PANEL_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/issues';
 class IssueCategoryView extends UI.TreeOutline.TreeElement {
     #category;
     constructor(category) {
@@ -179,9 +184,9 @@ export class IssuesPane extends UI.Widget.VBox {
         this.contentElement.appendChild(this.#issuesTree.element);
         this.#hiddenIssuesRow = new HiddenIssuesRow();
         this.#issuesTree.appendChild(this.#hiddenIssuesRow);
-        this.#noIssuesMessageDiv = document.createElement('div');
-        this.#noIssuesMessageDiv.classList.add('issues-pane-no-issues');
-        this.contentElement.appendChild(this.#noIssuesMessageDiv);
+        this.#noIssuesMessageDiv = new UI.EmptyWidget.EmptyWidget('', i18nString(UIStrings.issuesPanelDescription));
+        this.#noIssuesMessageDiv.appendLink(ISSUES_PANEL_EXPLANATION_URL);
+        this.#noIssuesMessageDiv.show(this.contentElement);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.#aggregator = new IssueAggregator(this.#issuesManager);
         this.#aggregator.addEventListener("AggregatedIssueUpdated" /* IssueAggregatorEvents.AGGREGATED_ISSUE_UPDATED */, this.#issueUpdated, this);
@@ -377,7 +382,7 @@ export class IssuesPane extends UI.Widget.VBox {
             this.#hiddenIssuesRow.hidden = hiddenIssueCount === 0;
             this.#hiddenIssuesRow.update(hiddenIssueCount);
             this.#issuesTree.element.hidden = false;
-            this.#noIssuesMessageDiv.style.display = 'none';
+            this.#noIssuesMessageDiv.hideWidget();
             const firstChild = this.#issuesTree.firstChild();
             if (firstChild) {
                 firstChild.select(/* omitFocus= */ true);
@@ -391,10 +396,9 @@ export class IssuesPane extends UI.Widget.VBox {
             }
             // We alreay know that issesCount is zero here.
             const hasOnlyThirdPartyIssues = this.#issuesManager.numberOfAllStoredIssues() > 0;
-            this.#noIssuesMessageDiv.textContent = hasOnlyThirdPartyIssues ?
-                i18nString(UIStrings.onlyThirdpartyCookieIssues) :
-                i18nString(UIStrings.noIssuesDetectedSoFar);
-            this.#noIssuesMessageDiv.style.display = 'flex';
+            this.#noIssuesMessageDiv.header =
+                hasOnlyThirdPartyIssues ? i18nString(UIStrings.onlyThirdpartyCookieIssues) : i18nString(UIStrings.noIssues);
+            this.#noIssuesMessageDiv.showWidget();
         }
     }
     async reveal(issue) {

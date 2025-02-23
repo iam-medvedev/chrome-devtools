@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
     title: 'Layout shift culprits',
@@ -281,7 +281,7 @@ function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePai
                 const maxIframe = Types.Timing.Micro(iframeEvent.ts + (iframeEvent.dur ?? 0));
                 return e.ts >= iframeEvent.ts && e.ts <= maxIframe;
             });
-            if (domEvent && domEvent.args.frame) {
+            if (domEvent?.args.frame) {
                 rootCausesForShift.iframeIds.push(domEvent.args.frame);
             }
         }
@@ -385,6 +385,7 @@ function getTopCulprits(cluster, culpritsByShift) {
 function finalize(partialModel) {
     const topCulprits = partialModel.worstCluster ? partialModel.topCulpritsByCluster.get(partialModel.worstCluster) ?? [] : [];
     return {
+        insightKey: "CLSCulprits" /* InsightKeys.CLS_CULPRITS */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),

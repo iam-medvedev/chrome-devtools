@@ -7117,7 +7117,7 @@ export const NativeFunctions = [
     },
     {
         name: "Sanitizer",
-        signatures: [["?config"]]
+        signatures: [["?configuration"]]
     },
     {
         name: "allowElement",
