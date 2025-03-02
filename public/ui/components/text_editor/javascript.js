@@ -456,7 +456,8 @@ async function getArgumentsForExpression(callee, doc) {
 }
 export function argumentsList(input) {
     function parseParamList(cursor) {
-        while (cursor.name !== 'ParamList' && cursor.nextSibling()) {
+        while (cursor.name !== 'ParamList') {
+            cursor.nextSibling();
         }
         const parameters = [];
         if (cursor.name === 'ParamList' && cursor.firstChild()) {
@@ -512,8 +513,9 @@ export function argumentsList(input) {
                     if (!cursor.firstChild()) {
                         throw new Error(`${cursor.name} rule is expected to have children`);
                     }
-                    while (cursor.nextSibling() && cursor.name !== 'ClassBody') {
-                    }
+                    do {
+                        cursor.nextSibling();
+                    } while (cursor.name !== 'ClassBody');
                     if (cursor.name === 'ClassBody' && cursor.firstChild()) {
                         do {
                             if (cursor.name === 'MethodDeclaration' && cursor.firstChild()) {

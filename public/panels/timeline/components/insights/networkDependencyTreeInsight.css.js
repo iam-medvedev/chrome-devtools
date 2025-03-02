@@ -11,6 +11,8 @@ export default {
  */
 
 .insight-body {
+  --override-timeline-link-text-decoration: none;
+
   .max-time {
     text-align: center;
   }
@@ -38,6 +40,16 @@ export default {
 
       .request {
         display: flex;
+
+        &.longest {
+          --override-timeline-link-text-color: var(--sys-color-error);
+
+          color: var(--sys-color-error);
+        }
+
+        &.highlighted {
+          background-color: var(--sys-color-state-hover-on-subtle);
+        }
 
         .url {
           flex: auto;

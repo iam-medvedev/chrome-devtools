@@ -16,7 +16,8 @@ export default {
   inline-size: 15px;
   grid: [stack] 1fr / [stack] 1fr;
   margin-left: 1px;
-  margin-right: 2px;
+  margin-right: 1px;
+  vertical-align: -1px;
   color: var(--color);
 }
 

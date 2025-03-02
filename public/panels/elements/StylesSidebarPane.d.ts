@@ -7,6 +7,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ElementsComponents from './components/components.js';
 import type { ComputedStyleModel, CSSModelChangedEvent } from './ComputedStyleModel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
@@ -56,7 +57,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     activeCSSAngle: InlineEditor.CSSAngle.CSSAngle | null;
     constructor(computedStyleModel: ComputedStyleModel);
     addPopover(element: Node, popover: {
-        contents: () => HTMLElement | undefined;
+        contents: () => UI.Widget.Widget | HTMLElement | undefined;
         jslogContext?: string;
     }): void;
     private onScroll;
@@ -81,6 +82,8 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private onFilterChanged;
     refreshUpdate(editedSection: StylePropertiesSection, editedTreeElement?: StylePropertyTreeElement): void;
     doUpdate(): Promise<void>;
+    getVariableParserError(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string): ElementsComponents.CSSVariableValueView.CSSVariableParserError | null;
+    getVariablePopoverContents(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string, computedValue: string | null): HTMLElement | undefined;
     private fetchComputedStylesFor;
     onResize(): void;
     private innerResize;

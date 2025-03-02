@@ -40,5 +40,23 @@ export declare function createAiAssistancePanel(options?: {
     view: import("sinon").SinonStub<[AiAssistance.ViewInput, unknown, HTMLElement], any>;
     aidaClient: Host.AidaClient.AidaClient;
     expectViewUpdate: (action: () => void) => Promise<AiAssistance.ViewInput>;
+    stubAidaCheckAccessPreconditions: (aidaAvailability: Host.AidaClient.AidaAccessPreconditions) => import("sinon").SinonStub<[], Promise<Host.AidaClient.AidaAccessPreconditions>>;
 }>;
-export declare function detachPanels(): void;
+/**
+ * Creates and shows an AiAssistancePanel instance returning the view
+ * stubs and the initial view input caused by Widget.show().
+ */
+export declare function createPatchWidget(options?: {
+    aidaClient?: Host.AidaClient.AidaClient;
+}): Promise<{
+    initialViewInput: AiAssistance.PatchWidget.ViewInput;
+    panel: AiAssistance.PatchWidget.PatchWidget;
+    view: import("sinon").SinonStub<[AiAssistance.PatchWidget.ViewInput, unknown, HTMLElement], any>;
+    aidaClient: Host.AidaClient.AidaClient;
+    expectViewUpdate: (action: () => void) => Promise<AiAssistance.PatchWidget.ViewInput>;
+}>;
+export declare function cleanup(): void;
+export declare function openHistoryContextMenu(lastUpdate: AiAssistance.ViewInput, item: string): {
+    contextMenu: import("../ui/legacy/ContextMenu.js").ContextMenu;
+    id: number | undefined;
+};

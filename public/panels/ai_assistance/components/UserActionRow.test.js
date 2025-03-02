@@ -60,15 +60,18 @@ describeWithEnvironment('UserActionRow', () => {
         assert.isTrue(view.calledOnce);
         {
             const [viewInput] = view.lastCall.args;
-            expect(viewInput.isSubmitButtonDisabled).equals(false);
+            expect(viewInput.isSubmitButtonDisabled).equals(true);
             viewInput.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
         assert.isTrue(view.calledTwice);
         {
             const [viewInput] = view.lastCall.args;
-            expect(viewInput.isSubmitButtonDisabled).equals(false);
             expect(viewInput.isShowingFeedbackForm).equals(true);
             viewInput.onInputChange('test');
+        }
+        {
+            const [viewInput] = view.lastCall.args;
+            expect(viewInput.isSubmitButtonDisabled).equals(false);
             viewInput.onSubmit(new SubmitEvent('submit'));
         }
         {

@@ -155,7 +155,7 @@ describeWithMockConnection('SourcesView', () => {
         createFileSystemUISourceCode({
             url: urlString `snippet:///foo.js`,
             mimeType: 'application/javascript',
-            type: 'snippets',
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS,
         });
         const sourcesView = new Sources.SourcesView.SourcesView();
         const removeUISourceCodesSpy = sinon.spy(sourcesView.editorContainer, 'removeUISourceCodes');

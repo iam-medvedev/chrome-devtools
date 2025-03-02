@@ -95,9 +95,6 @@
       "path": "../../../ui/components/render_coordinator/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/components/split_view/bundle-tsconfig.json"
-    },
-    {
       "path": "../../../ui/components/suggestion_input/bundle-tsconfig.json"
     },
     {

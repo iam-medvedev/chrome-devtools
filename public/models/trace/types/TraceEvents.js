@@ -353,6 +353,11 @@ export function isResourceWillSendRequest(event) {
 export function isResourceReceivedData(event) {
     return event.name === 'ResourceReceivedData';
 }
+// Any event where we receive data (and get an encodedDataLength)
+export function isReceivedDataEvent(event) {
+    return event.name === 'ResourceReceivedData' || event.name === 'ResourceFinish' ||
+        event.name === 'ResourceReceiveResponse';
+}
 export function isSyntheticNetworkRequest(event) {
     return event.name === "SyntheticNetworkRequest" /* Name.SYNTHETIC_NETWORK_REQUEST */;
 }
@@ -400,6 +405,9 @@ export function isDomLoading(event) {
 }
 export function isBeginRemoteFontLoad(event) {
     return event.name === "BeginRemoteFontLoad" /* Name.BEGIN_REMOTE_FONT_LOAD */;
+}
+export function isRemoteFontLoaded(event) {
+    return event.name === "RemoteFontLoaded" /* Name.REMOTE_FONT_LOADED */;
 }
 export function isPerformanceMeasure(event) {
     return isUserTiming(event) && isPhaseAsync(event.ph);

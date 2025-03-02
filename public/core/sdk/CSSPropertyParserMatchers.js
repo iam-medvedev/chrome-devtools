@@ -107,6 +107,24 @@ export class VariableMatcher extends matcherBase(VariableMatch) {
             null;
     }
 }
+export class BinOpMatch {
+    text;
+    node;
+    constructor(text, node) {
+        this.text = text;
+        this.node = node;
+    }
+}
+// clang-format off
+export class BinOpMatcher extends matcherBase(BinOpMatch) {
+    // clang-format on
+    accepts() {
+        return true;
+    }
+    matches(node, matching) {
+        return node.name === 'BinaryExpression' ? new BinOpMatch(matching.ast.text(node), node) : null;
+    }
+}
 export class TextMatch {
     text;
     node;
@@ -341,16 +359,23 @@ export class LightDarkColorMatch {
     node;
     light;
     dark;
-    constructor(text, node, light, dark) {
+    property;
+    constructor(text, node, light, dark, property) {
         this.text = text;
         this.node = node;
         this.light = light;
         this.dark = dark;
+        this.property = property;
     }
 }
 // clang-format off
 export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
+    property;
     // clang-format on
+    constructor(property) {
+        super();
+        this.property = property;
+    }
     accepts(propertyName) {
         return cssMetadata().isColorAwareProperty(propertyName);
     }
@@ -362,7 +387,7 @@ export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
         if (args.length !== 2 || args[0].length === 0 || args[1].length === 0) {
             return null;
         }
-        return new LightDarkColorMatch(matching.ast.text(node), node, args[0], args[1]);
+        return new LightDarkColorMatch(matching.ast.text(node), node, args[0], args[1], this.property);
     }
 }
 export class AutoBaseMatch {
@@ -613,10 +638,10 @@ export class LengthMatch {
 export class LengthMatcher extends matcherBase(LengthMatch) {
     // clang-format on
     static LENGTH_UNITS = new Set([
-        'em', 'ex', 'ch', 'cap', 'ic', 'lh', 'rem', 'rex', 'rch', 'rlh', 'ric', 'rcap', 'px', 'pt',
-        'pc', 'in', 'cm', 'mm', 'Q', 'vw', 'vh', 'vi', 'vb', 'vmin', 'vmax', 'dvw', 'dvh', 'dvi',
-        'dvb', 'dvmin', 'dvmax', 'svw', 'svh', 'svi', 'svb', 'svmin', 'svmax', 'lvw', 'lvh', 'lvi', 'lvb', 'lvmin',
-        'lvmax', 'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch',
+        'em', 'ex', 'ch', 'cap', 'ic', 'lh', 'rem', 'rex', 'rch', 'rlh', 'ric', 'rcap', 'pt',
+        'pc', 'in', 'cm', 'mm', 'Q', 'vw', 'vh', 'vi', 'vb', 'vmin', 'vmax', 'dvw', 'dvh',
+        'dvi', 'dvb', 'dvmin', 'dvmax', 'svw', 'svh', 'svi', 'svb', 'svmin', 'svmax', 'lvw', 'lvh', 'lvi',
+        'lvb', 'lvmin', 'lvmax', 'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch',
     ]);
     matches(node, matching) {
         if (node.name !== 'NumberLiteral') {
@@ -630,7 +655,7 @@ export class LengthMatcher extends matcherBase(LengthMatch) {
         return new LengthMatch(text, node, unit);
     }
 }
-export class SelectFunctionMatch {
+export class MathFunctionMatch {
     text;
     node;
     func;
@@ -643,14 +668,14 @@ export class SelectFunctionMatch {
     }
 }
 // clang-format off
-export class SelectFunctionMatcher extends matcherBase(SelectFunctionMatch) {
+export class MathFunctionMatcher extends matcherBase(MathFunctionMatch) {
     // clang-format on
     matches(node, matching) {
         if (node.name !== 'CallExpression') {
             return null;
         }
         const callee = matching.ast.text(node.getChild('Callee'));
-        if (!['min', 'max', 'clamp'].includes(callee)) {
+        if (!['min', 'max', 'clamp', 'calc'].includes(callee)) {
             return null;
         }
         const args = ASTUtils.callArgs(node);
@@ -658,7 +683,7 @@ export class SelectFunctionMatcher extends matcherBase(SelectFunctionMatch) {
             return null;
         }
         const text = matching.ast.text(node);
-        return new SelectFunctionMatch(text, node, callee, args);
+        return new MathFunctionMatch(text, node, callee, args);
     }
 }
 export class FlexGridMatch {

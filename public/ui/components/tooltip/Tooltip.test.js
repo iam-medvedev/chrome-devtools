@@ -83,6 +83,15 @@ describe('Tooltip', () => {
         renderElementIntoDOM(container);
         assert.strictEqual(anchor.style.anchorName, '--tooltip-id-anchor');
     });
+    it('should hide the tooltip if anchor is removed from DOM', async () => {
+        const container = renderTooltip();
+        const button = container.querySelector('button');
+        button?.dispatchEvent(new MouseEvent('mouseenter'));
+        await checkForPendingActivity();
+        button?.remove();
+        await checkForPendingActivity();
+        assert.isFalse(container.querySelector('devtools-tooltip')?.open);
+    });
 });
 describe('closestAnchor', () => {
     function renderTemplate(template) {

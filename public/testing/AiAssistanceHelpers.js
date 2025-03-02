@@ -7,6 +7,7 @@ import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Logs from '../models/logs/logs.js';
 import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
+import { findMenuItemWithLabel, getMenu } from './ContextMenuHelpers.js';
 import { createTarget, } from './EnvironmentHelpers.js';
 import { expectCall } from './ExpectStubCall.js';
 import { createContentProviderUISourceCodes } from './UISourceCodeHelpers.js';
@@ -124,11 +125,15 @@ let panels = [];
  * stubs and the initial view input caused by Widget.show().
  */
 export async function createAiAssistancePanel(options) {
+    let aidaAvailabilityForStub = options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
     const view = sinon.stub();
     const aidaClient = options?.aidaClient ?? mockAidaClient();
+    const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions').callsFake(() => {
+        return Promise.resolve(aidaAvailabilityForStub);
+    });
     const panel = new AiAssistance.AiAssistancePanel(view, {
         aidaClient,
-        aidaAvailability: options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
+        aidaAvailability: aidaAvailabilityForStub,
         syncInfo: options?.syncInfo ?? { isSyncActive: true },
     });
     panels.push(panel);
@@ -146,12 +151,71 @@ export async function createAiAssistancePanel(options) {
         panel.markAsRoot();
         panel.show(document.body);
     });
-    return { initialViewInput, panel, view, aidaClient, expectViewUpdate };
+    const stubAidaCheckAccessPreconditions = (aidaAvailability) => {
+        aidaAvailabilityForStub = aidaAvailability;
+        return checkAccessPreconditionsStub;
+    };
+    return {
+        initialViewInput,
+        panel,
+        view,
+        aidaClient,
+        expectViewUpdate,
+        stubAidaCheckAccessPreconditions,
+    };
 }
-export function detachPanels() {
+let patchWidgets = [];
+/**
+ * Creates and shows an AiAssistancePanel instance returning the view
+ * stubs and the initial view input caused by Widget.show().
+ */
+export async function createPatchWidget(options) {
+    const view = sinon.stub();
+    const aidaClient = options?.aidaClient ?? mockAidaClient();
+    const widget = new AiAssistance.PatchWidget.PatchWidget(undefined, view, {
+        aidaClient,
+    });
+    patchWidgets.push(widget);
+    /**
+     * Triggers the action and returns args of the next view function
+     * call.
+     */
+    async function expectViewUpdate(action) {
+        const result = expectCall(view);
+        action();
+        const viewArgs = await result;
+        return viewArgs[0];
+    }
+    const initialViewInput = await expectViewUpdate(() => {
+        widget.markAsRoot();
+        widget.show(document.body);
+    });
+    return {
+        initialViewInput,
+        panel: widget,
+        view,
+        aidaClient,
+        expectViewUpdate,
+    };
+}
+export function cleanup() {
     for (const panel of panels) {
         panel.detach();
     }
     panels = [];
+    for (const widget of patchWidgets) {
+        widget.detach();
+    }
+    patchWidgets = [];
+}
+export function openHistoryContextMenu(lastUpdate, item) {
+    const contextMenu = getMenu(() => {
+        lastUpdate.onHistoryClick(new MouseEvent('click'));
+    });
+    const freestylerEntry = findMenuItemWithLabel(contextMenu.defaultSection(), item);
+    return {
+        contextMenu,
+        id: freestylerEntry?.id(),
+    };
 }
 //# sourceMappingURL=AiAssistanceHelpers.js.map

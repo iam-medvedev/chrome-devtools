@@ -79,6 +79,7 @@ export class SourceMapEntry {
     }
 }
 export class SourceMap {
+    static retainRawSourceMaps = false;
     #json;
     #compiledURLInternal;
     #sourceMappingURL;
@@ -103,6 +104,9 @@ export class SourceMap {
             }
         }
         this.eachSection(this.parseSources.bind(this));
+    }
+    json() {
+        return this.#json;
     }
     augmentWithScopes(scriptUrl, ranges) {
         this.#ensureMappingsProcessed();
@@ -292,6 +296,8 @@ export class SourceMap {
             // As per spec, mappings are not necessarily sorted.
             this.mappings().sort(SourceMapEntry.compare);
             this.#computeReverseMappings(this.#mappingsInternal);
+        }
+        if (!SourceMap.retainRawSourceMaps) {
             this.#json = null;
         }
     }

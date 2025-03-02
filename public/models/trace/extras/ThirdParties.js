@@ -34,6 +34,7 @@ function getOrMakeSummaryByURL(thirdPartySummary, url) {
     thirdPartySummary.byUrl.set(url, summary);
     return summary;
 }
+// TODO: Remove and use the the BottomUpRootNode defined in ThirdPartyTreeView instead.
 function collectMainThreadActivity(thirdPartySummary, parsedTrace, bounds) {
     for (const process of parsedTrace.Renderer.processes.values()) {
         if (!process.isOnMainFrame) {

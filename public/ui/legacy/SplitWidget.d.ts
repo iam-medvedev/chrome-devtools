@@ -110,19 +110,10 @@ export declare class SplitWidget extends SplitWidget_base {
     toggleSidebar(): boolean;
     private updateShowHideSidebarButton;
 }
-interface SplitWidgetOptions {
-    vertical?: boolean;
-    secondIsSidebar?: boolean;
-    settingName?: string;
-    defaultSidebarWidth?: number;
-    defaultSidebarHeight?: number;
-    constraintsInDip?: boolean;
-    markAsRoot?: boolean;
-}
 export declare class SplitWidgetElement extends WidgetElement<SplitWidget> {
-    #private;
-    set options(options: SplitWidgetOptions);
+    static readonly observedAttributes: string[];
     createWidget(): SplitWidget;
+    attributeChangedCallback(name: string, oldValue: string, newValue: string): void;
 }
 export declare const enum ShowMode {
     BOTH = "Both",

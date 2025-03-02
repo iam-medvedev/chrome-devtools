@@ -170,8 +170,8 @@ dd.dl-title {
 
 .timeline-link {
   cursor: pointer;
-  text-decoration: underline;
-  color: var(--sys-color-primary);
+  text-decoration: var(--override-timeline-link-text-decoration, underline);
+  color: var(--override-timeline-link-text-color, var(--sys-color-primary));
   /* for a11y reasons this is a button, so we have to remove some default
    * styling */
   background: none;

@@ -38,7 +38,7 @@ export declare function createFileSystemUISourceCode(options: {
     content?: string;
     fileSystemPath?: string;
     autoMapping?: boolean;
-    type?: string;
+    type?: Persistence.PlatformFileSystem.PlatformFileSystemType;
     metadata?: Workspace.UISourceCode.UISourceCodeMetadata;
 }): {
     uiSourceCode: Workspace.UISourceCode.UISourceCode;

@@ -22,9 +22,9 @@ const UIStrings = {
      */
     transferSize: 'Transfer size',
     /**
-     *@description Title referencing self time.
+     *@description Title referencing main thread time.
      */
-    selfTime: 'Self time',
+    mainThreadTime: 'Main thread time',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/ThirdPartyTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -46,12 +46,6 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
          */
         this.dataGrid.expandNodesWhenArrowing = false;
     }
-    wasShown() {
-        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange, this);
-    }
-    childWasDetached(_widget) {
-        this.dataGrid.removeEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange);
-    }
     buildTree() {
         const parsedTrace = this.parsedTrace();
         const entityMapper = this.entityMapper();
@@ -61,17 +55,11 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
                 filters: this.filtersWithoutTextFilter(),
                 startTime: this.startTime,
                 endTime: this.endTime,
-                eventGroupIdCallback: this.groupingFunction(),
+                eventGroupIdCallback: this.groupingFunction.bind(this),
             });
         }
-        // Update summaries.
-        const min = Trace.Helpers.Timing.milliToMicro(this.startTime);
-        const max = Trace.Helpers.Timing.milliToMicro(this.endTime);
-        const bounds = { max, min, range: Trace.Types.Timing.Micro(max - min) };
-        this.#thirdPartySummaries =
-            Trace.Extras.ThirdParties.getSummariesAndEntitiesWithMapping(parsedTrace, bounds, entityMapper.mappings());
-        const events = this.#thirdPartySummaries?.entityByEvent.keys();
-        const relatedEvents = Array.from(events ?? []).sort(Trace.Helpers.Trace.eventTimeComparator);
+        // const events = this.#thirdPartySummaries.entityByEvent.keys();
+        const relatedEvents = this.selectedEvents().sort(Trace.Helpers.Trace.eventTimeComparator);
         // The filters for this view are slightly different; we want to use the set
         // of visible event types, but also include network events, which by
         // default are not in the set of visible entries (as they are not shown on
@@ -82,7 +70,8 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
             filters: [filter],
             startTime: this.startTime,
             endTime: this.endTime,
-            eventGroupIdCallback: this.groupingFunction(),
+            eventGroupIdCallback: this.groupingFunction.bind(this),
+            calculateTransferSize: true,
         });
         return node;
     }
@@ -92,19 +81,8 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
     selectProfileNode() {
         return;
     }
-    groupingFunction() {
-        return this.domainByEvent.bind(this);
-    }
-    domainByEvent(event) {
-        const parsedTrace = this.parsedTrace();
-        if (!parsedTrace) {
-            return '';
-        }
-        const entityMappings = this.entityMapper();
-        if (!entityMappings) {
-            return '';
-        }
-        const entity = entityMappings.entityForEvent(event);
+    groupingFunction(event) {
+        const entity = this.entityMapper()?.entityForEvent(event);
         if (!entity) {
             return '';
         }
@@ -127,8 +105,8 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
             sortable: true,
         }, {
             id: 'self',
-            title: i18nString(UIStrings.selfTime),
-            width: '105px', // Mostly to fit large self-time plus devtools-button
+            title: i18nString(UIStrings.mainThreadTime),
+            width: '120px', // Mostly to fit large self-time/main thread time plus devtools-button
             fixedWidth: true,
             sortable: true,
         });
@@ -139,8 +117,8 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
     compareTransferSize(a, b) {
         const nodeA = a;
         const nodeB = b;
-        const transferA = this.extractThirdPartySummary(nodeA.profileNode).transferSize ?? 0;
-        const transferB = this.extractThirdPartySummary(nodeB.profileNode).transferSize ?? 0;
+        const transferA = nodeA.profileNode.transferSize ?? 0;
+        const transferB = nodeB.profileNode.transferSize ?? 0;
         return transferA - transferB;
     }
     sortingChanged() {
@@ -161,31 +139,13 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
             this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
         }
     }
-    /**
-     * This event fires when the user selects a row in the grid, either by
-     * clicking or by using the arrow keys. We want to have the same effect as
-     * when the user hover overs a row.
-     */
-    #onDataGridSelectionChange(event) {
-        this.onHover(event.data.profileNode);
-    }
-    onHover(node) {
-        const entityMappings = this.entityMapper();
-        if (!entityMappings || !node?.event) {
-            return;
-        }
-        const nodeEntity = entityMappings.entityForEvent(node.event);
-        if (!nodeEntity) {
-            return;
-        }
-        const eventsForEntity = entityMappings.eventsForEntity(nodeEntity);
-        this.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, eventsForEntity);
-    }
     displayInfoForGroupNode(node) {
         const color = 'gray';
         const unattributed = i18nString(UIStrings.unattributed);
         const id = typeof node.id === 'symbol' ? undefined : node.id;
-        const domainName = id ? this.domainByEvent(node.event) : undefined;
+        // This `undefined` is [unattributed]
+        // TODO(paulirish,aixba): Improve attribution to reduce amount of items in [unattributed].
+        const domainName = id ? this.entityMapper()?.entityForEvent(node.event)?.name || id : undefined;
         return { name: domainName || unattributed, color, icon: undefined };
     }
     extractThirdPartySummary(node) {

@@ -770,10 +770,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
                 this.extensionStorageListTreeElement?.removeChild(parentListTreeElement);
                 this.extensionIdToStorageTreeParentElement.delete(extensionStorage.extensionId);
             }
-            else {
-                if (wasSelected) {
-                    parentListTreeElement.select();
-                }
+            else if (wasSelected) {
+                parentListTreeElement.select();
             }
         }
         this.extensionStorageTreeElements.delete(extensionStorage.key);

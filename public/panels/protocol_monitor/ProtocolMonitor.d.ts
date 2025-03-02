@@ -5,7 +5,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type Command, JSONEditor, type Parameter } from './JSONEditor.js';
+import { type Command, type Parameter } from './JSONEditor.js';
 export declare const buildProtocolMetadata: (domains: Iterable<ProtocolDomain>) => Map<string, {
     parameters: Parameter[];
     description: string;
@@ -42,7 +42,12 @@ export interface ProtocolDomain {
 export interface ViewInput {
     messages: Message[];
     selectedMessage?: Message;
-    filters: TextUtils.TextUtils.ParsedFilter[];
+    hideInputBar: boolean;
+    command: string;
+    commandSuggestions: string[];
+    filterKeys: string[];
+    filter: string;
+    parseFilter: (filter: string) => TextUtils.TextUtils.ParsedFilter[];
     onRecord: (e: Event) => void;
     onClear: () => void;
     onSave: () => void;
@@ -51,10 +56,13 @@ export interface ViewInput {
         menu: UI.ContextMenu.ContextMenu;
         element: HTMLElement;
     }>) => void;
-    textFilterUI: UI.Toolbar.ToolbarInput;
+    onFilterChanged: (e: CustomEvent<string>) => void;
+    onCommandChange: (e: CustomEvent<string>) => void;
+    onCommandSubmitted: (e: CustomEvent<string>) => void;
+    onTargetChange: (e: Event) => void;
     showHideSidebarButton: UI.Toolbar.ToolbarButton;
-    commandInput: UI.Toolbar.ToolbarInput;
-    selector: UI.Toolbar.ToolbarComboBox;
+    targets: SDK.Target.Target[];
+    selectedTargetId: string;
 }
 export interface ViewOutput {
 }
@@ -73,9 +81,6 @@ export declare class ProtocolMonitorDataGrid extends ProtocolMonitorDataGrid_bas
     private startTime;
     private readonly messageForId;
     private readonly filterParser;
-    private readonly suggestionBuilder;
-    private readonly textFilterUI;
-    readonly selector: UI.Toolbar.ToolbarComboBox;
     constructor(splitWidget: UI.SplitWidget.SplitWidget, view?: View);
     performUpdate(): void;
     onCommandSend(command: string, parameters: object, target?: string): void;
@@ -93,6 +98,7 @@ export declare class ProtocolMonitorImpl extends UI.Widget.VBox {
 export declare class CommandAutocompleteSuggestionProvider {
     #private;
     constructor(maxHistorySize?: number);
+    allSuggestions(): string[];
     buildTextPromptCompletions: (expression: string, prefix: string, force?: boolean) => Promise<UI.SuggestBox.Suggestions>;
     addEntry(value: string): void;
 }
@@ -116,18 +122,6 @@ export declare const enum Events {
 export interface EventTypes {
     [Events.COMMAND_SENT]: Command;
     [Events.COMMAND_CHANGE]: Command;
-}
-declare const EditorWidget_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: keyof EventTypes): boolean;
-    dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
-}) & typeof UI.Widget.VBox;
-export declare class EditorWidget extends EditorWidget_base {
-    readonly jsonEditor: JSONEditor;
-    constructor();
 }
 export declare function parseCommandInput(input: string): {
     command: string;

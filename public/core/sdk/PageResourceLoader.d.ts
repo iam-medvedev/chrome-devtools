@@ -25,6 +25,7 @@ export interface PageResource {
     initiator: PageResourceLoadInitiator;
     url: Platform.DevToolsPath.UrlString;
     size: number | null;
+    duration: number | null;
 }
 export declare class ResourceKey {
     readonly key: string;

@@ -2130,8 +2130,23 @@
             return loaf;
         });
     }
+    function isPrerendered() {
+        if (document.prerendering) {
+            return true;
+        }
+        const firstNavStart = self.performance.getEntriesByType?.('navigation')[0]?.activationStart;
+        return firstNavStart !== undefined && firstNavStart > 0;
+    }
+    let startedHidden = null;
     function initialize() {
         sendEventToDevTools({ name: 'reset' });
+        new PerformanceObserver(list => {
+            for (const entry of list.getEntries()) {
+                if (startedHidden === null && !isPrerendered()) {
+                    startedHidden = entry.name === 'hidden';
+                }
+            }
+        }).observe({ type: 'visibility-state', buffered: true });
         // We want to treat bfcache navigations like a standard navigations, so emit
         // a reset event when bfcache is restored.
         //
@@ -2139,12 +2154,14 @@
         // To ensure this event is fired before those values are emitted, register this
         // callback before any others.
         onBFCacheRestore(() => {
+            startedHidden = false;
             sendEventToDevTools({ name: 'reset' });
         });
         onLCP(metric => {
             const event = {
                 name: 'LCP',
                 value: metric.value,
+                startedHidden: Boolean(startedHidden),
                 phases: {
                     timeToFirstByte: metric.attribution.timeToFirstByte,
                     resourceLoadDelay: metric.attribution.resourceLoadDelay,

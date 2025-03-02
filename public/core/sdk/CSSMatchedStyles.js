@@ -617,6 +617,9 @@ export class CSSMatchedStyles {
         const domCascade = this.#styleToDOMCascade.get(style);
         return domCascade ? domCascade.computeCSSVariable(style, variableName) : null;
     }
+    resolveProperty(name, startingPoint) {
+        return this.#styleToDOMCascade.get(startingPoint)?.resolveProperty(name, startingPoint) ?? null;
+    }
     resolveGlobalKeyword(property, keyword) {
         const resolved = this.#styleToDOMCascade.get(property.ownerStyle)?.resolveGlobalKeyword(property, keyword);
         return resolved ? new CSSValueSource(resolved) : null;
@@ -789,6 +792,14 @@ function* forEach(array, startAfter) {
         yield array[i];
     }
 }
+function* forEachInclusive(array, startAt) {
+    if (startAt === undefined || array.includes(startAt)) {
+        if (startAt !== undefined) {
+            yield startAt;
+        }
+        yield* forEach(array, startAt);
+    }
+}
 class DOMInheritanceCascade {
     #nodeCascades;
     #propertiesState;
@@ -836,6 +847,19 @@ class DOMInheritanceCascade {
         }
         return null;
     }
+    resolveProperty(name, startAt) {
+        const cascade = this.#styleToNodeCascade.get(startAt);
+        if (!cascade) {
+            return null;
+        }
+        for (const style of forEachInclusive(cascade.styles, startAt)) {
+            const candidate = style.allProperties().findLast(candidate => candidate.name === name);
+            if (candidate) {
+                return candidate;
+            }
+        }
+        return this.#findPropertyInParentCascadeIfInherited({ name, ownerStyle: startAt });
+    }
     #findPropertyInParentCascade(property) {
         const nodeCascade = this.#styleToNodeCascade.get(property.ownerStyle);
         if (!nodeCascade) {
@@ -853,13 +877,13 @@ class DOMInheritanceCascade {
     }
     #findPropertyInParentCascadeIfInherited(property) {
         if (!cssMetadata().isPropertyInherited(property.name) ||
-            !(this.#findCustomPropertyRegistration(property)?.inherits() ?? true)) {
+            !(this.#findCustomPropertyRegistration(property.name)?.inherits() ?? true)) {
             return null;
         }
         return this.#findPropertyInParentCascade(property);
     }
     #findCustomPropertyRegistration(property) {
-        const registration = this.#registeredProperties.find(registration => registration.propertyName() === property.name);
+        const registration = this.#registeredProperties.find(registration => registration.propertyName() === property);
         return registration ? registration : null;
     }
     resolveGlobalKeyword(property, keyword) {
@@ -882,9 +906,9 @@ class DOMInheritanceCascade {
         };
         switch (keyword) {
             case "initial" /* CSSWideKeyword.INITIAL */:
-                return this.#findCustomPropertyRegistration(property);
+                return this.#findCustomPropertyRegistration(property.name);
             case "inherit" /* CSSWideKeyword.INHERIT */:
-                return this.#findPropertyInParentCascade(property) ?? this.#findCustomPropertyRegistration(property);
+                return this.#findPropertyInParentCascade(property) ?? this.#findCustomPropertyRegistration(property.name);
             case "revert" /* CSSWideKeyword.REVERT */:
                 return this.#findPropertyInPreviousStyle(property, other => other.ownerStyle.parentRule !== null &&
                     other.ownerStyle.parentRule.origin !==
@@ -894,7 +918,8 @@ class DOMInheritanceCascade {
                 return this.#findPropertyInPreviousStyle(property, isPreviousLayer) ??
                     this.resolveGlobalKeyword(property, "revert" /* CSSWideKeyword.REVERT */);
             case "unset" /* CSSWideKeyword.UNSET */:
-                return this.#findPropertyInParentCascadeIfInherited(property) ?? this.#findCustomPropertyRegistration(property);
+                return this.#findPropertyInParentCascadeIfInherited(property) ??
+                    this.#findCustomPropertyRegistration(property.name);
         }
     }
     computeCSSVariable(style, variableName) {

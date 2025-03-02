@@ -52,11 +52,12 @@ class EventRef extends HTMLElement {
         // clang-format on
     }
 }
-export function eventRef(event) {
-    let title, text;
+export function eventRef(event, options) {
+    let title = options?.title;
+    let text = options?.text;
     if (Trace.Types.Events.isSyntheticNetworkRequest(event)) {
-        text = Utils.Helpers.shortenUrl(new URL(event.args.data.url));
-        title = event.args.data.url;
+        text = text ?? Utils.Helpers.shortenUrl(new URL(event.args.data.url));
+        title = title ?? event.args.data.url;
     }
     else {
         Platform.TypeScriptUtilities.assertNever(event, `unsupported event in eventRef: ${event.name}`);

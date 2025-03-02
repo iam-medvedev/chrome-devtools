@@ -73,11 +73,13 @@ export declare class SourceMapEntry {
 }
 export declare class SourceMap {
     #private;
+    static retainRawSourceMaps: boolean;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
      */
     constructor(compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString, payload: SourceMapV3);
+    json(): SourceMapV3 | null;
     augmentWithScopes(scriptUrl: Platform.DevToolsPath.UrlString, ranges: NamedFunctionRange[]): void;
     compiledURL(): Platform.DevToolsPath.UrlString;
     url(): Platform.DevToolsPath.UrlString;

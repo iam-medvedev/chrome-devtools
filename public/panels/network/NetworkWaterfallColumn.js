@@ -184,6 +184,9 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         }
     }
     getPopoverRequest(event) {
+        if (event instanceof KeyboardEvent) {
+            return null;
+        }
         if (!this.hoveredNode) {
             return null;
         }

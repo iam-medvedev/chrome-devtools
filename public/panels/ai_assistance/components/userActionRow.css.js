@@ -23,6 +23,7 @@ export default {
     display: flex;
     align-items: center;
     gap: var(--sys-size-2);
+    padding: var(--sys-size-4) 0;
   }
 
   .vertical-separator {

@@ -23,7 +23,9 @@ export declare class Toolbar extends HTMLElement {
     private items;
     enabled: boolean;
     private compactLayout;
+    private mutationObserver;
     constructor();
+    onItemsChange(mutationList: MutationRecord[]): void;
     connectedCallback(): void;
     /**
      * Returns whether this toolbar is floating.
@@ -105,7 +107,7 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes,
     private button;
     private text?;
     private adorner?;
-    constructor(title: string, glyphOrAdorner?: string | Adorners.Adorner.Adorner, text?: string, jslogContext?: string);
+    constructor(title: string, glyphOrAdorner?: string | Adorners.Adorner.Adorner, text?: string, jslogContext?: string, button?: Buttons.Button.Button);
     focus(): void;
     checked(checked: boolean): void;
     toggleOnClick(toggleOnClick: boolean): void;
@@ -124,18 +126,6 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes,
     setDarkText(): void;
     clicked(event: Event): void;
 }
-export declare class ToolbarCombobox extends ToolbarItem<ToolbarButton.EventTypes> {
-    private textElement?;
-    private text?;
-    private iconName?;
-    private adorner?;
-    constructor(title: string, isIconDropdown?: boolean, jslogContext?: string, iconName?: string);
-    setText(text: string): void;
-    setAdorner(adorner: Adorners.Adorner.Adorner): void;
-    setDarkText(): void;
-    turnShrinkable(): void;
-    clicked(event: Event): void;
-}
 export declare namespace ToolbarButton {
     const enum Events {
         CLICK = "Click"
@@ -147,7 +137,7 @@ export declare namespace ToolbarButton {
 export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     private prompt;
     private readonly proxyElement;
-    constructor(placeholder: string, accessiblePlaceholder?: string, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string);
+    constructor(placeholder: string, accessiblePlaceholder?: string, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string, element?: HTMLElement);
     applyEnabledState(enabled: boolean): void;
     setValue(value: string, notify?: boolean): void;
     value(): string;
@@ -159,7 +149,7 @@ export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
     private updateEmptyStyles;
 }
 export declare class ToolbarFilter extends ToolbarInput {
-    constructor(filterBy?: Common.UIString.LocalizedString, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string);
+    constructor(filterBy?: Common.UIString.LocalizedString, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string, element?: HTMLElement);
 }
 export declare namespace ToolbarInput {
     const enum Event {
@@ -180,12 +170,21 @@ export declare class ToolbarToggle extends ToolbarButton {
     setChecked(checked: boolean): void;
     enableToggleWithRedColor(): void;
 }
-export declare class ToolbarMenuButton extends ToolbarCombobox {
+export declare class ToolbarMenuButton extends ToolbarItem<ToolbarButton.EventTypes> {
     #private;
+    private textElement?;
+    private text?;
+    private iconName?;
+    private adorner?;
     private readonly contextMenuHandler;
     private readonly useSoftMenu;
+    private readonly keepOpen;
     private triggerTimeoutId?;
-    constructor(contextMenuHandler: (arg0: ContextMenu) => void, isIconDropdown?: boolean, useSoftMenu?: boolean, jslogContext?: string, iconName?: string);
+    constructor(contextMenuHandler: (arg0: ContextMenu) => void, isIconDropdown?: boolean, useSoftMenu?: boolean, jslogContext?: string, iconName?: string, keepOpen?: boolean);
+    setText(text: string): void;
+    setAdorner(adorner: Adorners.Adorner.Adorner): void;
+    setDarkText(): void;
+    turnShrinkable(): void;
     setTriggerDelay(x: number): void;
     mouseDown(event: MouseEvent): void;
     private trigger;
@@ -209,7 +208,7 @@ export interface ItemsProvider {
     toolbarItems(): ToolbarItem[];
 }
 export declare class ToolbarComboBox extends ToolbarItem<void, HTMLSelectElement> {
-    constructor(changeHandler: ((arg0: Event) => void) | null, title: string, className?: string, jslogContext?: string);
+    constructor(changeHandler: ((arg0: Event) => void) | null, title: string, className?: string, jslogContext?: string, element?: HTMLSelectElement);
     size(): number;
     options(): HTMLOptionElement[];
     addOption(option: Element): void;

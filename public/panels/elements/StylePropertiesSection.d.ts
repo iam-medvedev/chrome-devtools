@@ -94,7 +94,7 @@ export declare class StylePropertiesSection {
     static getSpecificityStoredForNodeElement(element: Element): Protocol.CSS.Specificity | undefined;
     static renderSelectors(selectors: Array<{
         text: string;
-        specificity: Protocol.CSS.Specificity | undefined;
+        specificity?: Protocol.CSS.Specificity;
     }>, matchingSelectors: boolean[], elementToSelectorIndex: WeakMap<Element, number>): DocumentFragment;
     markSelectorHighlights(): void;
     addNewBlankProperty(index?: number | undefined): StylePropertyTreeElement;

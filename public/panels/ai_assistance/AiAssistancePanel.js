@@ -7,7 +7,6 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -19,9 +18,9 @@ import * as NetworkPanel from '../network/network.js';
 import * as SourcesPanel from '../sources/sources.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
+import { AiAgent, } from './agents/AiAgent.js';
 import { FileAgent, FileContext, } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext, } from './agents/NetworkAgent.js';
-import { PatchAgent } from './agents/PatchAgent.js';
 import { CallTreeContext, PerformanceAgent } from './agents/PerformanceAgent.js';
 import { InsightContext, PerformanceInsightsAgent } from './agents/PerformanceInsightsAgent.js';
 import { NodeContext, StylingAgent, StylingAgentWithFunctionCalling } from './agents/StylingAgent.js';
@@ -29,6 +28,7 @@ import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
 import { AiHistoryStorage, Conversation } from './AiHistoryStorage.js';
 import { ChangeManager } from './ChangeManager.js';
 import { ChatView } from './components/ChatView.js';
+import { isAiAssistancePatchingEnabled } from './PatchWidget.js';
 const { html } = Lit;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://goo.gle/devtools-ai-assistance';
@@ -74,6 +74,14 @@ const UIStrings = {
      *@description AI assistance UI text explains that he user had no pas conversations.
      */
     noPastConversations: 'No past conversations',
+    /**
+     * @description Placeholder text for an inactive text field. When active, it's used for the user's input to the GenAI assistance.
+     */
+    followTheSteps: 'Follow the steps above to ask a question',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -87,6 +95,82 @@ const UIStringsNotTranslate = {
      *@description Announcement text for screen readers when the answer comes.
      */
     answerReady: 'Answer ready',
+    /**
+     * @description Placeholder text for the input shown when the conversation is blocked because a cross-origin context was selected.
+     */
+    crossOriginError: 'To talk about data from another origin, start a new chat',
+    /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForStyling: 'Ask a question about the selected element',
+    /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForNetwork: 'Ask a question about the selected network request',
+    /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForFile: 'Ask a question about the selected file',
+    /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForPerformance: 'Ask a question about the selected item and its call tree',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForStylingNoContext: 'Select an element to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForNetworkNoContext: 'Select a network request to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForFileNoContext: 'Select a file to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input when there is no context selected.
+     */
+    inputPlaceholderForPerformanceNoContext: 'Select an item to ask a question',
+    /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForPerformanceInsights: 'Ask a question about the selected performance insight',
+    /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForPerformanceInsightsNoContext: 'Select a performance insight to ask a question',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForStyling: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForStylingEnterpriseNoLogging: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForNetwork: 'Chat messages and the selected network request are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForNetworkEnterpriseNoLogging: 'Chat messages and the selected network request are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForFile: 'Chat messages and the selected file are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForFileEnterpriseNoLogging: 'Chat messages and the selected file are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForPerformance: 'Chat messages and the selected call tree are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
+    /**
+     *@description Disclaimer text right after the chat input.
+     */
+    inputDisclaimerForPerformanceEnterpriseNoLogging: 'Chat messages and the selected call stack are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/AiAssistancePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -96,6 +180,37 @@ function selectedElementFilter(maybeNode) {
         return maybeNode.nodeType() === Node.ELEMENT_NODE ? maybeNode : null;
     }
     return null;
+}
+function getEmptyStateSuggestions(conversationType) {
+    switch (conversationType) {
+        case "freestyler" /* ConversationType.STYLING */:
+            return [
+                'What can you help me with?',
+                'Why isn’t this element visible?',
+                'How do I center this element?',
+            ];
+        case "drjones-file" /* ConversationType.FILE */:
+            return [
+                'What does this script do?',
+                'Is the script optimized for performance?',
+                'Does the script handle user input safely?',
+            ];
+        case "drjones-network-request" /* ConversationType.NETWORK */:
+            return [
+                'Why is this network request taking so long?',
+                'Are there any security headers present?',
+                'Why is the request failing?',
+            ];
+        case "drjones-performance" /* ConversationType.PERFORMANCE */:
+            return [
+                'Identify performance issues in this call tree',
+                'Where is most of the time being spent in this call tree?',
+                'How can I reduce the time of this call tree?',
+            ];
+        case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
+            // TODO(b/393061683): Define these.
+            return ['Placeholder', 'Suggestions', 'For now'];
+    }
 }
 function toolbarView(input) {
     // clang-format off
@@ -226,10 +341,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #aiAssistanceEnabledSetting;
     #changeManager = new ChangeManager();
     #mutex = new Common.Mutex.Mutex();
-    #currentAgent;
-    #currentConversation;
-    #conversations = [];
-    #previousSameOriginContext;
+    #conversationAgent;
+    #conversation;
+    #historicalConversations = [];
     #selectedFile = null;
     #selectedElement = null;
     #selectedCallTree = null;
@@ -253,11 +367,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #aidaAvailability;
     // Info of the currently logged in user.
     #userInfo;
-    #project;
-    #patchSuggestion;
-    #patchSuggestionLoading;
     #imageInput = '';
-    #workspace = Workspace.Workspace.WorkspaceImpl.instance();
+    // Used to disable send button when there is not text input.
+    #isTextInputEmpty = true;
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
@@ -271,38 +383,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             accountImage: syncInfo.accountImage,
             accountFullName: syncInfo.accountFullName,
         };
-        this.#conversations = AiHistoryStorage.instance().getHistory().map(item => {
+        this.#historicalConversations = AiHistoryStorage.instance().getHistory().map(item => {
             return new Conversation(item.type, item.history, item.id, true);
         });
-        this.#selectProject();
-    }
-    #selectProject() {
-        if (isAiAssistancePatchingEnabled()) {
-            // TODO: this is temporary code that should be replaced with
-            // workflow selection flow. For now it picks the first Workspace
-            // project that is not Snippets.
-            const projects = this.#workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem);
-            this.#project = undefined;
-            for (const project of projects) {
-                // This is for TypeScript to narrow the types. projectsForType()
-                // probably only returns instances of
-                // Persistence.FileSystemWorkspaceBinding.FileSystem.
-                if (!(project instanceof Persistence.FileSystemWorkspaceBinding.FileSystem)) {
-                    continue;
-                }
-                // Workspace projects do not have a type. Only snippets and
-                // overrides do.
-                if (project.fileSystem().type()) {
-                    continue;
-                }
-                this.#project = project;
-                this.requestUpdate();
-                break;
-            }
-        }
-    }
-    #onProjectAddedOrRemoved() {
-        this.#selectProject();
     }
     #getChatUiState() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -317,14 +400,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
     }
-    #createAgent(agentType) {
+    #createAgent(conversationType) {
         const options = {
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
         };
         let agent;
-        switch (agentType) {
-            case "freestyler" /* AgentType.STYLING */: {
+        switch (conversationType) {
+            case "freestyler" /* ConversationType.STYLING */: {
                 agent = new StylingAgent({
                     ...options,
                     changeManager: this.#changeManager,
@@ -337,24 +420,21 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 }
                 break;
             }
-            case "drjones-network-request" /* AgentType.NETWORK */: {
+            case "drjones-network-request" /* ConversationType.NETWORK */: {
                 agent = new NetworkAgent(options);
                 break;
             }
-            case "drjones-file" /* AgentType.FILE */: {
+            case "drjones-file" /* ConversationType.FILE */: {
                 agent = new FileAgent(options);
                 break;
             }
-            case "drjones-performance" /* AgentType.PERFORMANCE */: {
+            case "drjones-performance" /* ConversationType.PERFORMANCE */: {
                 agent = new PerformanceAgent(options);
                 break;
             }
-            case "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */: {
+            case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */: {
                 agent = new PerformanceInsightsAgent(options);
                 break;
-            }
-            case "patch" /* AgentType.PATCH */: {
-                throw new Error('AI Assistance does not support direct usage of the patch agent');
             }
         }
         return agent;
@@ -375,7 +455,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // If there already is an agent and if it is not empty,
         // we don't automatically change the agent. In addition to this,
         // we don't change the current agent when there is a message in flight.
-        if ((this.#currentAgent && !this.#currentAgent.isEmpty) || this.#isLoading) {
+        if ((this.#conversationAgent && this.#conversation && !this.#conversation.isEmpty) || this.#isLoading) {
             return;
         }
         const { hostConfig } = Root.Runtime;
@@ -383,38 +463,61 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const isNetworkPanelVisible = Boolean(UI.Context.Context.instance().flavor(NetworkPanel.NetworkPanel.NetworkPanel));
         const isSourcesPanelVisible = Boolean(UI.Context.Context.instance().flavor(SourcesPanel.SourcesPanel.SourcesPanel));
         const isPerformancePanelVisible = Boolean(UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel));
-        let targetAgentType = undefined;
+        let targetConversationType = undefined;
         if (isElementsPanelVisible && hostConfig.devToolsFreestyler?.enabled) {
-            targetAgentType = "freestyler" /* AgentType.STYLING */;
+            targetConversationType = "freestyler" /* ConversationType.STYLING */;
         }
         else if (isNetworkPanelVisible && hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-            targetAgentType = "drjones-network-request" /* AgentType.NETWORK */;
+            targetConversationType = "drjones-network-request" /* ConversationType.NETWORK */;
         }
         else if (isSourcesPanelVisible && hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-            targetAgentType = "drjones-file" /* AgentType.FILE */;
+            targetConversationType = "drjones-file" /* ConversationType.FILE */;
         }
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled &&
             hostConfig.devToolsAiAssistancePerformanceAgent?.insightsEnabled) {
-            targetAgentType = "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */;
+            targetConversationType = "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */;
         }
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-            targetAgentType = "drjones-performance" /* AgentType.PERFORMANCE */;
+            targetConversationType = "drjones-performance" /* ConversationType.PERFORMANCE */;
         }
-        const agent = targetAgentType ? this.#createAgent(targetAgentType) : undefined;
-        this.#updateAgentState(agent);
+        if (this.#conversationAgent?.type === targetConversationType) {
+            // The above if makes sure even if we have an active agent it's empty
+            // So we can just reuse it
+            return;
+        }
+        const agent = targetConversationType ? this.#createAgent(targetConversationType) : undefined;
+        this.#updateConversationState(agent);
     }
-    #updateAgentState(agent) {
-        if (this.#currentAgent !== agent) {
+    #updateConversationState(input) {
+        const agent = input instanceof AiAgent ? input : undefined;
+        const conversation = input instanceof Conversation ? input : undefined;
+        if (this.#conversationAgent !== agent) {
+            // Cancel any previous conversation
             this.#cancel();
             this.#messages = [];
             this.#isLoading = false;
-            this.#currentAgent = agent;
-            this.#currentConversation?.archiveConversation();
-            if (this.#currentAgent?.type) {
-                this.#currentConversation =
-                    new Conversation(agentTypeToConversationType(this.#currentAgent.type), [], agent?.id, false);
-                this.#conversations.push(this.#currentConversation);
+            this.#conversation?.archiveConversation();
+            this.#conversationAgent = agent;
+            // If we get a new agent we need to
+            // create a new conversation along side it
+            if (agent) {
+                this.#conversation = new Conversation(agentTypeToConversationType(agent.type), [], agent.id, false);
+                this.#historicalConversations.push(this.#conversation);
             }
+        }
+        if (!agent) {
+            this.#conversation = undefined;
+            // We need to run doConversation separately
+            this.#messages = [];
+            // If a no new agent is provided
+            // but conversation is
+            // update with history conversation
+            if (conversation) {
+                this.#conversation = conversation;
+            }
+        }
+        if (!this.#conversationAgent && !this.#conversation) {
+            this.#selectDefaultAgentIfNeeded();
         }
         this.#onContextSelectionChanged();
         this.requestUpdate();
@@ -423,7 +526,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         super.wasShown();
         this.#viewOutput.chatView?.restoreScrollPosition();
         this.#viewOutput.chatView?.focusTextInput();
-        this.#selectDefaultAgentIfNeeded();
         void this.#handleAidaAvailabilityChange();
         this.#selectedElement =
             createNodeContext(selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)));
@@ -434,8 +536,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedPerformanceInsight =
             createPerfInsightContext(UI.Context.Context.instance().flavor(TimelineUtils.InsightAIContext.ActiveInsight));
         this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode));
-        this.#selectedContext = this.#getConversationContext();
-        this.requestUpdate();
+        this.#updateConversationState(this.#conversationAgent);
         this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
         this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
@@ -451,14 +552,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
-        if (isAiAssistancePatchingEnabled()) {
-            this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAddedOrRemoved, this);
-            this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectAddedOrRemoved, this);
-            // @ts-expect-error temporary global function for local testing.
-            window.aiAssistanceTestPatchPrompt = async (changeSummary) => {
-                return await this.#applyPatch(changeSummary);
-            };
-        }
     }
     willHide() {
         this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
@@ -475,10 +568,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#selectDefaultAgentIfNeeded, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-        if (isAiAssistancePatchingEnabled()) {
-            this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAddedOrRemoved, this);
-            this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectAddedOrRemoved, this);
-        }
     }
     #handleAidaAvailabilityChange = async () => {
         const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
@@ -497,7 +586,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
-        this.#updateAgentState(this.#currentAgent);
+        this.#updateConversationState(this.#conversationAgent);
     };
     #handleDOMNodeAttrChange = (ev) => {
         if (this.#selectedElement?.getItem() === ev.data.node) {
@@ -511,21 +600,21 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedRequest = Boolean(ev.data) ? new RequestContext(ev.data) : null;
-        this.#updateAgentState(this.#currentAgent);
+        this.#updateConversationState(this.#conversationAgent);
     };
     #handleTraceEntryNodeFlavorChange = (ev) => {
         if (this.#selectedCallTree?.getItem() === ev.data) {
             return;
         }
         this.#selectedCallTree = Boolean(ev.data) ? new CallTreeContext(ev.data) : null;
-        this.#updateAgentState(this.#currentAgent);
+        this.#updateConversationState(this.#conversationAgent);
     };
     #handlePerfInsightFlavorChange = (ev) => {
         if (this.#selectedPerformanceInsight?.getItem() === ev.data) {
             return;
         }
         this.#selectedPerformanceInsight = Boolean(ev.data) ? new InsightContext(ev.data) : null;
-        this.#updateAgentState(this.#currentAgent);
+        this.#updateConversationState(this.#conversationAgent);
     };
     #handleUISourceCodeFlavorChange = (ev) => {
         const newFile = ev.data;
@@ -536,11 +625,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedFile = new FileContext(ev.data);
-        this.#updateAgentState(this.#currentAgent);
+        this.#updateConversationState(this.#conversationAgent);
     };
     #getChangeSummary() {
-        return (isAiAssistancePatchingEnabled() && this.#currentAgent && !this.#currentConversation?.isReadOnly) ?
-            this.#changeManager.formatChanges(this.#currentAgent.id) :
+        return (isAiAssistancePatchingEnabled() && this.#conversationAgent && !this.#conversation?.isReadOnly) ?
+            this.#changeManager.formatChanges(this.#conversationAgent.id) :
             undefined;
     }
     async performUpdate() {
@@ -551,19 +640,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             isLoading: this.#isLoading,
             messages: this.#messages,
             selectedContext: this.#selectedContext,
-            agentType: this.#currentAgent?.type,
-            isReadOnly: this.#currentConversation?.isReadOnly ?? false,
+            conversationType: this.#conversation?.type,
+            isReadOnly: this.#conversation?.isReadOnly ?? false,
             changeSummary: this.#getChangeSummary(),
-            patchSuggestion: this.#patchSuggestion,
-            patchSuggestionLoading: this.#patchSuggestionLoading,
-            stripLinks: this.#currentAgent?.type === "drjones-performance" /* AgentType.PERFORMANCE */,
             inspectElementToggled: this.#toggleSearchElementAction.toggled(),
             userInfo: this.#userInfo,
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
-            multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() && this.#currentAgent?.type === "freestyler" /* AgentType.STYLING */,
+            multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() && this.#conversation?.type === "freestyler" /* ConversationType.STYLING */,
             imageInput: this.#imageInput,
-            projectName: this.#project?.displayName() ?? '',
-            isDeleteHistoryButtonVisible: Boolean(this.#currentConversation && !this.#currentConversation.isEmpty),
+            isDeleteHistoryButtonVisible: Boolean(this.#conversation && !this.#conversation.isEmpty),
+            isTextInputDisabled: this.#isTextInputDisabled(),
+            emptyStateSuggestions: this.#conversation ? getEmptyStateSuggestions(this.#conversation.type) : [],
+            inputPlaceholder: this.#getChatInputPlaceholder(),
+            disclaimerText: this.#getDisclaimerText(),
+            isTextInputEmpty: this.#isTextInputEmpty,
             onNewChatClick: this.#handleNewChatRequest.bind(this),
             onHistoryClick: this.#onHistoryClicked.bind(this),
             onDeleteClick: this.#onDeleteClicked.bind(this),
@@ -583,17 +673,102 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onCancelClick: this.#cancel.bind(this),
             onContextClick: this.#handleContextClick.bind(this),
             onNewConversation: this.#handleNewChatRequest.bind(this),
-            onCancelCrossOriginChat: this.#blockedByCrossOrigin && this.#previousSameOriginContext ?
-                this.#handleCrossOriginChatCancellation.bind(this) :
-                undefined,
             onTakeScreenshot: isAiAssistanceMultimodalInputEnabled() ? this.#handleTakeScreenshot.bind(this) : undefined,
             onRemoveImageInput: isAiAssistanceMultimodalInputEnabled() ? this.#handleRemoveImageInput.bind(this) :
                 undefined,
-            onApplyToWorkspace: this.#onApplyToWorkspace.bind(this)
+            onTextInputChange: this.#handleTextInputChange.bind(this),
         }, this.#viewOutput, this.contentElement);
     }
     #handleSelectElementClick() {
         void this.#toggleSearchElementAction.execute();
+    }
+    #isTextInputDisabled() {
+        // If the `aiAssistanceSetting` is not enabled
+        // or if the user is blocked by age, the text input is disabled.
+        const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
+        const isBlockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+        if (!aiAssistanceSetting || isBlockedByAge) {
+            return true;
+        }
+        // If the Aida is not available, the text input is disabled.
+        const isAidaAvailable = this.#aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
+        if (!isAidaAvailable) {
+            return true;
+        }
+        // If sending a new message is blocked by cross origin context
+        // the text input is disabled.
+        if (this.#blockedByCrossOrigin) {
+            return true;
+        }
+        // If there is no current agent if there is no selected context
+        // the text input is disabled.
+        if (!this.#conversation || !this.#selectedContext) {
+            return true;
+        }
+        return false;
+    }
+    #getChatInputPlaceholder() {
+        const state = this.#getChatUiState();
+        if (state === "consent-view" /* ChatViewState.CONSENT_VIEW */ || !this.#conversation) {
+            return i18nString(UIStrings.followTheSteps);
+        }
+        if (this.#blockedByCrossOrigin) {
+            return lockedString(UIStringsNotTranslate.crossOriginError);
+        }
+        switch (this.#conversation.type) {
+            case "freestyler" /* ConversationType.STYLING */:
+                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForStyling) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForStylingNoContext);
+            case "drjones-file" /* ConversationType.FILE */:
+                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFile) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForFileNoContext);
+            case "drjones-network-request" /* ConversationType.NETWORK */:
+                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForNetwork) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkNoContext);
+            case "drjones-performance" /* ConversationType.PERFORMANCE */:
+                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForPerformance) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceNoContext);
+            case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
+                return this.#selectedContext ?
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceInsights) :
+                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceInsightsNoContext);
+        }
+    }
+    #getDisclaimerText() {
+        const state = this.#getChatUiState();
+        if (state === "consent-view" /* ChatViewState.CONSENT_VIEW */ || !this.#conversation || this.#conversation.isReadOnly) {
+            return i18nString(UIStrings.inputDisclaimerForEmptyState);
+        }
+        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
+            Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+        switch (this.#conversation.type) {
+            case "freestyler" /* ConversationType.STYLING */:
+                if (noLogging) {
+                    return lockedString(UIStringsNotTranslate.inputDisclaimerForStylingEnterpriseNoLogging);
+                }
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForStyling);
+            case "drjones-file" /* ConversationType.FILE */:
+                if (noLogging) {
+                    return lockedString(UIStringsNotTranslate.inputDisclaimerForFileEnterpriseNoLogging);
+                }
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForFile);
+            case "drjones-network-request" /* ConversationType.NETWORK */:
+                if (noLogging) {
+                    return lockedString(UIStringsNotTranslate.inputDisclaimerForNetworkEnterpriseNoLogging);
+                }
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForNetwork);
+            case "drjones-performance" /* ConversationType.PERFORMANCE */:
+                if (noLogging) {
+                    return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformanceEnterpriseNoLogging);
+                }
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformance);
+            case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
+                // TODO(b/393061683): Define these rather than reuse the existing performance agent.
+                if (noLogging) {
+                    return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformanceEnterpriseNoLogging);
+                }
+                return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformance);
+        }
     }
     async #handleFeedbackSubmit(rpcId, rating, feedback) {
         void this.#aidaClient.registerClientEvent({
@@ -633,58 +808,58 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#viewOutput.chatView?.focusTextInput();
             return;
         }
-        let targetAgentType;
+        let targetConversationType;
         switch (actionId) {
             case 'freestyler.elements-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromElementsPanelFloatingButton);
-                targetAgentType = "freestyler" /* AgentType.STYLING */;
+                targetConversationType = "freestyler" /* ConversationType.STYLING */;
                 break;
             }
             case 'freestyler.element-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromElementsPanel);
-                targetAgentType = "freestyler" /* AgentType.STYLING */;
+                targetConversationType = "freestyler" /* ConversationType.STYLING */;
                 break;
             }
             case 'drjones.network-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromNetworkPanelFloatingButton);
-                targetAgentType = "drjones-network-request" /* AgentType.NETWORK */;
+                targetConversationType = "drjones-network-request" /* ConversationType.NETWORK */;
                 break;
             }
             case 'drjones.network-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromNetworkPanel);
-                targetAgentType = "drjones-network-request" /* AgentType.NETWORK */;
+                targetConversationType = "drjones-network-request" /* ConversationType.NETWORK */;
                 break;
             }
             case 'drjones.performance-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformancePanel);
-                targetAgentType = "drjones-performance" /* AgentType.PERFORMANCE */;
+                targetConversationType = "drjones-performance" /* ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.performance-insight-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceInsight);
-                targetAgentType = "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */;
+                targetConversationType = "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */;
                 break;
             }
             case 'drjones.sources-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromSourcesPanelFloatingButton);
-                targetAgentType = "drjones-file" /* AgentType.FILE */;
+                targetConversationType = "drjones-file" /* ConversationType.FILE */;
                 break;
             }
             case 'drjones.sources-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromSourcesPanel);
-                targetAgentType = "drjones-file" /* AgentType.FILE */;
+                targetConversationType = "drjones-file" /* ConversationType.FILE */;
                 break;
             }
         }
-        if (!targetAgentType) {
+        if (!targetConversationType) {
             return;
         }
-        let agent = this.#currentAgent;
-        if (!this.#currentConversation || !this.#currentAgent || this.#currentAgent.type !== targetAgentType ||
-            this.#currentConversation?.isEmpty || targetAgentType === "drjones-performance" /* AgentType.PERFORMANCE */) {
-            agent = this.#createAgent(targetAgentType);
+        let agent = this.#conversationAgent;
+        if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType ||
+            this.#conversation?.isEmpty || targetConversationType === "drjones-performance" /* ConversationType.PERFORMANCE */) {
+            agent = this.#createAgent(targetConversationType);
         }
-        this.#updateAgentState(agent);
+        this.#updateConversationState(agent);
         this.#viewOutput.chatView?.focusTextInput();
     }
     #onHistoryClicked(event) {
@@ -695,7 +870,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             x: clientRect?.left,
             y: clientRect?.bottom,
         });
-        for (const conversation of [...this.#conversations].reverse()) {
+        for (const conversation of [...this.#historicalConversations].reverse()) {
             if (conversation.isEmpty) {
                 continue;
             }
@@ -705,7 +880,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
             contextMenu.defaultSection().appendCheckboxItem(title, () => {
                 void this.#openConversation(conversation);
-            }, { checked: (this.#currentConversation === conversation) });
+            }, { checked: (this.#conversation === conversation) });
         }
         const historyEmpty = contextMenu.defaultSection().items.length === 0;
         if (historyEmpty) {
@@ -721,39 +896,30 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         void contextMenu.show();
     }
     #clearHistory() {
-        this.#conversations = [];
-        this.#currentConversation = undefined;
+        this.#historicalConversations = [];
         void AiHistoryStorage.instance().deleteAll();
-        this.#updateAgentState();
+        this.#updateConversationState();
     }
     #onDeleteClicked() {
-        if (this.#currentAgent) {
-            this.#conversations = this.#conversations.filter(conversation => conversation !== this.#currentConversation);
-            this.#currentConversation = undefined;
-            void AiHistoryStorage.instance().deleteHistoryEntry(this.#currentAgent.id);
+        if (!this.#conversation) {
+            return;
         }
-        this.#updateAgentState();
-        this.#selectDefaultAgentIfNeeded();
+        this.#historicalConversations =
+            this.#historicalConversations.filter(conversation => conversation !== this.#conversation);
+        void AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
+        this.#updateConversationState();
         UI.ARIAUtils.alert(i18nString(UIStrings.chatDeleted));
     }
     async #openConversation(conversation) {
-        if (this.#currentConversation === conversation) {
+        if (this.#conversation === conversation) {
             return;
         }
-        this.#currentConversation = conversation;
-        this.#messages = [];
+        this.#updateConversationState(conversation);
         await this.#doConversation(conversation.history);
     }
     #handleNewChatRequest() {
-        this.#updateAgentState();
-        this.#selectDefaultAgentIfNeeded();
+        this.#updateConversationState();
         UI.ARIAUtils.alert(i18nString(UIStrings.newChatCreated));
-    }
-    #handleCrossOriginChatCancellation() {
-        if (this.#previousSameOriginContext) {
-            this.#onContextSelectionChanged(this.#previousSameOriginContext);
-            this.requestUpdate();
-        }
     }
     async #handleTakeScreenshot() {
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -768,20 +934,32 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (bytes) {
             this.#imageInput = bytes;
             this.requestUpdate();
+            void this.updateComplete.then(() => {
+                this.#viewOutput.chatView?.focusTextInput();
+            });
         }
     }
     #handleRemoveImageInput() {
         this.#imageInput = '';
         this.requestUpdate();
+        void this.updateComplete.then(() => {
+            this.#viewOutput.chatView?.focusTextInput();
+        });
+    }
+    #handleTextInputChange(value) {
+        const disableSubmit = !value;
+        if (disableSubmit !== this.#isTextInputEmpty) {
+            this.#isTextInputEmpty = disableSubmit;
+            void this.requestUpdate();
+        }
     }
     #runAbortController = new AbortController();
     #cancel() {
         this.#runAbortController.abort();
-        this.#isLoading = false;
-        this.requestUpdate();
+        this.#runAbortController = new AbortController();
     }
     #onContextSelectionChanged(contextToRestore) {
-        if (!this.#currentAgent) {
+        if (!this.#conversationAgent) {
             this.#blockedByCrossOrigin = false;
             return;
         }
@@ -791,55 +969,49 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#blockedByCrossOrigin = false;
             return;
         }
-        this.#blockedByCrossOrigin = !currentContext.isOriginAllowed(this.#currentAgent.origin);
-        if (!this.#blockedByCrossOrigin) {
-            this.#previousSameOriginContext = currentContext;
-        }
+        this.#blockedByCrossOrigin = !currentContext.isOriginAllowed(this.#conversationAgent.origin);
     }
     #getConversationContext() {
-        if (!this.#currentAgent) {
+        if (!this.#conversation) {
             return null;
         }
         let context;
-        switch (this.#currentAgent.type) {
-            case "freestyler" /* AgentType.STYLING */:
+        switch (this.#conversation.type) {
+            case "freestyler" /* ConversationType.STYLING */:
                 context = this.#selectedElement;
                 break;
-            case "drjones-file" /* AgentType.FILE */:
+            case "drjones-file" /* ConversationType.FILE */:
                 context = this.#selectedFile;
                 break;
-            case "drjones-network-request" /* AgentType.NETWORK */:
+            case "drjones-network-request" /* ConversationType.NETWORK */:
                 context = this.#selectedRequest;
                 break;
-            case "drjones-performance" /* AgentType.PERFORMANCE */:
+            case "drjones-performance" /* ConversationType.PERFORMANCE */:
                 context = this.#selectedCallTree;
                 break;
-            case "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */:
+            case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
                 context = this.#selectedPerformanceInsight;
                 break;
-            case "patch" /* AgentType.PATCH */:
-                throw new Error('AI Assistance does not support direct usage of the patch agent');
         }
         return context;
     }
     async #startConversation(text, imageInput) {
-        if (!this.#currentAgent) {
+        if (!this.#conversationAgent) {
             return;
         }
         // Cancel any previous in-flight conversation.
         this.#cancel();
-        this.#runAbortController = new AbortController();
         const signal = this.#runAbortController.signal;
         const context = this.#getConversationContext();
         // If a different context is provided, it must be from the same origin.
-        if (context && !context.isOriginAllowed(this.#currentAgent.origin)) {
+        if (context && !context.isOriginAllowed(this.#conversationAgent.origin)) {
             // This error should not be reached. If it happens, some
             // invariants do not hold anymore.
             throw new Error('cross-origin context data should not be included');
         }
         const image = isAiAssistanceMultimodalInputEnabled() ? imageInput : undefined;
         const imageId = image ? crypto.randomUUID() : undefined;
-        const runner = this.#currentAgent.run(text, {
+        const runner = this.#conversationAgent.run(text, {
             signal,
             selected: context,
         }, image, imageId);
@@ -847,38 +1019,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         await this.#doConversation(this.#saveResponsesToCurrentConversation(runner));
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
     }
-    async #onApplyToWorkspace() {
-        if (!isAiAssistancePatchingEnabled()) {
-            return;
-        }
-        const changeSummary = this.#getChangeSummary();
-        if (!changeSummary) {
-            throw new Error('Change summary does not exist');
-        }
-        this.#patchSuggestionLoading = true;
-        this.requestUpdate();
-        const response = await this.#applyPatch(changeSummary);
-        this.#patchSuggestion = response?.type === "answer" /* ResponseType.ANSWER */ ? response.text : 'Could not update files';
-        this.#patchSuggestionLoading = false;
-        this.requestUpdate();
-    }
-    async #applyPatch(changeSummary) {
-        if (!this.#project) {
-            throw new Error('Project does not exist');
-        }
-        const agent = new PatchAgent({
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-            project: this.#project,
-        });
-        const responses = await Array.fromAsync(agent.applyChanges(changeSummary));
-        return responses.at(-1);
-    }
     async *#saveResponsesToCurrentConversation(items) {
+        const currentConversation = this.#conversation;
         for await (const data of items) {
             // We don't want to save partial responses to the conversation history.
             if (data.type !== "answer" /* ResponseType.ANSWER */ || data.complete) {
-                this.#currentConversation?.addHistoryItem(data);
+                currentConversation?.addHistoryItem(data);
             }
             yield data;
         }
@@ -998,7 +1144,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 }
                 // Commit update intermediated step when not
                 // in read only mode.
-                if (!this.#currentConversation?.isReadOnly) {
+                if (!this.#conversation?.isReadOnly) {
                     this.requestUpdate();
                     // This handles scrolling to the bottom for live conversations when:
                     // * User submits the query & the context step is shown.
@@ -1009,7 +1155,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 }
             }
             this.#isLoading = false;
-            this.#viewOutput.chatView?.finishTextAnimations();
             this.requestUpdate();
         }
         finally {
@@ -1045,10 +1190,6 @@ export class ActionDelegate {
 function isAiAssistanceMultimodalInputEnabled() {
     const { hostConfig } = Root.Runtime;
     return Boolean(hostConfig.devToolsFreestyler?.multimodal);
-}
-function isAiAssistancePatchingEnabled() {
-    const { hostConfig } = Root.Runtime;
-    return Boolean(hostConfig.devToolsFreestyler?.patching);
 }
 function isAiAssistanceServerSideLoggingEnabled() {
     const { hostConfig } = Root.Runtime;

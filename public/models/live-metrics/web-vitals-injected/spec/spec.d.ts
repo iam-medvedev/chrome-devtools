@@ -1,36 +1,40 @@
-import type { INPAttribution, MetricType } from '../../../../third_party/web-vitals/web-vitals.js';
+import type { INPAttribution } from '../../../../third_party/web-vitals/web-vitals.js';
+import type * as Trace from '../../../trace/trace.js';
 export declare const EVENT_BINDING_NAME = "__chromium_devtools_metrics_reporter";
 export declare const INTERNAL_KILL_SWITCH = "__chromium_devtools_kill_live_metrics";
 export declare const SCRIPTS_PER_LOAF_LIMIT = 10;
 export declare const LOAF_LIMIT = 5;
-export type MetricChangeEvent = Pick<MetricType, 'name' | 'value'>;
 export type InteractionEntryGroupId = number & {
     _tag: 'InteractionEntryGroupId';
 };
 export type UniqueLayoutShiftId = `layout-shift-${number}-${number}`;
 export declare function getUniqueLayoutShiftId(entry: LayoutShift): UniqueLayoutShiftId;
 export interface LcpPhases {
-    timeToFirstByte: number;
-    resourceLoadDelay: number;
-    resourceLoadTime: number;
-    elementRenderDelay: number;
+    timeToFirstByte: Trace.Types.Timing.Milli;
+    resourceLoadDelay: Trace.Types.Timing.Milli;
+    resourceLoadTime: Trace.Types.Timing.Milli;
+    elementRenderDelay: Trace.Types.Timing.Milli;
 }
 export interface InpPhases {
-    inputDelay: number;
-    processingDuration: number;
-    presentationDelay: number;
+    inputDelay: Trace.Types.Timing.Milli;
+    processingDuration: Trace.Types.Timing.Milli;
+    presentationDelay: Trace.Types.Timing.Milli;
 }
-export interface LcpChangeEvent extends MetricChangeEvent {
+export interface LcpChangeEvent {
     name: 'LCP';
+    value: Trace.Types.Timing.Milli;
     phases: LcpPhases;
+    startedHidden: boolean;
     nodeIndex?: number;
 }
-export interface ClsChangeEvent extends MetricChangeEvent {
+export interface ClsChangeEvent {
     name: 'CLS';
+    value: number;
     clusterShiftIds: UniqueLayoutShiftId[];
 }
-export interface InpChangeEvent extends MetricChangeEvent {
+export interface InpChangeEvent {
     name: 'INP';
+    value: Trace.Types.Timing.Milli;
     interactionType: INPAttribution['interactionType'];
     phases: InpPhases;
     startTime: number;
@@ -69,7 +73,7 @@ export interface InteractionEntryEvent {
     entryGroupId: InteractionEntryGroupId;
     startTime: number;
     nextPaintTime: number;
-    duration: number;
+    duration: Trace.Types.Timing.Milli;
     phases: InpPhases;
     nodeIndex?: number;
     longAnimationFrameEntries: PerformanceLongAnimationFrameTimingJSON[];

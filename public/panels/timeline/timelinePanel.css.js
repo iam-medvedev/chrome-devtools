@@ -567,7 +567,7 @@ export default {
 
 .timeline-details-range-summary {
   height: 100%;
-  margin: var(--sys-size-4) 0;
+  margin: var(--sys-size-4) 0 0;
 
   & > devtools-performance-timeline-summary {
     /* The category summary can't be more narrow than this, so we'll force a horizontal scrollbar
@@ -577,7 +577,7 @@ export default {
 }
 
 /* Dont need to see insight chips in range summary */
-.timeline-details-range-summary + devtools-related-insight-chips {
+.timeline-details-range-summary > devtools-related-insight-chips {
   display:none;
 }
 

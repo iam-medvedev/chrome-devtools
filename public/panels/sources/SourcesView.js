@@ -115,6 +115,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     }
     placeholderElement() {
         const placeholder = document.createElement('div');
+        placeholder.classList.add('sources-placeholder');
         const workspaceElement = placeholder.createChild('div', 'tabbed-pane-placeholder-row');
         workspaceElement.classList.add('workspace');
         const icon = IconButton.Icon.create('sync', 'sync-icon');

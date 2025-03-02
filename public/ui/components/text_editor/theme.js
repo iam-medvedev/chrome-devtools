@@ -39,6 +39,9 @@ export const editorTheme = CM.EditorView.theme({
     '&.cm-focused > .cm-scroller > .cm-selectionLayer .cm-selectionBackground': {
         background: 'var(--sys-color-tonal-container)',
     },
+    '.cm-line::selection': {
+        color: 'currentColor',
+    },
     '.cm-selectionBackground': {
         background: 'var(--sys-color-neutral-container)',
     },

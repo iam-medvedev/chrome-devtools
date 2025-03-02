@@ -36,7 +36,8 @@ function finalize(partialModel) {
 }
 export function generateInsight(parsedTrace, context) {
     const fonts = [];
-    for (const event of parsedTrace.LayoutShifts.beginRemoteFontLoadEvents) {
+    for (const remoteFont of parsedTrace.LayoutShifts.remoteFonts) {
+        const event = remoteFont.beginRemoteFontLoadEvent;
         if (!Helpers.Timing.eventIsInBounds(event, context.bounds)) {
             continue;
         }
@@ -45,9 +46,8 @@ export function generateInsight(parsedTrace, context) {
         if (!request) {
             continue;
         }
-        const display = event.args.display;
         let wastedTime = Types.Timing.Milli(0);
-        if (/^(block|fallback|auto)$/.test(display)) {
+        if (/^(block|fallback|auto)$/.test(remoteFont.display)) {
             const wastedTimeMicro = Types.Timing.Micro(request.args.data.syntheticData.finishTime - request.args.data.syntheticData.sendStartTime);
             // TODO(crbug.com/352244504): should really end at the time of the next Commit trace event.
             wastedTime =
@@ -56,8 +56,9 @@ export function generateInsight(parsedTrace, context) {
             wastedTime = Math.min(wastedTime, 3000);
         }
         fonts.push({
+            name: remoteFont.name,
             request,
-            display,
+            display: remoteFont.display,
             wastedTime,
         });
     }

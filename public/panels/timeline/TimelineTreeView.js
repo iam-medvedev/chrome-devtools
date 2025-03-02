@@ -6,7 +6,6 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
-import * as ThirdPartyWeb from '../../third_party/third-party-web/third-party-web.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -244,7 +243,6 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
         this.dataGrid.element.addEventListener('mousemove', this.onMouseMove.bind(this), true);
         this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, null));
-        this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, null));
         this.dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OPENED_NODE */, this.onGridNodeOpened, this);
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
@@ -510,10 +508,24 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     onHover(node) {
         this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node);
     }
-    // TODO: do this on selection (before opened)
+    wasShown() {
+        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange, this);
+    }
+    childWasDetached(_widget) {
+        this.dataGrid.removeEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange);
+    }
+    /**
+     * This event fires when the user selects a row in the grid, either by
+     * clicking or by using the arrow keys. We want to have the same effect as
+     * when the user hover overs a row.
+     */
+    #onDataGridSelectionChange(event) {
+        this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, event.data.profileNode);
+        this.onHover(event.data.profileNode);
+    }
     onGridNodeOpened() {
-        const node = this.dataGrid.selectedNode;
-        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.profileNode);
+        const gridNode = this.dataGrid.selectedNode;
+        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, gridNode.profileNode);
         this.updateDetailsForSelection();
     }
     onContextMenu(contextMenu, eventGridNode) {
@@ -682,7 +694,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                 showPercents = true;
                 break;
             case 'transfer-size':
-                value = thirdPartyView.extractThirdPartySummary(this.profileNode).transferSize;
+                value = this.profileNode.transferSize;
                 isSize = true;
                 break;
             default:
@@ -734,7 +746,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     #bottomUpButtonClicked() {
         // We should also trigger an event to "unhover" the 3P tree row. Since this isn't
         // triggered when clicking the bottom up button.
-        this.treeView.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, null);
+        this.treeView.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, null);
         this.treeView.dispatchEventToListeners("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, this.profileNode);
     }
 }
@@ -810,6 +822,8 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case AggregatedTimelineTreeView.GroupBy.Domain:
             case AggregatedTimelineTreeView.GroupBy.Subdomain:
             case AggregatedTimelineTreeView.GroupBy.ThirdParties: {
+                // This `undefined` is [unattributed]
+                // TODO(paulirish,aixba): Improve attribution to reduce amount of items in [unattributed].
                 const domainName = id ? this.beautifyDomainName(id, node) : undefined;
                 return { name: domainName || unattributed, color, icon: undefined };
             }
@@ -933,10 +947,11 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         if (parsedURL.scheme === 'chrome-extension') {
             return parsedURL.scheme + '://' + parsedURL.host;
         }
+        // This must follow after the extension checks.
         if (groupBy === AggregatedTimelineTreeView.GroupBy.ThirdParties) {
-            const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url);
+            const entity = this.entityMapper()?.entityForEvent(event);
             if (!entity) {
-                return parsedURL.host;
+                return '';
             }
             return entity.name;
         }

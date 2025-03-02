@@ -21,12 +21,6 @@ export default {
   margin-top: 2px;
 }
 
-.film-strip-view .label {
-  margin: auto;
-  font-size: 18px;
-  color: var(--sys-color-token-subtle);
-}
-
 .film-strip-view .frame {
   background: none;
   border: none;

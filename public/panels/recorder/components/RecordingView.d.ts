@@ -1,5 +1,4 @@
 import '../../../ui/components/icon_button/icon_button.js';
-import '../../../ui/components/split_view/split_view.js';
 import './ExtensionView.js';
 import './ControlButton.js';
 import './ReplaySection.js';

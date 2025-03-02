@@ -42,7 +42,7 @@ export interface EyeDropperPickedColorEvent {
     a: number;
 }
 export interface DevToolsFileSystem {
-    type: string;
+    type: '' | 'automatic' | 'snippets' | 'overrides';
     fileSystemName: string;
     rootURL: string;
     fileSystemPath: Platform.DevToolsPath.RawPathString;

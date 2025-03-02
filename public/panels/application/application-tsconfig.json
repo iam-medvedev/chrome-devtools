@@ -137,9 +137,6 @@
       "path": "../../ui/components/report_view/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/split_view/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

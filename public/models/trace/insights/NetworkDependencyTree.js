@@ -15,6 +15,10 @@ export const UIStrings = {
      */
     description: '[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.',
     /**
+     * @description Description of the warning that recommends avoiding chaining critical requests.
+     */
+    warningDescription: 'Avoid chaining critical requests by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.',
+    /**
      * @description Text status indicating that there isn't long chaining critical network requests.
      */
     noNetworkDependencyTree: 'No rendering tasks impacted by network dependencies',
@@ -83,26 +87,39 @@ export function generateInsight(_parsedTrace, context) {
         });
     }
     const rootNodes = [];
+    const relatedEvents = new Map();
     let maxTime = Types.Timing.Micro(0);
+    let longestChain = [];
     function addChain(path) {
         if (path.length === 0) {
             return;
         }
         const initialRequest = path[0];
+        const lastRequest = path[path.length - 1];
+        const totalChainTime = Types.Timing.Micro(lastRequest.ts + lastRequest.dur - initialRequest.ts);
+        if (totalChainTime > maxTime) {
+            maxTime = totalChainTime;
+            longestChain = path;
+        }
         let currentNodes = rootNodes;
-        for (const networkRequest of path) {
+        for (let depth = 0; depth < path.length; ++depth) {
+            const request = path[depth];
             // find the request
-            let found = currentNodes.find(node => node.request === networkRequest);
+            let found = currentNodes.find(node => node.request === request);
             if (!found) {
-                const timeFromInitialRequest = Types.Timing.Micro(networkRequest.ts + networkRequest.dur - initialRequest.ts);
-                maxTime = Types.Timing.Micro(Math.max(maxTime, timeFromInitialRequest));
+                const timeFromInitialRequest = Types.Timing.Micro(request.ts + request.dur - initialRequest.ts);
                 found = {
-                    request: networkRequest,
+                    request,
                     timeFromInitialRequest,
                     children: [],
                 };
                 currentNodes.push(found);
             }
+            if (request === lastRequest) {
+                found.chain = path;
+            }
+            // TODO(b/372897712) Switch the UIString to markdown.
+            relatedEvents.set(request, depth < 2 ? [] : [i18nString(UIStrings.warningDescription)]);
             currentNodes = found.children;
         }
     }
@@ -122,7 +139,7 @@ export function generateInsight(_parsedTrace, context) {
         if (!isCritical(networkNode.rawRequest, context)) {
             return;
         }
-        const networkPath = traversalPath.filter(node => node.type === 'network').reverse().map(node => (node).rawRequest);
+        const networkPath = traversalPath.filter(node => node.type === 'network').reverse().map(node => node.rawRequest);
         // Ignore if some ancestor is not a critical request.
         if (networkPath.some(request => (!isCritical(request, context)))) {
             return;
@@ -133,9 +150,24 @@ export function generateInsight(_parsedTrace, context) {
         }
         addChain(networkPath);
     }, getNextNodes);
+    // Mark the longest chain
+    if (longestChain.length > 0) {
+        let currentNodes = rootNodes;
+        for (const request of longestChain) {
+            const found = currentNodes.find(node => node.request === request);
+            if (found) {
+                found.isLongest = true;
+                currentNodes = found.children;
+            }
+            else {
+                console.error('Some request in the longest chain is not found');
+            }
+        }
+    }
     return finalize({
         rootNodes,
         maxTime,
+        relatedEvents,
     });
 }
 //# sourceMappingURL=NetworkDependencyTree.js.map

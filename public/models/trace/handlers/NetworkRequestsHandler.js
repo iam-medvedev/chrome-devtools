@@ -384,8 +384,9 @@ export async function finalize() {
         requests.all.push(networkEvent);
         requestsByTime.push(networkEvent);
         requestsById.set(networkEvent.args.data.requestId, networkEvent);
-        // Update entity relationships for network events.
-        HandlerHelpers.addEventToEntityMapping(networkEvent, entityMappings);
+        // Update entity relationships for network events
+        HandlerHelpers.addNetworkRequestToEntityMapping(networkEvent, entityMappings, request);
+        // Establish initiator relationships
         const initiatorUrl = networkEvent.args.data.initiator?.url ||
             Helpers.Trace.getZeroIndexedStackTraceForEvent(networkEvent)?.at(0)?.url;
         if (initiatorUrl) {

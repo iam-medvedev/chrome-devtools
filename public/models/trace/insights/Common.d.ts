@@ -30,6 +30,12 @@ export interface CrUXFieldMetricResults {
     lcp: CrUXFieldMetricTimingResult | null;
     inp: CrUXFieldMetricTimingResult | null;
     cls: CrUXFieldMetricNumberResult | null;
+    lcpPhases: {
+        ttfb: CrUXFieldMetricTimingResult | null;
+        loadDelay: CrUXFieldMetricTimingResult | null;
+        loadDuration: CrUXFieldMetricTimingResult | null;
+        renderDelay: CrUXFieldMetricTimingResult | null;
+    };
 }
 export declare function getFieldMetricsForInsightSet(insightSet: InsightSet, metadata: Types.File.MetaData | null, scope?: CrUXManager.Scope | null): CrUXFieldMetricResults | null;
 export declare function calculateMetricWeightsForSorting(insightSet: InsightSet, metadata: Types.File.MetaData | null): {

@@ -102,6 +102,16 @@ export function eventTimeComparator(a, b) {
     if (aEndTime < bEndTime) {
         return 1;
     }
+    // If times are equal, prioritize profile calls over trace events,
+    // since an exactly equal timestamp with a trace event is likely
+    // indicates that the SamplesIntegrator meant to parent the trace
+    // event with the profile call.
+    if (Types.Events.isProfileCall(a) && !Types.Events.isProfileCall(b)) {
+        return -1;
+    }
+    if (Types.Events.isProfileCall(b) && !Types.Events.isProfileCall(a)) {
+        return 1;
+    }
     return 0;
 }
 /**
@@ -571,12 +581,13 @@ export function eventContainsTimestamp(event, ts) {
     return event.ts <= ts && event.ts + (event.dur || 0) >= ts;
 }
 export function extractSampleTraceId(event) {
-    if (Types.Events.isConsoleRunTask(event) || Types.Events.isConsoleTimeStamp(event)) {
-        return event.args?.data?.sampleTraceId || null;
+    if (!event.args) {
+        return null;
     }
-    if (Types.Events.isUserTimingMeasure(event)) {
-        return event.args.sampleTraceId;
+    if ('beginData' in event.args) {
+        const beginData = event.args['beginData'];
+        return beginData.sampleTraceId ?? null;
     }
-    return null;
+    return event.args?.sampleTraceId ?? event.args?.data?.sampleTraceId ?? null;
 }
 //# sourceMappingURL=Trace.js.map

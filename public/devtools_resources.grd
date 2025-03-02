@@ -583,7 +583,6 @@
       <include file="models/trace/lantern/metrics/metrics.js" name="MODELS_TRACE_LANTERN_METRICS_METRICS_JS" resource_path="models/trace/lantern/metrics/metrics.js" type="BINDATA" compress="false"/>
       <include file="models/trace/lantern/simulation/simulation.js" name="MODELS_TRACE_LANTERN_SIMULATION_SIMULATION_JS" resource_path="models/trace/lantern/simulation/simulation.js" type="BINDATA" compress="false"/>
       <include file="models/trace/lantern/types/types.js" name="MODELS_TRACE_LANTERN_TYPES_TYPES_JS" resource_path="models/trace/lantern/types/types.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/root-causes/root-causes.js" name="MODELS_TRACE_ROOT_CAUSES_ROOT_CAUSES_JS" resource_path="models/trace/root-causes/root-causes.js" type="BINDATA" compress="false"/>
       <include file="models/trace/trace.js" name="MODELS_TRACE_TRACE_JS" resource_path="models/trace/trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/types.js" name="MODELS_TRACE_TYPES_TYPES_JS" resource_path="models/trace/types/types.js" type="BINDATA" compress="false"/>
       <include file="models/workspace/workspace.js" name="MODELS_WORKSPACE_WORKSPACE_JS" resource_path="models/workspace/workspace.js" type="BINDATA" compress="false"/>
@@ -763,7 +762,6 @@
       <include file="ui/components/request_link_icon/request_link_icon.js" name="UI_COMPONENTS_REQUEST_LINK_ICON_REQUEST_LINK_ICON_JS" resource_path="ui/components/request_link_icon/request_link_icon.js" type="BINDATA" compress="false"/>
       <include file="ui/components/settings/settings.js" name="UI_COMPONENTS_SETTINGS_SETTINGS_JS" resource_path="ui/components/settings/settings.js" type="BINDATA" compress="false"/>
       <include file="ui/components/spinners/spinners.js" name="UI_COMPONENTS_SPINNERS_SPINNERS_JS" resource_path="ui/components/spinners/spinners.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/split_view/split_view.js" name="UI_COMPONENTS_SPLIT_VIEW_SPLIT_VIEW_JS" resource_path="ui/components/split_view/split_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/srgb_overlay/srgb_overlay.js" name="UI_COMPONENTS_SRGB_OVERLAY_SRGB_OVERLAY_JS" resource_path="ui/components/srgb_overlay/srgb_overlay.js" type="BINDATA" compress="false"/>
       <include file="ui/components/suggestion_input/suggestion_input.js" name="UI_COMPONENTS_SUGGESTION_INPUT_SUGGESTION_INPUT_JS" resource_path="ui/components/suggestion_input/suggestion_input.js" type="BINDATA" compress="false"/>
       <include file="ui/components/survey_link/survey_link.js" name="UI_COMPONENTS_SURVEY_LINK_SURVEY_LINK_JS" resource_path="ui/components/survey_link/survey_link.js" type="BINDATA" compress="false"/>
@@ -1177,8 +1175,6 @@
       <include file="models/trace/lantern/simulation/Simulator.js" name="MODELS_TRACE_LANTERN_SIMULATION_SIMULATOR_JS" resource_path="models/trace/lantern/simulation/Simulator.js" type="BINDATA" compress="false"/>
       <include file="models/trace/lantern/simulation/TCPConnection.js" name="MODELS_TRACE_LANTERN_SIMULATION_TCPCONNECTION_JS" resource_path="models/trace/lantern/simulation/TCPConnection.js" type="BINDATA" compress="false"/>
       <include file="models/trace/lantern/types/Lantern.js" name="MODELS_TRACE_LANTERN_TYPES_LANTERN_JS" resource_path="models/trace/lantern/types/Lantern.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/root-causes/LayoutShift.js" name="MODELS_TRACE_ROOT_CAUSES_LAYOUTSHIFT_JS" resource_path="models/trace/root-causes/LayoutShift.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/root-causes/RootCauses.js" name="MODELS_TRACE_ROOT_CAUSES_ROOTCAUSES_JS" resource_path="models/trace/root-causes/RootCauses.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/Configuration.js" name="MODELS_TRACE_TYPES_CONFIGURATION_JS" resource_path="models/trace/types/Configuration.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/Extensions.js" name="MODELS_TRACE_TYPES_EXTENSIONS_JS" resource_path="models/trace/types/Extensions.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/File.js" name="MODELS_TRACE_TYPES_FILE_JS" resource_path="models/trace/types/File.js" type="BINDATA" compress="false"/>
@@ -1205,6 +1201,7 @@
       <include file="panels/ai_assistance/ChangeManager.js" name="PANELS_AI_ASSISTANCE_CHANGEMANAGER_JS" resource_path="panels/ai_assistance/ChangeManager.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/EvaluateAction.js" name="PANELS_AI_ASSISTANCE_EVALUATEACTION_JS" resource_path="panels/ai_assistance/EvaluateAction.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/ExtensionScope.js" name="PANELS_AI_ASSISTANCE_EXTENSIONSCOPE_JS" resource_path="panels/ai_assistance/ExtensionScope.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/PatchWidget.js" name="PANELS_AI_ASSISTANCE_PATCHWIDGET_JS" resource_path="panels/ai_assistance/PatchWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/AiAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_AIAGENT_JS" resource_path="panels/ai_assistance/agents/AiAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/FileAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_FILEAGENT_JS" resource_path="panels/ai_assistance/agents/FileAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/NetworkAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_NETWORKAGENT_JS" resource_path="panels/ai_assistance/agents/NetworkAgent.js" type="BINDATA" compress="false"/>
@@ -1222,6 +1219,7 @@
       <include file="panels/ai_assistance/data_formatters/NetworkRequestFormatter.js" name="PANELS_AI_ASSISTANCE_DATA_FORMATTERS_NETWORKREQUESTFORMATTER_JS" resource_path="panels/ai_assistance/data_formatters/NetworkRequestFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/data_formatters/PerformanceInsightFormatter.js" name="PANELS_AI_ASSISTANCE_DATA_FORMATTERS_PERFORMANCEINSIGHTFORMATTER_JS" resource_path="panels/ai_assistance/data_formatters/PerformanceInsightFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/debug.js" name="PANELS_AI_ASSISTANCE_DEBUG_JS" resource_path="panels/ai_assistance/debug.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/injected.js" name="PANELS_AI_ASSISTANCE_INJECTED_JS" resource_path="panels/ai_assistance/injected.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationScreenshotPopover.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_JS" resource_path="panels/animation/AnimationScreenshotPopover.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationTimeline.js" name="PANELS_ANIMATION_ANIMATIONTIMELINE_JS" resource_path="panels/animation/AnimationTimeline.js" type="BINDATA" compress="false"/>
@@ -1397,6 +1395,7 @@
       <include file="panels/elements/ComputedStyleWidget.js" name="PANELS_ELEMENTS_COMPUTEDSTYLEWIDGET_JS" resource_path="panels/elements/ComputedStyleWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/DOMLinkifier.js" name="PANELS_ELEMENTS_DOMLINKIFIER_JS" resource_path="panels/elements/DOMLinkifier.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/DOMPath.js" name="PANELS_ELEMENTS_DOMPATH_JS" resource_path="panels/elements/DOMPath.js" type="BINDATA" compress="false"/>
+      <include file="panels/elements/ElementIssueUtils.js" name="PANELS_ELEMENTS_ELEMENTISSUEUTILS_JS" resource_path="panels/elements/ElementIssueUtils.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/ElementStatePaneWidget.js" name="PANELS_ELEMENTS_ELEMENTSTATEPANEWIDGET_JS" resource_path="panels/elements/ElementStatePaneWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/ElementsPanel.js" name="PANELS_ELEMENTS_ELEMENTSPANEL_JS" resource_path="panels/elements/ElementsPanel.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/ElementsSidebarPane.js" name="PANELS_ELEMENTS_ELEMENTSSIDEBARPANE_JS" resource_path="panels/elements/ElementsSidebarPane.js" type="BINDATA" compress="false"/>
@@ -2327,7 +2326,6 @@
       <include file="ui/components/settings/settingDeprecationWarning.css.js" name="UI_COMPONENTS_SETTINGS_SETTINGDEPRECATIONWARNING_CSS_JS" resource_path="ui/components/settings/settingDeprecationWarning.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/spinners/Spinner.js" name="UI_COMPONENTS_SPINNERS_SPINNER_JS" resource_path="ui/components/spinners/Spinner.js" type="BINDATA" compress="false"/>
       <include file="ui/components/spinners/spinner.css.js" name="UI_COMPONENTS_SPINNERS_SPINNER_CSS_JS" resource_path="ui/components/spinners/spinner.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/split_view/SplitView.js" name="UI_COMPONENTS_SPLIT_VIEW_SPLITVIEW_JS" resource_path="ui/components/split_view/SplitView.js" type="BINDATA" compress="false"/>
       <include file="ui/components/srgb_overlay/SrgbOverlay.js" name="UI_COMPONENTS_SRGB_OVERLAY_SRGBOVERLAY_JS" resource_path="ui/components/srgb_overlay/SrgbOverlay.js" type="BINDATA" compress="false"/>
       <include file="ui/components/srgb_overlay/srgbOverlay.css.js" name="UI_COMPONENTS_SRGB_OVERLAY_SRGBOVERLAY_CSS_JS" resource_path="ui/components/srgb_overlay/srgbOverlay.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/suggestion_input/SuggestionInput.js" name="UI_COMPONENTS_SUGGESTION_INPUT_SUGGESTIONINPUT_JS" resource_path="ui/components/suggestion_input/SuggestionInput.js" type="BINDATA" compress="false"/>

@@ -29,6 +29,10 @@ const metrics = [
     'interaction_to_next_paint',
     'round_trip_time',
     'form_factors',
+    'largest_contentful_paint_image_time_to_first_byte',
+    'largest_contentful_paint_image_resource_load_delay',
+    'largest_contentful_paint_image_resource_load_duration',
+    'largest_contentful_paint_image_element_render_delay',
 ];
 export class CrUXManager extends Common.ObjectWrapper.ObjectWrapper {
     #originCache = new Map();

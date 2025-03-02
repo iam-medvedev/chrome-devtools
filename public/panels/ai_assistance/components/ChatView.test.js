@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as i18n from '../../../core/i18n/i18n.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
@@ -18,9 +19,10 @@ describeWithEnvironment('ChatView', () => {
             onCancelClick: noop,
             onContextClick: noop,
             onNewConversation: noop,
+            onTextInputChange: noop,
             inspectElementToggled: false,
             state: "chat-view" /* AiAssistance.State.CHAT_VIEW */,
-            agentType: "freestyler" /* AiAssistance.AgentType.STYLING */,
+            conversationType: "freestyler" /* AiAssistance.ConversationType.STYLING */,
             aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             messages,
             selectedContext,
@@ -28,8 +30,12 @@ describeWithEnvironment('ChatView', () => {
             canShowFeedbackForm: false,
             userInfo: {},
             blockedByCrossOrigin: false,
-            stripLinks: false,
             isReadOnly: false,
+            isTextInputDisabled: false,
+            emptyStateSuggestions: [],
+            inputPlaceholder: i18n.i18n.lockedString('input placeholder'),
+            disclaimerText: i18n.i18n.lockedString('disclaimer text'),
+            isTextInputEmpty: true,
             ...options,
         };
     }
@@ -66,9 +72,6 @@ describeWithEnvironment('ChatView', () => {
             renderElementIntoDOM(chat);
             const optIn = chat.shadowRoot?.querySelector('.disabled-view');
             assert.strictEqual(optIn?.textContent?.trim(), 'Turn on AI assistance in Settings to get help with understanding CSS styles');
-            const chatInput = chat.shadowRoot?.querySelector('.chat-input');
-            assert.isTrue(chatInput.disabled);
-            assert.strictEqual(chatInput.placeholder, 'Follow the steps above to ask a question');
         });
         it('shows the disabled view when the AIDA is not available', async () => {
             const props = getProp({
@@ -79,9 +82,6 @@ describeWithEnvironment('ChatView', () => {
             renderElementIntoDOM(chat);
             const optIn = chat.shadowRoot?.querySelector('.disabled-view');
             assert.strictEqual(optIn?.textContent?.trim(), 'Check your internet connection and try again');
-            const chatInput = chat.shadowRoot?.querySelector('.chat-input');
-            assert.isTrue(chatInput.disabled);
-            assert.strictEqual(chatInput.placeholder, 'Ask a question about the selected element');
         });
         describe('no agent empty state', () => {
             it('should show feature cards for enabled features', () => {
@@ -100,7 +100,7 @@ describeWithEnvironment('ChatView', () => {
                     },
                 });
                 const props = getProp({
-                    agentType: undefined,
+                    conversationType: undefined,
                 });
                 const chat = new AiAssistance.ChatView(props);
                 renderElementIntoDOM(chat);
@@ -128,7 +128,7 @@ describeWithEnvironment('ChatView', () => {
                     },
                 });
                 const props = getProp({
-                    agentType: undefined,
+                    conversationType: undefined,
                 });
                 const chat = new AiAssistance.ChatView(props);
                 renderElementIntoDOM(chat);

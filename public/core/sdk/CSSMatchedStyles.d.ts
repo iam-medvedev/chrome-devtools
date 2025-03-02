@@ -77,6 +77,7 @@ export declare class CSSMatchedStyles {
     nodeForStyle(style: CSSStyleDeclaration): DOMNode | null;
     availableCSSVariables(style: CSSStyleDeclaration): string[];
     computeCSSVariable(style: CSSStyleDeclaration, variableName: string): CSSVariableValue | null;
+    resolveProperty(name: string, startingPoint: CSSStyleDeclaration): CSSProperty | null;
     resolveGlobalKeyword(property: CSSProperty, keyword: CSSWideKeyword): CSSValueSource | null;
     isInherited(style: CSSStyleDeclaration): boolean;
     propertyState(property: CSSProperty): PropertyState | null;

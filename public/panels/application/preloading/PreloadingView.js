@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import '../../../ui/components/split_view/split_view.js';
 import '../../../ui/legacy/legacy.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -223,12 +222,11 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
             ${UI.XLink.XLink.create(SPECULATION_EXPLANATION_URL, i18nString(UIStrings.learnMore), 'x-link', undefined, 'learn-more')}
           </div>
         </div>
-        <devtools-split-view .horizontal=${true} style="--min-sidebar-size: max(100vh-200px, 0px)">
-          <div slot="main" class="overflow-auto" style="height: 100%">
+        <devtools-split-view sidebar-position="second">
+          <div slot="main">
             ${this.ruleSetGrid}
           </div>
-          <div slot="sidebar" class="overflow-auto" style="height: 100%"
-          jslog=${VisualLogging.section('rule-set-details')}>
+          <div slot="sidebar" jslog=${VisualLogging.section('rule-set-details')}>
             ${this.ruleSetDetails}
           </div>
         </devtools-split-view>
@@ -268,10 +266,10 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
         this.ruleSetDetails.shouldPrettyPrint = this.shouldPrettyPrint;
         this.ruleSetDetails.data = ruleSet;
         if (ruleSet === null) {
-            this.hsplit.style.setProperty('--current-main-area-size', '100%');
+            this.hsplit.setAttribute('sidebar-visibility', 'hidden');
         }
         else {
-            this.hsplit.style.setProperty('--current-main-area-size', '60%');
+            this.hsplit.removeAttribute('sidebar-visibility');
         }
     }
     render() {

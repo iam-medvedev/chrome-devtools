@@ -7,9 +7,9 @@ import type { Target } from './Target.js';
 export declare class CSSStyleDeclaration {
     #private;
     parentRule: CSSRule | null;
-    styleSheetId: Protocol.CSS.StyleSheetId | undefined;
+    styleSheetId?: Protocol.CSS.StyleSheetId;
     range: TextUtils.TextRange.TextRange | null;
-    cssText: string | undefined;
+    cssText?: string;
     type: Type;
     constructor(cssModel: CSSModel, parentRule: CSSRule | null, payload: Protocol.CSS.CSSStyle, type: Type, animationName?: string);
     rebase(edit: Edit): void;

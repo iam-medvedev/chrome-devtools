@@ -14,10 +14,11 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, render } from '../../ui/lit/lit.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { JSONEditor } from './JSONEditor.js';
 import protocolMonitorStyles from './protocolMonitor.css.js';
+const { styleMap } = Directives;
 const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
@@ -142,17 +143,16 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
     startTime;
     messageForId = new Map();
     filterParser;
-    suggestionBuilder;
-    textFilterUI;
-    selector;
+    #filterKeys = ['method', 'request', 'response', 'target', 'session'];
     #commandAutocompleteSuggestionProvider = new CommandAutocompleteSuggestionProvider();
     #selectedTargetId;
-    #commandInput;
+    #command = '';
+    #hideInputBar = false;
     #showHideSidebarButton;
     #view;
     #messages = [];
     #selectedMessage;
-    #filters = [];
+    #filter = '';
     #splitWidget;
     constructor(splitWidget, view = (input, output, target) => {
         // clang-format off
@@ -176,20 +176,25 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                                .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
                                .jslogContext=${'protocol-monitor.save'}
                                @click=${input.onSave}></devtools-button>
-              ${input.textFilterUI.element}
+              <devtools-toolbar-input type="filter"
+                                      list="filter-suggestions"
+                                      style="flex-grow: 1"
+                                      value=${input.filter}
+                                      @change=${input.onFilterChanged}>
+                <datalist id="filter-suggestions">
+                  ${input.filterKeys.map(key => html `
+                        <option value=${key + ':'}></option>
+                        <option value=${'-' + key + ':'}></option>`)}
+                </datalist>
+              </devtools-toolbar-input>
             </devtools-toolbar>
-            <devtools-split-widget .options=${{
-            vertical: true,
-            secondIsSidebar: true,
-            settingName: 'protocol-monitor-panel-split',
-            defaultSidebarWidth: 250
-        }}>
+            <devtools-split-view direction="column" sidebar-position="second" name="protocol-monitor-panel-split" sidebar-initial-size="250">
               <devtools-data-grid
                   striped
                   slot="main"
                   @select=${input.onSelect}
                   @contextmenu=${input.onContextMenu}
-                  .filters=${input.filters}>
+                  .filters=${input.parseFilter(input.filter)}>
                 <table>
                     <tr>
                       <th id="type" sortable style="text-align: center" hideable weight="1">${i18nString(UIStrings.type)}</th>
@@ -240,12 +245,36 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         })}
                   class="protocol-monitor-info"
                   slot="sidebar"></devtools-widget>
-            </devtools-split-widget>
+            </devtools-split-view>
             <devtools-toolbar class="protocol-monitor-bottom-toolbar"
                jslog=${VisualLogging.toolbar('bottom')}>
               ${input.showHideSidebarButton.element}
-              ${input.commandInput.element}
-              ${input.selector.element}
+              <devtools-toolbar-input id="command-input"
+                                      style=${styleMap({
+            'flex-grow': 1,
+            display: input.hideInputBar ? 'none' : 'flex'
+        })}
+                                      value=${input.command}
+                                      list="command-input-suggestions"
+                                      placeholder=${i18nString(UIStrings.sendRawCDPCommand)}
+                                      title=${i18nString(UIStrings.sendRawCDPCommandExplanation)}
+                                      @change=${input.onCommandChange}
+                                      @submit=${input.onCommandSubmitted}>
+                <datalist id="command-input-suggestions">
+                  ${input.commandSuggestions.map(c => html `<option value=${c}></option>`)}
+                </datalist>
+              </devtools-toolbar-input>
+              <select class="target-selector"
+                      title=${i18nString(UIStrings.selectTarget)}
+                      style=${styleMap({ display: input.hideInputBar ? 'none' : 'flex' })}
+                      jslog=${VisualLogging.dropDown('target-selector').track({ change: true })}
+                      @change=${input.onTargetChange}>
+                ${input.targets.map(target => html `
+                  <option jslog=${VisualLogging.item('target').track({ click: true })}
+                          value=${target.id()} ?selected=${target.id() === input.selectedTargetId}>
+                    ${target.name()} (${target.inspectedURL()})
+                  </option>`)}
+              </select>
             </devtools-toolbar>`, target, { host: input });
         // clang-format on
     }) {
@@ -255,58 +284,52 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
         this.started = false;
         this.startTime = 0;
         this.contentElement.classList.add('protocol-monitor');
-        this.selector = this.#createTargetSelector();
-        const keys = ['method', 'request', 'response', 'type', 'target', 'session'];
-        this.filterParser = new TextUtils.TextUtils.FilterParser(keys);
-        this.suggestionBuilder = new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(keys);
-        this.textFilterUI = new UI.Toolbar.ToolbarFilter(undefined, 1, .2, '', this.suggestionBuilder.completions.bind(this.suggestionBuilder), true);
-        this.textFilterUI.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, event => {
-            const query = event.data;
-            this.#filters = this.filterParser.parse(query);
-            this.requestUpdate();
-        });
+        this.#filterKeys = ['method', 'request', 'response', 'type', 'target', 'session'];
+        this.filterParser = new TextUtils.TextUtils.FilterParser(this.#filterKeys);
         this.#showHideSidebarButton = splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showCDPCommandEditor), i18nString(UIStrings.hideCDPCommandEditor), i18nString(UIStrings.CDPCommandEditorShown), i18nString(UIStrings.CDPCommandEditorHidden), 'protocol-monitor.toggle-command-editor');
-        this.#commandInput = this.#createCommandInput();
-        const inputBar = this.#commandInput.element;
-        const tabSelector = this.selector.element;
         const populateToolbarInput = () => {
             const editorWidget = splitWidget.sidebarWidget();
-            if (!(editorWidget instanceof EditorWidget)) {
+            if (!(editorWidget instanceof JSONEditor)) {
                 return;
             }
-            const commandJson = editorWidget.jsonEditor.getCommandJson();
-            const targetId = editorWidget.jsonEditor.targetId;
+            const commandJson = editorWidget.getCommandJson();
+            const targetId = editorWidget.targetId;
             if (targetId) {
-                const selectedIndex = this.selector.options().findIndex(option => option.value === targetId);
-                if (selectedIndex !== -1) {
-                    this.selector.setSelectedIndex(selectedIndex);
-                    this.#selectedTargetId = targetId;
-                }
+                this.#selectedTargetId = targetId;
             }
             if (commandJson) {
-                this.#commandInput.setValue(commandJson);
+                this.#command = commandJson;
+                this.requestUpdate();
             }
         };
         splitWidget.addEventListener("ShowModeChanged" /* UI.SplitWidget.Events.SHOW_MODE_CHANGED */, (event => {
             if (event.data === 'OnlyMain') {
                 populateToolbarInput();
-                inputBar?.setAttribute('style', 'display:flex; flex-grow: 1');
-                tabSelector?.setAttribute('style', 'display:flex');
+                this.#hideInputBar = false;
             }
             else {
-                const { command, parameters } = parseCommandInput(this.#commandInput.value());
+                const { command, parameters } = parseCommandInput(this.#command);
                 this.dispatchEventToListeners("CommandChange" /* Events.COMMAND_CHANGE */, { command, parameters, targetId: this.#selectedTargetId });
-                inputBar?.setAttribute('style', 'display:none');
-                tabSelector?.setAttribute('style', 'display:none');
+                this.#hideInputBar = true;
             }
+            this.requestUpdate();
         }));
+        this.#selectedTargetId = 'main';
         this.performUpdate();
+        SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, () => {
+            this.requestUpdate();
+        });
     }
     performUpdate() {
         const viewInput = {
             messages: this.#messages,
             selectedMessage: this.#selectedMessage,
-            filters: this.#filters,
+            hideInputBar: this.#hideInputBar,
+            command: this.#command,
+            commandSuggestions: this.#commandAutocompleteSuggestionProvider.allSuggestions(),
+            filterKeys: this.#filterKeys,
+            filter: this.#filter,
+            parseFilter: this.filterParser.parse.bind(this.filterParser),
             onRecord: (e) => {
                 this.setRecording(e.target.toggled);
             },
@@ -329,10 +352,26 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
                     this.#populateContextMenu(e.detail.menu, message);
                 }
             },
-            textFilterUI: this.textFilterUI,
+            onCommandChange: (e) => {
+                this.#command = e.detail;
+            },
+            onCommandSubmitted: (e) => {
+                this.#commandAutocompleteSuggestionProvider.addEntry(e.detail);
+                const { command, parameters } = parseCommandInput(e.detail);
+                this.onCommandSend(command, parameters, this.#selectedTargetId);
+            },
+            onFilterChanged: (e) => {
+                this.#filter = e.detail;
+                this.requestUpdate();
+            },
+            onTargetChange: (e) => {
+                if (e.target instanceof HTMLSelectElement) {
+                    this.#selectedTargetId = e.target.value;
+                }
+            },
             showHideSidebarButton: this.#showHideSidebarButton,
-            commandInput: this.#commandInput,
-            selector: this.selector,
+            targets: SDK.TargetManager.TargetManager.instance().targets(),
+            selectedTargetId: this.#selectedTargetId,
         };
         const viewOutput = {};
         this.#view(viewInput, viewOutput, this.contentElement);
@@ -360,7 +399,8 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
          * current row.
          */
         menu.editSection().appendItem(i18nString(UIStrings.filter), () => {
-            this.textFilterUI.setValue(`method:${message.method}`, true);
+            this.#filter = `method:${message.method}`;
+            this.requestUpdate();
         }, { jslogContext: 'filter' });
         /**
          * You can click the "Documentation" item in the context menu to be
@@ -371,36 +411,6 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
             const type = 'id' in message ? 'method' : 'event';
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(`https://chromedevtools.github.io/devtools-protocol/tot/${domain}#${type}-${method}`);
         }, { jslogContext: 'documentation' });
-    }
-    #createCommandInput() {
-        const placeholder = i18nString(UIStrings.sendRawCDPCommand);
-        const accessiblePlaceholder = placeholder;
-        const growFactor = 1;
-        const shrinkFactor = 0.2;
-        const tooltip = i18nString(UIStrings.sendRawCDPCommandExplanation);
-        const input = new UI.Toolbar.ToolbarInput(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, this.#commandAutocompleteSuggestionProvider.buildTextPromptCompletions, false, 'command-input');
-        input.addEventListener("EnterPressed" /* UI.Toolbar.ToolbarInput.Event.ENTER_PRESSED */, () => {
-            this.#commandAutocompleteSuggestionProvider.addEntry(input.value());
-            const { command, parameters } = parseCommandInput(input.value());
-            this.onCommandSend(command, parameters, this.#selectedTargetId);
-        });
-        return input;
-    }
-    #createTargetSelector() {
-        const selector = new UI.Toolbar.ToolbarComboBox(() => {
-            this.#selectedTargetId = selector.selectedOption()?.value;
-        }, i18nString(UIStrings.selectTarget), undefined, 'target-selector');
-        selector.setMaxWidth(120);
-        const targetManager = SDK.TargetManager.TargetManager.instance();
-        const syncTargets = () => {
-            selector.removeOptions();
-            for (const target of targetManager.targets()) {
-                selector.createOption(`${target.name()} (${target.inspectedURL()})`, target.id(), 'target');
-            }
-        };
-        targetManager.addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, syncTargets);
-        syncTargets();
-        return selector;
     }
     onCommandSend(command, parameters, target) {
         const test = ProtocolClient.InspectorBackend.test;
@@ -490,7 +500,7 @@ export class ProtocolMonitorDataGrid extends Common.ObjectWrapper.eventMixin(UI.
 }
 export class ProtocolMonitorImpl extends UI.Widget.VBox {
     #split;
-    #editorWidget = new EditorWidget();
+    #editorWidget = new JSONEditor(metadataByCommand, typesByName, enumsByName);
     #protocolMonitorDataGrid;
     // This width corresponds to the optimal width to use the editor properly
     // It is randomly chosen
@@ -503,13 +513,13 @@ export class ProtocolMonitorImpl extends UI.Widget.VBox {
         this.#split.show(this.contentElement);
         this.#protocolMonitorDataGrid = new ProtocolMonitorDataGrid(this.#split);
         this.#protocolMonitorDataGrid.addEventListener("CommandChange" /* Events.COMMAND_CHANGE */, event => {
-            this.#editorWidget.jsonEditor.displayCommand(event.data.command, event.data.parameters, event.data.targetId);
+            this.#editorWidget.displayCommand(event.data.command, event.data.parameters, event.data.targetId);
         });
         this.#editorWidget.element.style.overflow = 'hidden';
         this.#split.setMainWidget(this.#protocolMonitorDataGrid);
         this.#split.setSidebarWidget(this.#editorWidget);
         this.#split.hideSidebar(true);
-        this.#editorWidget.addEventListener("CommandSent" /* Events.COMMAND_SENT */, event => {
+        this.#editorWidget.addEventListener("submiteditor" /* JSONEditorEvents.SUBMIT_EDITOR */, event => {
             this.#protocolMonitorDataGrid.onCommandSend(event.data.command, event.data.parameters, event.data.targetId);
         });
     }
@@ -522,12 +532,16 @@ export class CommandAutocompleteSuggestionProvider {
             this.#maxHistorySize = maxHistorySize;
         }
     }
+    allSuggestions() {
+        const newestToOldest = [...this.#commandHistory].reverse();
+        newestToOldest.push(...metadataByCommand.keys());
+        return newestToOldest;
+    }
     buildTextPromptCompletions = async (expression, prefix, force) => {
         if (!prefix && !force && expression) {
             return [];
         }
-        const newestToOldest = [...this.#commandHistory].reverse();
-        newestToOldest.push(...metadataByCommand.keys());
+        const newestToOldest = this.allSuggestions();
         return newestToOldest.filter(cmd => cmd.startsWith(prefix)).map(text => ({
             text,
         }));
@@ -574,16 +588,6 @@ export class InfoWidget extends UI.Widget.VBox {
         if (this.selectedTab) {
             this.tabbedPane.selectTab(this.selectedTab);
         }
-    }
-}
-export class EditorWidget extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    jsonEditor;
-    constructor() {
-        super();
-        this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor').track({ resize: true })}`);
-        this.jsonEditor = new JSONEditor(metadataByCommand, typesByName, enumsByName);
-        this.jsonEditor.show(this.element);
-        this.jsonEditor.addEventListener("submiteditor" /* JSONEditorEvents.SUBMIT_EDITOR */, ({ data }) => this.dispatchEventToListeners("CommandSent" /* Events.COMMAND_SENT */, data));
     }
 }
 export function parseCommandInput(input) {

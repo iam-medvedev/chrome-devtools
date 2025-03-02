@@ -6,20 +6,16 @@ export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineT
     #private;
     protected autoSelectFirstChildOnRefresh: boolean;
     constructor();
-    wasShown(): void;
-    childWasDetached(_widget: UI.Widget.Widget): void;
     buildTree(): Trace.Extras.TraceTree.Node;
     /**
      * Third party tree view doesn't require the select feature, as this expands the node.
      */
     selectProfileNode(): void;
-    protected groupingFunction(): ((arg0: Trace.Types.Events.Event) => string) | null;
-    private domainByEvent;
+    private groupingFunction;
     populateColumns(columns: DataGrid.DataGrid.ColumnDescriptor[]): void;
     populateToolbar(): void;
     private compareTransferSize;
     sortingChanged(): void;
-    onHover(node: Trace.Extras.TraceTree.Node | null): void;
     displayInfoForGroupNode(node: Trace.Extras.TraceTree.Node): {
         name: string;
         color: string;

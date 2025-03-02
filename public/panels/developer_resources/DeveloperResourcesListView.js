@@ -28,6 +28,10 @@ const UIStrings = {
      */
     totalBytes: 'Total Bytes',
     /**
+     * @description Column header. The column contains the time it took to load a resource.
+     */
+    duration: 'Duration',
+    /**
      *@description Text for errors
      */
     error: 'Error',
@@ -93,6 +97,9 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
                   <th id="size" sortable fixed width="80px" align="right">
                     ${i18nString(UIStrings.totalBytes)}
                   </th>
+                  <th id="duration" sortable fixed width="80px" align="right">
+                    ${i18nString(UIStrings.duration)}
+                  </th>
                   <th id="error-message" sortable width="200px">
                     ${i18nString(UIStrings.error)}
                   </th>
@@ -116,6 +123,8 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
                     >${item.initiator.initiatorUrl || ''}</td>
                     <td aria-label=${item.size !== null ? i18nString(UIStrings.sBytes, { n: item.size }) : nothing}
                         data-value=${item.size ?? nothing}>${item.size !== null ? html `<span>${withThousandsSeparator(item.size)}</span>` : ''}</td>
+                    <td aria-label=${item.duration !== null ? i18n.TimeUtilities.millisToString(item.duration) : nothing}
+                        data-value=${item.duration ?? nothing}>${item.duration !== null ? html `<span>${i18n.TimeUtilities.millisToString(item.duration)}</span>` : ''}</td>
                     <td class="error-message">${(() => {
             const cell = document.createElement('span');
             if (item.errorMessage) {

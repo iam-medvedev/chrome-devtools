@@ -25,16 +25,37 @@ export function getMatchedStylesWithStylesheet(cssModel, origin, styleSheetId, h
 export function getMatchedStylesWithBlankRule(cssModel, selector = 'div', range = undefined, origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, styleSheetId = '0', payload = {}) {
     return getMatchedStylesWithProperties(cssModel, {}, selector, range, origin, styleSheetId, payload);
 }
-export function getMatchedStylesWithProperties(cssModel, properties, selector = 'div', range = undefined, origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, styleSheetId = '0', payload = {}) {
+export function createCSSStyle(cssProperties, range, styleSheetId = '0') {
+    return {
+        cssProperties,
+        styleSheetId,
+        range,
+        shorthandEntries: [],
+    };
+}
+function getSimpleList(selector) {
+    return {
+        selectors: [{ text: selector }],
+        text: selector,
+    };
+}
+export function ruleMatch(selectorOrList, properties, options = {}) {
+    const { range, origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, styleSheetId, matchingSelectorsIndexes, nestingSelectors, } = options;
     const cssProperties = Array.isArray(properties) ? properties : Object.keys(properties).map(name => ({ name, value: properties[name] }));
-    const matchedPayload = [{
-            rule: {
-                selectorList: { selectors: [{ text: selector }], text: selector },
-                origin,
-                style: { styleSheetId, range, cssProperties, shorthandEntries: [] },
-            },
-            matchingSelectors: [0],
-        }];
+    const selectorList = typeof selectorOrList === 'string' ? getSimpleList(selectorOrList) : selectorOrList;
+    const matchingSelectors = matchingSelectorsIndexes ?? selectorList.selectors.map((_, index) => index);
+    return {
+        rule: {
+            nestingSelectors,
+            selectorList,
+            origin,
+            style: createCSSStyle(cssProperties, range, styleSheetId),
+        },
+        matchingSelectors,
+    };
+}
+export function getMatchedStylesWithProperties(cssModel, properties, selector = 'div', range = undefined, origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, styleSheetId = '0', payload = {}) {
+    const matchedPayload = [ruleMatch(selector, properties, { range, origin, styleSheetId })];
     return getMatchedStylesWithStylesheet(cssModel, origin, styleSheetId, {}, { matchedPayload, ...payload });
 }
 export function getMatchedStyles(payload = {}) {

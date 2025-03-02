@@ -70,10 +70,12 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     constructor(ast: SyntaxTree, matchers: Array<Matcher<Match>>);
     protected leave({ node }: SyntaxNodeRef): void;
     matchText(node: CodeMirror.SyntaxNode): void;
+    hasMatches(...matchTypes: Array<Constructor<Match>>): boolean;
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
     hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
     hasUnresolvedVarsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;
     getComputedText(node: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
+    getComputedPropertyValueText(): string;
     getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
 }
 export declare class ComputedText {
@@ -99,6 +101,10 @@ export type CSSControlMap = Map<string, HTMLElement[]>;
 export declare namespace ASTUtils {
     function siblings(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[];
     function children(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[];
+    function range(node: CodeMirror.SyntaxNode[]): [
+        CodeMirror.SyntaxNode,
+        CodeMirror.SyntaxNode
+    ] | [undefined, undefined];
     function declValue(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode | null;
     function stripComments(nodes: CodeMirror.SyntaxNode[]): Generator<CodeMirror.SyntaxNode>;
     function split(nodes: CodeMirror.SyntaxNode[]): CodeMirror.SyntaxNode[][];

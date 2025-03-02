@@ -8,7 +8,7 @@ import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { cssMetadata, GridAreaRowRegex } from './CSSMetadata.js';
 import { matchDeclaration, stripComments } from './CSSPropertyParser.js';
-import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BezierMatcher, ColorMatcher, ColorMixMatcher, CSSWideKeywordMatcher, FlexGridMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, PositionAnchorMatcher, PositionTryMatcher, SelectFunctionMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, CSSWideKeywordMatcher, FlexGridMatcher, FontMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
     ownerStyle;
     index;
@@ -80,7 +80,7 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
             new StringMatcher(),
             new ShadowMatcher(),
             new CSSWideKeywordMatcher(this, matchedStyles),
-            new LightDarkColorMatcher(),
+            new LightDarkColorMatcher(this),
             new GridTemplateMatcher(),
             new LinearGradientMatcher(),
             new AnchorFunctionMatcher(),
@@ -88,8 +88,9 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
             new FlexGridMatcher(),
             new PositionTryMatcher(),
             new LengthMatcher(),
-            new SelectFunctionMatcher(),
+            new MathFunctionMatcher(),
             new AutoBaseMatcher(),
+            new BinOpMatcher(),
         ];
         if (Root.Runtime.experiments.isEnabled('font-editor')) {
             matchers.push(new FontMatcher());

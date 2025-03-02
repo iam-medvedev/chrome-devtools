@@ -54,6 +54,10 @@ export default {
 .tabbed-pane-placeholder {
   text-align: center;
   align-content: center;
+
+  .sources-placeholder {
+    display: inline-block;
+  }
 }
 
 .tabbed-pane-placeholder-row {

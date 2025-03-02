@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/components/icon_button/icon_button.js';
-import '../../../ui/components/split_view/split_view.js';
 import './ExtensionView.js';
 import './ControlButton.js';
 import './ReplaySection.js';
@@ -688,7 +687,7 @@ export class RecordingView extends HTMLElement {
         return !this.#showCodeView
             ? this.#renderSections()
             : html `
-        <devtools-split-view>
+        <devtools-split-view direction="column" sidebar-position="second">
           <div slot="main">
             ${this.#renderSections()}
           </div>

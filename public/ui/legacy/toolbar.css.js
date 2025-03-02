@@ -45,6 +45,10 @@ slot {
   height: var(--toolbar-height);
 }
 
+devtools-toolbar-input {
+  display: flex;
+}
+
 /*# sourceURL=${import.meta.resolve('./toolbar.css')} */
 `
 };

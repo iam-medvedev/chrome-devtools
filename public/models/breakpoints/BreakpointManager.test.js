@@ -1183,9 +1183,8 @@ describeWithMockConnection('BreakpointManager', () => {
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
             const fileSystemPath = urlString `file://path/to/overrides`;
             const fielSystemFileUrl = urlString `${fileSystemPath + '/site/script.js'}`;
-            const type = 'overrides';
             const content = '';
-            await testBreakpointMovedOnInstrumentationBreak(fileSystemPath, fielSystemFileUrl, content, type);
+            await testBreakpointMovedOnInstrumentationBreak(fileSystemPath, fielSystemFileUrl, content, Persistence.PlatformFileSystem.PlatformFileSystemType.OVERRIDES);
         });
     });
     it('removes breakpoints that resolve to the same uiLocation as a previous breakpoint', async () => {

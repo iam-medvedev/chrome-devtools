@@ -86,9 +86,12 @@ export class TimelineController {
             Trace.Types.Events.Categories.Loading,
             Trace.Types.Events.Categories.UserTiming,
             'devtools.timeline',
-            disabledByDefault('devtools.timeline'),
+            disabledByDefault('devtools.target-rundown'),
             disabledByDefault('devtools.timeline.frame'),
             disabledByDefault('devtools.timeline.stack'),
+            disabledByDefault('devtools.timeline'),
+            disabledByDefault('devtools.v8-source-rundown-sources'),
+            disabledByDefault('devtools.v8-source-rundown'),
             disabledByDefault('v8.compile'),
             disabledByDefault('v8.inspector'),
             disabledByDefault('v8.cpu_profiler.hires'),
@@ -115,13 +118,6 @@ export class TimelineController {
         }
         if (options.captureSelectorStats) {
             categoriesArray.push(disabledByDefault('blink.debug'));
-        }
-        if (Root.Runtime.experiments.isEnabled('timeline-enhanced-traces')) {
-            categoriesArray.push(disabledByDefault('devtools.target-rundown'));
-            categoriesArray.push(disabledByDefault('devtools.v8-source-rundown'));
-        }
-        if (Root.Runtime.experiments.isEnabled('timeline-compiled-sources')) {
-            categoriesArray.push(disabledByDefault('devtools.v8-source-rundown-sources'));
         }
         await LiveMetrics.LiveMetrics.instance().disable();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.FrameNavigated, this.#onFrameNavigated, this);
@@ -154,12 +150,20 @@ export class TimelineController {
         const optionDuringRecording = throttlingManager.cpuThrottlingOption();
         throttlingManager.setCPUThrottlingOption(SDK.CPUThrottlingManager.NoThrottlingOption);
         this.client.loadingStarted();
-        const [fieldData] = await Promise.all([
+        // Give `TimelinePanel.#executeNewTrace` a chance to retain source maps from SDK.SourceMap.SourceMapManager.
+        SDK.SourceMap.SourceMap.retainRawSourceMaps = true;
+        const [fieldData] = await Promise
+            .all([
             this.fetchFieldData(),
             // TODO(crbug.com/366072294): Report the progress of this resumption, as it can be lengthy on heavy pages.
             SDK.TargetManager.TargetManager.instance().resumeAllTargets(),
             this.waitForTracingToStop(),
-        ]);
+        ])
+            .catch(e => {
+            // Normally set false in allSourcesFinished, but just in case something fails, catch it here.
+            SDK.SourceMap.SourceMap.retainRawSourceMaps = false;
+            throw e;
+        });
         this.#fieldData = fieldData;
         // Now we re-enable throttling again to maintain the setting being persistent.
         throttlingManager.setCPUThrottlingOption(optionDuringRecording);
@@ -235,6 +239,7 @@ export class TimelineController {
         const metadata = await this.createMetadata();
         await this.client.loadingComplete(this.#collectedEvents, /* exclusiveFilter= */ null, metadata);
         this.client.loadingCompleteForTest();
+        SDK.SourceMap.SourceMap.retainRawSourceMaps = false;
     }
     tracingBufferUsage(usage) {
         this.client.recordingProgress(usage);

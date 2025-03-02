@@ -1,10 +1,12 @@
-import type { HydratingDataPerTarget } from './RehydratingObject.js';
+import type { HydratingDataPerTarget, TraceFile } from './RehydratingObject.js';
 export declare class EnhancedTracesParser {
     #private;
     static readonly enhancedTraceVersion: number;
-    constructor(traceEvents: unknown[]);
-    parseEnhancedTrace(traceEvents: unknown[]): void;
+    constructor(trace: TraceFile);
+    parseEnhancedTrace(): void;
     data(): HydratingDataPerTarget;
+    private getEncodedSourceMapUrl;
+    private getSourceMapFromMetadata;
     private getScriptIsolateId;
     private isTraceEvent;
     private isTargetRundownEvent;

@@ -54,9 +54,16 @@ export default {
   opacity: 60%;
 }
 
-:host(:hover:not(.prevents-close)) .menu-item,
-:host(:focus-visible:not(.prevents-close)) .menu-item {
-  background: var(--sys-color-state-hover-on-subtle);
+:host(:hover:not(.prevents-close)) .menu-item::after,
+:host(:focus-visible:not(.prevents-close)) .menu-item::after {
+  content: "";
+  height: 100%;
+  width: calc(100% + 2* var(--sys-size-8));
+  border-radius: inherit;
+  position: absolute;
+  top: 0;
+  left: calc(-1 * var(--sys-size-8));
+  background-color: var(--sys-color-state-hover-on-subtle);
 }
 
 :host(:focus) {

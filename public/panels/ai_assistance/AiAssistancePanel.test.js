@@ -6,13 +6,12 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { createAiAssistancePanel, createNetworkRequest, detachPanels, mockAidaClient } from '../../testing/AiAssistanceHelpers.js';
+import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
 import { findMenuItemWithLabel, getMenu } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
-import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from '../elements/elements.js';
 import * as Network from '../network/network.js';
@@ -34,7 +33,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, null);
     });
     afterEach(() => {
-        detachPanels();
+        cleanup();
     });
     describe('consent view', () => {
         it('should render consent view when the consent is not given before', async () => {
@@ -76,11 +75,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
         });
         it('updates when the user logs in', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-            const { initialViewInput, expectViewUpdate } = await createAiAssistancePanel({ aidaAvailability: "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */ });
+            const { initialViewInput, expectViewUpdate, stubAidaCheckAccessPreconditions } = await createAiAssistancePanel({ aidaAvailability: "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */ });
             assert.strictEqual(initialViewInput.state, "chat-view" /* AiAssistance.State.CHAT_VIEW */);
             assert.strictEqual(initialViewInput.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
-            sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions')
-                .returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
+            stubAidaCheckAccessPreconditions("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             const updatedViewInput = await expectViewUpdate(() => {
                 Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
             });
@@ -380,7 +378,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 updatedViewInputAfterMessage.onNewChatClick();
             });
             assert.deepEqual(updatedViewInputAfterNewChat.messages, []);
-            assert.deepEqual(updatedViewInputAfterNewChat.agentType, "freestyler" /* AiAssistance.AgentType.STYLING */);
+            assert.deepEqual(updatedViewInputAfterNewChat.conversationType, "freestyler" /* AiAssistance.ConversationType.STYLING */);
         });
         it('should select the performance insights agent if it is enabled', async () => {
             updateHostConfig({
@@ -415,7 +413,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 updatedViewInputAfterMessage.onNewChatClick();
             });
             assert.deepEqual(updatedViewInputAfterNewChat.messages, []);
-            assert.deepEqual(updatedViewInputAfterNewChat.agentType, "performance-insight" /* AiAssistance.AgentType.PERFORMANCE_INSIGHT */);
+            assert.deepEqual(updatedViewInputAfterNewChat.conversationType, "performance-insight" /* AiAssistance.ConversationType.PERFORMANCE_INSIGHT */);
         });
         it('should select the Dr Jones performance agent if insights are not enabled', async () => {
             updateHostConfig({
@@ -450,7 +448,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 updatedViewInputAfterMessage.onNewChatClick();
             });
             assert.deepEqual(updatedViewInputAfterNewChat.messages, []);
-            assert.deepEqual(updatedViewInputAfterNewChat.agentType, "drjones-performance" /* AiAssistance.AgentType.PERFORMANCE */);
+            assert.deepEqual(updatedViewInputAfterNewChat.conversationType, "drjones-performance" /* AiAssistance.ConversationType.PERFORMANCE */);
         });
         it('should switch agents and restore history', async () => {
             updateHostConfig({
@@ -545,9 +543,51 @@ describeWithMockConnection('AI Assistance Panel', () => {
             sinon.assert.calledWith(addHistoryItemStub, sinon.match({ type: 'answer', text: 'partially started and now it\'s finished' }));
             sinon.assert.neverCalledWith(addHistoryItemStub, sinon.match({ type: 'answer', text: 'partially started' }));
         });
+        it('should switch agents and restore history and allow a single delete', async () => {
+            updateHostConfig({
+                devToolsFreestyler: {
+                    enabled: true,
+                },
+            });
+            const { panel, expectViewUpdate } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([
+                    [{ explanation: 'test' }],
+                    [{ explanation: 'test2' }],
+                ]),
+            });
+            const updateViewInput = await expectViewUpdate(() => {
+                panel.handleAction('freestyler.elements-floating-button');
+            });
+            await expectViewUpdate(() => {
+                updateViewInput.onTextSubmit('User question to Freestyler?');
+            });
+            const updatedViewInputAfterSwitchToNetwork = await expectViewUpdate(() => {
+                panel.handleAction('drjones.network-floating-button');
+            });
+            await expectViewUpdate(() => {
+                updatedViewInputAfterSwitchToNetwork.onTextSubmit('User question to DrJones?');
+            });
+            const { contextMenu, id } = openHistoryContextMenu(updatedViewInputAfterSwitchToNetwork, 'User question to Freestyler?');
+            assert.isDefined(id);
+            const updatedViewInput = await expectViewUpdate(() => {
+                contextMenu.invokeHandler(id);
+            });
+            const stub = sinon.createStubInstance(AiAssistance.AiHistoryStorage);
+            sinon.stub(AiAssistance.AiHistoryStorage, 'instance').returns(stub);
+            const updateDeleteSingle = await expectViewUpdate(() => {
+                updatedViewInput.onDeleteClick();
+            });
+            assert.deepEqual(updateDeleteSingle.messages, []);
+            assert.strictEqual(stub.deleteHistoryEntry.callCount, 1);
+            assert.isString(stub.deleteHistoryEntry.lastCall.args[0]);
+            const menuAfterDelete = openHistoryContextMenu(updatedViewInputAfterSwitchToNetwork, 'User question to Freestyler?');
+            assert.isUndefined(menuAfterDelete.id);
+        });
     });
     it('should have empty state after clear chat', async () => {
-        const { panel, expectViewUpdate } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+        const { panel, expectViewUpdate } = await createAiAssistancePanel({
+            aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+        });
         const updatedViewInput = await expectViewUpdate(() => {
             panel.handleAction('freestyler.elements-floating-button');
         });
@@ -572,7 +612,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             updatedViewInputAfterMessage.onDeleteClick();
         });
         assert.deepEqual(updatedViewInputAfterDelete.messages, []);
-        assert.isUndefined(updatedViewInputAfterDelete.agentType);
+        assert.isUndefined(updatedViewInputAfterDelete.conversationType);
     });
     it('should select default agent based on open panel after clearing the chat', async () => {
         updateHostConfig({
@@ -606,7 +646,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             updatedViewInputAfterMessage.onDeleteClick();
         });
         assert.deepEqual(updatedViewInputAfterDelete.messages, []);
-        assert.deepEqual(updatedViewInputAfterDelete.agentType, "freestyler" /* AiAssistance.AgentType.STYLING */);
+        assert.deepEqual(updatedViewInputAfterDelete.conversationType, "freestyler" /* AiAssistance.ConversationType.STYLING */);
     });
     it('should have empty state after clear chat history', async () => {
         const { panel, expectViewUpdate } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }]]) });
@@ -659,7 +699,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             contextMenu.invokeHandler(clearAll.id());
         });
         assert.deepEqual(updatedViewInputAfterClearAll.messages, []);
-        assert.isUndefined(updatedViewInputAfterClearAll.agentType);
+        assert.isUndefined(updatedViewInputAfterClearAll.conversationType);
         contextMenu.discard();
         contextMenu = getMenu(() => {
             updatedViewInputAfterClearAll.onHistoryClick(new MouseEvent('click'));
@@ -767,32 +807,66 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 },
             ]);
         });
+        it('blocks input on cross origin request, when the selected context is changed while the panel was hidden', async () => {
+            const networkRequest = createNetworkRequest({
+                url: urlString `https://a.test`,
+            });
+            UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
+            const { panel, expectViewUpdate } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([
+                    [{ explanation: 'test' }],
+                ])
+            });
+            const updatedViewInput = await expectViewUpdate(() => {
+                panel.handleAction('drjones.network-floating-button');
+            });
+            assert.isFalse(updatedViewInput.blockedByCrossOrigin);
+            assert.strictEqual(updatedViewInput.selectedContext?.getItem(), networkRequest);
+            // Send a query for https://a.test.
+            await expectViewUpdate(() => {
+                panel.handleAction('drjones.network-floating-button');
+                updatedViewInput.onTextSubmit('test');
+            });
+            // Hide the panel
+            panel.hideWidget();
+            // Change context to https://b.test.
+            const networkRequest2 = createNetworkRequest({
+                url: urlString `https://b.test`,
+            });
+            UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
+            // Show the widget again
+            const updatedViewInputWithCrossOriginContext = await expectViewUpdate(() => {
+                panel.showWidget();
+            });
+            assert.isTrue(updatedViewInputWithCrossOriginContext.blockedByCrossOrigin);
+            assert.strictEqual(updatedViewInputWithCrossOriginContext.selectedContext?.getItem(), networkRequest2);
+        });
     });
     describe('auto agent selection for panels', () => {
         const tests = [
             {
                 panel: Elements.ElementsPanel.ElementsPanel,
-                expectedAgentType: "freestyler" /* AiAssistance.AgentType.STYLING */,
+                expectedConversationType: "freestyler" /* AiAssistance.ConversationType.STYLING */,
                 featureFlagName: 'devToolsFreestyler',
             },
             {
                 panel: Network.NetworkPanel.NetworkPanel,
-                expectedAgentType: "drjones-network-request" /* AiAssistance.AgentType.NETWORK */,
+                expectedConversationType: "drjones-network-request" /* AiAssistance.ConversationType.NETWORK */,
                 featureFlagName: 'devToolsAiAssistanceNetworkAgent',
             },
             {
                 panel: Sources.SourcesPanel.SourcesPanel,
-                expectedAgentType: "drjones-file" /* AiAssistance.AgentType.FILE */,
+                expectedConversationType: "drjones-file" /* AiAssistance.ConversationType.FILE */,
                 featureFlagName: 'devToolsAiAssistanceFileAgent',
             },
             {
                 panel: Timeline.TimelinePanel.TimelinePanel,
-                expectedAgentType: "drjones-performance" /* AiAssistance.AgentType.PERFORMANCE */,
+                expectedConversationType: "drjones-performance" /* AiAssistance.ConversationType.PERFORMANCE */,
                 featureFlagName: 'devToolsAiAssistancePerformanceAgent',
             }
         ];
         for (const test of tests) {
-            it(`should select ${test.expectedAgentType} conversation when the panel ${test.panel.name} is opened`, async () => {
+            it(`should select ${test.expectedConversationType} conversation when the panel ${test.panel.name} is opened`, async () => {
                 updateHostConfig({
                     [test.featureFlagName]: {
                         enabled: true,
@@ -802,7 +876,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 const { initialViewInput } = await createAiAssistancePanel({
                     aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
                 });
-                assert.strictEqual(initialViewInput.agentType, test.expectedAgentType);
+                assert.strictEqual(initialViewInput.conversationType, test.expectedConversationType);
             });
             it(`should reset the conversation when ${test.panel.name} is closed and no other panels are open`, async () => {
                 updateHostConfig({
@@ -812,11 +886,11 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 });
                 UI.Context.Context.instance().setFlavor(test.panel, sinon.createStubInstance(test.panel));
                 const { initialViewInput, expectViewUpdate } = await createAiAssistancePanel();
-                assert.strictEqual(initialViewInput.agentType, test.expectedAgentType);
+                assert.strictEqual(initialViewInput.conversationType, test.expectedConversationType);
                 const updatedViewInput = await expectViewUpdate(() => {
                     UI.Context.Context.instance().setFlavor(test.panel, null);
                 });
-                assert.isUndefined(updatedViewInput.agentType);
+                assert.isUndefined(updatedViewInput.conversationType);
             });
             it(`should render no conversation state if the ${test.panel.name} panel is changed and the feature is not enabled`, async () => {
                 updateHostConfig({
@@ -826,7 +900,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 });
                 UI.Context.Context.instance().setFlavor(test.panel, sinon.createStubInstance(test.panel));
                 const { initialViewInput } = await createAiAssistancePanel();
-                assert.isUndefined(initialViewInput.agentType);
+                assert.isUndefined(initialViewInput.conversationType);
             });
         }
         describe('Performance Insight agent', () => {
@@ -839,7 +913,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 });
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.TimelinePanel, sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel));
                 const { initialViewInput } = await createAiAssistancePanel();
-                assert.strictEqual(initialViewInput.agentType, "performance-insight" /* AiAssistance.AgentType.PERFORMANCE_INSIGHT */);
+                assert.strictEqual(initialViewInput.conversationType, "performance-insight" /* AiAssistance.ConversationType.PERFORMANCE_INSIGHT */);
             });
         });
     });
@@ -868,6 +942,111 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 steps: [],
             },
         ]);
+    });
+    describe('chat input', () => {
+        describe('disabled state', () => {
+            it('should be disabled when ai assistance enabled setting is disabled and show followTheSteps placeholder', async () => {
+                Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(true);
+                const { initialViewInput } = await createAiAssistancePanel();
+                assert.isTrue(initialViewInput.isTextInputDisabled);
+                assert.strictEqual(initialViewInput.inputPlaceholder, 'Follow the steps above to ask a question');
+                assert.strictEqual(initialViewInput.disclaimerText, 'This is an experimental AI feature and won\'t always get it right.');
+            });
+            it('should be disabled when ai assistance setting is marked as false and show followTheSteps placeholder', async () => {
+                Common.Settings.moduleSetting('ai-assistance-enabled').set(false);
+                const { initialViewInput } = await createAiAssistancePanel();
+                assert.isTrue(initialViewInput.isTextInputDisabled);
+                assert.strictEqual(initialViewInput.inputPlaceholder, 'Follow the steps above to ask a question');
+                assert.strictEqual(initialViewInput.disclaimerText, 'This is an experimental AI feature and won\'t always get it right.');
+            });
+            it('should be disabled when the user is blocked by age and show followTheSteps placeholder', async () => {
+                Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+                updateHostConfig({
+                    aidaAvailability: {
+                        blockedByAge: true,
+                    },
+                });
+                const { initialViewInput } = await createAiAssistancePanel();
+                assert.isTrue(initialViewInput.isTextInputDisabled);
+                assert.strictEqual(initialViewInput.inputPlaceholder, 'Follow the steps above to ask a question');
+                assert.strictEqual(initialViewInput.disclaimerText, 'This is an experimental AI feature and won\'t always get it right.');
+            });
+            it('should be disabled when Aida availability status is not AVAILABLE', async () => {
+                Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+                const { initialViewInput } = await createAiAssistancePanel({ aidaAvailability: "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */ });
+                assert.isTrue(initialViewInput.isTextInputDisabled);
+            });
+            it('should be disabled when the next message is blocked by cross origin and show crossOriginError placeholder', async () => {
+                Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+                const networkRequest = createNetworkRequest({
+                    url: urlString `https://a.test`,
+                });
+                UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
+                const { panel, expectViewUpdate } = await createAiAssistancePanel({
+                    aidaClient: mockAidaClient([
+                        [{ explanation: 'test' }],
+                    ]),
+                });
+                const updatedViewInput = await expectViewUpdate(() => {
+                    panel.handleAction('drjones.network-floating-button');
+                });
+                assert.isFalse(updatedViewInput.blockedByCrossOrigin);
+                assert.strictEqual(updatedViewInput.selectedContext?.getItem(), networkRequest);
+                // Send a query for https://a.test.
+                await expectViewUpdate(() => {
+                    panel.handleAction('drjones.network-floating-button');
+                    updatedViewInput.onTextSubmit('test');
+                });
+                // Change context to https://b.test.
+                const networkRequest2 = createNetworkRequest({
+                    url: urlString `https://b.test`,
+                });
+                UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest2);
+                const updatedViewInputWithCrossOriginContext = await expectViewUpdate(() => {
+                    panel.handleAction('drjones.network-floating-button');
+                });
+                assert.isTrue(updatedViewInputWithCrossOriginContext.blockedByCrossOrigin);
+                assert.isTrue(updatedViewInputWithCrossOriginContext.isTextInputDisabled);
+                assert.strictEqual(updatedViewInputWithCrossOriginContext.inputPlaceholder, 'To talk about data from another origin, start a new chat');
+            });
+            it('should be disabled when there is no selected context and show inputPlaceholderForStylingNoContext', async () => {
+                updateHostConfig({
+                    devToolsFreestyler: {
+                        enabled: true,
+                    },
+                });
+                Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+                const { panel, expectViewUpdate } = await createAiAssistancePanel({ aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ });
+                const updatedViewInput = await expectViewUpdate(() => {
+                    panel.handleAction('freestyler.elements-floating-button');
+                });
+                assert.isNull(updatedViewInput.selectedContext);
+                assert.isTrue(updatedViewInput.isTextInputDisabled);
+                assert.strictEqual(updatedViewInput.inputPlaceholder, 'Select an element to ask a question');
+            });
+        });
+        it('should disable the send button when the input is empty', async () => {
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            updateHostConfig({
+                devToolsFreestyler: {
+                    enabled: true,
+                },
+            });
+            UI.Context.Context.instance().setFlavor(Elements.ElementsPanel.ElementsPanel, sinon.createStubInstance(Elements.ElementsPanel.ElementsPanel));
+            const { panel, expectViewUpdate } = await createAiAssistancePanel({ aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ });
+            const updateViewInput = await expectViewUpdate(() => {
+                panel.handleAction('freestyler.elements-floating-button');
+            });
+            assert.isTrue(updateViewInput.isTextInputEmpty);
+            const updateViewInputAfterTextInputAdded = await expectViewUpdate(() => {
+                updateViewInput.onTextInputChange('test');
+            });
+            assert.isFalse(updateViewInputAfterTextInputAdded.isTextInputEmpty);
+            const updateViewInputAfterTextInputRemoved = await expectViewUpdate(() => {
+                updateViewInputAfterTextInputAdded.onTextInputChange('');
+            });
+            assert.isTrue(updateViewInputAfterTextInputRemoved.isTextInputEmpty);
+        });
     });
     describe('multimodal input', () => {
         function mockScreenshotModel() {
@@ -940,55 +1119,6 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     steps: [],
                 },
             ]);
-        });
-    });
-    describe('workspace', () => {
-        function createTestFilesystem(fileSystemPath) {
-            const { project, uiSourceCode } = createFileSystemUISourceCode({
-                url: Platform.DevToolsPath.urlString `file:///example.html`,
-                mimeType: 'text/html',
-                content: 'content',
-                fileSystemPath,
-            });
-            return { project, uiSourceCode };
-        }
-        it('does not report a workspace project if disabled', async () => {
-            createTestFilesystem('file://test');
-            updateHostConfig({
-                devToolsFreestyler: {
-                    enabled: true,
-                    patching: false,
-                },
-            });
-            const { initialViewInput, } = await createAiAssistancePanel();
-            assert.strictEqual(initialViewInput.projectName, '');
-        });
-        it('reports a current workspace project', async () => {
-            createTestFilesystem('file://test');
-            updateHostConfig({
-                devToolsFreestyler: {
-                    enabled: true,
-                    patching: true,
-                },
-            });
-            const { initialViewInput, } = await createAiAssistancePanel();
-            assert.strictEqual(initialViewInput.projectName, 'test');
-        });
-        it('reports an updated project', async () => {
-            const { project } = createTestFilesystem('file://test');
-            updateHostConfig({
-                devToolsFreestyler: {
-                    enabled: true,
-                    patching: true,
-                },
-            });
-            const { initialViewInput, expectViewUpdate } = await createAiAssistancePanel();
-            assert.strictEqual(initialViewInput.projectName, 'test');
-            const updatedViewInput = await expectViewUpdate(() => {
-                Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
-                createTestFilesystem('file://test2');
-            });
-            assert.strictEqual(updatedViewInput.projectName, 'test2');
         });
     });
 });

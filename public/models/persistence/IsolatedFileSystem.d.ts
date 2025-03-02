@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
-import { PlatformFileSystem } from './PlatformFileSystem.js';
+import { PlatformFileSystem, type PlatformFileSystemType } from './PlatformFileSystem.js';
 export declare class IsolatedFileSystem extends PlatformFileSystem {
     private readonly manager;
     private readonly embedderPathInternal;
@@ -13,8 +13,8 @@ export declare class IsolatedFileSystem extends PlatformFileSystem {
     private readonly initialFilePathsInternal;
     private readonly initialGitFoldersInternal;
     private readonly fileLocks;
-    constructor(manager: IsolatedFileSystemManager, path: Platform.DevToolsPath.UrlString, embedderPath: Platform.DevToolsPath.RawPathString, domFileSystem: FileSystem, type: string);
-    static create(manager: IsolatedFileSystemManager, path: Platform.DevToolsPath.UrlString, embedderPath: Platform.DevToolsPath.RawPathString, type: string, name: string, rootURL: string): Promise<IsolatedFileSystem | null>;
+    constructor(manager: IsolatedFileSystemManager, path: Platform.DevToolsPath.UrlString, embedderPath: Platform.DevToolsPath.RawPathString, domFileSystem: FileSystem, type: PlatformFileSystemType, automatic: boolean);
+    static create(manager: IsolatedFileSystemManager, path: Platform.DevToolsPath.UrlString, embedderPath: Platform.DevToolsPath.RawPathString, type: PlatformFileSystemType, name: string, rootURL: string, automatic: boolean): Promise<IsolatedFileSystem | null>;
     static errorMessage(error: DOMError): string;
     private serializedFileOperation;
     getMetadata(path: Platform.DevToolsPath.EncodedPathString): Promise<Metadata | null>;

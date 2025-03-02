@@ -18,6 +18,7 @@ export declare class SourceMapManager<T extends FrameAssociated> extends Common.
     detachSourceMap(client: T): void;
 }
 export declare function loadSourceMap(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): Promise<SourceMapV3>;
+export declare function tryLoadSourceMap(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): Promise<SourceMapV3 | null>;
 export declare enum Events {
     SourceMapWillAttach = "SourceMapWillAttach",
     SourceMapFailedToAttach = "SourceMapFailedToAttach",

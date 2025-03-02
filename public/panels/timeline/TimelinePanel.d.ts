@@ -95,7 +95,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private prepareToLoadTimeline;
     private createFileSelector;
     private contextMenu;
-    saveToFile(isEnhancedTraces?: boolean, addModifications?: boolean): Promise<void>;
+    saveToFile(isEnhancedTrace?: boolean, addModifications?: boolean): Promise<void>;
     showHistoryDropdown(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;

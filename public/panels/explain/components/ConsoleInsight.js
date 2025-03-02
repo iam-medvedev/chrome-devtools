@@ -239,12 +239,12 @@ export class ConsoleInsight extends HTMLElement {
         if (this.#state.type !== "insight" /* State.INSIGHT */ || !this.#referenceDetailsRef.value) {
             return;
         }
-        this.#state.highlightIndex = index;
         const areDetailsAlreadyExpanded = this.#referenceDetailsRef.value.open;
         this.#areReferenceDetailsOpen = true;
         this.#render();
-        const highlightedElement = this.#shadow.querySelector('li .highlighted');
+        const highlightedElement = this.#shadow.querySelector(`.sources-list x-link[data-index="${index}"]`);
         if (highlightedElement) {
+            UI.UIUtils.runCSSAnimationOnce(highlightedElement, 'highlighted');
             if (areDetailsAlreadyExpanded) {
                 highlightedElement.scrollIntoView({ behavior: 'auto' });
             }
@@ -577,27 +577,21 @@ export class ConsoleInsight extends HTMLElement {
         if (this.#state.type !== "insight" /* State.INSIGHT */ || !this.#state.directCitationUrls.length) {
             return Lit.nothing;
         }
-        const highlightIndex = this.#state.highlightIndex || -1;
         // clang-format off
         return html `
       <ol class="sources-list">
-        ${this.#state.directCitationUrls.map((url, index) => {
-            const linkClasses = Lit.Directives.classMap({
-                link: true,
-                highlighted: highlightIndex - 1 === index,
-            });
-            return html `
-            <li>
-              <x-link
-                href=${url}
-                class=${linkClasses}
-                jslog=${VisualLogging.link('references.console-insights').track({ click: true })}
-              >
-                ${url}
-              </x-link>
-            </li>
-          `;
-        })}
+        ${this.#state.directCitationUrls.map((url, index) => html `
+          <li>
+            <x-link
+              href=${url}
+              class="link"
+              data-index=${index + 1}
+              jslog=${VisualLogging.link('references.console-insights').track({ click: true })}
+            >
+              ${url}
+            </x-link>
+          </li>
+        `)}
       </ol>
     `;
         // clang-format on
@@ -645,11 +639,6 @@ export class ConsoleInsight extends HTMLElement {
     #onToggleReferenceDetails() {
         if (this.#referenceDetailsRef.value) {
             this.#areReferenceDetailsOpen = this.#referenceDetailsRef.value.open;
-            if (!this.#areReferenceDetailsOpen && this.#state.type === "insight" /* State.INSIGHT */ &&
-                this.#state.highlightIndex !== undefined) {
-                this.#state.highlightIndex = undefined;
-                this.#render();
-            }
         }
     }
     #renderMain() {

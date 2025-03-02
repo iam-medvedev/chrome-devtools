@@ -5,8 +5,8 @@ import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-import * as Utils from '../../utils/utils.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
+import { eventRef } from './EventRef.js';
 import networkDependencyTreeInsightRaw from './networkDependencyTreeInsight.css.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.NetworkDependencyTree;
 const { html } = Lit;
@@ -16,6 +16,7 @@ networkDependencyTreeInsightComponentStyles.replaceSync(networkDependencyTreeIns
 export class NetworkDependencyTree extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
     internalName = 'long-critical-network-tree';
+    hoveredChain = [];
     connectedCallback() {
         super.connectedCallback();
         this.shadow.adoptedStyleSheets.push(networkDependencyTreeInsightComponentStyles);
@@ -28,6 +29,29 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         getAllOverlays(this.model.rootNodes, overlays);
         return overlays;
     }
+    #createOverlayForChain(chain) {
+        return chain.map(entry => ({
+            type: 'ENTRY_OUTLINE',
+            entry,
+            outlineReason: 'ERROR',
+        }));
+    }
+    #onMouseOver(chain) {
+        this.hoveredChain = chain ?? [];
+        const overlays = this.#createOverlayForChain(this.hoveredChain);
+        this.toggleTemporaryOverlays(overlays, {
+            // The trace window doesn't need to be updated because the request is being hovered.
+            updateTraceWindow: false,
+        });
+        this.scheduleRender();
+    }
+    #onMouseOut() {
+        this.hoveredChain = [];
+        this.toggleTemporaryOverlays(null, {
+            updateTraceWindow: false,
+        });
+        this.scheduleRender();
+    }
     renderTree(nodes) {
         if (nodes.length === 0) {
             return null;
@@ -35,12 +59,19 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         // clang-format off
         return html `
       <ul>
-        ${nodes.map(({ request, timeFromInitialRequest, children }) => {
+        ${nodes.map(({ request, timeFromInitialRequest, children, isLongest, chain }) => {
             const hasChildren = children.length > 0;
+            const requestClasses = Lit.Directives.classMap({
+                request: true,
+                longest: Boolean(isLongest),
+                highlighted: this.hoveredChain.includes(request),
+            });
             return html `
             <li>
-              <div class="request">
-                <span class="url">${Utils.Helpers.shortenUrl(new URL(request.args.data.url))}</span>
+              <div class=${requestClasses}
+                   @mouseover=${hasChildren ? null : this.#onMouseOver.bind(this, chain)}
+                   @mouseout=${hasChildren ? null : this.#onMouseOut.bind(this)}>
+                <span class="url">${eventRef(request)}</span>
                 ${
             // If this is the last request, show the chain time
             hasChildren ? Lit.nothing : html `

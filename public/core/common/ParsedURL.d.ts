@@ -73,6 +73,10 @@ export declare class ParsedURL {
     dataURLDisplayName(): string;
     isAboutBlank(): boolean;
     isDataURL(): boolean;
+    extractDataUrlMimeType(): {
+        type: string | undefined;
+        subtype: string | undefined;
+    };
     isBlobURL(): boolean;
     lastPathComponentWithFragment(): string;
     domain(): string;

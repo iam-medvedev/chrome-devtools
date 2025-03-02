@@ -3,29 +3,27 @@
 // found in the LICENSE file.
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
-import { html, render } from '../../../lit/lit.js';
+import * as Lit from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import colorMixSwatchStylesRaw from './colorMixSwatch.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const colorMixSwatchStyles = new CSSStyleSheet();
 colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw.cssContent);
+const { html, render, Directives: { ref } } = Lit;
 export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement) {
     shadow = this.attachShadow({ mode: 'open' });
     colorMixText = ''; // color-mix(in srgb, hotpink, white)
     firstColorText = ''; // hotpink
     secondColorText = ''; // white
-    #registerPopoverCallback;
+    #icon = null;
     constructor() {
         super();
         this.shadow.adoptedStyleSheets = [
             colorMixSwatchStyles,
         ];
     }
-    get icon() {
-        return this.shadow.firstElementChild;
-    }
     mixedColor() {
-        const colorText = this.icon?.computedStyleMap().get('color')?.toString() ?? null;
+        const colorText = this.#icon?.computedStyleMap().get('color')?.toString() ?? null;
         return colorText ? Common.Color.parse(colorText) : null;
     }
     setFirstColor(text) {
@@ -56,10 +54,6 @@ export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement)
         this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
         this.#render();
     }
-    setRegisterPopoverCallback(callback) {
-        this.#registerPopoverCallback = callback;
-        callback(this);
-    }
     getText() {
         return this.colorMixText;
     }
@@ -74,13 +68,14 @@ export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement)
         // free to append any content to replace what is being shown here.
         // Note also that whitespace between nodes is removed on purpose to avoid pushing these elements apart. Do not
         // re-format the HTML code.
-        render(html `<div class="swatch-icon" jslog=${VisualLogging.cssColorMix()} style="--color: ${this.colorMixText}">
+        render(html `<div class="swatch-icon"
+      ${ref(e => { this.#icon = e; })}
+      jslog=${VisualLogging.cssColorMix()}
+      style="--color: ${this.colorMixText}">
         <span class="swatch swatch-left" id="swatch-1" style="--color: ${this.firstColorText}"></span>
         <span class="swatch swatch-right" id="swatch-2" style="--color: ${this.secondColorText}"></span>
-        <span class="swatch swatch-mix" id="mix-result" style="--color: ${this.colorMixText}"></span>
-      </div><slot>${this.colorMixText}</slot>`, this.shadow, { host: this });
+        <span class="swatch swatch-mix" id="mix-result" style="--color: ${this.colorMixText}"></span></div>`, this.shadow, { host: this });
         // clang-format on
-        this.#registerPopoverCallback && this.#registerPopoverCallback(this);
     }
 }
 customElements.define('devtools-color-mix-swatch', ColorMixSwatch);

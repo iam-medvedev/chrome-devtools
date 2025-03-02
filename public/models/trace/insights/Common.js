@@ -112,6 +112,12 @@ export function getFieldMetricsForInsightSet(insightSet, metadata, scope = null)
         lcp: getMetricTimingResult(pageResult, 'largest_contentful_paint', scope),
         inp: getMetricTimingResult(pageResult, 'interaction_to_next_paint', scope),
         cls: getMetricResult(pageResult, 'cumulative_layout_shift', scope),
+        lcpPhases: {
+            ttfb: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_time_to_first_byte', scope),
+            loadDelay: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_resource_load_delay', scope),
+            loadDuration: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_resource_load_duration', scope),
+            renderDelay: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_element_render_delay', scope),
+        }
     };
 }
 export function calculateMetricWeightsForSorting(insightSet, metadata) {

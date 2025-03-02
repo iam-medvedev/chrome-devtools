@@ -16,32 +16,9 @@ export class EntityMapper {
     #resolvedCallFrames = new Set();
     constructor(parsedTrace) {
         this.#parsedTrace = parsedTrace;
-        this.#entityMappings = this.#initializeEntityMappings(this.#parsedTrace);
+        this.#entityMappings = this.#parsedTrace.Renderer.entityMappings;
         this.#firstPartyEntity = this.#findFirstPartyEntity();
         this.#thirdPartyEvents = this.#getThirdPartyEvents();
-    }
-    /**
-     * This initializes our maps using the parsedTrace data from both the RendererHandler and
-     * the NetworkRequestsHandler.
-     */
-    #initializeEntityMappings(parsedTrace) {
-        // NetworkRequestHandler caches.
-        const entityByNetworkEvent = parsedTrace.NetworkRequests.entityMappings.entityByEvent;
-        const networkEventsByEntity = parsedTrace.NetworkRequests.entityMappings.eventsByEntity;
-        const networkCreatedCache = parsedTrace.NetworkRequests.entityMappings.createdEntityCache;
-        // RendrerHandler caches.
-        const entityByRendererEvent = parsedTrace.Renderer.entityMappings.entityByEvent;
-        const rendererEventsByEntity = parsedTrace.Renderer.entityMappings.eventsByEntity;
-        const rendererCreatedCache = parsedTrace.Renderer.entityMappings.createdEntityCache;
-        // Build caches.
-        const entityByEvent = new Map([...entityByNetworkEvent, ...entityByRendererEvent]);
-        const createdEntityCache = new Map([...networkCreatedCache, ...rendererCreatedCache]);
-        const eventsByEntity = this.#mergeEventsByEntities(rendererEventsByEntity, networkEventsByEntity);
-        return {
-            entityByEvent,
-            eventsByEntity,
-            createdEntityCache,
-        };
     }
     #findFirstPartyEntity() {
         // As a starting point, we consider the first navigation as the 1P.
@@ -54,23 +31,10 @@ export class EntityMapper {
     }
     #getThirdPartyEvents() {
         const entries = Array.from(this.#entityMappings.eventsByEntity.entries());
-        const thirdPartyEvents = entries.flatMap(([entity, requests]) => {
-            return entity.name !== this.#firstPartyEntity?.name ? requests : [];
+        const thirdPartyEvents = entries.flatMap(([entity, events]) => {
+            return entity !== this.#firstPartyEntity ? events : [];
         });
         return thirdPartyEvents;
-    }
-    #mergeEventsByEntities(a, b) {
-        const merged = new Map(a);
-        for (const [entity, events] of b.entries()) {
-            if (merged.has(entity)) {
-                const currentEvents = merged.get(entity) ?? [];
-                merged.set(entity, [...currentEvents, ...events]);
-            }
-            else {
-                merged.set(entity, [...events]);
-            }
-        }
-        return merged;
     }
     /**
      * Returns an entity for a given event if any.

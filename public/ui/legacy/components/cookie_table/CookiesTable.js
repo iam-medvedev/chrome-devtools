@@ -385,9 +385,8 @@ export class CookiesTable extends UI.Widget.VBox {
         const maxTime = 8640000000000000;
         const isRequest = cookie.type() === 0 /* SDK.Cookie.Type.REQUEST */;
         const data = { name: cookie.name(), value: cookie.value() };
-        for (const attribute of ["size" /* SDK.Cookie.Attribute.SIZE */, "http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */, "secure" /* SDK.Cookie.Attribute.SECURE */,
-            "same-site" /* SDK.Cookie.Attribute.SAME_SITE */, "source-scheme" /* SDK.Cookie.Attribute.SOURCE_SCHEME */, "source-port" /* SDK.Cookie.Attribute.SOURCE_PORT */,
-            "priority" /* SDK.Cookie.Attribute.PRIORITY */]) {
+        for (const attribute of ["http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */, "secure" /* SDK.Cookie.Attribute.SECURE */, "same-site" /* SDK.Cookie.Attribute.SAME_SITE */,
+            "source-scheme" /* SDK.Cookie.Attribute.SOURCE_SCHEME */, "source-port" /* SDK.Cookie.Attribute.SOURCE_PORT */]) {
             if (cookie.hasAttribute(attribute)) {
                 data[attribute] = String(cookie.getAttribute(attribute) ?? true);
             }
@@ -408,6 +407,8 @@ export class CookiesTable extends UI.Widget.VBox {
         data["partition-key-site" /* SDK.Cookie.Attribute.PARTITION_KEY_SITE */] =
             cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey) : cookie.topLevelSite();
         data["has-cross-site-ancestor" /* SDK.Cookie.Attribute.HAS_CROSS_SITE_ANCESTOR */] = cookie.hasCrossSiteAncestor() ? 'true' : '';
+        data["size" /* SDK.Cookie.Attribute.SIZE */] = String(cookie.size());
+        data["priority" /* SDK.Cookie.Attribute.PRIORITY */] = cookie.priority();
         data.priorityValue = ['Low', 'Medium', 'High'].indexOf(cookie.priority());
         const blockedReasons = this.cookieToBlockedReasons?.get(cookie) || [];
         for (const blockedReason of blockedReasons) {

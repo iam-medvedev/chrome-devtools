@@ -42,6 +42,7 @@ import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.j
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsComponents from './components/components.js';
+import { getElementIssueDetails } from './ElementIssueUtils.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ElementsTreeElement, InitialChildrenLimit, isOpeningTag } from './ElementsTreeElement.js';
 import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
@@ -93,7 +94,6 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     treeElementBeingDragged;
     dragOverTreeElement;
     updateModifiedNodesTimeout;
-    #genericIssues = [];
     #topLayerContainerByParent = new Map();
     #issuesManager;
     #popupHelper;
@@ -102,12 +102,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         super();
         if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
             this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-            this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueEventReceived, this);
-            for (const issue of this.#issuesManager.issues()) {
-                if (issue instanceof IssuesManager.GenericIssue.GenericIssue) {
-                    this.#onIssueAdded(issue);
-                }
-            }
+            this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueAdded, this);
         }
         this.treeElementByNode = new WeakMap();
         const shadowContainer = document.createElement('div');
@@ -166,6 +161,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.showHTMLCommentsSetting.addChangeListener(this.onShowHTMLCommentsChange.bind(this));
         this.setUseLightSelectionColor(true);
         if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
+            // TODO(changhaohan): refactor the popover to use tooltip component.
             this.#popupHelper = new UI.PopoverHelper.PopoverHelper(this.elementInternal, event => {
                 const hoveredNode = event.composedPath()[0];
                 if (!hoveredNode?.matches('.violating-element')) {
@@ -175,8 +171,10 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                 if (!issue) {
                     return null;
                 }
-                const issueDetails = issue.details();
-                const tooltipTitle = this.#issueCodeToTooltipTitle(issueDetails.errorType);
+                const elementIssueDetails = getElementIssueDetails(issue);
+                if (!elementIssueDetails) {
+                    return null;
+                }
                 const issueKindIcon = new IconButton.Icon.Icon();
                 issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(issue.getKind());
                 issueKindIcon.style.cursor = 'pointer';
@@ -184,7 +182,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                 viewIssueElement.href = '#';
                 viewIssueElement.textContent = 'View issue:';
                 const issueTitle = document.createElement('span');
-                issueTitle.textContent = tooltipTitle;
+                issueTitle.textContent = elementIssueDetails.tooltip;
                 const element = document.createElement('div');
                 element.appendChild(issueKindIcon);
                 element.appendChild(viewIssueElement);
@@ -208,59 +206,30 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             this.#popupHelper.setHasPadding(true);
         }
     }
-    #issueCodeToTooltipTitle(errorType) {
-        switch (errorType) {
-            case "FormLabelForNameError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForNameError */:
-                return 'Incorrect use of <label for=FORM_ELEMENT>';
-            case "FormDuplicateIdForInputError" /* Protocol.Audits.GenericIssueErrorType.FormDuplicateIdForInputError */:
-                return 'Duplicate form field id in the same form';
-            case "FormInputWithNoLabelError" /* Protocol.Audits.GenericIssueErrorType.FormInputWithNoLabelError */:
-                return 'Form field without valid aria-labelledby attribute or associated label';
-            case "FormAutocompleteAttributeEmptyError" /* Protocol.Audits.GenericIssueErrorType.FormAutocompleteAttributeEmptyError */:
-                return 'Incorrect use of autocomplete attribute';
-            case "FormEmptyIdAndNameAttributesForInputError" /* Protocol.Audits.GenericIssueErrorType.FormEmptyIdAndNameAttributesForInputError */:
-                return 'A form field element should have an id or name attribute';
-            case "FormAriaLabelledByToNonExistingId" /* Protocol.Audits.GenericIssueErrorType.FormAriaLabelledByToNonExistingId */:
-                return 'An aria-labelledby attribute doesn\'t match any element id';
-            case "FormInputAssignedAutocompleteValueToIdOrNameAttributeError" /* Protocol.Audits.GenericIssueErrorType.FormInputAssignedAutocompleteValueToIdOrNameAttributeError */:
-                return 'An element doesn\'t have an autocomplete attribute';
-            case "FormLabelHasNeitherForNorNestedInput" /* Protocol.Audits.GenericIssueErrorType.FormLabelHasNeitherForNorNestedInput */:
-                return 'No label associated with a form field';
-            case "FormLabelForMatchesNonExistingIdError" /* Protocol.Audits.GenericIssueErrorType.FormLabelForMatchesNonExistingIdError */:
-                return 'Incorrect use of <label for=FORM_ELEMENT>';
-            case "FormInputHasWrongButWellIntendedAutocompleteValueError" /* Protocol.Audits.GenericIssueErrorType.FormInputHasWrongButWellIntendedAutocompleteValueError */:
-                return 'Non-standard autocomplete attribute value';
-            default:
-                return '';
-        }
-    }
     static forDOMModel(domModel) {
         return elementsTreeOutlineByDOMModel.get(domModel) || null;
     }
-    async #onIssueEventReceived(event) {
-        if (event.data.issue instanceof IssuesManager.GenericIssue.GenericIssue) {
-            this.#onIssueAdded(event.data.issue);
-            await this.#addTreeElementIssue(event.data.issue);
-        }
-    }
-    #onIssueAdded(issue) {
-        this.#genericIssues.push(issue);
+    #onIssueAdded(event) {
+        void this.#addTreeElementIssue(event.data.issue);
     }
     #addAllElementIssues() {
-        for (const issue of this.#genericIssues) {
+        if (!this.#issuesManager) {
+            return;
+        }
+        for (const issue of this.#issuesManager.issues()) {
             void this.#addTreeElementIssue(issue);
         }
     }
     async #addTreeElementIssue(issue) {
-        const issueDetails = issue.details();
-        const tooltipTitle = this.#issueCodeToTooltipTitle(issueDetails.errorType);
-        if (!tooltipTitle) {
+        const elementIssueDetails = getElementIssueDetails(issue);
+        if (!elementIssueDetails) {
             return;
         }
-        if (!this.rootDOMNode || !issueDetails.violatingNodeId) {
+        const { nodeId } = elementIssueDetails;
+        if (!this.rootDOMNode || !nodeId) {
             return;
         }
-        const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(this.rootDOMNode.domModel().target(), issueDetails.violatingNodeId);
+        const deferredDOMNode = new SDK.DOMModel.DeferredDOMNode(this.rootDOMNode.domModel().target(), nodeId);
         const node = await deferredDOMNode.resolvePromise();
         if (!node) {
             return;

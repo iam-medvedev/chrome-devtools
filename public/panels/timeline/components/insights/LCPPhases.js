@@ -92,6 +92,38 @@ export class LCPPhases extends BaseInsightComponent {
         overlays.push(this.#overlay);
         return overlays;
     }
+    #renderFieldPhases() {
+        if (!this.fieldMetrics) {
+            return null;
+        }
+        const { ttfb, loadDelay, loadDuration, renderDelay } = this.fieldMetrics.lcpPhases;
+        if (!ttfb || !loadDelay || !loadDuration || !renderDelay) {
+            return null;
+        }
+        const ttfbMillis = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microToMilli(ttfb.value));
+        const loadDelayMillis = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microToMilli(loadDelay.value));
+        const loadDurationMillis = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microToMilli(loadDuration.value));
+        const renderDelayMillis = i18n.TimeUtilities.preciseMillisToString(Trace.Helpers.Timing.microToMilli(renderDelay.value));
+        const rows = [
+            { values: [i18nString(UIStrings.timeToFirstByte), ttfbMillis] },
+            { values: [i18nString(UIStrings.resourceLoadDelay), loadDelayMillis] },
+            { values: [i18nString(UIStrings.resourceLoadDuration), loadDurationMillis] },
+            { values: [i18nString(UIStrings.elementRenderDelay), renderDelayMillis] },
+        ];
+        // clang-format off
+        return html `
+      <div class="insight-section">
+        <devtools-performance-table
+          .data=${{
+            insight: this,
+            headers: [i18nString(UIStrings.phase), i18nString(UIStrings.fieldDuration)],
+            rows,
+        }}>
+        </devtools-performance-table>
+      </div>
+    `;
+        // clang-format on
+    }
     renderContent() {
         if (!this.model) {
             return Lit.nothing;
@@ -111,17 +143,23 @@ export class LCPPhases extends BaseInsightComponent {
             };
         });
         // clang-format off
-        return html `
+        const sections = [html `
       <div class="insight-section">
-        ${html `<devtools-performance-table
+        <devtools-performance-table
           .data=${{
-            insight: this,
-            headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
-            rows,
-        }}>
-        </devtools-performance-table>`}
-      </div>`;
+                insight: this,
+                headers: [i18nString(UIStrings.phase), i18nString(UIStrings.duration)],
+                rows,
+            }}>
+        </devtools-performance-table>
+      </div>`
+        ];
         // clang-format on
+        const fieldDataSection = this.#renderFieldPhases();
+        if (fieldDataSection) {
+            sections.push(fieldDataSection);
+        }
+        return html `${sections}`;
     }
 }
 customElements.define('devtools-performance-lcp-by-phases', LCPPhases);

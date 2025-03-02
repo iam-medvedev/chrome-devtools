@@ -7,6 +7,7 @@ import * as Types from '../types/types.js';
 export class Node {
     totalTime;
     selfTime;
+    transferSize;
     id;
     /** The first trace event encountered that necessitated the creation of this tree node. */
     event;
@@ -21,6 +22,7 @@ export class Node {
     constructor(id, event) {
         this.totalTime = 0;
         this.selfTime = 0;
+        this.transferSize = 0;
         this.id = id;
         this.event = event;
         this.events = [event];
@@ -168,6 +170,9 @@ export class TopDownNode extends Node {
             }
             node.selfTime += duration;
             node.totalTime += duration;
+            if (Types.Events.isReceivedDataEvent(e)) {
+                node.transferSize += e.args.data.encodedDataLength;
+            }
             currentDirectChild = node;
         }
         /**
@@ -241,6 +246,7 @@ export class TopDownRootNode extends TopDownNode {
         this.selfTime = this.totalTime;
     }
     children() {
+        // FYI tree nodes are built lazily. https://codereview.chromium.org/2674283003
         return this.childrenInternal || this.grouppedTopNodes();
     }
     grouppedTopNodes() {
@@ -262,7 +268,7 @@ export class TopDownRootNode extends TopDownNode {
             else {
                 groupNode.events.push(...node.events);
             }
-            groupNode.addChild(node, node.selfTime, node.totalTime);
+            groupNode.addChild(node, node.selfTime, node.totalTime, node.transferSize);
         }
         this.childrenInternal = groupNodes;
         return groupNodes;
@@ -279,7 +285,8 @@ export class BottomUpRootNode extends Node {
     endTime;
     eventGroupIdCallback;
     totalTime;
-    constructor(events, { textFilter, filters, startTime, endTime, eventGroupIdCallback }) {
+    calculateTransferSize;
+    constructor(events, { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, }) {
         super('', events[0]);
         this.childrenInternal = null;
         this.events = events;
@@ -289,6 +296,7 @@ export class BottomUpRootNode extends Node {
         this.endTime = endTime;
         this.eventGroupIdCallback = eventGroupIdCallback;
         this.totalTime = endTime - startTime;
+        this.calculateTransferSize = calculateTransferSize;
     }
     hasChildren() {
         return true;
@@ -303,11 +311,15 @@ export class BottomUpRootNode extends Node {
         return children;
     }
     children() {
+        // FYI tree nodes are built lazily. https://codereview.chromium.org/2674283003
         if (!this.childrenInternal) {
             this.childrenInternal = this.filterChildren(this.grouppedTopNodes());
         }
         return this.childrenInternal;
     }
+    // If no grouping is applied, the nodes returned here are what's initially shown in the bottom-up view.
+    // "No grouping" == no grouping in UI dropdown == no groupingFunction…
+    // … HOWEVER, nodes are still aggregated via `generateEventID`, which is ~= the event name.
     ungrouppedTopNodes() {
         const root = this;
         const startTime = this.startTime;
@@ -316,9 +328,25 @@ export class BottomUpRootNode extends Node {
         const selfTimeStack = [endTime - startTime];
         const firstNodeStack = [];
         const totalTimeById = new Map();
+        // encodedDataLength is provided solely on instant events.
+        const sumTransferSizeOfInstantEvent = (e) => {
+            if (Types.Events.isReceivedDataEvent(e)) {
+                const id = generateEventID(e);
+                let node = nodeById.get(id);
+                if (!node) {
+                    node = new BottomUpNode(root, id, e, false, root);
+                    nodeById.set(id, node);
+                }
+                else {
+                    node.events.push(e);
+                }
+                node.transferSize += e.args.data.encodedDataLength;
+            }
+        };
         Helpers.Trace.forEachEvent(this.events, {
             onStartEvent,
             onEndEvent,
+            onInstantEvent: this.calculateTransferSize ? sumTransferSizeOfInstantEvent : undefined,
             startTime: Helpers.Timing.milliToMicro(this.startTime),
             endTime: Helpers.Timing.milliToMicro(this.endTime),
             eventFilter: this.filter,
@@ -357,8 +385,9 @@ export class BottomUpRootNode extends Node {
             }
         }
         this.selfTime = selfTimeStack.pop() || 0;
+        // Delete any nodes that have no selfTime (or transferSize, if it's being calculated)
         for (const pair of nodeById) {
-            if (pair[1].selfTime <= 0) {
+            if (pair[1].selfTime <= 0 && (!this.calculateTransferSize || pair[1].transferSize <= 0)) {
                 nodeById.delete((pair[0]));
             }
         }
@@ -380,7 +409,7 @@ export class BottomUpRootNode extends Node {
             else {
                 groupNode.events.push(...node.events);
             }
-            groupNode.addChild(node, node.selfTime, node.selfTime);
+            groupNode.addChild(node, node.selfTime, node.selfTime, node.transferSize);
         }
         return groupNodes;
     }
@@ -396,10 +425,11 @@ export class GroupNode extends Node {
         this.parent = parent;
         this.isGroupNodeInternal = true;
     }
-    addChild(child, selfTime, totalTime) {
+    addChild(child, selfTime, totalTime, transferSize) {
         this.childrenInternal.set(child.id, child);
         this.selfTime += selfTime;
         this.totalTime += totalTime;
+        this.transferSize += transferSize;
         child.parent = this;
     }
     hasChildren() {
@@ -525,8 +555,8 @@ export function generateEventID(event) {
     if (Types.Events.isConsoleTimeStamp(event) && event.args.data) {
         return `${event.name}:${event.args.data.name}`;
     }
-    if (Types.Events.isSyntheticNetworkRequest(event)) {
-        return `${event.name}:${event.args.data.url}`;
+    if (Types.Events.isSyntheticNetworkRequest(event) || Types.Events.isReceivedDataEvent(event)) {
+        return `req:${event.args.data.requestId}`;
     }
     return event.name;
 }

@@ -165,9 +165,10 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             throw new Error('Invalid initiator');
         }
         const key = PageResourceLoader.makeKey(url, initiator);
-        const pageResource = { success: null, size: null, errorMessage: undefined, url, initiator };
+        const pageResource = { success: null, size: null, duration: null, errorMessage: undefined, url, initiator };
         this.#pageResources.set(key, pageResource);
         this.dispatchEventToListeners("Update" /* Events.UPDATE */);
+        const startTime = performance.now();
         try {
             await this.acquireLoadSlot(initiator.target);
             const resultPromise = this.dispatchLoad(url, initiator);
@@ -190,6 +191,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             throw e;
         }
         finally {
+            pageResource.duration = performance.now() - startTime;
             this.releaseLoadSlot(initiator.target);
             this.dispatchEventToListeners("Update" /* Events.UPDATE */);
         }

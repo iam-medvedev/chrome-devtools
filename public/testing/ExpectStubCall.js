@@ -21,4 +21,14 @@ export function expectCalled(stub, options = {}) {
     }
     return expectCall(stub, { ...options, callCount: remainingCalls });
 }
+export function spyCall(obj, method) {
+    const { promise, resolve } = Promise.withResolvers();
+    const original = obj[method];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sinon.stub(obj, method).callsFake(function (...args) {
+        const result = original.apply(this, args);
+        resolve({ args, result });
+    });
+    return promise;
+}
 //# sourceMappingURL=ExpectStubCall.js.map

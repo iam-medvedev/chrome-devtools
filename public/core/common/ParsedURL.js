@@ -306,12 +306,12 @@ export class ParsedURL {
     }
     static completeURL(baseURL, href) {
         // Return special URLs as-is.
-        const trimmedHref = href.trim();
-        if (trimmedHref.startsWith('data:') || trimmedHref.startsWith('blob:') || trimmedHref.startsWith('javascript:') ||
-            trimmedHref.startsWith('mailto:')) {
+        if (href.startsWith('data:') || href.startsWith('blob:') || href.startsWith('javascript:') ||
+            href.startsWith('mailto:')) {
             return href;
         }
         // Return absolute URLs with normalized path and other components as-is.
+        const trimmedHref = href.trim();
         const parsedHref = this.fromString(trimmedHref);
         if (parsedHref?.scheme) {
             const securityOrigin = parsedHref.securityOrigin();
@@ -447,6 +447,14 @@ export class ParsedURL {
     }
     isDataURL() {
         return this.scheme === 'data';
+    }
+    extractDataUrlMimeType() {
+        const regexp = /^data:((?<type>\w+)\/(?<subtype>\w+))?(;base64)?,/;
+        const match = this.url.match(regexp);
+        return {
+            type: match?.groups?.type,
+            subtype: match?.groups?.subtype,
+        };
     }
     isBlobURL() {
         return this.url.startsWith('blob:');

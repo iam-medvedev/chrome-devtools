@@ -425,12 +425,10 @@ class FontPropertyInputs {
                 this.boundResizeCallback();
             }
         }
-        else {
-            if (!this.errorText.hidden) {
-                this.errorText.hidden = true;
-                this.textBoxInput.classList.remove('error-input');
-                this.boundResizeCallback();
-            }
+        else if (!this.errorText.hidden) {
+            this.errorText.hidden = true;
+            this.textBoxInput.classList.remove('error-input');
+            this.boundResizeCallback();
         }
     }
     checkSelectorValueAndToggle() {

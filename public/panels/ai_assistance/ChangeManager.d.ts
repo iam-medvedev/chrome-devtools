@@ -6,7 +6,6 @@ export interface Change {
     className: string;
     styles: Record<string, string>;
 }
-export declare const AI_ASSISTANCE_CSS_CLASS_NAME = "ai-style-change";
 /**
  * Keeps track of changes done by the Styling agent. Currently, it is
  * primarily for stylesheet generation based on all changes.

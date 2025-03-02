@@ -12,7 +12,7 @@ export default {
 
 .background-service-toolbar {
   background-color: var(--sys-color-cdt-base-container);
-  border-bottom: var(--sys-color-divider);
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
 .data-grid {

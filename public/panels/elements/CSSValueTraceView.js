@@ -4,6 +4,8 @@
 import * as Lit from '../../third_party/lit/lit.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import cssValueTraceViewStyles from './cssValueTraceView.css.js';
+import { Renderer, RenderingContext, TracingContext, } from './PropertyRenderer.js';
+import stylePropertiesTreeOutlineStyles from './stylePropertiesTreeOutline.css.js';
 const { html, render } = Lit;
 export class CSSValueTraceView extends UI.Widget.VBox {
     #view;
@@ -38,14 +40,40 @@ export class CSSValueTraceView extends UI.Widget.VBox {
         target);
     }) {
         super(true);
-        this.registerRequiredCSS(cssValueTraceViewStyles);
+        this.registerRequiredCSS(cssValueTraceViewStyles, stylePropertiesTreeOutlineStyles);
         this.#view = view;
         this.requestUpdate();
     }
-    showTrace(substitutions, evaluations, finalResult) {
+    showTrace(property, matchedStyles, computedStyles, renderers) {
+        const matchedResult = property.parseValue(matchedStyles, computedStyles);
+        if (!matchedResult) {
+            return undefined;
+        }
+        const rendererMap = new Map(renderers.map(r => [r.matchType, r]));
+        // Compute all trace lines
+        // 1st: Apply substitutions for var() functions
+        const substitutions = [];
+        const evaluations = [];
+        const tracing = new TracingContext(matchedResult);
+        while (tracing.nextSubstitution()) {
+            const context = new RenderingContext(matchedResult.ast, rendererMap, matchedResult, 
+            /* cssControls */ undefined, 
+            /* options */ {}, tracing);
+            substitutions.push(Renderer.render(matchedResult.ast.tree, context).nodes);
+        }
+        // 2nd: Apply evaluations for calc, min, max, etc.
+        while (tracing.nextEvaluation()) {
+            const context = new RenderingContext(matchedResult.ast, rendererMap, matchedResult, 
+            /* cssControls */ undefined, 
+            /* options */ {}, tracing);
+            evaluations.push(Renderer.render(matchedResult.ast.tree, context).nodes);
+        }
         this.#substitutions = substitutions;
+        this.#finalResult = evaluations.pop();
         this.#evaluations = evaluations;
-        this.#finalResult = finalResult;
+        if (evaluations.length === 0 && !tracing.didApplyEvaluations()) {
+            this.#substitutions.pop();
+        }
         this.requestUpdate();
     }
     performUpdate() {

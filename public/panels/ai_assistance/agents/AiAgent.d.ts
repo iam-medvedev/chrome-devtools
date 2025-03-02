@@ -186,7 +186,6 @@ export declare abstract class AiAgent<T> {
     enhanceQuery(query: string, selected: ConversationContext<T> | null, hasImageInput?: boolean): Promise<string>;
     buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.AidaRequest;
     get id(): string;
-    get isEmpty(): boolean;
     get origin(): string | undefined;
     /**
      * Parses a streaming text response into a

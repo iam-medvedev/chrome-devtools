@@ -190,9 +190,31 @@ describeWithMockConnection('MetricCard', () => {
             await RenderCoordinator.done();
             const phaseTable = getPhaseTable(view);
             assert.deepEqual(phaseTable, [
-                ['TTFB', '500'],
-                ['Phase 1', '0'],
-                ['Phase 2', '124'],
+                ['TTFB', '500 ms'],
+                ['Phase 1', '0 ms'],
+                ['Phase 2', '124 ms'],
+            ]);
+        });
+        it('should display field data phases in a table format', async () => {
+            const view = new Components.MetricCard.MetricCard();
+            view.data = {
+                metric: 'LCP',
+                localValue: 100,
+                fieldValue: 200,
+                histogram: createMockHistogram(),
+                fieldDataPhases: [
+                    ['TTFB', 500],
+                    ['Phase 1', 0],
+                    ['Phase 2', 123.783458345],
+                ],
+            };
+            renderElementIntoDOM(view);
+            await RenderCoordinator.done();
+            const phaseTable = getPhaseTable(view);
+            assert.deepEqual(phaseTable, [
+                ['TTFB', '500 ms'],
+                ['Phase 1', '0 ms'],
+                ['Phase 2', '124 ms'],
             ]);
         });
     });
