@@ -10,6 +10,10 @@ export declare const UIStrings: {
      */
     readonly description: "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.";
     /**
+     * @description Description of the warning that recommends avoiding chaining critical requests.
+     */
+    readonly warningDescription: "Avoid chaining critical requests by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.";
+    /**
      * @description Text status indicating that there isn't long chaining critical network requests.
      */
     readonly noNetworkDependencyTree: "No rendering tasks impacted by network dependencies";
@@ -24,6 +28,8 @@ export interface CriticalRequestNode {
     request: Types.Events.SyntheticNetworkRequest;
     timeFromInitialRequest: Types.Timing.Micro;
     children: CriticalRequestNode[];
+    isLongest?: boolean;
+    chain?: Types.Events.SyntheticNetworkRequest[];
 }
 export type NetworkDependencyTreeInsightModel = InsightModel<typeof UIStrings, {
     rootNodes: CriticalRequestNode[];

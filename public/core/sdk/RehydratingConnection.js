@@ -1,27 +1,7 @@
 // Copyright (c) 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * This file is the implementation of a protocol `Connection` object
- *  which is central to the rehydrated devtools feature. The premise of
- * this feature is that the enhanced traces will contain enough
- * information to power this class with all metadata needed. This class
- * then interacts with rehydrated devtools in a way that produces the
- * equivalent result as live debugging session.
- *
- * It's much more of a state machine than the other Connection
- * implementations, which simply interact with a network protocol in
- * one way or another.
- *
- * Note on the methodology to derive runtime/debugger domain behavior below:
- * We can use protocol monitor in the devtools to look at how dt-fe
- * communicates with the backend, and it's also how majority of the behavior
- * in the rehydrated sesion was derived at the first place. In the event of
- * adding more support and capability to rehydrated session, developers will
- * want to look at protocol monitor to imitate the behavior in a real session
- *
- */
-import * as Common from '../../core/common/common.js';
+import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as EnhancedTraces from './EnhancedTracesParser.js';
 import { TraceObject } from './TraceObject.js';
@@ -45,7 +25,7 @@ export class RehydratingConnection {
     rehydratingConnectionState = 1 /* RehydratingConnectionState.UNINITIALIZED */;
     onDisconnect = null;
     onMessage = null;
-    traceEvents = [];
+    trace = null;
     sessions = new Map();
     #onConnectionLost;
     #rehydratingWindow;
@@ -92,8 +72,8 @@ export class RehydratingConnection {
             console.error('RehydratingConnection failed to initialize due to missing trace events in payload');
             return false;
         }
-        this.traceEvents = payload.traceEvents;
-        const enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser(this.traceEvents);
+        this.trace = payload;
+        const enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser(payload);
         const dataPerTarget = enhancedTracesParser.data();
         let sessionId = 0;
         // Set up default rehydrating session.
@@ -121,9 +101,12 @@ export class RehydratingConnection {
         return true;
     }
     async #onRehydrated() {
+        if (!this.trace) {
+            return;
+        }
         this.rehydratingConnectionState = 3 /* RehydratingConnectionState.REHYDRATED */;
         // Use revealer to load trace into performance panel
-        const trace = new TraceObject(this.traceEvents);
+        const trace = new TraceObject(this.trace.traceEvents, this.trace.metadata);
         await Common.Revealer.reveal(trace);
     }
     setOnMessage(onMessage) {

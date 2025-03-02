@@ -555,6 +555,9 @@ export class DebuggerPlugin extends Plugin {
             tokenType === 'PropertyDefinition';
     }
     getPopoverRequest(event) {
+        if (event instanceof KeyboardEvent) {
+            return null;
+        }
         if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
             return null;
         }

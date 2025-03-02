@@ -35,6 +35,10 @@ export declare const UIStrings: {
      */
     readonly duration: "Duration";
     /**
+     * @description Label used for the duration a single phase/component/stage/section takes up of a larger duration. The value will be the 75th percentile of aggregate data. "Field" means that the data was collected from real users in the field as opposed to the developers local environment. "Field" is synonymous with "Real user data".
+     */
+    readonly fieldDuration: "Field 75th percentile";
+    /**
      * @description Text status indicating that the the Largest Contentful Paint (LCP) metric timing was not found. "LCP" is an acronym and should not be translated.
      */
     readonly noLcp: "No LCP detected";

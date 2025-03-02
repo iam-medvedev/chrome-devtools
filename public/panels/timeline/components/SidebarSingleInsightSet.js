@@ -73,7 +73,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * us to ship incrementally without turning insights on by default for all
  * users. */
 const EXPERIMENTAL_INSIGHTS = new Set([
-    'FontDisplay',
     'NetworkDependencyTree',
 ]);
 /**
@@ -318,6 +317,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
                 !shouldRenderForCategory({ activeCategory: this.#data.activeCategory, insightCategory: model.category })) {
                 continue;
             }
+            const fieldMetrics = this.#getFieldMetrics(insightSetKey);
             // clang-format off
             const component = html `<div>
         <${componentClass.litTagName}
@@ -325,7 +325,8 @@ export class SidebarSingleInsightSet extends HTMLElement {
           .model=${model}
           .bounds=${insightSet.bounds}
           .insightSetKey=${insightSetKey}
-          .parsedTrace=${this.#data.parsedTrace}>
+          .parsedTrace=${this.#data.parsedTrace}
+          .fieldMetrics=${fieldMetrics}>
         </${componentClass.litTagName}>
       </div>`;
             // clang-format on

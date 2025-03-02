@@ -4,6 +4,7 @@ import type { TraceFilter } from './TraceFilter.js';
 export declare class Node {
     totalTime: number;
     selfTime: number;
+    transferSize: number;
     id: string | symbol;
     /** The first trace event encountered that necessitated the creation of this tree node. */
     event: Types.Events.Event;
@@ -68,12 +69,14 @@ export declare class BottomUpRootNode extends Node {
     readonly endTime: Types.Timing.Milli;
     private eventGroupIdCallback;
     totalTime: number;
-    constructor(events: Types.Events.Event[], { textFilter, filters, startTime, endTime, eventGroupIdCallback }: {
+    private calculateTransferSize?;
+    constructor(events: Types.Events.Event[], { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, }: {
         textFilter: TraceFilter;
         filters: readonly TraceFilter[];
         startTime: Types.Timing.Milli;
         endTime: Types.Timing.Milli;
         eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null;
+        calculateTransferSize?: boolean;
     });
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
@@ -86,7 +89,7 @@ export declare class GroupNode extends Node {
     isGroupNodeInternal: boolean;
     events: Types.Events.Event[];
     constructor(id: string, parent: BottomUpRootNode | TopDownRootNode, events: Types.Events.Event[]);
-    addChild(child: BottomUpNode, selfTime: number, totalTime: number): void;
+    addChild(child: BottomUpNode, selfTime: number, totalTime: number, transferSize: number): void;
     hasChildren(): boolean;
     children(): ChildrenCache;
 }

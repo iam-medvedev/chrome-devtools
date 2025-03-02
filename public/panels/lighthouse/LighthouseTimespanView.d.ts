@@ -3,6 +3,7 @@ import type { LighthousePanel } from './LighthousePanel.js';
 export declare class TimespanView extends UI.Dialog.Dialog {
     private panel;
     private statusHeader;
+    private contentContainer;
     private endButton;
     constructor(panel: LighthousePanel);
     show(dialogRenderElement: Element): void;

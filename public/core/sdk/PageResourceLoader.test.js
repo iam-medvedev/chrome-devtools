@@ -42,6 +42,7 @@ describeWithLocale('PageResourceLoader', () => {
             success: true,
             initiator,
             size: null,
+            duration: null,
         };
         loader.resourceLoadedThroughExtension(extensionResource);
         assert.deepEqual(loader.getScopedNumberOfResources(), { loading: 0, resources: 1 });

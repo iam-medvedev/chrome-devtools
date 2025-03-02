@@ -75,6 +75,7 @@ export declare const enum ExperimentName {
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
+    TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources",
     TIMELINE_SERVER_TIMINGS = "timeline-server-timings",
     FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE = "floating-entry-points-for-ai-assistance",
     TIMELINE_EXPERIMENTAL_INSIGHTS = "timeline-experimental-insights",
@@ -168,6 +169,9 @@ export interface HostConfigThirdPartyCookieControls {
     thirdPartyCookieHeuristicsEnabled: boolean;
     managedBlockThirdPartyCookies: string | boolean;
 }
+interface CSSValueTracing {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -201,6 +205,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsEnableOriginBoundCookies: HostConfigEnableOriginBoundCookies;
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
     thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
+    devToolsCssValueTracing: CSSValueTracing;
 }>;
 /**
  * The host configuration for this DevTools instance.
@@ -225,3 +230,4 @@ export type Condition = (config?: HostConfig) => boolean;
 export declare const conditions: {
     canDock: () => boolean;
 };
+export {};

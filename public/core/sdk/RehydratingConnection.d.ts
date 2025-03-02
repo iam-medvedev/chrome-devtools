@@ -1,6 +1,6 @@
 import type * as Platform from '../platform/platform.js';
 import type * as ProtocolClient from '../protocol_client/protocol_client.js';
-import type { ProtocolMessage, RehydratingExecutionContext, RehydratingScript, RehydratingTarget, ServerMessage } from './RehydratingObject.js';
+import type { ProtocolMessage, RehydratingExecutionContext, RehydratingScript, RehydratingTarget, ServerMessage, TraceFile } from './RehydratingObject.js';
 export interface RehydratingConnectionInterface {
     postToFrontend: (arg: ServerMessage) => void;
 }
@@ -14,7 +14,7 @@ export declare class RehydratingConnection implements ProtocolClient.InspectorBa
     rehydratingConnectionState: RehydratingConnectionState;
     onDisconnect: ((arg0: string) => void) | null;
     onMessage: ((arg0: Object) => void) | null;
-    traceEvents: unknown[];
+    trace: TraceFile | null;
     sessions: Map<number, RehydratingSessionBase>;
     constructor(onConnectionLost: (message: Platform.UIString.LocalizedString) => void);
     startHydration(logPayload: string): Promise<boolean>;

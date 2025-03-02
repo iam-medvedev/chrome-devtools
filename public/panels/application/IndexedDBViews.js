@@ -601,8 +601,6 @@ export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {
                 cell.appendChild(objectElement);
                 break;
             }
-            default: {
-            }
         }
         return cell;
     }

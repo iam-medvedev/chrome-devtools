@@ -185,6 +185,9 @@ export class BottomUpTreeMatching extends TreeWalker {
         this.iterateExcludingSuccessors(node);
         this.#matchers.push(...matchers);
     }
+    hasMatches(...matchTypes) {
+        return Boolean(this.#matchedNodes.values().find(match => matchTypes.some(matchType => match instanceof matchType)));
+    }
     getMatch(node) {
         return this.#matchedNodes.get(this.#key(node));
     }
@@ -196,6 +199,10 @@ export class BottomUpTreeMatching extends TreeWalker {
     }
     getComputedText(node, substitutions) {
         return this.getComputedTextRange(node, node, substitutions);
+    }
+    getComputedPropertyValueText() {
+        const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
+        return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
     }
     getComputedTextRange(from, to, substitutions) {
         return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from, substitutions);
@@ -370,6 +377,10 @@ export var ASTUtils;
         return siblings(node?.firstChild ?? null);
     }
     ASTUtils.children = children;
+    function range(node) {
+        return [node[0], node[node.length - 1]];
+    }
+    ASTUtils.range = range;
     function declValue(node) {
         if (node.name !== 'Declaration') {
             return null;

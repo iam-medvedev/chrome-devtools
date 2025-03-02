@@ -18,6 +18,9 @@ export default {
   border-top: 1px solid var(--sys-color-divider);
 }
 
+.target-selector {
+  max-width: 120px;
+}
 /*# sourceURL=${import.meta.resolve('./protocolMonitor.css')} */
 `
 };

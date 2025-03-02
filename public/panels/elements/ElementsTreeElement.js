@@ -49,6 +49,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Emulation from '../emulation/emulation.js';
 import * as ElementsComponents from './components/components.js';
 import { canGetJSPath, cssPath, jsPath, xPath } from './DOMPath.js';
+import { getElementIssueDetails } from './ElementIssueUtils.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { MappedCharToEntity } from './ElementsTreeOutline.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
@@ -385,9 +386,12 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.#applyIssueStyleAndTooltip(newIssue);
     }
     #applyIssueStyleAndTooltip(issue) {
-        const issueDetails = issue.details();
-        if (issueDetails.violatingNodeAttribute) {
-            this.#highlightViolatingAttr(issueDetails.violatingNodeAttribute, issue);
+        const elementIssueDetails = getElementIssueDetails(issue);
+        if (!elementIssueDetails) {
+            return;
+        }
+        if (elementIssueDetails.attribute) {
+            this.#highlightViolatingAttr(elementIssueDetails.attribute, issue);
         }
         else {
             this.#highlightTagAsViolating(issue);
@@ -1052,13 +1056,11 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                         this.triggerEditAttribute(attributes[i - 1].name);
                     }
                 }
+                else if (i === attributes.length - 1) {
+                    this.addNewAttribute();
+                }
                 else {
-                    if (i === attributes.length - 1) {
-                        this.addNewAttribute();
-                    }
-                    else {
-                        this.triggerEditAttribute(attributes[i + 1].name);
-                    }
+                    this.triggerEditAttribute(attributes[i + 1].name);
                 }
                 return;
             }
@@ -1069,12 +1071,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                     if (attributes.length > 0) {
                         this.triggerEditAttribute(attributes[attributes.length - 1].name);
                     }
-                }
-                else {
                     // Moving from "New Attribute" that holds new value
-                    if (attributes.length > 1) {
-                        this.triggerEditAttribute(attributes[attributes.length - 2].name);
-                    }
+                }
+                else if (attributes.length > 1) {
+                    this.triggerEditAttribute(attributes[attributes.length - 2].name);
                 }
             }
             else if (moveDirection === 'forward') {

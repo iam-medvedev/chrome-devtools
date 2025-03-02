@@ -168,8 +168,8 @@ export class ReplaySection extends HTMLElement {
       .value=${this.#settings?.replayExtension || this.#settings?.speed || ''}
       .buttonLabel=${i18nString(UIStrings.Replay)}
       .groups=${groups}
-      jslog=${VisualLogging.action("chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */).track({ click: true })}>
-    </devtools-select-button>`, this.#shadow, { host: this });
+      jslog=${VisualLogging.action("chrome-recorder.replay-recording" /* Actions.RecorderActions.REPLAY_RECORDING */).track({ click: true })}
+    ></devtools-select-button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

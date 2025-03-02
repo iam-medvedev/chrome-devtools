@@ -12,6 +12,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as LiveMetrics from '../../../models/live-metrics/live-metrics.js';
+import * as Trace from '../../../models/trace/trace.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
@@ -374,6 +375,26 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         cruxManager.removeEventListener("field-data-changed" /* CrUXManager.Events.FIELD_DATA_CHANGED */, this.#onFieldDataChanged, this);
         this.#deviceModeModel?.removeEventListener("Updated" /* EmulationModel.DeviceModeModel.Events.UPDATED */, this.#onEmulationChanged, this);
     }
+    #getLcpFieldPhases() {
+        const ttfb = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint_image_time_to_first_byte')
+            ?.percentiles?.p75;
+        const loadDelay = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint_image_resource_load_delay')
+            ?.percentiles?.p75;
+        const loadDuration = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint_image_resource_load_duration')
+            ?.percentiles?.p75;
+        const renderDelay = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint_image_element_render_delay')
+            ?.percentiles?.p75;
+        if (typeof ttfb !== 'number' || typeof loadDelay !== 'number' || typeof loadDuration !== 'number' ||
+            typeof renderDelay !== 'number') {
+            return;
+        }
+        return [
+            [i18nString(UIStrings.timeToFirstByte), Trace.Types.Timing.Milli(ttfb)],
+            [i18nString(UIStrings.resourceLoadDelay), Trace.Types.Timing.Milli(loadDelay)],
+            [i18nString(UIStrings.resourceLoadDuration), Trace.Types.Timing.Milli(loadDuration)],
+            [i18nString(UIStrings.elementRenderDelay), Trace.Types.Timing.Milli(renderDelay)],
+        ];
+    }
     #renderLcpCard() {
         const fieldData = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint');
         const nodeLink = this.#lcpValue?.nodeRef?.link;
@@ -393,6 +414,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 [i18nString(UIStrings.resourceLoadDuration), phases.resourceLoadTime],
                 [i18nString(UIStrings.elementRenderDelay), phases.elementRenderDelay],
             ],
+            fieldDataPhases: this.#getLcpFieldPhases(),
         }}>
         ${nodeLink ? html `
             <div class="related-info" slot="extra-info">

@@ -214,10 +214,8 @@ export class PanelUtils {
             hasDotBadge = true;
             isDotPurple = true;
         }
-        else {
-            if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
-                iconType = 'snippet';
-            }
+        else if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
+            iconType = 'snippet';
         }
         const icon = new IconButton.FileSourceIcon.FileSourceIcon(iconType);
         icon.data = {

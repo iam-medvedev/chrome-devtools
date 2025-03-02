@@ -87,7 +87,11 @@ describeWithMockConnection('PersistenceImpl', () => {
     it('moves breakpoint from file system uiSourceCode to the network uiSourceCode when binding is created', async () => {
         const fileSystemPath = urlString `file://path/to/filesystem`;
         const fileSystemFileUrl = urlString `${fileSystemPath + '/script.js'}`;
-        const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({ fileSystemPath, fileSystemFileUrl, type: '' }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target);
+        const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({
+            fileSystemPath,
+            fileSystemFileUrl,
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT
+        }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target);
         const breakpointLine = 0;
         // Set the breakpoint response for our upcoming request.
         await setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine);
@@ -103,7 +107,11 @@ describeWithMockConnection('PersistenceImpl', () => {
     it('copies breakpoint from network uiSourceCode to the file system uiSourceCode when binding is removed ', async () => {
         const fileSystemPath = urlString `file://path/to/filesystem`;
         const fileSystemFileUrl = urlString `${fileSystemPath + '/script.js'}`;
-        const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({ fileSystemPath, fileSystemFileUrl, type: '' }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target);
+        const { uiSourceCode: fileSystemUiSourceCode, project } = createFileSystemFileForPersistenceTests({
+            fileSystemPath,
+            fileSystemFileUrl,
+            type: Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT
+        }, SCRIPT_DESCRIPTION.url, SCRIPT_DESCRIPTION.content, target);
         const breakpointLine = 0;
         // Set the breakpoint response for our upcoming request.
         await setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine);

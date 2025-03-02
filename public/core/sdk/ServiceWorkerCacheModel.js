@@ -91,11 +91,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
         void this.requestAllEntries(cache, pathFilter, callback);
     }
     caches() {
-        const caches = new Array();
-        for (const cache of this.#cachesInternal.values()) {
-            caches.push(cache);
-        }
-        return caches;
+        return [...this.#cachesInternal.values()];
     }
     dispose() {
         for (const cache of this.#cachesInternal.values()) {

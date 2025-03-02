@@ -73,9 +73,6 @@
       "path": "lantern/bundle-tsconfig.json"
     },
     {
-      "path": "root-causes/bundle-tsconfig.json"
-    },
-    {
       "path": "types/bundle-tsconfig.json"
     }
   ]

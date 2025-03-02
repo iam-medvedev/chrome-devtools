@@ -102,18 +102,28 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         const eventsView = new EventsTimelineTreeView(delegate);
         this.appendTab(Tab.EventLog, i18nString(UIStrings.eventLog), eventsView);
         this.rangeDetailViews.set(Tab.EventLog, eventsView);
+        // Listeners for hover dimming
         this.rangeDetailViews.values().forEach(view => {
             view.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data));
+            view.addEventListener("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node => {
+                // Re-dispatch to reach the tree row dimmer.
+                this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node.data);
+            });
             // If there's a heaviest stack sidebar view, also listen to hover within it.
             if (view instanceof AggregatedTimelineTreeView) {
                 view.stackView.addEventListener("TreeRowHovered" /* TimelineStackView.Events.TREE_ROW_HOVERED */, node => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data));
             }
         });
-        this.#thirdPartyTree.addEventListener("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node => {
-            this.dispatchEventToListeners("ThirdPartyRowHovered" /* TimelineTreeView.Events.THIRD_PARTY_ROW_HOVERED */, node.data);
+        this.#thirdPartyTree.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => {
+            // Re-dispatch through 3P event to get 3P dimmer.
+            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data);
         });
         this.#thirdPartyTree.addEventListener("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, node => {
             this.selectTab(Tab.BottomUp, node.data, AggregatedTimelineTreeView.GroupBy.ThirdParties);
+        });
+        this.#thirdPartyTree.addEventListener("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node => {
+            // Re-dispatch through 3P event to get 3P dimmer.
+            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node.data);
         });
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
@@ -248,12 +258,12 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
                 this.tabbedPane.closeTab(allTabs[i]);
             }
         }
+        // Append relatedChips inside of the node being shown.
+        const chipParent = (node instanceof Element && node.shadowRoot || node);
+        chipParent.appendChild(this.#relatedInsightChips);
         this.defaultDetailsContentWidget.detach();
         this.defaultDetailsContentWidget = this.#createContentWidget();
         this.defaultDetailsContentWidget.contentElement.append(node);
-        if (this.#relatedInsightChips) {
-            this.defaultDetailsContentWidget.contentElement.appendChild(this.#relatedInsightChips);
-        }
     }
     updateContents() {
         const traceBoundsState = TraceBounds.TraceBounds.BoundsManager.instance().state();
@@ -265,10 +275,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         const view = this.rangeDetailViews.get(this.tabbedPane.selectedTabId || '');
         if (view) {
             view.updateContents(this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max));
-        }
-        else {
-            // If no view, we must be in the summary tab, update the 3p tree.
-            this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(visibleWindow.min, visibleWindow.max));
         }
     }
     appendTab(id, tabTitle, view, isCloseable) {
@@ -488,6 +494,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         const startOffset = startTime - minBoundsMilli;
         const endOffset = endTime - minBoundsMilli;
         const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
+        this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(startTime, endTime));
         this.setSummaryContent(summaryDetailElem);
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();

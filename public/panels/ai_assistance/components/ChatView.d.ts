@@ -1,6 +1,8 @@
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
-import { AgentType, type ContextDetail, type ConversationContext, ErrorType } from '../agents/AiAgent.js';
+import type * as Platform from '../../../core/platform/platform.js';
+import { type ContextDetail, type ConversationContext, ErrorType } from '../agents/AiAgent.js';
+import { ConversationType } from '../AiHistoryStorage.js';
 export interface Step {
     isLoading: boolean;
     thought?: string;
@@ -43,9 +45,9 @@ export interface Props {
     onCancelClick: () => void;
     onContextClick: () => void;
     onNewConversation: () => void;
-    onCancelCrossOriginChat?: () => void;
     onTakeScreenshot?: () => void;
     onRemoveImageInput?: () => void;
+    onTextInputChange: (input: string) => void;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
@@ -54,10 +56,9 @@ export interface Props {
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;
-    agentType?: AgentType;
+    conversationType?: ConversationType;
     isReadOnly: boolean;
     blockedByCrossOrigin: boolean;
-    stripLinks: boolean;
     changeSummary?: string;
     patchSuggestion?: string;
     patchSuggestionLoading?: boolean;
@@ -65,6 +66,11 @@ export interface Props {
     multimodalInputEnabled?: boolean;
     imageInput?: string;
     onApplyToWorkspace?: () => void;
+    isTextInputDisabled: boolean;
+    emptyStateSuggestions: string[];
+    inputPlaceholder: Platform.UIString.LocalizedString;
+    disclaimerText: Platform.UIString.LocalizedString;
+    isTextInputEmpty: boolean;
 }
 export declare class ChatView extends HTMLElement {
     #private;
@@ -74,7 +80,6 @@ export declare class ChatView extends HTMLElement {
     disconnectedCallback(): void;
     focusTextInput(): void;
     restoreScrollPosition(): void;
-    finishTextAnimations(): void;
     scrollToBottom(): void;
 }
 declare global {

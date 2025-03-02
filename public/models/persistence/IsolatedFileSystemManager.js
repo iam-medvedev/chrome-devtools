@@ -32,6 +32,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import { IsolatedFileSystem } from './IsolatedFileSystem.js';
+import { PlatformFileSystemType } from './PlatformFileSystem.js';
 const UIStrings = {
     /**
      *@description Text in Isolated File System Manager of the Workspace settings in Settings
@@ -147,7 +148,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     innerAddFileSystem(fileSystem, dispatchEvent) {
         const embedderPath = fileSystem.fileSystemPath;
         const fileSystemURL = Common.ParsedURL.ParsedURL.rawPathToUrlString(fileSystem.fileSystemPath);
-        const promise = IsolatedFileSystem.create(this, fileSystemURL, embedderPath, fileSystem.type, fileSystem.fileSystemName, fileSystem.rootURL);
+        const promise = IsolatedFileSystem.create(this, fileSystemURL, embedderPath, hostFileSystemTypeToPlatformFileSystemType(fileSystem.type), fileSystem.fileSystemName, fileSystem.rootURL, fileSystem.type === 'automatic');
         return promise.then(storeFileSystem.bind(this));
         function storeFileSystem(fileSystem) {
             if (!fileSystem) {
@@ -291,4 +292,14 @@ export var Events;
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 let lastRequestId = 0;
+function hostFileSystemTypeToPlatformFileSystemType(type) {
+    switch (type) {
+        case 'snippets':
+            return PlatformFileSystemType.SNIPPETS;
+        case 'overrides':
+            return PlatformFileSystemType.OVERRIDES;
+        default:
+            return PlatformFileSystemType.WORKSPACE_PROJECT;
+    }
+}
 //# sourceMappingURL=IsolatedFileSystemManager.js.map

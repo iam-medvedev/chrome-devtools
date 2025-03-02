@@ -101,7 +101,7 @@ export class ExperimentsSupport {
     }
     register(experimentName, experimentTitle, unstable, docLink, feedbackLink) {
         if (this.#experimentNames.has(experimentName)) {
-            throw new Error(`Duplicate registraction of experiment '${experimentName}'`);
+            throw new Error(`Duplicate registration of experiment '${experimentName}'`);
         }
         this.#experimentNames.add(experimentName);
         this.#experiments.push(new Experiment(this, experimentName, experimentTitle, Boolean(unstable), docLink ?? Platform.DevToolsPath.EmptyUrlString, feedbackLink ?? Platform.DevToolsPath.EmptyUrlString));

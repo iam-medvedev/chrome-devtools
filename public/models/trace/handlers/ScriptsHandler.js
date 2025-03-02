@@ -84,6 +84,7 @@ export async function finalize(options) {
         if (!sourceMapUrl) {
             continue;
         }
+        script.sourceMapUrl = sourceMapUrl;
         const params = {
             scriptId: script.scriptId,
             scriptUrl: sourceUrl,

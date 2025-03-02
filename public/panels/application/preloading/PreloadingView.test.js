@@ -201,7 +201,6 @@ function createRuleSetView(target) {
     const view = new Resources.PreloadingView.PreloadingRuleSetView(model);
     const container = new UI.Widget.VBox();
     const div = document.createElement('div');
-    view.contentElement.style.display = 'block';
     view.contentElement.style.width = '640px';
     view.contentElement.style.height = '480px';
     renderElementIntoDOM(div);

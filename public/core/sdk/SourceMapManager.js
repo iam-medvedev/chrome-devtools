@@ -124,15 +124,13 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     cancelAttachSourceMap(client) {
         if (client === this.#attachingClient) {
             this.#attachingClient = null;
+            // This should not happen.
+        }
+        else if (this.#attachingClient) {
+            console.error('cancel attach source map requested but a different source map was being attached');
         }
         else {
-            // This should not happen.
-            if (this.#attachingClient) {
-                console.error('cancel attach source map requested but a different source map was being attached');
-            }
-            else {
-                console.error('cancel attach source map requested but no source map was being attached');
-            }
+            console.error('cancel attach source map requested but no source map was being attached');
         }
     }
     detachSourceMap(client) {
@@ -161,6 +159,16 @@ export async function loadSourceMap(url, initiator) {
     }
     catch (cause) {
         throw new Error(`Could not load content for ${url}: ${cause.message}`, { cause });
+    }
+}
+export async function tryLoadSourceMap(url, initiator) {
+    try {
+        const { content } = await PageResourceLoader.instance().loadResource(url, initiator);
+        return parseSourceMap(content);
+    }
+    catch (cause) {
+        console.error(`Could not load content for ${url}: ${cause.message}`, { cause });
+        return null;
     }
 }
 export var Events;

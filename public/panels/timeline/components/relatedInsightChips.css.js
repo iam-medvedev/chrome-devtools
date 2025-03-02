@@ -12,16 +12,17 @@ export default {
 
 :host {
   display: block;
-  padding: var(--sys-size-4);
+  border-bottom: 1px solid var(--sys-color-divider);
+  flex: none;
 }
 
 ul {
   list-style: none;
   margin: 0;
-  padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--sys-size-5);
+  gap: var(--sys-size-4);
+  padding: 0 var(--sys-size-4);
   justify-content: flex-start;
   align-items: center;
 }
@@ -33,7 +34,7 @@ ul {
   border: var(--sys-size-1) solid var(--sys-color-primary);
   border-radius: var(--sys-shape-corner-extra-small);
   display: flex;
-  margin-top: var(--sys-size-4);
+  margin: var(--sys-size-4) 0;
   padding: var(--sys-size-2) var(--sys-size-4) var(--sys-size-2) var(--sys-size-4);
   width: max-content;
   white-space: pre;
@@ -54,6 +55,7 @@ ul {
   background: var(--sys-color-surface-yellow);
   border-radius: var(--sys-shape-corner-extra-small);
   font: var(--sys-typescale-body4-regular);
+  margin: var(--sys-size-4) 0;
 
   button {
     color: var(--sys-color-on-surface-yellow);

@@ -248,7 +248,6 @@ models/trace/lantern/simulation/ConnectionPool.test.js
 models/trace/lantern/simulation/DNSCache.test.js
 models/trace/lantern/simulation/Simulator.test.js
 models/trace/lantern/simulation/TCPConnection.test.js
-models/trace/root-causes/LayoutShift.test.js
 models/trace/types/File.test.js
 models/trace/types/TraceEvents.test.js
 models/workspace/SearchConfig.test.js
@@ -260,6 +259,8 @@ panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/AiHistoryStorage.test.js
 panels/ai_assistance/ChangeManager.test.js
 panels/ai_assistance/EvaluateAction.test.js
+panels/ai_assistance/ExtensionScope.test.js
+panels/ai_assistance/PatchWidget.test.js
 panels/ai_assistance/agents/AiAgent.test.js
 panels/ai_assistance/agents/FileAgent.test.js
 panels/ai_assistance/agents/NetworkAgent.test.js
@@ -579,7 +580,6 @@ ui/components/report_view/ReportView.test.js
 ui/components/request_link_icon/RequestLinkIcon.test.js
 ui/components/settings/SettingCheckbox.test.js
 ui/components/settings/SettingDeprecationWarning.test.js
-ui/components/split_view/SplitView.test.js
 ui/components/survey_link/SurveyLink.test.js
 ui/components/switch/SwitchImpl.test.js
 ui/components/text_editor/AutocompleteHistory.test.js

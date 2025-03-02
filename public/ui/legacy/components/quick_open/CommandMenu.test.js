@@ -43,12 +43,8 @@ describeWithLocale('CommandMenu', () => {
         const { provider } = createCommandMenuProvider(deprecation);
         provider.renderItem(0, 'Test', elements.title, elements.subtitle);
         const tags = Array.from(elements.toplevel.querySelectorAll('.deprecated-tag'));
-        try {
-            assert.deepEqual(tags.map(e => e.textContent), ['— deprecated']);
-            assert.deepEqual(tags[0].title, 'Deprecation Warning');
-        }
-        finally {
-        }
+        assert.deepEqual(tags.map(e => e.textContent), ['— deprecated']);
+        assert.deepEqual(tags[0].title, 'Deprecation Warning');
     });
     it('reveals the setting when calling a deprecated setting', () => {
         const deprecation = { disabled: true, warning };

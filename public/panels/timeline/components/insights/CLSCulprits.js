@@ -33,6 +33,24 @@ export class CLSCulprits extends BaseInsightComponent {
     #clickEvent(event) {
         this.dispatchEvent(new EventReferenceClick(event));
     }
+    #renderCulpritsSection(culprits) {
+        if (culprits.length === 0) {
+            return html `<div class="insight-section">${i18nString(UIStrings.noCulprits)}</div>`;
+        }
+        // clang-format off
+        return html `
+      <div class="insight-section">
+        <p class="list-title">${i18nString(UIStrings.topCulprits)}:</p>
+        <ul class="worst-culprits">
+          ${culprits.map(culprit => {
+            return html `
+              <li>${culprit}</li>
+            `;
+        })}
+        </ul>
+      </div>`;
+        // clang-format on
+    }
     renderContent() {
         if (!this.model || !this.bounds) {
             return Lit.nothing;
@@ -42,24 +60,15 @@ export class CLSCulprits extends BaseInsightComponent {
         }
         const worstCluster = this.model.worstCluster;
         const culprits = this.model.topCulpritsByCluster.get(worstCluster) ?? [];
-        if (culprits.length === 0) {
-            return html `<div class="insight-section">${i18nString(UIStrings.noCulprits)}</div>`;
-        }
         const ts = Trace.Types.Timing.Micro(worstCluster.ts - this.bounds.min);
         const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
         // clang-format off
         return html `
       <div class="insight-section">
         <span class="worst-cluster">${i18nString(UIStrings.worstCluster)}: <button type="button" class="timeline-link" @click=${() => this.#clickEvent(worstCluster)}>${i18nString(UIStrings.layoutShiftCluster, { PH1: clusterTs })}</button></span>
-          <p class="list-title">${i18nString(UIStrings.topCulprits)}:</p>
-          <ul class="worst-culprits">
-            ${culprits.map(culprit => {
-            return html `
-                <li>${culprit}</li>
-              `;
-        })}
-          </ul>
-      </div>`;
+      </div>
+      ${this.#renderCulpritsSection(culprits)}
+    `;
         // clang-format on
     }
 }

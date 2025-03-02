@@ -19,6 +19,7 @@ export default {
   padding: 0;
   overflow: visible;
   position-area: bottom;
+  position-visibility: anchors-visible;
   justify-self: anchor-center;
   position-try-fallbacks: flip-inline, flip-block, flip-inline flip-block;
 

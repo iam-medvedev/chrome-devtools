@@ -15,11 +15,14 @@ export declare const UIStrings: {
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
 export declare function deps(): ['Meta', 'NetworkRequests', 'LayoutShifts'];
+interface RemoteFont {
+    name?: string;
+    request: Types.Events.SyntheticNetworkRequest;
+    display: string;
+    wastedTime: Types.Timing.Milli;
+}
 export type FontDisplayInsightModel = InsightModel<typeof UIStrings, {
-    fonts: Array<{
-        request: Types.Events.SyntheticNetworkRequest;
-        display: string;
-        wastedTime: Types.Timing.Milli;
-    }>;
+    fonts: RemoteFont[];
 }>;
 export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): FontDisplayInsightModel;
+export {};

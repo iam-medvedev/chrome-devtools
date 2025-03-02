@@ -42,22 +42,12 @@ color: red;
             assert.exists(component.shadowRoot?.firstElementChild);
             return component.shadowRoot.firstElementChild;
         };
-        it('strips links if stripLinks true', () => {
-            const linklessRenderer = new AiAssistance.MarkdownRendererWithCodeBlock({ stripLinks: true });
+        it('strips links', () => {
+            const linklessRenderer = new AiAssistance.MarkdownRendererWithCodeBlock();
             for (const linkCase of linkCases) {
                 const elem = renderToElem(linkCase, linklessRenderer);
                 assert.lengthOf(elem.querySelectorAll('a, x-link, devtools-link'), 0);
                 assert.isFalse(['<a', '<x-link', '<devtools-link'].some(tagName => elem.outerHTML.includes(tagName)));
-                assert.isOk(elem.textContent?.includes('( https://z.com )'), linkCase);
-            }
-        });
-        it('leaves links intact by default', () => {
-            const linkfulRenderer = new AiAssistance.MarkdownRendererWithCodeBlock();
-            for (const linkCase of linkCases) {
-                const elem = renderToElem(linkCase, linkfulRenderer);
-                assert.lengthOf(elem.querySelectorAll('a, x-link, devtools-link'), 1);
-                assert.isTrue(['<a', '<x-link', '<devtools-link'].some(tagName => elem.outerHTML.includes(tagName)));
-                assert.isFalse(elem.textContent?.includes('( https://z.com )'));
             }
         });
         const imageCases = [
@@ -68,13 +58,12 @@ color: red;
             'plain image href https://z.com/i.png .',
             'link in quotes \'https://z.com/i.png\' .',
         ];
-        it('strips images if stripLinks true', () => {
-            const linklessRenderer = new AiAssistance.MarkdownRendererWithCodeBlock({ stripLinks: true });
+        it('strips images', () => {
+            const linklessRenderer = new AiAssistance.MarkdownRendererWithCodeBlock();
             for (const imageCase of imageCases) {
                 const elem = renderToElem(imageCase, linklessRenderer);
                 assert.lengthOf(elem.querySelectorAll('a, x-link, devtools-link, img, devtools-markdown-image'), 0);
                 assert.isFalse(['<a', '<x-link', '<devtools-link', '<img', '<devtools-markdown-image'].some(tagName => elem.outerHTML.includes(tagName)));
-                assert.isOk(elem.textContent?.includes('( https://z.com/i.png )'), imageCase);
             }
         });
     });

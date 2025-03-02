@@ -27,6 +27,8 @@ export declare abstract class BaseInsightComponent<T extends InsightModel<{}, {}
     get bounds(): Trace.Types.Timing.TraceWindowMicro | null;
     set bounds(bounds: Trace.Types.Timing.TraceWindowMicro | null);
     set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    set fieldMetrics(fieldMetrics: Trace.Insights.Common.CrUXFieldMetricResults);
+    get fieldMetrics(): Trace.Insights.Common.CrUXFieldMetricResults | null;
     /**
      * Replaces the initial insight overlays with the ones provided.
      *

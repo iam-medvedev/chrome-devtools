@@ -72,7 +72,10 @@ export default {
     position: absolute;
     top: 0;
     left: -2px; /* Needed for aligning with other divider lines */
-    width: calc(100% + 4px); /* Needed for extending the divider line to the edges */
+    width: calc(
+      100% + 4px
+    ); /* Needed for extending the divider line to the edges */
+
     height: var(--sys-size-4);
 
     & .input-form-shadow {
@@ -137,6 +140,7 @@ export default {
     img {
       margin: var(--sys-size-4) 0;
       max-height: var(--sys-size-18);
+      max-width: 100%;
       border: 1px solid var(--sys-color-neutral-outline);
       border-radius: var(--sys-shape-corner-small);
     }
@@ -144,10 +148,9 @@ export default {
 }
 
 .chat-input {
-  --right-padding:
-    calc(
-      var(--sys-size-3) + 26px
-    ); /* Gap between the button and the edge + icon's width */
+  --right-padding: calc(
+    var(--sys-size-3) + 26px
+  ); /* Gap between the button and the edge + icon's width */
 
   scrollbar-width: none;
   field-sizing: content; /* stylelint-disable-line property-no-unknown */
@@ -159,8 +162,7 @@ export default {
   font: var(--sys-typescale-body4-regular);
   line-height: 18px;
   min-height: var(--sys-size-11);
-  padding:
-    var(--sys-size-4) var(--right-padding) var(--sys-size-4)
+  padding: var(--sys-size-4) var(--right-padding) var(--sys-size-4)
     var(--sys-size-4);
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
@@ -188,6 +190,12 @@ export default {
     /* cancel + start new chat button */
     --right-padding: 172px;
   }
+
+  &.screenshot-button {
+    --right-padding: calc(
+      2 * var(--sys-size-3) + 2 * 26px
+    ); /* Gaps because of right paddings + width of two icons */
+  }
 }
 
 .chat-input-buttons {
@@ -199,7 +207,7 @@ export default {
 }
 
 .chat-input-button {
-  padding-bottom: 3px;
+  padding-bottom: 2px;
   padding-right: var(--sys-size-3);
 }
 
@@ -218,7 +226,7 @@ export default {
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
 
   .disclaimer-text {
-    max-width: var(--sys-size-36);
+    max-width: var(--sys-size-38);
     color: var(--sys-color-on-surface-subtle);
     font: var(--sys-typescale-body5-regular);
     text-wrap: pretty;
@@ -290,16 +298,19 @@ export default {
     color: var(--sys-color-on-surface-subtle);
   }
 
-  img {
-    margin: var(--sys-size-4) 0;
-    max-height: var(--sys-size-20);
-    border-radius: var(--sys-shape-corner-small);
-    border: 1px solid var(--sys-color-neutral-outline);
-    width: fit-content;
-  }
-
   .image-link {
     width: fit-content;
+    border-radius: var(--sys-shape-corner-small);
+    outline-offset: var(--sys-size-2);
+
+    img {
+      max-height: var(--sys-size-20);
+      max-width: 100%;
+      border-radius: var(--sys-shape-corner-small);
+      border: 1px solid var(--sys-color-neutral-outline);
+      width: fit-content;
+      vertical-align: bottom;
+    }
   }
 }
 
@@ -441,7 +452,7 @@ export default {
   }
 
   &:not(&[open]):hover::after {
-    content: "";
+    content: '';
     height: 100%;
     width: 100%;
     border-radius: inherit;
@@ -497,7 +508,11 @@ export default {
   }
 
   summary::marker {
-    content: "";
+    content: '';
+  }
+
+  summary {
+    border-radius: var(--sys-size-6);
   }
 
   .step-details {
@@ -611,12 +626,11 @@ main {
       height: var(--sys-size-14);
       width: var(--sys-size-14);
       border-radius: var(--sys-shape-corner-small);
-      background:
-        linear-gradient(
-          135deg,
-          var(--sys-color-gradient-primary),
-          var(--sys-color-gradient-tertiary)
-        );
+      background: linear-gradient(
+        135deg,
+        var(--sys-color-gradient-primary),
+        var(--sys-color-gradient-tertiary)
+      );
     }
 
     h1 {
@@ -691,12 +705,11 @@ main {
     border-radius: var(--sys-shape-corner-extra-small);
     width: var(--sys-size-9);
     height: var(--sys-size-9);
-    background:
-      linear-gradient(
-        135deg,
-        var(--sys-color-gradient-primary),
-        var(--sys-color-gradient-tertiary)
-      );
+    background: linear-gradient(
+      135deg,
+      var(--sys-color-gradient-primary),
+      var(--sys-color-gradient-tertiary)
+    );
     margin-right: var(--sys-size-5);
 
     devtools-icon {
@@ -751,12 +764,12 @@ main {
     }
 
     &::marker {
-      content: "";
+      content: '';
     }
   }
 
   &:not(&[open]):hover::after {
-    content: "";
+    content: '';
     height: 100%;
     width: 100%;
     border-radius: inherit;
@@ -789,7 +802,16 @@ main {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    padding: var(--sys-size-4);
+    margin: var(--sys-size-5);
+  }
+
+  .selected-folder {
+    margin: var(--sys-size-3) var(--sys-size-3) 0 0;
+  }
+
+  .change-workspace {
+    display: flex;
+    flex-direction: row;
   }
 
   .patch-tmp-message {

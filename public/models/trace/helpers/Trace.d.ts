@@ -26,15 +26,12 @@ export interface TimeSpan {
     ts: Types.Timing.Micro;
     dur?: Types.Timing.Micro;
 }
-export declare function eventTimeComparator(a: TimeSpan, b: TimeSpan): -1 | 0 | 1;
+export declare function eventTimeComparator(a: Types.Events.Event, b: Types.Events.Event): -1 | 0 | 1;
 /**
  * Sorts all the events in place, in order, by their start time. If they have
  * the same start time, orders them by longest first.
  */
-export declare function sortTraceEventsInPlace(events: Array<{
-    ts: Types.Timing.Micro;
-    dur?: Types.Timing.Micro;
-}>): void;
+export declare function sortTraceEventsInPlace(events: Types.Events.Event[]): void;
 /**
  * Returns an array of ordered events that results after merging the two
  * ordered input arrays.

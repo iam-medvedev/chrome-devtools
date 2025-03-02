@@ -21,7 +21,7 @@ import { data as samplesHandlerData } from './SamplesHandler.js';
  * event type.
  */
 const processes = new Map();
-const entityMappings = {
+let entityMappings = {
     eventsByEntity: new Map(),
     entityByEvent: new Map(),
     createdEntityCache: new Map(),
@@ -102,9 +102,7 @@ export function handleEvent(event) {
 }
 export async function finalize() {
     const { mainFrameId, rendererProcessesByFrame, threadsInProcess } = metaHandlerData();
-    const { entityMappings: networkEntityMappings } = networkRequestHandlerData();
-    // Build on top of the created entity cache to avoid de-dupes of entities that are made up.
-    entityMappings.createdEntityCache = new Map(networkEntityMappings.createdEntityCache);
+    entityMappings = networkRequestHandlerData().entityMappings;
     assignMeta(processes, mainFrameId, rendererProcessesByFrame, threadsInProcess);
     sanitizeProcesses(processes);
     buildHierarchy(processes);
@@ -312,6 +310,7 @@ export function buildHierarchy(processes, options) {
             // Update the entryToNode map with the entries from this thread
             for (const [entry, node] of treeData.entryToNode) {
                 entryToNode.set(entry, node);
+                // Entity mapping is unrelated to the tree, but calling here as we need to call on every node anyway.
                 HandlerHelpers.addEventToEntityMapping(entry, entityMappings);
             }
         }

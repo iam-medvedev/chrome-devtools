@@ -75,6 +75,10 @@ export class CSSModel extends SDKModel {
         }
         return this.#colorScheme;
     }
+    async resolveValues(nodeId, ...values) {
+        const response = await this.agent.invoke_resolveValues({ values, nodeId });
+        return response.getError() ? null : response.results;
+    }
     headersForSourceURL(sourceURL) {
         const headers = [];
         for (const headerId of this.getStyleSheetIdsForURL(sourceURL)) {

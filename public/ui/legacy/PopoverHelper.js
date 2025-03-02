@@ -51,6 +51,7 @@ export class PopoverHelper {
     boundMouseDown;
     boundMouseMove;
     boundMouseOut;
+    boundKeyUp;
     jslogContext;
     constructor(container, getRequest, jslogContext) {
         this.disableOnClick = false;
@@ -67,9 +68,11 @@ export class PopoverHelper {
         this.boundMouseDown = this.mouseDown.bind(this);
         this.boundMouseMove = this.mouseMove.bind(this);
         this.boundMouseOut = this.mouseOut.bind(this);
+        this.boundKeyUp = this.keyUp.bind(this);
         this.container.addEventListener('mousedown', this.boundMouseDown, false);
         this.container.addEventListener('mousemove', this.boundMouseMove, false);
         this.container.addEventListener('mouseout', this.boundMouseOut, false);
+        this.container.addEventListener('keyup', this.boundKeyUp, false);
         this.setTimeout(1000);
     }
     setTimeout(showTimeout, hideTimeout) {
@@ -97,6 +100,24 @@ export class PopoverHelper {
         this.startHidePopoverTimer(0);
         this.stopShowPopoverTimer();
         this.startShowPopoverTimer(event, 0);
+    }
+    keyUp(ev) {
+        const event = ev;
+        if (event.altKey && event.key === 'ArrowDown') {
+            if (this.isPopoverVisible()) {
+                this.hidePopover();
+            }
+            else {
+                this.stopShowPopoverTimer();
+                this.startHidePopoverTimer(0);
+                this.startShowPopoverTimer(event, 0);
+            }
+            ev.stopPropagation();
+        }
+        else if (event.key === 'Escape' && this.isPopoverVisible()) {
+            this.hidePopover();
+            ev.stopPropagation();
+        }
     }
     mouseMove(ev) {
         const event = ev;
@@ -203,6 +224,7 @@ export class PopoverHelper {
             popoverHelperInstance = this;
             VisualLogging.setMappedParent(popover.contentElement, this.container);
             popover.contentElement.classList.toggle('has-padding', this.hasPadding);
+            popover.contentElement.style.scrollbarGutter = 'stable';
             popover.contentElement.addEventListener('mousemove', this.popoverMouseMove.bind(this), true);
             popover.contentElement.addEventListener('mouseout', this.popoverMouseOut.bind(this, popover), true);
             popover.setContentAnchorBox(request.box);

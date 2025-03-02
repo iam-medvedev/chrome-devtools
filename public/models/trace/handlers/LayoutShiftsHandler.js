@@ -28,7 +28,7 @@ const styleRecalcInvalidationEvents = [];
 const renderFrameImplCreateChildFrameEvents = [];
 const domLoadingEvents = [];
 const layoutImageUnsizedEvents = [];
-const beginRemoteFontLoadEvents = [];
+const remoteFonts = [];
 const backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
 // We determine if a LayoutInvalidation event is a potential root cause of a layout
@@ -53,7 +53,7 @@ export function reset() {
     renderFrameImplCreateChildFrameEvents.length = 0;
     layoutImageUnsizedEvents.length = 0;
     domLoadingEvents.length = 0;
-    beginRemoteFontLoadEvents.length = 0;
+    remoteFonts.length = 0;
     backendNodeIds.clear();
     clusters.length = 0;
     sessionMaxScore = 0;
@@ -90,7 +90,18 @@ export function handleEvent(event) {
         layoutImageUnsizedEvents.push(event);
     }
     if (Types.Events.isBeginRemoteFontLoad(event)) {
-        beginRemoteFontLoadEvents.push(event);
+        remoteFonts.push({
+            display: event.args.display,
+            url: event.args.url,
+            beginRemoteFontLoadEvent: event,
+        });
+    }
+    if (Types.Events.isRemoteFontLoaded(event)) {
+        for (const remoteFont of remoteFonts) {
+            if (remoteFont.url === event.args.url) {
+                remoteFont.name = event.args.name;
+            }
+        }
     }
     if (Types.Events.isPaintImage(event)) {
         paintImageEvents.push(event);
@@ -178,7 +189,7 @@ export async function finalize() {
     renderFrameImplCreateChildFrameEvents.sort((a, b) => a.ts - b.ts);
     domLoadingEvents.sort((a, b) => a.ts - b.ts);
     layoutImageUnsizedEvents.sort((a, b) => a.ts - b.ts);
-    beginRemoteFontLoadEvents.sort((a, b) => a.ts - b.ts);
+    remoteFonts.sort((a, b) => a.beginRemoteFontLoadEvent.ts - b.beginRemoteFontLoadEvent.ts);
     paintImageEvents.sort((a, b) => a.ts - b.ts);
     // Each function transforms the data used by the next, as such the invoke order
     // is important.
@@ -408,7 +419,7 @@ export function data() {
         renderFrameImplCreateChildFrameEvents,
         domLoadingEvents,
         layoutImageUnsizedEvents,
-        beginRemoteFontLoadEvents,
+        remoteFonts,
         scoreRecords,
         // TODO(crbug/41484172): change the type so no need to clone
         backendNodeIds: [...backendNodeIds],

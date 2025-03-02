@@ -5,6 +5,7 @@ import * as Trace from '../../../../models/trace/trace.js';
 import { dispatchClickEvent, dispatchKeyDownEvent, querySelectorErrorOnMissing, raf, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
+import * as UI from '../../legacy.js';
 import * as PerfUI from './perf_ui.js';
 describeWithEnvironment('FilmStripView', function () {
     async function renderView(filmStripData) {
@@ -43,6 +44,16 @@ describeWithEnvironment('FilmStripView', function () {
         });
         assert.deepEqual(1, 1);
         filmStrip.detach();
+    });
+    it('shows placeholder', async function () {
+        const filmStripView = new PerfUI.FilmStripView.FilmStripView();
+        filmStripView.markAsRoot();
+        filmStripView.show(document.body);
+        const placeholder = new UI.Widget.Widget();
+        placeholder.contentElement.textContent = 'Placeholder';
+        filmStripView.setStatusPlaceholder(placeholder);
+        assert.deepEqual(filmStripView.contentElement.textContent, 'Placeholder');
+        filmStripView.detach();
     });
     describe('FilmStripView Dialog', function () {
         async function renderDialogWithTrace(filmStrip, selectedFrameIndex) {

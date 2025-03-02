@@ -296,7 +296,7 @@ describeWithEnvironment('ConsoleInsight', () => {
         assert.strictEqual(relatedContent[0].getAttribute('href'), 'https://www.firstSource.test/someInfo');
         assert.isFalse(details?.hasAttribute('open'));
         assert.isFalse(directCitations[0].classList.contains('highlighted'));
-        const link = markdownView.shadowRoot?.querySelector('sup x-link');
+        const link = markdownView.shadowRoot?.querySelector('sup button');
         link.click();
         assert.isTrue(details?.hasAttribute('open'));
         assert.isTrue(directCitations[0].classList.contains('highlighted'));

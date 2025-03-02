@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-export type StandardMetricNames = 'cumulative_layout_shift' | 'first_contentful_paint' | 'first_input_delay' | 'interaction_to_next_paint' | 'largest_contentful_paint' | 'experimental_time_to_first_byte' | 'round_trip_time';
+export type StandardMetricNames = 'cumulative_layout_shift' | 'first_contentful_paint' | 'first_input_delay' | 'interaction_to_next_paint' | 'largest_contentful_paint' | 'experimental_time_to_first_byte' | 'round_trip_time' | 'largest_contentful_paint_image_time_to_first_byte' | 'largest_contentful_paint_image_resource_load_delay' | 'largest_contentful_paint_image_resource_load_duration' | 'largest_contentful_paint_image_element_render_delay';
 export type MetricNames = StandardMetricNames | 'form_factors';
 export type FormFactor = 'DESKTOP' | 'PHONE' | 'TABLET';
 export type DeviceScope = FormFactor | 'ALL';

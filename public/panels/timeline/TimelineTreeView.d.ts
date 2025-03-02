@@ -72,6 +72,8 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     showDetailsForNode(_node: Trace.Extras.TraceTree.Node): boolean;
     private onMouseMove;
     onHover(node: Trace.Extras.TraceTree.Node | null): void;
+    wasShown(): void;
+    childWasDetached(_widget: UI.Widget.Widget): void;
     onGridNodeOpened(): void;
     private onContextMenu;
     dataGridElementForEvent(event: Trace.Types.Events.Event | null): HTMLElement | null;
@@ -86,13 +88,13 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
 export declare namespace TimelineTreeView {
     const enum Events {
         TREE_ROW_HOVERED = "TreeRowHovered",
-        THIRD_PARTY_ROW_HOVERED = "ThirdPartyRowHovered",
-        BOTTOM_UP_BUTTON_CLICKED = "BottomUpButtonClicked"
+        BOTTOM_UP_BUTTON_CLICKED = "BottomUpButtonClicked",
+        TREE_ROW_CLICKED = "TreeRowClicked"
     }
     interface EventTypes {
         [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
-        [Events.THIRD_PARTY_ROW_HOVERED]: Trace.Types.Events.Event[] | null;
         [Events.BOTTOM_UP_BUTTON_CLICKED]: Trace.Extras.TraceTree.Node | null;
+        [Events.TREE_ROW_CLICKED]: Trace.Extras.TraceTree.Node | null;
     }
 }
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {

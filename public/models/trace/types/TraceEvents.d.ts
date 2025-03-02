@@ -48,10 +48,12 @@ export interface Event {
 }
 export interface Args {
     data?: ArgsData;
+    sampleTraceId?: number;
     stackTrace?: CallFrame[];
 }
 export interface ArgsData {
     stackTrace?: CallFrame[];
+    sampleTraceId?: number;
     url?: string;
     navigationId?: string;
     frame?: string;
@@ -171,6 +173,7 @@ export interface ParseHTML extends Complete {
     name: 'ParseHTML';
     args: Args & {
         beginData: {
+            sampleTraceId?: number;
             frame: string;
             startLine: number;
             url: string;
@@ -1089,6 +1092,14 @@ export interface BeginRemoteFontLoad extends UserTiming {
     args: Args & {
         display: string;
         id: number;
+        url?: string;
+    };
+}
+export interface RemoteFontLoaded extends UserTiming {
+    name: Name.REMOTE_FONT_LOADED;
+    args: Args & {
+        url: string;
+        name: string;
     };
 }
 export type PairableUserTiming = UserTiming & PairableAsync;
@@ -1470,6 +1481,7 @@ export interface UpdateLayoutTree extends Complete {
     args: Args & {
         elementCount: number;
         beginData?: {
+            sampleTraceId?: number;
             frame: string;
             stackTrace?: CallFrame[];
         };
@@ -1480,6 +1492,7 @@ export interface Layout extends Complete {
     name: Name.LAYOUT;
     args: Args & {
         beginData: {
+            sampleTraceId?: number;
             frame: string;
             dirtyObjects: number;
             partialLayout: boolean;
@@ -1588,6 +1601,7 @@ export declare function isResourceMarkAsCached(event: Event): event is ResourceM
 export declare function isResourceFinish(event: Event): event is ResourceFinish;
 export declare function isResourceWillSendRequest(event: Event): event is ResourceWillSendRequest;
 export declare function isResourceReceivedData(event: Event): event is ResourceReceivedData;
+export declare function isReceivedDataEvent(event: Event): event is ResourceReceivedData | ResourceFinish | ResourceReceiveResponse;
 export declare function isSyntheticNetworkRequest(event: Event): event is SyntheticNetworkRequest;
 export declare function isSyntheticWebSocketConnection(event: Event): event is SyntheticWebSocketConnection;
 export declare function isNetworkTrackEntry(event: Event): event is SyntheticWebSocketConnection | SyntheticNetworkRequest;
@@ -1600,6 +1614,7 @@ export declare function isSyntheticConsoleTiming(event: Event): event is Synthet
 export declare function isUserTiming(event: Event): event is UserTiming;
 export declare function isDomLoading(event: Event): event is DomLoading;
 export declare function isBeginRemoteFontLoad(event: Event): event is BeginRemoteFontLoad;
+export declare function isRemoteFontLoaded(event: Event): event is RemoteFontLoaded;
 export declare function isPerformanceMeasure(event: Event): event is PerformanceMeasure;
 export declare function isPerformanceMeasureBegin(event: Event): event is PerformanceMeasureBegin;
 export declare function isPerformanceMark(event: Event): event is PerformanceMark;
@@ -2146,6 +2161,7 @@ export declare const enum Name {
     LAYOUT_IMAGE_UNSIZED = "LayoutImageUnsized",
     DOM_LOADING = "domLoading",
     BEGIN_REMOTE_FONT_LOAD = "BeginRemoteFontLoad",
+    REMOTE_FONT_LOADED = "RemoteFontLoaded",
     ANIMATION_FRAME = "AnimationFrame",
     ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation",
     SYNTHETIC_NETWORK_REQUEST = "SyntheticNetworkRequest",

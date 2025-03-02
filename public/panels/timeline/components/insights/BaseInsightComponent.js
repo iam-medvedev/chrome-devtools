@@ -48,6 +48,7 @@ export class BaseInsightComponent extends HTMLElement {
     #selected = false;
     #model = null;
     #parsedTrace = null;
+    #fieldMetrics = null;
     #insightsAskAiEnabled = false;
     get model() {
         return this.#model;
@@ -101,6 +102,12 @@ export class BaseInsightComponent extends HTMLElement {
     }
     set parsedTrace(parsedTrace) {
         this.#parsedTrace = parsedTrace;
+    }
+    set fieldMetrics(fieldMetrics) {
+        this.#fieldMetrics = fieldMetrics;
+    }
+    get fieldMetrics() {
+        return this.#fieldMetrics;
     }
     #dispatchInsightToggle() {
         if (this.#selected) {

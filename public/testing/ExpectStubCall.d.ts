@@ -6,3 +6,10 @@ export declare function expectCalled<TArgs extends any[] = any[], TReturnValue =
     fakeFn?: (...args: TArgs) => TReturnValue;
     callCount?: number;
 }): Promise<TArgs>;
+type Args<T> = T extends (...args: infer TArgs) => unknown ? TArgs : never;
+type Ret<T> = T extends (...args: infer TArgs) => infer TRet ? TRet : never;
+export declare function spyCall<T, Fn extends keyof T>(obj: T, method: Fn): Promise<{
+    args: Args<T[Fn]>;
+    result: Ret<T[Fn]>;
+}>;
+export {};

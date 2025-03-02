@@ -12,7 +12,10 @@ declare class EventRef extends HTMLElement {
     set event(event: Trace.Types.Events.Event);
 }
 type EventRefSupportedEvents = Trace.Types.Events.SyntheticNetworkRequest;
-export declare function eventRef(event: EventRefSupportedEvents): Lit.TemplateResult;
+export declare function eventRef(event: EventRefSupportedEvents, options?: {
+    text?: string;
+    title?: string;
+}): Lit.TemplateResult;
 declare class ImageRef extends HTMLElement {
     #private;
     connectedCallback(): void;

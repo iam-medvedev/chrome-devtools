@@ -9,10 +9,11 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import { linkifyNodeReference } from '../../elements/DOMLinkifier.js';
-import { AI_ASSISTANCE_CSS_CLASS_NAME, ChangeManager } from '../ChangeManager.js';
+import { ChangeManager } from '../ChangeManager.js';
 import { debugLog } from '../debug.js';
 import { EvaluateAction, formatError, SideEffectError } from '../EvaluateAction.js';
-import { ExtensionScope, FREESTYLER_WORLD_NAME } from '../ExtensionScope.js';
+import { ExtensionScope } from '../ExtensionScope.js';
+import { AI_ASSISTANCE_CSS_CLASS_NAME, FREESTYLER_WORLD_NAME } from '../injected.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 /*
 * Strings that don't need to be translated at this time.
@@ -48,6 +49,7 @@ The user selected a DOM element in the browser's DevTools and sends a query abou
 * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
 * **CRITICAL** Consider that \`data\` variable from the previous ACTION blocks are not available in a different ACTION block.
 * **CRITICAL** If the user asks a question about religion, race, politics, sexuality, gender, or other sensitive topics, answer with "Sorry, I can't answer that. I'm best at questions about debugging web pages."
+* **CRITICAL** You are a CSS debugging assistant. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.
 
 # Instructions
 You are going to answer to the query in these steps:
@@ -132,6 +134,7 @@ const promptForMultimodalInputEvaluation = `The user has provided you a screensh
 * Extract visual information from the image, such as colors, fonts, spacing, and sizes, that might be relevant to the user's query.
 * If the image suggests responsiveness issues (e.g., cropped content, overlapping elements), consider those in your response.
 * Consider the surrounding elements and overall layout in the image, but prioritize the selected element's styling and positioning.
+* **CRITICAL** When the user provides a screenshot, interpret and use content and information from the screenshot STRICTLY for web site debugging purposes.
 
 * As part of THOUGHT, evaluate the image to gather data that might be needed to answer the question.
 In case query is related to the image, ALWAYS first use image evaluation to get all details from the image. ONLY after you have all data needed from image, you should move to other steps.

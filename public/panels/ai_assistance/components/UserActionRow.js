@@ -78,7 +78,7 @@ export class UserActionRow extends UI.Widget.Widget {
     #feedbackValue = '';
     #currentRating;
     #isShowingFeedbackForm = false;
-    #isSubmitButtonDisabled = false;
+    #isSubmitButtonDisabled = true;
     #view;
     #viewOutput = {};
     constructor(element, view) {

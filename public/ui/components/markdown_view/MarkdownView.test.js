@@ -18,10 +18,10 @@ function renderTemplateResult(templateResult) {
 describeWithEnvironment('MarkdownView', () => {
     describe('tokenizer', () => {
         it('tokenizers links in single quotes', () => {
-            assert.deepEqual(Marked.Marked.lexer('\'https://example.com\''), [
+            assert.deepEqual(Marked.Marked.lexer('\'https://example.test\''), [
                 {
-                    raw: '\'https://example.com\'',
-                    text: '\'https://example.com\'',
+                    raw: '\'https://example.test\'',
+                    text: '\'https://example.test\'',
                     tokens: [
                         {
                             raw: '\'',
@@ -29,13 +29,13 @@ describeWithEnvironment('MarkdownView', () => {
                             type: 'text',
                         },
                         {
-                            href: 'https://example.com',
-                            raw: 'https://example.com',
-                            text: 'https://example.com',
+                            href: 'https://example.test',
+                            raw: 'https://example.test',
+                            text: 'https://example.test',
                             tokens: [
                                 {
-                                    raw: 'https://example.com',
-                                    text: 'https://example.com',
+                                    raw: 'https://example.test',
+                                    text: 'https://example.test',
                                     type: 'text',
                                 },
                             ],
@@ -142,9 +142,13 @@ describeWithEnvironment('MarkdownView', () => {
     });
     describe('MarkdownInsightRenderer renderToken', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
-        it('renders link as an x-link', () => {
-            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'https://example.com' });
-            assert(result.values[0].tagName === 'X-LINK');
+        it('renders link as texts', () => {
+            const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'https://example.test' });
+            assert(result.values[0] === 'learn more');
+        });
+        it('renders link urls as texts', () => {
+            const result = renderer.renderToken({ type: 'link', href: 'https://example.test' });
+            assert(result.values[0] === 'https://example.test');
         });
         it('does not render URLs with "javascript:"', () => {
             const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'javascript:alert("test")' });
@@ -158,9 +162,13 @@ describeWithEnvironment('MarkdownView', () => {
             const result = renderer.renderToken({ type: 'link', text: 'learn more', href: '123' });
             assert(result.values[0] === undefined);
         });
-        it('renders images as an x-link', () => {
-            const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'https://example.com' });
-            assert(result.values[0].tagName === 'X-LINK');
+        it('renders images as text', () => {
+            const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'https://example.test' });
+            assert(result.values[0] === 'learn more');
+        });
+        it('renders image urls as text', () => {
+            const result = renderer.renderToken({ type: 'image', href: 'https://example.test' });
+            assert(result.values[0] === 'https://example.test');
         });
         it('renders headings as headings with the `insight` class', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'heading', text: 'a heading text', depth: 3 }));

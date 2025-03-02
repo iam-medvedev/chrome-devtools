@@ -1070,13 +1070,11 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                     nextSelectedNode = this.selectedNode.children[0];
                     handled = nextSelectedNode ? true : false;
                 }
+                else if (event.altKey) {
+                    this.selectedNode.expandRecursively();
+                }
                 else {
-                    if (event.altKey) {
-                        this.selectedNode.expandRecursively();
-                    }
-                    else {
-                        this.selectedNode.expand();
-                    }
+                    this.selectedNode.expand();
                 }
             }
         }
@@ -1125,7 +1123,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         let nextSelectedNode;
         // Skip subtree being deleted when looking for the next selectable node.
-        for (ancestor = root; ancestor && !ancestor.nextSibling; ancestor = ancestor.parent) {
+        ancestor = root;
+        while (ancestor && !ancestor.nextSibling) {
+            ancestor = ancestor.parent;
         }
         if (ancestor) {
             nextSelectedNode = ancestor.nextSibling;
@@ -1328,13 +1328,11 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                 gridNode.collapse();
             }
         }
+        else if (event.altKey) {
+            gridNode.expandRecursively();
+        }
         else {
-            if (event.altKey) {
-                gridNode.expandRecursively();
-            }
-            else {
-                gridNode.expand();
-            }
+            gridNode.expand();
         }
     }
     setResizeMethod(method) {

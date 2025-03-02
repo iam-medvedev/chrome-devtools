@@ -8,8 +8,8 @@ import * as Utils from './utils.js';
 describeWithEnvironment('EntityMapper', function () {
     it('correctly merges handler data', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'lantern/paul/trace.json.gz');
-        const fromRenderer = new Map(parsedTrace.Renderer.entityMappings.eventsByEntity);
-        const fromNetwork = new Map(parsedTrace.NetworkRequests.entityMappings.eventsByEntity);
+        const fromRenderer = parsedTrace.Renderer.entityMappings.eventsByEntity;
+        const fromNetwork = parsedTrace.NetworkRequests.entityMappings.eventsByEntity;
         const mapper = new Utils.EntityMapper.EntityMapper(parsedTrace);
         const mappings = mapper.mappings();
         // [paulirish.com, Google Tag Manager, Google Fonts, Google Analytics, Disqus, Firebase]
@@ -30,12 +30,9 @@ describeWithEnvironment('EntityMapper', function () {
                 assert.isTrue(gotEvents.includes(e));
             });
         });
-        // Additionally make sure they sum up.
-        mappings.eventsByEntity.entries().forEach(([entity, events]) => {
-            const eventsInNetwork = fromNetwork.get(entity) ?? [];
-            const eventsInRenderer = fromRenderer.get(entity) ?? [];
-            assert.deepEqual(events.length, eventsInNetwork.length + eventsInRenderer.length);
-        });
+        // These would be the same object identity, if not for shallowClone
+        assert.deepEqual(fromRenderer, fromNetwork);
+        assert.deepEqual(fromRenderer, mappings.eventsByEntity);
     });
     describe('entityForEvent', () => {
         it('correctly contains network req entity mappings', async function () {
@@ -97,6 +94,7 @@ describeWithEnvironment('EntityMapper', function () {
             assert.deepEqual(got.name, 'paulirish.com');
             const firstPartyEvents = mapper.eventsForEntity(got);
             const gotThirdPartyEvents = mapper.thirdPartyEvents();
+            // If any failure is found in here, the event is categorized as both 1p AND 3p.
             gotThirdPartyEvents.forEach(e => {
                 assert.isTrue(!firstPartyEvents.includes(e));
             });

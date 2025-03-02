@@ -1,7 +1,6 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
@@ -23,7 +22,6 @@ export class DeviceModeWrapper extends UI.Widget.VBox {
         this.showDeviceModeSetting.setRequiresUserAction(Boolean(Root.Runtime.Runtime.queryParam('hasOtherClients')));
         this.showDeviceModeSetting.addChangeListener(this.update.bind(this, false));
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.OverlayModel.OverlayModel, "ScreenshotRequested" /* SDK.OverlayModel.Events.SCREENSHOT_REQUESTED */, this.screenshotRequestedFromOverlay, this);
-        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, () => this.update(), this);
         this.update(true);
     }
     static instance(opts = { forceNew: null, inspectedPagePlaceholder: null }) {
@@ -64,13 +62,7 @@ export class DeviceModeWrapper extends UI.Widget.VBox {
     }
     update(force) {
         this.toggleDeviceModeAction.setToggled(this.showDeviceModeSetting.get());
-        // Only allow device mode for non chrome:// pages.
-        function allowDeviceMode() {
-            const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-            const url = target?.inspectedURL();
-            return url ? !Common.ParsedURL.schemeIs(url, 'chrome:') : false;
-        }
-        const shouldShow = this.showDeviceModeSetting.get() && allowDeviceMode();
+        const shouldShow = this.showDeviceModeSetting.get();
         if (!force && shouldShow === this.deviceModeView?.isShowing()) {
             return;
         }

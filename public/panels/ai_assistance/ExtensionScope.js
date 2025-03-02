@@ -4,9 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { AI_ASSISTANCE_CSS_CLASS_NAME } from './ChangeManager.js';
-export const FREESTYLER_WORLD_NAME = 'DevTools AI Assistance';
-export const FREESTYLER_BINDING_NAME = '__freestyler';
+import { AI_ASSISTANCE_CSS_CLASS_NAME, FREESTYLER_BINDING_NAME, FREESTYLER_WORLD_NAME, freestylerBinding, injectedFunctions } from './injected.js';
 /**
  * Injects Freestyler extension functions in to the isolated world.
  */
@@ -14,7 +12,9 @@ export class ExtensionScope {
     #listeners = [];
     #changeManager;
     #agentId;
+    /** Don't use directly use the getter */
     #frameId;
+    /** Don't use directly use the getter */
     #target;
     #bindingMutex = new Common.Mutex.Mutex();
     constructor(changes, agentId) {
@@ -63,7 +63,7 @@ export class ExtensionScope {
             executionContextId,
         });
         await this.#simpleEval(isolatedWorldContext, freestylerBinding);
-        await this.#simpleEval(isolatedWorldContext, functions);
+        await this.#simpleEval(isolatedWorldContext, injectedFunctions);
     }
     async uninstall() {
         const runtimeModel = this.target.model(SDK.RuntimeModel.RuntimeModel);
@@ -75,12 +75,12 @@ export class ExtensionScope {
             name: FREESTYLER_BINDING_NAME,
         });
     }
-    async #simpleEval(context, expression) {
+    async #simpleEval(context, expression, returnByValue = true) {
         const response = await context.evaluate({
             expression,
             replMode: true,
             includeCommandLineAPI: false,
-            returnByValue: true,
+            returnByValue,
             silent: false,
             generatePreview: false,
             allowUnsafeEvalBlockedByCSP: true,
@@ -99,110 +99,128 @@ export class ExtensionScope {
         }
         return response;
     }
+    static getSelectorForRule(matchedStyles) {
+        let styleRule;
+        for (const style of matchedStyles.nodeStyles()) {
+            // Ignore inline as we can't override them
+            if (style.type === 'Inline') {
+                continue;
+            }
+            const rule = style.parentRule;
+            if (rule?.origin === "user-agent" /* Protocol.CSS.StyleSheetOrigin.UserAgent */) {
+                // TODO(nvitkov): this may not be true after crbug.com/40280502
+                // All rule after the User Agent one are inherit
+                // We can't use them to build the selector
+                break;
+            }
+            if (rule instanceof SDK.CSSRule.CSSStyleRule) {
+                // If the rule we created was our own return directly
+                if (rule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME)) {
+                    // We know that the last character will be & so remove it
+                    const text = rule.selectors[0].text;
+                    return text.at(-1) === '&' ? text.slice(0, -1) : text;
+                }
+                styleRule = rule;
+                break;
+            }
+        }
+        if (!styleRule) {
+            return '';
+        }
+        const selectorIndexes = matchedStyles.getMatchingSelectors(styleRule);
+        // TODO: Compute the selector when nested selector is present
+        const selectors = styleRule.selectors.filter((_, index) => selectorIndexes.includes(index)).sort((a, b) => {
+            if (!a.specificity) {
+                return -1;
+            }
+            if (!b.specificity) {
+                return 1;
+            }
+            if (b.specificity.a !== a.specificity.a) {
+                return b.specificity.a - a.specificity.a;
+            }
+            if (b.specificity.b !== a.specificity.b) {
+                return b.specificity.b - a.specificity.b;
+            }
+            return b.specificity.b - a.specificity.b;
+        });
+        // See https://developer.mozilla.org/en-US/docs/Web/CSS/Privacy_and_the_:visited_selector
+        return selectors.at(0)?.text.replace(':visited', '') ?? '';
+    }
+    static getSelectorForNode(node) {
+        return node.simpleSelector()
+            .split('.')
+            .filter(chunk => {
+            return !chunk.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME);
+        })
+            .join('.');
+    }
+    async #computeSelectorFromElement(remoteObject) {
+        if (!remoteObject.objectId) {
+            throw new Error('DOMModel is not found');
+        }
+        const cssModel = this.target.model(SDK.CSSModel.CSSModel);
+        if (!cssModel) {
+            throw new Error('CSSModel is not found');
+        }
+        const domModel = this.target.model(SDK.DOMModel.DOMModel);
+        if (!domModel) {
+            throw new Error('DOMModel is not found');
+        }
+        const node = await domModel.pushNodeToFrontend(remoteObject.objectId);
+        if (!node) {
+            throw new Error('Node is not found');
+        }
+        try {
+            const matchedStyles = await cssModel.getMatchedStyles(node.id);
+            if (!matchedStyles) {
+                throw new Error('No Matching styles');
+            }
+            const selector = ExtensionScope.getSelectorForRule(matchedStyles);
+            if (selector) {
+                return selector;
+            }
+        }
+        catch {
+        }
+        return ExtensionScope.getSelectorForNode(node);
+    }
     async #bindingCalled(executionContext, event) {
         const { data } = event;
         if (data.name !== FREESTYLER_BINDING_NAME) {
             return;
         }
+        // We need to clean-up if anything fails here.
         await this.#bindingMutex.run(async () => {
-            const id = data.payload;
-            const { object } = await this.#simpleEval(executionContext, `freestyler.getArgs(${id})`);
-            const arg = JSON.parse(object.value);
-            const selector = arg.selector;
-            const className = arg.className;
             const cssModel = this.target.model(SDK.CSSModel.CSSModel);
             if (!cssModel) {
                 throw new Error('CSSModel is not found');
             }
+            const id = data.payload;
+            const [args, element] = await Promise.all([
+                this.#simpleEval(executionContext, `freestyler.getArgs(${id})`),
+                this.#simpleEval(executionContext, `freestyler.getElement(${id})`, false)
+            ]);
+            const arg = JSON.parse(args.object.value);
+            // TODO: Should this a be a *?
+            let selector = '';
+            try {
+                selector = await this.#computeSelectorFromElement(element.object);
+            }
+            catch (err) {
+                console.error(err);
+            }
+            finally {
+                element.object.release();
+            }
             const styleChanges = await this.#changeManager.addChange(cssModel, this.frameId, {
                 groupId: this.#agentId,
                 selector,
-                className,
+                className: arg.className,
                 styles: arg.styles,
             });
             await this.#simpleEval(executionContext, `freestyler.respond(${id}, ${JSON.stringify(styleChanges)})`);
         });
     }
 }
-const freestylerBinding = `if (!globalThis.freestyler) {
-  globalThis.freestyler = (args) => {
-    const {resolve, promise } = Promise.withResolvers();
-    freestyler.callbacks.set(freestyler.id , {
-      args: JSON.stringify(args),
-      callbackId: freestyler.id,
-      resolve,
-    });
-    ${FREESTYLER_BINDING_NAME}(String(freestyler.id));
-    freestyler.id++;
-    return promise;
-  }
-  freestyler.id = 1;
-  freestyler.callbacks = new Map();
-  freestyler.getArgs = (callbackId) => {
-    return freestyler.callbacks.get(callbackId).args;
-  }
-  freestyler.respond = (callbackId, styleChanges) => {
-    freestyler.callbacks.get(callbackId).resolve(styleChanges);
-    freestyler.callbacks.delete(callbackId);
-  }
-}`;
-const functions = `async function setElementStyles(el, styles) {
-  let selector = el.tagName.toLowerCase();
-  if (el.id) {
-    selector = '#' + el.id;
-  } else if (el.classList.length) {
-    const parts = [];
-    for (const cls of el.classList) {
-      if (cls.startsWith('${AI_ASSISTANCE_CSS_CLASS_NAME}')) {
-        continue;
-      }
-      parts.push('.' + cls);
-    }
-    if (parts.length) {
-      selector = parts.join('');
-    }
-  }
-
-  // __freestylerClassName is not exposed to the page due to this being
-  // run in the isolated world.
-  const className = el.__freestylerClassName ?? '${AI_ASSISTANCE_CSS_CLASS_NAME}-' + freestyler.id;
-  el.__freestylerClassName = className;
-  el.classList.add(className);
-
-  // Remove inline styles with the same keys so that the edit applies.
-  for (const [key, value] of Object.entries(styles)) {
-    // if it's kebab case.
-    el.style.removeProperty(key);
-    // If it's camel case.
-    el.style[key] = '';
-  }
-
-  const result = await freestyler({
-    method: 'setElementStyles',
-    selector: selector,
-    className,
-    styles
-  });
-
-  let rootNode = el.getRootNode();
-  if (rootNode instanceof ShadowRoot) {
-    let stylesheets = rootNode.adoptedStyleSheets;
-    let hasAiStyleChange = false;
-    let stylesheet = new CSSStyleSheet();
-    for (let i = 0; i < stylesheets.length; i++) {
-      const sheet = stylesheets[i];
-      for (let j = 0; j < sheet.cssRules.length; j++) {
-        hasAiStyleChange = sheet.cssRules[j].selectorText.startsWith('.${AI_ASSISTANCE_CSS_CLASS_NAME}');
-        if (hasAiStyleChange) {
-          stylesheet = sheet;
-          break;
-        }
-      }
-    }
-    stylesheet.replaceSync(result);
-    if (!hasAiStyleChange) {
-      rootNode.adoptedStyleSheets = [...stylesheets, stylesheet];
-    }
-  }
-}`;
 //# sourceMappingURL=ExtensionScope.js.map

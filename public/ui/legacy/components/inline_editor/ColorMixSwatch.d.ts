@@ -26,12 +26,10 @@ export declare class ColorMixSwatch extends ColorMixSwatch_base {
     private firstColorText;
     private secondColorText;
     constructor();
-    get icon(): Element | null;
     mixedColor(): Common.Color.Color | null;
     setFirstColor(text: string): void;
     setSecondColor(text: string): void;
     setColorMixText(text: string): void;
-    setRegisterPopoverCallback(callback: (swatch: ColorMixSwatch) => void): void;
     getText(): string;
 }
 declare global {

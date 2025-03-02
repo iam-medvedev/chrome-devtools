@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+const MAX_TITLE_LENGTH = 80;
 export class Conversation {
     id;
     type;
@@ -17,12 +18,11 @@ export class Conversation {
         return this.#isReadOnly;
     }
     get title() {
-        return this.history
-            .filter(response => {
-            return response.type === "user-query" /* ResponseType.USER_QUERY */;
-        })
-            .at(0)
-            ?.query;
+        const query = this.history.find(response => response.type === "user-query" /* ResponseType.USER_QUERY */)?.query;
+        if (!query) {
+            return;
+        }
+        return `${query.substring(0, MAX_TITLE_LENGTH)}${query.length > MAX_TITLE_LENGTH ? '…' : ''}`;
     }
     get isEmpty() {
         return this.history.length === 0;

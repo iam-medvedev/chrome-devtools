@@ -38,6 +38,9 @@
   "references": [
     {
       "path": "../../../../third_party/web-vitals/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../trace/bundle-tsconfig.json"
     }
   ]
 }

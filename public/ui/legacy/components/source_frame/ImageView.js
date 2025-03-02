@@ -189,16 +189,31 @@ export class ImageView extends UI.View.SimpleView {
         if (!imageDataURL) {
             return;
         }
-        const link = document.createElement('a');
-        link.href = imageDataURL;
-        // If it is a Base64 image, set a default file name.
-        // When chrome saves a file, the file name characters that are not supported
-        // by the OS will be replaced automatically. For example, in the Mac,
-        // `:` it will be replaced with `_`.
-        link.download =
-            this.parsedURL.isDataURL() ? i18nString(UIStrings.download) : decodeURIComponent(this.parsedURL.displayName);
-        link.click();
-        link.remove();
+        let suggestedName = '';
+        if (this.parsedURL.isDataURL()) {
+            suggestedName = i18nString(UIStrings.download);
+            const { type, subtype } = this.parsedURL.extractDataUrlMimeType();
+            if (type === 'image' && subtype) {
+                suggestedName += '.' + subtype;
+            }
+        }
+        else {
+            suggestedName = decodeURIComponent(this.parsedURL.displayName);
+        }
+        const blob = await fetch(imageDataURL).then(r => r.blob());
+        try {
+            const handle = await window.showSaveFilePicker({ suggestedName });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+        }
+        catch (error) {
+            // If the user aborts the action no need to report it, otherwise do.
+            if (error.name === 'AbortError') {
+                return;
+            }
+            throw error;
+        }
     }
     openInNewTab() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.url);

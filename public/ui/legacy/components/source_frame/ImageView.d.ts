@@ -1,5 +1,17 @@
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
 import * as UI from '../../legacy.js';
+declare global {
+    interface FileSystemWritableFileStream extends WritableStream {
+        write(data: unknown): Promise<void>;
+        close(): Promise<void>;
+    }
+    interface FileSystemHandle {
+        createWritable(): Promise<FileSystemWritableFileStream>;
+    }
+    interface Window {
+        showSaveFilePicker(opts: unknown): Promise<FileSystemHandle>;
+    }
+}
 export declare class ImageView extends UI.View.SimpleView {
     private url;
     private parsedURL;

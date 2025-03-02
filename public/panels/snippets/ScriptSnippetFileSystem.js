@@ -33,7 +33,7 @@ export class SnippetFileSystem extends Persistence.PlatformFileSystem.PlatformFi
     lastSnippetIdentifierSetting;
     snippetsSetting;
     constructor() {
-        super('snippet://', 'snippets');
+        super('snippet://', Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS, false);
         this.lastSnippetIdentifierSetting =
             Common.Settings.Settings.instance().createSetting('script-snippets-last-identifier', 0);
         this.snippetsSetting = Common.Settings.Settings.instance().createSetting('script-snippets', []);

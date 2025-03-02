@@ -60,8 +60,9 @@ describe('EnhancedTracesParser', () => {
         hash: '',
         isModule: false,
         url: 'http://localhost:8080/index.html',
-        hasSourceUrl: false,
-        sourceMapUrl: 'http://localhost:8080/source.map.json',
+        hasSourceURL: false,
+        sourceURL: undefined,
+        sourceMapURL: 'http://localhost:8080/source.map.json',
         length: 13,
         sourceText: 'source text 1',
         auxData: {
@@ -81,8 +82,9 @@ describe('EnhancedTracesParser', () => {
         hash: '',
         isModule: false,
         url: 'http://localhost:8080/index.html',
-        hasSourceUrl: false,
-        sourceMapUrl: undefined,
+        hasSourceURL: false,
+        sourceURL: undefined,
+        sourceMapURL: undefined,
         length: 13,
         sourceText: 'source text 2',
         auxData: {
@@ -102,8 +104,9 @@ describe('EnhancedTracesParser', () => {
         hash: '',
         isModule: false,
         url: 'http://localhost:8080/index.html',
-        hasSourceUrl: false,
-        sourceMapUrl: undefined,
+        hasSourceURL: false,
+        sourceURL: undefined,
+        sourceMapURL: undefined,
         length: 13,
         sourceText: 'source text 3',
         auxData: {
@@ -114,7 +117,7 @@ describe('EnhancedTracesParser', () => {
     };
     beforeEach(async function () {
         const events = await TraceLoader.rawEvents(this, 'enhanced-traces.json.gz');
-        enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser(events);
+        enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser({ traceEvents: events, metadata: {} });
     });
     it('captures targets from target rundown events', async function () {
         const data = enhancedTracesParser.data();
@@ -170,7 +173,7 @@ describe('EnhancedTracesParser', () => {
         assert.lengthOf(scripts, 3);
         for (const script of scripts) {
             if (script.scriptId === '1' && script.isolate === '12345') {
-                assert.deepEqual(script, script1);
+                assert.deepEqual(script, { ...script1, sourceMapURL: undefined });
             }
             else if (script.scriptId === '2' && script.isolate === '12345') {
                 assert.deepEqual(script, script2);
@@ -202,7 +205,7 @@ describe('EnhancedTracesParser', () => {
                     assert.lengthOf(scripts, 2);
                     for (const script of scripts) {
                         if (script.scriptId === '1') {
-                            assert.deepEqual(script, script1);
+                            assert.deepEqual(script, { ...script1, sourceMapURL: undefined });
                         }
                         else if (script.scriptId === '2') {
                             assert.deepEqual(script, script2);

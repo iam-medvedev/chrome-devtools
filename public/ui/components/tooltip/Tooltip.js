@@ -21,6 +21,7 @@ export class Tooltip extends HTMLElement {
     #anchor = null;
     #timeout = null;
     #closing = false;
+    #anchorObserver = null;
     get open() {
         return this.matches(':popover-open');
     }
@@ -83,6 +84,7 @@ export class Tooltip extends HTMLElement {
     }
     disconnectedCallback() {
         this.#removeEventListeners();
+        this.#anchorObserver?.disconnect();
     }
     showTooltip = () => {
         if (this.#timeout) {
@@ -179,7 +181,27 @@ export class Tooltip extends HTMLElement {
         const anchorName = `--${id}-anchor`;
         anchor.style.anchorName = anchorName;
         this.style.positionAnchor = anchorName;
+        this.#observeAnchorRemoval(anchor);
         this.#anchor = anchor;
+    }
+    #observeAnchorRemoval(anchor) {
+        if (anchor.parentElement === null) {
+            return;
+        }
+        if (this.#anchorObserver) {
+            this.#anchorObserver.disconnect();
+        }
+        this.#anchorObserver = new MutationObserver(mutations => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'childList' && [...mutation.removedNodes].includes(anchor)) {
+                    if (this.#timeout) {
+                        window.clearTimeout(this.#timeout);
+                    }
+                    this.hidePopover();
+                }
+            }
+        });
+        this.#anchorObserver.observe(anchor.parentElement, { childList: true });
     }
 }
 export function closestAnchor(tooltip, selector) {

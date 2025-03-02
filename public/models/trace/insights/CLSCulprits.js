@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { InsightCategory, } from './types.js';
@@ -383,14 +384,23 @@ function getTopCulprits(cluster, culpritsByShift) {
     return causes.slice(0, MAX_TOP_CULPRITS);
 }
 function finalize(partialModel) {
-    const topCulprits = partialModel.worstCluster ? partialModel.topCulpritsByCluster.get(partialModel.worstCluster) ?? [] : [];
+    let state = 'pass';
+    if (partialModel.worstCluster) {
+        const classification = Handlers.ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(partialModel.worstCluster.clusterCumulativeScore);
+        if (classification === "good" /* Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */) {
+            state = 'informative';
+        }
+        else {
+            state = 'fail';
+        }
+    }
     return {
         insightKey: "CLSCulprits" /* InsightKeys.CLS_CULPRITS */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.CLS,
-        state: topCulprits.length > 0 ? 'fail' : 'pass',
+        state,
         ...partialModel,
     };
 }

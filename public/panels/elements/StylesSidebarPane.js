@@ -332,7 +332,12 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                             popover.setJsLog(`${VisualLogging.popover(`${hook?.jslogContext ?? 'elements.generic-sidebar-popover'}`)
                                 .parent('popoverParent')}`);
                             popover.contentElement.classList.add('borderless-popover');
-                            popover.contentElement.appendChild(contents);
+                            if (contents instanceof HTMLElement) {
+                                popover.contentElement.appendChild(contents);
+                            }
+                            else {
+                                contents.show(popover.contentElement);
+                            }
                             return true;
                         },
                     };
@@ -638,6 +643,24 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
         this.nodeStylesUpdatedForTest(this.node(), true);
         this.dispatchEventToListeners("StylesUpdateCompleted" /* Events.STYLES_UPDATE_COMPLETED */, { hasMatchedStyles: this.hasMatchedStyles });
+    }
+    #getRegisteredPropertyDetails(matchedStyles, variableName) {
+        const registration = matchedStyles.getRegisteredProperty(variableName);
+        const goToDefinition = () => this.jumpToSection(variableName, REGISTERED_PROPERTY_SECTION_NAME);
+        return registration ? { registration, goToDefinition } : undefined;
+    }
+    getVariableParserError(matchedStyles, variableName) {
+        const registrationDetails = this.#getRegisteredPropertyDetails(matchedStyles, variableName);
+        return registrationDetails ?
+            new ElementsComponents.CSSVariableValueView.CSSVariableParserError(registrationDetails) :
+            null;
+    }
+    getVariablePopoverContents(matchedStyles, variableName, computedValue) {
+        return new ElementsComponents.CSSVariableValueView.CSSVariableValueView({
+            variableName,
+            value: computedValue ?? undefined,
+            details: this.#getRegisteredPropertyDetails(matchedStyles, variableName),
+        });
     }
     async fetchComputedStylesFor(nodeId) {
         const node = this.node();

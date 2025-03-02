@@ -112,7 +112,7 @@ const UIStrings = {
     /**
      * @description Column header for table cell values representing a phase duration (in milliseconds) that was measured in the developers local environment.
      */
-    duration: 'Local duration (ms)',
+    localDuration: 'Local duration',
     /**
      * @description Tooltip text for a link that goes to documentation explaining the Largest Contentful Paint (LCP) metric. "LCP" is an acronym and should not be translated.
      */
@@ -472,31 +472,34 @@ export class MetricCard extends HTMLElement {
     `;
         // clang-format on
     }
-    #renderPhaseTable() {
-        const localValue = this.#getLocalValue();
-        const phases = this.#data.phases;
-        if (!phases || !localValue) {
-            return Lit.nothing;
-        }
+    #renderPhaseTable(phases, isLocal) {
+        // clang-format off
         return html `
       <hr class="divider">
       <div class="phase-table" role="table">
         <div class="phase-table-row phase-table-header-row" role="row">
           <div role="columnheader">${i18nString(UIStrings.phase)}</div>
-          <div role="columnheader">${i18nString(UIStrings.duration)}</div>
+          <div role="columnheader">${isLocal ? i18nString(UIStrings.localDuration) : i18nString(UIStrings.field75thPercentile)}</div>
         </div>
         ${phases.map(phase => html `
           <div class="phase-table-row" role="row">
             <div role="cell">${phase[0]}</div>
-            <div role="cell">${Math.round(phase[1])}</div>
+            <div role="cell">${i18n.TimeUtilities.preciseMillisToString(phase[1])}</div>
           </div>
         `)}
       </div>
     `;
+        // clang-format on
     }
     #render = () => {
         const fieldEnabled = CrUXManager.CrUXManager.instance().getConfigSetting().get().enabled;
         const helpLink = this.#getHelpLink();
+        const localValue = this.#getLocalValue();
+        const fieldValue = this.#getFieldValue();
+        const thresholds = this.#getThresholds();
+        const formatFn = this.#getFormatFn();
+        const localValueEl = renderMetricValue(this.#getMetricValueLogContext(true), localValue, thresholds, formatFn);
+        const fieldValueEl = renderMetricValue(this.#getMetricValueLogContext(false), fieldValue, thresholds, formatFn);
         // clang-format off
         const output = html `
       <div class="metric-card">
@@ -518,12 +521,12 @@ export class MetricCard extends HTMLElement {
           aria-describedby="tooltip"
         >
           <div class="metric-source-block">
-            <div class="metric-source-value" id="local-value">${renderMetricValue(this.#getMetricValueLogContext(true), this.#getLocalValue(), this.#getThresholds(), this.#getFormatFn())}</div>
+            <div class="metric-source-value" id="local-value">${localValueEl}</div>
             ${fieldEnabled ? html `<div class="metric-source-label">${i18nString(UIStrings.localValue)}</div>` : nothing}
           </div>
           ${fieldEnabled ? html `
             <div class="metric-source-block">
-              <div class="metric-source-value" id="field-value">${renderMetricValue(this.#getMetricValueLogContext(false), this.#getFieldValue(), this.#getThresholds(), this.#getFormatFn())}</div>
+              <div class="metric-source-value" id="field-value">${fieldValueEl}</div>
               <div class="metric-source-label">${i18nString(UIStrings.field75thPercentile)}</div>
             </div>
           ` : nothing}
@@ -539,7 +542,8 @@ export class MetricCard extends HTMLElement {
             ${this.#renderDetailedCompareString()}
             <hr class="divider">
             ${this.#renderFieldHistogram()}
-            ${this.#renderPhaseTable()}
+            ${localValue && this.#data.phases ? this.#renderPhaseTable(this.#data.phases, true) : nothing}
+            ${this.#data.fieldDataPhases ? this.#renderPhaseTable(this.#data.fieldDataPhases, false) : nothing}
           </div>
         </div>
         ${fieldEnabled ? html `<hr class="divider">` : nothing}

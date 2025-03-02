@@ -28,12 +28,11 @@ export default {
 
 .network-request-details-cols {
   display: flex;
+  border-bottom: 1px solid var(--sys-color-divider);
 }
 
 :host {
-  border-bottom: 1px solid var(--sys-color-divider);
-  display: block;
-  padding-bottom: 5px;
+  display: contents; /* needed to avoid a floating border when scrolling */
 }
 
 .network-request-details-col {

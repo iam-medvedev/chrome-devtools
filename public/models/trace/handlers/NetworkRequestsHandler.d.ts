@@ -1,6 +1,15 @@
 import * as Types from '../types/types.js';
 import * as HandlerHelpers from './helpers.js';
 import type { HandlerName } from './types.js';
+export interface TraceEventsForNetworkRequest {
+    changePriority?: Types.Events.ResourceChangePriority;
+    willSendRequests?: Types.Events.ResourceWillSendRequest[];
+    sendRequests?: Types.Events.ResourceSendRequest[];
+    receiveResponse?: Types.Events.ResourceReceiveResponse;
+    resourceFinish?: Types.Events.ResourceFinish;
+    receivedData?: Types.Events.ResourceReceivedData[];
+    resourceMarkAsCached?: Types.Events.ResourceMarkAsCached;
+}
 export interface WebSocketTraceDataForFrame {
     frame: string;
     webSocketIdentifier: number;

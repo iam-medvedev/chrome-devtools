@@ -30,7 +30,8 @@ export function outline(state) {
         return { lineNumber: line.number - 1, columnNumber: offset - line.from };
     }
     function subtitleFromParamList() {
-        while (cursor.name !== 'ParamList' && cursor.nextSibling()) {
+        while (cursor.name !== 'ParamList') {
+            cursor.nextSibling();
         }
         let parameters = '';
         if (cursor.name === 'ParamList' && cursor.firstChild()) {
@@ -164,7 +165,8 @@ export function outline(state) {
                     ])) {
                     let title = state.sliceDoc(cursor.from, cursor.to);
                     const { lineNumber, columnNumber } = toLineColumn(cursor.from);
-                    while (cursor.name !== 'Equals' && cursor.next()) {
+                    while (cursor.name !== 'Equals') {
+                        cursor.next();
                     }
                     if (!cursor.nextSibling()) {
                         break;

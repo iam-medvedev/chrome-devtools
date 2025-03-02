@@ -15,9 +15,15 @@ interface LayoutShifts {
     renderFrameImplCreateChildFrameEvents: readonly Types.Events.RenderFrameImplCreateChildFrame[];
     domLoadingEvents: readonly Types.Events.DomLoading[];
     layoutImageUnsizedEvents: readonly Types.Events.LayoutImageUnsized[];
-    beginRemoteFontLoadEvents: readonly Types.Events.BeginRemoteFontLoad[];
+    remoteFonts: readonly RemoteFont[];
     scoreRecords: readonly ScoreRecord[];
     backendNodeIds: Protocol.DOM.BackendNodeId[];
+}
+interface RemoteFont {
+    display: string;
+    url?: string;
+    name?: string;
+    beginRemoteFontLoadEvent: Types.Events.BeginRemoteFontLoad;
 }
 export declare const MAX_CLUSTER_DURATION: Types.Timing.Micro;
 export declare const MAX_SHIFT_TIME_DELTA: Types.Timing.Micro;

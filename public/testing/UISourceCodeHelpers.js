@@ -37,7 +37,7 @@ class TestPlatformFileSystem extends Persistence.PlatformFileSystem.PlatformFile
     #mimeType;
     #autoMapping;
     constructor(path, type, mimeType, autoMapping) {
-        super(path, type);
+        super(path, type, false);
         this.#mimeType = mimeType;
         this.#autoMapping = autoMapping;
     }
@@ -70,7 +70,7 @@ export function createFileSystemUISourceCode(options) {
     const fileSystemPath = urlString `${options.fileSystemPath || ''}`;
     const type = options.type || '';
     const content = options.content || '';
-    const platformFileSystem = new TestPlatformFileSystem(fileSystemPath, type, options.mimeType, Boolean(options.autoMapping));
+    const platformFileSystem = new TestPlatformFileSystem(fileSystemPath, type || Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT, options.mimeType, Boolean(options.autoMapping));
     const metadata = options.metadata || new Workspace.UISourceCode.UISourceCodeMetadata(null, null);
     const project = new TestFileSystem({ fileSystemWorkspaceBinding, platformFileSystem, workspace, content, metadata });
     const uiSourceCode = project.createUISourceCode(options.url, Common.ResourceType.ResourceType.fromMimeType(options.mimeType));

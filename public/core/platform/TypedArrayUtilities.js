@@ -134,8 +134,9 @@ class BitVectorImpl extends Uint8Array {
             }
         }
         // Next, iterate by bytes to skip over ranges of zeros.
-        let byteIndex;
-        for (byteIndex = (index >> 3) - 1; byteIndex >= 0 && this[byteIndex] === 0; --byteIndex) {
+        let byteIndex = (index >> 3) - 1;
+        while (byteIndex >= 0 && this[byteIndex] === 0) {
+            --byteIndex;
         }
         if (byteIndex < 0) {
             return -1;

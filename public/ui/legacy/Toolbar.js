@@ -81,10 +81,50 @@ export class Toolbar extends HTMLElement {
     items = [];
     enabled = true;
     compactLayout = false;
+    mutationObserver = new MutationObserver(this.onItemsChange.bind(this));
     constructor() {
         super();
         this.#shadowRoot.createChild('style').textContent = toolbarStyles.cssContent;
         this.#shadowRoot.createChild('slot');
+    }
+    onItemsChange(mutationList) {
+        for (const mutation of mutationList) {
+            for (const element of mutation.removedNodes) {
+                if (!(element instanceof HTMLElement)) {
+                    continue;
+                }
+                for (const item of this.items) {
+                    if (item.element === element) {
+                        this.items.splice(this.items.indexOf(item), 1);
+                        break;
+                    }
+                }
+            }
+            for (const element of mutation.addedNodes) {
+                if (!(element instanceof HTMLElement)) {
+                    continue;
+                }
+                if (this.items.some(item => item.element === element)) {
+                    continue;
+                }
+                let item;
+                if (element instanceof Buttons.Button.Button) {
+                    item = new ToolbarButton('', undefined, undefined, undefined, element);
+                }
+                else if (element instanceof ToolbarInputElement) {
+                    item = element.item;
+                }
+                else if (element instanceof HTMLSelectElement) {
+                    item = new ToolbarComboBox(null, element.title, undefined, undefined, element);
+                }
+                else {
+                    item = new ToolbarItem(element);
+                }
+                if (item) {
+                    this.appendToolbarItem(item);
+                }
+            }
+        }
     }
     connectedCallback() {
         if (!this.hasAttribute('role')) {
@@ -155,13 +195,11 @@ export class Toolbar extends HTMLElement {
                     longClickButtons = buttons;
                 }
             }
-            else {
-                if (longClickController) {
-                    longClickController.dispose();
-                    longClickController = null;
-                    button.setLongClickable(false);
-                    longClickButtons = null;
-                }
+            else if (longClickController) {
+                longClickController.dispose();
+                longClickController = null;
+                button.setLongClickable(false);
+                longClickButtons = null;
             }
         }
         function showOptions() {
@@ -285,7 +323,9 @@ export class Toolbar extends HTMLElement {
         if (!this.enabled) {
             item.applyEnabledState(false);
         }
-        this.appendChild(item.element);
+        if (item.element.parentElement !== this) {
+            this.appendChild(item.element);
+        }
         this.hideSeparatorDupes();
     }
     hasItem(item) {
@@ -467,24 +507,30 @@ export class ToolbarButton extends ToolbarItem {
     button;
     text;
     adorner;
-    constructor(title, glyphOrAdorner, text, jslogContext) {
-        const button = new Buttons.Button.Button();
+    constructor(title, glyphOrAdorner, text, jslogContext, button) {
+        let adorner = null;
+        if (!button) {
+            button = new Buttons.Button.Button();
+            if (glyphOrAdorner instanceof Adorners.Adorner.Adorner) {
+                button.variant = "adorner_icon" /* Buttons.Button.Variant.ADORNER_ICON */;
+                adorner = glyphOrAdorner;
+            }
+            else if (typeof glyphOrAdorner === 'string' && !text) {
+                button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: glyphOrAdorner };
+            }
+            else {
+                button.variant = "text" /* Buttons.Button.Variant.TEXT */;
+                button.reducedFocusRing = true;
+                if (glyphOrAdorner) {
+                    button.iconName = glyphOrAdorner;
+                }
+            }
+        }
         super(button);
         this.button = button;
-        if (glyphOrAdorner instanceof Adorners.Adorner.Adorner) {
-            this.button.variant = "adorner_icon" /* Buttons.Button.Variant.ADORNER_ICON */;
-            this.setAdorner(glyphOrAdorner);
-            this.button.prepend(glyphOrAdorner);
-        }
-        else if (typeof glyphOrAdorner === 'string' && !text) {
-            this.button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: glyphOrAdorner };
-        }
-        else {
-            this.button.variant = "text" /* Buttons.Button.Variant.TEXT */;
-            this.button.reducedFocusRing = true;
-            if (glyphOrAdorner) {
-                this.button.iconName = glyphOrAdorner;
-            }
+        if (adorner) {
+            this.setAdorner(adorner);
+            this.button.prepend(adorner);
         }
         button.classList.add('toolbar-button');
         this.element.addEventListener('click', this.clicked.bind(this), false);
@@ -563,83 +609,13 @@ export class ToolbarButton extends ToolbarItem {
         event.consume();
     }
 }
-export class ToolbarCombobox extends ToolbarItem {
-    textElement;
-    text;
-    iconName;
-    adorner;
-    constructor(title, isIconDropdown, jslogContext, iconName) {
-        let element;
-        if (iconName) {
-            element = new Buttons.Button.Button();
-            element.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName };
-        }
-        else {
-            element = document.createElement('button');
-        }
-        element.classList.add('toolbar-button');
-        super(element);
-        this.element.addEventListener('click', this.clicked.bind(this), false);
-        this.iconName = iconName;
-        this.setTitle(title);
-        if (jslogContext) {
-            this.element.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(jslogContext)}`);
-        }
-        this.title = '';
-        if (!isIconDropdown) {
-            this.element.classList.add('toolbar-has-dropdown');
-            const dropdownArrowIcon = IconButton.Icon.create('triangle-down', 'toolbar-dropdown-arrow');
-            this.element.appendChild(dropdownArrowIcon);
-        }
-    }
-    setText(text) {
-        if (this.text === text || this.iconName) {
-            return;
-        }
-        if (!this.textElement) {
-            this.textElement = document.createElement('div');
-            this.textElement.classList.add('toolbar-text', 'hidden');
-            const dropDownArrow = this.element.querySelector('.toolbar-dropdown-arrow');
-            this.element.insertBefore(this.textElement, dropDownArrow);
-        }
-        this.textElement.textContent = text;
-        this.textElement.classList.toggle('hidden', !text);
-        this.text = text;
-    }
-    setAdorner(adorner) {
-        if (this.iconName) {
-            return;
-        }
-        if (!this.adorner) {
-            this.adorner = adorner;
-        }
-        else {
-            adorner.replaceWith(adorner);
-            if (this.element.firstChild) {
-                this.element.removeChild(this.element.firstChild);
-            }
-        }
-        this.element.prepend(adorner);
-    }
-    setDarkText() {
-        this.element.classList.add('dark-text');
-    }
-    turnShrinkable() {
-        this.element.classList.add('toolbar-has-dropdown-shrinkable');
-    }
-    clicked(event) {
-        if (!this.enabled) {
-            return;
-        }
-        this.dispatchEventToListeners("Click" /* ToolbarButton.Events.CLICK */, event);
-        event.consume();
-    }
-}
 export class ToolbarInput extends ToolbarItem {
     prompt;
     proxyElement;
-    constructor(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext) {
-        const element = document.createElement('div');
+    constructor(placeholder, accessiblePlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext, element) {
+        if (!element) {
+            element = document.createElement('div');
+        }
         element.classList.add('toolbar-input');
         super(element);
         const internalPromptElement = this.element.createChild('div', 'toolbar-input-prompt');
@@ -734,14 +710,61 @@ export class ToolbarInput extends ToolbarItem {
     }
 }
 export class ToolbarFilter extends ToolbarInput {
-    constructor(filterBy, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext) {
+    constructor(filterBy, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext, element) {
         const filterPlaceholder = filterBy ? filterBy : i18nString(UIStrings.filter);
-        super(filterPlaceholder, filterPlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext || 'filter');
+        super(filterPlaceholder, filterPlaceholder, growFactor, shrinkFactor, tooltip, completions, dynamicCompletions, jslogContext || 'filter', element);
         const filterIcon = IconButton.Icon.create('filter');
         this.element.prepend(filterIcon);
         this.element.classList.add('toolbar-filter');
     }
 }
+class ToolbarInputElement extends HTMLElement {
+    static observedAttributes = ['value'];
+    item;
+    datalist = null;
+    connectedCallback() {
+        const list = this.getAttribute('list');
+        if (list) {
+            this.datalist = this.getRootNode().querySelector(`datalist[id="${list}"]`);
+        }
+        const placeholder = this.getAttribute('placeholder') || '';
+        const accessiblePlaceholder = this.getAttribute('aria-placeholder') ?? undefined;
+        const tooltip = this.getAttribute('title') ?? undefined;
+        const jslogContext = this.id ?? undefined;
+        const isFilter = this.getAttribute('type') === 'filter';
+        if (isFilter) {
+            this.item = new ToolbarFilter(placeholder, /* growFactor=*/ undefined, 
+            /* shrinkFactor=*/ undefined, tooltip, this.datalist ? this.#onAutocomplete.bind(this) : undefined, 
+            /* dynamicCompletions=*/ undefined, jslogContext || 'filter', this);
+        }
+        else {
+            this.item = new ToolbarInput(placeholder, accessiblePlaceholder, /* growFactor=*/ undefined, 
+            /* shrinkFactor=*/ undefined, tooltip, this.datalist ? this.#onAutocomplete.bind(this) : undefined, 
+            /* dynamicCompletions=*/ undefined, jslogContext, this);
+        }
+        this.item.addEventListener("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, event => {
+            this.dispatchEvent(new CustomEvent('change', { detail: event.data }));
+        });
+        this.item.addEventListener("EnterPressed" /* ToolbarInput.Event.ENTER_PRESSED */, event => {
+            this.dispatchEvent(new CustomEvent('submit', { detail: event.data }));
+        });
+    }
+    async #onAutocomplete(expression, prefix, force) {
+        if (!prefix && !force && expression || !this.datalist) {
+            return [];
+        }
+        const options = this.datalist.options;
+        return [...options].map((({ value }) => value)).filter(value => value.startsWith(prefix)).map(text => ({ text }));
+    }
+    attributeChangedCallback(name, oldValue, newValue) {
+        if (name === 'value') {
+            if (this.item && this.item.value() !== newValue) {
+                this.item.setValue(newValue, true);
+            }
+        }
+    }
+}
+customElements.define('devtools-toolbar-input', ToolbarInputElement);
 export class ToolbarToggle extends ToolbarButton {
     untoggledGlyph;
     toggledGlyph;
@@ -772,20 +795,79 @@ export class ToolbarToggle extends ToolbarButton {
         this.setToggleType("red-toggle" /* Buttons.Button.ToggleType.RED */);
     }
 }
-export class ToolbarMenuButton extends ToolbarCombobox {
+export class ToolbarMenuButton extends ToolbarItem {
+    textElement;
+    text;
+    iconName;
+    adorner;
     contextMenuHandler;
     useSoftMenu;
+    keepOpen;
     triggerTimeoutId;
     #triggerDelay = 200;
-    constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext, iconName) {
-        super('', isIconDropdown, jslogContext, iconName);
+    constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext, iconName, keepOpen) {
+        let element;
+        if (iconName) {
+            element = new Buttons.Button.Button();
+            element.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName };
+        }
+        else {
+            element = document.createElement('button');
+        }
+        element.classList.add('toolbar-button');
+        super(element);
+        this.element.addEventListener('click', this.clicked.bind(this), false);
+        this.iconName = iconName;
+        this.setTitle('');
+        this.title = '';
+        if (!isIconDropdown) {
+            this.element.classList.add('toolbar-has-dropdown');
+            const dropdownArrowIcon = IconButton.Icon.create('triangle-down', 'toolbar-dropdown-arrow');
+            this.element.appendChild(dropdownArrowIcon);
+        }
         if (jslogContext) {
             this.element.setAttribute('jslog', `${VisualLogging.dropDown().track({ click: true }).context(jslogContext)}`);
         }
         this.element.addEventListener('mousedown', this.mouseDown.bind(this), false);
         this.contextMenuHandler = contextMenuHandler;
         this.useSoftMenu = Boolean(useSoftMenu);
+        this.keepOpen = Boolean(keepOpen);
         ARIAUtils.markAsMenuButton(this.element);
+    }
+    setText(text) {
+        if (this.text === text || this.iconName) {
+            return;
+        }
+        if (!this.textElement) {
+            this.textElement = document.createElement('div');
+            this.textElement.classList.add('toolbar-text', 'hidden');
+            const dropDownArrow = this.element.querySelector('.toolbar-dropdown-arrow');
+            this.element.insertBefore(this.textElement, dropDownArrow);
+        }
+        this.textElement.textContent = text;
+        this.textElement.classList.toggle('hidden', !text);
+        this.text = text;
+    }
+    setAdorner(adorner) {
+        if (this.iconName) {
+            return;
+        }
+        if (!this.adorner) {
+            this.adorner = adorner;
+        }
+        else {
+            adorner.replaceWith(adorner);
+            if (this.element.firstChild) {
+                this.element.removeChild(this.element.firstChild);
+            }
+        }
+        this.element.prepend(adorner);
+    }
+    setDarkText() {
+        this.element.classList.add('dark-text');
+    }
+    turnShrinkable() {
+        this.element.classList.add('toolbar-has-dropdown-shrinkable');
     }
     setTriggerDelay(x) {
         this.#triggerDelay = x;
@@ -805,6 +887,7 @@ export class ToolbarMenuButton extends ToolbarCombobox {
         delete this.triggerTimeoutId;
         const contextMenu = new ContextMenu(event, {
             useSoftMenu: this.useSoftMenu,
+            keepOpen: this.keepOpen,
             x: this.element.getBoundingClientRect().left,
             y: this.element.getBoundingClientRect().top + this.element.offsetHeight,
             // Without adding a delay, pointer events will be un-ignored too early, and a single click causes
@@ -859,8 +942,11 @@ export class ToolbarSeparator extends ToolbarItem {
     }
 }
 export class ToolbarComboBox extends ToolbarItem {
-    constructor(changeHandler, title, className, jslogContext) {
-        super(document.createElement('select'));
+    constructor(changeHandler, title, className, jslogContext, element) {
+        if (!element) {
+            element = document.createElement('select');
+        }
+        super(element);
         if (changeHandler) {
             this.element.addEventListener('change', changeHandler, false);
         }

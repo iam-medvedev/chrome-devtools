@@ -97,6 +97,10 @@ export default {
   pointer-events: none;
 }
 
+:host {
+  display: flex;
+}
+
 /*# sourceURL=${import.meta.resolve('./splitWidget.css')} */
 `
 };

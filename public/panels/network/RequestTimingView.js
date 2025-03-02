@@ -447,10 +447,8 @@ export class RequestTimingView extends UI.Widget.VBox {
                     serviceworkerHeader = createHeader('Service Worker');
                 }
             }
-            else {
-                if (!dataHeader) {
-                    dataHeader = createHeader(i18nString(UIStrings.requestresponse));
-                }
+            else if (!dataHeader) {
+                dataHeader = createHeader(i18nString(UIStrings.requestresponse));
             }
             const left = (scale * (range.start - startTime));
             right = (scale * (endTime - range.end));

@@ -385,28 +385,26 @@ export class ConsoleViewMessage {
                 }
             }
         }
+        else if (this.message.source === "network" /* Protocol.Log.LogEntrySource.Network */) {
+            messageElement = this.formatAsNetworkRequest() || this.format([messageText]);
+        }
         else {
-            if (this.message.source === "network" /* Protocol.Log.LogEntrySource.Network */) {
-                messageElement = this.formatAsNetworkRequest() || this.format([messageText]);
+            const messageInParameters = this.message.parameters && messageText === this.message.parameters[0];
+            // These terms are locked because the console message will not be translated anyway.
+            if (this.message.source === "violation" /* Protocol.Log.LogEntrySource.Violation */) {
+                messageText = i18nString(UIStrings.violationS, { PH1: messageText });
             }
-            else {
-                const messageInParameters = this.message.parameters && messageText === this.message.parameters[0];
-                // These terms are locked because the console message will not be translated anyway.
-                if (this.message.source === "violation" /* Protocol.Log.LogEntrySource.Violation */) {
-                    messageText = i18nString(UIStrings.violationS, { PH1: messageText });
-                }
-                else if (this.message.source === "intervention" /* Protocol.Log.LogEntrySource.Intervention */) {
-                    messageText = i18nString(UIStrings.interventionS, { PH1: messageText });
-                }
-                else if (this.message.source === "deprecation" /* Protocol.Log.LogEntrySource.Deprecation */) {
-                    messageText = i18nString(UIStrings.deprecationS, { PH1: messageText });
-                }
-                const args = this.message.parameters || [messageText];
-                if (messageInParameters) {
-                    args[0] = messageText;
-                }
-                messageElement = this.format(args);
+            else if (this.message.source === "intervention" /* Protocol.Log.LogEntrySource.Intervention */) {
+                messageText = i18nString(UIStrings.interventionS, { PH1: messageText });
             }
+            else if (this.message.source === "deprecation" /* Protocol.Log.LogEntrySource.Deprecation */) {
+                messageText = i18nString(UIStrings.deprecationS, { PH1: messageText });
+            }
+            const args = this.message.parameters || [messageText];
+            if (messageInParameters) {
+                args[0] = messageText;
+            }
+            messageElement = this.format(args);
         }
         messageElement.classList.add('console-message-text');
         const formattedMessage = document.createElement('span');

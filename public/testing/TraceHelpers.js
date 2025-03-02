@@ -512,7 +512,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
             renderFrameImplCreateChildFrameEvents: [],
             domLoadingEvents: [],
             layoutImageUnsizedEvents: [],
-            beginRemoteFontLoadEvents: [],
+            remoteFonts: [],
             scoreRecords: [],
             backendNodeIds: [],
             paintImageEvents: [],

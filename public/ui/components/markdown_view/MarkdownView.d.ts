@@ -12,7 +12,6 @@ export declare class MarkdownView extends HTMLElement {
     #private;
     connectedCallback(): void;
     set data(data: MarkdownViewData);
-    finishAnimations(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -88,7 +88,7 @@ export class AiAgent {
             ...(enableAidaFunctionCalling ? { function_declarations: declarations } : {}),
             options: {
                 temperature: validTemperature(this.options.temperature),
-                model_id: this.options.modelId,
+                model_id: this.options.modelId || undefined,
             },
             metadata: {
                 disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
@@ -104,9 +104,6 @@ export class AiAgent {
     }
     get id() {
         return this.#id;
-    }
-    get isEmpty() {
-        return this.#history.length === 0;
     }
     get origin() {
         return this.#origin;

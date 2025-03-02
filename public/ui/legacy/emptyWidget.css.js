@@ -11,7 +11,6 @@ export default {
  */
 
 .empty-view-scroller {
-  justify-content: center;
   overflow: auto;
 }
 

@@ -367,6 +367,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             errorMessage: status.errorMessage,
             success: status.success ?? null,
             size: status.size ?? null,
+            duration: null,
         };
         SDK.PageResourceLoader.PageResourceLoader.instance().resourceLoadedThroughExtension(pageResource);
         return this.status.OK();
