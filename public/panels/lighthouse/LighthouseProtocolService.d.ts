@@ -3,7 +3,10 @@ import type * as ReportRenderer from './LighthouseReporterTypes.js';
 export interface LighthouseRun {
     inspectedURL: Platform.DevToolsPath.UrlString;
     categoryIDs: string[];
-    flags: Record<string, Object | undefined>;
+    flags: {
+        formFactor: (string | undefined);
+        mode: string;
+    };
 }
 /**
  * ProtocolService manages a connection between the frontend (Lighthouse panel) and the Lighthouse worker.

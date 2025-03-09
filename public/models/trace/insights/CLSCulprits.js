@@ -59,9 +59,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/CLSCulprits.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
-}
 /**
  * Each failure reason is represented by a bit flag. The bit shift operator '<<' is used to define
  * which bit corresponds to each failure reason.

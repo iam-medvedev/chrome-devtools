@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /** Title of an insight that provides details about the fonts used on the page, and the value of their `font-display` properties. */
     title: 'Font display',
@@ -20,9 +20,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/FontDisplay.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['Meta', 'NetworkRequests', 'LayoutShifts'];
-}
 function finalize(partialModel) {
     return {
         insightKey: "FontDisplay" /* InsightKeys.FONT_DISPLAY */,
@@ -46,15 +43,17 @@ export function generateInsight(parsedTrace, context) {
         if (!request) {
             continue;
         }
-        let wastedTime = Types.Timing.Milli(0);
-        if (/^(block|fallback|auto)$/.test(remoteFont.display)) {
-            const wastedTimeMicro = Types.Timing.Micro(request.args.data.syntheticData.finishTime - request.args.data.syntheticData.sendStartTime);
-            // TODO(crbug.com/352244504): should really end at the time of the next Commit trace event.
-            wastedTime =
-                Platform.NumberUtilities.floor(Helpers.Timing.microToMilli(wastedTimeMicro), 1 / 5);
-            // All browsers wait for no more than 3s.
-            wastedTime = Math.min(wastedTime, 3000);
+        if (!/^(block|fallback|auto)$/.test(remoteFont.display)) {
+            continue;
         }
+        const wastedTimeMicro = Types.Timing.Micro(request.args.data.syntheticData.finishTime - request.args.data.syntheticData.sendStartTime);
+        // TODO(crbug.com/352244504): should really end at the time of the next Commit trace event.
+        let wastedTime = Platform.NumberUtilities.floor(Helpers.Timing.microToMilli(wastedTimeMicro), 1 / 5);
+        if (wastedTime === 0) {
+            continue;
+        }
+        // All browsers wait for no more than 3s.
+        wastedTime = Math.min(wastedTime, 3000);
         fonts.push({
             name: remoteFont.name,
             request,

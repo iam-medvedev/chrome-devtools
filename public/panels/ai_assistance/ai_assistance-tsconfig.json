@@ -29,12 +29,14 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/ai_assistance/AgentProject.ts",
     "../../../../../../front_end/panels/ai_assistance/AiAssistancePanel.ts",
     "../../../../../../front_end/panels/ai_assistance/AiHistoryStorage.ts",
     "../../../../../../front_end/panels/ai_assistance/ChangeManager.ts",
     "../../../../../../front_end/panels/ai_assistance/EvaluateAction.ts",
     "../../../../../../front_end/panels/ai_assistance/ExtensionScope.ts",
     "../../../../../../front_end/panels/ai_assistance/PatchWidget.ts",
+    "../../../../../../front_end/panels/ai_assistance/SelectWorkspaceDialog.ts",
     "../../../../../../front_end/panels/ai_assistance/agents/AiAgent.ts",
     "../../../../../../front_end/panels/ai_assistance/agents/FileAgent.ts",
     "../../../../../../front_end/panels/ai_assistance/agents/NetworkAgent.ts",
@@ -90,6 +92,12 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/workspace_diff/bundle-tsconfig.json"
+    },
+    {
+      "path": "../changes/bundle-tsconfig.json"
+    },
+    {
       "path": "../elements/bundle-tsconfig.json"
     },
     {
@@ -108,6 +116,9 @@
       "path": "../utils/bundle-tsconfig.json"
     },
     {
+      "path": "../../third_party/diff/bundle-tsconfig.json"
+    },
+    {
       "path": "../../third_party/marked/bundle-tsconfig.json"
     },
     {
@@ -115,6 +126,9 @@
     },
     {
       "path": "../../ui/components/spinners/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/tooltips/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

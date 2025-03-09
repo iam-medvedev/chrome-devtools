@@ -1,11 +1,9 @@
 import '../../ui/legacy/legacy.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
-import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { type Command, type Parameter } from './JSONEditor.js';
+import { JSONEditor, type Parameter } from './JSONEditor.js';
 export declare const buildProtocolMetadata: (domains: Iterable<ProtocolDomain>) => Map<string, {
     parameters: Parameter[];
     description: string;
@@ -42,7 +40,7 @@ export interface ProtocolDomain {
 export interface ViewInput {
     messages: Message[];
     selectedMessage?: Message;
-    hideInputBar: boolean;
+    sidebarVisible: boolean;
     command: string;
     commandSuggestions: string[];
     filterKeys: string[];
@@ -51,6 +49,7 @@ export interface ViewInput {
     onRecord: (e: Event) => void;
     onClear: () => void;
     onSave: () => void;
+    onSplitChange: (e: CustomEvent<string>) => void;
     onSelect: (e: CustomEvent<HTMLElement | null>) => void;
     onContextMenu: (e: CustomEvent<{
         menu: UI.ContextMenu.ContextMenu;
@@ -60,28 +59,21 @@ export interface ViewInput {
     onCommandChange: (e: CustomEvent<string>) => void;
     onCommandSubmitted: (e: CustomEvent<string>) => void;
     onTargetChange: (e: Event) => void;
-    showHideSidebarButton: UI.Toolbar.ToolbarButton;
+    onToggleSidebar: (e: Event) => void;
     targets: SDK.Target.Target[];
     selectedTargetId: string;
 }
 export interface ViewOutput {
+    editorWidget: JSONEditor;
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
-declare const ProtocolMonitorDataGrid_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: keyof EventTypes): boolean;
-    dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
-}) & typeof UI.Widget.VBox;
-export declare class ProtocolMonitorDataGrid extends ProtocolMonitorDataGrid_base {
+export declare class ProtocolMonitorImpl extends UI.Panel.Panel {
     #private;
     private started;
     private startTime;
     private readonly messageForId;
     private readonly filterParser;
-    constructor(splitWidget: UI.SplitWidget.SplitWidget, view?: View);
+    constructor(view?: View);
     performUpdate(): void;
     onCommandSend(command: string, parameters: object, target?: string): void;
     wasShown(): void;
@@ -90,10 +82,6 @@ export declare class ProtocolMonitorDataGrid extends ProtocolMonitorDataGrid_bas
     private messageReceived;
     private messageSent;
     private saveAsFile;
-}
-export declare class ProtocolMonitorImpl extends UI.Widget.VBox {
-    #private;
-    constructor();
 }
 export declare class CommandAutocompleteSuggestionProvider {
     #private;
@@ -115,18 +103,9 @@ export declare class InfoWidget extends UI.Widget.VBox {
     constructor(element: HTMLElement);
     performUpdate(): void;
 }
-export declare const enum Events {
-    COMMAND_SENT = "CommandSent",
-    COMMAND_CHANGE = "CommandChange"
-}
-export interface EventTypes {
-    [Events.COMMAND_SENT]: Command;
-    [Events.COMMAND_CHANGE]: Command;
-}
 export declare function parseCommandInput(input: string): {
     command: string;
     parameters: {
         [paramName: string]: unknown;
     };
 };
-export {};

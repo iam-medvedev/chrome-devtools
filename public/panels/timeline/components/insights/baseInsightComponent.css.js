@@ -185,6 +185,13 @@ dd.dl-title {
   color: var(--sys-color-state-disabled);
 }
 
+.ask-ai-btn-wrap {
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
+  padding-top: var(--sys-size-5);
+  margin-top: var(--sys-size-5);
+  text-align: center;
+}
+
 /*# sourceURL=${import.meta.resolve('./baseInsightComponent.css')} */
 `
 };

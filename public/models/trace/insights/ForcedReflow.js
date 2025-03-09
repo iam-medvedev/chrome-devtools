@@ -5,9 +5,6 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { InsightCategory, } from './types.js';
-export function deps() {
-    return ['Warnings', 'Renderer'];
-}
 export const UIStrings = {
     /**
      *@description Title of an insight that provides details about Forced reflow.

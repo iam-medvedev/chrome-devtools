@@ -73,7 +73,7 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
     #selectedItem = null;
     #view;
     #filters = [];
-    constructor(view = (input, output, target) => {
+    constructor(view = (input, _, target) => {
         // clang-format off
         render(html `
             <devtools-data-grid

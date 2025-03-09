@@ -1,5 +1,6 @@
+import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type Checklist, type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type Checklist, type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
@@ -56,5 +57,4 @@ export type DocumentLatencyInsightModel = InsightModel<typeof UIStrings, {
         checklist: Checklist<'noRedirects' | 'serverResponseIsFast' | 'usesCompression'>;
     };
 }>;
-export declare function deps(): ['Meta', 'NetworkRequests'];
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): DocumentLatencyInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DocumentLatencyInsightModel;

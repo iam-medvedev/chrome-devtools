@@ -2,23 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import * as TextUtils from '../../../models/text_utils/text_utils.js';
+import { AgentProject } from '../AgentProject.js';
 import { debugLog } from '../debug.js';
 import { AiAgent, } from './AiAgent.js';
-function getFiles(project) {
-    const files = [];
-    const map = new Map();
-    for (const uiSourceCode of project.uiSourceCodes()) {
-        let path = uiSourceCode.fullDisplayName();
-        const idx = path.indexOf('/');
-        if (idx !== -1) {
-            path = path.substring(idx + 1);
-        }
-        files.push(path);
-        map.set(path, uiSourceCode);
-    }
-    return { files, map };
-}
 export class PatchAgent extends AiAgent {
     #project;
     #fileUpdateAgent;
@@ -42,7 +28,7 @@ export class PatchAgent extends AiAgent {
     }
     constructor(opts) {
         super(opts);
-        this.#project = opts.project;
+        this.#project = new AgentProject(opts.project);
         this.#fileUpdateAgent = opts.fileUpdateAgent ?? new FileUpdateAgent(opts);
         this.declareFunction('listFiles', {
             description: 'Returns a list of all files in the project.',
@@ -53,16 +39,9 @@ export class PatchAgent extends AiAgent {
                 properties: {},
             },
             handler: async () => {
-                if (!this.#project) {
-                    return {
-                        error: 'No project available',
-                    };
-                }
-                const project = this.#project;
-                const { files } = getFiles(project);
                 return {
                     result: {
-                        files,
+                        files: this.#project.getFiles(),
                     }
                 };
             },
@@ -92,32 +71,9 @@ export class PatchAgent extends AiAgent {
                 },
             },
             handler: async (params) => {
-                if (!this.#project) {
-                    return {
-                        error: 'No project available',
-                    };
-                }
-                const project = this.#project;
-                const { map } = getFiles(project);
-                const matches = [];
-                for (const [filepath, file] of map.entries()) {
-                    await file.requestContentData();
-                    debugLog('searching in', filepath, 'for', params.query);
-                    const content = file.isDirty() ? file.workingCopyContentData() : await file.requestContentData();
-                    const results = TextUtils.TextUtils.performSearchInContentData(content, params.query, params.caseSensitive ?? true, params.isRegex ?? false);
-                    for (const result of results) {
-                        debugLog('matches in', filepath);
-                        matches.push({
-                            filepath,
-                            lineNumber: result.lineNumber,
-                            columnNumber: result.columnNumber,
-                            matchLength: result.matchLength
-                        });
-                    }
-                }
                 return {
                     result: {
-                        matches,
+                        matches: await this.#project.searchFiles(params.query, params.caseSensitive, params.isRegex),
                     }
                 };
             },
@@ -139,17 +95,10 @@ export class PatchAgent extends AiAgent {
             },
             handler: async (args) => {
                 debugLog('updateFiles', args.files);
-                if (!this.#project) {
-                    return {
-                        error: 'No project available',
-                    };
-                }
-                const project = this.#project;
-                const { map } = getFiles(project);
-                for (const file of args.files.slice(0, 3)) {
+                for (const file of args.files) {
                     debugLog('updating', file);
-                    const uiSourceCode = map.get(file);
-                    if (!uiSourceCode) {
+                    const content = this.#project.readFile(file);
+                    if (content === undefined) {
                         debugLog(file, 'not found');
                         continue;
                     }
@@ -163,7 +112,7 @@ Following '===' I provide the source code file. Update the file to apply the sam
 CRITICAL: Output the entire file with changes without any other modifications! DO NOT USE MARKDOWN.
 
 ===
-${uiSourceCode.workingCopyContentData().text}
+${content}
 `;
                     let response;
                     for await (response of this.#fileUpdateAgent.run(prompt, { selected: null })) {
@@ -175,7 +124,7 @@ ${uiSourceCode.workingCopyContentData().text}
                         continue;
                     }
                     const updated = response.text;
-                    uiSourceCode.setWorkingCopy(updated);
+                    this.#project.writeFile(file, updated);
                     debugLog('updated', updated);
                 }
                 return {

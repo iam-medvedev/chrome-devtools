@@ -325,10 +325,10 @@ describeWithEnvironment('AiAgent', () => {
                     handler: this.#test.bind(this),
                 });
             }
-            async #test(args) {
+            async #test(...args) {
                 this.called++;
                 return {
-                    result: args,
+                    result: args[0],
                 };
             }
             // eslint-disable-next-line require-yield

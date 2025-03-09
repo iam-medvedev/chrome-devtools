@@ -197,7 +197,7 @@ export class PanelUtils {
         }
         return { iconName: 'file-generic', color: 'var(--icon-default)' };
     }
-    static getIconForSourceFile(uiSourceCode) {
+    static getIconForSourceFile(uiSourceCode, options = {}) {
         const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
         const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
         let iconType = 'document';
@@ -222,6 +222,8 @@ export class PanelUtils {
             contentType: uiSourceCode.contentType().name(),
             hasDotBadge,
             isDotPurple,
+            width: options.width,
+            height: options.height,
         };
         if (binding) {
             UI.Tooltip.Tooltip.install(icon, Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode));

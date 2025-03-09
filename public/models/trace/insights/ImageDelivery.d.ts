@@ -1,5 +1,6 @@
+import type * as Handlers from '../handlers/handlers.js';
 import type * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Title of an insight that recommends ways to reduce the size of images downloaded and used on the page.
@@ -48,7 +49,6 @@ export declare const UIStrings: {
     readonly estimatedSavings: "{PH1} (Est {PH2})";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['NetworkRequests', 'Meta', 'ImagePainting'];
 export declare enum ImageOptimizationType {
     ADJUST_COMPRESSION = "ADJUST_COMPRESSION",
     MODERN_FORMAT_OR_COMPRESSION = "MODERN_FORMAT_OR_COMPRESSION",
@@ -89,4 +89,4 @@ export type ImageDeliveryInsightModel = InsightModel<typeof UIStrings, {
 }>;
 export declare function getOptimizationMessage(optimization: ImageOptimization): string;
 export declare function getOptimizationMessageWithBytes(optimization: ImageOptimization): string;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): ImageDeliveryInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ImageDeliveryInsightModel;

@@ -15,6 +15,10 @@ export default {
   flex-shrink: 0;
 }
 
+.automatic-workspace-infobar {
+  border-top: var(--sys-size-1) solid var(--sys-color-divider);
+}
+
 /*# sourceURL=${import.meta.resolve('./sourcesNavigator.css')} */
 `
 };

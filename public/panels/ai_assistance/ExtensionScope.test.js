@@ -1,10 +1,17 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
+import * as Workspace from '../../models/workspace/workspace.js';
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import { createCSSStyle, getMatchedStyles, ruleMatch } from '../../testing/StyleHelpers.js';
 import * as ExtensionScope from './ExtensionScope.js';
 import * as Injected from './injected.js';
+const { urlString } = Platform.DevToolsPath;
 function createNode(options) {
     const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
     node.id = 1;
@@ -25,7 +32,11 @@ async function getSelector(payload, node) {
         node,
         ...payload,
     });
-    return ExtensionScope.ExtensionScope.getSelectorForRule(matchedStyles);
+    const styleRule = ExtensionScope.ExtensionScope.getStyleRuleFromMatchesStyles(matchedStyles);
+    if (!styleRule) {
+        return '';
+    }
+    return ExtensionScope.ExtensionScope.getSelectorsFromStyleRule(styleRule, matchedStyles);
 }
 describe('ExtensionScope', () => {
     const MOCK_STYLE = [
@@ -180,6 +191,65 @@ describe('ExtensionScope', () => {
             ];
             const selector = await getSelector({ matchedPayload });
             assert.strictEqual(selector, 'div');
+        });
+    });
+    describeWithMockConnection('getSourceLocation', () => {
+        async function setupMockedStyleRules() {
+            const target = createTarget();
+            const targetManager = target.targetManager();
+            targetManager.setScopeTarget(target);
+            const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+            const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+            Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
+            const sourceURL = urlString `http://localhost/something/style.css`;
+            createResource(getMainFrame(target), sourceURL, 'text/html', '');
+            const uiSourceCode = workspace.uiSourceCodeForURL(sourceURL);
+            assert.isNotNull(uiSourceCode);
+            const cssModel = target.model(SDK.CSSModel.CSSModel);
+            const cssStyleSheetHeader = new SDK.CSSStyleSheetHeader.CSSStyleSheetHeader(cssModel, {
+                styleSheetId: 'test',
+                frameId: 'test',
+                sourceURL,
+                origin: "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */,
+                title: 'style.css',
+                disabled: false,
+                isInline: false,
+                isMutable: false,
+                isConstructed: false,
+                startLine: 0,
+                startColumn: 0,
+                length: 10,
+                endLine: 1,
+                endColumn: 8,
+            });
+            sinon.stub(cssModel, 'styleSheetHeaderForId').returns(cssStyleSheetHeader);
+            const node = createNode();
+            const matchedPayload = [
+                ruleMatch({
+                    text: '.test',
+                    selectors: [{
+                            text: '.test',
+                            range: {
+                                startLine: 0,
+                                startColumn: 0,
+                                endLine: 0,
+                                endColumn: 10,
+                            }
+                        }]
+                }, MOCK_STYLE, {
+                    styleSheetId: cssStyleSheetHeader.id,
+                }),
+            ];
+            const matchedStyles = await getMatchedStyles({
+                node,
+                matchedPayload,
+                cssModel,
+            });
+            return ExtensionScope.ExtensionScope.getStyleRuleFromMatchesStyles(matchedStyles);
+        }
+        it('should compute a source location', async () => {
+            const styleRule = await setupMockedStyleRules();
+            assert.strictEqual(ExtensionScope.ExtensionScope.getSourceLocation(styleRule), 'style.css:1:1');
         });
     });
 });

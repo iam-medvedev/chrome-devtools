@@ -64,6 +64,7 @@ export class ObjectWrapper {
 }
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export function eventMixin(base) {
+    console.assert(base !== HTMLElement);
     return class EventHandling extends base {
         #events = new ObjectWrapper();
         addEventListener(eventType, listener, thisObject) {

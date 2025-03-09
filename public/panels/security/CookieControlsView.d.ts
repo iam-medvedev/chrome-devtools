@@ -10,9 +10,7 @@ export interface ViewInput {
     inputChanged: (newValue: boolean, setting: Common.Settings.Setting<boolean>) => void;
     openChromeCookieSettings: () => void;
 }
-export interface ViewOutput {
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare function showInfobar(): void;
 export declare class CookieControlsView extends UI.Widget.VBox {
     #private;

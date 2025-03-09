@@ -13,9 +13,7 @@ interface ViewInput {
         element: HTMLElement;
     }>) => void;
 }
-interface ViewOutput {
-}
-type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare class TimelineSelectorStatsView extends UI.Widget.VBox {
     #private;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, view?: View);

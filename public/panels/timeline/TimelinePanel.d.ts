@@ -4,6 +4,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as TimelineComponents from './components/components.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
@@ -206,4 +207,13 @@ export declare class EventRevealer implements Common.Revealer.Revealer<SDK.Trace
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;
+}
+/**
+ * Used to set the UI.Context when the user expands an Insight. This is only
+ * relied upon in the AI Agent code to know which agent to pick by default based
+ * on the context of the panel.
+ */
+export declare class SelectedInsight {
+    insight: TimelineComponents.Sidebar.ActiveInsight;
+    constructor(insight: TimelineComponents.Sidebar.ActiveInsight);
 }

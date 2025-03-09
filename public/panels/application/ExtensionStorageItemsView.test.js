@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
 var View = Resources.ExtensionStorageItemsView;
 class ExtensionStorageItemsListener {
@@ -56,12 +56,7 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
         extensionStorage = new Resources.ExtensionStorageModel.ExtensionStorage(extensionStorageModel, TEST_EXTENSION_ID, TEST_EXTENSION_NAME, "local" /* Protocol.Extensions.StorageArea.Local */);
     });
     function createView() {
-        const viewFunction = sinon.stub();
-        viewFunction.callsFake((_input, output, _target) => {
-            output.splitWidget = sinon.createStubInstance(UI.SplitWidget.SplitWidget);
-            output.preview = new UI.Widget.VBox();
-            output.resizer = sinon.createStubInstance(HTMLElement);
-        });
+        const viewFunction = createViewFunctionStub(View.ExtensionStorageItemsView);
         const view = new View.ExtensionStorageItemsView(extensionStorage, viewFunction);
         return { view, viewFunction };
     }
@@ -76,7 +71,7 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
         const { view, viewFunction } = createView();
         const itemsListener = new ExtensionStorageItemsListener(view.extensionStorageItemsDispatcher);
         await itemsListener.waitForItemsRefreshed();
-        assert.deepEqual(viewFunction.lastCall.firstArg.items, Object.keys(EXAMPLE_DATA).map(key => ({ key, value: EXAMPLE_DATA[key] })));
+        assert.deepEqual(viewFunction.input.items, Object.keys(EXAMPLE_DATA).map(key => ({ key, value: EXAMPLE_DATA[key] })));
     });
     it('correctly parses set values as JSON, with string fallback', async () => {
         assert.exists(extensionStorageModel);
@@ -96,8 +91,13 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
         ];
         for (const { input, parsedValue } of expectedResults) {
             const key = Object.keys(EXAMPLE_DATA)[0];
-            viewFunction.lastCall.firstArg.onEdit(new CustomEvent('edit', {
-                detail: { node: { dataset: { key } }, columnId: 'value', valueBeforeEditing: EXAMPLE_DATA[key], newText: input }
+            viewFunction.input.onEdit(new CustomEvent('edit', {
+                detail: {
+                    node: { dataset: { key } },
+                    columnId: 'value',
+                    valueBeforeEditing: EXAMPLE_DATA[key],
+                    newText: input
+                }
             }));
             await itemsListener.waitForItemsEdited();
             setStorageItems.calledOnceWithExactly({ id: TEST_EXTENSION_ID, storageArea: "local" /* Protocol.Extensions.StorageArea.Local */, values: { [key]: parsedValue } });

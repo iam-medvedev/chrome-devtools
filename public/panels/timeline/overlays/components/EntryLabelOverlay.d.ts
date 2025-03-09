@@ -1,3 +1,4 @@
+import '../../../../ui/components/icon_button/icon_button.js';
 export declare class EmptyEntryLabelRemoveEvent extends Event {
     static readonly eventName = "emptyentrylabelremoveevent";
     constructor();

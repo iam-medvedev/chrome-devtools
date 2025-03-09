@@ -20,7 +20,6 @@ export declare class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper<
     breakpointIndexes: Set<number>;
     steppingOver: boolean;
     aborted: boolean;
-    abortPromise: Promise<void>;
     constructor(userFlow: UserFlow, { speed, breakpointIndexes, }: {
         speed: PlayRecordingSpeed;
         breakpointIndexes?: Set<number>;
@@ -31,6 +30,7 @@ export declare class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper<
     }>;
     static disconnectPuppeteer(browser: puppeteer.Browser): Promise<void>;
     stop(): Promise<void>;
+    get abortPromise(): Promise<void>;
     abort(): void;
     disposeForTesting(): void;
     continue(): void;

@@ -20,6 +20,12 @@ export declare const enum ChatMessageEntity {
     MODEL = "model",
     USER = "user"
 }
+export type ImageInputData = {
+    isLoading: true;
+} | {
+    isLoading: false;
+    data: string;
+};
 export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
     text: string;
@@ -64,7 +70,7 @@ export interface Props {
     patchSuggestionLoading?: boolean;
     projectName?: string;
     multimodalInputEnabled?: boolean;
-    imageInput?: string;
+    imageInput?: ImageInputData;
     onApplyToWorkspace?: () => void;
     isTextInputDisabled: boolean;
     emptyStateSuggestions: string[];

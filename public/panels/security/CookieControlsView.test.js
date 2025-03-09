@@ -6,6 +6,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createFakeSetting, createTarget, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Security from './security.js';
 const { urlString } = Platform.DevToolsPath;
@@ -13,7 +14,7 @@ describeWithMockConnection('CookieControlsView', () => {
     let mockView;
     let target;
     beforeEach(() => {
-        mockView = sinon.stub();
+        mockView = createViewFunctionStub(Security.CookieControlsView.CookieControlsView);
     });
     it('should update setting', async () => {
         const testSetting = createFakeSetting('test-control', true);

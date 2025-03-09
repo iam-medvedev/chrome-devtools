@@ -138,7 +138,7 @@ export class Isolate {
         if (!usage) {
             return;
         }
-        this.#usedHeapSizeInternal = usage.usedSize + usage.embedderHeapUsedSize + usage.backingStorageSize;
+        this.#usedHeapSizeInternal = usage.usedSize + (usage.embedderHeapUsedSize ?? 0) + (usage.backingStorageSize ?? 0);
         this.#memoryTrend.add(this.#usedHeapSizeInternal);
         IsolateManager.instance().dispatchEventToListeners("MemoryChanged" /* Events.MEMORY_CHANGED */, this);
     }

@@ -16,29 +16,29 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 75,
-    header: 'What\'s new in DevTools 134',
+    version: 76,
+    header: 'What\'s new in DevTools 135',
     markdownLinks: [
         {
-            key: 'privacy-and-security',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-134/#privacy-and-security',
+            key: 'perf-script-origin',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-135/#perf-script-origin',
         },
         {
-            key: 'calibrated-cpu-throttling',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-134/#calibrated-cpu-throttling',
+            key: 'empty-panels',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-135/#empty-panels',
         },
         {
-            key: 'perf-third-party',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-134/#perf-third-party',
+            key: 'accessibility-tree',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-135/#accessibility-tree',
         },
     ],
     videoLinks: [
         {
-            description: 'See also the highlights from Chrome 130-132',
-            link: 'https://www.youtube.com/watch?v=kzDUe-f4gac',
+            description: 'See the highlights from Chrome 135',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-135',
             type: "WhatsNew" /* VideoType.WHATS_NEW */,
         },
     ],
-    link: 'https://developer.chrome.com/blog/new-in-devtools-134/',
+    link: 'https://developer.chrome.com/blog/new-in-devtools-135/',
 };
 //# sourceMappingURL=ReleaseNoteText.js.map

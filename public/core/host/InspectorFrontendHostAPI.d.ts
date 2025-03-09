@@ -227,7 +227,6 @@ export interface InspectorFrontendHostAPI {
     sendMessageToBackend(message: string): void;
     setDevicesDiscoveryConfig(config: Adb.Config): void;
     setDevicesUpdatesEnabled(enabled: boolean): void;
-    performActionOnRemotePage(pageId: string, action: string): void;
     openRemotePage(browserId: string, url: string): void;
     openNodeFrontend(): void;
     setInjectedScriptForOrigin(origin: string, script: string): void;

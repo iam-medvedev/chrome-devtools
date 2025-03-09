@@ -1,5 +1,6 @@
 import * as Extras from '../extras/extras.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import type * as Handlers from '../handlers/handlers.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Title of an insight that identifies multiple copies of the same JavaScript sources, and recommends removing the duplication.
@@ -14,5 +15,4 @@ export declare const i18nString: (id: string, values?: import("../../../core/i18
 export type DuplicateJavaScriptInsightModel = InsightModel<typeof UIStrings, {
     duplication: Extras.ScriptDuplication.ScriptDuplication;
 }>;
-export declare function deps(): ['Scripts', 'NetworkRequests'];
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): DuplicateJavaScriptInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DuplicateJavaScriptInsightModel;

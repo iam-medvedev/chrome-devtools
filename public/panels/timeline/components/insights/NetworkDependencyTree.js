@@ -72,13 +72,9 @@ export class NetworkDependencyTree extends BaseInsightComponent {
                    @mouseover=${hasChildren ? null : this.#onMouseOver.bind(this, chain)}
                    @mouseout=${hasChildren ? null : this.#onMouseOut.bind(this)}>
                 <span class="url">${eventRef(request)}</span>
-                ${
-            // If this is the last request, show the chain time
-            hasChildren ? Lit.nothing : html `
-                    <span class="chain-time">
-                      ${i18n.TimeUtilities.formatMicroSecondsTime(Trace.Types.Timing.Micro(timeFromInitialRequest))}
-                    </span>
-                `}
+                <span class="chain-time">
+                  ${i18n.TimeUtilities.formatMicroSecondsTime(Trace.Types.Timing.Micro(timeFromInitialRequest))}
+                </span>
               </div>
             </li>
             ${hasChildren ? html `${this.renderTree(children)}` : Lit.nothing}
@@ -100,7 +96,7 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         <div class="max-time">
           ${i18nString(UIStrings.maxCriticalPathLatency)}
           <br>
-          ${i18n.TimeUtilities.formatMicroSecondsTime((this.model.maxTime))}
+          <span class='longest'> ${i18n.TimeUtilities.formatMicroSecondsTime((this.model.maxTime))}</span>
         </div>
 
         <!-- a divider is added here, through |tree-view| element's border-top -->

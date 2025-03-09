@@ -68,6 +68,7 @@ export class Multimap {
 /**
  * Gets value for key, assigning a default if value is falsy.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export function getWithDefault(map, key, defaultValueFactory) {
     let value = map.get(key);
     if (value === undefined || value === null) {

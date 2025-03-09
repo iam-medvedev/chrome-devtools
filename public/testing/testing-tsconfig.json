@@ -76,6 +76,7 @@
     "../../../../../front_end/testing/TrackAsyncOperations.ts",
     "../../../../../front_end/testing/UISourceCodeHelpers.ts",
     "../../../../../front_end/testing/UserMetricsHelpers.ts",
+    "../../../../../front_end/testing/ViewFunctionHelpers.ts",
     "../../../../../front_end/testing/VisualLoggingHelpers.ts",
     "../../../../../front_end/testing/test_post_setup.ts",
     "../../../../../front_end/testing/test_setup.ts",

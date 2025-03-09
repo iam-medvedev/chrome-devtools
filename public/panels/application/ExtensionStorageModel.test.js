@@ -12,7 +12,7 @@ class ExtensionStorageListener {
     #storagesWatched;
     constructor(model) {
         this.#model = model;
-        this.#storagesWatched = new Array();
+        this.#storagesWatched = [];
         this.#model.addEventListener("ExtensionStorageAdded" /* Resources.ExtensionStorageModel.Events.EXTENSION_STORAGE_ADDED */, this.#extensionStorageAdded, this);
         this.#model.addEventListener("ExtensionStorageRemoved" /* Resources.ExtensionStorageModel.Events.EXTENSION_STORAGE_REMOVED */, this.#extensionStorageRemoved, this);
     }

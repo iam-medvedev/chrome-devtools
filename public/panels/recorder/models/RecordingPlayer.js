@@ -18,16 +18,14 @@ function isPageTarget(target) {
         target.type === 'background_page' || target.type === 'webview');
 }
 export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
-    #stopPromise;
-    #resolveStopPromise;
     userFlow;
     speed;
     timeout;
     breakpointIndexes;
     steppingOver = false;
     aborted = false;
-    abortPromise;
-    #abortResolveFn;
+    #stopPromise = Promise.withResolvers();
+    #abortPromise = Promise.withResolvers();
     #runner;
     constructor(userFlow, { speed, breakpointIndexes = new Set(), }) {
         super();
@@ -35,18 +33,10 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
         this.speed = speed;
         this.timeout = userFlow.timeout || defaultTimeout;
         this.breakpointIndexes = breakpointIndexes;
-        this.#stopPromise = new Promise(resolve => {
-            this.#resolveStopPromise = resolve;
-        });
-        this.abortPromise = new Promise(resolve => {
-            this.#abortResolveFn = resolve;
-        });
     }
     #resolveAndRefreshStopPromise() {
-        this.#resolveStopPromise?.();
-        this.#stopPromise = new Promise(resolve => {
-            this.#resolveStopPromise = resolve;
-        });
+        this.#stopPromise.resolve();
+        this.#stopPromise = Promise.withResolvers();
     }
     static async connectPuppeteer() {
         const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
@@ -133,16 +123,19 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async stop() {
-        await Promise.race([this.#stopPromise, this.abortPromise]);
+        await Promise.race([this.#stopPromise, this.#abortPromise]);
+    }
+    get abortPromise() {
+        return this.#abortPromise.promise;
     }
     abort() {
         this.aborted = true;
-        this.#abortResolveFn?.();
+        this.#abortPromise.resolve();
         this.#runner?.abort();
     }
     disposeForTesting() {
-        this.#resolveStopPromise?.();
-        this.#abortResolveFn?.();
+        this.#stopPromise.resolve();
+        this.#abortPromise.resolve();
     }
     continue() {
         this.steppingOver = false;

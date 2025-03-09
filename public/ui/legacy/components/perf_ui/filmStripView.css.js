@@ -21,6 +21,10 @@ export default {
   margin-top: 2px;
 }
 
+.film-strip-view .gray-info-message {
+  margin: auto;
+}
+
 .film-strip-view .frame {
   background: none;
   border: none;

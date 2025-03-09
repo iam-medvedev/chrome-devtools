@@ -80,12 +80,12 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #command = '';
     #targetId;
     #hintPopoverHelper;
-    constructor(metadataByCommand, typesByName, enumsByName) {
-        super(/* useShadowDom=*/ true);
+    constructor(element) {
+        super(/* useShadowDom=*/ true, undefined, element);
         this.registerRequiredCSS(editorWidgetStyles);
-        this.#metadataByCommand = metadataByCommand;
-        this.#typesByName = typesByName;
-        this.#enumsByName = enumsByName;
+        this.#metadataByCommand = new Map();
+        this.#typesByName = new Map();
+        this.#enumsByName = new Map();
         this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor').track({ resize: true })}`);
         this.contentElement.addEventListener('keydown', event => {
             if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {

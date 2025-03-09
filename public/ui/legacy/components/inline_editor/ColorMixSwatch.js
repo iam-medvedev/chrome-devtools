@@ -10,7 +10,15 @@ import colorMixSwatchStylesRaw from './colorMixSwatch.css.js';
 const colorMixSwatchStyles = new CSSStyleSheet();
 colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw.cssContent);
 const { html, render, Directives: { ref } } = Lit;
-export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement) {
+export class ColorMixChangedEvent extends Event {
+    static eventName = 'colormixchanged';
+    data;
+    constructor(text) {
+        super(ColorMixChangedEvent.eventName, {});
+        this.data = { text };
+    }
+}
+export class ColorMixSwatch extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     colorMixText = ''; // color-mix(in srgb, hotpink, white)
     firstColorText = ''; // hotpink
@@ -35,7 +43,7 @@ export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement)
             this.colorMixText = this.colorMixText.replace(this.firstColorText, text);
         }
         this.firstColorText = text;
-        this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
+        this.dispatchEvent(new ColorMixChangedEvent(this.colorMixText));
         this.#render();
     }
     setSecondColor(text) {
@@ -46,12 +54,12 @@ export class ColorMixSwatch extends Common.ObjectWrapper.eventMixin(HTMLElement)
             this.colorMixText = Platform.StringUtilities.replaceLast(this.colorMixText, this.secondColorText, text);
         }
         this.secondColorText = text;
-        this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
+        this.dispatchEvent(new ColorMixChangedEvent(this.colorMixText));
         this.#render();
     }
     setColorMixText(text) {
         this.colorMixText = text;
-        this.dispatchEventToListeners("colorChanged" /* Events.COLOR_CHANGED */, { text: this.colorMixText });
+        this.dispatchEvent(new ColorMixChangedEvent(this.colorMixText));
         this.#render();
     }
     getText() {

@@ -36,6 +36,7 @@ const pendingChange = new Set();
 function observeMutations(roots) {
     for (const root of roots) {
         mutationObserver.observe(root, { attributes: true, childList: true, subtree: true });
+        root.querySelectorAll('[popover]')?.forEach(e => e.addEventListener('toggle', scheduleProcessing));
     }
 }
 let logging = false;

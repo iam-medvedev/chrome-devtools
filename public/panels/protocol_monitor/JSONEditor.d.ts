@@ -63,11 +63,7 @@ declare const JSONEditor_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class JSONEditor extends JSONEditor_base {
     #private;
-    constructor(metadataByCommand: Map<string, {
-        parameters: Parameter[];
-        description: string;
-        replyArgs: string[];
-    }>, typesByName: Map<string, Parameter[]>, enumsByName: Map<string, Record<string, string>>);
+    constructor(element: HTMLElement);
     get metadataByCommand(): Map<string, {
         parameters: Parameter[];
         description: string;

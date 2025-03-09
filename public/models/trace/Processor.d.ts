@@ -15,7 +15,10 @@ declare global {
 export declare class TraceProcessor extends EventTarget {
     #private;
     static createWithAllHandlers(): TraceProcessor;
-    static getEnabledInsightRunners(parsedTrace: Handlers.Types.ParsedTrace): Partial<Insights.Types.InsightModelsType>;
+    /**
+     * This function is kept for testing with `stub`.
+     */
+    static getInsightRunners(): Insights.Types.InsightModelsType;
     constructor(traceHandlers: Partial<Handlers.Types.Handlers>, modelConfiguration?: Types.Configuration.Configuration);
     reset(): void;
     parse(traceEvents: readonly Types.Events.Event[], options: Types.Configuration.ParseOptions): Promise<void>;

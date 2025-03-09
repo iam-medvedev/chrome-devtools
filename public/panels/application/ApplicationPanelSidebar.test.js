@@ -12,7 +12,7 @@ import * as Application from './application.js';
 const { urlString } = Platform.DevToolsPath;
 class SharedStorageTreeElementListener {
     #sidebar;
-    #originsAdded = new Array();
+    #originsAdded = [];
     constructor(sidebar) {
         this.#sidebar = sidebar;
         this.#sidebar.sharedStorageTreeElementDispatcher.addEventListener("SharedStorageTreeElementAdded" /* Application.ApplicationPanelSidebar.SharedStorageTreeElementDispatcher.Events.SHARED_STORAGE_TREE_ELEMENT_ADDED */, this.#treeElementAdded, this);

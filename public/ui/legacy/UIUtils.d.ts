@@ -52,7 +52,7 @@ export declare function measurePreferredSize(element: Element, containerElement?
 export declare function startBatchUpdate(): void;
 export declare function endBatchUpdate(): void;
 export declare function invokeOnceAfterBatchUpdate(object: Object, method: () => void): void;
-export declare function animateFunction(window: Window, func: Function, params: Array<{
+export declare function animateFunction(window: Window, func: (...args: any[]) => void, params: Array<{
     from: number;
     to: number;
 }>, duration: number, animationComplete?: (() => void)): () => void;
@@ -229,7 +229,7 @@ export declare function registerRenderer(registration: RendererRegistration): vo
 export declare function getApplicableRegisteredRenderers(object: Object): RendererRegistration[];
 export interface RendererRegistration {
     loadRenderer: () => Promise<Renderer>;
-    contextTypes: () => Function[];
+    contextTypes: () => Array<Platform.Constructor.ConstructorOrAbstract<unknown>>;
 }
 export interface ConfirmDialogOptions {
     okButtonLabel?: string;

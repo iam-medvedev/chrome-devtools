@@ -129,7 +129,7 @@ function computeLastGeneratedColumnMap(map) {
  */
 export function computeScriptDuplication(scriptsData) {
     const sizesMap = new Map();
-    for (const script of scriptsData.scripts.values()) {
+    for (const script of scriptsData.scripts) {
         if (script.content && script.sourceMap) {
             sizesMap.set(script, computeGeneratedFileSizes(script));
         }
@@ -167,7 +167,7 @@ export function computeScriptDuplication(scriptsData) {
                 moduleNameToSourceData.set(sourceData.source, data);
             }
             data.push({
-                scriptId: script.scriptId,
+                script,
                 resourceSize: sourceData.resourceSize,
             });
         }

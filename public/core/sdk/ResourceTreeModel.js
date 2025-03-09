@@ -35,7 +35,7 @@ export class ResourceTreeModel extends SDKModel {
         }
         this.agent = target.pageAgent();
         this.storageAgent = target.storageAgent();
-        void this.agent.invoke_enable();
+        void this.agent.invoke_enable({});
         this.#securityOriginManager = target.model(SecurityOriginManager);
         this.#storageKeyManager = target.model(StorageKeyManager);
         this.#pendingBackForwardCacheNotUsedEvents = new Set();

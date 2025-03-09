@@ -68,8 +68,7 @@ export class TopLayerContainer extends UI.TreeOutline.TreeElement {
     removeCurrentTopLayerElementsAdorners() {
         for (const node of this.currentTopLayerDOMNodes) {
             const topLayerTreeElement = this.tree.treeElementByNode.get(node);
-            // TODO(changhaohan): remove only top layer adorner.
-            topLayerTreeElement?.removeAllAdorners();
+            topLayerTreeElement?.removeAdornersByType(ElementsComponents.AdornerManager.RegisteredAdorners.TOP_LAYER);
         }
     }
     addTopLayerAdorner(element, topLayerElementRepresentation, topLayerElementIndex) {

@@ -19,7 +19,7 @@ export declare function normalizeSource(source: string): string;
  * up in the script.
  */
 export type ScriptDuplication = Map<string, Array<{
-    scriptId: string;
+    script: Handlers.ModelHandlers.Scripts.Script;
     resourceSize: number;
 }>>;
 /**

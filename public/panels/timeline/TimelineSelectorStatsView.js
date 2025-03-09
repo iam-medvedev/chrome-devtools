@@ -88,7 +88,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
     #lastStatsSourceEventOrEvents = null;
     #view;
     #timings = [];
-    constructor(parsedTrace, view = (input, output, target) => {
+    constructor(parsedTrace, view = (input, _, target) => {
         render(html `
       <devtools-data-grid striped name=${i18nString(UIStrings.selectorStats)}
           @contextmenu=${input.onContextMenu.bind(input)}>

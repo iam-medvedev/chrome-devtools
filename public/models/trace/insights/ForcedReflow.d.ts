@@ -1,5 +1,5 @@
-import { type BottomUpCallStack, type ForcedReflowAggregatedData, type InsightModel, type RequiredData } from './types.js';
-export declare function deps(): ['Warnings', 'Renderer'];
+import type * as Handlers from '../handlers/handlers.js';
+import { type BottomUpCallStack, type ForcedReflowAggregatedData, type InsightModel } from './types.js';
 export declare const UIStrings: {
     /**
      *@description Title of an insight that provides details about Forced reflow.
@@ -27,4 +27,4 @@ export type ForcedReflowInsightModel = InsightModel<typeof UIStrings, {
     topLevelFunctionCallData: ForcedReflowAggregatedData | undefined;
     aggregatedBottomUpData: BottomUpCallStack[];
 }>;
-export declare function generateInsight(traceParsedData: RequiredData<typeof deps>): ForcedReflowInsightModel;
+export declare function generateInsight(traceParsedData: Handlers.Types.ParsedTrace): ForcedReflowInsightModel;

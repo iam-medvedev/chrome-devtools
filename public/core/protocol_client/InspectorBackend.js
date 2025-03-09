@@ -821,13 +821,12 @@ class DispatcherManager {
             InspectorBackend.reportProtocolWarning(`Protocol Warning: Attempted to dispatch an unspecified event '${messageObject.method}'`, messageObject);
             return;
         }
-        const messageParams = { ...messageObject.params };
         for (let index = 0; index < this.#dispatchers.length; ++index) {
             const dispatcher = this.#dispatchers[index];
             if (event in dispatcher) {
                 const f = dispatcher[event];
                 // @ts-expect-error Can't type check the dispatch.
-                f.call(dispatcher, messageParams);
+                f.call(dispatcher, messageObject.params);
             }
         }
     }

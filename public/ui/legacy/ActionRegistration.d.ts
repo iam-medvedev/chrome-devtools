@@ -24,7 +24,7 @@ export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventType
     toggled(): boolean;
     setToggled(toggled: boolean): void;
     options(): undefined | ExtensionOption[];
-    contextTypes(): undefined | Function[];
+    contextTypes(): undefined | Array<Platform.Constructor.Constructor<unknown>>;
     canInstantiate(): boolean;
     bindings(): Binding[] | undefined;
     experiment(): string | undefined;
@@ -217,7 +217,7 @@ export interface ActionRegistration {
      * });
      * ```
      */
-    contextTypes?: () => Function[];
+    contextTypes?: () => Array<Platform.Constructor.Constructor<unknown>>;
     /**
      * The descriptions for each of the two states in which a toggleable action can be.
      */

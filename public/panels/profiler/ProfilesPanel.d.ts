@@ -14,7 +14,7 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
     toggleRecordAction: UI.ActionRegistration.Action;
     readonly toggleRecordButton: UI.Toolbar.ToolbarButton;
     readonly profileViewToolbar: UI.Toolbar.Toolbar;
-    profileGroups: {};
+    profileGroups: Record<string, ProfileGroup>;
     launcherView: ProfileLauncherView;
     visibleView: UI.Widget.Widget | undefined;
     readonly profileToView: Array<{

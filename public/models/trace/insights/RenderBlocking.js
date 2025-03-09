@@ -36,9 +36,6 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 // can be falsely flagged as blocking. Therefore, ignore stylesheets that loaded fast enough
 // to possibly be non-blocking (and they have minimal impact anyway).
 const MINIMUM_WASTED_MS = 50;
-export function deps() {
-    return ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint'];
-}
 /**
  * Given a simulation's nodeTimings, return an object with the nodes/timing keyed by network URL
  */

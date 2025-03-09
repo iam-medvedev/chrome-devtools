@@ -11,7 +11,8 @@ import * as ElementsComponents from './components/components.js';
 import type { ComputedStyleModel, CSSModelChangedEvent } from './ComputedStyleModel.js';
 import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
-import { type StylePropertyTreeElement } from './StylePropertyTreeElement.js';
+import type { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
+import { WebCustomData } from './WebCustomData.js';
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
 declare const StylesSidebarPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
@@ -56,14 +57,10 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private readonly imagePreviewPopover;
     activeCSSAngle: InlineEditor.CSSAngle.CSSAngle | null;
     constructor(computedStyleModel: ComputedStyleModel);
-    addPopover(element: Node, popover: {
-        contents: () => UI.Widget.Widget | HTMLElement | undefined;
-        jslogContext?: string;
-    }): void;
+    get webCustomData(): WebCustomData | undefined;
     private onScroll;
     swatchPopoverHelper(): InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;
     setUserOperation(userOperation: boolean): void;
-    createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | null): Element;
     static ignoreErrorsForProperty(property: SDK.CSSProperty.CSSProperty): boolean;
     static formatLeadingProperties(section: StylePropertiesSection): {
         allDeclarationText: string;

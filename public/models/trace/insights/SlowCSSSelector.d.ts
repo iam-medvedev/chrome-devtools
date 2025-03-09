@@ -1,5 +1,6 @@
+import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      *@description Title of an insight that provides details about slow CSS selectors.
@@ -35,7 +36,6 @@ export declare const UIStrings: {
     readonly enableSelectorData: "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings.";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['SelectorStats'];
 export type SlowCSSSelectorInsightModel = InsightModel<typeof UIStrings, {
     totalElapsedMs: Types.Timing.Milli;
     totalMatchAttempts: number;
@@ -43,4 +43,4 @@ export type SlowCSSSelectorInsightModel = InsightModel<typeof UIStrings, {
     topElapsedMs: Types.Events.SelectorTiming[];
     topMatchAttempts: Types.Events.SelectorTiming[];
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): SlowCSSSelectorInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): SlowCSSSelectorInsightModel;

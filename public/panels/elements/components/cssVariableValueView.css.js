@@ -21,10 +21,6 @@ export default {
   font-size: var(--monospace-font-size);
 }
 
-:host {
-  padding: 11px 7px;
-}
-
 .divider {
   margin: 8px -7px;
   border: 1px solid var(--sys-color-divider);

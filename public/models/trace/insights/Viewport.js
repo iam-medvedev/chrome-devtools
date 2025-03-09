@@ -14,9 +14,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/Viewport.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['Meta', 'UserInteractions'];
-}
 function finalize(partialModel) {
     return {
         insightKey: "Viewport" /* InsightKeys.VIEWPORT */,
@@ -29,8 +26,19 @@ function finalize(partialModel) {
     };
 }
 export function generateInsight(parsedTrace, context) {
+    const viewportEvent = parsedTrace.UserInteractions.parseMetaViewportEvents.find(event => {
+        if (event.args.data.frame !== context.frameId) {
+            return false;
+        }
+        return Helpers.Timing.eventIsInBounds(event, context.bounds);
+    });
     const compositorEvents = parsedTrace.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {
         if (event.args.frame !== context.frameId) {
+            return false;
+        }
+        // Commit compositor frame events can be emitted before the viewport tag is parsed.
+        // We shouldn't count these since the browser hasn't had time to make the viewport mobile optimized.
+        if (viewportEvent && event.ts < viewportEvent.ts) {
             return false;
         }
         return Helpers.Timing.eventIsInBounds(event, context.bounds);
@@ -42,12 +50,6 @@ export function generateInsight(parsedTrace, context) {
             warnings: [InsightWarning.NO_LAYOUT],
         });
     }
-    const viewportEvent = parsedTrace.UserInteractions.parseMetaViewportEvents.find(event => {
-        if (event.args.data.frame !== context.frameId) {
-            return false;
-        }
-        return Helpers.Timing.eventIsInBounds(event, context.bounds);
-    });
     // Returns true only if all events are mobile optimized.
     for (const event of compositorEvents) {
         if (!event.args.is_mobile_optimized) {

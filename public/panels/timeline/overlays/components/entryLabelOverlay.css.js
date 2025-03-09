@@ -16,6 +16,68 @@ export default {
   align-items: center;
 }
 
+.label-button-input-wrapper {
+  display: flex;
+  position: relative;
+  overflow: visible;
+}
+
+.ai-label-button-wrapper {
+  /* position the button wrapper on the very right of the label */
+  position: absolute;
+  left: 100%;
+  display: flex;
+  /* Since the ai-button is a bit bigger than the label, lift it up for it to appear more centered */
+  transform: translateY(-3px);
+  flex-flow: row nowrap;
+  /* when the button wrapper is not hovered, set the max width to only fit the pen icon */
+  overflow: hidden;
+  width: var(--sys-size-12);
+  height: var(--sys-size-12);
+  border: none;
+  border-radius: var(--sys-shape-corner-large);
+  background: var(--sys-color-surface3);
+  box-shadow: var(--drop-shadow);
+  align-items: center;
+  gap: var(--sys-size-4);
+  pointer-events: auto;
+
+  * {
+    /* Make up for the padding in a hovered button to only see the pen icon when it is not hovered */
+    transform: translateX(-2px);
+  }
+}
+
+.ai-label-button-wrapper:focus,
+.ai-label-button-wrapper:hover {
+  width: fit-content;
+  height: var(--sys-size-13);
+  padding: var(--sys-size-3) var(--sys-size-5);
+  transition:
+    all var(--sys-motion-duration-long2) var(--sys-motion-easing-emphasized);
+  overflow: hidden;
+  top: -4px;
+
+  * {
+    transform: translateX(0);
+  }
+}
+
+.ai-label-button {
+  display: flex;
+  align-items: center;
+  background: var(--sys-color-surface3);
+  gap: var(--sys-size-4);
+  padding: var(--sys-size-3) var(--sys-size-5);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--sys-shape-corner-large);
+}
+
+.generate-label-text {
+  white-space: nowrap;
+  color: var(--color-primary);
+}
+
 .input-field {
   background-color: var(--color-background-inverted);
   color: var(--color-background);

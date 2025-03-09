@@ -34,13 +34,14 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/perf_ui/FilmStripView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBox) {
-    statusPlaceholder;
+    statusLabel;
     zeroTime = Trace.Types.Timing.Milli(0);
     #filmStrip = null;
     constructor() {
         super(true);
         this.registerRequiredCSS(filmStripViewStyles);
         this.contentElement.classList.add('film-strip-view');
+        this.statusLabel = this.contentElement.createChild('div', 'gray-info-message');
         this.reset();
     }
     static setImageData(imageElement, dataUri) {
@@ -86,7 +87,6 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
             return;
         }
         const frameElements = frames.map(frame => this.createFrameElement(frame));
-        this.statusPlaceholder?.detach();
         this.contentElement.removeChildren();
         for (const element of frameElements) {
             this.contentElement.appendChild(element);
@@ -105,14 +105,11 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
     }
     reset() {
         this.zeroTime = Trace.Types.Timing.Milli(0);
-        this.statusPlaceholder?.detach();
         this.contentElement.removeChildren();
-        this.statusPlaceholder?.show(this.contentElement);
+        this.contentElement.appendChild(this.statusLabel);
     }
-    setStatusPlaceholder(element) {
-        this.statusPlaceholder?.detach();
-        this.statusPlaceholder = element;
-        this.statusPlaceholder.show(this.contentElement);
+    setStatusText(text) {
+        this.statusLabel.textContent = text;
     }
 }
 export class Dialog {

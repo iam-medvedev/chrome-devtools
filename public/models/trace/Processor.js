@@ -33,16 +33,11 @@ export class TraceProcessor extends EventTarget {
     static createWithAllHandlers() {
         return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.defaults());
     }
-    static getEnabledInsightRunners(parsedTrace) {
-        const enabledInsights = {};
-        for (const [name, insight] of Object.entries(Insights.Models)) {
-            const deps = insight.deps();
-            if (deps.some(dep => !parsedTrace[dep])) {
-                continue;
-            }
-            Object.assign(enabledInsights, { [name]: insight });
-        }
-        return enabledInsights;
+    /**
+     * This function is kept for testing with `stub`.
+     */
+    static getInsightRunners() {
+        return { ...Insights.Models };
     }
     constructor(traceHandlers, modelConfiguration) {
         super();
@@ -349,7 +344,7 @@ export class TraceProcessor extends EventTarget {
         }
         insightSet.model = newModel;
     }
-    #computeInsightSet(insights, parsedTrace, insightRunners, context, options) {
+    #computeInsightSet(insights, parsedTrace, context, options) {
         let id, urlString, navigation;
         if (context.navigation) {
             id = context.navigationId;
@@ -361,7 +356,7 @@ export class TraceProcessor extends EventTarget {
             urlString = parsedTrace.Meta.mainFrameURL;
         }
         const model = {};
-        for (const [name, insight] of Object.entries(insightRunners)) {
+        for (const [name, insight] of Object.entries(TraceProcessor.getInsightRunners())) {
             let insightResult;
             try {
                 insightResult = insight.generateInsight(parsedTrace, context);
@@ -400,7 +395,6 @@ export class TraceProcessor extends EventTarget {
      */
     #computeInsights(parsedTrace, traceEvents, options) {
         this.#insights = new Map();
-        const enabledInsightRunners = TraceProcessor.getEnabledInsightRunners(parsedTrace);
         const navigations = parsedTrace.Meta.mainFrameNavigations.filter(navigation => navigation.args.frame && navigation.args.data?.navigationId);
         // Check if there is a meaningful chunk of work happening prior to the first navigation.
         // If so, we run the insights on that initial bounds.
@@ -414,7 +408,7 @@ export class TraceProcessor extends EventTarget {
                     bounds,
                     frameId: parsedTrace.Meta.mainFrameId,
                 };
-                this.#computeInsightSet(this.#insights, parsedTrace, enabledInsightRunners, context, options);
+                this.#computeInsightSet(this.#insights, parsedTrace, context, options);
             }
             // If threshold is not met, then the very beginning of the trace is ignored by the insights engine.
         }
@@ -423,7 +417,7 @@ export class TraceProcessor extends EventTarget {
                 bounds: parsedTrace.Meta.traceBounds,
                 frameId: parsedTrace.Meta.mainFrameId,
             };
-            this.#computeInsightSet(this.#insights, parsedTrace, enabledInsightRunners, context, options);
+            this.#computeInsightSet(this.#insights, parsedTrace, context, options);
         }
         // Now run the insights for each navigation in isolation.
         for (const [i, navigation] of navigations.entries()) {
@@ -469,7 +463,7 @@ export class TraceProcessor extends EventTarget {
                 navigationId,
                 lantern,
             };
-            this.#computeInsightSet(this.#insights, parsedTrace, enabledInsightRunners, context, options);
+            this.#computeInsightSet(this.#insights, parsedTrace, context, options);
         }
     }
 }

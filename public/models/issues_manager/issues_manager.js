@@ -20,6 +20,7 @@ import * as IssuesManager from './IssuesManager.js';
 import * as LowTextContrastIssue from './LowTextContrastIssue.js';
 import * as MarkdownIssueDescription from './MarkdownIssueDescription.js';
 import * as MixedContentIssue from './MixedContentIssue.js';
+import * as PartitioningBlobURLIssue from './PartitioningBlobURLIssue.js';
 import * as PropertyRuleIssue from './PropertyRuleIssue.js';
 import * as QuirksModeIssue from './QuirksModeIssue.js';
 import * as RelatedIssue from './RelatedIssue.js';
@@ -29,5 +30,5 @@ import * as SharedDictionaryIssue from './SharedDictionaryIssue.js';
 import * as SourceFrameIssuesManager from './SourceFrameIssuesManager.js';
 import * as SRIMessageSignatureIssue from './SRIMessageSignatureIssue.js';
 import * as StylesheetLoadingIssue from './StylesheetLoadingIssue.js';
-export { AttributionReportingIssue, CheckFormsIssuesTrigger, ClientHintIssue, ContentSecurityPolicyIssue, ContrastCheckTrigger, CookieDeprecationMetadataIssue, CookieIssue, CorsIssue, CrossOriginEmbedderPolicyIssue, DeprecationIssue, FederatedAuthUserInfoRequestIssue, GenericIssue, HeavyAdIssue, Issue, IssueResolver, IssuesManager, LowTextContrastIssue, MarkdownIssueDescription, MixedContentIssue, PropertyRuleIssue, QuirksModeIssue, RelatedIssue, SelectElementAccessibilityIssue, SharedArrayBufferIssue, SharedDictionaryIssue, SourceFrameIssuesManager, SRIMessageSignatureIssue, StylesheetLoadingIssue, };
+export { AttributionReportingIssue, CheckFormsIssuesTrigger, ClientHintIssue, ContentSecurityPolicyIssue, ContrastCheckTrigger, CookieDeprecationMetadataIssue, CookieIssue, CorsIssue, CrossOriginEmbedderPolicyIssue, DeprecationIssue, FederatedAuthUserInfoRequestIssue, GenericIssue, HeavyAdIssue, Issue, IssueResolver, IssuesManager, LowTextContrastIssue, MarkdownIssueDescription, MixedContentIssue, PartitioningBlobURLIssue, PropertyRuleIssue, QuirksModeIssue, RelatedIssue, SelectElementAccessibilityIssue, SharedArrayBufferIssue, SharedDictionaryIssue, SourceFrameIssuesManager, SRIMessageSignatureIssue, StylesheetLoadingIssue, };
 //# sourceMappingURL=issues_manager.js.map

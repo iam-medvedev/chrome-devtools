@@ -91,11 +91,11 @@ export declare class StylePropertiesSection {
     updateFilter(): boolean;
     isHidden(): boolean;
     markSelectorMatches(): void;
-    static getSpecificityStoredForNodeElement(element: Element): Protocol.CSS.Specificity | undefined;
-    static renderSelectors(selectors: Array<{
+    static getNextSpecificityTooltipId(): string;
+    renderSelectors(selectors: Array<{
         text: string;
         specificity?: Protocol.CSS.Specificity;
-    }>, matchingSelectors: boolean[], elementToSelectorIndex: WeakMap<Element, number>): DocumentFragment;
+    }>, matchingSelectors: boolean[], elementToSelectorIndex: WeakMap<Element, number>): void;
     markSelectorHighlights(): void;
     addNewBlankProperty(index?: number | undefined): StylePropertyTreeElement;
     private handleEmptySpaceMouseDown;

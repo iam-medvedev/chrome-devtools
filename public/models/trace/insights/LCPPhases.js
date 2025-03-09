@@ -51,9 +51,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/LCPPhases.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
-}
 export function isLCPPhases(model) {
     return model.insightKey === 'LCPPhases';
 }

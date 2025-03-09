@@ -1,5 +1,6 @@
+import * as Handlers from '../handlers/handlers.js';
 import type * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Title of an insight that provides the user with the list of network requests that blocked and therefore slowed down the page rendering and becoming visible to the user.
@@ -27,5 +28,4 @@ export type RenderBlockingInsightModel = InsightModel<typeof UIStrings, {
     renderBlockingRequests: Types.Events.SyntheticNetworkRequest[];
     requestIdToWastedMs?: Map<string, number>;
 }>;
-export declare function deps(): ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint'];
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): RenderBlockingInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): RenderBlockingInsightModel;

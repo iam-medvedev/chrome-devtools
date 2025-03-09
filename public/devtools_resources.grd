@@ -493,6 +493,7 @@
       <include file="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotPotentiallyTrustworthy.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FEDERATEDAUTHUSERINFOREQUESTNOTPOTENTIALLYTRUSTWORTHY_MD" resource_path="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotPotentiallyTrustworthy.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSameOrigin.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FEDERATEDAUTHUSERINFOREQUESTNOTSAMEORIGIN_MD" resource_path="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSameOrigin.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSignedInWithIdp.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FEDERATEDAUTHUSERINFOREQUESTNOTSIGNEDINWITHIDP_MD" resource_path="models/issues_manager/descriptions/federatedAuthUserInfoRequestNotSignedInWithIdp.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/fetchingPartitionedBlobURL.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_FETCHINGPARTITIONEDBLOBURL_MD" resource_path="models/issues_manager/descriptions/fetchingPartitionedBlobURL.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormAriaLabelledByToNonExistingId.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMARIALABELLEDBYTONONEXISTINGID_MD" resource_path="models/issues_manager/descriptions/genericFormAriaLabelledByToNonExistingId.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormAutocompleteAttributeEmptyError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMAUTOCOMPLETEATTRIBUTEEMPTYERROR_MD" resource_path="models/issues_manager/descriptions/genericFormAutocompleteAttributeEmptyError.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/genericFormDuplicateIdForInputError.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICFORMDUPLICATEIDFORINPUTERROR_MD" resource_path="models/issues_manager/descriptions/genericFormDuplicateIdForInputError.md" type="BINDATA" compress="false"/>
@@ -506,6 +507,7 @@
       <include file="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_GENERICRESPONSEWASBLOCKEDBYORB_MD" resource_path="models/issues_manager/descriptions/genericResponseWasBlockedByORB.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/heavyAd.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_HEAVYAD_MD" resource_path="models/issues_manager/descriptions/heavyAd.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/mixedContent.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_MIXEDCONTENT_MD" resource_path="models/issues_manager/descriptions/mixedContent.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/navigatingPartitionedBlobURL.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_NAVIGATINGPARTITIONEDBLOBURL_MD" resource_path="models/issues_manager/descriptions/navigatingPartitionedBlobURL.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/placeholderDescriptionForInvisibleIssues.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_PLACEHOLDERDESCRIPTIONFORINVISIBLEISSUES_MD" resource_path="models/issues_manager/descriptions/placeholderDescriptionForInvisibleIssues.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/propertyRuleInvalidNameIssue.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_PROPERTYRULEINVALIDNAMEISSUE_MD" resource_path="models/issues_manager/descriptions/propertyRuleInvalidNameIssue.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/propertyRuleIssue.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_PROPERTYRULEISSUE_MD" resource_path="models/issues_manager/descriptions/propertyRuleIssue.md" type="BINDATA" compress="false"/>
@@ -768,6 +770,7 @@
       <include file="ui/components/switch/switch.js" name="UI_COMPONENTS_SWITCH_SWITCH_JS" resource_path="ui/components/switch/switch.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_editor/text_editor.js" name="UI_COMPONENTS_TEXT_EDITOR_TEXT_EDITOR_JS" resource_path="ui/components/text_editor/text_editor.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_prompt/text_prompt.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXT_PROMPT_JS" resource_path="ui/components/text_prompt/text_prompt.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/tooltips/tooltips.js" name="UI_COMPONENTS_TOOLTIPS_TOOLTIPS_JS" resource_path="ui/components/tooltips/tooltips.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/tree_outline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREE_OUTLINE_JS" resource_path="ui/components/tree_outline/tree_outline.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/color_picker/color_picker.js" name="UI_LEGACY_COMPONENTS_COLOR_PICKER_COLOR_PICKER_JS" resource_path="ui/legacy/components/color_picker/color_picker.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/cookie_table/cookie_table.js" name="UI_LEGACY_COMPONENTS_COOKIE_TABLE_COOKIE_TABLE_JS" resource_path="ui/legacy/components/cookie_table/cookie_table.js" type="BINDATA" compress="false"/>
@@ -836,6 +839,7 @@
       <include file="core/i18n/time-utilities.js" name="CORE_I18N_TIME_UTILITIES_JS" resource_path="core/i18n/time-utilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/ArrayUtilities.js" name="CORE_PLATFORM_ARRAYUTILITIES_JS" resource_path="core/platform/ArrayUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/Brand.js" name="CORE_PLATFORM_BRAND_JS" resource_path="core/platform/Brand.js" type="BINDATA" compress="false"/>
+      <include file="core/platform/Constructor.js" name="CORE_PLATFORM_CONSTRUCTOR_JS" resource_path="core/platform/Constructor.js" type="BINDATA" compress="false"/>
       <include file="core/platform/DOMUtilities.js" name="CORE_PLATFORM_DOMUTILITIES_JS" resource_path="core/platform/DOMUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/DateUtilities.js" name="CORE_PLATFORM_DATEUTILITIES_JS" resource_path="core/platform/DateUtilities.js" type="BINDATA" compress="false"/>
       <include file="core/platform/DevToolsPath.js" name="CORE_PLATFORM_DEVTOOLSPATH_JS" resource_path="core/platform/DevToolsPath.js" type="BINDATA" compress="false"/>
@@ -1034,6 +1038,7 @@
       <include file="models/issues_manager/LowTextContrastIssue.js" name="MODELS_ISSUES_MANAGER_LOWTEXTCONTRASTISSUE_JS" resource_path="models/issues_manager/LowTextContrastIssue.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/MarkdownIssueDescription.js" name="MODELS_ISSUES_MANAGER_MARKDOWNISSUEDESCRIPTION_JS" resource_path="models/issues_manager/MarkdownIssueDescription.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/MixedContentIssue.js" name="MODELS_ISSUES_MANAGER_MIXEDCONTENTISSUE_JS" resource_path="models/issues_manager/MixedContentIssue.js" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/PartitioningBlobURLIssue.js" name="MODELS_ISSUES_MANAGER_PARTITIONINGBLOBURLISSUE_JS" resource_path="models/issues_manager/PartitioningBlobURLIssue.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/PropertyRuleIssue.js" name="MODELS_ISSUES_MANAGER_PROPERTYRULEISSUE_JS" resource_path="models/issues_manager/PropertyRuleIssue.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/QuirksModeIssue.js" name="MODELS_ISSUES_MANAGER_QUIRKSMODEISSUE_JS" resource_path="models/issues_manager/QuirksModeIssue.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/RelatedIssue.js" name="MODELS_ISSUES_MANAGER_RELATEDISSUE_JS" resource_path="models/issues_manager/RelatedIssue.js" type="BINDATA" compress="false"/>
@@ -1196,12 +1201,14 @@
       <include file="panels/accessibility/accessibilityNode.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYNODE_CSS_JS" resource_path="panels/accessibility/accessibilityNode.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/accessibilityProperties.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYPROPERTIES_CSS_JS" resource_path="panels/accessibility/accessibilityProperties.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/axBreadcrumbs.css.js" name="PANELS_ACCESSIBILITY_AXBREADCRUMBS_CSS_JS" resource_path="panels/accessibility/axBreadcrumbs.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/AgentProject.js" name="PANELS_AI_ASSISTANCE_AGENTPROJECT_JS" resource_path="panels/ai_assistance/AgentProject.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/AiAssistancePanel.js" name="PANELS_AI_ASSISTANCE_AIASSISTANCEPANEL_JS" resource_path="panels/ai_assistance/AiAssistancePanel.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/AiHistoryStorage.js" name="PANELS_AI_ASSISTANCE_AIHISTORYSTORAGE_JS" resource_path="panels/ai_assistance/AiHistoryStorage.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/ChangeManager.js" name="PANELS_AI_ASSISTANCE_CHANGEMANAGER_JS" resource_path="panels/ai_assistance/ChangeManager.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/EvaluateAction.js" name="PANELS_AI_ASSISTANCE_EVALUATEACTION_JS" resource_path="panels/ai_assistance/EvaluateAction.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/ExtensionScope.js" name="PANELS_AI_ASSISTANCE_EXTENSIONSCOPE_JS" resource_path="panels/ai_assistance/ExtensionScope.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/PatchWidget.js" name="PANELS_AI_ASSISTANCE_PATCHWIDGET_JS" resource_path="panels/ai_assistance/PatchWidget.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/SelectWorkspaceDialog.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_JS" resource_path="panels/ai_assistance/SelectWorkspaceDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/AiAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_AIAGENT_JS" resource_path="panels/ai_assistance/agents/AiAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/FileAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_FILEAGENT_JS" resource_path="panels/ai_assistance/agents/FileAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/agents/NetworkAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_NETWORKAGENT_JS" resource_path="panels/ai_assistance/agents/NetworkAgent.js" type="BINDATA" compress="false"/>
@@ -1220,6 +1227,7 @@
       <include file="panels/ai_assistance/data_formatters/PerformanceInsightFormatter.js" name="PANELS_AI_ASSISTANCE_DATA_FORMATTERS_PERFORMANCEINSIGHTFORMATTER_JS" resource_path="panels/ai_assistance/data_formatters/PerformanceInsightFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/debug.js" name="PANELS_AI_ASSISTANCE_DEBUG_JS" resource_path="panels/ai_assistance/debug.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/injected.js" name="PANELS_AI_ASSISTANCE_INJECTED_JS" resource_path="panels/ai_assistance/injected.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/selectWorkspaceDialog.css.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_CSS_JS" resource_path="panels/ai_assistance/selectWorkspaceDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationScreenshotPopover.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_JS" resource_path="panels/animation/AnimationScreenshotPopover.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationTimeline.js" name="PANELS_ANIMATION_ANIMATIONTIMELINE_JS" resource_path="panels/animation/AnimationTimeline.js" type="BINDATA" compress="false"/>
@@ -1494,6 +1502,7 @@
       <include file="panels/issues/AffectedElementsWithLowContrastView.js" name="PANELS_ISSUES_AFFECTEDELEMENTSWITHLOWCONTRASTVIEW_JS" resource_path="panels/issues/AffectedElementsWithLowContrastView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedHeavyAdView.js" name="PANELS_ISSUES_AFFECTEDHEAVYADVIEW_JS" resource_path="panels/issues/AffectedHeavyAdView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedMetadataAllowedSitesView.js" name="PANELS_ISSUES_AFFECTEDMETADATAALLOWEDSITESVIEW_JS" resource_path="panels/issues/AffectedMetadataAllowedSitesView.js" type="BINDATA" compress="false"/>
+      <include file="panels/issues/AffectedPartitioningBlobURLView.js" name="PANELS_ISSUES_AFFECTEDPARTITIONINGBLOBURLVIEW_JS" resource_path="panels/issues/AffectedPartitioningBlobURLView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedResourcesView.js" name="PANELS_ISSUES_AFFECTEDRESOURCESVIEW_JS" resource_path="panels/issues/AffectedResourcesView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedSharedArrayBufferIssueDetailsView.js" name="PANELS_ISSUES_AFFECTEDSHAREDARRAYBUFFERISSUEDETAILSVIEW_JS" resource_path="panels/issues/AffectedSharedArrayBufferIssueDetailsView.js" type="BINDATA" compress="false"/>
       <include file="panels/issues/AffectedSourcesView.js" name="PANELS_ISSUES_AFFECTEDSOURCESVIEW_JS" resource_path="panels/issues/AffectedSourcesView.js" type="BINDATA" compress="false"/>
@@ -2345,6 +2354,8 @@
       <include file="ui/components/text_editor/theme.js" name="UI_COMPONENTS_TEXT_EDITOR_THEME_JS" resource_path="ui/components/text_editor/theme.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_prompt/TextPrompt.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXTPROMPT_JS" resource_path="ui/components/text_prompt/TextPrompt.js" type="BINDATA" compress="false"/>
       <include file="ui/components/text_prompt/textPrompt.css.js" name="UI_COMPONENTS_TEXT_PROMPT_TEXTPROMPT_CSS_JS" resource_path="ui/components/text_prompt/textPrompt.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/tooltips/Tooltip.js" name="UI_COMPONENTS_TOOLTIPS_TOOLTIP_JS" resource_path="ui/components/tooltips/Tooltip.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/tooltips/tooltip.css.js" name="UI_COMPONENTS_TOOLTIPS_TOOLTIP_CSS_JS" resource_path="ui/components/tooltips/tooltip.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/TreeOutline.js" name="UI_COMPONENTS_TREE_OUTLINE_TREEOUTLINE_JS" resource_path="ui/components/tree_outline/TreeOutline.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/TreeOutlineUtils.js" name="UI_COMPONENTS_TREE_OUTLINE_TREEOUTLINEUTILS_JS" resource_path="ui/components/tree_outline/TreeOutlineUtils.js" type="BINDATA" compress="false"/>
       <include file="ui/components/tree_outline/treeOutline.css.js" name="UI_COMPONENTS_TREE_OUTLINE_TREEOUTLINE_CSS_JS" resource_path="ui/components/tree_outline/treeOutline.css.js" type="BINDATA" compress="false"/>

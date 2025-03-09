@@ -1,6 +1,7 @@
 import * as Platform from '../../../core/platform/platform.js';
+import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about the fonts used on the page, and the value of their `font-display` properties. */
     readonly title: "Font display";
@@ -14,7 +15,6 @@ export declare const UIStrings: {
     readonly wastedTimeColumn: "Wasted time";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
-export declare function deps(): ['Meta', 'NetworkRequests', 'LayoutShifts'];
 interface RemoteFont {
     name?: string;
     request: Types.Events.SyntheticNetworkRequest;
@@ -24,5 +24,5 @@ interface RemoteFont {
 export type FontDisplayInsightModel = InsightModel<typeof UIStrings, {
     fonts: RemoteFont[];
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): FontDisplayInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): FontDisplayInsightModel;
 export {};

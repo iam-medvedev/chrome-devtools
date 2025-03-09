@@ -33,6 +33,7 @@ const { html } = Lit;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://goo.gle/devtools-ai-assistance';
 const SCREENSHOT_QUALITY = 100;
+const SHOW_LOADING_STATE_TIMEOUT = 100;
 const UIStrings = {
     /**
      *@description AI assistance UI text creating a new chat.
@@ -209,7 +210,7 @@ function getEmptyStateSuggestions(conversationType) {
             ];
         case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
             // TODO(b/393061683): Define these.
-            return ['Placeholder', 'Suggestions', 'For now'];
+            return ['Help me optimize my LCP', 'Suggestions', 'For now'];
     }
 }
 function toolbarView(input) {
@@ -367,7 +368,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #aidaAvailability;
     // Info of the currently logged in user.
     #userInfo;
-    #imageInput = '';
+    #imageInput;
     // Used to disable send button when there is not text input.
     #isTextInputEmpty = true;
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
@@ -463,6 +464,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const isNetworkPanelVisible = Boolean(UI.Context.Context.instance().flavor(NetworkPanel.NetworkPanel.NetworkPanel));
         const isSourcesPanelVisible = Boolean(UI.Context.Context.instance().flavor(SourcesPanel.SourcesPanel.SourcesPanel));
         const isPerformancePanelVisible = Boolean(UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel));
+        // Check if the user has an insight expanded in the performance panel sidebar.
+        // If they have, we default to the Insights agent; otherwise we fallback to
+        // the regular Performance agent.
+        // Note that we do not listen to this flavor changing; this code is here to
+        // ensure that by default we do not pick the Insights agent if the user has
+        // just imported a trace and not done anything else. It doesn't make sense
+        // to select the Insights AI agent in that case.
+        const userHasExpandedPerfInsight = Boolean(UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.SelectedInsight));
         let targetConversationType = undefined;
         if (isElementsPanelVisible && hostConfig.devToolsFreestyler?.enabled) {
             targetConversationType = "freestyler" /* ConversationType.STYLING */;
@@ -474,7 +483,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             targetConversationType = "drjones-file" /* ConversationType.FILE */;
         }
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled &&
-            hostConfig.devToolsAiAssistancePerformanceAgent?.insightsEnabled) {
+            hostConfig.devToolsAiAssistancePerformanceAgent?.insightsEnabled && userHasExpandedPerfInsight) {
             targetConversationType = "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */;
         }
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
@@ -551,6 +560,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#selectDefaultAgentIfNeeded, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
     }
     willHide() {
@@ -568,6 +578,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#selectDefaultAgentIfNeeded, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+        SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     }
     #handleAidaAvailabilityChange = async () => {
         const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
@@ -627,9 +638,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedFile = new FileContext(ev.data);
         this.#updateConversationState(this.#conversationAgent);
     };
+    #onPrimaryPageChanged() {
+        if (!this.#imageInput) {
+            return;
+        }
+        this.#imageInput = undefined;
+        this.requestUpdate();
+    }
     #getChangeSummary() {
         return (isAiAssistancePatchingEnabled() && this.#conversationAgent && !this.#conversation?.isReadOnly) ?
-            this.#changeManager.formatChanges(this.#conversationAgent.id) :
+            this.#changeManager.formatChangesForPatching(this.#conversationAgent.id, /* includeSourceLocation= */ true) :
             undefined;
     }
     async performUpdate() {
@@ -664,7 +682,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
             },
             onTextSubmit: async (text, imageInput) => {
-                this.#imageInput = '';
+                this.#imageInput = undefined;
+                this.#isTextInputEmpty = true;
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
                 await this.#startConversation(text, imageInput);
             },
@@ -770,7 +789,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformance);
         }
     }
-    async #handleFeedbackSubmit(rpcId, rating, feedback) {
+    #handleFeedbackSubmit(rpcId, rating, feedback) {
         void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: rpcId,
             disable_user_content_logging: !this.#serverSideLoggingEnabled,
@@ -930,9 +949,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (!model) {
             throw new Error('Could not find model');
         }
+        const showLoadingTimeout = setTimeout(() => {
+            this.#imageInput = { isLoading: true };
+            this.requestUpdate();
+        }, SHOW_LOADING_STATE_TIMEOUT);
         const bytes = await model.captureScreenshot("jpeg" /* Protocol.Page.CaptureScreenshotRequestFormat.Jpeg */, SCREENSHOT_QUALITY, "fromViewport" /* SDK.ScreenCaptureModel.ScreenshotMode.FROM_VIEWPORT */);
+        clearTimeout(showLoadingTimeout);
         if (bytes) {
-            this.#imageInput = bytes;
+            this.#imageInput = { isLoading: false, data: bytes };
             this.requestUpdate();
             void this.updateComplete.then(() => {
                 this.#viewOutput.chatView?.focusTextInput();
@@ -940,7 +964,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     #handleRemoveImageInput() {
-        this.#imageInput = '';
+        this.#imageInput = undefined;
         this.requestUpdate();
         void this.updateComplete.then(() => {
             this.#viewOutput.chatView?.focusTextInput();
@@ -1024,7 +1048,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         for await (const data of items) {
             // We don't want to save partial responses to the conversation history.
             if (data.type !== "answer" /* ResponseType.ANSWER */ || data.complete) {
-                currentConversation?.addHistoryItem(data);
+                void currentConversation?.addHistoryItem(data);
             }
             yield data;
         }

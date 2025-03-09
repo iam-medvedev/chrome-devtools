@@ -372,19 +372,20 @@ export class DebuggerPlugin extends Plugin {
         }
         const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.WARNING */, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
             {
-                text: i18nString(UIStrings.removeFromIgnoreList),
-                highlight: false,
-                delegate: unIgnoreList,
-                dismiss: true,
-                jslogContext: 'remove-from-ignore-list',
-            },
-            {
                 text: i18nString(UIStrings.configure),
                 highlight: false,
                 delegate: UI.ViewManager.ViewManager.instance().showView.bind(UI.ViewManager.ViewManager.instance(), 'blackbox'),
                 dismiss: false,
                 jslogContext: 'configure',
             },
+            {
+                text: i18nString(UIStrings.removeFromIgnoreList),
+                highlight: false,
+                delegate: unIgnoreList,
+                buttonVariant: "tonal" /* Buttons.Button.Variant.TONAL */,
+                dismiss: true,
+                jslogContext: 'remove-from-ignore-list',
+            }
         ], undefined, 'script-on-ignore-list');
         this.ignoreListInfobar = infobar;
         infobar.setCloseCallback(() => this.removeInfobar(this.ignoreListInfobar));

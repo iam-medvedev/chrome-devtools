@@ -5,7 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /**
      * @description Title of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated.
@@ -48,9 +48,6 @@ const DOM_SIZE_DURATION_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Mil
 // See go/rpp-dom-size-thresholds for the analysis that produced these thresholds.
 const LAYOUT_OBJECTS_THRESHOLD = 100;
 const STYLE_RECALC_ELEMENTS_THRESHOLD = 300;
-export function deps() {
-    return ['Renderer', 'AuctionWorklets', 'DOMStats'];
-}
 function finalize(partialModel) {
     const relatedEvents = [...partialModel.largeLayoutUpdates, ...partialModel.largeStyleRecalcs];
     return {

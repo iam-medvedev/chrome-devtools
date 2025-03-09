@@ -6,6 +6,7 @@ export declare const enum ConversationType {
     PERFORMANCE = "drjones-performance",
     PERFORMANCE_INSIGHT = "performance-insight"
 }
+export declare const NOT_FOUND_IMAGE_DATA = "";
 export interface SerializedConversation {
     id: string;
     type: ConversationType;
@@ -26,7 +27,7 @@ export declare class Conversation {
     get title(): string | undefined;
     get isEmpty(): boolean;
     archiveConversation(): void;
-    addHistoryItem(item: ResponseData): void;
+    addHistoryItem(item: ResponseData): Promise<void>;
     serialize(): SerializedConversation;
 }
 export declare class AiHistoryStorage {

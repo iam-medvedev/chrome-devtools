@@ -15,6 +15,7 @@ interface ViewInput {
         valueBeforeEditing: string;
         newText: string;
     }>) => void;
+    onCreate: (event: CustomEvent<CookieData>) => void;
     onRefresh: () => void;
     onDelete: (event: CustomEvent<HTMLElement>) => void;
     onContextMenu: (event: CustomEvent<{
@@ -23,9 +24,7 @@ interface ViewInput {
     }>) => void;
     onSelect: (event: CustomEvent<HTMLElement | null>) => void;
 }
-interface ViewOutput {
-}
-type ViewFunction = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+type ViewFunction = (input: ViewInput, output: object, target: HTMLElement) => void;
 type AttributeWithIcon = SDK.Cookie.Attribute.NAME | SDK.Cookie.Attribute.VALUE | SDK.Cookie.Attribute.DOMAIN | SDK.Cookie.Attribute.PATH | SDK.Cookie.Attribute.SECURE | SDK.Cookie.Attribute.SAME_SITE;
 type CookieData = {
     [key in SDK.Cookie.Attribute]?: string;

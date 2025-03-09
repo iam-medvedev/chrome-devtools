@@ -76,10 +76,10 @@ export class KeyValueStorageItemsView extends StorageItemsView {
     #editable;
     constructor(title, id, editable, view, metadataView) {
         if (!view) {
-            view = (input, output, target) => {
+            view = (input, _, target) => {
                 // clang-format off
                 render(html `
-            <devtools-split-view direction="column" sidebar-position="second" name="${id}-split-view-state">
+            <devtools-split-view sidebar-position="second" name="${id}-split-view-state">
                <devtools-widget
                   slot="main"
                   .widgetConfig=${widgetConfig(VBox, { minimumSize: new Size(0, 50) })}>

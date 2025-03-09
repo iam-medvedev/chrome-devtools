@@ -255,12 +255,14 @@ models/workspace/UISourceCode.test.js
 models/workspace/WorkspaceImpl.test.js
 models/workspace_diff/WorkspaceDiff.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
+panels/ai_assistance/AgentProject.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/AiHistoryStorage.test.js
 panels/ai_assistance/ChangeManager.test.js
 panels/ai_assistance/EvaluateAction.test.js
 panels/ai_assistance/ExtensionScope.test.js
 panels/ai_assistance/PatchWidget.test.js
+panels/ai_assistance/SelectWorkspaceDialog.test.js
 panels/ai_assistance/agents/AiAgent.test.js
 panels/ai_assistance/agents/FileAgent.test.js
 panels/ai_assistance/agents/NetworkAgent.test.js
@@ -588,7 +590,7 @@ ui/components/text_editor/TextEditor.test.js
 ui/components/text_editor/TextEditorHistory.test.js
 ui/components/text_editor/javascript.test.js
 ui/components/text_prompt/TextPrompt.test.js
-ui/components/tooltip/Tooltip.test.js
+ui/components/tooltips/Tooltip.test.js
 ui/components/tree_outline/TreeOutline.test.js
 ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js

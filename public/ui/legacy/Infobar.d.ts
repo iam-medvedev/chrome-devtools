@@ -38,7 +38,6 @@ export interface InfobarAction {
     delegate: (() => void) | null;
     dismiss: boolean;
     buttonVariant?: Buttons.Button.Variant;
-    icon?: string;
     jslogContext?: string;
 }
 export declare const enum Type {

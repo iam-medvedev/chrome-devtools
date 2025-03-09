@@ -1238,6 +1238,9 @@
   "generated/Deprecation.ts | InterestGroupDailyUpdateUrl": {
     "message": "The dailyUpdateUrl field of InterestGroups passed to joinAdInterestGroup() has been renamed to updateUrl, to more accurately reflect its behavior."
   },
+  "generated/Deprecation.ts | IntlV8BreakIterator": {
+    "message": "Intl.v8BreakIterator is deprecated. Please use Intl.Segmenter instead."
+  },
   "generated/Deprecation.ts | LocalCSSFileExtensionRejected": {
     "message": "CSS cannot be loaded from file: URLs unless they end in a .css file extension."
   },
@@ -1257,7 +1260,7 @@
     "message": "Permission for the Notification API may no longer be requested from a cross-origin iframe. You should consider requesting permission from a top-level frame or opening a new window instead."
   },
   "generated/Deprecation.ts | ObsoleteCreateImageBitmapImageOrientationNone": {
-    "message": "Option imageOrientation: 'none' in createImageBitmap is deprecated. Please use createImageBitmap with option {imageOrientation: 'from-image'} instead."
+    "message": "Option imageOrientation: 'none' in createImageBitmap is deprecated. Please use createImageBitmap with option '{imageOrientation: 'from-image'}' instead."
   },
   "generated/Deprecation.ts | ObsoleteWebRtcCipherSuite": {
     "message": "Your partner is negotiating an obsolete (D)TLS version. Please check with your partner to have this fixed."
@@ -1334,20 +1337,11 @@
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
   },
-  "generated/Deprecation.ts | WebGPULimitMaxInterStageShaderComponents": {
-    "message": "The WebGPU limit maxInterStageShaderComponents is deprecated, instead use the WebGPU limit maxInterStageShaderVariables."
-  },
-  "generated/Deprecation.ts | WebSQL": {
-    "message": "Web SQL is deprecated. Please use SQLite WebAssembly or Indexed Database"
-  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "UTF-16 is not supported by response json in XMLHttpRequest"
   },
   "generated/Deprecation.ts | XMLHttpRequestSynchronousInNonWorkerOutsideBeforeUnload": {
     "message": "Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/."
-  },
-  "generated/Deprecation.ts | XRSupportsSession": {
-    "message": "supportsSession() is deprecated. Please use isSessionSupported() and check the resolved boolean value instead."
   },
   "models/bindings/ContentProviderBasedProject.ts | unknownErrorLoadingFile": {
     "message": "Unknown error loading file"
@@ -1570,6 +1564,12 @@
   },
   "models/issues_manager/MixedContentIssue.ts | preventingMixedContent": {
     "message": "Preventing mixed content"
+  },
+  "models/issues_manager/PartitioningBlobURLIssue.ts | chromeStatusEntry": {
+    "message": "Chrome Status Entry"
+  },
+  "models/issues_manager/PartitioningBlobURLIssue.ts | partitioningBlobURL": {
+    "message": "Partitioning BlobURL"
   },
   "models/issues_manager/QuirksModeIssue.ts | documentCompatibilityMode": {
     "message": "Document compatibility mode"
@@ -5408,6 +5408,9 @@
   "panels/changes/ChangesView.ts | sInsertions": {
     "message": "{n, plural, =1 {# insertion (+)} other {# insertions (+)}}"
   },
+  "panels/changes/CombinedDiffView.ts | copied": {
+    "message": "Copied to clipboard"
+  },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Open Console to view {PH1}"
   },
@@ -6755,6 +6758,9 @@
   "panels/elements/StylePropertiesSection.ts | showAllPropertiesSMore": {
     "message": "Show all properties ({PH1} more)"
   },
+  "panels/elements/StylePropertiesSection.ts | specificity": {
+    "message": "Specificity: {PH1}"
+  },
   "panels/elements/StylePropertiesSection.ts | styleAttribute": {
     "message": "style attribute"
   },
@@ -6794,6 +6800,12 @@
   "panels/elements/StylePropertyTreeElement.ts | gridEditorButton": {
     "message": "Open grid editor"
   },
+  "panels/elements/StylePropertyTreeElement.ts | invalidPropertyValue": {
+    "message": "Invalid property value"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | invalidString": {
+    "message": "{PH1}, property name: {PH2}, property value: {PH3}"
+  },
   "panels/elements/StylePropertyTreeElement.ts | jumpToAnimationsPanel": {
     "message": "Jump to Animations panel"
   },
@@ -6806,8 +6818,14 @@
   "panels/elements/StylePropertyTreeElement.ts | shiftClickToChangeColorFormat": {
     "message": "Shift + Click to change color format."
   },
+  "panels/elements/StylePropertyTreeElement.ts | sIsNotDefined": {
+    "message": "{PH1} is not defined"
+  },
   "panels/elements/StylePropertyTreeElement.ts | togglePropertyAndContinueEditing": {
     "message": "Toggle property and continue editing"
+  },
+  "panels/elements/StylePropertyTreeElement.ts | unknownPropertyName": {
+    "message": "Unknown property name"
   },
   "panels/elements/StylePropertyTreeElement.ts | viewComputedValue": {
     "message": "View computed value"
@@ -6836,12 +6854,6 @@
   "panels/elements/StylesSidebarPane.ts | inheritedFromSPseudoOf": {
     "message": "Inherited from ::{PH1} pseudo of "
   },
-  "panels/elements/StylesSidebarPane.ts | invalidPropertyValue": {
-    "message": "Invalid property value"
-  },
-  "panels/elements/StylesSidebarPane.ts | invalidString": {
-    "message": "{PH1}, property name: {PH2}, property value: {PH3}"
-  },
   "panels/elements/StylesSidebarPane.ts | layer": {
     "message": "Layer"
   },
@@ -6851,14 +6863,8 @@
   "panels/elements/StylesSidebarPane.ts | pseudoSElement": {
     "message": "Pseudo ::{PH1} element"
   },
-  "panels/elements/StylesSidebarPane.ts | specificity": {
-    "message": "Specificity: {PH1}"
-  },
   "panels/elements/StylesSidebarPane.ts | toggleRenderingEmulations": {
     "message": "Toggle common rendering emulations"
-  },
-  "panels/elements/StylesSidebarPane.ts | unknownPropertyName": {
-    "message": "Unknown property name"
   },
   "panels/elements/StylesSidebarPane.ts | visibleSelectors": {
     "message": "{n, plural, =1 {# visible selector listed below} other {# visible selectors listed below}}"
@@ -7270,6 +7276,18 @@
   },
   "panels/issues/AffectedMetadataAllowedSitesView.ts | nAllowedSites": {
     "message": "{n, plural, =1 {1 website allowed to access cookies} other {# websites allowed to access cookies}}"
+  },
+  "panels/issues/AffectedPartitioningBlobURLView.ts | blobURLCount": {
+    "message": "Blob URL issues count: {count}"
+  },
+  "panels/issues/AffectedPartitioningBlobURLView.ts | blockedCrossPartitionFetching": {
+    "message": "Access to the Blob URL {url} was blocked because it was performed from a cross-partition context."
+  },
+  "panels/issues/AffectedPartitioningBlobURLView.ts | enforceNoopenerForNavigation": {
+    "message": "Blob URL {url} top-level navigation had 'noopener' set because the Blob URL origin was cross-site with the top-level site of the context that initiated the navigation."
+  },
+  "panels/issues/AffectedPartitioningBlobURLView.ts | noBlobURLAvailable": {
+    "message": "No Blob URL available for this issue."
   },
   "panels/issues/AffectedResourcesView.ts | clickToRevealTheFramesDomNodeIn": {
     "message": "Click to reveal the frame's DOM node in the Elements panel"
@@ -9480,13 +9498,16 @@
     "message": "Export HAR (with sensitive data)..."
   },
   "panels/network/NetworkPanel.ts | fetchingFrames": {
-    "message": "Currently fetching frames"
+    "message": "Fetching frames..."
   },
   "panels/network/NetworkPanel.ts | groupByFrame": {
     "message": "Group by frame"
   },
   "panels/network/NetworkPanel.ts | groupRequestsByTopLevelRequest": {
     "message": "Group requests by top level request frame"
+  },
+  "panels/network/NetworkPanel.ts | hitSToReloadAndCaptureFilmstrip": {
+    "message": "Hit {PH1} to reload and capture filmstrip."
   },
   "panels/network/NetworkPanel.ts | importHarFile": {
     "message": "Import HAR file..."
@@ -9496,9 +9517,6 @@
   },
   "panels/network/NetworkPanel.ts | networkSettings": {
     "message": "Network settings"
-  },
-  "panels/network/NetworkPanel.ts | noFilmstrips": {
-    "message": "No filmstrips captured"
   },
   "panels/network/NetworkPanel.ts | openInNetworkPanel": {
     "message": "Open in Network panel"
@@ -9510,13 +9528,7 @@
     "message": "Preserve log"
   },
   "panels/network/NetworkPanel.ts | recordingFrames": {
-    "message": "Currenty recording frames"
-  },
-  "panels/network/NetworkPanel.ts | reloadAndCaptureFilmstrip": {
-    "message": "Reload and capture filmstrip by using the \"{PH1}\" button or by hitting {PH2}"
-  },
-  "panels/network/NetworkPanel.ts | reloadPage": {
-    "message": "Reload page"
+    "message": "Recording frames..."
   },
   "panels/network/NetworkPanel.ts | search": {
     "message": "Search"
@@ -10636,12 +10648,6 @@
   },
   "panels/protocol_monitor/protocol_monitor-meta.ts | showProtocolMonitor": {
     "message": "Show Protocol monitor"
-  },
-  "panels/protocol_monitor/ProtocolMonitor.ts | CDPCommandEditorHidden": {
-    "message": "CDP command editor hidden"
-  },
-  "panels/protocol_monitor/ProtocolMonitor.ts | CDPCommandEditorShown": {
-    "message": "CDP command editor shown"
   },
   "panels/protocol_monitor/ProtocolMonitor.ts | clearAll": {
     "message": "Clear all"
@@ -13203,7 +13209,7 @@
     "message": "Workspace"
   },
   "panels/sources/SourcesNavigator.ts | automaticWorkspaceFolderConnect": {
-    "message": "Connect..."
+    "message": "Connect"
   },
   "panels/sources/SourcesNavigator.ts | automaticWorkspaceFolderDetected": {
     "message": "Workspace folder {PH1} detected."
@@ -13793,6 +13799,9 @@
   "panels/timeline/components/MetricCard.ts | field75thPercentile": {
     "message": "Field 75th percentile"
   },
+  "panels/timeline/components/MetricCard.ts | fieldP75": {
+    "message": "Field p75"
+  },
   "panels/timeline/components/MetricCard.ts | good": {
     "message": "Good"
   },
@@ -13810,9 +13819,6 @@
   },
   "panels/timeline/components/MetricCard.ts | leqRange": {
     "message": "(≤{PH1})"
-  },
-  "panels/timeline/components/MetricCard.ts | localDuration": {
-    "message": "Local duration"
   },
   "panels/timeline/components/MetricCard.ts | localValue": {
     "message": "Local"
@@ -14188,6 +14194,9 @@
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | entryLabel": {
     "message": "Entry label"
+  },
+  "panels/timeline/overlays/components/EntryLabelOverlay.ts | generateLabelButton": {
+    "message": "Generate label"
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | inputTextPrompt": {
     "message": "Enter an annotation label"
@@ -16581,7 +16590,7 @@
     "message": "Panels"
   },
   "ui/legacy/InspectorView.ts | reloadDebuggedTab": {
-    "message": "Reload"
+    "message": "Reload page"
   },
   "ui/legacy/InspectorView.ts | reloadDevtools": {
     "message": "Reload DevTools"

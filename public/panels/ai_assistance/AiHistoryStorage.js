@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 const MAX_TITLE_LENGTH = 80;
+export const NOT_FOUND_IMAGE_DATA = '';
 export class Conversation {
     id;
     type;
@@ -34,7 +35,8 @@ export class Conversation {
             for (const data of historyWithoutImages) {
                 if (data.type === "user-query" /* ResponseType.USER_QUERY */ && data.imageId) {
                     const image = imageHistory.find(item => item.id === data.imageId);
-                    const inlineData = image ? { data: image.data, mimeType: image.mimeType } : { data: '', mimeType: 'image/jpeg' };
+                    const inlineData = image ? { data: image.data, mimeType: image.mimeType } :
+                        { data: NOT_FOUND_IMAGE_DATA, mimeType: 'image/jpeg' };
                     history.push({ ...data, imageInput: { inlineData } });
                 }
                 else {
@@ -48,15 +50,15 @@ export class Conversation {
     archiveConversation() {
         this.#isReadOnly = true;
     }
-    addHistoryItem(item) {
+    async addHistoryItem(item) {
         if (item.type === "user-query" /* ResponseType.USER_QUERY */) {
             if (item.imageId && item.imageInput && 'inlineData' in item.imageInput) {
                 const inlineData = item.imageInput.inlineData;
-                void AiHistoryStorage.instance().upsertImage({ id: item.imageId, data: inlineData.data, mimeType: inlineData.mimeType });
+                await AiHistoryStorage.instance().upsertImage({ id: item.imageId, data: inlineData.data, mimeType: inlineData.mimeType });
             }
         }
         this.history.push(item);
-        void AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
+        await AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
     }
     serialize() {
         return {

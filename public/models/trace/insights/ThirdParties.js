@@ -6,7 +6,7 @@ import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party
 import * as Extras from '../extras/extras.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
     title: '3rd parties',
@@ -29,9 +29,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/ThirdParties.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
-}
 function getRelatedEvents(summaries, firstPartyEntity) {
     const relatedEvents = [];
     for (const [entity, events] of summaries.eventsByEntity.entries()) {

@@ -746,7 +746,7 @@ devtools-toolbar {
 
   & > devtools-issue-counter {
     margin-top: -4px;
-    padding-left: 1px;
+    padding: 0 1px;
   }
 
   devtools-adorner.fix-perf-icon {
@@ -1011,7 +1011,7 @@ devtools-toolbar {
     flex: 1;
     overflow: hidden;
     white-space: nowrap;
-    cursor: auto;
+    cursor: text;
     color: var(--sys-color-on-surface);
   }
   /* Separator */

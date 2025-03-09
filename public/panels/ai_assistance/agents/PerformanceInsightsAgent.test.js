@@ -30,6 +30,7 @@ describeWithEnvironment('PerformanceInsightsAgent', () => {
                             }
                         }]])
             });
+            const expectedDetailText = new PerformanceInsightFormatter(mockInsight.insight).formatInsight();
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             assert.deepEqual(responses, [
                 {
@@ -40,11 +41,9 @@ describeWithEnvironment('PerformanceInsightsAgent', () => {
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,
-                    title: 'LCP by phase',
+                    title: 'Analyzing insight: LCP by phase',
                     details: [
-                        // Note: these are placeholder values, see the TODO in
-                        // PerformanceInsightsAgent.
-                        { title: 'LCP by phase', text: 'LCP by phase' },
+                        { title: 'LCP by phase', text: expectedDetailText },
                     ],
                 },
                 {
@@ -77,13 +76,15 @@ What is this?`;
         });
     });
     describe('function calls', () => {
-        it('calls getNetworkActivity', async function () {
+        it('calls getNetworkActivitySummary', async function () {
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
             assert.isOk(insights);
             const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
             const lcpPhases = getInsightOrError('LCPPhases', insights, firstNav);
             const agent = new PerformanceInsightsAgent({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getNetworkActivity', args: {} }] }], [{ explanation: 'done' }]])
+                aidaClient: mockAidaClient([
+                    [{ explanation: '', functionCalls: [{ name: 'getNetworkActivitySummary', args: {} }] }], [{ explanation: 'done' }]
+                ])
             });
             const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(lcpPhases, parsedTrace);
             const context = new InsightContext(activeInsight);
@@ -101,10 +102,49 @@ What is this?`;
                 assert.isOk(match, `no request found for ${url}`);
                 return match;
             });
-            const expectedRequestsOutput = requests.map(r => TraceEventFormatter.networkRequest(r, parsedTrace));
+            const expectedRequestsOutput = requests.map(r => TraceEventFormatter.networkRequest(r, parsedTrace, { verbose: false }));
             const expectedOutput = JSON.stringify({ requests: expectedRequestsOutput });
+            const titleResponse = responses.find(response => response.type === "title" /* ResponseType.TITLE */);
+            assert.exists(titleResponse);
+            assert.strictEqual(titleResponse.title, 'Investigating network activity…');
             assert.exists(action);
-            assert.deepEqual(action, { type: 'action', output: expectedOutput, code: undefined, canceled: false });
+            assert.deepEqual(action, {
+                type: 'action',
+                output: expectedOutput,
+                code: 'getNetworkActivitySummary()',
+                canceled: false
+            });
+        });
+        it('can call getNetworkRequestDetail to get detail about a single request', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+            assert.isOk(insights);
+            const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
+            const lcpPhases = getInsightOrError('LCPPhases', insights, firstNav);
+            const requestUrl = 'https://chromedevtools.github.io/performance-stories/lcp-large-image/app.css';
+            const agent = new PerformanceInsightsAgent({
+                aidaClient: mockAidaClient([
+                    [{ explanation: '', functionCalls: [{ name: 'getNetworkRequestDetail', args: { url: requestUrl } }] }],
+                    [{ explanation: 'done' }]
+                ])
+            });
+            const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(lcpPhases, parsedTrace);
+            const context = new InsightContext(activeInsight);
+            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const titleResponse = responses.find(response => response.type === "title" /* ResponseType.TITLE */);
+            assert.exists(titleResponse);
+            assert.strictEqual(titleResponse.title, `Investigating network request ${requestUrl}…`);
+            const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
+            const request = parsedTrace.NetworkRequests.byTime.find(r => r.args.data.url === requestUrl);
+            assert.isOk(request);
+            const expectedRequestOutput = TraceEventFormatter.networkRequest(request, parsedTrace, { verbose: true });
+            const expectedOutput = JSON.stringify({ request: expectedRequestOutput });
+            assert.exists(action);
+            assert.deepEqual(action, {
+                type: 'action',
+                output: expectedOutput,
+                code: `getNetworkRequestDetail('${requestUrl}')`,
+                canceled: false
+            });
         });
         it('calls getMainThreadActivity', async function () {
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
@@ -117,12 +157,20 @@ What is this?`;
             const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(lcpPhases, parsedTrace);
             const context = new InsightContext(activeInsight);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
+            const titleResponse = responses.find(response => response.type === "title" /* ResponseType.TITLE */);
+            assert.exists(titleResponse);
+            assert.strictEqual(titleResponse.title, 'Investigating main thread activity…');
             const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
+            assert.exists(action);
             const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivity(lcpPhases, parsedTrace);
             assert.isOk(expectedTree);
             const expectedOutput = JSON.stringify({ activity: expectedTree.serialize() });
-            assert.exists(action);
-            assert.deepEqual(action, { type: 'action', output: expectedOutput, code: undefined, canceled: false });
+            assert.deepEqual(action, {
+                type: 'action',
+                output: expectedOutput,
+                code: 'getMainThreadActivity()',
+                canceled: false
+            });
         });
     });
 });

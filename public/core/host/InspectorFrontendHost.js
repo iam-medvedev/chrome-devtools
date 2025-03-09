@@ -382,8 +382,6 @@ export class InspectorFrontendHostStub {
     }
     setDevicesUpdatesEnabled(enabled) {
     }
-    performActionOnRemotePage(pageId, action) {
-    }
     openRemotePage(browserId, url) {
     }
     openNodeFrontend() {

@@ -50,15 +50,15 @@ class ManualPromise {
     #waitPromise;
     #resolveFn;
     constructor() {
-        this.#waitPromise = new Promise(r => {
-            this.#resolveFn = r;
-        });
+        const { resolve, promise } = Promise.withResolvers();
+        this.#waitPromise = promise;
+        this.#resolveFn = resolve;
     }
     resolve() {
         this.#resolveFn();
-        this.#waitPromise = new Promise(r => {
-            this.#resolveFn = r;
-        });
+        const { resolve, promise } = Promise.withResolvers();
+        this.#waitPromise = promise;
+        this.#resolveFn = resolve;
     }
     wait() {
         return this.#waitPromise;

@@ -23,7 +23,8 @@ export declare const enum IssueCode {
     PREFLIGHT_MISSING_PRIVATE_NETWORK_ACCESS_ID = "CorsIssue::PreflightMissingPrivateNetworkAccessId",
     PREFLIGHT_MISSING_PRIVATE_NETWORK_ACCESS_NAME = "CorsIssue::PreflightMissingPrivateNetworkAccessName",
     PRIVATE_NETWORK_ACCESS_PERMISSION_UNAVAILABLE = "CorsIssue::PrivateNetworkAccessPermissionUnavailable",
-    PRIVATE_NETWORK_ACCESS_PERMISSION_DENIED = "CorsIssue::PrivateNetworkAccessPermissionDenied"
+    PRIVATE_NETWORK_ACCESS_PERMISSION_DENIED = "CorsIssue::PrivateNetworkAccessPermissionDenied",
+    LOCAL_NETWORK_ACCESS_PERMISSION_DENIED = "CorsIssue::LocalNetworkAccessPermissionDenied"
 }
 export declare class CorsIssue extends Issue<IssueCode> {
     #private;
