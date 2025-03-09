@@ -21,6 +21,7 @@ import { AffectedElementsView } from './AffectedElementsView.js';
 import { AffectedElementsWithLowContrastView } from './AffectedElementsWithLowContrastView.js';
 import { AffectedHeavyAdView } from './AffectedHeavyAdView.js';
 import { AffectedMetadataAllowedSitesView } from './AffectedMetadataAllowedSitesView.js';
+import { AffectedPartitioningBlobURLView } from './AffectedPartitioningBlobURLView.js';
 import { AffectedResourcesView, extractShortPath } from './AffectedResourcesView.js';
 import { AffectedSharedArrayBufferIssueDetailsView } from './AffectedSharedArrayBufferIssueDetailsView.js';
 import { AffectedSourcesView } from './AffectedSourcesView.js';
@@ -227,6 +228,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
             new AffectedTrackingSitesView(this, this.#issue, 'tracking-sites-details'),
             new AffectedMetadataAllowedSitesView(this, this.#issue, 'metadata-allowed-sites-details'),
             new AffectedDescendantsWithinSelectElementView(this, this.#issue, 'disallowed-select-descendants-details'),
+            new AffectedPartitioningBlobURLView(this, this.#issue, 'partitioning-blob-url-details'),
         ];
         this.#hiddenIssuesMenu = new Components.HideIssuesMenu.HideIssuesMenu();
         this.#aggregatedIssuesCount = null;

@@ -1,25 +1,17 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Platform from '../../core/platform/platform.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { cleanup, createPatchWidget, } from '../../testing/AiAssistanceHelpers.js';
+import { cleanup, createPatchWidget, createTestFilesystem, initializePersistenceImplForTests, } from '../../testing/AiAssistanceHelpers.js';
 import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import { createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 describeWithMockConnection('workspace', () => {
+    beforeEach(() => {
+        initializePersistenceImplForTests();
+    });
     afterEach(() => {
         cleanup();
     });
-    function createTestFilesystem(fileSystemPath) {
-        const { project, uiSourceCode } = createFileSystemUISourceCode({
-            url: Platform.DevToolsPath.urlString `file:///example.html`,
-            mimeType: 'text/html',
-            content: 'content',
-            fileSystemPath,
-        });
-        return { project, uiSourceCode };
-    }
     it('does not report a workspace project if disabled', async () => {
         createTestFilesystem('file://test');
         updateHostConfig({
@@ -28,8 +20,8 @@ describeWithMockConnection('workspace', () => {
                 patching: false,
             },
         });
-        const { initialViewInput, } = await createPatchWidget();
-        assert.isUndefined(initialViewInput.projectName);
+        const { view } = await createPatchWidget();
+        assert.isUndefined(view.input.projectName);
     });
     it('reports a current workspace project', async () => {
         createTestFilesystem('file://test');
@@ -39,8 +31,8 @@ describeWithMockConnection('workspace', () => {
                 patching: true,
             },
         });
-        const { initialViewInput, } = await createPatchWidget();
-        assert.strictEqual(initialViewInput.projectName, 'test');
+        const { view } = await createPatchWidget();
+        assert.strictEqual(view.input.projectName, 'test');
     });
     it('reports an updated project', async () => {
         const { project } = createTestFilesystem('file://test');
@@ -50,13 +42,11 @@ describeWithMockConnection('workspace', () => {
                 patching: true,
             },
         });
-        const { initialViewInput, expectViewUpdate } = await createPatchWidget();
-        assert.strictEqual(initialViewInput.projectName, 'test');
-        const updatedViewInput = await expectViewUpdate(() => {
-            Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
-            createTestFilesystem('file://test2');
-        });
-        assert.strictEqual(updatedViewInput.projectName, 'test2');
+        const { view } = await createPatchWidget();
+        assert.strictEqual(view.input.projectName, 'test');
+        Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);
+        createTestFilesystem('file://test2');
+        assert.strictEqual((await view.nextInput).projectName, 'test2');
     });
 });
 //# sourceMappingURL=PatchWidget.test.js.map

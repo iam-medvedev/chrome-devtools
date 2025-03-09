@@ -425,6 +425,9 @@ export const generatedPropertyValues: {
     "forced-color-adjust": {
         values: string[];
     };
+    "gap-rule-paint-order": {
+        values: string[];
+    };
     "grid-auto-columns": {
         values: string[];
     };
@@ -686,6 +689,15 @@ export const generatedPropertyValues: {
     "row-rule-break": {
         values: string[];
     };
+    "row-rule-color": {
+        values: string[];
+    };
+    "row-rule-style": {
+        values: string[];
+    };
+    "row-rule-width": {
+        values: string[];
+    };
     "ruby-align": {
         values: string[];
     };
@@ -702,6 +714,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "scroll-initial-target": {
+        values: string[];
+    };
+    "scroll-marker-contain": {
         values: string[];
     };
     "scroll-marker-group": {
@@ -879,9 +894,6 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "vertical-align": {
-        values: string[];
-    };
-    "view-transition-capture-mode": {
         values: string[];
     };
     "view-transition-class": {

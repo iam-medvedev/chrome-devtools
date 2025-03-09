@@ -11,7 +11,7 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #affectedCookies = new Map();
     #affectedRawCookieLines = new Map();
-    #affectedRequests = new Array();
+    #affectedRequests = [];
     #affectedRequestIds = new Set();
     #affectedLocations = new Map();
     #heavyAdIssues = new Set();
@@ -24,6 +24,7 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     #lowContrastIssues = new Set();
     #cookieDeprecationMetadataIssues = new Set();
     #mixedContentIssues = new Set();
+    #partitioningBlobURLIssues = new Set();
     #sharedArrayBufferIssues = new Set();
     #quirksModeIssues = new Set();
     #attributionReportingIssues = new Set();
@@ -114,6 +115,9 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
     getAggregatedIssuesCount() {
         return this.#aggregatedIssuesCount;
     }
+    getPartitioningBlobURLIssues() {
+        return this.#partitioningBlobURLIssues;
+    }
     /**
      * Produces a primary key for a cookie. Use this instead of `JSON.stringify` in
      * case new fields are added to `AffectedCookie`.
@@ -201,6 +205,9 @@ export class AggregatedIssue extends IssuesManager.Issue.Issue {
         }
         if (issue instanceof IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue) {
             this.#selectElementAccessibilityIssues.add(issue);
+        }
+        if (issue instanceof IssuesManager.PartitioningBlobURLIssue.PartitioningBlobURLIssue) {
+            this.#partitioningBlobURLIssues.add(issue);
         }
     }
     getKind() {

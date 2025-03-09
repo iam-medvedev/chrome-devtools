@@ -440,4 +440,7 @@ export declare const NotRestoredReasonDescription: {
     WebViewDocumentStartJavascriptChanged: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    CacheControlNoStoreDeviceBoundSessionTerminated: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

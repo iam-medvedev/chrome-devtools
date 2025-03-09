@@ -42,9 +42,6 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/SlowCSSSelector.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['SelectorStats'];
-}
 function aggregateSelectorStats(data, context) {
     const selectorMap = new Map();
     for (const [event, value] of data) {

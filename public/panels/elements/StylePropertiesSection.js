@@ -39,6 +39,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { FontEditorSectionManager } from './ColorSwatchPopoverIcon.js';
@@ -103,6 +104,11 @@ const UIStrings = {
      *@description Text that is announced by the screen reader when the user focuses on an input field for editing the name of a CSS selector in the Styles panel
      */
     cssSelector: '`CSS` selector',
+    /**
+     *@description Text displayed in tooltip that shows specificity information.
+     *@example {(0,0,1)} PH1
+     */
+    specificity: 'Specificity: {PH1}',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertiesSection.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -141,9 +147,9 @@ export class StylePropertiesSection {
     // Used to identify buttons that trigger a flexbox or grid editor.
     nextEditorTriggerButtonIdx = 1;
     sectionIdx = 0;
-    // Used to keep track of Specificity Information
-    static #nodeElementToSpecificity = new WeakMap();
     #customHeaderText;
+    #specificiyTooltips;
+    static #nextSpecificityTooltipId = 0;
     constructor(parentPane, matchedStyles, style, sectionIdx, computedStyles, parentsComputedStyles, customHeaderText) {
         this.#customHeaderText = customHeaderText;
         this.parentPane = parentPane;
@@ -202,6 +208,7 @@ export class StylePropertiesSection {
         selectorContainer.appendChild(this.selectorElement);
         this.selectorElement.addEventListener('mouseenter', this.onMouseEnterSelector.bind(this), false);
         this.selectorElement.addEventListener('mouseleave', this.onMouseOutSelector.bind(this), false);
+        this.#specificiyTooltips = selectorContainer.createChild('span');
         // We only add braces for style rules with selectors and non-style rules, which create their own sections.
         if (headerText.length > 0 || !(rule instanceof SDK.CSSRule.CSSStyleRule)) {
             const openBrace = selectorContainer.createChild('span', 'sidebar-pane-open-brace');
@@ -1002,31 +1009,36 @@ export class StylePropertiesSection {
         if (this.parentPane.isEditingStyle) {
             return;
         }
-        const fragment = StylePropertiesSection.renderSelectors(rule.selectors, matchingSelectors, this.elementToSelectorIndex);
-        this.selectorElement.removeChildren();
-        this.selectorElement.appendChild(fragment);
+        this.renderSelectors(rule.selectors, matchingSelectors, this.elementToSelectorIndex);
         this.markSelectorHighlights();
     }
-    static getSpecificityStoredForNodeElement(element) {
-        return StylePropertiesSection.#nodeElementToSpecificity.get(element);
+    static getNextSpecificityTooltipId() {
+        return `specificity-tooltip-${this.#nextSpecificityTooltipId++}`;
     }
-    static renderSelectors(selectors, matchingSelectors, elementToSelectorIndex) {
-        const fragment = document.createDocumentFragment();
+    renderSelectors(selectors, matchingSelectors, elementToSelectorIndex) {
+        this.selectorElement.removeChildren();
+        this.#specificiyTooltips.removeChildren();
         for (const [i, selector] of selectors.entries()) {
-            if (i) {
-                UI.UIUtils.createTextChild(fragment, ', ');
+            if (i > 0) {
+                this.selectorElement.append(', ');
             }
-            const selectorElement = document.createElement('span');
-            selectorElement.classList.add('simple-selector');
-            selectorElement.classList.toggle('selector-matches', matchingSelectors[i]);
-            if (selector.specificity) {
-                StylePropertiesSection.#nodeElementToSpecificity.set(selectorElement, selector.specificity);
+            const specificityTooltipId = selector.specificity ? StylePropertiesSection.getNextSpecificityTooltipId() : null;
+            const span = this.selectorElement.createChild('span', 'simple-selector');
+            span.classList.toggle('selector-matches', matchingSelectors[i]);
+            elementToSelectorIndex.set(span, i);
+            span.textContent = selectors[i].text;
+            if (specificityTooltipId && selector.specificity) {
+                span.setAttribute('aria-details', specificityTooltipId);
+                const PH1 = `(${selector.specificity.a},${selector.specificity.b},${selector.specificity.c})`;
+                const tooltip = this.#specificiyTooltips.appendChild(new Tooltips.Tooltip.Tooltip({
+                    id: specificityTooltipId,
+                    anchor: span,
+                    variant: 'rich',
+                    jslogContext: 'elements.css-selector-specificity',
+                }));
+                tooltip.textContent = i18nString(UIStrings.specificity, { PH1 });
             }
-            elementToSelectorIndex.set(selectorElement, i);
-            selectorElement.textContent = selectors[i].text;
-            fragment.append(selectorElement);
         }
-        return fragment;
     }
     markSelectorHighlights() {
         const selectors = this.selectorElement.getElementsByClassName('simple-selector');
@@ -1260,6 +1272,7 @@ export class StylePropertiesSection {
         // Reset selector marks in group, and normalize whitespace.
         const textContent = element.textContent;
         if (textContent !== null) {
+            this.#specificiyTooltips.querySelectorAll('devtools-tooltip')?.forEach(tooltip => tooltip.hidePopover());
             element.textContent = textContent.replace(/\s+/g, ' ').trim();
         }
         const config = new UI.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this), undefined);

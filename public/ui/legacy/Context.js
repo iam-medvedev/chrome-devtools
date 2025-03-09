@@ -4,11 +4,9 @@
 import * as Common from '../../core/common/common.js';
 let contextInstance;
 export class Context {
-    flavorsInternal;
-    eventDispatchers;
+    #flavors = new Map();
+    #eventDispatchers = new Map();
     constructor() {
-        this.flavorsInternal = new Map();
-        this.eventDispatchers = new Map();
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -21,53 +19,53 @@ export class Context {
         contextInstance = undefined;
     }
     setFlavor(flavorType, flavorValue) {
-        const value = this.flavorsInternal.get(flavorType) || null;
+        const value = this.#flavors.get(flavorType) || null;
         if (value === flavorValue) {
             return;
         }
         if (flavorValue) {
-            this.flavorsInternal.set(flavorType, flavorValue);
+            this.#flavors.set(flavorType, flavorValue);
         }
         else {
-            this.flavorsInternal.delete(flavorType);
+            this.#flavors.delete(flavorType);
         }
-        this.dispatchFlavorChange(flavorType, flavorValue);
+        this.#dispatchFlavorChange(flavorType, flavorValue);
     }
-    dispatchFlavorChange(flavorType, flavorValue) {
+    #dispatchFlavorChange(flavorType, flavorValue) {
         for (const extension of getRegisteredListeners()) {
             if (extension.contextTypes().includes(flavorType)) {
                 void extension.loadListener().then(instance => instance.flavorChanged(flavorValue));
             }
         }
-        const dispatcher = this.eventDispatchers.get(flavorType);
+        const dispatcher = this.#eventDispatchers.get(flavorType);
         if (!dispatcher) {
             return;
         }
         dispatcher.dispatchEventToListeners("FlavorChanged" /* Events.FLAVOR_CHANGED */, flavorValue);
     }
     addFlavorChangeListener(flavorType, listener, thisObject) {
-        let dispatcher = this.eventDispatchers.get(flavorType);
+        let dispatcher = this.#eventDispatchers.get(flavorType);
         if (!dispatcher) {
             dispatcher = new Common.ObjectWrapper.ObjectWrapper();
-            this.eventDispatchers.set(flavorType, dispatcher);
+            this.#eventDispatchers.set(flavorType, dispatcher);
         }
         dispatcher.addEventListener("FlavorChanged" /* Events.FLAVOR_CHANGED */, listener, thisObject);
     }
     removeFlavorChangeListener(flavorType, listener, thisObject) {
-        const dispatcher = this.eventDispatchers.get(flavorType);
+        const dispatcher = this.#eventDispatchers.get(flavorType);
         if (!dispatcher) {
             return;
         }
         dispatcher.removeEventListener("FlavorChanged" /* Events.FLAVOR_CHANGED */, listener, thisObject);
         if (!dispatcher.hasEventListeners("FlavorChanged" /* Events.FLAVOR_CHANGED */)) {
-            this.eventDispatchers.delete(flavorType);
+            this.#eventDispatchers.delete(flavorType);
         }
     }
     flavor(flavorType) {
-        return this.flavorsInternal.get(flavorType) || null;
+        return this.#flavors.get(flavorType) || null;
     }
     flavors() {
-        return new Set(this.flavorsInternal.keys());
+        return new Set(this.#flavors.keys());
     }
 }
 const registeredListeners = [];

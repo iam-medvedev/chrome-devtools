@@ -5,6 +5,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { getMatchedStylesWithBlankRule } from '../../testing/StyleHelpers.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 async function setUpStyles() {
@@ -45,14 +46,11 @@ async function getTreeElement(matchedStyles, stylesPane, name, value, variables)
     return { matchedStyles, property, treeElement };
 }
 async function showTrace(property, matchedStyles, treeElement) {
-    let renderPromise = Promise.withResolvers();
-    const view = new Elements.CSSValueTraceView.CSSValueTraceView(sinon.stub().callsFake(input => {
-        renderPromise.resolve(input);
-    }));
-    await renderPromise.promise;
-    renderPromise = Promise.withResolvers();
+    const viewFunction = createViewFunctionStub(Elements.CSSValueTraceView.CSSValueTraceView);
+    const view = new Elements.CSSValueTraceView.CSSValueTraceView(viewFunction);
+    await viewFunction.nextInput;
     view.showTrace(property, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.ownerStyle, treeElement.parentPane(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map()));
-    return await renderPromise.promise;
+    return await viewFunction.nextInput;
 }
 describeWithMockConnection('CSSValueTraceView', () => {
     beforeEach(() => {

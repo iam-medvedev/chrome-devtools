@@ -5,6 +5,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ElementsComponents from './components/components.js';
 import { type ElementsTreeOutline, type UpdateRecord } from './ElementsTreeOutline.js';
 declare const enum TagType {
     OPENING = "OPENING_TAG",
@@ -13,8 +14,8 @@ declare const enum TagType {
 interface OpeningTagContext {
     tagType: TagType.OPENING;
     readonly adornerContainer: HTMLElement;
-    adorners: Adorners.Adorner.Adorner[];
-    styleAdorners: Adorners.Adorner.Adorner[];
+    adorners: Set<Adorners.Adorner.Adorner>;
+    styleAdorners: Set<Adorners.Adorner.Adorner>;
     readonly adornersThrottler: Common.Throttler.Throttler;
     canAddAttributes: boolean;
     slot?: Adorners.Adorner.Adorner;
@@ -128,7 +129,10 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         name: string;
     }): Adorners.Adorner.Adorner;
     removeAdorner(adornerToRemove: Adorners.Adorner.Adorner, context: OpeningTagContext): void;
-    removeAllAdorners(): void;
+    /**
+     * @param adornerType optional type of adorner to remove. If not provided, remove all adorners.
+     */
+    removeAdornersByType(adornerType?: ElementsComponents.AdornerManager.RegisteredAdorners): void;
     private updateAdorners;
     private updateAdornersInternal;
     updateStyleAdorners(): Promise<void>;

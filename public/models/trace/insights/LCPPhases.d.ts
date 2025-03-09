@@ -1,5 +1,6 @@
+import * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      *@description Title of an insight that provides details about the LCP metric, broken down by phases / parts.
@@ -44,7 +45,6 @@ export declare const UIStrings: {
     readonly noLcp: "No LCP detected";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
 interface LCPPhases {
     /**
      * The time between when the user initiates loading the page until when
@@ -66,7 +66,7 @@ interface LCPPhases {
      */
     renderDelay: Types.Timing.Milli;
 }
-export declare function isLCPPhases(model: InsightModel<{}, {}>): model is LCPPhasesInsightModel;
+export declare function isLCPPhases(model: InsightModel): model is LCPPhasesInsightModel;
 export type LCPPhasesInsightModel = InsightModel<typeof UIStrings, {
     lcpMs?: Types.Timing.Milli;
     lcpTs?: Types.Timing.Milli;
@@ -75,5 +75,5 @@ export type LCPPhasesInsightModel = InsightModel<typeof UIStrings, {
     lcpRequest?: Types.Events.SyntheticNetworkRequest;
     phases?: LCPPhases;
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): LCPPhasesInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LCPPhasesInsightModel;
 export {};

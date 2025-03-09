@@ -628,6 +628,13 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         this.#sideBar.setActiveInsight(insight);
         this.flameChart.setActiveInsight(insight);
+        if (insight) {
+            const selectedInsight = new SelectedInsight(insight);
+            UI.Context.Context.instance().setFlavor(SelectedInsight, selectedInsight);
+        }
+        else {
+            UI.Context.Context.instance().setFlavor(SelectedInsight, null);
+        }
     }
     /**
      * This "disables" the 3P checkbox in the toolbar.
@@ -1154,7 +1161,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (!isEnhancedTrace ||
             !Root.Runtime.experiments.isEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */)) {
             traceEvents = traceEvents.filter(event => {
-                return event.cat !== 'devtools.v8-source-rundown-sources';
+                return event.cat !== 'disabled-by-default-devtools.v8-source-rundown-sources';
             });
         }
         if (metadata) {
@@ -2586,6 +2593,17 @@ export class ActionDelegate {
                 return true;
         }
         return false;
+    }
+}
+/**
+ * Used to set the UI.Context when the user expands an Insight. This is only
+ * relied upon in the AI Agent code to know which agent to pick by default based
+ * on the context of the panel.
+ */
+export class SelectedInsight {
+    insight;
+    constructor(insight) {
+        this.insight = insight;
     }
 }
 //# sourceMappingURL=TimelinePanel.js.map

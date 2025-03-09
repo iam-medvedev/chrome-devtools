@@ -11,7 +11,6 @@ export default {
  */
 
 .combined-diff-view {
-  padding: var(--sys-size-6);
   display: flex;
   flex-direction: column;
   gap: var(--sys-size-5);
@@ -56,6 +55,11 @@ export default {
 
       .summary-right {
         flex-shrink: 0;
+
+        .copied {
+          padding-right: var(--sys-size-4);
+          font: var(--sys-typescale-body5-regular);
+        }
       }
 
       &::marker {

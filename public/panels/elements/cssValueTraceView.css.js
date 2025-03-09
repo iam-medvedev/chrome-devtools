@@ -11,7 +11,7 @@ export default {
  */
 
 .css-value-trace {
-  --cell-width: 2em;
+  --cell-width: 1.5em;
 
   display: grid;
   grid-template-columns: var(--cell-width) 1fr;
@@ -21,7 +21,6 @@ export default {
     grid-column-start: 1;
     width: var(--sys-size-9);
     height: var(--sys-size-9);
-    font-size: var(--sys-size-9);
     text-align: center;
     color: var(--icon-default);
     padding-top: var(--sys-size-4);

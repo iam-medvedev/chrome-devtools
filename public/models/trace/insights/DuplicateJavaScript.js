@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Extras from '../extras/extras.js';
 import * as Helpers from '../helpers/helpers.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /**
      * @description Title of an insight that identifies multiple copies of the same JavaScript sources, and recommends removing the duplication.
@@ -17,10 +17,8 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/DuplicateJavaScript.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function deps() {
-    return ['Scripts', 'NetworkRequests'];
-}
 function finalize(partialModel) {
+    const requests = [...partialModel.duplication.values().flatMap(array => array.map(v => v.script.request))].filter(e => !!e); // eslint-disable-line no-implicit-coercion
     return {
         insightKey: "DuplicateJavaScript" /* InsightKeys.DUPLICATE_JAVASCRIPT */,
         strings: UIStrings,
@@ -28,13 +26,12 @@ function finalize(partialModel) {
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
         state: Boolean(partialModel.duplication.values().next().value) ? 'fail' : 'pass',
-        // TODO(cjamcl): script network events.
-        // relatedEvents: [],
+        relatedEvents: [...new Set(requests)],
         ...partialModel,
     };
 }
 export function generateInsight(parsedTrace, context) {
-    const scriptEntries = [...parsedTrace.Scripts.scripts].filter(([_, script]) => {
+    const scripts = parsedTrace.Scripts.scripts.filter(script => {
         if (!context.navigation) {
             return false;
         }
@@ -43,7 +40,7 @@ export function generateInsight(parsedTrace, context) {
         }
         return Helpers.Timing.timestampIsInBounds(context.bounds, script.ts);
     });
-    const duplication = Extras.ScriptDuplication.computeScriptDuplication({ scripts: new Map(scriptEntries) });
+    const duplication = Extras.ScriptDuplication.computeScriptDuplication({ scripts });
     return finalize({ duplication });
 }
 //# sourceMappingURL=DuplicateJavaScript.js.map

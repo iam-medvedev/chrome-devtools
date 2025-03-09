@@ -101,7 +101,6 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     setOpenNewWindowForPopups(value: boolean): void;
     setDevicesDiscoveryConfig(config: Adb.Config): void;
     setDevicesUpdatesEnabled(enabled: boolean): void;
-    performActionOnRemotePage(pageId: string, action: string): void;
     openRemotePage(browserId: string, url: string): void;
     openNodeFrontend(): void;
     showContextMenuAtPoint(x: number, y: number, items: ContextMenuDescriptor[], document: Document): void;

@@ -13,8 +13,7 @@ export declare class ObjectWrapper<Events> implements EventTarget<Events> {
     hasEventListeners(eventType: keyof Events): boolean;
     dispatchEventToListeners<T extends keyof Events>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...[eventData]: EventPayloadToRestParameters<Events, T>): void;
 }
-type Constructor = new (...args: any[]) => {};
-export declare function eventMixin<Events, Base extends Constructor>(base: Base): {
+export declare function eventMixin<Events, Base extends Platform.Constructor.Constructor<object>>(base: Base): {
     new (...args: any[]): {
         "__#13@#events": ObjectWrapper<Events>;
         addEventListener<T extends keyof Events>(eventType: T, listener: (arg0: EventTargetEvent<Events[T]>) => void, thisObject?: Object): EventDescriptor<Events, T>;
@@ -24,4 +23,3 @@ export declare function eventMixin<Events, Base extends Constructor>(base: Base)
         dispatchEventToListeners<T extends keyof Events>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: EventPayloadToRestParameters<Events, T>): void;
     };
 } & Base;
-export {};

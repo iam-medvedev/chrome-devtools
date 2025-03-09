@@ -2,7 +2,8 @@ import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
-import type * as Workspace from '../models/workspace/workspace.js';
+import * as Persistence from '../models/persistence/persistence.js';
+import * as Workspace from '../models/workspace/workspace.js';
 import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
 export type MockAidaResponse = Omit<Host.AidaClient.AidaResponse, 'completed' | 'metadata'> & {
     metadata?: Host.AidaClient.AidaResponseMetadata;
@@ -35,11 +36,9 @@ export declare function createAiAssistancePanel(options?: {
     aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
     syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation;
 }): Promise<{
-    initialViewInput: AiAssistance.ViewInput;
     panel: AiAssistance.AiAssistancePanel;
-    view: import("sinon").SinonStub<[AiAssistance.ViewInput, unknown, HTMLElement], any>;
+    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.AiAssistancePanel>;
     aidaClient: Host.AidaClient.AidaClient;
-    expectViewUpdate: (action: () => void) => Promise<AiAssistance.ViewInput>;
     stubAidaCheckAccessPreconditions: (aidaAvailability: Host.AidaClient.AidaAccessPreconditions) => import("sinon").SinonStub<[], Promise<Host.AidaClient.AidaAccessPreconditions>>;
 }>;
 /**
@@ -49,14 +48,20 @@ export declare function createAiAssistancePanel(options?: {
 export declare function createPatchWidget(options?: {
     aidaClient?: Host.AidaClient.AidaClient;
 }): Promise<{
-    initialViewInput: AiAssistance.PatchWidget.ViewInput;
     panel: AiAssistance.PatchWidget.PatchWidget;
-    view: import("sinon").SinonStub<[AiAssistance.PatchWidget.ViewInput, unknown, HTMLElement], any>;
+    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
-    expectViewUpdate: (action: () => void) => Promise<AiAssistance.PatchWidget.ViewInput>;
 }>;
+export declare function initializePersistenceImplForTests(): void;
 export declare function cleanup(): void;
 export declare function openHistoryContextMenu(lastUpdate: AiAssistance.ViewInput, item: string): {
     contextMenu: import("../ui/legacy/ContextMenu.js").ContextMenu;
     id: number | undefined;
+};
+export declare function createTestFilesystem(fileSystemPath: string, files?: Array<{
+    path: string;
+    content: string;
+}>): {
+    project: Persistence.FileSystemWorkspaceBinding.FileSystem;
+    uiSourceCode: Workspace.UISourceCode.UISourceCode;
 };

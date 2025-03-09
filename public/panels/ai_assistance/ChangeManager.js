@@ -17,6 +17,62 @@ export class ChangeManager {
     #stylesheetMutex = new Common.Mutex.Mutex();
     #cssModelToStylesheetId = new Map();
     #stylesheetChanges = new Map();
+    async clear() {
+        const models = Array.from(this.#cssModelToStylesheetId.keys());
+        const results = await Promise.allSettled(models.map(async (model) => {
+            await this.#onCssModelDisposed({ data: model });
+        }));
+        this.#cssModelToStylesheetId.clear();
+        this.#stylesheetChanges.clear();
+        const firstFailed = results.find(result => result.status === 'rejected');
+        if (firstFailed) {
+            throw new Error(firstFailed.reason);
+        }
+    }
+    async addChange(cssModel, frameId, change) {
+        const stylesheetId = await this.#getStylesheet(cssModel, frameId);
+        const changes = this.#stylesheetChanges.get(stylesheetId) || [];
+        const existingChange = changes.find(c => c.className === change.className);
+        if (existingChange) {
+            Object.assign(existingChange.styles, change.styles);
+            // This combines all style changes for a given element,
+            // regardless of the conversation they originated from, into a single rule.
+            // While separating these changes by conversation would be ideal,
+            // it currently causes crashes in the Styles tab when duplicate selectors exist (crbug.com/393515428).
+            // This workaround avoids that crash.
+            existingChange.groupId = change.groupId;
+        }
+        else {
+            changes.push(change);
+        }
+        const content = this.formatChangesForInspectoStylesheet(changes);
+        await cssModel.setStyleSheetText(stylesheetId, content, true);
+        this.#stylesheetChanges.set(stylesheetId, changes);
+        return content;
+    }
+    formatChangesForPatching(groupId, includeSourceLocation = false) {
+        return Array.from(this.#stylesheetChanges.values())
+            .flatMap(changesPerStylesheet => changesPerStylesheet.filter(change => change.groupId === groupId)
+            .map(change => this.#formatChange(change, includeSourceLocation)))
+            .join('\n\n');
+    }
+    formatChangesForInspectoStylesheet(changes) {
+        return changes
+            .map(change => {
+            return `.${change.className} {
+  ${change.selector}& {
+${formatStyles(change.styles, 4)}
+  }
+}`;
+        })
+            .join('\n');
+    }
+    #formatChange(change, includeSourceLocation = false) {
+        const sourceLocation = includeSourceLocation && change.sourceLocation ? `/* related resource: ${change.sourceLocation} */\n` : '';
+        return `${sourceLocation}${change.selector} {
+${formatStyles(change.styles)}
+}`;
+    }
     async #getStylesheet(cssModel, frameId) {
         return await this.#stylesheetMutex.run(async () => {
             let frameToStylesheet = this.#cssModelToStylesheetId.get(cssModel);
@@ -53,55 +109,6 @@ export class ChangeManager {
                 throw new Error(firstFailed.reason);
             }
         });
-    }
-    async clear() {
-        const models = Array.from(this.#cssModelToStylesheetId.keys());
-        const results = await Promise.allSettled(models.map(async (model) => {
-            await this.#onCssModelDisposed({ data: model });
-        }));
-        this.#cssModelToStylesheetId.clear();
-        this.#stylesheetChanges.clear();
-        const firstFailed = results.find(result => result.status === 'rejected');
-        if (firstFailed) {
-            throw new Error(firstFailed.reason);
-        }
-    }
-    async addChange(cssModel, frameId, change) {
-        const stylesheetId = await this.#getStylesheet(cssModel, frameId);
-        const changes = this.#stylesheetChanges.get(stylesheetId) || [];
-        const existingChange = changes.find(c => c.className === change.className);
-        if (existingChange) {
-            Object.assign(existingChange.styles, change.styles);
-            // This combines all style changes for a given element,
-            // regardless of the conversation they originated from, into a single rule.
-            // While separating these changes by conversation would be ideal,
-            // it currently causes crashes in the Styles tab when duplicate selectors exist (crbug.com/393515428).
-            // This workaround avoids that crash.
-            existingChange.groupId = change.groupId;
-        }
-        else {
-            changes.push(change);
-        }
-        await cssModel.setStyleSheetText(stylesheetId, this.buildChanges(changes), true);
-        this.#stylesheetChanges.set(stylesheetId, changes);
-        return this.buildChanges(changes);
-    }
-    formatChanges(groupId) {
-        return Array.from(this.#stylesheetChanges.values())
-            .flatMap(changesPerStylesheet => changesPerStylesheet.filter(change => change.groupId === groupId).map(change => `${change.selector} {
-${formatStyles(change.styles)}
-}`)).join('\n\n');
-    }
-    buildChanges(changes) {
-        return changes
-            .map(change => {
-            return `.${change.className} {
-  ${change.selector}& {
-${formatStyles(change.styles, 4)}
-  }
-}`;
-        })
-            .join('\n');
     }
 }
 //# sourceMappingURL=ChangeManager.js.map

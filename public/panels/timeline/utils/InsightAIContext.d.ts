@@ -10,8 +10,8 @@ import { AICallTree } from './AICallTree.js';
  */
 export declare class ActiveInsight {
     #private;
-    constructor(insight: Trace.Insights.Types.InsightModel<{}, {}>, parsedTrace: Trace.Handlers.Types.ParsedTrace);
-    get insight(): Readonly<Trace.Insights.Types.InsightModel<{}, {}>>;
+    constructor(insight: Trace.Insights.Types.InsightModel, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    get insight(): Readonly<Trace.Insights.Types.InsightModel>;
     get parsedTrace(): Trace.Handlers.Types.ParsedTrace;
     title(): string;
 }
@@ -19,10 +19,18 @@ export declare class AIQueries {
     /**
      * Returns the set of network requests that occurred within the timeframe of this Insight.
      */
-    static networkRequests(insight: Trace.Insights.Types.InsightModel<{}, {}>, parsedTrace: Trace.Handlers.Types.ParsedTrace): readonly Trace.Types.Events.SyntheticNetworkRequest[];
+    static networkRequests(insight: Trace.Insights.Types.InsightModel, parsedTrace: Trace.Handlers.Types.ParsedTrace): readonly Trace.Types.Events.SyntheticNetworkRequest[];
+    /**
+     * Returns the single network request. We do not check to filter this by the
+     * bounds of the insight, because the only way that the LLM has found this
+     * request is by first inspecting a summary of relevant network requests for
+     * the given insight. So if it then looks up a request by URL, we know that
+     * is a valid and relevant request.
+     */
+    static networkRequest(parsedTrace: Trace.Handlers.Types.ParsedTrace, url: string): Trace.Types.Events.SyntheticNetworkRequest | null;
     /**
      * Returns an AI Call Tree representing the activity on the main thread for
      * the relevant time range of the given insight.
      */
-    static mainThreadActivity(insight: Trace.Insights.Types.InsightModel<{}, {}>, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
+    static mainThreadActivity(insight: Trace.Insights.Types.InsightModel, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
 }

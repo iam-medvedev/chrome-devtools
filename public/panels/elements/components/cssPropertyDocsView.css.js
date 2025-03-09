@@ -10,10 +10,6 @@ export default {
  * found in the LICENSE file.
  */
 
-:host {
-  padding: 6px;
-}
-
 .docs-popup-wrapper {
   max-width: 350px;
   font-size: 12px;

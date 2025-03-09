@@ -11,7 +11,7 @@ declare const FilmStripView_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.HBox;
 export declare class FilmStripView extends FilmStripView_base {
     #private;
-    private statusPlaceholder?;
+    private statusLabel;
     private zeroTime;
     constructor();
     static setImageData(imageElement: HTMLImageElement, dataUri: string | null): void;
@@ -21,7 +21,7 @@ export declare class FilmStripView extends FilmStripView_base {
     private onMouseEvent;
     private onDoubleClick;
     reset(): void;
-    setStatusPlaceholder(element: UI.Widget.Widget): void;
+    setStatusText(text: string): void;
 }
 export declare const enum Events {
     FRAME_SELECTED = "FrameSelected",

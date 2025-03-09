@@ -1,5 +1,6 @@
+import type * as Handlers from '../handlers/handlers.js';
 import type * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
     readonly title: "Optimize viewport for mobile";
@@ -9,9 +10,8 @@ export declare const UIStrings: {
     readonly description: "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile.";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['Meta', 'UserInteractions'];
 export type ViewportInsightModel = InsightModel<typeof UIStrings, {
     mobileOptimized: boolean | null;
     viewportEvent?: Types.Events.ParseMetaViewport;
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): ViewportInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ViewportInsightModel;

@@ -100,7 +100,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             });
             const component = await renderComponent();
             assert.isOk(component.shadowRoot);
-            const button = component.shadowRoot.querySelector('devtools-button[data-ask-ai]');
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
         });
         it('sets the context when the user clicks the button', async () => {
@@ -112,7 +112,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             });
             const component = await renderComponent();
             assert.isOk(component.shadowRoot);
-            const button = component.shadowRoot.querySelector('devtools-button[data-ask-ai]');
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
             sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction')
                 .withArgs(sinon.match(/drjones\.performance-insight-context/))
@@ -143,7 +143,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             });
             const component = await renderComponent();
             assert.isOk(component.shadowRoot);
-            const button = component.shadowRoot.querySelector('devtools-button[data-ask-ai]');
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isNull(button);
         });
         it('does not render the "Ask AI" button when the perf agent is enabled but the insights ai is not', async () => {
@@ -155,7 +155,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             });
             const component = await renderComponent();
             assert.isOk(component.shadowRoot);
-            const button = component.shadowRoot.querySelector('devtools-button[data-ask-ai]');
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isNull(button);
         });
     });

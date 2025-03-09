@@ -16,7 +16,7 @@ class StorageBucketModelListener {
     events(eventType) {
         let bucketEvents = this.#bucketEvents.get(eventType);
         if (!bucketEvents) {
-            bucketEvents = new Array();
+            bucketEvents = [];
             this.#bucketEvents.set(eventType, bucketEvents);
         }
         return bucketEvents;

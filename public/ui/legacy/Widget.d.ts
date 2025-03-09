@@ -10,7 +10,7 @@ export declare class WidgetConfig<WidgetT extends Widget & WidgetParams, WidgetP
     constructor(widgetClass: WidgetConstructor<WidgetT, WidgetParams>, widgetParams?: WidgetParams | undefined);
 }
 export declare function widgetConfig<WidgetT extends Widget & WidgetParams, WidgetParams>(widgetClass: WidgetConstructor<WidgetT, WidgetParams>, widgetParams?: WidgetParams): WidgetConfig<any, any>;
-export declare class WidgetElement<WidgetT extends Widget & WidgetParams, WidgetParams = {}> extends HTMLElement {
+export declare class WidgetElement<WidgetT extends Widget & WidgetParams, WidgetParams = object> extends HTMLElement {
     #private;
     createWidget(): WidgetT;
     set widgetConfig(config: WidgetConfig<WidgetT, WidgetParams>);

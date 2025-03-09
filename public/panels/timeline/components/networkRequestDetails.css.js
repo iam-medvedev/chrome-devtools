@@ -26,9 +26,12 @@ export default {
   margin-right: 4px;
 }
 
+.network-request-details-content {
+  border-bottom: 1px solid var(--sys-color-divider);
+}
+
 .network-request-details-cols {
   display: flex;
-  border-bottom: 1px solid var(--sys-color-divider);
 }
 
 :host {
@@ -41,7 +44,7 @@ export default {
 
 .network-request-details-row {
   padding: 0 10px;
-  min-height: 20px;
+  min-height: min-content;
 }
 
 .title {

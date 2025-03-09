@@ -64,7 +64,7 @@ const UIStrings = {
     /**
      *@description Title of an action that reloads the tab currently being debugged by DevTools
      */
-    reloadDebuggedTab: 'Reload',
+    reloadDebuggedTab: 'Reload page',
     /**
      *@description Title of an action that reloads the DevTools
      */
@@ -419,7 +419,6 @@ export class InspectorView extends VBox {
                     },
                     dismiss: false,
                     buttonVariant: "primary" /* Buttons.Button.Variant.PRIMARY */,
-                    icon: 'refresh',
                     jslogContext: 'main.debug-reload',
                 },
             ], undefined, 'reload-required');
@@ -444,6 +443,7 @@ export class InspectorView extends VBox {
                     highlight: true,
                     delegate: () => reloadDevTools(),
                     dismiss: false,
+                    buttonVariant: "primary" /* Buttons.Button.Variant.PRIMARY */,
                     jslogContext: 'main.debug-reload',
                 },
             ], undefined, 'reload-required');
@@ -463,6 +463,7 @@ export class InspectorView extends VBox {
                     highlight: true,
                     delegate: () => callback(),
                     dismiss: true,
+                    buttonVariant: "tonal" /* Buttons.Button.Variant.TONAL */,
                     jslogContext: 'select-folder',
                 },
             ], undefined, 'select-override-folder');

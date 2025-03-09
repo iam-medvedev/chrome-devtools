@@ -72,9 +72,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * "enable experimental performance insights" experiment. This is used to enable
  * us to ship incrementally without turning insights on by default for all
  * users. */
-const EXPERIMENTAL_INSIGHTS = new Set([
-    'NetworkDependencyTree',
-]);
+const EXPERIMENTAL_INSIGHTS = new Set([]);
 /**
  * Every insight (INCLUDING experimental ones).
  *

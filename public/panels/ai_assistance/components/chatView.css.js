@@ -144,6 +144,22 @@ export default {
       border: 1px solid var(--sys-color-neutral-outline);
       border-radius: var(--sys-shape-corner-small);
     }
+
+    .loading {
+      margin: var(--sys-size-4) 0;
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      height: var(--sys-size-18);
+      width: var(--sys-size-19);
+      background-color: var(--sys-color-surface3);
+      border-radius: var(--sys-shape-corner-small);
+      border: 1px solid var(--sys-color-neutral-outline);
+
+      devtools-spinner {
+        color: var(--sys-color-state-disabled);
+      }
+    }
   }
 }
 
@@ -310,6 +326,22 @@ export default {
       border: 1px solid var(--sys-color-neutral-outline);
       width: fit-content;
       vertical-align: bottom;
+    }
+  }
+
+  .unavailable-image {
+    margin: var(--sys-size-4) 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    height: var(--sys-size-17);
+    width: var(--sys-size-18);
+    background-color: var(--sys-color-surface3);
+    border-radius: var(--sys-shape-corner-small);
+    border: 1px solid var(--sys-color-neutral-outline);
+
+    devtools-icon {
+      color: var(--sys-color-state-disabled);
     }
   }
 }
@@ -748,6 +780,13 @@ main {
     height: var(--sys-size-14);
     padding-left: var(--sys-size-3);
 
+    devtools-spinner {
+      width: var(--sys-size-6);
+      height: var(--sys-size-6);
+      margin-left: var(--sys-size-3);
+      margin-right: var(--sys-size-3);
+    }
+
     & .difference-icon {
       color: var(--sys-color-on-tonal-container);
       width: var(--sys-size-8);
@@ -798,24 +837,37 @@ main {
     --code-block-background-color: var(--sys-color-surface1);
   }
 
-  .workspace {
+  .footer {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin: var(--sys-size-5);
-  }
+    margin: var(--sys-size-5) 0;
 
-  .selected-folder {
-    margin: var(--sys-size-3) var(--sys-size-3) 0 0;
-  }
+    .disclaimer-link {
+      align-self: center;
+    }
 
-  .change-workspace {
-    display: flex;
-    flex-direction: row;
-  }
+    .selected-folder {
+      margin: var(--sys-size-3) var(--sys-size-3) 0 0;
+    }
 
-  .patch-tmp-message {
-    padding: var(--sys-size-4);
+    .change-workspace {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .apply-to-workspace-container {
+      display: flex;
+      align-items: center;
+      gap: var(--sys-size-3);
+
+      devtools-icon {
+        /* var(--sys-size-8) is too small and var(--sys-size-9) is too big. */
+        width: 18px;
+        height: 18px;
+        margin-left: var(--sys-size-2);
+      }
+    }
   }
 }
 

@@ -5,25 +5,30 @@ import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
+import { data as networkRequestsHandlerData } from './NetworkRequestsHandler.js';
 const scriptById = new Map();
+export function deps() {
+    return ['Meta', 'NetworkRequests'];
+}
 export function reset() {
     scriptById.clear();
 }
 export function handleEvent(event) {
-    const getOrMakeScript = (scriptIdAsNumber) => {
+    const getOrMakeScript = (isolate, scriptIdAsNumber) => {
         const scriptId = String(scriptIdAsNumber);
-        return Platform.MapUtilities.getWithDefault(scriptById, scriptId, () => ({ scriptId, frame: '', ts: 0 }));
+        const key = `${isolate}.${scriptId}`;
+        return Platform.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: '', ts: 0 }));
     };
     if (Types.Events.isTargetRundownEvent(event) && event.args.data) {
-        const { scriptId, frame } = event.args.data;
-        const script = getOrMakeScript(scriptId);
+        const { isolate, scriptId, frame } = event.args.data;
+        const script = getOrMakeScript(isolate, scriptId);
         script.frame = frame;
         script.ts = event.ts;
         return;
     }
     if (Types.Events.isV8SourceRundownEvent(event)) {
-        const { scriptId, url, sourceUrl, sourceMapUrl } = event.args.data;
-        const script = getOrMakeScript(scriptId);
+        const { isolate, scriptId, url, sourceUrl, sourceMapUrl } = event.args.data;
+        const script = getOrMakeScript(isolate, scriptId);
         script.url = url;
         if (sourceUrl) {
             script.sourceUrl = sourceUrl;
@@ -34,14 +39,14 @@ export function handleEvent(event) {
         return;
     }
     if (Types.Events.isV8SourceRundownSourcesScriptCatchupEvent(event)) {
-        const { scriptId, sourceText } = event.args.data;
-        const script = getOrMakeScript(scriptId);
+        const { isolate, scriptId, sourceText } = event.args.data;
+        const script = getOrMakeScript(isolate, scriptId);
         script.content = sourceText;
         return;
     }
     if (Types.Events.isV8SourceRundownSourcesLargeScriptCatchupEvent(event)) {
-        const { scriptId, sourceText } = event.args.data;
-        const script = getOrMakeScript(scriptId);
+        const { isolate, scriptId, sourceText } = event.args.data;
+        const script = getOrMakeScript(isolate, scriptId);
         script.content = (script.content ?? '') + sourceText;
         return;
     }
@@ -55,7 +60,14 @@ function findFrame(meta, frameId) {
     }
     return null;
 }
+function findNetworkRequest(networkRequests, script) {
+    return networkRequests.find(request => request.args.data.url === script.url) ?? null;
+}
 export async function finalize(options) {
+    const networkRequests = [...networkRequestsHandlerData().byId.values()];
+    for (const script of scriptById.values()) {
+        script.request = findNetworkRequest(networkRequests, script) ?? undefined;
+    }
     if (!options.resolveSourceMap) {
         return;
     }
@@ -102,7 +114,7 @@ export async function finalize(options) {
 }
 export function data() {
     return {
-        scripts: scriptById,
+        scripts: [...scriptById.values()],
     };
 }
 //# sourceMappingURL=ScriptsHandler.js.map

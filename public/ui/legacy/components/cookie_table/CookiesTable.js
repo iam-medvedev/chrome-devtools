@@ -127,7 +127,7 @@ export class CookiesTable extends UI.Widget.VBox {
     constructor(renderInline, saveCallback, refreshCallback, selectedCallback, deleteCallback, view) {
         super();
         if (!view) {
-            view = (input, output, target) => {
+            view = (input, _, target) => {
                 // clang-format off
                 render(html `
           <devtools-data-grid
@@ -136,6 +136,7 @@ export class CookiesTable extends UI.Widget.VBox {
                striped
                ?inline=${input.renderInline}
                @edit=${input.onEdit}
+               @create=${input.onCreate}
                @refresh=${input.onRefresh}
                @delete=${input.onDelete}
                @contextmenu=${input.onContextMenu}
@@ -284,6 +285,7 @@ export class CookiesTable extends UI.Widget.VBox {
             schemeBindingEnabled: this.schemeBindingEnabled,
             portBindingEnabled: this.portBindingEnabled,
             onEdit: event => this.onUpdateCookie(event.detail.node, event.detail.columnId, event.detail.valueBeforeEditing, event.detail.newText),
+            onCreate: event => this.onCreateCookie(event.detail),
             onRefresh: () => this.refresh(),
             onDelete: event => this.onDeleteCookie(event.detail),
             onSelect: event => this.onSelect(event.detail),

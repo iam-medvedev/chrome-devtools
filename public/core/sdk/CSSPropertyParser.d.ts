@@ -1,3 +1,4 @@
+import type * as Platform from '../../core/platform/platform.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 /**
  * Extracts information about font variation settings assuming
@@ -51,15 +52,14 @@ export interface Match {
     readonly node: CodeMirror.SyntaxNode;
     computedText?(): string | null;
 }
-export type Constructor<T = any> = (abstract new (...args: any[]) => T) | (new (...args: any[]) => T);
 export interface Matcher<MatchT extends Match> {
-    readonly matchType: Constructor<MatchT>;
+    readonly matchType: Platform.Constructor.ConstructorOrAbstract<MatchT>;
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): MatchT | null;
 }
-export declare function matcherBase<MatchT extends Match>(matchT: Constructor<MatchT>): {
+export declare function matcherBase<MatchT extends Match>(matchT: Platform.Constructor.ConstructorOrAbstract<MatchT>): {
     new (): {
-        matchType: Constructor<MatchT>;
+        matchType: Platform.Constructor.ConstructorOrAbstract<MatchT>;
         accepts(_propertyName: string): boolean;
         matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): MatchT | null;
     };
@@ -70,7 +70,7 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     constructor(ast: SyntaxTree, matchers: Array<Matcher<Match>>);
     protected leave({ node }: SyntaxNodeRef): void;
     matchText(node: CodeMirror.SyntaxNode): void;
-    hasMatches(...matchTypes: Array<Constructor<Match>>): boolean;
+    hasMatches(...matchTypes: Array<Platform.Constructor.Constructor<Match>>): boolean;
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
     hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
     hasUnresolvedVarsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;

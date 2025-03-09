@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Bindings from '../../models/bindings/bindings.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AI_ASSISTANCE_CSS_CLASS_NAME, FREESTYLER_BINDING_NAME, FREESTYLER_WORLD_NAME, freestylerBinding, injectedFunctions } from './injected.js';
 /**
@@ -99,7 +100,7 @@ export class ExtensionScope {
         }
         return response;
     }
-    static getSelectorForRule(matchedStyles) {
+    static getStyleRuleFromMatchesStyles(matchedStyles) {
         let styleRule;
         for (const style of matchedStyles.nodeStyles()) {
             // Ignore inline as we can't override them
@@ -114,18 +115,18 @@ export class ExtensionScope {
                 break;
             }
             if (rule instanceof SDK.CSSRule.CSSStyleRule) {
-                // If the rule we created was our own return directly
-                if (rule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME)) {
-                    // We know that the last character will be & so remove it
-                    const text = rule.selectors[0].text;
-                    return text.at(-1) === '&' ? text.slice(0, -1) : text;
-                }
                 styleRule = rule;
                 break;
             }
         }
-        if (!styleRule) {
-            return '';
+        return styleRule;
+    }
+    static getSelectorsFromStyleRule(styleRule, matchedStyles) {
+        // If the rule we created was our own return directly
+        if (styleRule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME)) {
+            // We know that the last character will be & so remove it
+            const text = styleRule.selectors[0].text;
+            return text.at(-1) === '&' ? text.slice(0, -1) : text;
         }
         const selectorIndexes = matchedStyles.getMatchingSelectors(styleRule);
         // TODO: Compute the selector when nested selector is present
@@ -155,7 +156,25 @@ export class ExtensionScope {
         })
             .join('.');
     }
-    async #computeSelectorFromElement(remoteObject) {
+    static getSourceLocation(styleRule) {
+        if (!styleRule.styleSheetId) {
+            return;
+        }
+        const styleSheetHeader = styleRule.cssModel().styleSheetHeaderForId(styleRule.styleSheetId);
+        if (!styleSheetHeader) {
+            return;
+        }
+        const range = styleRule.selectorRange();
+        if (!range) {
+            return;
+        }
+        const lineNumber = styleSheetHeader.lineNumberInSource(range.startLine);
+        const columnNumber = styleSheetHeader.columnNumberInSource(range.startLine, range.startColumn);
+        const location = new SDK.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
+        const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(location);
+        return uiLocation?.linkText(/* skipTrim= */ true, /* showColumnNumber= */ true);
+    }
+    async #computeContextFromElement(remoteObject) {
         if (!remoteObject.objectId) {
             throw new Error('DOMModel is not found');
         }
@@ -174,16 +193,28 @@ export class ExtensionScope {
         try {
             const matchedStyles = await cssModel.getMatchedStyles(node.id);
             if (!matchedStyles) {
-                throw new Error('No Matching styles');
+                throw new Error('No matching styles');
             }
-            const selector = ExtensionScope.getSelectorForRule(matchedStyles);
-            if (selector) {
-                return selector;
+            const styleRule = ExtensionScope.getStyleRuleFromMatchesStyles(matchedStyles);
+            if (!styleRule) {
+                throw new Error('No style rule found');
             }
+            const selector = ExtensionScope.getSelectorsFromStyleRule(styleRule, matchedStyles);
+            if (!selector) {
+                throw new Error('No selector found');
+            }
+            return {
+                selector,
+                sourceLocation: ExtensionScope.getSourceLocation(styleRule),
+            };
         }
         catch {
+            // no-op to allow the fallback below to run.
         }
-        return ExtensionScope.getSelectorForNode(node);
+        // Fallback
+        return {
+            selector: ExtensionScope.getSelectorForNode(node),
+        };
     }
     async #bindingCalled(executionContext, event) {
         const { data } = event;
@@ -202,10 +233,12 @@ export class ExtensionScope {
                 this.#simpleEval(executionContext, `freestyler.getElement(${id})`, false)
             ]);
             const arg = JSON.parse(args.object.value);
-            // TODO: Should this a be a *?
-            let selector = '';
+            let context = {
+                // TODO: Should this a be a *?
+                selector: ''
+            };
             try {
-                selector = await this.#computeSelectorFromElement(element.object);
+                context = await this.#computeContextFromElement(element.object);
             }
             catch (err) {
                 console.error(err);
@@ -215,7 +248,8 @@ export class ExtensionScope {
             }
             const styleChanges = await this.#changeManager.addChange(cssModel, this.frameId, {
                 groupId: this.#agentId,
-                selector,
+                sourceLocation: context.sourceLocation,
+                selector: context.selector,
                 className: arg.className,
                 styles: arg.styles,
             });

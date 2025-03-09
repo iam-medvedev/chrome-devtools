@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('UserActionRow', () => {
     function createComponent(props) {
-        const view = sinon.stub();
+        const view = createViewFunctionStub(AiAssistance.UserActionRow);
         const component = new AiAssistance.UserActionRow(undefined, view);
         Object.assign(component, props);
         component.wasShown();
@@ -19,16 +20,14 @@ describeWithEnvironment('UserActionRow', () => {
             onSuggestionClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
-        assert.isTrue(view.calledOnce);
+        assert.strictEqual(view.callCount, 1);
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isShowingFeedbackForm).equals(false);
-            viewInput.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
+            expect(view.input.isShowingFeedbackForm).equals(false);
+            view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
-        assert.isTrue(view.calledTwice);
+        assert.strictEqual(view.callCount, 2);
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isShowingFeedbackForm).equals(true);
+            expect(view.input.isShowingFeedbackForm).equals(true);
         }
     });
     it('should not show the feedback form when canShowFeedbackForm is false', async () => {
@@ -38,16 +37,14 @@ describeWithEnvironment('UserActionRow', () => {
             onSuggestionClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
-        assert.isTrue(view.calledOnce);
+        assert.strictEqual(view.callCount, 1);
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isShowingFeedbackForm).equals(false);
-            viewInput.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
+            expect(view.input.isShowingFeedbackForm).equals(false);
+            view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
-        assert.isTrue(view.calledTwice);
+        assert.strictEqual(view.callCount, 2);
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isShowingFeedbackForm).equals(false);
+            expect(view.input.isShowingFeedbackForm).equals(false);
         }
     });
     it('should disable the submit button when the input is empty', async () => {
@@ -57,26 +54,22 @@ describeWithEnvironment('UserActionRow', () => {
             onSuggestionClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
-        assert.isTrue(view.calledOnce);
+        assert.strictEqual(view.callCount, 1);
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isSubmitButtonDisabled).equals(true);
-            viewInput.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
+            expect(view.input.isSubmitButtonDisabled).equals(true);
+            view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
-        assert.isTrue(view.calledTwice);
+        assert.strictEqual(view.callCount, 2);
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isShowingFeedbackForm).equals(true);
-            viewInput.onInputChange('test');
+            expect(view.input.isShowingFeedbackForm).equals(true);
+            view.input.onInputChange('test');
         }
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isSubmitButtonDisabled).equals(false);
-            viewInput.onSubmit(new SubmitEvent('submit'));
+            expect(view.input.isSubmitButtonDisabled).equals(false);
+            view.input.onSubmit(new SubmitEvent('submit'));
         }
         {
-            const [viewInput] = view.lastCall.args;
-            expect(viewInput.isSubmitButtonDisabled).equals(true);
+            expect(view.input.isSubmitButtonDisabled).equals(true);
         }
     });
 });

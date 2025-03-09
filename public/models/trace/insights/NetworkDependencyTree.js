@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightCategory } from './types.js';
+import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /**
      * @description Title of an insight that recommends avoiding chaining critical requests.
@@ -38,9 +38,6 @@ const nonCriticalResourceTypes = new Set([
     "Fetch" /* Protocol.Network.ResourceType.Fetch */,
     "EventSource" /* Protocol.Network.ResourceType.EventSource */,
 ]);
-export function deps() {
-    return ['NetworkRequests'];
-}
 function finalize(partialModel) {
     return {
         insightKey: "NetworkDependencyTree" /* InsightKeys.NETWORK_DEPENDENCY_TREE */,

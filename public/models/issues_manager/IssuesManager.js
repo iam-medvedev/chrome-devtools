@@ -18,6 +18,7 @@ import { GenericIssue } from './GenericIssue.js';
 import { HeavyAdIssue } from './HeavyAdIssue.js';
 import { LowTextContrastIssue } from './LowTextContrastIssue.js';
 import { MixedContentIssue } from './MixedContentIssue.js';
+import { PartitioningBlobURLIssue } from './PartitioningBlobURLIssue.js';
 import { PropertyRuleIssue } from './PropertyRuleIssue.js';
 import { QuirksModeIssue } from './QuirksModeIssue.js';
 import { SelectElementAccessibilityIssue } from './SelectElementAccessibilityIssue.js';
@@ -103,6 +104,10 @@ const issueCodeHandlers = new Map([
     [
         "StylesheetLoadingIssue" /* Protocol.Audits.InspectorIssueCode.StylesheetLoadingIssue */,
         StylesheetLoadingIssue.fromInspectorIssue,
+    ],
+    [
+        "PartitioningBlobURLIssue" /* Protocol.Audits.InspectorIssueCode.PartitioningBlobURLIssue */,
+        PartitioningBlobURLIssue.fromInspectorIssue,
     ],
     [
         "PropertyRuleIssue" /* Protocol.Audits.InspectorIssueCode.PropertyRuleIssue */,

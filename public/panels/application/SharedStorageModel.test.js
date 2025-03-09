@@ -13,8 +13,8 @@ class SharedStorageListener {
     #changeEvents;
     constructor(model) {
         this.#model = model;
-        this.#storagesWatched = new Array();
-        this.#accessEvents = new Array();
+        this.#storagesWatched = [];
+        this.#accessEvents = [];
         this.#changeEvents = new Map();
         this.#model.addEventListener("SharedStorageAdded" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_ADDED */, this.#sharedStorageAdded, this);
         this.#model.addEventListener("SharedStorageRemoved" /* Resources.SharedStorageModel.Events.SHARED_STORAGE_REMOVED */, this.#sharedStorageRemoved, this);
@@ -56,7 +56,7 @@ class SharedStorageListener {
     }
     #sharedStorageChanged(storage, event) {
         if (!this.#changeEvents.has(storage)) {
-            this.#changeEvents.set(storage, new Array());
+            this.#changeEvents.set(storage, []);
         }
         this.#changeEvents.get(storage)?.push(event.data);
     }

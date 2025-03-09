@@ -50,6 +50,7 @@ export declare class AggregatedIssue extends IssuesManager.Issue.Issue {
     getDescription(): IssuesManager.MarkdownIssueDescription.MarkdownIssueDescription | null;
     getCategory(): IssuesManager.Issue.IssueCategory;
     getAggregatedIssuesCount(): number;
+    getPartitioningBlobURLIssues(): Iterable<IssuesManager.PartitioningBlobURLIssue.PartitioningBlobURLIssue>;
     addInstance(issue: IssuesManager.Issue.Issue): void;
     getKind(): IssuesManager.Issue.IssueKind;
     isHidden(): boolean;

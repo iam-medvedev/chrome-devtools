@@ -1,8 +1,11 @@
 import * as Trace from '../../../models/trace/trace.js';
 export declare class PerformanceInsightFormatter {
     #private;
-    constructor(insight: Trace.Insights.Types.InsightModel<{}, {}>);
+    constructor(insight: Trace.Insights.Types.InsightModel);
     formatInsight(): string;
+}
+export interface NetworkRequestFormatOptions {
+    verbose: boolean;
 }
 export declare class TraceEventFormatter {
     /**
@@ -13,5 +16,5 @@ export declare class TraceEventFormatter {
      * Security; be careful about adding new data here. If you are in doubt please
      * talk to jacktfranklin@.
      */
-    static networkRequest(request: Trace.Types.Events.SyntheticNetworkRequest, parsedTrace: Trace.Handlers.Types.ParsedTrace): string;
+    static networkRequest(request: Trace.Types.Events.SyntheticNetworkRequest, parsedTrace: Trace.Handlers.Types.ParsedTrace, options: NetworkRequestFormatOptions): string;
 }

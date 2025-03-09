@@ -202,19 +202,19 @@ describeWithMockConnection('MetricCard', () => {
                 localValue: 100,
                 fieldValue: 200,
                 histogram: createMockHistogram(),
-                fieldDataPhases: [
-                    ['TTFB', 500],
-                    ['Phase 1', 0],
-                    ['Phase 2', 123.783458345],
+                phases: [
+                    ['TTFB', 500, 400],
+                    ['Phase 1', 0, 10],
+                    ['Phase 2', 123.783458345, 100],
                 ],
             };
             renderElementIntoDOM(view);
             await RenderCoordinator.done();
             const phaseTable = getPhaseTable(view);
             assert.deepEqual(phaseTable, [
-                ['TTFB', '500 ms'],
-                ['Phase 1', '0 ms'],
-                ['Phase 2', '124 ms'],
+                ['TTFB', '400 ms', '500 ms'],
+                ['Phase 1', '10 ms', '0 ms'],
+                ['Phase 2', '100 ms', '124 ms'],
             ]);
         });
     });

@@ -40,8 +40,8 @@ export declare class RuntimeModel extends SDKModel<EventTypes> {
     heapUsage(): Promise<{
         usedSize: number;
         totalSize: number;
-        embedderHeapUsedSize: number;
-        backingStorageSize: number;
+        embedderHeapUsedSize?: number;
+        backingStorageSize?: number;
     } | null>;
     inspectRequested(payload: Protocol.Runtime.RemoteObject, hints: unknown, executionContextId?: number): void;
     addBinding(event: Protocol.Runtime.AddBindingRequest): Promise<Protocol.ProtocolResponseWithError>;

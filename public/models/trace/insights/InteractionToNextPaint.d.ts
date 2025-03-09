@@ -1,5 +1,6 @@
+import type * as Handlers from '../handlers/handlers.js';
 import type { SyntheticInteractionPair } from '../types/TraceEvents.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Text to tell the user about the longest user interaction.
@@ -35,9 +36,8 @@ export declare const UIStrings: {
     readonly noInteractions: "No interactions detected";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['UserInteractions'];
 export type INPInsightModel = InsightModel<typeof UIStrings, {
     longestInteractionEvent?: SyntheticInteractionPair;
     highPercentileInteractionEvent?: SyntheticInteractionPair;
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): INPInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): INPInsightModel;

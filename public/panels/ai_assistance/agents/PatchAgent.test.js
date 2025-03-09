@@ -17,6 +17,7 @@ describeWithEnvironment('PatchAgent', () => {
     async function testAgent(mock, fileAgentMock) {
         const { project, uiSourceCode } = createFileSystemUISourceCode({
             url: Platform.DevToolsPath.urlString `file:///path/to/overrides/example.html`,
+            fileSystemPath: Platform.DevToolsPath.urlString `file:///path/to/overrides`,
             mimeType: 'text/html',
             content: 'content',
         });
@@ -40,7 +41,7 @@ describeWithEnvironment('PatchAgent', () => {
         assert.exists(action);
         assert.deepEqual(action, {
             type: 'action',
-            output: '{"files":["//path/to/overrides/example.html"]}',
+            output: '{"files":["example.html"]}',
             canceled: false,
             code: undefined,
         });
@@ -64,18 +65,14 @@ describeWithEnvironment('PatchAgent', () => {
         assert.exists(action);
         assert.deepEqual(action, {
             type: 'action',
-            output: '{"matches":[{"filepath":"//path/to/overrides/example.html","lineNumber":0,"columnNumber":0,"matchLength":7}]}',
+            output: '{"matches":[{"filepath":"example.html","lineNumber":0,"columnNumber":0,"matchLength":7}]}',
             canceled: false,
             code: undefined
         });
     });
     it('calls updateFiles', async () => {
         const responses = await testAgent([
-            [{
-                    explanation: '',
-                    functionCalls: [{ name: 'updateFiles', args: { files: ['//path/to/overrides/example.html'] } }]
-                }],
-            [{
+            [{ explanation: '', functionCalls: [{ name: 'updateFiles', args: { files: ['example.html'] } }] }], [{
                     explanation: 'done',
                 }]
         ], [[{

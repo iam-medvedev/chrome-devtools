@@ -1,5 +1,6 @@
+import * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Title of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated.
@@ -40,5 +41,4 @@ export type DOMSizeInsightModel = InsightModel<typeof UIStrings, {
     largeStyleRecalcs: Types.Events.UpdateLayoutTree[];
     maxDOMStats?: Types.Events.DOMStats;
 }>;
-export declare function deps(): ['Renderer', 'AuctionWorklets', 'DOMStats'];
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): DOMSizeInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DOMSizeInsightModel;

@@ -1,3 +1,4 @@
+import type * as Platform from '../platform/platform.js';
 export declare abstract class Linkifier {
     abstract linkify(object: Object, options?: Options): Node;
     static linkify(object: Object | null, options?: Options): Promise<Node>;
@@ -12,5 +13,5 @@ export declare function registerLinkifier(registration: LinkifierRegistration): 
 export declare function getApplicableRegisteredlinkifiers(object: Object): LinkifierRegistration[];
 export interface LinkifierRegistration {
     loadLinkifier: () => Promise<Linkifier>;
-    contextTypes?: (() => Function[]);
+    contextTypes?: () => Array<Platform.Constructor.Constructor<unknown>>;
 }

@@ -4,7 +4,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-import { InsightCategory, InsightWarning } from './types.js';
+import { InsightCategory, InsightWarning, } from './types.js';
 export const UIStrings = {
     /**
      *@description Title of an insight that provides a breakdown for how long it took to download the main document.
@@ -59,9 +59,6 @@ const TOO_SLOW_THRESHOLD_MS = 600;
 const TARGET_MS = 100;
 // Threshold for compression savings.
 const IGNORE_THRESHOLD_IN_BYTES = 1400;
-export function deps() {
-    return ['Meta', 'NetworkRequests'];
-}
 function getServerResponseTime(request) {
     const timing = request.args.data.timing;
     if (!timing) {

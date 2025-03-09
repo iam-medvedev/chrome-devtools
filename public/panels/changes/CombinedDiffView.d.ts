@@ -3,10 +3,12 @@ import type * as Diff from '../../third_party/diff/diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
 interface SingleDiffViewInput {
     fileName: string;
+    fileUrl: string;
     mimeType: string;
     icon: HTMLElement;
     diff: Diff.Diff.DiffArray;
-    onCopy: (diff: Diff.Diff.DiffArray) => void;
+    copied: boolean;
+    onCopy: (fileUrl: string, diff: Diff.Diff.DiffArray) => void;
 }
 export interface ViewInput {
     singleDiffViewInputs: SingleDiffViewInput[];

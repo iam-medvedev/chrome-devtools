@@ -1,7 +1,8 @@
 import * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
+import * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about why elements shift/move on the page. The causes for these shifts are referred to as culprits ("reasons"). */
     readonly title: "Layout shift culprits";
@@ -61,7 +62,6 @@ export type CLSCulpritsInsightModel = InsightModel<typeof UIStrings, {
     /** The top 3 shift root causes for each cluster. */
     topCulpritsByCluster: Map<Types.Events.SyntheticLayoutShiftCluster, Platform.UIString.LocalizedString[]>;
 }>;
-export declare function deps(): ['Meta', 'Animations', 'LayoutShifts', 'NetworkRequests'];
 export declare const enum AnimationFailureReasons {
     ACCELERATED_ANIMATIONS_DISABLED = "ACCELERATED_ANIMATIONS_DISABLED",
     EFFECT_SUPPRESSED_BY_DEVTOOLS = "EFFECT_SUPPRESSED_BY_DEVTOOLS",
@@ -108,4 +108,4 @@ export interface LayoutShiftRootCausesData {
     unsizedImages: Protocol.DOM.BackendNodeId[];
 }
 export declare function getNonCompositedFailure(animationEvent: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): CLSCulpritsInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): CLSCulpritsInsightModel;

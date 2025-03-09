@@ -1,5 +1,6 @@
+import * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type Checklist, type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type Checklist, type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      *@description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
@@ -40,7 +41,7 @@ export declare const UIStrings: {
     readonly noLcpResource: "No LCP resource detected because the LCP is not an image";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['NetworkRequests', 'PageLoadMetrics', 'LargestImagePaint', 'Meta'];
+export declare function isLCPDiscovery(model: InsightModel): model is LCPDiscoveryInsightModel;
 export type LCPDiscoveryInsightModel = InsightModel<typeof UIStrings, {
     lcpEvent?: Types.Events.LargestContentfulPaintCandidate;
     /** The network request for the LCP image, if there was one. */
@@ -48,4 +49,4 @@ export type LCPDiscoveryInsightModel = InsightModel<typeof UIStrings, {
     earliestDiscoveryTimeTs?: Types.Timing.Micro;
     checklist?: Checklist<'priorityHinted' | 'requestDiscoverable' | 'eagerlyLoaded'>;
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): LCPDiscoveryInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LCPDiscoveryInsightModel;

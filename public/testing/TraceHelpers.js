@@ -652,7 +652,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
             asyncCallToScheduler: new Map(),
         },
         Scripts: {
-            scripts: new Map(),
+            scripts: [],
         },
         ...overrides,
     };

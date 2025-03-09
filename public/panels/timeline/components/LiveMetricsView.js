@@ -386,19 +386,20 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             ?.percentiles?.p75;
         if (typeof ttfb !== 'number' || typeof loadDelay !== 'number' || typeof loadDuration !== 'number' ||
             typeof renderDelay !== 'number') {
-            return;
+            return null;
         }
-        return [
-            [i18nString(UIStrings.timeToFirstByte), Trace.Types.Timing.Milli(ttfb)],
-            [i18nString(UIStrings.resourceLoadDelay), Trace.Types.Timing.Milli(loadDelay)],
-            [i18nString(UIStrings.resourceLoadDuration), Trace.Types.Timing.Milli(loadDuration)],
-            [i18nString(UIStrings.elementRenderDelay), Trace.Types.Timing.Milli(renderDelay)],
-        ];
+        return {
+            timeToFirstByte: Trace.Types.Timing.Milli(ttfb),
+            resourceLoadDelay: Trace.Types.Timing.Milli(loadDelay),
+            resourceLoadTime: Trace.Types.Timing.Milli(loadDuration),
+            elementRenderDelay: Trace.Types.Timing.Milli(renderDelay),
+        };
     }
     #renderLcpCard() {
         const fieldData = this.#cruxManager.getSelectedFieldMetricData('largest_contentful_paint');
         const nodeLink = this.#lcpValue?.nodeRef?.link;
         const phases = this.#lcpValue?.phases;
+        const fieldPhases = this.#getLcpFieldPhases();
         // clang-format off
         return html `
       <devtools-metric-card .data=${{
@@ -409,12 +410,11 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
             tooltipContainer: this.#tooltipContainerEl,
             warnings: this.#lcpValue?.warnings,
             phases: phases && [
-                [i18nString(UIStrings.timeToFirstByte), phases.timeToFirstByte],
-                [i18nString(UIStrings.resourceLoadDelay), phases.resourceLoadDelay],
-                [i18nString(UIStrings.resourceLoadDuration), phases.resourceLoadTime],
-                [i18nString(UIStrings.elementRenderDelay), phases.elementRenderDelay],
+                [i18nString(UIStrings.timeToFirstByte), phases.timeToFirstByte, fieldPhases?.timeToFirstByte],
+                [i18nString(UIStrings.resourceLoadDelay), phases.resourceLoadDelay, fieldPhases?.resourceLoadDelay],
+                [i18nString(UIStrings.resourceLoadDuration), phases.resourceLoadTime, fieldPhases?.resourceLoadTime],
+                [i18nString(UIStrings.elementRenderDelay), phases.elementRenderDelay, fieldPhases?.elementRenderDelay],
             ],
-            fieldDataPhases: this.#getLcpFieldPhases(),
         }}>
         ${nodeLink ? html `
             <div class="related-info" slot="extra-info">

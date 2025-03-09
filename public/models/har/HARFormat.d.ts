@@ -51,7 +51,6 @@ export declare class HAREntry extends HARBase {
     time: number;
     request: HARRequest;
     response: HARResponse;
-    cache: {};
     timings: HARTimings;
     serverIPAddress: string | undefined;
     connection: string | undefined;

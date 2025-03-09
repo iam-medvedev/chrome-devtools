@@ -28,9 +28,7 @@ export interface ViewInput {
     }>) => void;
     onDelete: (event: CustomEvent<HTMLElement>) => void;
 }
-export interface ViewOutput {
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 /**
  * A helper typically used in the Application panel. Renders a split view
  * between a DataGrid displaying key-value pairs and a preview Widget.

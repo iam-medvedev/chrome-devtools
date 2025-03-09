@@ -72,6 +72,8 @@ function getIssueCode(details) {
             return "CorsIssue::PrivateNetworkAccessPermissionUnavailable" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_UNAVAILABLE */;
         case "PrivateNetworkAccessPermissionDenied" /* Protocol.Network.CorsError.PrivateNetworkAccessPermissionDenied */:
             return "CorsIssue::PrivateNetworkAccessPermissionDenied" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_DENIED */;
+        case "LocalNetworkAccessPermissionDenied" /* Protocol.Network.CorsError.LocalNetworkAccessPermissionDenied */:
+            return "CorsIssue::LocalNetworkAccessPermissionDenied" /* IssueCode.LOCAL_NETWORK_ACCESS_PERMISSION_DENIED */;
     }
 }
 export class CorsIssue extends Issue {
@@ -209,6 +211,7 @@ export class CorsIssue extends Issue {
             case "CorsIssue::UnexpectedPrivateNetworkAccess" /* IssueCode.UNEXPECTED_PRIVATE_NETWORK_ACCESS */:
             case "CorsIssue::PrivateNetworkAccessPermissionUnavailable" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_UNAVAILABLE */:
             case "CorsIssue::PrivateNetworkAccessPermissionDenied" /* IssueCode.PRIVATE_NETWORK_ACCESS_PERMISSION_DENIED */:
+            case "CorsIssue::LocalNetworkAccessPermissionDenied" /* IssueCode.LOCAL_NETWORK_ACCESS_PERMISSION_DENIED */:
                 return null;
         }
     }

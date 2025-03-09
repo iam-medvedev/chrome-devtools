@@ -42,18 +42,15 @@ describeWithEnvironment('RecordingListView', () => {
         await RenderCoordinator.done();
         const deleteButton = view.shadowRoot?.querySelector('.delete-recording-button');
         assert.isOk(deleteButton);
-        let forceResolve;
-        const eventSent = new Promise(resolve => {
-            forceResolve = resolve;
-            view.addEventListener('openrecording', resolve, { once: true });
-        });
+        const { resolve: forceResolve, promise: eventSent } = Promise.withResolvers();
+        view.addEventListener('openrecording', forceResolve, { once: true });
         dispatchKeyDownEvent(deleteButton, { key: 'Enter', bubbles: true });
         const maybeEvent = await Promise.race([
             eventSent,
             new Promise(resolve => queueMicrotask(() => resolve('timeout'))),
         ]);
         assert.strictEqual(maybeEvent, 'timeout');
-        forceResolve?.();
+        forceResolve();
     });
 });
 //# sourceMappingURL=RecordingListView.test.js.map

@@ -50,6 +50,7 @@ export function ruleMatch(selectorOrList, properties, options = {}) {
             selectorList,
             origin,
             style: createCSSStyle(cssProperties, range, styleSheetId),
+            styleSheetId,
         },
         matchingSelectors,
     };

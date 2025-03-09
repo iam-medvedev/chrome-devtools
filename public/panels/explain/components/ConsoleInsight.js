@@ -247,10 +247,12 @@ export class ConsoleInsight extends HTMLElement {
             UI.UIUtils.runCSSAnimationOnce(highlightedElement, 'highlighted');
             if (areDetailsAlreadyExpanded) {
                 highlightedElement.scrollIntoView({ behavior: 'auto' });
+                highlightedElement.focus();
             }
             else { // Wait for the details element to open before scrolling.
                 this.#referenceDetailsRef.value.addEventListener('transitionend', () => {
                     highlightedElement.scrollIntoView({ behavior: 'auto' });
+                    highlightedElement.focus();
                 }, { once: true });
             }
         }

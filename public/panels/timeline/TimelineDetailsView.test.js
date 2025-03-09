@@ -40,9 +40,10 @@ describeWithEnvironment('TimelineDetailsView', function () {
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         assert.deepEqual(Array.from(detailsContentElement.children).map(n => n.localName), ['devtools-performance-network-request-details']);
-        const children = detailsContentElement.firstElementChild?.shadowRoot?.children;
-        assert(children);
-        assert.deepEqual(Array.from(children).map(n => n.localName), ['div', 'div', 'div', 'div', 'devtools-related-insight-chips']);
+        const content = detailsContentElement.firstElementChild?.shadowRoot;
+        assert(content);
+        assert.lengthOf(content.querySelectorAll('div.network-request-details-row'), 10);
+        assert.lengthOf(content.querySelectorAll('devtools-related-insight-chips'), 1);
     });
     it('displays the details for a frame correctly', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');

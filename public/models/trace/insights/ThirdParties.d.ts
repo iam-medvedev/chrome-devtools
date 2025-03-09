@@ -1,6 +1,7 @@
 import * as Extras from '../extras/extras.js';
+import * as Handlers from '../handlers/handlers.js';
 import type * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
     readonly title: "3rd parties";
@@ -21,7 +22,6 @@ export declare const UIStrings: {
     readonly noThirdParties: "No third parties found";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function deps(): ['Meta', 'NetworkRequests', 'Renderer', 'ImagePainting'];
 export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
     eventsByEntity: Map<Extras.ThirdParties.Entity, Types.Events.Event[]>;
     summaryByEntity: Map<Extras.ThirdParties.Entity, Extras.ThirdParties.Summary>;
@@ -30,4 +30,4 @@ export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
     /** The entity for this navigation's URL. Any other entity is from a third party. */
     firstPartyEntity?: Extras.ThirdParties.Entity;
 }>;
-export declare function generateInsight(parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): ThirdPartiesInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ThirdPartiesInsightModel;

@@ -723,6 +723,9 @@ class ToolbarInputElement extends HTMLElement {
     item;
     datalist = null;
     connectedCallback() {
+        if (this.item) {
+            return;
+        }
         const list = this.getAttribute('list');
         if (list) {
             this.datalist = this.getRootNode().querySelector(`datalist[id="${list}"]`);

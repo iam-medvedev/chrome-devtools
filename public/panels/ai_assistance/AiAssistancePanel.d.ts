@@ -11,10 +11,10 @@ interface ToolbarViewInput {
     isDeleteHistoryButtonVisible: boolean;
 }
 export type ViewInput = ChatViewProps & ToolbarViewInput;
-interface ViewOutput {
+export interface PanelViewOutput {
     chatView?: ChatView;
 }
-type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+type View = (input: ViewInput, output: PanelViewOutput, target: HTMLElement) => void;
 export declare class AiAssistancePanel extends UI.Panel.Panel {
     #private;
     private view;

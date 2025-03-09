@@ -113,7 +113,7 @@ export class CookieControlsView extends UI.Widget.VBox {
     #view;
     #isGracePeriodActive;
     #thirdPartyControlsDict;
-    constructor(element, view = (input, output, target) => {
+    constructor(element, view = (input, _, target) => {
         // createSetting() allows us to initialize the settings with the UI binding values the first
         // time that the browser starts, and use the existing setting value for all subsequent uses.
         const enterpriseEnabledSetting = Common.Settings.Settings.instance().createSetting('enterprise-enabled', this.#thirdPartyControlsDict && this.#thirdPartyControlsDict.managedBlockThirdPartyCookies &&

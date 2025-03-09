@@ -115,7 +115,7 @@ export class BaseInsightComponent extends HTMLElement {
             UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, null);
             return;
         }
-        if (!this.data.insightSetKey) {
+        if (!this.data.insightSetKey || !this.model) {
             // Shouldn't happen, but needed to satisfy TS.
             return;
         }
@@ -257,7 +257,14 @@ export class BaseInsightComponent extends HTMLElement {
         <div class="insight-description">${md(insightModel.description)}</div>
         <div class="insight-content">${content}</div>
         ${this.#insightsAskAiEnabled ? html `
-          <devtools-button data-ask-ai @click=${this.#askAIButtonClick}>Ask AI (placeholder UX)</devtools-button>
+          <div class="ask-ai-btn-wrap">
+            <devtools-button class="ask-ai"
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+              .iconName=${'smart-assistant'}
+              data-insights-ask-ai
+              @click=${this.#askAIButtonClick}
+            >Ask AI</devtools-button>
+          </div>
         ` : Lit.nothing}
       </div>`;
         // clang-format on

@@ -7,9 +7,7 @@ export interface ViewInput {
     finalResult: Node[] | undefined;
     onToggle: () => void;
 }
-export interface ViewOutput {
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare class CSSValueTraceView extends UI.Widget.VBox {
     #private;
     constructor(view?: View);

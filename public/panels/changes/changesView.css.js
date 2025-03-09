@@ -26,6 +26,10 @@ export default {
   & .widget:first-child {
     height: 100%;
   }
+
+  .combined-diff-view {
+    padding: var(--sys-size-6);
+  }
 }
 
 :focus.selected {

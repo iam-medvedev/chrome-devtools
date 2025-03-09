@@ -637,5 +637,6 @@ export const NotRestoredReasonDescription = {
     WebViewMessageListenerInjected: { name: i18n.i18n.lockedLazyString('WebViewMessageListenerInjected') },
     WebViewSafeBrowsingAllowlistChanged: { name: i18n.i18n.lockedLazyString('WebViewSafeBrowsingAllowlistChanged') },
     WebViewDocumentStartJavascriptChanged: { name: i18n.i18n.lockedLazyString('WebViewDocumentStartJavascriptChanged') },
+    CacheControlNoStoreDeviceBoundSessionTerminated: { name: i18nLazyString(UIStrings.cacheControlNoStore) },
 };
 //# sourceMappingURL=BackForwardCacheStrings.js.map

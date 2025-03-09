@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
-export declare class ExtensionStorage extends Common.ObjectWrapper.ObjectWrapper<{}> {
+export declare class ExtensionStorage extends Common.ObjectWrapper.ObjectWrapper<Record<string, never>> {
     #private;
     constructor(model: ExtensionStorageModel, extensionId: string, name: string, storageArea: Protocol.Extensions.StorageArea);
     get model(): ExtensionStorageModel;

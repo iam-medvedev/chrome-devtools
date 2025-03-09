@@ -5,9 +5,7 @@ export class InsightActivated extends Event {
     model;
     insightSetKey;
     static eventName = 'insightactivated';
-    constructor(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    model, insightSetKey) {
+    constructor(model, insightSetKey) {
         super(InsightActivated.eventName, { bubbles: true, composed: true });
         this.model = model;
         this.insightSetKey = insightSetKey;

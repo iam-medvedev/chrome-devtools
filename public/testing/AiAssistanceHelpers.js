@@ -5,12 +5,16 @@ import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
+import * as Bindings from '../models/bindings/bindings.js';
+import * as Breakpoints from '../models/breakpoints/breakpoints.js';
 import * as Logs from '../models/logs/logs.js';
+import * as Persistence from '../models/persistence/persistence.js';
+import * as Workspace from '../models/workspace/workspace.js';
 import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
 import { findMenuItemWithLabel, getMenu } from './ContextMenuHelpers.js';
 import { createTarget, } from './EnvironmentHelpers.js';
-import { expectCall } from './ExpectStubCall.js';
-import { createContentProviderUISourceCodes } from './UISourceCodeHelpers.js';
+import { createContentProviderUISourceCodes, createFileSystemUISourceCode } from './UISourceCodeHelpers.js';
+import { createViewFunctionStub } from './ViewFunctionHelpers.js';
 function createMockAidaClient(fetch) {
     const fetchStub = sinon.stub();
     const registerClientEventStub = sinon.stub();
@@ -84,14 +88,14 @@ export async function createUISourceCode(options) {
     return uiSourceCode;
 }
 export function createNetworkRequest(opts) {
-    const networkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', opts?.url ?? Platform.DevToolsPath.urlString `https://www.example.com/script.js`, Platform.DevToolsPath.urlString ``, null, null, null);
+    const networkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId-0', opts?.url ?? Platform.DevToolsPath.urlString `https://www.example.com/script.js`, Platform.DevToolsPath.urlString ``, null, null, null);
     networkRequest.statusCode = 200;
     networkRequest.setRequestHeaders([{ name: 'content-type', value: 'bar1' }]);
     networkRequest.responseHeaders = [{ name: 'content-type', value: 'bar2' }, { name: 'x-forwarded-for', value: 'bar3' }];
     if (opts?.includeInitiators) {
-        const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', Platform.DevToolsPath.urlString `https://www.initiator.com`, Platform.DevToolsPath.urlString ``, null, null, null);
-        const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', Platform.DevToolsPath.urlString `https://www.example.com/1`, Platform.DevToolsPath.urlString ``, null, null, null);
-        const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', Platform.DevToolsPath.urlString `https://www.example.com/2`, Platform.DevToolsPath.urlString ``, null, null, null);
+        const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId-1', Platform.DevToolsPath.urlString `https://www.initiator.com`, Platform.DevToolsPath.urlString ``, null, null, null);
+        const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId-2', Platform.DevToolsPath.urlString `https://www.example.com/1`, Platform.DevToolsPath.urlString ``, null, null, null);
+        const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId-3', Platform.DevToolsPath.urlString `https://www.example.com/2`, Platform.DevToolsPath.urlString ``, null, null, null);
         sinon.stub(Logs.NetworkLog.NetworkLog.instance(), 'initiatorGraphForRequest')
             .withArgs(networkRequest)
             .returns({
@@ -126,7 +130,7 @@ let panels = [];
  */
 export async function createAiAssistancePanel(options) {
     let aidaAvailabilityForStub = options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
-    const view = sinon.stub();
+    const view = createViewFunctionStub(AiAssistance.AiAssistancePanel);
     const aidaClient = options?.aidaClient ?? mockAidaClient();
     const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions').callsFake(() => {
         return Promise.resolve(aidaAvailabilityForStub);
@@ -137,30 +141,17 @@ export async function createAiAssistancePanel(options) {
         syncInfo: options?.syncInfo ?? { isSyncActive: true },
     });
     panels.push(panel);
-    /**
-     * Triggers the action and returns args of the next view function
-     * call.
-     */
-    async function expectViewUpdate(action) {
-        const result = expectCall(view);
-        action();
-        const viewArgs = await result;
-        return viewArgs[0];
-    }
-    const initialViewInput = await expectViewUpdate(() => {
-        panel.markAsRoot();
-        panel.show(document.body);
-    });
+    panel.markAsRoot();
+    panel.show(document.body);
+    await view.nextInput;
     const stubAidaCheckAccessPreconditions = (aidaAvailability) => {
         aidaAvailabilityForStub = aidaAvailability;
         return checkAccessPreconditionsStub;
     };
     return {
-        initialViewInput,
         panel,
         view,
         aidaClient,
-        expectViewUpdate,
         stubAidaCheckAccessPreconditions,
     };
 }
@@ -170,33 +161,35 @@ let patchWidgets = [];
  * stubs and the initial view input caused by Widget.show().
  */
 export async function createPatchWidget(options) {
-    const view = sinon.stub();
+    const view = createViewFunctionStub(AiAssistance.PatchWidget.PatchWidget);
     const aidaClient = options?.aidaClient ?? mockAidaClient();
     const widget = new AiAssistance.PatchWidget.PatchWidget(undefined, view, {
         aidaClient,
     });
     patchWidgets.push(widget);
-    /**
-     * Triggers the action and returns args of the next view function
-     * call.
-     */
-    async function expectViewUpdate(action) {
-        const result = expectCall(view);
-        action();
-        const viewArgs = await result;
-        return viewArgs[0];
-    }
-    const initialViewInput = await expectViewUpdate(() => {
-        widget.markAsRoot();
-        widget.show(document.body);
-    });
+    widget.markAsRoot();
+    widget.show(document.body);
+    await view.nextInput;
     return {
-        initialViewInput,
         panel: widget,
         view,
         aidaClient,
-        expectViewUpdate,
     };
+}
+export function initializePersistenceImplForTests() {
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+    const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        forceNew: true,
+        targetManager: SDK.TargetManager.TargetManager.instance(),
+        resourceMapping: new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace),
+    });
+    const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
+        forceNew: true,
+        targetManager: SDK.TargetManager.TargetManager.instance(),
+        workspace,
+        debuggerWorkspaceBinding,
+    });
+    Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
 }
 export function cleanup() {
     for (const panel of panels) {
@@ -217,5 +210,20 @@ export function openHistoryContextMenu(lastUpdate, item) {
         contextMenu,
         id: freestylerEntry?.id(),
     };
+}
+export function createTestFilesystem(fileSystemPath, files) {
+    const { project, uiSourceCode } = createFileSystemUISourceCode({
+        url: Platform.DevToolsPath.urlString `${fileSystemPath}/index.html`,
+        mimeType: 'text/html',
+        content: 'content',
+        fileSystemPath,
+    });
+    uiSourceCode.setWorkingCopy('content');
+    for (const file of files ?? []) {
+        const uiSourceCode = project.createUISourceCode(Platform.DevToolsPath.urlString `${fileSystemPath}/${file.path}`, Common.ResourceType.resourceTypes.Script);
+        project.addUISourceCode(uiSourceCode);
+        uiSourceCode.setWorkingCopy(file.content);
+    }
+    return { project, uiSourceCode };
 }
 //# sourceMappingURL=AiAssistanceHelpers.js.map

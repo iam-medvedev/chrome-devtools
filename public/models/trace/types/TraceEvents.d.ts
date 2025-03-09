@@ -66,7 +66,7 @@ export interface CallFrame {
     lineNumber: number;
     url: string;
 }
-export declare function objectIsCallFrame(object: {}): object is CallFrame;
+export declare function objectIsCallFrame(object: object): object is CallFrame;
 export interface TraceFrame {
     frame: string;
     name: string;
@@ -1648,10 +1648,15 @@ export interface PaintImage extends Complete {
             width: number;
             x: number;
             y: number;
+            isCSS: boolean;
+            isPicture?: boolean;
+            loadingAttribute?: string;
+            srcsetAttribute?: string;
             url?: string;
             srcHeight: number;
             srcWidth: number;
             nodeId?: Protocol.DOM.BackendNodeId;
+            frame?: string;
         };
     };
 }

@@ -2,10 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import * as i18n from '../../../core/i18n/i18n.js';
 import * as TimelineUtils from '../../timeline/utils/utils.js';
 import * as PanelUtils from '../../utils/utils.js';
 import { PerformanceInsightFormatter, TraceEventFormatter } from '../data_formatters/PerformanceInsightFormatter.js';
+import { debugLog } from '../debug.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
+const UIStringsNotTranslated = {
+    /**
+     *@description Shown when the agent is investigating network activity
+     */
+    networkActivitySummary: 'Investigating network activity…',
+    /**
+     *@description Shown when the agent is investigating main thread activity
+     */
+    mainThreadActivity: 'Investigating main thread activity…',
+};
+const lockedString = i18n.i18n.lockedString;
 /* clang-format off */
 const preamble = `You are a performance expert deeply integrated within Chrome DevTools. You specialize in analyzing web application behaviour captured by Chrome DevTools Performance Panel.
 
@@ -22,12 +35,14 @@ You will also be provided with external resources. Use these to ensure you give 
 
 - Think about what the user wants.
 - Call any of the available functions to help you gather more information to inform your suggestions.
+- Ensure that you call all relevant functions to receive full information about relevant network requests.
 - Make suggestions that you are confident will improve the performance of the page.
 
 ## General considerations
 
 - *CRITICAL* never make the same function call twice.
 - *CRITICAL* make sure you are thorough and call the functions you have access to to give yourself the most information possible to make accurate recommendations.
+- *CRITICAL* your text output should NEVER mention the functions that you called. These are an implementation detail and not important for the user to be aware of.
 `;
 /* clang-format on */
 export class InsightContext extends ConversationContext {
@@ -63,9 +78,17 @@ export class PerformanceInsightsAgent extends AiAgent {
         if (!activeContext) {
             return;
         }
-        const title = activeContext.getItem().title();
-        // TODO: Provide proper text with useful context details.
-        const titleDetail = { title, text: title };
+        const activeInsight = activeContext.getItem();
+        const insightTitle = activeInsight.title();
+        const title = `Analyzing insight: ${insightTitle}`;
+        // The details are the exact text sent to the LLM to allow the user to inspect it.
+        const formatter = new PerformanceInsightFormatter(activeInsight.insight);
+        const titleDetail = {
+            // Purposefully use the raw title in the details view, we don't need to repeat "Analyzing insight"
+            title: insightTitle,
+            // Important: this must reflect what data is sent to the LLM.
+            text: formatter.formatInsight()
+        };
         yield { type: "context" /* ResponseType.CONTEXT */, title, details: [titleDetail] };
     }
     type = "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */;
@@ -82,22 +105,63 @@ export class PerformanceInsightsAgent extends AiAgent {
     }
     constructor(opts) {
         super(opts);
-        this.declareFunction('getNetworkActivity', {
-            description: 'Returns relevant network requests for the selected insight',
+        this.declareFunction('getNetworkActivitySummary', {
+            description: 'Returns a summary of network activity for the selected insight. If you want to get more detailed information on a network request, you can pass the URL of a request into `getNetworkRequestDetail`.',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',
                 nullable: true,
                 properties: {},
             },
+            displayInfoFromArgs: () => {
+                return {
+                    title: lockedString(UIStringsNotTranslated.networkActivitySummary),
+                    action: 'getNetworkActivitySummary()'
+                };
+            },
             handler: async () => {
+                debugLog('Function call: getNetworkActivitySummary');
                 if (!this.#insight) {
                     return { error: 'No insight available' };
                 }
                 const activeInsight = this.#insight.getItem();
                 const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
-                const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace));
+                const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
                 return { result: { requests: formatted } };
+            },
+        });
+        this.declareFunction('getNetworkRequestDetail', {
+            description: 'Returns detailed debugging information about a specific network request',
+            parameters: {
+                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                description: '',
+                nullable: true,
+                properties: {
+                    url: {
+                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                        description: 'The URL of the network request',
+                        nullable: false,
+                    }
+                },
+            },
+            displayInfoFromArgs: params => {
+                return {
+                    title: lockedString(`Investigating network request ${params.url}…`),
+                    action: `getNetworkRequestDetail('${params.url}')`
+                };
+            },
+            handler: async (params) => {
+                debugLog('Function call: getNetworkRequestDetail', params);
+                if (!this.#insight) {
+                    return { error: 'No insight available' };
+                }
+                const activeInsight = this.#insight.getItem();
+                const request = TimelineUtils.InsightAIContext.AIQueries.networkRequest(activeInsight.parsedTrace, params.url);
+                if (!request) {
+                    return { error: 'Request not found' };
+                }
+                const formatted = TraceEventFormatter.networkRequest(request, activeInsight.parsedTrace, { verbose: true });
+                return { result: { request: formatted } };
             },
         });
         this.declareFunction('getMainThreadActivity', {
@@ -128,7 +192,11 @@ The fields are:
                 nullable: true,
                 properties: {},
             },
+            displayInfoFromArgs: () => {
+                return { title: lockedString(UIStringsNotTranslated.mainThreadActivity), action: 'getMainThreadActivity()' };
+            },
             handler: async () => {
+                debugLog('Function call: getMainThreadActivity');
                 if (!this.#insight) {
                     return { error: 'No insight available' };
                 }
@@ -145,7 +213,8 @@ The fields are:
         if (!selectedInsight) {
             return query;
         }
-        const formatter = new PerformanceInsightFormatter(selectedInsight.getItem().insight);
+        const { insight } = selectedInsight.getItem();
+        const formatter = new PerformanceInsightFormatter(insight);
         const extraQuery = `${formatter.formatInsight()}\n\n# User request:\n`;
         const finalQuery = `${extraQuery}${query}`;
         return finalQuery;

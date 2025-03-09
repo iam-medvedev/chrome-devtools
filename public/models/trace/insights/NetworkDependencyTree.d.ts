@@ -1,5 +1,6 @@
+import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext, type RequiredData } from './types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Title of an insight that recommends avoiding chaining critical requests.
@@ -35,5 +36,4 @@ export type NetworkDependencyTreeInsightModel = InsightModel<typeof UIStrings, {
     rootNodes: CriticalRequestNode[];
     maxTime: Types.Timing.Micro;
 }>;
-export declare function deps(): ['NetworkRequests'];
-export declare function generateInsight(_parsedTrace: RequiredData<typeof deps>, context: InsightSetContext): NetworkDependencyTreeInsightModel;
+export declare function generateInsight(_parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): NetworkDependencyTreeInsightModel;

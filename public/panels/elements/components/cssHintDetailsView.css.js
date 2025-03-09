@@ -10,10 +10,6 @@ export default {
  * found in the LICENSE file.
  */
 
-:host {
-  padding: 6px;
-}
-
 .hint-popup-wrapper {
   max-width: 232px;
   font-size: 12px;

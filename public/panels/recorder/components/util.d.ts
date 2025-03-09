@@ -2,10 +2,10 @@ export declare const mod: (a: number, n: number) => number;
 export declare function assert<T>(predicate: T, message?: string): asserts predicate;
 export type Keys<T> = T extends T ? keyof T : never;
 export type RequiredKeys<T> = {
-    [K in keyof T]-?: {} extends Pick<T, K> ? never : K;
+    [K in keyof T]-?: Record<string | number | symbol, unknown> extends Pick<T, K> ? never : K;
 }[keyof T];
 export type OptionalKeys<T> = {
-    [K in keyof T]-?: {} extends Pick<T, K> ? K : never;
+    [K in keyof T]-?: Record<string | number | symbol, unknown> extends Pick<T, K> ? K : never;
 }[keyof T];
 export type DeepImmutable<T> = {
     readonly [K in keyof T]: DeepImmutable<T[K]>;

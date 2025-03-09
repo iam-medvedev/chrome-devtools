@@ -130,7 +130,6 @@ export class HAREntry extends HARBase {
     time;
     request;
     response;
-    cache;
     timings;
     serverIPAddress;
     connection;
@@ -142,7 +141,6 @@ export class HAREntry extends HARBase {
         this.time = HARBase.safeNumber(data['time']);
         this.request = new HARRequest(data['request']);
         this.response = new HARResponse(data['response']);
-        this.cache = {}; // Not yet implemented.
         this.timings = new HARTimings(data['timings']);
         this.serverIPAddress = HARBase.optionalString(data['serverIPAddress']);
         this.connection = HARBase.optionalString(data['connection']);

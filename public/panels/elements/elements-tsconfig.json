@@ -142,6 +142,9 @@
       "path": "../../ui/components/text_editor/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/tooltips/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/tree_outline/bundle-tsconfig.json"
     },
     {

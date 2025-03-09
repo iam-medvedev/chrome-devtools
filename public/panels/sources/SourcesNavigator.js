@@ -115,7 +115,7 @@ const UIStrings = {
      * @description Button description in Workspaces tab in the Sources panel
      *              to connect to an automatic workspace folder.
      */
-    automaticWorkspaceFolderConnect: 'Connect...',
+    automaticWorkspaceFolderConnect: 'Connect',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesNavigator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -182,6 +182,7 @@ export class FilesNavigatorView extends NavigatorView {
     #eventListeners = [];
     constructor() {
         super('navigator-files');
+        this.registerRequiredCSS(sourcesNavigatorStyles);
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWorkspace), i18nString(UIStrings.explainWorkspace));
         this.setPlaceholder(placeholder);
         placeholder.appendLink('https://goo.gle/devtools-workspace');
@@ -234,6 +235,7 @@ export class FilesNavigatorView extends NavigatorView {
                     jslogContext: 'automatic-workspace-folders.connect',
                 }], Common.Settings.Settings.instance().moduleSetting('persistence-automatic-workspace-folders'), 'automatic-workspace-folders');
             if (this.#infobar) {
+                this.#infobar.element.classList.add('automatic-workspace-infobar');
                 this.contentElement.append(this.#infobar.element);
             }
         }

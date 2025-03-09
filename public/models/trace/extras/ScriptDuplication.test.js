@@ -17,6 +17,7 @@ async function loadScriptFixture(name, modify) {
     const compiledUrl = Platform.DevToolsPath.urlString `${name}.js`;
     const mapUrl = Platform.DevToolsPath.urlString `${name}.js.map`;
     return {
+        isolate: 'iso',
         scriptId: `1.${name}`,
         frame: 'abcdef',
         ts: 0,
@@ -214,19 +215,19 @@ describeWithEnvironment('ScriptDuplication', function () {
     });
     describe('computeScriptDuplication', () => {
         it('works (simple, no duplication)', async () => {
-            const scripts = [await loadScriptFixture('foo.min')];
             const scriptsData = {
-                scripts: new Map(scripts.map(s => ([s.scriptId, s]))),
+                scripts: [await loadScriptFixture('foo.min')],
             };
             const results = Object.fromEntries(Trace.Extras.ScriptDuplication.computeScriptDuplication(scriptsData));
             assert.deepEqual(results, {});
         });
         it('works (complex, lots of duplication)', async () => {
-            const scripts = [await loadScriptFixture('coursehero-bundle-1'), await loadScriptFixture('coursehero-bundle-2')];
             const scriptsData = {
-                scripts: new Map(scripts.map(s => ([s.scriptId, s]))),
+                scripts: [await loadScriptFixture('coursehero-bundle-1'), await loadScriptFixture('coursehero-bundle-2')],
             };
-            const results = Object.fromEntries(Trace.Extras.ScriptDuplication.computeScriptDuplication(scriptsData));
+            const results = Object.fromEntries(Trace.Extras.ScriptDuplication.computeScriptDuplication(scriptsData).entries().map(([key, value]) => {
+                return [key, value.map(v => ({ scriptId: v.script.scriptId, resourceSize: v.resourceSize }))];
+            }));
             assert.deepEqual(results, {
                 'coursehero:///Control/assets/js/vendor/ng/select/select.js': [
                     { scriptId: '1.coursehero-bundle-1', resourceSize: 48513 },

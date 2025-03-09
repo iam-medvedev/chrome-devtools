@@ -10,6 +10,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import { NOT_FOUND_IMAGE_DATA } from '../AiHistoryStorage.js';
 import { PatchWidget } from '../PatchWidget.js';
 import stylesRaw from './chatView.css.js';
 import { MarkdownRendererWithCodeBlock } from './MarkdownRendererWithCodeBlock.js';
@@ -185,6 +186,10 @@ const UIStringsNotTranslate = {
      */
     openImageInNewTab: 'Open image in a new tab',
     /**
+     *@description Alt text for image when it is not available.
+     */
+    imageUnavailable: 'Image unavailable',
+    /**
      *@description Button text to change the selected workspace
      */
     change: 'Change',
@@ -201,6 +206,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/components/ChatVi
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
 const SCROLL_ROUNDING_OFFSET = 1;
+const JPEG_MIME_TYPE = 'image/jpeg';
 export class ChatView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #markdownRenderer = new MarkdownRendererWithCodeBlock();
@@ -299,11 +305,16 @@ export class ChatView extends HTMLElement {
     };
     #handleSubmit = (ev) => {
         ev.preventDefault();
+        if (this.#props.imageInput?.isLoading) {
+            return;
+        }
         const textArea = this.#shadow.querySelector('.chat-input');
         if (!textArea?.value) {
             return;
         }
-        const imageInput = this.#props.imageInput ? { inlineData: { data: this.#props.imageInput, mimeType: 'image/jpeg' } } : undefined;
+        const imageInput = !this.#props.imageInput?.isLoading && this.#props.imageInput?.data ?
+            { inlineData: { data: this.#props.imageInput.data, mimeType: JPEG_MIME_TYPE } } :
+            undefined;
         void this.#props.onTextSubmit(textArea.value, imageInput);
         textArea.value = '';
     };
@@ -314,10 +325,12 @@ export class ChatView extends HTMLElement {
         // Go to a new line only when Shift + Enter is pressed.
         if (ev.key === 'Enter' && !ev.shiftKey) {
             ev.preventDefault();
-            if (!ev.target?.value) {
+            if (!ev.target?.value || this.#props.imageInput?.isLoading) {
                 return;
             }
-            const imageInput = this.#props.imageInput ? { inlineData: { data: this.#props.imageInput, mimeType: 'image/jpeg' } } : undefined;
+            const imageInput = !this.#props.imageInput?.isLoading && this.#props.imageInput?.data ?
+                { inlineData: { data: this.#props.imageInput.data, mimeType: JPEG_MIME_TYPE } } :
+                undefined;
             void this.#props.onTextSubmit(ev.target.value, imageInput);
             ev.target.value = '';
         }
@@ -597,18 +610,9 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
             html `<devtools-icon
           .name=${'profile'}
         ></devtools-icon>`;
-        let imageInput = html ``;
-        if (message.imageInput && 'inlineData' in message.imageInput) {
-            const imageUrl = `data:image/jpeg;base64,${message.imageInput.inlineData.data}`;
-            // clang-format off
-            imageInput = html `<x-link
-        class="image-link" title=${UIStringsNotTranslate.openImageInNewTab}
-        href=${imageUrl}
-      >
-        <img src=${imageUrl} alt=${UIStringsNotTranslate.imageInputSentToTheModel} />
-      </x-link>`;
-            // clang-format on
-        }
+        const imageInput = message.imageInput && 'inlineData' in message.imageInput ?
+            renderImageChatMessage(message.imageInput.inlineData) :
+            Lit.nothing;
         // clang-format off
         return html `<section
       class="chat-message query"
@@ -665,6 +669,24 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
         })}></devtools-widget>`}
     </section>
   `;
+    // clang-format on
+}
+function renderImageChatMessage(inlineData) {
+    if (inlineData.data === NOT_FOUND_IMAGE_DATA) {
+        // clang-format off
+        return html `<div class="unavailable-image" title=${UIStringsNotTranslate.imageUnavailable}>
+      <devtools-icon name='file-image'></devtools-icon>
+    </div>`;
+        // clang-format on
+    }
+    const imageUrl = `data:image/jpeg;base64,${inlineData.data}`;
+    // clang-format off
+    return html `<x-link
+      class="image-link" title=${UIStringsNotTranslate.openImageInNewTab}
+      href=${imageUrl}
+    >
+      <img src=${imageUrl} alt=${UIStringsNotTranslate.imageInputSentToTheModel} />
+    </x-link>`;
     // clang-format on
 }
 function renderSelection({ selectedContext, inspectElementToggled, conversationType, onContextClick, onInspectElementClick, }) {
@@ -790,7 +812,7 @@ function renderReadOnlySection({ onNewConversation, conversationType }) {
   </div>`;
     // clang-format on
 }
-function renderChatInputButtons({ isLoading, blockedByCrossOrigin, isTextInputDisabled, isTextInputEmpty, onCancel, onNewConversation }) {
+function renderChatInputButtons({ isLoading, blockedByCrossOrigin, isTextInputDisabled, isTextInputEmpty, imageInput, onCancel, onNewConversation }) {
     if (isLoading) {
         // clang-format off
         return html `<devtools-button
@@ -832,14 +854,14 @@ function renderChatInputButtons({ isLoading, blockedByCrossOrigin, isTextInputDi
         type: 'submit',
         variant: "icon" /* Buttons.Button.Variant.ICON */,
         size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
-        disabled: isTextInputDisabled || isTextInputEmpty,
+        disabled: isTextInputDisabled || isTextInputEmpty || imageInput?.isLoading,
         iconName: 'send',
         title: lockedString(UIStringsNotTranslate.sendButtonTitle),
         jslogContext: 'send',
     }}
   ></devtools-button>`;
 }
-function renderTakeScreenshotButton({ multimodalInputEnabled, blockedByCrossOrigin, isTextInputDisabled, onTakeScreenshot, }) {
+function renderTakeScreenshotButton({ multimodalInputEnabled, blockedByCrossOrigin, isTextInputDisabled, imageInput, onTakeScreenshot, }) {
     if (!multimodalInputEnabled || blockedByCrossOrigin) {
         return Lit.nothing;
     }
@@ -850,7 +872,7 @@ function renderTakeScreenshotButton({ multimodalInputEnabled, blockedByCrossOrig
       .data=${{
         variant: "icon" /* Buttons.Button.Variant.ICON */,
         size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
-        disabled: isTextInputDisabled,
+        disabled: isTextInputDisabled || imageInput?.isLoading,
         iconName: 'photo-camera',
         title: lockedString(UIStringsNotTranslate.takeScreenshotButtonTitle),
         jslogContext: 'take-screenshot',
@@ -858,12 +880,10 @@ function renderTakeScreenshotButton({ multimodalInputEnabled, blockedByCrossOrig
     ></devtools-button>`;
 }
 function renderImageInput({ multimodalInputEnabled, imageInput, onRemoveImageInput, }) {
-    if (!multimodalInputEnabled || !imageInput || imageInput === '') {
+    if (!multimodalInputEnabled || !imageInput) {
         return Lit.nothing;
     }
-    return html `
-    <div class="image-input-container">
-      <devtools-button
+    const crossButton = html `<devtools-button
       aria-label=${lockedString(UIStringsNotTranslate.removeImageInputButtonTitle)}
       @click=${onRemoveImageInput}
       .data=${{
@@ -872,8 +892,19 @@ function renderImageInput({ multimodalInputEnabled, imageInput, onRemoveImageInp
         iconName: 'cross',
         title: lockedString(UIStringsNotTranslate.removeImageInputButtonTitle),
     }}
-    ></devtools-button>
-      <img src="data:image/jpeg;base64, ${imageInput}" alt="Screenshot input" />
+    ></devtools-button>`;
+    if (imageInput.isLoading) {
+        return html `<div class="image-input-container">
+        ${crossButton}
+        <div class="loading">
+          <devtools-spinner></devtools-spinner>
+        </div>
+      </div>`;
+    }
+    return html `
+    <div class="image-input-container">
+      ${crossButton}
+      <img src="data:image/jpeg;base64, ${imageInput.data}" alt="Screenshot input" />
     </div>`;
 }
 function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, state, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, }) {
@@ -921,13 +952,14 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
       ></textarea>
       <div class="chat-input-buttons">
         ${renderTakeScreenshotButton({
-        multimodalInputEnabled, blockedByCrossOrigin, isTextInputDisabled, onTakeScreenshot
+        multimodalInputEnabled, blockedByCrossOrigin, isTextInputDisabled, imageInput, onTakeScreenshot
     })}
-        ${renderChatInputButtons({ isLoading, blockedByCrossOrigin, isTextInputDisabled, isTextInputEmpty, onCancel, onNewConversation })}
+        ${renderChatInputButtons({
+        isLoading, blockedByCrossOrigin, isTextInputDisabled, isTextInputEmpty, imageInput, onCancel, onNewConversation
+    })}
       </div>
     </div>
-  </form>
-`;
+  </form>`;
     // clang-format on
 }
 function renderAidaUnavailableContents(aidaAvailability) {

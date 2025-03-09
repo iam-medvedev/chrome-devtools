@@ -78,7 +78,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
             titleElement.style.fontWeight = 'bold';
         }
         const initiated = initiatorGraph.initiated;
-        this.depthFirstSearchTreeBuilder(initiated, (parent), this.request);
+        this.depthFirstSearchTreeBuilder(initiated, parent, this.request);
         return root;
     }
     depthFirstSearchTreeBuilder(initiated, parentElement, parentRequest) {
