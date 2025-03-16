@@ -22,14 +22,32 @@ export default {
 }
 
 .infobar {
+  --summary-header-height: var(--sys-size-11);
+
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-cdt-base-container);
   display: flex;
   flex: auto;
-  flex-direction: column;
+  flex-direction: row;
   position: relative;
   padding: var(--sys-size-5) var(--sys-size-8);
   min-width: fit-content;
+  min-height: calc(var(--summary-header-height) + var(--sys-size-5) * 2);
+
+  .icon-container {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    height: var(--summary-header-height);
+  }
+
+  .infobar-info-message {
+    padding-top: var(--sys-size-2);
+  }
+
+  dt-close-button {
+    margin-left: var(--sys-size-3);
+  }
 }
 
 .infobar:focus {
@@ -51,50 +69,32 @@ export default {
 }
 
 .infobar-main-row {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
-  justify-content: flex-start;
-  min-height: 25px;
+  margin-right: auto;
 }
 
 .infobar-info-container {
   display: flex;
+  row-gap: var(--sys-size-4);
   align-items: center;
   flex-grow: 1;
   flex-wrap: wrap;
 }
 
-.infobar-info-message {
-  display: flex;
-  align-items: center;
-}
-
 .infobar-info-text {
-  display: flex;
-  align-items: center;
   font: var(--sys-typescale-body3-regular);
-  margin: 0 var(--sys-size-8);
-}
-
-.infobar-details-rows {
-  padding: 5px 5px 0;
+  margin-right: var(--sys-size-8);
 }
 
 .infobar-details-row {
   display: flex;
   flex-direction: column;
   line-height: 18px;
-  padding-bottom: 6px;
-}
 
-.infobar-close-container {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.infobar-close-container > .infobar-button.link-style {
-  margin: 4px;
+  + .infobar-details-row {
+    padding-top: var(--sys-size-3);
+  }
 }
 
 .infobar-selectable {
@@ -125,6 +125,7 @@ export default {
 .warning-icon,
 .error-icon,
 .issue-icon {
+  margin-right: var(--sys-size-8);
   width: var(--sys-size-8);
   height: var(--sys-size-8);
   flex-shrink: 0;
@@ -132,7 +133,7 @@ export default {
 
 .infobar-info-actions {
   display: flex;
-  gap: var(--sys-size-3);
+  gap: var(--sys-size-5);
 }
 
 .devtools-link.text-button:hover,
@@ -140,6 +141,40 @@ export default {
 .devtools-link.text-button:active {
   background-color: transparent;
   box-shadow: none;
+}
+
+details {
+  margin-right: auto;
+
+  summary {
+    display: flex;
+    min-height: var(--summary-header-height);
+
+    &:focus-visible {
+      outline: var(--sys-color-state-focus-ring) auto var(--sys-size-1);
+      outline-offset: var(--sys-size-3);
+    }
+
+    &::marker {
+      content: '';
+    }
+  }
+
+  devtools-icon[name="arrow-drop-down"] {
+    align-self: center;
+    transform: rotate(270deg);
+  }
+
+  &[open] {
+    devtools-icon[name="arrow-drop-down"] {
+      transform: rotate(0deg);
+    }
+
+    &::details-content {
+      padding: var(--sys-size-4) 0 0 var(--sys-size-9);
+    }
+
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./infobar.css')} */

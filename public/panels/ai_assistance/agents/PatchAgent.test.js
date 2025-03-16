@@ -1,9 +1,10 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { createFileSystemUISourceCode } from '../../../testing/UISourceCodeHelpers.js';
 import { FileUpdateAgent, PatchAgent } from '../ai_assistance.js';
 /**
@@ -29,7 +30,8 @@ describeWithEnvironment('PatchAgent', () => {
                 aidaClient: mockAidaClient(fileAgentMock),
             })
         });
-        return await Array.fromAsync(agent.applyChanges('summary'));
+        const { responses } = await agent.applyChanges('summary');
+        return responses;
     }
     it('calls listFiles', async () => {
         const responses = await testAgent([
@@ -81,6 +83,27 @@ describeWithEnvironment('PatchAgent', () => {
         const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
         assert.exists(action);
         assert.deepEqual(action, { type: 'action', output: '{"success":true}', code: undefined, canceled: false });
+    });
+    it('builds a request with a user tier', async () => {
+        updateHostConfig({
+            devToolsFreestyler: {
+                userTier: 'PUBLIC',
+            },
+        });
+        const { project } = createFileSystemUISourceCode({
+            url: Platform.DevToolsPath.urlString `file:///path/to/overrides/example.html`,
+            fileSystemPath: Platform.DevToolsPath.urlString `file:///path/to/overrides`,
+            mimeType: 'text/html',
+            content: 'content',
+        });
+        const agent = new PatchAgent({
+            aidaClient: mockAidaClient(),
+            project,
+            fileUpdateAgent: new FileUpdateAgent({
+                aidaClient: mockAidaClient(),
+            })
+        });
+        assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).metadata?.user_tier, 3);
     });
 });
 //# sourceMappingURL=PatchAgent.test.js.map

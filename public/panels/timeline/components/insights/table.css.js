@@ -46,9 +46,10 @@ table tbody th {
   font-weight: normal;
 }
 
-table th[scope="row"] {
+table th[scope='row'] {
   padding: 3px 0;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 /*# sourceURL=${import.meta.resolve('./table.css')} */

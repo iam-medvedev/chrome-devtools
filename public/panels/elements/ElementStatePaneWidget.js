@@ -136,7 +136,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
                 jslogContext: 'learn-more',
                 title: i18nString(UIStrings.learnMore),
             };
-            learnMoreButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('https://goo.gle/devtools-emulate-focused-page'));
+            learnMoreButton.addEventListener('click', () => UI.UIUtils.openInNewTab('https://developer.chrome.com/docs/devtools/rendering/apply-effects#emulate_a_focused_page'));
             div.appendChild(label);
             div.appendChild(learnMoreButton);
             return div;

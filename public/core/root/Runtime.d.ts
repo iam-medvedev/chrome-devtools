@@ -95,6 +95,7 @@ export interface AidaAvailability {
     disallowLogging: boolean;
     enterprisePolicyValue: number;
 }
+type Channel = 'stable' | 'beta' | 'dev' | 'canary';
 export interface HostConfigConsoleInsights {
     modelId: string;
     temperature: number;
@@ -140,9 +141,6 @@ export interface HostConfigAiAssistanceFileAgent {
 export interface HostConfigAutomaticFileSystems {
     enabled: boolean;
 }
-export interface HostConfigImprovedWorkspaces {
-    enabled: boolean;
-}
 export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
@@ -172,6 +170,9 @@ export interface HostConfigThirdPartyCookieControls {
 interface CSSValueTracing {
     enabled: boolean;
 }
+interface AiGeneratedTimelineLabels {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -187,13 +188,13 @@ interface CSSValueTracing {
  */
 export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
+    channel: Channel;
     devToolsConsoleInsights: HostConfigConsoleInsights;
     devToolsFreestyler: HostConfigFreestyler;
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
     devToolsAutomaticFileSystems: HostConfigAutomaticFileSystems;
-    devToolsImprovedWorkspaces: HostConfigImprovedWorkspaces;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsWellKnown: HostConfigWellKnown;
     devToolsPrivacyUI: HostConfigPrivacyUI;
@@ -206,6 +207,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
     thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
     devToolsCssValueTracing: CSSValueTracing;
+    devToolsAiGeneratedTimelineLabels: AiGeneratedTimelineLabels;
 }>;
 /**
  * The host configuration for this DevTools instance.
@@ -221,7 +223,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
  * Object.assign(Root.runtime.hostConfig, config);
  * ```
  */
-export declare const hostConfig: HostConfig;
+export declare const hostConfig: Platform.TypeScriptUtilities.RecursiveReadonly<HostConfig>;
 /**
  * When defining conditions make sure that objects used by the function have
  * been instantiated.

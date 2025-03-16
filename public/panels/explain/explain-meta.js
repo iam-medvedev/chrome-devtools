@@ -87,7 +87,7 @@ function isFeatureEnabled(config) {
     return (config?.aidaAvailability?.enabled && config?.devToolsConsoleInsights?.enabled) === true;
 }
 Common.Settings.registerSettingExtension({
-    category: "" /* Common.Settings.SettingCategory.NONE */,
+    category: "AI" /* Common.Settings.SettingCategory.AI */,
     settingName: setting,
     settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
     title: i18nLazyString(UIStrings.enableConsoleInsights),

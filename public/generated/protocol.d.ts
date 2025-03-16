@@ -1791,6 +1791,7 @@ export declare namespace Browser {
         IdleDetection = "idleDetection",
         KeyboardLock = "keyboardLock",
         LocalFonts = "localFonts",
+        LocalNetworkAccess = "localNetworkAccess",
         Midi = "midi",
         MidiSysex = "midiSysex",
         Nfc = "nfc",
@@ -1893,6 +1894,10 @@ export declare namespace Browser {
          * Buckets.
          */
         buckets: Bucket[];
+    }
+    const enum PrivacySandboxAPI {
+        BiddingAndAuctionServices = "BiddingAndAuctionServices",
+        TrustedKeyValue = "TrustedKeyValue"
     }
     interface SetPermissionRequest {
         /**
@@ -2081,6 +2086,16 @@ export declare namespace Browser {
     }
     interface AddPrivacySandboxEnrollmentOverrideRequest {
         url: string;
+    }
+    interface AddPrivacySandboxCoordinatorKeyConfigRequest {
+        api: PrivacySandboxAPI;
+        coordinatorOrigin: string;
+        keyConfig: string;
+        /**
+         * BrowserContext to perform the action in. When omitted, default browser
+         * context is used.
+         */
+        browserContextId?: BrowserContextID;
     }
     /**
      * Fired when page is about to start a download.
@@ -8999,13 +9014,37 @@ export declare namespace Network {
         Br = "br",
         Zstd = "zstd"
     }
+    const enum DirectSocketDnsQueryType {
+        Ipv4 = "ipv4",
+        Ipv6 = "ipv6"
+    }
+    interface DirectTCPSocketOptions {
+        /**
+         * TCP_NODELAY option
+         */
+        noDelay: boolean;
+        /**
+         * Expected to be unsigned integer.
+         */
+        keepAliveDelay?: number;
+        /**
+         * Expected to be unsigned integer.
+         */
+        sendBufferSize?: number;
+        /**
+         * Expected to be unsigned integer.
+         */
+        receiveBufferSize?: number;
+        dnsQueryType?: DirectSocketDnsQueryType;
+    }
     const enum PrivateNetworkRequestPolicy {
         Allow = "Allow",
         BlockFromInsecureToMorePrivate = "BlockFromInsecureToMorePrivate",
         WarnFromInsecureToMorePrivate = "WarnFromInsecureToMorePrivate",
         PreflightBlock = "PreflightBlock",
         PreflightWarn = "PreflightWarn",
-        PermissionBlock = "PermissionBlock"
+        PermissionBlock = "PermissionBlock",
+        PermissionWarn = "PermissionWarn"
     }
     const enum IPAddressSpace {
         Local = "Local",
@@ -10027,6 +10066,52 @@ export declare namespace Network {
         /**
          * Timestamp.
          */
+        timestamp: MonotonicTime;
+    }
+    /**
+     * Fired upon direct_socket.TCPSocket creation.
+     */
+    interface DirectTCPSocketCreatedEvent {
+        identifier: RequestId;
+        remoteAddr: string;
+        /**
+         * Unsigned int 16.
+         */
+        remotePort: integer;
+        options: DirectTCPSocketOptions;
+        timestamp: MonotonicTime;
+        initiator?: Initiator;
+    }
+    /**
+     * Fired when direct_socket.TCPSocket connection is opened.
+     */
+    interface DirectTCPSocketOpenedEvent {
+        identifier: RequestId;
+        remoteAddr: string;
+        /**
+         * Expected to be unsigned integer.
+         */
+        remotePort: integer;
+        timestamp: MonotonicTime;
+        localAddr?: string;
+        /**
+         * Expected to be unsigned integer.
+         */
+        localPort?: integer;
+    }
+    /**
+     * Fired when direct_socket.TCPSocket is aborted.
+     */
+    interface DirectTCPSocketAbortedEvent {
+        identifier: RequestId;
+        errorMessage: string;
+        timestamp: MonotonicTime;
+    }
+    /**
+     * Fired when direct_socket.TCPSocket is closed.
+     */
+    interface DirectTCPSocketClosedEvent {
+        identifier: RequestId;
         timestamp: MonotonicTime;
     }
     /**
@@ -11949,7 +12034,8 @@ export declare namespace Page {
         EmbedderExtensionSentMessageToCachedFrame = "EmbedderExtensionSentMessageToCachedFrame",
         RequestedByWebViewClient = "RequestedByWebViewClient",
         PostMessageByWebViewClient = "PostMessageByWebViewClient",
-        CacheControlNoStoreDeviceBoundSessionTerminated = "CacheControlNoStoreDeviceBoundSessionTerminated"
+        CacheControlNoStoreDeviceBoundSessionTerminated = "CacheControlNoStoreDeviceBoundSessionTerminated",
+        CacheLimitPruned = "CacheLimitPruned"
     }
     /**
      * Types of not restored reasons for back-forward cache.
@@ -12685,6 +12771,12 @@ export declare namespace Page {
     }
     interface SetInterceptFileChooserDialogRequest {
         enabled: boolean;
+        /**
+         * If true, cancels the dialog by emitting relevant events (if any)
+         * in addition to not showing it if the interception is enabled
+         * (default: false).
+         */
+        cancel?: boolean;
     }
     interface SetPrerenderingAllowedRequest {
         isAllowed: boolean;
@@ -16523,6 +16615,9 @@ export declare namespace Preload {
         PrefetchNotEligibleSchemeIsNotHttps = "PrefetchNotEligibleSchemeIsNotHttps",
         PrefetchNotEligibleUserHasCookies = "PrefetchNotEligibleUserHasCookies",
         PrefetchNotEligibleUserHasServiceWorker = "PrefetchNotEligibleUserHasServiceWorker",
+        PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler = "PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler",
+        PrefetchNotEligibleRedirectFromServiceWorker = "PrefetchNotEligibleRedirectFromServiceWorker",
+        PrefetchNotEligibleRedirectToServiceWorker = "PrefetchNotEligibleRedirectToServiceWorker",
         PrefetchNotEligibleBatterySaverEnabled = "PrefetchNotEligibleBatterySaverEnabled",
         PrefetchNotEligiblePreloadingDisabled = "PrefetchNotEligiblePreloadingDisabled",
         PrefetchNotFinishedInTime = "PrefetchNotFinishedInTime",
@@ -16846,6 +16941,16 @@ export declare namespace BluetoothEmulation {
         scanRecord: ScanRecord;
     }
     interface EnableRequest {
+        /**
+         * State of the simulated central.
+         */
+        state: CentralState;
+        /**
+         * If the simulated central supports low-energy.
+         */
+        leSupported: boolean;
+    }
+    interface SetSimulatedCentralStateRequest {
         /**
          * State of the simulated central.
          */

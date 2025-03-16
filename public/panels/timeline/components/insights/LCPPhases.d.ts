@@ -7,6 +7,7 @@ export declare class LCPPhases extends BaseInsightComponent<LCPPhasesInsightMode
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAISupport: boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderContent(): Lit.LitTemplate;
 }

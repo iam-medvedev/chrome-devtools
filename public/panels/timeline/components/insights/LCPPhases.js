@@ -11,6 +11,7 @@ const { html } = Lit;
 export class LCPPhases extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-lcp-by-phases`;
     internalName = 'lcp-by-phase';
+    hasAskAISupport = true;
     #overlay = null;
     #getPhaseData() {
         if (!this.model) {

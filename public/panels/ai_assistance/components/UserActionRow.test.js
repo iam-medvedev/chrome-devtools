@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
 describeWithEnvironment('UserActionRow', () => {
     function createComponent(props) {
-        const view = createViewFunctionStub(AiAssistance.UserActionRow);
-        const component = new AiAssistance.UserActionRow(undefined, view);
+        const view = createViewFunctionStub(AiAssistance.UserActionRow.UserActionRow);
+        const component = new AiAssistance.UserActionRow.UserActionRow(undefined, view);
         Object.assign(component, props);
         component.wasShown();
         return [view, component];
@@ -71,6 +72,26 @@ describeWithEnvironment('UserActionRow', () => {
         {
             expect(view.input.isSubmitButtonDisabled).equals(true);
         }
+    });
+    describe('view', () => {
+        it('looks fine', async () => {
+            const target = document.createElement('div');
+            renderElementIntoDOM(target);
+            AiAssistance.UserActionRow.DEFAULT_VIEW({
+                onRatingClick: () => { },
+                onReportClick: () => { },
+                scrollSuggestionsScrollContainer: () => { },
+                onSuggestionsScrollOrResize: () => { },
+                onSuggestionClick: () => { },
+                onSubmit: () => { },
+                onClose: () => { },
+                onInputChange: () => { },
+                showRateButtons: true,
+                isSubmitButtonDisabled: false,
+                isShowingFeedbackForm: true,
+            }, {}, target);
+            await assertScreenshot('ai_assistance/user_action_row.png');
+        });
     });
 });
 //# sourceMappingURL=UserActionRow.test.js.map

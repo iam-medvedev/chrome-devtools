@@ -913,8 +913,8 @@ export class NavigatorView extends UI.Widget.VBox {
             contextMenu.defaultSection().appendItem(i18nString(UIStrings.excludeFolder), this.handleContextMenuExclude.bind(this, project, path), { jslogContext: 'exclude-folder' });
         }
         if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
-            const isFileOverrides = project.fileSystem().type() === 'overrides';
-            if (!isFileOverrides) {
+            if (Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !==
+                Persistence.PlatformFileSystem.PlatformFileSystemType.OVERRIDES) {
                 if (node instanceof NavigatorGroupTreeNode) {
                     contextMenu.defaultSection().appendItem(i18nString(UIStrings.removeFolderFromWorkspace), async () => {
                         const header = i18nString(UIStrings.areYouSureYouWantToRemoveThis, { PH1: node.title });

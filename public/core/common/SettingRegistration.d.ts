@@ -9,6 +9,7 @@ export declare function maybeRemoveSettingExtension(settingName: string): boolea
 export declare const enum SettingCategory {
     NONE = "",// `NONE` must be a falsy value. Legacy code uses if-checks for the category.
     ELEMENTS = "ELEMENTS",
+    AI = "AI",
     APPEARANCE = "APPEARANCE",
     SOURCES = "SOURCES",
     NETWORK = "NETWORK",

@@ -25,6 +25,7 @@ export declare class CSSProperty extends Common.ObjectWrapper.ObjectWrapper<Even
     range: TextUtils.TextRange.TextRange | null;
     constructor(ownerStyle: CSSStyleDeclaration, index: number, name: string, value: string, important: boolean, disabled: boolean, parsedOk: boolean, implicit: boolean, text?: string | null, range?: Protocol.CSS.SourceRange, longhandProperties?: Protocol.CSS.CSSProperty[]);
     static parsePayload(ownerStyle: CSSStyleDeclaration, index: number, payload: Protocol.CSS.CSSProperty): CSSProperty;
+    parseExpression(expression: string, matchedStyles: CSSMatchedStyles, computedStyles: Map<string, string> | null): BottomUpTreeMatching | null;
     parseValue(matchedStyles: CSSMatchedStyles, computedStyles: Map<string, string> | null): BottomUpTreeMatching | null;
     private ensureRanges;
     nameRange(): TextUtils.TextRange.TextRange | null;

@@ -49,6 +49,7 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/SlowCSSSelector.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Table.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/ThirdParties.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/UseCache.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Viewport.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/types.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",

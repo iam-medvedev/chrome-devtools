@@ -6,19 +6,28 @@ import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives } from '../../ui/lit/lit.js';
 export interface ViewInput {
     workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl;
     changeSummary?: string;
     patchSuggestion?: string;
     patchSuggestionLoading?: boolean;
+    sources?: string;
     projectName?: string;
+    savedToDisk?: boolean;
     projectPath: Platform.DevToolsPath.UrlString;
-    onApplyToWorkspace?: () => void;
+    applyToWorkspaceTooltipText: Platform.UIString.LocalizedString;
+    onLearnMoreTooltipClick: () => void;
+    onApplyToWorkspace: () => void;
+    onCancel: () => void;
     onDiscard: () => void;
     onSaveAll: () => void;
     onChangeWorkspaceClick: () => void;
 }
-type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+export interface ViewOutput {
+    tooltipRef?: Directives.Ref<HTMLElement>;
+}
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class PatchWidget extends UI.Widget.Widget {
     #private;
     changeSummary: string;

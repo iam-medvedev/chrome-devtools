@@ -235,6 +235,7 @@ models/trace/insights/RenderBlocking.test.js
 models/trace/insights/SlowCSSSelector.test.js
 models/trace/insights/Statistics.test.js
 models/trace/insights/ThirdParties.test.js
+models/trace/insights/UseCache.test.js
 models/trace/insights/Viewport.test.js
 models/trace/lantern/core/NetworkAnalyzer.test.js
 models/trace/lantern/graph/BaseNode.test.js
@@ -428,6 +429,7 @@ panels/performance_monitor/PerformanceMonitor.test.js
 panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
 panels/recorder/RecorderController.test.js
+panels/recorder/injected.test.js
 panels/recorder/components/CreateRecordingView.test.js
 panels/recorder/components/RecordingListView.test.js
 panels/recorder/components/RecordingView.test.js

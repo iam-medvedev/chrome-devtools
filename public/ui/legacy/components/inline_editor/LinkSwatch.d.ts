@@ -1,50 +1,24 @@
-interface BaseLinkSwatchRenderData {
+export interface LinkSwatchRenderData {
+    tooltip: {
+        tooltipId: string;
+    } | {
+        title: string;
+    } | undefined;
     text: string;
-    title: string;
-    showTitle: boolean;
     isDefined: boolean;
+    jslogContext?: string;
     onLinkActivate: (linkText: string) => void;
 }
-declare class BaseLinkSwatch extends HTMLElement {
+export declare class LinkSwatch extends HTMLElement {
     #private;
-    protected readonly shadow: ShadowRoot;
     protected onLinkActivate: (linkText: string, event: MouseEvent | KeyboardEvent) => void;
     connectedCallback(): void;
-    set data(data: BaseLinkSwatchRenderData);
+    set data(data: LinkSwatchRenderData);
     get linkElement(): HTMLElement | undefined;
     private render;
 }
-interface CSSVarSwatchRenderData {
-    variableName: string;
-    computedValue: string | null;
-    fromFallback: boolean;
-    fallbackText: string | null;
-    onLinkActivate: (linkText: string) => void;
-}
-export declare class CSSVarSwatch extends HTMLElement {
-    #private;
-    protected readonly shadow: ShadowRoot;
-    constructor();
-    set data(data: CSSVarSwatchRenderData);
-    get link(): BaseLinkSwatch | undefined;
-    protected render(data: CSSVarSwatchRenderData): void;
-}
-export interface LinkSwatchRenderData {
-    isDefined: boolean;
-    text: string;
-    onLinkActivate: (linkText: string) => void;
-    jslogContext: string;
-}
-export declare class LinkSwatch extends HTMLElement {
-    protected readonly shadow: ShadowRoot;
-    set data(data: LinkSwatchRenderData);
-    protected render(data: LinkSwatchRenderData): void;
-}
 declare global {
     interface HTMLElementTagNameMap {
-        'devtools-base-link-swatch': BaseLinkSwatch;
         'devtools-link-swatch': LinkSwatch;
-        'devtools-css-var-swatch': CSSVarSwatch;
     }
 }
-export {};

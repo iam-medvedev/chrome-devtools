@@ -9,6 +9,10 @@ export default {
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+:host(:focus-within) {
+  /* stylelint-disable-next-line declaration-no-important */
+  outline: none !important;
+}
 
 .css-value-trace {
   --cell-width: 1.5em;
@@ -24,6 +28,11 @@ export default {
     text-align: center;
     color: var(--icon-default);
     padding-top: var(--sys-size-4);
+  }
+
+  :focus {
+    border-radius: var(--sys-size-2);
+    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
   }
 
   details {
@@ -72,6 +81,10 @@ export default {
     padding: var(--sys-size-3);
     grid-column: 2 / 3;
   }
+}
+
+::highlight(css-value-tracing) {
+  background-color: var(--sys-color-tonal-container);
 }
 
 /*# sourceURL=${import.meta.resolve('./cssValueTraceView.css')} */

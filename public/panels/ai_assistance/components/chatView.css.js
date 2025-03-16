@@ -276,7 +276,8 @@ export default {
   width: 100%;
   padding: var(--sys-size-7) var(--sys-size-5);
   font-size: 12px;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
 
   &:last-of-type {
@@ -773,6 +774,10 @@ main {
   margin: 0 var(--sys-size-5);
   padding: 0 var(--sys-size-5);
 
+  &.saved-to-disk {
+    pointer-events: none;
+  }
+
   summary {
     display: flex;
     align-items: center;
@@ -787,10 +792,17 @@ main {
       margin-right: var(--sys-size-3);
     }
 
-    & .difference-icon {
-      color: var(--sys-color-on-tonal-container);
+    & devtools-icon.summary-badge {
       width: var(--sys-size-8);
       height: var(--sys-size-8);
+    }
+
+    & .green-bright-icon {
+      color: var(--sys-color-green-bright);
+    }
+
+    & .on-tonal-icon {
+      color: var(--sys-color-on-tonal-container);
     }
 
     & .header-text {
@@ -819,7 +831,7 @@ main {
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
-  &[open] {
+  &[open]:not(.saved-to-disk) {
     &::details-content {
       height: fit-content;
       padding: var(--sys-size-2) 0;
@@ -841,25 +853,53 @@ main {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    margin: var(--sys-size-5) 0;
+    margin: var(--sys-size-5) 0 var(--sys-size-5) var(--sys-size-2);
+    gap: var(--sys-size-6);
 
     .disclaimer-link {
       align-self: center;
     }
 
+    .sources-link {
+      flex-grow: 1;
+      align-self: center;
+    }
+
     .selected-folder {
-      margin: var(--sys-size-3) var(--sys-size-3) 0 0;
+      display: flex;
+      align-items: center;
+      gap: var(--sys-size-3);
     }
 
     .change-workspace {
       display: flex;
       flex-direction: row;
+      gap: var(--sys-size-2);
+    }
+
+    .info-tooltip-container {
+      max-width: var(--sys-size-28);
+
+      .tooltip-link {
+        display: block;
+        margin-top: var(--sys-size-4);
+        color: var(--sys-color-primary);
+      }
+    }
+
+    .loading-text-container {
+      margin-right: var(--sys-size-3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: var(--sys-size-3);
     }
 
     .apply-to-workspace-container {
       display: flex;
       align-items: center;
       gap: var(--sys-size-3);
+      margin-left: auto;
 
       devtools-icon {
         /* var(--sys-size-8) is too small and var(--sys-size-9) is too big. */

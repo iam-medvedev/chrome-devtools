@@ -23,6 +23,9 @@ export class ConversationContext {
     async refresh() {
         return;
     }
+    getSuggestions() {
+        return;
+    }
 }
 const OBSERVATION_PREFIX = 'OBSERVATION: ';
 /**
@@ -80,10 +83,12 @@ export class AiAgent {
             return typeof temperature === 'number' && temperature >= 0 ? temperature : undefined;
         }
         const enableAidaFunctionCalling = declarations.length && !this.functionCallEmulationEnabled;
+        const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
+        const premable = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : undefined;
         const request = {
             client: Host.AidaClient.CLIENT_NAME,
             current_message: currentMessage,
-            preamble: this.preamble,
+            preamble: premable,
             historical_contexts: history.length ? history : undefined,
             ...(enableAidaFunctionCalling ? { function_declarations: declarations } : {}),
             options: {
@@ -93,7 +98,7 @@ export class AiAgent {
             metadata: {
                 disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
                 string_session_id: this.#sessionId,
-                user_tier: Host.AidaClient.convertToUserTierEnum(this.userTier),
+                user_tier: userTier,
                 client_version: Root.Runtime.getChromeVersion(),
             },
             functionality_type: enableAidaFunctionCalling ? Host.AidaClient.FunctionalityType.AGENTIC_CHAT :

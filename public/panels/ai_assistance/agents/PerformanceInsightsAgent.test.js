@@ -15,9 +15,15 @@ const FAKE_LCP_MODEL = {
     description: 'some description',
     category: Trace.Insights.Types.InsightCategory.ALL,
     state: 'fail',
+    frameId: '123',
 };
 const FAKE_PARSED_TRACE = {};
 describeWithEnvironment('PerformanceInsightsAgent', () => {
+    it('outputs the right title for the selected insight', async () => {
+        const mockInsight = new TimelineUtils.InsightAIContext.ActiveInsight(FAKE_LCP_MODEL, FAKE_PARSED_TRACE);
+        const context = new InsightContext(mockInsight);
+        assert.strictEqual(context.getTitle(), 'Insight: LCP by phase');
+    });
     describe('handleContextDetails', () => {
         it('outputs the right context for the initial query from the user', async () => {
             const mockInsight = new TimelineUtils.InsightAIContext.ActiveInsight(FAKE_LCP_MODEL, FAKE_PARSED_TRACE);
@@ -30,7 +36,7 @@ describeWithEnvironment('PerformanceInsightsAgent', () => {
                             }
                         }]])
             });
-            const expectedDetailText = new PerformanceInsightFormatter(mockInsight.insight).formatInsight();
+            const expectedDetailText = new PerformanceInsightFormatter(mockInsight).formatInsight();
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             assert.deepEqual(responses, [
                 {
@@ -66,7 +72,7 @@ describeWithEnvironment('PerformanceInsightsAgent', () => {
             });
             const mockInsight = new TimelineUtils.InsightAIContext.ActiveInsight(FAKE_LCP_MODEL, FAKE_PARSED_TRACE);
             const context = new InsightContext(mockInsight);
-            const extraContext = new PerformanceInsightFormatter(mockInsight.insight).formatInsight();
+            const extraContext = new PerformanceInsightFormatter(mockInsight).formatInsight();
             const finalQuery = await agent.enhanceQuery('What is this?', context);
             const expected = `${extraContext}
 

@@ -147,4 +147,17 @@ export async function contextAsNumber(context) {
     const digest = await crypto.subtle.digest('SHA-1', data);
     return new DataView(digest).getInt32(0, true);
 }
+export async function logSettingAccess(name, value) {
+    let numericValue = undefined;
+    let stringValue = undefined;
+    if (typeof value === 'string') {
+        stringValue = value;
+    }
+    else if (typeof value === 'number' || typeof value === 'boolean') {
+        numericValue = Number(value);
+    }
+    const settingAccessEvent = { name, numericValue, stringValue };
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordSettingAccess(settingAccessEvent);
+    processEventForDebugging('SettingAccess', null, { name, numericValue, stringValue });
+}
 //# sourceMappingURL=LoggingEvents.js.map

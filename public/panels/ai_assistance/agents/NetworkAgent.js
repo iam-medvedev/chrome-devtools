@@ -7,6 +7,11 @@ import * as Root from '../../../core/root/root.js';
 import * as PanelUtils from '../../utils/utils.js';
 import { NetworkRequestFormatter } from '../data_formatters/NetworkRequestFormatter.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
+/**
+ * WARNING: preamble defined in code is only used when userTier is
+ * TESTERS. Otherwise, a server-side preamble is used (see
+ * chrome_preambles.gcl). Sync local changes with the server-side.
+ */
 /* clang-format off */
 const preamble = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
@@ -109,13 +114,11 @@ export class NetworkAgent extends AiAgent {
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
     get userTier() {
-        const { hostConfig } = Root.Runtime;
-        return hostConfig.devToolsAiAssistanceNetworkAgent?.userTier;
+        return Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.userTier;
     }
     get options() {
-        const { hostConfig } = Root.Runtime;
-        const temperature = hostConfig.devToolsAiAssistanceNetworkAgent?.temperature;
-        const modelId = hostConfig.devToolsAiAssistanceNetworkAgent?.modelId;
+        const temperature = Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.temperature;
+        const modelId = Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.modelId;
         return {
             temperature,
             modelId,

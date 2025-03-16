@@ -451,6 +451,7 @@
       <include file="models/issues_manager/descriptions/corsHeaderDisallowedByPreflightResponse.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSHEADERDISALLOWEDBYPREFLIGHTRESPONSE_MD" resource_path="models/issues_manager/descriptions/corsHeaderDisallowedByPreflightResponse.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/corsInsecurePrivateNetwork.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSINSECUREPRIVATENETWORK_MD" resource_path="models/issues_manager/descriptions/corsInsecurePrivateNetwork.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/corsInvalidHeaderValues.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSINVALIDHEADERVALUES_MD" resource_path="models/issues_manager/descriptions/corsInvalidHeaderValues.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/corsLocalNetworkAccessPermissionDenied.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSLOCALNETWORKACCESSPERMISSIONDENIED_MD" resource_path="models/issues_manager/descriptions/corsLocalNetworkAccessPermissionDenied.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/corsMethodDisallowedByPreflightResponse.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSMETHODDISALLOWEDBYPREFLIGHTRESPONSE_MD" resource_path="models/issues_manager/descriptions/corsMethodDisallowedByPreflightResponse.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/corsNoCorsRedirectModeNotFollow.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSNOCORSREDIRECTMODENOTFOLLOW_MD" resource_path="models/issues_manager/descriptions/corsNoCorsRedirectModeNotFollow.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/corsOriginMismatch.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_CORSORIGINMISMATCH_MD" resource_path="models/issues_manager/descriptions/corsOriginMismatch.md" type="BINDATA" compress="false"/>
@@ -608,6 +609,7 @@
       <include file="panels/browser_debugger/browser_debugger.js" name="PANELS_BROWSER_DEBUGGER_BROWSER_DEBUGGER_JS" resource_path="panels/browser_debugger/browser_debugger.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changes-meta.js" name="PANELS_CHANGES_CHANGES_META_JS" resource_path="panels/changes/changes-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changes.js" name="PANELS_CHANGES_CHANGES_JS" resource_path="panels/changes/changes.js" type="BINDATA" compress="false"/>
+      <include file="panels/common/common.js" name="PANELS_COMMON_COMMON_JS" resource_path="panels/common/common.js" type="BINDATA" compress="false"/>
       <include file="panels/console/console-meta.js" name="PANELS_CONSOLE_CONSOLE_META_JS" resource_path="panels/console/console-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/console/console.js" name="PANELS_CONSOLE_CONSOLE_JS" resource_path="panels/console/console.js" type="BINDATA" compress="false"/>
       <include file="panels/console_counters/console_counters-meta.js" name="PANELS_CONSOLE_COUNTERS_CONSOLE_COUNTERS_META_JS" resource_path="panels/console_counters/console_counters-meta.js" type="BINDATA" compress="false"/>
@@ -1157,6 +1159,7 @@
       <include file="models/trace/insights/SlowCSSSelector.js" name="MODELS_TRACE_INSIGHTS_SLOWCSSSELECTOR_JS" resource_path="models/trace/insights/SlowCSSSelector.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/Statistics.js" name="MODELS_TRACE_INSIGHTS_STATISTICS_JS" resource_path="models/trace/insights/Statistics.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/ThirdParties.js" name="MODELS_TRACE_INSIGHTS_THIRDPARTIES_JS" resource_path="models/trace/insights/ThirdParties.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/UseCache.js" name="MODELS_TRACE_INSIGHTS_USECACHE_JS" resource_path="models/trace/insights/UseCache.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/Viewport.js" name="MODELS_TRACE_INSIGHTS_VIEWPORT_JS" resource_path="models/trace/insights/Viewport.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/types.js" name="MODELS_TRACE_INSIGHTS_TYPES_JS" resource_path="models/trace/insights/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace/lantern/core/LanternError.js" name="MODELS_TRACE_LANTERN_CORE_LANTERNERROR_JS" resource_path="models/trace/lantern/core/LanternError.js" type="BINDATA" compress="false"/>
@@ -1352,6 +1355,7 @@
       <include file="panels/changes/changesSidebar.css.js" name="PANELS_CHANGES_CHANGESSIDEBAR_CSS_JS" resource_path="panels/changes/changesSidebar.css.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/changesView.css.js" name="PANELS_CHANGES_CHANGESVIEW_CSS_JS" resource_path="panels/changes/changesView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/changes/combinedDiffView.css.js" name="PANELS_CHANGES_COMBINEDDIFFVIEW_CSS_JS" resource_path="panels/changes/combinedDiffView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/common/common.css.js" name="PANELS_COMMON_COMMON_CSS_JS" resource_path="panels/common/common.css.js" type="BINDATA" compress="false"/>
       <include file="panels/console/ConsoleContextSelector.js" name="PANELS_CONSOLE_CONSOLECONTEXTSELECTOR_JS" resource_path="panels/console/ConsoleContextSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/console/ConsoleFilter.js" name="PANELS_CONSOLE_CONSOLEFILTER_JS" resource_path="panels/console/ConsoleFilter.js" type="BINDATA" compress="false"/>
       <include file="panels/console/ConsoleFormat.js" name="PANELS_CONSOLE_CONSOLEFORMAT_JS" resource_path="panels/console/ConsoleFormat.js" type="BINDATA" compress="false"/>
@@ -1529,6 +1533,7 @@
       <include file="panels/layer_viewer/PaintProfilerView.js" name="PANELS_LAYER_VIEWER_PAINTPROFILERVIEW_JS" resource_path="panels/layer_viewer/PaintProfilerView.js" type="BINDATA" compress="false"/>
       <include file="panels/layer_viewer/TransformController.js" name="PANELS_LAYER_VIEWER_TRANSFORMCONTROLLER_JS" resource_path="panels/layer_viewer/TransformController.js" type="BINDATA" compress="false"/>
       <include file="panels/layer_viewer/layerDetailsView.css.js" name="PANELS_LAYER_VIEWER_LAYERDETAILSVIEW_CSS_JS" resource_path="panels/layer_viewer/layerDetailsView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/layer_viewer/layerTreeOutline.css.js" name="PANELS_LAYER_VIEWER_LAYERTREEOUTLINE_CSS_JS" resource_path="panels/layer_viewer/layerTreeOutline.css.js" type="BINDATA" compress="false"/>
       <include file="panels/layer_viewer/layers3DView.css.js" name="PANELS_LAYER_VIEWER_LAYERS3DVIEW_CSS_JS" resource_path="panels/layer_viewer/layers3DView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/layer_viewer/paintProfiler.css.js" name="PANELS_LAYER_VIEWER_PAINTPROFILER_CSS_JS" resource_path="panels/layer_viewer/paintProfiler.css.js" type="BINDATA" compress="false"/>
       <include file="panels/layers/LayerPaintProfilerView.js" name="PANELS_LAYERS_LAYERPAINTPROFILERVIEW_JS" resource_path="panels/layers/LayerPaintProfilerView.js" type="BINDATA" compress="false"/>
@@ -1929,6 +1934,7 @@
       <include file="panels/timeline/components/insights/SlowCSSSelector.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_SLOWCSSSELECTOR_JS" resource_path="panels/timeline/components/insights/SlowCSSSelector.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Table.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_TABLE_JS" resource_path="panels/timeline/components/insights/Table.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/ThirdParties.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_THIRDPARTIES_JS" resource_path="panels/timeline/components/insights/ThirdParties.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/UseCache.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_USECACHE_JS" resource_path="panels/timeline/components/insights/UseCache.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/Viewport.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_VIEWPORT_JS" resource_path="panels/timeline/components/insights/Viewport.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/baseInsightComponent.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_BASEINSIGHTCOMPONENT_CSS_JS" resource_path="panels/timeline/components/insights/baseInsightComponent.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/checklist.css.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_CHECKLIST_CSS_JS" resource_path="panels/timeline/components/insights/checklist.css.js" type="BINDATA" compress="false"/>
@@ -2508,7 +2514,6 @@
       <include file="ui/legacy/components/source_frame/imageView.css.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_IMAGEVIEW_CSS_JS" resource_path="ui/legacy/components/source_frame/imageView.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/jsonView.css.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_JSONVIEW_CSS_JS" resource_path="ui/legacy/components/source_frame/jsonView.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/resourceSourceFrame.css.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_RESOURCESOURCEFRAME_CSS_JS" resource_path="ui/legacy/components/source_frame/resourceSourceFrame.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/legacy/components/source_frame/selfXssDialog.css.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_SELFXSSDIALOG_CSS_JS" resource_path="ui/legacy/components/source_frame/selfXssDialog.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/xmlTree.css.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_XMLTREE_CSS_JS" resource_path="ui/legacy/components/source_frame/xmlTree.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/source_frame/xmlView.css.js" name="UI_LEGACY_COMPONENTS_SOURCE_FRAME_XMLVIEW_CSS_JS" resource_path="ui/legacy/components/source_frame/xmlView.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/components/utils/ImagePreview.js" name="UI_LEGACY_COMPONENTS_UTILS_IMAGEPREVIEW_JS" resource_path="ui/legacy/components/utils/ImagePreview.js" type="BINDATA" compress="false"/>

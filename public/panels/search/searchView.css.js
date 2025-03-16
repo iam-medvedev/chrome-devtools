@@ -29,7 +29,7 @@ export default {
     flex-grow: 1;
     box-shadow: inset 0 0 0 2px transparent;
     box-sizing: border-box;
-    height: var(--sys-size-11);
+    height: var(--sys-size-9);
     margin-left: var(--sys-size-3);
     padding: 0 var(--sys-size-2) 0 var(--sys-size-5);
     border-radius: 100px;
@@ -99,6 +99,10 @@ export default {
   flex: 0 0 19px;
   display: flex;
   padding-right: 5px;
+}
+
+.search-results:has(.empty-state) + .search-toolbar-summary {
+  display: none;
 }
 
 .search-toolbar-summary .search-message {

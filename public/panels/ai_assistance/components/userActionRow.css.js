@@ -12,6 +12,7 @@ export default {
 
 
 .ai-assistance-feedback-row {
+  font-family: var(--default-font-family);
   width: 100%;
   display: flex;
   gap: var(--sys-size-8);
@@ -100,6 +101,7 @@ export default {
     height: var(--sys-size-11);
     padding: 0 var(--sys-size-5);
     background-color: var(--sys-color-surface3);
+    width: auto;
   }
 
   .feedback-input::placeholder {

@@ -39,6 +39,9 @@
   ],
   "references": [
     {
+      "path": "../../../Images/optimize_images-tsconfig.json"
+    },
+    {
       "path": "../helpers/bundle-tsconfig.json"
     },
     {

@@ -176,7 +176,7 @@ describe('ExtensionScope', () => {
             const selector = await getSelector({ matchedPayload });
             assert.strictEqual(selector, 'div.container > .header');
         });
-        it('should return nested selector with ai assistance prefix', async () => {
+        it('should skip nested selector with ai assistance prefix', async () => {
             // Order is reversed we know that specificity order will
             // be returned correctly
             // front_end/core/sdk/CSSMatchedStyles.ts:373
@@ -188,6 +188,22 @@ describe('ExtensionScope', () => {
                 }, MOCK_STYLE, {
                     nestingSelectors: [`.${Injected.AI_ASSISTANCE_CSS_CLASS_NAME}-1`],
                 }),
+            ];
+            const selector = await getSelector({ matchedPayload });
+            assert.strictEqual(selector, '.test');
+        });
+        it('should work with nested selector and strip the &', async () => {
+            // Order is reversed we know that specificity order will
+            // be returned correctly
+            // front_end/core/sdk/CSSMatchedStyles.ts:373
+            const matchedPayload = [
+                ruleMatch('.test', MOCK_STYLE),
+                ruleMatch({
+                    selectors: [{ text: 'div&' }],
+                    text: 'div&',
+                }, MOCK_STYLE, {
+                    nestingSelectors: ['.my-parent-selector'],
+                })
             ];
             const selector = await getSelector({ matchedPayload });
             assert.strictEqual(selector, 'div');
@@ -238,6 +254,12 @@ describe('ExtensionScope', () => {
                         }]
                 }, MOCK_STYLE, {
                     styleSheetId: cssStyleSheetHeader.id,
+                }),
+                ruleMatch({
+                    selectors: [{ text: 'div&' }],
+                    text: 'div&',
+                }, MOCK_STYLE, {
+                    nestingSelectors: [`.${Injected.AI_ASSISTANCE_CSS_CLASS_NAME}-1`],
                 }),
             ];
             const matchedStyles = await getMatchedStyles({

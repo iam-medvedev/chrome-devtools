@@ -239,6 +239,7 @@ describeWithEnvironment('TraceProcessor', function () {
                         UIStrings: {},
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         i18nString: (() => { }),
+                        isRenderBlocking: (x) => false,
                         generateInsight: () => {
                             throw new Error('forced error');
                         },
@@ -347,6 +348,7 @@ describeWithEnvironment('TraceProcessor', function () {
                 'DuplicateJavaScript',
                 'SlowCSSSelector',
                 'ForcedReflow',
+                'UseCache',
             ]);
             const orderWithMetadata = await getInsightOrder(true);
             // Viewport is first, before CLSCulprits, since the field data produces a higher weight for INP than for CLS.
@@ -366,6 +368,7 @@ describeWithEnvironment('TraceProcessor', function () {
                 'DuplicateJavaScript',
                 'SlowCSSSelector',
                 'ForcedReflow',
+                'UseCache',
             ]);
         });
     });

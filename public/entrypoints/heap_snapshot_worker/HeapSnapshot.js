@@ -729,7 +729,6 @@ export class HeapSnapshot {
         this.buildSamples();
         this.#progress.updateStatus('Building locations…');
         this.buildLocationMap();
-        this.#progress.updateStatus('Finished processing.');
         if (this.profile.snapshot.trace_function_count) {
             this.#progress.updateStatus('Building allocation statistics…');
             const nodes = this.nodes;
@@ -749,8 +748,8 @@ export class HeapSnapshot {
                 stats.ids.push(node.id());
             }
             this.#allocationProfile = new AllocationProfile(this.profile, liveObjects);
-            this.#progress.updateStatus('done');
         }
+        this.#progress.updateStatus('Finished processing.');
     }
     buildEdgeIndexes() {
         const nodes = this.nodes;

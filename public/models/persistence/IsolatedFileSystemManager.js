@@ -138,7 +138,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         });
     }
     removeFileSystem(fileSystem) {
-        Host.userMetrics.actionTaken(fileSystem.type() === 'overrides' ? Host.UserMetrics.Action.OverrideTabRemoveFolder :
+        Host.userMetrics.actionTaken(fileSystem.type() === PlatformFileSystemType.OVERRIDES ? Host.UserMetrics.Action.OverrideTabRemoveFolder :
             Host.UserMetrics.Action.WorkspaceTabRemoveFolder);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.removeFileSystem(fileSystem.embedderPath());
     }

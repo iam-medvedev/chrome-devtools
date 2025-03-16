@@ -1,7 +1,8 @@
 import * as Trace from '../../../models/trace/trace.js';
+import type * as TimelineUtils from '../../timeline/utils/utils.js';
 export declare class PerformanceInsightFormatter {
     #private;
-    constructor(insight: Trace.Insights.Types.InsightModel);
+    constructor(activeInsight: TimelineUtils.InsightAIContext.ActiveInsight);
     formatInsight(): string;
 }
 export interface NetworkRequestFormatOptions {

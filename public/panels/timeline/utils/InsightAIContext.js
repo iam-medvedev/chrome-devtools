@@ -69,8 +69,47 @@ export class AIQueries {
      * the relevant time range of the given insight.
      */
     static mainThreadActivity(insight, parsedTrace) {
+        /**
+         * We cannot assume that there is one main thread as there are scenarios
+         * where there can be multiple (see crbug.com/402658800) as an example.
+         * Therefore we calculate the main thread by using the thread that the
+         * Insight has been associated to. Most Insights relate to a navigation, so
+         * in this case we can use the navigation's PID/TID as we know that will
+         * have run on the main thread that we are interested in.
+         * If we do not have a navigation, we fall back to looking for the first
+         * thread we find that is of type MAIN_THREAD.
+         * Longer term we should solve this at the Trace Engine level to avoid
+         * look-ups like this; this is the work that is tracked in
+         * crbug.com/402658800.
+         */
+        let mainThreadPID = null;
+        let mainThreadTID = null;
+        if (insight.navigationId) {
+            const navigation = parsedTrace.Meta.navigationsByNavigationId.get(insight.navigationId);
+            if (navigation?.args.data?.isOutermostMainFrame) {
+                mainThreadPID = navigation.pid;
+                mainThreadTID = navigation.tid;
+            }
+        }
+        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace);
+        const thread = threads.find(thread => {
+            if (mainThreadPID && mainThreadTID) {
+                return thread.pid === mainThreadPID && thread.tid === mainThreadTID;
+            }
+            return thread.type === "MAIN_THREAD" /* Trace.Handlers.Threads.ThreadType.MAIN_THREAD */;
+        });
+        if (!thread) {
+            return null;
+        }
         const bounds = insightBounds(insight, parsedTrace);
-        return AICallTree.fromTime(bounds.min, bounds.max, parsedTrace);
+        return AICallTree.fromTimeOnThread({
+            thread: {
+                pid: thread.pid,
+                tid: thread.tid,
+            },
+            parsedTrace,
+            bounds,
+        });
     }
 }
 /**

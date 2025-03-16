@@ -10,6 +10,7 @@ type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'fetch' | 'registerClie
 export declare class ConsoleInsight extends HTMLElement {
     #private;
     static create(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient): Promise<ConsoleInsight>;
+    disableAnimations: boolean;
     constructor(promptBuilder: PublicPromptBuilder, aidaClient: PublicAidaClient, aidaAvailability: Host.AidaClient.AidaAccessPreconditions);
     connectedCallback(): void;
     disconnectedCallback(): void;

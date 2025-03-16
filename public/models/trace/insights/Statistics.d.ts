@@ -12,3 +12,7 @@ export declare function getLogNormalScore({ median, p10 }: {
     median: number;
     p10: number;
 }, value: number): number;
+/**
+ * Interpolates the y value at a point x on the line defined by (x0, y0) and (x1, y1)
+ */
+export declare function linearInterpolation(x0: number, y0: number, x1: number, y1: number, x: number): number;

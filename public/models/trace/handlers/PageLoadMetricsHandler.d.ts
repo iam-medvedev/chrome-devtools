@@ -69,3 +69,8 @@ export interface MetricScore {
     estimated?: boolean;
     timing: Types.Timing.Micro;
 }
+export type LCPMetricScore = MetricScore & {
+    event: Types.Events.LargestContentfulPaintCandidate;
+    metricName: MetricName.LCP;
+};
+export declare function metricIsLCP(metric: MetricScore): metric is LCPMetricScore;

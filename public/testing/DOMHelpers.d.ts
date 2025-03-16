@@ -95,4 +95,14 @@ export declare function getCleanTextContentFromElements(el: ShadowRoot | HTMLEle
 export declare function getCleanTextContentFromSingleElement(el: ShadowRoot | HTMLElement, selector: string): string;
 export declare function assertNodeTextContent(component: NodeText.NodeText.NodeText, expectedContent: string): void;
 export declare function querySelectorErrorOnMissing<T extends HTMLElement = HTMLElement>(parent: HTMLElement, selector: string): T;
+/**
+ * Given a filename in the format "<folder>/<image.png>"
+ * this function asserts that a screenshot taken from the element
+ * identified by the TEST_CONTAINER_ID matches a screenshot
+ * in test/interactions/goldens/linux/<folder>/<image.png>.
+ *
+ * Currently, it only asserts screenshots match goldens on Linux.
+ * The function relies on the bindings exposed via the karma config.
+ */
+export declare function assertScreenshot(filename: string): Promise<void>;
 export {};

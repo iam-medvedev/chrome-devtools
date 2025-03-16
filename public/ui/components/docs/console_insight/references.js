@@ -91,5 +91,6 @@ A direct citation is a link to a reference, but it only applies to a specific pa
     },
     registerClientEvent: () => Promise.resolve({}),
 }, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+component.disableAnimations = true;
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=references.js.map

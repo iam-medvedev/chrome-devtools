@@ -16,5 +16,4 @@ export declare class ChangeManager {
     clear(): Promise<void>;
     addChange(cssModel: SDK.CSSModel.CSSModel, frameId: Protocol.Page.FrameId, change: Change): Promise<string>;
     formatChangesForPatching(groupId: string, includeSourceLocation?: boolean): string;
-    formatChangesForInspectoStylesheet(changes: Change[]): string;
 }

@@ -19,6 +19,7 @@ export declare class Settings {
         syncedStorage: SettingsStorage | null;
         globalStorage: SettingsStorage | null;
         localStorage: SettingsStorage | null;
+        logSettingAccess?: (name: string, value: number | string | boolean) => Promise<void>;
     }): Settings;
     static removeInstance(): void;
     private registerModuleSetting;
@@ -81,7 +82,7 @@ export declare class Setting<V> {
     readonly defaultValue: V;
     private readonly eventSupport;
     readonly storage: SettingsStorage;
-    constructor(name: string, defaultValue: V, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage);
+    constructor(name: string, defaultValue: V, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage, logSettingAccess?: (name: string, value: number | string | boolean) => Promise<void>);
     setSerializer(serializer: Serializer<unknown, V>): void;
     addChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): EventDescriptor;
     removeChangeListener(listener: (arg0: EventTargetEvent<V>) => void, thisObject?: Object): void;
@@ -109,7 +110,7 @@ export declare class Setting<V> {
 }
 export declare class RegExpSetting extends Setting<any> {
     #private;
-    constructor(name: string, defaultValue: string, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage, regexFlags?: string);
+    constructor(name: string, defaultValue: string, eventSupport: ObjectWrapper<GenericEvents>, storage: SettingsStorage, regexFlags?: string, logSettingAccess?: (name: string, value: number | string | boolean) => Promise<void>);
     get(): string;
     getAsArray(): RegExpSettingItem[];
     set(value: string): void;

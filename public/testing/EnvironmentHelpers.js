@@ -204,8 +204,10 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-trace-expand', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'flamechart-selected-navigation', false, "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-css-property-documentation-on-hover', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
-        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
-        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'ai-assistance-history-entries', [], "array" /* Common.Settings.SettingType.ARRAY */),
+        createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-annotations-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-history-entries', [], "array" /* Common.Settings.SettingType.ARRAY */),
+        createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-patching-fre-completed', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
@@ -396,7 +398,7 @@ export function restoreUserAgentForTesting() {
 }
 export function resetHostConfig() {
     for (const key of Object.keys(Root.Runtime.hostConfig)) {
-        // @ts-expect-error
+        // @ts-expect-error TypeScript does not deduce the correct type
         delete Root.Runtime.hostConfig[key];
     }
 }

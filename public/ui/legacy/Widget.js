@@ -86,11 +86,15 @@ export class WidgetElement extends HTMLElement {
         this.#widgetClass = config.widgetClass;
         this.#widgetParams = config.widgetParams;
     }
+    getWidget() {
+        return Widget.get(this);
+    }
     connectedCallback() {
-        // When using <devtools-widget> we suppress
-        // suppressOrphanWidgetError and allow the Widget instance to be
-        // treated as a root instance if no root widget was found.
-        Widget.getOrCreateWidget(this).show(this.parentElement, undefined, /* suppressOrphanWidgetError= */ true);
+        const widget = Widget.getOrCreateWidget(this);
+        if (!widget.element.parentElement) {
+            widget.markAsRoot();
+        }
+        widget.show(this.parentElement, undefined, /* suppressOrphanWidgetError= */ true);
     }
     appendChild(child) {
         if (child instanceof HTMLElement && child.tagName !== 'STYLE') {

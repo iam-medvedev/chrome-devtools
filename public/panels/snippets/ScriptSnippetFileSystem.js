@@ -163,7 +163,8 @@ export function isSnippetsUISourceCode(uiSourceCode) {
 }
 export function isSnippetsProject(project) {
     return project.type() === Workspace.Workspace.projectTypes.FileSystem &&
-        Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) === 'snippets';
+        Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) ===
+            Persistence.PlatformFileSystem.PlatformFileSystemType.SNIPPETS;
 }
 export function findSnippetsProject() {
     const workspaceProject = Workspace.Workspace.WorkspaceImpl.instance()

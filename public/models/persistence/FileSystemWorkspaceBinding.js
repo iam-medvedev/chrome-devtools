@@ -61,8 +61,10 @@ export class FileSystemWorkspaceBinding {
         return fileSystem.tooltipForURL(uiSourceCode.url());
     }
     static fileSystemType(project) {
-        const fileSystem = project.fileSystemInternal;
-        return fileSystem.type();
+        if (project instanceof FileSystem) {
+            return project.fileSystemInternal.type();
+        }
+        throw new TypeError('project is not a FileSystem');
     }
     static fileSystemSupportsAutomapping(project) {
         const fileSystem = project.fileSystemInternal;

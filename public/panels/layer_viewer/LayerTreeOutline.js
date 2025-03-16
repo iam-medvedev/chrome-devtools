@@ -30,8 +30,15 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
+import layerTreeOutlineStyles from './layerTreeOutline.css.js';
 import { LayerSelection, } from './LayerViewHost.js';
 const UIStrings = {
+    /**
+     *@description A count of the number of rendering layers in Layer Tree Outline of the Layers panel
+     *@example {10} PH1
+     */
+    layerCount: '{PH1} layers',
     /**
      *@description Label for layers sidepanel tree
      */
@@ -53,6 +60,8 @@ export class LayerTreeOutline extends Common.ObjectWrapper.eventMixin(UI.TreeOut
     layerViewHost;
     treeOutline;
     lastHoveredNode;
+    layerCountElement;
+    layerMemoryElement;
     element;
     layerTree;
     layerSnapshotMap;
@@ -67,7 +76,19 @@ export class LayerTreeOutline extends Common.ObjectWrapper.eventMixin(UI.TreeOut
         this.treeOutline.element.addEventListener('contextmenu', this.onContextMenu.bind(this), true);
         UI.ARIAUtils.setLabel(this.treeOutline.contentElement, i18nString(UIStrings.layersTreePane));
         this.lastHoveredNode = null;
-        this.element = this.treeOutline.element;
+        const summaryElement = document.createElement('div');
+        summaryElement.classList.add('hbox', 'layer-summary');
+        this.layerCountElement = document.createElement('span');
+        this.layerCountElement.classList.add('layer-count');
+        this.layerMemoryElement = document.createElement('span');
+        summaryElement.appendChild(this.layerCountElement);
+        summaryElement.appendChild(this.layerMemoryElement);
+        const wrapperElement = document.createElement('div');
+        wrapperElement.classList.add('vbox', 'layer-tree-wrapper');
+        wrapperElement.appendChild(this.treeOutline.element);
+        wrapperElement.appendChild(summaryElement);
+        this.element = wrapperElement;
+        ThemeSupport.ThemeSupport.instance().appendStyle(this.element, layerTreeOutlineStyles);
         this.layerViewHost.showInternalLayersSetting().addChangeListener(this.update, this);
     }
     focus() {
@@ -114,6 +135,8 @@ export class LayerTreeOutline extends Common.ObjectWrapper.eventMixin(UI.TreeOut
                 root = this.layerTree.root();
             }
         }
+        let layerCount = 0;
+        let totalLayerMemory = 0;
         function updateLayer(layer) {
             if (!layer.drawsContent() && !showInternalLayers) {
                 return;
@@ -122,6 +145,8 @@ export class LayerTreeOutline extends Common.ObjectWrapper.eventMixin(UI.TreeOut
                 console.assert(false, 'Duplicate layer: ' + layer.id());
             }
             seenLayers.set(layer, true);
+            layerCount++;
+            totalLayerMemory += layer.gpuMemoryUsage();
             let node = layerToTreeElement.get(layer) || null;
             let parentLayer = layer.parent();
             // Skip till nearest visible ancestor.
@@ -158,7 +183,7 @@ export class LayerTreeOutline extends Common.ObjectWrapper.eventMixin(UI.TreeOut
         if (root && this.layerTree) {
             this.layerTree.forEachLayer(updateLayer.bind(this), root);
         }
-        // Cleanup layers that don't exist anymore from tree.
+        // Clean up layers that don't exist anymore from tree.
         const rootElement = this.treeOutline.rootElement();
         for (let node = rootElement.firstChild(); node instanceof LayerTreeElement && !node.root;) {
             if (seenLayers.get(node.layer)) {
@@ -184,6 +209,8 @@ export class LayerTreeOutline extends Common.ObjectWrapper.eventMixin(UI.TreeOut
                 }
             }
         }
+        this.layerCountElement.textContent = i18nString(UIStrings.layerCount, { PH1: layerCount });
+        this.layerMemoryElement.textContent = i18n.ByteUtilities.bytesToString(totalLayerMemory);
     }
     onMouseMove(event) {
         const node = this.treeOutline.treeElementFromEvent(event);

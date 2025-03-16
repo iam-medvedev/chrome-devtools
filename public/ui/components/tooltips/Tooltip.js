@@ -8,13 +8,16 @@ const { html } = Lit;
 /**
  * @attr id - Id of the tooltip. Used for searching an anchor element with aria-describedby.
  * @attr hover-delay - Hover length in ms before the tooltip is shown and hidden.
- * @attr variant - Variant of the tooltip, `"simple"` for strings only, inverted background,
- *                 `"rich"` for interactive content, background according to theme's surface.
+ * @attr variant - Variant of the tooltip, `"simple"` for strings only, inverted background, `"rich"` for interactive
+ *                 content, background according to theme's surface.
  * @attr use-click - If present, the tooltip will be shown on click instead of on hover.
+ * @attr use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus. Requires a hotkey to
+ *                    open when fosed (Alt-down). When `"use-click"` is present as well, use-click takes precedence.
  * @prop {String} id - reflects the `"id"` attribute.
  * @prop {Number} hoverDelay - reflects the `"hover-delay"` attribute.
  * @prop {String} variant - reflects the `"variant"` attribute.
  * @prop {Boolean} useClick - reflects the `"click"` attribute.
+ * @prop {Boolean} useHotkey - reflects the `"use-hotkey"` attribute.
  */
 export class Tooltip extends HTMLElement {
     static observedAttributes = ['id', 'variant', 'jslogcontext'];
@@ -25,6 +28,17 @@ export class Tooltip extends HTMLElement {
     #anchorObserver = null;
     get open() {
         return this.matches(':popover-open');
+    }
+    get useHotkey() {
+        return this.hasAttribute('use-hotkey') ?? false;
+    }
+    set useHotkey(useHotkey) {
+        if (useHotkey) {
+            this.setAttribute('use-hotkey', '');
+        }
+        else {
+            this.removeAttribute('use-hotkey');
+        }
     }
     get useClick() {
         return this.hasAttribute('use-click') ?? false;
@@ -55,6 +69,9 @@ export class Tooltip extends HTMLElement {
     set jslogContext(jslogContext) {
         this.setAttribute('jslogcontext', jslogContext);
         this.#updateJslog();
+    }
+    get anchor() {
+        return this.#anchor;
     }
     constructor(properties) {
         super();
@@ -119,7 +136,8 @@ export class Tooltip extends HTMLElement {
             window.clearTimeout(this.#timeout);
         }
         // Don't hide a rich tooltip when hovering over the tooltip itself.
-        if (this.variant === 'rich' && event.relatedTarget === this) {
+        if (event && this.variant === 'rich' &&
+            (event.relatedTarget === this || event.relatedTarget?.parentElement === this)) {
             return;
         }
         this.#timeout = window.setTimeout(() => {
@@ -162,6 +180,12 @@ export class Tooltip extends HTMLElement {
             this.#closing = false;
         }
     };
+    #keyDown = (event) => {
+        if ((event.altKey && event.key === 'ArrowDown') || (event.key === 'Escape' && this.open)) {
+            this.toggle();
+            event.stopPropagation();
+        }
+    };
     #registerEventListeners() {
         if (this.#anchor) {
             if (this.useClick) {
@@ -169,7 +193,12 @@ export class Tooltip extends HTMLElement {
             }
             else {
                 this.#anchor.addEventListener('mouseenter', this.showTooltip);
-                this.#anchor.addEventListener('focus', this.showTooltip);
+                if (this.useHotkey) {
+                    this.#anchor.addEventListener('keydown', this.#keyDown);
+                }
+                else {
+                    this.#anchor.addEventListener('focus', this.showTooltip);
+                }
                 this.#anchor.addEventListener('blur', this.hideTooltip);
                 this.#anchor.addEventListener('mouseleave', this.hideTooltip);
                 this.addEventListener('mouseleave', this.hideTooltip);
@@ -190,6 +219,7 @@ export class Tooltip extends HTMLElement {
             this.#anchor.removeEventListener('mouseenter', this.showTooltip);
             this.#anchor.removeEventListener('focus', this.showTooltip);
             this.#anchor.removeEventListener('blur', this.hideTooltip);
+            this.#anchor.removeEventListener('keydown', this.#keyDown);
             this.#anchor.removeEventListener('mouseleave', this.hideTooltip);
         }
         this.removeEventListener('mouseleave', this.hideTooltip);

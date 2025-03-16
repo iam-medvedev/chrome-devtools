@@ -12,7 +12,7 @@ import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenu, getMenuItemLabels, } from '../../testing/ContextMenuHelpers.js';
 import { dispatchClickEvent, raf } from '../../testing/DOMHelpers.js';
-import { createTarget, registerNoopActions, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerNoopActions, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
@@ -748,6 +748,21 @@ describeWithMockConnection('NetworkLogView placeholder', () => {
         networkLogView.setRecording(true);
         testPlaceholderText(networkLogView, 'Currently recording network activity', 'Perform a request or reload the page by using the \"Reload page\" button or by hitting Ctrl.');
         testPlaceholderButton(networkLogView, 'Reload page', RELOAD_ID);
+    });
+});
+describeWithEnvironment('NetworkLogView', () => {
+    it('renders when actions aren\'t registered', async () => {
+        stubNoopSettings();
+        sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
+            shortcutTitleForAction: () => 'Ctrl',
+            shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: UI.KeyboardShortcut.Keys.Ctrl.code, name: 'Ctrl' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */)],
+        });
+        try {
+            createNetworkLogView();
+        }
+        catch {
+            assert.fail('Creating the network view without registring the actions shouldn\'t fail.');
+        }
     });
 });
 function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescriptionText) {

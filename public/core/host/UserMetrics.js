@@ -1031,8 +1031,9 @@ export var IssueCreated;
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::ValidationFailedSignatureExpired"] = 108] = "SRIMessageSignatureIssue::ValidationFailedSignatureExpired";
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::ValidationFailedInvalidLength"] = 109] = "SRIMessageSignatureIssue::ValidationFailedInvalidLength";
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::ValidationFailedSignatureMismatch"] = 110] = "SRIMessageSignatureIssue::ValidationFailedSignatureMismatch";
+    IssueCreated[IssueCreated["CorsIssue::LocalNetworkAccessPermissionDenied"] = 111] = "CorsIssue::LocalNetworkAccessPermissionDenied";
     /* eslint-enable @typescript-eslint/naming-convention */
-    IssueCreated[IssueCreated["MAX_VALUE"] = 111] = "MAX_VALUE";
+    IssueCreated[IssueCreated["MAX_VALUE"] = 112] = "MAX_VALUE";
 })(IssueCreated || (IssueCreated = {}));
 export var Language;
 (function (Language) {

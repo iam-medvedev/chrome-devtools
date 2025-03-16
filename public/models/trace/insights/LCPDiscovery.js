@@ -90,9 +90,9 @@ export function generateInsight(parsedTrace, context) {
     }
     const docRequest = networkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
     if (!docRequest) {
-        return finalize({ lcpEvent, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
+        return finalize({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
     }
-    const lcpRequest = parsedTrace.LargestImagePaint.lcpRequestByNavigation.get(context.navigation);
+    const lcpRequest = parsedTrace.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
     if (!lcpRequest) {
         return finalize({ lcpEvent });
     }

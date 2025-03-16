@@ -1265,7 +1265,7 @@ export class StylePropertiesSection {
     }
     startEditingSelector() {
         const element = this.selectorElement;
-        if (UI.UIUtils.isBeingEdited(element)) {
+        if (UI.UIUtils.isBeingEdited(element) || this.titleElement.classList.contains('hidden')) {
             return;
         }
         element.scrollIntoViewIfNeeded(false);

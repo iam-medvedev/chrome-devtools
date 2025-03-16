@@ -54,6 +54,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Optimize DOM size',
             'CSS Selector costs',
             'Forced reflow',
+            'Use efficient cache lifetimes',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -68,6 +69,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Optimize DOM size',
             'CSS Selector costs',
             'Forced reflow',
+            'Use efficient cache lifetimes',
         ]);
     });
     it('does not render experimental insights by default', async function () {
@@ -96,6 +98,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Improve image delivery',
             'Font display',
             '3rd parties',
+            'Use efficient cache lifetimes',
             'INP by phase',
             'LCP request discovery',
             'Render blocking requests',
@@ -147,6 +150,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Improve image delivery',
             'Font display',
             '3rd parties',
+            'Use efficient cache lifetimes',
             'INP by phase',
             'LCP request discovery',
             'Render blocking requests',

@@ -39,14 +39,15 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
     #workspace = Workspace.Workspace.WorkspaceImpl.instance();
     #projects = [];
     #selectedIndex = 0;
-    #handleProjectSelected;
+    #onProjectSelected;
     #boundOnKeyDown;
     #dialog;
     constructor(options, view) {
         super();
+        this.element.classList.add('dialog-container');
         this.registerRequiredCSS(selectWorkspaceDialogStyles);
         this.#boundOnKeyDown = this.#onKeyDown.bind(this);
-        this.#handleProjectSelected = options.handleProjectSelected;
+        this.#onProjectSelected = options.onProjectSelected;
         this.#projects = this.#getProjects();
         this.#dialog = options.dialog;
         if (options.currentProject) {
@@ -132,7 +133,7 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
             },
             onSelectButtonClick: () => {
                 this.#dialog.hide();
-                this.#handleProjectSelected(this.#projects[this.#selectedIndex]);
+                this.#onProjectSelected(this.#projects[this.#selectedIndex]);
             },
             onCancelButtonClick: () => {
                 this.#dialog.hide();
@@ -152,6 +153,14 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
     #onProjectAdded() {
         this.#projects = this.#getProjects();
         this.requestUpdate();
+    }
+    static show(onProjectSelected, currentProject) {
+        const dialog = new UI.Dialog.Dialog('select-workspace');
+        dialog.setMaxContentSize(new UI.Geometry.Size(384, 340));
+        dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
+        dialog.setDimmed(true);
+        new SelectWorkspaceDialog({ dialog, onProjectSelected, currentProject }).show(dialog.contentElement);
+        dialog.show();
     }
 }
 //# sourceMappingURL=SelectWorkspaceDialog.js.map

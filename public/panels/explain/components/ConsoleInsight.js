@@ -195,6 +195,7 @@ export class ConsoleInsight extends HTMLElement {
         return new ConsoleInsight(promptBuilder, aidaClient, aidaAvailability);
     }
     #shadow = this.attachShadow({ mode: 'open' });
+    disableAnimations = false;
     #promptBuilder;
     #aidaClient;
     #renderer;
@@ -665,7 +666,7 @@ export class ConsoleInsight extends HTMLElement {
                 return html `
         <main jslog=${jslog}>
           ${this.#state.validMarkdown ? html `<devtools-markdown-view
-              .data=${{ tokens: this.#state.tokens, renderer: this.#renderer, animationEnabled: true }}>
+              .data=${{ tokens: this.#state.tokens, renderer: this.#renderer, animationEnabled: !this.disableAnimations }}>
             </devtools-markdown-view>` : this.#state.explanation}
           ${this.#state.timedOut ? html `<p class="error-message">${i18nString(UIStrings.timedOut)}</p>` : Lit.nothing}
           ${this.#isSearchRagResponse(this.#state.metadata) ? html `

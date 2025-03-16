@@ -722,6 +722,7 @@ class ToolbarInputElement extends HTMLElement {
     static observedAttributes = ['value'];
     item;
     datalist = null;
+    value = undefined;
     connectedCallback() {
         if (this.item) {
             return;
@@ -745,6 +746,9 @@ class ToolbarInputElement extends HTMLElement {
             /* shrinkFactor=*/ undefined, tooltip, this.datalist ? this.#onAutocomplete.bind(this) : undefined, 
             /* dynamicCompletions=*/ undefined, jslogContext, this);
         }
+        if (this.value) {
+            this.item.setValue(this.value);
+        }
         this.item.addEventListener("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, event => {
             this.dispatchEvent(new CustomEvent('change', { detail: event.data }));
         });
@@ -763,6 +767,9 @@ class ToolbarInputElement extends HTMLElement {
         if (name === 'value') {
             if (this.item && this.item.value() !== newValue) {
                 this.item.setValue(newValue, true);
+            }
+            else {
+                this.value = newValue;
             }
         }
     }

@@ -32,7 +32,8 @@ export interface UserActionRowWidgetParams {
     onSuggestionClick: (suggestion: string) => void;
     canShowFeedbackForm: boolean;
 }
-export type View = (input: UserActionRowViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: (input: UserActionRowViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = typeof DEFAULT_VIEW;
 /**
  * This presenter has too many responsibilities (rating buttons, feedback
  * form, suggestions).
@@ -44,6 +45,7 @@ export declare class UserActionRow extends UI.Widget.Widget implements UserActio
     suggestions: [string, ...string[]] | undefined;
     onSuggestionClick: (suggestion: string) => void;
     canShowFeedbackForm: boolean;
+    view: View;
     constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
     performUpdate(): Promise<void> | void;

@@ -39,8 +39,6 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     get options(): RequestOptions;
     get multimodalInputEnabled(): boolean;
     parseTextResponse(text: string): ParsedResponse;
-    changes: ChangeManager;
-    createExtensionScope: CreateExtensionScopeFunction;
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;
     protected emulateFunctionCall(aidaResponse: Host.AidaClient.AidaResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';

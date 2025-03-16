@@ -24,6 +24,7 @@ export declare const UIStrings: {
     readonly noRenderBlocking: "No render blocking requests for this navigation";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
+export declare function isRenderBlocking(insight: InsightModel): insight is RenderBlockingInsightModel;
 export type RenderBlockingInsightModel = InsightModel<typeof UIStrings, {
     renderBlockingRequests: Types.Events.SyntheticNetworkRequest[];
     requestIdToWastedMs?: Map<string, number>;

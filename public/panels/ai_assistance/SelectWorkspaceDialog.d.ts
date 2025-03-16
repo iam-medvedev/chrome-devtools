@@ -16,11 +16,12 @@ export declare class SelectWorkspaceDialog extends UI.Widget.VBox {
     #private;
     constructor(options: {
         dialog: UI.Dialog.Dialog;
-        handleProjectSelected: (project: Workspace.Workspace.Project) => void;
+        onProjectSelected: (project: Workspace.Workspace.Project) => void;
         currentProject?: Workspace.Workspace.Project;
     }, view?: View);
     wasShown(): void;
     willHide(): void;
     performUpdate(): void;
+    static show(onProjectSelected: (project: Workspace.Workspace.Project) => void, currentProject?: Workspace.Workspace.Project): void;
 }
 export {};

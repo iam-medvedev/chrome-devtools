@@ -266,7 +266,6 @@ export class ActionDelegate {
     }
 }
 function shouldRenderCombinedDiffView() {
-    const { hostConfig } = Root.Runtime;
-    return Boolean(hostConfig.devToolsFreestyler?.patching);
+    return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.patching);
 }
 //# sourceMappingURL=ChangesView.js.map

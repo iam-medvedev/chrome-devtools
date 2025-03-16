@@ -42,6 +42,90 @@ export function rendererBase(matchT) {
     }
     return RendererBase;
 }
+// This class implements highlighting for rendered nodes in value traces. On hover, all nodes belonging to the same
+// Match (using object identity) are highlighted.
+export class Highlighting {
+    static REGISTRY_NAME = 'css-value-tracing';
+    // This holds a stack of active ranges, the top-stack is the currently highlighted set. mouseenter and mouseleave
+    // push and pop range sets, respectively.
+    #activeHighlights = [];
+    // We hold a bidirectional mapping between nodes and matches. A node can belong to multiple matches when matches are
+    // nested (via function arguments for instance).
+    #nodesForMatches = new Map();
+    #matchesForNodes = new Map();
+    #registry;
+    #boundOnEnter;
+    #boundOnExit;
+    constructor() {
+        const registry = CSS.highlights.get(Highlighting.REGISTRY_NAME);
+        this.#registry = registry ?? new Highlight();
+        if (!registry) {
+            CSS.highlights.set(Highlighting.REGISTRY_NAME, this.#registry);
+        }
+        this.#boundOnExit = this.#onExit.bind(this);
+        this.#boundOnEnter = this.#onEnter.bind(this);
+    }
+    addMatch(match, nodes) {
+        if (nodes.length > 0) {
+            const ranges = this.#nodesForMatches.get(match);
+            if (ranges) {
+                ranges.push(nodes);
+            }
+            else {
+                this.#nodesForMatches.set(match, [nodes]);
+            }
+        }
+        for (const node of nodes) {
+            const matches = this.#matchesForNodes.get(node);
+            if (matches) {
+                matches.push(match);
+            }
+            else {
+                this.#matchesForNodes.set(node, [match]);
+            }
+            if (node instanceof HTMLElement) {
+                node.onmouseenter = this.#boundOnEnter;
+                node.onmouseleave = this.#boundOnExit;
+                node.onfocus = this.#boundOnEnter;
+                node.onblur = this.#boundOnExit;
+                node.tabIndex = 0;
+            }
+        }
+    }
+    *#nodeRangesHitByMouseEvent(e) {
+        for (const node of e.composedPath()) {
+            const matches = this.#matchesForNodes.get(node);
+            if (matches) {
+                for (const match of matches) {
+                    yield* this.#nodesForMatches.get(match) ?? [];
+                }
+                break;
+            }
+        }
+    }
+    #onEnter(e) {
+        this.#registry.clear();
+        this.#activeHighlights.push([]);
+        for (const nodeRange of this.#nodeRangesHitByMouseEvent(e)) {
+            const range = new Range();
+            const begin = nodeRange[0];
+            const end = nodeRange[nodeRange.length - 1];
+            if (begin.parentNode && end.parentNode) {
+                range.setStartBefore(begin);
+                range.setEndAfter(end);
+                this.#activeHighlights[this.#activeHighlights.length - 1].push(range);
+                this.#registry.add(range);
+            }
+        }
+    }
+    #onExit() {
+        this.#registry.clear();
+        this.#activeHighlights.pop();
+        if (this.#activeHighlights.length > 0) {
+            this.#activeHighlights[this.#activeHighlights.length - 1].forEach(range => this.#registry.add(range));
+        }
+    }
+}
 // This class is used to guide value tracing when passed to the Renderer. Tracing has two phases. First, substitutions
 // such as var() are applied step by step. In each step, all vars in the value are replaced by their definition until no
 // vars remain. In the second phase, we evaluate other functions such as calc() or min() or color-mix(). Which CSS
@@ -62,13 +146,19 @@ export class TracingContext {
     #evaluationCount = 0;
     #appliedEvaluations = 0;
     #hasMoreEvaluations = true;
-    constructor(matchedResult) {
+    #highlighting;
+    #parsedValueCache = new Map();
+    constructor(highlighting, matchedResult) {
+        this.#highlighting = highlighting;
         this.#hasMoreSubstitutions =
             matchedResult?.hasMatches(SDK.CSSPropertyParserMatchers.VariableMatch, SDK.CSSPropertyParserMatchers.BaseVariableMatch) ??
                 false;
     }
+    get highlighting() {
+        return this.#highlighting;
+    }
     renderingContext(context) {
-        return new RenderingContext(context.ast, context.renderers, context.matchedResult, context.cssControls, context.options, this);
+        return new RenderingContext(context.ast, context.property, context.renderers, context.matchedResult, context.cssControls, context.options, this);
     }
     nextSubstitution() {
         if (!this.#hasMoreSubstitutions) {
@@ -104,11 +194,12 @@ export class TracingContext {
     // be passed to the Renderer calls for the respective subtrees.
     evaluation(args) {
         const childContexts = args.map(() => {
-            const child = new TracingContext();
+            const child = new TracingContext(this.#highlighting);
             child.#parent = this;
             child.#substitutionDepth = this.#substitutionDepth;
             child.#evaluationCount = this.#evaluationCount;
             child.#hasMoreSubstitutions = this.#hasMoreSubstitutions;
+            child.#parsedValueCache = this.#parsedValueCache;
             return child;
         });
         return childContexts;
@@ -143,23 +234,35 @@ export class TracingContext {
             this.#setHasMoreSubstitutions();
             return null;
         }
-        const child = new TracingContext();
+        const child = new TracingContext(this.#highlighting);
         child.#parent = this;
         child.#substitutionDepth = this.#substitutionDepth - 1;
         child.#evaluationCount = this.#evaluationCount;
         child.#hasMoreSubstitutions = false;
+        child.#parsedValueCache = this.#parsedValueCache;
         return child;
+    }
+    cachedParsedValue(declaration, matchedStyles, computedStyles) {
+        const cachedValue = this.#parsedValueCache.get(declaration);
+        if (cachedValue?.matchedStyles === matchedStyles && cachedValue?.computedStyles === computedStyles) {
+            return cachedValue.parsedValue;
+        }
+        const parsedValue = declaration.parseValue(matchedStyles, computedStyles);
+        this.#parsedValueCache.set(declaration, { matchedStyles, computedStyles, parsedValue });
+        return parsedValue;
     }
 }
 export class RenderingContext {
     ast;
+    property;
     renderers;
     matchedResult;
     cssControls;
     options;
     tracing;
-    constructor(ast, renderers, matchedResult, cssControls, options = {}, tracing) {
+    constructor(ast, property, renderers, matchedResult, cssControls, options = {}, tracing) {
         this.ast = ast;
+        this.property = property;
         this.renderers = renderers;
         this.matchedResult = matchedResult;
         this.cssControls = cssControls;
@@ -182,17 +285,18 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     #matchedResult;
     #output = [];
     #context;
-    constructor(ast, renderers, matchedResult, cssControls, options, tracing) {
+    constructor(ast, property, renderers, matchedResult, cssControls, options, tracing) {
         super(ast);
         this.#matchedResult = matchedResult;
-        this.#context = new RenderingContext(this.ast, renderers, this.#matchedResult, cssControls, options, tracing);
+        this.#context =
+            new RenderingContext(this.ast, property, renderers, this.#matchedResult, cssControls, options, tracing);
     }
     static render(nodeOrNodes, context) {
         if (!Array.isArray(nodeOrNodes)) {
             return this.render([nodeOrNodes], context);
         }
         const cssControls = new SDK.CSSPropertyParser.CSSControlMap();
-        const renderers = nodeOrNodes.map(node => this.walkExcludingSuccessors(context.ast.subtree(node), context.renderers, context.matchedResult, cssControls, context.options, context.tracing));
+        const renderers = nodeOrNodes.map(node => this.walkExcludingSuccessors(context.ast.subtree(node), context.property, context.renderers, context.matchedResult, cssControls, context.options, context.tracing));
         const nodes = renderers.map(node => node.#output).reduce(mergeWithSpacing);
         return { nodes, cssControls };
     }
@@ -213,6 +317,7 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
         if (renderer || match instanceof SDK.CSSPropertyParserMatchers.TextMatch) {
             const output = renderer ? renderer.render(match, this.#context) :
                 match.render();
+            this.#context.tracing?.highlighting.addMatch(match, output);
             this.renderedMatchForTest(output, match);
             this.#output = mergeWithSpacing(this.#output, output);
             return false;
@@ -239,27 +344,29 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     //
     // More general, longer matches take precedence over shorter, more specific matches. Whitespaces are normalized, for
     // unmatched text and around rendered matching results.
-    static renderValueElement(name, value, matchedResult, renderers, tracing) {
+    static renderValueElement(property, matchedResult, renderers, tracing) {
         const valueElement = document.createElement('span');
         valueElement.setAttribute('jslog', `${VisualLogging.value().track({
             change: true,
             keydown: 'ArrowLeft|ArrowUp|PageUp|Home|PageDown|ArrowRight|ArrowDown|End|Space|Tab|Enter|Escape',
         })}`);
-        UI.ARIAUtils.setLabel(valueElement, i18nString(UIStrings.cssPropertyValue, { PH1: value }));
+        UI.ARIAUtils.setLabel(valueElement, i18nString(UIStrings.cssPropertyValue, { PH1: property.value }));
         valueElement.className = 'value';
+        const { nodes, cssControls } = this.renderValueNodes(property, matchedResult, renderers, tracing);
+        nodes.forEach(node => valueElement.appendChild(node));
+        valueElement.normalize();
+        return { valueElement, cssControls };
+    }
+    static renderValueNodes(property, matchedResult, renderers, tracing) {
         if (!matchedResult) {
-            valueElement.appendChild(document.createTextNode(value));
-            return { valueElement, cssControls: new Map() };
+            return { nodes: [document.createTextNode(property.value)], cssControls: new Map() };
         }
         const rendererMap = new Map();
         for (const renderer of renderers) {
             rendererMap.set(renderer.matchType, renderer);
         }
-        const context = new RenderingContext(matchedResult.ast, rendererMap, matchedResult, undefined, {}, tracing);
-        const { nodes, cssControls } = Renderer.render([matchedResult.ast.tree, ...matchedResult.ast.trailingNodes], context);
-        nodes.forEach(node => valueElement.appendChild(node));
-        valueElement.normalize();
-        return { valueElement, cssControls };
+        const context = new RenderingContext(matchedResult.ast, property instanceof SDK.CSSProperty.CSSProperty ? property : null, rendererMap, matchedResult, undefined, {}, tracing);
+        return Renderer.render([matchedResult.ast.tree, ...matchedResult.ast.trailingNodes], context);
     }
 }
 // clang-format off

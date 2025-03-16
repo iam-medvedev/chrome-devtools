@@ -30,10 +30,11 @@ export interface CriticalRequestNode {
     timeFromInitialRequest: Types.Timing.Micro;
     children: CriticalRequestNode[];
     isLongest?: boolean;
-    chain?: Types.Events.SyntheticNetworkRequest[];
+    relatedRequests: Set<Types.Events.SyntheticNetworkRequest>;
 }
 export type NetworkDependencyTreeInsightModel = InsightModel<typeof UIStrings, {
     rootNodes: CriticalRequestNode[];
     maxTime: Types.Timing.Micro;
+    fail: boolean;
 }>;
 export declare function generateInsight(_parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): NetworkDependencyTreeInsightModel;

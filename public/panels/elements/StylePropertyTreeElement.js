@@ -14,6 +14,7 @@ import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { BezierPopoverIcon, ColorSwatchPopoverIcon, ShadowSwatchPopoverHelper, } from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
@@ -24,6 +25,7 @@ import { BinOpRenderer, Renderer, rendererBase, RenderingContext, StringRenderer
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, } from './StylesSidebarPane.js';
+const { html, nothing, render } = Lit;
 const ASTUtils = SDK.CSSPropertyParser.ASTUtils;
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
@@ -94,7 +96,8 @@ const UIStrings = {
      */
     jumpToAnimationsPanel: 'Jump to Animations panel',
     /**
-     *@description Text displayed in a tooltip shown when hovering over a var() CSS function in the Styles pane when the custom property in this function does not exist. The parameter is the name of the property.
+     *@description Text displayed in a tooltip shown when hovering over a CSS property value references a name that's not
+     *             defined and can't be linked to.
      *@example {--my-custom-property-name} PH1
      */
     sIsNotDefined: '{PH1} is not defined',
@@ -169,6 +172,7 @@ export class CSSWideKeywordRenderer extends rendererBase(SDK.CSSPropertyParserMa
         UI.UIUtils.createTextChild(swatch, match.text);
         swatch.data = {
             text: match.text,
+            tooltip: resolvedProperty ? undefined : { title: i18nString(UIStrings.sIsNotDefined, { PH1: match.text }) },
             isDefined: Boolean(resolvedProperty),
             onLinkActivate: () => resolvedProperty && this.#stylesPane.jumpToDeclaration(resolvedProperty),
             jslogContext: 'css-wide-keyword-link',
@@ -182,6 +186,48 @@ export class CSSWideKeywordRenderer extends rendererBase(SDK.CSSPropertyParserMa
         }
         return [swatch];
     }
+}
+function getTracingTooltip(functionName, text, matchedStyles, computedStyles, stylesPane, context) {
+    if (!Root.Runtime.hostConfig.devToolsCssValueTracing?.enabled || context.tracing || !context.property) {
+        return html `${functionName}`;
+    }
+    const { property } = context;
+    const tooltipId = swatchTooltipId();
+    // clang-format off
+    return html `<span tabIndex=-1 aria-details=${tooltipId}>${functionName}</span><devtools-tooltip
+        id=${tooltipId}
+        use-hotkey
+        variant=rich
+        jslogContext=elements.css-value-trace
+        @beforetoggle=${function (e) {
+        if (e.newState === 'open') {
+            this.querySelector('devtools-widget')
+                ?.getWidget()
+                ?.showTrace(property, text, matchedStyles, computedStyles, getPropertyRenderers(property.ownerStyle, stylesPane, matchedStyles, null, computedStyles));
+        }
+    }}
+        @toggle=${function (e) {
+        if (e.newState === 'open') {
+            this.querySelector('devtools-widget')
+                ?.getWidget()
+                ?.focus();
+        }
+    }}
+        ><devtools-widget
+          @keydown=${(e) => {
+        const maybeTooltip = e.target.parentElement;
+        if (!(maybeTooltip instanceof Tooltips.Tooltip.Tooltip)) {
+            return;
+        }
+        if (e.key === 'Escape' || (e.altKey && e.key === 'ArrowDown')) {
+            maybeTooltip.hideTooltip();
+            maybeTooltip.anchor?.focus();
+            e.consume();
+        }
+    }}
+          .widgetConfig=${UI.Widget.widgetConfig(CSSValueTraceView, {})}
+          ></devtools-widget></devtools-tooltip>`;
+    // clang-format on
 }
 // clang-format off
 export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.VariableMatch) {
@@ -201,48 +247,46 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         const { declaration, value: variableValue } = match.resolveVariable() ?? {};
         const fromFallback = variableValue === undefined;
         const computedValue = variableValue ?? match.fallbackValue();
+        const onLinkActivate = (name) => this.#handleVarDefinitionActivate(declaration ?? name);
+        const varSwatch = document.createElement('span');
         const substitution = context.tracing?.substitution();
         if (substitution) {
             if (declaration?.declaration instanceof SDK.CSSProperty.CSSProperty) {
-                const { valueElement, cssControls } = Renderer.renderValueElement(declaration.declaration.name, declaration.declaration.value, declaration.declaration.parseValue(this.#matchedStyles, this.#computedStyles), getPropertyRenderers(declaration.declaration.ownerStyle, this.#stylesPane, this.#matchedStyles, this.#treeElement, this.#computedStyles), substitution);
+                const { nodes, cssControls } = Renderer.renderValueNodes(declaration.declaration, substitution.cachedParsedValue(declaration.declaration, this.#matchedStyles, this.#computedStyles), getPropertyRenderers(declaration.declaration.ownerStyle, this.#stylesPane, this.#matchedStyles, null, this.#computedStyles), substitution);
                 cssControls.forEach((value, key) => value.forEach(control => context.addControl(key, control)));
-                return [valueElement];
+                return nodes;
             }
             if (!declaration && match.fallback.length > 0) {
                 return Renderer.render(match.fallback, substitution.renderingContext(context)).nodes;
             }
         }
         const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
-        const varSwatch = new InlineEditor.LinkSwatch.CSSVarSwatch();
-        varSwatch.data = {
-            computedValue,
-            variableName: match.name,
-            fromFallback,
-            fallbackText: match.fallback.map(n => context.ast.text(n)).join(' '),
-            onLinkActivate: name => this.#handleVarDefinitionActivate(declaration ?? name),
-        };
-        if (renderedFallback?.nodes.length) {
-            // When slotting someting into the fallback slot, also emit text children so that .textContent produces the
-            // correct var value.
-            varSwatch.appendChild(document.createTextNode(`var(${match.name}`));
-            const span = varSwatch.appendChild(document.createElement('span'));
-            span.appendChild(document.createTextNode(', '));
-            span.slot = 'fallback';
-            renderedFallback.nodes.forEach(n => span.appendChild(n));
-            varSwatch.appendChild(document.createTextNode(')'));
-        }
-        else {
-            UI.UIUtils.createTextChild(varSwatch, match.text);
-        }
+        const varCall = getTracingTooltip('var', match.text, this.#matchedStyles, this.#computedStyles, this.#stylesPane, context);
+        const tooltipContents = this.#stylesPane.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null);
         const tooltipId = swatchTooltipId();
-        varSwatch.setAttribute('aria-details', tooltipId);
-        const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: varSwatch, variant: 'rich', id: tooltipId, jslogContext: 'elements.css-var' });
-        tooltip.appendChild((varSwatch.link &&
-            this.#stylesPane.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null)) ||
-            document.createTextNode(i18nString(UIStrings.sIsNotDefined, { PH1: match.name })));
+        render(
+        // clang-format off
+        html `<span
+          data-title=${computedValue || ''}
+          jslog=${VisualLogging.link('css-variable').track({ click: true, hover: true })}
+          >${varCall}(<devtools-link-swatch
+            class=css-var-link
+            .data=${{
+            tooltip: { tooltipId },
+            text: match.name,
+            isDefined: computedValue !== null && !fromFallback,
+            onLinkActivate,
+        }}
+            ></devtools-link-swatch>${renderedFallback?.nodes.length ? html `, ${renderedFallback.nodes}` : nothing})</span><devtools-tooltip
+              variant=rich
+              id=${tooltipId}
+              jslogContext=elements.css-var
+              >${tooltipContents}</devtools-tooltip>`, 
+        // clang-format on
+        varSwatch);
         const color = computedValue && Common.Color.parse(computedValue);
         if (!color) {
-            return [varSwatch, tooltip];
+            return [varSwatch];
         }
         const colorSwatch = new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(color, varSwatch);
         context.addControl('color', colorSwatch);
@@ -251,7 +295,7 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
                 colorSwatch.setColor(ev.data.color);
             }));
         }
-        return [colorSwatch, tooltip];
+        return [colorSwatch];
     }
     #handleVarDefinitionActivate(variable) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CustomPropertyLinkClicked);
@@ -480,9 +524,13 @@ export class LightDarkColorRenderer extends rendererBase(SDK.CSSPropertyParserMa
 export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMixMatch) {
     // clang-format on
     #pane;
-    constructor(pane) {
+    #matchedStyles;
+    #computedStyles;
+    constructor(pane, matchedStyles, computedStyles) {
         super();
         this.#pane = pane;
+        this.#matchedStyles = matchedStyles;
+        this.#computedStyles = computedStyles;
     }
     render(match, context) {
         const hookUpColorArg = (node, onChange) => {
@@ -505,14 +553,13 @@ export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         const childTracingContexts = context.tracing?.evaluation([match.space, match.color1, match.color2]);
         const childRenderingContexts = childTracingContexts?.map(ctx => ctx.renderingContext(context)) ?? [context, context, context];
         const contentChild = document.createElement('span');
-        contentChild.appendChild(document.createTextNode('color-mix('));
-        Renderer.renderInto(match.space, childRenderingContexts[0], contentChild);
-        contentChild.appendChild(document.createTextNode(', '));
-        const color1 = Renderer.renderInto(match.color1, childRenderingContexts[1], contentChild).cssControls.get('color') ?? [];
-        contentChild.appendChild(document.createTextNode(', '));
-        const color2 = Renderer.renderInto(match.color2, childRenderingContexts[2], contentChild).cssControls.get('color') ?? [];
-        contentChild.appendChild(document.createTextNode(')'));
-        if (context.matchedResult.hasUnresolvedVars(match.node) || color1.length !== 1 || color2.length !== 1) {
+        const color1 = Renderer.renderInto(match.color1, childRenderingContexts[1], contentChild);
+        const color2 = Renderer.renderInto(match.color2, childRenderingContexts[2], contentChild);
+        render(html `${getTracingTooltip('color-mix', match.text, this.#matchedStyles, this.#computedStyles, this.#pane, context)}(${Renderer.render(match.space, childRenderingContexts[0]).nodes}, ${color1.nodes}, ${color2.nodes})`, contentChild);
+        const color1Controls = color1.cssControls.get('color') ?? [];
+        const color2Controls = color2.cssControls.get('color') ?? [];
+        if (context.matchedResult.hasUnresolvedVars(match.node) || color1Controls.length !== 1 ||
+            color2Controls.length !== 1) {
             return [contentChild];
         }
         const space = match.space.map(space => context.matchedResult.getComputedText(space)).join(' ');
@@ -537,12 +584,16 @@ export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
             }
         }
         const swatch = new InlineEditor.ColorMixSwatch.ColorMixSwatch();
-        if (!hookUpColorArg(color1[0], text => swatch.setFirstColor(text)) ||
-            !hookUpColorArg(color2[0], text => swatch.setSecondColor(text))) {
+        if (!hookUpColorArg(color1Controls[0], text => swatch.setFirstColor(text)) ||
+            !hookUpColorArg(color2Controls[0], text => swatch.setSecondColor(text))) {
             return [contentChild];
         }
         swatch.tabIndex = -1;
         swatch.setColorMixText(colorMixText);
+        context.addControl('color', swatch);
+        if (context.tracing) {
+            return [swatch, contentChild];
+        }
         const tooltipId = swatchTooltipId();
         swatch.setAttribute('aria-details', tooltipId);
         const tooltip = new Tooltips.Tooltip.Tooltip({
@@ -563,7 +614,6 @@ export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
             const rgb = color.as("hex" /* Common.Color.Format.HEX */);
             colorTextSpan.textContent = rgb.isGamutClipped() ? color.asString() : rgb.asString();
         };
-        context.addControl('color', swatch);
         return [swatch, contentChild, tooltip];
     }
 }
@@ -657,10 +707,10 @@ export class LinkableNameRenderer extends rendererBase(SDK.CSSPropertyParserMatc
     }
     render(match) {
         const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
-        UI.UIUtils.createTextChild(swatch, match.text);
         const { metric, jslogContext, ruleBlock, isDefined } = this.#getLinkData(match);
         swatch.data = {
             text: match.text,
+            tooltip: isDefined ? undefined : { title: i18nString(UIStrings.sIsNotDefined, { PH1: match.text }) },
             isDefined,
             onLinkActivate: () => {
                 metric && Host.userMetrics.swatchActivated(metric);
@@ -930,7 +980,7 @@ export class ShadowRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.S
                     value: matchedNode,
                     source: value,
                     match: matches.getMatch(matchedNode),
-                    expansionContext: new RenderingContext(computedValueAst, context.renderers, matches),
+                    expansionContext: new RenderingContext(computedValueAst, null, context.renderers, matches),
                 })));
             }
             else {
@@ -1042,7 +1092,7 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
         if (context.tracing?.applyEvaluation([])) {
             void this.#applyEvaluation(valueElement, match.text);
         }
-        else {
+        else if (!context.tracing) {
             void this.#attachPopover(valueElement, match.text);
         }
         return [valueElement];
@@ -1079,9 +1129,13 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
 // clang-format off
 export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.MathFunctionMatch) {
     #stylesPane;
+    #matchedStyles;
+    #computedStyles;
     // clang-format on
-    constructor(stylesPane) {
+    constructor(stylesPane, matchedStyles, computedStyles) {
         super();
+        this.#matchedStyles = matchedStyles;
+        this.#computedStyles = computedStyles;
         this.#stylesPane = stylesPane;
     }
     render(match, context) {
@@ -1092,7 +1146,7 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
             return span;
         });
         const span = document.createElement('span');
-        span.append(document.createTextNode(match.func), document.createTextNode('('), ...renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [document.createTextNode(', '), arg]).flat(), document.createTextNode(')'));
+        render(html `${getTracingTooltip(match.func, match.text, this.#matchedStyles, this.#computedStyles, this.#stylesPane, context)}(${renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [html `, `, arg]).flat()})`, span);
         if (childTracingContexts && context.tracing?.applyEvaluation(childTracingContexts)) {
             void this.#applyEvaluation(span, context.matchedResult.getComputedText(match.node));
         }
@@ -1250,7 +1304,7 @@ export function getPropertyRenderers(style, stylesPane, matchedStyles, treeEleme
     return [
         new VariableRenderer(stylesPane, treeElement, matchedStyles, computedStyles),
         new ColorRenderer(stylesPane, treeElement),
-        new ColorMixRenderer(stylesPane),
+        new ColorMixRenderer(stylesPane, matchedStyles, computedStyles),
         new URLRenderer(style.parentRule, stylesPane.node()),
         new AngleRenderer(treeElement),
         new LinkableNameRenderer(matchedStyles, stylesPane),
@@ -1266,7 +1320,7 @@ export function getPropertyRenderers(style, stylesPane, matchedStyles, treeEleme
         new FlexGridRenderer(stylesPane, treeElement),
         new PositionTryRenderer(matchedStyles),
         new LengthRenderer(stylesPane),
-        new MathFunctionRenderer(stylesPane),
+        new MathFunctionRenderer(stylesPane, matchedStyles, computedStyles),
         new AutoBaseRenderer(computedStyles),
         new BinOpRenderer(),
     ];
@@ -1633,7 +1687,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.listItemElement.removeChildren();
         const matchedResult = this.property.parseValue(this.matchedStyles(), this.computedStyles);
-        this.valueElement = Renderer.renderValueElement(this.name, this.value, matchedResult, renderers).valueElement;
+        this.valueElement = Renderer.renderValueElement(this.property, matchedResult, renderers).valueElement;
         this.nameElement = Renderer.renderNameElement(this.name);
         if (!this.treeOutline) {
             return;
@@ -1642,24 +1696,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         UI.UIUtils.createTextChild(this.listItemElement.createChild('span', 'styles-clipboard-only'), indent.repeat(this.section().nestingLevel + 1) + (this.property.disabled ? '/* ' : ''));
         this.listItemElement.appendChild(this.nameElement);
         if (this.property.name.startsWith('--')) {
-            let contents;
-            if (!Root.Runtime.hostConfig.devToolsCssValueTracing?.enabled) {
-                contents = this.parentPaneInternal.getVariablePopoverContents(this.matchedStyles(), this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null);
-            }
-            else {
-                contents = new CSSValueTraceView();
-                contents.showTrace(this.property, this.matchedStyles(), this.computedStyles, renderers);
-            }
+            const contents = this.parentPaneInternal.getVariablePopoverContents(this.matchedStyles(), this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null);
             if (contents) {
                 const tooltipId = swatchTooltipId();
                 this.nameElement.setAttribute('aria-details', tooltipId);
                 const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: this.nameElement, variant: 'rich', id: tooltipId, jslogContext: 'elements.css-var' });
-                if (contents instanceof UI.Widget.Widget) {
-                    contents.show(tooltip, null, true);
-                }
-                else {
-                    tooltip.appendChild(contents);
-                }
+                tooltip.appendChild(contents);
                 this.listItemElement.appendChild(tooltip);
             }
         }

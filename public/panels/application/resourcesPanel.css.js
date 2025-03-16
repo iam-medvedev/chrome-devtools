@@ -73,7 +73,7 @@ export default {
 
 .storage-view.query {
   padding: 2px 0;
-  overflow: hidden overlay;
+  overflow: hidden auto;
 }
 
 .storage-view .filter-bar {

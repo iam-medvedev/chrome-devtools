@@ -45,11 +45,18 @@ export class BaseInsightComponent extends HTMLElement {
     // about litTagName. Every child should overrwrite this.
     static litTagName = Lit.StaticHtml.literal ``;
     shadow = this.attachShadow({ mode: 'open' });
+    // Flipped to true for Insights that have support for the "Ask AI" Insights
+    // experience. The "Ask AI" button will only be shown for an Insight if this
+    // is true and if the feature has been enabled by the user and they meet the
+    // requirements to use AI.
+    hasAskAISupport = false;
+    // This flag tracks if the Insights AI feature is enabled within Chrome for
+    // the active user.
+    #insightsAskAiEnabled = false;
     #selected = false;
     #model = null;
     #parsedTrace = null;
     #fieldMetrics = null;
-    #insightsAskAiEnabled = false;
     get model() {
         return this.#model;
     }
@@ -244,6 +251,9 @@ export class BaseInsightComponent extends HTMLElement {
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
         void action.execute();
     }
+    #canShowAskAI() {
+        return this.#insightsAskAiEnabled && this.hasAskAISupport;
+    }
     #renderInsightContent(insightModel) {
         if (!this.#selected) {
             return Lit.nothing;
@@ -256,12 +266,13 @@ export class BaseInsightComponent extends HTMLElement {
       <div class="insight-body">
         <div class="insight-description">${md(insightModel.description)}</div>
         <div class="insight-content">${content}</div>
-        ${this.#insightsAskAiEnabled ? html `
+        ${this.#canShowAskAI() ? html `
           <div class="ask-ai-btn-wrap">
             <devtools-button class="ask-ai"
               .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
               .iconName=${'smart-assistant'}
               data-insights-ask-ai
+              jslog=${VisualLogging.action(`timeline.insight-ask-ai.${this.internalName}`).track({ click: true })}
               @click=${this.#askAIButtonClick}
             >Ask AI</devtools-button>
           </div>

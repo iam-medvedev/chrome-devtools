@@ -143,6 +143,10 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     reportingApiReportUpdated(data: Protocol.Network.ReportingApiReportUpdatedEvent): void;
     reportingApiEndpointsChangedForOrigin(data: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent): void;
     policyUpdated(): void;
+    directTCPSocketCreated(_: Protocol.Network.DirectTCPSocketCreatedEvent): void;
+    directTCPSocketOpened(_: Protocol.Network.DirectTCPSocketOpenedEvent): void;
+    directTCPSocketAborted(_: Protocol.Network.DirectTCPSocketAbortedEvent): void;
+    directTCPSocketClosed(_: Protocol.Network.DirectTCPSocketClosedEvent): void;
     /**
      * @deprecated
      * This method is only kept for usage in a web test.

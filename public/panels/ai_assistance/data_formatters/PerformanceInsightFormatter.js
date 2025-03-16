@@ -16,10 +16,61 @@ function formatMicro(x) {
     }
     return formatMilli(Trace.Helpers.Timing.microToMilli(x));
 }
+/**
+ * For a given frame ID and navigation ID, returns the LCP Event and the LCP Request, if the resource was an image.
+ */
+function getLCPData(parsedTrace, frameId, navigationId) {
+    const navMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigationId);
+    if (!navMetrics) {
+        return null;
+    }
+    const metric = navMetrics.get("LCP" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */);
+    if (!metric || !Trace.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
+        return null;
+    }
+    const lcpEvent = metric?.event;
+    if (!lcpEvent || !Trace.Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
+        return null;
+    }
+    return {
+        lcpEvent,
+        lcpRequest: parsedTrace.LargestImagePaint.lcpRequestByNavigationId.get(navigationId),
+        metricScore: metric,
+    };
+}
 export class PerformanceInsightFormatter {
     #insight;
-    constructor(insight) {
-        this.#insight = insight;
+    #parsedTrace;
+    constructor(activeInsight) {
+        this.#insight = activeInsight.insight;
+        this.#parsedTrace = activeInsight.parsedTrace;
+    }
+    /**
+     * Information about LCP which we pass to the LLM for all insights that relate to LCP.
+     */
+    #lcpMetricSharedContext() {
+        if (!this.#insight.navigationId) {
+            // No navigation ID = no LCP.
+            return '';
+        }
+        if (!this.#insight.frameId || !this.#insight.navigationId) {
+            return '';
+        }
+        const data = getLCPData(this.#parsedTrace, this.#insight.frameId, this.#insight.navigationId);
+        if (!data) {
+            return '';
+        }
+        const { metricScore, lcpRequest } = data;
+        const parts = [
+            `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicro(metricScore.timing)}.`,
+        ];
+        if (lcpRequest) {
+            parts.push(`The LCP resource was fetched from \`${lcpRequest.args.data.url}\`.`);
+        }
+        else {
+            parts.push('The LCP is text based and was not fetched from the network.');
+        }
+        return parts.join('\n');
     }
     formatInsight() {
         const { title } = this.#insight;
@@ -37,7 +88,7 @@ ${this.#details()}`;
     }
     #details() {
         if (Trace.Insights.Models.LCPPhases.isLCPPhases(this.#insight)) {
-            const { phases, lcpMs, lcpRequest } = this.#insight;
+            const { phases, lcpMs } = this.#insight;
             if (!lcpMs) {
                 return '';
             }
@@ -59,11 +110,7 @@ ${this.#details()}`;
             if (phases?.renderDelay) {
                 phaseBulletPoints.push({ name: 'Render delay', value: formatMilli(phases.renderDelay) });
             }
-            let lcpRequestText = '';
-            if (lcpRequest) {
-                lcpRequestText = `\nThe LCP resource was downloaded from: ${lcpRequest.args.data.url}.`;
-            }
-            return `The actual LCP time is ${formatMilli(lcpMs)}.${lcpRequestText}
+            return `${this.#lcpMetricSharedContext()}
 
 We can break this time down into the ${phaseBulletPoints.length} phases that combine to make up the LCP time:
 
@@ -87,7 +134,36 @@ ${phaseBulletPoints.map(phase => `- ${phase.name}: ${phase.value}`).join('\n')}`
                 name: checklist.requestDiscoverable.label,
                 passed: checklist.requestDiscoverable.value,
             });
-            return `The LCP resource URL is: ${lcpRequest.args.data.url}.
+            return `${this.#lcpMetricSharedContext()}
+
+The result of the checks for this insight are:
+${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED' : 'FAILED'}`).join('\n')}`;
+        }
+        if (Trace.Insights.Models.RenderBlocking.isRenderBlocking(this.#insight)) {
+            const requestSummary = this.#insight.renderBlockingRequests.map(r => TraceEventFormatter.networkRequest(r, this.#parsedTrace, { verbose: false }));
+            return `Here is a list of the network requests that were render blocking on this page and their duration:
+
+${requestSummary.join('\n\n')}`;
+        }
+        if (Trace.Insights.Models.DocumentLatency.isDocumentLatency(this.#insight)) {
+            if (!this.#insight.data) {
+                return '';
+            }
+            const { checklist } = this.#insight.data;
+            const checklistBulletPoints = [];
+            checklistBulletPoints.push({
+                name: 'The request was not redirected',
+                passed: checklist.noRedirects.value,
+            });
+            checklistBulletPoints.push({
+                name: 'Server responded quickly',
+                passed: checklist.serverResponseIsFast.value,
+            });
+            checklistBulletPoints.push({
+                name: 'Compression was applied',
+                passed: checklist.usesCompression.value,
+            });
+            return `${this.#lcpMetricSharedContext()}
 
 The result of the checks for this insight are:
 ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED' : 'FAILED'}`).join('\n')}`;
@@ -99,7 +175,7 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             case 'CLSCulprits':
                 return '';
             case 'DocumentLatency':
-                return '';
+                return '- https://web.dev/articles/optimize-ttfb';
             case 'DOMSize':
                 return '';
             case 'DuplicateJavaScript':
@@ -121,12 +197,15 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             case 'NetworkDependencyTree':
                 return '';
             case 'RenderBlocking':
-                return '';
+                return `- https://web.dev/articles/lcp
+- https://web.dev/articles/optimize-lcp`;
             case 'SlowCSSSelector':
                 return '';
             case 'ThirdParties':
                 return '';
             case 'Viewport':
+                return '';
+            case 'UseCache':
                 return '';
         }
     }
@@ -135,7 +214,10 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             case 'CLSCulprits':
                 return '';
             case 'DocumentLatency':
-                return '';
+                return `This insight checks that the first request is responded to promptly. We use the following criteria to check this:
+1. Was the initial request redirected?
+2. Did the server respond in 600ms or less? We want developers to aim for as close to 100ms as possible, but our threshold for this insight is 600ms.
+3. Was there compression applied to the response to minimize the transfer size?`;
             case 'DOMSize':
                 return '';
             case 'DuplicateJavaScript':
@@ -160,12 +242,14 @@ It is important that all of these checks pass to minimize the delay between the 
             case 'NetworkDependencyTree':
                 return '';
             case 'RenderBlocking':
-                return '';
+                return 'This insight identifies network requests that were render blocking. Render blocking requests are impactful because they are deemed critical to the page and therefore the browser stops rendering the page until it has dealt with these resources. For this insight make sure you fully inspect the details of each render blocking network request and prioritize your suggestions to the user based on the impact of each render blocking request.';
             case 'SlowCSSSelector':
                 return '';
             case 'ThirdParties':
                 return '';
             case 'Viewport':
+                return '';
+            case 'UseCache':
                 return '';
         }
     }
@@ -206,6 +290,12 @@ export class TraceEventFormatter {
             priorityLines.push(`Initial priority: ${initialPriority}`);
             priorityLines.push(`Final priority: ${priority}`);
         }
+        const redirects = request.args.data.redirects.map((redirect, index) => {
+            const startTime = redirect.ts - baseTime;
+            return `#### Redirect ${index + 1}: ${redirect.url}
+- Start time: ${formatMicro(startTime)}
+- Duration: ${formatMicro(redirect.dur)}`;
+        });
         if (!options.verbose) {
             return `## Network request: ${url}
 - Start time: ${formatMicro(startTimesForLifecycle.start)}
@@ -222,6 +312,7 @@ Timings:
 Durations:
 - Main thread processing duration: ${formatMicro(mainThreadProcessingDuration)}
 - Total duration: ${formatMicro(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
+Redirects:${redirects.length ? '\n' + redirects.join('\n') : ' no redirects'}
 Status code: ${statusCode}
 MIME Type: ${mimeType}
 ${priorityLines.join('\n')}

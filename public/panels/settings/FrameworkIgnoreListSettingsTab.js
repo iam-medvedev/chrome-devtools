@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import '../../ui/components/cards/cards.js';
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -117,7 +116,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
             jslogContext: 'learn-more',
             title: i18nString(UIStrings.learnMore),
         };
-        automaticallyIgnoreLinkButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('http://goo.gle/skip-third-party'));
+        automaticallyIgnoreLinkButton.addEventListener('click', () => UI.UIUtils.openInNewTab('https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party'));
         automaticallyIgnoreList.appendChild(automaticallyIgnoreLinkButton);
         const ignoreListAnonymousScripts = generalExclusionGroup.createChild('div', 'ignore-list-option');
         ignoreListAnonymousScripts.appendChild(UI.SettingsUI.createSettingCheckbox(i18nString(UIStrings.ignoreListAnonymousScripts), Common.Settings.Settings.instance().moduleSetting('skip-anonymous-scripts')));

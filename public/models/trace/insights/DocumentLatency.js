@@ -59,6 +59,9 @@ const TOO_SLOW_THRESHOLD_MS = 600;
 const TARGET_MS = 100;
 // Threshold for compression savings.
 const IGNORE_THRESHOLD_IN_BYTES = 1400;
+export function isDocumentLatency(x) {
+    return x.insightKey === 'DocumentLatency';
+}
 function getServerResponseTime(request) {
     const timing = request.args.data.timing;
     if (!timing) {

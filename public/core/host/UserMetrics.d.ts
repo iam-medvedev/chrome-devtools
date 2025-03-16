@@ -798,7 +798,8 @@ export declare enum IssueCreated {
     'SRIMessageSignatureIssue::ValidationFailedSignatureExpired' = 108,
     'SRIMessageSignatureIssue::ValidationFailedInvalidLength' = 109,
     'SRIMessageSignatureIssue::ValidationFailedSignatureMismatch' = 110,
-    MAX_VALUE = 111
+    'CorsIssue::LocalNetworkAccessPermissionDenied' = 111,
+    MAX_VALUE = 112
 }
 export declare const enum DeveloperResourceLoaded {
     LOAD_THROUGH_PAGE_VIA_TARGET = 0,

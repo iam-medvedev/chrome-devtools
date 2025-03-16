@@ -31,7 +31,7 @@ import { ChatView } from './components/ChatView.js';
 import { isAiAssistancePatchingEnabled } from './PatchWidget.js';
 const { html } = Lit;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
-const AI_ASSISTANCE_HELP = 'https://goo.gle/devtools-ai-assistance';
+const AI_ASSISTANCE_HELP = 'https://developer.chrome.com/docs/devtools/ai-assistance';
 const SCREENSHOT_QUALITY = 100;
 const SHOW_LOADING_STATE_TIMEOUT = 100;
 const UIStrings = {
@@ -182,7 +182,16 @@ function selectedElementFilter(maybeNode) {
     }
     return null;
 }
-function getEmptyStateSuggestions(conversationType) {
+function getEmptyStateSuggestions(context, conversationType) {
+    if (context) {
+        const specialSuggestions = context.getSuggestions();
+        if (specialSuggestions) {
+            return specialSuggestions;
+        }
+    }
+    if (!conversationType) {
+        return [];
+    }
     switch (conversationType) {
         case "freestyler" /* ConversationType.STYLING */:
             return [
@@ -646,9 +655,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.requestUpdate();
     }
     #getChangeSummary() {
-        return (isAiAssistancePatchingEnabled() && this.#conversationAgent && !this.#conversation?.isReadOnly) ?
-            this.#changeManager.formatChangesForPatching(this.#conversationAgent.id, /* includeSourceLocation= */ true) :
-            undefined;
+        if (!isAiAssistancePatchingEnabled() || !this.#conversationAgent || this.#conversation?.isReadOnly) {
+            return;
+        }
+        return this.#changeManager.formatChangesForPatching(this.#conversationAgent.id, /* includeSourceLocation= */ true);
     }
     async performUpdate() {
         this.view({
@@ -668,7 +678,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             imageInput: this.#imageInput,
             isDeleteHistoryButtonVisible: Boolean(this.#conversation && !this.#conversation.isEmpty),
             isTextInputDisabled: this.#isTextInputDisabled(),
-            emptyStateSuggestions: this.#conversation ? getEmptyStateSuggestions(this.#conversation.type) : [],
+            emptyStateSuggestions: getEmptyStateSuggestions(this.#selectedContext, this.#conversation?.type),
             inputPlaceholder: this.#getChatInputPlaceholder(),
             disclaimerText: this.#getDisclaimerText(),
             isTextInputEmpty: this.#isTextInputEmpty,
@@ -676,7 +686,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onHistoryClick: this.#onHistoryClicked.bind(this),
             onDeleteClick: this.#onDeleteClicked.bind(this),
             onHelpClick: () => {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(AI_ASSISTANCE_HELP);
+                UI.UIUtils.openInNewTab(AI_ASSISTANCE_HELP);
             },
             onSettingsClick: () => {
                 void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
@@ -1212,15 +1222,12 @@ export class ActionDelegate {
     }
 }
 function isAiAssistanceMultimodalInputEnabled() {
-    const { hostConfig } = Root.Runtime;
-    return Boolean(hostConfig.devToolsFreestyler?.multimodal);
+    return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.multimodal);
 }
 function isAiAssistanceServerSideLoggingEnabled() {
-    const { hostConfig } = Root.Runtime;
-    return !hostConfig.aidaAvailability?.disallowLogging;
+    return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 function isAiAssistanceStylingWithFunctionCallingEnabled() {
-    const { hostConfig } = Root.Runtime;
-    return Boolean(hostConfig.devToolsFreestyler?.functionCalling);
+    return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.functionCalling);
 }
 //# sourceMappingURL=AiAssistancePanel.js.map

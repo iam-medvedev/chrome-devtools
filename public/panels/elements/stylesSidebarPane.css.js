@@ -239,7 +239,9 @@ export default {
   }
 }
 
-.styles-pane:not(.is-editing-style) .styles-section.matched-styles:not(.read-only):hover .sidebar-pane-section-toolbar.new-rule-toolbar {
+.styles-pane:not(.is-editing-style)
+  .styles-section.matched-styles:not(.read-only):hover
+  .sidebar-pane-section-toolbar.new-rule-toolbar {
   visibility: visible;
 }
 
@@ -254,7 +256,7 @@ export default {
 @media (forced-colors: active) {
   .sidebar-pane-section-toolbar {
     forced-color-adjust: none;
-    border-color: 1px solid ButtonText;
+    border: 1px solid ButtonText;
     background-color: ButtonFace;
   }
 

@@ -14,6 +14,11 @@ import * as ThemeSupport from '../ui/legacy/theme_support/theme_support.js';
 import { cleanTestDOM, setupTestDOM } from './DOMHelpers.js';
 import { createFakeSetting, resetHostConfig } from './EnvironmentHelpers.js';
 import { checkForPendingActivity, startTrackingAsyncActivity, stopTrackingAsyncActivity, } from './TrackAsyncOperations.js';
+const style = document.createElement('style');
+style.innerText =
+    '@import url(\'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap\');';
+document.head.append(style);
+document.documentElement.classList.add('platform-screenshot-test');
 beforeEach(async () => {
     resetHostConfig();
     await setupTestDOM();

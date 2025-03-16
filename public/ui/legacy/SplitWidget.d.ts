@@ -44,9 +44,11 @@ export declare class SplitWidget extends SplitWidget_base {
     private savedHorizontalMainSize;
     private showModeInternal;
     private savedShowMode;
+    private autoAdjustOrientation;
     constructor(isVertical: boolean, secondIsSidebar: boolean, settingName?: string, defaultSidebarWidth?: number, defaultSidebarHeight?: number, constraintsInDip?: boolean, element?: SplitWidgetElement);
     isVertical(): boolean;
     setVertical(isVertical: boolean): void;
+    setAutoAdjustOrientation(autoAdjustOrientation: boolean): void;
     private innerSetVertical;
     private updateLayout;
     setMainWidget(widget: Widget): void;
@@ -88,6 +90,7 @@ export declare class SplitWidget extends SplitWidget_base {
     onResize(): void;
     onLayout(): void;
     calculateConstraints(): Constraints;
+    private maybeAutoAdjustOrientation;
     private onResizeStart;
     private onResizeUpdate;
     private onResizeEnd;

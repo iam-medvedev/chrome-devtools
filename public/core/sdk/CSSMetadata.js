@@ -280,17 +280,6 @@ export class CSSMetadata {
             pseudoType === "spelling-error" /* Protocol.DOM.PseudoType.SpellingError */);
     }
 }
-// The following regexes are used within in the StylesSidebarPropertyRenderer class
-// and will parse both invalid and valid values. They both match full strings.
-// [^- ][a-zA-Z-]+ matches property key values (e.g. smaller, x-large, initial)
-// -?\+?(?:[0-9]+\.[0-9]+|\.[0-9]+|[0-9]+) matches numeric property values (e.g. -.23, 3.3, 55)
-// [a-zA-Z%]{0,4} matches the units of numeric property values (e.g. px, vmin, or blank units)
-export const FontPropertiesRegex = /^[^- ][a-zA-Z-]+$|^-?\+?(?:[0-9]+\.[0-9]+|\.[0-9]+|[0-9]+)[a-zA-Z%]{0,4}$/;
-// "[\w \,-]+",? ? matches double quoted values and the trailing comma/space (e.g. "Tahoma", )
-// ('[\w \,-]+',? ?) matches single quoted values and the trailing comma/space (e.g. 'Segoe UI', )
-// ([\w \,-]+,? ?) matches non quoted values and the trailing comma/space (e.g. Helvetica)
-// (?: ...)+ will match 1 or more of the groups above such that it would match a value with fallbacks (e.g. "Tahoma", 'Segoe UI', Helvetica)
-export const FontFamilyRegex = /^("[\w \,-]+"?, ?|'[\w \,-]+',? ?|[\w \-]+,? ?)+$/;
 export const CubicBezierKeywordValues = new Map([
     ['linear', 'cubic-bezier(0, 0, 1, 1)'],
     ['ease', 'cubic-bezier(0.25, 0.1, 0.25, 1)'],
@@ -358,6 +347,10 @@ const filterValuePresetMap = new Map([
     ['sepia', 'sepia(|1|)'],
     ['url', 'url(||)'],
 ]);
+const cornerShapeValuePresetMap = new Map([
+    ['superellipse(0.5)', 'superellipse(|0.5|)'],
+    ['superellipse(infinity)', 'superellipse(|infinity|)'],
+]);
 const valuePresets = new Map([
     ['filter', filterValuePresetMap],
     ['backdrop-filter', filterValuePresetMap],
@@ -389,6 +382,7 @@ const valuePresets = new Map([
             ['perspective', 'perspective(|10px|)'],
         ]),
     ],
+    ['corner-shape', cornerShapeValuePresetMap],
 ]);
 const distanceProperties = new Set([
     'background-position',
@@ -1250,6 +1244,19 @@ const extraPropertyValues = new Map([
             'text alphabetic',
             'cap alphabetic',
             'ex alphabetic',
+        ]),
+    ],
+    [
+        'corner-shape',
+        new Set([
+            'round',
+            'scoop',
+            'bevel',
+            'notch',
+            'straight',
+            'squircle',
+            'superellipse(0.5)',
+            'superellipse(infinity)',
         ]),
     ],
 ]);
