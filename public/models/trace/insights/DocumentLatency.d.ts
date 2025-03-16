@@ -48,13 +48,14 @@ export declare const UIStrings: {
     readonly uncompressedDownload: "Uncompressed download";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
+export declare function isDocumentLatency(x: InsightModel): x is DocumentLatencyInsightModel;
 export type DocumentLatencyInsightModel = InsightModel<typeof UIStrings, {
     data?: {
         serverResponseTime: Types.Timing.Milli;
         redirectDuration: Types.Timing.Milli;
         uncompressedResponseBytes: number;
-        documentRequest?: Types.Events.SyntheticNetworkRequest;
         checklist: Checklist<'noRedirects' | 'serverResponseIsFast' | 'usesCompression'>;
+        documentRequest?: Types.Events.SyntheticNetworkRequest;
     };
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DocumentLatencyInsightModel;

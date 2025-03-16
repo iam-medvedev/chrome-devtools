@@ -64,7 +64,6 @@ describeWithEnvironment('PerformanceAgent', () => {
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
                 serverSideLoggingEnabled: true,
             });
-            sinon.stub(agent, 'preamble').value('preamble');
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();
             assert.deepEqual(agent.buildRequest({
@@ -72,7 +71,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             }, Host.AidaClient.Role.USER), {
                 current_message: { role: Host.AidaClient.Role.USER, parts: [{ text: 'test input' }] },
                 client: 'CHROME_DEVTOOLS',
-                preamble: 'preamble',
+                preamble: undefined,
                 historical_contexts: [
                     {
                         role: 1,

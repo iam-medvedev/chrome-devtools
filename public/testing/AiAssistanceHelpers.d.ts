@@ -52,6 +52,11 @@ export declare function createPatchWidget(options?: {
     view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
 }>;
+export declare function createPatchWidgetWithDiffView(): Promise<{
+    panel: AiAssistance.PatchWidget.PatchWidget;
+    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.PatchWidget.PatchWidget>;
+    aidaClient: Host.AidaClient.AidaClient;
+}>;
 export declare function initializePersistenceImplForTests(): void;
 export declare function cleanup(): void;
 export declare function openHistoryContextMenu(lastUpdate: AiAssistance.ViewInput, item: string): {

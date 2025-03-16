@@ -10,6 +10,11 @@ export default {
  * found in the LICENSE file.
  */
 
+ .widget.dialog-container {
+  width: 100%;
+  box-shadow: none;
+ }
+
 .dialog-header {
   margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-5);
   font: var(--sys-typescale-headline5);
@@ -62,6 +67,12 @@ li.selected {
 
 .selected .folder-icon {
   color: var(--icon-file-authored);
+}
+
+.theme-with-dark-background, :host-context(.theme-with-dark-background) {
+  li.selected, .selected .folder-icon {
+    color: var(--app-color-navigation-drawer-label-selected);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('././selectWorkspaceDialog.css')} */

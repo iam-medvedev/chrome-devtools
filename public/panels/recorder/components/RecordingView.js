@@ -684,14 +684,18 @@ export class RecordingView extends HTMLElement {
         const currentConverter = this.#getCurrentConverter();
         const converterFormatName = currentConverter?.getFormatName();
         // clang-format off
-        return !this.#showCodeView
-            ? this.#renderSections()
-            : html `
-        <devtools-split-view direction="column" sidebar-position="second">
+        return html `
+        <devtools-split-view
+          direction="auto"
+          sidebar-position="second"
+          sidebar-initial-size="300"
+          sidebar-visibility=${this.#showCodeView ? '' : 'hidden'}
+        >
           <div slot="main">
             ${this.#renderSections()}
           </div>
           <div slot="sidebar" jslog=${VisualLogging.pane('source-code').track({ resize: true })}>
+            ${this.#showCodeView ? html `
             <div class="section-toolbar" jslog=${VisualLogging.toolbar()}>
               <devtools-select-menu
                 @selectmenuselected=${this.#onCodeFormatChange}
@@ -704,36 +708,37 @@ export class RecordingView extends HTMLElement {
                 .jslogContext=${'code-format'}
               >
                 ${this.#builtInConverters.map(converter => {
-                return html `<devtools-menu-item
+            return html `<devtools-menu-item
                     .value=${converter.getId()}
                     .selected=${this.#converterId === converter.getId()}
                     jslog=${VisualLogging.action().track({ click: true }).context(`converter-${Platform.StringUtilities.toKebabCase(converter.getId())}`)}
                   >
                     ${converter.getFormatName()}
                   </devtools-menu-item>`;
-            })}
+        })}
                 ${this.#extensionConverters.map(converter => {
-                return html `<devtools-menu-item
+            return html `<devtools-menu-item
                     .value=${converter.getId()}
                     .selected=${this.#converterId === converter.getId()}
                     jslog=${VisualLogging.action().track({ click: true }).context('converter-extension')}
                   >
                     ${converter.getFormatName()}
                   </devtools-menu-item>`;
-            })}
+        })}
               </devtools-select-menu>
               <devtools-button
                 title=${Models.Tooltip.getTooltipForActions(i18nString(UIStrings.hideCode), "chrome-recorder.toggle-code-view" /* Actions.RecorderActions.TOGGLE_CODE_VIEW */)}
                 .data=${{
-                variant: "icon" /* Buttons.Button.Variant.ICON */,
-                size: "SMALL" /* Buttons.Button.Size.SMALL */,
-                iconName: 'cross',
-            }}
+            variant: "icon" /* Buttons.Button.Variant.ICON */,
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
+            iconName: 'cross',
+        }}
                 @click=${this.showCodeToggle}
                 jslog=${VisualLogging.close().track({ click: true })}
               ></devtools-button>
             </div>
-            ${this.#renderTextEditor()}
+            ${this.#renderTextEditor()}`
+            : Lit.nothing}
           </div>
         </devtools-split-view>
       `;

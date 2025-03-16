@@ -8,7 +8,6 @@
         "imageView.css.js",
         "jsonView.css.js",
         "resourceSourceFrame.css.js",
-        "selfXssDialog.css.js",
         "xmlTree.css.js",
         "xmlView.css.js"
     ]

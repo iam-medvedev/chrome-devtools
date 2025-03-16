@@ -12,10 +12,7 @@ describe('LiveLocation', () => {
         //   2. resolve the blocking promise
         //   3. schedule a third update
         //   4. check that all actions were still executed atomically.
-        let fulfillBlockingPromise = (_) => { };
-        const blockingPromise = new Promise(fulfill => {
-            fulfillBlockingPromise = fulfill;
-        });
+        const { resolve: fulfillBlockingPromise, promise: blockingPromise, } = Promise.withResolvers();
         const updateDelegateLog = [];
         const liveLocation = new LiveLocationWithPool(async () => {
             updateDelegateLog.push('enter');

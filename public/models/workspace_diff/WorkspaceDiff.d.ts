@@ -54,6 +54,8 @@ export declare const enum UISourceCodeDiffEvents {
 export interface UISourceCodeDiffEventTypes {
     [UISourceCodeDiffEvents.DIFF_CHANGED]: void;
 }
-export declare function workspaceDiff(): WorkspaceDiffImpl;
+export declare function workspaceDiff({ forceNew }?: {
+    forceNew?: boolean;
+}): WorkspaceDiffImpl;
 export declare const UpdateTimeout = 200;
 export {};

@@ -12,7 +12,7 @@ import * as Insights from './insights.js';
 const { html } = Lit;
 describeWithEnvironment('BaseInsightComponent', () => {
     const { BaseInsightComponent } = Insights.BaseInsightComponent;
-    class TestInsightComponent extends BaseInsightComponent {
+    class TestInsightComponentNoAISupport extends BaseInsightComponent {
         internalName = 'test-insight';
         createOverlays() {
             return [];
@@ -21,10 +21,21 @@ describeWithEnvironment('BaseInsightComponent', () => {
             return html `<div>test content</div>`;
         }
     }
-    customElements.define('test-insight-component', TestInsightComponent);
+    class TestInsightComponentWithAISupport extends BaseInsightComponent {
+        internalName = 'test-insight';
+        hasAskAISupport = true;
+        createOverlays() {
+            return [];
+        }
+        renderContent() {
+            return html `<div>test content</div>`;
+        }
+    }
+    customElements.define('test-insight-component-no-ai-support', TestInsightComponentNoAISupport);
+    customElements.define('test-insight-component-ai-support', TestInsightComponentWithAISupport);
     describe('sidebar insight component rendering', () => {
         it('renders insight title even when not active', async () => {
-            const component = new TestInsightComponent();
+            const component = new TestInsightComponentNoAISupport();
             component.selected = false;
             component.model = {
                 insightKey: 'LCPPhases',
@@ -33,6 +44,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 description: 'some description',
                 category: Trace.Insights.Types.InsightCategory.ALL,
                 state: 'fail',
+                frameId: '123',
             };
             renderElementIntoDOM(component);
             await RenderCoordinator.done();
@@ -46,7 +58,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.deepEqual(titleElement.textContent, 'LCP by Phase');
         });
         it('renders title, description and content when toggled', async () => {
-            const component = new TestInsightComponent();
+            const component = new TestInsightComponentNoAISupport();
             component.selected = true;
             component.model = {
                 insightKey: 'LCPPhases',
@@ -55,6 +67,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 description: 'some description',
                 category: Trace.Insights.Types.InsightCategory.ALL,
                 state: 'fail',
+                frameId: '123',
             };
             renderElementIntoDOM(component);
             await RenderCoordinator.done();
@@ -80,9 +93,10 @@ describeWithEnvironment('BaseInsightComponent', () => {
             description: 'some description',
             category: Trace.Insights.Types.InsightCategory.ALL,
             state: 'fail',
+            frameId: '123',
         };
-        async function renderComponent() {
-            const component = new TestInsightComponent();
+        async function renderComponent({ insightHasAISupport }) {
+            const component = insightHasAISupport ? new TestInsightComponentWithAISupport() : new TestInsightComponentNoAISupport();
             component.selected = true;
             component.model = FAKE_LCP_MODEL;
             // We don't need a real trace for these tests.
@@ -91,17 +105,29 @@ describeWithEnvironment('BaseInsightComponent', () => {
             await RenderCoordinator.done();
             return component;
         }
-        it('renders the "Ask AI" button when perf insights AI is enabled', async () => {
+        it('renders the "Ask AI" button when perf insights AI is enabled and the Insight supports it', async () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
                     insightsEnabled: true,
                 }
             });
-            const component = await renderComponent();
+            const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
+        });
+        it('does not show the button if the feature is enabled but the Insight does not support it', async () => {
+            updateHostConfig({
+                devToolsAiAssistancePerformanceAgent: {
+                    enabled: true,
+                    insightsEnabled: true,
+                }
+            });
+            const component = await renderComponent({ insightHasAISupport: false });
+            assert.isOk(component.shadowRoot);
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
+            assert.isNull(button);
         });
         it('sets the context when the user clicks the button', async () => {
             updateHostConfig({
@@ -110,7 +136,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                     insightsEnabled: true,
                 }
             });
-            const component = await renderComponent();
+            const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
@@ -128,7 +154,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
         it('clears the active context when it gets toggled shut', async () => {
             const FAKE_ACTIVE_INSIGHT = {};
             UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, FAKE_ACTIVE_INSIGHT);
-            const component = await renderComponent();
+            const component = await renderComponent({ insightHasAISupport: true });
             const header = component.shadowRoot?.querySelector('header');
             assert.isOk(header);
             dispatchClickEvent(header);
@@ -141,7 +167,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                     enabled: false,
                 }
             });
-            const component = await renderComponent();
+            const component = await renderComponent({ insightHasAISupport: true }); // The Insight supports it, but the feature is not enabled
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isNull(button);
@@ -153,7 +179,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                     insightsEnabled: false,
                 }
             });
-            const component = await renderComponent();
+            const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isNull(button);

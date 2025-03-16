@@ -19,6 +19,11 @@ const UIStringsNotTranslated = {
     mainThreadActivity: 'Investigating main thread activity…',
 };
 const lockedString = i18n.i18n.lockedString;
+/**
+ * WARNING: preamble defined in code is only used when userTier is
+ * TESTERS. Otherwise, a server-side preamble is used (see
+ * chrome_preambles.gcl). Sync local changes with the server-side.
+ */
 /* clang-format off */
 const preamble = `You are a performance expert deeply integrated within Chrome DevTools. You specialize in analyzing web application behaviour captured by Chrome DevTools Performance Panel.
 
@@ -29,7 +34,7 @@ You will be told the following information about the Insight:
 - The 'Insight description' which helps you understand what the insight is for and what the user is hoping to understand.
 - 'Insight details' which will be additional context and information to help you understand what the insight is showing the user. Use this information to suggest opportunities to improve the performance.
 
-You will also be provided with external resources. Use these to ensure you give correct, accurate and up to date answers.
+You will also be provided with external resources. Use the contents of these resources to ensure you give correct, accurate and up to date answers.
 
 ## Step-by-step instructions
 
@@ -69,7 +74,7 @@ export class InsightContext extends ConversationContext {
         return icon;
     }
     getTitle() {
-        return this.#insight.title();
+        return `Insight: ${this.#insight.title()}`;
     }
 }
 export class PerformanceInsightsAgent extends AiAgent {
@@ -82,7 +87,7 @@ export class PerformanceInsightsAgent extends AiAgent {
         const insightTitle = activeInsight.title();
         const title = `Analyzing insight: ${insightTitle}`;
         // The details are the exact text sent to the LLM to allow the user to inspect it.
-        const formatter = new PerformanceInsightFormatter(activeInsight.insight);
+        const formatter = new PerformanceInsightFormatter(activeInsight);
         const titleDetail = {
             // Purposefully use the raw title in the details view, we don't need to repeat "Analyzing insight"
             title: insightTitle,
@@ -213,8 +218,7 @@ The fields are:
         if (!selectedInsight) {
             return query;
         }
-        const { insight } = selectedInsight.getItem();
-        const formatter = new PerformanceInsightFormatter(insight);
+        const formatter = new PerformanceInsightFormatter(selectedInsight.getItem());
         const extraQuery = `${formatter.formatInsight()}\n\n# User request:\n`;
         const finalQuery = `${extraQuery}${query}`;
         return finalQuery;

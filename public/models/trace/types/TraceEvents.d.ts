@@ -1497,6 +1497,7 @@ export interface Layout extends Complete {
             dirtyObjects: number;
             partialLayout: boolean;
             totalObjects: number;
+            stackTrace?: CallFrame[];
         };
         endData?: {
             layoutRoots: Array<{

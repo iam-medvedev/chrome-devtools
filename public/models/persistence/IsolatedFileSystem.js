@@ -33,7 +33,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import { Events } from './IsolatedFileSystemManager.js';
-import { PlatformFileSystem } from './PlatformFileSystem.js';
+import { PlatformFileSystem, PlatformFileSystemType } from './PlatformFileSystem.js';
 const UIStrings = {
     /**
      *@description Text in Isolated File System of the Workspace settings in Settings
@@ -437,7 +437,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         return Common.ResourceType.ResourceType.mimeFromURL(path) || 'text/plain';
     }
     canExcludeFolder(path) {
-        return Boolean(path) && this.type() !== 'overrides';
+        return Boolean(path) && this.type() !== PlatformFileSystemType.OVERRIDES;
     }
     // path not typed as Branded Types as here we are interested in extention only
     contentType(path) {
@@ -462,7 +462,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         return i18nString(UIStrings.linkedToS, { PH1: path });
     }
     supportsAutomapping() {
-        return this.type() !== 'overrides';
+        return this.type() !== PlatformFileSystemType.OVERRIDES;
     }
 }
 /**

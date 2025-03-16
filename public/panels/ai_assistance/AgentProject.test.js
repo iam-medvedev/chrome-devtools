@@ -39,6 +39,12 @@ describeWithEnvironment('AgentProject', () => {
         const { project } = await mockProject();
         assert.deepEqual(project.readFile('index.html'), 'content');
     });
+    it('can report processed files', async () => {
+        const { project } = await mockProject();
+        assert.deepEqual(project.getProcessedFiles(), []);
+        project.readFile('index.html');
+        assert.deepEqual(project.getProcessedFiles(), ['index.html']);
+    });
     it('can write files files', async () => {
         const { project } = await mockProject();
         project.writeFile('index.html', 'updated');

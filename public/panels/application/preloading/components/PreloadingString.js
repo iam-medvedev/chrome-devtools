@@ -368,6 +368,9 @@ export const PrefetchReasonDescription = {
     PrefetchEvictedAfterCandidateRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterCandidateRemoved) },
     PrefetchNotEligibleBatterySaverEnabled: { name: i18nLazyString(UIStrings.PrefetchNotEligibleBatterySaverEnabled) },
     PrefetchNotEligiblePreloadingDisabled: { name: i18nLazyString(UIStrings.PrefetchNotEligiblePreloadingDisabled) },
+    PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler: { name: () => i18n.i18n.lockedString('Unknown') },
+    PrefetchNotEligibleRedirectFromServiceWorker: { name: () => i18n.i18n.lockedString('Unknown') },
+    PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n.i18n.lockedString('Unknown') },
 };
 // Decoding PrefetchFinalStatus prefetchAttempt to failure description.
 export function prefetchFailureReason({ prefetchStatus }) {
@@ -441,6 +444,12 @@ export function prefetchFailureReason({ prefetchStatus }) {
             return PrefetchReasonDescription['PrefetchNotEligibleBatterySaverEnabled'].name();
         case "PrefetchNotEligiblePreloadingDisabled" /* Protocol.Preload.PrefetchStatus.PrefetchNotEligiblePreloadingDisabled */:
             return PrefetchReasonDescription['PrefetchNotEligiblePreloadingDisabled'].name();
+        case "PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler" /* Protocol.Preload.PrefetchStatus.PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler */:
+            return PrefetchReasonDescription['PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler'].name();
+        case "PrefetchNotEligibleRedirectFromServiceWorker" /* Protocol.Preload.PrefetchStatus.PrefetchNotEligibleRedirectFromServiceWorker */:
+            return PrefetchReasonDescription['PrefetchNotEligibleRedirectFromServiceWorker'].name();
+        case "PrefetchNotEligibleRedirectToServiceWorker" /* Protocol.Preload.PrefetchStatus.PrefetchNotEligibleRedirectToServiceWorker */:
+            return PrefetchReasonDescription['PrefetchNotEligibleRedirectToServiceWorker'].name();
         default:
             // Note that we use switch and exhaustiveness check to prevent to
             // forget updating these strings, but allow to handle unknown

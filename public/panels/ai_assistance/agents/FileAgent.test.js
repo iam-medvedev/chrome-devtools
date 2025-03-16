@@ -57,13 +57,12 @@ describeWithMockConnection('FileAgent', () => {
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
                 serverSideLoggingEnabled: true,
             });
-            sinon.stub(agent, 'preamble').value('preamble');
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();
             assert.deepEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER), {
                 current_message: { parts: [{ text: 'test input' }], role: Host.AidaClient.Role.USER },
                 client: 'CHROME_DEVTOOLS',
-                preamble: 'preamble',
+                preamble: undefined,
                 historical_contexts: [
                     {
                         role: 1,

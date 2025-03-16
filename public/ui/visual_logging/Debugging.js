@@ -146,7 +146,9 @@ export function processEventForIntuitiveDebugging(event, state, extraInfo) {
     maybeLogDebugEvent(entry);
 }
 export function processEventForTestDebugging(event, state, _extraInfo) {
-    lastImpressionLogEntry = null;
+    if (event !== 'SettingAccess') {
+        lastImpressionLogEntry = null;
+    }
     maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state?.veid || 0) || (state?.veid ? '<UNKNOWN>' : '')}` });
     checkPendingEventExpectation();
 }

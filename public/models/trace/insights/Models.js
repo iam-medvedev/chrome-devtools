@@ -15,5 +15,6 @@ export * as NetworkDependencyTree from './NetworkDependencyTree.js';
 export * as RenderBlocking from './RenderBlocking.js';
 export * as SlowCSSSelector from './SlowCSSSelector.js';
 export * as ThirdParties from './ThirdParties.js';
+export * as UseCache from './UseCache.js';
 export * as Viewport from './Viewport.js';
 //# sourceMappingURL=Models.js.map

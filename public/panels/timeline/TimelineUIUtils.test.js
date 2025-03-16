@@ -522,7 +522,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 {
                     // The "Recalculation forced" Stack trace
                     title: undefined,
-                    value: 'testFuncs.changeAttributeAndDisplay @ chromedevtools.github.io/performance-stories/style-invalidations/app.js:47:40',
+                    value: 'testFuncs.changeAttributeAndDisplay @ chromedevtools.github.io/performance-stories/style-invalidations/app.js:44:47\n(anonymous) @ chromedevtools.github.io/performance-stories/style-invalidations/app.js:64:36',
                 },
                 {
                     title: 'Initiated by',

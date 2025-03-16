@@ -35,6 +35,7 @@ import './Toolbar.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
@@ -1329,32 +1330,6 @@ export function measureTextWidth(context, text) {
     return width;
 }
 let measureTextWidthCache = null;
-/**
- * Adds a 'utm_source=devtools' as query parameter to the url.
- */
-export function addReferrerToURL(url) {
-    if (/(\?|&)utm_source=devtools/.test(url)) {
-        return url;
-    }
-    if (url.indexOf('?') === -1) {
-        // If the URL does not contain a query, add the referrer query after path
-        // and before (potential) anchor.
-        return url.replace(/^([^#]*)(#.*)?$/g, '$1?utm_source=devtools$2');
-    }
-    // If the URL already contains a query, add the referrer query after the last query
-    // and before (potential) anchor.
-    return url.replace(/^([^#]*)(#.*)?$/g, '$1&utm_source=devtools$2');
-}
-/**
- * We want to add a referrer query param to every request to
- * 'web.dev' or 'developers.google.com'.
- */
-export function addReferrerToURLIfNecessary(url) {
-    if (/(\/\/developers.google.com\/|\/\/web.dev\/|\/\/developer.chrome.com\/)/.test(url)) {
-        return addReferrerToURL(url);
-    }
-    return url;
-}
 export function loadImage(url) {
     return new Promise(fulfill => {
         const image = new Image();
@@ -1636,5 +1611,36 @@ export function measuredScrollbarWidth(document) {
     cachedMeasuredScrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
     document.body.removeChild(scrollDiv);
     return cachedMeasuredScrollbarWidth;
+}
+/**
+ * Opens the given `url` in a new Chrome tab.
+ *
+ * If the `url` is a Google owned documentation page (currently that includes
+ * `web.dev`, `developers.google.com`, and `developer.chrome.com`), the `url`
+ * will also be checked for UTM parameters:
+ *
+ * - If no `utm_source` search parameter is present, this method will add a new
+ *   search parameter `utm_source=devtools` to `url`.
+ * - If no `utm_campaign` search parameter is present, and DevTools is running
+ *   within a branded build, this method will add `utm_campaign=<channel>` to
+ *   the search parameters, with `<channel>` being the release channel of
+ *   Chrome ("stable", "beta", "dev", or "canary").
+ *
+ * @param url the URL to open in a new tab.
+ * @throws TypeError if `url` is not a valid URL.
+ * @see https://en.wikipedia.org/wiki/UTM_parameters
+ */
+export function openInNewTab(url) {
+    url = new URL(`${url}`);
+    if (['developer.chrome.com', 'developers.google.com', 'web.dev'].includes(url.hostname)) {
+        if (!url.searchParams.has('utm_source')) {
+            url.searchParams.append('utm_source', 'devtools');
+        }
+        const { channel } = Root.Runtime.hostConfig;
+        if (!url.searchParams.has('utm_campaign') && typeof channel === 'string') {
+            url.searchParams.append('utm_campaign', channel);
+        }
+    }
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(Platform.DevToolsPath.urlString `${url}`);
 }
 //# sourceMappingURL=UIUtils.js.map

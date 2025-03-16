@@ -65,10 +65,7 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
         const result = new CSSProperty(ownerStyle, index, payload.name, payload.value, payload.important || false, payload.disabled || false, ('parsedOk' in payload) ? Boolean(payload.parsedOk) : true, Boolean(payload.implicit), payload.text, payload.range, payload.longhandProperties);
         return result;
     }
-    parseValue(matchedStyles, computedStyles) {
-        if (!this.parsedOk) {
-            return null;
-        }
+    #matchers(matchedStyles, computedStyles) {
         const matchers = [
             new VariableMatcher(matchedStyles, this.ownerStyle),
             new ColorMatcher(() => computedStyles?.get('color') ?? null),
@@ -95,7 +92,19 @@ export class CSSProperty extends Common.ObjectWrapper.ObjectWrapper {
         if (Root.Runtime.experiments.isEnabled('font-editor')) {
             matchers.push(new FontMatcher());
         }
-        return matchDeclaration(this.name, this.value, matchers);
+        return matchers;
+    }
+    parseExpression(expression, matchedStyles, computedStyles) {
+        if (!this.parsedOk) {
+            return null;
+        }
+        return matchDeclaration(this.name, expression, this.#matchers(matchedStyles, computedStyles));
+    }
+    parseValue(matchedStyles, computedStyles) {
+        if (!this.parsedOk) {
+            return null;
+        }
+        return matchDeclaration(this.name, this.value, this.#matchers(matchedStyles, computedStyles));
     }
     ensureRanges() {
         if (this.#nameRangeInternal && this.#valueRangeInternal) {

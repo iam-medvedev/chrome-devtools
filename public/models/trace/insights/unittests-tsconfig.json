@@ -53,6 +53,7 @@
     "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.test.ts",
     "../../../../../../../front_end/models/trace/insights/Statistics.test.ts",
     "../../../../../../../front_end/models/trace/insights/ThirdParties.test.ts",
+    "../../../../../../../front_end/models/trace/insights/UseCache.test.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

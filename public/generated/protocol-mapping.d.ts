@@ -271,6 +271,22 @@ export namespace ProtocolMapping {
      */
     'Network.webTransportClosed': [Protocol.Network.WebTransportClosedEvent];
     /**
+     * Fired upon direct_socket.TCPSocket creation.
+     */
+    'Network.directTCPSocketCreated': [Protocol.Network.DirectTCPSocketCreatedEvent];
+    /**
+     * Fired when direct_socket.TCPSocket connection is opened.
+     */
+    'Network.directTCPSocketOpened': [Protocol.Network.DirectTCPSocketOpenedEvent];
+    /**
+     * Fired when direct_socket.TCPSocket is aborted.
+     */
+    'Network.directTCPSocketAborted': [Protocol.Network.DirectTCPSocketAbortedEvent];
+    /**
+     * Fired when direct_socket.TCPSocket is closed.
+     */
+    'Network.directTCPSocketClosed': [Protocol.Network.DirectTCPSocketClosedEvent];
+    /**
      * Fired when additional information about a requestWillBeSent event is available from the
      * network stack. Not every requestWillBeSent event will have an additional
      * requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
@@ -1211,6 +1227,16 @@ export namespace ProtocolMapping {
      */
     'Browser.addPrivacySandboxEnrollmentOverride': {
       paramsType: [Protocol.Browser.AddPrivacySandboxEnrollmentOverrideRequest];
+      returnType: void;
+    };
+    /**
+     * Configures encryption keys used with a given privacy sandbox API to talk
+     * to a trusted coordinator.  Since this is intended for test automation only,
+     * coordinatorOrigin must be a .test domain. No existing coordinator
+     * configuration for the origin may exist.
+     */
+    'Browser.addPrivacySandboxCoordinatorKeyConfig': {
+      paramsType: [Protocol.Browser.AddPrivacySandboxCoordinatorKeyConfigRequest];
       returnType: void;
     };
     /**
@@ -4653,6 +4679,13 @@ export namespace ProtocolMapping {
      */
     'BluetoothEmulation.enable': {
       paramsType: [Protocol.BluetoothEmulation.EnableRequest];
+      returnType: void;
+    };
+    /**
+     * Set the state of the simulated central.
+     */
+    'BluetoothEmulation.setSimulatedCentralState': {
+      paramsType: [Protocol.BluetoothEmulation.SetSimulatedCentralStateRequest];
       returnType: void;
     };
     /**

@@ -26,7 +26,7 @@ import { data as pageLoadMetricsData } from './PageLoadMetricsHandler.js';
  * also keyed on `ProcessId`.
  **/
 const imagePaintsByNodeIdAndProcess = new Map();
-const lcpRequestByNavigation = new Map();
+const lcpRequestByNavigationId = new Map();
 export function reset() {
     imagePaintsByNodeIdAndProcess.clear();
 }
@@ -72,12 +72,12 @@ export async function finalize() {
             }
         }
         if (lcpRequest) {
-            lcpRequestByNavigation.set(navigation, lcpRequest);
+            lcpRequestByNavigationId.set(navigationId, lcpRequest);
         }
     }
 }
 export function data() {
-    return { lcpRequestByNavigation };
+    return { lcpRequestByNavigationId };
 }
 export function deps() {
     return ['Meta', 'NetworkRequests', 'PageLoadMetrics'];

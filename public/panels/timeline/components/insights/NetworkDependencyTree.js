@@ -16,7 +16,7 @@ networkDependencyTreeInsightComponentStyles.replaceSync(networkDependencyTreeIns
 export class NetworkDependencyTree extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
     internalName = 'long-critical-network-tree';
-    hoveredChain = [];
+    #relatedRequests = null;
     connectedCallback() {
         super.connectedCallback();
         this.shadow.adoptedStyleSheets.push(networkDependencyTreeInsightComponentStyles);
@@ -29,16 +29,18 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         getAllOverlays(this.model.rootNodes, overlays);
         return overlays;
     }
-    #createOverlayForChain(chain) {
-        return chain.map(entry => ({
+    #createOverlayForChain(requests) {
+        const overlays = [];
+        requests.forEach(entry => overlays.push({
             type: 'ENTRY_OUTLINE',
             entry,
             outlineReason: 'ERROR',
         }));
+        return overlays;
     }
-    #onMouseOver(chain) {
-        this.hoveredChain = chain ?? [];
-        const overlays = this.#createOverlayForChain(this.hoveredChain);
+    #onMouseOver(relatedRequests) {
+        this.#relatedRequests = relatedRequests;
+        const overlays = this.#createOverlayForChain(this.#relatedRequests);
         this.toggleTemporaryOverlays(overlays, {
             // The trace window doesn't need to be updated because the request is being hovered.
             updateTraceWindow: false,
@@ -46,7 +48,7 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         this.scheduleRender();
     }
     #onMouseOut() {
-        this.hoveredChain = [];
+        this.#relatedRequests = null;
         this.toggleTemporaryOverlays(null, {
             updateTraceWindow: false,
         });
@@ -59,18 +61,18 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         // clang-format off
         return html `
       <ul>
-        ${nodes.map(({ request, timeFromInitialRequest, children, isLongest, chain }) => {
+        ${nodes.map(({ request, timeFromInitialRequest, children, isLongest, relatedRequests }) => {
             const hasChildren = children.length > 0;
             const requestClasses = Lit.Directives.classMap({
                 request: true,
                 longest: Boolean(isLongest),
-                highlighted: this.hoveredChain.includes(request),
+                highlighted: this.#relatedRequests?.has(request) ?? false,
             });
             return html `
             <li>
               <div class=${requestClasses}
-                   @mouseover=${hasChildren ? null : this.#onMouseOver.bind(this, chain)}
-                   @mouseout=${hasChildren ? null : this.#onMouseOut.bind(this)}>
+                   @mouseover=${this.#onMouseOver.bind(this, relatedRequests)}
+                   @mouseout=${this.#onMouseOut.bind(this)}>
                 <span class="url">${eventRef(request)}</span>
                 <span class="chain-time">
                   ${i18n.TimeUtilities.formatMicroSecondsTime(Trace.Types.Timing.Micro(timeFromInitialRequest))}

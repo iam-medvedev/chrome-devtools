@@ -69,6 +69,9 @@
       "path": "../../../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../../../../panels/common/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../../panels/linear_memory_inspector/components/bundle-tsconfig.json"
     },
     {

@@ -106,7 +106,7 @@ function renderPropertyContents(node, propertyName, propertyValue) {
     const name = Renderer.renderNameElement(propertyName);
     name.slot = 'name';
     const value = Renderer
-        .renderValueElement(propertyName, propertyValue, matchProperty(propertyName, propertyValue), [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()])
+        .renderValueElement({ name: propertyName, value: propertyValue }, matchProperty(propertyName, propertyValue), [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()])
         .valueElement;
     value.slot = 'value';
     propertyContentsCache.set(cacheKey, { name, value });
@@ -135,7 +135,7 @@ const createPropertyElement = (node, propertyName, propertyValue, traceable, inh
 };
 const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles, linkifier) => {
     const trace = new ElementsComponents.ComputedStyleTrace.ComputedStyleTrace();
-    const { valueElement } = Renderer.renderValueElement(property.name, property.value, matchProperty(property.name, property.value), [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()]);
+    const { valueElement } = Renderer.renderValueElement(property, matchProperty(property.name, property.value), [new ColorRenderer(), new URLRenderer(null, node), new StringRenderer()]);
     valueElement.slot = 'trace-value';
     trace.appendChild(valueElement);
     const rule = property.ownerStyle.parentRule;

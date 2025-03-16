@@ -312,7 +312,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         this.contrastValueBubble.classList.toggle('contrast-aaa', passesAAA);
     }
     static showHelp() {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(UI.UIUtils.addReferrerToURL('https://web.dev/color-and-contrast-accessibility/'));
+        UI.UIUtils.openInNewTab('https://web.dev/color-and-contrast-accessibility/');
     }
     setVisible(visible) {
         this.visibleInternal = visible;

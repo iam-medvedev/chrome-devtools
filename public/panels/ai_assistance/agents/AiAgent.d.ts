@@ -120,6 +120,7 @@ export declare abstract class ConversationContext<T> {
      * It will be overridden in subclasses to fetch data related to the context item.
      */
     refresh(): Promise<void>;
+    getSuggestions(): [string, ...string[]] | undefined;
 }
 export type FunctionCallHandlerResult<Result> = {
     result: Result;
@@ -176,6 +177,11 @@ export declare abstract class AiAgent<T> {
     #private;
     /** Subclasses need to define these. */
     abstract readonly type: AgentType;
+    /**
+     * WARNING: preamble defined in code is only used when userTier is
+     * TESTERS. Otherwise, a server-side preamble is used (see
+     * chrome_preambles.gcl).
+     */
     abstract readonly preamble: string | undefined;
     abstract readonly options: RequestOptions;
     abstract readonly clientFeature: Host.AidaClient.ClientFeature;

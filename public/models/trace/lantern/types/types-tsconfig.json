@@ -37,7 +37,7 @@
   ],
   "references": [
     {
-      "path": "../../types/bundle-tsconfig.json"
+      "path": "../../../../generated/generated-tsconfig.json"
     }
   ]
 }

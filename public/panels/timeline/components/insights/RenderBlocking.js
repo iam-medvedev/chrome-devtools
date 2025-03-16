@@ -12,6 +12,7 @@ const { UIStrings, i18nString } = Trace.Insights.Models.RenderBlocking;
 const { html } = Lit;
 export class RenderBlocking extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-render-blocking-requests`;
+    hasAskAISupport = true;
     internalName = 'render-blocking-requests';
     createOverlays() {
         if (!this.model) {

@@ -1,5 +1,8 @@
+import * as Platform from '../../../core/platform/platform.js';
+import type * as Protocol from '../../../generated/protocol.js';
 import type * as Handlers from '../handlers/handlers.js';
-import { type BottomUpCallStack, type ForcedReflowAggregatedData, type InsightModel } from './types.js';
+import * as Types from '../types/types.js';
+import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
      *@description Title of an insight that provides details about Forced reflow.
@@ -21,10 +24,27 @@ export declare const UIStrings: {
      * @description Text to describe the total reflow time
      */
     readonly totalReflowTime: "Total reflow time";
+    /**
+     * @description Text to describe CPU processor tasks that could not be attributed to any specific source code.
+     */
+    readonly unattributed: "Unattributed";
 };
-export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
+export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
 export type ForcedReflowInsightModel = InsightModel<typeof UIStrings, {
     topLevelFunctionCallData: ForcedReflowAggregatedData | undefined;
     aggregatedBottomUpData: BottomUpCallStack[];
 }>;
-export declare function generateInsight(traceParsedData: Handlers.Types.ParsedTrace): ForcedReflowInsightModel;
+export interface BottomUpCallStack {
+    /**
+     * `null` indicates that this data is for unattributed force reflows.
+     */
+    bottomUpData: Types.Events.CallFrame | Protocol.Runtime.CallFrame | null;
+    totalTime: number;
+    relatedEvents: Types.Events.Event[];
+}
+export interface ForcedReflowAggregatedData {
+    topLevelFunctionCall: Types.Events.CallFrame | Protocol.Runtime.CallFrame;
+    totalReflowTime: number;
+    topLevelFunctionCallEvents: Types.Events.Event[];
+}
+export declare function generateInsight(traceParsedData: Handlers.Types.ParsedTrace, context: InsightSetContext): ForcedReflowInsightModel;

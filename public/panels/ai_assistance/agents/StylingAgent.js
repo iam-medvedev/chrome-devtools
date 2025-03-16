@@ -29,6 +29,11 @@ const UIStringsNotTranslate = {
     dataUsed: 'Data used',
 };
 const lockedString = i18n.i18n.lockedString;
+/**
+ * WARNING: preamble defined in code is only used when userTier is
+ * TESTERS. Otherwise, a server-side preamble is used (see
+ * chrome_preambles.gcl). Sync local changes with the server-side.
+ */
 /* clang-format off */
 const preamble = `You are the most advanced CSS debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
@@ -210,25 +215,22 @@ export class StylingAgent extends AiAgent {
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
     get userTier() {
-        const { hostConfig } = Root.Runtime;
-        return hostConfig.devToolsFreestyler?.userTier;
+        return Root.Runtime.hostConfig.devToolsFreestyler?.userTier;
     }
     get executionMode() {
-        const { hostConfig } = Root.Runtime;
-        return hostConfig.devToolsFreestyler?.executionMode ?? Root.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
+        return Root.Runtime.hostConfig.devToolsFreestyler?.executionMode ??
+            Root.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
     }
     get options() {
-        const { hostConfig } = Root.Runtime;
-        const temperature = hostConfig.devToolsFreestyler?.temperature;
-        const modelId = hostConfig.devToolsFreestyler?.modelId;
+        const temperature = Root.Runtime.hostConfig.devToolsFreestyler?.temperature;
+        const modelId = Root.Runtime.hostConfig.devToolsFreestyler?.modelId;
         return {
             temperature,
             modelId,
         };
     }
     get multimodalInputEnabled() {
-        const { hostConfig } = Root.Runtime;
-        return Boolean(hostConfig.devToolsFreestyler?.multimodal);
+        return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.multimodal);
     }
     parseTextResponse(text) {
         // We're returning an empty answer to denote the erroneous case.
@@ -364,17 +366,17 @@ export class StylingAgent extends AiAgent {
         };
     }
     #execJs;
-    changes;
-    createExtensionScope;
+    #changes;
+    #createExtensionScope;
     constructor(opts) {
         super({
             aidaClient: opts.aidaClient,
             serverSideLoggingEnabled: opts.serverSideLoggingEnabled,
             confirmSideEffectForTest: opts.confirmSideEffectForTest,
         });
-        this.changes = opts.changeManager || new ChangeManager();
+        this.#changes = opts.changeManager || new ChangeManager();
         this.#execJs = opts.execJs ?? executeJsCode;
-        this.createExtensionScope = opts.createExtensionScope ?? ((changes) => {
+        this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
             return new ExtensionScope(changes, this.id);
         });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
@@ -420,7 +422,7 @@ export class StylingAgent extends AiAgent {
         });
     }
     onPrimaryPageChanged() {
-        void this.changes.clear();
+        void this.#changes.clear();
     }
     emulateFunctionCall(aidaResponse) {
         const parsed = this.parseTextResponse(aidaResponse.explanation);
@@ -579,7 +581,7 @@ export class StylingAgent extends AiAgent {
                 error: 'Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint.',
             };
         }
-        const scope = this.createExtensionScope(this.changes);
+        const scope = this.#createExtensionScope(this.#changes);
         await scope.install();
         try {
             let throwOnSideEffect = true;

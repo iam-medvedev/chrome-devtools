@@ -15,32 +15,32 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
         const dialog = new UI.Dialog.Dialog('select-workspace');
         const hideDialogSpy = sinon.spy(dialog, 'hide');
         const view = createViewFunctionStub(AiAssistance.SelectWorkspaceDialog);
-        const handleProjectSelected = sinon.spy();
-        const component = new AiAssistance.SelectWorkspaceDialog({ dialog, handleProjectSelected }, view);
+        const onProjectSelected = sinon.spy();
+        const component = new AiAssistance.SelectWorkspaceDialog({ dialog, onProjectSelected }, view);
         component.markAsRoot();
         component.show(document.body);
         assert.strictEqual(view.callCount, 1);
         assert.strictEqual(view.input.selectedIndex, 0);
-        return { view, component, handleProjectSelected, hideDialogSpy, project };
+        return { view, component, onProjectSelected, hideDialogSpy, project };
     }
     it('selects a project', async () => {
-        const { view, handleProjectSelected, hideDialogSpy, project } = createComponent();
+        const { view, onProjectSelected, hideDialogSpy, project } = createComponent();
         view.input.onProjectSelected(1);
         const input = await view.nextInput;
         assert.strictEqual(view.callCount, 2);
         assert.strictEqual(input.selectedIndex, 1);
         view.input.onSelectButtonClick();
-        assert.isTrue(handleProjectSelected.calledOnceWith(project));
+        assert.isTrue(onProjectSelected.calledOnceWith(project));
         assert.isTrue(hideDialogSpy.calledOnce);
     });
     it('can be canceled', async () => {
-        const { view, handleProjectSelected, hideDialogSpy } = createComponent();
+        const { view, onProjectSelected, hideDialogSpy } = createComponent();
         view.input.onProjectSelected(1);
         const input = await view.nextInput;
         assert.strictEqual(view.callCount, 2);
         assert.strictEqual(input.selectedIndex, 1);
         view.input.onCancelButtonClick();
-        assert.isTrue(handleProjectSelected.notCalled);
+        assert.isTrue(onProjectSelected.notCalled);
         assert.isTrue(hideDialogSpy.calledOnce);
     });
     it('listens to ArrowUp/Down', async () => {

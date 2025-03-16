@@ -72,7 +72,7 @@ const UIStrings = {
     /**
      *@description Message to display if a setting change requires a reload of DevTools
      */
-    oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect.',
+    oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect',
     /**
      * @description Label for a filter text input that controls which experiments are shown.
      */
@@ -222,7 +222,8 @@ export class GenericSettingsTab extends SettingsTab {
         super('preferences-tab-content');
         this.element.setAttribute('jslog', `${VisualLogging.pane('preferences')}`);
         this.containerElement.classList.add('settings-multicolumn-card-container');
-        // GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
+        // AI, GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
+        // AI settings are displayed in their own tab.
         const explicitSectionOrder = [
             "" /* Common.Settings.SettingCategory.NONE */,
             "APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */,
@@ -427,7 +428,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
                 jslogContext: `${experiment.name}-documentation`,
                 title: i18nString(UIStrings.learnMore),
             };
-            linkButton.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(experimentLink));
+            linkButton.addEventListener('click', () => UI.UIUtils.openInNewTab(experimentLink));
             linkButton.classList.add('link-icon');
             p.appendChild(linkButton);
         }
@@ -467,7 +468,7 @@ export class ActionDelegate {
                 void SettingsScreen.showSettingsScreen({ focusTabHeader: true });
                 return true;
             case 'settings.documentation':
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(UI.UIUtils.addReferrerToURL('https://developer.chrome.com/docs/devtools/'));
+                UI.UIUtils.openInNewTab('https://developer.chrome.com/docs/devtools/');
                 return true;
             case 'settings.shortcuts':
                 void SettingsScreen.showSettingsScreen({ name: 'keybinds', focusTabHeader: true });

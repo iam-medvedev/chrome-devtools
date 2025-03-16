@@ -48,6 +48,9 @@
     },
     {
       "path": "../../crux-manager/bundle-tsconfig.json"
+    },
+    {
+      "path": "../lantern/bundle-tsconfig.json"
     }
   ]
 }

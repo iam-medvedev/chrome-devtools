@@ -344,6 +344,10 @@ devtools-split-view {
   min-height: 0;
 }
 
+[slot="main"] {
+  overflow: hidden;
+}
+
 [slot="sidebar"] {
   display: flex;
   flex-direction: column;

@@ -71,5 +71,6 @@ Images: ![https://example.com](https://example.com)
     },
     registerClientEvent: () => Promise.resolve({}),
 }, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+component.disableAnimations = true;
 document.getElementById('container')?.appendChild(component);
 //# sourceMappingURL=static.js.map

@@ -9,9 +9,16 @@ export declare function rendererBase<MatchT extends SDK.CSSPropertyParser.Match>
     readonly matchType: Platform.Constructor.Constructor<MatchT>;
     render(_match: MatchT, _context: RenderingContext): Node[];
 };
+export declare class Highlighting {
+    #private;
+    static readonly REGISTRY_NAME = "css-value-tracing";
+    constructor();
+    addMatch(match: SDK.CSSPropertyParser.Match, nodes: Node[]): void;
+}
 export declare class TracingContext {
     #private;
-    constructor(matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
+    constructor(highlighting: Highlighting, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
+    get highlighting(): Highlighting;
     renderingContext(context: RenderingContext): RenderingContext;
     nextSubstitution(): boolean;
     nextEvaluation(): boolean;
@@ -19,9 +26,11 @@ export declare class TracingContext {
     evaluation(args: unknown[]): TracingContext[] | null;
     applyEvaluation(children: TracingContext[]): boolean;
     substitution(): TracingContext | null;
+    cachedParsedValue(declaration: SDK.CSSProperty.CSSProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>): SDK.CSSPropertyParser.BottomUpTreeMatching | null;
 }
 export declare class RenderingContext {
     readonly ast: SDK.CSSPropertyParser.SyntaxTree;
+    readonly property: SDK.CSSProperty.CSSProperty | null;
     readonly renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>;
     readonly matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching;
     readonly cssControls?: SDK.CSSPropertyParser.CSSControlMap | undefined;
@@ -29,14 +38,14 @@ export declare class RenderingContext {
         readonly?: boolean;
     };
     readonly tracing?: TracingContext | undefined;
-    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls?: SDK.CSSPropertyParser.CSSControlMap | undefined, options?: {
+    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls?: SDK.CSSPropertyParser.CSSControlMap | undefined, options?: {
         readonly?: boolean;
     }, tracing?: TracingContext | undefined);
     addControl(cssType: string, control: HTMLElement): void;
 }
 export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     #private;
-    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls: SDK.CSSPropertyParser.CSSControlMap, options: {
+    constructor(ast: SDK.CSSPropertyParser.SyntaxTree, property: SDK.CSSProperty.CSSProperty | null, renderers: Map<Platform.Constructor.Constructor<SDK.CSSPropertyParser.Match>, MatchRenderer<SDK.CSSPropertyParser.Match>>, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching, cssControls: SDK.CSSPropertyParser.CSSControlMap, options: {
         readonly?: boolean;
     }, tracing: TracingContext | undefined);
     static render(nodeOrNodes: CodeMirror.SyntaxNode | CodeMirror.SyntaxNode[], context: RenderingContext): {
@@ -50,8 +59,18 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     renderedMatchForTest(_nodes: Node[], _match: SDK.CSSPropertyParser.Match): void;
     protected enter({ node }: SDK.CSSPropertyParser.SyntaxNodeRef): boolean;
     static renderNameElement(name: string): HTMLElement;
-    static renderValueElement(name: string, value: string, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext): {
+    static renderValueElement(property: SDK.CSSProperty.CSSProperty | {
+        name: string;
+        value: string;
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext): {
         valueElement: HTMLElement;
+        cssControls: SDK.CSSPropertyParser.CSSControlMap;
+    };
+    static renderValueNodes(property: SDK.CSSProperty.CSSProperty | {
+        name: string;
+        value: string;
+    }, matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, tracing?: TracingContext): {
+        nodes: Node[];
         cssControls: SDK.CSSPropertyParser.CSSControlMap;
     };
 }

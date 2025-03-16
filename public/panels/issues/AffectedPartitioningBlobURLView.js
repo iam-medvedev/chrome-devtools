@@ -32,6 +32,7 @@ export class AffectedPartitioningBlobURLView extends AffectedResourcesView {
     }
     update() {
         this.clear();
+        let count = 0;
         const partitioningBlobURLIssues = this.issue.getPartitioningBlobURLIssues();
         for (const issue of partitioningBlobURLIssues) {
             const blobURL = issue.details().url;
@@ -49,15 +50,15 @@ export class AffectedPartitioningBlobURLView extends AffectedResourcesView {
                 const descriptionElement = document.createElement('div');
                 descriptionElement.textContent = description;
                 this.affectedResources.appendChild(descriptionElement);
-                this.updateAffectedResourceCount(1);
+                count++;
             }
             else {
                 const noURLMessage = document.createElement('div');
                 noURLMessage.textContent = i18nString(UIStrings.noBlobURLAvailable);
                 this.affectedResources.appendChild(noURLMessage);
-                this.updateAffectedResourceCount(0);
             }
         }
+        this.updateAffectedResourceCount(count);
     }
 }
 //# sourceMappingURL=AffectedPartitioningBlobURLView.js.map

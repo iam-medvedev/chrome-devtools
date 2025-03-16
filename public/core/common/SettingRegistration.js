@@ -9,6 +9,10 @@ const UIStrings = {
      */
     elements: 'Elements',
     /**
+     *@description Text for DevTools AI
+     */
+    ai: 'AI',
+    /**
      *@description Text for DevTools appearance
      */
     appearance: 'Appearance',
@@ -118,6 +122,8 @@ export function getLocalizedSettingsCategory(category) {
     switch (category) {
         case "ELEMENTS" /* SettingCategory.ELEMENTS */:
             return i18nString(UIStrings.elements);
+        case "AI" /* SettingCategory.AI */:
+            return i18nString(UIStrings.ai);
         case "APPEARANCE" /* SettingCategory.APPEARANCE */:
             return i18nString(UIStrings.appearance);
         case "SOURCES" /* SettingCategory.SOURCES */:

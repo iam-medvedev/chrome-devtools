@@ -300,6 +300,29 @@ export class CSSModel extends SDKModel {
         }
         return await this.#styleLoader.computedStylePromise(nodeId);
     }
+    async getLayoutPropertiesFromComputedStyle(nodeId) {
+        const styles = await this.getComputedStyle(nodeId);
+        if (!styles) {
+            return null;
+        }
+        const display = styles.get('display');
+        const isFlex = display === 'flex' || display === 'inline-flex';
+        const isGrid = display === 'grid' || display === 'inline-grid';
+        const isSubgrid = (isGrid &&
+            (styles.get('grid-template-columns')?.startsWith('subgrid') ||
+                styles.get('grid-template-rows')?.startsWith('subgrid'))) ??
+            false;
+        const containerType = styles.get('container-type');
+        const isContainer = Boolean(containerType) && containerType !== '' && containerType !== 'normal';
+        const hasScroll = Boolean(styles.get('scroll-snap-type')) && styles.get('scroll-snap-type') !== 'none';
+        return {
+            isFlex,
+            isGrid,
+            isSubgrid,
+            isContainer,
+            hasScroll,
+        };
+    }
     async getBackgroundColors(nodeId) {
         const response = await this.agent.invoke_getBackgroundColors({ nodeId });
         if (response.getError()) {

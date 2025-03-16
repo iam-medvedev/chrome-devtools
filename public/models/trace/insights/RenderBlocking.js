@@ -31,6 +31,9 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/RenderBlocking.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export function isRenderBlocking(insight) {
+    return insight.insightKey === 'RenderBlocking';
+}
 // Because of the way we detect blocking stylesheets, asynchronously loaded
 // CSS with link[rel=preload] and an onload handler (see https://github.com/filamentgroup/loadCSS)
 // can be falsely flagged as blocking. Therefore, ignore stylesheets that loaded fast enough
@@ -74,7 +77,7 @@ function estimateSavingsWithGraphs(deferredIds, lanternContext) {
     return Math.round(Math.max(estimateBeforeInline - estimateAfterInline, 0));
 }
 function hasImageLCP(parsedTrace, context) {
-    return parsedTrace.LargestImagePaint.lcpRequestByNavigation.get(context.navigation) !== undefined;
+    return parsedTrace.LargestImagePaint.lcpRequestByNavigationId.has(context.navigationId);
 }
 function computeSavings(parsedTrace, context, renderBlockingRequests) {
     if (!context.lantern) {

@@ -101,7 +101,6 @@ export class ExtensionScope {
         return response;
     }
     static getStyleRuleFromMatchesStyles(matchedStyles) {
-        let styleRule;
         for (const style of matchedStyles.nodeStyles()) {
             // Ignore inline as we can't override them
             if (style.type === 'Inline') {
@@ -115,19 +114,16 @@ export class ExtensionScope {
                 break;
             }
             if (rule instanceof SDK.CSSRule.CSSStyleRule) {
-                styleRule = rule;
-                break;
+                if (rule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME)) {
+                    // If the rule we created was our continue to get the correct location
+                    continue;
+                }
+                return rule;
             }
         }
-        return styleRule;
+        return;
     }
     static getSelectorsFromStyleRule(styleRule, matchedStyles) {
-        // If the rule we created was our own return directly
-        if (styleRule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME)) {
-            // We know that the last character will be & so remove it
-            const text = styleRule.selectors[0].text;
-            return text.at(-1) === '&' ? text.slice(0, -1) : text;
-        }
         const selectorIndexes = matchedStyles.getMatchingSelectors(styleRule);
         // TODO: Compute the selector when nested selector is present
         const selectors = styleRule.selectors.filter((_, index) => selectorIndexes.includes(index)).sort((a, b) => {
@@ -145,8 +141,15 @@ export class ExtensionScope {
             }
             return b.specificity.b - a.specificity.b;
         });
+        const selector = selectors.at(0);
+        if (!selector) {
+            return '';
+        }
         // See https://developer.mozilla.org/en-US/docs/Web/CSS/Privacy_and_the_:visited_selector
-        return selectors.at(0)?.text.replace(':visited', '') ?? '';
+        let cssSelector = selector.text.replaceAll(':visited', '');
+        // See https://www.w3.org/TR/css-nesting-1/#nest-selector
+        cssSelector = cssSelector.replaceAll('&', '');
+        return cssSelector.trim();
     }
     static getSelectorForNode(node) {
         return node.simpleSelector()

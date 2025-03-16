@@ -28,7 +28,7 @@ export default {
 .data-grid .data-container {
   position: absolute;
   inset: 0;
-  overflow: hidden overlay;
+  overflow: hidden auto;
   transform: translateZ(0);
   background-color: var(--sys-color-cdt-base-container);
 }

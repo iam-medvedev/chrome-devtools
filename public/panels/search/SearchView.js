@@ -75,10 +75,6 @@ const UIStrings = {
     /**
      *@description Search results message element text content in Search View of the Search tab
      */
-    noMatchesFoundStatusbar: 'No matches found.',
-    /**
-     *@description Search results message element text content in Search View of the Search tab
-     */
     noMatchesFound: 'No matches found',
     /**
      *@description Search results message element text content in Search View of the Search tab
@@ -92,6 +88,15 @@ const UIStrings = {
      *@description Text in Search View of the Search tab
      */
     searchInterrupted: 'Search interrupted.',
+    /**
+     *@description Text in Search View of the Search tab if user hasn't started the search
+     *@example {Enter} PH1
+     */
+    typeAndPressSToSearch: 'Type and press {PH1} to search',
+    /**
+     *@description Text in Search view of the Search tab if user hasn't started the search
+     */
+    noSearchResult: 'No search results',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/search/SearchView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -102,6 +107,7 @@ function createSearchToggleButton(iconName, jslogContext) {
         iconName,
         toggledIconName: iconName,
         toggleType: "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */,
+        size: "SMALL" /* Buttons.Button.Size.SMALL */,
         toggled: false,
         jslogContext,
     };
@@ -135,6 +141,7 @@ export class SearchView extends UI.Widget.VBox {
     // result added.
     #throttler;
     #pendingSearchResults = [];
+    #emptyStartView;
     constructor(settingKey, throttler) {
         super(true);
         this.setMinimumSize(0, 40);
@@ -181,6 +188,7 @@ export class SearchView extends UI.Widget.VBox {
             variant: "icon" /* Buttons.Button.Variant.ICON */,
             iconName: 'cross-circle-filled',
             jslogContext: 'clear-input',
+            size: "SMALL" /* Buttons.Button.Size.SMALL */,
             title: i18nString(UIStrings.clearInput),
         };
         clearInputFieldButton.classList.add('clear-button');
@@ -216,6 +224,10 @@ export class SearchView extends UI.Widget.VBox {
         this.advancedSearchConfig = Common.Settings.Settings.instance().createLocalSetting(settingKey + '-search-config', new Workspace.SearchConfig.SearchConfig('', true, false).toPlainObject());
         this.load();
         this.searchScope = null;
+        this.#emptyStartView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noSearchResult), i18nString(UIStrings.typeAndPressSToSearch, {
+            PH1: UI.KeyboardShortcut.KeyboardShortcut.shortcutToString(UI.KeyboardShortcut.Keys.Enter)
+        }));
+        this.showPane(this.#emptyStartView);
     }
     regexButtonToggled() {
         this.regexButton.title = this.regexButton.toggled ? i18nString(UIStrings.disableRegularExpression) :
@@ -292,6 +304,7 @@ export class SearchView extends UI.Widget.VBox {
         this.search.value = '';
         this.save();
         this.focus();
+        this.showPane(this.#emptyStartView);
     }
     onSearchResult(searchId, searchResult) {
         if (searchId !== this.searchId || !this.progressIndicator) {
@@ -398,7 +411,6 @@ export class SearchView extends UI.Widget.VBox {
             this.notFoundView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMatchesFound), i18nString(UIStrings.nothingMatchedTheQuery));
         }
         this.showPane(this.notFoundView);
-        this.searchResultsMessageElement.textContent = i18nString(UIStrings.noMatchesFoundStatusbar);
     }
     addSearchResult(searchResult) {
         const matchesCount = searchResult.matchesCount();

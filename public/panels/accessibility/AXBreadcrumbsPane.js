@@ -35,7 +35,7 @@ const UIStrings = {
     /**
      *@description Message saying that DevTools must be restarted before the experiment is enabled.
      */
-    reloadRequired: 'Reload required before the change takes effect.',
+    reloadRequired: 'Reload required before the change takes effect',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/accessibility/AXBreadcrumbsPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);

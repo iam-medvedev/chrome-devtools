@@ -77,7 +77,7 @@ declare const ColorMixRenderer_base: abstract new () => {
 };
 export declare class ColorMixRenderer extends ColorMixRenderer_base {
     #private;
-    constructor(pane: StylesSidebarPane);
+    constructor(pane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>);
     render(match: SDK.CSSPropertyParserMatchers.ColorMixMatch, context: RenderingContext): Node[];
 }
 declare const AngleRenderer_base: abstract new () => {
@@ -189,7 +189,7 @@ declare const MathFunctionRenderer_base: abstract new () => {
 };
 export declare class MathFunctionRenderer extends MathFunctionRenderer_base {
     #private;
-    constructor(stylesPane: StylesSidebarPane);
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>);
     render(match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Node[];
     applySelectFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
 }

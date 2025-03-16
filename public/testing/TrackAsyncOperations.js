@@ -174,6 +174,7 @@ const BasePromise = {
     reject: Promise.reject,
     resolve: Promise.resolve,
     withResolvers: Promise.withResolvers,
+    try: Promise.try,
 };
 // We can't subclass native Promise here as this will cause all derived promises
 // (e.g. those returned by `then`) to also be subclass instances. This results

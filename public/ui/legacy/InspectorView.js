@@ -83,7 +83,7 @@ const UIStrings = {
      * The placeholder is the current Chrome language.
      * @example {German} PH1
      */
-    devToolsLanguageMissmatch: 'DevTools is now available in {PH1}!',
+    devToolsLanguageMissmatch: 'DevTools is now available in {PH1}',
     /**
      * @description An option the user can select when we notice that DevTools
      * is configured with a different locale than Chrome. This option means DevTools will
@@ -117,7 +117,7 @@ const UIStrings = {
      * @description Request for the user to select a local file system folder for DevTools
      * to store local overrides in.
      */
-    selectOverrideFolder: 'Select a folder to store override files in.',
+    selectOverrideFolder: 'Select a folder to store override files in',
     /**
      *@description Label for a button which opens a file picker.
      */
@@ -412,7 +412,6 @@ export class InspectorView extends VBox {
             const infobar = new Infobar("info" /* InfobarType.INFO */, message, [
                 {
                     text: i18nString(UIStrings.reloadDebuggedTab),
-                    highlight: true,
                     delegate: () => {
                         reloadDebuggedTab();
                         this.removeDebuggedTabReloadRequiredWarning();
@@ -440,7 +439,6 @@ export class InspectorView extends VBox {
             const infobar = new Infobar("info" /* InfobarType.INFO */, message, [
                 {
                     text: i18nString(UIStrings.reloadDevtools),
-                    highlight: true,
                     delegate: () => reloadDevTools(),
                     dismiss: false,
                     buttonVariant: "primary" /* Buttons.Button.Variant.PRIMARY */,
@@ -460,7 +458,6 @@ export class InspectorView extends VBox {
             const infobar = new Infobar("info" /* InfobarType.INFO */, i18nString(UIStrings.selectOverrideFolder), [
                 {
                     text: i18nString(UIStrings.selectFolder),
-                    highlight: true,
                     delegate: () => callback(),
                     dismiss: true,
                     buttonVariant: "tonal" /* Buttons.Button.Variant.TONAL */,
@@ -514,7 +511,6 @@ function createLocaleInfobar() {
     return new Infobar("info" /* InfobarType.INFO */, i18nString(UIStrings.devToolsLanguageMissmatch, { PH1: closestSupportedLanguageInCurrentLocale }), [
         {
             text: i18nString(UIStrings.setToBrowserLanguage),
-            highlight: true,
             delegate: () => {
                 languageSetting.set('browserLanguage');
                 getDisableLocaleInfoBarSetting().set(true);
@@ -525,7 +521,6 @@ function createLocaleInfobar() {
         },
         {
             text: i18nString(UIStrings.setToSpecificLanguage, { PH1: closestSupportedLanguageInCurrentLocale }),
-            highlight: true,
             delegate: () => {
                 languageSetting.set(closestSupportedLocale);
                 getDisableLocaleInfoBarSetting().set(true);

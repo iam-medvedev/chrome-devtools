@@ -11,6 +11,11 @@ export declare class AgentProject {
         maxLinesChanged: number;
     });
     /**
+     * Returns a list of files from the project that has been used for
+     * processing.
+     */
+    getProcessedFiles(): string[];
+    /**
      * Provides file names in the project to the agent.
      */
     getFiles(): string[];
@@ -28,7 +33,9 @@ export declare class AgentProject {
      * This method searches in files for the agent and provides the
      * matches to the agent.
      */
-    searchFiles(query: string, caseSensitive?: boolean, isRegex?: boolean): Promise<Array<{
+    searchFiles(query: string, caseSensitive?: boolean, isRegex?: boolean, { signal }?: {
+        signal?: AbortSignal;
+    }): Promise<Array<{
         filepath: string;
         lineNumber: number;
         columnNumber: number;

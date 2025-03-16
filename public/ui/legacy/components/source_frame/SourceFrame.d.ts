@@ -136,9 +136,6 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     protected populateLineGutterContextMenu(_menu: UI.ContextMenu.ContextMenu, _lineNumber: number): void;
     focus(): void;
 }
-export declare class SelfXssWarningDialog {
-    static show(): Promise<boolean>;
-}
 export interface Transformer {
     editorLocationToUILocation(lineNumber: number, columnNumber: number): {
         lineNumber: number;

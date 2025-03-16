@@ -45,10 +45,10 @@ export class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper {
             }
             return;
         }
-        const { hostConfig } = Root.Runtime;
         const isComputedStyleWidgetVisible = Boolean(UI.Context.Context.instance().flavor(ComputedStyleWidget));
         const isStylesTabVisible = Boolean(UI.Context.Context.instance().flavor(StylesSidebarPane));
-        const shouldTrackComputedStyleUpdates = isComputedStyleWidgetVisible || (isStylesTabVisible && hostConfig.devToolsAnimationStylesInStylesTab?.enabled);
+        const shouldTrackComputedStyleUpdates = isComputedStyleWidgetVisible ||
+            (isStylesTabVisible && Root.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled);
         // There is a selected node but not the computed style widget nor the styles tab is visible.
         // If there is a previously tracked node let's stop tracking computed style updates for that node.
         if (!shouldTrackComputedStyleUpdates) {

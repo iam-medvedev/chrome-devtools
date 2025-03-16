@@ -344,4 +344,7 @@ export function data() {
 export function deps() {
     return ['Meta'];
 }
+export function metricIsLCP(metric) {
+    return metric.metricName === "LCP" /* MetricName.LCP */;
+}
 //# sourceMappingURL=PageLoadMetricsHandler.js.map

@@ -248,6 +248,9 @@ class DataGridElement extends HTMLElement {
         }
     }
     #updateNode(node, attributeName) {
+        while (node?.parentNode && !(node instanceof HTMLElement)) {
+            node = node.parentNode;
+        }
         const dataRow = node instanceof HTMLElement ? node.closest('tr') : null;
         const dataGridNode = dataRow ? DataGridElementNode.get(dataRow) : null;
         if (dataGridNode && dataRow) {

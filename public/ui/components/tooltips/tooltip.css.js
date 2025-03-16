@@ -20,8 +20,9 @@ export default {
   overflow: visible;
   position-area: bottom;
   position-visibility: anchors-visible;
+  /* stylelint-disable-next-line declaration-property-value-no-unknown */
   justify-self: anchor-center;
-  position-try-fallbacks: flip-inline, flip-block, flip-inline flip-block;
+  position-try-fallbacks: flip-block;
 
   & .container {
     width: max-content;
@@ -35,11 +36,12 @@ export default {
   }
 }
 
-:host([variant="rich"]) {
+:host([variant='rich']) {
   justify-self: unset;
   margin: 0 var(--tooltip-viewport-distance) var(--tooltip-viewport-distance) 0;
   position-area: bottom span-right;
-  position-try-fallbacks: --bottom-left, --top-right, --top-left;
+  position-try-fallbacks: --bottom-left, --bottom-center, --top-right,
+    --top-left, --top-center;
 
   & .container {
     margin-inline: 0;
@@ -52,18 +54,37 @@ export default {
 }
 
 @position-try --bottom-left {
+  /* stylelint-disable-next-line at-rule-descriptor-no-unknown */
   position-area: bottom span-left;
   margin: 0 0 var(--tooltip-viewport-distance) var(--tooltip-viewport-distance);
 }
 
 @position-try --top-right {
+  /* stylelint-disable-next-line at-rule-descriptor-no-unknown */
   position-area: top span-right;
   margin: var(--tooltip-viewport-distance) var(--tooltip-viewport-distance) 0 0;
 }
 
 @position-try --top-left {
+  /* stylelint-disable-next-line at-rule-descriptor-no-unknown */
   position-area: top span-left;
   margin: var(--tooltip-viewport-distance) 0 0 var(--tooltip-viewport-distance);
+}
+
+@position-try --bottom-center {
+  justify-self: anchor-center;
+  /* stylelint-disable-next-line at-rule-descriptor-no-unknown */
+  position-area: bottom;
+  margin: 0 var(--tooltip-viewport-distance) var(--tooltip-viewport-distance)
+    var(--tooltip-viewport-distance);
+}
+
+@position-try --top-center {
+  justify-self: anchor-center;
+  /* stylelint-disable-next-line at-rule-descriptor-no-unknown */
+  position-area: top;
+  margin: var(--tooltip-viewport-distance) var(--tooltip-viewport-distance) 0
+    var(--tooltip-viewport-distance);
 }
 
 /*# sourceURL=${import.meta.resolve('./tooltip.css')} */

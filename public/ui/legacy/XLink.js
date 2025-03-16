@@ -8,7 +8,7 @@ import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { html as xhtml } from './Fragment.js';
 import { Tooltip } from './Tooltip.js';
-import { addReferrerToURLIfNecessary, copyLinkAddressLabel, MaxLengthForDisplayedURLs, openLinkExternallyLabel, } from './UIUtils.js';
+import { copyLinkAddressLabel, MaxLengthForDisplayedURLs, openInNewTab, openLinkExternallyLabel, } from './UIUtils.js';
 import { XElement } from './XElement.js';
 export class XLink extends XElement {
     hrefInternal;
@@ -40,7 +40,7 @@ export class XLink extends XElement {
         this.onClick = (event) => {
             event.consume(true);
             if (this.hrefInternal) {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.hrefInternal);
+                openInNewTab(this.hrefInternal);
             }
             this.dispatchEvent(new Event('x-link-invoke'));
         };
@@ -48,7 +48,7 @@ export class XLink extends XElement {
             if (Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
                 event.consume(true);
                 if (this.hrefInternal) {
-                    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.hrefInternal);
+                    openInNewTab(this.hrefInternal);
                 }
             }
             this.dispatchEvent(new Event('x-link-invoke'));
@@ -73,15 +73,13 @@ export class XLink extends XElement {
                 newValue = '';
             }
             let href = null;
-            let url = null;
             try {
-                url = new URL(addReferrerToURLIfNecessary(newValue));
-                href = url.toString();
+                const url = new URL(newValue);
+                if (url.protocol !== 'javascript:') {
+                    href = Platform.DevToolsPath.urlString `${url}`;
+                }
             }
             catch {
-            }
-            if (url && url.protocol === 'javascript:') {
-                href = null;
             }
             this.hrefInternal = href;
             if (!this.hasAttribute('title')) {
@@ -123,7 +121,7 @@ export class ContextMenuProvider {
         const node = targetNode;
         contextMenu.revealSection().appendItem(openLinkExternallyLabel(), () => {
             if (node.href) {
-                Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(node.href);
+                openInNewTab(node.href);
             }
         }, { jslogContext: 'open-in-new-tab' });
         contextMenu.revealSection().appendItem(copyLinkAddressLabel(), () => {

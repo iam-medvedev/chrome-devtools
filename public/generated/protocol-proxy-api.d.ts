@@ -610,6 +610,14 @@ declare namespace ProtocolProxyApi {
      */
     invoke_addPrivacySandboxEnrollmentOverride(params: Protocol.Browser.AddPrivacySandboxEnrollmentOverrideRequest): Promise<Protocol.ProtocolResponseWithError>;
 
+    /**
+     * Configures encryption keys used with a given privacy sandbox API to talk
+     * to a trusted coordinator.  Since this is intended for test automation only,
+     * coordinatorOrigin must be a .test domain. No existing coordinator
+     * configuration for the origin may exist.
+     */
+    invoke_addPrivacySandboxCoordinatorKeyConfig(params: Protocol.Browser.AddPrivacySandboxCoordinatorKeyConfigRequest): Promise<Protocol.ProtocolResponseWithError>;
+
   }
   export interface BrowserDispatcher {
     /**
@@ -2329,6 +2337,26 @@ declare namespace ProtocolProxyApi {
      * Fired when WebTransport is disposed.
      */
     webTransportClosed(params: Protocol.Network.WebTransportClosedEvent): void;
+
+    /**
+     * Fired upon direct_socket.TCPSocket creation.
+     */
+    directTCPSocketCreated(params: Protocol.Network.DirectTCPSocketCreatedEvent): void;
+
+    /**
+     * Fired when direct_socket.TCPSocket connection is opened.
+     */
+    directTCPSocketOpened(params: Protocol.Network.DirectTCPSocketOpenedEvent): void;
+
+    /**
+     * Fired when direct_socket.TCPSocket is aborted.
+     */
+    directTCPSocketAborted(params: Protocol.Network.DirectTCPSocketAbortedEvent): void;
+
+    /**
+     * Fired when direct_socket.TCPSocket is closed.
+     */
+    directTCPSocketClosed(params: Protocol.Network.DirectTCPSocketClosedEvent): void;
 
     /**
      * Fired when additional information about a requestWillBeSent event is available from the
@@ -4146,6 +4174,11 @@ declare namespace ProtocolProxyApi {
      * Enable the BluetoothEmulation domain.
      */
     invoke_enable(params: Protocol.BluetoothEmulation.EnableRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Set the state of the simulated central.
+     */
+    invoke_setSimulatedCentralState(params: Protocol.BluetoothEmulation.SetSimulatedCentralStateRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
      * Disable the BluetoothEmulation domain.

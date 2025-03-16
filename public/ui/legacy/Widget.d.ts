@@ -14,6 +14,7 @@ export declare class WidgetElement<WidgetT extends Widget & WidgetParams, Widget
     #private;
     createWidget(): WidgetT;
     set widgetConfig(config: WidgetConfig<WidgetT, WidgetParams>);
+    getWidget(): WidgetT | undefined;
     connectedCallback(): void;
     appendChild<T extends Node>(child: T): T;
     insertBefore<T extends Node>(child: T, referenceChild: Node): T;

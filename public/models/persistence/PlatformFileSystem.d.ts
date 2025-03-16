@@ -41,7 +41,7 @@ export declare class PlatformFileSystem {
     initialGitFolders(): Platform.DevToolsPath.EncodedPathString[];
     path(): Platform.DevToolsPath.UrlString;
     embedderPath(): Platform.DevToolsPath.RawPathString;
-    type(): string;
+    type(): PlatformFileSystemType;
     /**
      * True if the filesystem was automatically discovered (see
      * https://goo.gle/devtools-json-design).

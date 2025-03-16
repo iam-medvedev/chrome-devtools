@@ -590,7 +590,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
             timestampEvents: [],
             measureTraceByTraceId: new Map(),
         },
-        LargestImagePaint: { lcpRequestByNavigation: new Map() },
+        LargestImagePaint: { lcpRequestByNavigationId: new Map() },
         LargestTextPaint: new Map(),
         AuctionWorklets: {
             worklets: new Map(),

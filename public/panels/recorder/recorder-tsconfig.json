@@ -45,10 +45,16 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/extensions/bundle-tsconfig.json"
     },
     {
       "path": "../../models/trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../common/bundle-tsconfig.json"
     },
     {
       "path": "../emulation/bundle-tsconfig.json"

@@ -118,12 +118,8 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             this.#currentlyLoadingPerTarget.set(target.id(), currentCount + 1);
         }
         if (this.#currentlyLoading > this.#maxConcurrentLoads) {
-            const entry = { resolve: () => { }, reject: () => { } };
-            const waitForCapacity = new Promise((resolve, reject) => {
-                entry.resolve = resolve;
-                entry.reject = reject;
-            });
-            this.#queuedLoads.push(entry);
+            const { promise: waitForCapacity, resolve, reject, } = Promise.withResolvers();
+            this.#queuedLoads.push({ resolve, reject });
             await waitForCapacity;
         }
     }

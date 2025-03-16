@@ -26,7 +26,7 @@ export class ChangeManager {
         this.#stylesheetChanges.clear();
         const firstFailed = results.find(result => result.status === 'rejected');
         if (firstFailed) {
-            throw new Error(firstFailed.reason);
+            console.error(firstFailed.reason);
         }
     }
     async addChange(cssModel, frameId, change) {
@@ -45,7 +45,7 @@ export class ChangeManager {
         else {
             changes.push(change);
         }
-        const content = this.formatChangesForInspectoStylesheet(changes);
+        const content = this.#formatChangesForInspectorStylesheet(changes);
         await cssModel.setStyleSheetText(stylesheetId, content, true);
         this.#stylesheetChanges.set(stylesheetId, changes);
         return content;
@@ -56,7 +56,7 @@ export class ChangeManager {
             .map(change => this.#formatChange(change, includeSourceLocation)))
             .join('\n\n');
     }
-    formatChangesForInspectoStylesheet(changes) {
+    #formatChangesForInspectorStylesheet(changes) {
         return changes
             .map(change => {
             return `.${change.className} {

@@ -10,6 +10,7 @@ import * as Breakpoints from '../models/breakpoints/breakpoints.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as Workspace from '../models/workspace/workspace.js';
+import * as WorkspaceDiff from '../models/workspace_diff/workspace_diff.js';
 import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
 import { findMenuItemWithLabel, getMenu } from './ContextMenuHelpers.js';
 import { createTarget, } from './EnvironmentHelpers.js';
@@ -176,6 +177,13 @@ export async function createPatchWidget(options) {
         aidaClient,
     };
 }
+export async function createPatchWidgetWithDiffView() {
+    const { view, panel, aidaClient } = await createPatchWidget({ aidaClient: mockAidaClient([[{ explanation: 'patch applied' }]]) });
+    panel.changeSummary = 'body { background-color: red; }';
+    view.input.onApplyToWorkspace();
+    assert.exists((await view.nextInput).patchSuggestion);
+    return { panel, view, aidaClient };
+}
 export function initializePersistenceImplForTests() {
     const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
@@ -190,6 +198,7 @@ export function initializePersistenceImplForTests() {
         debuggerWorkspaceBinding,
     });
     Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
+    WorkspaceDiff.WorkspaceDiff.workspaceDiff({ forceNew: true });
 }
 export function cleanup() {
     for (const panel of panels) {

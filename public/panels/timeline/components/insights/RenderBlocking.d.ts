@@ -7,6 +7,7 @@ import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class RenderBlocking extends BaseInsightComponent<RenderBlockingInsightModel> {
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
+    protected hasAskAISupport: boolean;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;

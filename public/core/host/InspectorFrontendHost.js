@@ -422,6 +422,8 @@ export class InspectorFrontendHostStub {
     }
     recordKeyDown(event) {
     }
+    recordSettingAccess(event) {
+    }
 }
 // @ts-expect-error Global injected by devtools_compatibility.js
 // eslint-disable-next-line @typescript-eslint/naming-convention

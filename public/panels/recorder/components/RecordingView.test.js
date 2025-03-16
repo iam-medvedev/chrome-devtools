@@ -76,10 +76,10 @@ describeWithEnvironment('RecordingView', () => {
         assert.isOk(button);
         dispatchClickEvent(button);
     }
-    async function waitForSplitViewToDissappear(view) {
+    async function waitForSplitViewSidebarToBeHidden(view) {
         await getEventPromise(view, 'code-generated');
         const splitView = view.shadowRoot?.querySelector('devtools-split-view');
-        assert.isNull(splitView);
+        assert.strictEqual(splitView?.getAttribute('sidebar-visibility'), 'hidden');
     }
     async function changeCodeView(view) {
         const menu = view.shadowRoot?.querySelector('devtools-select-menu');
@@ -109,7 +109,7 @@ describeWithEnvironment('RecordingView', () => {
         await waitForTextEditor(view);
         clickHideCode(view);
         // Click is handled async, therefore, waiting for split view to be removed.
-        await waitForSplitViewToDissappear(view);
+        await waitForSplitViewSidebarToBeHidden(view);
     });
     it('should copy the recording to clipboard via copy event', async () => {
         await renderView();

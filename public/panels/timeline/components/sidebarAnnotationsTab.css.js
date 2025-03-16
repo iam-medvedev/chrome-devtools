@@ -52,7 +52,8 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
   padding: var(--sys-size-8) 0;
   gap: 6px;
 }

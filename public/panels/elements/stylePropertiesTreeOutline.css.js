@@ -14,7 +14,7 @@ export default {
   color: inherit;
 }
 
-.inactive-value:not(:hover) {
+.inactive-value:not(:hover,:focus,:focus-within) {
   text-decoration: line-through;
 }
 
@@ -304,7 +304,8 @@ devtools-icon.open-in-animations-panel {
 }
 
 .value :focus {
-  outline: 1px solid var(--sys-color-outline);
+  border-radius: var(--sys-size-2);
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
 }
 
 /*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */

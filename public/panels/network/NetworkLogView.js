@@ -939,8 +939,9 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     showRecordingHint() {
         this.hideRecordingHint();
+        const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();
         const actionName = this.recording ? 'inspector-main.reload' : 'network.toggle-recording';
-        const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionName);
+        const action = actionRegistry.hasAction(actionName) ? actionRegistry.getAction(actionName) : null;
         const shortcutTitle = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(actionName) ?? '';
         const header = this.recording ? i18nString(UIStrings.recordingNetworkActivity) :
             i18nString(UIStrings.noNetworkActivityRecorded);
@@ -954,11 +955,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.recordingHint = new UI.EmptyWidget.EmptyWidget(header, shortcutTitle ? description : '');
         this.recordingHint.element.classList.add('network-status-pane');
         this.recordingHint.appendLink('https://developer.chrome.com/docs/devtools/network/');
-        const button = UI.UIUtils.createTextButton(buttonText, () => action.execute(), {
-            jslogContext: actionName,
-            variant: "tonal" /* Buttons.Button.Variant.TONAL */,
-        });
-        this.recordingHint.contentElement.appendChild(button);
+        if (shortcutTitle && action) {
+            const button = UI.UIUtils.createTextButton(buttonText, () => action.execute(), {
+                jslogContext: actionName,
+                variant: "tonal" /* Buttons.Button.Variant.TONAL */,
+            });
+            this.recordingHint.contentElement.appendChild(button);
+        }
         this.recordingHint.show(this.element);
         this.setHidden(true);
     }
@@ -2307,7 +2310,7 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             this.dropDownButton.setTitle(this.selectedFilters().join(', '));
         }
         else {
-            this.dropDownButton.setTitle(UIStrings.showOnlyHideRequests);
+            this.dropDownButton.setTitle(i18nString(UIStrings.showOnlyHideRequests));
         }
     }
     isActive() {

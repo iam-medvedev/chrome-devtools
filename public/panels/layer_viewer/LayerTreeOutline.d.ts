@@ -14,6 +14,8 @@ export declare class LayerTreeOutline extends LayerTreeOutline_base implements C
     private layerViewHost;
     private treeOutline;
     private lastHoveredNode;
+    private layerCountElement;
+    private layerMemoryElement;
     element: HTMLElement;
     private layerTree?;
     private layerSnapshotMap?;

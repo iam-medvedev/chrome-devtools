@@ -83,4 +83,11 @@ export function getLogNormalScore({ median, p10 }, value) {
     }
     return score;
 }
+/**
+ * Interpolates the y value at a point x on the line defined by (x0, y0) and (x1, y1)
+ */
+export function linearInterpolation(x0, y0, x1, y1, x) {
+    const slope = (y1 - y0) / (x1 - x0);
+    return y0 + (x - x0) * slope;
+}
 //# sourceMappingURL=Statistics.js.map

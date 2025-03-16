@@ -87,7 +87,8 @@ export default {
 
 .tree-outline .hex-data {
   display: block;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: anywhere;
   margin-left: 20px;
 }
 

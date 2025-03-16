@@ -7,7 +7,7 @@ import * as LoggingEvents from './LoggingEvents.js';
 import * as NonDomState from './NonDomState.js';
 export { setVeDebuggingEnabled, setVeDebugLoggingEnabled } from './Debugging.js';
 export { addDocument, startLogging, stopLogging } from './LoggingDriver.js';
-export { logImpressions } from './LoggingEvents.js';
+export { logImpressions, logSettingAccess } from './LoggingEvents.js';
 export const logClick = (loggable, event, options = {}) => LoggingEvents.logClick(LoggingDriver.clickLogThrottler)(loggable, event, options);
 export const logResize = (l, s) => LoggingEvents.logResize(l, s);
 export const logKeyDown = async (l, e, context) => await LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);

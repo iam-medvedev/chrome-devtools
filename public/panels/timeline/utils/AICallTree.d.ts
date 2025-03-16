@@ -1,17 +1,23 @@
 import * as Trace from '../../../models/trace/trace.js';
+export interface FromTimeOnThreadOptions {
+    thread: {
+        pid: Trace.Types.Events.ProcessID;
+        tid: Trace.Types.Events.ThreadID;
+    };
+    parsedTrace: Trace.Handlers.Types.ParsedTrace;
+    bounds: Trace.Types.Timing.TraceWindowMicro;
+}
 export declare class AICallTree {
     selectedNode: Trace.Extras.TraceTree.Node | null;
     rootNode: Trace.Extras.TraceTree.TopDownRootNode;
     parsedTrace: Trace.Handlers.Types.ParsedTrace;
     constructor(selectedNode: Trace.Extras.TraceTree.Node | null, rootNode: Trace.Extras.TraceTree.TopDownRootNode, parsedTrace: Trace.Handlers.Types.ParsedTrace);
     /**
-     * Builds a call tree representing all calls within the given timeframe.
-     * Only includes events that:
-     * 1. Are on the main thread
-     * 2. Are known to the Renderer / Samples handler.
-     * 3. Are at least 0.05% in duration of the total range.
+     * Builds a call tree representing all calls within the given timeframe for
+     * the provided thread.
+     * Events that are less than 0.05% of the range duration are removed.
      */
-    static fromTime(start: Trace.Types.Timing.Micro, end: Trace.Types.Timing.Micro, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
+    static fromTimeOnThread({ thread, parsedTrace, bounds }: FromTimeOnThreadOptions): AICallTree | null;
     /**
      * Attempts to build an AICallTree from a given selected event. It also
      * validates that this event is one that we support being used with the AI

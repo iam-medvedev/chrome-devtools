@@ -4,10 +4,12 @@
 import * as Common from './common.js';
 const { Throttler, Scheduling } = Common.Throttler;
 describe('Throttler class', () => {
+    let consoleStub;
     let clock;
     let throttler;
     const TIMEOUT = 10;
     beforeEach(async () => {
+        consoleStub = sinon.stub(console, 'error');
         clock = sinon.useFakeTimers();
         // When nothing was run, throttler has 0 as the last exectution time.
         // With mock time, current time is also 0 initially. Advance the clock
@@ -16,6 +18,7 @@ describe('Throttler class', () => {
     });
     afterEach(() => {
         clock.restore();
+        consoleStub.restore();
     });
     function ensureNoRecentRun() {
         clock.tick(TIMEOUT + 1);
@@ -24,6 +27,32 @@ describe('Throttler class', () => {
         void throttler.schedule(async () => { });
         await clock.tickAsync(TIMEOUT);
     }
+    it('is able to schedule a process', async () => {
+        const process = sinon.spy();
+        throttler = new Throttler(TIMEOUT);
+        await ensureHasRecentRun();
+        void throttler.schedule(process);
+        assert.isFalse(process.called);
+        await clock.tickAsync(TIMEOUT + 1);
+        assert.isTrue(process.calledOnce);
+    });
+    it('is able to schedule a process from process', async () => {
+        const process2 = sinon.spy();
+        const process1 = sinon.stub().callsFake(() => {
+            void throttler.schedule(process2);
+        });
+        throttler = new Throttler(TIMEOUT);
+        await ensureHasRecentRun();
+        void throttler.schedule(process1);
+        assert.isFalse(process1.called);
+        assert.isFalse(process2.calledOnce);
+        await clock.tickAsync(TIMEOUT + 1);
+        assert.isTrue(process1.calledOnce);
+        assert.isFalse(process2.calledOnce);
+        await clock.tickAsync(TIMEOUT + 1);
+        assert.isTrue(process1.calledOnce);
+        assert.isTrue(process2.calledOnce);
+    });
     it('is able to schedule a process as soon as possible', async () => {
         const process = sinon.spy();
         throttler = new Throttler(TIMEOUT);
@@ -72,12 +101,12 @@ describe('Throttler class', () => {
     });
     it('is able to schedule a delayed process', async () => {
         const process = sinon.spy();
-        const throttler = new Throttler(10);
+        const throttler = new Throttler(TIMEOUT);
         void throttler.schedule(process, "Delayed" /* Scheduling.DELAYED */);
         assert.isFalse(process.called);
         await clock.tickAsync(0);
         assert.isFalse(process.called);
-        await clock.tickAsync(10);
+        await clock.tickAsync(TIMEOUT);
         assert.isTrue(process.calledOnce);
     });
     it('runs only one process at a time', async () => {
@@ -106,6 +135,50 @@ describe('Throttler class', () => {
         await clock.tickAsync(50);
         assert.isTrue(spy2.called);
         process2Resolve(); // No pending promises.
+    });
+    it('is resolve when process throws', async () => {
+        const process = sinon.stub().throws(new Error('Process error'));
+        const throttler = new Throttler(TIMEOUT);
+        const promise = throttler.schedule(process, "Delayed" /* Scheduling.DELAYED */);
+        assert.isTrue(process.notCalled);
+        await clock.tickAsync(TIMEOUT + 1);
+        assert.isTrue(process.calledOnce);
+        const race = await Promise.race([promise, Promise.resolve('pending')]);
+        assert.notStrictEqual(race, 'pending');
+        assert.isTrue(consoleStub.calledOnce);
+    });
+    it('is resolve promise correctly', async () => {
+        const process = sinon.spy();
+        const throttler = new Throttler(TIMEOUT);
+        const promise = throttler.schedule(process, "Delayed" /* Scheduling.DELAYED */);
+        let race = await Promise.race([promise, Promise.resolve('pending')]);
+        assert.strictEqual(race, 'pending');
+        await clock.tickAsync(0);
+        race = await Promise.race([promise, Promise.resolve('pending')]);
+        assert.strictEqual(race, 'pending');
+        await clock.tickAsync(TIMEOUT + 1);
+        race = await Promise.race([promise, Promise.resolve('pending')]);
+        assert.notStrictEqual(race, 'pending');
+    });
+    it('runs the last scheduled', async () => {
+        const process1 = sinon.spy();
+        const process2 = sinon.spy();
+        const process3 = sinon.spy();
+        const throttler = new Throttler(TIMEOUT);
+        void throttler.schedule(process1, "Delayed" /* Scheduling.DELAYED */);
+        void throttler.schedule(process2, "Delayed" /* Scheduling.DELAYED */);
+        void throttler.schedule(process3, "Delayed" /* Scheduling.DELAYED */);
+        assert.isFalse(process1.calledOnce);
+        assert.isFalse(process2.calledOnce);
+        assert.isFalse(process3.calledOnce);
+        await clock.tickAsync(0);
+        assert.isFalse(process1.calledOnce);
+        assert.isFalse(process2.calledOnce);
+        assert.isFalse(process3.calledOnce);
+        await clock.tickAsync(TIMEOUT + 1);
+        assert.isFalse(process1.calledOnce);
+        assert.isFalse(process2.calledOnce);
+        assert.isTrue(process3.calledOnce);
     });
 });
 //# sourceMappingURL=Throttler.test.js.map

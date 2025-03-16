@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Marked from '../../third_party/marked/marked.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -107,7 +106,7 @@ export class ReleaseNoteView extends UI.Widget.VBox {
         const markdownContent = await getMarkdownContent();
         this.#view({
             getReleaseNote,
-            openNewTab: this.#openNewTab,
+            openNewTab: UI.UIUtils.openInNewTab,
             markdownContent,
             getThumbnailPath: this.#getThumbnailPath,
         }, this, this.contentElement);
@@ -126,9 +125,6 @@ export class ReleaseNoteView extends UI.Widget.VBox {
                 break;
         }
         return new URL(img, import.meta.url).toString();
-    }
-    #openNewTab(link) {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(link);
     }
 }
 //# sourceMappingURL=ReleaseNoteView.js.map

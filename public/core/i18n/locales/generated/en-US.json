@@ -119,6 +119,9 @@
   "core/common/SettingRegistration.ts | adorner": {
     "message": "Adorner"
   },
+  "core/common/SettingRegistration.ts | ai": {
+    "message": "AI"
+  },
   "core/common/SettingRegistration.ts | appearance": {
     "message": "Appearance"
   },
@@ -1226,6 +1229,9 @@
   "generated/Deprecation.ts | GetUserMediaInsecureOrigin": {
     "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
   },
+  "generated/Deprecation.ts | H1UserAgentFontSizeInSection": {
+    "message": "The website has an <h1> tag within an <article>, <aside>, <nav>, or <section>, and relies on deprecated UA stylesheet rules for the resulting font size. See the second block of 'x h1' styles in https://html.spec.whatwg.org/multipage/rendering.html#sections-and-headings. These special rules are deprecated and will be removed. See https://github.com/whatwg/html/issues/7867."
+  },
   "generated/Deprecation.ts | HostCandidateAttributeGetter": {
     "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
   },
@@ -1498,6 +1504,9 @@
   },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Cross-Origin Resource Sharing (CORS)"
+  },
+  "models/issues_manager/CorsIssue.ts | corsLocalNetworkAccess": {
+    "message": "Local Network Access"
   },
   "models/issues_manager/CorsIssue.ts | corsPrivateNetworkAccess": {
     "message": "Private Network Access"
@@ -1862,6 +1871,9 @@
   "models/trace/insights/ForcedReflow.ts | totalReflowTime": {
     "message": "Total reflow time"
   },
+  "models/trace/insights/ForcedReflow.ts | unattributed": {
+    "message": "Unattributed"
+  },
   "models/trace/insights/ImageDelivery.ts | description": {
     "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)"
   },
@@ -2044,6 +2056,24 @@
   },
   "models/trace/insights/ThirdParties.ts | title": {
     "message": "3rd parties"
+  },
+  "models/trace/insights/UseCache.ts | cacheTTL": {
+    "message": "Cache TTL"
+  },
+  "models/trace/insights/UseCache.ts | description": {
+    "message": "A long cache lifetime can speed up repeat visits to your page. [Learn more](https://web.dev/uses-long-cache-ttl/)."
+  },
+  "models/trace/insights/UseCache.ts | noRequestsToCache": {
+    "message": "No requests with inefficient cache policies"
+  },
+  "models/trace/insights/UseCache.ts | others": {
+    "message": "{PH1} others"
+  },
+  "models/trace/insights/UseCache.ts | requestColumn": {
+    "message": "Request"
+  },
+  "models/trace/insights/UseCache.ts | title": {
+    "message": "Use efficient cache lifetimes"
   },
   "models/trace/insights/Viewport.ts | description": {
     "message": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile."
@@ -2457,7 +2487,7 @@
     "message": "Ignored"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | reloadRequired": {
-    "message": "Reload required before the change takes effect."
+    "message": "Reload required before the change takes effect"
   },
   "panels/accessibility/AXBreadcrumbsPane.ts | scrollIntoView": {
     "message": "Scroll into view"
@@ -4784,6 +4814,12 @@
   "panels/application/ReportingApiTreeElement.ts | reportingApi": {
     "message": "Reporting API"
   },
+  "panels/application/ReportingApiView.ts | noReportOrEndpoint": {
+    "message": "No report or endpoint"
+  },
+  "panels/application/ReportingApiView.ts | reportingApiDescription": {
+    "message": "On this page you will be able to inspect Reporting API reports and endpoints."
+  },
   "panels/application/ServiceWorkerCacheTreeElement.ts | cacheStorage": {
     "message": "Cache storage"
   },
@@ -5410,6 +5446,21 @@
   },
   "panels/changes/CombinedDiffView.ts | copied": {
     "message": "Copied to clipboard"
+  },
+  "panels/common/common.ts | allow": {
+    "message": "Allow"
+  },
+  "panels/common/common.ts | cancel": {
+    "message": "Cancel"
+  },
+  "panels/common/common.ts | gotIt": {
+    "message": "Got it"
+  },
+  "panels/common/common.ts | learnMore": {
+    "message": "Learn more"
+  },
+  "panels/common/common.ts | thingsToConsider": {
+    "message": "Things to consider"
   },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Open Console to view {PH1}"
@@ -6199,6 +6250,9 @@
   },
   "panels/elements/components/AnchorFunctionLinkSwatch.ts | jumpToAnchorNode": {
     "message": "Jump to anchor node"
+  },
+  "panels/elements/components/AnchorFunctionLinkSwatch.ts | sIsNotDefined": {
+    "message": "{PH1} is not defined"
   },
   "panels/elements/components/CSSHintDetailsView.ts | learnMore": {
     "message": "Learn More"
@@ -7696,6 +7750,9 @@
   },
   "panels/layer_viewer/Layers3DView.ts | webglSupportIsDisabledInYour": {
     "message": "WebGL support is disabled in your browser."
+  },
+  "panels/layer_viewer/LayerTreeOutline.ts | layerCount": {
+    "message": "{PH1} layers"
   },
   "panels/layer_viewer/LayerTreeOutline.ts | layersTreePane": {
     "message": "Layers Tree Pane"
@@ -11015,6 +11072,9 @@
   "panels/recorder/recorder-meta.ts | toggleCode": {
     "message": "Toggle code view"
   },
+  "panels/recorder/RecorderController.ts | allowImporting": {
+    "message": "allow importing"
+  },
   "panels/recorder/RecorderController.ts | continueReplay": {
     "message": "Continue"
   },
@@ -11026,6 +11086,12 @@
   },
   "panels/recorder/RecorderController.ts | deleteRecording": {
     "message": "Delete recording"
+  },
+  "panels/recorder/RecorderController.ts | doNotImport": {
+    "message": "Don't import recordings you do not understand or have not reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Please type ''{PH1}'' below to allow importing."
+  },
+  "panels/recorder/RecorderController.ts | doYouTrustThisCode": {
+    "message": "Do you trust this recording?"
   },
   "panels/recorder/RecorderController.ts | export": {
     "message": "Export"
@@ -11071,6 +11137,9 @@
   },
   "panels/recorder/RecorderController.ts | toggleCode": {
     "message": "Toggle code view"
+  },
+  "panels/recorder/RecorderController.ts | typeAllowImporting": {
+    "message": "Type ''{PH1}''"
   },
   "panels/screencast/ScreencastApp.ts | toggleScreencast": {
     "message": "Toggle screencast"
@@ -11150,8 +11219,8 @@
   "panels/search/SearchView.ts | noMatchesFound": {
     "message": "No matches found"
   },
-  "panels/search/SearchView.ts | noMatchesFoundStatusbar": {
-    "message": "No matches found."
+  "panels/search/SearchView.ts | noSearchResult": {
+    "message": "No search results"
   },
   "panels/search/SearchView.ts | nothingMatchedTheQuery": {
     "message": "Nothing matched your search query"
@@ -11167,6 +11236,9 @@
   },
   "panels/search/SearchView.ts | searchInterrupted": {
     "message": "Search interrupted."
+  },
+  "panels/search/SearchView.ts | typeAndPressSToSearch": {
+    "message": "Type and press {PH1} to search"
   },
   "panels/security/CookieControlsView.ts | cardDisclaimer": {
     "message": "Only when DevTools is open"
@@ -11945,6 +12017,9 @@
   "panels/settings/AISettingsTab.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
   },
+  "panels/settings/AISettingsTab.ts | enableAiSuggestedAnnotations": {
+    "message": "Enable AI suggestions for performance panel annotations"
+  },
   "panels/settings/AISettingsTab.ts | enableConsoleInsights": {
     "message": "Enable Console insights"
   },
@@ -11971,6 +12046,15 @@
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsDataNoLogging": {
     "message": "Any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google to generate explanations. This data will not be used to improve Google’s AI models."
+  },
+  "panels/settings/AISettingsTab.ts | generatedAiAnnotationsSendData": {
+    "message": "Your performance trace is sent to Google to generate an explanation. This data will be used to improve Google’s AI models."
+  },
+  "panels/settings/AISettingsTab.ts | generatedAiAnnotationsSendDataNoLogging": {
+    "message": "Your performance trace is sent to Google to generate an explanation. This data will not be used to improve Google’s AI models."
+  },
+  "panels/settings/AISettingsTab.ts | getAIAnnotationsSuggestions": {
+    "message": "Get AI suggestions for performance panel annotations"
   },
   "panels/settings/AISettingsTab.ts | helpUnderstandConsole": {
     "message": "Helps you understand and fix console warnings and errors"
@@ -12330,7 +12414,7 @@
     "message": "No experiments match the filter"
   },
   "panels/settings/SettingsScreen.ts | oneOrMoreSettingsHaveChanged": {
-    "message": "One or more settings have changed which requires a reload to take effect."
+    "message": "One or more settings have changed which requires a reload to take effect"
   },
   "panels/settings/SettingsScreen.ts | restoreDefaultsAndReload": {
     "message": "Restore defaults and reload"
@@ -12690,7 +12774,7 @@
     "message": "DevTools can't show authored sources, but you can debug the deployed code."
   },
   "panels/sources/DebuggerPlugin.ts | debugInfoNotFound": {
-    "message": "Failed to load any debug info for {PH1}."
+    "message": "Failed to load any debug info for {PH1}"
   },
   "panels/sources/DebuggerPlugin.ts | disableBreakpoint": {
     "message": "{n, plural, =1 {Disable breakpoint} other {Disable all breakpoints in line}}"
@@ -12723,13 +12807,13 @@
     "message": "Show request"
   },
   "panels/sources/DebuggerPlugin.ts | sourceMapFailed": {
-    "message": "Source map failed to load."
+    "message": "Source map failed to load"
   },
   "panels/sources/DebuggerPlugin.ts | sourceMapLoaded": {
-    "message": "Source map loaded."
+    "message": "Source map loaded"
   },
   "panels/sources/DebuggerPlugin.ts | sourceMapSkipped": {
-    "message": "Source map skipped for this file."
+    "message": "Source map skipped for this file"
   },
   "panels/sources/DebuggerPlugin.ts | theDebuggerWillSkipStepping": {
     "message": "The debugger will skip stepping through this script, and will not stop on exceptions."
@@ -13212,7 +13296,7 @@
     "message": "Connect"
   },
   "panels/sources/SourcesNavigator.ts | automaticWorkspaceFolderDetected": {
-    "message": "Workspace folder {PH1} detected."
+    "message": "Workspace folder {PH1} detected"
   },
   "panels/sources/SourcesNavigator.ts | clearConfiguration": {
     "message": "Clear configuration"
@@ -16127,9 +16211,6 @@
   "ui/legacy/components/inline_editor/FontEditor.ts | units": {
     "message": "Units"
   },
-  "ui/legacy/components/inline_editor/LinkSwatch.ts | sIsNotDefined": {
-    "message": "{PH1} is not defined"
-  },
   "ui/legacy/components/object_ui/CustomPreviewComponent.ts | showAsJavascriptObject": {
     "message": "Show as JavaScript object"
   },
@@ -16308,7 +16389,7 @@
     "message": "No commands found"
   },
   "ui/legacy/components/quick_open/CommandMenu.ts | oneOrMoreSettingsHaveChanged": {
-    "message": "One or more settings have changed which requires a reload to take effect."
+    "message": "One or more settings have changed which requires a reload to take effect"
   },
   "ui/legacy/components/quick_open/CommandMenu.ts | run": {
     "message": "Run"
@@ -16409,9 +16490,6 @@
   "ui/legacy/components/source_frame/source_frame-meta.ts | tabCharacter": {
     "message": "Tab character"
   },
-  "ui/legacy/components/source_frame/SourceFrame.ts | allow": {
-    "message": "Allow"
-  },
   "ui/legacy/components/source_frame/SourceFrame.ts | allowPasting": {
     "message": "allow pasting"
   },
@@ -16420,9 +16498,6 @@
   },
   "ui/legacy/components/source_frame/SourceFrame.ts | bytecodePositionXs": {
     "message": "Bytecode position 0x{PH1}"
-  },
-  "ui/legacy/components/source_frame/SourceFrame.ts | cancel": {
-    "message": "Cancel"
   },
   "ui/legacy/components/source_frame/SourceFrame.ts | dCharactersSelected": {
     "message": "{PH1} characters selected"
@@ -16556,14 +16631,11 @@
   "ui/legacy/Infobar.ts | dontShowAgain": {
     "message": "Don't show again"
   },
-  "ui/legacy/Infobar.ts | showMore": {
-    "message": "Show more"
-  },
   "ui/legacy/InspectorView.ts | closeDrawer": {
     "message": "Close drawer"
   },
   "ui/legacy/InspectorView.ts | devToolsLanguageMissmatch": {
-    "message": "DevTools is now available in {PH1}!"
+    "message": "DevTools is now available in {PH1}"
   },
   "ui/legacy/InspectorView.ts | drawer": {
     "message": "Tool drawer"
@@ -16599,7 +16671,7 @@
     "message": "Select folder"
   },
   "ui/legacy/InspectorView.ts | selectOverrideFolder": {
-    "message": "Select a folder to store override files in."
+    "message": "Select a folder to store override files in"
   },
   "ui/legacy/InspectorView.ts | setToBrowserLanguage": {
     "message": "Always match Chrome's language"
@@ -16692,7 +16764,7 @@
     "message": "Show previous result"
   },
   "ui/legacy/SettingsUI.ts | oneOrMoreSettingsHaveChanged": {
-    "message": "One or more settings have changed which requires a reload to take effect."
+    "message": "One or more settings have changed which requires a reload to take effect"
   },
   "ui/legacy/SettingsUI.ts | srequiresReload": {
     "message": "*Requires reload"

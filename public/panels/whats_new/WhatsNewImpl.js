@@ -55,7 +55,7 @@ let releaseNotesActionDelegateInstance;
 export class ReleaseNotesActionDelegate {
     handleAction(_context, _actionId) {
         const releaseNote = getReleaseNote();
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(releaseNote.link);
+        UI.UIUtils.openInNewTab(releaseNote.link);
         return true;
     }
     static instance(opts = { forceNew: null }) {
@@ -69,7 +69,7 @@ export class ReleaseNotesActionDelegate {
 let reportIssueActionDelegateInstance;
 export class ReportIssueActionDelegate {
     handleAction(_context, _actionId) {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('https://goo.gle/devtools-bug');
+        UI.UIUtils.openInNewTab('https://goo.gle/devtools-bug');
         return true;
     }
     static instance(opts = { forceNew: null }) {

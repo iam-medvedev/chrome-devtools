@@ -74,6 +74,7 @@ devtools-code-block.animating {
 
 .message code {
   color: var(--sys-color-on-surface);
+  font-family: var(--monospace-font-family);
   font-size: 11px;
   user-select: text;
   cursor: text;

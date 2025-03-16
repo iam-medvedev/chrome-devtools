@@ -22,6 +22,7 @@ import * as SlowCSSSelector from './SlowCSSSelector.js';
 import * as Table from './Table.js';
 import * as ThirdParties from './ThirdParties.js';
 import * as Types from './types.js';
+import * as UseCache from './UseCache.js';
 import * as Viewport from './Viewport.js';
-export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, NetworkDependencyTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, Viewport, };
+export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, NetworkDependencyTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, UseCache, Viewport, };
 //# sourceMappingURL=insights.js.map

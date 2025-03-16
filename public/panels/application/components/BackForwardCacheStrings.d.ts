@@ -443,4 +443,7 @@ export declare const NotRestoredReasonDescription: {
     CacheControlNoStoreDeviceBoundSessionTerminated: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    CacheLimitPruned: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
 };

@@ -46,6 +46,7 @@
     "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.ts",
     "../../../../../../../front_end/models/trace/insights/Statistics.ts",
     "../../../../../../../front_end/models/trace/insights/ThirdParties.ts",
+    "../../../../../../../front_end/models/trace/insights/UseCache.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.ts",
     "../../../../../../../front_end/models/trace/insights/types.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",

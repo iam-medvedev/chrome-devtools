@@ -10,6 +10,7 @@ const { html } = Lit;
 export class DocumentLatency extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-document-latency`;
     internalName = 'document-latency';
+    hasAskAISupport = true;
     createOverlays() {
         if (!this.model?.data?.documentRequest) {
             return [];

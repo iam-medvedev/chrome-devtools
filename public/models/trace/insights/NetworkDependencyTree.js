@@ -45,7 +45,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
-        state: partialModel.rootNodes.length > 0 ? 'fail' : 'pass',
+        state: partialModel.fail ? 'fail' : 'pass',
         ...partialModel,
     };
 }
@@ -81,15 +81,20 @@ export function generateInsight(_parsedTrace, context) {
         return finalize({
             rootNodes: [],
             maxTime: Types.Timing.Micro(0),
+            fail: false,
         });
     }
     const rootNodes = [];
     const relatedEvents = new Map();
     let maxTime = Types.Timing.Micro(0);
+    let fail = false;
     let longestChain = [];
     function addChain(path) {
         if (path.length === 0) {
             return;
+        }
+        if (path.length >= 2) {
+            fail = true;
         }
         const initialRequest = path[0];
         const lastRequest = path[path.length - 1];
@@ -109,12 +114,11 @@ export function generateInsight(_parsedTrace, context) {
                     request,
                     timeFromInitialRequest,
                     children: [],
+                    relatedRequests: new Set(),
                 };
                 currentNodes.push(found);
             }
-            if (request === lastRequest) {
-                found.chain = path;
-            }
+            path.forEach(request => found?.relatedRequests.add(request));
             // TODO(b/372897712) Switch the UIString to markdown.
             relatedEvents.set(request, depth < 2 ? [] : [i18nString(UIStrings.warningDescription)]);
             currentNodes = found.children;
@@ -164,6 +168,7 @@ export function generateInsight(_parsedTrace, context) {
     return finalize({
         rootNodes,
         maxTime,
+        fail,
         relatedEvents,
     });
 }

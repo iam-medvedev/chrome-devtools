@@ -17,6 +17,7 @@ export default {
   justify-content: flex-start;
   align-items: stretch;
   display: flex;
+  min-width: var(--sys-size-30);
 }
 
 .dialog-close-button {

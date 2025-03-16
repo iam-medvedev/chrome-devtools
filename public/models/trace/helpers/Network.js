@@ -26,4 +26,61 @@ const HIGH_NETWORK_PRIORITIES = new Set([
 export function isSyntheticNetworkRequestHighPriority(event) {
     return HIGH_NETWORK_PRIORITIES.has(event.args.data.priority);
 }
+export const CACHEABLE_STATUS_CODES = new Set([200, 203, 206]);
+/** @type {Set<LH.Crdp.Network.ResourceType>} */
+export const STATIC_RESOURCE_TYPES = new Set([
+    "Font" /* Protocol.Network.ResourceType.Font */,
+    "Image" /* Protocol.Network.ResourceType.Image */,
+    "Media" /* Protocol.Network.ResourceType.Media */,
+    "Script" /* Protocol.Network.ResourceType.Script */,
+    "Stylesheet" /* Protocol.Network.ResourceType.Stylesheet */,
+]);
+export const NON_NETWORK_SCHEMES = [
+    'blob', // @see https://developer.mozilla.org/en-US/docs/Web/API/URL/createObjectURL
+    'data', // @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
+    'intent', // @see https://developer.chrome.com/docs/multidevice/android/intents/
+    'file', // @see https://en.wikipedia.org/wiki/File_URI_scheme
+    'filesystem', // @see https://developer.mozilla.org/en-US/docs/Web/API/FileSystem
+    'chrome-extension',
+];
+/**
+ * Parses Cache-Control directives based on https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control
+ * eg. 'no-cache, no-store, max-age=0, no-transform, private' will return
+ * {no-cache: true, no-store: true, max-age: 0, no-transform: true, private: true}
+ */
+export function parseCacheControl(header) {
+    if (!header) {
+        return null;
+    }
+    const directives = header.split(',').map(directive => directive.trim());
+    const cacheControlOptions = {};
+    for (const directive of directives) {
+        const [key, value] = directive.split('=').map(part => part.trim());
+        switch (key) {
+            case 'max-age': {
+                const maxAge = parseInt(value, 10);
+                if (!isNaN(maxAge)) {
+                    cacheControlOptions['max-age'] = maxAge;
+                }
+                break;
+            }
+            case 'no-cache':
+                cacheControlOptions['no-cache'] = true;
+                break;
+            case 'no-store':
+                cacheControlOptions['no-store'] = true;
+                break;
+            case 'must-revalidate':
+                cacheControlOptions['must-revalidate'] = true;
+                break;
+            case 'private':
+                cacheControlOptions['private'] = true;
+                break;
+            default:
+                // Ignore unknown directives
+                break;
+        }
+    }
+    return cacheControlOptions;
+}
 //# sourceMappingURL=Network.js.map

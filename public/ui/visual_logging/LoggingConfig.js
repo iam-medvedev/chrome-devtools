@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import { knownContextValues } from './KnownContextValues.js';
 const LOGGING_ATTRIBUTE = 'jslog';
@@ -99,7 +100,8 @@ function checkContextValue(context) {
         reportedUnknownVeContext.has(context)) {
         return;
     }
-    if (Root.Runtime.Runtime.queryParam('debugFrontend')) {
+    if (Root.Runtime.Runtime.queryParam('debugFrontend') || Host.InspectorFrontendHost.isUnderTest() ||
+        localStorage.getItem('veDebugLoggingEnabled') === "Test" /* DebugLoggingFormat.TEST */) {
         const stack = (new Error().stack || '').split('\n').slice(3).join('\n');
         console.error(`Unknown VE context: ${context}${stack}`);
     }

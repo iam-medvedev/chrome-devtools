@@ -28,6 +28,9 @@ export function stackTraceInEvent(event) {
     if (Types.Events.isUpdateLayoutTree(event)) {
         return event.args.beginData?.stackTrace || null;
     }
+    if (Types.Events.isLayout(event)) {
+        return event.args.beginData.stackTrace ?? null;
+    }
     if (Types.Events.isFunctionCall(event)) {
         const data = event.args.data;
         if (!data) {
@@ -370,6 +373,7 @@ export function getZeroIndexedStackTraceForEvent(event) {
             case "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */:
             case "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */:
             case "FunctionCall" /* Types.Events.Name.FUNCTION_CALL */:
+            case "Layout" /* Types.Events.Name.LAYOUT */:
             case "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */: {
                 return makeZeroBasedCallFrame(callFrame);
             }

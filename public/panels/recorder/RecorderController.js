@@ -11,17 +11,16 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as PublicExtensions from '../../models/extensions/extensions.js';
+import * as PanelCommon from '../../panels/common/common.js';
 import * as Emulation from '../../panels/emulation/emulation.js';
 import * as Timeline from '../../panels/timeline/timeline.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
-// inspectorCommonStyles is imported for the empty state styling that is used for the start view
-// eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -31,9 +30,6 @@ import * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
 import recorderControllerStylesRaw from './recorderController.css.js';
 import * as Events from './RecorderEvents.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const recorderControllerStyles = new CSSStyleSheet();
 recorderControllerStyles.replaceSync(recorderControllerStylesRaw.cssContent);
@@ -120,7 +116,26 @@ const UIStrings = {
     /**
      * @description Link text to forward to a documentation page on the recorder.
      */
-    learnMore: 'Learn more'
+    learnMore: 'Learn more',
+    /**
+     *@description Headline of warning shown to users when users import a recording into DevTools Recorder.
+     */
+    doYouTrustThisCode: 'Do you trust this recording?',
+    /**
+     *@description Warning shown to users when imports code into DevTools Recorder.
+     *@example {allow importing} PH1
+     */
+    doNotImport: 'Don\'t import recordings you do not understand or have not reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Please type \'\'{PH1}\'\' below to allow importing.',
+    /**
+     *@description Text a user needs to type in order to confirm that they
+     *are aware of the danger of import code into the DevTools Recorder.
+     */
+    allowImporting: 'allow importing',
+    /**
+     *@description Input box placeholder which instructs the user to type 'allow pasing' into the input box.
+     *@example {allow importing} PH1
+     */
+    typeAllowImporting: 'Type \'\'{PH1}\'\'',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/recorder/RecorderController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -136,7 +151,7 @@ const CONVERTER_ID_TO_METRIC = {
     ["lighthouse" /* Models.ConverterIds.ConverterIds.LIGHTHOUSE */]: 5 /* Host.UserMetrics.RecordingExported.TO_LIGHTHOUSE */,
 };
 let RecorderController = class RecorderController extends LitElement {
-    static styles = [recorderControllerStyles, inspectorCommonStyles];
+    static styles = [recorderControllerStyles];
     #storage = Models.RecordingStorage.RecordingStorage.instance();
     #screenshotStorage = Models.ScreenshotStorage.ScreenshotStorage.instance();
     // TODO: we keep the functionality to allow/disallow replay but right now it's not used.
@@ -149,6 +164,8 @@ let RecorderController = class RecorderController extends LitElement {
     #builtInConverters;
     #recorderSettings = new Models.RecorderSettings.RecorderSettings();
     #shortcutHelper = new Models.RecorderShortcutHelper.RecorderShortcutHelper();
+    #disableRecorderImportWarningSetting = Common.Settings.Settings.instance().createSetting('disable-recorder-import-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+    #selfXssWarningDisabledSetting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
     constructor() {
         super();
         this.isRecording = false;
@@ -799,11 +816,36 @@ let RecorderController = class RecorderController extends LitElement {
             ?.shadowRoot?.querySelector('.action')
             ?.click();
     }
-    #onImportRecording(event) {
+    async #acknowledgeImportNotice() {
+        if (this.#disableRecorderImportWarningSetting.get()) {
+            return true;
+        }
+        if (Root.Runtime.Runtime.queryParam('isChromeForTesting') ||
+            Root.Runtime.Runtime.queryParam('disableSelfXssWarnings') || this.#selfXssWarningDisabledSetting.get()) {
+            return true;
+        }
+        const result = await PanelCommon.TypeToAllowDialog.show({
+            jslogContext: {
+                input: 'confirm-import-recording-input',
+                dialog: 'confirm-import-recording-dialog',
+            },
+            message: i18nString(UIStrings.doNotImport, { PH1: i18nString(UIStrings.allowImporting) }),
+            header: i18nString(UIStrings.doYouTrustThisCode),
+            typePhrase: i18nString(UIStrings.allowImporting),
+            inputPlaceholder: i18nString(UIStrings.typeAllowImporting, { PH1: i18nString(UIStrings.allowImporting) }),
+        });
+        if (result) {
+            this.#disableRecorderImportWarningSetting.set(true);
+        }
+        return result;
+    }
+    async #onImportRecording(event) {
         event.stopPropagation();
         this.#clearError();
-        this.#fileSelector = UI.UIUtils.createFileSelectorElement(this.#importFile.bind(this));
-        this.#fileSelector.click();
+        if (await this.#acknowledgeImportNotice()) {
+            this.#fileSelector = UI.UIUtils.createFileSelectorElement(this.#importFile.bind(this));
+            this.#fileSelector.click();
+        }
     }
     async #onPlayRecordingByName(event) {
         await this.#onRecordingSelected(event);

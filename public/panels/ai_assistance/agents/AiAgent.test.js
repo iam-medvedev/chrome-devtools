@@ -20,6 +20,9 @@ function mockConversationContext() {
         getTitle() {
             return 'title';
         }
+        getSuggestions() {
+            return;
+        }
     })();
 }
 class AiAgentMock extends AiAgent {
@@ -104,13 +107,24 @@ describeWithEnvironment('AiAgent', () => {
             const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.strictEqual(request.metadata?.string_session_id, 'sessionId');
         });
-        it('builds a request with preamble', async () => {
+        it('builds a request with preamble if user tier is TESTERS', async () => {
             const agent = new AiAgentMock({
                 aidaClient: mockAidaClient(),
             });
+            agent.userTier = 'TESTERS';
             const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.strictEqual(request.preamble, 'preamble');
+            assert.isUndefined(request.historical_contexts);
+        });
+        it('builds a request without preamble if user tier is not TESTERS', async () => {
+            const agent = new AiAgentMock({
+                aidaClient: mockAidaClient(),
+            });
+            agent.userTier = 'PUBLIC';
+            const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
+            assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
+            assert.isUndefined(request.preamble);
             assert.isUndefined(request.historical_contexts);
         });
         it('builds a request without preamble', async () => {
@@ -270,6 +284,9 @@ describeWithEnvironment('AiAgent', () => {
                 }
                 getItem() {
                     return undefined;
+                }
+                getSuggestions() {
+                    return;
                 }
             }
             return new TestContext();

@@ -166,7 +166,9 @@ export function outline(state) {
                     let title = state.sliceDoc(cursor.from, cursor.to);
                     const { lineNumber, columnNumber } = toLineColumn(cursor.from);
                     while (cursor.name !== 'Equals') {
-                        cursor.next();
+                        if (!cursor.next()) {
+                            return items;
+                        }
                     }
                     if (!cursor.nextSibling()) {
                         break;

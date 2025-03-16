@@ -17,6 +17,7 @@ export class AgentProject {
     #linesChanged = 0;
     #maxFilesChanged;
     #maxLinesChanged;
+    #processedFiles = new Set();
     constructor(project, options = {
         maxFilesChanged: 5,
         maxLinesChanged: 200,
@@ -24,6 +25,13 @@ export class AgentProject {
         this.#project = project;
         this.#maxFilesChanged = options.maxFilesChanged;
         this.#maxLinesChanged = options.maxLinesChanged;
+    }
+    /**
+     * Returns a list of files from the project that has been used for
+     * processing.
+     */
+    getProcessedFiles() {
+        return Array.from(this.#processedFiles);
     }
     /**
      * Provides file names in the project to the agent.
@@ -41,6 +49,7 @@ export class AgentProject {
         if (!uiSourceCode) {
             return;
         }
+        this.#processedFiles.add(filepath);
         // TODO: needs additional handling for binary files.
         return uiSourceCode.workingCopyContentData().text;
     }
@@ -83,10 +92,13 @@ export class AgentProject {
      * This method searches in files for the agent and provides the
      * matches to the agent.
      */
-    async searchFiles(query, caseSensitive, isRegex) {
+    async searchFiles(query, caseSensitive, isRegex, { signal } = {}) {
         const { map } = this.#indexFiles();
         const matches = [];
         for (const [filepath, file] of map.entries()) {
+            if (signal?.aborted) {
+                break;
+            }
             await file.requestContentData();
             debugLog('searching in', filepath, 'for', query);
             const content = file.isDirty() ? file.workingCopyContentData() : await file.requestContentData();
@@ -105,7 +117,7 @@ export class AgentProject {
     }
     #shouldSkipPath(pathParts) {
         for (const part of pathParts) {
-            if (this.#ignoredFolderNames.has(part)) {
+            if (this.#ignoredFolderNames.has(part) || part.startsWith('.')) {
                 return true;
             }
         }

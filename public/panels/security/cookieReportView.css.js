@@ -46,9 +46,13 @@ export default {
 }
 
 .filter {
-  padding-left: var(--sys-size-5);
   padding-right: var(--sys-size-6);
   flex-shrink: 0;
+}
+
+.filters-container {
+  display: flex;
+  padding-left: var(--sys-size-5);
 }
 
 devtools-data-grid {

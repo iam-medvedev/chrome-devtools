@@ -5,5 +5,5 @@ export declare class HeapSnapshotWorkerDispatcher {
     sendEvent(name: string, data: unknown): void;
     dispatchMessage({ data }: {
         data: HeapSnapshotModel.HeapSnapshotModel.WorkerCommand;
-    }): void;
+    }): Promise<void>;
 }

@@ -10,8 +10,12 @@ export default {
  * found in the LICENSE file.
  */
 
-.request-initiator-view-tree .fill {
-  right: -6px; /* Same as the margin in .request-initiator-view but negative. */
+.request-initiator-view-tree {
+  user-select: text;
+
+  & .fill {
+    right: -6px; /* Same as the margin in .request-initiator-view but negative. */
+  }
 }
 
 .request-initiator-view-section-title {

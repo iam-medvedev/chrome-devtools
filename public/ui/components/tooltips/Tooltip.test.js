@@ -6,14 +6,20 @@ import { checkForPendingActivity } from '../../../testing/TrackAsyncOperations.j
 import * as Lit from '../../lit/lit.js';
 import * as Tooltips from './tooltips.js';
 const { html, nothing } = Lit;
-function renderTooltip({ variant = 'simple', attribute = 'aria-describedby', useClick = false, jslogContext = undefined, } = {}) {
+function renderTooltip({ variant = 'simple', attribute = 'aria-describedby', useClick = false, useHotkey = false, jslogContext = undefined, } = {}) {
     const container = document.createElement('div');
     // clang-format off
     Lit.render(html `
     ${attribute === 'aria-details' ?
         html `<button aria-details="tooltip-id">Button</button>` :
         html `<button aria-describedby="tooltip-id">Button</button>`}
-    <devtools-tooltip id="tooltip-id" variant=${variant} ?use-click=${useClick} jslogContext=${jslogContext ?? nothing}>
+    <devtools-tooltip
+     id="tooltip-id"
+     variant=${variant}
+     ?use-click=${useClick}
+     ?use-hotkey=${useHotkey}
+     jslogContext=${jslogContext ?? nothing}
+     >
       ${variant === 'rich' ? html `<p>Rich content</p>` : 'Simple content'}
     </devtools-tooltip>
   `, container);
@@ -83,6 +89,19 @@ describe('Tooltip', () => {
         const button = container.querySelector('button');
         button?.click();
         assert.isTrue(container.querySelector('devtools-tooltip')?.open);
+    });
+    it('should open with hotkey if use-hotkey is set', () => {
+        const container = renderTooltip({ useHotkey: true });
+        const button = container.querySelector('button');
+        button?.dispatchEvent(new KeyboardEvent('keydown', { altKey: true, key: 'ArrowDown' }));
+        assert.isTrue(container.querySelector('devtools-tooltip')?.open);
+    });
+    it('should not open on focus if use-hotkey is set', async () => {
+        const container = renderTooltip({ useHotkey: true });
+        const button = container.querySelector('button');
+        button?.dispatchEvent(new FocusEvent('focus'));
+        await checkForPendingActivity();
+        assert.isFalse(container.querySelector('devtools-tooltip')?.open);
     });
     const eventsNotToPropagate = ['click', 'mouseup'];
     eventsNotToPropagate.forEach(eventName => {

@@ -4,6 +4,7 @@
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -184,6 +185,7 @@ export class CookieReportView extends UI.Widget.VBox {
     #cookieRows = new Map();
     #view;
     filterItems = [];
+    searchText;
     constructor(element, view = (input, output, target) => {
         // clang-format off
         render(html `
@@ -194,21 +196,32 @@ export class CookieReportView extends UI.Widget.VBox {
             </div>
             ${input.cookieRows.length > 0 ?
             html `
-                <devtools-named-bit-set-filter
-                  class="filter"
-                  aria-label="Third-party cookie status filters"
-                  @filterChanged=${input.onFilterChanged}
-                  .options=${{ items: input.filterItems }}
-                  ${ref((el) => {
+                <div class="filters-container">
+                  <devtools-toolbar>
+                    <devtools-toolbar-input
+                      type="filter"
+                      style="flex-grow: 0.4;"
+                      @change=${input.onSearchFilterChanged}
+                      value=${input.searchText}
+                    ></devtools-toolbar-input>
+                  </devtools-toolbar>
+                  <devtools-named-bit-set-filter
+                    class="filter"
+                    aria-label="Third-party cookie status filters"
+                    @filterChanged=${input.onFilterChanged}
+                    .options=${{ items: input.filterItems }}
+                    ${ref((el) => {
                 if (el instanceof UI.FilterBar.NamedBitSetFilterUIElement) {
                     output.namedBitSetFilterUI = el.getOrCreateNamedBitSetFilterUI();
                 }
             })}
-                ></devtools-named-bit-set-filter>
+                  ></devtools-named-bit-set-filter>
+                </div>
                 <!-- @ts-ignore -->
                 <devtools-data-grid
                   name=${i18nString(UIStrings.report)}
                   striped
+                  .filters=${input.filters}
                   @sort=${input.onSortingChanged}
                   @contextmenu=${input.populateContextMenu.bind(input)}
                 >
@@ -256,6 +269,7 @@ export class CookieReportView extends UI.Widget.VBox {
         super(true, undefined, element);
         this.#view = view;
         this.registerRequiredCSS(cookieReportViewStyles);
+        this.searchText = Common.Settings.Settings.instance().createSetting('cookie-report-search-query', '').get();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueEventReceived, this);
@@ -275,7 +289,14 @@ export class CookieReportView extends UI.Widget.VBox {
                 }
                 return true;
             }),
+            filters: [{
+                    key: 'name,domain',
+                    regex: RegExp(Platform.StringUtilities.escapeForRegExp(this.searchText), 'i'),
+                    negative: false,
+                }],
+            searchText: this.searchText,
             filterItems: this.filterItems,
+            onSearchFilterChanged: (e) => this.onSearchFilterChanged(e),
             onFilterChanged: () => this.requestUpdate(),
             onSortingChanged: () => this.requestUpdate(),
             populateContextMenu: this.populateContextMenu.bind(this),
@@ -301,6 +322,11 @@ export class CookieReportView extends UI.Widget.VBox {
         if (info) {
             this.#cookieRows.set(issue.cookieId(), info);
         }
+    }
+    onSearchFilterChanged(e) {
+        this.searchText = e.detail ? e.detail : '';
+        Common.Settings.Settings.instance().createSetting('cookie-report-search-query', '').set(this.searchText);
+        this.requestUpdate();
     }
     #buildFilterItems() {
         const filterItems = [];

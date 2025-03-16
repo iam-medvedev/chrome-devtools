@@ -169,7 +169,8 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         const filterToolbar = this.filterElement.createChild('devtools-toolbar');
         // Set the style directly on the element to overwrite parent css styling.
         filterToolbar.style.borderBottom = 'none';
-        this.#filter = new ToolbarFilter(undefined, 1, 1, UIStrings.egSmalldUrlacomb, this.completions.bind(this));
+        this.#filter =
+            new ToolbarFilter(undefined, 1, 1, i18nString(UIStrings.egSmalldUrlacomb), this.completions.bind(this));
         filterToolbar.appendToolbarItem(this.#filter);
         this.#filter.addEventListener("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, () => this.valueChanged());
         this.suggestionProvider = null;

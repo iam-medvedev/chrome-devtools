@@ -1,5 +1,4 @@
 import type * as Common from '../../../core/common/common.js';
-import type * as Protocol from '../../../generated/protocol.js';
 import type * as Lantern from '../lantern/lantern.js';
 import type * as Types from '../types/types.js';
 import type * as Models from './Models.js';
@@ -23,17 +22,6 @@ export interface LanternContext {
     graph: Lantern.Graph.Node<Types.Events.SyntheticNetworkRequest>;
     simulator: Lantern.Simulation.Simulator<Types.Events.SyntheticNetworkRequest>;
     metrics: Record<string, Lantern.Metrics.MetricResult>;
-}
-export interface ForcedReflowAggregatedData {
-    topLevelFunctionCall: Types.Events.CallFrame | Protocol.Runtime.CallFrame;
-    totalReflowTime: number;
-    bottomUpData: Set<string>;
-    topLevelFunctionCallEvents: Types.Events.Event[];
-}
-export interface BottomUpCallStack {
-    bottomUpData: Types.Events.CallFrame | Protocol.Runtime.CallFrame;
-    totalTime: number;
-    relatedEvents: Types.Events.Event[];
 }
 export type InsightModelsType = typeof Models;
 export declare enum InsightWarning {
@@ -72,12 +60,13 @@ export type InsightModel<UIStrings extends Record<string, string> = Record<strin
     relatedEvents?: RelatedEventsMap | Types.Events.Event[];
     warnings?: InsightWarning[];
     metricSavings?: MetricSavings;
+    frameId?: string;
     /**
      * If this insight is attached to a navigation, this stores its ID.
      */
     navigationId?: string;
 };
-export type PartialInsightModel<T> = Omit<T, 'strings' | 'title' | 'description' | 'category' | 'state' | 'insightKey' | 'navigationId'>;
+export type PartialInsightModel<T> = Omit<T, 'strings' | 'title' | 'description' | 'category' | 'state' | 'insightKey' | 'navigationId' | 'frameId'>;
 /**
  * Contains insights for a specific navigation. If a trace began after a navigation already started,
  * this could instead represent the duration from the beginning of the trace up to the first recorded

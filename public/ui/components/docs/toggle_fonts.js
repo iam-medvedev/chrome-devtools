@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+const PLATFROM_SCREENSHOT_TESTS = 'platform-screenshot-test';
 const PLATFORM_MAC_CLASS = 'platform-mac';
 const PLATFORM_LINUX_CLASS = 'platform-linux';
 const PLATFORM_WINDOWS_CLASS = 'platform-windows';
@@ -29,6 +30,7 @@ export function init() {
     const button = document.createElement('button');
     button.className = 'component-docs-ui';
     const loop = [
+        PLATFROM_SCREENSHOT_TESTS,
         PLATFORM_LINUX_CLASS,
         PLATFORM_MAC_CLASS,
         PLATFORM_WINDOWS_CLASS,

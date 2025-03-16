@@ -3,7 +3,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
-import type { PlatformFileSystem } from './PlatformFileSystem.js';
+import type { PlatformFileSystem, PlatformFileSystemType } from './PlatformFileSystem.js';
 export declare class FileSystemWorkspaceBinding {
     readonly isolatedFileSystemManager: IsolatedFileSystemManager;
     private readonly workspace;
@@ -13,7 +13,7 @@ export declare class FileSystemWorkspaceBinding {
     static projectId(fileSystemPath: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString;
     static relativePath(uiSourceCode: Workspace.UISourceCode.UISourceCode): Platform.DevToolsPath.EncodedPathString[];
     static tooltipForUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): string;
-    static fileSystemType(project: Workspace.Workspace.Project): string;
+    static fileSystemType(project: Workspace.Workspace.Project): PlatformFileSystemType;
     static fileSystemSupportsAutomapping(project: Workspace.Workspace.Project): boolean;
     static completeURL(project: Workspace.Workspace.Project, relativePath: string): Platform.DevToolsPath.UrlString;
     static fileSystemPath(projectId: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString;

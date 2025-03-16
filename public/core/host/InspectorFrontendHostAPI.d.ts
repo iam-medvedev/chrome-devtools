@@ -139,6 +139,11 @@ export interface KeyDownEvent {
     veid?: number;
     context?: number;
 }
+export interface SettingAccessEvent {
+    name: string;
+    numericValue?: number;
+    stringValue?: string;
+}
 export interface EventTypes {
     [Events.AppendedToURL]: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
     [Events.CanceledSaveURL]: Platform.DevToolsPath.UrlString;
@@ -253,6 +258,7 @@ export interface InspectorFrontendHostAPI {
     recordDrag(event: DragEvent): void;
     recordChange(event: ChangeEvent): void;
     recordKeyDown(event: KeyDownEvent): void;
+    recordSettingAccess(event: SettingAccessEvent): void;
 }
 export interface AcceleratorDescriptor {
     keyCode: number;
