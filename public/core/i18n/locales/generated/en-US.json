@@ -1475,12 +1475,6 @@
   "models/issues_manager/CookieDeprecationMetadataIssue.ts | thirdPartyPhaseoutExplained": {
     "message": "Changes to Chrome's treatment of third-party cookies"
   },
-  "models/issues_manager/CookieIssue.ts | anInsecure": {
-    "message": "an insecure"
-  },
-  "models/issues_manager/CookieIssue.ts | aSecure": {
-    "message": "a secure"
-  },
   "models/issues_manager/CookieIssue.ts | consoleTpcdErrorMessage": {
     "message": "Third-party cookie is blocked in Chrome either because of Chrome flags or browser configuration."
   },
@@ -1838,11 +1832,17 @@
   "models/trace/insights/DOMSize.ts | value": {
     "message": "Value"
   },
-  "models/trace/insights/DuplicateJavaScript.ts | description": {
+  "models/trace/insights/DuplicatedJavaScript.ts | columnResourceSize": {
+    "message": "Resource size"
+  },
+  "models/trace/insights/DuplicatedJavaScript.ts | columnSource": {
+    "message": "Source"
+  },
+  "models/trace/insights/DuplicatedJavaScript.ts | description": {
     "message": "Remove large, duplicate JavaScript modules from bundles to reduce unnecessary bytes consumed by network activity."
   },
-  "models/trace/insights/DuplicateJavaScript.ts | title": {
-    "message": "Duplicate JavaScript"
+  "models/trace/insights/DuplicatedJavaScript.ts | title": {
+    "message": "Duplicated JavaScript"
   },
   "models/trace/insights/FontDisplay.ts | description": {
     "message": "Consider setting [font-display](https://developer.chrome.com/blog/font-display) to swap or optional to ensure text is consistently visible. swap can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks)."
@@ -2676,7 +2676,7 @@
     "message": "Application panel sidebar"
   },
   "panels/application/ApplicationPanelSidebar.ts | appManifest": {
-    "message": "App Manifest"
+    "message": "Manifest"
   },
   "panels/application/ApplicationPanelSidebar.ts | backgroundServices": {
     "message": "Background services"
@@ -2826,7 +2826,7 @@
     "message": "This is used by the browser to know whether the manifest should be updating an existing application, or whether it refers to a new web app that can be installed."
   },
   "panels/application/AppManifestView.ts | appIdNote": {
-    "message": "{PH1} {PH2} is not specified in the manifest, {PH3} is used instead. To specify an App ID that matches the current identity, set the {PH4} field to {PH5} {PH6}."
+    "message": "Note: id is not specified in the manifest, start_url is used instead. To specify an App ID that matches the current identity, set the id field to {PH1} {PH2}."
   },
   "panels/application/AppManifestView.ts | aUrlInTheManifestContainsA": {
     "message": "A URL in the manifest contains a username, password, or port"
@@ -2938,9 +2938,6 @@
   },
   "panels/application/AppManifestView.ts | noSuppliedIconIsAtLeastSpxSquare": {
     "message": "No supplied icon is at least {PH1} pixels square in PNG, SVG, or WebP format, with the purpose attribute unset or set to 'any'."
-  },
-  "panels/application/AppManifestView.ts | note": {
-    "message": "Note:"
   },
   "panels/application/AppManifestView.ts | orientation": {
     "message": "Orientation"
@@ -3588,7 +3585,7 @@
     "message": "Unknown Status"
   },
   "panels/application/components/BackForwardCacheView.ts | url": {
-    "message": "URL:"
+    "message": "URL"
   },
   "panels/application/components/BounceTrackingMitigationsView.ts | bounceTrackingMitigationsTitle": {
     "message": "Bounce tracking mitigations"
@@ -6404,6 +6401,9 @@
   "panels/elements/ElementIssueUtils.ts | formLabelHasNeitherForNorNestedInput": {
     "message": "No label associated with a form field"
   },
+  "panels/elements/ElementIssueUtils.ts | interactiveContentAttributesSelectDescendant": {
+    "message": "Element with invalid attributes within a <select> element"
+  },
   "panels/elements/ElementIssueUtils.ts | interactiveContentLegendChild": {
     "message": "Interactive element inside of a <legend> element"
   },
@@ -6706,6 +6706,9 @@
   },
   "panels/elements/ElementsTreeOutline.ts | storeAsGlobalVariable": {
     "message": "Store as global variable"
+  },
+  "panels/elements/ElementsTreeOutline.ts | viewIssue": {
+    "message": "View Issue:"
   },
   "panels/elements/EventListenersWidget.ts | all": {
     "message": "All"
@@ -10694,6 +10697,9 @@
   "panels/protocol_monitor/JSONEditor.ts | resetDefaultValue": {
     "message": "Reset to default value"
   },
+  "panels/protocol_monitor/JSONEditor.ts | selectTarget": {
+    "message": "Select a target"
+  },
   "panels/protocol_monitor/JSONEditor.ts | sendCommandCmdEnter": {
     "message": "Send command - ⌘+Enter"
   },
@@ -12464,6 +12470,9 @@
   "panels/sources/AddSourceMapURLDialog.ts | sourceMapUrl": {
     "message": "Source map URL: "
   },
+  "panels/sources/AiWarningInfobarPlugin.ts | aiContentWarning": {
+    "message": "This file contains AI-generated content"
+  },
   "panels/sources/BreakpointEditDialog.ts | breakpoint": {
     "message": "Breakpoint"
   },
@@ -13657,6 +13666,9 @@
   },
   "panels/timeline/components/insights/Checklist.ts | successAriaLabel": {
     "message": "Insight check passed: {PH1}"
+  },
+  "panels/timeline/components/insights/Table.ts | others": {
+    "message": "{PH1} others"
   },
   "panels/timeline/components/InteractionBreakdown.ts | inputDelay": {
     "message": "Input delay"

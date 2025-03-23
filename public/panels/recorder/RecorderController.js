@@ -32,7 +32,7 @@ import recorderControllerStylesRaw from './recorderController.css.js';
 import * as Events from './RecorderEvents.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const recorderControllerStyles = new CSSStyleSheet();
-recorderControllerStyles.replaceSync(recorderControllerStylesRaw.cssContent);
+recorderControllerStyles.replaceSync(recorderControllerStylesRaw.cssText);
 const { html, Decorators, LitElement } = Lit;
 const { customElement, state } = Decorators;
 const UIStrings = {
@@ -415,6 +415,8 @@ let RecorderController = class RecorderController extends LitElement {
             else {
                 Host.userMetrics.recordingReplayFinished(4 /* Host.UserMetrics.RecordingReplayFinished.OTHER_ERROR */);
             }
+            // Dispatch an event for e2e testing.
+            this.dispatchEvent(new Events.ReplayFinishedEvent());
         });
         this.recordingPlayer.addEventListener("Done" /* Models.RecordingPlayer.Events.DONE */, () => {
             if (!withPerformanceTrace) {

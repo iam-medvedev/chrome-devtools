@@ -29,5 +29,6 @@ export interface BitVector {
     setBit(index: number): void;
     clearBit(index: number): void;
     previous(index: number): number;
+    get buffer(): ArrayBuffer;
 }
-export declare function createBitVector(length: number): BitVector;
+export declare function createBitVector(lengthOrBuffer: number | ArrayBuffer): BitVector;

@@ -61,4 +61,9 @@ export declare function getCombinedHeaders(responseHeaders: Array<{
  * Disabled caching is checked on the 'cache-control' and 'pragma' headers.
  */
 export declare function cachingDisabled(headers: Map<string, string> | null, parsedCacheControl: Helpers.Network.CacheControl | null): boolean;
+export interface CacheableRequest {
+    request: Types.Events.SyntheticNetworkRequest;
+    ttl: number;
+    wastedBytes: number;
+}
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): UseCacheInsightModel;

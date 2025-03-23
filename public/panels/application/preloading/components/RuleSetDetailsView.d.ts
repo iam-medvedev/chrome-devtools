@@ -5,7 +5,6 @@ type RuleSet = Protocol.Preload.RuleSet;
 export type RuleSetDetailsViewData = RuleSet | null;
 export declare class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    connectedCallback(): void;
     set data(data: RuleSetDetailsViewData);
     set shouldPrettyPrint(shouldPrettyPrint: boolean);
 }

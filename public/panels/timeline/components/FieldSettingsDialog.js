@@ -14,7 +14,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import fieldSettingsDialogStylesRaw from './fieldSettingsDialog.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const fieldSettingsDialogStyles = new CSSStyleSheet();
-fieldSettingsDialogStyles.replaceSync(fieldSettingsDialogStylesRaw.cssContent);
+fieldSettingsDialogStyles.replaceSync(fieldSettingsDialogStylesRaw.cssText);
 const UIStrings = {
     /**
      * @description Text label for a button that opens a dialog to set up field data.

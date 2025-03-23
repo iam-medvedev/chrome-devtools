@@ -299,7 +299,7 @@ export class TraceProcessor extends EventTarget {
             Viewport: null,
             DOMSize: null,
             ThirdParties: null,
-            DuplicateJavaScript: null,
+            DuplicatedJavaScript: null,
             SlowCSSSelector: null,
             ForcedReflow: null,
             UseCache: null,
@@ -367,12 +367,13 @@ export class TraceProcessor extends EventTarget {
         let id, urlString, navigation;
         if (context.navigation) {
             id = context.navigationId;
-            urlString = context.navigation.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
+            urlString =
+                parsedTrace.Meta.finalDisplayUrlByNavigationId.get(context.navigationId) ?? parsedTrace.Meta.mainFrameURL;
             navigation = context.navigation;
         }
         else {
             id = Types.Events.NO_NAVIGATION;
-            urlString = parsedTrace.Meta.mainFrameURL;
+            urlString = parsedTrace.Meta.finalDisplayUrlByNavigationId.get('') ?? parsedTrace.Meta.mainFrameURL;
         }
         const model = {};
         for (const [name, insight] of Object.entries(TraceProcessor.getInsightRunners())) {

@@ -66,6 +66,7 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     contentEncodedInternal;
     isKnownThirdPartyInternal;
     isUnconditionallyIgnoreListedInternal;
+    #containsAiChanges = false;
     constructor(project, url, contentType) {
         super();
         this.projectInternal = project;
@@ -316,11 +317,18 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
     innerResetWorkingCopy() {
         this.workingCopyInternal = null;
         this.workingCopyGetter = null;
+        this.setContainsAiChanges(false);
     }
     setWorkingCopy(newWorkingCopy) {
         this.workingCopyInternal = newWorkingCopy;
         this.workingCopyGetter = null;
         this.workingCopyChanged();
+    }
+    setContainsAiChanges(containsAiChanges) {
+        this.#containsAiChanges = containsAiChanges;
+    }
+    containsAiChanges() {
+        return this.#containsAiChanges;
     }
     setContent(content, isBase64) {
         this.contentEncodedInternal = isBase64;

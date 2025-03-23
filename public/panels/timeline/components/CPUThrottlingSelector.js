@@ -13,7 +13,7 @@ import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js'
 import cpuThrottlingSelectorStylesRaw from './cpuThrottlingSelector.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const cpuThrottlingSelectorStyles = new CSSStyleSheet();
-cpuThrottlingSelectorStyles.replaceSync(cpuThrottlingSelectorStylesRaw.cssContent);
+cpuThrottlingSelectorStyles.replaceSync(cpuThrottlingSelectorStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

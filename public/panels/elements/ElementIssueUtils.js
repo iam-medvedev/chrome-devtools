@@ -64,6 +64,10 @@ const UIStrings = {
      * @description Tooltip text shown in the Elements panel when an element has an error.
      */
     interactiveContentLegendChild: 'Interactive element inside of a <legend> element',
+    /**
+     * @description Tooltip text shown in the Elements panel when an element has an error.
+     */
+    interactiveContentAttributesSelectDescendant: 'Element with invalid attributes within a <select> element',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementIssueUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -78,6 +82,12 @@ export function getElementIssueDetails(issue) {
     }
     if (issue instanceof IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue) {
         const issueDetails = issue.details();
+        if (issue.isInteractiveContentAttributesSelectDescendantIssue()) {
+            return {
+                tooltip: i18nString(UIStrings.interactiveContentAttributesSelectDescendant),
+                nodeId: issueDetails.nodeId,
+            };
+        }
         return {
             tooltip: getTooltipFromSelectElementAccessibilityIssue(issueDetails.selectElementAccessibilityIssueReason),
             nodeId: issueDetails.nodeId,

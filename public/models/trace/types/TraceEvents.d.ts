@@ -1130,12 +1130,13 @@ export interface ConsoleTimeEnd extends PairableAsyncEnd {
 }
 export type ConsoleTime = ConsoleTimeBegin | ConsoleTimeEnd;
 export interface ConsoleTimeStamp extends Event {
-    cat: 'disabled-by-default-v8.inspector';
-    name: Name.CONSOLE_TIME_STAMP;
-    ph: Phase.COMPLETE;
+    cat: 'devtools.timeline';
+    name: Name.TIME_STAMP;
+    ph: Phase.INSTANT;
     args: Args & {
         data?: ArgsData & {
-            name: string | number;
+            message: string;
+            name?: string | number;
             start?: string | number;
             end?: string | number;
             track?: string | number;
@@ -1609,6 +1610,16 @@ export declare function isNetworkTrackEntry(event: Event): event is SyntheticWeb
 export declare function isPrePaint(event: Event): event is PrePaint;
 /** A VALID navigation start (as it has a populated documentLoaderURL) */
 export declare function isNavigationStart(event: Event): event is NavigationStart;
+export interface DidCommitSameDocumentNavigation extends Complete {
+    name: 'RenderFrameHostImpl::DidCommitSameDocumentNavigation';
+    args: Args & {
+        url: string;
+        render_frame_host: {
+            frame_type: string;
+        };
+    };
+}
+export declare function isDidCommitSameDocumentNavigation(event: Event): event is DidCommitSameDocumentNavigation;
 export declare function isMainFrameViewport(event: Event): event is MainFrameViewport;
 export declare function isSyntheticUserTiming(event: Event): event is SyntheticUserTimingPair;
 export declare function isSyntheticConsoleTiming(event: Event): event is SyntheticConsoleTimingPair;
@@ -2124,7 +2135,7 @@ export declare const enum Name {
     CONSOLE_TIME = "ConsoleTime",
     USER_TIMING = "UserTiming",
     INTERACTIVE_TIME = "InteractiveTime",
-    CONSOLE_TIME_STAMP = "V8Console::TimeStamp",
+    TIME_STAMP = "TimeStamp",
     BEGIN_FRAME = "BeginFrame",
     NEEDS_BEGIN_FRAME_CHANGED = "NeedsBeginFrameChanged",
     BEGIN_MAIN_THREAD_FRAME = "BeginMainThreadFrame",

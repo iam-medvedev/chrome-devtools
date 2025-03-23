@@ -9,7 +9,7 @@ import { html, render } from '../../../ui/lit/lit.js';
 import hideIssuesMenuStylesRaw from './hideIssuesMenu.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const hideIssuesMenuStyles = new CSSStyleSheet();
-hideIssuesMenuStyles.replaceSync(hideIssuesMenuStylesRaw.cssContent);
+hideIssuesMenuStyles.replaceSync(hideIssuesMenuStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Title for the tooltip of the (3 dots) Hide Issues menu icon.

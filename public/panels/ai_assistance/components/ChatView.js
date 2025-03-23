@@ -5,19 +5,19 @@ import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
+import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import * as Marked from '../../../third_party/marked/marked.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { NOT_FOUND_IMAGE_DATA } from '../AiHistoryStorage.js';
 import { PatchWidget } from '../PatchWidget.js';
 import stylesRaw from './chatView.css.js';
 import { MarkdownRendererWithCodeBlock } from './MarkdownRendererWithCodeBlock.js';
 import { UserActionRow } from './UserActionRow.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssContent);
+styles.replaceSync(stylesRaw.cssText);
 const { html, Directives: { ifDefined, ref } } = Lit;
 const UIStrings = {
     /**
@@ -92,7 +92,7 @@ const UIStringsNotTranslate = {
     /**
      * @description The error message when the request to the LLM failed for some reason.
      */
-    systemError: 'Something unforeseen happened and I can no longer continue. Try your request again and see if that resolves the issue.',
+    systemError: 'Something unforeseen happened and I can no longer continue. Try your request again and see if that resolves the issue. If this keeps happening, update Chrome to the latest version.',
     /**
      * @description The error message when the LLM gets stuck in a loop (max steps reached).
      */
@@ -146,10 +146,6 @@ const UIStringsNotTranslate = {
      */
     completed: 'Completed',
     /**
-     *@description Aria label for the loading icon to be read by screen reader
-     */
-    inProgress: 'In progress',
-    /**
      *@description Aria label for the cancel icon to be read by screen reader
      */
     canceled: 'Canceled',
@@ -157,14 +153,6 @@ const UIStringsNotTranslate = {
      *@description Text displayed when the chat input is disabled due to reading past conversation.
      */
     pastConversation: 'You\'re viewing a past conversation.',
-    /**
-     *@description Text displayed for showing change summary view.
-     */
-    changeSummary: 'Changes summary',
-    /**
-     *@description Button text for staging changes to workspace.
-     */
-    applyToWorkspace: 'Apply to workspace',
     /**
      *@description Title for the take screenshot button.
      */
@@ -189,18 +177,6 @@ const UIStringsNotTranslate = {
      *@description Alt text for image when it is not available.
      */
     imageUnavailable: 'Image unavailable',
-    /**
-     *@description Button text to change the selected workspace
-     */
-    change: 'Change',
-    /**
-     *@description Button text while data is being loaded
-     */
-    loading: 'Loading...',
-    /**
-     *@description Label for the selected workspace/folder
-     */
-    selectedFolder: 'Selected folder:'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/components/ChatView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -588,14 +564,14 @@ function renderError(message) {
     if (message.error) {
         let errorMessage;
         switch (message.error) {
-            case "unknown" /* ErrorType.UNKNOWN */:
-            case "block" /* ErrorType.BLOCK */:
+            case "unknown" /* AiAssistanceModel.ErrorType.UNKNOWN */:
+            case "block" /* AiAssistanceModel.ErrorType.BLOCK */:
                 errorMessage = UIStringsNotTranslate.systemError;
                 break;
-            case "max-steps" /* ErrorType.MAX_STEPS */:
+            case "max-steps" /* AiAssistanceModel.ErrorType.MAX_STEPS */:
                 errorMessage = UIStringsNotTranslate.maxStepsError;
                 break;
-            case "abort" /* ErrorType.ABORT */:
+            case "abort" /* AiAssistanceModel.ErrorType.ABORT */:
                 return html `<p class="aborted" jslog=${VisualLogging.section('aborted')}>${lockedString(UIStringsNotTranslate.stoppedResponse)}</p>`;
         }
         return html `<p class="error" jslog=${VisualLogging.section('error')}>${lockedString(errorMessage)}</p>`;
@@ -672,7 +648,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
     // clang-format on
 }
 function renderImageChatMessage(inlineData) {
-    if (inlineData.data === NOT_FOUND_IMAGE_DATA) {
+    if (inlineData.data === AiAssistanceModel.NOT_FOUND_IMAGE_DATA) {
         // clang-format off
         return html `<div class="unavailable-image" title=${UIStringsNotTranslate.imageUnavailable}>
       <devtools-icon name='file-image'></devtools-icon>
@@ -694,7 +670,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
         return Lit.nothing;
     }
     // TODO: currently the picker behavior is SDKNode specific.
-    const hasPickerBehavior = conversationType === "freestyler" /* ConversationType.STYLING */;
+    const hasPickerBehavior = conversationType === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
     const resourceClass = Lit.Directives.classMap({
         'not-selected': !selectedContext,
         'resource-link': true,

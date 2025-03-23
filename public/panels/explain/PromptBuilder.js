@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
-import * as AiAssistance from '../ai_assistance/ai_assistance.js';
 const MAX_MESSAGE_SIZE = 1000;
 const MAX_STACK_TRACE_SIZE = 1000;
 const MAX_CODE_SIZE = 1000;
@@ -226,9 +226,9 @@ function formatLines(title, lines, maxLength) {
 export function formatNetworkRequest(request) {
     return `Request: ${request.url()}
 
-${AiAssistance.NetworkRequestFormatter.formatHeaders('Request headers:', request.requestHeaders())}
+${AiAssistanceModel.NetworkRequestFormatter.formatHeaders('Request headers:', request.requestHeaders())}
 
-${AiAssistance.NetworkRequestFormatter.formatHeaders('Response headers:', request.responseHeaders)}
+${AiAssistanceModel.NetworkRequestFormatter.formatHeaders('Response headers:', request.responseHeaders)}
 
 Response status: ${request.statusCode} ${request.statusText}`;
 }

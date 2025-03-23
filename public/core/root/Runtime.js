@@ -79,8 +79,14 @@ export class Runtime {
         return condition ? condition(hostConfig) : true;
     }
     loadLegacyModule(modulePath) {
+        // eslint-disable-next-line no-console
+        console.log('Loading legacy module: ' + modulePath);
         const importPath = `../../${modulePath}`; // Extracted as a variable so esbuild doesn't attempt to bundle all the things.
-        return import(importPath);
+        return import(importPath).then(m => {
+            // eslint-disable-next-line no-console
+            console.log('Loaded legacy module: ' + modulePath);
+            return m;
+        });
     }
 }
 export class ExperimentsSupport {

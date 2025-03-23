@@ -11,10 +11,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import permissionsPolicySectionStylesRaw from './permissionsPolicySection.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const permissionsPolicySectionStyles = new CSSStyleSheet();
-permissionsPolicySectionStyles.replaceSync(permissionsPolicySectionStylesRaw.cssContent);
+import permissionsPolicySectionStyles from './permissionsPolicySection.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -80,9 +77,6 @@ export class PermissionsPolicySection extends HTMLElement {
         this.#permissionsPolicySectionData = data;
         void this.#render();
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [permissionsPolicySectionStyles];
-    }
     #toggleShowPermissionsDisallowedDetails() {
         this.#permissionsPolicySectionData.showDetails = !this.#permissionsPolicySectionData.showDetails;
         void this.#render();
@@ -111,6 +105,7 @@ export class PermissionsPolicySection extends HTMLElement {
         <devtools-report-value>
           ${disallowed.map(p => p.feature).join(', ')}
           <devtools-button
+          class="disabled-features-button"
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           @click=${() => this.#toggleShowPermissionsDisallowedDetails()}
           jslog=${VisualLogging.action('show-disabled-features-details').track({
@@ -196,8 +191,12 @@ export class PermissionsPolicySection extends HTMLElement {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
+          <style>${permissionsPolicySectionStyles.cssText}</style>
           <devtools-report-section-header>${i18n.i18n.lockedString('Permissions Policy')}</devtools-report-section-header>
           ${this.#renderAllowed()}
+          ${(this.#permissionsPolicySectionData.policies.findIndex(p => p.allowed) > 0 ||
+                this.#permissionsPolicySectionData.policies.findIndex(p => !p.allowed) > 0) ?
+                html `<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : Lit.nothing}
           ${Lit.Directives.until(this.#renderDisallowed(), Lit.nothing)}
           <devtools-report-divider></devtools-report-divider>
         `, this.#shadow, { host: this });

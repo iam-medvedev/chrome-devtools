@@ -262,6 +262,13 @@ export class ModificationsManager extends EventTarget {
     getOverlays() {
         return [...this.#overlayForAnnotation.values()];
     }
+    applyAnnotationsFromCache() {
+        this.#modifications = this.toJSON();
+        // The cache is filled by applyModificationsIfPresent, so we clear
+        // it beforehand to prevent duplicate entries.
+        this.#overlayForAnnotation.clear();
+        this.#applyStoredAnnotations(this.#modifications.annotations);
+    }
     /**
      * Builds all modifications into a serializable object written into
      * the 'modifications' trace file metadata field.

@@ -11,10 +11,10 @@ import valueInterpreterDisplayStylesRaw from './valueInterpreterDisplay.css.js';
 import { format, getDefaultValueTypeMapping, getPointerAddress, isNumber, isPointer, isValidMode, VALUE_TYPE_MODE_LIST, } from './ValueInterpreterDisplayUtils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const valueInterpreterDisplayStyles = new CSSStyleSheet();
-valueInterpreterDisplayStyles.replaceSync(valueInterpreterDisplayStylesRaw.cssContent);
+valueInterpreterDisplayStyles.replaceSync(valueInterpreterDisplayStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an unsigned interpretation of the memory under the Value Interpreter
@@ -76,7 +76,7 @@ export class ValueInterpreterDisplay extends HTMLElement {
         ];
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [valueInterpreterDisplayStyles];
+        this.#shadow.adoptedStyleSheets = [inspectorCommonStyles, valueInterpreterDisplayStyles];
     }
     set data(data) {
         this.#buffer = data.buffer;
@@ -147,7 +147,6 @@ export class ValueInterpreterDisplay extends HTMLElement {
       <div>
         <select title=${i18nString(UIStrings.changeValueTypeMode)}
           data-mode-settings="true"
-          style="border: none; background-color: transparent; cursor: pointer; color: var(--sys-color-token-subtle);"
           jslog=${VisualLogging.dropDown('linear-memory-inspector.value-type-mode').track({ change: true })}
           @change=${this.#onValueTypeModeChange.bind(this, type)}>
             ${VALUE_TYPE_MODE_LIST.filter(x => isValidMode(type, x)).map(mode => {

@@ -70,7 +70,7 @@ export declare class TreeOutlineInShadow extends TreeOutline {
     renderSelection: boolean;
     constructor(variant?: TreeVariant);
     registerRequiredCSS(...cssFiles: Array<{
-        cssContent: string;
+        cssText: string;
     }>): void;
     hideOverflow(): void;
     makeDense(): void;

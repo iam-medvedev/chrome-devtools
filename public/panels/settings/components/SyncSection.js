@@ -9,7 +9,7 @@ import * as Lit from '../../../ui/lit/lit.js';
 import syncSectionStylesRaw from './syncSection.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const syncSectionStyles = new CSSStyleSheet();
-syncSectionStyles.replaceSync(syncSectionStylesRaw.cssContent);
+syncSectionStyles.replaceSync(syncSectionStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

@@ -15,7 +15,6 @@ interface PreloadingDetailsReportViewDataInternal {
 }
 export declare class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    connectedCallback(): void;
     set data(data: PreloadingDetailsReportViewData);
 }
 declare global {

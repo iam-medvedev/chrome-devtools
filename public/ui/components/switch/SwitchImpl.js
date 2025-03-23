@@ -6,7 +6,7 @@ import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import switchStylesRaw from './switch.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const switchStyles = new CSSStyleSheet();
-switchStyles.replaceSync(switchStylesRaw.cssContent);
+switchStyles.replaceSync(switchStylesRaw.cssText);
 export class SwitchChangeEvent extends Event {
     checked;
     static eventName = 'switchchange';

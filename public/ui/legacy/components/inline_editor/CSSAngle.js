@@ -9,7 +9,7 @@ import { convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAn
 import { ValueChangedEvent } from './InlineEditorUtils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const cssAngleStyles = new CSSStyleSheet();
-cssAngleStyles.replaceSync(cssAngleStylesRaw.cssContent);
+cssAngleStyles.replaceSync(cssAngleStylesRaw.cssText);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 export class PopoverToggledEvent extends Event {

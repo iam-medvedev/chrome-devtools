@@ -52,8 +52,8 @@ class DataGridElement extends HTMLElement {
         this.style.display = 'flex';
         this.#dataGrid.element.style.flex = 'auto';
         this.#shadowRoot = this.attachShadow({ mode: 'open', delegatesFocus: true });
-        this.#shadowRoot.createChild('style').textContent = dataGridStyles.cssContent;
-        this.#shadowRoot.createChild('style').textContent = inspectorCommonStyles.cssContent;
+        this.#shadowRoot.createChild('style').textContent = dataGridStyles.cssText;
+        this.#shadowRoot.createChild('style').textContent = inspectorCommonStyles.cssText;
         this.#shadowRoot.appendChild(this.#dataGrid.element);
         this.#dataGrid.addEventListener("SelectedNode" /* DataGridEvents.SELECTED_NODE */, e => this.dispatchEvent(new CustomEvent('select', { detail: e.data.configElement })));
         this.#dataGrid.addEventListener("DeselectedNode" /* DataGridEvents.DESELECTED_NODE */, () => this.dispatchEvent(new CustomEvent('select', { detail: null })));

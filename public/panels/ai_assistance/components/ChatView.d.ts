@@ -1,8 +1,7 @@
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
 import type * as Platform from '../../../core/platform/platform.js';
-import { type ContextDetail, type ConversationContext, ErrorType } from '../agents/AiAgent.js';
-import { ConversationType } from '../AiHistoryStorage.js';
+import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 export interface Step {
     isLoading: boolean;
     thought?: string;
@@ -11,7 +10,7 @@ export interface Step {
     output?: string;
     canceled?: boolean;
     sideEffect?: ConfirmSideEffectDialog;
-    contextDetails?: [ContextDetail, ...ContextDetail[]];
+    contextDetails?: [AiAssistanceModel.ContextDetail, ...AiAssistanceModel.ContextDetail[]];
 }
 interface ConfirmSideEffectDialog {
     onAnswer: (result: boolean) => void;
@@ -36,7 +35,7 @@ export interface ModelChatMessage {
     steps: Step[];
     suggestions?: [string, ...string[]];
     answer?: string;
-    error?: ErrorType;
+    error?: AiAssistanceModel.ErrorType;
     rpcId?: Host.AidaClient.RpcGlobalId;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
@@ -58,11 +57,11 @@ export interface Props {
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
-    selectedContext: ConversationContext<unknown> | null;
+    selectedContext: AiAssistanceModel.ConversationContext<unknown> | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;
-    conversationType?: ConversationType;
+    conversationType?: AiAssistanceModel.ConversationType;
     isReadOnly: boolean;
     blockedByCrossOrigin: boolean;
     changeSummary?: string;

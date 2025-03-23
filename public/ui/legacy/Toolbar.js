@@ -84,7 +84,7 @@ export class Toolbar extends HTMLElement {
     mutationObserver = new MutationObserver(this.onItemsChange.bind(this));
     constructor() {
         super();
-        this.#shadowRoot.createChild('style').textContent = toolbarStyles.cssContent;
+        this.#shadowRoot.createChild('style').textContent = toolbarStyles.cssText;
         this.#shadowRoot.createChild('slot');
     }
     onItemsChange(mutationList) {

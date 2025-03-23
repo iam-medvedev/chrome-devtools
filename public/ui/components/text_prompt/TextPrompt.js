@@ -94,7 +94,7 @@ export class TextPrompt extends HTMLElement {
     }
     #render() {
         const output = html `
-      <style>${textPromptStyles.cssContent}</style>
+      <style>${textPromptStyles.cssText}</style>
       <span class="prefix">${this.#prefixText} </span>
       <span class="text-prompt-input"><input class="input" aria-label=${this.#ariaLabelText} spellcheck="false" @input=${this.onInput} @keydown=${this.onKeyDown}/><input class="suggestion" aria-label=${this.#ariaLabelText + ' Suggestion'}></span>`;
         render(output, this.#shadow, { host: this });

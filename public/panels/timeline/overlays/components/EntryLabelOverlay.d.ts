@@ -1,4 +1,7 @@
 import '../../../../ui/components/icon_button/icon_button.js';
+import '../../../../ui/components/tooltips/tooltips.js';
+import * as AiAssistanceModels from '../../../../models/ai_assistance/ai_assistance.js';
+import type * as Utils from '../../utils/utils.js';
 export declare class EmptyEntryLabelRemoveEvent extends Event {
     static readonly eventName = "emptyentrylabelremoveevent";
     constructor();
@@ -36,10 +39,15 @@ export declare class EntryLabelOverlay extends HTMLElement {
      * Otherwise, the entry label overlay object only gets repositioned.
      */
     constructor(label: string, shouldDrawBelowEntry?: boolean);
+    /**
+     * So we can provide a mocked agent in tests. Do not call this method outside of a test!
+     */
+    overrideAIAgentForTest(agent: AiAssistanceModels.PerformanceAgent): void;
     connectedCallback(): void;
     entryHighlightWrapper(): HTMLElement | null;
     set entryLabelVisibleHeight(entryLabelVisibleHeight: number);
     setLabelEditabilityAndRemoveEmptyLabel(editable: boolean): void;
+    set callTree(callTree: Utils.AICallTree.AICallTree | null);
 }
 declare global {
     interface HTMLElementTagNameMap {

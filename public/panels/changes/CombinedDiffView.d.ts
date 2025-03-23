@@ -9,6 +9,7 @@ interface SingleDiffViewInput {
     diff: Diff.Diff.DiffArray;
     copied: boolean;
     onCopy: (fileUrl: string, diff: Diff.Diff.DiffArray) => void;
+    onFileNameClick: (fileUrl: string) => void;
 }
 export interface ViewInput {
     singleDiffViewInputs: SingleDiffViewInput[];

@@ -43,10 +43,10 @@ export class WorkerWrapper {
     static fromURL(url) {
         return new WorkerWrapper(url);
     }
-    postMessage(message) {
+    postMessage(message, transfer) {
         void this.#workerPromise.then(worker => {
             if (!this.#disposed) {
-                worker.postMessage(message);
+                worker.postMessage(message, transfer ?? []);
             }
         });
     }

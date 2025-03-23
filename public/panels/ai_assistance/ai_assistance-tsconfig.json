@@ -29,29 +29,12 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/panels/ai_assistance/AgentProject.ts",
     "../../../../../../front_end/panels/ai_assistance/AiAssistancePanel.ts",
-    "../../../../../../front_end/panels/ai_assistance/AiHistoryStorage.ts",
-    "../../../../../../front_end/panels/ai_assistance/ChangeManager.ts",
-    "../../../../../../front_end/panels/ai_assistance/EvaluateAction.ts",
-    "../../../../../../front_end/panels/ai_assistance/ExtensionScope.ts",
     "../../../../../../front_end/panels/ai_assistance/PatchWidget.ts",
     "../../../../../../front_end/panels/ai_assistance/SelectWorkspaceDialog.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/AiAgent.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/FileAgent.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/NetworkAgent.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/PatchAgent.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/PerformanceAgent.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/PerformanceInsightsAgent.ts",
-    "../../../../../../front_end/panels/ai_assistance/agents/StylingAgent.ts",
     "../../../../../../front_end/panels/ai_assistance/components/ChatView.ts",
     "../../../../../../front_end/panels/ai_assistance/components/MarkdownRendererWithCodeBlock.ts",
     "../../../../../../front_end/panels/ai_assistance/components/UserActionRow.ts",
-    "../../../../../../front_end/panels/ai_assistance/data_formatters/FileFormatter.ts",
-    "../../../../../../front_end/panels/ai_assistance/data_formatters/NetworkRequestFormatter.ts",
-    "../../../../../../front_end/panels/ai_assistance/data_formatters/PerformanceInsightFormatter.ts",
-    "../../../../../../front_end/panels/ai_assistance/debug.ts",
-    "../../../../../../front_end/panels/ai_assistance/injected.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts",
@@ -74,19 +57,10 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/bindings/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/logs/bundle-tsconfig.json"
+      "path": "../../models/ai_assistance/bundle-tsconfig.json"
     },
     {
       "path": "../../models/persistence/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/text_utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
@@ -114,12 +88,6 @@
     },
     {
       "path": "../timeline/utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../third_party/diff/bundle-tsconfig.json"
     },
     {
       "path": "../../third_party/marked/bundle-tsconfig.json"

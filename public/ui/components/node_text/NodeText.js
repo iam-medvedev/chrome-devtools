@@ -5,7 +5,7 @@ import * as Lit from '../../../ui/lit/lit.js';
 import nodeTextStylesRaw from './nodeText.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const nodeTextStyles = new CSSStyleSheet();
-nodeTextStyles.replaceSync(nodeTextStylesRaw.cssContent);
+nodeTextStyles.replaceSync(nodeTextStylesRaw.cssText);
 const { render, html } = Lit;
 export class NodeText extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });

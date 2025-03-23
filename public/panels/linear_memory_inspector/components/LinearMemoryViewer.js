@@ -7,7 +7,7 @@ import { toHexString } from './LinearMemoryInspectorUtils.js';
 import linearMemoryViewerStylesRaw from './linearMemoryViewer.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const linearMemoryViewerStyles = new CSSStyleSheet();
-linearMemoryViewerStyles.replaceSync(linearMemoryViewerStylesRaw.cssContent);
+linearMemoryViewerStyles.replaceSync(linearMemoryViewerStylesRaw.cssText);
 const { render, html } = Lit;
 export class ByteSelectedEvent extends Event {
     static eventName = 'byteselected';

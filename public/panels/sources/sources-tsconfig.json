@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/sources/AddSourceMapURLDialog.ts",
+    "../../../../../../front_end/panels/sources/AiWarningInfobarPlugin.ts",
     "../../../../../../front_end/panels/sources/BreakpointEditDialog.ts",
     "../../../../../../front_end/panels/sources/CSSPlugin.ts",
     "../../../../../../front_end/panels/sources/CallStackSidebarPane.ts",

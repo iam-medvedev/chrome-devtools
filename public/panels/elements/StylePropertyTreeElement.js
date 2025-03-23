@@ -222,7 +222,7 @@ function getTracingTooltip(functionName, text, matchedStyles, computedStyles, st
         if (e.key === 'Escape' || (e.altKey && e.key === 'ArrowDown')) {
             maybeTooltip.hideTooltip();
             maybeTooltip.anchor?.focus();
-            e.consume();
+            e.consume(true);
         }
     }}
           .widgetConfig=${UI.Widget.widgetConfig(CSSValueTraceView, {})}
@@ -251,8 +251,8 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         const varSwatch = document.createElement('span');
         const substitution = context.tracing?.substitution();
         if (substitution) {
-            if (declaration?.declaration instanceof SDK.CSSProperty.CSSProperty) {
-                const { nodes, cssControls } = Renderer.renderValueNodes(declaration.declaration, substitution.cachedParsedValue(declaration.declaration, this.#matchedStyles, this.#computedStyles), getPropertyRenderers(declaration.declaration.ownerStyle, this.#stylesPane, this.#matchedStyles, null, this.#computedStyles), substitution);
+            if (declaration?.declaration) {
+                const { nodes, cssControls } = Renderer.renderValueNodes({ name: declaration.name, value: declaration.value ?? '' }, substitution.cachedParsedValue(declaration.declaration, this.#matchedStyles, this.#computedStyles), getPropertyRenderers(declaration.style, this.#stylesPane, this.#matchedStyles, null, this.#computedStyles), substitution);
                 cssControls.forEach((value, key) => value.forEach(control => context.addControl(key, control)));
                 return nodes;
             }
@@ -494,7 +494,7 @@ export class LightDarkColorRenderer extends rendererBase(SDK.CSSPropertyParserMa
     // If the element has color-scheme set to light or dark, return the respective group.
     // If the element has color-scheme set to both light and dark, we check the prefers-color-scheme media query.
     async #activeColor(match) {
-        const activeColorSchemes = this.#matchedStyles.resolveProperty('color-scheme', match.property.ownerStyle)
+        const activeColorSchemes = this.#matchedStyles.resolveProperty('color-scheme', match.style)
             ?.parseValue(this.#matchedStyles, new Map())
             ?.getComputedPropertyValueText()
             .split(' ') ??
@@ -1148,26 +1148,26 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
         const span = document.createElement('span');
         render(html `${getTracingTooltip(match.func, match.text, this.#matchedStyles, this.#computedStyles, this.#stylesPane, context)}(${renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [html `, `, arg]).flat()})`, span);
         if (childTracingContexts && context.tracing?.applyEvaluation(childTracingContexts)) {
-            void this.#applyEvaluation(span, context.matchedResult.getComputedText(match.node));
+            void this.applyEvaluation(span, context.matchedResult.getComputedText(match.node));
         }
         else if (match.func !== 'calc') {
             const resolvedArgs = match.args.map(arg => context.matchedResult.getComputedTextRange(arg[0], arg[arg.length - 1]));
-            void this.applySelectFunction(renderedArgs, resolvedArgs, context.matchedResult.getComputedText(match.node));
+            void this.applyMathFunction(renderedArgs, resolvedArgs, context.matchedResult.getComputedText(match.node));
         }
         return [span];
     }
-    async #applyEvaluation(span, value) {
+    async applyEvaluation(span, value) {
         const nodeId = this.#stylesPane.node()?.id;
         if (nodeId === undefined) {
             return;
         }
         const evaled = await this.#stylesPane.cssModel()?.resolveValues(nodeId, value);
-        if (!evaled || evaled[0] === value) {
+        if (!evaled?.[0] || evaled[0] === value) {
             return;
         }
         span.textContent = evaled[0];
     }
-    async applySelectFunction(renderedArgs, values, functionText) {
+    async applyMathFunction(renderedArgs, values, functionText) {
         const nodeId = this.#stylesPane.node()?.id;
         if (nodeId === undefined) {
             return;
@@ -1948,7 +1948,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     async viewComputedValue() {
         const computedStyleWidget = ElementsPanel.instance().getComputedStyleWidget();
         if (!computedStyleWidget.isShowing()) {
-            await UI.ViewManager.ViewManager.instance().showView('Computed');
+            await UI.ViewManager.ViewManager.instance().showView('computed');
         }
         let propertyNamePattern = '';
         if (this.isShorthand) {

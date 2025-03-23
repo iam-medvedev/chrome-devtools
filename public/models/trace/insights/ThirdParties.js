@@ -5,7 +5,6 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
 import * as Extras from '../extras/extras.js';
 import * as Handlers from '../handlers/handlers.js';
-import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory, } from './types.js';
 export const UIStrings = {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
@@ -31,8 +30,9 @@ const str_ = i18n.i18n.registerUIStrings('models/trace/insights/ThirdParties.ts'
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 function getRelatedEvents(summaries, firstPartyEntity) {
     const relatedEvents = [];
-    for (const [entity, events] of summaries.eventsByEntity.entries()) {
-        if (entity !== firstPartyEntity) {
+    for (const summary of summaries) {
+        if (summary.entity !== firstPartyEntity) {
+            const events = summary.relatedEvents ?? [];
             relatedEvents.push(...events);
         }
     }
@@ -45,33 +45,20 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
-        state: [...partialModel.summaryByEntity.entries()].find(kv => kv[0] !== partialModel.firstPartyEntity) ?
-            'informative' :
+        state: partialModel.summaries.find(summary => summary.entity !== partialModel.firstPartyEntity) ? 'informative' :
             'pass',
         ...partialModel,
     };
 }
 export function generateInsight(parsedTrace, context) {
-    const networkRequests = parsedTrace.NetworkRequests.byTime.filter(event => {
-        if (!context.navigation) {
-            return false;
-        }
-        if (event.args.data.frame !== context.frameId) {
-            return false;
-        }
-        return Helpers.Timing.eventIsInBounds(event, context.bounds);
-    });
-    const thirdPartySummary = Extras.ThirdParties.summarizeThirdParties(parsedTrace, context.bounds, networkRequests);
+    const summaries = Extras.ThirdParties.summarizeThirdParties(parsedTrace, context.bounds);
     const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) ||
-        Handlers.Helpers.makeUpEntity(thirdPartySummary.madeUpEntityCache, firstPartyUrl);
+        Handlers.Helpers.makeUpEntity(parsedTrace.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
     return finalize({
-        relatedEvents: getRelatedEvents(thirdPartySummary, firstPartyEntity),
-        eventsByEntity: thirdPartySummary.eventsByEntity,
-        summaryByEntity: thirdPartySummary.byEntity,
-        summaryByUrl: thirdPartySummary.byUrl,
-        urlsByEntity: thirdPartySummary.urlsByEntity,
+        relatedEvents: getRelatedEvents(summaries, firstPartyEntity),
         firstPartyEntity,
+        summaries,
     });
 }
 //# sourceMappingURL=ThirdParties.js.map

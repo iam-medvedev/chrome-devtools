@@ -34,6 +34,7 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/Checklist.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/DOMSize.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/DocumentLatency.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/DuplicatedJavaScript.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/EventRef.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/FontDisplay.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/ForcedReflow.ts",

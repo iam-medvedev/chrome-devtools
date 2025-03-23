@@ -15,7 +15,7 @@ export declare const UIStrings: {
     readonly wastedTimeColumn: "Wasted time";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
-interface RemoteFont {
+export interface RemoteFont {
     name?: string;
     request: Types.Events.SyntheticNetworkRequest;
     display: string;
@@ -25,4 +25,3 @@ export type FontDisplayInsightModel = InsightModel<typeof UIStrings, {
     fonts: RemoteFont[];
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): FontDisplayInsightModel;
-export {};

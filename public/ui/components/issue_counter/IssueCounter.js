@@ -166,7 +166,7 @@ export class IssueCounter extends HTMLElement {
             compact: this.#compact,
         };
         render(html `
-        <style>${issueCounterStyles.cssContent}</style>
+        <style>${issueCounterStyles.cssText}</style>
         <icon-button .data=${data} .accessibleName=${this.#accessibleName}></icon-button>
         `, this.#shadow, { host: this });
         this.#tooltipCallback?.();

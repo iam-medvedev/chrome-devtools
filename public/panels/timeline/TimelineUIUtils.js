@@ -59,7 +59,7 @@ import { selectionFromEvent } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const imagePreviewStyles = new CSSStyleSheet();
-imagePreviewStyles.replaceSync(imagePreviewStylesRaw.cssContent);
+imagePreviewStyles.replaceSync(imagePreviewStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Text that only contain a placeholder
@@ -624,7 +624,7 @@ export class TimelineUIUtils {
             return title;
         }
         if (Trace.Types.Events.isConsoleTimeStamp(event) && event.args.data) {
-            return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.name });
+            return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.name ?? event.args.data.message });
         }
         if (Trace.Types.Events.isAnimation(event) && event.args.data.name) {
             return i18nString(UIStrings.sS, { PH1: title, PH2: event.args.data.name });
@@ -714,7 +714,7 @@ export class TimelineUIUtils {
                 }
                 break;
             }
-            case "V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */:
+            case "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */:
                 detailsText = unsafeEventData['message'];
                 break;
             case "WebSocketCreate" /* Trace.Types.Events.Name.WEB_SOCKET_CREATE */:
@@ -2085,7 +2085,7 @@ export class TimelineUIUtils {
                 color = 'var(--sys-color-green)';
                 tall = true;
                 break;
-            case "V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */:
+            case "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */:
                 color = 'orange';
                 break;
         }
@@ -2274,7 +2274,7 @@ export function timeStampForEventAdjustedForClosestNavigationIfPossible(event, p
  **/
 export function isMarkerEvent(parsedTrace, event) {
     const { Name } = Trace.Types.Events;
-    if (event.name === "V8Console::TimeStamp" /* Name.CONSOLE_TIME_STAMP */ || event.name === "navigationStart" /* Name.NAVIGATION_START */) {
+    if (event.name === "TimeStamp" /* Name.TIME_STAMP */ || event.name === "navigationStart" /* Name.NAVIGATION_START */) {
         return true;
     }
     if (Trace.Types.Events.isFirstContentfulPaint(event) || Trace.Types.Events.isFirstPaint(event)) {

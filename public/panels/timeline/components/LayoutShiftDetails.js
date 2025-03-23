@@ -13,9 +13,9 @@ import * as Insights from './insights/insights.js';
 import layoutShiftDetailsStylesRaw from './layoutShiftDetails.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const layoutShiftDetailsStyles = new CSSStyleSheet();
-layoutShiftDetailsStyles.replaceSync(layoutShiftDetailsStylesRaw.cssContent);
+layoutShiftDetailsStyles.replaceSync(layoutShiftDetailsStylesRaw.cssText);
 const textButtonStyles = new CSSStyleSheet();
-textButtonStyles.replaceSync(Buttons.textButtonStyles.cssContent);
+textButtonStyles.replaceSync(Buttons.textButtonStyles.cssText);
 const { html } = Lit;
 const MAX_URL_LENGTH = 20;
 const UIStrings = {

@@ -158,6 +158,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+/**
+ * For an overview, read: https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/main/front_end/panels/timeline/README.md#timeline-tree-views
+ */
 export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     #selectedEvents;
     searchResults;
@@ -242,7 +245,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         });
         this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortingChanged, this);
         this.dataGrid.element.addEventListener('mousemove', this.onMouseMove.bind(this), true);
-        this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, null));
+        this.dataGrid.element.addEventListener('mouseleave', () => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: null }));
         this.dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OPENED_NODE */, this.onGridNodeOpened, this);
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
@@ -323,6 +326,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     }
     appendContextMenuItems(_contextMenu, _node) {
     }
+    //  TODO(paulirish): rename profileNode to treeNode
     selectProfileNode(treeNode, suppressSelectedEvent) {
         const pathToRoot = [];
         let node = treeNode;
@@ -506,7 +510,10 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         this.onHover(profileNode);
     }
     onHover(node) {
-        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node);
+        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node });
+    }
+    onClick(node) {
+        this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node });
     }
     wasShown() {
         this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange, this);
@@ -520,12 +527,13 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
      * when the user hover overs a row.
      */
     #onDataGridSelectionChange(event) {
-        this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, event.data.profileNode);
+        this.onClick(event.data.profileNode);
         this.onHover(event.data.profileNode);
     }
     onGridNodeOpened() {
         const gridNode = this.dataGrid.selectedNode;
-        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, gridNode.profileNode);
+        // Use tree's hover method in case of unique hover experiences (like ThirdPartyTree).
+        this.onHover(gridNode.profileNode);
         this.updateDetailsForSelection();
     }
     onContextMenu(contextMenu, eventGridNode) {
@@ -584,6 +592,12 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         return true;
     }
 }
+/**
+ * GridNodes are 1:1 with `TraceTree.Node`s but represent them within the DataGrid. It handles the representation as a row.
+ * `TreeGridNode` extends this to maintain relationship to the tree, and handles populate().
+ *
+ * `TimelineStackView` (aka heaviest stack) uses GridNode directly (as there's no hierarchy there), otherwise these TreeGridNode could probably be consolidated.
+ */
 export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     populated;
     profileNode;
@@ -746,10 +760,13 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
     #bottomUpButtonClicked() {
         // We should also trigger an event to "unhover" the 3P tree row. Since this isn't
         // triggered when clicking the bottom up button.
-        this.treeView.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, null);
+        this.treeView.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: null });
         this.treeView.dispatchEventToListeners("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, this.profileNode);
     }
 }
+/**
+ * `TreeGridNode` lets a `GridNode` (row) populate based on its tree children.
+ */
 export class TreeGridNode extends GridNode {
     constructor(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView) {
         super(profileNode, grandTotalTime, maxSelfTime, maxTotalTime, treeView);
@@ -925,6 +942,9 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
                 return null;
         }
     }
+    // This is our groupingFunction that returns the eventId in Domain, Subdomain, and ThirdParty groupBy scenarios.
+    // The eventid == the identity of a node that we expect in a bottomUp tree (either without grouping or with the groupBy grouping)
+    // A "top node" (in `ungrouppedTopNodes`) is aggregated by this. (But so are all the other nodes, except the `GroupNode`s)
     domainByEvent(groupBy, event) {
         const parsedTrace = this.parsedTrace();
         if (!parsedTrace) {
@@ -932,6 +952,21 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         }
         const url = Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace);
         if (!url) {
+            // We could have receiveDataEvents (that don't have a url), but that have been
+            // attributed to an entity, let's check for these. This is used for ThirdParty grouping.
+            const entity = this.entityMapper()?.entityForEvent(event);
+            if (groupBy === AggregatedTimelineTreeView.GroupBy.ThirdParties && entity) {
+                if (!entity) {
+                    return '';
+                }
+                const firstDomain = entity.domains[0];
+                const parsedURL = Common.ParsedURL.ParsedURL.fromString(firstDomain);
+                // chrome-extension check must come before entity.name.
+                if (parsedURL?.scheme === 'chrome-extension') {
+                    return `${parsedURL.scheme}://${parsedURL.host}`;
+                }
+                return entity.name;
+            }
             return '';
         }
         if (AggregatedTimelineTreeView.isExtensionInternalURL(url)) {
@@ -972,6 +1007,34 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     }
     static extensionInternalPrefix = 'extensions::';
     static v8NativePrefix = 'native ';
+    onHover(node) {
+        if (node !== null && this.groupBySetting.get() === AggregatedTimelineTreeView.GroupBy.ThirdParties) {
+            const events = this.#getThirdPartyEventsForNode(node);
+            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node, events });
+            return;
+        }
+        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node });
+    }
+    onClick(node) {
+        if (node !== null && this.groupBySetting.get() === AggregatedTimelineTreeView.GroupBy.ThirdParties) {
+            const events = this.#getThirdPartyEventsForNode(node);
+            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node, events });
+            return;
+        }
+        this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node });
+    }
+    #getThirdPartyEventsForNode(node) {
+        if (!node.event) {
+            return;
+        }
+        const entity = this.entityMapper()?.entityForEvent(node.event);
+        // Should be [unattributed]. Just use the node's events.
+        if (!entity) {
+            return node.events;
+        }
+        const events = this.entityMapper()?.eventsForEntity(entity);
+        return events;
+    }
 }
 (function (AggregatedTimelineTreeView) {
     let GroupBy;
@@ -1012,6 +1075,11 @@ export class BottomUpTimelineTreeView extends AggregatedTimelineTreeView {
             startTime: this.startTime,
             endTime: this.endTime,
             eventGroupIdCallback: this.groupingFunction(this.groupBySetting.get()),
+            // To include instant events. When this is set to true, instant events are
+            // considered (to calculate transfer size). This then includes these events in tree nodes.
+            calculateTransferSize: true,
+            // We should forceGroupIdCallback if filtering by 3P for correct 3P grouping.
+            forceGroupIdCallback: this.groupBySetting.get() === AggregatedTimelineTreeView.GroupBy.ThirdParties,
         });
     }
 }

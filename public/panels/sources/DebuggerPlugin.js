@@ -268,7 +268,6 @@ export class DebuggerPlugin extends Plugin {
                     click: (view, block, event) => this.handleGutterClick(view.state.doc.lineAt(block.from), event),
                 },
             }),
-            infobarState,
             breakpointMarkers,
             TextEditor.ExecutionPositionHighlighter.positionHighlighter('cm-executionLine', 'cm-executionToken'),
             CodeMirror.Prec.lowest(continueToMarkers.field),
@@ -392,12 +391,12 @@ export class DebuggerPlugin extends Plugin {
     }
     attachInfobar(bar) {
         if (this.editor) {
-            this.editor.dispatch({ effects: addInfobar.of(bar) });
+            this.editor.dispatch({ effects: SourceFrame.SourceFrame.addInfobar.of(bar) });
         }
     }
     removeInfobar(bar) {
         if (this.editor && bar) {
-            this.editor.dispatch({ effects: removeInfobar.of(bar) });
+            this.editor.dispatch({ effects: SourceFrame.SourceFrame.removeInfobar.of(bar) });
         }
     }
     hideIgnoreListInfobar() {
@@ -1550,26 +1549,6 @@ export class BreakpointLocationRevealer {
         }
     }
 }
-// Infobar panel state, used to show additional panels below the editor.
-const addInfobar = CodeMirror.StateEffect.define();
-const removeInfobar = CodeMirror.StateEffect.define();
-const infobarState = CodeMirror.StateField.define({
-    create() {
-        return [];
-    },
-    update(current, tr) {
-        for (const effect of tr.effects) {
-            if (effect.is(addInfobar)) {
-                current = current.concat(effect.value);
-            }
-            else if (effect.is(removeInfobar)) {
-                current = current.filter(b => b !== effect.value);
-            }
-        }
-        return current;
-    },
-    provide: (field) => CodeMirror.showPanel.computeN([field], (state) => state.field(field).map((bar) => () => ({ dom: bar.element }))),
-});
 // Enumerate non-breakable lines (lines without a known corresponding
 // position in the UISource).
 async function computeNonBreakableLines(state, transformer, sourceCode) {

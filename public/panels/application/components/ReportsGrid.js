@@ -15,10 +15,10 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import reportingApiGridStylesRaw from './reportingApiGrid.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportingApiGridStyles = new CSSStyleSheet();
-reportingApiGridStyles.replaceSync(reportingApiGridStylesRaw.cssContent);
+reportingApiGridStyles.replaceSync(reportingApiGridStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Placeholder text when there are no Reporting API reports.

@@ -67,16 +67,28 @@ export declare class BottomUpRootNode extends Node {
     readonly filter: (e: Types.Events.Event) => boolean;
     readonly startTime: Types.Timing.Milli;
     readonly endTime: Types.Timing.Milli;
-    private eventGroupIdCallback;
     totalTime: number;
+    eventGroupIdCallback: ((arg0: Types.Events.Event) => string) | null | undefined;
     private calculateTransferSize?;
-    constructor(events: Types.Events.Event[], { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, }: {
+    private forceGroupIdCallback?;
+    constructor(events: Types.Events.Event[], { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, forceGroupIdCallback, }: {
         textFilter: TraceFilter;
         filters: readonly TraceFilter[];
         startTime: Types.Timing.Milli;
         endTime: Types.Timing.Milli;
         eventGroupIdCallback?: ((arg0: Types.Events.Event) => string) | null;
         calculateTransferSize?: boolean;
+        /**
+         * This forces using `eventGroupIdCallback` in combination with generateEventID
+         * to generate the ID of the node.
+         *
+         * This is used in the ThirdPartyTreeView and BottomUpTreeView, where we want to group all events
+         * related to a specific 3P entity together, regardless of the specific event name/type.
+         * There are cases where events under the same event name belong to different entities. But, because
+         * they get grouped first by event name/type, it throws off the 3P groupBy - grouping events of different
+         * 3P entities together.
+         */
+        forceGroupIdCallback?: boolean;
     });
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;

@@ -42,6 +42,7 @@ describeWithLocale('SRIMessageSignatureIssue', () => {
                     requestId: 'test-request-id',
                     url: 'https://example.com/',
                 },
+                signatureBase: 'test-signature-base',
             };
             const issue = createProtocolIssue(issueDetails);
             const sriMessageSignatureIssues = IssuesManager.SRIMessageSignatureIssue.SRIMessageSignatureIssue.fromInspectorIssue(mockModel, issue);

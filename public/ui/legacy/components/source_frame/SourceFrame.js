@@ -262,6 +262,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
                     activeDark: 'var(--sys-color-divider-prominent)',
                 },
             }),
+            infobarState,
         ];
     }
     onBlur() {
@@ -1051,5 +1052,25 @@ const sourceFrameTheme = CodeMirror.EditorView.theme({
     ':host-context(.pretty-printed) & .cm-lineNumbers .cm-gutterElement': {
         color: 'var(--sys-color-primary)',
     },
+});
+// Infobar panel state, used to show additional panels below the editor.
+export const addInfobar = CodeMirror.StateEffect.define();
+export const removeInfobar = CodeMirror.StateEffect.define();
+const infobarState = CodeMirror.StateField.define({
+    create() {
+        return [];
+    },
+    update(current, tr) {
+        for (const effect of tr.effects) {
+            if (effect.is(addInfobar)) {
+                current = current.concat(effect.value);
+            }
+            else if (effect.is(removeInfobar)) {
+                current = current.filter(b => b !== effect.value);
+            }
+        }
+        return current;
+    },
+    provide: (field) => CodeMirror.showPanel.computeN([field], (state) => state.field(field).map((bar) => () => ({ dom: bar.element }))),
 });
 //# sourceMappingURL=SourceFrame.js.map

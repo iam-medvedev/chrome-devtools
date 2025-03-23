@@ -8477,6 +8477,10 @@ export const NativeFunctions = [
         signatures: [["contribution"]]
     },
     {
+        name: "contributeToHistogramOnEvent",
+        signatures: [["event", "contribution"]]
+    },
+    {
         name: "enableDebugMode",
         signatures: [["?options"]]
     },

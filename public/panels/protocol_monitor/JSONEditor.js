@@ -8,7 +8,6 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as SuggestionInput from '../../ui/components/suggestion_input/suggestion_input.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
@@ -35,17 +34,21 @@ const UIStrings = {
      */
     addCustomProperty: 'Add custom property',
     /**
-     * @description The title of a the button that sends a CDP command.
+     * @description The title of a button that sends a CDP command.
      */
     sendCommandCtrlEnter: 'Send command - Ctrl+Enter',
     /**
-     * @description The title of a the button that sends a CDP command.
+     * @description The title of a button that sends a CDP command.
      */
     sendCommandCmdEnter: 'Send command - ⌘+Enter',
     /**
-     * @description he title of a the button that copies a CDP command.
+     * @description The title of a button that copies a CDP command.
      */
     copyCommand: 'Copy command',
+    /**
+     * @description A label for a select input that allows selecting a CDP target to send the commands to.
+     */
+    selectTarget: 'Select a target',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/protocol_monitor/JSONEditor.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -560,12 +563,6 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.populateParametersForCommandWithDefaultValues();
     };
-    #computeTargetLabel(target) {
-        if (!target) {
-            return undefined;
-        }
-        return `${target.name()} (${target.inspectedURL()})`;
-    }
     #isTypePrimitive(type) {
         if (type === "string" /* ParameterType.STRING */ || type === "boolean" /* ParameterType.BOOLEAN */ || type === "number" /* ParameterType.NUMBER */) {
             return true;
@@ -728,39 +725,28 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.requestUpdate();
     }
     #renderTargetSelectorRow() {
-        const target = this.targets.find(el => el.id() === this.targetId);
-        const targetLabel = target ? this.#computeTargetLabel(target) : this.#computeTargetLabel(this.targets[0]);
         // clang-format off
         return html `
     <div class="row attribute padded">
       <div>target<span class="separator">:</span></div>
-      <devtools-select-menu
-            class="target-select-menu"
-            @selectmenuselected=${this.#onTargetSelected}
-            .showDivider=${true}
-            .showArrow=${true}
-            .sideButton=${false}
-            .showSelectedItem=${true}
-            .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
-            .buttonTitle=${targetLabel || ''}
-            jslog=${VisualLogging.dropDown('targets').track({ click: true })}
-          >
-          ${repeat(this.targets, target => {
-            return html `
-                <devtools-menu-item
-                  class="no-checkmark"
-                  .value=${target.id()}>
-                    ${this.#computeTargetLabel(target)}
-                </devtools-menu-item>
-              `;
-        })}
-          </devtools-select-menu>
+      <select class="target-selector"
+              title=${i18nString(UIStrings.selectTarget)}
+              jslog=${VisualLogging.dropDown('target-selector').track({ change: true })}
+              @change=${this.#onTargetSelected}>
+        ${this.targets.map(target => html `
+          <option jslog=${VisualLogging.item('target').track({ click: true })}
+                  value=${target.id()} ?selected=${target.id() === this.targetId}>
+            ${target.name()} (${target.inspectedURL()})
+          </option>`)}
+      </select>
     </div>
   `;
         // clang-format on
     }
     #onTargetSelected(event) {
-        this.targetId = event.itemValue;
+        if (event.target instanceof HTMLSelectElement) {
+            this.targetId = event.target.value;
+        }
         this.requestUpdate();
     }
     #computeDropdownValues(parameter) {

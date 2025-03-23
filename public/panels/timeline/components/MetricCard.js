@@ -14,10 +14,10 @@ import metricValueStylesRaw from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, determineCompareRating, INP_THRESHOLDS, LCP_THRESHOLDS, rateMetric, renderMetricValue, } from './Utils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const metricCardStyles = new CSSStyleSheet();
-metricCardStyles.replaceSync(metricCardStylesRaw.cssContent);
+metricCardStyles.replaceSync(metricCardStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const metricValueStyles = new CSSStyleSheet();
-metricValueStyles.replaceSync(metricValueStylesRaw.cssContent);
+metricValueStyles.replaceSync(metricValueStylesRaw.cssText);
 const { html, nothing } = Lit;
 const UIStrings = {
     /**

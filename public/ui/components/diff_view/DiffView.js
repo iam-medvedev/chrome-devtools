@@ -9,9 +9,9 @@ import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import diffViewStylesRaw from './diffView.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const diffViewStyles = new CSSStyleSheet();
-diffViewStyles.replaceSync(diffViewStylesRaw.cssContent);
+diffViewStyles.replaceSync(diffViewStylesRaw.cssText);
 const CodeHighlighterStyles = new CSSStyleSheet();
-CodeHighlighterStyles.replaceSync(CodeHighlighter.codeHighlighterStyles.cssContent);
+CodeHighlighterStyles.replaceSync(CodeHighlighter.codeHighlighterStyles.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

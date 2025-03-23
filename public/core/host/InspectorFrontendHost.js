@@ -127,6 +127,9 @@ export class InspectorFrontendHostStub {
         void navigator.clipboard.writeText(text);
     }
     openInNewTab(url) {
+        if (Common.ParsedURL.schemeIs(url, 'javascript:')) {
+            return;
+        }
         window.open(url, '_blank');
     }
     openSearchResultsInNewTab(query) {

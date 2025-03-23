@@ -7,7 +7,7 @@ import markdownImageStylesRaw from './markdownImage.css.js';
 import { getMarkdownImage } from './MarkdownImagesMap.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const markdownImageStyles = new CSSStyleSheet();
-markdownImageStyles.replaceSync(markdownImageStylesRaw.cssContent);
+markdownImageStyles.replaceSync(markdownImageStylesRaw.cssText);
 const { html, Directives: { ifDefined } } = Lit;
 /**
  * Component to render images from parsed markdown.

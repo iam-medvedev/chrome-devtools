@@ -93,6 +93,7 @@ export declare function getCleanTextContentFromElements(el: ShadowRoot | HTMLEle
  * Will error if no element is found matching the selector.
  */
 export declare function getCleanTextContentFromSingleElement(el: ShadowRoot | HTMLElement, selector: string): string;
+export declare function cleanTextContent(input: string): string;
 export declare function assertNodeTextContent(component: NodeText.NodeText.NodeText, expectedContent: string): void;
 export declare function querySelectorErrorOnMissing<T extends HTMLElement = HTMLElement>(parent: HTMLElement, selector: string): T;
 /**

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as CPUProfile from '../../../models/cpu_profile/cpu_profile.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { makeCompleteEvent } from '../../../testing/TraceHelpers.js';
+import { makeCompleteEvent, makeInstantEvent } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describeWithEnvironment('SamplesIntegrator', function () {
@@ -243,8 +243,8 @@ describeWithEnvironment('SamplesIntegrator', function () {
             const integrator = new Trace.Helpers.SamplesIntegrator.SamplesIntegrator(parsedProfile, PROFILE_ID, pid, tid);
             const evaluateScript = makeCompleteEvent("EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */, 0, 500);
             const v8Run = makeCompleteEvent('v8.run', 10, 490);
-            const consoleTimeStamp = makeCompleteEvent("V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */, 350, 10);
-            consoleTimeStamp.args = { data: { name: 'A timestamp', sampleTraceId: traceId } };
+            const consoleTimeStamp = makeInstantEvent("TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */, 350);
+            consoleTimeStamp.args = { data: { message: 'A timestamp', sampleTraceId: traceId } };
             const traceEvents = [evaluateScript, v8Run, consoleTimeStamp];
             const constructedCalls = integrator.buildProfileCalls(traceEvents);
             assert.lengthOf(constructedCalls, 4);

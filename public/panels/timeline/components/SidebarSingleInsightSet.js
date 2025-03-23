@@ -17,7 +17,7 @@ import stylesRaw from './sidebarSingleInsightSet.css.js';
 import { determineCompareRating, NumberWithUnit } from './Utils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssContent);
+styles.replaceSync(stylesRaw.cssText);
 const { html } = Lit.StaticHtml;
 const UIStrings = {
     /**
@@ -72,7 +72,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
  * "enable experimental performance insights" experiment. This is used to enable
  * us to ship incrementally without turning insights on by default for all
  * users. */
-const EXPERIMENTAL_INSIGHTS = new Set([]);
+const EXPERIMENTAL_INSIGHTS = new Set([
+    'DuplicatedJavaScript',
+]);
 /**
  * Every insight (INCLUDING experimental ones).
  *
@@ -80,9 +82,11 @@ const EXPERIMENTAL_INSIGHTS = new Set([]);
  */
 const INSIGHT_NAME_TO_COMPONENT = {
     CLSCulprits: Insights.CLSCulprits.CLSCulprits,
-    DOMSize: Insights.DOMSize.DOMSize,
     DocumentLatency: Insights.DocumentLatency.DocumentLatency,
+    DOMSize: Insights.DOMSize.DOMSize,
+    DuplicatedJavaScript: Insights.DuplicatedJavaScript.DuplicatedJavaScript,
     FontDisplay: Insights.FontDisplay.FontDisplay,
+    ForcedReflow: Insights.ForcedReflow.ForcedReflow,
     ImageDelivery: Insights.ImageDelivery.ImageDelivery,
     InteractionToNextPaint: Insights.InteractionToNextPaint.InteractionToNextPaint,
     LCPDiscovery: Insights.LCPDiscovery.LCPDiscovery,
@@ -91,7 +95,6 @@ const INSIGHT_NAME_TO_COMPONENT = {
     RenderBlocking: Insights.RenderBlocking.RenderBlocking,
     SlowCSSSelector: Insights.SlowCSSSelector.SlowCSSSelector,
     ThirdParties: Insights.ThirdParties.ThirdParties,
-    ForcedReflow: Insights.ForcedReflow.ForcedReflow,
     Viewport: Insights.Viewport.Viewport,
     UseCache: Insights.UseCache.UseCache,
 };

@@ -12,21 +12,41 @@ type GeneratedFileSizes = {
 export declare function computeGeneratedFileSizes(script: Handlers.ModelHandlers.Scripts.Script): GeneratedFileSizes;
 export declare function normalizeSource(source: string): string;
 /**
- * The key is a source map `sources` entry, but normalized via `normalizeSource`.
+ * The key is a source map `sources` entry (these are URLs/file paths), but normalized
+ * via `normalizeSource`.
  *
- * The value is an array with an entry for every script that has a source map which
+ * The value is an object with an entry for every script that has a source map which
  * denotes that this source was used, along with the estimated resource size it takes
  * up in the script.
  */
-export type ScriptDuplication = Map<string, Array<{
-    script: Handlers.ModelHandlers.Scripts.Script;
-    resourceSize: number;
-}>>;
+export type ScriptDuplication = Map<string, {
+    /**
+     * This is the sum of all (but one) `attributedSize` in `scripts`.
+     *
+     * One copy of this module is treated as the canonical version - the rest will
+     * have non-zero `wastedBytes`. The canonical copy is the first entry of
+     * `scripts`.
+     *
+     * In the case of all copies being the same version, all sizes are
+     * equal and the selection doesn't matter (ignoring compression ratios). When
+     * the copies are different versions, it does matter. Ideally the newest
+     * version would be the canonical copy, but version information is not present.
+     * Instead, size is used as a heuristic for latest version. This makes the
+     * value here conserative in its estimation.
+     */
+    estimatedDuplicateBytes: number;
+    duplicates: Array<{
+        script: Handlers.ModelHandlers.Scripts.Script;
+        /** The number of bytes in the script bundle that map back to this module. */
+        attributedSize: number;
+    }>;
+}>;
 /**
- * Sorts each array within @see ScriptDuplication by resource size, and drops information
- * on sources that are too small.
+ * Sorts each array within @see ScriptDuplication by attributedSize, drops information
+ * on sources that are too small, and calculates esimatedDuplicateBytes.
  */
 export declare function normalizeDuplication(duplication: ScriptDuplication): void;
+export declare function getNodeModuleName(source: string): string;
 /**
  * Returns a @see ScriptDuplication for the given collection of script contents + source maps.
  */

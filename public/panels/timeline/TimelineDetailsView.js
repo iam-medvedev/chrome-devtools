@@ -111,19 +111,19 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             });
             // If there's a heaviest stack sidebar view, also listen to hover within it.
             if (view instanceof AggregatedTimelineTreeView) {
-                view.stackView.addEventListener("TreeRowHovered" /* TimelineStackView.Events.TREE_ROW_HOVERED */, node => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data));
+                view.stackView.addEventListener("TreeRowHovered" /* TimelineStackView.Events.TREE_ROW_HOVERED */, node => this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: node.data }));
             }
         });
         this.#thirdPartyTree.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => {
             // Re-dispatch through 3P event to get 3P dimmer.
-            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node.data);
+            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: node.data.node, events: node.data.events ?? undefined });
         });
         this.#thirdPartyTree.addEventListener("BottomUpButtonClicked" /* TimelineTreeView.Events.BOTTOM_UP_BUTTON_CLICKED */, node => {
             this.selectTab(Tab.BottomUp, node.data, AggregatedTimelineTreeView.GroupBy.ThirdParties);
         });
         this.#thirdPartyTree.addEventListener("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node => {
             // Re-dispatch through 3P event to get 3P dimmer.
-            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node.data);
+            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node: node.data.node, events: node.data.events ?? undefined });
         });
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
@@ -169,7 +169,8 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
                 if (!node) {
                     return;
                 }
-                // Look for the matching node in the bottom up tree using selected node event data.
+                // Look for the equivalent GroupNode in the bottomUp tree using the node's reference `event`.
+                // Conceivably, we could match using the group ID instead.
                 const treeNode = bottomUp.eventToTreeNode.get(node.event);
                 if (!treeNode) {
                     return;

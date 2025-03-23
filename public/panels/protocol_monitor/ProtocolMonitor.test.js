@@ -20,13 +20,17 @@ let protocolMonitor;
 let jsonEditor;
 let sendRawMessageStub;
 describeWithEnvironment('ProtocolMonitor', () => {
+    let originalSendRawMessage;
     beforeEach(() => {
-        // sendRawMessageStub = sinon.stub(InspectorBackend.test,'sendRawMessage');
         sendRawMessageStub = sinon.stub();
+        originalSendRawMessage = InspectorBackend.test.sendRawMessage;
         InspectorBackend.test.sendRawMessage = sendRawMessageStub;
         jsonEditor = new JSONEditor(document.createElement('div'));
         view = createViewFunctionStub(ProtocolMonitorImpl, { editorWidget: jsonEditor });
         protocolMonitor = new ProtocolMonitorImpl(view);
+    });
+    afterEach(() => {
+        InspectorBackend.test.sendRawMessage = originalSendRawMessage;
     });
     it('sends commands', async () => {
         view.input.onCommandSubmitted(new CustomEvent('submit', { detail: '{"command":"Test.test","parameters":{"test":"test"}}' }));
@@ -35,6 +39,12 @@ describeWithEnvironment('ProtocolMonitor', () => {
         assert.strictEqual(sendRawMessageStub.getCall(0).args[0], 'Test.test');
         assert.deepEqual(sendRawMessageStub.getCall(0).args[1], { test: 'test' });
         assert.deepEqual(sendRawMessageStub.getCall(0).args[3], '');
+    });
+    it('includes previous commands into autocomplete', async () => {
+        view.input.onCommandSubmitted(new CustomEvent('submit', { detail: 'Test.test1' }));
+        view.input.onCommandSubmitted(new CustomEvent('submit', { detail: 'Test.test2' }));
+        protocolMonitor.requestUpdate();
+        assert.includeOrderedMembers((await view.nextInput).commandSuggestions, ['Test.test2', 'Test.test1', 'Accessibility.disable']);
     });
     it('records commands', async () => {
         protocolMonitor.wasShown();

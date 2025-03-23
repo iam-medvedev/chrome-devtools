@@ -6,7 +6,7 @@ import * as Lit from '../../lit/lit.js';
 import floatingButtonStylesRaw from './floatingButton.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const floatingButtonStyles = new CSSStyleSheet();
-floatingButtonStyles.replaceSync(floatingButtonStylesRaw.cssContent);
+floatingButtonStyles.replaceSync(floatingButtonStylesRaw.cssText);
 const { html, Directives: { ifDefined } } = Lit;
 export class FloatingButton extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });

@@ -4,10 +4,16 @@ import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as Workspace from '../models/workspace/workspace.js';
-import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
+import * as AiAssistancePanel from '../panels/ai_assistance/ai_assistance.js';
+export declare const MockAidaAbortError: {
+    readonly abortError: true;
+};
+export declare const MockAidaFetchError: {
+    readonly fetchError: true;
+};
 export type MockAidaResponse = Omit<Host.AidaClient.AidaResponse, 'completed' | 'metadata'> & {
     metadata?: Host.AidaClient.AidaResponseMetadata;
-};
+} | typeof MockAidaAbortError | typeof MockAidaFetchError;
 /**
  * Creates a mock AIDA client that responds using `data`.
  *
@@ -36,8 +42,8 @@ export declare function createAiAssistancePanel(options?: {
     aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
     syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation;
 }): Promise<{
-    panel: AiAssistance.AiAssistancePanel;
-    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.AiAssistancePanel>;
+    panel: AiAssistancePanel.AiAssistancePanel;
+    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.AiAssistancePanel>;
     aidaClient: Host.AidaClient.AidaClient;
     stubAidaCheckAccessPreconditions: (aidaAvailability: Host.AidaClient.AidaAccessPreconditions) => import("sinon").SinonStub<[], Promise<Host.AidaClient.AidaAccessPreconditions>>;
 }>;
@@ -48,18 +54,18 @@ export declare function createAiAssistancePanel(options?: {
 export declare function createPatchWidget(options?: {
     aidaClient?: Host.AidaClient.AidaClient;
 }): Promise<{
-    panel: AiAssistance.PatchWidget.PatchWidget;
-    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.PatchWidget.PatchWidget>;
+    panel: AiAssistancePanel.PatchWidget.PatchWidget;
+    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
 }>;
 export declare function createPatchWidgetWithDiffView(): Promise<{
-    panel: AiAssistance.PatchWidget.PatchWidget;
-    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistance.PatchWidget.PatchWidget>;
+    panel: AiAssistancePanel.PatchWidget.PatchWidget;
+    view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
 }>;
 export declare function initializePersistenceImplForTests(): void;
 export declare function cleanup(): void;
-export declare function openHistoryContextMenu(lastUpdate: AiAssistance.ViewInput, item: string): {
+export declare function openHistoryContextMenu(lastUpdate: AiAssistancePanel.ViewInput, item: string): {
     contextMenu: import("../ui/legacy/ContextMenu.js").ContextMenu;
     id: number | undefined;
 };

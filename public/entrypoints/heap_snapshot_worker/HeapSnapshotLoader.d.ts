@@ -6,6 +6,6 @@ export declare class HeapSnapshotLoader {
     constructor(dispatcher: HeapSnapshotWorkerDispatcher);
     dispose(): void;
     close(): void;
-    buildSnapshot(): JSHeapSnapshot;
+    buildSnapshot(secondWorker: MessagePort): Promise<JSHeapSnapshot>;
     write(chunk: string): void;
 }

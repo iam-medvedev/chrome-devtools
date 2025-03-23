@@ -6,7 +6,7 @@ import { html, render } from '../../../ui/lit/lit.js';
 import computedStyleTraceStylesRaw from './computedStyleTrace.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const computedStyleTraceStyles = new CSSStyleSheet();
-computedStyleTraceStyles.replaceSync(computedStyleTraceStylesRaw.cssContent);
+computedStyleTraceStyles.replaceSync(computedStyleTraceStylesRaw.cssText);
 export class ComputedStyleTrace extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #selector = '';

@@ -191,7 +191,8 @@ export declare class MathFunctionRenderer extends MathFunctionRenderer_base {
     #private;
     constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>);
     render(match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Node[];
-    applySelectFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
+    applyEvaluation(span: HTMLSpanElement, value: string): Promise<void>;
+    applyMathFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
 }
 declare const AnchorFunctionRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch>;

@@ -1,17 +1,31 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import './Table.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
-import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
+import { createLimitedRows, renderOthersLabel } from './Table.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.RenderBlocking;
 const { html } = Lit;
 export class RenderBlocking extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-render-blocking-requests`;
+    mapToRow(request) {
+        return {
+            values: [
+                eventRef(request),
+                i18n.TimeUtilities.formatMicroSecondsTime(request.dur),
+            ],
+            overlays: [this.#createOverlayForRequest(request)],
+        };
+    }
+    createAggregatedTableRow(remaining) {
+        return {
+            values: [renderOthersLabel(remaining.length), ''],
+            overlays: remaining.map(r => this.#createOverlayForRequest(r)),
+        };
+    }
     hasAskAISupport = true;
     internalName = 'render-blocking-requests';
     createOverlays() {
@@ -34,11 +48,11 @@ export class RenderBlocking extends BaseInsightComponent {
         if (!this.model) {
             return Lit.nothing;
         }
-        const MAX_REQUESTS = 3;
-        const topRequests = this.model.renderBlockingRequests.slice(0, MAX_REQUESTS);
-        if (!topRequests.length) {
+        const requests = this.model.renderBlockingRequests;
+        if (!requests.length) {
             return html `<div class="insight-section">${i18nString(UIStrings.noRenderBlocking)}</div>`;
         }
+        const rows = createLimitedRows(requests, this);
         // clang-format off
         return html `
       <div class="insight-section">
@@ -46,13 +60,7 @@ export class RenderBlocking extends BaseInsightComponent {
           .data=${{
             insight: this,
             headers: [i18nString(UIStrings.renderBlockingRequest), i18nString(UIStrings.duration)],
-            rows: topRequests.map(request => ({
-                values: [
-                    eventRef(request),
-                    i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(request.dur)),
-                ],
-                overlays: [this.#createOverlayForRequest(request)],
-            })),
+            rows,
         }}>
         </devtools-performance-table>
       </div>

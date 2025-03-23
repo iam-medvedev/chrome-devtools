@@ -16,6 +16,8 @@ export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineT
     populateToolbar(): void;
     private compareTransferSize;
     sortingChanged(): void;
+    onHover(node: Trace.Extras.TraceTree.Node | null): void;
+    onClick(node: Trace.Extras.TraceTree.Node | null): void;
     displayInfoForGroupNode(node: Trace.Extras.TraceTree.Node): {
         name: string;
         color: string;

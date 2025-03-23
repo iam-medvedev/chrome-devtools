@@ -40,7 +40,7 @@ export class FreDialog {
         Lit.render(html `
       <div class="fre-disclaimer">
         <style>
-          ${commonStyles.cssContent}
+          ${commonStyles.cssText}
         </style>
         <header>
           <div class="header-icon-container">
@@ -95,7 +95,6 @@ export class FreDialog {
             result.resolve(false);
         });
         dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
-        dialog.setMaxContentSize(new UI.Geometry.Size(448, 600));
         dialog.setDimmed(true);
         dialog.show();
         return result.promise;

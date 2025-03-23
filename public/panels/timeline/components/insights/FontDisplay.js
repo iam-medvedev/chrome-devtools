@@ -7,11 +7,29 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
+import { createLimitedRows, renderOthersLabel } from './Table.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.FontDisplay;
 const { html } = Lit;
 export class FontDisplay extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-font-display`;
     internalName = 'font-display';
+    mapToRow(font) {
+        const overlay = this.#overlayForRequest.get(font.request);
+        return {
+            values: [
+                eventRef(font.request, { text: font.name }),
+                i18n.TimeUtilities.millisToString(font.wastedTime),
+            ],
+            overlays: overlay ? [overlay] : [],
+        };
+    }
+    createAggregatedTableRow(remaining) {
+        return {
+            values: [renderOthersLabel(remaining.length), ''],
+            overlays: remaining.map(r => this.#overlayForRequest.get(r.request))
+                .filter((o) => Boolean(o)),
+        };
+    }
     #overlayForRequest = new Map();
     createOverlays() {
         this.#overlayForRequest.clear();
@@ -34,6 +52,7 @@ export class FontDisplay extends BaseInsightComponent {
         if (!this.model) {
             return Lit.nothing;
         }
+        const rows = createLimitedRows(this.model.fonts, this);
         // clang-format off
         return html `
       <div class="insight-section">
@@ -41,13 +60,7 @@ export class FontDisplay extends BaseInsightComponent {
           .data=${{
             insight: this,
             headers: [i18nString(UIStrings.fontColumn), i18nString(UIStrings.wastedTimeColumn)],
-            rows: this.model.fonts.map(font => ({
-                values: [
-                    eventRef(font.request, { text: font.name }),
-                    i18n.TimeUtilities.millisToString(font.wastedTime),
-                ],
-                overlays: [this.#overlayForRequest.get(font.request)],
-            })),
+            rows,
         }}>
         </devtools-performance-table>`}
       </div>`;

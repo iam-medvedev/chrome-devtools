@@ -17,9 +17,7 @@ export class SelectElementAccessibilityIssue extends Issue {
         return JSON.stringify(this.issueDetails);
     }
     getDescription() {
-        if (this.issueDetails.hasDisallowedAttributes &&
-            (this.issueDetails.selectElementAccessibilityIssueReason !==
-                "InteractiveContentOptionChild" /* Protocol.Audits.SelectElementAccessibilityIssueReason.InteractiveContentOptionChild */)) {
+        if (this.isInteractiveContentAttributesSelectDescendantIssue()) {
             return {
                 file: 'selectElementAccessibilityInteractiveContentAttributesSelectDescendant.md',
                 links: [],
@@ -39,6 +37,11 @@ export class SelectElementAccessibilityIssue extends Issue {
     }
     details() {
         return this.issueDetails;
+    }
+    isInteractiveContentAttributesSelectDescendantIssue() {
+        return this.issueDetails.hasDisallowedAttributes &&
+            (this.issueDetails.selectElementAccessibilityIssueReason !==
+                "InteractiveContentOptionChild" /* Protocol.Audits.SelectElementAccessibilityIssueReason.InteractiveContentOptionChild */);
     }
     static fromInspectorIssue(issuesModel, inspectorIssue) {
         const selectElementAccessibilityIssueDetails = inspectorIssue.details.selectElementAccessibilityIssueDetails;

@@ -16,6 +16,9 @@ declare const TimelineTreeView_base: (new (...args: any[]) => {
     hasEventListeners(eventType: keyof TimelineTreeView.EventTypes): boolean;
     dispatchEventToListeners<T extends keyof TimelineTreeView.EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<TimelineTreeView.EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
+/**
+ * For an overview, read: https://chromium.googlesource.com/devtools/devtools-frontend/+/refs/heads/main/front_end/panels/timeline/README.md#timeline-tree-views
+ */
 export declare class TimelineTreeView extends TimelineTreeView_base implements UI.SearchableView.Searchable {
     #private;
     private searchResults;
@@ -72,6 +75,7 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     showDetailsForNode(_node: Trace.Extras.TraceTree.Node): boolean;
     private onMouseMove;
     onHover(node: Trace.Extras.TraceTree.Node | null): void;
+    onClick(node: Trace.Extras.TraceTree.Node | null): void;
     wasShown(): void;
     childWasDetached(_widget: UI.Widget.Widget): void;
     onGridNodeOpened(): void;
@@ -92,11 +96,23 @@ export declare namespace TimelineTreeView {
         TREE_ROW_CLICKED = "TreeRowClicked"
     }
     interface EventTypes {
-        [Events.TREE_ROW_HOVERED]: Trace.Extras.TraceTree.Node | null;
+        [Events.TREE_ROW_HOVERED]: {
+            node: Trace.Extras.TraceTree.Node | null;
+            events?: Trace.Types.Events.Event[];
+        };
         [Events.BOTTOM_UP_BUTTON_CLICKED]: Trace.Extras.TraceTree.Node | null;
-        [Events.TREE_ROW_CLICKED]: Trace.Extras.TraceTree.Node | null;
+        [Events.TREE_ROW_CLICKED]: {
+            node: Trace.Extras.TraceTree.Node | null;
+            events?: Trace.Types.Events.Event[];
+        };
     }
 }
+/**
+ * GridNodes are 1:1 with `TraceTree.Node`s but represent them within the DataGrid. It handles the representation as a row.
+ * `TreeGridNode` extends this to maintain relationship to the tree, and handles populate().
+ *
+ * `TimelineStackView` (aka heaviest stack) uses GridNode directly (as there's no hierarchy there), otherwise these TreeGridNode could probably be consolidated.
+ */
 export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode<GridNode> {
     #private;
     protected populated: boolean;
@@ -112,11 +128,15 @@ export declare class GridNode extends DataGrid.SortableDataGrid.SortableDataGrid
     private createValueCell;
     private generateBottomUpButton;
 }
+/**
+ * `TreeGridNode` lets a `GridNode` (row) populate based on its tree children.
+ */
 export declare class TreeGridNode extends GridNode {
     constructor(profileNode: Trace.Extras.TraceTree.Node, grandTotalTime: number, maxSelfTime: number, maxTotalTime: number, treeView: TimelineTreeView);
     populate(): void;
 }
 export declare class AggregatedTimelineTreeView extends TimelineTreeView {
+    #private;
     protected readonly groupBySetting: Common.Settings.Setting<AggregatedTimelineTreeView.GroupBy>;
     readonly stackView: TimelineStackView;
     constructor();
@@ -139,6 +159,8 @@ export declare class AggregatedTimelineTreeView extends TimelineTreeView {
     private static isV8NativeURL;
     private static readonly extensionInternalPrefix;
     private static readonly v8NativePrefix;
+    onHover(node: Trace.Extras.TraceTree.Node | null): void;
+    onClick(node: Trace.Extras.TraceTree.Node | null): void;
 }
 export declare namespace AggregatedTimelineTreeView {
     enum GroupBy {

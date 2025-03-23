@@ -523,19 +523,94 @@ export class HeapSnapshotProgress {
         }
     }
 }
-export class HeapSnapshotProblemReport {
-    #errors;
-    constructor(title) {
-        this.#errors = [title];
+function appendToProblemReport(report, messageOrNodeIndex) {
+    if (report.length > 100) {
+        return;
     }
-    addError(error) {
-        if (this.#errors.length > 100) {
-            return;
+    report.push(messageOrNodeIndex);
+}
+function formatProblemReport(snapshot, report) {
+    const node = snapshot.rootNode();
+    return report
+        .map(messageOrNodeIndex => {
+        if (typeof messageOrNodeIndex === 'string') {
+            return messageOrNodeIndex;
         }
-        this.#errors.push(error);
+        node.nodeIndex = messageOrNodeIndex;
+        return `${node.name()} @${node.id()}`;
+    })
+        .join('\n  ');
+}
+function reportProblemToPrimaryWorker(problemReport, port) {
+    port.postMessage({ problemReport });
+}
+// Initialization work is split into two threads. This class is the entry point
+// for work done by the second thread.
+export class SecondaryInitManager {
+    argsStep1;
+    argsStep2;
+    argsStep3;
+    constructor(port) {
+        const { promise: argsStep1, resolve: resolveArgsStep1 } = Promise.withResolvers();
+        this.argsStep1 = argsStep1;
+        const { promise: argsStep2, resolve: resolveArgsStep2 } = Promise.withResolvers();
+        this.argsStep2 = argsStep2;
+        const { promise: argsStep3, resolve: resolveArgsStep3 } = Promise.withResolvers();
+        this.argsStep3 = argsStep3;
+        port.onmessage = e => {
+            const data = e.data;
+            switch (data.step) {
+                case 1:
+                    resolveArgsStep1(data.args);
+                    break;
+                case 2:
+                    resolveArgsStep2(data.args);
+                    break;
+                case 3:
+                    resolveArgsStep3(data.args);
+                    break;
+            }
+        };
+        void this.initialize(port);
     }
-    toString() {
-        return this.#errors.join('\n  ');
+    async getNodeSelfSizes() {
+        return (await this.argsStep3).nodeSelfSizes;
+    }
+    async initialize(port) {
+        try {
+            const argsStep1 = await this.argsStep1;
+            const retainers = HeapSnapshot.buildRetainers(argsStep1);
+            const argsStep2 = await this.argsStep2;
+            const args = {
+                ...argsStep2,
+                ...argsStep1,
+                ...retainers,
+                essentialEdges: Platform.TypedArrayUtilities.createBitVector(argsStep2.essentialEdgesBuffer),
+                port,
+                nodeSelfSizesPromise: this.getNodeSelfSizes()
+            };
+            const dominatorsAndRetainedSizes = await HeapSnapshot.calculateDominatorsAndRetainedSizes(args);
+            const dominatedNodesOutputs = HeapSnapshot.buildDominatedNodes({ ...args, ...dominatorsAndRetainedSizes });
+            const results = {
+                ...retainers,
+                ...dominatorsAndRetainedSizes,
+                ...dominatedNodesOutputs,
+            };
+            port.postMessage({ resultsFromSecondWorker: results }, {
+                transfer: [
+                    results.dominatorsTree.buffer,
+                    results.firstRetainerIndex.buffer,
+                    results.retainedSizes.buffer,
+                    results.retainingEdges.buffer,
+                    results.retainingNodes.buffer,
+                    results.dominatedNodes.buffer,
+                    results.firstDominatedNodeIndex.buffer,
+                ]
+            });
+        }
+        catch (e) {
+            port.postMessage({ error: e + '\n' + e?.stack });
+        }
     }
 }
 const BITMASK_FOR_DOM_LINK_STATE = 3;
@@ -627,7 +702,6 @@ export class HeapSnapshot {
     #nodeDistancesForRetainersView;
     #edgeNamesThatAreNotWeakMaps;
     detachednessAndClassIndexArray;
-    #essentialEdges;
     #interfaceNames;
     #interfaceDefinitions;
     constructor(profile, progress) {
@@ -653,7 +727,7 @@ export class HeapSnapshot {
         this.#edgeNamesThatAreNotWeakMaps = Platform.TypedArrayUtilities.createBitVector(this.strings.length);
         this.#interfaceNames = new Map();
     }
-    initialize() {
+    async initialize(secondWorker) {
         const meta = this.#metaNode;
         this.nodeTypeOffset = meta.node_fields.indexOf('type');
         this.nodeNameOffset = meta.node_fields.indexOf('name');
@@ -696,39 +770,35 @@ export class HeapSnapshot {
         this.#locationFieldCount = locationFields.length;
         this.nodeCount = this.nodes.length / this.nodeFieldCount;
         this.#edgeCount = this.containmentEdges.length / this.edgeFieldsCount;
-        this.retainedSizes = new Float64Array(this.nodeCount);
-        this.firstEdgeIndexes = new Uint32Array(this.nodeCount + 1);
-        this.retainingNodes = new Uint32Array(this.#edgeCount);
-        this.retainingEdges = new Uint32Array(this.#edgeCount);
-        this.firstRetainerIndex = new Uint32Array(this.nodeCount + 1);
-        this.nodeDistances = new Int32Array(this.nodeCount);
         this.#progress.updateStatus('Building edge indexes…');
+        this.firstEdgeIndexes = new Uint32Array(this.nodeCount + 1);
         this.buildEdgeIndexes();
         this.#progress.updateStatus('Building retainers…');
-        this.buildRetainers();
+        const resultsFromSecondWorker = this.startInitStep1InSecondThread(secondWorker);
         this.#progress.updateStatus('Propagating DOM state…');
         this.propagateDOMState();
         this.#progress.updateStatus('Calculating node flags…');
         this.calculateFlags();
-        this.#progress.updateStatus('Calculating distances…');
-        this.calculateDistances(/* isForRetainersView=*/ false);
+        this.#progress.updateStatus('Building dominated nodes…');
+        this.startInitStep2InSecondThread(secondWorker);
         this.#progress.updateStatus('Calculating shallow sizes…');
         this.calculateShallowSizes();
         this.#progress.updateStatus('Calculating retained sizes…');
-        this.buildDominatorTreeAndCalculateRetainedSizes();
-        this.#progress.updateStatus('Building dominated nodes…');
-        this.firstDominatedNodeIndex = new Uint32Array(this.nodeCount + 1);
-        this.dominatedNodes = new Uint32Array(this.nodeCount - 1);
-        this.buildDominatedNodes();
+        this.startInitStep3InSecondThread(secondWorker);
+        this.#progress.updateStatus('Calculating distances…');
+        this.nodeDistances = new Int32Array(this.nodeCount);
+        this.calculateDistances(/* isForRetainersView=*/ false);
         this.#progress.updateStatus('Calculating object names…');
         this.calculateObjectNames();
         this.applyInterfaceDefinitions(this.inferInterfaceDefinitions());
-        this.#progress.updateStatus('Calculating statistics…');
-        this.calculateStatistics();
         this.#progress.updateStatus('Calculating samples…');
         this.buildSamples();
         this.#progress.updateStatus('Building locations…');
         this.buildLocationMap();
+        this.#progress.updateStatus('Calculating retained sizes…');
+        await this.installResultsFromSecondThread(resultsFromSecondWorker);
+        this.#progress.updateStatus('Calculating statistics…');
+        this.calculateStatistics();
         if (this.profile.snapshot.trace_function_count) {
             this.#progress.updateStatus('Building allocation statistics…');
             const nodes = this.nodes;
@@ -751,6 +821,69 @@ export class HeapSnapshot {
         }
         this.#progress.updateStatus('Finished processing.');
     }
+    startInitStep1InSecondThread(secondWorker) {
+        const resultsFromSecondWorker = new Promise((resolve, reject) => {
+            secondWorker.onmessage = (event) => {
+                const data = event.data;
+                if (data?.problemReport) {
+                    const problemReport = data.problemReport;
+                    console.warn(formatProblemReport(this, problemReport));
+                }
+                else if (data?.resultsFromSecondWorker) {
+                    const resultsFromSecondWorker = data.resultsFromSecondWorker;
+                    resolve(resultsFromSecondWorker);
+                }
+                else if (data?.error) {
+                    reject(data.error);
+                }
+            };
+        });
+        const edgeCount = this.#edgeCount;
+        const { containmentEdges, edgeToNodeOffset, edgeFieldsCount, nodeFieldCount } = this;
+        const edgeToNodeOrdinals = new Uint32Array(edgeCount);
+        for (let edgeOrdinal = 0; edgeOrdinal < edgeCount; ++edgeOrdinal) {
+            const toNodeIndex = containmentEdges.getValue(edgeOrdinal * edgeFieldsCount + edgeToNodeOffset);
+            if (toNodeIndex % nodeFieldCount) {
+                throw new Error('Invalid toNodeIndex ' + toNodeIndex);
+            }
+            edgeToNodeOrdinals[edgeOrdinal] = toNodeIndex / nodeFieldCount;
+        }
+        const args = {
+            edgeToNodeOrdinals,
+            firstEdgeIndexes: this.firstEdgeIndexes,
+            nodeCount: this.nodeCount,
+            edgeFieldsCount: this.edgeFieldsCount,
+            nodeFieldCount: this.nodeFieldCount,
+        };
+        // Note that firstEdgeIndexes is not transferred; each thread needs its own copy.
+        secondWorker.postMessage({ step: 1, args }, [edgeToNodeOrdinals.buffer]);
+        return resultsFromSecondWorker;
+    }
+    startInitStep2InSecondThread(secondWorker) {
+        const rootNodeOrdinal = this.rootNodeIndexInternal / this.nodeFieldCount;
+        const essentialEdges = this.initEssentialEdges();
+        const args = { rootNodeOrdinal, essentialEdgesBuffer: essentialEdges.buffer };
+        secondWorker.postMessage({ step: 2, args }, [essentialEdges.buffer]);
+    }
+    startInitStep3InSecondThread(secondWorker) {
+        const { nodes, nodeFieldCount, nodeSelfSizeOffset, nodeCount } = this;
+        const nodeSelfSizes = new Uint32Array(nodeCount);
+        for (let nodeOrdinal = 0; nodeOrdinal < nodeCount; ++nodeOrdinal) {
+            nodeSelfSizes[nodeOrdinal] = nodes.getValue(nodeOrdinal * nodeFieldCount + nodeSelfSizeOffset);
+        }
+        const args = { nodeSelfSizes };
+        secondWorker.postMessage({ step: 3, args }, [nodeSelfSizes.buffer]);
+    }
+    async installResultsFromSecondThread(resultsFromSecondWorker) {
+        const results = await resultsFromSecondWorker;
+        this.dominatedNodes = results.dominatedNodes;
+        this.dominatorsTree = results.dominatorsTree;
+        this.firstDominatedNodeIndex = results.firstDominatedNodeIndex;
+        this.firstRetainerIndex = results.firstRetainerIndex;
+        this.retainedSizes = results.retainedSizes;
+        this.retainingEdges = results.retainingEdges;
+        this.retainingNodes = results.retainingNodes;
+    }
     buildEdgeIndexes() {
         const nodes = this.nodes;
         const nodeCount = this.nodeCount;
@@ -764,24 +897,15 @@ export class HeapSnapshot {
             edgeIndex += nodes.getValue(nodeOrdinal * nodeFieldCount + nodeEdgeCountOffset) * edgeFieldsCount;
         }
     }
-    buildRetainers() {
-        const retainingNodes = this.retainingNodes;
-        const retainingEdges = this.retainingEdges;
-        // Index of the first retainer in the retainingNodes and retainingEdges
-        // arrays. Addressed by retained node index.
-        const firstRetainerIndex = this.firstRetainerIndex;
-        const containmentEdges = this.containmentEdges;
-        const edgeFieldsCount = this.edgeFieldsCount;
-        const nodeFieldCount = this.nodeFieldCount;
-        const edgeToNodeOffset = this.edgeToNodeOffset;
-        const firstEdgeIndexes = this.firstEdgeIndexes;
-        const nodeCount = this.nodeCount;
-        for (let toNodeFieldIndex = edgeToNodeOffset, l = containmentEdges.length; toNodeFieldIndex < l; toNodeFieldIndex += edgeFieldsCount) {
-            const toNodeIndex = containmentEdges.getValue(toNodeFieldIndex);
-            if (toNodeIndex % nodeFieldCount) {
-                throw new Error('Invalid toNodeIndex ' + toNodeIndex);
-            }
-            ++firstRetainerIndex[toNodeIndex / nodeFieldCount];
+    static buildRetainers(inputs) {
+        const { edgeToNodeOrdinals, firstEdgeIndexes, nodeCount, edgeFieldsCount, nodeFieldCount } = inputs;
+        const edgeCount = edgeToNodeOrdinals.length;
+        const retainingNodes = new Uint32Array(edgeCount);
+        const retainingEdges = new Uint32Array(edgeCount);
+        const firstRetainerIndex = new Uint32Array(nodeCount + 1);
+        for (let edgeOrdinal = 0; edgeOrdinal < edgeCount; ++edgeOrdinal) {
+            const toNodeOrdinal = edgeToNodeOrdinals[edgeOrdinal];
+            ++firstRetainerIndex[toNodeOrdinal];
         }
         for (let i = 0, firstUnusedRetainerSlot = 0; i < nodeCount; i++) {
             const retainersCount = firstRetainerIndex[i];
@@ -796,16 +920,18 @@ export class HeapSnapshot {
             nextNodeFirstEdgeIndex = firstEdgeIndexes[srcNodeOrdinal + 1];
             const srcNodeIndex = srcNodeOrdinal * nodeFieldCount;
             for (let edgeIndex = firstEdgeIndex; edgeIndex < nextNodeFirstEdgeIndex; edgeIndex += edgeFieldsCount) {
-                const toNodeIndex = containmentEdges.getValue(edgeIndex + edgeToNodeOffset);
-                if (toNodeIndex % nodeFieldCount) {
-                    throw new Error('Invalid toNodeIndex ' + toNodeIndex);
-                }
-                const firstRetainerSlotIndex = firstRetainerIndex[toNodeIndex / nodeFieldCount];
+                const toNodeOrdinal = edgeToNodeOrdinals[edgeIndex / edgeFieldsCount];
+                const firstRetainerSlotIndex = firstRetainerIndex[toNodeOrdinal];
                 const nextUnusedRetainerSlotIndex = firstRetainerSlotIndex + (--retainingNodes[firstRetainerSlotIndex]);
                 retainingNodes[nextUnusedRetainerSlotIndex] = srcNodeIndex;
                 retainingEdges[nextUnusedRetainerSlotIndex] = edgeIndex;
             }
         }
+        return {
+            retainingNodes,
+            retainingEdges,
+            firstRetainerIndex,
+        };
     }
     allNodes() {
         return new HeapSnapshotNodeIterator(this.rootNode());
@@ -1311,36 +1437,31 @@ export class HeapSnapshot {
         }
         return true;
     }
-    // Returns whether the edge should be considered when building the dominator tree.
-    // The first call to this function computes essential edges and caches them.
-    // Subsequent calls just lookup from the cache and are much faster.
-    isEssentialEdge(edgeIndex) {
-        let essentialEdges = this.#essentialEdges;
-        if (!essentialEdges) {
-            essentialEdges = this.#essentialEdges = Platform.TypedArrayUtilities.createBitVector(this.#edgeCount);
-            const { nodes, nodeFieldCount, edgeFieldsCount } = this;
-            const userObjectsMapAndFlag = this.userObjectsMapAndFlag();
-            const endNodeIndex = nodes.length;
-            const node = this.createNode(0);
-            for (let nodeIndex = 0; nodeIndex < endNodeIndex; nodeIndex += nodeFieldCount) {
-                node.nodeIndex = nodeIndex;
-                const edgeIndexesEnd = node.edgeIndexesEnd();
-                for (let edgeIndex = node.edgeIndexesStart(); edgeIndex < edgeIndexesEnd; edgeIndex += edgeFieldsCount) {
-                    if (this.computeIsEssentialEdge(nodeIndex, edgeIndex, userObjectsMapAndFlag)) {
-                        essentialEdges.setBit(edgeIndex / edgeFieldsCount);
-                    }
+    // Returns a bitmap indicating whether each edge should be considered when building the dominator tree.
+    initEssentialEdges() {
+        const essentialEdges = Platform.TypedArrayUtilities.createBitVector(this.#edgeCount);
+        const { nodes, nodeFieldCount, edgeFieldsCount } = this;
+        const userObjectsMapAndFlag = this.userObjectsMapAndFlag();
+        const endNodeIndex = nodes.length;
+        const node = this.createNode(0);
+        for (let nodeIndex = 0; nodeIndex < endNodeIndex; nodeIndex += nodeFieldCount) {
+            node.nodeIndex = nodeIndex;
+            const edgeIndexesEnd = node.edgeIndexesEnd();
+            for (let edgeIndex = node.edgeIndexesStart(); edgeIndex < edgeIndexesEnd; edgeIndex += edgeFieldsCount) {
+                if (this.computeIsEssentialEdge(nodeIndex, edgeIndex, userObjectsMapAndFlag)) {
+                    essentialEdges.setBit(edgeIndex / edgeFieldsCount);
                 }
             }
         }
-        return essentialEdges.getBit(edgeIndex / this.edgeFieldsCount);
+        return essentialEdges;
     }
-    hasOnlyWeakRetainers(nodeOrdinal) {
-        const retainingEdges = this.retainingEdges;
-        const beginRetainerIndex = this.firstRetainerIndex[nodeOrdinal];
-        const endRetainerIndex = this.firstRetainerIndex[nodeOrdinal + 1];
+    static hasOnlyWeakRetainers(inputs, nodeOrdinal) {
+        const { retainingEdges, edgeFieldsCount, firstRetainerIndex, essentialEdges } = inputs;
+        const beginRetainerIndex = firstRetainerIndex[nodeOrdinal];
+        const endRetainerIndex = firstRetainerIndex[nodeOrdinal + 1];
         for (let retainerIndex = beginRetainerIndex; retainerIndex < endRetainerIndex; ++retainerIndex) {
             const retainerEdgeIndex = retainingEdges[retainerIndex];
-            if (this.isEssentialEdge(retainerEdgeIndex)) {
+            if (essentialEdges.getBit(retainerEdgeIndex / edgeFieldsCount)) {
                 return false;
             }
         }
@@ -1349,20 +1470,12 @@ export class HeapSnapshot {
     // The algorithm for building the dominator tree is from the paper:
     // Thomas Lengauer and Robert Endre Tarjan. 1979. A fast algorithm for finding dominators in a flowgraph.
     // ACM Trans. Program. Lang. Syst. 1, 1 (July 1979), 121–141. https://doi.org/10.1145/357062.357071
-    buildDominatorTreeAndCalculateRetainedSizes() {
+    static async calculateDominatorsAndRetainedSizes(inputs) {
         // Preload fields into local variables for better performance.
-        const nodeCount = this.nodeCount;
-        const firstEdgeIndexes = this.firstEdgeIndexes;
-        const edgeFieldsCount = this.edgeFieldsCount;
-        const containmentEdges = this.containmentEdges;
-        const edgeToNodeOffset = this.edgeToNodeOffset;
-        const nodeFieldCount = this.nodeFieldCount;
-        const firstRetainerIndex = this.firstRetainerIndex;
-        const retainingEdges = this.retainingEdges;
-        const retainingNodes = this.retainingNodes;
-        const rootNodeOrdinal = this.rootNodeIndexInternal / nodeFieldCount;
-        const isEssentialEdge = this.isEssentialEdge.bind(this);
-        const hasOnlyWeakRetainers = this.hasOnlyWeakRetainers.bind(this);
+        const { nodeCount, firstEdgeIndexes, edgeFieldsCount, nodeFieldCount, firstRetainerIndex, retainingEdges, retainingNodes, edgeToNodeOrdinals, rootNodeOrdinal, essentialEdges, nodeSelfSizesPromise, port } = inputs;
+        function isEssentialEdge(edgeIndex) {
+            return essentialEdges.getBit(edgeIndex / edgeFieldsCount);
+        }
         // The Lengauer-Tarjan algorithm expects vectors to be numbered from 1 to n
         // and uses 0 as an invalid value, so use 1-indexing for all the arrays.
         // Convert between ordinals and vertex numbers by adding/subtracting 1.
@@ -1396,7 +1509,7 @@ export class HeapSnapshot {
                     if (!isEssentialEdge(edgeIndex)) {
                         continue;
                     }
-                    const wOrdinal = containmentEdges.getValue(edgeIndex + edgeToNodeOffset) / nodeFieldCount;
+                    const wOrdinal = edgeToNodeOrdinals[edgeIndex / edgeFieldsCount];
                     const w = wOrdinal + 1;
                     if (semi[w] === 0) {
                         parent[w] = v;
@@ -1446,36 +1559,32 @@ export class HeapSnapshot {
         dfs(r);
         // Then perform DFS from orphan nodes (ones with only weak retainers) if any.
         if (n < nodeCount) {
-            const errors = new HeapSnapshotProblemReport(`Heap snapshot: ${nodeCount - n} nodes are unreachable from the root.`);
-            errors.addError('The following nodes have only weak retainers:');
-            const dumpNode = this.rootNode();
+            const errors = [`Heap snapshot: ${nodeCount - n} nodes are unreachable from the root.`];
+            appendToProblemReport(errors, 'The following nodes have only weak retainers:');
             for (let v = 1; v <= nodeCount; v++) {
                 const vOrdinal = v - 1;
-                if (semi[v] === 0 && hasOnlyWeakRetainers(vOrdinal)) {
-                    dumpNode.nodeIndex = vOrdinal * nodeFieldCount;
-                    errors.addError(`${dumpNode.name()} @${dumpNode.id()}`);
+                if (semi[v] === 0 && HeapSnapshot.hasOnlyWeakRetainers(inputs, vOrdinal)) {
+                    appendToProblemReport(errors, vOrdinal * nodeFieldCount);
                     parent[v] = r;
                     dfs(v);
                 }
             }
-            console.warn(errors.toString());
+            reportProblemToPrimaryWorker(errors, port);
         }
         // If there are unreachable nodes still, visit them individually from the root.
         // This can happen when there is a clique of nodes retained by one another.
         if (n < nodeCount) {
-            const errors = new HeapSnapshotProblemReport(`Heap snapshot: Still found ${nodeCount - n} unreachable nodes:`);
-            const dumpNode = this.rootNode();
+            const errors = [`Heap snapshot: Still found ${nodeCount - n} unreachable nodes:`];
             for (let v = 1; v <= nodeCount; v++) {
                 if (semi[v] === 0) {
                     const vOrdinal = v - 1;
-                    dumpNode.nodeIndex = vOrdinal * nodeFieldCount;
-                    errors.addError(`${dumpNode.name()} @${dumpNode.id()}`);
+                    appendToProblemReport(errors, vOrdinal * nodeFieldCount);
                     parent[v] = r;
                     semi[v] = ++n;
                     vertex[n] = label[v] = v;
                 }
             }
-            console.warn(errors.toString());
+            reportProblemToPrimaryWorker(errors, port);
         }
         // Main loop. Process the vertices in decreasing order by DFS number.
         for (let i = n; i >= 2; --i) {
@@ -1526,13 +1635,12 @@ export class HeapSnapshot {
         }
         // Algorithm ends here.
         // Transform the dominators into an ordinal-indexed array and populate the self sizes.
-        const nodes = this.nodes;
-        const nodeSelfSizeOffset = this.nodeSelfSizeOffset;
-        const dominatorsTree = this.dominatorsTree = new Uint32Array(nodeCount);
-        const retainedSizes = this.retainedSizes;
+        const dominatorsTree = new Uint32Array(nodeCount);
+        const retainedSizes = new Float64Array(nodeCount);
+        const nodeSelfSizes = await nodeSelfSizesPromise;
         for (let nodeOrdinal = 0; nodeOrdinal < nodeCount; nodeOrdinal++) {
             dominatorsTree[nodeOrdinal] = dom[nodeOrdinal + 1] - 1;
-            retainedSizes[nodeOrdinal] = nodes.getValue(nodeOrdinal * nodeFieldCount + nodeSelfSizeOffset);
+            retainedSizes[nodeOrdinal] = nodeSelfSizes[nodeOrdinal];
         }
         // Then propagate up the retained sizes for each traversed node excluding the root.
         for (let i = n; i > 1; i--) {
@@ -1540,23 +1648,22 @@ export class HeapSnapshot {
             const dominatorOrdinal = dominatorsTree[nodeOrdinal];
             retainedSizes[dominatorOrdinal] += retainedSizes[nodeOrdinal];
         }
+        return { dominatorsTree, retainedSizes };
     }
-    buildDominatedNodes() {
+    static buildDominatedNodes(inputs) {
+        const { nodeCount, dominatorsTree, rootNodeOrdinal, nodeFieldCount } = inputs;
         // Builds up two arrays:
         //  - "dominatedNodes" is a continuous array, where each node owns an
         //    interval (can be empty) with corresponding dominated nodes.
         //  - "indexArray" is an array of indexes in the "dominatedNodes"
         //    with the same positions as in the _nodeIndex.
-        const indexArray = this.firstDominatedNodeIndex;
+        const indexArray = new Uint32Array(nodeCount + 1);
         // All nodes except the root have dominators.
-        const dominatedNodes = this.dominatedNodes;
+        const dominatedNodes = new Uint32Array(nodeCount - 1);
         // Count the number of dominated nodes for each node. Skip the root (node at
         // index 0) as it is the only node that dominates itself.
-        const nodeFieldCount = this.nodeFieldCount;
-        const dominatorsTree = this.dominatorsTree;
         let fromNodeOrdinal = 0;
-        let toNodeOrdinal = this.nodeCount;
-        const rootNodeOrdinal = this.rootNodeIndexInternal / nodeFieldCount;
+        let toNodeOrdinal = nodeCount;
         if (rootNodeOrdinal === fromNodeOrdinal) {
             fromNodeOrdinal = 1;
         }
@@ -1572,12 +1679,12 @@ export class HeapSnapshot {
         // Put in the first slot of each dominatedNodes slice the count of entries
         // that will be filled.
         let firstDominatedNodeIndex = 0;
-        for (let i = 0, l = this.nodeCount; i < l; ++i) {
+        for (let i = 0, l = nodeCount; i < l; ++i) {
             const dominatedCount = dominatedNodes[firstDominatedNodeIndex] = indexArray[i];
             indexArray[i] = firstDominatedNodeIndex;
             firstDominatedNodeIndex += dominatedCount;
         }
-        indexArray[this.nodeCount] = dominatedNodes.length;
+        indexArray[nodeCount] = dominatedNodes.length;
         // Fill up the dominatedNodes array with indexes of dominated nodes. Skip the root (node at
         // index 0) as it is the only node that dominates itself.
         for (let nodeOrdinal = fromNodeOrdinal; nodeOrdinal < toNodeOrdinal; ++nodeOrdinal) {
@@ -1586,6 +1693,7 @@ export class HeapSnapshot {
             dominatedRefIndex += (--dominatedNodes[dominatedRefIndex]);
             dominatedNodes[dominatedRefIndex] = nodeOrdinal * nodeFieldCount;
         }
+        return { firstDominatedNodeIndex: indexArray, dominatedNodes };
     }
     calculateObjectNames() {
         const { nodes, nodeCount, nodeNameOffset, nodeNativeType, nodeHiddenType, nodeObjectType, nodeCodeType, nodeClosureType, nodeRegExpType, } = this;
@@ -2526,7 +2634,6 @@ export class JSHeapSnapshot extends HeapSnapshot {
             detachedDOMTreeNode: 2,
             pageObject: 4, // The idea is to track separately the objects owned by the page and the objects owned by debugger.
         };
-        this.initialize();
     }
     createNode(nodeIndex) {
         return new JSHeapSnapshotNode(this, nodeIndex === undefined ? -1 : nodeIndex);
@@ -2917,6 +3024,14 @@ export class JSHeapSnapshot extends HeapSnapshot {
     getStatistics() {
         return this.#statistics;
     }
+}
+// Creates and initializes a JSHeapSnapshot using only one thread.
+export async function createJSHeapSnapshotForTesting(profile) {
+    const result = new JSHeapSnapshot(profile, new HeapSnapshotProgress());
+    const channel = new MessageChannel();
+    new SecondaryInitManager(channel.port2);
+    await result.initialize(channel.port1);
+    return result;
 }
 export class JSHeapSnapshotNode extends HeapSnapshotNode {
     constructor(snapshot, nodeIndex) {

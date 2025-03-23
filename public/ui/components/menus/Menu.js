@@ -12,13 +12,13 @@ import menuGroupStylesRaw from './menuGroup.css.js';
 import menuItemStylesRaw from './menuItem.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const menuStyles = new CSSStyleSheet();
-menuStyles.replaceSync(menuStylesRaw.cssContent);
+menuStyles.replaceSync(menuStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const menuGroupStyles = new CSSStyleSheet();
-menuGroupStyles.replaceSync(menuGroupStylesRaw.cssContent);
+menuGroupStyles.replaceSync(menuGroupStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const menuItemStyles = new CSSStyleSheet();
-menuItemStyles.replaceSync(menuItemStylesRaw.cssContent);
+menuItemStyles.replaceSync(menuItemStylesRaw.cssText);
 const { html } = Lit;
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {

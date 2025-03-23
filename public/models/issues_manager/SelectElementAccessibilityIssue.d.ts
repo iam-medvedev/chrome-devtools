@@ -10,5 +10,6 @@ export declare class SelectElementAccessibilityIssue extends Issue {
     getKind(): IssueKind;
     getCategory(): IssueCategory;
     details(): Protocol.Audits.SelectElementAccessibilityIssueDetails;
+    isInteractiveContentAttributesSelectDescendantIssue(): boolean;
     static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): SelectElementAccessibilityIssue[];
 }

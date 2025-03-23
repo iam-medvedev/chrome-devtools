@@ -5,7 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { BaseVariableMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -163,6 +163,13 @@ export class CSSRegisteredProperty {
     syntax() {
         return this.#registration instanceof CSSPropertyRule ? this.#registration.syntax() :
             `"${this.#registration.syntax}"`;
+    }
+    parseValue(matchedStyles, computedStyles) {
+        const value = this.initialValue();
+        if (!value) {
+            return null;
+        }
+        return PropertyParser.matchDeclaration(this.propertyName(), value, matchedStyles.propertyMatchers(this.style(), computedStyles));
     }
     #asCSSProperties() {
         if (this.#registration instanceof CSSPropertyRule) {
@@ -642,6 +649,30 @@ export class CSSMatchedStyles {
         for (const domCascade of this.#customHighlightPseudoDOMCascades.values()) {
             domCascade.reset();
         }
+    }
+    propertyMatchers(style, computedStyles) {
+        return [
+            new VariableMatcher(this, style),
+            new ColorMatcher(() => computedStyles?.get('color') ?? null),
+            new ColorMixMatcher(),
+            new URLMatcher(),
+            new AngleMatcher(),
+            new LinkableNameMatcher(),
+            new BezierMatcher(),
+            new StringMatcher(),
+            new ShadowMatcher(),
+            new LightDarkColorMatcher(style),
+            new GridTemplateMatcher(),
+            new LinearGradientMatcher(),
+            new AnchorFunctionMatcher(),
+            new PositionAnchorMatcher(),
+            new FlexGridMatcher(),
+            new PositionTryMatcher(),
+            new LengthMatcher(),
+            new MathFunctionMatcher(),
+            new AutoBaseMatcher(),
+            new BinOpMatcher(),
+        ];
     }
 }
 class NodeCascade {

@@ -3,6 +3,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type { Plugin } from './Plugin.js';
 declare const UISourceCodeFrame_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends Events.TOOLBAR_ITEMS_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -45,6 +46,7 @@ export declare class UISourceCodeFrame extends UISourceCodeFrame_base {
     private onWorkingCopyCommitted;
     private reloadPlugins;
     private onTitleChanged;
+    static sourceFramePlugins(): Array<typeof Plugin>;
     private loadPlugins;
     private disposePlugins;
     private onBindingChanged;

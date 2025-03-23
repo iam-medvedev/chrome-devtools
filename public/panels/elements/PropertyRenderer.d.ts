@@ -26,7 +26,7 @@ export declare class TracingContext {
     evaluation(args: unknown[]): TracingContext[] | null;
     applyEvaluation(children: TracingContext[]): boolean;
     substitution(): TracingContext | null;
-    cachedParsedValue(declaration: SDK.CSSProperty.CSSProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>): SDK.CSSPropertyParser.BottomUpTreeMatching | null;
+    cachedParsedValue(declaration: SDK.CSSProperty.CSSProperty | SDK.CSSMatchedStyles.CSSRegisteredProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>): SDK.CSSPropertyParser.BottomUpTreeMatching | null;
 }
 export declare class RenderingContext {
     readonly ast: SDK.CSSPropertyParser.SyntaxTree;

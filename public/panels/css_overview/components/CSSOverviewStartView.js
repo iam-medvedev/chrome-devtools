@@ -9,7 +9,7 @@ import { html, render } from '../../../ui/lit/lit.js';
 import cssOverviewStartViewStylesRaw from './cssOverviewStartView.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const cssOverviewStartViewStyles = new CSSStyleSheet();
-cssOverviewStartViewStyles.replaceSync(cssOverviewStartViewStylesRaw.cssContent);
+cssOverviewStartViewStyles.replaceSync(cssOverviewStartViewStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Label for the capture button in the CSS overview panel

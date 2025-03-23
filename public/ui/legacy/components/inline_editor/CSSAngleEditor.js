@@ -8,7 +8,7 @@ import cssAngleEditorStylesRaw from './cssAngleEditor.css.js';
 import { get2DTranslationsForAngle, getAngleFromRadians, getNewAngleFromEvent, getRadiansFromAngle, } from './CSSAngleUtils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const cssAngleEditorStyles = new CSSStyleSheet();
-cssAngleEditorStyles.replaceSync(cssAngleEditorStylesRaw.cssContent);
+cssAngleEditorStyles.replaceSync(cssAngleEditorStylesRaw.cssText);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 const CLOCK_DIAL_LENGTH = 6;

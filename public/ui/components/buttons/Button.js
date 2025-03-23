@@ -240,7 +240,7 @@ export class Button extends HTMLElement {
         const jslog = this.#props.jslogContext && VisualLogging.action().track({ click: true }).context(this.#props.jslogContext);
         // clang-format off
         Lit.render(html `
-        <style>${buttonStyles.cssContent}</style>
+        <style>${buttonStyles.cssText}</style>
         <button title=${ifDefined(this.#props.title)}
                 .disabled=${this.#props.disabled}
                 class=${classMap(classes)}

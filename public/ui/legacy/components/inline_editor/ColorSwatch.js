@@ -8,7 +8,7 @@ import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import colorSwatchStylesRaw from './colorSwatch.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const colorSwatchStyles = new CSSStyleSheet();
-colorSwatchStyles.replaceSync(colorSwatchStylesRaw.cssContent);
+colorSwatchStyles.replaceSync(colorSwatchStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

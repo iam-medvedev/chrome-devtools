@@ -6,7 +6,7 @@ import cssAngleSwatchStylesRaw from './cssAngleSwatch.css.js';
 import { get2DTranslationsForAngle } from './CSSAngleUtils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const cssAngleSwatchStyles = new CSSStyleSheet();
-cssAngleSwatchStyles.replaceSync(cssAngleSwatchStylesRaw.cssContent);
+cssAngleSwatchStyles.replaceSync(cssAngleSwatchStylesRaw.cssText);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 const swatchWidth = 11;

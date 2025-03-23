@@ -10,10 +10,7 @@ import * as ChromeLink from '../../../ui/components/chrome_link/chrome_link.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import bounceTrackingMitigationsViewStylesRaw from './bounceTrackingMitigationsView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const bounceTrackingMitigationsViewStyles = new CSSStyleSheet();
-bounceTrackingMitigationsViewStyles.replaceSync(bounceTrackingMitigationsViewStylesRaw.cssContent);
+import bounceTrackingMitigationsViewStyles from './bounceTrackingMitigationsView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -65,12 +62,12 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
     #checkedFeature = false;
     #seenButtonClick = false;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [bounceTrackingMitigationsViewStyles];
         void this.#render();
     }
     async #render() {
         // clang-format off
         Lit.render(html `
+      <style>${bounceTrackingMitigationsViewStyles.cssText}</style>
       <devtools-report .data=${{ reportTitle: i18nString(UIStrings.bounceTrackingMitigationsTitle) }}
                        jslog=${VisualLogging.pane('bounce-tracking-mitigations')}>
         ${await this.#renderMainFrameInformation()}

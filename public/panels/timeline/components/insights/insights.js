@@ -6,6 +6,7 @@ import * as Checklist from './Checklist.js';
 import * as CLSCulprits from './CLSCulprits.js';
 import * as DocumentLatency from './DocumentLatency.js';
 import * as DOMSize from './DOMSize.js';
+import * as DuplicatedJavaScript from './DuplicatedJavaScript.js';
 import * as EventRef from './EventRef.js';
 import * as FontDisplay from './FontDisplay.js';
 import * as ForcedReflow from './ForcedReflow.js';
@@ -24,5 +25,5 @@ import * as ThirdParties from './ThirdParties.js';
 import * as Types from './types.js';
 import * as UseCache from './UseCache.js';
 import * as Viewport from './Viewport.js';
-export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, NetworkDependencyTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, UseCache, Viewport, };
+export { BaseInsightComponent, Checklist, CLSCulprits, DocumentLatency, DOMSize, DuplicatedJavaScript, EventRef, FontDisplay, ForcedReflow, Helpers, ImageDelivery, InteractionToNextPaint, LCPDiscovery, LCPPhases, NetworkDependencyTree, NodeLink, RenderBlocking, SidebarInsight, SlowCSSSelector, Table, ThirdParties, Types, UseCache, Viewport, };
 //# sourceMappingURL=insights.js.map

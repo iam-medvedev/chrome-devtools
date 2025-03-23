@@ -40,6 +40,7 @@
   "files": [
     "../../../../../../../../front_end/panels/timeline/components/insights/BaseInsightComponent.test.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/CLSCulprits.test.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/Table.test.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../../../node_modules/@types/filesystem/index.d.ts",

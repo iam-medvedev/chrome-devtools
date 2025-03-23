@@ -86,7 +86,7 @@ export class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper 
         this.callbacks.set(callId, callback);
         this.postMessage({ callId, disposition: 'evaluateForTest', source: script });
     }
-    callFactoryMethod(callback, objectId, methodName, proxyConstructor, ...methodArguments) {
+    callFactoryMethod(callback, objectId, methodName, proxyConstructor, transfer, ...methodArguments) {
         const callId = this.nextCallId++;
         const newObjectId = this.nextObjectId++;
         if (callback) {
@@ -100,7 +100,7 @@ export class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper 
                 methodName,
                 methodArguments,
                 newObjectId,
-            });
+            }, transfer);
             return null;
         }
         this.postMessage({
@@ -110,7 +110,7 @@ export class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper 
             methodName,
             methodArguments,
             newObjectId,
-        });
+        }, transfer);
         return new proxyConstructor(this, newObjectId);
     }
     callMethod(callback, objectId, methodName, ...methodArguments) {
@@ -145,6 +145,18 @@ export class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper 
             this.previousCallbacks.add(callId);
         }
     }
+    setupForSecondaryInit(port) {
+        const callId = this.nextCallId++;
+        const done = new Promise(resolve => {
+            this.callbacks.set(callId, resolve);
+        });
+        this.postMessage({
+            callId,
+            disposition: 'setupForSecondaryInit',
+            objectId: this.nextObjectId++,
+        }, [port]);
+        return done;
+    }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     messageReceived(event) {
@@ -172,8 +184,8 @@ export class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.ObjectWrapper 
     }
     // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    postMessage(message) {
-        this.worker.postMessage(message);
+    postMessage(message, transfer) {
+        this.worker.postMessage(message, transfer);
     }
 }
 export class HeapSnapshotProxyObject {
@@ -190,10 +202,10 @@ export class HeapSnapshotProxyObject {
         this.worker.dispose();
     }
     callFactoryMethod(methodName, proxyConstructor, ...args) {
-        return this.worker.callFactoryMethod(null, String(this.objectId), methodName, proxyConstructor, ...args);
+        return this.worker.callFactoryMethod(null, String(this.objectId), methodName, proxyConstructor, [], ...args);
     }
-    callFactoryMethodPromise(methodName, proxyConstructor, ...args) {
-        return new Promise(resolve => this.worker.callFactoryMethod(resolve, String(this.objectId), methodName, proxyConstructor, ...args));
+    callFactoryMethodPromise(methodName, proxyConstructor, transfer, ...args) {
+        return new Promise(resolve => this.worker.callFactoryMethod(resolve, String(this.objectId), methodName, proxyConstructor, transfer, ...args));
     }
     callMethodPromise(methodName, ...args) {
         return new Promise(resolve => this.worker.callMethod(resolve, String(this.objectId), methodName, ...args));
@@ -212,7 +224,11 @@ export class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject {
     }
     async close() {
         await this.callMethodPromise('close');
-        const snapshotProxy = await this.callFactoryMethodPromise('buildSnapshot', HeapSnapshotProxy);
+        const secondWorker = new HeapSnapshotWorkerProxy(() => { });
+        const channel = new MessageChannel();
+        await secondWorker.setupForSecondaryInit(channel.port2);
+        const snapshotProxy = await this.callFactoryMethodPromise('buildSnapshot', HeapSnapshotProxy, [channel.port1]);
+        secondWorker.dispose();
         this.dispose();
         // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
         // @ts-expect-error

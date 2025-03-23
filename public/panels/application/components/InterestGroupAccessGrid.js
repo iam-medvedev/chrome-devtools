@@ -5,15 +5,9 @@ import '../../../ui/legacy/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 // inspectorCommonStyles is imported for the empty state styling that is used for the start view
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import interestGroupAccessGridStylesRaw from './interestGroupAccessGrid.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const interestGroupAccessGridStyles = new CSSStyleSheet();
-interestGroupAccessGridStyles.replaceSync(interestGroupAccessGridStylesRaw.cssContent);
+import interestGroupAccessGridStyles from './interestGroupAccessGrid.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -68,7 +62,6 @@ export class InterestGroupAccessGrid extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #datastores = [];
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [interestGroupAccessGridStyles, inspectorCommonStyles];
         this.#render();
     }
     // eslint-disable-next-line rulesdir/set-data-type-reference
@@ -77,30 +70,27 @@ export class InterestGroupAccessGrid extends HTMLElement {
         this.#render();
     }
     #render() {
-        if (this.#datastores.length === 0) {
-            Lit.render(this.#renderEmptyState(), this.#shadow, { host: this });
-            return;
-        }
         // clang-format off
         Lit.render(html `
-      <div>
-        <span class="heading">Interest Groups</span>
-        <devtools-icon class="info-icon"
-                       title=${i18nString(UIStrings.allInterestGroupStorageEvents)}
-                       .data=${{ iconName: 'info', color: 'var(--icon-default)', width: '16px' }}>
-        </devtools-icon>
-        ${this.#renderGrid()}
-      </div>
+      <style>${interestGroupAccessGridStyles.cssText}</style>
+      <style>${inspectorCommonStyles.cssText}</style>
+      ${this.#datastores.length === 0 ?
+            html `
+          <div class="empty-state">
+            <span class="empty-state-header">${i18nString(UIStrings.noEvents)}</span>
+            <span class="empty-state-description">${i18nString(UIStrings.interestGroupDescription)}</span>
+          </div>` :
+            html `
+          <div>
+            <span class="heading">Interest Groups</span>
+            <devtools-icon class="info-icon"
+                          title=${i18nString(UIStrings.allInterestGroupStorageEvents)}
+                          .data=${{ iconName: 'info', color: 'var(--icon-default)', width: '16px' }}>
+            </devtools-icon>
+            ${this.#renderGrid()}
+          </div>`}
     `, this.#shadow, { host: this });
         // clang-format on
-    }
-    #renderEmptyState() {
-        return html `
-      <div class="empty-state">
-        <span class="empty-state-header">${i18nString(UIStrings.noEvents)}</span>
-        <span class="empty-state-description">${i18nString(UIStrings.interestGroupDescription)}</span>
-      </div>
-    `;
     }
     #renderGrid() {
         return html `

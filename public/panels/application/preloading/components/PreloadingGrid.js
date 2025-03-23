@@ -8,11 +8,8 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-import preloadingGridStylesRaw from './preloadingGrid.css.js';
+import preloadingGridStyles from './preloadingGrid.css.js';
 import { capitalizedAction, composedStatus, ruleSetLocationShort } from './PreloadingString.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const preloadingGridStyles = new CSSStyleSheet();
-preloadingGridStyles.replaceSync(preloadingGridStylesRaw.cssContent);
 const { PreloadingStatus } = SDK.PreloadingModel;
 const UIStrings = {
     /**
@@ -40,7 +37,6 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [preloadingGridStyles];
         this.#render();
     }
     update(data) {
@@ -56,6 +52,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${preloadingGridStyles.cssText}</style>
       <div class="preloading-container">
         <devtools-data-grid striped @select=${this.#onPreloadingGridCellFocused}>
           <table>

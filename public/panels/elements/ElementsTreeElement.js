@@ -407,14 +407,21 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             if (attribute.getElementsByClassName('webkit-html-attribute-name')[0].textContent === name) {
                 const attributeElement = attribute.getElementsByClassName('webkit-html-attribute-name')[0];
                 attributeElement.classList.add('violating-element');
-                this.#nodeElementToIssue.set(attributeElement, issue);
+                this.#updateNodeElementToIssue(attributeElement, issue);
             }
         }
     }
     #highlightTagAsViolating(issue) {
         const tagElement = this.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];
         tagElement.classList.add('violating-element');
-        this.#nodeElementToIssue.set(tagElement, issue);
+        this.#updateNodeElementToIssue(tagElement, issue);
+    }
+    #updateNodeElementToIssue(nodeElement, issue) {
+        if (!this.#nodeElementToIssue.has(nodeElement)) {
+            this.#nodeElementToIssue.set(nodeElement, [issue]);
+            return;
+        }
+        this.#nodeElementToIssue.get(nodeElement)?.push(issue);
     }
     expandedChildrenLimit() {
         return this.expandedChildrenLimitInternal;

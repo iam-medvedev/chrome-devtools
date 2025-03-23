@@ -111,7 +111,7 @@ export class Tooltip extends HTMLElement {
         this.#setAttributes();
         // clang-format off
         Lit.render(html `
-      <style>${tooltipStyles.cssContent}</style>
+      <style>${tooltipStyles.cssText}</style>
       <!-- Wrapping it into a container, so that the tooltip doesn't disappear when the mouse moves from the anchor to the tooltip. -->
       <div class="container">
         <slot></slot>
@@ -183,7 +183,7 @@ export class Tooltip extends HTMLElement {
     #keyDown = (event) => {
         if ((event.altKey && event.key === 'ArrowDown') || (event.key === 'Escape' && this.open)) {
             this.toggle();
-            event.stopPropagation();
+            event.consume(true);
         }
     };
     #registerEventListeners() {

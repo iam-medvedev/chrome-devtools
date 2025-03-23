@@ -36,13 +36,13 @@ function makeTimingEventWithPerformanceExtensionData({ name, ts: tsMicro, detail
 }
 function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, trackGroup, color }) {
     return {
-        cat: 'disabled-by-default-v8.inspector',
+        cat: 'devtools.timeline',
         pid: Trace.Types.Events.ProcessID(2017),
         tid: Trace.Types.Events.ThreadID(259),
-        name: "V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */,
+        name: "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */,
         args: {
             data: {
-                name,
+                message: name,
                 start,
                 end,
                 track,
@@ -51,7 +51,7 @@ function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, 
             }
         },
         ts: Trace.Types.Timing.Micro(ts),
-        ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
+        ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
     };
 }
 export async function createTraceExtensionDataFromPerformanceAPITestInput(extensionData) {
@@ -382,7 +382,7 @@ describe('ExtensionTraceDataHandler', function () {
                 assert.deepEqual(Object.keys(fourthTrackData.entriesByTrack), ['Ungrouped Track 2']);
                 assert.deepEqual(Object.values(fourthTrackData.entriesByTrack).map(entries => entries.length), [2]);
             });
-            it('calculates self time sub track by sub track', async function () {
+            it('calculates self time sub track by sub track for events added with the performance API', async function () {
                 const extensionDevToolsObjects = [
                     // Track group 1
                     {
@@ -555,6 +555,20 @@ describe('ExtensionTraceDataHandler', function () {
                     end: 'Mark 4',
                     ts: 300,
                 },
+                // numeric start and end
+                {
+                    track: 'Custom track 1',
+                    name: 'Measure 6',
+                    start: 300,
+                    end: 400,
+                    ts: 300,
+                },
+                {
+                    track: 'Custom track 1',
+                    name: 'Measure 7',
+                    start: 350,
+                    ts: 400,
+                }
             ];
             return createTraceExtensionDataFromConsoleAPITestInput(extensionData);
         }
@@ -564,16 +578,26 @@ describe('ExtensionTraceDataHandler', function () {
             });
             it('parses track data correctly', async () => {
                 assert.lengthOf(extensionHandlerOutput.extensionTrackData, 3);
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[0].name, 'Custom track 3');
-                assert.lengthOf(extensionHandlerOutput.extensionTrackData[0].entriesByTrack['Custom track 3'], 2);
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[0].entriesByTrack['Custom track 3'][0].name, 'Measure 3');
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[0].entriesByTrack['Custom track 3'][1].name, 'Measure 4');
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[1].name, 'Custom track 1');
-                assert.lengthOf(extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Custom track 1'], 1);
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Custom track 1'][0].name, 'Measure 1');
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[2].name, 'Custom track 2');
-                assert.lengthOf(extensionHandlerOutput.extensionTrackData[2].entriesByTrack['Custom track 2'], 1);
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[2].entriesByTrack['Custom track 2'][0].name, 'Measure 2');
+                const expectedData = {
+                    'Custom track 3': [{ name: 'Measure 3', ts: 100, dur: 200 }, { name: 'Measure 4', ts: 100, dur: 100 }],
+                    'Custom track 1': [
+                        { name: 'Measure 1', ts: 100, dur: 100 }, { name: 'Measure 6', ts: 300, dur: 100 },
+                        { name: 'Measure 7', ts: 350, dur: 50 }
+                    ],
+                    'Custom track 2': [{ name: 'Measure 2', ts: 100, dur: 100 }]
+                };
+                for (let i = 0; i < extensionHandlerOutput.extensionTrackData.length; i++) {
+                    const track = extensionHandlerOutput.extensionTrackData[i];
+                    assert.strictEqual(track.name, Object.keys(expectedData)[i]);
+                    const actualTrackData = track.entriesByTrack[track.name];
+                    const expectedTrackData = expectedData[track.name];
+                    for (let j = 0; j < actualTrackData.length; j++) {
+                        const { name, ts, dur } = actualTrackData[j];
+                        assert.strictEqual(name, expectedTrackData[j].name);
+                        assert.strictEqual(ts, expectedTrackData[j].ts);
+                        assert.strictEqual(dur, expectedTrackData[j].dur);
+                    }
+                }
             });
             it('parses synthetic console timings for the timings track', async () => {
                 assert.lengthOf(extensionHandlerOutput.syntheticConsoleEntriesForTimingsTrack, 1);
@@ -653,7 +677,7 @@ describe('ExtensionTraceDataHandler', function () {
                 assert.deepEqual(Object.keys(fourthTrackData.entriesByTrack), ['Ungrouped Track 2']);
                 assert.deepEqual(Object.values(fourthTrackData.entriesByTrack).map(entries => entries.length), [2]);
             });
-            it('calculates self time sub track by sub track', async function () {
+            it('calculates self time sub track by sub track for events added with the console API', async function () {
                 const extensionDevToolsObjects = [
                     // Track group 1
                     {
@@ -711,6 +735,13 @@ describe('ExtensionTraceDataHandler', function () {
                         ts: 80,
                     },
                     {
+                        trackGroup: 'Group 1',
+                        track: 'Track 1',
+                        name: 'Measurement 5',
+                        start: 75,
+                        ts: 80,
+                    },
+                    {
                         name: 'G',
                         ts: 0,
                     },
@@ -764,7 +795,8 @@ describe('ExtensionTraceDataHandler', function () {
                     { name: 'Measurement 1', selfTime: 40 },
                     { name: 'Measurement 2', selfTime: 20 },
                     { name: 'Measurement 3', selfTime: 30 },
-                    { name: 'Measurement 4', selfTime: 10 },
+                    { name: 'Measurement 4', selfTime: 5 },
+                    { name: 'Measurement 5', selfTime: 5 },
                 ]);
                 const testDataTrack2 = trackGroupData.entriesByTrack['Track 2'].map(entry => {
                     const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;

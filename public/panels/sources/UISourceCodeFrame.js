@@ -39,6 +39,7 @@ import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { AiWarningInfobarPlugin } from './AiWarningInfobarPlugin.js';
 import { CoveragePlugin } from './CoveragePlugin.js';
 import { CSSPlugin } from './CSSPlugin.js';
 import { DebuggerPlugin } from './DebuggerPlugin.js';
@@ -46,19 +47,6 @@ import { MemoryProfilePlugin, PerformanceProfilePlugin } from './ProfilePlugin.j
 import { ResourceOriginPlugin } from './ResourceOriginPlugin.js';
 import { SnippetsPlugin } from './SnippetsPlugin.js';
 import { SourcesPanel } from './SourcesPanel.js';
-function sourceFramePlugins() {
-    // The order of these plugins matters for toolbar items and editor
-    // extension precedence
-    return [
-        CSSPlugin,
-        DebuggerPlugin,
-        SnippetsPlugin,
-        ResourceOriginPlugin,
-        CoveragePlugin,
-        MemoryProfilePlugin,
-        PerformanceProfilePlugin,
-    ];
-}
 export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFrame.SourceFrame.SourceFrameImpl) {
     uiSourceCodeInternal;
     muteSourceCodeEvents;
@@ -291,10 +279,24 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     onTitleChanged() {
         this.updateLanguageMode('').then(() => this.reloadPlugins(), console.error);
     }
+    static sourceFramePlugins() {
+        // The order of these plugins matters for toolbar items and editor
+        // extension precedence
+        return [
+            CSSPlugin,
+            DebuggerPlugin,
+            SnippetsPlugin,
+            ResourceOriginPlugin,
+            CoveragePlugin,
+            MemoryProfilePlugin,
+            PerformanceProfilePlugin,
+            AiWarningInfobarPlugin,
+        ];
+    }
     loadPlugins() {
         const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal);
         const pluginUISourceCode = binding ? binding.network : this.uiSourceCodeInternal;
-        for (const pluginType of sourceFramePlugins()) {
+        for (const pluginType of UISourceCodeFrame.sourceFramePlugins()) {
             if (pluginType.accepts(pluginUISourceCode)) {
                 this.plugins.push(new pluginType(pluginUISourceCode, this));
             }
