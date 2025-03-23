@@ -21,7 +21,7 @@ export declare class Runtime {
         experiment?: string | null;
         condition?: Condition;
     }): boolean;
-    loadLegacyModule(modulePath: string): Promise<void>;
+    loadLegacyModule(modulePath: string): Promise<unknown>;
 }
 export interface Option {
     title: string;

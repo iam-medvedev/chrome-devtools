@@ -11,7 +11,6 @@ export declare function renderIconLink(iconName: string, title: Platform.UIStrin
 export declare class PermissionsPolicySection extends HTMLElement {
     #private;
     set data(data: PermissionsPolicySectionData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -9,10 +9,23 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
+import { createLimitedRows, renderOthersLabel } from './Table.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.ForcedReflow;
 const { html, nothing } = Lit;
 export class ForcedReflow extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-forced-reflow`;
+    mapToRow(data) {
+        return {
+            values: [this.#linkifyUrl(data.bottomUpData)],
+            overlays: this.#createOverlayForEvents(data.relatedEvents),
+        };
+    }
+    createAggregatedTableRow(remaining) {
+        return {
+            values: [renderOthersLabel(remaining.length)],
+            overlays: remaining.flatMap(r => this.#createOverlayForEvents(r.relatedEvents)),
+        };
+    }
     internalName = 'forced-reflow';
     #linkifyUrl(callFrame) {
         if (!callFrame) {
@@ -42,6 +55,7 @@ export class ForcedReflow extends BaseInsightComponent {
         const topLevelFunctionCallData = this.model.topLevelFunctionCallData;
         const bottomUpCallStackData = this.model.aggregatedBottomUpData;
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
+        const rows = createLimitedRows(bottomUpCallStackData, this);
         // clang-format off
         return html `
       ${topLevelFunctionCallData ? html `
@@ -66,10 +80,7 @@ export class ForcedReflow extends BaseInsightComponent {
           .data=${{
             insight: this,
             headers: [i18nString(UIStrings.relatedStackTrace)],
-            rows: bottomUpCallStackData.map(data => ({
-                values: [this.#linkifyUrl(data.bottomUpData)],
-                overlays: this.#createOverlayForEvents(data.relatedEvents),
-            })),
+            rows,
         }}>
         </devtools-performance-table>
       </div>`;

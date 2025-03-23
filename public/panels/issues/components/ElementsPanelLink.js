@@ -6,7 +6,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import elementsPanelLinkStylesRaw from './elementsPanelLink.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const elementsPanelLinkStyles = new CSSStyleSheet();
-elementsPanelLinkStyles.replaceSync(elementsPanelLinkStylesRaw.cssContent);
+elementsPanelLinkStyles.replaceSync(elementsPanelLinkStylesRaw.cssText);
 export class ElementsPanelLink extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #onElementRevealIconClick = () => { };

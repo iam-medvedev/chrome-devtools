@@ -22,7 +22,7 @@ import breakpointsViewStylesRaw from './breakpointsView.css.js';
 import { findNextNodeForKeyboardNavigation, getDifferentiatingPathMap } from './BreakpointsViewUtils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const breakpointsViewStyles = new CSSStyleSheet();
-breakpointsViewStyles.replaceSync(breakpointsViewStylesRaw.cssContent);
+breakpointsViewStyles.replaceSync(breakpointsViewStylesRaw.cssText);
 const { html, Directives: { ifDefined, repeat, classMap, live } } = Lit;
 const UIStrings = {
     /**

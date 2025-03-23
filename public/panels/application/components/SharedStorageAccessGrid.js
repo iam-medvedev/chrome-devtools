@@ -5,17 +5,11 @@ import '../../../ui/legacy/components/data_grid/data_grid.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 // inspectorCommonStyles is imported for the empty state styling that is used for the start view
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import sharedStorageAccessGridStylesRaw from './sharedStorageAccessGrid.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const sharedStorageAccessGridStyles = new CSSStyleSheet();
-sharedStorageAccessGridStyles.replaceSync(sharedStorageAccessGridStylesRaw.cssContent);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+import sharedStorageAccessGridStyles from './sharedStorageAccessGrid.css.js';
 const SHARED_STORAGE_EXPLANATION_URL = 'https://developers.google.com/privacy-sandbox/private-advertising/shared-storage';
 const { render, html } = Lit;
 const UIStrings = {
@@ -72,7 +66,6 @@ export class SharedStorageAccessGrid extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #datastores = [];
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sharedStorageAccessGridStyles, inspectorCommonStyles];
         this.#render();
     }
     // eslint-disable-next-line rulesdir/set-data-type-reference
@@ -81,7 +74,12 @@ export class SharedStorageAccessGrid extends HTMLElement {
         this.#render();
     }
     #render() {
-        render(html `${this.#renderGridOrNoDataMessage()}`, this.#shadow, { host: this });
+        // clang-format off
+        render(html `
+      <style>${sharedStorageAccessGridStyles.cssText}</style>
+      <style>${inspectorCommonStyles.cssText}</style>
+      ${this.#renderGridOrNoDataMessage()}`, this.#shadow, { host: this });
+        // clang-format on
     }
     #renderGridOrNoDataMessage() {
         if (this.#datastores.length === 0) {

@@ -1,9 +1,11 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -21,14 +23,14 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/changes/CombinedDiffView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 function renderSingleDiffView(singleDiffViewInput) {
-    const { fileName, fileUrl, mimeType, icon, diff, copied, onCopy } = singleDiffViewInput;
+    const { fileName, fileUrl, mimeType, icon, diff, copied, onCopy, onFileNameClick } = singleDiffViewInput;
     return html `
     <details open>
       <summary>
         <div class="summary-left">
           <devtools-icon class="drop-down-icon" .name=${'arrow-drop-down'}></devtools-icon>
           ${icon}
-          <span class="file-name">${fileName}</span>
+          <button class="file-name-link" @click=${() => onFileNameClick(fileUrl)}>${fileName}</button>
         </div>
         <div class="summary-right">
           ${copied ? html `<span class="copied">${i18nString(UIStrings.copied)}</span>` : html `
@@ -88,6 +90,10 @@ export class CombinedDiffView extends UI.Widget.Widget {
             this.requestUpdate();
         }, COPIED_TO_CLIPBOARD_TEXT_TIMEOUT_MS);
     }
+    #onFileNameClick(fileUrl) {
+        const uiSourceCode = this.#modifiedUISourceCodes.find(uiSourceCode => uiSourceCode.url() === fileUrl);
+        void Common.Revealer.reveal(uiSourceCode);
+    }
     async #initializeModifiedUISourceCodes() {
         if (!this.#workspaceDiff) {
             return;
@@ -123,14 +129,24 @@ export class CombinedDiffView extends UI.Widget.Widget {
         }));
         const singleDiffViewInputs = uiSourceCodeAndDiffs.filter(uiSourceCodeAndDiff => uiSourceCodeAndDiff.diff)
             .map(({ uiSourceCode, diff }) => {
+            let displayText = uiSourceCode.fullDisplayName();
+            // If the UISourceCode is backed by a workspace, we show the path as "{workspace-name}/path/relative/to/workspace"
+            const fileSystemUiSourceCode = Persistence.Persistence.PersistenceImpl.instance().fileSystem(uiSourceCode);
+            if (fileSystemUiSourceCode) {
+                displayText = [
+                    fileSystemUiSourceCode.project().displayName(),
+                    ...Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(fileSystemUiSourceCode)
+                ].join('/');
+            }
             return {
                 diff: diff, // We already filter above the ones that does not have `diff`.
-                fileName: `${uiSourceCode.isDirty() ? '*' : ''}${uiSourceCode.displayName()}`,
+                fileName: `${uiSourceCode.isDirty() ? '*' : ''}${displayText}`,
                 fileUrl: uiSourceCode.url(),
                 mimeType: uiSourceCode.mimeType(),
                 icon: PanelUtils.PanelUtils.getIconForSourceFile(uiSourceCode, { width: 18, height: 18 }),
                 copied: this.#copiedFiles[uiSourceCode.url()],
                 onCopy: this.#onCopyDiff.bind(this),
+                onFileNameClick: this.#onFileNameClick.bind(this),
             };
         })
             .sort((a, b) => Platform.StringUtilities.compare(a.fileName, b.fileName));

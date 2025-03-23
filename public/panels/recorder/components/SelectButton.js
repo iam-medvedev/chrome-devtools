@@ -4,15 +4,19 @@
 import '../../../ui/components/menus/menus.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import selectButtonStylesRaw from './selectButton.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const inspectorCommonStyles = new CSSStyleSheet();
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const selectButtonStyles = new CSSStyleSheet();
-selectButtonStyles.replaceSync(selectButtonStylesRaw.cssContent);
+selectButtonStyles.replaceSync(selectButtonStylesRaw.cssText);
 const { html, Directives: { ifDefined, classMap } } = Lit;
 export class SelectButtonClickEvent extends Event {
     value;
@@ -41,7 +45,7 @@ export class SelectButton extends HTMLElement {
         variant: "primary" /* Variant.PRIMARY */,
     };
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [selectButtonStyles];
+        this.#shadow.adoptedStyleSheets = [inspectorCommonStyles, selectButtonStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get disabled() {
@@ -88,27 +92,30 @@ export class SelectButton extends HTMLElement {
         this.dispatchEvent(new SelectButtonClickEvent(this.#props.value));
     }
     #handleSelectMenuSelect(evt) {
-        this.dispatchEvent(new SelectMenuSelectedEvent(evt.itemValue));
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        if (evt.target instanceof HTMLSelectElement) {
+            this.dispatchEvent(new SelectMenuSelectedEvent(evt.target.value));
+            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        }
     }
     #renderSelectItem(item, selectedItem) {
+        const selected = item.value === selectedItem.value;
         // clang-format off
         return html `
-      <devtools-menu-item
+      <option
       .title=${item.label()}
-      .value=${item.value}
-      .selected=${item.value === selectedItem.value}
+      value=${item.value}
+      ?selected=${selected}
       jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(item.value)).track({ click: true })}
-      >${item.label()}</devtools-menu-item>
+      >${(selected && item.buttonLabel) ? item.buttonLabel() : item.label()}</option>
     `;
         // clang-format on
     }
     #renderSelectGroup(group, selectedItem) {
         // clang-format off
         return html `
-      <devtools-menu-group .name=${group.name}>
+      <optgroup label=${group.name}>
         ${group.items.map(item => this.#renderSelectItem(item, selectedItem))}
-      </devtools-menu-group>
+      </optgroup>
     `;
         // clang-format on
     }
@@ -131,23 +138,15 @@ export class SelectButton extends HTMLElement {
         // clang-format off
         Lit.render(html `
       <div class="select-button" title=${ifDefined(this.#getTitle(menuLabel))}>
-      <devtools-select-menu
-          title=""
-          class=${classMap(classes)}
-          @selectmenuselected=${this.#handleSelectMenuSelect}
-          ?disabled=${this.#props.disabled}
-          .showArrow=${true}
-          .sideButton=${false}
-          .showSelectedItem=${true}
-          .disabled=${this.#props.disabled}
-          .buttonTitle=${() => html `${menuLabel}`}
-          .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
-          .horizontalAlignment=${"right" /* Dialogs.Dialog.DialogHorizontalAlignment.RIGHT */}
-        >
-          ${hasGroups
+      <select
+      class=${classMap(classes)}
+      ?disabled=${this.#props.disabled}
+      jslog=${VisualLogging.dropDown('network-conditions').track({ change: true })}
+      @change=${this.#handleSelectMenuSelect}>
+        ${hasGroups
             ? this.#props.groups.map(group => this.#renderSelectGroup(group, selectedItem))
             : this.#props.items.map(item => this.#renderSelectItem(item, selectedItem))}
-        </devtools-select-menu>
+    </select>
         ${selectedItem
             ? html `
         <devtools-button

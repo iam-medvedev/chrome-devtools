@@ -15,7 +15,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import aiSettingsTabStylesRaw from './aiSettingsTab.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const aiSettingsTabStyles = new CSSStyleSheet();
-aiSettingsTabStyles.replaceSync(aiSettingsTabStylesRaw.cssContent);
+aiSettingsTabStyles.replaceSync(aiSettingsTabStylesRaw.cssText);
 const { html, Directives: { ifDefined, classMap } } = Lit;
 const UIStrings = {
     /**
@@ -291,7 +291,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
                         text: noLogging ? i18nString(UIStrings.generatedAiAnnotationsSendDataNoLogging) :
                             i18nString(UIStrings.generatedAiAnnotationsSendData)
                     }],
-                // TODO: Add a relevant link
+                // TODO(b/405316456): Add a relevant link here once we have written the documentation.
                 learnMoreLink: { url: '', linkJSLogContext: 'learn-more.ai-annotations' },
                 settingExpandState: {
                     isSettingExpanded: false,

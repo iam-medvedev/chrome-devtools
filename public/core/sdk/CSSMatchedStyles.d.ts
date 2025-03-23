@@ -2,6 +2,8 @@ import * as Protocol from '../../generated/protocol.js';
 import { CSSWideKeyword } from './CSSMetadata.js';
 import type { CSSModel } from './CSSModel.js';
 import { CSSProperty } from './CSSProperty.js';
+import * as PropertyParser from './CSSPropertyParser.js';
+import type { Match, Matcher } from './CSSPropertyParser.js';
 import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 import type { DOMNode } from './DOMModel.js';
@@ -32,6 +34,7 @@ export declare class CSSRegisteredProperty {
     initialValue(): string | null;
     inherits(): boolean;
     syntax(): string;
+    parseValue(matchedStyles: CSSMatchedStyles, computedStyles: Map<string, string> | null): PropertyParser.BottomUpTreeMatching | null;
     style(): CSSStyleDeclaration;
 }
 export declare class CSSMatchedStyles {
@@ -82,6 +85,7 @@ export declare class CSSMatchedStyles {
     isInherited(style: CSSStyleDeclaration): boolean;
     propertyState(property: CSSProperty): PropertyState | null;
     resetActiveProperties(): void;
+    propertyMatchers(style: CSSStyleDeclaration, computedStyles: Map<string, string> | null): Array<Matcher<Match>>;
 }
 export declare class CSSValueSource {
     readonly declaration: CSSProperty | CSSRegisteredProperty;

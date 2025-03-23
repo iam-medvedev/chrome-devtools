@@ -4,7 +4,7 @@
 import highlightingStylesRaw from './highlighting.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const highlightingStyles = new CSSStyleSheet();
-highlightingStyles.replaceSync(highlightingStylesRaw.cssContent);
+highlightingStyles.replaceSync(highlightingStylesRaw.cssText);
 export class RangeWalker {
     root;
     #offset = 0;

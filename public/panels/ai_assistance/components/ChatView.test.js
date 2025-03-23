@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as AiAssistanceModel from '../../../models/ai_assistance/ai_assistance.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
-import * as AiAssistance from '../ai_assistance.js';
+import * as AiAssistancePanel from '../ai_assistance.js';
 describeWithEnvironment('ChatView', () => {
     function getProp(options) {
         const noop = () => { };
         const messages = options.messages ?? [];
-        const selectedContext = sinon.createStubInstance(AiAssistance.NodeContext);
+        const selectedContext = sinon.createStubInstance(AiAssistanceModel.NodeContext);
         selectedContext.getTitle.returns('');
         return {
             onTextSubmit: noop,
@@ -21,8 +22,8 @@ describeWithEnvironment('ChatView', () => {
             onNewConversation: noop,
             onTextInputChange: noop,
             inspectElementToggled: false,
-            state: "chat-view" /* AiAssistance.State.CHAT_VIEW */,
-            conversationType: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+            state: "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */,
+            conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
             aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             messages,
             selectedContext,
@@ -44,7 +45,7 @@ describeWithEnvironment('ChatView', () => {
             const props = getProp({
                 messages: [
                     {
-                        entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                        entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                         steps: [
                             {
                                 isLoading: false,
@@ -59,26 +60,26 @@ describeWithEnvironment('ChatView', () => {
                     },
                 ],
             });
-            const chat = new AiAssistance.ChatView(props);
+            const chat = new AiAssistancePanel.ChatView(props);
             renderElementIntoDOM(chat);
             const sideEffect = chat.shadowRoot.querySelector('.side-effect-confirmation');
             assert.exists(sideEffect);
         });
         it('shows the disabled view when the state is CONSENT_VIEW', async () => {
             const props = getProp({
-                state: "consent-view" /* AiAssistance.State.CONSENT_VIEW */,
+                state: "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */,
             });
-            const chat = new AiAssistance.ChatView(props);
+            const chat = new AiAssistancePanel.ChatView(props);
             renderElementIntoDOM(chat);
             const optIn = chat.shadowRoot?.querySelector('.disabled-view');
             assert.strictEqual(optIn?.textContent?.trim(), 'Turn on AI assistance in Settings to get help with understanding CSS styles');
         });
         it('shows the disabled view when the AIDA is not available', async () => {
             const props = getProp({
-                state: "chat-view" /* AiAssistance.State.CHAT_VIEW */,
+                state: "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */,
                 aidaAvailability: "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */,
             });
-            const chat = new AiAssistance.ChatView(props);
+            const chat = new AiAssistancePanel.ChatView(props);
             renderElementIntoDOM(chat);
             const optIn = chat.shadowRoot?.querySelector('.disabled-view');
             assert.strictEqual(optIn?.textContent?.trim(), 'Check your internet connection and try again');
@@ -102,7 +103,7 @@ describeWithEnvironment('ChatView', () => {
                 const props = getProp({
                     conversationType: undefined,
                 });
-                const chat = new AiAssistance.ChatView(props);
+                const chat = new AiAssistancePanel.ChatView(props);
                 renderElementIntoDOM(chat);
                 const featureCards = chat.shadowRoot?.querySelectorAll('.feature-card');
                 assert.isDefined(featureCards);
@@ -130,7 +131,7 @@ describeWithEnvironment('ChatView', () => {
                 const props = getProp({
                     conversationType: undefined,
                 });
-                const chat = new AiAssistance.ChatView(props);
+                const chat = new AiAssistancePanel.ChatView(props);
                 renderElementIntoDOM(chat);
                 const featureCards = chat.shadowRoot?.querySelectorAll('.feature-card');
                 assert.isDefined(featureCards);

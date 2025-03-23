@@ -6,11 +6,12 @@ import * as UI from '../../ui/legacy/legacy.js';
 import cssValueTraceViewStyles from './cssValueTraceView.css.js';
 import { Highlighting, Renderer, RenderingContext, TracingContext, } from './PropertyRenderer.js';
 import stylePropertiesTreeOutlineStyles from './stylePropertiesTreeOutline.css.js';
-const { html, render, Directives: { ref, ifDefined } } = Lit;
+const { html, render, Directives: { ref, classMap, ifDefined } } = Lit;
 function defaultView(input, output, target) {
     const [firstEvaluation, ...intermediateEvaluations] = input.evaluations;
     const hiddenSummary = !firstEvaluation || intermediateEvaluations.length === 0;
     const summaryTabIndex = hiddenSummary ? undefined : 0;
+    const singleResult = input.evaluations.length === 0 && input.substitutions.length === 0;
     render(
     // clang-format off
     html `
@@ -44,8 +45,12 @@ function defaultView(input, output, target) {
             </details>`}
         ${!input.finalResult
         ? ''
-        : html `<span class="trace-line-icon" aria-label="is equal to">↳</span
-              ><span class="trace-line">${input.finalResult}</span>`}
+        : html `<span
+                class="trace-line-icon"
+                aria-label="is equal to"
+                ?hidden=${singleResult}
+              >↳</span
+              ><span class=${classMap({ 'trace-line': true, 'full-row': singleResult })}>${input.finalResult}</span>`}
       </div>
     `, 
     // clang-format on

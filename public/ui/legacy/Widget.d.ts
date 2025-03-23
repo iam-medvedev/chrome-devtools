@@ -90,7 +90,7 @@ export declare class Widget {
     doResize(): void;
     doLayout(): void;
     registerRequiredCSS(...cssFiles: Array<{
-        cssContent: string;
+        cssText: string;
     }>): void;
     printWidgetHierarchy(): void;
     private collectWidgetHierarchy;

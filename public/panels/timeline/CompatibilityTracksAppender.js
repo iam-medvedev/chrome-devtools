@@ -55,7 +55,7 @@ export function entryIsVisibleInTimeline(entry, parsedTrace) {
     // events are hidden by default.
     const eventStyle = TimelineUtils.EntryStyles.getEventStyle(entry.name);
     const eventIsTiming = Trace.Types.Events.isConsoleTime(entry) || Trace.Types.Events.isPerformanceMeasure(entry) ||
-        Trace.Types.Events.isPerformanceMark(entry);
+        Trace.Types.Events.isPerformanceMark(entry) || Trace.Types.Events.isConsoleTimeStamp(entry);
     return (eventStyle && !eventStyle.hidden) || eventIsTiming;
 }
 export const TrackNames = [

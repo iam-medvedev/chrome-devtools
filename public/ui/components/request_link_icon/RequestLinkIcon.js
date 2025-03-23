@@ -11,7 +11,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import requestLinkIconStylesRaw from './requestLinkIcon.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const requestLinkIconStyles = new CSSStyleSheet();
-requestLinkIconStyles.replaceSync(requestLinkIconStylesRaw.cssContent);
+requestLinkIconStyles.replaceSync(requestLinkIconStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

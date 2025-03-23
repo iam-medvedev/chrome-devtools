@@ -108,12 +108,17 @@ class ExpandableBigUint32ArrayImpl extends Array {
         return this;
     }
 }
-export function createBitVector(length) {
-    return new BitVectorImpl(length);
+export function createBitVector(lengthOrBuffer) {
+    return new BitVectorImpl(lengthOrBuffer);
 }
 class BitVectorImpl extends Uint8Array {
-    constructor(length) {
-        super(Math.ceil(length / 8));
+    constructor(lengthOrBuffer) {
+        if (typeof lengthOrBuffer === 'number') {
+            super(Math.ceil(lengthOrBuffer / 8));
+        }
+        else {
+            super(lengthOrBuffer);
+        }
     }
     getBit(index) {
         const value = this[index >> 3] & (1 << (index & 7));

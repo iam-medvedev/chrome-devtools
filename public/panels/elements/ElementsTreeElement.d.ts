@@ -58,7 +58,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     get hovered(): boolean;
     set hovered(isHovered: boolean);
     addIssue(newIssue: IssuesManager.Issue.Issue): void;
-    get issuesByNodeElement(): Map<Element, IssuesManager.Issue.Issue>;
+    get issuesByNodeElement(): Map<Element, IssuesManager.Issue.Issue[]>;
     expandedChildrenLimit(): number;
     setExpandedChildrenLimit(expandedChildrenLimit: number): void;
     createSlotLink(nodeShortcut: SDK.DOMModel.DOMNodeShortcut | null): void;

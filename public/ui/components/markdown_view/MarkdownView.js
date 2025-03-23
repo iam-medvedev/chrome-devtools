@@ -9,7 +9,7 @@ import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import markdownViewStylesRaw from './markdownView.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const markdownViewStyles = new CSSStyleSheet();
-markdownViewStyles.replaceSync(markdownViewStylesRaw.cssContent);
+markdownViewStyles.replaceSync(markdownViewStylesRaw.cssText);
 const html = Lit.html;
 const render = Lit.render;
 export class MarkdownView extends HTMLElement {

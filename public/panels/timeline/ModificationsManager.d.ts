@@ -39,6 +39,7 @@ export declare class ModificationsManager extends EventTarget {
     getAnnotationByOverlay(overlay: Overlays.Overlays.TimelineOverlay): Trace.Types.File.Annotation | null;
     getAnnotations(): Trace.Types.File.Annotation[];
     getOverlays(): Overlays.Overlays.TimelineOverlay[];
+    applyAnnotationsFromCache(): void;
     /**
      * Builds all modifications into a serializable object written into
      * the 'modifications' trace file metadata field.

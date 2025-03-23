@@ -56,9 +56,6 @@ export const generatedPropertyValues: {
     "-webkit-line-clamp": {
         values: string[];
     };
-    "-webkit-print-color-adjust": {
-        values: string[];
-    };
     "-webkit-rtl-ordering": {
         values: string[];
     };
@@ -272,6 +269,9 @@ export const generatedPropertyValues: {
     "column-gap": {
         values: string[];
     };
+    "column-height": {
+        values: string[];
+    };
     "column-rule-break": {
         values: string[];
     };
@@ -288,6 +288,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "column-width": {
+        values: string[];
+    };
+    "column-wrap": {
         values: string[];
     };
     contain: {
@@ -669,6 +672,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "position-visibility": {
+        values: string[];
+    };
+    "print-color-adjust": {
         values: string[];
     };
     quotes: {

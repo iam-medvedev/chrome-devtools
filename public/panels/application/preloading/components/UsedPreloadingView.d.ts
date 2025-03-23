@@ -21,7 +21,6 @@ export declare const enum UsedKind {
 }
 export declare class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
-    connectedCallback(): void;
     set data(data: UsedPreloadingViewData);
 }
 declare global {

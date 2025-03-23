@@ -8,7 +8,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import linearMemoryNavigatorStylesRaw from './linearMemoryNavigator.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const linearMemoryNavigatorStyles = new CSSStyleSheet();
-linearMemoryNavigatorStyles.replaceSync(linearMemoryNavigatorStylesRaw.cssContent);
+linearMemoryNavigatorStyles.replaceSync(linearMemoryNavigatorStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over a valid memory address (e.g. 0x0) in the address line in the Linear memory inspector.

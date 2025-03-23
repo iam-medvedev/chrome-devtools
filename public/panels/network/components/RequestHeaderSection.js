@@ -10,7 +10,7 @@ import * as NetworkForward from '../forward/forward.js';
 import requestHeaderSectionStylesRaw from './RequestHeaderSection.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const requestHeaderSectionStyles = new CSSStyleSheet();
-requestHeaderSectionStyles.replaceSync(requestHeaderSectionStylesRaw.cssContent);
+requestHeaderSectionStyles.replaceSync(requestHeaderSectionStylesRaw.cssText);
 const { render, html } = Lit;
 const UIStrings = {
     /**

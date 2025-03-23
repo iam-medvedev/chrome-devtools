@@ -9,7 +9,6 @@ export interface BadgeData {
 export declare class Badge extends HTMLElement {
     #private;
     set data(data: BadgeData);
-    connectedCallback(): void;
 }
 type TreeNode<DataType> = TreeOutline.TreeOutlineUtils.TreeNode<DataType>;
 export type OriginTrialTreeNodeData = Protocol.Page.OriginTrial | Protocol.Page.OriginTrialTokenWithStatus | string;
@@ -27,7 +26,6 @@ export interface OriginTrialTreeViewData {
 export declare class OriginTrialTreeView extends HTMLElement {
     #private;
     set data(data: OriginTrialTreeViewData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

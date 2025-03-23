@@ -7,7 +7,7 @@ import { html, render } from '../../../ui/lit/lit.js';
 import srgbOverlayStylesRaw from './srgbOverlay.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const srgbOverlayStyles = new CSSStyleSheet();
-srgbOverlayStyles.replaceSync(srgbOverlayStylesRaw.cssContent);
+srgbOverlayStyles.replaceSync(srgbOverlayStylesRaw.cssText);
 const SRGB_LABEL_HEIGHT = 10;
 const SRGB_LABEL_BOTTOM = 3;
 const SRGB_TEXT_UPPER_POINT_FROM_BOTTOM = SRGB_LABEL_HEIGHT + SRGB_LABEL_BOTTOM;

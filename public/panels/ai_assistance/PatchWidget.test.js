@@ -5,7 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as PanelCommon from '../../panels/common/common.js';
-import { cleanup, createPatchWidget, createPatchWidgetWithDiffView, createTestFilesystem, initializePersistenceImplForTests, mockAidaClient, } from '../../testing/AiAssistanceHelpers.js';
+import { cleanup, createPatchWidget, createPatchWidgetWithDiffView, createTestFilesystem, initializePersistenceImplForTests, MockAidaAbortError, mockAidaClient, MockAidaFetchError, } from '../../testing/AiAssistanceHelpers.js';
 import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as AiAssistance from './ai_assistance.js';
@@ -101,7 +101,6 @@ describeWithMockConnection('PatchWidget', () => {
             assert.isFalse(showFreDialogStub.called, 'Expected FreDialog to be not shown but it\'s shown');
         });
         it('should show files uploaded', async () => {
-            Common.Settings.moduleSetting('ai-assistance-patching-fre-completed').set(true);
             const { view, panel } = await createPatchWidget({
                 aidaClient: mockAidaClient([
                     [{ explanation: '', functionCalls: [{ name: 'updateFiles', args: { files: ['index.html'] } }] }], [{
@@ -114,6 +113,20 @@ describeWithMockConnection('PatchWidget', () => {
             assert.strictEqual((await view.nextInput).sources, `Filenames in test.
 Files:
 * index.html`);
+        });
+        it('should show error state when applyToWorkspace fails', async () => {
+            const { view, panel } = await createPatchWidget({ aidaClient: mockAidaClient([[MockAidaFetchError]]) });
+            panel.changeSummary = 'body { background-color: red; }';
+            view.input.onApplyToWorkspace();
+            const input = await view.nextInput;
+            assert.strictEqual(input.patchSuggestionState, AiAssistance.PatchWidget.PatchSuggestionState.ERROR);
+        });
+        it('should return back to initial state when the user aborts applying to workspace', async () => {
+            const { view, panel } = await createPatchWidget({ aidaClient: mockAidaClient([[MockAidaAbortError]]) });
+            panel.changeSummary = 'body { background-color: red; }';
+            view.input.onApplyToWorkspace();
+            const input = await view.nextInput;
+            assert.strictEqual(input.patchSuggestionState, AiAssistance.PatchWidget.PatchSuggestionState.INITIAL);
         });
     });
     describe('workspace', () => {
@@ -170,7 +183,7 @@ Files:
             handler(project);
             const input = await view.nextInput;
             // Assert that a patch has been generated and a project has been selected
-            assert.strictEqual(input.patchSuggestion, 'suggested patch');
+            assert.strictEqual(input.patchSuggestionState, AiAssistance.PatchWidget.PatchSuggestionState.SUCCESS);
             assert.strictEqual(input.projectName, 'test');
         });
         it('selection is triggered by the "change"-button if a workspace is already (pre-)selected', async () => {
@@ -225,7 +238,7 @@ Files:
             uiSourceCode.setWorkingCopy('working copy');
             view.input.onDiscard();
             const nextInput = await view.nextInput;
-            assert.notExists(nextInput.patchSuggestion);
+            assert.strictEqual(nextInput.patchSuggestionState, AiAssistance.PatchWidget.PatchSuggestionState.INITIAL);
             assert.isTrue(resetWorkingCopyStub.called, 'Expected resetWorkingCopy to be called but it is not called');
         });
     });

@@ -72,6 +72,8 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
             endTime: this.endTime,
             eventGroupIdCallback: this.groupingFunction.bind(this),
             calculateTransferSize: true,
+            // Ensure we group by 3P alongside eventID for correct 3P grouping.
+            forceGroupIdCallback: true,
         });
         return node;
     }
@@ -138,6 +140,32 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         if (sortFunction) {
             this.dataGrid.sortNodes(sortFunction, !this.dataGrid.isSortOrderAscending());
         }
+    }
+    onHover(node) {
+        if (!node) {
+            this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.TimelineTreeView.Events.TREE_ROW_HOVERED */, { node: null });
+            return;
+        }
+        this.#getEventsForEventDispatch(node);
+        const events = this.#getEventsForEventDispatch(node);
+        this.dispatchEventToListeners("TreeRowHovered" /* TimelineTreeView.TimelineTreeView.Events.TREE_ROW_HOVERED */, { node, events: events && events.length > 0 ? events : undefined });
+    }
+    onClick(node) {
+        if (!node) {
+            this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.TimelineTreeView.Events.TREE_ROW_CLICKED */, { node: null });
+            return;
+        }
+        const events = this.#getEventsForEventDispatch(node);
+        this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.TimelineTreeView.Events.TREE_ROW_CLICKED */, { node, events: events && events.length > 0 ? events : undefined });
+    }
+    // For ThirdPartyTree, we should include everything in our entity mapper for full coverage.
+    #getEventsForEventDispatch(node) {
+        const mapper = this.entityMapper();
+        if (!mapper) {
+            return null;
+        }
+        const entity = mapper.entityForEvent(node.event);
+        return entity ? mapper.eventsForEntity(entity) ?? [] : [];
     }
     displayInfoForGroupNode(node) {
         const color = 'gray';

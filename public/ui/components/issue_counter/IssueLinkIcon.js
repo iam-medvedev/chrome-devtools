@@ -12,7 +12,7 @@ import { getIssueKindIconData } from './IssueCounter.js';
 import IssueLinkIconStylesRaw from './issueLinkIcon.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const IssueLinkIconStyles = new CSSStyleSheet();
-IssueLinkIconStyles.replaceSync(IssueLinkIconStylesRaw.cssContent);
+IssueLinkIconStyles.replaceSync(IssueLinkIconStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

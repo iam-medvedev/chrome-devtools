@@ -283,10 +283,11 @@ export class BottomUpRootNode extends Node {
     filter;
     startTime;
     endTime;
-    eventGroupIdCallback;
     totalTime;
+    eventGroupIdCallback;
     calculateTransferSize;
-    constructor(events, { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, }) {
+    forceGroupIdCallback;
+    constructor(events, { textFilter, filters, startTime, endTime, eventGroupIdCallback, calculateTransferSize, forceGroupIdCallback, }) {
         super('', events[0]);
         this.childrenInternal = null;
         this.events = events;
@@ -297,6 +298,7 @@ export class BottomUpRootNode extends Node {
         this.eventGroupIdCallback = eventGroupIdCallback;
         this.totalTime = endTime - startTime;
         this.calculateTransferSize = calculateTransferSize;
+        this.forceGroupIdCallback = forceGroupIdCallback;
     }
     hasChildren() {
         return true;
@@ -328,10 +330,16 @@ export class BottomUpRootNode extends Node {
         const selfTimeStack = [endTime - startTime];
         const firstNodeStack = [];
         const totalTimeById = new Map();
+        // TODO(paulirish): rename to getGroupNodeId
+        const eventGroupIdCallback = this.eventGroupIdCallback;
+        const forceGroupIdCallback = this.forceGroupIdCallback;
         // encodedDataLength is provided solely on instant events.
         const sumTransferSizeOfInstantEvent = (e) => {
             if (Types.Events.isReceivedDataEvent(e)) {
-                const id = generateEventID(e);
+                let id = generateEventID(e);
+                if (this.forceGroupIdCallback && this.eventGroupIdCallback) {
+                    id = `${id}-${this.eventGroupIdCallback(e)}`;
+                }
                 let node = nodeById.get(id);
                 if (!node) {
                     node = new BottomUpNode(root, id, e, false, root);
@@ -358,7 +366,10 @@ export class BottomUpRootNode extends Node {
             const duration = actualEndTime - Math.max(currentStartTime, startTime);
             selfTimeStack[selfTimeStack.length - 1] -= duration;
             selfTimeStack.push(duration);
-            const id = generateEventID(e);
+            let id = generateEventID(e);
+            if (forceGroupIdCallback && eventGroupIdCallback) {
+                id = `${id}-${eventGroupIdCallback(e)}`;
+            }
             const noNodeOnStack = !totalTimeById.has(id);
             if (noNodeOnStack) {
                 totalTimeById.set(id, duration);
@@ -366,7 +377,10 @@ export class BottomUpRootNode extends Node {
             firstNodeStack.push(noNodeOnStack);
         }
         function onEndEvent(event) {
-            const id = generateEventID(event);
+            let id = generateEventID(event);
+            if (forceGroupIdCallback && eventGroupIdCallback) {
+                id = `${id}-${eventGroupIdCallback(event)}`;
+            }
             let node = nodeById.get(id);
             if (!node) {
                 node = new BottomUpNode(root, id, event, false, root);
@@ -544,6 +558,7 @@ export function eventStackFrame(event) {
     }
     return { ...topFrame, scriptId: String(topFrame.scriptId) };
 }
+// TODO(paulirish): rename to generateNodeId
 export function generateEventID(event) {
     if (Types.Events.isProfileCall(event)) {
         const name = SamplesIntegrator.isNativeRuntimeFrame(event.callFrame) ?

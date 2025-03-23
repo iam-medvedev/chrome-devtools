@@ -8,7 +8,7 @@ import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import colorMixSwatchStylesRaw from './colorMixSwatch.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const colorMixSwatchStyles = new CSSStyleSheet();
-colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw.cssContent);
+colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw.cssText);
 const { html, render, Directives: { ref } } = Lit;
 export class ColorMixChangedEvent extends Event {
     static eventName = 'colormixchanged';

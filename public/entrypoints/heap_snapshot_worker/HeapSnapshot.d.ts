@@ -159,12 +159,6 @@ export declare class HeapSnapshotProgress {
     reportProblem(error: string): void;
     private sendUpdateEvent;
 }
-export declare class HeapSnapshotProblemReport {
-    #private;
-    constructor(title: string);
-    addError(error: string): void;
-    toString(): string;
-}
 export interface Profile {
     root_index: number;
     nodes: Platform.TypedArrayUtilities.BigUint32Array;
@@ -182,6 +176,49 @@ export interface LiveObjects {
         size: number;
         ids: number[];
     };
+}
+interface SecondaryInitArgumentsStep1 {
+    edgeToNodeOrdinals: Uint32Array;
+    firstEdgeIndexes: Uint32Array;
+    nodeCount: number;
+    edgeFieldsCount: number;
+    nodeFieldCount: number;
+}
+interface SecondaryInitArgumentsStep2 {
+    rootNodeOrdinal: number;
+    essentialEdgesBuffer: ArrayBuffer;
+}
+interface SecondaryInitArgumentsStep3 {
+    nodeSelfSizes: Uint32Array;
+}
+type ArgumentsToBuildRetainers = SecondaryInitArgumentsStep1;
+interface Retainers {
+    firstRetainerIndex: Uint32Array;
+    retainingNodes: Uint32Array;
+    retainingEdges: Uint32Array;
+}
+interface ArgumentsToComputeDominatorsAndRetainedSizes extends SecondaryInitArgumentsStep1, Retainers, SecondaryInitArgumentsStep2 {
+    essentialEdges: Platform.TypedArrayUtilities.BitVector;
+    port: MessagePort;
+    nodeSelfSizesPromise: Promise<Uint32Array>;
+}
+interface DominatorsAndRetainedSizes {
+    dominatorsTree: Uint32Array;
+    retainedSizes: Float64Array;
+}
+interface ArgumentsToBuildDominatedNodes extends ArgumentsToComputeDominatorsAndRetainedSizes, DominatorsAndRetainedSizes {
+}
+interface DominatedNodes {
+    firstDominatedNodeIndex: Uint32Array;
+    dominatedNodes: Uint32Array;
+}
+export declare class SecondaryInitManager {
+    argsStep1: Promise<SecondaryInitArgumentsStep1>;
+    argsStep2: Promise<SecondaryInitArgumentsStep2>;
+    argsStep3: Promise<SecondaryInitArgumentsStep3>;
+    constructor(port: MessagePort);
+    private getNodeSelfSizes;
+    private initialize;
 }
 /**
  * DOM node link state.
@@ -241,9 +278,13 @@ export declare abstract class HeapSnapshot {
     nodeDetachednessAndClassIndexOffset: number;
     detachednessAndClassIndexArray?: Uint32Array;
     constructor(profile: Profile, progress: HeapSnapshotProgress);
-    initialize(): void;
+    initialize(secondWorker: MessagePort): Promise<void>;
+    private startInitStep1InSecondThread;
+    private startInitStep2InSecondThread;
+    private startInitStep3InSecondThread;
+    private installResultsFromSecondThread;
     private buildEdgeIndexes;
-    private buildRetainers;
+    static buildRetainers(inputs: ArgumentsToBuildRetainers): Retainers;
     abstract createNode(_nodeIndex?: number): HeapSnapshotNode;
     abstract createEdge(_edgeIndex: number): JSHeapSnapshotEdge;
     abstract createRetainingEdge(_retainerIndex: number): JSHeapSnapshotRetainerEdge;
@@ -280,10 +321,10 @@ export declare abstract class HeapSnapshot {
         tableId: string;
     } | undefined;
     private computeIsEssentialEdge;
-    private isEssentialEdge;
-    private hasOnlyWeakRetainers;
-    private buildDominatorTreeAndCalculateRetainedSizes;
-    private buildDominatedNodes;
+    private initEssentialEdges;
+    static hasOnlyWeakRetainers(inputs: ArgumentsToComputeDominatorsAndRetainedSizes, nodeOrdinal: number): boolean;
+    static calculateDominatorsAndRetainedSizes(inputs: ArgumentsToComputeDominatorsAndRetainedSizes): Promise<DominatorsAndRetainedSizes>;
+    static buildDominatedNodes(inputs: ArgumentsToBuildDominatedNodes): DominatedNodes;
     private calculateObjectNames;
     interfaceDefinitions(): string;
     private isPlainJSObject;
@@ -425,6 +466,7 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     private calculateArraySize;
     getStatistics(): HeapSnapshotModel.HeapSnapshotModel.Statistics;
 }
+export declare function createJSHeapSnapshotForTesting(profile: Profile): Promise<JSHeapSnapshot>;
 export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     #private;
     constructor(snapshot: JSHeapSnapshot, nodeIndex?: number);

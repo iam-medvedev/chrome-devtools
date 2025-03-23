@@ -7,7 +7,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import editableSpanStylesRaw from './EditableSpan.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const editableSpanStyles = new CSSStyleSheet();
-editableSpanStyles.replaceSync(editableSpanStylesRaw.cssContent);
+editableSpanStyles.replaceSync(editableSpanStylesRaw.cssText);
 export class EditableSpan extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #boundRender = this.#render.bind(this);

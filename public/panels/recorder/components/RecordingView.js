@@ -15,13 +15,18 @@ import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_h
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import recordingViewStylesRaw from './recordingView.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const inspectorCommonStyles = new CSSStyleSheet();
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const recordingViewStyles = new CSSStyleSheet();
-recordingViewStyles.replaceSync(recordingViewStylesRaw.cssContent);
+recordingViewStyles.replaceSync(recordingViewStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -280,6 +285,7 @@ export class RecordingView extends HTMLElement {
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [
+            inspectorCommonStyles,
             recordingViewStyles,
             Input.textInputStyles,
         ];
@@ -426,8 +432,11 @@ export class RecordingView extends HTMLElement {
         this.#render();
     }
     #onNetworkConditionsChange(event) {
-        const preset = networkConditionPresets.find(preset => preset.i18nTitleKey === event.itemValue);
-        this.dispatchEvent(new NetworkConditionsChanged(preset?.i18nTitleKey === SDK.NetworkManager.NoThrottlingConditions.i18nTitleKey ? undefined : preset));
+        const throttlingMenu = event.target;
+        if (throttlingMenu instanceof HTMLSelectElement) {
+            const preset = networkConditionPresets.find(preset => preset.i18nTitleKey === throttlingMenu.value);
+            this.dispatchEvent(new NetworkConditionsChanged(preset?.i18nTitleKey === SDK.NetworkManager.NoThrottlingConditions.i18nTitleKey ? undefined : preset));
+        }
     }
     #onTimeoutInput(event) {
         const target = event.target;
@@ -574,29 +583,18 @@ export class RecordingView extends HTMLElement {
             replaySettingsFragments.push(html `<div class="editable-setting">
         <label class="wrapping-label" @click=${this.#onSelectMenuLabelClick}>
           ${i18nString(UIStrings.network)}
-          <devtools-select-menu
-            @selectmenuselected=${this.#onNetworkConditionsChange}
-            .disabled=${!this.#steps.find(step => step.type === 'navigate')}
-            .showDivider=${true}
-            .showArrow=${true}
-            .sideButton=${false}
-            .showSelectedItem=${true}
-            .jslogContext=${'network-conditions'}
-            .position=${"bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */}
-            .buttonTitle=${menuButtonTitle}
-          >
-            ${networkConditionPresets.map(condition => {
-                return html `<devtools-menu-item
-                .value=${condition.i18nTitleKey || ''}
-                .selected=${selectedOption === condition.i18nTitleKey}
-                jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(condition.i18nTitleKey || ''))}
-              >
-                ${condition.title instanceof Function
-                    ? condition.title()
-                    : condition.title}
-              </devtools-menu-item>`;
-            })}
-          </devtools-select-menu>
+          <select
+              title=${menuButtonTitle}
+              jslog=${VisualLogging.dropDown('network-conditions').track({ change: true })}
+              @change=${this.#onNetworkConditionsChange}>
+        ${networkConditionPresets.map(condition => html `
+          <option jslog=${VisualLogging.item(Platform.StringUtilities.toKebabCase(condition.i18nTitleKey || ''))}
+                  value=${condition.i18nTitleKey || ''} ?selected=${selectedOption === condition.i18nTitleKey}>
+                  ${condition.title instanceof Function
+                ? condition.title()
+                : condition.title}
+          </option>`)}
+      </select>
         </label>
       </div>`);
             replaySettingsFragments.push(html `<div class="editable-setting">

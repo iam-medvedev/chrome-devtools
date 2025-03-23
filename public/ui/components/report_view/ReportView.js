@@ -10,22 +10,22 @@ import reportSectionHeaderStylesRaw from './reportSectionHeader.css.js';
 import reportValueStylesRaw from './reportValue.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportStyles = new CSSStyleSheet();
-reportStyles.replaceSync(reportStylesRaw.cssContent);
+reportStyles.replaceSync(reportStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportKeyStyles = new CSSStyleSheet();
-reportKeyStyles.replaceSync(reportKeyStylesRaw.cssContent);
+reportKeyStyles.replaceSync(reportKeyStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportSectionStyles = new CSSStyleSheet();
-reportSectionStyles.replaceSync(reportSectionStylesRaw.cssContent);
+reportSectionStyles.replaceSync(reportSectionStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportSectionDividerStyles = new CSSStyleSheet();
-reportSectionDividerStyles.replaceSync(reportSectionDividerStylesRaw.cssContent);
+reportSectionDividerStyles.replaceSync(reportSectionDividerStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportSectionHeaderStyles = new CSSStyleSheet();
-reportSectionHeaderStyles.replaceSync(reportSectionHeaderStylesRaw.cssContent);
+reportSectionHeaderStyles.replaceSync(reportSectionHeaderStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const reportValueStyles = new CSSStyleSheet();
-reportValueStyles.replaceSync(reportValueStylesRaw.cssContent);
+reportValueStyles.replaceSync(reportValueStylesRaw.cssText);
 export class Report extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #reportTitle = '';
@@ -41,8 +41,8 @@ export class Report extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      ${this.#reportTitle ? html `<div class="report-title">${this.#reportTitle}</div>` : nothing}
       <div class="content">
-        ${this.#reportTitle ? html `<div class="report-title">${this.#reportTitle}</div>` : nothing}
         <slot></slot>
       </div>
     `, this.#shadow, { host: this });

@@ -55,7 +55,7 @@ export class FileSourceIcon extends HTMLElement {
             height: this.#height ? `${this.#height}px` : undefined,
         });
         // clang-format off
-        render(html `<style>${fileSourceIconStyles.cssContent}</style><devtools-icon .name=${this.#iconType} class=${iconClasses} style=${iconStyles}></devtools-icon>`, this.#shadow, {
+        render(html `<style>${fileSourceIconStyles.cssText}</style><devtools-icon .name=${this.#iconType} class=${iconClasses} style=${iconStyles}></devtools-icon>`, this.#shadow, {
             host: this,
         });
         // clang-format on

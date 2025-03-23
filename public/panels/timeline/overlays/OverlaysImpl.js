@@ -6,7 +6,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { EntryStyles } from '../../timeline/utils/utils.js';
+import * as Utils from '../utils/utils.js';
 import * as Components from './components/components.js';
 const UIStrings = {
     /**
@@ -194,7 +194,10 @@ export function chartForEntry(entry) {
     return 'main';
 }
 export function overlayIsSingleton(overlay) {
-    return overlay.type === 'TIMESTAMP_MARKER' || overlay.type === 'ENTRY_SELECTED';
+    return overlayTypeIsSingleton(overlay.type);
+}
+export function overlayTypeIsSingleton(type) {
+    return type === 'TIMESTAMP_MARKER' || type === 'ENTRY_SELECTED';
 }
 export class AnnotationOverlayActionEvent extends Event {
     overlay;
@@ -253,6 +256,7 @@ export class Overlays extends EventTarget {
      * based on the new position of the timeline.
      */
     #overlaysToElements = new Map();
+    #singletonOverlays = new Map();
     // When the Entries Link Annotation is created, the arrow needs to follow the mouse.
     // Update the mouse coordinates while it is being created.
     #lastMouseOffsetX = null;
@@ -355,10 +359,13 @@ export class Overlays extends EventTarget {
          * the existing one, rather than create a new one. This ensures you can only
          * ever have one instance of the overlay type.
          */
-        const existing = this.overlaysOfType(newOverlay.type);
-        if (overlayIsSingleton(newOverlay) && existing[0]) {
-            this.updateExisting(existing[0], newOverlay);
-            return existing[0];
+        if (overlayIsSingleton(newOverlay)) {
+            const existing = this.#singletonOverlays.get(newOverlay.type);
+            if (existing) {
+                this.updateExisting(existing, newOverlay);
+                return existing; // The is a safe cast, thanks to `type` above.
+            }
+            this.#singletonOverlays.set(newOverlay.type, newOverlay);
         }
         // By setting the value to null, we ensure that on the next render that the
         // overlay will have a new HTML element created for it.
@@ -412,6 +419,14 @@ export class Overlays extends EventTarget {
      * @returns the number of overlays that were removed.
      */
     removeOverlaysOfType(type) {
+        if (overlayTypeIsSingleton(type)) {
+            const singleton = this.#singletonOverlays.get(type);
+            if (singleton) {
+                this.remove(singleton);
+                return 1;
+            }
+            return 0;
+        }
         const overlaysToRemove = Array.from(this.#overlaysToElements.keys()).filter(overlay => {
             return overlay.type === type;
         });
@@ -424,6 +439,13 @@ export class Overlays extends EventTarget {
      * @returns all overlays that match the provided type.
      */
     overlaysOfType(type) {
+        if (overlayTypeIsSingleton(type)) {
+            const singleton = this.#singletonOverlays.get(type);
+            if (singleton) {
+                return [singleton];
+            }
+            return [];
+        }
         const matches = [];
         function overlayIsOfType(overlay) {
             return overlay.type === type;
@@ -451,6 +473,9 @@ export class Overlays extends EventTarget {
             this.#overlaysContainer.removeChild(htmlElement);
         }
         this.#overlaysToElements.delete(overlay);
+        if (overlayIsSingleton(overlay)) {
+            this.#singletonOverlays.delete(overlay.type);
+        }
     }
     /**
      * Update the dimensions of a chart.
@@ -1153,6 +1178,10 @@ export class Overlays extends EventTarget {
             case 'ENTRY_LABEL': {
                 const shouldDrawLabelBelowEntry = Trace.Types.Events.isLegacyTimelineFrame(overlay.entry);
                 const component = new Components.EntryLabelOverlay.EntryLabelOverlay(overlay.label, shouldDrawLabelBelowEntry);
+                // Generate the AI Call Tree for the AI Auto-Annotation feature.
+                const parsedTrace = this.#queries.parsedTrace();
+                const callTree = parsedTrace ? Utils.AICallTree.AICallTree.fromEvent(overlay.entry, parsedTrace) : null;
+                component.callTree = callTree;
                 component.addEventListener(Components.EntryLabelOverlay.EmptyEntryLabelRemoveEvent.eventName, () => {
                     this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, 'Remove'));
                 });
@@ -1224,7 +1253,7 @@ export class Overlays extends EventTarget {
                 return overlayElement;
             }
             case 'TIMINGS_MARKER': {
-                const { color } = EntryStyles.markerDetailsForEvent(overlay.entries[0]);
+                const { color } = Utils.EntryStyles.markerDetailsForEvent(overlay.entries[0]);
                 const markersComponent = this.#createTimingsMarkerElement(overlay);
                 overlayElement.appendChild(markersComponent);
                 overlayElement.style.backgroundColor = color;
@@ -1283,7 +1312,7 @@ export class Overlays extends EventTarget {
         const markers = document.createElement('div');
         markers.classList.add('markers');
         for (const entry of overlay.entries) {
-            const { color, title } = EntryStyles.markerDetailsForEvent(entry);
+            const { color, title } = Utils.EntryStyles.markerDetailsForEvent(entry);
             const marker = document.createElement('div');
             marker.classList.add('marker-title');
             marker.textContent = title;

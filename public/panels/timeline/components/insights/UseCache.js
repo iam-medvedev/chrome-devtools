@@ -7,11 +7,23 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
+import { createLimitedRows, renderOthersLabel } from './Table.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.UseCache;
 const { html } = Lit;
-const MAX_TO_SHOW = 10;
 export class UseCache extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-use-cache`;
+    mapToRow(req) {
+        return {
+            values: [eventRef(req.request), i18n.TimeUtilities.secondsToString(req.ttl)],
+            overlays: [this.#createOverlayForRequest(req.request)],
+        };
+    }
+    createAggregatedTableRow(remaining) {
+        return {
+            values: [renderOthersLabel(remaining.length), ''],
+            overlays: remaining.flatMap(r => this.#createOverlayForRequest(r.request)),
+        };
+    }
     internalName = 'use-cache';
     createOverlays() {
         if (!this.model) {
@@ -28,18 +40,7 @@ export class UseCache extends BaseInsightComponent {
         }
         const cacheableRequests = [...this.model.requests];
         const topRequests = cacheableRequests.sort((a, b) => b.request.args.data.decodedBodyLength - a.request.args.data.decodedBodyLength);
-        const remaining = topRequests.splice(MAX_TO_SHOW);
-        const rows = topRequests.map(req => ({
-            values: [eventRef(req.request), i18n.TimeUtilities.secondsToString(req.ttl)],
-            overlays: [this.#createOverlayForRequest(req.request)],
-        }));
-        if (remaining.length > 0) {
-            const value = remaining.length > 1 ? i18nString(UIStrings.others, { PH1: remaining.length }) : eventRef(remaining[0].request);
-            rows.push({
-                values: [value],
-                overlays: remaining.map(r => this.#createOverlayForRequest(r.request)),
-            });
-        }
+        const rows = createLimitedRows(topRequests, this);
         if (!rows.length) {
             return html `<div class="insight-section">${i18nString(UIStrings.noRequestsToCache)}</div>`;
         }

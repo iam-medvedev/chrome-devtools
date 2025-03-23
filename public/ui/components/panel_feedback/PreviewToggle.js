@@ -9,7 +9,7 @@ import * as Input from '../input/input.js';
 import previewToggleStylesRaw from './previewToggle.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const previewToggleStyles = new CSSStyleSheet();
-previewToggleStyles.replaceSync(previewToggleStylesRaw.cssContent);
+previewToggleStyles.replaceSync(previewToggleStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Link text the user can click to provide feedback to the team.

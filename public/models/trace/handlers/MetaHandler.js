@@ -43,6 +43,7 @@ const traceBounds = {
  */
 const navigationsByFrameId = new Map();
 const navigationsByNavigationId = new Map();
+const finalDisplayUrlByNavigationId = new Map();
 const mainFrameNavigations = [];
 // Represents all the threads in the trace, organized by process. This is mostly for internal
 // bookkeeping so that during the finalize pass we can obtain the main and browser thread IDs.
@@ -69,6 +70,7 @@ const CHROME_WEB_TRACE_EVENTS = new Set([
 export function reset() {
     navigationsByFrameId.clear();
     navigationsByNavigationId.clear();
+    finalDisplayUrlByNavigationId.clear();
     processNames.clear();
     mainFrameNavigations.length = 0;
     browserProcessId = Types.Events.ProcessID(-1);
@@ -260,6 +262,7 @@ export function handleEvent(event) {
             return;
         }
         navigationsByNavigationId.set(navigationId, event);
+        finalDisplayUrlByNavigationId.set(navigationId, event.args.data.documentLoaderURL);
         const frameId = event.args.frame;
         const existingFrameNavigations = navigationsByFrameId.get(frameId) || [];
         existingFrameNavigations.push(event);
@@ -267,6 +270,29 @@ export function handleEvent(event) {
         if (frameId === mainFrameId) {
             mainFrameNavigations.push(event);
         }
+        return;
+    }
+    // Update `finalDisplayUrlByNavigationId` to reflect the latest redirect for each navigation.
+    if (Types.Events.isResourceSendRequest(event)) {
+        if (event.args.data.resourceType !== 'Document') {
+            return;
+        }
+        const maybeNavigationId = event.args.data.requestId;
+        const navigation = navigationsByNavigationId.get(maybeNavigationId);
+        if (!navigation) {
+            return;
+        }
+        finalDisplayUrlByNavigationId.set(maybeNavigationId, event.args.data.url);
+        return;
+    }
+    // Update `finalDisplayUrlByNavigationId` to reflect history API navigations.
+    if (Types.Events.isDidCommitSameDocumentNavigation(event)) {
+        if (event.args.render_frame_host.frame_type !== 'PRIMARY_MAIN_FRAME') {
+            return;
+        }
+        const navigation = mainFrameNavigations.at(-1);
+        const key = navigation?.args.data?.navigationId ?? '';
+        finalDisplayUrlByNavigationId.set(key, event.args.url);
         return;
     }
 }
@@ -361,6 +387,7 @@ export function data() {
         mainFrameURL,
         navigationsByFrameId,
         navigationsByNavigationId,
+        finalDisplayUrlByNavigationId,
         threadsInProcess,
         rendererProcessesByFrame: rendererProcessesByFrameId,
         topLevelRendererIds,

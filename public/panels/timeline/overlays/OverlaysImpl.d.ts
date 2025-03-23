@@ -117,6 +117,7 @@ export interface TimelineOverlaySetOptions {
  */
 type SingletonOverlay = EntrySelected | TimestampMarker;
 export declare function overlayIsSingleton(overlay: TimelineOverlay): overlay is SingletonOverlay;
+export declare function overlayTypeIsSingleton(type: TimelineOverlay['type']): type is SingletonOverlay['type'];
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
  * will always have the same width, so theoretically we could only gather that
@@ -136,6 +137,7 @@ export interface TimelineCharts {
     networkProvider: PerfUI.FlameChart.FlameChartDataProvider;
 }
 export interface OverlayEntryQueries {
+    parsedTrace: () => Trace.Handlers.Types.ParsedTrace | null;
     isEntryCollapsedByUser: (entry: Trace.Types.Events.Event) => boolean;
     firstVisibleParentForEntry: (entry: Trace.Types.Events.Event) => Trace.Types.Events.Event | null;
 }

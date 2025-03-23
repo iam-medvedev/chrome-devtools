@@ -11,7 +11,7 @@ import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../models/workspace_diff/workspace_diff.js';
-import * as AiAssistance from '../panels/ai_assistance/ai_assistance.js';
+import * as AiAssistancePanel from '../panels/ai_assistance/ai_assistance.js';
 import { findMenuItemWithLabel, getMenu } from './ContextMenuHelpers.js';
 import { createTarget, } from './EnvironmentHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode } from './UISourceCodeHelpers.js';
@@ -24,6 +24,12 @@ function createMockAidaClient(fetch) {
         registerClientEvent: registerClientEventStub,
     };
 }
+export const MockAidaAbortError = {
+    abortError: true,
+};
+export const MockAidaFetchError = {
+    fetchError: true,
+};
 /**
  * Creates a mock AIDA client that responds using `data`.
  *
@@ -38,8 +44,11 @@ export function mockAidaClient(data = []) {
             throw new Error('No data provided to the mock client');
         }
         for (const [idx, chunk] of data[callId].entries()) {
-            if (options?.signal?.aborted) {
+            if (options?.signal?.aborted || ('abortError' in chunk)) {
                 throw new Host.AidaClient.AidaAbortError();
+            }
+            if ('fetchError' in chunk) {
+                throw new Error('Fetch error');
             }
             const metadata = chunk.metadata ?? {};
             if (metadata?.attributionMetadata?.attributionAction === Host.AidaClient.RecitationAction.BLOCK) {
@@ -131,12 +140,12 @@ let panels = [];
  */
 export async function createAiAssistancePanel(options) {
     let aidaAvailabilityForStub = options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
-    const view = createViewFunctionStub(AiAssistance.AiAssistancePanel);
+    const view = createViewFunctionStub(AiAssistancePanel.AiAssistancePanel);
     const aidaClient = options?.aidaClient ?? mockAidaClient();
     const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions').callsFake(() => {
         return Promise.resolve(aidaAvailabilityForStub);
     });
-    const panel = new AiAssistance.AiAssistancePanel(view, {
+    const panel = new AiAssistancePanel.AiAssistancePanel(view, {
         aidaClient,
         aidaAvailability: aidaAvailabilityForStub,
         syncInfo: options?.syncInfo ?? { isSyncActive: true },
@@ -162,9 +171,9 @@ let patchWidgets = [];
  * stubs and the initial view input caused by Widget.show().
  */
 export async function createPatchWidget(options) {
-    const view = createViewFunctionStub(AiAssistance.PatchWidget.PatchWidget);
+    const view = createViewFunctionStub(AiAssistancePanel.PatchWidget.PatchWidget);
     const aidaClient = options?.aidaClient ?? mockAidaClient();
-    const widget = new AiAssistance.PatchWidget.PatchWidget(undefined, view, {
+    const widget = new AiAssistancePanel.PatchWidget.PatchWidget(undefined, view, {
         aidaClient,
     });
     patchWidgets.push(widget);
@@ -181,7 +190,7 @@ export async function createPatchWidgetWithDiffView() {
     const { view, panel, aidaClient } = await createPatchWidget({ aidaClient: mockAidaClient([[{ explanation: 'patch applied' }]]) });
     panel.changeSummary = 'body { background-color: red; }';
     view.input.onApplyToWorkspace();
-    assert.exists((await view.nextInput).patchSuggestion);
+    assert.strictEqual((await view.nextInput).patchSuggestionState, AiAssistancePanel.PatchWidget.PatchSuggestionState.SUCCESS);
     return { panel, view, aidaClient };
 }
 export function initializePersistenceImplForTests() {

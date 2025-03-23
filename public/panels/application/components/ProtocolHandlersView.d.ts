@@ -11,7 +11,6 @@ export interface ProtocolHandlersData {
 export declare class ProtocolHandlersView extends HTMLElement {
     #private;
     set data(data: ProtocolHandlersData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

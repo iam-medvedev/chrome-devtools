@@ -8,7 +8,7 @@ import markdownLinkStylesRaw from './markdownLink.css.js';
 import { getMarkdownLink } from './MarkdownLinksMap.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const markdownLinkStyles = new CSSStyleSheet();
-markdownLinkStyles.replaceSync(markdownLinkStylesRaw.cssContent);
+markdownLinkStyles.replaceSync(markdownLinkStylesRaw.cssText);
 /**
  * Component to render link from parsed markdown.
  * Parsed links from markdown are not directly rendered, instead they have to be added to the <key, link> map in MarkdownLinksMap.ts.

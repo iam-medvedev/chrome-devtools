@@ -1,6 +1,5 @@
 import * as Extras from '../extras/extras.js';
 import * as Handlers from '../handlers/handlers.js';
-import type * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
@@ -23,11 +22,8 @@ export declare const UIStrings: {
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
-    eventsByEntity: Map<Extras.ThirdParties.Entity, Types.Events.Event[]>;
-    summaryByEntity: Map<Extras.ThirdParties.Entity, Extras.ThirdParties.Summary>;
-    summaryByUrl: Map<string, Extras.ThirdParties.Summary>;
-    urlsByEntity: Map<Extras.ThirdParties.Entity, Set<string>>;
     /** The entity for this navigation's URL. Any other entity is from a third party. */
     firstPartyEntity?: Extras.ThirdParties.Entity;
+    summaries: Extras.ThirdParties.Summary[];
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ThirdPartiesInsightModel;

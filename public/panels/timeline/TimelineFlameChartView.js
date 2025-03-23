@@ -208,6 +208,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 networkProvider: this.networkDataProvider,
             },
             entryQueries: {
+                parsedTrace: () => {
+                    return this.#parsedTrace;
+                },
                 isEntryCollapsedByUser: (entry) => {
                     return ModificationsManager.activeManager()?.getEntriesFilter().entryIsInvisible(entry) ?? false;
                 },
@@ -290,15 +293,23 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.mainFlameChart.addEventListener("TracksReorderStateChange" /* PerfUI.FlameChart.Events.TRACKS_REORDER_STATE_CHANGED */, event => {
             this.#overlays.toggleAllOverlaysDisplayed(!event.data);
         });
-        this.detailsView.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, node => {
+        this.detailsView.addEventListener("TreeRowHovered" /* TimelineTreeView.Events.TREE_ROW_HOVERED */, e => {
             if (!Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
                 return;
             }
-            const events = node?.data?.events ?? null;
+            if (e.data.events) {
+                this.#updateFlameChartDimmerWithEvents(this.#treeRowHoverDimmer, e.data.events);
+                return;
+            }
+            const events = e?.data?.node?.events ?? null;
             this.#updateFlameChartDimmerWithEvents(this.#treeRowHoverDimmer, events);
         });
-        this.detailsView.addEventListener("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, node => {
-            const events = node?.data?.events ?? null;
+        this.detailsView.addEventListener("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, e => {
+            if (e.data.events) {
+                this.#updateFlameChartDimmerWithEvents(this.#treeRowClickDimmer, e.data.events);
+                return;
+            }
+            const events = e?.data?.node?.events ?? null;
             this.#updateFlameChartDimmerWithEvents(this.#treeRowClickDimmer, events);
         });
         /**
@@ -955,6 +966,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.resizeToPreferredHeights();
         this.setMarkers(this.#parsedTrace);
         this.dimThirdPartiesIfRequired();
+        ModificationsManager.activeManager()?.applyAnnotationsFromCache();
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {

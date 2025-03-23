@@ -10,7 +10,7 @@ import * as Utils from '../../utils/utils.js';
 import baseInsightComponentStylesRaw from './baseInsightComponent.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const baseInsightComponentStyles = new CSSStyleSheet();
-baseInsightComponentStyles.replaceSync(baseInsightComponentStylesRaw.cssContent);
+baseInsightComponentStyles.replaceSync(baseInsightComponentStylesRaw.cssText);
 const { html } = Lit;
 export class EventReferenceClick extends Event {
     event;

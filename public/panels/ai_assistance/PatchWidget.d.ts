@@ -7,11 +7,16 @@ import type * as Platform from '../../core/platform/platform.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives } from '../../ui/lit/lit.js';
+export declare enum PatchSuggestionState {
+    INITIAL = "initial",// The user did not attempt patching yet.
+    LOADING = "loading",// Applying to workspace is in progress.
+    SUCCESS = "success",// Applying to workspace succeeded.
+    ERROR = "error"
+}
 export interface ViewInput {
     workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl;
+    patchSuggestionState: PatchSuggestionState;
     changeSummary?: string;
-    patchSuggestion?: string;
-    patchSuggestionLoading?: boolean;
     sources?: string;
     projectName?: string;
     savedToDisk?: boolean;

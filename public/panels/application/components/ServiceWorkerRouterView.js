@@ -3,17 +3,11 @@
 // found in the LICENSE file.
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import stylesRaw from './serviceWorkerRouterView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssContent);
+import serviceWorkerRouterViewStyles from './serviceWorkerRouterView.css.js';
 const { html, render } = Lit;
 export class ServiceWorkerRouterView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #rules = [];
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
-    }
     update(rules) {
         this.#rules = rules;
         if (this.#rules.length > 0) {
@@ -23,6 +17,7 @@ export class ServiceWorkerRouterView extends LegacyWrapper.LegacyWrapper.Wrappab
     #render() {
         // clang-format off
         render(html `
+      <style>${serviceWorkerRouterViewStyles.cssText}</style>
       <ul class="router-rules">
         ${this.#rules.map(this.#renderRouterRule)}
       </ul>

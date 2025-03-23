@@ -17,7 +17,7 @@ import { compareHeaders, isValidHeaderName, } from './HeaderSectionRow.js';
 import responseHeaderSectionStylesRaw from './ResponseHeaderSection.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const responseHeaderSectionStyles = new CSSStyleSheet();
-responseHeaderSectionStyles.replaceSync(responseHeaderSectionStylesRaw.cssContent);
+responseHeaderSectionStyles.replaceSync(responseHeaderSectionStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Label for a button which allows adding an HTTP header.

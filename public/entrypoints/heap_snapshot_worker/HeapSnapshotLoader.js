@@ -63,10 +63,11 @@ export class HeapSnapshotLoader {
             this.#dataCallback('');
         }
     }
-    buildSnapshot() {
+    async buildSnapshot(secondWorker) {
         this.#snapshot = this.#snapshot || {};
         this.#progress.updateStatus('Processing snapshot…');
         const result = new JSHeapSnapshot(this.#snapshot, this.#progress);
+        await result.initialize(secondWorker);
         this.#reset();
         return result;
     }

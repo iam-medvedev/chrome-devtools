@@ -12,7 +12,7 @@ const { UIStrings, i18nString } = Trace.Insights.Models.NetworkDependencyTree;
 const { html } = Lit;
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const networkDependencyTreeInsightComponentStyles = new CSSStyleSheet();
-networkDependencyTreeInsightComponentStyles.replaceSync(networkDependencyTreeInsightRaw.cssContent);
+networkDependencyTreeInsightComponentStyles.replaceSync(networkDependencyTreeInsightRaw.cssText);
 export class NetworkDependencyTree extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
     internalName = 'long-critical-network-tree';

@@ -75,7 +75,6 @@ export declare class NamedBitSetFilterUIElement extends HTMLElement {
     #private;
     set options(options: NamedBitSetFilterUIOptions);
     getOrCreateNamedBitSetFilterUI(): NamedBitSetFilterUI;
-    connectedCallback(): void;
 }
 export declare class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {
     private readonly filtersElement;

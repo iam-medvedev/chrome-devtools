@@ -45,7 +45,7 @@ export class HeapSnapshotWorkerDispatcher {
     sendEvent(name, data) {
         this.#postMessage({ eventName: name, data });
     }
-    async dispatchMessage({ data }) {
+    async dispatchMessage({ data, ports }) {
         const response = { callId: data.callId, result: null, error: undefined, errorCallStack: undefined, errorMethodName: undefined };
         try {
             switch (data.disposition) {
@@ -64,7 +64,9 @@ export class HeapSnapshotWorkerDispatcher {
                 }
                 case 'factory': {
                     const object = this.#objects[data.objectId];
-                    const result = object[data.methodName].apply(object, data.methodArguments);
+                    const args = data.methodArguments.slice();
+                    args.push(...ports);
+                    const result = await object[data.methodName].apply(object, args);
                     if (result) {
                         this.#objects[data.newObjectId] = result;
                     }
@@ -93,6 +95,9 @@ export class HeapSnapshotWorkerDispatcher {
                         response.result = error.toString();
                     }
                     break;
+                }
+                case 'setupForSecondaryInit': {
+                    this.#objects[data.objectId] = new HeapSnapshot.SecondaryInitManager(ports[0]);
                 }
             }
         }

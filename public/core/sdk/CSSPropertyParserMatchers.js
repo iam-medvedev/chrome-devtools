@@ -361,22 +361,22 @@ export class LightDarkColorMatch {
     node;
     light;
     dark;
-    property;
-    constructor(text, node, light, dark, property) {
+    style;
+    constructor(text, node, light, dark, style) {
         this.text = text;
         this.node = node;
         this.light = light;
         this.dark = dark;
-        this.property = property;
+        this.style = style;
     }
 }
 // clang-format off
 export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
-    property;
+    style;
     // clang-format on
-    constructor(property) {
+    constructor(style) {
         super();
-        this.property = property;
+        this.style = style;
     }
     accepts(propertyName) {
         return cssMetadata().isColorAwareProperty(propertyName);
@@ -389,7 +389,7 @@ export class LightDarkColorMatcher extends matcherBase(LightDarkColorMatch) {
         if (args.length !== 2 || args[0].length === 0 || args[1].length === 0) {
             return null;
         }
-        return new LightDarkColorMatch(matching.ast.text(node), node, args[0], args[1], this.property);
+        return new LightDarkColorMatch(matching.ast.text(node), node, args[0], args[1], this.style);
     }
 }
 export class AutoBaseMatch {

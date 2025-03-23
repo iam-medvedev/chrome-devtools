@@ -174,8 +174,8 @@ export declare class LightDarkColorMatch implements Match {
     readonly node: CodeMirror.SyntaxNode;
     readonly light: CodeMirror.SyntaxNode[];
     readonly dark: CodeMirror.SyntaxNode[];
-    readonly property: CSSProperty;
-    constructor(text: string, node: CodeMirror.SyntaxNode, light: CodeMirror.SyntaxNode[], dark: CodeMirror.SyntaxNode[], property: CSSProperty);
+    readonly style: CSSStyleDeclaration;
+    constructor(text: string, node: CodeMirror.SyntaxNode, light: CodeMirror.SyntaxNode[], dark: CodeMirror.SyntaxNode[], style: CSSStyleDeclaration);
 }
 declare const LightDarkColorMatcher_base: {
     new (): {
@@ -185,8 +185,8 @@ declare const LightDarkColorMatcher_base: {
     };
 };
 export declare class LightDarkColorMatcher extends LightDarkColorMatcher_base {
-    readonly property: CSSProperty;
-    constructor(property: CSSProperty);
+    readonly style: CSSStyleDeclaration;
+    constructor(style: CSSStyleDeclaration);
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): LightDarkColorMatch | null;
 }

@@ -208,9 +208,6 @@ export class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         this.setValue('');
     }
 }
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const filterStyleSheet = new CSSStyleSheet();
-filterStyleSheet.replaceSync(filterStyles.cssContent);
 export class NamedBitSetFilterUIElement extends HTMLElement {
     #options = { items: [] };
     #shadow = this.attachShadow({ mode: 'open' });
@@ -231,6 +228,8 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
         }
         const namedBitSetFilterUI = new NamedBitSetFilterUI(this.#options.items, this.#options.setting);
         namedBitSetFilterUI.element().classList.add('named-bitset-filter');
+        const styleElement = this.#shadow.createChild('style');
+        styleElement.textContent = filterStyles.cssText;
         const disclosureElement = this.#shadow.createChild('div', 'named-bit-set-filter-disclosure');
         disclosureElement.appendChild(namedBitSetFilterUI.element());
         // Translate existing filter ("ObjectWrapper") events to DOM CustomEvents so clients can
@@ -238,11 +237,6 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
         namedBitSetFilterUI.addEventListener("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */, this.#filterChanged.bind(this));
         this.#namedBitSetFilterUI = namedBitSetFilterUI;
         return this.#namedBitSetFilterUI;
-    }
-    connectedCallback() {
-        // TODO(crbug.com/391381439): We cannot simply add a `<style>` element here, because
-        // the `options` setter above clears the shadow DOM.
-        this.#shadow.adoptedStyleSheets = [filterStyleSheet];
     }
     #filterChanged() {
         const domEvent = new CustomEvent('filterChanged');

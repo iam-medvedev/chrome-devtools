@@ -688,7 +688,7 @@ export function maybeInitSylesMap() {
         ["firstPaint" /* Trace.Types.Events.Name.MARK_FIRST_PAINT */]: new TimelineRecordStyle(i18nString(UIStrings.firstPaint), defaultCategoryStyles.painting, true),
         ["firstContentfulPaint" /* Trace.Types.Events.Name.MARK_FCP */]: new TimelineRecordStyle(i18nString(UIStrings.firstContentfulPaint), defaultCategoryStyles.rendering, true),
         ["largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */]: new TimelineRecordStyle(i18nString(UIStrings.largestContentfulPaint), defaultCategoryStyles.rendering, true),
-        ["V8Console::TimeStamp" /* Trace.Types.Events.Name.CONSOLE_TIME_STAMP */]: new TimelineRecordStyle(i18nString(UIStrings.timestamp), defaultCategoryStyles.scripting),
+        ["TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */]: new TimelineRecordStyle(i18nString(UIStrings.timestamp), defaultCategoryStyles.scripting),
         ["ConsoleTime" /* Trace.Types.Events.Name.CONSOLE_TIME */]: new TimelineRecordStyle(i18nString(UIStrings.consoleTime), defaultCategoryStyles.scripting),
         ["UserTiming" /* Trace.Types.Events.Name.USER_TIMING */]: new TimelineRecordStyle(i18nString(UIStrings.userTiming), defaultCategoryStyles.scripting),
         ["ResourceWillSendRequest" /* Trace.Types.Events.Name.RESOURCE_WILL_SEND_REQUEST */]: new TimelineRecordStyle(i18nString(UIStrings.willSendRequest), defaultCategoryStyles.loading),
@@ -743,6 +743,17 @@ export function maybeInitSylesMap() {
         ["AbortPostTaskCallback" /* Trace.Types.Events.Name.ABORT_POST_TASK_CALLBACK */]: new TimelineRecordStyle(i18nString(UIStrings.abortPostTaskCallback), defaultCategoryStyles.scripting),
         ["V8Console::runTask" /* Trace.Types.Events.Name.V8_CONSOLE_RUN_TASK */]: new TimelineRecordStyle(i18nString(UIStrings.consoleTaskRun), defaultCategoryStyles.scripting),
     };
+    // TODO: remove assertion after deduped eventStylesMap for VISIBLE_TRACE_EVENT_TYPES.
+    const visibleTraceEventsComplete = (Object.keys(eventStylesMap)).every(eventType => {
+        return Trace.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.has(eventType);
+    });
+    const eventStylesMapKeys = Object.keys(eventStylesMap);
+    const eventStylesComplete = Array.from(Trace.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES).every(eventType => {
+        return eventStylesMapKeys.includes(eventType);
+    });
+    if (!visibleTraceEventsComplete || !eventStylesComplete) {
+        throw new Error('eventStylesMap and VISIBLE_TRACE_EVENT_TYPES are out of sync!');
+    }
     return eventStylesMap;
 }
 export function setEventStylesMap(eventStyles) {

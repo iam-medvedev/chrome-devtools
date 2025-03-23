@@ -345,10 +345,6 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         this.resizerElementInternal.style.removeProperty('margin-bottom');
     }
     showBoth(animate) {
-        // Do nothing if both components are already showing.
-        if (!this.mainElement.classList.contains('hidden') && !this.sidebarElementInternal.classList.contains('hidden')) {
-            return;
-        }
         if (this.showModeInternal === "Both" /* ShowMode.BOTH */) {
             animate = false;
         }

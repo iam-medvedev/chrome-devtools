@@ -14,13 +14,14 @@ export declare class HeapSnapshotWorkerProxy extends Common.ObjectWrapper.Object
     dispose(): void;
     disposeObject(objectId: number): void;
     evaluateForTest(script: string, callback: (...arg0: any[]) => void): void;
-    callFactoryMethod<T extends Object>(callback: null, objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...methodArguments: any[]): T;
-    callFactoryMethod<T extends Object>(callback: ((...arg0: any[]) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...methodArguments: any[]): null;
+    callFactoryMethod<T extends Object>(callback: null, objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Transferable[], ...methodArguments: any[]): T;
+    callFactoryMethod<T extends Object>(callback: ((...arg0: any[]) => void), objectId: string, methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Transferable[], ...methodArguments: any[]): null;
     callMethod(callback: (...arg0: any[]) => void, objectId: string, methodName: string, ...methodArguments: any[]): void;
     startCheckingForLongRunningCalls(): void;
     checkLongRunningCalls(): void;
+    setupForSecondaryInit(port: MessagePort): Promise<void>;
     messageReceived(event: MessageEvent<any>): void;
-    postMessage(message: any): void;
+    postMessage(message: any, transfer?: Transferable[]): void;
 }
 export declare namespace HeapSnapshotWorkerProxy {
     const enum Events {
@@ -37,7 +38,7 @@ export declare class HeapSnapshotProxyObject {
     dispose(): void;
     disposeWorker(): void;
     callFactoryMethod<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...args: any[]): T;
-    callFactoryMethodPromise<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...args: any[]): Promise<T>;
+    callFactoryMethodPromise<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Transferable[], ...args: any[]): Promise<T>;
     callMethodPromise<T>(methodName: string, ...args: any[]): Promise<T>;
 }
 export declare class HeapSnapshotLoaderProxy extends HeapSnapshotProxyObject implements Common.StringOutputStream.OutputStream {

@@ -91,7 +91,7 @@ export class Adorner extends HTMLElement {
         });
     }
     #render() {
-        render(html `<style>${adornerStyles.cssContent}</style><slot name="content"></slot>`, this.#shadow, { host: this });
+        render(html `<style>${adornerStyles.cssText}</style><slot name="content"></slot>`, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-adorner', Adorner);

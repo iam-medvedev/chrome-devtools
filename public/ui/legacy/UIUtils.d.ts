@@ -239,9 +239,9 @@ export declare function injectCoreStyles(elementOrShadowRoot: Element | ShadowRo
  */
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
     cssFile?: Array<{
-        cssContent: string;
+        cssText: string;
     }> | {
-        cssContent: string;
+        cssText: string;
     };
     delegatesFocus?: boolean;
 }): ShadowRoot;

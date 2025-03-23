@@ -176,4 +176,6 @@ export type RevealPosition = number | {
         columnNumber: number;
     };
 };
+export declare const addInfobar: CodeMirror.StateEffectType<UI.Infobar.Infobar>;
+export declare const removeInfobar: CodeMirror.StateEffectType<UI.Infobar.Infobar>;
 export {};

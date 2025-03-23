@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 const DISPLAY_SELECTOR = 'devtools-linear-memory-inspector-interpreter-display';
 const SETTINGS_SELECTOR = 'devtools-linear-memory-inspector-interpreter-settings';
@@ -17,7 +18,7 @@ function assertDisplayRenders(component) {
     assert.isNotNull(display);
 }
 function clickSettingsButton(component) {
-    const settingsButton = getElementWithinComponent(component, '[data-settings]', HTMLButtonElement);
+    const settingsButton = getElementWithinComponent(component, '[data-settings]', Buttons.Button.Button);
     settingsButton.click();
 }
 describeWithLocale('LinearMemoryValueInterpreter', () => {

@@ -3,7 +3,8 @@ export declare class HeapSnapshotWorkerDispatcher {
     #private;
     constructor(postMessage: typeof Window.prototype.postMessage);
     sendEvent(name: string, data: unknown): void;
-    dispatchMessage({ data }: {
+    dispatchMessage({ data, ports }: {
         data: HeapSnapshotModel.HeapSnapshotModel.WorkerCommand;
+        ports: readonly MessagePort[];
     }): Promise<void>;
 }

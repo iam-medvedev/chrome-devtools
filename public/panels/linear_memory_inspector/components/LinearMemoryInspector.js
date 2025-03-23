@@ -12,7 +12,7 @@ import { formatAddress, parseAddress } from './LinearMemoryInspectorUtils.js';
 import { getDefaultValueTypeMapping, VALUE_INTEPRETER_MAX_NUM_BYTES, } from './ValueInterpreterDisplayUtils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const linearMemoryInspectorStyles = new CSSStyleSheet();
-linearMemoryInspectorStyles.replaceSync(linearMemoryInspectorStylesRaw.cssContent);
+linearMemoryInspectorStyles.replaceSync(linearMemoryInspectorStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an invalid address in the address line in the Linear memory inspector

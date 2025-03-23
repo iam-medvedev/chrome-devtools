@@ -7,13 +7,8 @@ import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import stackTraceLinkButtonStylesRaw from './stackTraceLinkButton.css.js';
-import stackTraceRowStylesRaw from './stackTraceRow.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const stackTraceLinkButtonStyles = new CSSStyleSheet();
-stackTraceLinkButtonStyles.replaceSync(stackTraceLinkButtonStylesRaw.cssContent);
-const stackTraceRowStyles = new CSSStyleSheet();
-stackTraceRowStyles.replaceSync(stackTraceRowStylesRaw.cssContent);
+import stackTraceLinkButtonStyles from './stackTraceLinkButton.css.js';
+import stackTraceRowStyles from './stackTraceRow.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -43,14 +38,12 @@ export class StackTraceRow extends HTMLElement {
         this.#stackTraceRowItem = data.stackTraceRowItem;
         this.#render();
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [stackTraceRowStyles];
-    }
     #render() {
         if (!this.#stackTraceRowItem) {
             return;
         }
         Lit.render(html `
+      <style>${stackTraceRowStyles.cssText}</style>
       <div class="stack-trace-row">
               <div class="stack-trace-function-name text-ellipsis" title=${this.#stackTraceRowItem.functionName}>
                 ${this.#stackTraceRowItem.functionName}
@@ -75,9 +68,6 @@ export class StackTraceLinkButton extends HTMLElement {
         this.#expandedView = data.expandedView;
         this.#render();
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [stackTraceLinkButtonStyles];
-    }
     #render() {
         if (!this.#hiddenCallFramesCount) {
             return;
@@ -85,6 +75,7 @@ export class StackTraceLinkButton extends HTMLElement {
         const linkText = this.#expandedView ? i18nString(UIStrings.showLess) :
             i18nString(UIStrings.showSMoreFrames, { n: this.#hiddenCallFramesCount });
         Lit.render(html `
+      <style>${stackTraceLinkButtonStyles.cssText}</style>
       <div class="stack-trace-row">
           <button class="link" @click=${() => this.#onShowAllClick()}>
             ${linkText}

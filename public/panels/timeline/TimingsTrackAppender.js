@@ -211,7 +211,7 @@ export class TimingsTrackAppender {
             }
         }
         if (Trace.Types.Events.isConsoleTimeStamp(event)) {
-            return `TimeStamp: ${event.args.data?.name ?? '(name unknown)'}`;
+            return `TimeStamp: ${event.args.data?.message ?? '(name unknown)'}`;
         }
         if (Trace.Types.Events.isPerformanceMark(event)) {
             return `[mark]: ${event.name}`;

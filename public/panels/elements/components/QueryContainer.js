@@ -9,7 +9,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import queryContainerStylesRaw from './queryContainer.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const queryContainerStyles = new CSSStyleSheet();
-queryContainerStyles.replaceSync(queryContainerStylesRaw.cssContent);
+queryContainerStyles.replaceSync(queryContainerStylesRaw.cssText);
 const { render, html } = Lit;
 const { PhysicalAxis, QueryAxis } = SDK.CSSContainerQuery;
 export class QueriedSizeRequestedEvent extends Event {

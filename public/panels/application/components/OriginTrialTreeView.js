@@ -6,16 +6,9 @@ import '../../../ui/components/tree_outline/tree_outline.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Adorners from '../../../ui/components/adorners/adorners.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import badgeStylesRaw from './badge.css.js';
-import originTrialTokenRowsStylesRaw from './originTrialTokenRows.css.js';
-import originTrialTreeViewStylesRaw from './originTrialTreeView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const badgeStyles = new CSSStyleSheet();
-badgeStyles.replaceSync(badgeStylesRaw.cssContent);
-const originTrialTokenRowsStyles = new CSSStyleSheet();
-originTrialTokenRowsStyles.replaceSync(originTrialTokenRowsStylesRaw.cssContent);
-const originTrialTreeViewStyles = new CSSStyleSheet();
-originTrialTreeViewStyles.replaceSync(originTrialTreeViewStylesRaw.cssContent);
+import badgeStyles from './badge.css.js';
+import originTrialTokenRowsStyles from './originTrialTokenRows.css.js';
+import originTrialTreeViewStyles from './originTrialTreeView.css.js';
 const { html, Directives: { ifDefined } } = Lit;
 const UIStrings = {
     /**
@@ -77,9 +70,6 @@ export class Badge extends HTMLElement {
     set data(data) {
         this.#render(data);
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [badgeStyles];
-    }
     #render(data) {
         const adornerContent = document.createElement('span');
         adornerContent.textContent = data.badgeContent;
@@ -89,6 +79,7 @@ export class Badge extends HTMLElement {
         };
         this.#adorner.classList.add(`badge-${data.style}`);
         Lit.render(html `
+      <style>${badgeStyles.cssText}</style>
       ${this.#adorner}
     `, this.#shadow, { host: this });
     }
@@ -185,7 +176,6 @@ export class OriginTrialTokenRows extends HTMLElement {
         this.#setTokenFields();
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [originTrialTokenRowsStyles];
         this.#render();
     }
     #renderTokenField = (fieldValue, hasError) => html `
@@ -250,6 +240,7 @@ export class OriginTrialTokenRows extends HTMLElement {
           `;
         });
         Lit.render(html `
+      <style>${originTrialTokenRowsStyles.cssText}</style>
       <div class="content">
         ${tokenDetailRows}
       </div>
@@ -262,12 +253,10 @@ export class OriginTrialTreeView extends HTMLElement {
     set data(data) {
         this.#render(data.trials);
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [originTrialTreeViewStyles];
-    }
     #render(trials) {
         if (!trials.length) {
             Lit.render(html `
+    <style>${originTrialTreeViewStyles.cssText}</style>
     <span class="status-badge">
       <devtools-icon
           .data=${{
@@ -283,6 +272,7 @@ export class OriginTrialTreeView extends HTMLElement {
             return;
         }
         Lit.render(html `
+      <style>${originTrialTreeViewStyles.cssText}</style>
       <devtools-tree-outline .data=${{
             tree: trials.map(constructOriginTrialTree),
             defaultRenderer,

@@ -40,6 +40,7 @@ import * as CodeHighlighter from '../../ui/components/code_highlighter/code_high
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ElementsComponents from './components/components.js';
 import { getElementIssueDetails } from './ElementIssueUtils.js';
@@ -66,6 +67,10 @@ const UIStrings = {
      *@description Link text content in Elements Tree Outline of the Elements panel
      */
     reveal: 'reveal',
+    /**
+     * @description Text for popover that directs to Issues panel
+     */
+    viewIssue: 'View Issue:',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementsTreeOutline.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -97,7 +102,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     #topLayerContainerByParent = new Map();
     #issuesManager;
     #popupHelper;
-    #nodeElementToIssue = new Map();
+    #nodeElementToIssues = new Map();
     constructor(omitRootDOMNode, selectEnabled, hideGutter) {
         super();
         if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
@@ -167,37 +172,34 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                 if (!hoveredNode?.matches('.violating-element')) {
                     return null;
                 }
-                const issue = this.#nodeElementToIssue.get(hoveredNode);
-                if (!issue) {
+                const issues = this.#nodeElementToIssues.get(hoveredNode);
+                if (!issues) {
                     return null;
                 }
-                const elementIssueDetails = getElementIssueDetails(issue);
-                if (!elementIssueDetails) {
-                    return null;
-                }
-                const issueKindIcon = new IconButton.Icon.Icon();
-                issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(issue.getKind());
-                issueKindIcon.style.cursor = 'pointer';
-                const viewIssueElement = document.createElement('a');
-                viewIssueElement.href = '#';
-                viewIssueElement.textContent = 'View issue:';
-                const issueTitle = document.createElement('span');
-                issueTitle.textContent = elementIssueDetails.tooltip;
-                const element = document.createElement('div');
-                element.appendChild(issueKindIcon);
-                element.appendChild(viewIssueElement);
-                element.appendChild(issueTitle);
-                element.style.display = 'flex';
-                element.style.alignItems = 'center';
-                element.style.gap = '5px';
                 return {
                     box: hoveredNode.boxInWindow(),
                     show: async (popover) => {
                         popover.setIgnoreLeftMargin(true);
-                        const openIssueEvent = () => Common.Revealer.reveal(issue);
-                        viewIssueElement.addEventListener('click', () => openIssueEvent());
-                        issueKindIcon.addEventListener('click', () => openIssueEvent());
-                        popover.contentElement.appendChild(element);
+                        // clang-format off
+                        render(html `
+              <div class="squiggles-content">
+                ${issues.map(issue => {
+                            const elementIssueDetails = getElementIssueDetails(issue);
+                            if (!elementIssueDetails) {
+                                // This shouldn't happen, but add this if check to pass ts check.
+                                return nothing;
+                            }
+                            const issueKindIconData = IssueCounter.IssueCounter.getIssueKindIconData(issue.getKind());
+                            const openIssueEvent = () => Common.Revealer.reveal(issue);
+                            return html `
+                    <div class="squiggles-content-item">
+                    <devtools-icon .data=${issueKindIconData} @click=${openIssueEvent}></devtools-icon>
+                    <x-link class="link" @click=${openIssueEvent}>${i18nString(UIStrings.viewIssue)}</x-link>
+                    <span>${elementIssueDetails.tooltip}</span>
+                    </div>`;
+                        })}
+              </div>`, popover.contentElement);
+                        // clang-format on
                         return true;
                     },
                 };
@@ -240,7 +242,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             const treeElementNodeElementsToIssue = treeElement.issuesByNodeElement;
             // This element could be the treeElement tags name or an attribute.
             for (const [element, issue] of treeElementNodeElementsToIssue) {
-                this.#nodeElementToIssue.set(element, issue);
+                this.#nodeElementToIssues.set(element, issue);
             }
         }
     }

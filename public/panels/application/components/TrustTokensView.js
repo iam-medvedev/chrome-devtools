@@ -10,17 +10,11 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 // inspectorCommonStyles is imported for the empty state styling that is used for the start view
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import trustTokensViewStylesRaw from './trustTokensView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const trustTokensViewStyles = new CSSStyleSheet();
-trustTokensViewStyles.replaceSync(trustTokensViewStylesRaw.cssContent);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+import trustTokensViewStyles from './trustTokensView.css.js';
 const PRIVATE_STATE_TOKENS_EXPLANATION_URL = 'https://developers.google.com/privacy-sandbox/protections/private-state-tokens';
 const { html } = Lit;
 const UIStrings = {
@@ -72,7 +66,6 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     connectedCallback() {
         this.wrapper?.contentElement.classList.add('vbox');
-        this.#shadow.adoptedStyleSheets = [trustTokensViewStyles, inspectorCommonStyles];
         void this.render();
     }
     async render() {
@@ -85,6 +78,8 @@ export class TrustTokensView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         await RenderCoordinator.write('Render TrustTokensView', () => {
             // clang-format off
             Lit.render(html `
+        <style>${trustTokensViewStyles.cssText}</style>
+        <style>${inspectorCommonStyles.cssText}</style>
         ${this.#renderGridOrNoDataMessage(tokens)}
       `, this.#shadow, { host: this });
             // clang-format on

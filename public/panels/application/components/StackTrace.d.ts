@@ -13,7 +13,6 @@ interface StackTraceRowData {
 export declare class StackTraceRow extends HTMLElement {
     #private;
     set data(data: StackTraceRowData);
-    connectedCallback(): void;
 }
 interface StackTraceLinkButtonData {
     onShowAllClick: () => void;
@@ -23,7 +22,6 @@ interface StackTraceLinkButtonData {
 export declare class StackTraceLinkButton extends HTMLElement {
     #private;
     set data(data: StackTraceLinkButtonData);
-    connectedCallback(): void;
 }
 export declare class StackTrace extends HTMLElement {
     #private;

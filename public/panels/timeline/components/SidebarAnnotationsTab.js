@@ -15,7 +15,7 @@ import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStylesRaw from './sidebarAnnotationsTab.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const sidebarAnnotationsTabStyles = new CSSStyleSheet();
-sidebarAnnotationsTabStyles.replaceSync(sidebarAnnotationsTabStylesRaw.cssContent);
+sidebarAnnotationsTabStyles.replaceSync(sidebarAnnotationsTabStylesRaw.cssText);
 const { html } = Lit;
 const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
 const entryLabelImageUrl = new URL('../../../Images/performance-panel-entry-label.svg', import.meta.url).toString();

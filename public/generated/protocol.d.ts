@@ -1059,6 +1059,7 @@ export declare namespace Audits {
     }
     interface SRIMessageSignatureIssueDetails {
         error: SRIMessageSignatureError;
+        signatureBase: string;
         request: AffectedRequest;
     }
     const enum GenericIssueErrorType {
@@ -6035,6 +6036,7 @@ export declare namespace Emulation {
         /**
          * If set, the display feature of a multi-segment screen. If not set, multi-segment support
          * is turned-off.
+         * Deprecated, use Emulation.setDisplayFeaturesOverride.
          */
         displayFeature?: DisplayFeature;
         /**
@@ -6046,6 +6048,9 @@ export declare namespace Emulation {
     }
     interface SetDevicePostureOverrideRequest {
         posture: DevicePosture;
+    }
+    interface SetDisplayFeaturesOverrideRequest {
+        features: DisplayFeature[];
     }
     interface SetScrollbarsHiddenRequest {
         /**
@@ -16600,6 +16605,7 @@ export declare namespace Preload {
         PrefetchFailedMIMENotSupported = "PrefetchFailedMIMENotSupported",
         PrefetchFailedNetError = "PrefetchFailedNetError",
         PrefetchFailedNon2XX = "PrefetchFailedNon2XX",
+        PrefetchEvictedAfterBrowsingDataRemoved = "PrefetchEvictedAfterBrowsingDataRemoved",
         PrefetchEvictedAfterCandidateRemoved = "PrefetchEvictedAfterCandidateRemoved",
         PrefetchEvictedForNewerPrefetch = "PrefetchEvictedForNewerPrefetch",
         PrefetchHeldback = "PrefetchHeldback",

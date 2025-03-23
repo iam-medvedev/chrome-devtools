@@ -6,7 +6,7 @@ import { html, render } from '../../../ui/lit/lit.js';
 import buttonDialogStylesRaw from './buttonDialog.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const buttonDialogStyles = new CSSStyleSheet();
-buttonDialogStyles.replaceSync(buttonDialogStylesRaw.cssContent);
+buttonDialogStyles.replaceSync(buttonDialogStylesRaw.cssText);
 export class ButtonDialog extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);

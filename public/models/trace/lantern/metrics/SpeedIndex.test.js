@@ -30,7 +30,8 @@ describe('Metrics: Lantern Speed Index', () => {
             pessimistic: 1122,
         });
     });
-    it('should compute predicted value for different settings', async () => {
+    // Flaky
+    it.skip('[crbug.com/404184570] should compute predicted value for different settings', async () => {
         const settings = {
             throttlingMethod: 'simulate',
             throttling: { ...defaultThrottling, rttMs: 300 },

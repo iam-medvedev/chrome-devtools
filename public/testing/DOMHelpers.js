@@ -235,7 +235,10 @@ export function getCleanTextContentFromElements(el, selector) {
 export function getCleanTextContentFromSingleElement(el, selector) {
     const element = el.querySelector(selector);
     assert.isOk(element, `Could not find element with selector ${selector}`);
-    return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, ' ') : '';
+    return element.textContent ? cleanTextContent(element.textContent) : '';
+}
+export function cleanTextContent(input) {
+    return input.trim().replace(/[ \n]{2,}/g, ' ');
 }
 export function assertNodeTextContent(component, expectedContent) {
     assert.isNotNull(component.shadowRoot);

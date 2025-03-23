@@ -15,10 +15,7 @@ import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { NotRestoredReasonDescription } from './BackForwardCacheStrings.js';
-import backForwardCacheViewStylesRaw from './backForwardCacheView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const backForwardCacheViewStyles = new CSSStyleSheet();
-backForwardCacheViewStyles.replaceSync(backForwardCacheViewStylesRaw.cssContent);
+import backForwardCacheViewStyles from './backForwardCacheView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -36,7 +33,7 @@ const UIStrings = {
     /**
      * @description Entry name text in the back/forward cache view of the Application panel
      */
-    url: 'URL:',
+    url: 'URL',
     /**
      * @description Status text for the status of the back/forward cache status
      */
@@ -154,13 +151,13 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
     }
     connectedCallback() {
         this.parentElement?.classList.add('overflow-auto');
-        this.#shadow.adoptedStyleSheets = [backForwardCacheViewStyles];
     }
     async render() {
         await RenderCoordinator.write('BackForwardCacheView render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
+        <style>${backForwardCacheViewStyles.cssText}</style>
         <devtools-report .data=${{ reportTitle: i18nString(UIStrings.backForwardCacheTitle) }} jslog=${VisualLogging.pane('back-forward-cache')}>
 
           ${this.#renderMainFrameInformation()}
@@ -236,14 +233,8 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         // clang-format off
         return html `
       ${this.#renderBackForwardCacheStatus(frame.backForwardCacheDetails.restoredFromCache)}
-      <div class="report-line">
-        <div class="report-key">
-          ${i18nString(UIStrings.url)}
-        </div>
-        <div class="report-value" title=${frame.url}>
-          ${frame.url}
-        </div>
-      </div>
+      <devtools-report-key>${i18nString(UIStrings.url)}</devtools-report-key>
+      <devtools-report-value>${frame.url}</devtools-report-value>
       ${this.#maybeRenderFrameTree(frame.backForwardCacheDetails.explanationsTree)}
       <devtools-report-section>
         <devtools-button
@@ -314,20 +305,15 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         };
         // clang-format off
         return html `
-      <div class="report-line"
-      jslog=${VisualLogging.section('frames')}>
-        <div class="report-key">
-          ${i18nString(UIStrings.framesTitle)}
-        </div>
-        <div class="report-value">
-          <devtools-tree-outline .data=${{
+      <devtools-report-key jslog=${VisualLogging.section('frames')}>${i18nString(UIStrings.framesTitle)}</devtools-report-key>
+      <devtools-report-value>
+        <devtools-tree-outline .data=${{
             tree: [root],
             defaultRenderer: treeNodeRenderer,
             compact: true,
         }}>
-          </devtools-tree-outline>
-        </div>
-      </div>
+        </devtools-tree-outline>
+      </devtools-report-value>
     `;
         // clang-format on
     }

@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
+import * as AiAssistanceModels from '../../../models/ai_assistance/ai_assistance.js';
 import * as Trace from '../../../models/trace/trace.js';
-import { dispatchClickEvent } from '../../../testing/DOMHelpers.js';
+import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
+import { cleanTextContent, dispatchClickEvent } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { makeInstantEvent, microsecondsTraceWindow, MockFlameChartDelegate, setupIgnoreListManagerEnvironment, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -14,6 +16,9 @@ import * as Timeline from '../timeline.js';
 import * as Components from './components/components.js';
 import * as Overlays from './overlays.js';
 const FAKE_OVERLAY_ENTRY_QUERIES = {
+    parsedTrace() {
+        return null;
+    },
     isEntryCollapsedByUser() {
         return false;
     },
@@ -231,7 +236,12 @@ describeWithEnvironment('Overlays', () => {
                     network: networkFlameChartsContainer,
                 },
                 charts,
-                entryQueries: FAKE_OVERLAY_ENTRY_QUERIES,
+                entryQueries: {
+                    ...FAKE_OVERLAY_ENTRY_QUERIES,
+                    parsedTrace() {
+                        return parsedTrace;
+                    },
+                },
             });
             const currManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
             // The Annotations Overlays are added through the ModificationsManager listener
@@ -283,6 +293,7 @@ describeWithEnvironment('Overlays', () => {
                 label: label ?? '',
             });
             await overlays.update();
+            await RenderCoordinator.done();
             // Ensure that the overlay was created.
             const overlayDOM = container.querySelector('.overlay-type-ENTRY_LABEL');
             assert.isOk(overlayDOM);
@@ -293,7 +304,7 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(elementsWrapper);
             const inputField = elementsWrapper.querySelector('.input-field');
             assert.isOk(inputField);
-            return { elementsWrapper, inputField, overlays, event };
+            return { elementsWrapper, inputField, overlays, event, component };
         }
         it('can render an entry selected overlay', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
@@ -401,6 +412,7 @@ describeWithEnvironment('Overlays', () => {
             const { elementsWrapper, inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50);
             // Double click on the label box to make it editable and focus on it
             inputField.dispatchEvent(new FocusEvent('dblclick', { bubbles: true }));
+            await RenderCoordinator.done();
             const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-button-wrapper');
             assert.isOk(aiLabelButtonWrapper);
             const aiButton = aiLabelButtonWrapper.querySelector('.ai-label-button');
@@ -408,6 +420,7 @@ describeWithEnvironment('Overlays', () => {
             // This dialog should not be visible unless the `generate annotation` button is clicked
             assert.isFalse(showFreDialogStub.called, 'Expected FreDialog to be not shown but it\'s shown');
             aiButton.dispatchEvent(new FocusEvent('click', { bubbles: true }));
+            await RenderCoordinator.done();
             // This dialog should be visible
             assert.isTrue(showFreDialogStub.called, 'Expected FreDialog to be shown but it\'s not shown');
         });
@@ -454,6 +467,113 @@ describeWithEnvironment('Overlays', () => {
         it('can render provided label for entry label overlay', async function () {
             const { inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'entry label');
             assert.strictEqual(inputField?.innerText, 'entry label');
+        });
+        it('generates a label when the user clicks "Generate" if the setting is enabled', async function () {
+            const { elementsWrapper, inputField, component } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50);
+            Common.Settings.moduleSetting('ai-annotations-enabled').set(true);
+            const generateButton = elementsWrapper.querySelector('.ai-label-button');
+            assert.isOk(generateButton, 'could not find "Generate label" button');
+            assert.isTrue(generateButton.classList.contains('enabled'));
+            const agent = new AiAssistanceModels.PerformanceAgent({
+                aidaClient: mockAidaClient([[{
+                            explanation: 'This is an interesting entry',
+                            metadata: {
+                                rpcGlobalId: 123,
+                            }
+                        }]])
+            });
+            component.overrideAIAgentForTest(agent);
+            // The Agent call is async, so wait for the change event on the label to ensure the UI is updated.
+            const changeEvent = new Promise(resolve => {
+                component.addEventListener(Components.EntryLabelOverlay.EntryLabelChangeEvent.eventName, () => resolve(), { once: true });
+            });
+            dispatchClickEvent(generateButton);
+            await RenderCoordinator.done();
+            await changeEvent;
+            assert.strictEqual(inputField.innerHTML, 'This is an interesting entry');
+        });
+        it('Correct security tooltip on the `generate ai label` info icon hover for the users with logging enabled', async function () {
+            const { elementsWrapper, inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'entry label');
+            assert.strictEqual(inputField?.innerText, 'entry label');
+            const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-button-wrapper');
+            assert.isOk(aiLabelButtonWrapper);
+            const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
+            assert.isOk(tooltip);
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. The content you submit and that is generated by this feature will be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right. Learn more');
+        });
+        it('shows correct tooltip text on `generate ai label` hover for the users with logging disabled', async function () {
+            updateHostConfig({
+                aidaAvailability: {
+                    enabled: true,
+                    blockedByAge: false,
+                    blockedByEnterprisePolicy: false,
+                    blockedByGeo: false,
+                    disallowLogging: true,
+                    enterprisePolicyValue: 1,
+                },
+            });
+            const { elementsWrapper, inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'entry label');
+            assert.strictEqual(inputField?.innerText, 'entry label');
+            const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-button-wrapper');
+            assert.isOk(aiLabelButtonWrapper);
+            const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
+            assert.isOk(tooltip);
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'The selected call stack is sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right. Learn more');
+        });
+        it('Shows disabled `generate ai label` button if the user is not logged into their google account or is under 18', async function () {
+            updateHostConfig({
+                aidaAvailability: {
+                    enabled: false,
+                    blockedByAge: true,
+                    blockedByEnterprisePolicy: false,
+                    blockedByGeo: false,
+                    disallowLogging: true,
+                    enterprisePolicyValue: 1,
+                },
+            });
+            const { elementsWrapper, inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'entry label');
+            assert.strictEqual(inputField?.innerText, 'entry label');
+            const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-disabled-button-wrapper');
+            assert.isOk(aiLabelButtonWrapper);
+            const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
+            assert.isOk(tooltip);
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'Auto annotations are not available. Learn more');
+        });
+        it('Shows disabled `generate ai label` button if the user is in an unsupported location', async function () {
+            updateHostConfig({
+                aidaAvailability: {
+                    enabled: false,
+                    blockedByAge: false,
+                    blockedByEnterprisePolicy: false,
+                    blockedByGeo: true,
+                    disallowLogging: true,
+                    enterprisePolicyValue: 1,
+                },
+            });
+            const { elementsWrapper, inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'entry label');
+            assert.strictEqual(inputField?.innerText, 'entry label');
+            const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-disabled-button-wrapper');
+            assert.isOk(aiLabelButtonWrapper);
+            const tooltip = aiLabelButtonWrapper.querySelector('devtools-tooltip');
+            assert.isOk(tooltip);
+            assert.strictEqual(cleanTextContent(tooltip.innerText), 'Auto annotations are not available. Learn more');
+        });
+        it('Does not show the `generate ai label` button for enterprise users with disabled AI features', async function () {
+            updateHostConfig({
+                aidaAvailability: {
+                    enabled: false,
+                    blockedByAge: false,
+                    blockedByEnterprisePolicy: true,
+                    blockedByGeo: false,
+                    disallowLogging: true,
+                    enterprisePolicyValue: 2,
+                },
+            });
+            const { elementsWrapper, inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'entry label');
+            assert.strictEqual(inputField?.innerText, 'entry label');
+            const aiLabelButtonWrapper = elementsWrapper.querySelector('.ai-label-button-wrapper');
+            // Button should not exist
+            assert.isNotOk(aiLabelButtonWrapper);
         });
         it('Inputting `Enter`into label overlay makes it non-editable', async function () {
             const { inputField } = await createAnnotationsLabelElement(this, 'web-dev.json.gz', 50, 'label');

@@ -10,6 +10,7 @@ let hasPainted = false;
 const allInvalidationTrackingEvents = [];
 export function reset() {
     invalidationsForEvent.clear();
+    invalidationCountForEvent.clear();
     lastRecalcStyleEvent = null;
     allInvalidationTrackingEvents.length = 0;
     hasPainted = false;

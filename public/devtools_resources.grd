@@ -378,6 +378,7 @@
       <include file="js_app.html" name="JS_APP_HTML" resource_path="js_app.html" type="BINDATA" compress="false"/>
       <include file="legacy_test_runner/legacy_test_runner.js" name="LEGACY_TEST_RUNNER_LEGACY_TEST_RUNNER_JS" resource_path="legacy_test_runner/legacy_test_runner.js" type="BINDATA" compress="false"/>
       <include file="legacy_test_runner/test_runner/test_runner.js" name="LEGACY_TEST_RUNNER_TEST_RUNNER_TEST_RUNNER_JS" resource_path="legacy_test_runner/test_runner/test_runner.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
@@ -978,6 +979,23 @@
       <include file="generated/SupportedCSSProperties.js" name="GENERATED_SUPPORTEDCSSPROPERTIES_JS" resource_path="generated/SupportedCSSProperties.js" type="BINDATA" compress="false"/>
       <include file="generated/protocol.js" name="GENERATED_PROTOCOL_JS" resource_path="generated/protocol.js" type="BINDATA" compress="false"/>
       <include file="legacy_test_runner/test_runner/TestRunner.js" name="LEGACY_TEST_RUNNER_TEST_RUNNER_TESTRUNNER_JS" resource_path="legacy_test_runner/test_runner/TestRunner.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/AgentProject.js" name="MODELS_AI_ASSISTANCE_AGENTPROJECT_JS" resource_path="models/ai_assistance/AgentProject.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/AiHistoryStorage.js" name="MODELS_AI_ASSISTANCE_AIHISTORYSTORAGE_JS" resource_path="models/ai_assistance/AiHistoryStorage.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/ChangeManager.js" name="MODELS_AI_ASSISTANCE_CHANGEMANAGER_JS" resource_path="models/ai_assistance/ChangeManager.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/EvaluateAction.js" name="MODELS_AI_ASSISTANCE_EVALUATEACTION_JS" resource_path="models/ai_assistance/EvaluateAction.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/ExtensionScope.js" name="MODELS_AI_ASSISTANCE_EXTENSIONSCOPE_JS" resource_path="models/ai_assistance/ExtensionScope.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/AiAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_AIAGENT_JS" resource_path="models/ai_assistance/agents/AiAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/FileAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_FILEAGENT_JS" resource_path="models/ai_assistance/agents/FileAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/NetworkAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_NETWORKAGENT_JS" resource_path="models/ai_assistance/agents/NetworkAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/PatchAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_PATCHAGENT_JS" resource_path="models/ai_assistance/agents/PatchAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/PerformanceAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_PERFORMANCEAGENT_JS" resource_path="models/ai_assistance/agents/PerformanceAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/PerformanceInsightsAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_PERFORMANCEINSIGHTSAGENT_JS" resource_path="models/ai_assistance/agents/PerformanceInsightsAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/agents/StylingAgent.js" name="MODELS_AI_ASSISTANCE_AGENTS_STYLINGAGENT_JS" resource_path="models/ai_assistance/agents/StylingAgent.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/data_formatters/FileFormatter.js" name="MODELS_AI_ASSISTANCE_DATA_FORMATTERS_FILEFORMATTER_JS" resource_path="models/ai_assistance/data_formatters/FileFormatter.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/data_formatters/NetworkRequestFormatter.js" name="MODELS_AI_ASSISTANCE_DATA_FORMATTERS_NETWORKREQUESTFORMATTER_JS" resource_path="models/ai_assistance/data_formatters/NetworkRequestFormatter.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/data_formatters/PerformanceInsightFormatter.js" name="MODELS_AI_ASSISTANCE_DATA_FORMATTERS_PERFORMANCEINSIGHTFORMATTER_JS" resource_path="models/ai_assistance/data_formatters/PerformanceInsightFormatter.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/debug.js" name="MODELS_AI_ASSISTANCE_DEBUG_JS" resource_path="models/ai_assistance/debug.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/injected.js" name="MODELS_AI_ASSISTANCE_INJECTED_JS" resource_path="models/ai_assistance/injected.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/AutofillManager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILLMANAGER_JS" resource_path="models/autofill_manager/AutofillManager.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/CSSWorkspaceBinding.js" name="MODELS_BINDINGS_CSSWORKSPACEBINDING_JS" resource_path="models/bindings/CSSWorkspaceBinding.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/CompilerScriptMapping.js" name="MODELS_BINDINGS_COMPILERSCRIPTMAPPING_JS" resource_path="models/bindings/CompilerScriptMapping.js" type="BINDATA" compress="false"/>
@@ -1146,7 +1164,7 @@
       <include file="models/trace/insights/Common.js" name="MODELS_TRACE_INSIGHTS_COMMON_JS" resource_path="models/trace/insights/Common.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/DOMSize.js" name="MODELS_TRACE_INSIGHTS_DOMSIZE_JS" resource_path="models/trace/insights/DOMSize.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/DocumentLatency.js" name="MODELS_TRACE_INSIGHTS_DOCUMENTLATENCY_JS" resource_path="models/trace/insights/DocumentLatency.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/insights/DuplicateJavaScript.js" name="MODELS_TRACE_INSIGHTS_DUPLICATEJAVASCRIPT_JS" resource_path="models/trace/insights/DuplicateJavaScript.js" type="BINDATA" compress="false"/>
+      <include file="models/trace/insights/DuplicatedJavaScript.js" name="MODELS_TRACE_INSIGHTS_DUPLICATEDJAVASCRIPT_JS" resource_path="models/trace/insights/DuplicatedJavaScript.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/FontDisplay.js" name="MODELS_TRACE_INSIGHTS_FONTDISPLAY_JS" resource_path="models/trace/insights/FontDisplay.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/ForcedReflow.js" name="MODELS_TRACE_INSIGHTS_FORCEDREFLOW_JS" resource_path="models/trace/insights/ForcedReflow.js" type="BINDATA" compress="false"/>
       <include file="models/trace/insights/ImageDelivery.js" name="MODELS_TRACE_INSIGHTS_IMAGEDELIVERY_JS" resource_path="models/trace/insights/ImageDelivery.js" type="BINDATA" compress="false"/>
@@ -1204,32 +1222,15 @@
       <include file="panels/accessibility/accessibilityNode.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYNODE_CSS_JS" resource_path="panels/accessibility/accessibilityNode.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/accessibilityProperties.css.js" name="PANELS_ACCESSIBILITY_ACCESSIBILITYPROPERTIES_CSS_JS" resource_path="panels/accessibility/accessibilityProperties.css.js" type="BINDATA" compress="false"/>
       <include file="panels/accessibility/axBreadcrumbs.css.js" name="PANELS_ACCESSIBILITY_AXBREADCRUMBS_CSS_JS" resource_path="panels/accessibility/axBreadcrumbs.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/AgentProject.js" name="PANELS_AI_ASSISTANCE_AGENTPROJECT_JS" resource_path="panels/ai_assistance/AgentProject.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/AiAssistancePanel.js" name="PANELS_AI_ASSISTANCE_AIASSISTANCEPANEL_JS" resource_path="panels/ai_assistance/AiAssistancePanel.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/AiHistoryStorage.js" name="PANELS_AI_ASSISTANCE_AIHISTORYSTORAGE_JS" resource_path="panels/ai_assistance/AiHistoryStorage.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/ChangeManager.js" name="PANELS_AI_ASSISTANCE_CHANGEMANAGER_JS" resource_path="panels/ai_assistance/ChangeManager.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/EvaluateAction.js" name="PANELS_AI_ASSISTANCE_EVALUATEACTION_JS" resource_path="panels/ai_assistance/EvaluateAction.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/ExtensionScope.js" name="PANELS_AI_ASSISTANCE_EXTENSIONSCOPE_JS" resource_path="panels/ai_assistance/ExtensionScope.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/PatchWidget.js" name="PANELS_AI_ASSISTANCE_PATCHWIDGET_JS" resource_path="panels/ai_assistance/PatchWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/SelectWorkspaceDialog.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_JS" resource_path="panels/ai_assistance/SelectWorkspaceDialog.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/AiAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_AIAGENT_JS" resource_path="panels/ai_assistance/agents/AiAgent.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/FileAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_FILEAGENT_JS" resource_path="panels/ai_assistance/agents/FileAgent.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/NetworkAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_NETWORKAGENT_JS" resource_path="panels/ai_assistance/agents/NetworkAgent.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/PatchAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_PATCHAGENT_JS" resource_path="panels/ai_assistance/agents/PatchAgent.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/PerformanceAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_PERFORMANCEAGENT_JS" resource_path="panels/ai_assistance/agents/PerformanceAgent.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/PerformanceInsightsAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_PERFORMANCEINSIGHTSAGENT_JS" resource_path="panels/ai_assistance/agents/PerformanceInsightsAgent.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/agents/StylingAgent.js" name="PANELS_AI_ASSISTANCE_AGENTS_STYLINGAGENT_JS" resource_path="panels/ai_assistance/agents/StylingAgent.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/aiAssistancePanel.css.js" name="PANELS_AI_ASSISTANCE_AIASSISTANCEPANEL_CSS_JS" resource_path="panels/ai_assistance/aiAssistancePanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/ChatView.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_CHATVIEW_JS" resource_path="panels/ai_assistance/components/ChatView.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_MARKDOWNRENDERERWITHCODEBLOCK_JS" resource_path="panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/UserActionRow.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_USERACTIONROW_JS" resource_path="panels/ai_assistance/components/UserActionRow.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/chatView.css.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_CHATVIEW_CSS_JS" resource_path="panels/ai_assistance/components/chatView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/userActionRow.css.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_USERACTIONROW_CSS_JS" resource_path="panels/ai_assistance/components/userActionRow.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/data_formatters/FileFormatter.js" name="PANELS_AI_ASSISTANCE_DATA_FORMATTERS_FILEFORMATTER_JS" resource_path="panels/ai_assistance/data_formatters/FileFormatter.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/data_formatters/NetworkRequestFormatter.js" name="PANELS_AI_ASSISTANCE_DATA_FORMATTERS_NETWORKREQUESTFORMATTER_JS" resource_path="panels/ai_assistance/data_formatters/NetworkRequestFormatter.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/data_formatters/PerformanceInsightFormatter.js" name="PANELS_AI_ASSISTANCE_DATA_FORMATTERS_PERFORMANCEINSIGHTFORMATTER_JS" resource_path="panels/ai_assistance/data_formatters/PerformanceInsightFormatter.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/debug.js" name="PANELS_AI_ASSISTANCE_DEBUG_JS" resource_path="panels/ai_assistance/debug.js" type="BINDATA" compress="false"/>
-      <include file="panels/ai_assistance/injected.js" name="PANELS_AI_ASSISTANCE_INJECTED_JS" resource_path="panels/ai_assistance/injected.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/selectWorkspaceDialog.css.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_CSS_JS" resource_path="panels/ai_assistance/selectWorkspaceDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationScreenshotPopover.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_JS" resource_path="panels/animation/AnimationScreenshotPopover.js" type="BINDATA" compress="false"/>
@@ -1795,6 +1796,7 @@
       <include file="panels/snippets/ScriptSnippetFileSystem.js" name="PANELS_SNIPPETS_SCRIPTSNIPPETFILESYSTEM_JS" resource_path="panels/snippets/ScriptSnippetFileSystem.js" type="BINDATA" compress="false"/>
       <include file="panels/snippets/SnippetsQuickOpen.js" name="PANELS_SNIPPETS_SNIPPETSQUICKOPEN_JS" resource_path="panels/snippets/SnippetsQuickOpen.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/AddSourceMapURLDialog.js" name="PANELS_SOURCES_ADDSOURCEMAPURLDIALOG_JS" resource_path="panels/sources/AddSourceMapURLDialog.js" type="BINDATA" compress="false"/>
+      <include file="panels/sources/AiWarningInfobarPlugin.js" name="PANELS_SOURCES_AIWARNINGINFOBARPLUGIN_JS" resource_path="panels/sources/AiWarningInfobarPlugin.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/BreakpointEditDialog.js" name="PANELS_SOURCES_BREAKPOINTEDITDIALOG_JS" resource_path="panels/sources/BreakpointEditDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/CSSPlugin.js" name="PANELS_SOURCES_CSSPLUGIN_JS" resource_path="panels/sources/CSSPlugin.js" type="BINDATA" compress="false"/>
       <include file="panels/sources/CallStackSidebarPane.js" name="PANELS_SOURCES_CALLSTACKSIDEBARPANE_JS" resource_path="panels/sources/CallStackSidebarPane.js" type="BINDATA" compress="false"/>
@@ -1919,6 +1921,7 @@
       <include file="panels/timeline/components/insights/Checklist.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_CHECKLIST_JS" resource_path="panels/timeline/components/insights/Checklist.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/DOMSize.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DOMSIZE_JS" resource_path="panels/timeline/components/insights/DOMSize.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/DocumentLatency.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DOCUMENTLATENCY_JS" resource_path="panels/timeline/components/insights/DocumentLatency.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/components/insights/DuplicatedJavaScript.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_DUPLICATEDJAVASCRIPT_JS" resource_path="panels/timeline/components/insights/DuplicatedJavaScript.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/EventRef.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_EVENTREF_JS" resource_path="panels/timeline/components/insights/EventRef.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/FontDisplay.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_FONTDISPLAY_JS" resource_path="panels/timeline/components/insights/FontDisplay.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/insights/ForcedReflow.js" name="PANELS_TIMELINE_COMPONENTS_INSIGHTS_FORCEDREFLOW_JS" resource_path="panels/timeline/components/insights/ForcedReflow.js" type="BINDATA" compress="false"/>

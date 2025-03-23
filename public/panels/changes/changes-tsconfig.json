@@ -48,6 +48,9 @@
       "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/persistence/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {

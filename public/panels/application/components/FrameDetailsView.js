@@ -19,12 +19,9 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import frameDetailsReportViewStylesRaw from './frameDetailsReportView.css.js';
+import frameDetailsReportViewStyles from './frameDetailsReportView.css.js';
 import { OriginTrialTreeView } from './OriginTrialTreeView.js';
 import { renderIconLink, } from './PermissionsPolicySection.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const frameDetailsReportViewStyles = new CSSStyleSheet();
-frameDetailsReportViewStyles.replaceSync(frameDetailsReportViewStylesRaw.cssContent);
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -265,7 +262,6 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
     connectedCallback() {
         this.parentElement?.classList.add('overflow-auto');
         this.#protocolMonitorExperimentEnabled = Root.Runtime.experiments.isEnabled('protocol-monitor');
-        this.#shadow.adoptedStyleSheets = [frameDetailsReportViewStyles];
     }
     async render() {
         this.#adScriptId = (await this.#frame?.parentFrame()?.getAdScriptId(this.#frame?.id)) || null;
@@ -283,6 +279,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
+        <style>${frameDetailsReportViewStyles.cssText}</style>
         <devtools-report .data=${{ reportTitle: this.#frame.displayName() }}
         jslog=${VisualLogging.pane('frames')}>
           ${this.#renderDocumentSection()}
@@ -315,11 +312,11 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         // clang-format off
         return html `
     <devtools-report-section-header>${i18n.i18n.lockedString('Origin trials')}</devtools-report-section-header>
-    <div class="span-cols">
+    <devtools-report-section>
         ${i18nString(UIStrings.originTrialsExplanation)}
         <x-link href="https://developer.chrome.com/docs/web-platform/origin-trials/" class="link"
         jslog=${VisualLogging.link('learn-more.origin-trials').track({ click: true })}>${i18nString(UIStrings.learnMore)}</x-link>
-    </div>
+    </devtools-report-section>
     ${this.#originTrialTreeView}
     <devtools-report-divider></devtools-report-divider>
     `;
@@ -352,7 +349,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
             return Lit.nothing;
         }
         const sourceCode = this.#uiSourceCodeForFrame(this.#frame);
-        return renderIconLink('breakpoint-circle', i18nString(UIStrings.clickToOpenInSourcesPanel), () => Common.Revealer.reveal(sourceCode), 'reveal-in-sources');
+        return renderIconLink('label', i18nString(UIStrings.clickToOpenInSourcesPanel), () => Common.Revealer.reveal(sourceCode), 'reveal-in-sources');
     }
     #maybeRenderNetworkLinkForURL() {
         if (this.#frame) {
@@ -594,7 +591,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         }
         return result;
     }
-    #renderSingleCSP(cspInfo) {
+    #renderSingleCSP(cspInfo, divider) {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
@@ -612,6 +609,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         ${cspInfo.source === "HTTP" /* Protocol.Network.ContentSecurityPolicySource.HTTP */ ? i18n.i18n.lockedString('HTTP header') : i18n.i18n.lockedString('Meta tag')}
         ${this.#renderEffectiveDirectives(cspInfo.effectiveDirectives)}
       </devtools-report-value>
+      ${divider ? html `<devtools-report-divider class="subsection-divider"></devtools-report-divider>` : Lit.nothing}
     `;
         // clang-format on
     }
@@ -623,7 +621,7 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
       <devtools-report-section-header>
         ${i18nString(UIStrings.contentSecurityPolicy)}
       </devtools-report-section-header>
-      ${(cspInfos?.length) ? cspInfos.map(cspInfo => this.#renderSingleCSP(cspInfo)) : html `
+      ${(cspInfos?.length) ? cspInfos.map((cspInfo, index) => this.#renderSingleCSP(cspInfo, index < cspInfos?.length - 1)) : html `
         <devtools-report-key>${i18n.i18n.lockedString('Content-Security-Policy')}</devtools-report-key>
         <devtools-report-value>
           ${i18nString(UIStrings.none)}
@@ -638,10 +636,10 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         }
         return html `
       <devtools-report-section-header>${i18nString(UIStrings.apiAvailability)}</devtools-report-section-header>
-      <div class="span-cols">
+      <devtools-report-section>
         ${i18nString(UIStrings.availabilityOfCertainApisDepends)}
         <x-link href="https://web.dev/why-coop-coep/" class="link" jslog=${VisualLogging.link('learn-more.coop-coep').track({ click: true })}>${i18nString(UIStrings.learnMore)}</x-link>
-      </div>
+      </devtools-report-section>
       ${this.#renderSharedArrayBufferAvailability()}
       ${this.#renderMeasureMemoryAvailability()}
       <devtools-report-divider></devtools-report-divider>

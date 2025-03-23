@@ -37,6 +37,12 @@
   ],
   "references": [
     {
+      "path": "../../../core/common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../core/i18n/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../core/platform/bundle-tsconfig.json"
     },
     {
@@ -49,7 +55,7 @@
       "path": "../../../ui/legacy/components/perf_ui/bundle-tsconfig.json"
     },
     {
-      "path": "../../../ui/lit/bundle-tsconfig.json"
+      "path": "../../../ui/visual_logging/bundle-tsconfig.json"
     },
     {
       "path": "../utils/bundle-tsconfig.json"

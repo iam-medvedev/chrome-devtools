@@ -12,10 +12,10 @@ import selectMenuStylesRaw from './selectMenu.css.js';
 import selectMenuButtonStylesRaw from './selectMenuButton.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const selectMenuStyles = new CSSStyleSheet();
-selectMenuStyles.replaceSync(selectMenuStylesRaw.cssContent);
+selectMenuStyles.replaceSync(selectMenuStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const selectMenuButtonStyles = new CSSStyleSheet();
-selectMenuButtonStyles.replaceSync(selectMenuButtonStylesRaw.cssContent);
+selectMenuButtonStyles.replaceSync(selectMenuButtonStylesRaw.cssText);
 const { html } = Lit;
 const deployMenuArrow = new URL('../../../Images/triangle-down.svg', import.meta.url).toString();
 export class SelectMenu extends HTMLElement {

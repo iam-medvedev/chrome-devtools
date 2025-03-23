@@ -19,7 +19,7 @@ import * as Models from '../models/models.js';
 import stepViewStylesRaw from './stepView.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const stepViewStyles = new CSSStyleSheet();
-stepViewStyles.replaceSync(stepViewStylesRaw.cssContent);
+stepViewStyles.replaceSync(stepViewStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**

@@ -14,7 +14,7 @@ import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js'
 import networkThrottlingSelectorStylesRaw from './networkThrottlingSelector.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const networkThrottlingSelectorStyles = new CSSStyleSheet();
-networkThrottlingSelectorStyles.replaceSync(networkThrottlingSelectorStylesRaw.cssContent);
+networkThrottlingSelectorStyles.replaceSync(networkThrottlingSelectorStylesRaw.cssText);
 const { html, nothing } = Lit;
 const UIStrings = {
     /**

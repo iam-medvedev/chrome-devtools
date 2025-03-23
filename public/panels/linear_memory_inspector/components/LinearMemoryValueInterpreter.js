@@ -6,12 +6,18 @@ import './ValueInterpreterDisplay.js';
 import './ValueInterpreterSettings.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import linearMemoryValueInterpreterStylesRaw from './linearMemoryValueInterpreter.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+const inspectorCommonStyles = new CSSStyleSheet();
+inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
+// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const linearMemoryValueInterpreterStyles = new CSSStyleSheet();
-linearMemoryValueInterpreterStyles.replaceSync(linearMemoryValueInterpreterStylesRaw.cssContent);
+linearMemoryValueInterpreterStyles.replaceSync(linearMemoryValueInterpreterStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear memory inspector. These settings
@@ -51,7 +57,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
     #memoryLength = 0;
     #showSettings = false;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [linearMemoryValueInterpreterStyles];
+        this.#shadow.adoptedStyleSheets = [inspectorCommonStyles, linearMemoryValueInterpreterStyles];
     }
     set data(data) {
         this.#endianness = data.endianness;
@@ -68,11 +74,14 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
       <div class="value-interpreter">
         <div class="settings-toolbar">
           ${this.#renderEndiannessSetting()}
-          <button data-settings="true" class="settings-toolbar-button ${this.#showSettings ? 'active' : ''}"
+          <devtools-button data-settings="true" class="toolbar-button ${this.#showSettings ? '' : 'disabled'}"
               title=${i18nString(UIStrings.toggleValueTypeSettings)} @click=${this.#onSettingsToggle}
-              jslog=${VisualLogging.toggleSubpane('linear-memory-inspector.toggle-value-settings').track({ click: true })}>
-            <devtools-icon name=${this.#showSettings ? 'gear-filled' : 'gear'}></devtools-icon>
-          </button>
+              jslog=${VisualLogging.toggleSubpane('linear-memory-inspector.toggle-value-settings').track({ click: true })}
+              .iconName=${'gear'}
+              .toggledIconName=${'gear-filled'}
+              .toggleType=${"primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */}
+              .variant=${"icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */}
+          ></devtools-button>
         </div>
         <span class="divider"></span>
         <div>
@@ -111,7 +120,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
     <label data-endianness-setting="true" title=${i18nString(UIStrings.changeEndianness)}>
       <select
         jslog=${VisualLogging.dropDown('linear-memory-inspector.endianess').track({ change: true })}
-        style="border: none; background-color: transparent; cursor: pointer;"
+        style="border: none;"
         data-endianness="true" @change=${onEnumSettingChange}>
         ${["Little Endian" /* Endianness.LITTLE */, "Big Endian" /* Endianness.BIG */].map(endianness => {
             return html `<option value=${endianness} .selected=${this.#endianness === endianness}

@@ -27,10 +27,10 @@ import metricValueStylesRaw from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const liveMetricsViewStyles = new CSSStyleSheet();
-liveMetricsViewStyles.replaceSync(liveMetricsViewStylesRaw.cssContent);
+liveMetricsViewStyles.replaceSync(liveMetricsViewStylesRaw.cssText);
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const metricValueStyles = new CSSStyleSheet();
-metricValueStyles.replaceSync(metricValueStylesRaw.cssContent);
+metricValueStyles.replaceSync(metricValueStylesRaw.cssText);
 const { html, nothing } = Lit;
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
 const RTT_MINIMUM = 60;

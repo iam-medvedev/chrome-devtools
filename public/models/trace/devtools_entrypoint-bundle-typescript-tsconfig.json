@@ -38,6 +38,24 @@
   "references": [
     {
       "path": "./trace-tsconfig.json"
+    },
+    {
+      "path": "extras/bundle-tsconfig.json"
+    },
+    {
+      "path": "handlers/bundle-tsconfig.json"
+    },
+    {
+      "path": "helpers/bundle-tsconfig.json"
+    },
+    {
+      "path": "insights/bundle-tsconfig.json"
+    },
+    {
+      "path": "lantern/bundle-tsconfig.json"
+    },
+    {
+      "path": "types/bundle-tsconfig.json"
     }
   ]
 }

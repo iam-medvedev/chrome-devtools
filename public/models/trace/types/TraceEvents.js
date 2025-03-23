@@ -374,6 +374,9 @@ export function isPrePaint(event) {
 export function isNavigationStart(event) {
     return event.name === 'navigationStart' && event.args?.data?.documentLoaderURL !== '';
 }
+export function isDidCommitSameDocumentNavigation(event) {
+    return event.name === 'RenderFrameHostImpl::DidCommitSameDocumentNavigation';
+}
 export function isMainFrameViewport(event) {
     return event.name === 'PaintTimingVisualizer::Viewport';
 }
@@ -422,7 +425,7 @@ export function isConsoleTime(event) {
     return event.cat === 'blink.console' && isPhaseAsync(event.ph);
 }
 export function isConsoleTimeStamp(event) {
-    return event.ph === "X" /* Phase.COMPLETE */ && event.name === "V8Console::TimeStamp" /* Name.CONSOLE_TIME_STAMP */;
+    return event.ph === "I" /* Phase.INSTANT */ && event.name === "TimeStamp" /* Name.TIME_STAMP */;
 }
 export function isUserTimingMeasure(event) {
     return event.name === "UserTiming::Measure" /* Name.USER_TIMING_MEASURE */;

@@ -12,7 +12,7 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import webBundleInfoViewStylesRaw from './WebBundleInfoView.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const webBundleInfoViewStyles = new CSSStyleSheet();
-webBundleInfoViewStyles.replaceSync(webBundleInfoViewStylesRaw.cssContent);
+webBundleInfoViewStyles.replaceSync(webBundleInfoViewStylesRaw.cssText);
 const { mimeFromURL, fromMimeTypeOverride, fromMimeType } = Common.ResourceType.ResourceType;
 const { iconDataForResourceType } = PanelUtils;
 const UIStrings = {

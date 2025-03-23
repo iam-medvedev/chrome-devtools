@@ -9,6 +9,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
@@ -18,7 +19,6 @@ import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ChangesPanel from '../changes/changes.js';
 import * as PanelCommon from '../common/common.js';
-import { PatchAgent } from './agents/PatchAgent.js';
 import { SelectWorkspaceDialog } from './SelectWorkspaceDialog.js';
 const { classMap } = Directives;
 /*
@@ -37,26 +37,22 @@ const UIStringsNotTranslate = {
      *@description Button text for staging changes to workspace.
      */
     applyToWorkspace: 'Apply to workspace',
-    /*
+    /**
      *@description Button text to change the selected workspace
      */
     change: 'Change',
-    /*
+    /**
      *@description Button text to cancel applying to workspace
      */
     cancel: 'Cancel',
-    /*
+    /**
      *@description Button text to discard the suggested changes and not save them to file system
      */
     discard: 'Discard',
-    /*
+    /**
      *@description Button text to save all the suggested changes to file system
      */
     saveAll: 'Save all',
-    /**
-     *@description Button text while data is being loaded
-     */
-    loading: 'Loading...',
     /**
      *@description Header text after the user saved the changes to the disk.
      */
@@ -106,9 +102,20 @@ const UIStringsNotTranslate = {
      * @description Text indicating that a link opens in a new tab (for a11y).
      */
     opensInNewTab: '(opens in a new tab)',
+    /**
+     * @description Generic error text for the case the changes were not applied to the workspace.
+     */
+    genericErrorMessage: 'Changes couldn’t be applied to your workspace.',
 };
 const lockedString = i18n.i18n.lockedString;
 const CODE_SNIPPET_WARNING_URL = 'https://support.google.com/legal/answer/13505487';
+export var PatchSuggestionState;
+(function (PatchSuggestionState) {
+    PatchSuggestionState["INITIAL"] = "initial";
+    PatchSuggestionState["LOADING"] = "loading";
+    PatchSuggestionState["SUCCESS"] = "success";
+    PatchSuggestionState["ERROR"] = "error";
+})(PatchSuggestionState || (PatchSuggestionState = {}));
 export class PatchWidget extends UI.Widget.Widget {
     changeSummary = '';
     // Whether the user completed first run experience dialog or not.
@@ -119,11 +126,10 @@ export class PatchWidget extends UI.Widget.Widget {
     #aidaClient;
     #applyPatchAbortController;
     #project;
-    #patchSuggestion;
     #patchSources;
-    #patchSuggestionLoading;
     #savedToDisk;
     #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
+    #patchSuggestionState = PatchSuggestionState.INITIAL;
     #workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
     #workspace = Workspace.Workspace.WorkspaceImpl.instance();
     constructor(element, view, opts) {
@@ -137,6 +143,18 @@ export class PatchWidget extends UI.Widget.Widget {
                 return;
             }
             output.tooltipRef = output.tooltipRef ?? Directives.createRef();
+            function renderSourcesLink() {
+                if (!input.sources) {
+                    return nothing;
+                }
+                return html `<x-link
+          class="link sources-link"
+          title="${UIStringsNotTranslate.viewUploadedFiles} ${UIStringsNotTranslate.opensInNewTab}"
+          href="data:text/plain,${encodeURIComponent(input.sources)}"
+          jslog=${VisualLogging.link('files-used-in-patching').track({ click: true })}>
+          ${UIStringsNotTranslate.viewUploadedFiles}
+        </x-link>`;
+            }
             function renderHeader() {
                 if (input.savedToDisk) {
                     return html `
@@ -146,7 +164,7 @@ export class PatchWidget extends UI.Widget.Widget {
             </span>
           `;
                 }
-                if (input.patchSuggestion) {
+                if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
                     return html `
             <devtools-icon class="on-tonal-icon summary-badge" .name=${'difference'}></devtools-icon>
             <span class="header-text">
@@ -173,7 +191,7 @@ export class PatchWidget extends UI.Widget.Widget {
                 if (!input.changeSummary || input.savedToDisk) {
                     return nothing;
                 }
-                if (input.patchSuggestion) {
+                if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
                     return html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(ChangesPanel.CombinedDiffView.CombinedDiffView, {
                         workspaceDiff: input.workspaceDiff,
                     })}></devtools-widget>`;
@@ -182,13 +200,18 @@ export class PatchWidget extends UI.Widget.Widget {
           .code=${input.changeSummary}
           .codeLang=${'css'}
           .displayNotice=${true}
-        ></devtools-code-block>`;
+        ></devtools-code-block>
+        ${input.patchSuggestionState === PatchSuggestionState.ERROR
+                    ? html `<div class="error-container">
+              <devtools-icon .name=${'cross-circle-filled'}></devtools-icon>${lockedString(UIStringsNotTranslate.genericErrorMessage)} ${renderSourcesLink()}
+            </div>`
+                    : nothing}`;
             }
             function renderFooter() {
                 if (input.savedToDisk) {
                     return nothing;
                 }
-                if (input.patchSuggestion) {
+                if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
                     return html `
           <div class="footer">
             <x-link class="link disclaimer-link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({
@@ -196,23 +219,17 @@ export class PatchWidget extends UI.Widget.Widget {
                     })}>
               ${lockedString(UIStringsNotTranslate.codeDisclaimer)}
             </x-link>
-            ${input.sources ? html `<x-link
-              class="link sources-link"
-              title="${UIStringsNotTranslate.viewUploadedFiles} ${UIStringsNotTranslate.opensInNewTab}"
-              href="data:text/plain,${encodeURIComponent(input.sources)}"
-              jslog=${VisualLogging.link('files-used-in-patching').track({ click: true })}>
-              ${UIStringsNotTranslate.viewUploadedFiles}
-            </x-link>` : nothing}
+            ${renderSourcesLink()}
             <div class="save-or-discard-buttons">
               <devtools-button
                 @click=${input.onDiscard}
-                .jslogContext=${'discard'}
+                .jslogContext=${'patch-widget.discard'}
                 .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>
                   ${lockedString(UIStringsNotTranslate.discard)}
               </devtools-button>
               <devtools-button
                 @click=${input.onSaveAll}
-                .jslogContext=${'save-all'}
+                .jslogContext=${'patch-widget.save-all'}
                 .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}>
                   ${lockedString(UIStringsNotTranslate.saveAll)}
               </devtools-button>
@@ -236,7 +253,7 @@ export class PatchWidget extends UI.Widget.Widget {
             </div>
           ` : nothing}
           <div class="apply-to-workspace-container">
-            ${input.patchSuggestionLoading ? html `
+            ${input.patchSuggestionState === PatchSuggestionState.LOADING ? html `
               <div class="loading-text-container">
                 <devtools-spinner></devtools-spinner>
                 <span>
@@ -251,7 +268,7 @@ export class PatchWidget extends UI.Widget.Widget {
                 ${lockedString(UIStringsNotTranslate.applyToWorkspace)}
               </devtools-button>
             `}
-            ${input.patchSuggestionLoading ? html `<devtools-button
+            ${input.patchSuggestionState === PatchSuggestionState.LOADING ? html `<devtools-button
               @click=${input.onCancel}
               .jslogContext=${'cancel'}
               .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>
@@ -302,8 +319,7 @@ export class PatchWidget extends UI.Widget.Widget {
         this.#view({
             workspaceDiff: this.#workspaceDiff,
             changeSummary: this.changeSummary,
-            patchSuggestion: this.#patchSuggestion,
-            patchSuggestionLoading: this.#patchSuggestionLoading,
+            patchSuggestionState: this.#patchSuggestionState,
             sources: this.#patchSources,
             projectName: this.#project?.displayName(),
             projectPath: Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath((this.#project?.id() || '')),
@@ -429,24 +445,30 @@ export class PatchWidget extends UI.Widget.Widget {
         if (!changeSummary) {
             throw new Error('Change summary does not exist');
         }
-        this.#patchSuggestionLoading = true;
+        this.#patchSuggestionState = PatchSuggestionState.LOADING;
         this.requestUpdate();
         const { response, processedFiles } = await this.#applyPatch(changeSummary);
-        // TODO: Handle error state
-        if (response?.type === "answer" /* ResponseType.ANSWER */) {
-            this.#patchSuggestion = response.text;
+        if (response?.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */) {
+            this.#patchSuggestionState = PatchSuggestionState.SUCCESS;
+        }
+        else if (response?.type === "error" /* AiAssistanceModel.ResponseType.ERROR */ &&
+            response.error === "abort" /* AiAssistanceModel.ErrorType.ABORT */) {
+            // If this is an abort error, we're returning back to the initial state.
+            this.#patchSuggestionState = PatchSuggestionState.INITIAL;
+        }
+        else {
+            this.#patchSuggestionState = PatchSuggestionState.ERROR;
         }
         this.#patchSources = `Filenames in ${this.#project?.displayName()}.
 Files:
 ${processedFiles.map(filename => `* ${filename}`).join('\n')}`;
-        this.#patchSuggestionLoading = false;
         this.requestUpdate();
     }
     #onDiscard() {
         this.#workspaceDiff.modifiedUISourceCodes().forEach(modifiedUISourceCode => {
             modifiedUISourceCode.resetWorkingCopy();
         });
-        this.#patchSuggestion = undefined;
+        this.#patchSuggestionState = PatchSuggestionState.INITIAL;
         this.#patchSources = undefined;
         this.requestUpdate();
     }
@@ -463,7 +485,7 @@ ${processedFiles.map(filename => `* ${filename}`).join('\n')}`;
             throw new Error('Project does not exist');
         }
         this.#applyPatchAbortController = new AbortController();
-        const agent = new PatchAgent({
+        const agent = new AiAssistanceModel.PatchAgent({
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: false,
             project: this.#project,

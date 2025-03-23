@@ -11,6 +11,19 @@ export interface MetaHandlerData {
     gpuProcessId: Types.Events.ProcessID;
     navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>;
     navigationsByNavigationId: Map<string, Types.Events.NavigationStart>;
+    /**
+     * The user-visible URL displayed to users in the address bar.
+     * This captures:
+     *  - resolving all redirects
+     *  - history API pushState
+     *
+     * Given no redirects or history API usages, this is just the navigation event's documentLoaderURL.
+     *
+     * Note: empty string special case denotes the duration of the trace between the start
+     * and the first navigation. If there is no history API navigation during this time,
+     * there will be no value for empty string.
+     **/
+    finalDisplayUrlByNavigationId: Map<string, string>;
     threadsInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, Types.Events.ThreadName>>;
     mainFrameId: string;
     mainFrameURL: string;

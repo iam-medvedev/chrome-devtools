@@ -145,4 +145,5 @@ export declare function eventHasCategory(event: Types.Events.Event, category: st
 export declare function isMatchingCallFrame(eventFrame: Types.Events.CallFrame, nodeFrame: Protocol.Runtime.CallFrame): boolean;
 export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.Micro): boolean;
 export declare function extractSampleTraceId(event: Types.Events.Event): number | null;
+export declare const VISIBLE_TRACE_EVENT_TYPES: Set<Types.Events.Name>;
 export {};

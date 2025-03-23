@@ -11,15 +11,9 @@ import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as TextEditor from '../../../../ui/components/text_editor/text_editor.js';
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../../ui/legacy/inspectorCommon.css.js';
+import inspectorCommonStyles from '../../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-import ruleSetDetailsViewStylesRaw from './RuleSetDetailsView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const ruleSetDetailsViewStyles = new CSSStyleSheet();
-ruleSetDetailsViewStyles.replaceSync(ruleSetDetailsViewStylesRaw.cssContent);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssContent);
+import ruleSetDetailsViewStyles from './RuleSetDetailsView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -43,9 +37,6 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
     #data = null;
     #shouldPrettyPrint = true;
     #editorState;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [ruleSetDetailsViewStyles, inspectorCommonStyles];
-    }
     set data(data) {
         this.#data = data;
         void this.#render();
@@ -57,6 +48,8 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
         await RenderCoordinator.write('RuleSetDetailsView render', async () => {
             if (this.#data === null) {
                 Lit.render(html `
+          <style>${ruleSetDetailsViewStyles.cssText}</style>
+          <style>${inspectorCommonStyles.cssText}</style>
           <div class="placeholder">
             <div class="empty-state">
               <span class="empty-state-header">${i18nString(UIStrings.noElementSelected)}</span>
@@ -71,6 +64,8 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
+        <style>${ruleSetDetailsViewStyles.cssText}</style>
+        <style>${inspectorCommonStyles.cssText}</style>
         <div class="content">
           <div class="ruleset-header" id="ruleset-url">${this.#data?.url || SDK.TargetManager.TargetManager.instance().inspectedURL()}</div>
           ${this.#maybeError()}

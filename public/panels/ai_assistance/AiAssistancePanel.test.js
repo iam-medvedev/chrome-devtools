@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
 import { findMenuItemWithLabel, getMenu } from '../../testing/ContextMenuHelpers.js';
@@ -18,7 +19,6 @@ import * as Network from '../network/network.js';
 import * as Sources from '../sources/sources.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
-import * as AiAssistance from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('AI Assistance Panel', () => {
     beforeEach(() => {
@@ -38,24 +38,24 @@ describeWithMockConnection('AI Assistance Panel', () => {
     describe('consent view', () => {
         it('should render consent view when the consent is not given before', async () => {
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistance.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
         });
         it('should switch from consent view to chat view when enabling setting', async () => {
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistance.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-            assert.strictEqual((await view.nextInput).state, "chat-view" /* AiAssistance.State.CHAT_VIEW */);
+            assert.strictEqual((await view.nextInput).state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
         });
         it('should render chat view when the consent is given before', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "chat-view" /* AiAssistance.State.CHAT_VIEW */);
+            assert.strictEqual(view.input.state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
         });
         it('should render the consent view when the setting is disabled', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(true);
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistance.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
             Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(false);
         });
         it('should render the consent view when blocked by age', async () => {
@@ -69,16 +69,16 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 },
             });
             const { view } = await createAiAssistancePanel();
-            assert.strictEqual(view.input.state, "consent-view" /* AiAssistance.State.CONSENT_VIEW */);
+            assert.strictEqual(view.input.state, "consent-view" /* AiAssistancePanel.State.CONSENT_VIEW */);
         });
         it('updates when the user logs in', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             const { view, stubAidaCheckAccessPreconditions } = await createAiAssistancePanel({ aidaAvailability: "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */ });
-            assert.strictEqual(view.input.state, "chat-view" /* AiAssistance.State.CHAT_VIEW */);
+            assert.strictEqual(view.input.state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
             assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
             stubAidaCheckAccessPreconditions("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
             Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
-            assert.strictEqual((await view.nextInput).state, "chat-view" /* AiAssistance.State.CHAT_VIEW */);
+            assert.strictEqual((await view.nextInput).state, "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */);
             assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         });
     });
@@ -180,35 +180,35 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     const node = sinon.createStubInstance(SDK.DOMModel.DOMNode, {
                         nodeType: Node.ELEMENT_NODE,
                     });
-                    return new AiAssistance.NodeContext(node);
+                    return new AiAssistanceModel.NodeContext(node);
                 },
                 action: 'freestyler.elements-floating-button',
             },
             {
                 flavor: SDK.NetworkRequest.NetworkRequest,
                 createContext: () => {
-                    return new AiAssistance.RequestContext(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest));
+                    return new AiAssistanceModel.RequestContext(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest));
                 },
                 action: 'drjones.network-floating-button'
             },
             {
                 flavor: TimelineUtils.AICallTree.AICallTree,
                 createContext: () => {
-                    return new AiAssistance.CallTreeContext(sinon.createStubInstance(TimelineUtils.AICallTree.AICallTree));
+                    return new AiAssistanceModel.CallTreeContext(sinon.createStubInstance(TimelineUtils.AICallTree.AICallTree));
                 },
                 action: 'drjones.performance-panel-context'
             },
             {
                 flavor: TimelineUtils.InsightAIContext.ActiveInsight,
                 createContext: () => {
-                    return new AiAssistance.InsightContext(sinon.createStubInstance(TimelineUtils.InsightAIContext.ActiveInsight));
+                    return new AiAssistanceModel.InsightContext(sinon.createStubInstance(TimelineUtils.InsightAIContext.ActiveInsight));
                 },
                 action: 'drjones.performance-insight-context'
             },
             {
                 flavor: Workspace.UISourceCode.UISourceCode,
                 createContext: () => {
-                    return new AiAssistance.FileContext(sinon.createStubInstance(Workspace.UISourceCode.UISourceCode));
+                    return new AiAssistanceModel.FileContext(sinon.createStubInstance(Workspace.UISourceCode.UISourceCode));
                 },
                 action: 'drjones.sources-panel-context',
             }
@@ -307,13 +307,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             (await view.nextInput).onTextSubmit('test');
             assert.deepEqual((await view.nextInput).messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -335,13 +335,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             view.input.onTextSubmit('test');
             assert.deepEqual((await view.nextInput).messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -349,7 +349,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             ]);
             view.input.onNewChatClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            assert.deepEqual(view.input.conversationType, "freestyler" /* AiAssistance.ConversationType.STYLING */);
+            assert.deepEqual(view.input.conversationType, "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
         });
         it('should select the performance insights agent if it is enabled and the user has expanded an insight', async () => {
             updateHostConfig({
@@ -366,13 +366,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.SelectedInsight, new Timeline.TimelinePanel.SelectedInsight({}));
             assert.deepEqual(view.input.messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -380,7 +380,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             ]);
             view.input.onNewChatClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            assert.deepEqual(view.input.conversationType, "performance-insight" /* AiAssistance.ConversationType.PERFORMANCE_INSIGHT */);
+            assert.deepEqual(view.input.conversationType, "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
         });
         it('should select the Dr Jones performance agent if insights are not enabled', async () => {
             updateHostConfig({
@@ -396,13 +396,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.TimelinePanel, sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel));
             assert.deepEqual(view.input.messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -410,7 +410,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             ]);
             view.input.onNewChatClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            assert.deepEqual(view.input.conversationType, "drjones-performance" /* AiAssistance.ConversationType.PERFORMANCE */);
+            assert.deepEqual(view.input.conversationType, "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
         });
         it('should switch agents and restore history', async () => {
             updateHostConfig({
@@ -425,13 +425,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             (await view.nextInput).onTextSubmit('User question to Freestyler?', imageInput);
             assert.deepEqual((await view.nextInput).messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                     imageInput,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -441,13 +441,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             (await view.nextInput).onTextSubmit('User question to DrJones?');
             assert.deepEqual((await view.nextInput).messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'User question to DrJones?',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test2',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -462,13 +462,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isTrue((await view.nextInput).isReadOnly);
             assert.deepEqual(view.input.messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'User question to Freestyler?',
                     imageInput,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -481,7 +481,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     enabled: true,
                 },
             });
-            const addHistoryItemStub = sinon.stub(AiAssistance.Conversation.prototype, 'addHistoryItem');
+            const addHistoryItemStub = sinon.stub(AiAssistanceModel.Conversation.prototype, 'addHistoryItem');
             UI.Context.Context.instance().setFlavor(Elements.ElementsPanel.ElementsPanel, sinon.createStubInstance(Elements.ElementsPanel.ElementsPanel));
             const { view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[
@@ -500,6 +500,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     enabled: true,
                 },
             });
+            const aiHistoryStorage = AiAssistanceModel.AiHistoryStorage.instance({ forceNew: true });
+            const deleteHistoryEntryStub = sinon.stub(aiHistoryStorage, 'deleteHistoryEntry');
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([
                     [{ explanation: 'test' }],
@@ -515,12 +517,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isDefined(id);
             contextMenu.invokeHandler(id);
             await view.nextInput;
-            const stub = sinon.createStubInstance(AiAssistance.AiHistoryStorage);
-            sinon.stub(AiAssistance.AiHistoryStorage, 'instance').returns(stub);
             view.input.onDeleteClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            assert.strictEqual(stub.deleteHistoryEntry.callCount, 1);
-            assert.isString(stub.deleteHistoryEntry.lastCall.args[0]);
+            assert.strictEqual(deleteHistoryEntryStub.callCount, 1);
+            assert.isString(deleteHistoryEntryStub.lastCall.args[0]);
             const menuAfterDelete = openHistoryContextMenu(view.input, 'User question to Freestyler?');
             assert.isUndefined(menuAfterDelete.id);
         });
@@ -533,13 +533,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
         (await view.nextInput).onTextSubmit('test');
         assert.deepEqual((await view.nextInput).messages, [
             {
-                entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                 text: 'test',
                 imageInput: undefined,
             },
             {
                 answer: 'test',
-                entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                 rpcId: undefined,
                 suggestions: undefined,
                 steps: [],
@@ -561,13 +561,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
         (await view.nextInput).onTextSubmit('test');
         assert.deepEqual((await view.nextInput).messages, [
             {
-                entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                 text: 'test',
                 imageInput: undefined,
             },
             {
                 answer: 'test',
-                entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                 rpcId: undefined,
                 suggestions: undefined,
                 steps: [],
@@ -575,7 +575,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
         ]);
         view.input.onDeleteClick();
         assert.deepEqual((await view.nextInput).messages, []);
-        assert.deepEqual(view.input.conversationType, "freestyler" /* AiAssistance.ConversationType.STYLING */);
+        assert.deepEqual(view.input.conversationType, "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
     });
     it('should have empty state after clear chat history', async () => {
         const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }]]) });
@@ -583,13 +583,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
         (await view.nextInput).onTextSubmit('User question to Freestyler?');
         assert.deepEqual((await view.nextInput).messages, [
             {
-                entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                 text: 'User question to Freestyler?',
                 imageInput: undefined,
             },
             {
                 answer: 'test',
-                entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                 rpcId: undefined,
                 suggestions: undefined,
                 steps: [],
@@ -599,13 +599,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
         (await view.nextInput).onTextSubmit('User question to DrJones?');
         assert.deepEqual((await view.nextInput).messages, [
             {
-                entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                 text: 'User question to DrJones?',
                 imageInput: undefined,
             },
             {
                 answer: 'test2',
-                entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                 rpcId: undefined,
                 suggestions: undefined,
                 steps: [],
@@ -674,13 +674,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             view.input.onTextSubmit('test');
             assert.deepEqual((await view.nextInput).messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -692,25 +692,25 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isFalse((await view.nextInput).isReadOnly);
             assert.deepEqual(view.input.messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
                 },
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test2',
                     imageInput: undefined,
                 },
                 {
                     answer: 'test2',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],
@@ -751,22 +751,22 @@ describeWithMockConnection('AI Assistance Panel', () => {
         const tests = [
             {
                 panel: Elements.ElementsPanel.ElementsPanel,
-                expectedConversationType: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+                expectedConversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
                 featureFlagName: 'devToolsFreestyler',
             },
             {
                 panel: Network.NetworkPanel.NetworkPanel,
-                expectedConversationType: "drjones-network-request" /* AiAssistance.ConversationType.NETWORK */,
+                expectedConversationType: "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */,
                 featureFlagName: 'devToolsAiAssistanceNetworkAgent',
             },
             {
                 panel: Sources.SourcesPanel.SourcesPanel,
-                expectedConversationType: "drjones-file" /* AiAssistance.ConversationType.FILE */,
+                expectedConversationType: "drjones-file" /* AiAssistanceModel.ConversationType.FILE */,
                 featureFlagName: 'devToolsAiAssistanceFileAgent',
             },
             {
                 panel: Timeline.TimelinePanel.TimelinePanel,
-                expectedConversationType: "drjones-performance" /* AiAssistance.ConversationType.PERFORMANCE */,
+                expectedConversationType: "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */,
                 featureFlagName: 'devToolsAiAssistancePerformanceAgent',
             }
         ];
@@ -817,7 +817,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.TimelinePanel, sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel));
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.SelectedInsight, new Timeline.TimelinePanel.SelectedInsight({}));
                 const { view } = await createAiAssistancePanel();
-                assert.strictEqual(view.input.conversationType, "performance-insight" /* AiAssistance.ConversationType.PERFORMANCE_INSIGHT */);
+                assert.strictEqual(view.input.conversationType, "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
             });
             it('should select the PERFORMANCE agent when the performance panel is open and insights are enabled but the user has not selected an insight', async () => {
                 updateHostConfig({
@@ -829,7 +829,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.TimelinePanel, sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel));
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.SelectedInsight, null);
                 const { view } = await createAiAssistancePanel();
-                assert.strictEqual(view.input.conversationType, "drjones-performance" /* AiAssistance.ConversationType.PERFORMANCE */);
+                assert.strictEqual(view.input.conversationType, "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
             });
         });
     });
@@ -844,15 +844,15 @@ describeWithMockConnection('AI Assistance Panel', () => {
         view.input.onTextSubmit('test');
         assert.deepEqual((await view.nextInput).messages, [
             {
-                entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                 text: 'test',
                 imageInput: undefined,
             },
             {
                 answer: undefined,
-                entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                 rpcId: undefined,
-                error: "block" /* AiAssistance.ErrorType.BLOCK */,
+                error: "block" /* AiAssistanceModel.ErrorType.BLOCK */,
                 steps: [],
             },
         ]);
@@ -1009,13 +1009,13 @@ describeWithMockConnection('AI Assistance Panel', () => {
             view.input.onTextSubmit('test', { inlineData: { data: 'imageInput', mimeType: 'image/jpeg' } });
             assert.deepEqual((await view.nextInput).messages, [
                 {
-                    entity: "user" /* AiAssistance.ChatMessageEntity.USER */,
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
                     text: 'test',
                     imageInput: { inlineData: { data: 'imageInput', mimeType: 'image/jpeg' } }
                 },
                 {
                     answer: 'test',
-                    entity: "model" /* AiAssistance.ChatMessageEntity.MODEL */,
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                     rpcId: undefined,
                     suggestions: undefined,
                     steps: [],

@@ -9,8 +9,8 @@ export interface PerformanceAPIExtensionTestData {
 }
 export interface ConsoleAPIExtensionTestData {
     name: string;
-    start?: string;
-    end?: string;
+    start?: string | number;
+    end?: string | number;
     track?: string;
     trackGroup?: string;
     color?: string;
