@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { getMainFrame, MAIN_FRAME_ID, navigate } from '../../testing/ResourceTreeHelpers.js';
@@ -12,50 +13,65 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
     let sharedStorageModel;
     let treeElement;
     const TEST_ORIGIN_A = 'http://a.test';
+    const TEST_SITE_A = TEST_ORIGIN_A;
     const TEST_ORIGIN_B = 'http://b.test';
+    const TEST_SITE_B = TEST_ORIGIN_B;
     const TEST_ORIGIN_C = 'http://c.test';
+    const TEST_SITE_C = TEST_ORIGIN_C;
     const EVENTS = [
         {
             accessTime: 0,
-            type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
+            method: "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
             mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0', value: 'value0' },
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 10,
-            type: "workletGet" /* Protocol.Storage.SharedStorageAccessType.WorkletGet */,
+            method: "get" /* Protocol.Storage.SharedStorageAccessMethod.Get */,
             mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0' },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 15,
-            type: "workletLength" /* Protocol.Storage.SharedStorageAccessType.WorkletLength */,
+            method: "length" /* Protocol.Storage.SharedStorageAccessMethod.Length */,
             mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 20,
-            type: "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
+            method: "clear" /* Protocol.Storage.SharedStorageAccessMethod.Clear */,
             mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 100,
-            type: "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
+            method: "set" /* Protocol.Storage.SharedStorageAccessMethod.Set */,
             mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 150,
-            type: "workletRemainingBudget" /* Protocol.Storage.SharedStorageAccessType.WorkletRemainingBudget */,
+            method: "remainingBudget" /* Protocol.Storage.SharedStorageAccessMethod.RemainingBudget */,
             mainFrameId: MAIN_FRAME_ID,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
     ];
     beforeEach(async () => {
@@ -69,13 +85,15 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
     it('shows view on select', async () => {
         assert.exists(sharedStorageModel);
         sinon.stub(sharedStorageModel, 'enable').resolves();
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         panel.markAsRoot();
-        panel.show(document.body);
+        panel.show(container);
         treeElement = new Application.SharedStorageListTreeElement.SharedStorageListTreeElement(panel);
         const view = treeElement.view;
         const wasShownSpy = sinon.spy(view, 'wasShown');
-        document.body.appendChild(treeElement.listItemNode);
+        container.appendChild(treeElement.listItemNode);
         treeElement.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeElement.selectable = true;
         treeElement.select();

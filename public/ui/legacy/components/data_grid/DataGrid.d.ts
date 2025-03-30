@@ -184,8 +184,6 @@ export declare class DataGridNode<T> {
     protected attachedInternal: boolean;
     private savedPosition;
     private shouldRefreshChildrenInternal;
-    private dataInternal;
-    private hasChildrenInternal;
     children: Array<DataGridNode<T>>;
     dataGrid: DataGridImpl<T> | null;
     parent: DataGridNode<T> | null;
@@ -196,6 +194,8 @@ export declare class DataGridNode<T> {
     nodeAccessibleText: string;
     cellAccessibleTextMap: Map<string, string>;
     isCreationNode: boolean;
+    private dataInternal;
+    private hasChildrenInternal;
     constructor(data?: DataGridData | null, hasChildren?: boolean);
     element(): Element;
     protected createElement(): HTMLElement;

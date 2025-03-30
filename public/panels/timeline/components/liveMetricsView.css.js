@@ -11,7 +11,6 @@ export default {
  */
 
 .container {
-  /* stylelint-disable-next-line property-no-unknown */
   container-type: inline-size;
   height: 100%;
   font-size: var(--sys-typescale-body4-size);
@@ -51,7 +50,6 @@ export default {
   border-left: 1px solid var(--sys-color-divider);
 }
 
-/* stylelint-disable-next-line at-rule-no-unknown */
 @container (max-width: 650px) {
   .live-metrics-view {
     flex-direction: column;
@@ -308,7 +306,7 @@ export default {
   font-weight: var(--ref-typeface-weight-medium);
 }
 
-x-link { /* stylelint-disable-line selector-type-no-unknown */
+x-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
 }

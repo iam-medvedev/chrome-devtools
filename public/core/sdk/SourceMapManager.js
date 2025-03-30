@@ -8,17 +8,13 @@ import { parseSourceMap, SourceMap } from './SourceMap.js';
 import { Type } from './Target.js';
 export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     #target;
-    #isEnabled;
-    #clientData;
-    #sourceMaps;
-    #attachingClient;
+    #isEnabled = true;
+    #clientData = new Map();
+    #sourceMaps = new Map();
+    #attachingClient = null;
     constructor(target) {
         super();
         this.#target = target;
-        this.#isEnabled = true;
-        this.#attachingClient = null;
-        this.#clientData = new Map();
-        this.#sourceMaps = new Map();
     }
     setEnabled(isEnabled) {
         if (isEnabled === this.#isEnabled) {

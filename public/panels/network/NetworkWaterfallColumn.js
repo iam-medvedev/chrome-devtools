@@ -61,7 +61,6 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         this.endTime = this.calculator.maximumBoundary();
         this.popoverHelper =
             new UI.PopoverHelper.PopoverHelper(this.element, this.getPopoverRequest.bind(this), 'network.timing');
-        this.popoverHelper.setHasPadding(true);
         this.popoverHelper.setTimeout(300, 300);
         this.nodes = [];
         this.hoveredNode = null;

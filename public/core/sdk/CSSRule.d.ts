@@ -92,4 +92,26 @@ export declare class CSSPositionTryRule extends CSSRule {
     name(): CSSValue;
     active(): boolean;
 }
+export interface CSSNestedStyleLeaf {
+    style: CSSStyleDeclaration;
+}
+export type CSSNestedStyleCondition = {
+    children: CSSNestedStyle[];
+} & ({
+    media: CSSMedia;
+} | {
+    container: CSSContainerQuery;
+} | {
+    supports: CSSSupports;
+});
+export type CSSNestedStyle = CSSNestedStyleLeaf | CSSNestedStyleCondition;
+export declare class CSSFunctionRule extends CSSRule {
+    #private;
+    constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSFunctionRule);
+    functionName(): CSSValue;
+    parameters(): string[];
+    children(): CSSNestedStyle[];
+    protocolNodesToNestedStyles(nodes: Protocol.CSS.CSSFunctionNode[]): CSSNestedStyle[];
+    protocolNodeToNestedStyle(node: Protocol.CSS.CSSFunctionNode): CSSNestedStyle | undefined;
+}
 export {};

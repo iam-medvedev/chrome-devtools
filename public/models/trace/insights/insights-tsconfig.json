@@ -30,6 +30,7 @@
   },
   "files": [
     "../../../../../../../front_end/models/trace/insights/CLSCulprits.ts",
+    "../../../../../../../front_end/models/trace/insights/Cache.ts",
     "../../../../../../../front_end/models/trace/insights/Common.ts",
     "../../../../../../../front_end/models/trace/insights/DOMSize.ts",
     "../../../../../../../front_end/models/trace/insights/DocumentLatency.ts",
@@ -40,21 +41,24 @@
     "../../../../../../../front_end/models/trace/insights/InteractionToNextPaint.ts",
     "../../../../../../../front_end/models/trace/insights/LCPDiscovery.ts",
     "../../../../../../../front_end/models/trace/insights/LCPPhases.ts",
+    "../../../../../../../front_end/models/trace/insights/LegacyJavaScript.ts",
     "../../../../../../../front_end/models/trace/insights/Models.ts",
+    "../../../../../../../front_end/models/trace/insights/ModernHTTP.ts",
     "../../../../../../../front_end/models/trace/insights/NetworkDependencyTree.ts",
     "../../../../../../../front_end/models/trace/insights/RenderBlocking.ts",
     "../../../../../../../front_end/models/trace/insights/SlowCSSSelector.ts",
     "../../../../../../../front_end/models/trace/insights/Statistics.ts",
     "../../../../../../../front_end/models/trace/insights/ThirdParties.ts",
-    "../../../../../../../front_end/models/trace/insights/UseCache.ts",
     "../../../../../../../front_end/models/trace/insights/Viewport.ts",
     "../../../../../../../front_end/models/trace/insights/types.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
-    "../../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
+    {
+      "path": "../../../third_party/legacy-javascript/bundle-tsconfig.json"
+    },
     {
       "path": "../../../third_party/third-party-web/bundle-tsconfig.json"
     },

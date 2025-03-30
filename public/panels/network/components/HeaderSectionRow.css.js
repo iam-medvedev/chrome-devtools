@@ -16,10 +16,11 @@ export default {
 
 .row {
   display: flex;
-  line-height: 20px;
+  line-height: 18px;
   padding-left: 8px;
-  gap: 12px;
+  gap: var(--sys-size-6);
   user-select: text;
+  margin: var(--sys-size-3) 0;
 }
 
 .row.header-editable {
@@ -28,8 +29,8 @@ export default {
 }
 
 .header-name {
-  color: var(--sys-color-on-surface);
-  font-weight: 400;
+  font: var(--sys-typescale-body5-medium);
+  color: var(--sys-color-on-surface-subtle);
   width: 30%;
   min-width: 160px;
   max-width: 240px;
@@ -62,6 +63,7 @@ export default {
   display: flex;
   overflow-wrap: anywhere;
   margin-inline-end: 14px;
+  font: var(--sys-typescale-body4-regular);
 }
 
 .header-badge-text {
@@ -135,7 +137,7 @@ export default {
   color: var(--sys-color-token-subtle);
 }
 
-x-link .inline-icon { /* stylelint-disable-line selector-type-no-unknown */
+x-link .inline-icon {
   padding-right: 3px;
 }
 

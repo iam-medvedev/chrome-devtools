@@ -348,7 +348,9 @@ describeWithEnvironment('TraceProcessor', function () {
                 'DuplicatedJavaScript',
                 'SlowCSSSelector',
                 'ForcedReflow',
-                'UseCache',
+                'Cache',
+                'ModernHTTP',
+                'LegacyJavaScript',
             ]);
             const orderWithMetadata = await getInsightOrder(true);
             // Viewport is first, before CLSCulprits, since the field data produces a higher weight for INP than for CLS.
@@ -368,7 +370,9 @@ describeWithEnvironment('TraceProcessor', function () {
                 'DuplicatedJavaScript',
                 'SlowCSSSelector',
                 'ForcedReflow',
-                'UseCache',
+                'Cache',
+                'ModernHTTP',
+                'LegacyJavaScript',
             ]);
         });
     });

@@ -8,32 +8,28 @@ import { NodeLabelGenerator, NodeView } from './NodeView.js';
 // A class that tracks all the nodes and edges of an audio graph.
 export class GraphView extends Common.ObjectWrapper.ObjectWrapper {
     contextId;
-    nodes;
-    edges;
-    outboundEdgeMap;
-    inboundEdgeMap;
-    nodeLabelGenerator;
-    paramIdToNodeIdMap;
+    nodes = new Map();
+    edges = new Map();
+    /**
+     * For each node ID, keep a set of all out-bound edge IDs.
+     */
+    outboundEdgeMap = new Platform.MapUtilities.Multimap();
+    /**
+     * For each node ID, keep a set of all in-bound edge IDs.
+     */
+    inboundEdgeMap = new Platform.MapUtilities.Multimap();
+    /**
+     * Use concise node label to replace the long UUID.
+     * Each graph has its own label generator so that the label starts from 0.
+     */
+    nodeLabelGenerator = new NodeLabelGenerator();
+    /**
+     * For each param ID, save its corresponding node Id.
+     */
+    paramIdToNodeIdMap = new Map();
     constructor(contextId) {
         super();
         this.contextId = contextId;
-        this.nodes = new Map();
-        this.edges = new Map();
-        /**
-         * For each node ID, keep a set of all out-bound edge IDs.
-         */
-        this.outboundEdgeMap = new Platform.MapUtilities.Multimap();
-        /**
-         * For each node ID, keep a set of all in-bound edge IDs.
-         */
-        this.inboundEdgeMap = new Platform.MapUtilities.Multimap();
-        // Use concise node label to replace the long UUID.
-        // Each graph has its own label generator so that the label starts from 0.
-        this.nodeLabelGenerator = new NodeLabelGenerator();
-        /**
-         * For each param ID, save its corresponding node Id.
-         */
-        this.paramIdToNodeIdMap = new Map();
     }
     /**
      * Add a node to the graph.

@@ -13,8 +13,9 @@ export default {
 .overview-info:not(:empty) {
   display: flex;
   background: var(--sys-color-cdt-base-container);
-  box-shadow: var(--drop-shadow);
-  padding: 3px;
+  box-shadow: var(--sys-elevation-level2);
+  padding: var(--sys-size-6) var(--sys-size-8);
+  border-radius: var(--sys-shape-corner-small);
 }
 
 .overview-info .frame .time {

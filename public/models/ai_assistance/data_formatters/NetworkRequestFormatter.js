@@ -124,7 +124,7 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
                 value: getDuration('total'),
             },
         ];
-        return labels.filter(label => Boolean(label.value)).map(label => `${label.label}: ${label.value}`).join('\n');
+        return labels.filter(label => !!label.value).map(label => `${label.label}: ${label.value}`).join('\n');
     }
     #formatRequestInitiated(initiated, parentRequest, initiatorChain, lineStart, allowedOrigin) {
         const visited = new Set();

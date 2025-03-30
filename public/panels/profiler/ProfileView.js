@@ -463,14 +463,10 @@ export class WritableProfileHeader extends ProfileHeader {
     jsonifiedProfile;
     profile;
     protocolProfileInternal;
-    #profileReceivedPromise;
-    #profileReceivedFulfill = () => { };
+    #profileReceivedPromise = Promise.withResolvers();
     constructor(debuggerModel, type, title) {
         super(type, title || i18nString(UIStrings.profileD, { PH1: type.nextProfileUid() }));
         this.debuggerModel = debuggerModel;
-        this.#profileReceivedPromise = new Promise(resolve => {
-            this.#profileReceivedFulfill = resolve;
-        });
     }
     onChunkTransferred(_reader) {
         if (this.jsonifiedProfile) {
@@ -499,7 +495,7 @@ export class WritableProfileHeader extends ProfileHeader {
         return !this.fromFile();
     }
     async saveToFile() {
-        await this.#profileReceivedPromise;
+        await this.#profileReceivedPromise.promise;
         const fileOutputStream = new Bindings.FileUtils.FileOutputStream();
         if (!this.fileName) {
             const now = Platform.DateUtilities.toISO8601Compact(new Date());
@@ -547,7 +543,7 @@ export class WritableProfileHeader extends ProfileHeader {
         this.protocolProfileInternal = profile;
         this.tempFile = new Bindings.TempFile.TempFile();
         this.tempFile.write([JSON.stringify(profile)]);
-        this.#profileReceivedFulfill();
+        this.#profileReceivedPromise.resolve();
     }
 }
 //# sourceMappingURL=ProfileView.js.map

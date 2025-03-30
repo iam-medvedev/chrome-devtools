@@ -61,16 +61,18 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 export class ServiceWorkerManager extends SDKModel {
     #agent;
-    #registrationsInternal;
-    #enabled;
+    #registrationsInternal = new Map();
+    #enabled = false;
     #forceUpdateSetting;
-    serviceWorkerNetworkRequestsPanelStatus;
+    /** Status of service worker network requests panel */
+    serviceWorkerNetworkRequestsPanelStatus = {
+        isOpen: false,
+        openedAt: 0,
+    };
     constructor(target) {
         super(target);
         target.registerServiceWorkerDispatcher(new ServiceWorkerDispatcher(this));
         this.#agent = target.serviceWorkerAgent();
-        this.#registrationsInternal = new Map();
-        this.#enabled = false;
         void this.enable();
         this.#forceUpdateSetting =
             Common.Settings.Settings.instance().createSetting('service-worker-update-on-reload', false);
@@ -79,11 +81,6 @@ export class ServiceWorkerManager extends SDKModel {
         }
         this.#forceUpdateSetting.addChangeListener(this.forceUpdateSettingChanged, this);
         new ServiceWorkerContextNamer(target, this);
-        /** Status of service worker network requests panel */
-        this.serviceWorkerNetworkRequestsPanelStatus = {
-            isOpen: false,
-            openedAt: 0,
-        };
     }
     async enable() {
         if (this.#enabled) {
@@ -407,14 +404,11 @@ export class ServiceWorkerRegistration {
     scopeURL;
     securityOrigin;
     isDeleted;
-    versions;
-    deleting;
-    errors;
+    versions = new Map();
+    deleting = false;
+    errors = [];
     constructor(payload) {
         this.update(payload);
-        this.versions = new Map();
-        this.deleting = false;
-        this.errors = [];
     }
     update(payload) {
         this.#fingerprintInternal = Symbol('fingerprint');
@@ -463,11 +457,10 @@ export class ServiceWorkerRegistration {
 class ServiceWorkerContextNamer {
     #target;
     #serviceWorkerManager;
-    #versionByTargetId;
+    #versionByTargetId = new Map();
     constructor(target, serviceWorkerManager) {
         this.#target = target;
         this.#serviceWorkerManager = serviceWorkerManager;
-        this.#versionByTargetId = new Map();
         serviceWorkerManager.addEventListener("RegistrationUpdated" /* Events.REGISTRATION_UPDATED */, this.registrationsUpdated, this);
         serviceWorkerManager.addEventListener("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, this.registrationsUpdated, this);
         TargetManager.instance().addModelListener(RuntimeModel, RuntimeModelEvents.ExecutionContextCreated, this.executionContextCreated, this);

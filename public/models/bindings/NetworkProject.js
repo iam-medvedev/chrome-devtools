@@ -128,7 +128,7 @@ export class NetworkProject {
             return [];
         }
         const frames = Array.from(attribution.keys()).map(frameId => resourceTreeModel.frameForId(frameId));
-        return frames.filter(frame => Boolean(frame));
+        return frames.filter(frame => !!frame);
     }
 }
 //# sourceMappingURL=NetworkProject.js.map

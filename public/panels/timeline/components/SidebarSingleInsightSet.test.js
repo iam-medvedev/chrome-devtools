@@ -52,9 +52,11 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Font display',
             'Optimize viewport for mobile',
             'Optimize DOM size',
+            'Duplicated JavaScript',
             'CSS Selector costs',
             'Forced reflow',
             'Use efficient cache lifetimes',
+            'Modern HTTP',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -67,9 +69,11 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Font display',
             'Optimize viewport for mobile',
             'Optimize DOM size',
+            'Duplicated JavaScript',
             'CSS Selector costs',
             'Forced reflow',
             'Use efficient cache lifetimes',
+            'Modern HTTP',
         ]);
     });
     it('does not render experimental insights by default', async function () {
@@ -105,8 +109,10 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Document request latency',
             'Optimize viewport for mobile',
             'Optimize DOM size',
+            'Duplicated JavaScript',
             'CSS Selector costs',
             'Forced reflow',
+            'Modern HTTP',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -119,8 +125,10 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Document request latency',
             'Optimize viewport for mobile',
             'Optimize DOM size',
+            'Duplicated JavaScript',
             'CSS Selector costs',
             'Forced reflow',
+            'Modern HTTP',
         ]);
     });
     it('renders experimental insights if the experiment is turned on', async function () {
@@ -159,6 +167,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Duplicated JavaScript',
             'CSS Selector costs',
             'Forced reflow',
+            'Modern HTTP',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -173,6 +182,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Duplicated JavaScript',
             'CSS Selector costs',
             'Forced reflow',
+            'Modern HTTP',
         ]);
     });
     it('will render the active insight fully', async function () {

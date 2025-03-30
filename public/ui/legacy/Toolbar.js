@@ -33,7 +33,6 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as Adorners from '../components/adorners/adorners.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { ActionRegistry } from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
@@ -507,31 +506,22 @@ export class ToolbarButton extends ToolbarItem {
     button;
     text;
     adorner;
-    constructor(title, glyphOrAdorner, text, jslogContext, button) {
-        let adorner = null;
+    constructor(title, glyph, text, jslogContext, button) {
         if (!button) {
             button = new Buttons.Button.Button();
-            if (glyphOrAdorner instanceof Adorners.Adorner.Adorner) {
-                button.variant = "adorner_icon" /* Buttons.Button.Variant.ADORNER_ICON */;
-                adorner = glyphOrAdorner;
-            }
-            else if (typeof glyphOrAdorner === 'string' && !text) {
-                button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: glyphOrAdorner };
+            if (glyph && !text) {
+                button.data = { variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: glyph };
             }
             else {
                 button.variant = "text" /* Buttons.Button.Variant.TEXT */;
                 button.reducedFocusRing = true;
-                if (glyphOrAdorner) {
-                    button.iconName = glyphOrAdorner;
+                if (glyph) {
+                    button.iconName = glyph;
                 }
             }
         }
         super(button);
         this.button = button;
-        if (adorner) {
-            this.setAdorner(adorner);
-            this.button.prepend(adorner);
-        }
         button.classList.add('toolbar-button');
         this.element.addEventListener('click', this.clicked.bind(this), false);
         button.textContent = text || '';

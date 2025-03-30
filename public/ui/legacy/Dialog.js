@@ -36,13 +36,13 @@ import { InspectorView } from './InspectorView.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
 import { WidgetFocusRestorer } from './Widget.js';
 export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
-    tabIndexBehavior;
-    tabIndexMap;
-    focusRestorer;
-    closeOnEscape;
-    targetDocument;
+    tabIndexBehavior = "DisableAllTabIndex" /* OutsideTabIndexBehavior.DISABLE_ALL_OUTSIDE_TAB_INDEX */;
+    tabIndexMap = new Map();
+    focusRestorer = null;
+    closeOnEscape = true;
+    targetDocument = null;
     targetDocumentKeyDownHandler;
-    escapeKeyCallback;
+    escapeKeyCallback = null;
     constructor(jslogContext) {
         super();
         this.registerRequiredCSS(dialogStyles);
@@ -58,12 +58,7 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             event.consume(true);
         });
         ARIAUtils.markAsModalDialog(this.contentElement);
-        this.tabIndexBehavior = "DisableAllTabIndex" /* OutsideTabIndexBehavior.DISABLE_ALL_OUTSIDE_TAB_INDEX */;
-        this.tabIndexMap = new Map();
-        this.focusRestorer = null;
-        this.closeOnEscape = true;
         this.targetDocumentKeyDownHandler = this.onKeyDown.bind(this);
-        this.escapeKeyCallback = null;
     }
     static hasInstance() {
         return Boolean(Dialog.instance);
@@ -94,6 +89,9 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         this.restoreTabIndexOnElements();
         this.dispatchEventToListeners("hidden" /* Events.HIDDEN */);
         Dialog.instance = null;
+    }
+    setAriaLabel(label) {
+        ARIAUtils.setLabel(this.contentElement, label);
     }
     setCloseOnEscape(close) {
         this.closeOnEscape = close;

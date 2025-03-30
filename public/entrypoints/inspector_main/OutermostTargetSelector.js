@@ -22,11 +22,10 @@ const str_ = i18n.i18n.registerUIStrings('entrypoints/inspector_main/OutermostTa
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let outermostTargetSelectorInstance;
 export class OutermostTargetSelector {
-    listItems;
+    listItems = new UI.ListModel.ListModel();
     #dropDown;
     #toolbarItem;
     constructor() {
-        this.listItems = new UI.ListModel.ListModel();
         this.#dropDown = new UI.SoftDropDown.SoftDropDown(this.listItems, this);
         this.#dropDown.setRowHeight(36);
         this.#toolbarItem = new UI.Toolbar.ToolbarItem(this.#dropDown.element);

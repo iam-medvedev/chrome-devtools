@@ -13,6 +13,9 @@ export interface Change {
  */
 export declare class ChangeManager {
     #private;
+    stashChanges(): Promise<void>;
+    dropStashedChanges(): void;
+    popStashedChanges(): Promise<void>;
     clear(): Promise<void>;
     addChange(cssModel: SDK.CSSModel.CSSModel, frameId: Protocol.Page.FrameId, change: Change): Promise<string>;
     formatChangesForPatching(groupId: string, includeSourceLocation?: boolean): string;

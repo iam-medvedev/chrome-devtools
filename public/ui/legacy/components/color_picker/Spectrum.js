@@ -1259,10 +1259,9 @@ const ITEMS_PER_PALETTE_ROW = 8;
 const GeneratedPaletteTitle = 'Page colors';
 export class PaletteGenerator {
     callback;
-    frequencyMap;
+    frequencyMap = new Map();
     constructor(callback) {
         this.callback = callback;
-        this.frequencyMap = new Map();
         const stylesheetPromises = [];
         for (const cssModel of SDK.TargetManager.TargetManager.instance().models(SDK.CSSModel.CSSModel)) {
             for (const stylesheet of cssModel.allStyleSheets()) {

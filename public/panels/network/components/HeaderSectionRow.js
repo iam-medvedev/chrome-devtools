@@ -168,7 +168,7 @@ export class HeaderSectionRow extends HTMLElement {
               @paste=${this.#onHeaderNamePaste}
               .data=${{ value: this.#header.name }}
             ></devtools-editable-span>` :
-            this.#header.name}:
+            this.#header.name}
         </div>
         <div
           class=${headerValueClasses}

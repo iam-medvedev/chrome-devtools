@@ -13,7 +13,6 @@ import { ExtensionTrackAppender } from './ExtensionTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
-import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { InstantEventVisibleDurationMs, } from './TimelineFlameChartDataProvider.js';
 import { TimelinePanel } from './TimelinePanel.js';
@@ -48,7 +47,7 @@ export function entryIsVisibleInTimeline(entry, parsedTrace) {
             return true;
         }
     }
-    if (Trace.Types.Extensions.isSyntheticExtensionEntry(entry) || Trace.Types.Events.isSyntheticServerTiming(entry)) {
+    if (Trace.Types.Extensions.isSyntheticExtensionEntry(entry)) {
         return true;
     }
     // Default styles are globally defined for each event name. Some
@@ -87,7 +86,6 @@ export class CompatibilityTracksAppender {
     #gpuTrackAppender;
     #layoutShiftsTrackAppender;
     #threadAppenders = [];
-    #serverTimingsTrackAppender;
     #entityMapper;
     /**
      * @param flameChartData the data used by the flame chart renderer on
@@ -124,8 +122,6 @@ export class CompatibilityTracksAppender {
         this.#allTrackAppenders.push(this.#gpuTrackAppender);
         this.#layoutShiftsTrackAppender = new LayoutShiftsTrackAppender(this, this.#parsedTrace);
         this.#allTrackAppenders.push(this.#layoutShiftsTrackAppender);
-        this.#serverTimingsTrackAppender = new ServerTimingsTrackAppender(this, this.#parsedTrace);
-        this.#allTrackAppenders.push(this.#serverTimingsTrackAppender);
         this.#addThreadAppenders();
         this.#addExtensionAppenders();
         this.onThemeChange = this.onThemeChange.bind(this);
@@ -237,9 +233,6 @@ export class CompatibilityTracksAppender {
     }
     threadAppenders() {
         return this.#threadAppenders;
-    }
-    serverTimingsTrackAppender() {
-        return this.#serverTimingsTrackAppender;
     }
     eventsInTrack(trackAppender) {
         const cachedData = this.#eventsForTrack.get(trackAppender);

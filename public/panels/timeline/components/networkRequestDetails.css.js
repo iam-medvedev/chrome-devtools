@@ -32,6 +32,8 @@ export default {
 
 .network-request-details-cols {
   display: flex;
+  justify-content: space-between;
+  width: fit-content;
 }
 
 :host {
@@ -39,12 +41,33 @@ export default {
 }
 
 .network-request-details-col {
-  flex: 1;
+  width: 300px;
+}
+
+.column-divider {
+  border-left: 1px solid var(--sys-color-divider);
+}
+
+.network-request-details-col.server-timings {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  width: fit-content;
+  width: 450px;
+  gap: 0;
+}
+
+.network-request-details-item, .network-request-details-col {
+  padding: 5px 10px;
+}
+
+.server-timing-column-header {
+  font-weight: var(--ref-typeface-weight-medium);
 }
 
 .network-request-details-row {
-  padding: 0 10px;
   min-height: min-content;
+  display: flex;
+  justify-content: space-between;
 }
 
 .title {
@@ -60,7 +83,6 @@ export default {
   user-select: text;
   text-overflow: ellipsis;
   overflow: hidden;
-  padding: 0 3px;
 }
 
 .devtools-link,
@@ -116,10 +138,6 @@ export default {
   background: none;
   border: none;
   font: inherit;
-}
-
-.timing-rows {
-  width: fit-content;
 }
 
 /*# sourceURL=${import.meta.resolve('./networkRequestDetails.css')} */

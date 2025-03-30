@@ -120,49 +120,33 @@ export class DebuggerModel extends SDKModel {
     agent;
     runtimeModelInternal;
     #sourceMapManagerInternal;
-    #debuggerPausedDetailsInternal;
-    #scriptsInternal;
-    #scriptsBySourceURL;
-    #discardableScripts;
-    continueToLocationCallback;
-    #selectedCallFrameInternal;
-    #debuggerEnabledInternal;
-    #debuggerId;
-    #skipAllPausesTimeout;
-    #beforePausedCallback;
-    #computeAutoStepRangesCallback;
-    #expandCallFramesCallback;
-    evaluateOnCallFrameCallback;
-    #synchronizeBreakpointsCallback;
+    #debuggerPausedDetailsInternal = null;
+    #scriptsInternal = new Map();
+    #scriptsBySourceURL = new Map();
+    #discardableScripts = [];
+    continueToLocationCallback = null;
+    #selectedCallFrameInternal = null;
+    #debuggerEnabledInternal = false;
+    #debuggerId = null;
+    #skipAllPausesTimeout = 0;
+    #beforePausedCallback = null;
+    #computeAutoStepRangesCallback = null;
+    #expandCallFramesCallback = null;
+    evaluateOnCallFrameCallback = null;
+    #synchronizeBreakpointsCallback = null;
     // We need to be able to register listeners for individual breakpoints. As such, we dispatch
     // on breakpoint ids, which are not statically known. The event #payload will always be a `Location`.
     #breakpointResolvedEventTarget = new Common.ObjectWrapper.ObjectWrapper();
     // When stepping over with autostepping enabled, the context denotes the function to which autostepping is restricted
     // to by way of its functionLocation (as per Debugger.CallFrame).
-    #autoSteppingContext;
-    #isPausingInternal;
+    #autoSteppingContext = null;
+    #isPausingInternal = false;
     constructor(target) {
         super(target);
         target.registerDebuggerDispatcher(new DebuggerDispatcher(this));
         this.agent = target.debuggerAgent();
         this.runtimeModelInternal = target.model(RuntimeModel);
         this.#sourceMapManagerInternal = new SourceMapManager(target);
-        this.#debuggerPausedDetailsInternal = null;
-        this.#scriptsInternal = new Map();
-        this.#scriptsBySourceURL = new Map();
-        this.#discardableScripts = [];
-        this.continueToLocationCallback = null;
-        this.#selectedCallFrameInternal = null;
-        this.#debuggerEnabledInternal = false;
-        this.#debuggerId = null;
-        this.#skipAllPausesTimeout = 0;
-        this.#beforePausedCallback = null;
-        this.#computeAutoStepRangesCallback = null;
-        this.#expandCallFramesCallback = null;
-        this.evaluateOnCallFrameCallback = null;
-        this.#synchronizeBreakpointsCallback = null;
-        this.#autoSteppingContext = null;
-        this.#isPausingInternal = false;
         Common.Settings.Settings.instance()
             .moduleSetting('pause-on-exception-enabled')
             .addChangeListener(this.pauseOnExceptionStateChanged, this);

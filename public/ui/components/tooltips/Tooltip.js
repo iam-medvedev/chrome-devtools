@@ -21,6 +21,7 @@ const { html } = Lit;
  */
 export class Tooltip extends HTMLElement {
     static observedAttributes = ['id', 'variant', 'jslogcontext'];
+    static lastOpenedTooltipId = null;
     #shadow = this.attachShadow({ mode: 'open' });
     #anchor = null;
     #timeout = null;
@@ -92,7 +93,7 @@ export class Tooltip extends HTMLElement {
             this.#anchor = properties.anchor;
         }
     }
-    attributeChangedCallback(name) {
+    attributeChangedCallback(name, oldValue, newValue) {
         if (!this.isConnected) {
             // There is no need to do anything before the connectedCallback is called.
             return;
@@ -100,6 +101,9 @@ export class Tooltip extends HTMLElement {
         if (name === 'id') {
             this.#removeEventListeners();
             this.#attachToAnchor();
+            if (Tooltip.lastOpenedTooltipId === oldValue) {
+                Tooltip.lastOpenedTooltipId = newValue;
+            }
         }
         else if (name === 'jslogcontext') {
             this.#updateJslog();
@@ -118,6 +122,9 @@ export class Tooltip extends HTMLElement {
       </div>
     `, this.#shadow, { host: this });
         // clang-format on
+        if (Tooltip.lastOpenedTooltipId === this.id) {
+            this.showPopover();
+        }
     }
     disconnectedCallback() {
         this.#removeEventListeners();
@@ -129,16 +136,30 @@ export class Tooltip extends HTMLElement {
         }
         this.#timeout = window.setTimeout(() => {
             this.showPopover();
+            Tooltip.lastOpenedTooltipId = this.id;
         }, this.hoverDelay);
     };
     hideTooltip = (event) => {
         if (this.#timeout) {
             window.clearTimeout(this.#timeout);
         }
+        // If the event is a blur event, then:
+        // 1. event.currentTarget = the element that got blurred
+        // 2. event.relatedTarget = the element that gained focus
+        // https://developer.mozilla.org/en-US/docs/Web/API/FocusEvent/relatedTarget
+        // If the blurred element (1) was our anchor, and the newly focused element
+        // (2) is within the tooltip, we do not want to hide the tooltip.
+        if (event && this.variant === 'rich' && event.target === this.#anchor && event.relatedTarget instanceof Node &&
+            this.contains(event.relatedTarget)) {
+            return;
+        }
         // Don't hide a rich tooltip when hovering over the tooltip itself.
         if (event && this.variant === 'rich' &&
             (event.relatedTarget === this || event.relatedTarget?.parentElement === this)) {
             return;
+        }
+        if (this.open && Tooltip.lastOpenedTooltipId === this.id) {
+            Tooltip.lastOpenedTooltipId = null;
         }
         this.#timeout = window.setTimeout(() => {
             this.hidePopover();

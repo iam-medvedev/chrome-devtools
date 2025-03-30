@@ -60,10 +60,6 @@ export default {
   pointer-events: none;
 }
 
-.devices-list-checkbox:focus {
-  outline: auto 5px -webkit-focus-ring-color;
-}
-
 .device-name {
   white-space: nowrap;
   text-overflow: ellipsis;

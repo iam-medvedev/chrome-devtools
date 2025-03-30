@@ -75,7 +75,7 @@ const nodeToLayoutElement = (node) => {
         color: 'var(--sys-color-inverse-surface)',
         name: node.localName(),
         domId: node.getAttribute('id'),
-        domClasses: className ? className.split(/\s+/).filter(s => Boolean(s)) : undefined,
+        domClasses: className ? className.split(/\s+/).filter(s => !!s) : undefined,
         enabled: false,
         reveal: () => {
             void Common.Revealer.reveal(node);

@@ -57,14 +57,20 @@ export class CSSVariableParserError extends HTMLElement {
 export class CSSVariableValueView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     variableName;
-    value;
+    #value;
     details;
     constructor({ variableName, value, details, }) {
         super();
         this.#shadow.adoptedStyleSheets = [cssVariableValueViewStyles];
         this.variableName = variableName;
-        this.value = value;
         this.details = details;
+        this.value = value;
+    }
+    get value() {
+        return this.#value;
+    }
+    set value(value) {
+        this.#value = value;
         this.#render();
     }
     #render() {

@@ -126,7 +126,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
             void Promise.all(promises).then(onFileSystemsAdded);
         }
         function onFileSystemsAdded(fileSystems) {
-            resolve(fileSystems.filter(fs => Boolean(fs)));
+            resolve(fileSystems.filter(fs => !!fs));
         }
     }
     addFileSystem(type) {

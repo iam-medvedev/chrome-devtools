@@ -21,6 +21,7 @@ describeWithEnvironment('ChatView', () => {
             onContextClick: noop,
             onNewConversation: noop,
             onTextInputChange: noop,
+            changeManager: new AiAssistanceModel.ChangeManager(),
             inspectElementToggled: false,
             state: "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */,
             conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,

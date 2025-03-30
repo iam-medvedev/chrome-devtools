@@ -71,7 +71,6 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             .moduleSetting('persistence-network-overrides-enabled')
             .addChangeListener(this.onNetworkPersistenceChanged, this);
         this.errorPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this), 'sources.error');
-        this.errorPopoverHelper.setHasPadding(true);
         this.errorPopoverHelper.setTimeout(100, 100);
         this.initializeUISourceCode();
     }
@@ -242,12 +241,11 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         this.errorPopoverHelper.hidePopover();
         SourcesPanel.instance().updateLastModificationTime();
         this.muteSourceCodeEvents = true;
-        if (this.isClean()) {
-            this.uiSourceCodeInternal.resetWorkingCopy();
-        }
-        else {
-            this.uiSourceCodeInternal.setWorkingCopyGetter(() => this.textEditor.state.sliceDoc());
-        }
+        // TODO: Bring back `isClean()` check and
+        // resetting working copy after making sure that
+        // `isClean()` correctly reports true only when
+        // the original code and the working copy is the same.
+        this.uiSourceCodeInternal.setWorkingCopyGetter(() => this.textEditor.state.sliceDoc());
         this.muteSourceCodeEvents = false;
         if (wasPretty !== this.pretty) {
             this.updateStyle();

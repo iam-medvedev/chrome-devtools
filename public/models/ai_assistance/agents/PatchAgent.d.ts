@@ -11,7 +11,6 @@ export declare class PatchAgent extends AiAgent<Workspace.Workspace.Project> {
     get options(): RequestOptions;
     constructor(opts: BaseAgentOptions & {
         fileUpdateAgent?: FileUpdateAgent;
-        project: Workspace.Workspace.Project;
     });
     applyChanges(changeSummary: string, { signal }?: {
         signal?: AbortSignal;

@@ -56,7 +56,6 @@
     "../../../../../../../front_end/models/trace/handlers/ScreenshotsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/ScriptsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/SelectorStatsHandler.ts",
-    "../../../../../../../front_end/models/trace/handlers/ServerTimingsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/Threads.ts",
     "../../../../../../../front_end/models/trace/handlers/UserInteractionsHandler.ts",
     "../../../../../../../front_end/models/trace/handlers/UserTimingsHandler.ts",
@@ -66,8 +65,7 @@
     "../../../../../../../front_end/models/trace/handlers/types.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../node_modules/@types/filesystem/index.d.ts",
-    "../../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
+    "../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
     {

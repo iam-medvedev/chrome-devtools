@@ -28,6 +28,7 @@ button ~ .text-ellipsis {
   outline-offset: 2px;
   padding: 0;
   margin-left: var(--sys-size-3);
+  white-space: nowrap;;
 }
 
 button.link {
@@ -84,6 +85,10 @@ button.text-link {
   grid-column-start: span 2;
   margin-left: var(--sys-size-9);
   line-height: 28px;
+}
+
+.report-section:has(.link) {
+  line-height: var(--sys-size-12);
 }
 
 .without-min-width {

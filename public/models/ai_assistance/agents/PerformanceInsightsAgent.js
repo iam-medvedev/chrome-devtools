@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import * as PanelUtils from '../../../panels/utils/utils.js';
 import { PerformanceInsightFormatter, TraceEventFormatter } from '../data_formatters/PerformanceInsightFormatter.js';
@@ -25,34 +26,42 @@ const lockedString = i18n.i18n.lockedString;
  * chrome_preambles.gcl). Sync local changes with the server-side.
  */
 /* clang-format off */
-const preamble = `You are a performance expert deeply integrated within Chrome DevTools. You specialize in analyzing web application behaviour captured by Chrome DevTools Performance Panel.
+const preamble = `You are an AI-powered web performance optimization expert, simulating a highly skilled Chrome DevTools user. Your goal is to provide actionable advice to web developers based on Chrome Performance Panel insights.
 
 You will be provided with an Insight from the Chrome Performance Panel. This Insight will contain information about the performance of the web site. It is your task to analyze the data available to you and suggest solutions to improve the performance of the page.
 
 You will be told the following information about the Insight:
-- The 'Insight name' which is the title of the Insight
-- The 'Insight description' which helps you understand what the insight is for and what the user is hoping to understand.
-- 'Insight details' which will be additional context and information to help you understand what the insight is showing the user. Use this information to suggest opportunities to improve the performance.
+- **Insight Title:** The name of the performance issue detected by Chrome DevTools.
+- **Insight Summary:** A brief explanation of the performance problem and its potential impact on the user experience.
+- **Detailed Analysis:** Specific data points and observations from the Chrome Performance Panel, including timestamps, durations, resource URLs, and function call stacks. Use this data to pinpoint the root cause of the performance issue.
 
-You will also be provided with external resources. Use the contents of these resources to ensure you give correct, accurate and up to date answers.
+You will be provided with a list of relevant URLs containing up-to-date information regarding web performance optimization. Treat these URLs as authoritative resources to supplement the Chrome DevTools data. Prioritize information from the provided URLs to ensure your recommendations are current and reflect best practices. Cross-reference information from the Chrome DevTools data with the external URLs to provide the most accurate and comprehensive analysis.
+
+*IMPORTANT*: All time units provided in the 'Detailed Analysis' are in milliseconds (ms). Ensure your response reflects this unit of measurement.
 
 ## Step-by-step instructions
 
-- Call any of the available functions to help you gather more information to inform your suggestions.
-- Ensure that you call all relevant functions to receive full information about relevant network requests.
-- Your response should be concise and to the point. Avoid lengthy explanations or unnecessary details.
-- Prefer lists of bullet points over long paragraphs of text.
-- Your response should be formatted via markdown. If you want to add headings to your response, don’t just mark the text as bold, use markdown’s heading syntax instead.
+- Utilize the provided functions (e.g., \`getMainThreadActivity\`, \`getNetworkActivitySummary\`) to retrieve detailed performance data. Prioritize function calls that provide context relevant to the Insight being analyzed.
+- Retrieve all necessary data through function calls before generating your response. Do not rely on assumptions or incomplete information.
+- Provide clear, actionable recommendations. Avoid technical jargon unless necessary, and explain any technical terms used.
+- Prioritize recommendations based on their potential impact on performance. Focus on the most significant bottlenecks.
+- Structure your response using markdown headings and bullet points for improved readability.
 - Your answer should contain the following sections:
-  1) Understanding the insight: explain the problems that the Insight is highlighting to the user and why they are important.
-  2) Suggested fix: A suggestion describing how the user can fix the problem. Keep the suggestion specific to the problem at hand and make no more than 3 suggestions - you should prioritize and pick the top 3 most impactful suggestions.
-- Your response should immediately start with the "Understanding the insight" section.
+    1. **Insight Analysis:** Clearly explain the observed performance issues, their impact on user experience, and the key metrics used to identify them. Include relevant timestamps and durations from the provided data.
+    2. **Optimization Recommendations:** Provide 2-3 specific, actionable steps to address the identified performance issues. Prioritize the most impactful optimizations, focusing on those that will yield the greatest performance improvements. Provide a brief justification for each recommendation, explaining its potential impact. Keep each optimization recommendation concise, ideally within 1-2 sentences. Avoid lengthy explanations or detailed technical jargon unless absolutely necessary.
+    3. **Relevant Resources:** Include direct URLs to relevant documentation, tools, or examples that support your recommendations. Provide a brief explanation of how each resource can help the user address the identified performance issues.
+- Your response should immediately start with the "Insight Analysis" section.
+- Whenever possible, include direct URLs to relevant documentation, tools, or examples to support your recommendations. This allows the user to explore further and implement the suggested optimizations effectively.
+- Be direct and to the point. Avoid unnecessary introductory phrases or filler content. Focus on delivering actionable advice efficiently.
 
-## Critical requirements
+## Strict Constraints
 
-- *CRITICAL* never make the same function call twice.
-- *CRITICAL* make sure you are thorough and call the functions you have access to to give yourself the most information possible to make accurate recommendations.
-- *CRITICAL* your text output should NEVER mention the functions that you called. These are an implementation detail and not important for the user to be aware of.
+- Adhere to the following critical requirements:
+    - Execute \`getMainThreadActivity\` only once *per Insight context*. If the Insight changes, you may call this function again.
+    - Execute \`getNetworkActivitySummary\` only once *per Insight context*. If the Insight changes, you may call this function again.
+    - Ensure comprehensive data retrieval through function calls to provide accurate and complete recommendations.
+    - Do not mention function names (e.g., \`getMainThreadActivity\`, \`getNetworkActivitySummary\`) in your output. These are internal implementation details.
+    - Do not mention that you are an AI, or refer to yourself in the third person. You are simulating a performance expert.
 `;
 /* clang-format on */
 export class InsightContext extends ConversationContext {
@@ -81,9 +90,74 @@ export class InsightContext extends ConversationContext {
     getTitle() {
         return `Insight: ${this.#insight.title()}`;
     }
+    /**
+     * Presents the default suggestions that are shown when the user first clicks
+     * "Ask AI" on an Insight.
+     */
+    getSuggestions() {
+        switch (this.#insight.insight.insightKey) {
+            case 'CLSCulprits':
+                return [
+                    'How can I improve my CLS score',
+                    'How can I prevent layout shifts on this page?',
+                ];
+            case 'DocumentLatency':
+                return [
+                    'How do I decrease the initial loading time of my page?',
+                    'Did anything slow down the request for this document?',
+                ];
+            case 'DOMSize':
+                return ['How can I reduce the size of my DOM?'];
+            case 'DuplicatedJavaScript':
+                return ['How do I deduplicate the identified scripts in my bundle?'];
+            case 'FontDisplay':
+                return ['How can I update my CSS to avoid layout shifts caused by incorrect `font-display` properties?'];
+            case 'ForcedReflow':
+                return ['How can I avoid layout thrashing?', 'What is forced reflow and why is it problematic?'];
+            case 'ImageDelivery':
+                return ['What should I do to improve and optimize the time taken to fetch and display images on the page?'];
+            case 'InteractionToNextPaint':
+                return [
+                    'Help me optimize my INP score', 'Help me understand why a large INP score is problematic',
+                    'What was the biggest contributor to my longest interaction duration time?'
+                ];
+            case 'LCPDiscovery':
+                return [
+                    'Help me optimize my LCP score', 'What can I do to reduce my LCP discovery time?',
+                    'Why is LCP discovery time important?'
+                ];
+            case 'LCPPhases':
+                return [
+                    'Help me optimize my LCP score', 'Which LCP phase was most problematic?',
+                    'What can I do to reduce the LCP time for this page load?'
+                ];
+            case 'NetworkDependencyTree':
+                return ['How do I optimize my network dependency tree?'];
+            case 'RenderBlocking':
+                return [
+                    'Show me the render blocking requests, listed by impact',
+                    'How can I reduce the number of render blocking requests?'
+                ];
+            case 'SlowCSSSelector':
+                return ['How can I optimize my CSS to increase the performance of CSS selectors?'];
+            case 'ThirdParties':
+                return ['Which third parties are having the largest impact on my page performance?'];
+            case 'Cache':
+                return ['What caching strategies can I apply to improve my page performance?'];
+            case 'Viewport':
+                return ['How do I make sure my page is optimized for mobile viewing?'];
+            case 'ModernHTTP':
+                return ['Is my site being served using the recommended HTTP best practices?'];
+            case 'LegacyJavaScript':
+                return ['Is my site polyfilling modern JavaScript features?'];
+            default:
+                Platform.assertNever(this.#insight.insight.insightKey, 'Unknown insight key');
+        }
+    }
 }
 export class PerformanceInsightsAgent extends AiAgent {
     #insight;
+    #lastContextForEnhancedQuery;
     async *handleContextDetails(activeContext) {
         if (!activeContext) {
             return;
@@ -176,6 +250,7 @@ export class PerformanceInsightsAgent extends AiAgent {
         });
         this.declareFunction('getMainThreadActivity', {
             description: `Returns the main thread activity for the selected insight.
+
 The tree is represented as a call frame with a root task and a series of children.
 The format of each callframe is:
 
@@ -240,8 +315,15 @@ The fields are:
             return query;
         }
         const formatter = new PerformanceInsightFormatter(selectedInsight.getItem());
-        const extraQuery = `${formatter.formatInsight()}\n\n# User request:\n`;
+        // We only need to add Insight info to a prompt when the context changes. For example:
+        // User clicks Insight A. We need to send info on Insight A with the prompt.
+        // User asks follow up question. We do not need to resend Insight A with the prompt.
+        // User clicks Insight B. We now need to send info on Insight B with the prompt.
+        // User clicks Insight A. We should resend the Insight info with the prompt.
+        const includeInsightInfo = selectedInsight !== this.#lastContextForEnhancedQuery;
+        const extraQuery = `${includeInsightInfo ? formatter.formatInsight() + '\n\n' : ''}# User request:\n`;
         const finalQuery = `${extraQuery}${query}`;
+        this.#lastContextForEnhancedQuery = selectedInsight;
         return finalQuery;
     }
     async *run(initialQuery, options) {

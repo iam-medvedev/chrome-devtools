@@ -41,10 +41,6 @@ export class SyntheticEventsManager {
             return syntheticEvent;
         }
     }
-    static registerServerTiming(syntheticEvent) {
-        // TODO(crbug.com/340811171): Implement
-        return syntheticEvent;
-    }
     constructor(rawEvents) {
         this.#rawTraceEvents = rawEvents;
     }

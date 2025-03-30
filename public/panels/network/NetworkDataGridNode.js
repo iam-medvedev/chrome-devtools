@@ -92,6 +92,10 @@ const UIStrings = {
      */
     origin: 'origin',
     /**
+     *@description Noun. Shown in a table cell as the reason why a network request failed. "integrity" here refers to the integrity of the network request itself in a cryptographic sense: signature verification might have failed, for instance.
+     */
+    integrity: 'integrity',
+    /**
      *@description Reason in Network Data Grid Node of the Network panel
      */
     devtools: 'devtools',
@@ -1049,6 +1053,10 @@ export class NetworkRequestNode extends NetworkNode {
                     displayShowHeadersLink = true;
                     reason = i18n.i18n.lockedString('NotSameOriginAfterDefaultedToSameOriginByCoep');
                     break;
+                case "sri-message-signature-mismatch" /* Protocol.Network.BlockedReason.SriMessageSignatureMismatch */:
+                    displayShowHeadersLink = true;
+                    reason = i18nString(UIStrings.integrity);
+                    break;
             }
             if (displayShowHeadersLink) {
                 this.setTextAndTitleAsLink(cell, i18nString(UIStrings.blockeds, { PH1: reason }), i18nString(UIStrings.blockedTooltip), () => {
@@ -1210,7 +1218,7 @@ export class NetworkRequestNode extends NetworkNode {
         }
     }
     renderSizeCell(cell) {
-        const resourceSize = i18n.ByteUtilities.bytesToString(this.requestInternal.resourceSize);
+        const resourceSize = i18n.ByteUtilities.formatBytesToKb(this.requestInternal.resourceSize);
         if (this.requestInternal.cachedInMemory()) {
             UI.UIUtils.createTextChild(cell, i18nString(UIStrings.memoryCache));
             UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromMemoryCacheResource, { PH1: resourceSize }));
@@ -1223,7 +1231,7 @@ export class NetworkRequestNode extends NetworkNode {
             UI.UIUtils.createTextChild(cell, i18n.i18n.lockedString('(ServiceWorker router)'));
             let tooltipText;
             if (serviceWorkerRouterInfo.matchedSourceType === "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */) {
-                const transferSize = i18n.ByteUtilities.bytesToString(this.requestInternal.transferSize);
+                const transferSize = i18n.ByteUtilities.formatBytesToKb(this.requestInternal.transferSize);
                 tooltipText = i18nString(UIStrings.matchedToServiceWorkerRouterWithNetworkSource, { PH1: ruleIdMatched, PH2: transferSize, PH3: resourceSize });
             }
             else {
@@ -1258,7 +1266,7 @@ export class NetworkRequestNode extends NetworkNode {
             cell.classList.add('network-dim-cell');
         }
         else {
-            const transferSize = i18n.ByteUtilities.bytesToString(this.requestInternal.transferSize);
+            const transferSize = i18n.ByteUtilities.formatBytesToKb(this.requestInternal.transferSize);
             UI.UIUtils.createTextChild(cell, transferSize);
             UI.Tooltip.Tooltip.install(cell, `${transferSize} transferred over network, resource size: ${resourceSize}`);
         }

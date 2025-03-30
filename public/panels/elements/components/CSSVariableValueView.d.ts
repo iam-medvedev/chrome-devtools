@@ -10,13 +10,14 @@ export declare class CSSVariableParserError extends HTMLElement {
 export declare class CSSVariableValueView extends HTMLElement {
     #private;
     readonly variableName: string;
-    readonly value: string | undefined;
     readonly details: RegisteredPropertyDetails | undefined;
     constructor({ variableName, value, details, }: {
         variableName: string;
         value: string | undefined;
         details?: RegisteredPropertyDetails;
     });
+    get value(): string | undefined;
+    set value(value: string | undefined);
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -64,12 +64,12 @@ h3 {
   gap: 20px;
 }
 
-x-link { /* stylelint-disable-line selector-type-no-unknown */
+x-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
 }
 
-x-link.quick-start-link { /* stylelint-disable-line selector-type-no-unknown */
+x-link.quick-start-link {
   font-size: 14px;
   line-height: 22px;
   letter-spacing: 0.04em;
@@ -82,7 +82,7 @@ x-link.quick-start-link { /* stylelint-disable-line selector-type-no-unknown */
 }
 
 @media (forced-colors: active) {
-  x-link { /* stylelint-disable-line selector-type-no-unknown */
+  x-link {
     color: linktext;
   }
 }

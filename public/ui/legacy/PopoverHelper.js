@@ -35,11 +35,10 @@ export class PopoverHelper {
         const popover = new GlassPane(`${VisualLogging.popover(jslogContext).parent('mapped')}`);
         popover.registerRequiredCSS(popoverStyles);
         popover.setSizeBehavior("MeasureContent" /* SizeBehavior.MEASURE_CONTENT */);
-        popover.setMarginBehavior("Arrow" /* MarginBehavior.ARROW */);
+        popover.setMarginBehavior("DefaultMargin" /* MarginBehavior.DEFAULT_MARGIN */);
         return popover;
     };
     disableOnClick;
-    hasPadding;
     getRequest;
     scheduledRequest;
     hidePopoverCallback;
@@ -55,7 +54,6 @@ export class PopoverHelper {
     jslogContext;
     constructor(container, getRequest, jslogContext) {
         this.disableOnClick = false;
-        this.hasPadding = false;
         this.getRequest = getRequest;
         this.jslogContext = jslogContext;
         this.scheduledRequest = null;
@@ -78,9 +76,6 @@ export class PopoverHelper {
     setTimeout(showTimeout, hideTimeout) {
         this.showTimeout = showTimeout;
         this.hideTimeout = typeof hideTimeout === 'number' ? hideTimeout : showTimeout / 2;
-    }
-    setHasPadding(hasPadding) {
-        this.hasPadding = hasPadding;
     }
     setDisableOnClick(disableOnClick) {
         this.disableOnClick = disableOnClick;
@@ -223,7 +218,6 @@ export class PopoverHelper {
             }
             popoverHelperInstance = this;
             VisualLogging.setMappedParent(popover.contentElement, this.container);
-            popover.contentElement.classList.toggle('has-padding', this.hasPadding);
             popover.contentElement.style.scrollbarGutter = 'stable';
             popover.contentElement.addEventListener('mousemove', this.popoverMouseMove.bind(this), true);
             popover.contentElement.addEventListener('mouseout', this.popoverMouseOut.bind(this, popover), true);

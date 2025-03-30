@@ -1,7 +1,7 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as Lit from '../../ui/lit/lit.js';
 export declare class FreDialog {
-    static show({ header, reminderItems, onLearnMoreClick, }: {
+    static show({ header, reminderItems, onLearnMoreClick, ariaLabel, learnMoreButtonTitle }: {
         header: {
             iconName: string;
             text: Platform.UIString.LocalizedString;
@@ -11,6 +11,8 @@ export declare class FreDialog {
             content: Platform.UIString.LocalizedString | Lit.LitTemplate;
         }>;
         onLearnMoreClick: () => void;
+        ariaLabel?: string;
+        learnMoreButtonTitle?: string;
     }): Promise<boolean>;
     private constructor();
 }

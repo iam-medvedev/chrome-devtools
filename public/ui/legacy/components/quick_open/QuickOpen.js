@@ -13,15 +13,11 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/quick_open/QuickO
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const history = [];
 export class QuickOpenImpl {
-    prefix;
-    prefixes;
-    providers;
-    filteredListWidget;
+    prefix = null;
+    prefixes = [];
+    providers = new Map();
+    filteredListWidget = null;
     constructor() {
-        this.prefix = null;
-        this.prefixes = [];
-        this.providers = new Map();
-        this.filteredListWidget = null;
         getRegisteredProviders().forEach(this.addProvider.bind(this));
         this.prefixes.sort((a, b) => b.length - a.length);
     }

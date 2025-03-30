@@ -72,24 +72,16 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('core/sdk/ConsoleModel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ConsoleModel extends SDKModel {
-    #messagesInternal;
-    #messagesByTimestamp;
-    #messageByExceptionId;
-    #warningsInternal;
-    #errorsInternal;
-    #violationsInternal;
-    #pageLoadSequenceNumber;
-    #targetListeners;
+    #messagesInternal = [];
+    #messagesByTimestamp = new Platform.MapUtilities.Multimap();
+    #messageByExceptionId = new Map();
+    #warningsInternal = 0;
+    #errorsInternal = 0;
+    #violationsInternal = 0;
+    #pageLoadSequenceNumber = 0;
+    #targetListeners = new WeakMap();
     constructor(target) {
         super(target);
-        this.#messagesInternal = [];
-        this.#messagesByTimestamp = new Platform.MapUtilities.Multimap();
-        this.#messageByExceptionId = new Map();
-        this.#warningsInternal = 0;
-        this.#errorsInternal = 0;
-        this.#violationsInternal = 0;
-        this.#pageLoadSequenceNumber = 0;
-        this.#targetListeners = new WeakMap();
         const resourceTreeModel = target.model(ResourceTreeModel);
         if (!resourceTreeModel || resourceTreeModel.cachedResourcesLoaded()) {
             this.initTarget(target);

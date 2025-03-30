@@ -6,19 +6,16 @@ export class Cookie {
     #nameInternal;
     #valueInternal;
     #typeInternal;
-    #attributes;
-    #sizeInternal;
+    #attributes = new Map();
+    #sizeInternal = 0;
     #priorityInternal;
-    #cookieLine;
+    #cookieLine = null;
     #partitionKey;
     constructor(name, value, type, priority, partitionKey) {
         this.#nameInternal = name;
         this.#valueInternal = value;
         this.#typeInternal = type;
-        this.#attributes = new Map();
-        this.#sizeInternal = 0;
         this.#priorityInternal = (priority || 'Medium');
-        this.#cookieLine = null;
         this.#partitionKey = partitionKey;
     }
     static fromProtocolCookie(protocolCookie) {

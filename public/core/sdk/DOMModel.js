@@ -19,7 +19,7 @@ export class DOMNode {
     ownerDocument;
     #isInShadowTreeInternal;
     id;
-    index;
+    index = undefined;
     #backendNodeIdInternal;
     #nodeTypeInternal;
     #nodeNameInternal;
@@ -32,21 +32,21 @@ export class DOMNode {
     #xmlVersion;
     #isSVGNodeInternal;
     #isScrollableInternal;
-    #creationStackTraceInternal;
-    #pseudoElements;
-    #distributedNodesInternal;
-    assignedSlot;
-    shadowRootsInternal;
-    #attributesInternal;
-    #markers;
-    #subtreeMarkerCount;
+    #creationStackTraceInternal = null;
+    #pseudoElements = new Map();
+    #distributedNodesInternal = [];
+    assignedSlot = null;
+    shadowRootsInternal = [];
+    #attributesInternal = new Map();
+    #markers = new Map();
+    #subtreeMarkerCount = 0;
     childNodeCountInternal;
-    childrenInternal;
-    nextSibling;
-    previousSibling;
-    firstChild;
-    lastChild;
-    parentNode;
+    childrenInternal = null;
+    nextSibling = null;
+    previousSibling = null;
+    firstChild = null;
+    lastChild = null;
+    parentNode = null;
     templateContentInternal;
     contentDocumentInternal;
     childDocumentPromiseForTesting;
@@ -59,21 +59,6 @@ export class DOMNode {
     constructor(domModel) {
         this.#domModelInternal = domModel;
         this.#agent = this.#domModelInternal.getAgent();
-        this.index = undefined;
-        this.#creationStackTraceInternal = null;
-        this.#pseudoElements = new Map();
-        this.#distributedNodesInternal = [];
-        this.assignedSlot = null;
-        this.shadowRootsInternal = [];
-        this.#attributesInternal = new Map();
-        this.#markers = new Map();
-        this.#subtreeMarkerCount = 0;
-        this.childrenInternal = null;
-        this.nextSibling = null;
-        this.previousSibling = null;
-        this.firstChild = null;
-        this.lastChild = null;
-        this.parentNode = null;
     }
     static create(domModel, doc, isInShadowTree, payload) {
         const node = new DOMNode(domModel);
@@ -943,22 +928,19 @@ export class DOMDocument extends DOMNode {
 export class DOMModel extends SDKModel {
     agent;
     idToDOMNode = new Map();
-    #document;
-    #attributeLoadNodeIds;
+    #document = null;
+    #attributeLoadNodeIds = new Set();
     runtimeModelInternal;
     #lastMutationId;
-    #pendingDocumentRequestPromise;
+    #pendingDocumentRequestPromise = null;
     #frameOwnerNode;
     #loadNodeAttributesTimeout;
     #searchId;
     constructor(target) {
         super(target);
         this.agent = target.domAgent();
-        this.#document = null;
-        this.#attributeLoadNodeIds = new Set();
         target.registerDOMDispatcher(new DOMDispatcher(this));
         this.runtimeModelInternal = target.model(RuntimeModel);
-        this.#pendingDocumentRequestPromise = null;
         if (!target.suspended()) {
             void this.agent.invoke_enable({});
         }

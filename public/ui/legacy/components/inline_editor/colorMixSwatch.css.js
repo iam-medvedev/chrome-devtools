@@ -10,7 +10,6 @@ export default {
  * found in the LICENSE file.
  */
 
-/* stylelint-disable */
 .swatch-icon {
   display: inline-grid;
   inline-size: 15px;
@@ -18,7 +17,7 @@ export default {
   margin-left: 1px;
   margin-right: 1px;
   vertical-align: -1px;
-  color: var(--color);
+  color: var(--color); /* stylelint-disable-line plugin/use_theme_colors */
 }
 
 .swatch {
@@ -26,13 +25,12 @@ export default {
   display: inline-block;
   width: 10px;
   border-radius: 1e5px;
-  background:
-    linear-gradient(var(--color), var(--color)),
+  /* stylelint-disable-next-line plugin/use_theme_colors */
+  background: linear-gradient(var(--color), var(--color)),
     var(--image-file-checker);
-  box-shadow: inset 0 0 0 .5px rgb(128 128 128 / 60%);
+  box-shadow: inset 0 0 0 0.5px rgb(128 128 128 / 60%); /* stylelint-disable-line plugin/use_theme_colors */
   grid-area: stack;
 }
-/* stylelint-enable */
 
 .swatch-right {
   justify-self: end;
@@ -41,7 +39,11 @@ export default {
 .swatch-mix {
   box-shadow: none;
   justify-self: end;
-  mask: radial-gradient(circle at 0% center, rgb(0 0 0) 50%, rgb(0 0 0 / 0%) calc(50% + 0.5px));
+  mask: radial-gradient(
+    circle at 0% center,
+    rgb(0 0 0) 50%,
+    rgb(0 0 0 / 0%) calc(50% + 0.5px)
+  );
 }
 
 /*# sourceURL=${import.meta.resolve('./colorMixSwatch.css')} */

@@ -17,6 +17,32 @@ export class ChangeManager {
     #stylesheetMutex = new Common.Mutex.Mutex();
     #cssModelToStylesheetId = new Map();
     #stylesheetChanges = new Map();
+    #backupStylesheetChanges = new Map();
+    async stashChanges() {
+        for (const [cssModel, stylesheetMap] of this.#cssModelToStylesheetId.entries()) {
+            const stylesheetIds = Array.from(stylesheetMap.values());
+            await Promise.allSettled(stylesheetIds.map(async (id) => {
+                this.#backupStylesheetChanges.set(id, this.#stylesheetChanges.get(id) ?? []);
+                this.#stylesheetChanges.delete(id);
+                await cssModel.setStyleSheetText(id, '', true);
+            }));
+        }
+    }
+    dropStashedChanges() {
+        this.#backupStylesheetChanges.clear();
+    }
+    async popStashedChanges() {
+        const cssModelAndStyleSheets = Array.from(this.#cssModelToStylesheetId.entries());
+        await Promise.allSettled(cssModelAndStyleSheets.map(async ([cssModel, stylesheetMap]) => {
+            const frameAndStylesheet = Array.from(stylesheetMap.entries());
+            return await Promise.allSettled(frameAndStylesheet.map(async ([frameId, stylesheetId]) => {
+                const changes = this.#backupStylesheetChanges.get(stylesheetId) ?? [];
+                return await Promise.allSettled(changes.map(async (change) => {
+                    return await this.addChange(cssModel, frameId, change);
+                }));
+            }));
+        }));
+    }
     async clear() {
         const models = Array.from(this.#cssModelToStylesheetId.keys());
         const results = await Promise.allSettled(models.map(async (model) => {
@@ -24,6 +50,7 @@ export class ChangeManager {
         }));
         this.#cssModelToStylesheetId.clear();
         this.#stylesheetChanges.clear();
+        this.#backupStylesheetChanges.clear();
         const firstFailed = results.find(result => result.status === 'rejected');
         if (firstFailed) {
             console.error(firstFailed.reason);
@@ -101,6 +128,7 @@ ${formatStyles(change.styles)}
             // Empty stylesheets.
             const results = await Promise.allSettled(stylesheetIds.map(async (id) => {
                 this.#stylesheetChanges.delete(id);
+                this.#backupStylesheetChanges.delete(id);
                 await cssModel.setStyleSheetText(id, '', true);
             }));
             this.#cssModelToStylesheetId.delete(cssModel);

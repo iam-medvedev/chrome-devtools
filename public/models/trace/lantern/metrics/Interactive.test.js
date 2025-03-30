@@ -5,7 +5,8 @@ import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Lantern from '../lantern.js';
 import { getComputationDataFromFixture, toLanternTrace } from '../testing/testing.js';
 const { Interactive, FirstContentfulPaint, LargestContentfulPaint } = Lantern.Metrics;
-describe('Metrics: Lantern TTI', () => {
+describe('Metrics: Lantern TTI', function () {
+    TraceLoader.setTestTimeout(this);
     let trace;
     let iframeTrace;
     before(async function () {

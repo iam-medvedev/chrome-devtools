@@ -46,127 +46,114 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('models/workspace/UISourceCode.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
-    projectInternal;
-    urlInternal;
-    originInternal;
-    parentURLInternal;
-    nameInternal;
-    contentTypeInternal;
-    requestContentPromise;
-    decorations = new Map();
-    hasCommitsInternal;
-    messagesInternal;
-    contentInternal;
-    forceLoadOnCheckContentInternal;
-    checkingContent;
-    lastAcceptedContent;
-    workingCopyInternal;
-    workingCopyGetter;
-    disableEditInternal;
-    contentEncodedInternal;
-    isKnownThirdPartyInternal;
-    isUnconditionallyIgnoreListedInternal;
+    #origin;
+    #parentURL;
+    #project;
+    #url;
+    #name;
+    #contentType;
+    #requestContentPromise = null;
+    #decorations = new Map();
+    #hasCommits = false;
+    #messages = null;
+    #content = null;
+    #forceLoadOnCheckContent = false;
+    #checkingContent = false;
+    #lastAcceptedContent = null;
+    #workingCopy = null;
+    #workingCopyGetter = null;
+    #disableEdit = false;
+    #contentEncoded;
+    #isKnownThirdParty = false;
+    #isUnconditionallyIgnoreListed = false;
     #containsAiChanges = false;
     constructor(project, url, contentType) {
         super();
-        this.projectInternal = project;
-        this.urlInternal = url;
+        this.#project = project;
+        this.#url = url;
         const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
         if (parsedURL) {
-            this.originInternal = parsedURL.securityOrigin();
-            this.parentURLInternal =
-                Common.ParsedURL.ParsedURL.concatenate(this.originInternal, parsedURL.folderPathComponents);
+            this.#origin = parsedURL.securityOrigin();
+            this.#parentURL = Common.ParsedURL.ParsedURL.concatenate(this.#origin, parsedURL.folderPathComponents);
             if (parsedURL.queryParams && !(parsedURL.lastPathComponent && contentType.isFromSourceMap())) {
                 // If there is a query param, display it like a URL. Unless it is from a source map,
                 // in which case the query param is probably a hash that is best left hidden.
-                this.nameInternal = parsedURL.lastPathComponent + '?' + parsedURL.queryParams;
+                this.#name = parsedURL.lastPathComponent + '?' + parsedURL.queryParams;
             }
             else {
                 // file name looks best decoded
-                this.nameInternal = decodeURIComponent(parsedURL.lastPathComponent);
+                this.#name = decodeURIComponent(parsedURL.lastPathComponent);
             }
         }
         else {
-            this.originInternal = Platform.DevToolsPath.EmptyUrlString;
-            this.parentURLInternal = Platform.DevToolsPath.EmptyUrlString;
-            this.nameInternal = url;
+            this.#origin = Platform.DevToolsPath.EmptyUrlString;
+            this.#parentURL = Platform.DevToolsPath.EmptyUrlString;
+            this.#name = url;
         }
-        this.contentTypeInternal = contentType;
-        this.requestContentPromise = null;
-        this.hasCommitsInternal = false;
-        this.messagesInternal = null;
-        this.contentInternal = null;
-        this.forceLoadOnCheckContentInternal = false;
-        this.checkingContent = false;
-        this.lastAcceptedContent = null;
-        this.workingCopyInternal = null;
-        this.workingCopyGetter = null;
-        this.disableEditInternal = false;
-        this.isKnownThirdPartyInternal = false;
-        this.isUnconditionallyIgnoreListedInternal = false;
+        this.#contentType = contentType;
     }
     requestMetadata() {
-        return this.projectInternal.requestMetadata(this);
+        return this.#project.requestMetadata(this);
     }
     name() {
-        return this.nameInternal;
+        return this.#name;
     }
     mimeType() {
-        return this.projectInternal.mimeType(this);
+        return this.#project.mimeType(this);
     }
     url() {
-        return this.urlInternal;
+        return this.#url;
     }
     // Identifier used for deduplicating scripts that are considered by the
     // DevTools UI to be the same script. For now this is just the url but this
     // is likely to change in the future.
-    canononicalScriptId() {
-        return `${this.contentTypeInternal.name()},${this.urlInternal}`;
+    canonicalScriptId() {
+        return `${this.#contentType.name()},${this.#url}`;
     }
     parentURL() {
-        return this.parentURLInternal;
+        return this.#parentURL;
     }
     origin() {
-        return this.originInternal;
+        return this.#origin;
     }
     fullDisplayName() {
-        return this.projectInternal.fullDisplayName(this);
+        return this.#project.fullDisplayName(this);
     }
     displayName(skipTrim) {
-        if (!this.nameInternal) {
+        if (!this.#name) {
             return i18nString(UIStrings.index);
         }
-        const name = this.nameInternal;
+        const name = this.#name;
         return skipTrim ? name : Platform.StringUtilities.trimEndWithMaxLength(name, 100);
     }
     canRename() {
-        return this.projectInternal.canRename();
+        return this.#project.canRename();
     }
     rename(newName) {
         const { resolve, promise } = Promise.withResolvers();
-        this.projectInternal.rename(this, newName, innerCallback.bind(this));
+        this.#project.rename(this, newName, innerCallback.bind(this));
         return promise;
         function innerCallback(success, newName, newURL, newContentType) {
             if (success) {
-                this.updateName(newName, newURL, newContentType);
+                this.#updateName(newName, newURL, newContentType);
             }
             resolve(success);
         }
     }
     remove() {
-        this.projectInternal.deleteFile(this);
+        this.#project.deleteFile(this);
     }
-    updateName(name, url, contentType) {
-        const oldURL = this.urlInternal;
-        this.nameInternal = name;
+    #updateName(name, url, contentType) {
+        const oldURL = this.#url;
+        this.#name = name;
         if (url) {
-            this.urlInternal = url;
+            this.#url = url;
         }
         else {
-            this.urlInternal = Common.ParsedURL.ParsedURL.relativePathToUrlString(name, oldURL);
+            this.#url = Common.ParsedURL.ParsedURL.relativePathToUrlString(name, oldURL);
         }
         if (contentType) {
-            this.contentTypeInternal = contentType;
+            this.#contentType = contentType;
         }
         this.dispatchEventToListeners(Events.TitleChanged, this);
         this.project().workspace().dispatchEventToListeners(WorkspaceImplEvents.UISourceCodeRenamed, { oldURL, uiSourceCode: this });
@@ -175,38 +162,38 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return this.url();
     }
     contentType() {
-        return this.contentTypeInternal;
+        return this.#contentType;
     }
     project() {
-        return this.projectInternal;
+        return this.#project;
     }
     requestContentData({ cachedWasmOnly } = {}) {
-        if (this.requestContentPromise) {
-            return this.requestContentPromise;
+        if (this.#requestContentPromise) {
+            return this.#requestContentPromise;
         }
-        if (this.contentInternal) {
-            return Promise.resolve(this.contentInternal);
+        if (this.#content) {
+            return Promise.resolve(this.#content);
         }
         if (cachedWasmOnly && this.mimeType() === 'application/wasm') {
             return Promise.resolve(new TextUtils.WasmDisassembly.WasmDisassembly([], [], []));
         }
-        this.requestContentPromise = this.requestContentImpl();
-        return this.requestContentPromise;
+        this.#requestContentPromise = this.#requestContent();
+        return this.#requestContentPromise;
     }
     async requestContent(options = {}) {
         return TextUtils.ContentData.ContentData.asDeferredContent(await this.requestContentData(options));
     }
-    async requestContentImpl() {
-        if (this.contentInternal) {
-            throw new Error('Called UISourceCode#requestContentImpl even though content is available for ' + this.urlInternal);
+    async #requestContent() {
+        if (this.#content) {
+            throw new Error('Called UISourceCode#requestContentImpl even though content is available for ' + this.#url);
         }
         try {
-            this.contentInternal = await this.projectInternal.requestFileContent(this);
+            this.#content = await this.#project.requestFileContent(this);
         }
         catch (err) {
-            this.contentInternal = { error: err ? String(err) : '' };
+            this.#content = { error: err ? String(err) : '' };
         }
-        return this.contentInternal;
+        return this.#content;
     }
     #decodeContent(content) {
         if (!content) {
@@ -222,33 +209,33 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return content.createdFromBase64 ? window.atob(content.base64) : content.text;
     }
     async checkContentUpdated() {
-        if (!this.contentInternal && !this.forceLoadOnCheckContentInternal) {
+        if (!this.#content && !this.#forceLoadOnCheckContent) {
             return;
         }
-        if (!this.projectInternal.canSetFileContent() || this.checkingContent) {
+        if (!this.#project.canSetFileContent() || this.#checkingContent) {
             return;
         }
-        this.checkingContent = true;
-        const updatedContent = TextUtils.ContentData.ContentData.asDeferredContent(await this.projectInternal.requestFileContent(this));
+        this.#checkingContent = true;
+        const updatedContent = TextUtils.ContentData.ContentData.asDeferredContent(await this.#project.requestFileContent(this));
         if ('error' in updatedContent) {
             return;
         }
-        this.checkingContent = false;
+        this.#checkingContent = false;
         if (updatedContent.content === null) {
             const workingCopy = this.workingCopy();
-            this.contentCommitted('', false);
+            this.#contentCommitted('', false);
             this.setWorkingCopy(workingCopy);
             return;
         }
-        if (this.lastAcceptedContent === updatedContent.content) {
+        if (this.#lastAcceptedContent === updatedContent.content) {
             return;
         }
-        if (this.#unsafeDecodeContentData(this.contentInternal) === this.#decodeContent(updatedContent)) {
-            this.lastAcceptedContent = null;
+        if (this.#unsafeDecodeContentData(this.#content) === this.#decodeContent(updatedContent)) {
+            this.#lastAcceptedContent = null;
             return;
         }
-        if (!this.isDirty() || this.workingCopyInternal === updatedContent.content) {
-            this.contentCommitted(updatedContent.content, false);
+        if (!this.isDirty() || this.#workingCopy === updatedContent.content) {
+            this.#contentCommitted(updatedContent.content, false);
             return;
         }
         await Common.Revealer.reveal(this);
@@ -256,40 +243,39 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         await new Promise(resolve => window.setTimeout(resolve, 0));
         const shouldUpdate = window.confirm(i18nString(UIStrings.thisFileWasChangedExternally));
         if (shouldUpdate) {
-            this.contentCommitted(updatedContent.content, false);
+            this.#contentCommitted(updatedContent.content, false);
         }
         else {
-            this.lastAcceptedContent = updatedContent.content;
+            this.#lastAcceptedContent = updatedContent.content;
         }
     }
     forceLoadOnCheckContent() {
-        this.forceLoadOnCheckContentInternal = true;
+        this.#forceLoadOnCheckContent = true;
     }
-    commitContent(content) {
-        if (this.projectInternal.canSetFileContent()) {
-            void this.projectInternal.setFileContent(this, content, false);
+    #commitContent(content) {
+        if (this.#project.canSetFileContent()) {
+            void this.#project.setFileContent(this, content, false);
         }
-        this.contentCommitted(content, true);
+        this.#contentCommitted(content, true);
     }
-    contentCommitted(content, committedByUser) {
-        this.lastAcceptedContent = null;
-        this.contentInternal =
-            new TextUtils.ContentData.ContentData(content, Boolean(this.contentEncodedInternal), this.mimeType());
-        this.requestContentPromise = null;
-        this.hasCommitsInternal = true;
-        this.innerResetWorkingCopy();
-        const data = { uiSourceCode: this, content, encoded: this.contentEncodedInternal };
+    #contentCommitted(content, committedByUser) {
+        this.#lastAcceptedContent = null;
+        this.#content = new TextUtils.ContentData.ContentData(content, Boolean(this.#contentEncoded), this.mimeType());
+        this.#requestContentPromise = null;
+        this.#hasCommits = true;
+        this.#resetWorkingCopy();
+        const data = { uiSourceCode: this, content, encoded: this.#contentEncoded };
         this.dispatchEventToListeners(Events.WorkingCopyCommitted, data);
-        this.projectInternal.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyCommitted, data);
+        this.#project.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyCommitted, data);
         if (committedByUser) {
-            this.projectInternal.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyCommittedByUser, data);
+            this.#project.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyCommittedByUser, data);
         }
     }
     addRevision(content) {
-        this.commitContent(content);
+        this.#commitContent(content);
     }
     hasCommits() {
-        return this.hasCommitsInternal;
+        return this.#hasCommits;
     }
     workingCopy() {
         return this.workingCopyContent().content || '';
@@ -298,31 +284,30 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return this.workingCopyContentData().asDeferedContent();
     }
     workingCopyContentData() {
-        if (this.workingCopyGetter) {
-            this.workingCopyInternal = this.workingCopyGetter();
-            this.workingCopyGetter = null;
+        if (this.#workingCopyGetter) {
+            this.#workingCopy = this.#workingCopyGetter();
+            this.#workingCopyGetter = null;
         }
-        const contentData = this.contentInternal ?
-            TextUtils.ContentData.ContentData.contentDataOrEmpty(this.contentInternal) :
+        const contentData = this.#content ? TextUtils.ContentData.ContentData.contentDataOrEmpty(this.#content) :
             TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA;
-        if (this.workingCopyInternal !== null) {
-            return new TextUtils.ContentData.ContentData(this.workingCopyInternal, /* isBase64 */ false, contentData.mimeType);
+        if (this.#workingCopy !== null) {
+            return new TextUtils.ContentData.ContentData(this.#workingCopy, /* isBase64 */ false, contentData.mimeType);
         }
         return contentData;
     }
     resetWorkingCopy() {
-        this.innerResetWorkingCopy();
-        this.workingCopyChanged();
+        this.#resetWorkingCopy();
+        this.#workingCopyChanged();
     }
-    innerResetWorkingCopy() {
-        this.workingCopyInternal = null;
-        this.workingCopyGetter = null;
+    #resetWorkingCopy() {
+        this.#workingCopy = null;
+        this.#workingCopyGetter = null;
         this.setContainsAiChanges(false);
     }
     setWorkingCopy(newWorkingCopy) {
-        this.workingCopyInternal = newWorkingCopy;
-        this.workingCopyGetter = null;
-        this.workingCopyChanged();
+        this.#workingCopy = newWorkingCopy;
+        this.#workingCopyGetter = null;
+        this.#workingCopyChanged();
     }
     setContainsAiChanges(containsAiChanges) {
         this.#containsAiChanges = containsAiChanges;
@@ -331,47 +316,47 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return this.#containsAiChanges;
     }
     setContent(content, isBase64) {
-        this.contentEncodedInternal = isBase64;
-        if (this.projectInternal.canSetFileContent()) {
-            void this.projectInternal.setFileContent(this, content, isBase64);
+        this.#contentEncoded = isBase64;
+        if (this.#project.canSetFileContent()) {
+            void this.#project.setFileContent(this, content, isBase64);
         }
-        this.contentCommitted(content, true);
+        this.#contentCommitted(content, true);
     }
     setWorkingCopyGetter(workingCopyGetter) {
-        this.workingCopyGetter = workingCopyGetter;
-        this.workingCopyChanged();
+        this.#workingCopyGetter = workingCopyGetter;
+        this.#workingCopyChanged();
     }
-    workingCopyChanged() {
-        this.removeAllMessages();
+    #workingCopyChanged() {
+        this.#removeAllMessages();
         this.dispatchEventToListeners(Events.WorkingCopyChanged, this);
-        this.projectInternal.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyChanged, { uiSourceCode: this });
+        this.#project.workspace().dispatchEventToListeners(WorkspaceImplEvents.WorkingCopyChanged, { uiSourceCode: this });
     }
     removeWorkingCopyGetter() {
-        if (!this.workingCopyGetter) {
+        if (!this.#workingCopyGetter) {
             return;
         }
-        this.workingCopyInternal = this.workingCopyGetter();
-        this.workingCopyGetter = null;
+        this.#workingCopy = this.#workingCopyGetter();
+        this.#workingCopyGetter = null;
     }
     commitWorkingCopy() {
         if (this.isDirty()) {
-            this.commitContent(this.workingCopy());
+            this.#commitContent(this.workingCopy());
         }
     }
     isDirty() {
-        return this.workingCopyInternal !== null || this.workingCopyGetter !== null;
+        return this.#workingCopy !== null || this.#workingCopyGetter !== null;
     }
     isKnownThirdParty() {
-        return this.isKnownThirdPartyInternal;
+        return this.#isKnownThirdParty;
     }
     markKnownThirdParty() {
-        this.isKnownThirdPartyInternal = true;
+        this.#isKnownThirdParty = true;
     }
     /**
      * {@link markAsUnconditionallyIgnoreListed}
      */
     isUnconditionallyIgnoreListed() {
-        return this.isUnconditionallyIgnoreListedInternal;
+        return this.#isUnconditionallyIgnoreListed;
     }
     isFetchXHR() {
         return [Common.ResourceType.resourceTypes.XHR, Common.ResourceType.resourceTypes.Fetch].includes(this.contentType());
@@ -381,34 +366,34 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
      * setting. We use this to mark breakpoint/logpoint condition scripts for now.
      */
     markAsUnconditionallyIgnoreListed() {
-        this.isUnconditionallyIgnoreListedInternal = true;
+        this.#isUnconditionallyIgnoreListed = true;
     }
     extension() {
-        return Common.ParsedURL.ParsedURL.extractExtension(this.nameInternal);
+        return Common.ParsedURL.ParsedURL.extractExtension(this.#name);
     }
     content() {
-        if (!this.contentInternal || 'error' in this.contentInternal) {
+        if (!this.#content || 'error' in this.#content) {
             return '';
         }
-        return this.contentInternal.text;
+        return this.#content.text;
     }
     loadError() {
-        return (this.contentInternal && 'error' in this.contentInternal && this.contentInternal.error) || null;
+        return (this.#content && 'error' in this.#content && this.#content.error) || null;
     }
     searchInContent(query, caseSensitive, isRegex) {
-        if (!this.contentInternal || 'error' in this.contentInternal) {
-            return this.projectInternal.searchInFileContent(this, query, caseSensitive, isRegex);
+        if (!this.#content || 'error' in this.#content) {
+            return this.#project.searchInFileContent(this, query, caseSensitive, isRegex);
         }
-        return Promise.resolve(TextUtils.TextUtils.performSearchInContentData(this.contentInternal, query, caseSensitive, isRegex));
+        return Promise.resolve(TextUtils.TextUtils.performSearchInContentData(this.#content, query, caseSensitive, isRegex));
     }
     contentLoaded() {
-        return Boolean(this.contentInternal);
+        return Boolean(this.#content);
     }
     uiLocation(lineNumber, columnNumber) {
         return new UILocation(this, lineNumber, columnNumber);
     }
     messages() {
-        return this.messagesInternal ? new Set(this.messagesInternal) : new Set();
+        return this.#messages ? new Set(this.#messages) : new Set();
     }
     addLineMessage(level, text, lineNumber, columnNumber, clickHandler) {
         const range = TextUtils.TextRange.TextRange.createFromLocation(lineNumber, columnNumber || 0);
@@ -417,40 +402,40 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         return message;
     }
     addMessage(message) {
-        if (!this.messagesInternal) {
-            this.messagesInternal = new Set();
+        if (!this.#messages) {
+            this.#messages = new Set();
         }
-        this.messagesInternal.add(message);
+        this.#messages.add(message);
         this.dispatchEventToListeners(Events.MessageAdded, message);
     }
     removeMessage(message) {
-        if (this.messagesInternal?.delete(message)) {
+        if (this.#messages?.delete(message)) {
             this.dispatchEventToListeners(Events.MessageRemoved, message);
         }
     }
-    removeAllMessages() {
-        if (!this.messagesInternal) {
+    #removeAllMessages() {
+        if (!this.#messages) {
             return;
         }
-        for (const message of this.messagesInternal) {
+        for (const message of this.#messages) {
             this.dispatchEventToListeners(Events.MessageRemoved, message);
         }
-        this.messagesInternal = null;
+        this.#messages = null;
     }
     setDecorationData(type, data) {
-        if (data !== this.decorations.get(type)) {
-            this.decorations.set(type, data);
+        if (data !== this.#decorations.get(type)) {
+            this.#decorations.set(type, data);
             this.dispatchEventToListeners(Events.DecorationChanged, type);
         }
     }
     getDecorationData(type) {
-        return this.decorations.get(type);
+        return this.#decorations.get(type);
     }
     disableEdit() {
-        this.disableEditInternal = true;
+        this.#disableEdit = true;
     }
     editDisabled() {
-        return this.disableEditInternal;
+        return this.#disableEdit;
     }
 }
 export var Events;
@@ -476,7 +461,11 @@ export class UILocation {
     linkText(skipTrim = false, showColumnNumber = false) {
         const displayName = this.uiSourceCode.displayName(skipTrim);
         const lineAndColumnText = this.lineAndColumnText(showColumnNumber);
-        return lineAndColumnText ? displayName + ':' + lineAndColumnText : displayName;
+        let text = lineAndColumnText ? displayName + ':' + lineAndColumnText : displayName;
+        if (this.uiSourceCode.isDirty()) {
+            text = '*' + text;
+        }
+        return text;
     }
     lineAndColumnText(showColumnNumber = false) {
         let lineAndColumnText;

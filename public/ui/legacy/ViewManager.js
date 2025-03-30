@@ -483,7 +483,7 @@ class TabbedLocation extends Location {
     tabOrderSetting;
     lastSelectedTabSetting;
     defaultTab;
-    views;
+    views = new Map();
     constructor(manager, revealCallback, location, restoreSelection, allowReorder, defaultTab) {
         const tabbedPane = new TabbedPane();
         if (allowReorder) {
@@ -504,7 +504,6 @@ class TabbedLocation extends Location {
             this.lastSelectedTabSetting = Common.Settings.Settings.instance().createSetting(location + '-selected-tab', '');
         }
         this.defaultTab = defaultTab;
-        this.views = new Map();
         if (location) {
             this.appendApplicableItems(location);
         }

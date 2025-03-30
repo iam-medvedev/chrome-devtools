@@ -35,8 +35,6 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private controller;
     private cpuProfiler;
     private clearButton;
-    private brickBreakerToolbarButton;
-    private brickBreakerToolbarButtonAdded;
     private loadButton;
     private saveButton;
     private homeButton?;

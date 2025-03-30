@@ -26,8 +26,8 @@ export class OverlayModel extends SDKModel {
     #domModel;
     overlayAgent;
     #debuggerModel;
-    #inspectModeEnabledInternal;
-    #hideHighlightTimeout;
+    #inspectModeEnabledInternal = false;
+    #hideHighlightTimeout = null;
     #defaultHighlighter;
     #highlighter;
     #showPaintRectsSetting;
@@ -36,11 +36,11 @@ export class OverlayModel extends SDKModel {
     #showDebugBordersSetting;
     #showFPSCounterSetting;
     #showScrollBottleneckRectsSetting;
-    #registeredListeners;
-    #showViewportSizeOnResize;
+    #registeredListeners = [];
+    #showViewportSizeOnResize = true;
     #persistentHighlighter;
     #sourceOrderHighlighter;
-    #sourceOrderModeActiveInternal;
+    #sourceOrderModeActiveInternal = false;
     #windowControls;
     constructor(target) {
         super(target);
@@ -57,8 +57,6 @@ export class OverlayModel extends SDKModel {
             // TODO(dgozman): we should get DebuggerResumed on navigations instead of listening to GlobalObjectCleared.
             this.#debuggerModel.addEventListener(DebuggerModelEvents.GlobalObjectCleared, this.updatePausedInDebuggerMessage, this);
         }
-        this.#inspectModeEnabledInternal = false;
-        this.#hideHighlightTimeout = null;
         this.#defaultHighlighter = new DefaultHighlighter(this);
         this.#highlighter = this.#defaultHighlighter;
         this.#showPaintRectsSetting = Common.Settings.Settings.instance().moduleSetting('show-paint-rects');
@@ -69,8 +67,6 @@ export class OverlayModel extends SDKModel {
         this.#showFPSCounterSetting = Common.Settings.Settings.instance().moduleSetting('show-fps-counter');
         this.#showScrollBottleneckRectsSetting =
             Common.Settings.Settings.instance().moduleSetting('show-scroll-bottleneck-rects');
-        this.#registeredListeners = [];
-        this.#showViewportSizeOnResize = true;
         if (!target.suspended()) {
             void this.overlayAgent.invoke_enable();
             void this.wireAgentToSettings();
@@ -98,7 +94,6 @@ export class OverlayModel extends SDKModel {
             }
         });
         this.#sourceOrderHighlighter = new SourceOrderHighlighter(this);
-        this.#sourceOrderModeActiveInternal = false;
         this.#windowControls = new WindowControls(this.#domModel.cssModel());
     }
     static highlightObjectAsDOMNode(object) {

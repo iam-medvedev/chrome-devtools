@@ -8,7 +8,7 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { Cookie } from './Cookie.js';
-import { Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
+import { DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
@@ -69,6 +69,22 @@ const UIStrings = {
      *@example {https://example.com} PH3
      */
     sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
+    /**
+     *@description One of direct socket connection statuses
+     */
+    directSocketStatusOpening: 'Opening',
+    /**
+     *@description One of direct socket connection statuses
+     */
+    directSocketStatusOpen: 'Open',
+    /**
+     *@description One of direct socket connection statuses
+     */
+    directSocketStatusClosed: 'Closed',
+    /**
+     *@description One of direct socket connection statuses
+     */
+    directSocketStatusAborted: 'Aborted',
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/NetworkManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -397,26 +413,21 @@ export class FetchDispatcher {
 }
 export class NetworkDispatcher {
     #manager;
-    #requestsById;
-    #requestsByURL;
-    #requestsByLoaderId;
-    #requestIdToExtraInfoBuilder;
-    #requestIdToTrustTokenEvent;
+    #requestsById = new Map();
+    #requestsByURL = new Map();
+    #requestsByLoaderId = new Map();
+    #requestIdToExtraInfoBuilder = new Map();
+    /**
+     * In case of an early abort or a cache hit, the Trust Token done event is
+     * reported before the request itself is created in `requestWillBeSent`.
+     * This causes the event to be lost as no `NetworkRequest` instance has been
+     * created yet.
+     * This map caches the events temporarily and populates the NetworkRequest
+     * once it is created in `requestWillBeSent`.
+     */
+    #requestIdToTrustTokenEvent = new Map();
     constructor(manager) {
         this.#manager = manager;
-        this.#requestsById = new Map();
-        this.#requestsByURL = new Map();
-        this.#requestsByLoaderId = new Map();
-        this.#requestIdToExtraInfoBuilder = new Map();
-        /**
-         * In case of an early abort or a cache hit, the Trust Token done event is
-         * reported before the request itself is created in `requestWillBeSent`.
-         * This causes the event to be lost as no `NetworkRequest` instance has been
-         * created yet.
-         * This map caches the events temporarliy and populates the NetworKRequest
-         * once it is created in `requestWillBeSent`.
-         */
-        this.#requestIdToTrustTokenEvent = new Map();
         MultitargetNetworkManager.instance().addEventListener("RequestIntercepted" /* MultitargetNetworkManager.Events.REQUEST_INTERCEPTED */, this.#markAsIntercepted.bind(this));
     }
     #markAsIntercepted(event) {
@@ -957,6 +968,70 @@ export class NetworkDispatcher {
         networkRequest.endTime = time;
         this.finishNetworkRequest(networkRequest, time, 0);
     }
+    directTCPSocketCreated(event) {
+        const requestURL = event.remotePort === 0 ? event.remoteAddr : `${event.remoteAddr}:${event.remotePort}`;
+        const networkRequest = NetworkRequest.createForWebSocket(event.identifier, requestURL, event.initiator);
+        networkRequest.hasNetworkData = true;
+        networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
+        networkRequest.protocol = i18n.i18n.lockedString('tcp');
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpening);
+        networkRequest.directSocketInfo = {
+            type: DirectSocketType.TCP,
+            status: DirectSocketStatus.OPENING,
+            createOptions: {
+                remoteAddr: event.remoteAddr,
+                remotePort: event.remotePort,
+                noDelay: event.options.noDelay,
+                keepAliveDelay: event.options.keepAliveDelay,
+                sendBufferSize: event.options.sendBufferSize,
+                receiveBufferSize: event.options.receiveBufferSize,
+                dnsQueryType: event.options.dnsQueryType,
+            }
+        };
+        networkRequest.setResourceType(Common.ResourceType.resourceTypes.DirectSocket);
+        networkRequest.setIssueTime(event.timestamp, event.timestamp);
+        requestToManagerMap.set(networkRequest, this.#manager);
+        this.startNetworkRequest(networkRequest, null);
+    }
+    directTCPSocketOpened(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        networkRequest.responseReceivedTime = event.timestamp;
+        networkRequest.directSocketInfo.status = DirectSocketStatus.OPEN;
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpen);
+        networkRequest.directSocketInfo.openInfo = {
+            remoteAddr: event.remoteAddr,
+            remotePort: event.remotePort,
+            localAddr: event.localAddr,
+            localPort: event.localPort,
+        };
+        networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
+        const requestURL = event.remotePort === 0 ? event.remoteAddr : `${event.remoteAddr}:${event.remotePort}`;
+        networkRequest.setUrl(requestURL);
+        this.updateNetworkRequest(networkRequest);
+    }
+    directTCPSocketAborted(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        networkRequest.failed = true;
+        networkRequest.directSocketInfo.status = DirectSocketStatus.ABORTED;
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusAborted);
+        networkRequest.directSocketInfo.errorMessage = event.errorMessage;
+        this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+    }
+    directTCPSocketClosed(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusClosed);
+        networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
+        this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+    }
     trustTokenOperationDone(event) {
         const request = this.#requestsById.get(event.requestId);
         if (!request) {
@@ -1008,14 +1083,6 @@ export class NetworkDispatcher {
     }
     policyUpdated() {
     }
-    directTCPSocketCreated(_) {
-    }
-    directTCPSocketOpened(_) {
-    }
-    directTCPSocketAborted(_) {
-    }
-    directTCPSocketClosed(_) {
-    }
     /**
      * @deprecated
      * This method is only kept for usage in a web test.
@@ -1028,42 +1095,30 @@ export class NetworkDispatcher {
 }
 let multiTargetNetworkManagerInstance;
 export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper {
-    #userAgentOverrideInternal;
-    #userAgentMetadataOverride;
-    #customAcceptedEncodings;
-    #networkAgents;
-    #fetchAgents;
-    inflightMainResourceRequests;
-    #networkConditionsInternal;
-    #updatingInterceptionPatternsPromise;
-    #blockingEnabledSetting;
-    #blockedPatternsSetting;
-    #effectiveBlockedURLs;
-    #urlsForRequestInterceptor;
+    #userAgentOverrideInternal = '';
+    #userAgentMetadataOverride = null;
+    #customAcceptedEncodings = null;
+    #networkAgents = new Set();
+    #fetchAgents = new Set();
+    inflightMainResourceRequests = new Map();
+    #networkConditionsInternal = NoThrottlingConditions;
+    #updatingInterceptionPatternsPromise = null;
+    #blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
+    #blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
+    #effectiveBlockedURLs = [];
+    #urlsForRequestInterceptor = new Platform.MapUtilities.Multimap();
     #extraHeaders;
     #customUserAgent;
     constructor() {
         super();
-        this.#userAgentOverrideInternal = '';
-        this.#userAgentMetadataOverride = null;
-        this.#customAcceptedEncodings = null;
-        this.#networkAgents = new Set();
-        this.#fetchAgents = new Set();
-        this.inflightMainResourceRequests = new Map();
-        this.#networkConditionsInternal = NoThrottlingConditions;
-        this.#updatingInterceptionPatternsPromise = null;
         // TODO(allada) Remove these and merge it with request interception.
         const blockedPatternChanged = () => {
             this.updateBlockedPatterns();
             this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
         };
-        this.#blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
         this.#blockingEnabledSetting.addChangeListener(blockedPatternChanged);
-        this.#blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
         this.#blockedPatternsSetting.addChangeListener(blockedPatternChanged);
-        this.#effectiveBlockedURLs = [];
         this.updateBlockedPatterns();
-        this.#urlsForRequestInterceptor = new Platform.MapUtilities.Multimap();
         TargetManager.instance().observeModels(NetworkManager, this);
     }
     static instance(opts = { forceNew: null }) {

@@ -19,8 +19,10 @@ export declare namespace SharedStorageForOrigin {
     }
     interface SharedStorageChangedEvent {
         accessTime: Protocol.Network.TimeSinceEpoch;
-        type: Protocol.Storage.SharedStorageAccessType;
+        scope: Protocol.Storage.SharedStorageAccessScope;
+        method: Protocol.Storage.SharedStorageAccessMethod;
         mainFrameId: Protocol.Page.FrameId;
+        ownerSite: string;
         params: Protocol.Storage.SharedStorageAccessParams;
     }
     interface EventTypes {

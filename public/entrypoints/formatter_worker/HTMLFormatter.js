@@ -197,30 +197,23 @@ function hasTokenInSet(tokenTypes, type) {
     return tokenTypes.has(type) || tokenTypes.has(`xml-${type}`);
 }
 export class HTMLModel {
-    #state;
+    #state = "Initial" /* ParseState.INITIAL */;
     #documentInternal;
     #stack;
-    #tokens;
-    #tokenIndex;
-    #attributes;
-    #attributeName;
-    #tagName;
-    #isOpenTag;
+    #tokens = [];
+    #tokenIndex = 0;
+    #attributes = new Map();
+    #attributeName = '';
+    #tagName = '';
+    #isOpenTag = false;
     #tagStartOffset;
     #tagEndOffset;
     constructor(text) {
-        this.#state = "Initial" /* ParseState.INITIAL */;
         this.#documentInternal = new FormatterElement('document');
         this.#documentInternal.openTag = new Tag('document', 0, 0, new Map(), true, false);
         this.#documentInternal.closeTag = new Tag('document', text.length, text.length, new Map(), false, false);
         this.#stack = [this.#documentInternal];
-        this.#tokens = [];
-        this.#tokenIndex = 0;
         this.#build(text);
-        this.#attributes = new Map();
-        this.#attributeName = '';
-        this.#tagName = '';
-        this.#isOpenTag = false;
     }
     #build(text) {
         const tokenizer = createTokenizer('text/html');

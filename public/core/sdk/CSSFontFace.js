@@ -4,13 +4,12 @@
 export class CSSFontFace {
     #fontFamily;
     #fontVariationAxes;
-    #fontVariationAxesByTag;
+    #fontVariationAxesByTag = new Map();
     #src;
     #fontDisplay;
     constructor(payload) {
         this.#fontFamily = payload.fontFamily;
         this.#fontVariationAxes = payload.fontVariationAxes || [];
-        this.#fontVariationAxesByTag = new Map();
         this.#src = payload.src;
         this.#fontDisplay = payload.fontDisplay;
         for (const axis of this.#fontVariationAxes) {

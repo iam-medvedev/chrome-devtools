@@ -83,8 +83,7 @@ export default {
 
 .lighthouse-progress-bar.errored {
   width: 100%;
-  background: var(--sys-color-error); /* stylelint-disable-line plugin/use_theme_colors */
-  /* See: crbug.com/1152736 for color variable migration. */
+  background: var(--sys-color-error);
 }
 
 .lighthouse-progress-bar.loading {

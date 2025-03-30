@@ -59,10 +59,16 @@ function getLineText(line) {
             renderElementIntoDOM(node, { allowMultipleChildren: true });
         }
     }
-    return line.map(nodes => nodes
+    const text = line.map(nodes => nodes
         .map(node => (node instanceof HTMLElement ? node.innerText :
         (node.nodeType === Node.TEXT_NODE ? node.textContent : '')))
         .join());
+    for (const node of line.flat()) {
+        if (node instanceof HTMLElement) {
+            node.remove();
+        }
+    }
+    return text;
 }
 describeWithMockConnection('CSSValueTraceView', () => {
     beforeEach(() => {

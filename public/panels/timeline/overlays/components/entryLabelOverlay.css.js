@@ -23,7 +23,9 @@ export default {
 }
 
 .ai-label-button-wrapper,
-.ai-label-disabled-button-wrapper {
+.ai-label-disabled-button-wrapper,
+.ai-label-loading,
+.ai-label-error {
   /* position the button wrapper on the very right of the label */
   position: absolute;
   left: 100%;
@@ -31,10 +33,6 @@ export default {
   /* Since the ai-button is a bit bigger than the label, lift it up for it to appear more centered */
   transform: translateY(-3px);
   flex-flow: row nowrap;
-  /* when the button wrapper is not hovered, set the max width to only fit the pen icon */
-  overflow: hidden;
-  width: var(--sys-size-12);
-  height: var(--sys-size-12);
   border: none;
   border-radius: var(--sys-shape-corner-large);
   background: var(--sys-color-surface3);
@@ -42,22 +40,35 @@ export default {
   align-items: center;
   gap: var(--sys-size-4);
   pointer-events: auto;
+  transition:
+    all var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized);
+
+  &.only-pen-wrapper {
+    /* when the button wrapper is not hovered, set the max width to only fit the pen icon */
+    overflow: hidden;
+    width: var(--sys-size-12);
+    height: var(--sys-size-12);
+  }
 
   * {
-    /* Make up for the padding in a hovered button to only see the pen icon when it is not hovered */
+    /* When unhovered, shift the contents left you don't see the border of the .ai-label-button  */
     transform: translateX(-2px);
   }
 }
 
+.ai-label-loading,
+.ai-label-error {
+  gap: var(--sys-size-6);
+  padding: var(--sys-size-5) var(--sys-size-8);
+}
+
 .ai-label-button-wrapper:focus,
+.ai-label-button-wrapper:focus-within,
 .ai-label-button-wrapper:hover {
-  width: fit-content;
+  width: auto;
   height: var(--sys-size-13);
   padding: var(--sys-size-3) var(--sys-size-5);
-  transition:
-    all var(--sys-motion-duration-long2) var(--sys-motion-easing-emphasized);
-  overflow: hidden;
-  top: -4px;
+  transform: translateY(-9px); /* -9px is the original -3px minus 6px (coming from the padding adjustment) */
 
   * {
     transform: translateX(0);
@@ -79,6 +90,10 @@ export default {
   &.disabled {
     background: var(--sys-color-surface5);
   }
+
+  &:hover {
+    background: var(--sys-color-state-hover-on-subtle);
+  }
 }
 
 .generate-label-text {
@@ -98,7 +113,16 @@ export default {
   font-weight: var(--ref-typeface-weight-medium);
 }
 
-.input-field:focus {
+
+/* When the input field is focused we want to style it as a light background so
+ * it's clear that the user is in it and can edit the text.
+* However we also do this styling when the user's focus is on the GenerateAI
+* button (using the :focus-within on the parent). This is so if you open an
+* empty annotation, and then tab to the GenerateAI button, the text field
+* styling doesn't change. */
+.input-field:focus,
+.label-parts-wrapper:focus-within .input-field,
+.input-field.fake-focus-state {
   background-color: var(--color-background);
   color: var(--color-background-inverted);
   outline: 2px solid var(--color-background-inverted);

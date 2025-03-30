@@ -35,7 +35,6 @@ export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.Co
     resourceURL(): Platform.DevToolsPath.UrlString;
     private getFrameURLPath;
     private viaInspectorResourceURL;
-    private dynamicStyleURL;
     lineNumberInSource(lineNumberInStyleSheet: number): number;
     columnNumberInSource(lineNumberInStyleSheet: number, columnNumberInStyleSheet: number): number | undefined;
     /**

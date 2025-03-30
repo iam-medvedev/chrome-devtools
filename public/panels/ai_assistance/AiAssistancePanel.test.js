@@ -201,7 +201,9 @@ describeWithMockConnection('AI Assistance Panel', () => {
             {
                 flavor: TimelineUtils.InsightAIContext.ActiveInsight,
                 createContext: () => {
-                    return new AiAssistanceModel.InsightContext(sinon.createStubInstance(TimelineUtils.InsightAIContext.ActiveInsight));
+                    const context = new AiAssistanceModel.InsightContext(sinon.createStubInstance(TimelineUtils.InsightAIContext.ActiveInsight));
+                    sinon.stub(AiAssistanceModel.InsightContext.prototype, 'getSuggestions').returns(['test suggestion']);
+                    return context;
                 },
                 action: 'drjones.performance-insight-context'
             },
@@ -525,106 +527,108 @@ describeWithMockConnection('AI Assistance Panel', () => {
             assert.isUndefined(menuAfterDelete.id);
         });
     });
-    it('should have empty state after clear chat', async () => {
-        const { panel, view } = await createAiAssistancePanel({
-            aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+    describe('empty state', () => {
+        it('should have empty state after clear chat', async () => {
+            const { panel, view } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+            });
+            panel.handleAction('freestyler.elements-floating-button');
+            (await view.nextInput).onTextSubmit('test');
+            assert.deepEqual((await view.nextInput).messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'test',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            view.input.onDeleteClick();
+            assert.deepEqual((await view.nextInput).messages, []);
+            assert.isUndefined(view.input.conversationType);
         });
-        panel.handleAction('freestyler.elements-floating-button');
-        (await view.nextInput).onTextSubmit('test');
-        assert.deepEqual((await view.nextInput).messages, [
-            {
-                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
-                text: 'test',
-                imageInput: undefined,
-            },
-            {
-                answer: 'test',
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
-                rpcId: undefined,
-                suggestions: undefined,
-                steps: [],
-            },
-        ]);
-        view.input.onDeleteClick();
-        assert.deepEqual((await view.nextInput).messages, []);
-        assert.isUndefined(view.input.conversationType);
-    });
-    it('should select default agent based on open panel after clearing the chat', async () => {
-        updateHostConfig({
-            devToolsFreestyler: {
-                enabled: true,
-            },
+        it('should select default agent based on open panel after clearing the chat', async () => {
+            updateHostConfig({
+                devToolsFreestyler: {
+                    enabled: true,
+                },
+            });
+            UI.Context.Context.instance().setFlavor(Elements.ElementsPanel.ElementsPanel, sinon.createStubInstance(Elements.ElementsPanel.ElementsPanel));
+            const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+            panel.handleAction('freestyler.elements-floating-button');
+            (await view.nextInput).onTextSubmit('test');
+            assert.deepEqual((await view.nextInput).messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'test',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            view.input.onDeleteClick();
+            assert.deepEqual((await view.nextInput).messages, []);
+            assert.deepEqual(view.input.conversationType, "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
         });
-        UI.Context.Context.instance().setFlavor(Elements.ElementsPanel.ElementsPanel, sinon.createStubInstance(Elements.ElementsPanel.ElementsPanel));
-        const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
-        panel.handleAction('freestyler.elements-floating-button');
-        (await view.nextInput).onTextSubmit('test');
-        assert.deepEqual((await view.nextInput).messages, [
-            {
-                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
-                text: 'test',
-                imageInput: undefined,
-            },
-            {
-                answer: 'test',
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
-                rpcId: undefined,
-                suggestions: undefined,
-                steps: [],
-            },
-        ]);
-        view.input.onDeleteClick();
-        assert.deepEqual((await view.nextInput).messages, []);
-        assert.deepEqual(view.input.conversationType, "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
-    });
-    it('should have empty state after clear chat history', async () => {
-        const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }]]) });
-        panel.handleAction('freestyler.elements-floating-button');
-        (await view.nextInput).onTextSubmit('User question to Freestyler?');
-        assert.deepEqual((await view.nextInput).messages, [
-            {
-                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
-                text: 'User question to Freestyler?',
-                imageInput: undefined,
-            },
-            {
-                answer: 'test',
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
-                rpcId: undefined,
-                suggestions: undefined,
-                steps: [],
-            },
-        ]);
-        panel.handleAction('drjones.network-floating-button');
-        (await view.nextInput).onTextSubmit('User question to DrJones?');
-        assert.deepEqual((await view.nextInput).messages, [
-            {
-                entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
-                text: 'User question to DrJones?',
-                imageInput: undefined,
-            },
-            {
-                answer: 'test2',
-                entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
-                rpcId: undefined,
-                suggestions: undefined,
-                steps: [],
-            },
-        ]);
-        let contextMenu = getMenu(() => {
-            view.input.onHistoryClick(new MouseEvent('click'));
+        it('should have empty state after clear chat history', async () => {
+            const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }]]) });
+            panel.handleAction('freestyler.elements-floating-button');
+            (await view.nextInput).onTextSubmit('User question to Freestyler?');
+            assert.deepEqual((await view.nextInput).messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'User question to Freestyler?',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            panel.handleAction('drjones.network-floating-button');
+            (await view.nextInput).onTextSubmit('User question to DrJones?');
+            assert.deepEqual((await view.nextInput).messages, [
+                {
+                    entity: "user" /* AiAssistancePanel.ChatMessageEntity.USER */,
+                    text: 'User question to DrJones?',
+                    imageInput: undefined,
+                },
+                {
+                    answer: 'test2',
+                    entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
+                    rpcId: undefined,
+                    suggestions: undefined,
+                    steps: [],
+                },
+            ]);
+            let contextMenu = getMenu(() => {
+                view.input.onHistoryClick(new MouseEvent('click'));
+            });
+            const clearAll = findMenuItemWithLabel(contextMenu.footerSection(), 'Clear local chats');
+            assert.isDefined(clearAll);
+            contextMenu.invokeHandler(clearAll.id());
+            assert.deepEqual((await view.nextInput).messages, []);
+            assert.isUndefined(view.input.conversationType);
+            contextMenu.discard();
+            contextMenu = getMenu(() => {
+                view.input.onHistoryClick(new MouseEvent('click'));
+            });
+            const menuItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'No past conversations');
+            assert(menuItem);
         });
-        const clearAll = findMenuItemWithLabel(contextMenu.footerSection(), 'Clear local chats');
-        assert.isDefined(clearAll);
-        contextMenu.invokeHandler(clearAll.id());
-        assert.deepEqual((await view.nextInput).messages, []);
-        assert.isUndefined(view.input.conversationType);
-        contextMenu.discard();
-        contextMenu = getMenu(() => {
-            view.input.onHistoryClick(new MouseEvent('click'));
-        });
-        const menuItem = findMenuItemWithLabel(contextMenu.defaultSection(), 'No past conversations');
-        assert(menuItem);
     });
     describe('cross-origin', () => {
         beforeEach(async () => {

@@ -40,16 +40,16 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     overviewGrid;
     cursorArea;
     cursorElement;
-    overviewControls;
-    markers;
+    overviewControls = [];
+    markers = new Map();
     overviewInfo;
-    updateThrottler;
-    cursorEnabled;
-    cursorPosition;
-    lastWidth;
-    windowStartTime;
-    windowEndTime;
-    muteOnWindowChanged;
+    updateThrottler = new Common.Throttler.Throttler(100);
+    cursorEnabled = false;
+    cursorPosition = 0;
+    lastWidth = 0;
+    windowStartTime = 0;
+    windowEndTime = Infinity;
+    muteOnWindowChanged = false;
     #dimHighlightSVG;
     constructor(prefix) {
         super();
@@ -66,16 +66,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.overviewGrid.addEventListener("WindowChangedWithPosition" /* OverviewGridEvents.WINDOW_CHANGED_WITH_POSITION */, this.onWindowChanged, this);
         this.overviewGrid.addEventListener("BreadcrumbAdded" /* OverviewGridEvents.BREADCRUMB_ADDED */, this.onBreadcrumbAdded, this);
         this.overviewGrid.setClickHandler(this.onClick.bind(this));
-        this.overviewControls = [];
-        this.markers = new Map();
         this.overviewInfo = new OverviewInfo(this.cursorElement);
-        this.updateThrottler = new Common.Throttler.Throttler(100);
-        this.cursorEnabled = false;
-        this.cursorPosition = 0;
-        this.lastWidth = 0;
-        this.windowStartTime = 0;
-        this.windowEndTime = Infinity;
-        this.muteOnWindowChanged = false;
         this.#dimHighlightSVG = UI.UIUtils.createSVGChild(this.element, 'svg', 'timeline-minimap-dim-highlight-svg hidden');
         this.#initializeDimHighlightSVG();
     }

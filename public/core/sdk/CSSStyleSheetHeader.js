@@ -5,7 +5,6 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
-import * as Root from '../root/root.js';
 import { DeferredDOMNode } from './DOMModel.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 const UIStrings = {
@@ -92,11 +91,7 @@ export class CSSStyleSheetHeader {
         return this.isConstructed && this.sourceURL.length === 0;
     }
     resourceURL() {
-        const url = this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
-        if (!url && Root.Runtime.experiments.isEnabled("styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */)) {
-            return this.dynamicStyleURL();
-        }
-        return url;
+        return this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
     }
     getFrameURLPath() {
         const model = this.#cssModelInternal.target().model(ResourceTreeModel);
@@ -117,10 +112,7 @@ export class CSSStyleSheetHeader {
         return urlPath;
     }
     viaInspectorResourceURL() {
-        return `inspector://${this.getFrameURLPath()}inspector-stylesheet#${this.id}`;
-    }
-    dynamicStyleURL() {
-        return `stylesheet://${this.getFrameURLPath()}style#${this.id}`;
+        return `inspector:///inspector-stylesheet#${this.id}`;
     }
     lineNumberInSource(lineNumberInStyleSheet) {
         return this.startLine + lineNumberInStyleSheet;

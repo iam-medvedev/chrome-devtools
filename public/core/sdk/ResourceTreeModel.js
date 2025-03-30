@@ -19,13 +19,13 @@ export class ResourceTreeModel extends SDKModel {
     storageAgent;
     #securityOriginManager;
     #storageKeyManager;
-    framesInternal;
-    #cachedResourcesProcessed;
-    #pendingReloadOptions;
-    #reloadSuspensionCount;
-    isInterstitialShowing;
-    mainFrame;
-    #pendingBackForwardCacheNotUsedEvents;
+    framesInternal = new Map();
+    #cachedResourcesProcessed = false;
+    #pendingReloadOptions = null;
+    #reloadSuspensionCount = 0;
+    isInterstitialShowing = false;
+    mainFrame = null;
+    #pendingBackForwardCacheNotUsedEvents = new Set();
     constructor(target) {
         super(target);
         const networkManager = target.model(NetworkManager);
@@ -38,14 +38,7 @@ export class ResourceTreeModel extends SDKModel {
         void this.agent.invoke_enable({});
         this.#securityOriginManager = target.model(SecurityOriginManager);
         this.#storageKeyManager = target.model(StorageKeyManager);
-        this.#pendingBackForwardCacheNotUsedEvents = new Set();
         target.registerPageDispatcher(new PageDispatcher(this));
-        this.framesInternal = new Map();
-        this.#cachedResourcesProcessed = false;
-        this.#pendingReloadOptions = null;
-        this.#reloadSuspensionCount = 0;
-        this.isInterstitialShowing = false;
-        this.mainFrame = null;
         void this.#buildResourceTree();
     }
     async #buildResourceTree() {
@@ -505,7 +498,7 @@ export class ResourceTreeFrame {
     #model;
     #sameTargetParentFrameInternal;
     #idInternal;
-    crossTargetParentFrameId;
+    crossTargetParentFrameId = null;
     #loaderIdInternal;
     #nameInternal;
     #urlInternal;
@@ -519,9 +512,9 @@ export class ResourceTreeFrame {
     #crossOriginIsolatedContextType;
     #gatedAPIFeatures;
     #creationStackTrace;
-    #creationStackTraceTarget;
-    #childFramesInternal;
-    resourcesMap;
+    #creationStackTraceTarget = null;
+    #childFramesInternal = new Set();
+    resourcesMap = new Map();
     backForwardCacheDetails = {
         restoredFromCache: undefined,
         explanations: [],
@@ -531,7 +524,6 @@ export class ResourceTreeFrame {
         this.#model = model;
         this.#sameTargetParentFrameInternal = parentFrame;
         this.#idInternal = frameId;
-        this.crossTargetParentFrameId = null;
         this.#loaderIdInternal = payload?.loaderId ?? '';
         this.#nameInternal = payload?.name;
         this.#urlInternal =
@@ -546,9 +538,6 @@ export class ResourceTreeFrame {
         this.#crossOriginIsolatedContextType = payload?.crossOriginIsolatedContextType ?? null;
         this.#gatedAPIFeatures = payload?.gatedAPIFeatures ?? null;
         this.#creationStackTrace = creationStackTrace;
-        this.#creationStackTraceTarget = null;
-        this.#childFramesInternal = new Set();
-        this.resourcesMap = new Map();
         if (this.#sameTargetParentFrameInternal) {
             this.#sameTargetParentFrameInternal.#childFramesInternal.add(this);
         }

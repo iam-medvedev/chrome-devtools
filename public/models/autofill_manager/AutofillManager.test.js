@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -17,7 +16,6 @@ describeWithMockConnection('AutofillManager', () => {
         model = target.model(SDK.AutofillModel.AutofillModel);
         showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
         autofillManager = AutofillManager.AutofillManager.AutofillManager.instance({ forceNew: true });
-        Root.Runtime.experiments.enableForTest("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */);
     });
     afterEach(() => {
         showViewStub.restore();

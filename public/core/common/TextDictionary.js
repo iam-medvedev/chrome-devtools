@@ -29,12 +29,8 @@
  */
 import { Trie } from './Trie.js';
 export class TextDictionary {
-    words;
-    index;
-    constructor() {
-        this.words = new Map();
-        this.index = Trie.newStringTrie();
-    }
+    words = new Map();
+    index = Trie.newStringTrie();
     addWord(word) {
         let count = this.words.get(word) || 0;
         ++count;

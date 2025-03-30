@@ -107,7 +107,7 @@ function extractBadgeTextFromTreeNode(node) {
         if (adornerElement === null) {
             return '';
         }
-        const contentElement = adornerElement.querySelector('[slot="content"]');
+        const contentElement = adornerElement.firstElementChild;
         assert.isNotNull(contentElement);
         if (contentElement === null) {
             return '';

@@ -22,6 +22,7 @@ export interface TooltipProperties {
 export declare class Tooltip extends HTMLElement {
     #private;
     static readonly observedAttributes: string[];
+    static lastOpenedTooltipId: string | null;
     get open(): boolean;
     get useHotkey(): boolean;
     set useHotkey(useHotkey: boolean);
@@ -35,7 +36,7 @@ export declare class Tooltip extends HTMLElement {
     set jslogContext(jslogContext: string);
     get anchor(): HTMLElement | null;
     constructor(properties?: TooltipProperties);
-    attributeChangedCallback(name: string): void;
+    attributeChangedCallback(name: string, oldValue: string, newValue: string): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
     showTooltip: () => void;

@@ -41,10 +41,6 @@ export default {
     height: var(--summary-header-height);
   }
 
-  .infobar-info-message {
-    padding-top: var(--sys-size-2);
-  }
-
   dt-close-button {
     margin-left: var(--sys-size-3);
   }

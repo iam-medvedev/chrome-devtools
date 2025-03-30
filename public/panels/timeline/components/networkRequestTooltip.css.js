@@ -56,7 +56,6 @@ devtools-icon.priority {
   align-self: start;
   display: flex;
   align-items: center;
-  width: 100%;
 }
 
 .indicator {

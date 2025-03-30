@@ -14,6 +14,7 @@ import { StylePropertiesSection } from './StylePropertiesSection.js';
 import type { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
 import { WebCustomData } from './WebCustomData.js';
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
+export declare const FUNCTION_SECTION_NAME = "@function";
 declare const StylesSidebarPane_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -80,7 +81,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     refreshUpdate(editedSection: StylePropertiesSection, editedTreeElement?: StylePropertyTreeElement): void;
     doUpdate(): Promise<void>;
     getVariableParserError(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string): ElementsComponents.CSSVariableValueView.CSSVariableParserError | null;
-    getVariablePopoverContents(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string, computedValue: string | null): HTMLElement | undefined;
+    getVariablePopoverContents(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string, computedValue: string | null): ElementsComponents.CSSVariableValueView.CSSVariableValueView;
     private fetchComputedStylesFor;
     onResize(): void;
     private innerResize;
@@ -110,10 +111,6 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     hideAllPopovers(): void;
     getSectionBlockByName(name: string): SectionBlock | undefined;
     allSections(): StylePropertiesSection[];
-    trackURLForChanges(url: Platform.DevToolsPath.UrlString): Promise<void>;
-    isPropertyChanged(property: SDK.CSSProperty.CSSProperty): boolean;
-    updateChangeStatus(): void;
-    private refreshChangedLines;
     getFormattedChanges(): Promise<string>;
     private clipboardCopy;
     private createStylesSidebarToolbar;
@@ -121,7 +118,6 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     appendToolbarItem(item: UI.Toolbar.ToolbarItem): void;
     private startToolbarPaneAnimation;
     private createRenderingShortcuts;
-    private createCopyAllChangesButton;
 }
 export declare const enum Events {
     INITIAL_UPDATE_COMPLETED = "InitialUpdateCompleted",
@@ -143,6 +139,7 @@ export declare class SectionBlock {
     static createPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, pseudoArgument: string | null): SectionBlock;
     static createInheritedPseudoTypeBlock(pseudoType: Protocol.DOM.PseudoType, pseudoArgument: string | null, node: SDK.DOMModel.DOMNode): Promise<SectionBlock>;
     static createRegisteredPropertiesBlock(expandedByDefault: boolean): SectionBlock;
+    static createFunctionBlock(expandedByDefault: boolean): SectionBlock;
     static createKeyframesBlock(keyframesName: string): SectionBlock;
     static createFontPaletteValuesRuleBlock(name: string): SectionBlock;
     static createPositionTryBlock(positionTryName: string): SectionBlock;

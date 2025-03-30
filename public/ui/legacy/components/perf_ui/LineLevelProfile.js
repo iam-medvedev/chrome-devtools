@@ -108,13 +108,11 @@ export class Memory {
 }
 export class Helper {
     type;
-    locationPool;
-    updateTimer;
-    lineData;
+    locationPool = new Bindings.LiveLocation.LiveLocationPool();
+    updateTimer = null;
+    lineData = new Map();
     constructor(type) {
         this.type = type;
-        this.locationPool = new Bindings.LiveLocation.LiveLocationPool();
-        this.updateTimer = null;
         this.reset();
     }
     reset() {

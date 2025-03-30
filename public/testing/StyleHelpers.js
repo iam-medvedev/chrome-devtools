@@ -88,6 +88,7 @@ export function getMatchedStyles(payload = {}) {
         animationStylesPayload: [],
         transitionsStylePayload: null,
         inheritedAnimatedPayload: [],
+        functionRules: [],
         ...payload,
     });
 }

@@ -21,6 +21,7 @@ export declare class Dialog extends Dialog_base {
     static getInstance(): Dialog | null;
     show(where?: Document | Element): void;
     hide(): void;
+    setAriaLabel(label: string): void;
     setCloseOnEscape(close: boolean): void;
     setEscapeKeyCallback(callback: (arg0: Event) => void): void;
     addCloseButton(): void;

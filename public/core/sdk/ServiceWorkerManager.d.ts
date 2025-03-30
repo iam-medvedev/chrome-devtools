@@ -5,6 +5,7 @@ import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     #private;
+    /** Status of service worker network requests panel */
     serviceWorkerNetworkRequestsPanelStatus: {
         isOpen: boolean;
         openedAt: number;

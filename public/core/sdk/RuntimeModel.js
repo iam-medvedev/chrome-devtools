@@ -10,15 +10,13 @@ import { SDKModel } from './SDKModel.js';
 import { Type } from './Target.js';
 export class RuntimeModel extends SDKModel {
     agent;
-    #executionContextById;
-    #executionContextComparatorInternal;
+    #executionContextById = new Map();
+    #executionContextComparatorInternal = ExecutionContext.comparator;
     constructor(target) {
         super(target);
         this.agent = target.runtimeAgent();
         this.target().registerRuntimeDispatcher(new RuntimeDispatcher(this));
         void this.agent.invoke_enable();
-        this.#executionContextById = new Map();
-        this.#executionContextComparatorInternal = ExecutionContext.comparator;
         if (Common.Settings.Settings.instance().moduleSetting('custom-formatters').get()) {
             void this.agent.invoke_setCustomObjectFormatterEnabled({ enabled: true });
         }

@@ -16,20 +16,17 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/source_frame/XMLView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class XMLView extends UI.Widget.Widget {
-    treeOutline;
-    searchableView;
-    currentSearchFocusIndex;
-    currentSearchTreeElements;
-    searchConfig;
+    treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
+    searchableView = null;
+    currentSearchFocusIndex = 0;
+    currentSearchTreeElements = [];
+    searchConfig = null;
     constructor(parsedXML) {
         super(true);
         this.registerRequiredCSS(xmlViewStyles);
         this.contentElement.classList.add('shadow-xml-view', 'source-code');
-        this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         this.treeOutline.registerRequiredCSS(xmlTreeStyles);
         this.contentElement.appendChild(this.treeOutline.element);
-        this.currentSearchFocusIndex = 0;
-        this.currentSearchTreeElements = [];
         XMLViewNode.populate(this.treeOutline, parsedXML, this);
         const firstChild = this.treeOutline.firstChild();
         if (firstChild) {

@@ -31,6 +31,13 @@ export class ThirdParties extends BaseInsightComponent {
         const overlays = [];
         const events = summary.relatedEvents ?? [];
         for (const event of events) {
+            // The events found for a third party can be vast, as they gather every
+            // single main thread task along with everything else on the page. If the
+            // main thread is busy with large icicles, we can easily create tens of
+            // thousands of overlays. Therefore, only create overlays for events of at least 1ms.
+            if (event.dur === undefined || event.dur < 1_000) {
+                continue;
+            }
             const overlay = {
                 type: 'ENTRY_OUTLINE',
                 entry: event,
@@ -46,22 +53,22 @@ export class ThirdParties extends BaseInsightComponent {
             overlays: this.#createOverlaysForSummary(summary),
         }),
         createAggregatedTableRow: remaining => {
-            const totalMainThreadTime = remaining.reduce((acc, summary) => acc + summary.mainThreadTime, 0);
+            const totalMainThreadTime = remaining.reduce((acc, summary) => Trace.Types.Timing.Milli(acc + summary.mainThreadTime), Trace.Types.Timing.Milli(0));
             return {
-                values: [renderOthersLabel(remaining.length), i18n.TimeUtilities.formatMicroSecondsTime(totalMainThreadTime)],
+                values: [renderOthersLabel(remaining.length), i18n.TimeUtilities.millisToString(totalMainThreadTime)],
                 overlays: remaining.flatMap(summary => this.#createOverlaysForSummary(summary) ?? []),
             };
         },
     };
     #transferSizeAggregator = {
         mapToRow: summary => ({
-            values: [summary.entity.name, i18n.ByteUtilities.bytesToString(summary.transferSize)],
+            values: [summary.entity.name, i18n.ByteUtilities.formatBytesToKb(summary.transferSize)],
             overlays: this.#createOverlaysForSummary(summary),
         }),
         createAggregatedTableRow: remaining => {
             const totalBytes = remaining.reduce((acc, summary) => acc + summary.transferSize, 0);
             return {
-                values: [renderOthersLabel(remaining.length), i18n.ByteUtilities.bytesToString(totalBytes)],
+                values: [renderOthersLabel(remaining.length), i18n.ByteUtilities.formatBytesToKb(totalBytes)],
                 overlays: remaining.flatMap(summary => this.#createOverlaysForSummary(summary) ?? []),
             };
         },

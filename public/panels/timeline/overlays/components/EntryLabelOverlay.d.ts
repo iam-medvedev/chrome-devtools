@@ -1,5 +1,6 @@
 import '../../../../ui/components/icon_button/icon_button.js';
 import '../../../../ui/components/tooltips/tooltips.js';
+import '../../../../ui/components/spinners/spinners.js';
 import * as AiAssistanceModels from '../../../../models/ai_assistance/ai_assistance.js';
 import type * as Utils from '../../utils/utils.js';
 export declare class EmptyEntryLabelRemoveEvent extends Event {
@@ -10,6 +11,11 @@ export declare class EntryLabelChangeEvent extends Event {
     newLabel: string;
     static readonly eventName = "entrylabelchangeevent";
     constructor(newLabel: string);
+}
+export declare class LabelAnnotationsConsentDialogVisiblityChange extends Event {
+    isVisible: boolean;
+    static readonly eventName = "labelannotationsconsentdialogvisiblitychange";
+    constructor(isVisible: boolean);
 }
 export declare class EntryLabelOverlay extends HTMLElement {
     #private;

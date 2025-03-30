@@ -645,20 +645,16 @@ export declare enum DevtoolsExperiments {
     'full-accessibility-tree' = 42,
     'contrast-issues' = 44,
     'experimental-cookie-features' = 45,
-    'styles-pane-css-changes' = 55,
     'instrumentation-breakpoints' = 61,
     'authored-deployed-grouping' = 63,
     'just-my-code' = 65,
     'highlight-errors-elements-panel' = 73,
     'use-source-map-scopes' = 76,
     'network-panel-filter-bar-redesign' = 79,
-    'autofill-view' = 82,
     'timeline-show-postmessage-events' = 86,
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
-    'timeline-server-timings' = 98,
-    'floating-entry-points-for-ai-assistance' = 101,
     'timeline-experimental-insights' = 102,
     'timeline-dim-unrelated-events' = 103,
     'timeline-alternative-navigation' = 104,
@@ -799,7 +795,8 @@ export declare enum IssueCreated {
     'SRIMessageSignatureIssue::ValidationFailedInvalidLength' = 109,
     'SRIMessageSignatureIssue::ValidationFailedSignatureMismatch' = 110,
     'CorsIssue::LocalNetworkAccessPermissionDenied' = 111,
-    MAX_VALUE = 112
+    'SRIMessageSignatureIssue::ValidationFailedIntegrityMismatch' = 112,
+    MAX_VALUE = 113
 }
 export declare const enum DeveloperResourceLoaded {
     LOAD_THROUGH_PAGE_VIA_TARGET = 0,

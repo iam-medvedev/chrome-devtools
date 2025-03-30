@@ -115,13 +115,9 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class MainImpl {
-    #readyForTestPromise;
-    #resolveReadyForTestPromise;
+    #readyForTestPromise = Promise.withResolvers();
     constructor() {
         MainImpl.instanceForTest = this;
-        this.#readyForTestPromise = new Promise(resolve => {
-            this.#resolveReadyForTestPromise = resolve;
-        });
         void this.#loaded();
     }
     static time(label) {
@@ -284,8 +280,6 @@ export class MainImpl {
         Root.Runtime.experiments.register('contrast-issues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
         Root.Runtime.experiments.register('experimental-cookie-features', 'Enable experimental cookie features');
-        // Integrate CSS changes in the Styles pane.
-        Root.Runtime.experiments.register("styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */, 'Sync CSS changes in the Styles tab');
         // Highlights a violating node or attribute by rendering a squiggly line under it and adding a tooltip linking to the issues panel.
         Root.Runtime.experiments.register("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */, 'Highlights a violating node or attribute in the Elements panel DOM tree');
         // Change grouping of sources panel to use Authored/Deployed trees
@@ -293,17 +287,12 @@ export class MainImpl {
         // Hide third party code (as determined by ignore lists or source maps)
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in Sources tree view');
         Root.Runtime.experiments.register("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */, 'Redesign of the filter bar in the Network panel', false, 'https://goo.gle/devtools-network-filter-redesign', 'https://crbug.com/1500573');
-        Root.Runtime.experiments.register("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */, 'Autofill panel', false, 'https://goo.gle/devtools-autofill-panel', 'https://crbug.com/329106326');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
-        Root.Runtime.experiments.register("timeline-server-timings" /* Root.Runtime.ExperimentName.TIMELINE_SERVER_TIMINGS */, 'Performance panel: enable server timings in the timeline');
-        Root.Runtime.experiments.register("floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */, 'Floating entry points for the AI assistance panel');
         Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.register("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */, 'Performance panel: enable dimming unrelated events in performance insights and search results');
         Root.Runtime.experiments.register("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */, 'Performance panel: enable a switch to an alternative timeline navigation option');
         Root.Runtime.experiments.enableExperimentsByDefault([
-            "autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */,
             "network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */,
-            "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
             "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
             "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
@@ -473,7 +462,7 @@ export class MainImpl {
         }
         // Used for browser tests.
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
-        this.#resolveReadyForTestPromise();
+        this.#readyForTestPromise.resolve();
         // Asynchronously run the extensions.
         window.setTimeout(this.#lateInitialization.bind(this), 100);
         await this.#maybeInstallVeInspectionBinding();
@@ -532,7 +521,7 @@ export class MainImpl {
         MainImpl.timeEnd('Main._lateInitialization');
     }
     readyForTest() {
-        return this.#readyForTestPromise;
+        return this.#readyForTestPromise.promise;
     }
     #registerMessageSinkListener() {
         Common.Console.Console.instance().addEventListener("messageAdded" /* Common.Console.Events.MESSAGE_ADDED */, messageAdded);

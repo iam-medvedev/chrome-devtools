@@ -6,43 +6,29 @@ import * as Platform from '../platform/platform.js';
 import { OverlayColorGenerator } from './OverlayColorGenerator.js';
 export class OverlayPersistentHighlighter {
     #model;
-    #colors;
-    #persistentHighlightSetting;
-    #gridHighlights;
-    #scrollSnapHighlights;
-    #flexHighlights;
-    #containerQueryHighlights;
-    #isolatedElementHighlights;
-    #gridColorGenerator;
-    #flexColorGenerator;
+    #colors = new Map();
+    #persistentHighlightSetting = Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
+    #gridHighlights = new Map();
+    #scrollSnapHighlights = new Map();
+    #flexHighlights = new Map();
+    #containerQueryHighlights = new Map();
+    #isolatedElementHighlights = new Map();
+    #gridColorGenerator = new OverlayColorGenerator();
+    #flexColorGenerator = new OverlayColorGenerator();
     /**
      * @see `front_end/core/sdk/sdk-meta.ts`
      */
-    #showGridLineLabelsSetting;
-    #extendGridLinesSetting;
-    #showGridAreasSetting;
-    #showGridTrackSizesSetting;
+    #showGridLineLabelsSetting = Common.Settings.Settings.instance().moduleSetting('show-grid-line-labels');
+    #extendGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('extend-grid-lines');
+    #showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('show-grid-areas');
+    #showGridTrackSizesSetting = Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes');
     #callbacks;
     constructor(model, callbacks) {
         this.#model = model;
         this.#callbacks = callbacks;
-        this.#persistentHighlightSetting =
-            Common.Settings.Settings.instance().createLocalSetting('persistent-highlight-setting', []);
-        this.#gridHighlights = new Map();
-        this.#scrollSnapHighlights = new Map();
-        this.#flexHighlights = new Map();
-        this.#containerQueryHighlights = new Map();
-        this.#isolatedElementHighlights = new Map();
-        this.#colors = new Map();
-        this.#gridColorGenerator = new OverlayColorGenerator();
-        this.#flexColorGenerator = new OverlayColorGenerator();
-        this.#showGridLineLabelsSetting = Common.Settings.Settings.instance().moduleSetting('show-grid-line-labels');
         this.#showGridLineLabelsSetting.addChangeListener(this.onSettingChange, this);
-        this.#extendGridLinesSetting = Common.Settings.Settings.instance().moduleSetting('extend-grid-lines');
         this.#extendGridLinesSetting.addChangeListener(this.onSettingChange, this);
-        this.#showGridAreasSetting = Common.Settings.Settings.instance().moduleSetting('show-grid-areas');
         this.#showGridAreasSetting.addChangeListener(this.onSettingChange, this);
-        this.#showGridTrackSizesSetting = Common.Settings.Settings.instance().moduleSetting('show-grid-track-sizes');
         this.#showGridTrackSizesSetting.addChangeListener(this.onSettingChange, this);
     }
     onSettingChange() {

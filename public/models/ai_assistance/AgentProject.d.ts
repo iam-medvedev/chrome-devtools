@@ -1,4 +1,3 @@
-import type * as Workspace from '../workspace/workspace.js';
 /**
  * AgentProject wraps around a Workspace.Workspace.Project and
  * implements AI Assistance-specific logic for accessing workspace files
@@ -6,7 +5,7 @@ import type * as Workspace from '../workspace/workspace.js';
  */
 export declare class AgentProject {
     #private;
-    constructor(project: Workspace.Workspace.Project, options?: {
+    constructor(options?: {
         maxFilesChanged: number;
         maxLinesChanged: number;
     });

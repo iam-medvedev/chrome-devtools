@@ -19,3 +19,8 @@ export declare const NON_NETWORK_SCHEMES: string[];
  * {no-cache: true, no-store: true, max-age: 0, no-transform: true, private: true}
  */
 export declare function parseCacheControl(header: string | null): CacheControl | null;
+/**
+ * Is the host localhost-enough to satisfy the "secure context" definition
+ * https://github.com/GoogleChrome/lighthouse/pull/11766#discussion_r582340683
+ */
+export declare function isSyntheticNetworkRequestLocalhost(event: SyntheticNetworkRequest): boolean;

@@ -44,6 +44,8 @@ export interface Timing {
     _workerReady?: number;
     _workerFetchStart?: number;
     _workerRespondWithSettled?: number;
+    _workerRouterEvaluationStart?: number;
+    _workerCacheLookupStart?: number;
 }
 export interface Parameter {
     name: string;
@@ -90,6 +92,9 @@ export interface Response {
     _fetchedViaServiceWorker: boolean;
     _responseCacheStorageCacheName: string | undefined;
     _serviceWorkerResponseSource: Protocol.Network.ServiceWorkerResponseSource | undefined;
+    _serviceWorkerRouterRuleIdMatched: number | undefined;
+    _serviceWorkerRouterMatchedSourceType: string | undefined;
+    _serviceWorkerRouterActualSourceType: string | undefined;
 }
 export interface EntryDTO {
     _connectionId?: string;

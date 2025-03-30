@@ -11,6 +11,7 @@ export interface Script {
     scriptId: Protocol.Runtime.ScriptId;
     frame: string;
     ts: Types.Timing.Micro;
+    inline: boolean;
     url?: string;
     sourceUrl?: string;
     content?: string;
@@ -18,9 +19,20 @@ export interface Script {
     sourceMapUrl?: string;
     sourceMap?: SDK.SourceMap.SourceMap;
     request?: Types.Events.SyntheticNetworkRequest;
+    /** Lazily generated - use getScriptGeneratedSizes to access. */
+    sizes?: GeneratedFileSizes;
 }
+type GeneratedFileSizes = {
+    errorMessage: string;
+} | {
+    files: Record<string, number>;
+    unmappedBytes: number;
+    totalBytes: number;
+};
 export declare function deps(): HandlerName[];
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
+export declare function getScriptGeneratedSizes(script: Script): GeneratedFileSizes | null;
 export declare function finalize(options: Types.Configuration.ParseOptions): Promise<void>;
 export declare function data(): ScriptsData;
+export {};

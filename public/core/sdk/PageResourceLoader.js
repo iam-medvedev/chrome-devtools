@@ -34,19 +34,15 @@ let pageResourceLoader = null;
  * resources were loaded, and whether there was a load error.
  */
 export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
-    #currentlyLoading;
-    #currentlyLoadingPerTarget;
+    #currentlyLoading = 0;
+    #currentlyLoadingPerTarget = new Map();
     #maxConcurrentLoads;
-    #pageResources;
-    #queuedLoads;
+    #pageResources = new Map();
+    #queuedLoads = [];
     #loadOverride;
     constructor(loadOverride, maxConcurrentLoads) {
         super();
-        this.#currentlyLoading = 0;
-        this.#currentlyLoadingPerTarget = new Map();
         this.#maxConcurrentLoads = maxConcurrentLoads;
-        this.#pageResources = new Map();
-        this.#queuedLoads = [];
         TargetManager.instance().addModelListener(ResourceTreeModel, ResourceTreeModelEvents.PrimaryPageChanged, this.onPrimaryPageChanged, this);
         this.#loadOverride = loadOverride;
     }

@@ -50,11 +50,11 @@ describeWithEnvironment('RequestHeaderSection', () => {
             ];
         });
         assert.deepEqual(sorted, [
-            ['aa:', 'first'],
-            ['ab:', 'second'],
-            ['abc:', 'third'],
-            ['name:', 'fourth'],
-            ['test:', 'fifth'],
+            ['aa', 'first'],
+            ['ab', 'second'],
+            ['abc', 'third'],
+            ['name', 'fourth'],
+            ['test', 'fifth'],
         ]);
     });
     it('does not warn about pseudo-headers containing invalid characters', async () => {

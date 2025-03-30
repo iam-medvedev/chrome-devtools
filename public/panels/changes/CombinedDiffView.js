@@ -40,7 +40,7 @@ function renderSingleDiffView(singleDiffViewInput) {
               .iconName=${'copy'}
               .jslogContext=${'combined-diff-view.copy'}
               .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-              @click=${() => onCopy(fileUrl, diff)}></devtools-button>
+              @click=${() => onCopy(fileUrl)}></devtools-button>
           `}
         </div>
       </summary>
@@ -57,7 +57,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
     #modifiedUISourceCodes = [];
     #copiedFiles = {};
     #view;
-    constructor(element, view = (input, output, target) => {
+    constructor(element, view = (input, _output, target) => {
         Lit.render(html `
       <div class="combined-diff-view">
         ${input.singleDiffViewInputs.map(singleDiffViewInput => renderSingleDiffView(singleDiffViewInput))}
@@ -80,9 +80,16 @@ export class CombinedDiffView extends UI.Widget.Widget {
         this.#workspaceDiff = workspaceDiff;
         void this.#initializeModifiedUISourceCodes();
     }
-    async #onCopyDiff(fileUrl, diff) {
-        const changes = await PanelUtils.PanelUtils.formatCSSChangesFromDiff(diff);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(changes);
+    async #onCopyFileContent(fileUrl) {
+        const file = this.#modifiedUISourceCodes.find(uiSource => uiSource.url() === fileUrl);
+        if (!file) {
+            return;
+        }
+        const content = file.workingCopyContentData();
+        if (!content.isTextContent) {
+            return;
+        }
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(content.text);
         this.#copiedFiles[fileUrl] = true;
         this.requestUpdate();
         setTimeout(() => {
@@ -127,7 +134,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
                 uiSourceCode: modifiedUISourceCode,
             };
         }));
-        const singleDiffViewInputs = uiSourceCodeAndDiffs.filter(uiSourceCodeAndDiff => uiSourceCodeAndDiff.diff)
+        const singleDiffViewInputs = uiSourceCodeAndDiffs.filter(uiSourceCodeAndDiff => Boolean(uiSourceCodeAndDiff.diff))
             .map(({ uiSourceCode, diff }) => {
             let displayText = uiSourceCode.fullDisplayName();
             // If the UISourceCode is backed by a workspace, we show the path as "{workspace-name}/path/relative/to/workspace"
@@ -145,7 +152,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
                 mimeType: uiSourceCode.mimeType(),
                 icon: PanelUtils.PanelUtils.getIconForSourceFile(uiSourceCode, { width: 18, height: 18 }),
                 copied: this.#copiedFiles[uiSourceCode.url()],
-                onCopy: this.#onCopyDiff.bind(this),
+                onCopy: this.#onCopyFileContent.bind(this),
                 onFileNameClick: this.#onFileNameClick.bind(this),
             };
         })

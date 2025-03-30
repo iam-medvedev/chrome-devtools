@@ -107,6 +107,7 @@ export declare const enum InsightKeys {
     FORCED_REFLOW = "ForcedReflow",
     IMAGE_DELIVERY = "ImageDelivery",
     LCP_DISCOVERY = "LCPDiscovery",
+    LEGACY_JAVASCRIPT = "LegacyJavaScript",
     NETWORK_DEPENDENCY_TREE = "NetworkDependencyTree",
     RENDER_BLOCKING = "RenderBlocking",
     SLOW_CSS_SELECTOR = "SlowCSSSelector",

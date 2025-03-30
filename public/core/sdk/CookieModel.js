@@ -9,16 +9,12 @@ import { Events as NetworkManagerEvents, NetworkManager } from './NetworkManager
 import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
 export class CookieModel extends SDKModel {
-    #blockedCookies;
-    #cookieToBlockedReasons;
-    #refreshThrottler;
-    #cookies;
+    #blockedCookies = new Map();
+    #cookieToBlockedReasons = new Map();
+    #refreshThrottler = new Common.Throttler.Throttler(300);
+    #cookies = new Map();
     constructor(target) {
         super(target);
-        this.#refreshThrottler = new Common.Throttler.Throttler(300);
-        this.#blockedCookies = new Map();
-        this.#cookieToBlockedReasons = new Map();
-        this.#cookies = new Map();
         target.model(ResourceTreeModel)
             ?.addEventListener(ResourceTreeModelEvents.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
         target.model(NetworkManager)

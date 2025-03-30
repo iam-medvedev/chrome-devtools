@@ -515,9 +515,6 @@ export function isV8Compile(event) {
 export function isFunctionCall(event) {
     return event.name === "FunctionCall" /* Name.FUNCTION_CALL */;
 }
-export function isSyntheticServerTiming(event) {
-    return event.cat === 'devtools.server-timing';
-}
 export function isSchedulePostTaskCallback(event) {
     return event.name === "SchedulePostTaskCallback" /* Name.SCHEDULE_POST_TASK_CALLBACK */;
 }

@@ -37,6 +37,7 @@ export declare class StylePropertiesSection {
     nestingLevel: number;
     nextEditorTriggerButtonIdx: number;
     private sectionIdx;
+    readonly sectionTooltipIdPrefix: number;
     constructor(parentPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number, computedStyles: Map<string, string> | null, parentsComputedStyles: Map<string, string> | null, customHeaderText?: string);
     setComputedStyles(computedStyles: Map<string, string> | null): void;
     setParentsComputedStyles(parentsComputedStyles: Map<string, string> | null): void;
@@ -72,6 +73,8 @@ export declare class StylePropertiesSection {
     private onNewRuleClick;
     styleSheetEdited(edit: SDK.CSSModel.Edit): void;
     protected createAncestorRules(rule: SDK.CSSRule.CSSStyleRule): void;
+    protected createClosingBrace(): HTMLElement;
+    protected indentElement(element: HTMLElement, nestingLevel: number, clipboardOnly?: boolean): HTMLElement;
     protected createMediaElement(media: SDK.CSSMedia.CSSMedia): ElementsComponents.CSSQuery.CSSQuery | undefined;
     protected createContainerQueryElement(containerQuery: SDK.CSSContainerQuery.CSSContainerQuery): ElementsComponents.CSSQuery.CSSQuery | undefined;
     protected createScopeElement(scope: SDK.CSSScope.CSSScope): ElementsComponents.CSSQuery.CSSQuery | undefined;
@@ -87,6 +90,7 @@ export declare class StylePropertiesSection {
     update(full: boolean): void;
     showAllItems(event?: Event): void;
     onpopulate(): void;
+    populateStyle(style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, parent: TreeElementParent): void;
     isPropertyOverloaded(property: SDK.CSSProperty.CSSProperty): boolean;
     updateFilter(): boolean;
     isHidden(): boolean;
@@ -144,6 +148,12 @@ export declare class RegisteredPropertiesSection extends StylePropertiesSection 
     setHeaderText(rule: SDK.CSSRule.CSSRule, newContent: string): Promise<void>;
     createRuleOriginNode(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, linkifier: Components.Linkifier.Linkifier, rule: SDK.CSSRule.CSSRule | null): Node;
 }
+export declare class FunctionRuleSection extends StylePropertiesSection {
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, children: SDK.CSSRule.CSSNestedStyle[], sectionIdx: number, functionName: string, parameters: string[], expandedByDefault: boolean);
+    createConditionElement(condition: SDK.CSSRule.CSSNestedStyleCondition): HTMLElement | undefined;
+    positionNestingElement(element: HTMLElement): HTMLElement;
+    addChildren(children: SDK.CSSRule.CSSNestedStyle[], parent: TreeElementParent): void;
+}
 export declare class FontPaletteValuesRuleSection extends StylePropertiesSection {
     constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number);
 }
@@ -163,3 +173,7 @@ export declare class KeyframePropertiesSection extends StylePropertiesSection {
 export declare class HighlightPseudoStylePropertiesSection extends StylePropertiesSection {
     isPropertyInherited(_propertyName: string): boolean;
 }
+interface TreeElementParent {
+    appendChild(child: UI.TreeOutline.TreeElement): void;
+}
+export {};

@@ -1109,13 +1109,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             appendChunk(i18nString(UIStrings.sSRequests, { PH1: selectedNodeNumber, PH2: nodeCount }));
             this.summaryToolbarInternal.appendSeparator();
             appendChunk(i18nString(UIStrings.sSTransferred, {
-                PH1: i18n.ByteUtilities.bytesToString(selectedTransferSize),
-                PH2: i18n.ByteUtilities.bytesToString(transferSize),
+                PH1: i18n.ByteUtilities.formatBytesToKb(selectedTransferSize),
+                PH2: i18n.ByteUtilities.formatBytesToKb(transferSize),
             }), i18nString(UIStrings.sBSBTransferredOverNetwork, { PH1: selectedTransferSize, PH2: transferSize }));
             this.summaryToolbarInternal.appendSeparator();
             appendChunk(i18nString(UIStrings.sSResources, {
-                PH1: i18n.ByteUtilities.bytesToString(selectedResourceSize),
-                PH2: i18n.ByteUtilities.bytesToString(resourceSize),
+                PH1: i18n.ByteUtilities.formatBytesToKb(selectedResourceSize),
+                PH2: i18n.ByteUtilities.formatBytesToKb(resourceSize),
             }), i18nString(UIStrings.sBSBResourcesLoadedByThePage, { PH1: selectedResourceSize, PH2: resourceSize }));
         }
         else {

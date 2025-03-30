@@ -94,6 +94,9 @@ const exampleLog = new HAR.HARFormat.HARLog({
                 _fetchedViaServiceWorker: true,
                 _responseCacheStorageCacheName: 'v1',
                 _serviceWorkerResponseSource: 'cache-storage',
+                _serviceWorkerRouterRuleIdMatched: 1,
+                _serviceWorkerRouterMatchedSourceType: 'cache',
+                _serviceWorkerRouterActualSourceType: 'network',
             },
             serverIPAddress: '127.0.0.1',
             startedDateTime: '2020-12-14T17:35:53.241Z',
@@ -111,6 +114,8 @@ const exampleLog = new HAR.HARFormat.HARLog({
                 _workerReady: 2,
                 _workerFetchStart: 10,
                 _workerRespondWithSettled: 300,
+                _workerRouterEvaluationStart: 100,
+                _workerCacheLookupStart: 200,
             },
         },
         {
@@ -249,6 +254,9 @@ describe('HAR Importer', () => {
         assert.isTrue(parsedRequest.fetchedViaServiceWorker);
         assert.strictEqual(parsedRequest.getResponseCacheStorageCacheName(), 'v1');
         assert.strictEqual(parsedRequest.serviceWorkerResponseSource(), 'cache-storage');
+        assert.strictEqual(parsedRequest.serviceWorkerRouterInfo?.ruleIdMatched, 1);
+        assert.strictEqual(parsedRequest.serviceWorkerRouterInfo?.matchedSourceType, 'cache');
+        assert.strictEqual(parsedRequest.serviceWorkerRouterInfo?.actualSourceType, 'network');
     });
     it('Parses the request timings', () => {
         const parsedRequest = requests[0];
@@ -273,6 +281,8 @@ describe('HAR Importer', () => {
             workerFetchStart: 10,
             workerRespondWithSettled: 300,
             workerStart: 30,
+            workerRouterEvaluationStart: 100,
+            workerCacheLookupStart: 200,
         });
     });
     it('Parses the remote address correctly', () => {

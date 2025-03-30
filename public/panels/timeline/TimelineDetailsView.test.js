@@ -42,7 +42,8 @@ describeWithEnvironment('TimelineDetailsView', function () {
         assert.deepEqual(Array.from(detailsContentElement.children).map(n => n.localName), ['devtools-performance-network-request-details']);
         const content = detailsContentElement.firstElementChild?.shadowRoot;
         assert(content);
-        assert.lengthOf(content.querySelectorAll('div.network-request-details-row'), 10);
+        assert.lengthOf(content.querySelectorAll('div.network-request-details-row'), 9);
+        assert.lengthOf(content.querySelectorAll('div.network-request-details-item'), 2);
         assert.lengthOf(content.querySelectorAll('devtools-related-insight-chips'), 1);
     });
     it('displays the details for a frame correctly', async function () {
@@ -68,7 +69,8 @@ describeWithEnvironment('TimelineDetailsView', function () {
         assert.isOk(duration);
         assert.strictEqual(duration.innerText, 'Duration37.85 ms (at 109.82 ms)');
     });
-    it('renders the layout shift component for a single layout shift', async function () {
+    // Semi-regularly flaking on CQ bots.
+    it.skip('[crbug.com/406981939]: renders the layout shift component for a single layout shift', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         await detailsView.setModel({
@@ -88,7 +90,8 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const layoutShiftDetails = detailsContentElement.querySelector('devtools-performance-layout-shift-details');
         assert.isNotNull(layoutShiftDetails);
     });
-    it('renders the layout shift component for a selected cluster', async function () {
+    // Semi-regularly flaking on CQ bots.
+    it.skip('[crbug.com/406981939]: renders the layout shift component for a selected cluster', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         await detailsView.setModel({

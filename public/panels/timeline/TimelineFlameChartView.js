@@ -220,6 +220,18 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 },
             },
         });
+        this.#overlays.addEventListener(Overlays.Overlays.ConsentDialogVisibilityChange.eventName, e => {
+            const event = e;
+            if (event.isVisible) {
+                // If the dialog is visible, we do not want anything in the performance
+                // panel capturing tab focus.
+                // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/inert
+                this.element.setAttribute('inert', 'inert');
+            }
+            else {
+                this.element.removeAttribute('inert');
+            }
+        });
         this.#overlays.addEventListener(Overlays.Overlays.EntryLabelMouseClick.eventName, event => {
             const { overlay } = event;
             this.dispatchEventToListeners("EntryLabelAnnotationClicked" /* Events.ENTRY_LABEL_ANNOTATION_CLICKED */, {
@@ -316,7 +328,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
          * NOTE: ENTRY_SELECTED, ENTRY_INVOKED and ENTRY_HOVERED are not always super obvious:
          * ENTRY_SELECTED: is KEYBOARD ONLY selection of events (e.g. navigating through the flamechart with your arrow keys)
          * ENTRY_HOVERED: is MOUSE ONLY when an event is hovered over with the mouse.
-         * ENTRY_INVOKED: is when the user cilcks on an event, or hits the "enter" key whilst an event is selected.
+         * ENTRY_INVOKED: is when the user clicks on an event, or hits the "enter" key whilst an event is selected.
          */
         this.onMainEntrySelected = this.onEntrySelected.bind(this, this.mainDataProvider);
         this.onNetworkEntrySelected = this.onEntrySelected.bind(this, this.networkDataProvider);
@@ -1188,11 +1200,17 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         // Note that we do not change the Context back to `null` if the user picks
         // an invalid event - we don't want to reset it back as it may be they are
         // clicking around in order to understand something.
+        // We also do this in a rAF to not block the UI updating to show the selected event first.
         if (selectionIsEvent(selection) && this.#parsedTrace) {
-            const aiCallTree = Utils.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
-            if (aiCallTree) {
-                UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
-            }
+            requestAnimationFrame(() => {
+                if (!this.#parsedTrace) {
+                    return;
+                }
+                const aiCallTree = Utils.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
+                if (aiCallTree) {
+                    UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
+                }
+            });
         }
     }
     // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace

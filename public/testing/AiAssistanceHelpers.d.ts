@@ -2,6 +2,7 @@ import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as Platform from '../core/platform/platform.js';
 import * as SDK from '../core/sdk/sdk.js';
+import * as Bindings from '../models/bindings/bindings.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import * as AiAssistancePanel from '../panels/ai_assistance/ai_assistance.js';
@@ -54,12 +55,12 @@ export declare function createAiAssistancePanel(options?: {
 export declare function createPatchWidget(options?: {
     aidaClient?: Host.AidaClient.AidaClient;
 }): Promise<{
-    panel: AiAssistancePanel.PatchWidget.PatchWidget;
+    widget: AiAssistancePanel.PatchWidget.PatchWidget;
     view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
 }>;
 export declare function createPatchWidgetWithDiffView(): Promise<{
-    panel: AiAssistancePanel.PatchWidget.PatchWidget;
+    widget: AiAssistancePanel.PatchWidget.PatchWidget;
     view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
 }>;
@@ -68,6 +69,13 @@ export declare function cleanup(): void;
 export declare function openHistoryContextMenu(lastUpdate: AiAssistancePanel.ViewInput, item: string): {
     contextMenu: import("../ui/legacy/ContextMenu.js").ContextMenu;
     id: number | undefined;
+};
+export declare function createNetworkProject(fileSystemPath: string, files?: Array<{
+    path: string;
+    content: string;
+}>): {
+    project: Bindings.ContentProviderBasedProject.ContentProviderBasedProject;
+    uiSourceCode: Workspace.UISourceCode.UISourceCode;
 };
 export declare function createTestFilesystem(fileSystemPath: string, files?: Array<{
     path: string;

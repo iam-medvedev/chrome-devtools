@@ -299,4 +299,61 @@ export class CSSPositionTryRule extends CSSRule {
         return this.#active;
     }
 }
+export class CSSFunctionRule extends CSSRule {
+    #name;
+    #parameters;
+    #children;
+    constructor(cssModel, payload) {
+        super(cssModel, { origin: payload.origin, style: { cssProperties: [], shorthandEntries: [] }, styleSheetId: payload.styleSheetId });
+        this.#name = new CSSValue(payload.name);
+        this.#parameters = payload.parameters.map(({ name }) => name);
+        this.#children = this.protocolNodesToNestedStyles(payload.children);
+    }
+    functionName() {
+        return this.#name;
+    }
+    parameters() {
+        return this.#parameters;
+    }
+    children() {
+        return this.#children;
+    }
+    protocolNodesToNestedStyles(nodes) {
+        const result = [];
+        for (const node of nodes) {
+            const nestedStyle = this.protocolNodeToNestedStyle(node);
+            if (nestedStyle) {
+                result.push(nestedStyle);
+            }
+        }
+        return result;
+    }
+    protocolNodeToNestedStyle(node) {
+        if (node.style) {
+            return { style: new CSSStyleDeclaration(this.cssModelInternal, this, node.style, Type.Regular) };
+        }
+        if (node.condition) {
+            const children = this.protocolNodesToNestedStyles(node.condition.children);
+            if (node.condition.media) {
+                return { children, media: new CSSMedia(this.cssModelInternal, node.condition.media) };
+            }
+            if (node.condition.containerQueries) {
+                return {
+                    children,
+                    container: new CSSContainerQuery(this.cssModelInternal, node.condition.containerQueries),
+                };
+            }
+            if (node.condition.supports) {
+                return {
+                    children,
+                    supports: new CSSSupports(this.cssModelInternal, node.condition.supports),
+                };
+            }
+            console.error('A function rule condition must have a media, container, or supports');
+            return;
+        }
+        console.error('A function rule node must have a style or condition');
+        return;
+    }
+}
 //# sourceMappingURL=CSSRule.js.map

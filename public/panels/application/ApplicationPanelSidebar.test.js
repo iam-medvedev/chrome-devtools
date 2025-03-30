@@ -33,52 +33,66 @@ class SharedStorageTreeElementListener {
 describeWithMockConnection('ApplicationPanelSidebar', () => {
     let target;
     const TEST_ORIGIN_A = 'http://www.example.com/';
+    const TEST_SITE_A = 'http://example.com';
     const TEST_ORIGIN_B = 'http://www.example.org/';
     const TEST_ORIGIN_C = 'http://www.example.net/';
+    const TEST_SITE_C = 'http://example.net';
     const TEST_EXTENSION_NAME = 'Test Extension';
     const ID = 'AA';
     const EVENTS = [
         {
             accessTime: 0,
-            type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
+            method: "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
             mainFrameId: ID,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0', value: 'value0' },
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 10,
-            type: "workletGet" /* Protocol.Storage.SharedStorageAccessType.WorkletGet */,
+            method: "get" /* Protocol.Storage.SharedStorageAccessMethod.Get */,
             mainFrameId: ID,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0' },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 15,
-            type: "workletLength" /* Protocol.Storage.SharedStorageAccessType.WorkletLength */,
+            method: "length" /* Protocol.Storage.SharedStorageAccessMethod.Length */,
             mainFrameId: ID,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 20,
-            type: "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
+            method: "clear" /* Protocol.Storage.SharedStorageAccessMethod.Clear */,
             mainFrameId: ID,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: {},
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 100,
-            type: "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
+            method: "set" /* Protocol.Storage.SharedStorageAccessMethod.Set */,
             mainFrameId: ID,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 150,
-            type: "workletRemainingBudget" /* Protocol.Storage.SharedStorageAccessType.WorkletRemainingBudget */,
+            method: "remainingBudget" /* Protocol.Storage.SharedStorageAccessMethod.RemainingBudget */,
             mainFrameId: ID,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
     ];
     beforeEach(() => {

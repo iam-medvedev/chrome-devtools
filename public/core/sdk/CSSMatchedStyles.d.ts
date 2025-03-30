@@ -4,7 +4,7 @@ import type { CSSModel } from './CSSModel.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
 import type { Match, Matcher } from './CSSPropertyParser.js';
-import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
+import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule } from './CSSRule.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 import type { DOMNode } from './DOMModel.js';
 export interface CSSMatchedStylesPayload {
@@ -26,6 +26,7 @@ export interface CSSMatchedStylesPayload {
     animationStylesPayload: Protocol.CSS.CSSAnimationStyle[];
     transitionsStylePayload: Protocol.CSS.CSSStyle | null;
     inheritedAnimatedPayload: Protocol.CSS.InheritedAnimatedStyleEntry[];
+    functionRules: Protocol.CSS.CSSFunctionRule[];
 }
 export declare class CSSRegisteredProperty {
     #private;
@@ -69,6 +70,7 @@ export declare class CSSMatchedStyles {
     transitionsStyle(): CSSStyleDeclaration | null;
     registeredProperties(): CSSRegisteredProperty[];
     getRegisteredProperty(name: string): CSSRegisteredProperty | undefined;
+    functionRules(): CSSFunctionRule[];
     fontPaletteValuesRule(): CSSFontPaletteValuesRule | undefined;
     keyframes(): CSSKeyframesRule[];
     positionTryRules(): CSSPositionTryRule[];

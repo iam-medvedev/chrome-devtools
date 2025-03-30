@@ -22,7 +22,6 @@ export declare class RequestPayloadView extends UI.Widget.VBox {
     private appendJSONPayloadParsed;
     private createViewSourceToggle;
     private toggleURLDecoding;
-    private createToggleButton;
 }
 export declare class Category extends UI.TreeOutline.TreeElement {
     toggleOnClick: boolean;

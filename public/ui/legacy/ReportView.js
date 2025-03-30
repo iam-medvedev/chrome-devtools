@@ -92,10 +92,10 @@ export class ReportView extends VBox {
 export class Section extends VBox {
     jslogContext;
     headerElement;
-    headerButtons;
+    headerButtons = [];
     titleElement;
     fieldList;
-    fieldMap;
+    fieldMap = new Map();
     constructor(title, className, jslogContext) {
         super();
         this.jslogContext = jslogContext;
@@ -107,13 +107,11 @@ export class Section extends VBox {
             this.element.setAttribute('jslog', `${VisualLogging.section(jslogContext)}`);
         }
         this.jslogContext = jslogContext;
-        this.headerButtons = [];
         this.headerElement = this.element.createChild('div', 'report-section-header');
         this.titleElement = this.headerElement.createChild('div', 'report-section-title');
         this.setTitle(title);
         ARIAUtils.markAsHeading(this.titleElement, 2);
         this.fieldList = this.element.createChild('div', 'vbox');
-        this.fieldMap = new Map();
     }
     title() {
         return this.titleElement.textContent || '';

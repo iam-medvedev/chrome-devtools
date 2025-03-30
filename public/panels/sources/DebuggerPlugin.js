@@ -349,7 +349,6 @@ export class DebuggerPlugin extends Plugin {
             new UI.PopoverHelper.PopoverHelper(editor, this.getPopoverRequest.bind(this), 'sources.object-properties');
         this.popoverHelper.setDisableOnClick(true);
         this.popoverHelper.setTimeout(250, 250);
-        this.popoverHelper.setHasPadding(true);
     }
     static accepts(uiSourceCode) {
         return uiSourceCode.contentType().hasScripts();
@@ -1453,8 +1452,7 @@ export class DebuggerPlugin extends Plugin {
         else {
             await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().createCallFrameLiveLocation(callFrame.location(), async (liveLocation) => {
                 const uiLocation = await liveLocation.uiLocation();
-                if (uiLocation &&
-                    uiLocation.uiSourceCode.canononicalScriptId() === this.uiSourceCode.canononicalScriptId()) {
+                if (uiLocation && uiLocation.uiSourceCode.canonicalScriptId() === this.uiSourceCode.canonicalScriptId()) {
                     this.setExecutionLocation(uiLocation);
                     this.updateMissingDebugInfoInfobar(callFrame.missingDebugInfoDetails);
                     // We are paused and the user is specifically looking at this UISourceCode either because

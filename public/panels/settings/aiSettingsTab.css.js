@@ -15,8 +15,8 @@ export default {
 }
 
 :host {
-  container-type: inline-size; /* stylelint-disable-line property-no-unknown */
-  container-name: ai-settings; /* stylelint-disable-line property-no-unknown */
+  container-type: inline-size;
+  container-name: ai-settings;
 }
 
 .shared-disclaimer {
@@ -165,7 +165,6 @@ export default {
   flex-direction: column;
 }
 
-/* stylelint-disable-next-line at-rule-no-unknown */
 @container ai-settings (min-width: 480px) {
   .settings-container-wrapper {
     align-items: center;

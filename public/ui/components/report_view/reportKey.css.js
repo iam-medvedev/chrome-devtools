@@ -17,7 +17,7 @@ export default {
 
 .key {
   color: var(--sys-color-on-surface-subtle);
-  font: var(--sys-typescale-body5-regular);
+  font: var(--sys-typescale-body5-medium);
   padding-right: var(--sys-size-6);
   text-align: left;
   white-space: pre;

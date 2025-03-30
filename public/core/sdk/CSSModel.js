@@ -19,27 +19,24 @@ import { SourceMapManager } from './SourceMapManager.js';
 export class CSSModel extends SDKModel {
     agent;
     #domModel;
-    #fontFaces;
-    #originalStyleSheetText;
+    #fontFaces = new Map();
+    #originalStyleSheetText = new Map();
     #resourceTreeModel;
     #sourceMapManager;
     #styleLoader;
-    #stylePollingThrottler;
-    #styleSheetIdsForURL;
-    #styleSheetIdToHeader;
-    #cachedMatchedCascadeNode;
-    #cachedMatchedCascadePromise;
-    #cssPropertyTracker;
-    #isCSSPropertyTrackingEnabled;
-    #isEnabled;
-    #isRuleUsageTrackingEnabled;
-    #isTrackingRequestPending;
+    #stylePollingThrottler = new Common.Throttler.Throttler(StylePollingInterval);
+    #styleSheetIdsForURL = new Map();
+    #styleSheetIdToHeader = new Map();
+    #cachedMatchedCascadeNode = null;
+    #cachedMatchedCascadePromise = null;
+    #cssPropertyTracker = null;
+    #isCSSPropertyTrackingEnabled = false;
+    #isEnabled = false;
+    #isRuleUsageTrackingEnabled = false;
+    #isTrackingRequestPending = false;
     #colorScheme;
     constructor(target) {
         super(target);
-        this.#isEnabled = false;
-        this.#cachedMatchedCascadeNode = null;
-        this.#cachedMatchedCascadePromise = null;
         this.#domModel = target.model(DOMModel);
         this.#sourceMapManager = new SourceMapManager(target);
         this.agent = target.cssAgent();
@@ -52,15 +49,6 @@ export class CSSModel extends SDKModel {
         if (!target.suspended()) {
             void this.enable();
         }
-        this.#styleSheetIdToHeader = new Map();
-        this.#styleSheetIdsForURL = new Map();
-        this.#originalStyleSheetText = new Map();
-        this.#isRuleUsageTrackingEnabled = false;
-        this.#fontFaces = new Map();
-        this.#cssPropertyTracker = null; // TODO: support multiple trackers when we refactor the backend
-        this.#isCSSPropertyTrackingEnabled = false;
-        this.#isTrackingRequestPending = false;
-        this.#stylePollingThrottler = new Common.Throttler.Throttler(StylePollingInterval);
         this.#sourceMapManager.setEnabled(Common.Settings.Settings.instance().moduleSetting('css-source-maps-enabled').get());
         Common.Settings.Settings.instance()
             .moduleSetting('css-source-maps-enabled')
@@ -281,6 +269,7 @@ export class CSSModel extends SDKModel {
             parentLayoutNodeId: matchedStylesResponse.parentLayoutNodeId,
             positionTryRules: matchedStylesResponse.cssPositionTryRules || [],
             propertyRules: matchedStylesResponse.cssPropertyRules ?? [],
+            functionRules: matchedStylesResponse.cssFunctionRules ?? [],
             cssPropertyRegistrations: matchedStylesResponse.cssPropertyRegistrations ?? [],
             fontPaletteValuesRule: matchedStylesResponse.cssFontPaletteValuesRule,
             activePositionFallbackIndex: matchedStylesResponse.activePositionFallbackIndex ?? -1,
@@ -843,10 +832,9 @@ class CSSDispatcher {
 }
 class ComputedStyleLoader {
     #cssModel;
-    #nodeIdToPromise;
+    #nodeIdToPromise = new Map();
     constructor(cssModel) {
         this.#cssModel = cssModel;
-        this.#nodeIdToPromise = new Map();
     }
     computedStylePromise(nodeId) {
         let promise = this.#nodeIdToPromise.get(nodeId);

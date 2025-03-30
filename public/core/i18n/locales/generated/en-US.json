@@ -5,6 +5,9 @@
   "core/common/ResourceType.ts | css": {
     "message": "CSS"
   },
+  "core/common/ResourceType.ts | directsocket": {
+    "message": "DirectSocket"
+  },
   "core/common/ResourceType.ts | doc": {
     "message": "Doc"
   },
@@ -56,6 +59,9 @@
   "core/common/ResourceType.ts | signedexchange": {
     "message": "SignedExchange"
   },
+  "core/common/ResourceType.ts | socketShort": {
+    "message": "Socket"
+  },
   "core/common/ResourceType.ts | stylesheet": {
     "message": "Stylesheet"
   },
@@ -76,9 +82,6 @@
   },
   "core/common/ResourceType.ts | webtransport": {
     "message": "WebTransport"
-  },
-  "core/common/ResourceType.ts | ws": {
-    "message": "WS"
   },
   "core/common/Revealer.ts | animationsPanel": {
     "message": "Animations panel"
@@ -292,6 +295,18 @@
   },
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With block"
+  },
+  "core/sdk/NetworkManager.ts | directSocketStatusAborted": {
+    "message": "Aborted"
+  },
+  "core/sdk/NetworkManager.ts | directSocketStatusClosed": {
+    "message": "Closed"
+  },
+  "core/sdk/NetworkManager.ts | directSocketStatusOpen": {
+    "message": "Open"
+  },
+  "core/sdk/NetworkManager.ts | directSocketStatusOpening": {
+    "message": "Opening"
   },
   "core/sdk/NetworkManager.ts | fast4G": {
     "message": "Fast 4G"
@@ -1230,10 +1245,13 @@
     "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
   },
   "generated/Deprecation.ts | H1UserAgentFontSizeInSection": {
-    "message": "The website has an <h1> tag within an <article>, <aside>, <nav>, or <section>, and relies on deprecated UA stylesheet rules for the resulting font size. See the second block of 'x h1' styles in https://html.spec.whatwg.org/multipage/rendering.html#sections-and-headings. These special rules are deprecated and will be removed. See https://github.com/whatwg/html/issues/7867."
+    "message": "Found an <h1> tag within an <article>, <aside>, <nav>, or <section> which does not have a specified font-size. The size of this heading text will be changing in this browser in the near future. See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements#specifying_a_uniform_font_size_for_h1 for more information."
   },
   "generated/Deprecation.ts | HostCandidateAttributeGetter": {
     "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
+  },
+  "generated/Deprecation.ts | IdentityDigitalCredentials": {
+    "message": "This format for the navigator.credentials.get() request for digital credentials is deprecated, please update your call to use the new format."
   },
   "generated/Deprecation.ts | IdentityInCanMakePaymentEvent": {
     "message": "The merchant origin and arbitrary data from the canmakepayment service worker event are deprecated and will be removed: topOrigin, paymentRequestOrigin, methodData, modifiers."
@@ -1739,6 +1757,24 @@
   "models/persistence/WorkspaceSettingsTab.ts | workspace": {
     "message": "Workspace"
   },
+  "models/trace/insights/Cache.ts | cacheTTL": {
+    "message": "Cache TTL"
+  },
+  "models/trace/insights/Cache.ts | description": {
+    "message": "A long cache lifetime can speed up repeat visits to your page. [Learn more](https://web.dev/uses-long-cache-ttl/)."
+  },
+  "models/trace/insights/Cache.ts | noRequestsToCache": {
+    "message": "No requests with inefficient cache policies"
+  },
+  "models/trace/insights/Cache.ts | others": {
+    "message": "{PH1} others"
+  },
+  "models/trace/insights/Cache.ts | requestColumn": {
+    "message": "Request"
+  },
+  "models/trace/insights/Cache.ts | title": {
+    "message": "Use efficient cache lifetimes"
+  },
   "models/trace/insights/CLSCulprits.ts | animation": {
     "message": "Animation"
   },
@@ -1832,8 +1868,8 @@
   "models/trace/insights/DOMSize.ts | value": {
     "message": "Value"
   },
-  "models/trace/insights/DuplicatedJavaScript.ts | columnResourceSize": {
-    "message": "Resource size"
+  "models/trace/insights/DuplicatedJavaScript.ts | columnDuplicatedBytes": {
+    "message": "Duplicated bytes"
   },
   "models/trace/insights/DuplicatedJavaScript.ts | columnSource": {
     "message": "Source"
@@ -1985,6 +2021,27 @@
   "models/trace/insights/LCPPhases.ts | title": {
     "message": "LCP by phase"
   },
+  "models/trace/insights/LegacyJavaScript.ts | description": {
+    "message": "Legacy JavaScript"
+  },
+  "models/trace/insights/LegacyJavaScript.ts | title": {
+    "message": "Legacy JavaScript"
+  },
+  "models/trace/insights/ModernHTTP.ts | description": {
+    "message": "HTTP/2 and HTTP/3 offer many benefits over HTTP/1.1, such as multiplexing. [Learn more about using modern HTTP](https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2/)."
+  },
+  "models/trace/insights/ModernHTTP.ts | noOldProtocolRequests": {
+    "message": "No requests used HTTP/1.1"
+  },
+  "models/trace/insights/ModernHTTP.ts | protocol": {
+    "message": "Protocol"
+  },
+  "models/trace/insights/ModernHTTP.ts | request": {
+    "message": "Request"
+  },
+  "models/trace/insights/ModernHTTP.ts | title": {
+    "message": "Modern HTTP"
+  },
   "models/trace/insights/NetworkDependencyTree.ts | description": {
     "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
   },
@@ -2056,24 +2113,6 @@
   },
   "models/trace/insights/ThirdParties.ts | title": {
     "message": "3rd parties"
-  },
-  "models/trace/insights/UseCache.ts | cacheTTL": {
-    "message": "Cache TTL"
-  },
-  "models/trace/insights/UseCache.ts | description": {
-    "message": "A long cache lifetime can speed up repeat visits to your page. [Learn more](https://web.dev/uses-long-cache-ttl/)."
-  },
-  "models/trace/insights/UseCache.ts | noRequestsToCache": {
-    "message": "No requests with inefficient cache policies"
-  },
-  "models/trace/insights/UseCache.ts | others": {
-    "message": "{PH1} others"
-  },
-  "models/trace/insights/UseCache.ts | requestColumn": {
-    "message": "Request"
-  },
-  "models/trace/insights/UseCache.ts | title": {
-    "message": "Use efficient cache lifetimes"
   },
   "models/trace/insights/Viewport.ts | description": {
     "message": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile."
@@ -2563,6 +2602,9 @@
   },
   "panels/ai_assistance/components/ChatView.ts | learnAbout": {
     "message": "Learn about AI in DevTools"
+  },
+  "panels/ai_assistance/components/ChatView.ts | notAvailableInIncognitoMode": {
+    "message": "AI assistance is not available in Incognito mode or Guest mode"
   },
   "panels/ai_assistance/components/ChatView.ts | notLoggedIn": {
     "message": "This feature is only available when you are signed into Chrome with your Google account"
@@ -3899,14 +3941,17 @@
   "panels/application/components/SharedStorageAccessGrid.ts | allSharedStorageEvents": {
     "message": "All shared storage events for this page."
   },
+  "panels/application/components/SharedStorageAccessGrid.ts | eventMethod": {
+    "message": "Access Method"
+  },
   "panels/application/components/SharedStorageAccessGrid.ts | eventParams": {
     "message": "Optional Event Params"
   },
+  "panels/application/components/SharedStorageAccessGrid.ts | eventScope": {
+    "message": "Access Scope"
+  },
   "panels/application/components/SharedStorageAccessGrid.ts | eventTime": {
     "message": "Event Time"
-  },
-  "panels/application/components/SharedStorageAccessGrid.ts | eventType": {
-    "message": "Access Type"
   },
   "panels/application/components/SharedStorageAccessGrid.ts | learnMore": {
     "message": "Learn more"
@@ -3916,6 +3961,9 @@
   },
   "panels/application/components/SharedStorageAccessGrid.ts | ownerOrigin": {
     "message": "Owner Origin"
+  },
+  "panels/application/components/SharedStorageAccessGrid.ts | ownerSite": {
+    "message": "Owner Site"
   },
   "panels/application/components/SharedStorageAccessGrid.ts | sharedStorage": {
     "message": "Shared storage"
@@ -6893,12 +6941,6 @@
   "panels/elements/StylesSidebarPane.ts | clickToRevealLayer": {
     "message": "Click to reveal layer in layer tree"
   },
-  "panels/elements/StylesSidebarPane.ts | copiedToClipboard": {
-    "message": "Copied to clipboard"
-  },
-  "panels/elements/StylesSidebarPane.ts | copyAllCSSChanges": {
-    "message": "Copy CSS changes"
-  },
   "panels/elements/StylesSidebarPane.ts | incrementdecrementWithMousewheelHundred": {
     "message": "Increment/decrement with mousewheel or up/down keys. {PH1}: ±100, Shift: ±10, {PH2}: ±0.1"
   },
@@ -7138,6 +7180,9 @@
   },
   "panels/explain/components/ConsoleInsight.ts | networkRequest": {
     "message": "Network request"
+  },
+  "panels/explain/components/ConsoleInsight.ts | notAvailableInIncognitoMode": {
+    "message": "AI assistance is not available in Incognito mode or Guest mode"
   },
   "panels/explain/components/ConsoleInsight.ts | notLoggedIn": {
     "message": "This feature is only available when you sign into Chrome with your Google account."
@@ -9032,6 +9077,9 @@
   "panels/network/NetworkDataGridNode.ts | initialPriorityToolTip": {
     "message": "{PH1}, Initial priority: {PH2}"
   },
+  "panels/network/NetworkDataGridNode.ts | integrity": {
+    "message": "integrity"
+  },
   "panels/network/NetworkDataGridNode.ts | level": {
     "message": "level 1"
   },
@@ -9695,26 +9743,14 @@
   "panels/network/RequestPayloadView.ts | viewDecoded": {
     "message": "View decoded"
   },
-  "panels/network/RequestPayloadView.ts | viewDecodedL": {
-    "message": "view decoded"
-  },
   "panels/network/RequestPayloadView.ts | viewParsed": {
     "message": "View parsed"
-  },
-  "panels/network/RequestPayloadView.ts | viewParsedL": {
-    "message": "view parsed"
   },
   "panels/network/RequestPayloadView.ts | viewSource": {
     "message": "View source"
   },
-  "panels/network/RequestPayloadView.ts | viewSourceL": {
-    "message": "view source"
-  },
   "panels/network/RequestPayloadView.ts | viewUrlEncoded": {
     "message": "View URL-encoded"
-  },
-  "panels/network/RequestPayloadView.ts | viewUrlEncodedL": {
-    "message": "view URL-encoded"
   },
   "panels/network/RequestPreviewView.ts | failedToLoadResponseData": {
     "message": "Failed to load response data"
@@ -12080,6 +12116,9 @@
   "panels/settings/AISettingsTab.ts | learnMore": {
     "message": "Learn more"
   },
+  "panels/settings/AISettingsTab.ts | notAvailableInIncognitoMode": {
+    "message": "AI assistance is not available in Incognito mode or Guest mode"
+  },
   "panels/settings/AISettingsTab.ts | notLoggedIn": {
     "message": "This feature is only available when you sign into Chrome with your Google account."
   },
@@ -14027,6 +14066,9 @@
   "panels/timeline/components/NetworkRequestDetails.ts | decodedBody": {
     "message": "Decoded body"
   },
+  "panels/timeline/components/NetworkRequestDetails.ts | description": {
+    "message": "Description"
+  },
   "panels/timeline/components/NetworkRequestDetails.ts | encodedData": {
     "message": "Encoded data"
   },
@@ -14066,11 +14108,20 @@
   "panels/timeline/components/NetworkRequestDetails.ts | priority": {
     "message": "Priority"
   },
+  "panels/timeline/components/NetworkRequestDetails.ts | protocol": {
+    "message": "Protocol"
+  },
   "panels/timeline/components/NetworkRequestDetails.ts | renderBlocking": {
     "message": "Render blocking"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | requestMethod": {
     "message": "Request method"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | serverTiming": {
+    "message": "Server timing"
+  },
+  "panels/timeline/components/NetworkRequestDetails.ts | time": {
+    "message": "Time"
   },
   "panels/timeline/components/NetworkRequestDetails.ts | yes": {
     "message": "Yes"
@@ -14291,11 +14342,20 @@
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | entryLabel": {
     "message": "Entry label"
   },
+  "panels/timeline/overlays/components/EntryLabelOverlay.ts | freDialog": {
+    "message": "Get AI-powered annotation suggestions dialog"
+  },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | generateLabelButton": {
     "message": "Generate label"
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | inputTextPrompt": {
     "message": "Enter an annotation label"
+  },
+  "panels/timeline/overlays/components/EntryLabelOverlay.ts | learnMoreAriaLabel": {
+    "message": "Learn more about auto annotations in settings"
+  },
+  "panels/timeline/overlays/components/EntryLabelOverlay.ts | moreInfoAriaLabel": {
+    "message": "More info"
   },
   "panels/timeline/overlays/components/TimeRangeOverlay.ts | timeRange": {
     "message": "Time range"
@@ -14311,12 +14371,6 @@
   },
   "panels/timeline/overlays/OverlaysImpl.ts | urlOption": {
     "message": "URL"
-  },
-  "panels/timeline/ServerTimingsTrackAppender.ts | serverSideTrack": {
-    "message": "Server Timings — {PH1}"
-  },
-  "panels/timeline/ServerTimingsTrackAppender.ts | serverTimingTrack": {
-    "message": "This track contains timings taken from Server-Timing network response headers. Their respective start times are only estimated and may not be accurate."
   },
   "panels/timeline/ThirdPartyTreeView.ts | firstOrThirdPartyName": {
     "message": "1st / 3rd party"
@@ -14944,9 +14998,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | delay": {
     "message": "Delay"
-  },
-  "panels/timeline/TimelineUIUtils.ts | description": {
-    "message": "Description"
   },
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "Details"

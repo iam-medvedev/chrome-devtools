@@ -12,6 +12,8 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import inspectorCommonStyles from '../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -129,24 +131,11 @@ export const buildProtocolMetadata = (domains) => {
 const metadataByCommand = buildProtocolMetadata(ProtocolClient.InspectorBackend.inspectorBackend.agentPrototypes.values());
 const typesByName = ProtocolClient.InspectorBackend.inspectorBackend.typeMap;
 const enumsByName = ProtocolClient.InspectorBackend.inspectorBackend.enumMap;
-export class ProtocolMonitorImpl extends UI.Panel.Panel {
-    started;
-    startTime;
-    messageForId = new Map();
-    filterParser;
-    #filterKeys = ['method', 'request', 'response', 'target', 'session'];
-    #commandAutocompleteSuggestionProvider = new CommandAutocompleteSuggestionProvider();
-    #selectedTargetId;
-    #command = '';
-    #sidebarVisible = false;
-    #view;
-    #messages = [];
-    #selectedMessage;
-    #filter = '';
-    #editorWidget;
-    constructor(view = (input, output, target) => {
-        // clang-format off
-        render(html `
+export const DEFAULT_VIEW = (input, output, target) => {
+    // clang-format off
+    render(html `
+        <style>${inspectorCommonStyles.cssText}</style>
+        <style>${protocolMonitorStyles.cssText}</style>
         <devtools-split-view name="protocol-monitor-split-container"
                              direction="column"
                              sidebar-initial-size="400"
@@ -219,27 +208,27 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
                         <td>${message.params ? html `<code>${JSON.stringify(message.params)}</code>` : ''}</td>
                         <td>
                           ${message.result ? html `<code>${JSON.stringify(message.result)}</code>` :
-            message.error ? html `<code>${JSON.stringify(message.error)}</code>` :
-                '(pending)'}
+        message.error ? html `<code>${JSON.stringify(message.error)}</code>` :
+            '(pending)'}
                         </td>
                         <td data-value=${message.elapsedTime || 0}>
                           ${!('id' in message) ? '' :
-            message.elapsedTime ? i18nString(UIStrings.sMs, { PH1: String(message.elapsedTime) })
-                : '(pending)'}
+        message.elapsedTime ? i18nString(UIStrings.sMs, { PH1: String(message.elapsedTime) })
+            : '(pending)'}
                         </td>
                         <td data-value=${message.requestTime}>${i18nString(UIStrings.sMs, { PH1: String(message.requestTime) })}</td>
-                        <td>${this.targetToString(message.target)}</td>
+                        <td>${targetToString(message.target)}</td>
                         <td>${message.sessionId || ''}</td>
                       </tr>`)}
                   </table>
               </devtools-data-grid>
               <devtools-widget .widgetConfig=${widgetConfig(InfoWidget, {
-            request: input.selectedMessage?.params,
-            response: input.selectedMessage?.result || input.selectedMessage?.error,
-            type: !input.selectedMessage ? undefined :
-                ('id' in input?.selectedMessage) ? 'sent'
-                    : 'received',
-        })}
+        request: input.selectedMessage?.params,
+        response: input.selectedMessage?.result || input.selectedMessage?.error,
+        type: !input.selectedMessage ? undefined :
+            ('id' in input?.selectedMessage) ? 'sent'
+                : 'received',
+    })}
                   class="protocol-monitor-info"
                   slot="sidebar"></devtools-widget>
             </devtools-split-view>
@@ -253,9 +242,9 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
               </devtools-button>
               <devtools-toolbar-input id="command-input"
                                       style=${styleMap({
-            'flex-grow': 1,
-            display: input.sidebarVisible ? 'none' : 'flex'
-        })}
+        'flex-grow': 1,
+        display: input.sidebarVisible ? 'none' : 'flex'
+    })}
                                       value=${input.command}
                                       list="command-input-suggestions"
                                       placeholder=${i18nString(UIStrings.sendRawCDPCommand)}
@@ -284,8 +273,24 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
               ${widgetRef(JSONEditor, e => { output.editorWidget = e; })}>
           </devtools-widget>
         </devtools-split-view>`, target, { host: input });
-        // clang-format on
-    }) {
+    // clang-format on
+};
+export class ProtocolMonitorImpl extends UI.Panel.Panel {
+    started;
+    startTime;
+    messageForId = new Map();
+    filterParser;
+    #filterKeys = ['method', 'request', 'response', 'target', 'session'];
+    #commandAutocompleteSuggestionProvider = new CommandAutocompleteSuggestionProvider();
+    #selectedTargetId;
+    #command = '';
+    #sidebarVisible = false;
+    #view;
+    #messages = [];
+    #selectedMessage;
+    #filter = '';
+    #editorWidget;
+    constructor(view = DEFAULT_VIEW) {
         super('protocol-monitor', true);
         this.#view = view;
         this.started = false;
@@ -443,7 +448,6 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
         if (this.started) {
             return;
         }
-        this.registerRequiredCSS(protocolMonitorStyles);
         this.started = true;
         this.startTime = Date.now();
         this.setRecording(true);
@@ -459,12 +463,6 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
             test.onMessageSent = null;
             test.onMessageReceived = null;
         }
-    }
-    targetToString(target) {
-        if (!target) {
-            return '';
-        }
-        return target.decorateLabel(`${target.name()} ${target === SDK.TargetManager.TargetManager.instance().rootTarget() ? '' : target.id()}`);
     }
     messageReceived(message, target) {
         if ('id' in message && message.id) {
@@ -594,5 +592,11 @@ export function parseCommandInput(input) {
     const command = json ? json.command || json.method || json.cmd || '' : input;
     const parameters = json?.parameters || json?.params || json?.args || json?.arguments || {};
     return { command, parameters };
+}
+function targetToString(target) {
+    if (!target) {
+        return '';
+    }
+    return target.decorateLabel(`${target.name()} ${target === SDK.TargetManager.TargetManager.instance().rootTarget() ? '' : target.id()}`);
 }
 //# sourceMappingURL=ProtocolMonitor.js.map

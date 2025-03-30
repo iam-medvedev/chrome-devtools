@@ -11,9 +11,9 @@ export class CSSStyleDeclaration {
     styleSheetId;
     range;
     cssText;
-    #shorthandValues;
-    #shorthandIsImportant;
-    #activePropertyMap;
+    #shorthandValues = new Map();
+    #shorthandIsImportant = new Set();
+    #activePropertyMap = new Map();
     #leadingPropertiesInternal;
     type;
     // For CSSStyles coming from animations,

@@ -6,15 +6,15 @@ import { checkForPendingActivity } from '../../../testing/TrackAsyncOperations.j
 import * as Lit from '../../lit/lit.js';
 import * as Tooltips from './tooltips.js';
 const { html, nothing } = Lit;
-function renderTooltip({ variant = 'simple', attribute = 'aria-describedby', useClick = false, useHotkey = false, jslogContext = undefined, } = {}) {
+function renderTooltip({ variant = 'simple', attribute = 'aria-describedby', useClick = false, useHotkey = false, jslogContext = undefined, id = 'tooltip-id', } = {}) {
     const container = document.createElement('div');
     // clang-format off
     Lit.render(html `
     ${attribute === 'aria-details' ?
-        html `<button aria-details="tooltip-id">Button</button>` :
-        html `<button aria-describedby="tooltip-id">Button</button>`}
+        html `<button aria-details=${id}>Button</button>` :
+        html `<button aria-describedby=${id}>Button</button>`}
     <devtools-tooltip
-     id="tooltip-id"
+     id=${id}
      variant=${variant}
      ?use-click=${useClick}
      ?use-hotkey=${useHotkey}
@@ -140,6 +140,25 @@ describe('Tooltip', () => {
         await checkForPendingActivity();
         assert.isFalse(container.querySelector('devtools-tooltip')?.open);
     });
+    it('should not hide the tooltip if focus moves from the anchor into deep DOM within the tooltip', async () => {
+        const container = renderTooltip({ variant: 'rich', attribute: 'aria-details' });
+        const anchor = container.querySelector('button');
+        assert.exists(anchor);
+        const tooltip = container.querySelector('devtools-tooltip');
+        assert.exists(tooltip);
+        // Make some nested DOM for this; this test exists because of a bug where
+        // the tooltip only stayed open if the focused element was an immediate
+        // child, so for this test we make a nested DOM structure and test on that.
+        tooltip.innerHTML = '<div><span><p class="deep-nested">nested</p></span></div>';
+        anchor.dispatchEvent(new FocusEvent('focus'));
+        await checkForPendingActivity();
+        assert.isTrue(tooltip.open);
+        const richContents = container.querySelector('devtools-tooltip')?.querySelector('p.deep-nested');
+        assert.exists(richContents);
+        anchor.dispatchEvent(new FocusEvent('blur', { relatedTarget: richContents }));
+        await checkForPendingActivity();
+        assert.isTrue(tooltip.open); // tooltip should still be open
+    });
     it('automatically sets and updates jslog', () => {
         const container = renderTooltip({ jslogContext: 'context' });
         const tooltip = container.querySelector('devtools-tooltip');
@@ -152,6 +171,27 @@ describe('Tooltip', () => {
         const constructedTooltip = new Tooltips.Tooltip.Tooltip({ id: 'constructed-tooltip-id', jslogContext: 'context3', anchor });
         container.appendChild(constructedTooltip);
         assert.strictEqual(constructedTooltip.getAttribute('jslog'), 'Popover; context: context3; parent: mapped');
+    });
+    it('automatically opens a new tooltip with the same id on re-attach', async () => {
+        const container = renderTooltip();
+        const tooltip = container.querySelector('devtools-tooltip');
+        assert.exists(tooltip);
+        const waitForOpen = Promise.withResolvers();
+        tooltip.ontoggle = waitForOpen.resolve;
+        tooltip.showTooltip();
+        await waitForOpen.promise;
+        assert.isTrue(tooltip.open);
+        container.remove();
+        const container2 = renderTooltip();
+        const tooltip2 = container2.querySelector('devtools-tooltip');
+        assert.exists(tooltip2);
+        assert.isTrue(tooltip2.open);
+        tooltip2.id = 'tooltip-id-2';
+        container2.remove();
+        const container3 = renderTooltip({ id: 'tooltip-id-2' });
+        const tooltip3 = container3.querySelector('devtools-tooltip');
+        assert.exists(tooltip3);
+        assert.isTrue(tooltip3.open);
     });
 });
 //# sourceMappingURL=Tooltip.test.js.map

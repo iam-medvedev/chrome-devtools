@@ -4,23 +4,17 @@
 import * as SupportedCSSProperties from '../../generated/SupportedCSSProperties.js';
 import * as Common from '../common/common.js';
 export class CSSMetadata {
-    #values;
-    #longhands;
-    #shorthands;
-    #inherited;
-    #svgProperties;
-    #propertyValues;
-    #aliasesFor;
+    #values = [];
+    #longhands = new Map();
+    #shorthands = new Map();
+    #inherited = new Set();
+    #svgProperties = new Set();
+    #propertyValues = new Map();
+    #aliasesFor = new Map();
+    #nameValuePresets = [];
+    #nameValuePresetsIncludingSVG = [];
     #valuesSet;
-    #nameValuePresetsInternal;
-    #nameValuePresetsIncludingSVG;
     constructor(properties, aliasesFor) {
-        this.#values = [];
-        this.#longhands = new Map();
-        this.#shorthands = new Map();
-        this.#inherited = new Set();
-        this.#svgProperties = new Set();
-        this.#propertyValues = new Map();
         this.#aliasesFor = aliasesFor;
         for (let i = 0; i < properties.length; ++i) {
             const property = properties[i];
@@ -77,15 +71,13 @@ export class CSSMetadata {
             }
             this.#propertyValues.set(propertyName, [...values]);
         }
-        this.#nameValuePresetsInternal = [];
-        this.#nameValuePresetsIncludingSVG = [];
         for (const name of this.#valuesSet) {
             const values = this.specificPropertyValues(name)
                 .filter(value => CSS.supports(name, value))
                 .sort(CSSMetadata.sortPrefixesAndCSSWideKeywordsToEnd);
             const presets = values.map(value => `${name}: ${value}`);
             if (!this.isSVGProperty(name)) {
-                this.#nameValuePresetsInternal.push(...presets);
+                this.#nameValuePresets.push(...presets);
             }
             this.#nameValuePresetsIncludingSVG.push(...presets);
         }
@@ -122,7 +114,7 @@ export class CSSMetadata {
         return this.#aliasesFor;
     }
     nameValuePresets(includeSVG) {
-        return includeSVG ? this.#nameValuePresetsIncludingSVG : this.#nameValuePresetsInternal;
+        return includeSVG ? this.#nameValuePresetsIncludingSVG : this.#nameValuePresets;
     }
     isSVGProperty(name) {
         name = name.toLowerCase();

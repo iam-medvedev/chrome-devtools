@@ -4,32 +4,12 @@ import * as TextUtils from '../text_utils/text_utils.js';
 import { type Project } from './WorkspaceImpl.js';
 export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements TextUtils.ContentProvider.ContentProvider {
     #private;
-    private projectInternal;
-    private urlInternal;
-    private readonly originInternal;
-    private readonly parentURLInternal;
-    private nameInternal;
-    private contentTypeInternal;
-    private requestContentPromise;
-    private decorations;
-    private hasCommitsInternal;
-    private messagesInternal;
-    private contentInternal;
-    private forceLoadOnCheckContentInternal;
-    private checkingContent;
-    private lastAcceptedContent;
-    private workingCopyInternal;
-    private workingCopyGetter;
-    private disableEditInternal;
-    private contentEncodedInternal?;
-    private isKnownThirdPartyInternal;
-    private isUnconditionallyIgnoreListedInternal;
     constructor(project: Project, url: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType);
     requestMetadata(): Promise<UISourceCodeMetadata | null>;
     name(): string;
     mimeType(): string;
     url(): Platform.DevToolsPath.UrlString;
-    canononicalScriptId(): string;
+    canonicalScriptId(): string;
     parentURL(): Platform.DevToolsPath.UrlString;
     origin(): Platform.DevToolsPath.UrlString;
     fullDisplayName(): string;
@@ -37,7 +17,6 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     canRename(): boolean;
     rename(newName: Platform.DevToolsPath.RawPathString): Promise<boolean>;
     remove(): void;
-    private updateName;
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
     project(): Project;
@@ -47,24 +26,19 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     requestContent(options?: {
         cachedWasmOnly?: boolean;
     }): Promise<TextUtils.ContentProvider.DeferredContent>;
-    private requestContentImpl;
     checkContentUpdated(): Promise<void>;
     forceLoadOnCheckContent(): void;
-    private commitContent;
-    private contentCommitted;
     addRevision(content: string): void;
     hasCommits(): boolean;
     workingCopy(): string;
     workingCopyContent(): TextUtils.ContentProvider.DeferredContent;
     workingCopyContentData(): TextUtils.ContentData.ContentData;
     resetWorkingCopy(): void;
-    private innerResetWorkingCopy;
     setWorkingCopy(newWorkingCopy: string): void;
     setContainsAiChanges(containsAiChanges: boolean): void;
     containsAiChanges(): boolean;
     setContent(content: string, isBase64: boolean): void;
     setWorkingCopyGetter(workingCopyGetter: () => string): void;
-    private workingCopyChanged;
     removeWorkingCopyGetter(): void;
     commitWorkingCopy(): void;
     isDirty(): boolean;
@@ -90,7 +64,6 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     addLineMessage(level: Message.Level, text: string, lineNumber: number, columnNumber?: number, clickHandler?: (() => void)): Message;
     addMessage(message: Message): void;
     removeMessage(message: Message): void;
-    private removeAllMessages;
     setDecorationData(type: string, data: any): void;
     getDecorationData(type: string): any;
     disableEdit(): void;
@@ -104,14 +77,14 @@ export declare enum Events {
     MessageRemoved = "MessageRemoved",
     DecorationChanged = "DecorationChanged"
 }
-export interface WorkingCopyCommitedEvent {
+export interface WorkingCopyCommittedEvent {
     uiSourceCode: UISourceCode;
     content: string;
     encoded: boolean | undefined;
 }
 export interface EventTypes {
     [Events.WorkingCopyChanged]: UISourceCode;
-    [Events.WorkingCopyCommitted]: WorkingCopyCommitedEvent;
+    [Events.WorkingCopyCommitted]: WorkingCopyCommittedEvent;
     [Events.TitleChanged]: UISourceCode;
     [Events.MessageAdded]: Message;
     [Events.MessageRemoved]: Message;

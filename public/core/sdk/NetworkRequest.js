@@ -304,6 +304,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #serverSentEvents;
     responseReceivedPromise;
     responseReceivedPromiseResolve;
+    directSocketInfo;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestIdInternal = requestId;
@@ -984,7 +985,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             ...this.responseCookies,
             ...this.blockedRequestCookies().map(blockedRequestCookie => blockedRequestCookie.cookie),
             ...this.blockedResponseCookies().map(blockedResponseCookie => blockedResponseCookie.cookie),
-        ].filter(v => Boolean(v));
+        ].filter(v => !!v);
     }
     get serverTimings() {
         if (typeof this.#serverTimingsInternal === 'undefined') {
@@ -1649,4 +1650,17 @@ export const setCookieBlockedReasonToAttribute = function (blockedReason) {
     }
     return null;
 };
+export var DirectSocketType;
+(function (DirectSocketType) {
+    DirectSocketType[DirectSocketType["TCP"] = 1] = "TCP";
+    DirectSocketType[DirectSocketType["UDP_BOUND"] = 2] = "UDP_BOUND";
+    DirectSocketType[DirectSocketType["UDP_CONNECTED"] = 3] = "UDP_CONNECTED";
+})(DirectSocketType || (DirectSocketType = {}));
+export var DirectSocketStatus;
+(function (DirectSocketStatus) {
+    DirectSocketStatus[DirectSocketStatus["OPENING"] = 1] = "OPENING";
+    DirectSocketStatus[DirectSocketStatus["OPEN"] = 2] = "OPEN";
+    DirectSocketStatus[DirectSocketStatus["CLOSED"] = 3] = "CLOSED";
+    DirectSocketStatus[DirectSocketStatus["ABORTED"] = 4] = "ABORTED";
+})(DirectSocketStatus || (DirectSocketStatus = {}));
 //# sourceMappingURL=NetworkRequest.js.map

@@ -121,14 +121,14 @@ export class StylePropertiesSection {
     computedStyles;
     parentsComputedStyles;
     editable;
-    hoverTimer;
-    willCauseCancelEditing;
-    forceShowAll;
+    hoverTimer = null;
+    willCauseCancelEditing = false;
+    forceShowAll = false;
     originalPropertiesCount;
     element;
     #styleRuleElement;
     titleElement;
-    propertiesTreeOutline;
+    propertiesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     showAllButton;
     selectorElement;
     newStyleRuleToolbar;
@@ -136,7 +136,7 @@ export class StylePropertiesSection {
     fontEditorSectionManager;
     fontEditorButton;
     selectedSinceMouseDown;
-    elementToSelectorIndex;
+    elementToSelectorIndex = new WeakMap();
     navigable;
     selectorRefElement;
     hoverableSelectorsMode;
@@ -148,8 +148,10 @@ export class StylePropertiesSection {
     nextEditorTriggerButtonIdx = 1;
     sectionIdx = 0;
     #customHeaderText;
-    #specificiyTooltips;
+    #specificityTooltips;
     static #nextSpecificityTooltipId = 0;
+    static #nextSectionTooltipIdPrefix = 0;
+    sectionTooltipIdPrefix = StylePropertiesSection.#nextSectionTooltipIdPrefix++;
     constructor(parentPane, matchedStyles, style, sectionIdx, computedStyles, parentsComputedStyles, customHeaderText) {
         this.#customHeaderText = customHeaderText;
         this.parentPane = parentPane;
@@ -159,9 +161,6 @@ export class StylePropertiesSection {
         this.computedStyles = computedStyles;
         this.parentsComputedStyles = parentsComputedStyles;
         this.editable = Boolean(style.styleSheetId && style.range);
-        this.hoverTimer = null;
-        this.willCauseCancelEditing = false;
-        this.forceShowAll = false;
         this.originalPropertiesCount = style.leadingProperties().length;
         const rule = style.parentRule;
         const headerText = this.headerText();
@@ -187,7 +186,6 @@ export class StylePropertiesSection {
         this.updateAncestorRuleList();
         this.titleElement =
             this.#styleRuleElement.createChild('div', 'styles-section-title ' + (rule ? 'styles-selector' : ''));
-        this.propertiesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         this.propertiesTreeOutline.setFocusable(false);
         this.propertiesTreeOutline.registerRequiredCSS(stylePropertiesTreeOutlineStyles);
         this.propertiesTreeOutline.element.classList.add('style-properties', 'matched-styles', 'monospace');
@@ -208,7 +206,7 @@ export class StylePropertiesSection {
         selectorContainer.appendChild(this.selectorElement);
         this.selectorElement.addEventListener('mouseenter', this.onMouseEnterSelector.bind(this), false);
         this.selectorElement.addEventListener('mouseleave', this.onMouseOutSelector.bind(this), false);
-        this.#specificiyTooltips = selectorContainer.createChild('span');
+        this.#specificityTooltips = selectorContainer.createChild('span');
         // We only add braces for style rules with selectors and non-style rules, which create their own sections.
         if (headerText.length > 0 || !(rule instanceof SDK.CSSRule.CSSStyleRule)) {
             const openBrace = selectorContainer.createChild('span', 'sidebar-pane-open-brace');
@@ -264,7 +262,6 @@ export class StylePropertiesSection {
         this.element.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         this.element.addEventListener('mouseleave', this.onMouseLeave.bind(this), false);
         this.selectedSinceMouseDown = false;
-        this.elementToSelectorIndex = new WeakMap();
         if (rule) {
             // Prevent editing the user agent and user rules.
             if (rule.isUserAgent() || rule.isInjected()) {
@@ -681,7 +678,6 @@ export class StylePropertiesSection {
         let supportsIndex = 0;
         let nestingIndex = 0;
         this.nestingLevel = 0;
-        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
         for (const ruleType of rule.ruleTypes) {
             let ancestorRuleElement;
             switch (ruleType) {
@@ -703,11 +699,7 @@ export class StylePropertiesSection {
             }
             if (ancestorRuleElement) {
                 this.#ancestorRuleListElement.prepend(ancestorRuleElement);
-                const closingBrace = document.createElement('div');
-                closingBrace.createChild('span', 'styles-clipboard-only').textContent = indent.repeat(this.nestingLevel);
-                closingBrace.style.paddingLeft = `${this.nestingLevel}ch`;
-                closingBrace.append('}');
-                this.#ancestorClosingBracesElement.prepend(closingBrace);
+                this.#ancestorClosingBracesElement.prepend(this.indentElement(this.createClosingBrace(), this.nestingLevel));
                 this.nestingLevel++;
             }
         }
@@ -717,14 +709,26 @@ export class StylePropertiesSection {
         }
         let curNestingLevel = 0;
         for (const element of this.#ancestorRuleListElement.children) {
-            const indentElement = document.createElement('span');
-            indentElement.classList.add('styles-clipboard-only');
-            indentElement.setAttribute('slot', 'indent');
-            indentElement.textContent = indent.repeat(curNestingLevel);
-            element.prepend(indentElement);
-            element.style.paddingLeft = `${curNestingLevel}ch`;
+            this.indentElement(element, curNestingLevel);
             curNestingLevel++;
         }
+    }
+    createClosingBrace() {
+        const closingBrace = document.createElement('div');
+        closingBrace.append('}');
+        return closingBrace;
+    }
+    indentElement(element, nestingLevel, clipboardOnly) {
+        const indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get();
+        const indentElement = document.createElement('span');
+        indentElement.classList.add('styles-clipboard-only');
+        indentElement.setAttribute('slot', 'indent');
+        indentElement.textContent = indent.repeat(nestingLevel);
+        element.prepend(indentElement);
+        if (!clipboardOnly) {
+            element.style.paddingLeft = `${nestingLevel}ch`;
+        }
+        return element;
     }
     createMediaElement(media) {
         // Don't display trivial non-print media types.
@@ -935,7 +939,9 @@ export class StylePropertiesSection {
         this.parentPane.setActiveProperty(null);
         this.nextEditorTriggerButtonIdx = 1;
         this.propertiesTreeOutline.removeChildren();
-        const style = this.styleInternal;
+        this.populateStyle(this.styleInternal, this.propertiesTreeOutline);
+    }
+    populateStyle(style, parent) {
         let count = 0;
         const properties = style.leadingProperties();
         const maxProperties = DEFAULT_MAX_PROPERTIES + properties.length - this.originalPropertiesCount;
@@ -962,7 +968,7 @@ export class StylePropertiesSection {
             });
             item.setComputedStyles(this.computedStyles);
             item.setParentsComputedStyles(this.parentsComputedStyles);
-            this.propertiesTreeOutline.appendChild(item);
+            parent.appendChild(item);
         }
         if (count < properties.length) {
             this.showAllButton.classList.remove('hidden');
@@ -1017,7 +1023,7 @@ export class StylePropertiesSection {
     }
     renderSelectors(selectors, matchingSelectors, elementToSelectorIndex) {
         this.selectorElement.removeChildren();
-        this.#specificiyTooltips.removeChildren();
+        this.#specificityTooltips.removeChildren();
         for (const [i, selector] of selectors.entries()) {
             if (i > 0) {
                 this.selectorElement.append(', ');
@@ -1030,7 +1036,7 @@ export class StylePropertiesSection {
             if (specificityTooltipId && selector.specificity) {
                 span.setAttribute('aria-details', specificityTooltipId);
                 const PH1 = `(${selector.specificity.a},${selector.specificity.b},${selector.specificity.c})`;
-                const tooltip = this.#specificiyTooltips.appendChild(new Tooltips.Tooltip.Tooltip({
+                const tooltip = this.#specificityTooltips.appendChild(new Tooltips.Tooltip.Tooltip({
                     id: specificityTooltipId,
                     anchor: span,
                     variant: 'rich',
@@ -1272,7 +1278,7 @@ export class StylePropertiesSection {
         // Reset selector marks in group, and normalize whitespace.
         const textContent = element.textContent;
         if (textContent !== null) {
-            this.#specificiyTooltips.querySelectorAll('devtools-tooltip')?.forEach(tooltip => tooltip.hidePopover());
+            this.#specificityTooltips.querySelectorAll('devtools-tooltip')?.forEach(tooltip => tooltip.hidePopover());
             element.textContent = textContent.replace(/\s+/g, ' ').trim();
         }
         const config = new UI.InplaceEditor.Config(this.editingSelectorCommitted.bind(this), this.editingSelectorCancelled.bind(this), undefined);
@@ -1501,6 +1507,62 @@ export class RegisteredPropertiesSection extends StylePropertiesSection {
             return super.createRuleOriginNode(matchedStyles, linkifier, rule);
         }
         return document.createTextNode('CSS.registerProperty');
+    }
+}
+export class FunctionRuleSection extends StylePropertiesSection {
+    constructor(stylesPane, matchedStyles, style, children, sectionIdx, functionName, parameters, expandedByDefault) {
+        super(stylesPane, matchedStyles, style, sectionIdx, null, null, `${functionName}(${parameters.join(', ')})`);
+        if (!expandedByDefault) {
+            this.element.classList.add('hidden');
+        }
+        this.selectorElement.className = 'function-key';
+        this.addChildren(children, this.propertiesTreeOutline);
+    }
+    createConditionElement(condition) {
+        if ('media' in condition) {
+            return this.createMediaElement(condition.media);
+        }
+        if ('container' in condition) {
+            return this.createContainerQueryElement(condition.container);
+        }
+        if ('supports' in condition) {
+            return this.createSupportsElement(condition.supports);
+        }
+        return;
+    }
+    positionNestingElement(element) {
+        // Add this class to get the same margins as a property and syntax highlighting.
+        element.classList.add('css-function-inline-block');
+        // Also add the clipboard text, but don't add additional margins because
+        // the tree nesting takes care of that.
+        return this.indentElement(element, this.nestingLevel, true);
+    }
+    addChildren(children, parent) {
+        for (const child of children) {
+            if ('style' in child) {
+                this.populateStyle(child.style, parent);
+            }
+            else if ('children' in child) {
+                const conditionElement = this.createConditionElement(child);
+                let newParent = parent;
+                this.nestingLevel++;
+                if (conditionElement) {
+                    const treeElement = new UI.TreeOutline.TreeElement();
+                    treeElement.listItemElement.appendChild(this.positionNestingElement(conditionElement));
+                    treeElement.setExpandable(true);
+                    treeElement.setCollapsible(false);
+                    parent.appendChild(treeElement);
+                    newParent = treeElement;
+                }
+                this.addChildren(child.children, newParent);
+                if (conditionElement) {
+                    const treeElement = new UI.TreeOutline.TreeElement();
+                    treeElement.listItemElement.appendChild(this.positionNestingElement(this.createClosingBrace()));
+                    parent.appendChild(treeElement);
+                }
+                this.nestingLevel--;
+            }
+        }
     }
 }
 export class FontPaletteValuesRuleSection extends StylePropertiesSection {

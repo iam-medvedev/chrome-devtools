@@ -9,9 +9,18 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../../trace/trace.js';
 import { InsightContext, PerformanceInsightFormatter, PerformanceInsightsAgent, TraceEventFormatter, } from '../ai_assistance.js';
 const FAKE_LCP_MODEL = {
-    insightKey: 'LCPPhases',
+    insightKey: "LCPPhases" /* Trace.Insights.Types.InsightKeys.LCP_PHASES */,
     strings: {},
     title: 'LCP by phase',
+    description: 'some description',
+    category: Trace.Insights.Types.InsightCategory.ALL,
+    state: 'fail',
+    frameId: '123',
+};
+const FAKE_INP_MODEL = {
+    insightKey: "InteractionToNextPaint" /* Trace.Insights.Types.InsightKeys.INTERACTION_TO_NEXT_PAINT */,
+    strings: {},
+    title: 'INP by phase',
     description: 'some description',
     category: Trace.Insights.Types.InsightCategory.ALL,
     state: 'fail',
@@ -118,6 +127,33 @@ code
 # User request:
 What is this?`;
             assert.strictEqual(finalQuery, expected);
+        });
+        it('does not add the context for follow-up queries with the same context', async () => {
+            const agent = new PerformanceInsightsAgent({
+                aidaClient: {},
+            });
+            const mockInsight = new TimelineUtils.InsightAIContext.ActiveInsight(FAKE_LCP_MODEL, FAKE_PARSED_TRACE);
+            const context = new InsightContext(mockInsight);
+            await agent.enhanceQuery('What is this?', context);
+            const finalQuery = await agent.enhanceQuery('Help me understand?', context);
+            const expected = `# User request:
+Help me understand?`;
+            assert.strictEqual(finalQuery, expected);
+        });
+        it('does add context to queries if the insight context changes', async () => {
+            const agent = new PerformanceInsightsAgent({
+                aidaClient: {},
+            });
+            const mockInsight1 = new TimelineUtils.InsightAIContext.ActiveInsight(FAKE_LCP_MODEL, FAKE_PARSED_TRACE);
+            const mockInsight2 = new TimelineUtils.InsightAIContext.ActiveInsight(FAKE_INP_MODEL, FAKE_PARSED_TRACE);
+            const context1 = new InsightContext(mockInsight1);
+            const context2 = new InsightContext(mockInsight2);
+            const firstQuery = await agent.enhanceQuery('Q1', context1);
+            const secondQuery = await agent.enhanceQuery('Q2', context1);
+            const thirdQuery = await agent.enhanceQuery('Q3', context2);
+            assert.include(firstQuery, '## Insight Title: LCP by phase');
+            assert.notInclude(secondQuery, '## Insight Title');
+            assert.include(thirdQuery, '## Insight Title: INP by phase');
         });
     });
     describe('function calls', () => {

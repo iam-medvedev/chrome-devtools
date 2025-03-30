@@ -6,7 +6,7 @@ import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
 import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
-import { CSSFontPaletteValuesRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
+import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
     if (!query.styleSheetId || !query.range) {
@@ -211,13 +211,14 @@ export class CSSMatchedStyles {
     #mainDOMCascade;
     #pseudoDOMCascades;
     #customHighlightPseudoDOMCascades;
+    #functionRules;
     #fontPaletteValuesRule;
     static async create(payload) {
         const cssMatchedStyles = new CSSMatchedStyles(payload);
         await cssMatchedStyles.init(payload);
         return cssMatchedStyles;
     }
-    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, activePositionFallbackIndex, }) {
+    constructor({ cssModel, node, animationsPayload, parentLayoutNodeId, positionTryRules, propertyRules, cssPropertyRegistrations, fontPaletteValuesRule, activePositionFallbackIndex, functionRules, }) {
         this.#cssModelInternal = cssModel;
         this.#nodeInternal = node;
         this.#registeredProperties = [
@@ -232,6 +233,7 @@ export class CSSMatchedStyles {
         this.#fontPaletteValuesRule =
             fontPaletteValuesRule ? new CSSFontPaletteValuesRule(cssModel, fontPaletteValuesRule) : undefined;
         this.#activePositionFallbackIndex = activePositionFallbackIndex;
+        this.#functionRules = functionRules.map(rule => new CSSFunctionRule(cssModel, rule));
     }
     async init({ matchedPayload, inheritedPayload, inlinePayload, attributesPayload, pseudoPayload, inheritedPseudoPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload, }) {
         matchedPayload = cleanUserAgentPayload(matchedPayload);
@@ -583,6 +585,9 @@ export class CSSMatchedStyles {
     getRegisteredProperty(name) {
         return this.#registeredPropertyMap.get(name);
     }
+    functionRules() {
+        return this.#functionRules;
+    }
     fontPaletteValuesRule() {
         return this.#fontPaletteValuesRule;
     }
@@ -832,21 +837,16 @@ function* forEachInclusive(array, startAt) {
     }
 }
 class DOMInheritanceCascade {
+    #propertiesState = new Map();
+    #availableCSSVariables = new Map();
+    #computedCSSVariables = new Map();
+    #styleToNodeCascade = new Map();
+    #initialized = false;
     #nodeCascades;
-    #propertiesState;
-    #availableCSSVariables;
-    #computedCSSVariables;
-    #initialized;
-    #styleToNodeCascade;
     #registeredProperties;
     constructor(nodeCascades, registeredProperties) {
         this.#nodeCascades = nodeCascades;
-        this.#propertiesState = new Map();
-        this.#availableCSSVariables = new Map();
-        this.#computedCSSVariables = new Map();
-        this.#initialized = false;
         this.#registeredProperties = registeredProperties;
-        this.#styleToNodeCascade = new Map();
         for (const nodeCascade of nodeCascades) {
             for (const style of nodeCascade.styles) {
                 this.#styleToNodeCascade.set(style, nodeCascade);

@@ -119,6 +119,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.downloadStore = downloadStore;
         this.sidebar = new PlayerListView(this);
         this.sidebar.show(this.panelSidebarElement());
+        this.splitWidget().hideSidebar();
         this.#placeholder =
             new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMediaPlayer), UIStrings.mediaPlayerDescription);
         this.#placeholder.show(this.mainElement());
@@ -237,6 +238,9 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.detailPanels.get(playerID)?.onEvent(event);
     }
     playersCreated(event) {
+        if (event.data.length > 0 && this.splitWidget().showMode() !== "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
+            this.splitWidget().showBoth();
+        }
         for (const playerID of event.data) {
             this.onPlayerCreated(playerID);
         }
@@ -250,6 +254,12 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         if (this.detailPanels.size === 0) {
             this.#placeholder.header = i18nString(UIStrings.noMediaPlayer);
             this.#placeholder.text = i18nString(UIStrings.mediaPlayerDescription);
+            this.splitWidget().hideSidebar();
+            const mainWidget = this.splitWidget().mainWidget();
+            if (mainWidget) {
+                mainWidget.detachChildWidgets();
+            }
+            this.#placeholder.show(this.mainElement());
         }
     }
     markOtherPlayersForDeletion(playerID) {

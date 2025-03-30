@@ -100,7 +100,7 @@ export default {
 }
 
 .report-field-name {
-  font: var(--sys-typescale-body5-regular);
+  font: var(--sys-typescale-body5-medium);
   color: var(--sys-color-on-surface-subtle);
   flex: 0 0 128px;
   text-align: left;

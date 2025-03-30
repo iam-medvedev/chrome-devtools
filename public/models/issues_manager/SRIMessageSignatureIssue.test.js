@@ -34,6 +34,7 @@ describeWithLocale('SRIMessageSignatureIssue', () => {
             "ValidationFailedSignatureExpired" /* Protocol.Audits.SRIMessageSignatureError.ValidationFailedSignatureExpired */,
             "ValidationFailedInvalidLength" /* Protocol.Audits.SRIMessageSignatureError.ValidationFailedInvalidLength */,
             "ValidationFailedSignatureMismatch" /* Protocol.Audits.SRIMessageSignatureError.ValidationFailedSignatureMismatch */,
+            "ValidationFailedIntegrityMismatch" /* Protocol.Audits.SRIMessageSignatureError.ValidationFailedIntegrityMismatch */,
         ];
         for (const errorReason of errorReasons) {
             const issueDetails = {
@@ -43,6 +44,7 @@ describeWithLocale('SRIMessageSignatureIssue', () => {
                     url: 'https://example.com/',
                 },
                 signatureBase: 'test-signature-base',
+                integrityAssertions: [],
             };
             const issue = createProtocolIssue(issueDetails);
             const sriMessageSignatureIssues = IssuesManager.SRIMessageSignatureIssue.SRIMessageSignatureIssue.fromInspectorIssue(mockModel, issue);

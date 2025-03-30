@@ -44,15 +44,13 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {
     #targetManager;
     #parentTarget;
     #targetAgent;
-    #childTargets;
-    #childConnections;
+    #childTargets = new Map();
+    #childConnections = new Map();
     constructor(parentTarget) {
         super(parentTarget);
         this.#targetManager = parentTarget.targetManager();
         this.#parentTarget = parentTarget;
         this.#targetAgent = parentTarget.targetAgent();
-        this.#childTargets = new Map();
-        this.#childConnections = new Map();
         parentTarget.registerTargetDispatcher(this);
         void this.#targetAgent.invoke_setDiscoverTargets({ discover: true });
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.DevicesDiscoveryConfigChanged, this.#devicesDiscoveryConfigChanged, this);

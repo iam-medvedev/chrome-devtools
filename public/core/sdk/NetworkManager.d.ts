@@ -134,6 +134,10 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     webTransportCreated({ transportId, url: requestURL, timestamp: time, initiator }: Protocol.Network.WebTransportCreatedEvent): void;
     webTransportConnectionEstablished({ transportId, timestamp: time }: Protocol.Network.WebTransportConnectionEstablishedEvent): void;
     webTransportClosed({ transportId, timestamp: time }: Protocol.Network.WebTransportClosedEvent): void;
+    directTCPSocketCreated(event: Protocol.Network.DirectTCPSocketCreatedEvent): void;
+    directTCPSocketOpened(event: Protocol.Network.DirectTCPSocketOpenedEvent): void;
+    directTCPSocketAborted(event: Protocol.Network.DirectTCPSocketAbortedEvent): void;
+    directTCPSocketClosed(event: Protocol.Network.DirectTCPSocketClosedEvent): void;
     trustTokenOperationDone(event: Protocol.Network.TrustTokenOperationDoneEvent): void;
     subresourceWebBundleMetadataReceived({ requestId, urls }: Protocol.Network.SubresourceWebBundleMetadataReceivedEvent): void;
     subresourceWebBundleMetadataError({ requestId, errorMessage }: Protocol.Network.SubresourceWebBundleMetadataErrorEvent): void;
@@ -143,10 +147,6 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     reportingApiReportUpdated(data: Protocol.Network.ReportingApiReportUpdatedEvent): void;
     reportingApiEndpointsChangedForOrigin(data: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent): void;
     policyUpdated(): void;
-    directTCPSocketCreated(_: Protocol.Network.DirectTCPSocketCreatedEvent): void;
-    directTCPSocketOpened(_: Protocol.Network.DirectTCPSocketOpenedEvent): void;
-    directTCPSocketAborted(_: Protocol.Network.DirectTCPSocketAbortedEvent): void;
-    directTCPSocketClosed(_: Protocol.Network.DirectTCPSocketClosedEvent): void;
     /**
      * @deprecated
      * This method is only kept for usage in a web test.

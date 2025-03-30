@@ -17,7 +17,7 @@ export declare function lookupClosestSupportedDevToolsLocale(locale: string): st
 export declare function getAllSupportedDevToolsLocales(): string[];
 /**
  * Fetches the locale data of the specified locale.
- * Callers have to ensure that `locale` is an officilly supported locale.
+ * Callers have to ensure that `locale` is an officially supported locale.
  * Depending whether a locale is present in `bundledLocales`, the data will be
  * fetched locally or remotely.
  */

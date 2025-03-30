@@ -484,10 +484,6 @@ const UIStrings = {
      */
     sSelectorStatsInfo: 'Select "{PH1}" to collect detailed CSS selector matching statistics.',
     /**
-     * @description Label for a description text of a metric.
-     */
-    description: 'Description',
-    /**
      * @description Label for a numeric value that was how long to wait before a function was run.
      */
     delay: 'Delay',
@@ -514,6 +510,17 @@ let eventDispatchDesciptors;
 let colorGenerator;
 const { SamplesIntegrator } = Trace.Helpers.SamplesIntegrator;
 export class TimelineUIUtils {
+    /**
+     * use getGetDebugModeEnabled() to query this variable.
+     */
+    static debugModeEnabled = undefined;
+    static getGetDebugModeEnabled() {
+        if (TimelineUIUtils.debugModeEnabled === undefined) {
+            TimelineUIUtils.debugModeEnabled =
+                Root.Runtime.experiments.isEnabled("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */);
+        }
+        return TimelineUIUtils.debugModeEnabled;
+    }
     static frameDisplayName(frame) {
         const maybeResolvedData = Utils.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForCallFrame(frame);
         const functionName = maybeResolvedData?.name || frame.functionName;
@@ -552,8 +559,14 @@ export class TimelineUIUtils {
                 tokens.push(url);
             }
         }
-        // This works for both legacy and new engine events.
-        appendObjectProperties(traceEvent.args, 2);
+        if (TimelineUIUtils.getGetDebugModeEnabled()) {
+            // When in debug mode append top level properties (like timestamp)
+            // and deeply nested properties.
+            appendObjectProperties(traceEvent, 4);
+        }
+        else {
+            appendObjectProperties(traceEvent.args, 2);
+        }
         const result = tokens.join('|').match(regExp);
         return result ? result.length > 0 : false;
         function appendObjectProperties(object, depth) {
@@ -1073,9 +1086,6 @@ export class TimelineUIUtils {
             for (const [key, value] of event.args.properties || []) {
                 contentHelper.appendTextRow(key, value);
             }
-        }
-        if (Trace.Types.Events.isSyntheticServerTiming(event) && event.args.data.desc) {
-            contentHelper.appendTextRow(i18nString(UIStrings.description), event.args.data.desc);
         }
         const isFreshRecording = Boolean(parsedTrace && Tracker.instance().recordingIsFresh(parsedTrace));
         switch (event.name) {

@@ -636,16 +636,16 @@ export class HeapSnapshot {
     containmentEdges;
     #metaNode;
     #rawSamples;
-    #samples;
+    #samples = null;
     strings;
     #locations;
     #progress;
-    #noDistance;
-    rootNodeIndexInternal;
-    #snapshotDiffs;
+    #noDistance = -5;
+    rootNodeIndexInternal = 0;
+    #snapshotDiffs = {};
     #aggregatesForDiffInternal;
-    #aggregates;
-    #aggregatesSortedFlags;
+    #aggregates = {};
+    #aggregatesSortedFlags = {};
     profile;
     nodeTypeOffset;
     nodeNameOffset;
@@ -697,35 +697,26 @@ export class HeapSnapshot {
     #allocationProfile;
     nodeDetachednessAndClassIndexOffset;
     #locationMap;
-    #ignoredNodesInRetainersView;
-    #ignoredEdgesInRetainersView;
+    #ignoredNodesInRetainersView = new Set();
+    #ignoredEdgesInRetainersView = new Set();
     #nodeDistancesForRetainersView;
     #edgeNamesThatAreNotWeakMaps;
     detachednessAndClassIndexArray;
-    #interfaceNames;
+    #interfaceNames = new Map();
     #interfaceDefinitions;
     constructor(profile, progress) {
         this.nodes = profile.nodes;
         this.containmentEdges = profile.edges;
         this.#metaNode = profile.snapshot.meta;
         this.#rawSamples = profile.samples;
-        this.#samples = null;
         this.strings = profile.strings;
         this.#locations = profile.locations;
         this.#progress = progress;
-        this.#noDistance = -5;
-        this.rootNodeIndexInternal = 0;
         if (profile.snapshot.root_index) {
             this.rootNodeIndexInternal = profile.snapshot.root_index;
         }
-        this.#snapshotDiffs = {};
-        this.#aggregates = {};
-        this.#aggregatesSortedFlags = {};
         this.profile = profile;
-        this.#ignoredNodesInRetainersView = new Set();
-        this.#ignoredEdgesInRetainersView = new Set();
         this.#edgeNamesThatAreNotWeakMaps = Platform.TypedArrayUtilities.createBitVector(this.strings.length);
-        this.#interfaceNames = new Map();
     }
     async initialize(secondWorker) {
         const meta = this.#metaNode;

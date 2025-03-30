@@ -67,6 +67,7 @@ export interface ViewOutput {
     editorWidget: JSONEditor;
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class ProtocolMonitorImpl extends UI.Panel.Panel {
     #private;
     private started;
@@ -78,7 +79,6 @@ export declare class ProtocolMonitorImpl extends UI.Panel.Panel {
     onCommandSend(command: string, parameters: object, target?: string): void;
     wasShown(): void;
     private setRecording;
-    private targetToString;
     private messageReceived;
     private messageSent;
     private saveAsFile;
