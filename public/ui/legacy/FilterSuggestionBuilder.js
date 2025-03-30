@@ -5,11 +5,10 @@ import * as Platform from '../../core/platform/platform.js';
 export class FilterSuggestionBuilder {
     keys;
     valueSorter;
-    valuesMap;
+    valuesMap = new Map();
     constructor(keys, valueSorter) {
         this.keys = keys;
         this.valueSorter = valueSorter || ((key, result) => result.sort());
-        this.valuesMap = new Map();
     }
     completions(expression, prefix, force) {
         if (!prefix && !force) {

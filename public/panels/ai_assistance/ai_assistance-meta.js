@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
 /*
   * TODO(nvitkov): b/346933425
@@ -131,7 +130,6 @@ UI.ActionRegistration.registerActionExtension({
     contextTypes() {
         return [];
     },
-    experiment: "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
@@ -158,7 +156,6 @@ UI.ActionRegistration.registerActionExtension({
     contextTypes() {
         return [];
     },
-    experiment: "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {
@@ -213,7 +210,6 @@ UI.ActionRegistration.registerActionExtension({
     contextTypes() {
         return [];
     },
-    experiment: "floating-entry-points-for-ai-assistance" /* Root.Runtime.ExperimentName.FLOATING_ENTRY_POINTS_FOR_AI_ASSISTANCE */,
     category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
     title: i18nLazyString(UIStrings.askAi),
     async loadActionDelegate() {

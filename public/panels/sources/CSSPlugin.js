@@ -196,7 +196,7 @@ class CurveSwatchWidget extends CodeMirror.WidgetType {
 function createCSSTooltip(active) {
     return {
         pos: active.pos,
-        arrow: true,
+        arrow: false,
         create(view) {
             let text = active.text;
             let widget, addListener;
@@ -301,7 +301,7 @@ const cssSwatchPlugin = CodeMirror.ViewPlugin.fromClass(class {
     decorations: v => v.decorations,
 });
 function cssSwatches() {
-    return [cssSwatchPlugin, cssTooltipState];
+    return [cssSwatchPlugin, cssTooltipState, theme];
 }
 function getNumberAt(node) {
     if (node.name === 'Unit') {
@@ -403,4 +403,12 @@ export class CSSPlugin extends Plugin {
         }
     }
 }
+const theme = CodeMirror.EditorView.baseTheme({
+    '.cm-tooltip.cm-tooltip-swatchEdit': {
+        'box-shadow': 'var(--sys-elevation-level2)',
+        'background-color': 'var(--sys-color-base-container-elevated)',
+        'border-radius': 'var(--sys-shape-corner-small)',
+        padding: 'var(--sys-size-6) var(--sys-size-8)',
+    },
+});
 //# sourceMappingURL=CSSPlugin.js.map

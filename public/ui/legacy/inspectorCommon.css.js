@@ -22,7 +22,6 @@ export default {
 :root {
   height: 100%;
   overflow: hidden;
-  /* stylelint-disable-next-line property-no-unknown */
   interpolate-size: allow-keywords;
 }
 
@@ -395,12 +394,10 @@ select {
     }
 
     &:hover:active {
-      /* stylelint-disable plugin/use_theme_colors */
       background:
         var(--combobox-dropdown-arrow),
         linear-gradient(var(--sys-color-state-hover-on-subtle), var(--sys-color-state-hover-on-subtle)),
         linear-gradient(var(--sys-color-state-ripple-neutral-on-subtle), var(--sys-color-state-ripple-neutral-on-subtle));
-      /* stylelint-enable plugin/use_theme_colors */
       background-position: right center;
       background-repeat: no-repeat;
     }
@@ -487,7 +484,7 @@ select option {
     font: var(--sys-typescale-body4-regular);
     color: var(--sys-color-on-surface-subtle);
 
-    > x-link {  /* stylelint-disable-line selector-type-no-unknown */
+    > x-link {
       white-space: nowrap;
       margin-left: var(--sys-size-3);
     }

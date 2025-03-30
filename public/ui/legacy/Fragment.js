@@ -10,10 +10,9 @@ function setNodeData(node, value) {
 }
 export class Fragment {
     elementInternal;
-    elementsById;
+    elementsById = new Map();
     constructor(element) {
         this.elementInternal = element;
-        this.elementsById = new Map();
     }
     element() {
         return this.elementInternal;

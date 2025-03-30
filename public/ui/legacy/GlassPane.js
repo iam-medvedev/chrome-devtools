@@ -1,49 +1,30 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-import * as Platform from '../../core/platform/platform.js';
 import glassPaneStyles from './glassPane.css.js';
 import { deepElementFromEvent, measuredScrollbarWidth } from './UIUtils.js';
 import { Widget } from './Widget.js';
 export class GlassPane {
-    widgetInternal;
+    widgetInternal = new Widget(true);
     element;
     contentElement;
-    arrowElement;
     onMouseDownBound;
-    onClickOutsideCallback;
-    maxSize;
-    positionX;
-    positionY;
-    anchorBox;
-    anchorBehavior;
-    sizeBehavior;
-    marginBehavior;
+    onClickOutsideCallback = null;
+    maxSize = null;
+    positionX = null;
+    positionY = null;
+    anchorBox = null;
+    anchorBehavior = "PreferTop" /* AnchorBehavior.PREFER_TOP */;
+    sizeBehavior = "SetExactSize" /* SizeBehavior.SET_EXACT_SIZE */;
+    marginBehavior = "DefaultMargin" /* MarginBehavior.DEFAULT_MARGIN */;
     #ignoreLeftMargin = false;
     constructor(jslog) {
-        this.widgetInternal = new Widget(true);
         this.widgetInternal.markAsRoot();
         this.element = this.widgetInternal.element;
         this.contentElement = this.widgetInternal.contentElement;
         if (jslog) {
             this.contentElement.setAttribute('jslog', jslog);
         }
-        this.arrowElement = document.createElement('span');
-        this.arrowElement.classList.add('arrow', 'hidden');
-        if (this.element.shadowRoot) {
-            this.element.shadowRoot.appendChild(this.arrowElement);
-        }
         this.registerRequiredCSS(glassPaneStyles);
         this.setPointerEventsBehavior("PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */);
         this.onMouseDownBound = this.onMouseDown.bind(this);
-        this.onClickOutsideCallback = null;
-        this.maxSize = null;
-        this.positionX = null;
-        this.positionY = null;
-        this.anchorBox = null;
-        this.anchorBehavior = "PreferTop" /* AnchorBehavior.PREFER_TOP */;
-        this.sizeBehavior = "SetExactSize" /* SizeBehavior.SET_EXACT_SIZE */;
-        this.marginBehavior = "DefaultMargin" /* MarginBehavior.DEFAULT_MARGIN */;
     }
     setJsLog(jslog) {
         this.contentElement.setAttribute('jslog', jslog);
@@ -89,7 +70,6 @@ export class GlassPane {
     }
     setMarginBehavior(behavior) {
         this.marginBehavior = behavior;
-        this.arrowElement.classList.toggle('hidden', behavior !== "Arrow" /* MarginBehavior.ARROW */);
     }
     setIgnoreLeftMargin(ignore) {
         this.#ignoreLeftMargin = ignore;
@@ -131,10 +111,9 @@ export class GlassPane {
         if (!this.isShowing()) {
             return;
         }
-        const showArrow = this.marginBehavior === "Arrow" /* MarginBehavior.ARROW */;
-        const gutterSize = showArrow ? 8 : (this.marginBehavior === "NoMargin" /* MarginBehavior.NO_MARGIN */ ? 0 : 3);
+        const gutterSize = this.marginBehavior === "NoMargin" /* MarginBehavior.NO_MARGIN */ ? 0 : 3;
         const scrollbarSize = measuredScrollbarWidth(this.element.ownerDocument);
-        const arrowSize = 10;
+        const offsetSize = 10;
         const container = (containers.get((this.element.ownerDocument)));
         if (this.sizeBehavior === "MeasureContent" /* SizeBehavior.MEASURE_CONTENT */) {
             this.contentElement.positionAt(0, 0);
@@ -163,7 +142,6 @@ export class GlassPane {
         if (this.anchorBox) {
             const anchorBox = this.anchorBox.relativeToElement(container);
             let behavior = this.anchorBehavior;
-            this.arrowElement.classList.remove('arrow-none', 'arrow-top', 'arrow-bottom', 'arrow-left', 'arrow-right');
             if (behavior === "PreferTop" /* AnchorBehavior.PREFER_TOP */ || behavior === "PreferBottom" /* AnchorBehavior.PREFER_BOTTOM */) {
                 const top = anchorBox.y - 2 * gutterSize;
                 const bottom = containerHeight - anchorBox.y - anchorBox.height - 2 * gutterSize;
@@ -173,29 +151,24 @@ export class GlassPane {
                 if (behavior === "PreferBottom" /* AnchorBehavior.PREFER_BOTTOM */ && bottom < height && top > bottom) {
                     behavior = "PreferTop" /* AnchorBehavior.PREFER_TOP */;
                 }
-                let arrowY;
                 let enoughHeight = true;
                 if (behavior === "PreferTop" /* AnchorBehavior.PREFER_TOP */) {
                     positionY = Math.max(gutterSize, anchorBox.y - height - gutterSize);
                     const spaceTop = anchorBox.y - positionY - gutterSize;
                     if (this.sizeBehavior === "MeasureContent" /* SizeBehavior.MEASURE_CONTENT */) {
                         if (height > spaceTop) {
-                            this.arrowElement.classList.add('arrow-none');
                             enoughHeight = false;
                         }
                     }
                     else {
                         height = Math.min(height, spaceTop);
                     }
-                    this.arrowElement.classList.add('arrow-bottom');
-                    arrowY = anchorBox.y - gutterSize;
                 }
                 else {
                     positionY = anchorBox.y + anchorBox.height + gutterSize;
                     const spaceBottom = containerHeight - positionY - gutterSize;
                     if (this.sizeBehavior === "MeasureContent" /* SizeBehavior.MEASURE_CONTENT */) {
                         if (height > spaceBottom) {
-                            this.arrowElement.classList.add('arrow-none');
                             positionY = containerHeight - gutterSize - height;
                             enoughHeight = false;
                         }
@@ -203,8 +176,6 @@ export class GlassPane {
                     else {
                         height = Math.min(height, spaceBottom);
                     }
-                    this.arrowElement.classList.add('arrow-top');
-                    arrowY = anchorBox.y + anchorBox.height + gutterSize;
                 }
                 const naturalPositionX = Math.min(anchorBox.x, containerWidth - width - gutterSize);
                 positionX = Math.max(gutterSize, naturalPositionX);
@@ -212,20 +183,12 @@ export class GlassPane {
                     positionX = 0;
                 }
                 if (!enoughHeight) {
-                    positionX = Math.min(positionX + arrowSize, containerWidth - width - gutterSize);
+                    positionX = Math.min(positionX + offsetSize, containerWidth - width - gutterSize);
                 }
-                else if (showArrow && positionX - arrowSize >= gutterSize) {
-                    positionX -= arrowSize;
+                else if (positionX - offsetSize >= gutterSize) {
+                    positionX -= offsetSize;
                 }
                 width = Math.min(width, containerWidth - positionX - gutterSize);
-                if (2 * arrowSize >= width) {
-                    this.arrowElement.classList.add('arrow-none');
-                }
-                else {
-                    let arrowX = anchorBox.x + Math.min(50, Math.floor(anchorBox.width / 2));
-                    arrowX = Platform.NumberUtilities.clamp(arrowX, positionX + arrowSize, positionX + width - arrowSize);
-                    this.arrowElement.positionAt(arrowX, arrowY, container);
-                }
             }
             else {
                 const left = anchorBox.x - 2 * gutterSize;
@@ -236,29 +199,24 @@ export class GlassPane {
                 if (behavior === "PreferRight" /* AnchorBehavior.PREFER_RIGHT */ && right < width && left > right) {
                     behavior = "PreferLeft" /* AnchorBehavior.PREFER_LEFT */;
                 }
-                let arrowX;
                 let enoughWidth = true;
                 if (behavior === "PreferLeft" /* AnchorBehavior.PREFER_LEFT */) {
                     positionX = Math.max(gutterSize, anchorBox.x - width - gutterSize);
                     const spaceLeft = anchorBox.x - positionX - gutterSize;
                     if (this.sizeBehavior === "MeasureContent" /* SizeBehavior.MEASURE_CONTENT */) {
                         if (width > spaceLeft) {
-                            this.arrowElement.classList.add('arrow-none');
                             enoughWidth = false;
                         }
                     }
                     else {
                         width = Math.min(width, spaceLeft);
                     }
-                    this.arrowElement.classList.add('arrow-right');
-                    arrowX = anchorBox.x - gutterSize;
                 }
                 else {
                     positionX = anchorBox.x + anchorBox.width + gutterSize;
                     const spaceRight = containerWidth - positionX - gutterSize;
                     if (this.sizeBehavior === "MeasureContent" /* SizeBehavior.MEASURE_CONTENT */) {
                         if (width > spaceRight) {
-                            this.arrowElement.classList.add('arrow-none');
                             positionX = containerWidth - gutterSize - width;
                             enoughWidth = false;
                         }
@@ -266,25 +224,15 @@ export class GlassPane {
                     else {
                         width = Math.min(width, spaceRight);
                     }
-                    this.arrowElement.classList.add('arrow-left');
-                    arrowX = anchorBox.x + anchorBox.width + gutterSize;
                 }
                 positionY = Math.max(gutterSize, Math.min(anchorBox.y, containerHeight - height - gutterSize));
                 if (!enoughWidth) {
-                    positionY = Math.min(positionY + arrowSize, containerHeight - height - gutterSize);
+                    positionY = Math.min(positionY + offsetSize, containerHeight - height - gutterSize);
                 }
-                else if (showArrow && positionY - arrowSize >= gutterSize) {
-                    positionY -= arrowSize;
+                else if (positionY - offsetSize >= gutterSize) {
+                    positionY -= offsetSize;
                 }
                 height = Math.min(height, containerHeight - positionY - gutterSize);
-                if (2 * arrowSize >= height) {
-                    this.arrowElement.classList.add('arrow-none');
-                }
-                else {
-                    let arrowY = anchorBox.y + Math.min(50, Math.floor(anchorBox.height / 2));
-                    arrowY = Platform.NumberUtilities.clamp(arrowY, positionY + arrowSize, positionY + height - arrowSize);
-                    this.arrowElement.positionAt(arrowX, arrowY, container);
-                }
             }
         }
         else {
@@ -292,7 +240,6 @@ export class GlassPane {
             positionY = this.positionY !== null ? this.positionY : (containerHeight - height) / 2;
             width = Math.min(width, containerWidth - positionX - gutterSize);
             height = Math.min(height, containerHeight - positionY - gutterSize);
-            this.arrowElement.classList.add('arrow-none');
         }
         this.contentElement.style.width = width + 'px';
         if (this.sizeBehavior === "SetExactWidthMaxHeight" /* SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */) {

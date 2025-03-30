@@ -15,11 +15,11 @@ export default {
 }
 
 devtools-header-section-row:last-of-type {
-  margin-bottom: 10px;
+  margin-bottom: var(--sys-size-5);
 }
 
 devtools-header-section-row:first-of-type {
-  margin-top: 2px;
+  margin-top: var(--sys-size-5);
 }
 
 .add-header-button {

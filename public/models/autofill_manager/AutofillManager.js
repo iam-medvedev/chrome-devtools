@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 let autofillManagerInstance;
@@ -33,8 +32,7 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async #addressFormFilled({ data }) {
-        if (Root.Runtime.experiments.isEnabled("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */) &&
-            this.#autoOpenViewSetting.get()) {
+        if (this.#autoOpenViewSetting.get()) {
             await UI.ViewManager.ViewManager.instance().showView('autofill-view');
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.AutofillReceivedAndTabAutoOpened);
         }

@@ -39,10 +39,8 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as Workspace from '../../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import { PanelUtils } from '../../panels/utils/utils.js';
-import * as DiffView from '../../ui/components/diff_view/diff_view.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -54,7 +52,7 @@ import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import * as LayersWidget from './LayersWidget.js';
 import { StyleEditorWidget } from './StyleEditorWidget.js';
-import { BlankStylePropertiesSection, FontPaletteValuesRuleSection, HighlightPseudoStylePropertiesSection, KeyframePropertiesSection, PositionTryRuleSection, RegisteredPropertiesSection, StylePropertiesSection, } from './StylePropertiesSection.js';
+import { BlankStylePropertiesSection, FontPaletteValuesRuleSection, FunctionRuleSection, HighlightPseudoStylePropertiesSection, KeyframePropertiesSection, PositionTryRuleSection, RegisteredPropertiesSection, StylePropertiesSection, } from './StylePropertiesSection.js';
 import { StylePropertyHighlighter } from './StylePropertyHighlighter.js';
 import stylesSidebarPaneStyles from './stylesSidebarPane.css.js';
 import { WebCustomData } from './WebCustomData.js';
@@ -103,14 +101,6 @@ const UIStrings = {
      */
     automaticDarkMode: 'Automatic dark mode',
     /**
-     *@description Tooltip text that appears when hovering over the css changes button in the Styles Sidebar Pane of the Elements panel
-     */
-    copyAllCSSChanges: 'Copy CSS changes',
-    /**
-     *@description Tooltip text that appears after clicking on the copy CSS changes button
-     */
-    copiedToClipboard: 'Copied to clipboard',
-    /**
      *@description Text displayed on layer separators in the styles sidebar pane.
      */
     layer: 'Layer',
@@ -127,6 +117,8 @@ const FILTER_IDLE_PERIOD = 500;
 const MIN_FOLDED_SECTIONS_COUNT = 5;
 // Title of the registered properties section
 export const REGISTERED_PROPERTY_SECTION_NAME = '@property';
+// Title of the function section
+export const FUNCTION_SECTION_NAME = '@function';
 // Highlightable properties are those that can be hovered in the sidebar to trigger a specific
 // highlighting mode on the current element.
 const HIGHLIGHTABLE_PROPERTIES = [
@@ -145,41 +137,40 @@ const HIGHLIGHTABLE_PROPERTIES = [
     { mode: 'flexibility', properties: ['flex', 'flex-basis', 'flex-grow', 'flex-shrink'] },
 ];
 export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsSidebarPane) {
-    matchedStyles;
-    currentToolbarPane;
-    animatedToolbarPane;
-    pendingWidget;
-    pendingWidgetToggle;
-    toolbar;
+    matchedStyles = null;
+    currentToolbarPane = null;
+    animatedToolbarPane = null;
+    pendingWidget = null;
+    pendingWidgetToggle = null;
+    toolbar = null;
     toolbarPaneElement;
-    lastFilterChange;
-    visibleSections;
+    lastFilterChange = null;
+    visibleSections = null;
     noMatchesElement;
     sectionsContainer;
-    sectionByElement;
-    swatchPopoverHelperInternal;
-    linkifier;
+    sectionByElement = new WeakMap();
+    swatchPopoverHelperInternal = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
+    linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
     decorator;
-    lastRevealedProperty;
-    userOperation;
-    isEditingStyle;
-    filterRegexInternal;
-    isActivePropertyHighlighted;
-    initialUpdateCompleted;
-    hasMatchedStyles;
-    sectionBlocks;
-    idleCallbackManager;
-    needsForceUpdate;
-    resizeThrottler;
-    resetUpdateThrottler;
-    computedStyleUpdateThrottler;
+    lastRevealedProperty = null;
+    userOperation = false;
+    isEditingStyle = false;
+    filterRegexInternal = null;
+    isActivePropertyHighlighted = false;
+    initialUpdateCompleted = false;
+    hasMatchedStyles = false;
+    sectionBlocks = [];
+    idleCallbackManager = null;
+    needsForceUpdate = false;
+    resizeThrottler = new Common.Throttler.Throttler(100);
+    resetUpdateThrottler = new Common.Throttler.Throttler(500);
+    computedStyleUpdateThrottler = new Common.Throttler.Throttler(500);
     scrollerElement;
     boundOnScroll;
     imagePreviewPopover;
     #webCustomData;
-    activeCSSAngle;
+    activeCSSAngle = null;
     #urlToChangeTracker = new Map();
-    #copyChangesButton;
     #updateAbortController;
     #updateComputedStylesAbortController;
     constructor(computedStyleModel) {
@@ -187,13 +178,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.setMinimumSize(96, 26);
         this.registerRequiredCSS(stylesSidebarPaneStyles);
         Common.Settings.Settings.instance().moduleSetting('text-editor-indent').addChangeListener(this.update.bind(this));
-        this.currentToolbarPane = null;
-        this.animatedToolbarPane = null;
-        this.pendingWidget = null;
-        this.pendingWidgetToggle = null;
-        this.toolbar = null;
-        this.lastFilterChange = null;
-        this.visibleSections = null;
         this.toolbarPaneElement = this.createStylesSidebarToolbar();
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingSelectorOrStyle);
@@ -202,28 +186,11 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.sectionsContainer.addEventListener('keydown', this.sectionsContainerKeyDown.bind(this), false);
         this.sectionsContainer.addEventListener('focusin', this.sectionsContainerFocusChanged.bind(this), false);
         this.sectionsContainer.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
-        this.sectionByElement = new WeakMap();
-        this.swatchPopoverHelperInternal = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
         this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
-        this.linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
         this.decorator = new StylePropertyHighlighter(this);
-        this.matchedStyles = null;
-        this.lastRevealedProperty = null;
-        this.userOperation = false;
-        this.isEditingStyle = false;
-        this.filterRegexInternal = null;
-        this.isActivePropertyHighlighted = false;
-        this.initialUpdateCompleted = false;
-        this.hasMatchedStyles = false;
         this.contentElement.classList.add('styles-pane');
-        this.sectionBlocks = [];
-        this.idleCallbackManager = null;
-        this.needsForceUpdate = false;
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
         this.contentElement.addEventListener('copy', this.clipboardCopy.bind(this));
-        this.resizeThrottler = new Common.Throttler.Throttler(100);
-        this.resetUpdateThrottler = new Common.Throttler.Throttler(500);
-        this.computedStyleUpdateThrottler = new Common.Throttler.Throttler(500);
         if (Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover')) {
             this.#webCustomData = WebCustomData.create();
         }
@@ -235,7 +202,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             }
             return null;
         }, () => this.node());
-        this.activeCSSAngle = null;
     }
     get webCustomData() {
         return this.#webCustomData;
@@ -506,11 +472,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (!this.initialUpdateCompleted) {
             this.initialUpdateCompleted = true;
             this.appendToolbarItem(this.createRenderingShortcuts());
-            if (Root.Runtime.experiments.isEnabled("styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */)) {
-                this.#copyChangesButton = this.createCopyAllChangesButton();
-                this.appendToolbarItem(this.#copyChangesButton);
-                this.#copyChangesButton.element.classList.add('hidden');
-            }
             this.dispatchEventToListeners("InitialUpdateCompleted" /* Events.INITIAL_UPDATE_COMPLETED */);
         }
         this.nodeStylesUpdatedForTest(this.node(), true);
@@ -882,15 +843,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         // We disable the layer widget initially. If we see a layer in
         // the matched styles we reenable the button.
         LayersWidget.ButtonProvider.instance().item().setVisible(false);
-        const refreshedURLs = new Set();
         for (const style of matchedStyles.nodeStyles()) {
-            if (Root.Runtime.experiments.isEnabled("styles-pane-css-changes" /* Root.Runtime.ExperimentName.STYLES_PANE_CSS_CHANGES */) && style.parentRule) {
-                const url = style.parentRule.resourceURL();
-                if (url && !refreshedURLs.has(url)) {
-                    await this.trackURLForChanges(url);
-                    refreshedURLs.add(url);
-                }
-            }
             const parentNode = matchedStyles.isInherited(style) ? matchedStyles.nodeForStyle(style) : null;
             if (parentNode && parentNode !== lastParentNode) {
                 lastParentNode = parentNode;
@@ -1002,6 +955,17 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             }
             blocks.push(block);
         }
+        if (matchedStyles.functionRules().length > 0) {
+            const expandedByDefault = matchedStyles.functionRules().length <= MIN_FOLDED_SECTIONS_COUNT;
+            const block = SectionBlock.createFunctionBlock(expandedByDefault);
+            for (const functionRule of matchedStyles.functionRules()) {
+                this.idleCallbackManager.schedule(() => {
+                    block.sections.push(new FunctionRuleSection(this, matchedStyles, functionRule.style, functionRule.children(), sectionIdx, functionRule.functionName().text, functionRule.parameters(), expandedByDefault));
+                    sectionIdx++;
+                });
+            }
+            blocks.push(block);
+        }
         // If we have seen a layer in matched styles we enable
         // the layer widget button.
         if (sawLayers) {
@@ -1106,80 +1070,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             sections = sections.concat(block.sections);
         }
         return sections;
-    }
-    async trackURLForChanges(url) {
-        const currentTracker = this.#urlToChangeTracker.get(url);
-        if (currentTracker) {
-            WorkspaceDiff.WorkspaceDiff.workspaceDiff().unsubscribeFromDiffChange(currentTracker.uiSourceCode, currentTracker.diffChangeCallback);
-        }
-        // We get a refreshed uiSourceCode each time because the underlying instance may be recreated.
-        const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-        if (!uiSourceCode) {
-            return;
-        }
-        const diffChangeCallback = this.refreshChangedLines.bind(this, uiSourceCode);
-        WorkspaceDiff.WorkspaceDiff.workspaceDiff().subscribeToDiffChange(uiSourceCode, diffChangeCallback);
-        const newTracker = {
-            uiSourceCode,
-            changedLines: new Set(),
-            diffChangeCallback,
-        };
-        this.#urlToChangeTracker.set(url, newTracker);
-        await this.refreshChangedLines(newTracker.uiSourceCode);
-    }
-    isPropertyChanged(property) {
-        const url = property.ownerStyle.parentRule?.resourceURL();
-        if (!url) {
-            return false;
-        }
-        const changeTracker = this.#urlToChangeTracker.get(url);
-        if (!changeTracker) {
-            return false;
-        }
-        const { changedLines, formattedCurrentMapping } = changeTracker;
-        const uiLocation = Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().propertyUILocation(property, true);
-        if (!uiLocation) {
-            return false;
-        }
-        if (!formattedCurrentMapping) {
-            // UILocation's lineNumber starts at 0, but changedLines start at 1.
-            return changedLines.has(uiLocation.lineNumber + 1);
-        }
-        const formattedLineNumber = formattedCurrentMapping.originalToFormatted(uiLocation.lineNumber, uiLocation.columnNumber)[0];
-        return changedLines.has(formattedLineNumber + 1);
-    }
-    updateChangeStatus() {
-        if (!this.#copyChangesButton) {
-            return;
-        }
-        let hasChangedStyles = false;
-        for (const changeTracker of this.#urlToChangeTracker.values()) {
-            if (changeTracker.changedLines.size > 0) {
-                hasChangedStyles = true;
-                break;
-            }
-        }
-        this.#copyChangesButton.element.classList.toggle('hidden', !hasChangedStyles);
-    }
-    async refreshChangedLines(uiSourceCode) {
-        const changeTracker = this.#urlToChangeTracker.get(uiSourceCode.url());
-        if (!changeTracker) {
-            return;
-        }
-        const diffResponse = await WorkspaceDiff.WorkspaceDiff.workspaceDiff().requestDiff(uiSourceCode);
-        const changedLines = new Set();
-        changeTracker.changedLines = changedLines;
-        if (!diffResponse) {
-            return;
-        }
-        const { diff, formattedCurrentMapping } = diffResponse;
-        const { rows } = DiffView.DiffView.buildDiffRows(diff);
-        for (const row of rows) {
-            if (row.type === "addition" /* DiffView.DiffView.RowType.ADDITION */) {
-                changedLines.add(row.currentLineNumber);
-            }
-        }
-        changeTracker.formattedCurrentMapping = formattedCurrentMapping;
     }
     async getFormattedChanges() {
         let allChanges = '';
@@ -1312,26 +1202,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }, { capture: true });
         return button;
     }
-    createCopyAllChangesButton() {
-        const copyAllChangesButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.copyAllCSSChanges), 'copy');
-        // TODO(1296947): implement a dedicated component to share between all copy buttons
-        copyAllChangesButton.element.setAttribute('data-content', i18nString(UIStrings.copiedToClipboard));
-        let timeout;
-        copyAllChangesButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, async () => {
-            const allChanges = await this.getFormattedChanges();
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-            if (timeout) {
-                clearTimeout(timeout);
-                timeout = undefined;
-            }
-            copyAllChangesButton.element.classList.add('copied-to-clipboard');
-            timeout = window.setTimeout(() => {
-                copyAllChangesButton.element.classList.remove('copied-to-clipboard');
-                timeout = undefined;
-            }, 2000);
-        });
-        return copyAllChangesButton;
-    }
 }
 const MAX_LINK_LENGTH = 23;
 export class SectionBlock {
@@ -1392,6 +1262,13 @@ export class SectionBlock {
         const block = new SectionBlock(separatorElement, true, expandedByDefault);
         separatorElement.className = 'sidebar-separator';
         separatorElement.appendChild(document.createTextNode(REGISTERED_PROPERTY_SECTION_NAME));
+        return block;
+    }
+    static createFunctionBlock(expandedByDefault) {
+        const separatorElement = document.createElement('div');
+        const block = new SectionBlock(separatorElement, true, expandedByDefault);
+        separatorElement.className = 'sidebar-separator';
+        separatorElement.appendChild(document.createTextNode(FUNCTION_SECTION_NAME));
         return block;
     }
     static createKeyframesBlock(keyframesName) {

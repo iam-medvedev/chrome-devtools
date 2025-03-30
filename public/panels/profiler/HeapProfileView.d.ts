@@ -47,7 +47,7 @@ export declare class SamplingHeapProfileTypeBase extends SamplingHeapProfileType
     fileExtension(): string;
     get buttonTooltip(): Common.UIString.LocalizedString;
     buttonClicked(): boolean;
-    startRecordingProfile(): void;
+    startRecordingProfile(): Promise<void>;
     stopRecordingProfile(): Promise<void>;
     createProfileLoadedFromFile(title: string): ProfileHeader;
     profileBeingRecordedRemoved(): void;

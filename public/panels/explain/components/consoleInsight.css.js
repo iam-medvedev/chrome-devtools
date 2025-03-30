@@ -25,7 +25,6 @@ export default {
 .wrapper {
   background-color: var(--sys-color-cdt-base-container);
   border-radius: 16px;
-  /* stylelint-disable-next-line property-no-unknown */
   container-type: inline-size;
   display: grid;
   animation: expand var(--sys-motion-duration-medium2) var(--sys-motion-easing-emphasized) forwards;
@@ -183,7 +182,6 @@ footer {
   gap: 32px;
 }
 
-/* stylelint-disable-next-line at-rule-no-unknown */
 @container (max-width: 600px) {
   footer {
     gap: 8px;
@@ -285,7 +283,6 @@ details {
   margin-top: 10px;
 }
 
-/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 ::details-content {
   height: 0;
   transition:
@@ -293,7 +290,6 @@ details {
     content-visibility var(--sys-motion-duration-short4) var(--sys-motion-easing-emphasized) allow-discrete;
 }
 
-/* stylelint-disable-next-line selector-pseudo-element-no-unknown */
 [open]::details-content {
   height: auto;
 }
@@ -370,7 +366,7 @@ h2:focus-visible {
   display: table-cell;
 }
 
-.sources-list x-link.highlighted { /* stylelint-disable-line selector-type-no-unknown */
+.sources-list x-link.highlighted {
   animation: highlight-fadeout 2s;
 }
 

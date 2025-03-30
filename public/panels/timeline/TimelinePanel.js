@@ -55,7 +55,6 @@ import * as AnnotationHelpers from './AnnotationHelpers.js';
 import { TraceLoadEvent } from './BenchmarkEvents.js';
 import * as TimelineComponents from './components/components.js';
 import * as TimelineInsights from './components/insights/insights.js';
-import { SHOULD_SHOW_EASTER_EGG } from './EasterEgg.js';
 import { Tracker } from './FreshRecording.js';
 import { IsolateSelector } from './IsolateSelector.js';
 import { AnnotationModifiedEvent, ModificationsManager } from './ModificationsManager.js';
@@ -376,8 +375,6 @@ export class TimelinePanel extends UI.Panel.Panel {
     controller;
     cpuProfiler;
     clearButton;
-    brickBreakerToolbarButton;
-    brickBreakerToolbarButtonAdded = false;
     loadButton;
     saveButton;
     homeButton;
@@ -400,7 +397,6 @@ export class TimelinePanel extends UI.Panel.Panel {
     #sourceMapsResolver = null;
     #entityMapper = null;
     #onSourceMapsNodeNamesResolvedBound = this.#onSourceMapsNodeNamesResolved.bind(this);
-    #onChartPlayableStateChangeBound;
     #sidebarToggleButton = this.#splitWidget.createShowHideSidebarButton(i18nString(UIStrings.showSidebar), i18nString(UIStrings.hideSidebar), 
     // These are used to announce to screen-readers and not shown visibly.
     i18nString(UIStrings.sidebarShown), i18nString(UIStrings.sidebarHidden), 'timeline.sidebar');
@@ -456,8 +452,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             name: i18nString(UIStrings.fixMe),
             content: adornerContent,
         };
-        this.brickBreakerToolbarButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.fixMe), adorner);
-        this.brickBreakerToolbarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.#onBrickBreakerEasterEggClick());
         this.#traceEngineModel = traceModel || this.#instantiateNewModel();
         this.#listenForProcessingProgress();
         this.element.addEventListener('contextmenu', this.contextMenu.bind(this), false);
@@ -515,9 +509,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.createFileSelector();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.Load, this.loadEventFired, this);
         this.flameChart = new TimelineFlameChartView(this);
-        this.#onChartPlayableStateChangeBound = this.#onChartPlayableStateChange.bind(this);
         this.element.addEventListener('toggle-popover', event => this.flameChart.togglePopover(event.detail));
-        this.flameChart.getMainFlameChart().addEventListener("ChartPlayableStateChange" /* PerfUI.FlameChart.Events.CHART_PLAYABLE_STATE_CHANGED */, this.#onChartPlayableStateChangeBound, this);
         this.#onMainEntryHovered = this.#onEntryHovered.bind(this, this.flameChart.getMainDataProvider());
         this.flameChart.getMainFlameChart().addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, this.#onMainEntryHovered);
         this.flameChart.addEventListener("EntryLabelAnnotationClicked" /* TimelineFlameChartViewEvents.ENTRY_LABEL_ANNOTATION_CLICKED */, event => {
@@ -555,19 +547,23 @@ export class TimelinePanel extends UI.Panel.Panel {
             this.#setActiveInsight({ model, insightSetKey });
             // Open the summary panel for the 3p insight.
             if (model.insightKey === "ThirdParties" /* Trace.Insights.Types.InsightKeys.THIRD_PARTIES */) {
-                this.#openSummaryTab();
+                void window.scheduler.postTask(() => {
+                    this.#openSummaryTab();
+                }, { priority: 'background' });
             }
         });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightProvideOverlays.eventName, event => {
             const { overlays, options } = event;
-            this.flameChart.setOverlays(overlays, options);
-            const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(overlays);
-            if (overlaysBounds) {
-                this.#minimapComponent.highlightBounds(overlaysBounds, /* withBracket */ true);
-            }
-            else {
-                this.#minimapComponent.clearBoundsHighlight();
-            }
+            void window.scheduler.postTask(() => {
+                this.flameChart.setOverlays(overlays, options);
+                const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(overlays);
+                if (overlaysBounds) {
+                    this.#minimapComponent.highlightBounds(overlaysBounds, /* withBracket */ true);
+                }
+                else {
+                    this.#minimapComponent.clearBoundsHighlight();
+                }
+            }, { priority: 'user-visible' });
         });
         this.#sideBar.contentElement.addEventListener(TimelineInsights.EventRef.EventReferenceClick.eventName, event => {
             this.select(selectionFromEvent(event.event));
@@ -792,9 +788,6 @@ export class TimelinePanel extends UI.Panel.Panel {
                 // Whilst we don't reset this, we hide it, mainly so the user cannot
                 // hit Ctrl/Cmd-F and try to search when it isn't visible.
                 this.searchableViewInternal.hideWidget();
-                // Hide the brick-breaker easter egg
-                this.brickBreakerToolbarButtonAdded = false;
-                this.panelToolbar.removeToolbarItem(this.brickBreakerToolbarButton);
                 return;
             }
             case 'VIEWING_TRACE': {
@@ -858,22 +851,6 @@ export class TimelinePanel extends UI.Panel.Panel {
             throw new Error('No trace engine data found.');
         }
         return data;
-    }
-    #onChartPlayableStateChange(event) {
-        if (event.data) {
-            const dateObj = new Date();
-            const month = dateObj.getUTCMonth() + 1;
-            const day = dateObj.getUTCDate();
-            const isAprilFools = (month === 4 && (day === 1 || day === 2)); // Show only on April fools and the next day
-            if (isAprilFools && !this.brickBreakerToolbarButtonAdded && SHOULD_SHOW_EASTER_EGG) {
-                this.brickBreakerToolbarButtonAdded = true;
-                this.panelToolbar.appendToolbarItem(this.brickBreakerToolbarButton);
-            }
-        }
-        else {
-            this.brickBreakerToolbarButtonAdded = false;
-            this.panelToolbar.removeToolbarItem(this.brickBreakerToolbarButton);
-        }
     }
     #onEntryHovered(dataProvider, event) {
         const entryIndex = event.data;
@@ -1274,7 +1251,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         const blob = file.slice(0, maximumTraceFileLengthToDetermineEnhancedTraces);
         const content = await blob.text();
         if (content.includes('enhancedTraceVersion')) {
-            await window.scheduler?.postTask(() => {
+            await window.scheduler.postTask(() => {
                 this.#launchRehydratedSession(file);
             }, { priority: 'background' });
         }
@@ -1642,12 +1619,6 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     #hasActiveTrace() {
         return this.#viewMode.mode === 'VIEWING_TRACE';
-    }
-    #onBrickBreakerEasterEggClick() {
-        if (!this.#hasActiveTrace()) {
-            return;
-        }
-        this.flameChart.runBrickBreakerGame();
     }
     #applyActiveFilters(traceIsGeneric, exclusiveFilter = null) {
         if (traceIsGeneric || Root.Runtime.experiments.isEnabled('timeline-show-all-events')) {
@@ -2177,7 +2148,10 @@ export class TimelinePanel extends UI.Panel.Panel {
             return await debuggerModel.sourceMapManager().sourceMapForClientPromise(script);
         }
         return async function resolveSourceMap(params) {
-            const { scriptId, scriptUrl, sourceMapUrl, frame } = params;
+            const { scriptId, scriptUrl, sourceMapUrl, frame, cachedRawSourceMap } = params;
+            if (cachedRawSourceMap) {
+                return new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, cachedRawSourceMap);
+            }
             // For still-active frames, the source map is likely already fetched or at least in-flight.
             if (isFreshRecording) {
                 const map = await getExistingSourceMap(frame, scriptId, scriptUrl);

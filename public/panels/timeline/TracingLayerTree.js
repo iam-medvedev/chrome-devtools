@@ -5,11 +5,10 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
-    tileById;
+    tileById = new Map();
     paintProfilerModel;
     constructor(target) {
         super(target);
-        this.tileById = new Map();
         this.paintProfilerModel = target?.model(SDK.PaintProfiler.PaintProfilerModel) ?? null;
     }
     async setLayers(root, layers, paints) {

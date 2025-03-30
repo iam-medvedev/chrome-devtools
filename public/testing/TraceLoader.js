@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as SDK from '../core/sdk/sdk.js';
 import * as Trace from '../models/trace/trace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as TraceBounds from '../services/trace_bounds/trace_bounds.js';
@@ -43,7 +44,7 @@ export class TraceLoader {
         if (!context || context.timeout() >= 10_000) {
             return;
         }
-        context?.timeout(10_000);
+        context.timeout(10_000);
     }
     /**
      * Loads a trace file into memory and returns its contents after
@@ -182,7 +183,19 @@ export class TraceLoader {
                     }
                 }
             });
-            void model.parse(events, { metadata, isFreshRecording: emulateFreshRecording }).catch(e => console.error(e));
+            void model
+                .parse(events, {
+                metadata,
+                isFreshRecording: emulateFreshRecording,
+                async resolveSourceMap(params) {
+                    const { scriptUrl, sourceMapUrl, cachedRawSourceMap } = params;
+                    if (cachedRawSourceMap) {
+                        return new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, cachedRawSourceMap);
+                    }
+                    return null;
+                },
+            })
+                .catch(e => console.error(e));
         });
     }
 }

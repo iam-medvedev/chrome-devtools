@@ -380,19 +380,16 @@ export class DOMEventListenerBreakpoint extends CategorizedBreakpoint {
 let domDebuggerManagerInstance;
 export class DOMDebuggerManager {
     #xhrBreakpointsSetting;
-    #xhrBreakpointsInternal;
-    #cspViolationsToBreakOn;
-    #eventListenerBreakpointsInternal;
+    #xhrBreakpointsInternal = new Map();
+    #cspViolationsToBreakOn = [];
+    #eventListenerBreakpointsInternal = [];
     constructor() {
         this.#xhrBreakpointsSetting = Common.Settings.Settings.instance().createLocalSetting('xhr-breakpoints', []);
-        this.#xhrBreakpointsInternal = new Map();
         for (const breakpoint of this.#xhrBreakpointsSetting.get()) {
             this.#xhrBreakpointsInternal.set(breakpoint.url, breakpoint.enabled);
         }
-        this.#cspViolationsToBreakOn = [];
         this.#cspViolationsToBreakOn.push(new CSPViolationBreakpoint("trusted-type-violation" /* Category.TRUSTED_TYPE_VIOLATION */, "trustedtype-sink-violation" /* Protocol.DOMDebugger.CSPViolationType.TrustedtypeSinkViolation */));
         this.#cspViolationsToBreakOn.push(new CSPViolationBreakpoint("trusted-type-violation" /* Category.TRUSTED_TYPE_VIOLATION */, "trustedtype-policy-violation" /* Protocol.DOMDebugger.CSPViolationType.TrustedtypePolicyViolation */));
-        this.#eventListenerBreakpointsInternal = [];
         this.createEventListenerBreakpoints("media" /* Category.MEDIA */, [
             'play', 'pause', 'playing', 'canplay', 'canplaythrough', 'seeking',
             'seeked', 'timeupdate', 'ended', 'ratechange', 'durationchange', 'volumechange',

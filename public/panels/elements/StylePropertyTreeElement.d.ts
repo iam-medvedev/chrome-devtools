@@ -4,6 +4,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import { type MatchRenderer, RenderingContext } from './PropertyRenderer.js';
 import type { StylePropertiesSection } from './StylePropertiesSection.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
@@ -77,7 +78,7 @@ declare const ColorMixRenderer_base: abstract new () => {
 };
 export declare class ColorMixRenderer extends ColorMixRenderer_base {
     #private;
-    constructor(pane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>);
+    constructor(pane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.ColorMixMatch, context: RenderingContext): Node[];
 }
 declare const AngleRenderer_base: abstract new () => {
@@ -179,7 +180,7 @@ declare const LengthRenderer_base: abstract new () => {
 };
 export declare class LengthRenderer extends LengthRenderer_base {
     #private;
-    constructor(stylesPane: StylesSidebarPane);
+    constructor(stylesPane: StylesSidebarPane, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.LengthMatch, context: RenderingContext): Node[];
     popOverAttachedForTest(): void;
 }
@@ -189,7 +190,7 @@ declare const MathFunctionRenderer_base: abstract new () => {
 };
 export declare class MathFunctionRenderer extends MathFunctionRenderer_base {
     #private;
-    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>);
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Node[];
     applyEvaluation(span: HTMLSpanElement, value: string): Promise<void>;
     applyMathFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
@@ -249,6 +250,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     constructor({ stylesPane, section, matchedStyles, property, isShorthand, inherited, overloaded, newProperty }: StylePropertyTreeElementParams);
     gridNames(): Promise<Set<string>>;
     matchedStyles(): SDK.CSSMatchedStyles.CSSMatchedStyles;
+    getLonghand(): StylePropertyTreeElement | null;
     editable(): boolean;
     inherited(): boolean;
     overloaded(): boolean;
@@ -267,7 +269,6 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     section(): StylePropertiesSection;
     private updatePane;
     private toggleDisabled;
-    private isPropertyChanged;
     onpopulate(): Promise<void>;
     onattach(): void;
     onexpand(): void;
@@ -277,6 +278,8 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     updateTitle(): void;
     private innerUpdateTitle;
     createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | null): Element;
+    getTracingTooltip(functionName: string, text: string, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, context: RenderingContext): Lit.TemplateResult;
+    getTooltipId(key: string): string;
     updateAuthoringHint(): void;
     private mouseUp;
     private handleContextMenuEvent;

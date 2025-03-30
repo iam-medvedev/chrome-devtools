@@ -234,8 +234,6 @@ export default {
 
 /* Resource preview icons */
 /* These rules are grouped by type */
-/* stylelint-disable no-duplicate-selectors */
-
 .network-log-grid.data-grid .icon.image {
   position: relative;
 }
@@ -298,7 +296,7 @@ export default {
 .network-log-grid.data-grid .trailing-link-icon {
   padding-left: 0.5ex;
 }
-/* stylelint-enable no-duplicate-selectors */
+
 /* This is part of the large color block declared above, but should not be
    extracted out. */
 .network-dim-cell {

@@ -339,12 +339,12 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     }
     canonicalUISourceCode(uiSourceCode) {
         // Check if we have already a UISourceCode for this url
-        const existingSourceCode = this.idToUISourceCode.get(uiSourceCode.canononicalScriptId());
+        const existingSourceCode = this.idToUISourceCode.get(uiSourceCode.canonicalScriptId());
         if (existingSourceCode) {
             // Ignore incoming uiSourceCode, we already have this file.
             return existingSourceCode;
         }
-        this.idToUISourceCode.set(uiSourceCode.canononicalScriptId(), uiSourceCode);
+        this.idToUISourceCode.set(uiSourceCode.canonicalScriptId(), uiSourceCode);
         this.uriToUISourceCode.set(uiSourceCode.url(), uiSourceCode);
         return uiSourceCode;
     }
@@ -356,7 +356,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         if (duplicated && uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.FileSystem) {
             uiSourceCode.disableEdit();
         }
-        if (this.currentFileInternal?.canononicalScriptId() === uiSourceCode.canononicalScriptId()) {
+        if (this.currentFileInternal?.canonicalScriptId() === uiSourceCode.canonicalScriptId()) {
             return;
         }
         const index = this.history.index(historyItemKey(uiSourceCode));
@@ -394,8 +394,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             if (this.uriToUISourceCode.get(uiSourceCode.url()) === uiSourceCode) {
                 this.uriToUISourceCode.delete(uiSourceCode.url());
             }
-            if (this.idToUISourceCode.get(uiSourceCode.canononicalScriptId()) === uiSourceCode) {
-                this.idToUISourceCode.delete(uiSourceCode.canononicalScriptId());
+            if (this.idToUISourceCode.get(uiSourceCode.canonicalScriptId()) === uiSourceCode) {
+                this.idToUISourceCode.delete(uiSourceCode.canonicalScriptId());
             }
         }
         this.tabbedPane.closeTabs(tabIds);
@@ -473,7 +473,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         const { tabId, isUserGesture } = event.data;
         const uiSourceCode = this.files.get(tabId);
         if (this.currentFileInternal &&
-            this.currentFileInternal.canononicalScriptId() === uiSourceCode?.canononicalScriptId()) {
+            this.currentFileInternal.canonicalScriptId() === uiSourceCode?.canonicalScriptId()) {
             this.removeViewListeners();
             this.currentView = null;
             this.currentFileInternal = null;
@@ -542,7 +542,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         }
         // Remove from map under old id if it has changed.
         for (const [k, v] of this.idToUISourceCode) {
-            if (v === uiSourceCode && k !== v.canononicalScriptId()) {
+            if (v === uiSourceCode && k !== v.canonicalScriptId()) {
                 this.idToUISourceCode.delete(k);
             }
         }

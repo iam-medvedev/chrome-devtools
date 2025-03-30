@@ -78,7 +78,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         assert.isNotNull(component.shadowRoot);
         const headerName = component.shadowRoot.querySelector('.header-name');
         assert.instanceOf(headerName, HTMLDivElement);
-        const regex = /^\s*not-set\s*cross-origin-resource-policy:\s*$/;
+        const regex = /^\s*not-set\s*cross-origin-resource-policy\s*$/;
         assert.isTrue(regex.test(headerName.textContent || ''));
         const headerValue = component.shadowRoot.querySelector('.header-value');
         assert.instanceOf(headerValue, HTMLDivElement);
@@ -99,7 +99,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         assert.isNotNull(component.shadowRoot);
         const headerName = component.shadowRoot.querySelector('.header-name');
         assert.instanceOf(headerName, HTMLDivElement);
-        assert.strictEqual(headerName.textContent?.trim(), 'x-client-data:');
+        assert.strictEqual(headerName.textContent?.trim(), 'x-client-data');
         const headerValue = component.shadowRoot.querySelector('.header-value');
         assert.instanceOf(headerValue, HTMLDivElement);
         assert.isTrue(headerValue.classList.contains('flex-columns'));
@@ -117,7 +117,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         assert.isNotNull(component.shadowRoot);
         const headerName = component.shadowRoot.querySelector('.header-name');
         assert.instanceOf(headerName, HTMLDivElement);
-        assert.strictEqual(headerName.textContent?.trim(), 'set-cookie:');
+        assert.strictEqual(headerName.textContent?.trim(), 'set-cookie');
         const headerValue = component.shadowRoot.querySelector('.header-value');
         assert.instanceOf(headerValue, HTMLDivElement);
         assert.strictEqual(headerValue.textContent?.trim(), 'secure=only; Secure');

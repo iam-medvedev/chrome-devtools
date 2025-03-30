@@ -53,6 +53,7 @@ export interface Props {
     onTakeScreenshot?: () => void;
     onRemoveImageInput?: () => void;
     onTextInputChange: (input: string) => void;
+    changeManager: AiAssistanceModel.ChangeManager;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
@@ -65,12 +66,8 @@ export interface Props {
     isReadOnly: boolean;
     blockedByCrossOrigin: boolean;
     changeSummary?: string;
-    patchSuggestion?: string;
-    patchSuggestionLoading?: boolean;
-    projectName?: string;
     multimodalInputEnabled?: boolean;
     imageInput?: ImageInputData;
-    onApplyToWorkspace?: () => void;
     isTextInputDisabled: boolean;
     emptyStateSuggestions: string[];
     inputPlaceholder: Platform.UIString.LocalizedString;

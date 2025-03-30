@@ -148,6 +148,11 @@ export declare class AnnotationOverlayActionEvent extends Event {
     static readonly eventName = "annotationoverlayactionsevent";
     constructor(overlay: TimelineOverlay, action: UpdateAction);
 }
+export declare class ConsentDialogVisibilityChange extends Event {
+    isVisible: boolean;
+    static readonly eventName = "consentdialogvisibilitychange";
+    constructor(isVisible: boolean);
+}
 export declare class TimeRangeMouseOverEvent extends Event {
     overlay: TimeRangeLabel;
     static readonly eventName = "timerangemouseoverevent";

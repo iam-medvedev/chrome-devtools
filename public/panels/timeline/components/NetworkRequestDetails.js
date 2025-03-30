@@ -27,6 +27,10 @@ const UIStrings = {
      */
     requestMethod: 'Request method',
     /**
+     *@description Text that refers to the network request protocol
+     */
+    protocol: 'Protocol',
+    /**
      *@description Text to show the priority of an item
      */
     priority: 'Priority',
@@ -94,6 +98,18 @@ const UIStrings = {
      * @description Text to refer to a 3rd Party entity.
      */
     entity: '3rd party',
+    /**
+     * @description Label for a column containing the names of timings (performance metric) taken in the server side application.
+     */
+    serverTiming: 'Server timing',
+    /**
+     * @description Label for a column containing the values of timings (performance metric) taken in the server side application.
+     */
+    time: 'Time',
+    /**
+     * @description Label for a column containing the description of timings (performance metric) taken in the server side application.
+     */
+    description: 'Description',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/NetworkRequestDetails.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -105,6 +121,7 @@ export class NetworkRequestDetails extends HTMLElement {
     #linkifier;
     #parsedTrace = null;
     #entityMapper = null;
+    #serverTimings = null;
     constructor(linkifier) {
         super();
         this.#linkifier = linkifier;
@@ -120,6 +137,19 @@ export class NetworkRequestDetails extends HTMLElement {
         this.#networkRequest = networkRequest;
         this.#maybeTarget = maybeTarget;
         this.#entityMapper = entityMapper;
+        this.#serverTimings = null;
+        for (const header of networkRequest.args.data.responseHeaders) {
+            const headerName = header.name.toLocaleLowerCase();
+            // Some popular hosting providers like vercel or render get rid of
+            // Server-Timing headers added by users, so as a workaround we
+            // also support server timing headers with the `-test` suffix
+            // while this feature is experimental, to enable easier trials.
+            if (headerName === 'server-timing' || headerName === 'server-timing-test') {
+                header.name = 'server-timing';
+                this.#serverTimings = SDK.ServerTiming.ServerTiming.parseHeaders([header]);
+                break;
+            }
+        }
         await this.#render();
     }
     #renderTitle() {
@@ -142,6 +172,24 @@ export class NetworkRequestDetails extends HTMLElement {
         }
         return html `
       <div class="network-request-details-row"><div class="title">${title}</div><div class="value">${value}</div></div>
+    `;
+    }
+    #renderServerTimings() {
+        if (!this.#serverTimings) {
+            return Lit.nothing;
+        }
+        return html `
+      <div class="column-divider"></div>
+      <div class="network-request-details-col server-timings">
+          <div class="server-timing-column-header">${i18nString(UIStrings.serverTiming)}</div>
+          <div class="server-timing-column-header">${i18nString(UIStrings.time)}</div>
+          <div class="server-timing-column-header">${i18nString(UIStrings.description)}</div>
+        ${this.#serverTimings.map(timing => html `
+              <div class="value">${timing.metric || '-'}</div>
+              <div class="value">${timing.value || '-'}</div>
+              <div class="value">${timing.description || '-'}</div>
+          `)}
+      </div>
     `;
     }
     #renderURL() {
@@ -173,9 +221,9 @@ export class NetworkRequestDetails extends HTMLElement {
         </devtools-request-link-icon>
       `;
             // clang-format on
-            return html `<div class="network-request-details-row">${urlElement}</div>`;
+            return html `<div class="network-request-details-item">${urlElement}</div>`;
         }
-        return html `<div class="network-request-details-row">${linkifiedURL}</div>`;
+        return html `<div class="network-request-details-item">${linkifiedURL}</div>`;
     }
     #renderFromCache() {
         if (!this.#networkRequest) {
@@ -222,26 +270,26 @@ export class NetworkRequestDetails extends HTMLElement {
             return null;
         }
         const hasStackTrace = Trace.Helpers.Trace.stackTraceInEvent(this.#networkRequest) !== null;
+        let link = null;
         // If we have a stack trace, that is the most reliable way to get the initiator data and display a link to the source.
         if (hasStackTrace) {
             const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(this.#networkRequest)?.at(0) ?? null;
             if (topFrame) {
-                const link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
-                if (link) {
-                    return this.#renderRow(i18nString(UIStrings.initiatedBy), link);
-                }
+                link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
             }
         }
         // If we do not, we can see if the network handler found an initiator and try to link by URL
         const initiator = this.#parsedTrace?.NetworkRequests.eventToInitiator.get(this.#networkRequest);
         if (initiator) {
-            const link = this.#linkifier.maybeLinkifyScriptLocation(this.#maybeTarget, null, // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
+            link = this.#linkifier.maybeLinkifyScriptLocation(this.#maybeTarget, null, // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
             initiator.args.data.url, undefined);
-            if (link) {
-                return this.#renderRow(i18nString(UIStrings.initiatedBy), link);
-            }
         }
-        return null;
+        if (!link) {
+            return null;
+        }
+        return html `
+      <div class="network-request-details-item"><div class="title">${i18nString(UIStrings.initiatedBy)}</div><div class="value">${link}</div></div>
+    `;
     }
     #renderBlockingRow() {
         if (!this.#networkRequest || !Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#networkRequest)) {
@@ -277,7 +325,7 @@ export class NetworkRequestDetails extends HTMLElement {
         }
         const requestPreviewElement = this.#requestPreviewElements.get(this.#networkRequest);
         if (requestPreviewElement) {
-            return html `<div class="network-request-details-row">${requestPreviewElement}</div>`;
+            return html `<div class="network-request-details-item">${requestPreviewElement}</div>`;
         }
         return null;
     }
@@ -295,6 +343,7 @@ export class NetworkRequestDetails extends HTMLElement {
         <div class="network-request-details-cols">
           <div class="network-request-details-col">
             ${this.#renderRow(i18nString(UIStrings.requestMethod), networkData.requestMethod)}
+            ${this.#renderRow(i18nString(UIStrings.protocol), networkData.protocol)}
             ${this.#renderRow(i18nString(UIStrings.priority), NetworkRequestTooltip.renderPriorityValue(this.#networkRequest))}
             ${this.#renderRow(i18nString(UIStrings.mimeType), networkData.mimeType)}
             ${this.#renderEncodedDataLength()}
@@ -303,11 +352,13 @@ export class NetworkRequestDetails extends HTMLElement {
             ${this.#renderFromCache()}
             ${this.#renderThirdPartyEntity()}
           </div>
+          <div class="column-divider"></div>
           <div class="network-request-details-col">
             <div class="timing-rows">
               ${NetworkRequestTooltip.renderTimings(this.#networkRequest)}
             </div>
           </div>
+          ${this.#renderServerTimings()}
         </div>
         ${this.#renderInitiatedBy()}
       </div>

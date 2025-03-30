@@ -5,20 +5,18 @@ import * as Platform from '../platform/platform.js';
 import { SDKModel } from './SDKModel.js';
 export class PerformanceMetricsModel extends SDKModel {
     #agent;
-    #metricModes;
-    #metricData;
+    #metricModes = new Map([
+        ['TaskDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
+        ['ScriptDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
+        ['LayoutDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
+        ['RecalcStyleDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
+        ['LayoutCount', "CumulativeCount" /* MetricMode.CUMULATIVE_COUNT */],
+        ['RecalcStyleCount', "CumulativeCount" /* MetricMode.CUMULATIVE_COUNT */],
+    ]);
+    #metricData = new Map();
     constructor(target) {
         super(target);
         this.#agent = target.performanceAgent();
-        this.#metricModes = new Map([
-            ['TaskDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
-            ['ScriptDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
-            ['LayoutDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
-            ['RecalcStyleDuration', "CumulativeTime" /* MetricMode.CUMULATIVE_TIME */],
-            ['LayoutCount', "CumulativeCount" /* MetricMode.CUMULATIVE_COUNT */],
-            ['RecalcStyleCount', "CumulativeCount" /* MetricMode.CUMULATIVE_COUNT */],
-        ]);
-        this.#metricData = new Map();
     }
     enable() {
         return this.#agent.invoke_enable({});

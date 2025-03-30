@@ -158,18 +158,13 @@ export const test = {
 const LongPollingMethods = new Set(['CSS.takeComputedStyleUpdates']);
 export class SessionRouter {
     #connectionInternal;
-    #lastMessageId;
-    #pendingResponsesCount;
-    #pendingLongPollingMessageIds;
-    #sessions;
-    #pendingScripts;
+    #lastMessageId = 1;
+    #pendingResponsesCount = 0;
+    #pendingLongPollingMessageIds = new Set();
+    #sessions = new Map();
+    #pendingScripts = [];
     constructor(connection) {
         this.#connectionInternal = connection;
-        this.#lastMessageId = 1;
-        this.#pendingResponsesCount = 0;
-        this.#pendingLongPollingMessageIds = new Set();
-        this.#sessions = new Map();
-        this.#pendingScripts = [];
         test.deprecatedRunAfterPendingDispatches = this.deprecatedRunAfterPendingDispatches.bind(this);
         test.sendRawMessage = this.sendRawMessageForTesting.bind(this);
         this.#connectionInternal.setOnMessage(this.onMessage.bind(this));

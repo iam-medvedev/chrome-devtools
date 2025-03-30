@@ -51,9 +51,7 @@ export default {
 
   /* Prevents the input form from jumping when the scrollbar is shown */
   /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
-  /* stylelint-disable-next-line at-rule-no-unknown */
   @container (width > 688px) {
-    /* stylelint-disable-next-line unit-no-unknown */
     --half-scrollbar-width: calc((100cqw - 100%) / 2);
 
     margin-left: var(--half-scrollbar-width);
@@ -63,7 +61,6 @@ export default {
   /* when there isn't enough space to view the messages,
   do not overlay the input form on top of the messages */
   /* height < var(--sys-size-27) */
-  /* stylelint-disable-next-line at-rule-no-unknown */
   @container (height < 224px) {
     position: static;
   }
@@ -83,7 +80,6 @@ export default {
       box-shadow: 0 -3px 2px -2px var(--app-color-ai-assistance-input-divider);
       animation: reveal;
       opacity: 0%;
-      /* stylelint-disable-next-line property-no-unknown */
       animation-timeline: --scroll-timeline;
     }
   }
@@ -169,7 +165,7 @@ export default {
   ); /* Gap between the button and the edge + icon's width */
 
   scrollbar-width: none;
-  field-sizing: content; /* stylelint-disable-line property-no-unknown */
+  field-sizing: content;
   resize: none;
   width: 100%;
   max-height: 84px; /* 4 rows */
@@ -257,9 +253,7 @@ export default {
 
   /* Prevents the container from jumping when the scrollbar is shown */
   /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
-  /* stylelint-disable-next-line at-rule-no-unknown */
   @container (width > 688px) {
-    /* stylelint-disable-next-line unit-no-unknown */
     --half-scrollbar-width: calc((100cqw - 100%) / 2);
 
     margin-left: var(--half-scrollbar-width);
@@ -609,7 +603,7 @@ main {
   flex-direction: column;
   align-items: center;
   height: 100%;
-  container-type: size; /* stylelint-disable-line property-no-unknown */
+  container-type: size;
   scrollbar-width: thin;
   /*
   Even though \\'transform: translateZ(1px)\\' doesn't have a visual effect,
@@ -617,8 +611,6 @@ main {
   fixes the \\'.input-form\\' jumping on scroll issue.
   */
   transform: translateZ(1px);
-
-  /* stylelint-disable-next-line property-no-unknown */
   scroll-timeline: --scroll-timeline y;
 }
 
@@ -634,9 +626,7 @@ main {
 
   /* Prevents the container from jumping when the scrollbar is shown */
   /* 688px is the max width of the input form + left and right paddings: var(--sys-size-36) + 2 * var(--sys-size-5)  */
-  /* stylelint-disable-next-line at-rule-no-unknown */
   @container (width > 688px) {
-    /* stylelint-disable-next-line unit-no-unknown */
     --half-scrollbar-width: calc((100cqw - 100%) / 2);
 
     margin-left: var(--half-scrollbar-width);
@@ -876,18 +866,6 @@ main {
       align-self: center;
     }
 
-    .selected-folder {
-      display: flex;
-      align-items: center;
-      gap: var(--sys-size-3);
-    }
-
-    .change-workspace {
-      display: flex;
-      flex-direction: row;
-      gap: var(--sys-size-2);
-    }
-
     .info-tooltip-container {
       max-width: var(--sys-size-28);
 
@@ -906,7 +884,7 @@ main {
       gap: var(--sys-size-3);
     }
 
-    .apply-to-workspace-container {
+    .apply-to-page-tree-container {
       display: flex;
       align-items: center;
       gap: var(--sys-size-3);

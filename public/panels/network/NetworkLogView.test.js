@@ -803,7 +803,7 @@ function getCountAdorner(filterBar) {
 }
 function getMoreFiltersActiveCount(filterBar) {
     const countAdorner = getCountAdorner(filterBar);
-    const count = countAdorner?.querySelector('[slot="content"]')?.textContent ?? '';
+    const count = countAdorner?.firstChild?.textContent ?? '';
     return count;
 }
 function getDropdownItem(softMenu, label) {

@@ -5,7 +5,8 @@ import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as Lantern from '../lantern.js';
 import { getComputationDataFromFixture, toLanternTrace } from '../testing/testing.js';
 const { FirstContentfulPaint } = Lantern.Metrics;
-describe('Metrics: Lantern FCP', () => {
+describe('Metrics: Lantern FCP', function () {
+    TraceLoader.setTestTimeout(this);
     let trace;
     before(async function () {
         trace = toLanternTrace(await TraceLoader.rawEvents(this, 'lantern/progressive-app/trace.json.gz'));

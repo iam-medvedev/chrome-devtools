@@ -31,6 +31,7 @@
   "files": [
     "../../../../../../../../front_end/panels/timeline/components/insights/BaseInsightComponent.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/CLSCulprits.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/Cache.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Checklist.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/DOMSize.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/DocumentLatency.ts",
@@ -43,6 +44,7 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/InteractionToNextPaint.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPDiscovery.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/LCPPhases.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/ModernHTTP.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/NetworkDependencyTree.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/NodeLink.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/RenderBlocking.ts",
@@ -50,13 +52,11 @@
     "../../../../../../../../front_end/panels/timeline/components/insights/SlowCSSSelector.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Table.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/ThirdParties.ts",
-    "../../../../../../../../front_end/panels/timeline/components/insights/UseCache.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Viewport.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/types.ts",
     "../../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../../front_end/global_typings/global_defs.d.ts",
-    "../../../../../../../../node_modules/@types/filesystem/index.d.ts",
-    "../../../../../../../../node_modules/@types/wicg-task-scheduling/index.d.ts"
+    "../../../../../../../../node_modules/@types/filesystem/index.d.ts"
   ],
   "references": [
     {

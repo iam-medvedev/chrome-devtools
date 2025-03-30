@@ -136,7 +136,8 @@ export default {
   contain: content;
   background-color: var(--sys-color-cdt-base-container);
   pointer-events: none;
-  padding: 4px 8px;
+  padding: var(--sys-size-6) var(--sys-size-8);
+  border-radius: var(--sys-shape-corner-small);
   white-space: nowrap;
   max-width: 80%;
   box-shadow: var(--drop-shadow);

@@ -197,7 +197,7 @@ export declare class TrackingHeapSnapshotProfileType extends TrackingHeapSnapsho
     get buttonTooltip(): Common.UIString.LocalizedString;
     isInstantProfile(): boolean;
     buttonClicked(): boolean;
-    startRecordingProfile(): void;
+    startRecordingProfile(): Promise<void>;
     customContent(): Element | null;
     setCustomContentEnabled(enable: boolean): void;
     recordAllocationStacksSetting(): Common.Settings.Setting<boolean>;
@@ -231,7 +231,7 @@ export declare class HeapProfileHeader extends ProfileHeader {
     receiver: Common.StringOutputStream.OutputStream | null;
     snapshotProxy: HeapSnapshotProxy | null;
     readonly loadPromise: Promise<HeapSnapshotProxy>;
-    fulfillLoad?: (value: HeapSnapshotProxy | PromiseLike<HeapSnapshotProxy>) => void;
+    fulfillLoad: (value: HeapSnapshotProxy | PromiseLike<HeapSnapshotProxy>) => void;
     totalNumberOfChunks: number;
     bufferedWriter: Bindings.TempFile.TempFile | null;
     onTempFileReady: (() => void) | null;

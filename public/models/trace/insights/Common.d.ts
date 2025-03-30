@@ -1,4 +1,6 @@
+import * as Protocol from '../../../generated/protocol.js';
 import type * as CrUXManager from '../../crux-manager/crux-manager.js';
+import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
 import { type InsightModels, type InsightSet, type InsightSetContext, type MetricSavings, type TraceInsightSets } from './types.js';
 export declare function getInsight<InsightName extends keyof InsightModels>(insightName: InsightName, insights: TraceInsightSets | null, key: string | null): InsightModels[InsightName] | null;
@@ -47,3 +49,20 @@ export declare function calculateMetricWeightsForSorting(insightSet: InsightSet,
  * Estimates the FCP & LCP savings for wasted bytes in `wastedBytesByRequestId`.
  */
 export declare function metricSavingsForWastedBytes(wastedBytesByRequestId: Map<string, number>, context: InsightSetContext): MetricSavings | undefined;
+/**
+ * Returns whether the network request was sent encoded.
+ */
+export declare function isRequestCompressed(request: Types.Events.SyntheticNetworkRequest): boolean;
+/**
+ * Estimates the number of bytes the content of this network record would have consumed on the network based on the
+ * uncompressed size (totalBytes). Uses the actual transfer size from the network record if applicable,
+ * minus the size of the response headers.
+ *
+ * @param totalBytes Uncompressed size of the resource
+ */
+export declare function estimateCompressedContentSize(request: Types.Events.SyntheticNetworkRequest | undefined, totalBytes: number, resourceType: Protocol.Network.ResourceType): number;
+/**
+ * Utility function to estimate the ratio of the compression of a script.
+ * This excludes the size of the response headers.
+ */
+export declare function estimateCompressionRatioForScript(script: Handlers.ModelHandlers.Scripts.Script): number;

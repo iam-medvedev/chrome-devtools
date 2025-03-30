@@ -35,6 +35,7 @@ describe('ScriptsHandler', () => {
                 frame: '21D58E83A5C17916277166140F6A464B',
                 request: undefined,
                 ts: 50442438976,
+                inline: false,
                 url: 'http://localhost:8080/index.html',
                 content: 'source text 1',
                 sourceMapUrl: 'http://localhost:8080/source.map.json',
@@ -46,6 +47,7 @@ describe('ScriptsHandler', () => {
                 frame: '21D58E83A5C17916277166140F6A464B',
                 request: undefined,
                 ts: 50442438976,
+                inline: false,
                 url: 'http://localhost:8080/index.html',
                 content: 'source text 2'
             },
@@ -56,6 +58,7 @@ describe('ScriptsHandler', () => {
                 content: ' text ',
                 request: undefined,
                 ts: 50442438976,
+                inline: false,
                 url: 'http://localhost:8080/index.html',
             }
         ]);

@@ -37,7 +37,6 @@ export default {
   pointer-events: none;
 }
 
-/* stylelint-disable-next-line at-rule-no-unknown */
 @container (max-width: 400px) {
   .overlay {
     /* Offset of 32px for spacing */

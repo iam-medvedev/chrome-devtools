@@ -8,7 +8,7 @@ interface SingleDiffViewInput {
     icon: HTMLElement;
     diff: Diff.Diff.DiffArray;
     copied: boolean;
-    onCopy: (fileUrl: string, diff: Diff.Diff.DiffArray) => void;
+    onCopy: (fileUrl: string) => void;
     onFileNameClick: (fileUrl: string) => void;
 }
 export interface ViewInput {

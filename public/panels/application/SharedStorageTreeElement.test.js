@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { SECURITY_ORIGIN } from '../../testing/ResourceTreeHelpers.js';
@@ -75,9 +76,11 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
             entries: ENTRIES,
             getError: () => undefined,
         });
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         panel.markAsRoot();
-        panel.show(document.body);
+        panel.show(container);
         const viewFunction = createViewFunctionStub(Application.SharedStorageItemsView.SharedStorageItemsView);
         const treeElement = new Application.SharedStorageTreeElement.SharedStorageTreeElement(panel, sharedStorage);
         treeElement.view =
@@ -87,7 +90,7 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
         const { view } = treeElement;
         const itemsListener = new SharedStorageItemsListener(view.sharedStorageItemsDispatcher);
         const refreshedPromise = itemsListener.waitForItemsRefreshed();
-        document.body.appendChild(treeElement.listItemNode);
+        container.appendChild(treeElement.listItemNode);
         treeElement.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeElement.selectable = true;
         treeElement.select();

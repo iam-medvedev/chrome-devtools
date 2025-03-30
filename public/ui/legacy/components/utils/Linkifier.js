@@ -79,17 +79,32 @@ const linkHandlers = new Map();
 let linkHandlerSettingInstance;
 export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     maxLength;
-    anchorsByTarget;
-    locationPoolByTarget;
+    anchorsByTarget = new Map();
+    locationPoolByTarget = new Map();
     useLinkDecorator;
+    #anchorUpdaters;
     constructor(maxLengthForDisplayedURLs, useLinkDecorator) {
         super();
         this.maxLength = maxLengthForDisplayedURLs || UI.UIUtils.MaxLengthForDisplayedURLs;
-        this.anchorsByTarget = new Map();
-        this.locationPoolByTarget = new Map();
         this.useLinkDecorator = Boolean(useLinkDecorator);
+        this.#anchorUpdaters = new WeakMap();
         instances.add(this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
+        Workspace.Workspace.WorkspaceImpl.instance().addEventListener(Workspace.Workspace.Events.WorkingCopyChanged, this.#onWorkingCopyChangedOrCommitted, this);
+        Workspace.Workspace.WorkspaceImpl.instance().addEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, this.#onWorkingCopyChangedOrCommitted, this);
+    }
+    #onWorkingCopyChangedOrCommitted({ data: { uiSourceCode } }) {
+        const anchors = anchorsByUISourceCode.get(uiSourceCode);
+        if (!anchors) {
+            return;
+        }
+        for (const anchor of anchors) {
+            const updater = this.#anchorUpdaters.get(anchor);
+            if (!updater) {
+                continue;
+            }
+            updater.call(this, anchor);
+        }
     }
     static setLinkDecorator(linkDecorator) {
         console.assert(!decorator, 'Cannot re-register link decorator.');
@@ -370,6 +385,8 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         this.listeners?.clear();
     }
     dispose() {
+        Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace.Workspace.Events.WorkingCopyChanged, this.#onWorkingCopyChangedOrCommitted, this);
+        Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace.Workspace.Events.WorkingCopyCommitted, this.#onWorkingCopyChangedOrCommitted, this);
         // Create a copy of {keys} so {targetRemoved} can safely modify the map.
         for (const target of [...this.anchorsByTarget.keys()]) {
             this.targetRemoved(target);
@@ -404,6 +421,9 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         }
         const text = uiLocation.linkText(true /* skipTrim */, options.showColumnNumber);
         Linkifier.setTrimmedText(anchor, text, this.maxLength);
+        this.#anchorUpdaters.set(anchor, function (anchor) {
+            void this.updateAnchor(anchor, options, liveLocation);
+        });
         let titleText = uiLocation.uiSourceCode.url();
         if (uiLocation.uiSourceCode.mimeType() === 'application/wasm') {
             // For WebAssembly locations, we follow the conventions described in

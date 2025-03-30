@@ -294,7 +294,7 @@ export class Automapping {
         await Promise.all(similarFiles.concat(networkSourceCode).map(async (sourceCode) => {
             this.sourceCodeToMetadataMap.set(sourceCode, await sourceCode.requestMetadata());
         }));
-        const activeFiles = similarFiles.filter(file => Boolean(this.activeFoldersIndex.closestParentFolder(file.url())));
+        const activeFiles = similarFiles.filter(file => !!this.activeFoldersIndex.closestParentFolder(file.url()));
         const networkMetadata = this.sourceCodeToMetadataMap.get(networkSourceCode);
         if (!networkMetadata || (!networkMetadata.modificationTime && typeof networkMetadata.contentSize !== 'number')) {
             // If networkSourceCode does not have metadata, try to match against active folders.

@@ -12,12 +12,15 @@ export declare const UIStrings: {
     readonly description: "Remove large, duplicate JavaScript modules from bundles to reduce unnecessary bytes consumed by network activity.";
     /** Label for a column in a data table; entries will be the locations of JavaScript or CSS code, e.g. the name of a Javascript package or module. */
     readonly columnSource: "Source";
-    /** Label for a column in a data table; entries will be the file size of a web resource in kilobytes. */
-    readonly columnResourceSize: "Resource size";
+    /** Label for a column in a data table; entries will be the number of wasted bytes due to duplication of a web resource. */
+    readonly columnDuplicatedBytes: "Duplicated bytes";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export type DuplicateJavaScriptInsightModel = InsightModel<typeof UIStrings, {
+export type DuplicatedJavaScriptInsightModel = InsightModel<typeof UIStrings, {
     duplication: Extras.ScriptDuplication.ScriptDuplication;
+    duplicationGroupedByNodeModules: Extras.ScriptDuplication.ScriptDuplication;
     scriptsWithDuplication: Handlers.ModelHandlers.Scripts.Script[];
+    scripts: Handlers.ModelHandlers.Scripts.Script[];
+    mainDocumentUrl: string;
 }>;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DuplicateJavaScriptInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DuplicatedJavaScriptInsightModel;

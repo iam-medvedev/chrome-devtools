@@ -154,35 +154,6 @@ input.enabled-button.small {
   opacity: 50%;
 }
 
-.changed {
-  background-color: var(--sys-color-tertiary-container);
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: -4px;
-    top: 0;
-    width: 2px;
-    height: 100%;
-    background-color: var(--sys-color-tertiary);
-  }
-}
-
-.copy {
-  display: none;
-
-  .changed:hover & {
-    position: absolute;
-    right: -4px;
-    top: 0;
-    bottom: 0;
-    margin: auto;
-    display: inline-block;
-    cursor: pointer;
-    transform: scale(0.9);
-  }
-}
-
 .hint-wrapper {
   align-items: center;
   display: inline-block;
@@ -306,6 +277,14 @@ devtools-icon.open-in-animations-panel {
 .value :focus {
   border-radius: var(--sys-size-2);
   outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+}
+
+.css-function-inline-block {
+  display: inline-block;
+  padding-left: 18px;  /* should match enabled-button width */
+  margin-left: -38px;  /* should match .webkit-css-property margin-left */
+
+  --webkit-css-property-color: var(--app-color-element-sidebar-subtitle);
 }
 
 /*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */

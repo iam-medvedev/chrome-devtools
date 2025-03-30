@@ -12,8 +12,6 @@ export default {
 
 .hint-popup-wrapper {
   max-width: 232px;
-  font-size: 12px;
-  line-height: 1.4;
 }
 
 code {
@@ -35,6 +33,10 @@ code {
 
 .unbreakable-text {
   white-space: nowrap;
+}
+
+.footer {
+  margin-top: var(--sys-size-5);
 }
 
 /*# sourceURL=${import.meta.resolve('./cssHintDetailsView.css')} */

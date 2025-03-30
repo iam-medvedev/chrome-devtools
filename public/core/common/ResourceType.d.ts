@@ -46,7 +46,7 @@ export declare const resourceCategories: {
     Image: ResourceCategory;
     Media: ResourceCategory;
     Manifest: ResourceCategory;
-    WebSocket: ResourceCategory;
+    Socket: ResourceCategory;
     Wasm: ResourceCategory;
     Other: ResourceCategory;
 };
@@ -70,6 +70,7 @@ export declare const resourceTypes: {
     EventSource: ResourceType;
     WebSocket: ResourceType;
     WebTransport: ResourceType;
+    DirectSocket: ResourceType;
     Wasm: ResourceType;
     Manifest: ResourceType;
     SignedExchange: ResourceType;

@@ -58,14 +58,13 @@ const OVERRIDES_FILE_SYSTEM_PATH = '/overrides';
  * The native implementations live in devtools_ui_bindings.cc: https://source.chromium.org/chromium/chromium/src/+/main:chrome/browser/devtools/devtools_ui_bindings.cc
  */
 export class InspectorFrontendHostStub {
-    #urlsBeingSaved;
+    #urlsBeingSaved = new Map();
     events;
     #fileSystem = null;
     recordedCountHistograms = [];
     recordedEnumeratedHistograms = [];
     recordedPerformanceHistograms = [];
     constructor() {
-        this.#urlsBeingSaved = new Map();
         // Guard against errors should this file ever be imported at the top level
         // within a worker - in which case this constructor is run. If there's no
         // document, we can early exit.

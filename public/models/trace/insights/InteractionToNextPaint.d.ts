@@ -40,4 +40,5 @@ export type INPInsightModel = InsightModel<typeof UIStrings, {
     longestInteractionEvent?: SyntheticInteractionPair;
     highPercentileInteractionEvent?: SyntheticInteractionPair;
 }>;
+export declare function isINP(insight: InsightModel): insight is INPInsightModel;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): INPInsightModel;

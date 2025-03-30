@@ -12,7 +12,7 @@ export default {
 
 :host {
   display: block;
-  padding: 5px 10px;
+  padding: 5px 8px;
 }
 
 .metrics {

@@ -4,7 +4,6 @@ import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { GPUTrackAppender } from './GPUTrackAppender.js';
 import { InteractionsTrackAppender } from './InteractionsTrackAppender.js';
 import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
-import { ServerTimingsTrackAppender } from './ServerTimingsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
@@ -127,7 +126,6 @@ export declare class CompatibilityTracksAppender {
     gpuTrackAppender(): GPUTrackAppender;
     layoutShiftsTrackAppender(): LayoutShiftsTrackAppender;
     threadAppenders(): ThreadAppender[];
-    serverTimingsTrackAppender(): ServerTimingsTrackAppender;
     eventsInTrack(trackAppender: TrackAppender): Trace.Types.Events.Event[];
     /**
      * Gets the events to be shown in the tree views of the details pane

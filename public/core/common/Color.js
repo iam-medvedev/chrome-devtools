@@ -1968,13 +1968,12 @@ export class Generator {
     #satSpace;
     #lightnessSpace;
     #alphaSpace;
-    #colors;
+    #colors = new Map();
     constructor(hueSpace, satSpace, lightnessSpace, alphaSpace) {
         this.#hueSpace = hueSpace || { min: 0, max: 360, count: undefined };
         this.#satSpace = satSpace || 67;
         this.#lightnessSpace = lightnessSpace || 80;
         this.#alphaSpace = alphaSpace || 1;
-        this.#colors = new Map();
     }
     setColorForID(id, color) {
         this.#colors.set(id, color);

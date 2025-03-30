@@ -223,7 +223,6 @@ models/trace/handlers/SamplesHandler.test.js
 models/trace/handlers/ScreenshotsHandler.test.js
 models/trace/handlers/ScriptsHandler.test.js
 models/trace/handlers/SelectorStatsHandler.test.js
-models/trace/handlers/ServerTimingsHandler.test.js
 models/trace/handlers/Threads.test.js
 models/trace/handlers/UserInteractionsHandler.test.js
 models/trace/handlers/UserTimingsHandler.test.js
@@ -236,21 +235,24 @@ models/trace/helpers/Timing.test.js
 models/trace/helpers/Trace.test.js
 models/trace/helpers/TreeHelpers.test.js
 models/trace/insights/CLSCulprits.test.js
+models/trace/insights/Cache.test.js
 models/trace/insights/Common.test.js
 models/trace/insights/DOMSize.test.js
 models/trace/insights/DocumentLatency.test.js
+models/trace/insights/DuplicatedJavaScript.test.js
 models/trace/insights/FontDisplay.test.js
 models/trace/insights/ForcedReflow.test.js
 models/trace/insights/ImageDelivery.test.js
 models/trace/insights/InteractionToNextPaint.test.js
 models/trace/insights/LCPDiscovery.test.js
 models/trace/insights/LCPPhases.test.js
+models/trace/insights/LegacyJavaScript.test.js
+models/trace/insights/ModernHTTP.test.js
 models/trace/insights/NetworkDependencyTree.test.js
 models/trace/insights/RenderBlocking.test.js
 models/trace/insights/SlowCSSSelector.test.js
 models/trace/insights/Statistics.test.js
 models/trace/insights/ThirdParties.test.js
-models/trace/insights/UseCache.test.js
 models/trace/insights/Viewport.test.js
 models/trace/lantern/core/NetworkAnalyzer.test.js
 models/trace/lantern/graph/BaseNode.test.js
@@ -273,7 +275,6 @@ models/workspace_diff/WorkspaceDiff.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/PatchWidget.test.js
-panels/ai_assistance/SelectWorkspaceDialog.test.js
 panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
 panels/ai_assistance/components/UserActionRow.test.js
@@ -426,6 +427,9 @@ panels/network/components/RequestHeadersView.test.js
 panels/network/components/RequestTrustTokensView.test.js
 panels/network/components/ResponseHeaderSection.test.js
 panels/performance_monitor/PerformanceMonitor.test.js
+panels/profiler/HeapDetachedElementsView.test.js
+panels/profiler/HeapProfileView.test.js
+panels/profiler/HeapSnapshotView.test.js
 panels/protocol_monitor/JSONEditor.test.js
 panels/protocol_monitor/ProtocolMonitor.test.js
 panels/recorder/RecorderController.test.js
@@ -533,7 +537,6 @@ panels/timeline/track_appenders/GPUTrackAppender.test.js
 panels/timeline/track_appenders/InteractionsTrackAppender.test.js
 panels/timeline/track_appenders/LayoutShiftsTrackAppender.test.js
 panels/timeline/track_appenders/NetworkTrackAppender.test.js
-panels/timeline/track_appenders/ServerTimingsTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
 panels/timeline/utils/AICallTree.test.js
@@ -544,6 +547,7 @@ panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js
 panels/timeline/utils/InsightAIContext.test.js
 panels/timeline/utils/SourceMapsResolver.test.js
+panels/timeline/utils/Treemap.test.js
 panels/utils/utils.test.js
 panels/web_audio/WebAudioView.test.js
 panels/web_audio/web_audio.test.js

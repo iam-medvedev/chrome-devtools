@@ -7,113 +7,144 @@ import * as Resources from './application.js';
 var View = Resources.SharedStorageEventsView;
 describeWithMockConnection('SharedStorageEventsView', () => {
     const TEST_ORIGIN_A = 'http://a.test';
+    const TEST_SITE_A = TEST_ORIGIN_A;
     const TEST_ORIGIN_B = 'http://b.test';
+    const TEST_SITE_B = TEST_ORIGIN_B;
     const TEST_ORIGIN_C = 'http://c.test';
+    const TEST_SITE_C = TEST_ORIGIN_C;
     const ID_A = 'AA';
     const ID_B = 'BB';
     const EMPTY_ID = '';
     const EVENTS = [
         {
             accessTime: 0,
-            type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
+            method: "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0', value: 'value0' },
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 10,
-            type: "workletGet" /* Protocol.Storage.SharedStorageAccessType.WorkletGet */,
+            method: "get" /* Protocol.Storage.SharedStorageAccessMethod.Get */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0' },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 15,
-            type: "workletLength" /* Protocol.Storage.SharedStorageAccessType.WorkletLength */,
+            method: "length" /* Protocol.Storage.SharedStorageAccessMethod.Length */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 20,
-            type: "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
+            method: "clear" /* Protocol.Storage.SharedStorageAccessMethod.Clear */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 100,
-            type: "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
+            method: "set" /* Protocol.Storage.SharedStorageAccessMethod.Set */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 150,
-            type: "workletRemainingBudget" /* Protocol.Storage.SharedStorageAccessType.WorkletRemainingBudget */,
+            method: "remainingBudget" /* Protocol.Storage.SharedStorageAccessMethod.RemainingBudget */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
     ];
     const MULTI_PAGE_EVENTS = [
         {
             accessTime: 0,
-            type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
+            method: "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0', value: 'value0' },
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 10,
-            type: "workletGet" /* Protocol.Storage.SharedStorageAccessType.WorkletGet */,
+            method: "get" /* Protocol.Storage.SharedStorageAccessMethod.Get */,
             mainFrameId: ID_B,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0' },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 15,
-            type: "workletLength" /* Protocol.Storage.SharedStorageAccessType.WorkletLength */,
+            method: "length" /* Protocol.Storage.SharedStorageAccessMethod.Length */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 20,
-            type: "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
+            method: "clear" /* Protocol.Storage.SharedStorageAccessMethod.Clear */,
             mainFrameId: EMPTY_ID,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 100,
-            type: "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
+            method: "set" /* Protocol.Storage.SharedStorageAccessMethod.Set */,
             mainFrameId: EMPTY_ID,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: { key: 'key0', value: 'value1', ignoreIfPresent: true },
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
         {
             accessTime: 150,
-            type: "workletRemainingBudget" /* Protocol.Storage.SharedStorageAccessType.WorkletRemainingBudget */,
+            method: "remainingBudget" /* Protocol.Storage.SharedStorageAccessMethod.RemainingBudget */,
             mainFrameId: ID_B,
             ownerOrigin: TEST_ORIGIN_C,
+            ownerSite: TEST_SITE_C,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
     ];
     const PAGE_A_EVENTS = [
         {
             accessTime: 0,
-            type: "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
+            method: "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_A,
+            ownerSite: TEST_SITE_A,
             params: { key: 'key0', value: 'value0' },
+            scope: "window" /* Protocol.Storage.SharedStorageAccessScope.Window */,
         },
         {
             accessTime: 15,
-            type: "workletLength" /* Protocol.Storage.SharedStorageAccessType.WorkletLength */,
+            method: "length" /* Protocol.Storage.SharedStorageAccessMethod.Length */,
             mainFrameId: ID_A,
             ownerOrigin: TEST_ORIGIN_B,
+            ownerSite: TEST_SITE_B,
             params: {},
+            scope: "sharedStorageWorklet" /* Protocol.Storage.SharedStorageAccessScope.SharedStorageWorklet */,
         },
     ];
     it('records events', () => {

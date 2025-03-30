@@ -6,9 +6,22 @@ export declare class GraphView extends Common.ObjectWrapper.ObjectWrapper<EventT
     contextId: string;
     private readonly nodes;
     private readonly edges;
+    /**
+     * For each node ID, keep a set of all out-bound edge IDs.
+     */
     private readonly outboundEdgeMap;
+    /**
+     * For each node ID, keep a set of all in-bound edge IDs.
+     */
     private readonly inboundEdgeMap;
+    /**
+     * Use concise node label to replace the long UUID.
+     * Each graph has its own label generator so that the label starts from 0.
+     */
     private readonly nodeLabelGenerator;
+    /**
+     * For each param ID, save its corresponding node Id.
+     */
     private readonly paramIdToNodeIdMap;
     constructor(contextId: string);
     /**

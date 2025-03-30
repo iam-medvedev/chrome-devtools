@@ -15,7 +15,7 @@ export default {
   position: relative;
   width: auto;
   height: auto;
-  margin: var(--sys-size-6) 0;
+  margin: var(--sys-size-5) 0;
   border-radius: var(--sys-shape-corner-extra-small);
   overflow: hidden;
   border: var(--sys-size-1) solid var(--sys-color-divider);
@@ -32,7 +32,7 @@ export default {
   }
 
   header {
-    padding: var(--sys-size-5) var(--sys-size-6);
+    padding: var(--sys-size-5) var(--sys-size-4);
 
     h3 {
       font: var(--sys-typescale-body4-medium);
@@ -58,16 +58,11 @@ export default {
   border-radius: var(--sys-shape-corner-full);
   background: var(--sys-color-cdt-base-container);
   opacity: 0%;
-  transition: opacity 0.2s ease;
 
   /* Ensure that the icon appears when the user hovers, or focuses the header */
   .insight:hover &,
   header:focus-within & {
     opacity: 100%;
-  }
-
-  devtools-button {
-    transition: transform 0.2s ease;
   }
 
   &.active devtools-button {
@@ -82,7 +77,7 @@ export default {
 }
 
 .insight-body {
-  padding: 0 var(--sys-size-6) var(--sys-size-5) var(--sys-size-6);
+  padding: 0 var(--sys-size-4) var(--sys-size-5);
 
   .list-title {
     margin-top: var(--sys-size-4);

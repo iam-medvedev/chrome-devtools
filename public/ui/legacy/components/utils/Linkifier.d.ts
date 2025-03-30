@@ -10,6 +10,7 @@ import * as Workspace from '../../../../models/workspace/workspace.js';
 import type * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as UI from '../../legacy.js';
 export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.Observer {
+    #private;
     private readonly maxLength;
     private readonly anchorsByTarget;
     private readonly locationPoolByTarget;

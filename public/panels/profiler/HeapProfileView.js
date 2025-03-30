@@ -228,11 +228,11 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
             void this.stopRecordingProfile();
         }
         else {
-            this.startRecordingProfile();
+            void this.startRecordingProfile();
         }
         return this.recording;
     }
-    startRecordingProfile() {
+    async startRecordingProfile() {
         const heapProfilerModel = UI.Context.Context.instance().flavor(SDK.HeapProfilerModel.HeapProfilerModel);
         if (this.profileBeingRecorded() || !heapProfilerModel) {
             return;
@@ -244,6 +244,12 @@ export class SamplingHeapProfileTypeBase extends Common.ObjectWrapper.eventMixin
         const warnings = [i18nString(UIStrings.heapProfilerIsRecording)];
         UI.InspectorView.InspectorView.instance().setPanelWarnings('heap-profiler', warnings);
         this.recording = true;
+        const target = heapProfilerModel.target();
+        const animationModel = target.model(SDK.AnimationModel.AnimationModel);
+        if (animationModel) {
+            // TODO(b/406904348): Remove this once we correctly release animations on the backend.
+            await animationModel.releaseAllAnimations();
+        }
         this.startSampling();
     }
     async stopRecordingProfile() {

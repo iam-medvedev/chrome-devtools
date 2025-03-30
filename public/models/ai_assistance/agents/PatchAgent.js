@@ -43,7 +43,7 @@ export class PatchAgent extends AiAgent {
     }
     constructor(opts) {
         super(opts);
-        this.#project = new AgentProject(opts.project);
+        this.#project = new AgentProject();
         this.#fileUpdateAgent = opts.fileUpdateAgent ?? new FileUpdateAgent(opts);
         this.declareFunction('listFiles', {
             description: 'Returns a list of all files in the project.',
@@ -104,7 +104,10 @@ export class PatchAgent extends AiAgent {
                         type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
                         description: 'List of file names from the project',
                         nullable: false,
-                        items: { type: 1 /* Host.AidaClient.ParametersTypes.STRING */, description: 'File name' }
+                        items: {
+                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                            description: 'File name',
+                        }
                     }
                 },
             },

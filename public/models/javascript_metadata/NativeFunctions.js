@@ -223,12 +223,7 @@ export const NativeFunctions = [
     {
         name: "create",
         signatures: [["?options"]],
-        receivers: ["CredentialsContainer", "AILanguageModelFactory", "AIRewriterFactory", "AISummarizerFactory", "AIWriterFactory", "AILanguageDetectorFactory"]
-    },
-    {
-        name: "create",
-        signatures: [["options"]],
-        receivers: ["AITranslatorFactory"]
+        receivers: ["CredentialsContainer", "LanguageModelFactory"]
     },
     {
         name: "defineProperty",
@@ -6792,7 +6787,7 @@ export const NativeFunctions = [
     {
         name: "redirect",
         signatures: [["url"]],
-        receivers: ["NavigateEvent"]
+        receivers: ["NavigationPrecommitController"]
     },
     {
         name: "Blob",
@@ -7315,23 +7310,7 @@ export const NativeFunctions = [
     },
     {
         name: "availability",
-        signatures: [["?options"]],
-        receivers: ["AILanguageModelFactory", "AIRewriterFactory", "AISummarizerFactory", "AIWriterFactory"]
-    },
-    {
-        name: "availability",
-        signatures: [["options"]],
-        receivers: ["AITranslatorFactory"]
-    },
-    {
-        name: "detect",
-        signatures: [["input", "?options"]],
-        receivers: ["AILanguageDetector"]
-    },
-    {
-        name: "detect",
-        signatures: [["image"]],
-        receivers: ["BarcodeDetector", "FaceDetector", "TextDetector"]
+        signatures: [["?options"]]
     },
     {
         name: "registerAnimator",
@@ -8467,6 +8446,10 @@ export const NativeFunctions = [
     {
         name: "BarcodeDetector",
         signatures: [["?barcodeDetectorOptions"]]
+    },
+    {
+        name: "detect",
+        signatures: [["image"]]
     },
     {
         name: "FaceDetector",

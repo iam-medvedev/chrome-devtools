@@ -246,9 +246,9 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
 customElements.define('devtools-named-bit-set-filter', NamedBitSetFilterUIElement);
 export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     filtersElement;
-    typeFilterElementTypeNames;
-    allowedTypes;
-    typeFilterElements;
+    typeFilterElementTypeNames = new WeakMap();
+    allowedTypes = new Set();
+    typeFilterElements = [];
     setting;
     constructor(items, setting) {
         super();
@@ -260,9 +260,6 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
         Tooltip.install(this.filtersElement, i18nString(UIStrings.sclickToSelectMultipleTypes, {
             PH1: KeyboardShortcut.shortcutToString('', Modifiers.CtrlOrMeta.value),
         }));
-        this.typeFilterElementTypeNames = new WeakMap();
-        this.allowedTypes = new Set();
-        this.typeFilterElements = [];
         this.addBit(NamedBitSetFilterUI.ALL_TYPES, i18nString(UIStrings.allStrings), NamedBitSetFilterUI.ALL_TYPES);
         this.typeFilterElements[0].tabIndex = 0;
         this.filtersElement.createChild('div', 'filter-bitset-filter-divider');

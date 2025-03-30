@@ -6,6 +6,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
@@ -340,6 +341,125 @@ describeWithEnvironment('ProtocolMonitor', () => {
                 { text: 'test2' },
             ]);
         });
+    });
+});
+describeWithEnvironment('view', () => {
+    let target;
+    const view = ProtocolMonitor.ProtocolMonitor.DEFAULT_VIEW;
+    beforeEach(async () => {
+        const container = document.createElement('div');
+        renderElementIntoDOM(container);
+        const widget = new UI.Widget.Widget();
+        widget.markAsRoot();
+        widget.show(container);
+        target = widget.element;
+        target.style.display = 'flex';
+        target.style.width = '780px';
+        target.style.height = '400px';
+    });
+    it('basic', async () => {
+        const viewInput = {
+            messages: [
+                {
+                    id: 1,
+                    method: 'Test.test1',
+                    result: { result: 'Test1' },
+                    params: { test: 'Test' },
+                    requestTime: 1,
+                    elapsedTime: 2,
+                },
+                {
+                    id: 2,
+                    method: 'Test.test2',
+                    params: { test: 'Test' },
+                    requestTime: 1,
+                    elapsedTime: 2,
+                },
+                {
+                    method: 'Test.test2',
+                    result: { test: 'Test' },
+                    requestTime: 1,
+                    elapsedTime: 2,
+                }
+            ],
+            selectedMessage: undefined,
+            sidebarVisible: false,
+            command: 'Test.test3',
+            commandSuggestions: [],
+            filterKeys: ['method', 'request', 'response', 'target', 'session'],
+            filter: '',
+            parseFilter: (_) => [],
+            onSplitChange: (_) => { },
+            onRecord: (_) => { },
+            onClear: () => { },
+            onSave: () => { },
+            onSelect: (_) => { },
+            onContextMenu: (_) => { },
+            onCommandChange: (_) => { },
+            onCommandSubmitted: (_) => { },
+            onFilterChanged: (_) => { },
+            onTargetChange: (_) => { },
+            onToggleSidebar: (_) => { },
+            targets: [],
+            selectedTargetId: 'main',
+        };
+        const viewOutput = { set editorWidget(value) { } };
+        view(viewInput, viewOutput, target);
+        await assertScreenshot('protocol_monitor/basic.png');
+    });
+    it('advanced', async () => {
+        const messages = [
+            {
+                id: 1,
+                method: 'Test.test1',
+                result: { result: 'Test1' },
+                params: { test: 'Test' },
+                requestTime: 1,
+                elapsedTime: 2,
+            },
+            {
+                id: 2,
+                method: 'Test.test2',
+                params: { test: 'Test' },
+                requestTime: 1,
+                elapsedTime: 2,
+            },
+            {
+                method: 'Test.test3',
+                result: { test: 'Test' },
+                requestTime: 1,
+                elapsedTime: 2,
+            }
+        ];
+        const viewInput = {
+            messages,
+            selectedMessage: messages[2],
+            sidebarVisible: false,
+            command: '{"command": "Test.test3"}',
+            commandSuggestions: [],
+            filterKeys: ['method', 'request', 'response', 'target', 'session'],
+            filter: 'method:Test.test3',
+            parseFilter: (_) => [{ key: 'method', text: 'test3', negative: false }],
+            onSplitChange: (_) => { },
+            onRecord: (_) => { },
+            onClear: () => { },
+            onSave: () => { },
+            onSelect: (_) => { },
+            onContextMenu: (_) => { },
+            onCommandChange: (_) => { },
+            onCommandSubmitted: (_) => { },
+            onFilterChanged: (_) => { },
+            onTargetChange: (_) => { },
+            onToggleSidebar: (_) => { },
+            targets: [
+                { id: () => 'main', name: () => 'Main', inspectedURL: () => 'www.example.com' },
+                { id: () => 'prerender', name: () => 'Prerender', inspectedURL: () => 'www.example.com/prerender' }
+            ],
+            selectedTargetId: 'prerender',
+        };
+        const viewOutput = { set editorWidget(value) { } };
+        view(viewInput, viewOutput, target);
+        await assertScreenshot('protocol_monitor/advanced.png');
     });
 });
 //# sourceMappingURL=ProtocolMonitor.test.js.map

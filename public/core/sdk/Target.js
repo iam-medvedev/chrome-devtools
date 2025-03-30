@@ -8,13 +8,13 @@ import { SDKModel } from './SDKModel.js';
 export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     #targetManagerInternal;
     #nameInternal;
-    #inspectedURLInternal;
-    #inspectedURLName;
+    #inspectedURLInternal = Platform.DevToolsPath.EmptyUrlString;
+    #inspectedURLName = '';
     #capabilitiesMask;
     #typeInternal;
     #parentTargetInternal;
     #idInternal;
-    #modelByConstructor;
+    #modelByConstructor = new Map();
     #isSuspended;
     /**
      * Generally when a target crashes we don't need to know, with one exception.
@@ -35,8 +35,6 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         super(needsNodeJSPatching, parentTarget, sessionId, connection);
         this.#targetManagerInternal = targetManager;
         this.#nameInternal = name;
-        this.#inspectedURLInternal = Platform.DevToolsPath.EmptyUrlString;
-        this.#inspectedURLName = '';
         this.#capabilitiesMask = 0;
         switch (type) {
             case Type.FRAME:
@@ -92,8 +90,6 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         this.#typeInternal = type;
         this.#parentTargetInternal = parentTarget;
         this.#idInternal = id;
-        /* } */
-        this.#modelByConstructor = new Map();
         this.#isSuspended = suspended;
         this.#targetInfoInternal = targetInfo;
     }

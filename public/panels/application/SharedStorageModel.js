@@ -121,21 +121,24 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
     }
     isChangeEvent(event) {
         return [
-            "documentSet" /* Protocol.Storage.SharedStorageAccessType.DocumentSet */,
-            "documentAppend" /* Protocol.Storage.SharedStorageAccessType.DocumentAppend */,
-            "documentDelete" /* Protocol.Storage.SharedStorageAccessType.DocumentDelete */,
-            "documentClear" /* Protocol.Storage.SharedStorageAccessType.DocumentClear */,
-            "workletSet" /* Protocol.Storage.SharedStorageAccessType.WorkletSet */,
-            "workletAppend" /* Protocol.Storage.SharedStorageAccessType.WorkletAppend */,
-            "workletDelete" /* Protocol.Storage.SharedStorageAccessType.WorkletDelete */,
-            "workletClear" /* Protocol.Storage.SharedStorageAccessType.WorkletClear */,
-        ].includes(event.type);
+            "set" /* Protocol.Storage.SharedStorageAccessMethod.Set */,
+            "append" /* Protocol.Storage.SharedStorageAccessMethod.Append */,
+            "delete" /* Protocol.Storage.SharedStorageAccessMethod.Delete */,
+            "clear" /* Protocol.Storage.SharedStorageAccessMethod.Clear */,
+        ].includes(event.method);
     }
     sharedStorageAccessed(event) {
         if (this.isChangeEvent(event)) {
             const sharedStorage = this.storageForOrigin(event.ownerOrigin);
             if (sharedStorage) {
-                const eventData = { accessTime: event.accessTime, type: event.type, mainFrameId: event.mainFrameId, params: event.params };
+                const eventData = {
+                    accessTime: event.accessTime,
+                    method: event.method,
+                    mainFrameId: event.mainFrameId,
+                    ownerSite: event.ownerSite,
+                    params: event.params,
+                    scope: event.scope,
+                };
                 // Forward events that may have changed `sharedStorage` to listeners for `sharedStorage`.
                 sharedStorage.dispatchEventToListeners("SharedStorageChanged" /* SharedStorageForOrigin.Events.SHARED_STORAGE_CHANGED */, eventData);
             }

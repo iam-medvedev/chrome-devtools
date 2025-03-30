@@ -75,9 +75,9 @@ export function suggestionFilter(option, query) {
     return option.toLowerCase().includes(query.toLowerCase());
 }
 export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    #metadataByCommand;
-    #typesByName;
-    #enumsByName;
+    #metadataByCommand = new Map();
+    #typesByName = new Map();
+    #enumsByName = new Map();
     #parameters = [];
     #targets = [];
     #command = '';
@@ -86,9 +86,6 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     constructor(element) {
         super(/* useShadowDom=*/ true, undefined, element);
         this.registerRequiredCSS(editorWidgetStyles);
-        this.#metadataByCommand = new Map();
-        this.#typesByName = new Map();
-        this.#enumsByName = new Map();
         this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor').track({ resize: true })}`);
         this.contentElement.addEventListener('keydown', event => {
             if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
@@ -155,7 +152,6 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.#hintPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.contentElement, event => this.#handlePopoverDescriptions(event), 'protocol-monitor.hint');
         this.#hintPopoverHelper.setDisableOnClick(true);
         this.#hintPopoverHelper.setTimeout(300);
-        this.#hintPopoverHelper.setHasPadding(true);
         const targetManager = SDK.TargetManager.TargetManager.instance();
         targetManager.addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, this.#handleAvailableTargetsChanged, this);
         this.#handleAvailableTargetsChanged();
@@ -359,7 +355,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         const replyArgs = elementData.replyArgs;
         let popupContent = '';
         // replyArgs and type cannot get into conflict because replyArgs is attached to a command and type to a parameter
-        if (replyArgs) {
+        if (replyArgs && replyArgs.length > 0) {
             popupContent = tail + `Returns: ${replyArgs}<br>`;
         }
         else if (type) {
@@ -372,7 +368,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             box: hintElement.boxInWindow(),
             show: async (popover) => {
                 const popupElement = new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView({
-                    getMessage: () => `<code><span>${head}</span></code>`,
+                    getMessage: () => `<span>${head}</span>`,
                     getPossibleFixMessage: () => popupContent,
                     getLearnMoreLink: () => `https://chromedevtools.github.io/devtools-protocol/tot/${this.command.split('.')[0]}/`,
                 });

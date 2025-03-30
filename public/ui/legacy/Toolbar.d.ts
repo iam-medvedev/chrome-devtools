@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as Adorners from '../components/adorners/adorners.js';
+import type * as Adorners from '../components/adorners/adorners.js';
 import { type Action } from './ActionRegistration.js';
 import { ContextMenu } from './ContextMenu.js';
 import type { Suggestion } from './SuggestBox.js';
@@ -107,7 +107,7 @@ export declare class ToolbarButton extends ToolbarItem<ToolbarButton.EventTypes,
     private button;
     private text?;
     private adorner?;
-    constructor(title: string, glyphOrAdorner?: string | Adorners.Adorner.Adorner, text?: string, jslogContext?: string, button?: Buttons.Button.Button);
+    constructor(title: string, glyph?: string, text?: string, jslogContext?: string, button?: Buttons.Button.Button);
     focus(): void;
     checked(checked: boolean): void;
     toggleOnClick(toggleOnClick: boolean): void;

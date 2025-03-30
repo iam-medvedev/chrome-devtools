@@ -256,7 +256,7 @@ export class BreakpointsSidebarController {
             const locations = locationsGroupedById[idx];
             const fstLocation = locations[0];
             const sourceURL = fstLocation.uiLocation.uiSourceCode.url();
-            const scriptId = fstLocation.uiLocation.uiSourceCode.canononicalScriptId();
+            const scriptId = fstLocation.uiLocation.uiSourceCode.canonicalScriptId();
             const uiLocation = fstLocation.uiLocation;
             const isHit = selectedUILocation !== null &&
                 locations.some(location => location.uiLocation.id() === selectedUILocation.id());

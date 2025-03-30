@@ -633,9 +633,6 @@ export function getBaseTraceParseModelData(overrides = {}) {
         SelectorStats: {
             dataForUpdateLayoutEvent: new Map(),
         },
-        ServerTimings: {
-            serverTimings: [],
-        },
         Warnings: {
             perEvent: new Map(),
             perWarning: new Map(),

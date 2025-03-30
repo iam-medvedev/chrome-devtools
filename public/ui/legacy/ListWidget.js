@@ -260,13 +260,13 @@ export class Editor {
     commitButton;
     cancelButton;
     errorMessageContainer;
-    controls;
-    controlByName;
-    validators;
-    commit;
-    cancel;
-    item;
-    index;
+    controls = [];
+    controlByName = new Map();
+    validators = [];
+    commit = null;
+    cancel = null;
+    item = null;
+    index = -1;
     constructor() {
         this.element = document.createElement('div');
         this.element.classList.add('editor-container');
@@ -303,13 +303,6 @@ export class Editor {
                 callback();
             }
         }
-        this.controls = [];
-        this.controlByName = new Map();
-        this.validators = [];
-        this.commit = null;
-        this.cancel = null;
-        this.item = null;
-        this.index = -1;
     }
     contentElement() {
         return this.contentElementInternal;

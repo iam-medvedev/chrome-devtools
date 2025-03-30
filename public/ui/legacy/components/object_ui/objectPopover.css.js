@@ -11,10 +11,11 @@ export default {
  */
 
 .object-popover-content {
-  display: block;
+  display: flex;
   position: relative;
   overflow: hidden;
   flex: 1 1 auto;
+  flex-direction: column;
 }
 
 .object-popover-title {
@@ -24,6 +25,7 @@ export default {
   font-weight: bold;
   padding-left: 18px;
   padding-bottom: 2px;
+  flex-shrink: 0;
 }
 
 .object-popover-tree {

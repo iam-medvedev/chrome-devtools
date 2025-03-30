@@ -1022,7 +1022,8 @@ export declare namespace Audits {
         SignatureInputHeaderMissingRequiredParameters = "SignatureInputHeaderMissingRequiredParameters",
         ValidationFailedSignatureExpired = "ValidationFailedSignatureExpired",
         ValidationFailedInvalidLength = "ValidationFailedInvalidLength",
-        ValidationFailedSignatureMismatch = "ValidationFailedSignatureMismatch"
+        ValidationFailedSignatureMismatch = "ValidationFailedSignatureMismatch",
+        ValidationFailedIntegrityMismatch = "ValidationFailedIntegrityMismatch"
     }
     /**
      * Details for issues around "Attribution Reporting API" usage.
@@ -1060,6 +1061,7 @@ export declare namespace Audits {
     interface SRIMessageSignatureIssueDetails {
         error: SRIMessageSignatureError;
         signatureBase: string;
+        integrityAssertions: string[];
         request: AffectedRequest;
     }
     const enum GenericIssueErrorType {
@@ -8677,7 +8679,8 @@ export declare namespace Network {
         SamePartyFromCrossPartyContext = "SamePartyFromCrossPartyContext",
         NameValuePairExceedsMaxSize = "NameValuePairExceedsMaxSize",
         PortMismatch = "PortMismatch",
-        SchemeMismatch = "SchemeMismatch"
+        SchemeMismatch = "SchemeMismatch",
+        AnonymousContext = "AnonymousContext"
     }
     /**
      * Types of reasons why a cookie should have been blocked by 3PCD but is exempted for the request.
@@ -11184,6 +11187,7 @@ export declare namespace Page {
         InterestCohort = "interest-cohort",
         JoinAdInterestGroup = "join-ad-interest-group",
         KeyboardMap = "keyboard-map",
+        LanguageDetector = "language-detector",
         LocalFonts = "local-fonts",
         Magnetometer = "magnetometer",
         MediaPlaybackWhileNotVisible = "media-playback-while-not-visible",
@@ -11198,6 +11202,7 @@ export declare namespace Page {
         PrivateStateTokenRedemption = "private-state-token-redemption",
         PublickeyCredentialsCreate = "publickey-credentials-create",
         PublickeyCredentialsGet = "publickey-credentials-get",
+        Rewriter = "rewriter",
         RunAdAuction = "run-ad-auction",
         ScreenWakeLock = "screen-wake-lock",
         Serial = "serial",
@@ -11208,7 +11213,9 @@ export declare namespace Page {
         SpeakerSelection = "speaker-selection",
         StorageAccess = "storage-access",
         SubApps = "sub-apps",
+        Summarizer = "summarizer",
         SyncXhr = "sync-xhr",
+        Translator = "translator",
         Unload = "unload",
         Usb = "usb",
         UsbUnrestricted = "usb-unrestricted",
@@ -11217,6 +11224,7 @@ export declare namespace Page {
         WebPrinting = "web-printing",
         WebShare = "web-share",
         WindowManagement = "window-management",
+        Writer = "writer",
         XrSpatialTracking = "xr-spatial-tracking"
     }
     /**
@@ -13807,30 +13815,33 @@ export declare namespace Storage {
         SellerTrustedSignals = "sellerTrustedSignals"
     }
     /**
-     * Enum of shared storage access types.
+     * Enum of shared storage access scopes.
      */
-    const enum SharedStorageAccessType {
-        DocumentAddModule = "documentAddModule",
-        DocumentSelectURL = "documentSelectURL",
-        DocumentRun = "documentRun",
-        DocumentSet = "documentSet",
-        DocumentAppend = "documentAppend",
-        DocumentDelete = "documentDelete",
-        DocumentClear = "documentClear",
-        DocumentGet = "documentGet",
-        WorkletSet = "workletSet",
-        WorkletAppend = "workletAppend",
-        WorkletDelete = "workletDelete",
-        WorkletClear = "workletClear",
-        WorkletGet = "workletGet",
-        WorkletKeys = "workletKeys",
-        WorkletEntries = "workletEntries",
-        WorkletLength = "workletLength",
-        WorkletRemainingBudget = "workletRemainingBudget",
-        HeaderSet = "headerSet",
-        HeaderAppend = "headerAppend",
-        HeaderDelete = "headerDelete",
-        HeaderClear = "headerClear"
+    const enum SharedStorageAccessScope {
+        Window = "window",
+        SharedStorageWorklet = "sharedStorageWorklet",
+        ProtectedAudienceWorklet = "protectedAudienceWorklet",
+        Header = "header"
+    }
+    /**
+     * Enum of shared storage access methods.
+     */
+    const enum SharedStorageAccessMethod {
+        AddModule = "addModule",
+        CreateWorklet = "createWorklet",
+        SelectURL = "selectURL",
+        Run = "run",
+        BatchUpdate = "batchUpdate",
+        Set = "set",
+        Append = "append",
+        Delete = "delete",
+        Clear = "clear",
+        Get = "get",
+        Keys = "keys",
+        Values = "values",
+        Entries = "entries",
+        Length = "length",
+        RemainingBudget = "remainingBudget"
     }
     /**
      * Struct for a single key-value pair in an origin's shared storage.
@@ -14584,17 +14595,25 @@ export declare namespace Storage {
          */
         accessTime: Network.TimeSinceEpoch;
         /**
+         * Enum value indicating the access scope.
+         */
+        scope: SharedStorageAccessScope;
+        /**
          * Enum value indicating the Shared Storage API method invoked.
          */
-        type: SharedStorageAccessType;
+        method: SharedStorageAccessMethod;
         /**
          * DevTools Frame Token for the primary frame tree's root.
          */
         mainFrameId: Page.FrameId;
         /**
-         * Serialized origin for the context that invoked the Shared Storage API.
+         * Serialization of the origin owning the Shared Storage data.
          */
         ownerOrigin: string;
+        /**
+         * Serialization of the site owning the Shared Storage data.
+         */
+        ownerSite: string;
         /**
          * The sub-parameters wrapped by `params` are all optional and their
          * presence/absence depends on `type`.
@@ -16904,6 +16923,13 @@ export declare namespace BluetoothEmulation {
         PoweredOn = "powered-on"
     }
     /**
+     * Indicates the various types of GATT event.
+     */
+    const enum GATTOperationType {
+        Connection = "connection",
+        Discovery = "discovery"
+    }
+    /**
      * Stores the manufacturer data
      */
     interface ManufacturerData {
@@ -16970,6 +16996,33 @@ export declare namespace BluetoothEmulation {
     }
     interface SimulateAdvertisementRequest {
         entry: ScanEntry;
+    }
+    interface SimulateGATTOperationResponseRequest {
+        address: string;
+        type: GATTOperationType;
+        code: integer;
+    }
+    interface AddServiceRequest {
+        address: string;
+        serviceUuid: string;
+    }
+    interface AddServiceResponse extends ProtocolResponseWithError {
+        /**
+         * An identifier that uniquely represents this service.
+         */
+        id: string;
+    }
+    interface RemoveServiceRequest {
+        address: string;
+        id: string;
+    }
+    /**
+     * Event for when a GATT operation of |type| to the peripheral with |address|
+     * happened.
+     */
+    interface GattOperationReceivedEvent {
+        address: string;
+        type: GATTOperationType;
     }
 }
 /**

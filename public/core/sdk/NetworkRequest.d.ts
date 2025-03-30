@@ -19,6 +19,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     localizedFailDescription: string | null;
     responseReceivedPromise?: Promise<void>;
     responseReceivedPromiseResolve?: () => void;
+    directSocketInfo?: DirectSocketInfo;
     constructor(requestId: string, backendRequestId: Protocol.Network.RequestId | undefined, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, initiator: Protocol.Network.Initiator | null, hasUserGesture?: boolean);
     static create(backendRequestId: Protocol.Network.RequestId, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, initiator: Protocol.Network.Initiator | null, hasUserGesture?: boolean): NetworkRequest;
     static createForWebSocket(backendRequestId: Protocol.Network.RequestId, requestURL: Platform.DevToolsPath.UrlString, initiator?: Protocol.Network.Initiator): NetworkRequest;
@@ -362,3 +363,38 @@ export interface WebBundleInnerRequestInfo {
     errorMessage?: string;
 }
 export type OverrideType = 'content' | 'headers';
+export declare enum DirectSocketType {
+    TCP = 1,
+    UDP_BOUND = 2,
+    UDP_CONNECTED = 3
+}
+export declare enum DirectSocketStatus {
+    OPENING = 1,
+    OPEN = 2,
+    CLOSED = 3,
+    ABORTED = 4
+}
+export interface DirectSocketCreateOptions {
+    remoteAddr?: string;
+    remotePort?: number;
+    localAddr?: string;
+    localPort?: number;
+    noDelay?: boolean;
+    keepAliveDelay?: number;
+    sendBufferSize?: number;
+    receiveBufferSize?: number;
+    dnsQueryType?: Protocol.Network.DirectSocketDnsQueryType;
+}
+export interface DirectSocketOpenInfo {
+    remoteAddr?: string;
+    remotePort?: number;
+    localAddr?: string;
+    localPort?: number;
+}
+export interface DirectSocketInfo {
+    type: DirectSocketType;
+    status: DirectSocketStatus;
+    errorMessage?: string;
+    createOptions: DirectSocketCreateOptions;
+    openInfo?: DirectSocketOpenInfo;
+}

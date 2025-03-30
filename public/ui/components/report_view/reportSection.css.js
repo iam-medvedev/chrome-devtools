@@ -16,7 +16,7 @@ export default {
 }
 
 .section {
-  padding: var(--sys-size-5) 0 var(--sys-size-5) var(--sys-size-9);
+  padding: var(--sys-size-5) var(--sys-size-9);
   display: flex;
   flex-direction: row;
   align-items: center;

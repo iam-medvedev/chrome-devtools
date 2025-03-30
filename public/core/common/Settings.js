@@ -37,23 +37,17 @@ export class Settings {
     syncedStorage;
     globalStorage;
     localStorage;
-    #sessionStorage;
-    settingNameSet;
-    orderValuesBySettingCategory;
-    #eventSupport;
-    #registry;
-    moduleSettings;
+    #sessionStorage = new SettingsStorage({});
+    settingNameSet = new Set();
+    orderValuesBySettingCategory = new Map();
+    #eventSupport = new ObjectWrapper();
+    #registry = new Map();
+    moduleSettings = new Map();
     #logSettingAccess;
     constructor(syncedStorage, globalStorage, localStorage, logSettingAccess) {
         this.syncedStorage = syncedStorage;
         this.globalStorage = globalStorage;
         this.localStorage = localStorage;
-        this.#sessionStorage = new SettingsStorage({});
-        this.settingNameSet = new Set();
-        this.orderValuesBySettingCategory = new Map();
-        this.#eventSupport = new ObjectWrapper();
-        this.#registry = new Map();
-        this.moduleSettings = new Map();
         this.#logSettingAccess = logSettingAccess;
         for (const registration of this.getRegisteredSettings()) {
             const { settingName, defaultValue, storageType } = registration;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../../../ui/components/icon_button/icon_button.js';
 import '../../../../ui/components/tooltips/tooltips.js';
+import '../../../../ui/components/spinners/spinners.js';
 import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
@@ -34,6 +35,18 @@ const UIStrings = {
      *@description Text displayed on a button that generates an AI label.
      */
     generateLabelButton: 'Generate label',
+    /**
+     *@description Label used for screenreaders on the FRE dialog
+     */
+    freDialog: 'Get AI-powered annotation suggestions dialog',
+    /**
+     *@description Screen-reader text for a tooltip link for navigating to "AI innovations" settings where the user can learn more about auto-annotations.
+     */
+    learnMoreAriaLabel: 'Learn more about auto annotations in settings',
+    /**
+     *@description Screen-reader text for a tooltip icon.
+     */
+    moreInfoAriaLabel: 'More info',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -42,7 +55,7 @@ const UIStringsNotTranslate = {
     /**
      *@description Tooltip link for the navigating to "AI innovations" page in settings.
      */
-    learnMore: 'Learn more',
+    learnMore: 'Learn more in settings',
     /**
      *@description Security disclaimer text displayed when the information icon on a button that generates an AI label is hovered.
      */
@@ -64,6 +77,14 @@ const UIStringsNotTranslate = {
      */
     freDisclaimerHeader: 'Get AI-powered annotation suggestions',
     /**
+     *@description Text shown when the AI-powered annotation is being generated.
+     */
+    generatingLabel: 'Generating label',
+    /**
+     *@description Text shown when the generation of the AI-powered annotation failed.
+     */
+    generationFailed: 'Generation failed',
+    /**
      *@description First disclaimer item text for the fre dialog - AI won't always get it right.
      */
     freDisclaimerAiWontAlwaysGetItRight: 'This feature uses AI and won’t always get it right',
@@ -79,6 +100,10 @@ const UIStringsNotTranslate = {
      *@description Third disclaimer item text part for the fre dialog part - settings panel text.
      */
     settingsPanel: 'settings panel',
+    /**
+     *@description Text for the 'learn more' button displayed in fre.
+     */
+    learnMoreButton: 'Learn more about auto annotations',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/EntryLabelOverlay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -98,6 +123,14 @@ export class EntryLabelChangeEvent extends Event {
     constructor(newLabel) {
         super(EntryLabelChangeEvent.eventName);
         this.newLabel = newLabel;
+    }
+}
+export class LabelAnnotationsConsentDialogVisiblityChange extends Event {
+    isVisible;
+    static eventName = 'labelannotationsconsentdialogvisiblitychange';
+    constructor(isVisible) {
+        super(LabelAnnotationsConsentDialogVisiblityChange.eventName, { bubbles: true, composed: true });
+        this.isVisible = isVisible;
     }
 }
 export class EntryLabelOverlay extends HTMLElement {
@@ -140,6 +173,17 @@ export class EntryLabelOverlay extends HTMLElement {
         aidaClient: new Host.AidaClient.AidaClient(),
         serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled(),
     });
+    /**
+     * We track this because when the user is in this flow we don't want the
+     * empty annotation label to be removed on blur, as we take them to the flow &
+     * want to keep the label there for when they come back from the flow having
+     * consented, hopefully!
+     */
+    #inAIConsentDialogFlow = false;
+    // Keep track of the AI label loading state to render a loading component if the label is being generated
+    #isAILabelLoading = false;
+    // Set to true when the generation of an AI label failed so we know when to display the 'generation failed' disclaimer
+    #isAILabelGenerationFailed = false;
     /**
      * The entry label overlay consists of 3 parts - the label part with the label string inside,
      * the line connecting the label to the entry, and a black box around an entry to highlight the entry with a label.
@@ -197,6 +241,9 @@ export class EntryLabelOverlay extends HTMLElement {
         if (labelBoxTextContent !== this.#label) {
             this.#label = labelBoxTextContent;
             this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
+            // Dispatch a fake change event; because we use contenteditable rather than an input, this event does not fire.
+            // But we want to listen to the change event in the VE logs, so we dispatch it here.
+            this.#inputField?.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
         this.#inputField?.setAttribute('aria-label', labelBoxTextContent);
     }
@@ -213,11 +260,22 @@ export class EntryLabelOverlay extends HTMLElement {
         // We do not want to create multi-line labels.
         // Therefore, if the new key is `Enter` key, treat it
         // as the end of the label input and blur the input field.
-        if (event.key === Platform.KeyboardUtilities.ENTER_KEY || event.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
+        if ((event.key === Platform.KeyboardUtilities.ENTER_KEY || event.key === Platform.KeyboardUtilities.ESCAPE_KEY) &&
+            this.#isLabelEditable) {
             // Note that we do not stop the event propagating here; this is on
             // purpose because we need it to bubble up into TimelineFlameChartView's
             // handler. That updates the state and deals with the keydown.
-            this.#inputField.dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+            // In theory blur() should call the blur event listener, which in turn
+            // calls the setLabelEditabilityAndRemoveEmptyLabel method. However, we
+            // have seen this not work as part of the AI FRE flow where the privacy
+            // consent dialog is shown, which takes focus away from the input and
+            // causes the blur() to be a no-op. It's not entirely clear why this
+            // happens as visually it renders as focused, but as a back-up we call
+            // the setLabelEditabilityAndRemoveEmptyLabel method manually. It won't
+            // do anything if the editable state matches what is passed in, so it's
+            // safe to call this just in case the blur() didn't actually trigger.
+            this.#inputField.blur();
+            this.setLabelEditabilityAndRemoveEmptyLabel(false);
             return false;
         }
         // If the max limit is not reached, return true
@@ -244,13 +302,7 @@ export class EntryLabelOverlay extends HTMLElement {
         const newText = this.#inputField.textContent + pastedText;
         const trimmedText = newText.slice(0, EntryLabelOverlay.MAX_LABEL_LENGTH + 1);
         this.#inputField.textContent = trimmedText;
-        // Reset the selection to the end
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(this.#inputField);
-        range.collapse(false);
-        selection?.removeAllRanges();
-        selection?.addRange(range);
+        this.#placeCursorAtInputEnd();
     }
     set entryLabelVisibleHeight(entryLabelVisibleHeight) {
         if (entryLabelVisibleHeight === this.#entryLabelVisibleHeight) {
@@ -353,10 +405,15 @@ export class EntryLabelOverlay extends HTMLElement {
         this.#inputField.focus();
     }
     setLabelEditabilityAndRemoveEmptyLabel(editable) {
+        // We skip this if we have taken the user to the AI FRE flow, because we want the label still there when they come back.
+        if (this.#inAIConsentDialogFlow && editable === false) {
+            return;
+        }
         this.#isLabelEditable = editable;
         this.#render();
-        // If the label is editable, focus cursor on it
-        if (editable) {
+        // If the label is editable, focus cursor on it & put the cursor at the end
+        if (editable && this.#inputField) {
+            this.#placeCursorAtInputEnd();
             this.#focusInputBox();
         }
         // On MacOS when clearing the input box it is left with a new line, so we
@@ -367,6 +424,22 @@ export class EntryLabelOverlay extends HTMLElement {
             this.#isPendingRemoval = true;
             this.dispatchEvent(new EmptyEntryLabelRemoveEvent());
         }
+    }
+    /**
+     * Places the user's cursor at the end of the input. We do this when the user
+     * focuses the input with either the keyboard or mouse, and when they paste in
+     * text, so that the cursor is placed in a useful position to edit.
+     */
+    #placeCursorAtInputEnd() {
+        if (!this.#inputField) {
+            return;
+        }
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(this.#inputField);
+        range.collapse(false);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
     }
     set callTree(callTree) {
         this.#callTree = callTree;
@@ -379,26 +452,55 @@ export class EntryLabelOverlay extends HTMLElement {
     // Otherwise, show the fre dialog with a 'Got it' button that turns the setting on.
     async #handleAiButtonClick() {
         if (this.#aiAnnotationsEnabledSetting.get()) {
-            // TODO(b/405354543): handle the loading state here.
             if (!this.#callTree || !this.#inputField) {
                 // Shouldn't happen as we only show the Generate UI when we have this, but this satisfies TS.
                 return;
             }
             try {
+                // Trigger a re-render to display the loading component in the place of the button when the label is being generated.
+                this.#isAILabelLoading = true;
+                // Trigger a re-render to put focus back on the input box, otherwise
+                // when the button changes to a loading spinner, it loses focus and the
+                // editing state is reset because the component loses focus.
+                this.#render();
+                this.#focusInputBox();
+                void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
                 this.#label = await this.#performanceAgent.generateAIEntryLabel(this.#callTree);
                 this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
                 this.#inputField.innerText = this.#label;
+                this.#isAILabelLoading = false;
+                // Trigger a re-render to hide the AI Button and display the generated label.
+                this.#render();
             }
             catch {
-                // TODO(b/405354265): handle the error state
+                this.#isAILabelLoading = false;
+                this.#isAILabelGenerationFailed = true;
+                void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
             }
         }
         else {
-            await this.#showUserAiFirstRunDialog();
+            this.#isAILabelLoading = false;
+            this.#inAIConsentDialogFlow = true;
+            this.#render();
+            const hasConsented = await this.#showUserAiFirstRunDialog();
+            this.#inAIConsentDialogFlow = false;
+            // This makes sure we put the user back in the editable state.
+            this.setLabelEditabilityAndRemoveEmptyLabel(true);
+            // If the user has consented, we now want to call this function again so
+            // the label generation happens without them having to click the button
+            // again.
+            if (hasConsented) {
+                await this.#handleAiButtonClick();
+            }
         }
     }
+    /**
+     * @returns `true` if the user has now consented, and `false` otherwise.
+     */
     async #showUserAiFirstRunDialog() {
+        this.dispatchEvent(new LabelAnnotationsConsentDialogVisiblityChange(true));
         const userConsented = await PanelCommon.FreDialog.show({
+            ariaLabel: i18nString(UIStrings.freDialog),
             header: { iconName: 'pen-spark', text: lockedString(UIStringsNotTranslate.freDisclaimerHeader) },
             reminderItems: [
                 {
@@ -414,37 +516,68 @@ export class EntryLabelOverlay extends HTMLElement {
                     // clang-format off
                     content: html `
             ${lockedString(UIStringsNotTranslate.freDisclaimerControlSettingFrom)}
-            <x-link
+            <button
               @click=${() => {
                         void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
                     }}
               class="link"
+              role="link"
               jslog=${VisualLogging.link('open-ai-settings').track({
                         click: true
                     })}
-            >${lockedString(UIStringsNotTranslate.settingsPanel)}</x-link>`,
+              tabindex="0"
+            >${lockedString(UIStringsNotTranslate.settingsPanel)}</button>`,
                     // clang-format on
-                }
+                },
             ],
             onLearnMoreClick: () => {
-                void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
-            }
+                UI.UIUtils.openInNewTab('https://developer.chrome.com/docs/devtools/performance/reference#auto-annotations');
+            },
+            learnMoreButtonTitle: UIStringsNotTranslate.learnMoreButton,
         });
+        this.dispatchEvent(new LabelAnnotationsConsentDialogVisiblityChange(false));
         if (userConsented) {
             this.#aiAnnotationsEnabledSetting.set(true);
         }
+        return this.#aiAnnotationsEnabledSetting.get();
     }
-    // Check if the user is logged in, over 18, in a supported location and offline.
-    // If the user is not logged in, `blockedByAge` will return true.
-    #isAiAvailable() {
+    #shouldRenderAIButton() {
+        const hasAiExperiment = Boolean(Root.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled);
+        const aiDisabledByEnterprisePolicy = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
+            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE;
+        // If the call tree is not available, the entry is in a track other than the main track.
+        // Therefore, hide the button because, at the moment, the label can only be generated for main tracks
+        const dataToGenerateLabelAvailable = this.#callTree !== null;
+        /**
+         * Right now if the user "retries" the AI label generation the result will
+         * be almost identical because we don't change the input data or prompt. So
+         * we only show the generate button if the label is empty.
+         */
+        const labelIsEmpty = this.#label?.length <= 0;
+        if (!hasAiExperiment || aiDisabledByEnterprisePolicy || !dataToGenerateLabelAvailable || !labelIsEmpty) {
+            return 'hidden';
+        }
+        // To verify whether AI can be used, check if the user is logged in, over 18, in a supported
+        // location and offline. If the user is not logged in, `blockedByAge` will return true.
         const aiAvailable = !Root.Runtime.hostConfig.aidaAvailability?.blockedByAge &&
             !Root.Runtime.hostConfig.aidaAvailability?.blockedByGeo && !navigator.onLine === false;
-        const dataToGenerateLabelAvailable = this.#callTree !== null;
-        return aiAvailable && dataToGenerateLabelAvailable;
+        if (aiAvailable) {
+            return 'enabled';
+        }
+        // If AI features are not available, we show a disabled button.
+        if (!aiAvailable) {
+            return 'disabled';
+        }
+        console.error('\'Generate label\' button is hidden for an unknown reason');
+        return 'hidden';
     }
     #renderAITooltip(opts) {
         // clang-format off
-        return html `<devtools-tooltip variant="rich" id="info-tooltip" ${Directives.ref(this.#richTooltip)}>
+        return html `<devtools-tooltip
+    variant="rich"
+    id="info-tooltip"
+    aria-label=${i18nString(UIStrings.moreInfoAriaLabel)}
+    ${Directives.ref(this.#richTooltip)}>
       <div class="info-tooltip-container">
         ${opts.textContent}
         ${opts.includeSettingsButton ? html `
@@ -455,6 +588,7 @@ export class EntryLabelOverlay extends HTMLElement {
             click: true,
         })}
             @click=${this.#onTooltipLearnMoreClick}
+            aria-label=${i18nString(UIStrings.learnMoreAriaLabel)}
           >${lockedString(UIStringsNotTranslate.learnMore)}</button>
         ` : Lit.nothing}
       </div>
@@ -464,11 +598,41 @@ export class EntryLabelOverlay extends HTMLElement {
     #renderAiButton() {
         const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+        if (this.#isAILabelLoading) {
+            // clang-format off
+            return html `
+      <span
+        class="ai-label-loading">
+        <devtools-spinner></devtools-spinner>
+        <span class="generate-label-text">${lockedString(UIStringsNotTranslate.generatingLabel)}</span>
+      </span>
+    `;
+            // clang-format on
+        }
+        if (this.#isAILabelGenerationFailed) {
+            // Only show the error message on the first component render render after the failure.
+            this.#isAILabelGenerationFailed = false;
+            // clang-format off
+            return html `
+        <span
+          class="ai-label-error">
+          <devtools-icon
+            class="warning"
+            .name=${'warning'}
+            .data=${{
+                iconName: 'warning', color: 'var(--ref-palette-error50)', width: '20px'
+            }}>
+          </devtools-icon>
+          <span class="generate-label-text">${lockedString(UIStringsNotTranslate.generationFailed)}</span>
+        </span>
+      `;
+            // clang-format on
+        }
         // clang-format off
         return html `
       <!-- 'preventDefault' on the AI label button to prevent the label removal on blur  -->
       <span
-        class="ai-label-button-wrapper"
+        class="ai-label-button-wrapper only-pen-wrapper"
         @mousedown=${(e) => e.preventDefault()}>
         <button
           class="ai-label-button enabled"
@@ -510,7 +674,7 @@ export class EntryLabelOverlay extends HTMLElement {
         return html `
       <!-- 'preventDefault' on the AI label button to prevent the label removal on blur  -->
       <span
-        class="ai-label-disabled-button-wrapper"
+        class="ai-label-disabled-button-wrapper only-pen-wrapper"
         @mousedown=${(e) => e.preventDefault()}>
         <button
           class="ai-label-button disabled"
@@ -533,32 +697,78 @@ export class EntryLabelOverlay extends HTMLElement {
     `;
         // clang-format on
     }
+    #handleFocusOutEvent() {
+        /**
+         * Usually when the text box loses focus, we want to stop the edit mode and
+         * just display the annotation. However, if the user tabs from the text box
+         * to focus the GenerateAI button, we need to ensure that we do not exit
+         * edit mode. The only reliable method is to listen to the focusout event
+         * (which bubbles, unlike `blur`) on the parent.
+         * This means we get any updates on the focus state of anything inside this component.
+         * Once we get the event, we check to see if focus is still within this
+         * component (which means either the input, or the button, or the disclaimer popup).
+         * If it is, we do nothing, but if we have lost focus,  we can then exit editable mode.
+         *
+         * If you are thinking "why not `blur` on the span" it's because blur does
+         * not propagate; the span itself never blurs, but the elements inside it
+         * do as the span is not focusable.
+         *
+         * The reason we do it inside a rAF is because on the first run the values
+         * for `this.hasFocus()` are not accurate. I'm not quite sure why, but by
+         * letting the browser have a frame to update, it then accurately reports
+         * the up to date values for `this.hasFocus()`
+         */
+        requestAnimationFrame(() => {
+            if (!this.hasFocus()) {
+                this.setLabelEditabilityAndRemoveEmptyLabel(false);
+            }
+        });
+    }
     #render() {
-        const hasAiExperiment = Boolean(Root.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled);
-        const aiDisabledByEnterprisePolicy = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
-            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE;
-        const doNotShowAIButton = !hasAiExperiment || aiDisabledByEnterprisePolicy;
+        const inputFieldClasses = Lit.Directives.classMap({
+            'input-field': true,
+            // When the consent modal pops up, we want the input to look like it has focus so it visually doesn't change.
+            // Once the consent flow is closed, we restore focus and maintain the appearance.
+            'fake-focus-state': this.#inAIConsentDialogFlow,
+        });
         // clang-format off
         Lit.render(html `
-        <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}>
+        <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}
+          @focusout=${this.#handleFocusOutEvent}
+        >
           <span
             class="label-button-input-wrapper">
             <span
-              class="input-field"
+              class=${inputFieldClasses}
               role="textbox"
-              @dblclick=${() => this.setLabelEditabilityAndRemoveEmptyLabel(true)}
-              @blur=${() => this.setLabelEditabilityAndRemoveEmptyLabel(false)}
+              @focus=${() => {
+            this.setLabelEditabilityAndRemoveEmptyLabel(true);
+        }}
+              @dblclick=${() => {
+            this.setLabelEditabilityAndRemoveEmptyLabel(true);
+        }}
               @keydown=${this.#handleLabelInputKeyDown}
               @paste=${this.#handleLabelInputPaste}
-              @keyup=${this.#handleLabelInputKeyUp}
+              @keyup=${() => {
+            this.#handleLabelInputKeyUp();
+            // Rerender the label component when the label text changes because we need to
+            // make sure the 'auto annotation' button is only shown when the label is empty.
+            this.#render();
+        }}
               contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}
-              jslog=${VisualLogging.textField('timeline.annotations.entry-label-input').track({ keydown: true, click: true })}
+              jslog=${VisualLogging.textField('timeline.annotations.entry-label-input').track({ keydown: true, click: true, change: true })}
+              tabindex="0"
             ></span>
-            ${
-        // If the enterprise policy is disabled or the user does not have the feature flag, do not render anything.
-        // If it is enabled, render either the enabled or disabled ai button depending on whether the feature is available.
-        doNotShowAIButton ? Lit.nothing
-            : this.#isAiAvailable() ? this.#renderAiButton() : this.#renderDisabledAiButton()}
+            ${(() => {
+            switch (this.#shouldRenderAIButton()) {
+                case 'hidden':
+                    return Lit.nothing;
+                case 'enabled':
+                    return this.#renderAiButton();
+                case 'disabled':
+                    return this.#renderDisabledAiButton();
+            }
+        })()}
           </span>
           <svg class="connectorContainer">
             <line/>

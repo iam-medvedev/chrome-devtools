@@ -56,6 +56,10 @@ const UIStrings = {
      *@description The footer disclaimer that links to more information about the AI feature.
      */
     learnAbout: 'Learn about AI in DevTools',
+    /**
+     *@description Text informing the user that AI assistance is not available in Incognito mode or Guest mode.
+     */
+    notAvailableInIncognitoMode: 'AI assistance is not available in Incognito mode or Guest mode',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -341,6 +345,7 @@ export class ChatView extends HTMLElement {
             markdownRenderer: this.#markdownRenderer,
             conversationType: this.#props.conversationType,
             changeSummary: this.#props.changeSummary,
+            changeManager: this.#props.changeManager,
             onSuggestionClick: this.#handleSuggestionClick,
             onFeedbackSubmit: this.#props.onFeedbackSubmit,
             onMessageContainerRef: this.#handleMessageContainerRef,
@@ -714,7 +719,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
   </div>`;
     // clang-format on
 }
-function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
+function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
     // clang-format off
     return html `
     <div class="messages-container" ${ref(onMessageContainerRef)}>
@@ -729,9 +734,14 @@ function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, 
         onSuggestionClick,
         onFeedbackSubmit,
     }))}
-      ${(changeSummary && !isLoading) ? html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(PatchWidget, {
-        changeSummary,
-    })}></devtools-widget>` : Lit.nothing}
+      ${changeSummary && !isLoading
+        ? html `<devtools-widget
+            .widgetConfig=${UI.Widget.widgetConfig(PatchWidget, {
+            changeSummary,
+            changeManager,
+        })}
+          ></devtools-widget>`
+        : Lit.nothing}
     </div>
   `;
     // clang-format on
@@ -961,6 +971,9 @@ function renderConsentViewContents() {
     let consentViewContents;
     // TODO(ergunsh): Should this `view` access `hostConfig` at all?
     const config = Root.Runtime.hostConfig;
+    if (config.isOffTheRecord) {
+        return html `${i18nString(UIStrings.notAvailableInIncognitoMode)}`;
+    }
     if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
         consentViewContents = i18n.i18n.getFormatLocalizedString(str_, UIStrings.turnOnForStylesRequestsPerformanceAndFiles, { PH1: settingsLink });
     }
@@ -1062,7 +1075,7 @@ function renderNoAgentState() {
     </div>`;
     // clang-format on
 }
-function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
+function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
     if (state === "consent-view" /* State.CONSENT_VIEW */) {
         return renderDisabledState(renderConsentViewContents());
     }
@@ -1081,6 +1094,7 @@ function renderMainContents({ state, aidaAvailability, messages, isLoading, isRe
             userInfo,
             markdownRenderer,
             changeSummary,
+            changeManager,
             onSuggestionClick,
             onFeedbackSubmit,
             onMessageContainerRef,

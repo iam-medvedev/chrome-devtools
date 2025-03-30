@@ -151,21 +151,16 @@ export class AccessibilityNode {
 }
 export class AccessibilityModel extends SDKModel {
     agent;
-    #axIdToAXNode;
-    #backendDOMNodeIdToAXNode;
-    #frameIdToAXNode;
-    #pendingChildRequests;
-    #root;
+    #axIdToAXNode = new Map();
+    #backendDOMNodeIdToAXNode = new Map();
+    #frameIdToAXNode = new Map();
+    #pendingChildRequests = new Map();
+    #root = null;
     constructor(target) {
         super(target);
         target.registerAccessibilityDispatcher(this);
         this.agent = target.accessibilityAgent();
         void this.resumeModel();
-        this.#axIdToAXNode = new Map();
-        this.#backendDOMNodeIdToAXNode = new Map();
-        this.#frameIdToAXNode = new Map();
-        this.#pendingChildRequests = new Map();
-        this.#root = null;
     }
     clear() {
         this.#root = null;

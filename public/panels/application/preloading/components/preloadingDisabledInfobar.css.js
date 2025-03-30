@@ -36,7 +36,7 @@ export default {
   grid-column-start: span 2;
 }
 
-x-link { /* stylelint-disable-line selector-type-no-unknown */
+x-link {
   color: var(--sys-color-primary);
   text-decoration-line: underline;
 }

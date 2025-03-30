@@ -18,7 +18,6 @@ export class ImagePreviewPopover {
         this.getDOMNode = getDOMNode;
         this.popover =
             new UI.PopoverHelper.PopoverHelper(container, this.handleRequest.bind(this), 'elements.image-preview');
-        this.popover.setHasPadding(true);
         this.popover.setTimeout(0, 100);
     }
     handleRequest(event) {

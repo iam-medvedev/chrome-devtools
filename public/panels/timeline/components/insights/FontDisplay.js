@@ -26,8 +26,7 @@ export class FontDisplay extends BaseInsightComponent {
     createAggregatedTableRow(remaining) {
         return {
             values: [renderOthersLabel(remaining.length), ''],
-            overlays: remaining.map(r => this.#overlayForRequest.get(r.request))
-                .filter((o) => Boolean(o)),
+            overlays: remaining.map(r => this.#overlayForRequest.get(r.request)).filter(o => !!o),
         };
     }
     #overlayForRequest = new Map();

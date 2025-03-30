@@ -6,7 +6,6 @@ export declare class SyntheticEventsManager {
     static getActiveManager(): SyntheticEventsManager;
     static reset(): void;
     static registerSyntheticEvent<T extends Types.Events.SyntheticBased>(syntheticEvent: Omit<T, '_tag'>): T;
-    static registerServerTiming(syntheticEvent: Omit<Types.Events.SyntheticServerTiming, '_tag'>): Types.Events.SyntheticServerTiming;
     private constructor();
     /**
      * Registers and returns a branded synthetic event. Synthetic events need to

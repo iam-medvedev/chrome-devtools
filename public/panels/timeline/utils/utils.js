@@ -10,5 +10,6 @@ import * as IgnoreList from './IgnoreList.js';
 import * as ImageCache from './ImageCache.js';
 import * as InsightAIContext from './InsightAIContext.js';
 import * as SourceMapsResolver from './SourceMapsResolver.js';
-export { AICallTree, EntityMapper, EntryName, EntryStyles, Helpers, IgnoreList, ImageCache, InsightAIContext, SourceMapsResolver, };
+import * as Treemap from './Treemap.js';
+export { AICallTree, EntityMapper, EntryName, EntryStyles, Helpers, IgnoreList, ImageCache, InsightAIContext, SourceMapsResolver, Treemap, };
 //# sourceMappingURL=utils.js.map

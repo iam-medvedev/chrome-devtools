@@ -41,12 +41,11 @@ async function resolveToObjectInWorld(domNode, worldName) {
  */
 export class AnimationDOMNode {
     #domNode;
-    #scrollListenersById;
+    #scrollListenersById = new Map();
     #scrollBindingListener;
     static lastAddedListenerId = 0;
     constructor(domNode) {
         this.#domNode = domNode;
-        this.#scrollListenersById = new Map();
     }
     async #addReportScrollPositionBinding() {
         // The binding is already added so we don't need to add it again.
@@ -230,10 +229,10 @@ function shouldGroupAnimations(firstAnimation, anim) {
 export class AnimationModel extends SDKModel {
     runtimeModel;
     agent;
-    #animationsById;
-    animationGroups;
-    #pendingAnimations;
-    playbackRate;
+    #animationsById = new Map();
+    animationGroups = new Map();
+    #pendingAnimations = new Set();
+    playbackRate = 1;
     #screenshotCapture;
     #flushPendingAnimations;
     constructor(target) {
@@ -241,10 +240,6 @@ export class AnimationModel extends SDKModel {
         this.runtimeModel = target.model(RuntimeModel);
         this.agent = target.animationAgent();
         target.registerAnimationDispatcher(new AnimationDispatcher(this));
-        this.#animationsById = new Map();
-        this.animationGroups = new Map();
-        this.#pendingAnimations = new Set();
-        this.playbackRate = 1;
         if (!target.suspended()) {
             void this.agent.invoke_enable();
         }

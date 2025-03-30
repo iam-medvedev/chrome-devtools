@@ -6,18 +6,16 @@ import { RuntimeModel } from './RuntimeModel.js';
 import { TargetManager } from './TargetManager.js';
 let isolateManagerInstance;
 export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
-    #isolatesInternal;
-    #isolateIdByModel;
-    #observers;
-    #pollId;
+    #isolatesInternal = new Map();
+    /**
+     * Contains null while the isolateId is being retrieved.
+     */
+    #isolateIdByModel = new Map();
+    #observers = new Set();
+    #pollId = 0;
     constructor() {
         super();
-        this.#isolatesInternal = new Map();
-        // #isolateIdByModel contains null while the isolateId is being retrieved.
-        this.#isolateIdByModel = new Map();
-        this.#observers = new Set();
         TargetManager.instance().observeModels(RuntimeModel, this);
-        this.#pollId = 0;
     }
     static instance({ forceNew } = { forceNew: false }) {
         if (!isolateManagerInstance || forceNew) {

@@ -5,7 +5,6 @@ export declare class GlassPane {
     private readonly widgetInternal;
     element: typeof Widget.prototype.element;
     contentElement: typeof Widget.prototype.contentElement;
-    private readonly arrowElement;
     private readonly onMouseDownBound;
     private onClickOutsideCallback;
     private maxSize;

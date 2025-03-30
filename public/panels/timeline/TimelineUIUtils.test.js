@@ -875,20 +875,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ];
             assert.deepEqual(pieChartData, expectedPieChartData);
         });
-        it('renders details for synthetic server timings', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'server-timings.json.gz');
-            const serverTimings = parsedTrace.ServerTimings.serverTimings;
-            const serverTiming = serverTimings[0];
-            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, serverTiming, new Components.Linkifier.Linkifier(), false, null);
-            const rowData = getRowDataForDetailsElement(details);
-            assert.deepEqual(rowData, [
-                { title: 'Duration', value: '1.00\xA0s' },
-                {
-                    title: 'Description',
-                    value: 'Description of top level task 1',
-                },
-            ]);
-        });
         it('renders details for SchedulePostTaskCallback events', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
             const scheduleEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isSchedulePostTaskCallback);

@@ -1,13 +1,9 @@
-import * as Platform from '../platform/platform.js';
-type NameValue = Platform.ServerTiming.NameValue;
-/**
- * This is a wrapper for the ServerTiming implementation in
- * core/platform which uses localized strings for warnings. The
- * implementation at core/platform/ is kept without dependencies to the
- * i18n moduke so that it remains portable outside of devtools, which is
- * needed to be used by the trace/ model of the Performance panel.
- */
-export declare class ServerTiming extends Platform.ServerTiming.ServerTiming {
+import type { NameValue } from './NetworkRequest.js';
+export declare class ServerTiming {
+    metric: string;
+    value: number | null;
+    description: string | null;
+    constructor(metric: string, value: number | null, description: string | null);
     static parseHeaders(headers: NameValue[]): ServerTiming[] | null;
     /**
      * TODO(crbug.com/1011811): Instead of using !Object<string, *> we should have a proper type
@@ -19,5 +15,5 @@ export declare class ServerTiming extends Platform.ServerTiming.ServerTiming {
     static getParserForParameter(paramName: string): ((arg0: {
         [x: string]: any;
     }, arg1: string | null) => void) | null;
+    static showWarning(msg: string): void;
 }
-export {};

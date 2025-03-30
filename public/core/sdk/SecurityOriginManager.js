@@ -3,18 +3,15 @@
 // found in the LICENSE file.
 import { SDKModel } from './SDKModel.js';
 export class SecurityOriginManager extends SDKModel {
-    #mainSecurityOriginInternal;
-    #unreachableMainSecurityOriginInternal;
-    #securityOriginsInternal;
+    // if a URL is unreachable, the browser will jump to an error page at
+    // 'chrome-error://chromewebdata/', and |this.#mainSecurityOriginInternal| stores
+    // its origin. In this situation, the original unreachable URL's security
+    // origin will be stored in |this.#unreachableMainSecurityOriginInternal|.
+    #mainSecurityOriginInternal = '';
+    #unreachableMainSecurityOriginInternal = '';
+    #securityOriginsInternal = new Set();
     constructor(target) {
         super(target);
-        // if a URL is unreachable, the browser will jump to an error page at
-        // 'chrome-error://chromewebdata/', and |this.#mainSecurityOriginInternal| stores
-        // its origin. In this situation, the original unreachable URL's security
-        // origin will be stored in |this.#unreachableMainSecurityOriginInternal|.
-        this.#mainSecurityOriginInternal = '';
-        this.#unreachableMainSecurityOriginInternal = '';
-        this.#securityOriginsInternal = new Set();
     }
     updateSecurityOrigins(securityOrigins) {
         const oldOrigins = this.#securityOriginsInternal;

@@ -32,6 +32,7 @@ describeWithMockConnection('AccessibilityTreeView', () => {
         });
         await new Promise(resolve => queueMicrotask(resolve));
         assert.strictEqual(treeComponentDataSet.set.called, inScope);
+        view.detach();
     };
     it('updates UI on in scope update event', updatesUiOnEvent(true));
     it('does not update UI on out of scope update event', updatesUiOnEvent(false));

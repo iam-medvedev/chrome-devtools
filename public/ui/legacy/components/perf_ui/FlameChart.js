@@ -1504,6 +1504,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (event.key === 'Enter') {
             event.consume(true);
             this.dispatchEventToListeners("EntryInvoked" /* Events.ENTRY_INVOKED */, this.selectedEntryIndex);
+            // Treat hitting enter on an entry just like we would clicking & create the annotation
+            this.dispatchEventToListeners("EntryLabelAnnotationAdded" /* Events.ENTRY_LABEL_ANNOTATION_ADDED */, {
+                entryIndex: this.selectedEntryIndex,
+                withLinkCreationButton: true,
+            });
             return true;
         }
         return false;

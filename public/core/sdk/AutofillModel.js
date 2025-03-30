@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Root from '../../core/root/root.js';
 import * as Host from '../host/host.js';
 import { SDKModel } from './SDKModel.js';
 export class AutofillModel extends SDKModel {
@@ -130,8 +129,7 @@ export class AutofillModel extends SDKModel {
         });
     }
     enable() {
-        if (!Root.Runtime.experiments.isEnabled("autofill-view" /* Root.Runtime.ExperimentName.AUTOFILL_VIEW */) || this.#enabled ||
-            Host.InspectorFrontendHost.isUnderTest()) {
+        if (this.#enabled || Host.InspectorFrontendHost.isUnderTest()) {
             return;
         }
         void this.agent.invoke_enable();

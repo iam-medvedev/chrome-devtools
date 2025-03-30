@@ -488,8 +488,8 @@ export class HeapSnapshotGenericObjectNode extends HeapSnapshotGridNode {
         const retainedSizePercent = this.retainedSize / snapshot.totalSize * 100.0;
         this.data = {
             distance: this.toUIDistance(this.distance),
-            shallowSize: i18n.ByteUtilities.bytesToString(this.shallowSize),
-            retainedSize: i18n.ByteUtilities.bytesToString(this.retainedSize),
+            shallowSize: i18n.ByteUtilities.formatBytesToKb(this.shallowSize),
+            retainedSize: i18n.ByteUtilities.formatBytesToKb(this.retainedSize),
             'shallowSize-percent': this.toPercentString(shallowSizePercent),
             'retainedSize-percent': this.toPercentString(retainedSizePercent),
         };
@@ -864,11 +864,11 @@ export class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectNode {
             data['addedCount'] = '';
             data['addedSize'] = '';
             data['removedCount'] = '\u2022';
-            data['removedSize'] = i18n.ByteUtilities.bytesToString(this.shallowSize || 0);
+            data['removedSize'] = i18n.ByteUtilities.formatBytesToKb(this.shallowSize || 0);
         }
         else {
             data['addedCount'] = '\u2022';
-            data['addedSize'] = i18n.ByteUtilities.bytesToString(this.shallowSize || 0);
+            data['addedSize'] = i18n.ByteUtilities.formatBytesToKb(this.shallowSize || 0);
             data['removedCount'] = '';
             data['removedSize'] = '';
         }
@@ -942,8 +942,8 @@ export class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
             object: this.nameInternal,
             count: Platform.NumberUtilities.withThousandsSeparator(this.count),
             distance: this.toUIDistance(this.distance),
-            shallowSize: i18n.ByteUtilities.bytesToString(this.shallowSize),
-            retainedSize: i18n.ByteUtilities.bytesToString(this.retainedSize),
+            shallowSize: i18n.ByteUtilities.formatBytesToKb(this.shallowSize),
+            retainedSize: i18n.ByteUtilities.formatBytesToKb(this.retainedSize),
             'shallowSize-percent': this.toPercentString(shallowSizePercent),
             'retainedSize-percent': this.toPercentString(retainedSizePercent),
         };
