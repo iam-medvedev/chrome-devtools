@@ -165,6 +165,11 @@ export function generateInsight(parsedTrace, context) {
             continue;
         }
         ttl = ttl || 0;
+        // Ignore >= 30d.
+        const ttlDays = ttl / 86400;
+        if (ttlDays >= 30) {
+            continue;
+        }
         // If cache lifetime is high enough, let's skip.
         const cacheHitProbability = getCacheHitProbability(ttl);
         if (cacheHitProbability > IGNORE_THRESHOLD_IN_PERCENT) {

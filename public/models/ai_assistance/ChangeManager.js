@@ -81,6 +81,7 @@ export class ChangeManager {
         return Array.from(this.#stylesheetChanges.values())
             .flatMap(changesPerStylesheet => changesPerStylesheet.filter(change => change.groupId === groupId)
             .map(change => this.#formatChange(change, includeSourceLocation)))
+            .filter(change => change !== '')
             .join('\n\n');
     }
     #formatChangesForInspectorStylesheet(changes) {

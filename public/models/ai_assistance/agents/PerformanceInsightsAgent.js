@@ -94,7 +94,7 @@ export class InsightContext extends ConversationContext {
      * Presents the default suggestions that are shown when the user first clicks
      * "Ask AI" on an Insight.
      */
-    getSuggestions() {
+    async getSuggestions() {
         switch (this.#insight.insight.insightKey) {
             case 'CLSCulprits':
                 return [
@@ -175,7 +175,6 @@ export class PerformanceInsightsAgent extends AiAgent {
         };
         yield { type: "context" /* ResponseType.CONTEXT */, title, details: [titleDetail] };
     }
-    type = "performance-insight" /* AgentType.PERFORMANCE_INSIGHT */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_INSIGHTS_AGENT;
     get userTier() {

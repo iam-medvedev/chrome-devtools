@@ -57,7 +57,6 @@ export declare const enum SizeBehavior {
     MEASURE_CONTENT = "MeasureContent"
 }
 export declare const enum MarginBehavior {
-    ARROW = "Arrow",
     DEFAULT_MARGIN = "DefaultMargin",
     NO_MARGIN = "NoMargin"
 }

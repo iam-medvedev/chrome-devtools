@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 /*
  * Copyright (C) 2011 Google Inc.  All rights reserved.
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
@@ -1539,13 +1540,11 @@ function updateWidgetfocusWidgetForNode(node) {
 }
 function updateXWidgetfocusWidgetForNode(node) {
     node = node?.parentNodeOrShadowHost() ?? null;
-    const XWidgetCtor = customElements.get('x-widget');
+    const XWidgetConstructor = customElements.get('x-widget');
     let widget = null;
     while (node) {
-        if (XWidgetCtor && node instanceof XWidgetCtor) {
+        if (XWidgetConstructor && node instanceof XWidgetConstructor) {
             if (widget) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 node.defaultFocusedElement = widget;
             }
             widget = node;

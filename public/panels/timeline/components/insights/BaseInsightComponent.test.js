@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Root from '../../../../core/root/root.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../../../testing/EnvironmentHelpers.js';
@@ -116,6 +117,21 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
+        });
+        it('does not render the "Ask AI" button if disabled by enterprise policy', async () => {
+            updateHostConfig({
+                devToolsAiAssistancePerformanceAgent: {
+                    enabled: true,
+                    insightsEnabled: true,
+                },
+                aidaAvailability: {
+                    enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.DISABLE,
+                }
+            });
+            const component = await renderComponent({ insightHasAISupport: true });
+            assert.isOk(component.shadowRoot);
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
+            assert.isNull(button);
         });
         it('does not show the button if the feature is enabled but the Insight does not support it', async () => {
             updateHostConfig({

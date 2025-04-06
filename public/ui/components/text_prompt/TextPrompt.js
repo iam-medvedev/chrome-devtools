@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Platform from '../../../core/platform/platform.js';
 import { html, render } from '../../lit/lit.js';
 import textPromptStyles from './textPrompt.css.js';
@@ -43,10 +44,6 @@ export class TextPrompt extends HTMLElement {
     moveCaretToEndOfInput() {
         this.setSelectedRange(this.#text().length, this.#text().length);
     }
-    onInput() {
-        this.#suggestion().value = this.#text();
-        this.dispatchEvent(new PromptInputEvent(this.#text()));
-    }
     onKeyDown(event) {
         if (event.key === Platform.KeyboardUtilities.ENTER_KEY) {
             event.preventDefault();
@@ -71,12 +68,11 @@ export class TextPrompt extends HTMLElement {
     }
     setSuggestion(suggestion) {
         this.#suggestionText = suggestion;
-        this.#suggestion().value += this.#suggestionText;
+        this.#suggestion().value = this.#suggestionText;
         this.#render();
     }
     setText(text) {
         this.#input().value = text;
-        this.#suggestion().value = this.#text();
         if (this.#input().hasFocus()) {
             this.moveCaretToEndOfInput();
             this.#input().scrollIntoView();
@@ -92,11 +88,26 @@ export class TextPrompt extends HTMLElement {
     #text() {
         return this.#input().value || '';
     }
+    connectedCallback() {
+        const observer = new MutationObserver(mutations => {
+            for (const mutation of mutations) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'dir') {
+                    const writingDirection = this.#input().getAttribute('dir');
+                    if (!writingDirection) {
+                        this.#suggestion().removeAttribute('dir');
+                        return;
+                    }
+                    this.#suggestion().setAttribute('dir', writingDirection);
+                }
+            }
+        });
+        observer.observe(this.#input(), { attributeFilter: ['dir'] });
+    }
     #render() {
         const output = html `
       <style>${textPromptStyles.cssText}</style>
       <span class="prefix">${this.#prefixText} </span>
-      <span class="text-prompt-input"><input class="input" aria-label=${this.#ariaLabelText} spellcheck="false" @input=${this.onInput} @keydown=${this.onKeyDown}/><input class="suggestion" tabindex=-1 aria-label=${this.#ariaLabelText + ' Suggestion'}></span>`;
+      <span class="text-prompt-input"><input class="input" aria-label=${this.#ariaLabelText} spellcheck="false" @input=${() => this.dispatchEvent(new PromptInputEvent(this.#text()))} @keydown=${this.onKeyDown}/><input class="suggestion" tabindex=-1 aria-label=${this.#ariaLabelText + ' Suggestion'}></span>`;
         render(output, this.#shadow, { host: this });
     }
 }

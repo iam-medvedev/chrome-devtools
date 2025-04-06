@@ -14,12 +14,12 @@ export declare class TextPrompt extends HTMLElement {
     get data(): TextPromptData;
     focus(): void;
     moveCaretToEndOfInput(): void;
-    onInput(): void;
     onKeyDown(event: KeyboardEvent): void;
     setSelectedRange(startIndex: number, endIndex: number): void;
     setPrefix(prefix: string): void;
     setSuggestion(suggestion: string): void;
     setText(text: string): void;
+    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

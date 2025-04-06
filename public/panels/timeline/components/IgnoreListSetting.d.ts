@@ -1,5 +1,4 @@
 import '../../../ui/components/menus/menus.js';
-import * as Common from '../../../core/common/common.js';
 export declare class IgnoreListSetting extends HTMLElement {
     #private;
     constructor();
@@ -11,14 +10,9 @@ declare global {
     }
 }
 /**
- * Returns if a new regex string is valid for the given regex setting array.
+ * Returns if a new regex string is valid to be added to the ignore list.
+ * Note that things like duplicates are handled by the IgnoreList for us.
  *
- * Export for test reason
- * @param existingRegexes an array of objects, each representing a regex pattern and its state.
- * @param inputValue new regex in string format
- * @returns if the regex is valid and if not, why it is invalid
+ * @param inputValue the text input from the user we need to validate.
  */
-export declare function patternValidator(existingRegexes: Common.Settings.RegExpSettingItem[], inputValue: string): {
-    valid: boolean;
-    message?: string;
-};
+export declare function regexInputIsValid(inputValue: string): boolean;

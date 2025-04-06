@@ -37,6 +37,8 @@ export declare class KeyboardShortcut {
     };
     static isModifier(key: number): boolean;
     private static modifiersToString;
+    static keyCodeToKey(keyCode: number): Key | undefined;
+    static modifierValueToModifier(modifierValue: number): Modifier | undefined;
 }
 export interface Modifier {
     value: number;

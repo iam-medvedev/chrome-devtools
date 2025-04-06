@@ -30,7 +30,7 @@ export declare const UIStrings: {
     readonly others: "{PH1} others";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export type UseCacheInsightModel = InsightModel<typeof UIStrings, {
+export type CacheInsightModel = InsightModel<typeof UIStrings, {
     requests: Array<{
         request: Types.Events.SyntheticNetworkRequest;
         ttl: number;
@@ -66,4 +66,4 @@ export interface CacheableRequest {
     ttl: number;
     wastedBytes: number;
 }
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): UseCacheInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): CacheInsightModel;

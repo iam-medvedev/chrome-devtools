@@ -207,6 +207,10 @@ table.network-timing-table > tr:not(.network-timing-table-header, .network-timin
   background-color: var(--sys-color-neutral-container);
 }
 
+tr.synthetic {
+  font-style: italic;
+}
+
 .network-timing-table td.network-timing-metric {
   white-space: nowrap;
   max-width: 150px;

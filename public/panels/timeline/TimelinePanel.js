@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 /*
  * Copyright (C) 2012 Google Inc. All rights reserved.
  * Copyright (C) 2012 Intel Inc. All rights reserved.
@@ -67,7 +68,7 @@ import { TimelineHistoryManager } from './TimelineHistoryManager.js';
 import { TimelineLoader } from './TimelineLoader.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import timelinePanelStyles from './timelinePanel.css.js';
-import { rangeForSelection, selectionFromEvent, selectionIsRange, } from './TimelineSelection.js';
+import { rangeForSelection, selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
 import timelineStatusDialogStyles from './timelineStatusDialog.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import { UIDevtoolsController } from './UIDevtoolsController.js';
@@ -301,21 +302,13 @@ const UIStrings = {
      */
     backToLiveMetrics: 'Go back to the live metrics page',
     /**
-     * @description Description of the Timeline up/down scroll action that appears in the Performance panel shortcuts dialog.
+     * @description Description of the Timeline zoom keyboard instructions that appear in the shortcuts dialog
      */
-    timelineScrollUpDown: 'Move up/down',
+    timelineZoom: 'Zoom',
     /**
-     * @description Description of the Timeline left/right panning action that appears in the Performance panel shortcuts dialog.
+     * @description Description of the Timeline scrolling & panning instructions that appear in the shortcuts dialog.
      */
-    timelinePanLeftRight: 'Move left/right',
-    /**
-     * @description Description of the Timeline in/out zoom action that appears in the Performance panel shortcuts dialog.
-     */
-    timelineZoomInOut: 'Zoom in/out',
-    /**
-     * @description Description of the Timeline fast in/out zoom action that appears in the Performance panel shortcuts dialog.
-     */
-    timelineFastZoomInOut: 'Fast zoom in/out',
+    timelineScrollPan: 'Scroll & Pan',
     /**
      * @description Title for the Dim 3rd Parties checkbox.
      */
@@ -324,6 +317,10 @@ const UIStrings = {
      * @description Description for the Dim 3rd Parties checkbox tooltip describing how 3rd parties are classified.
      */
     thirdPartiesByThirdPartyWeb: '3rd parties classified by third-party-web',
+    /**
+     * @description Title of the shortcuts dialog shown to the user that lists keyboard shortcuts.
+     */
+    shortcutsDialogTitle: 'Keyboard shortcuts for flamechart'
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -432,8 +429,8 @@ export class TimelinePanel extends UI.Panel.Panel {
      * Navigation radio buttons located in the shortcuts dialog.
      */
     #navigationRadioButtons = document.createElement('form');
-    #modernNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Modern', 'timeline.select-modern-navigation');
-    #classicNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Classic', 'timeline.select-classic-navigation');
+    #modernNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Modern - normal scrolling', 'timeline.select-modern-navigation');
+    #classicNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Classic - scroll to zoom', 'timeline.select-classic-navigation');
     #onMainEntryHovered;
     constructor(traceModel) {
         super('timeline');
@@ -1006,6 +1003,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         // need to update the radio buttons selection when the dialog is open.
         this.#shortcutsDialog.addEventListener('click', this.#updateNavigationSettingSelection.bind(this));
         this.#shortcutsDialog.data = {
+            customTitle: i18nString(UIStrings.shortcutsDialogTitle),
             shortcuts: this.#getShortcutsInfo(currentNavSetting === 'classic'),
             open: !userHadShortcutsDialogOpenedOnce && hideTheDialogForTests !== 'true' &&
                 !Host.InspectorFrontendHost.isUnderTest(),
@@ -1038,28 +1036,53 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     #getShortcutsInfo(isNavClassic) {
+        const metaKey = Host.Platform.isMac() ? '⌘' : 'Ctrl';
         if (isNavClassic) {
+            // Classic navigation = scroll to zoom.
             return [
-                { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Shift', 'Scroll up/down'], ['Shift', '↑/↓']] },
                 {
-                    title: i18nString(UIStrings.timelinePanLeftRight),
-                    bindings: [['Shift', '←/→'], ['Scroll left/right'], ['A/D']]
+                    title: i18nString(UIStrings.timelineZoom),
+                    rows: [
+                        [{ key: 'Scroll ↕' }], [{ key: 'W' }, { key: 'S' }, { joinText: 'or' }, { key: '+' }, { key: '-' }],
+                        { footnote: 'hold shift for fast zoom' }
+                    ]
                 },
-                { title: i18nString(UIStrings.timelineZoomInOut), bindings: [['Scroll up/down'], ['W/S'], ['+/-']] },
-                { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
+                {
+                    title: i18nString(UIStrings.timelineScrollPan),
+                    rows: [
+                        [{ key: 'Shift' }, { joinText: '+' }, { key: 'Scroll ↕' }],
+                        [{ key: 'Scroll ↔' }, { joinText: 'or' }, { key: 'A' }, { key: 'D' }],
+                        [
+                            { key: 'Drag' }, { joinText: 'or' }, { key: 'Shift' }, { joinText: '+' }, { key: '↑' }, { key: '↓' }, { key: '←' },
+                            { key: '→' }
+                        ],
+                    ]
+                }
             ];
         }
+        // New navigation where scroll = scroll.
         return [
-            { title: i18nString(UIStrings.timelineScrollUpDown), bindings: [['Scroll up/down'], ['Shift', '↑/↓']] },
             {
-                title: i18nString(UIStrings.timelinePanLeftRight),
-                bindings: [['Shift', 'Scroll up/down'], ['Scroll left/right'], ['Shift', '←/→'], ['A/D']],
+                title: i18nString(UIStrings.timelineZoom),
+                rows: [
+                    [{ key: metaKey }, { joinText: '+' }, { key: 'Scroll ↕' }],
+                    [{ key: 'W' }, { key: 'S' }, { joinText: 'or' }, { key: '+' }, { key: '-' }], { footnote: '' }
+                ]
             },
             {
-                title: i18nString(UIStrings.timelineZoomInOut),
-                bindings: [[Host.Platform.isMac() ? '⌘' : 'Ctrl', 'Scroll up/down'], ['W/S'], ['+/-']],
-            },
-            { title: i18nString(UIStrings.timelineFastZoomInOut), bindings: [['Shift', 'W/S'], ['Shift', '+/-']] },
+                title: i18nString(UIStrings.timelineScrollPan),
+                rows: [
+                    [{ key: 'Scroll ↕' }],
+                    [
+                        { key: 'Shift' }, { joinText: '+' }, { key: 'Scroll ↕' }, { joinText: 'or' }, { key: 'Scroll ↔' }, { joinText: 'or' },
+                        { key: 'A' }, { key: 'D' }
+                    ],
+                    [
+                        { key: 'Drag' }, { joinText: 'or' }, { key: 'Shift' }, { joinText: '+' }, { key: '↑' }, { key: '↓' }, { key: '←' },
+                        { key: '→' }
+                    ],
+                ]
+            }
         ];
     }
     createSettingsPane() {
@@ -1119,7 +1142,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.flameChart.getMainFlameChart().coordinatesToEntryIndex(mouseEvent.offsetX, mouseEvent.offsetY) !== -1) {
             return;
         }
-        const contextMenu = new UI.ContextMenu.ContextMenu(event, { useSoftMenu: true });
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
@@ -1215,7 +1238,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     navigateHistory(direction) {
         const recordingData = this.#historyManager.navigate(direction);
-        // When navigating programatically, you cannot navigate to the landing page
+        // When navigating programmatically, you cannot navigate to the landing page
         // view, so we can discount that possibility here.
         if (recordingData && recordingData.type === 'TRACE_INDEX') {
             this.#changeView({
@@ -2291,6 +2314,10 @@ export class TimelinePanel extends UI.Panel.Panel {
             UI.ARIAUtils.alert(i18nString(UIStrings.selectionCleared));
         }
         if (newSelection === null) {
+            return;
+        }
+        if (oldSelection && selectionsEqual(oldSelection, newSelection)) {
+            // Don't announce to the user if the selection has not changed.
             return;
         }
         if (selectionIsRange(newSelection)) {

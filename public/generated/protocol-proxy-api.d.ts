@@ -683,6 +683,11 @@ declare namespace ProtocolProxyApi {
      * For example, a value of '1em' is evaluated according to the computed
      * 'font-size' of the element and a value 'calc(1px + 2px)' will be
      * resolved to '3px'.
+     * If the `propertyName` was specified the `values` are resolved as if
+     * they were property's declaration. If a value cannot be parsed according
+     * to the provided property syntax, the value is parsed using combined
+     * syntax as if null `propertyName` was provided. If the value cannot be
+     * resolved even then, return the provided value without any changes.
      */
     invoke_resolveValues(params: Protocol.CSS.ResolveValuesRequest): Promise<Protocol.CSS.ResolveValuesResponse>;
 
@@ -4219,14 +4224,41 @@ declare namespace ProtocolProxyApi {
     invoke_simulateGATTOperationResponse(params: Protocol.BluetoothEmulation.SimulateGATTOperationResponseRequest): Promise<Protocol.ProtocolResponseWithError>;
 
     /**
-     * Adds a service with |uuid| to the peripheral with |address|.
+     * Adds a service with |serviceUuid| to the peripheral with |address|.
      */
     invoke_addService(params: Protocol.BluetoothEmulation.AddServiceRequest): Promise<Protocol.BluetoothEmulation.AddServiceResponse>;
 
     /**
-     * Removes the service respresented by |id| from the peripheral with |address|.
+     * Removes the service respresented by |serviceId| from the peripheral with
+     * |address|.
      */
     invoke_removeService(params: Protocol.BluetoothEmulation.RemoveServiceRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Adds a characteristic with |characteristicUuid| and |properties| to the
+     * service represented by |serviceId| in the peripheral with |address|.
+     */
+    invoke_addCharacteristic(params: Protocol.BluetoothEmulation.AddCharacteristicRequest): Promise<Protocol.BluetoothEmulation.AddCharacteristicResponse>;
+
+    /**
+     * Removes the characteristic respresented by |characteristicId| from the
+     * service respresented by |serviceId| in the peripheral with |address|.
+     */
+    invoke_removeCharacteristic(params: Protocol.BluetoothEmulation.RemoveCharacteristicRequest): Promise<Protocol.ProtocolResponseWithError>;
+
+    /**
+     * Adds a descriptor with |descriptorUuid| to the characteristic respresented
+     * by |characteristicId| in the service represented by |serviceId| of the
+     * peripheral with |address|.
+     */
+    invoke_addDescriptor(params: Protocol.BluetoothEmulation.AddDescriptorRequest): Promise<Protocol.BluetoothEmulation.AddDescriptorResponse>;
+
+    /**
+     * Removes the descriptor with |descriptorId| from the characteristic
+     * respresented by |characteristicId| in the service represented by |serviceId|
+     * of the peripheral with |address|.
+     */
+    invoke_removeDescriptor(params: Protocol.BluetoothEmulation.RemoveDescriptorRequest): Promise<Protocol.ProtocolResponseWithError>;
 
   }
   export interface BluetoothEmulationDispatcher {

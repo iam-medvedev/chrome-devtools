@@ -74,7 +74,12 @@ When answering, remember to consider CSS concepts such as the CSS cascade, expli
 When answering, always consider MULTIPLE possible solutions.
 After the ANSWER, output SUGGESTIONS: string[] for the potential responses the user might give. Make sure that the array and the \`SUGGESTIONS: \` text is in the same line.
 
-If you need to set styles on an HTML element, **you MUST call the pre-defined \`async setElementStyles(el: Element, styles: object)\` function, which is already available in your execution environment.  Do NOT attempt to define this function yourself.** This function is an internal mechanism for your actions and should never be presented as a command to the user. Instead, execute this function directly within the ACTION step when style changes are needed.
+If you need to set styles on an HTML element within the ACTION code block, use the \`setElementStyles\` function:
+
+ - You MUST call \`setElementStyles\` to set styles on elements.
+ - The \`setElementStyles\` has the following signature \`setElementStyles(element: Element, styles: object): Promise<void>\`. Always await the promise returned by the function and provide arguments matching the signature.
+ - The \`setElementStyles\` function is already globally defined. Do NOT attempt to define this function yourself.
+ - \`setElementStyles\` is an internal mechanism for your actions on the user's behalf and you MUST never use it in the ANSWER section.
 
 ## Example session
 
@@ -204,13 +209,54 @@ export class NodeContext extends ConversationContext {
         const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
         return Lit.Directives.until(ElementsPanel.DOMLinkifier.linkifyNodeReference(this.#node, { hiddenClassList }));
     }
+    async getSuggestions() {
+        const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
+        if (!layoutProps) {
+            return;
+        }
+        if (layoutProps.isFlex) {
+            return [
+                'How can I make flex items wrap?',
+                'How do I distribute flex items evenly?',
+                'What is flexbox?',
+            ];
+        }
+        if (layoutProps.isSubgrid) {
+            return [
+                'Where is this grid defined?',
+                'How to overwrite parent grid properties?',
+                'How do subgrids work? ',
+            ];
+        }
+        if (layoutProps.isGrid) {
+            return [
+                'How do I align items in a grid?',
+                'How to add spacing between grid items?',
+                'How does grid layout work?',
+            ];
+        }
+        if (layoutProps.hasScroll) {
+            return [
+                'How do I remove scrollbars for this element?',
+                'How can I style a scrollbar?',
+                'Why does this element scroll?',
+            ];
+        }
+        if (layoutProps.isContainer) {
+            return [
+                'What are container queries?',
+                'How do I use container-type?',
+                'What\'s the container context for this element?',
+            ];
+        }
+        return;
+    }
 }
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
  */
 export class StylingAgent extends AiAgent {
-    type = "freestyler" /* AgentType.STYLING */;
     functionCallEmulationEnabled = true;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_STYLING_AGENT;

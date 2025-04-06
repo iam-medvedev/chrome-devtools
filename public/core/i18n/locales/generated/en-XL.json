@@ -726,7 +726,7 @@
     "message": "T̂ŕît́âńôṕîá (n̂ó b̂ĺûé)"
   },
   "core/sdk/ServerTiming.ts | deprecatedSyntaxFoundPleaseUse": {
-    "message": "D̂ép̂ŕêćât́êd́ ŝýn̂t́âx́ f̂óûńd̂. Ṕl̂éâśê úŝé: <n̂ám̂é>;d̂úr̂=<d́ûŕât́îón̂>;d́êśĉ=<d́êśĉŕîṕt̂íôń>"
+    "message": "D̂ép̂ŕêćât́êd́ ŝýn̂t́âx́ f̂óûńd̂ f́ôŕ m̂ét̂ŕîć \"{PH1}\". P̂ĺêáŝé ûśê: <ńâḿê>;d́ûŕ=<d̂úr̂át̂íôń>;d̂éŝć=<d̂éŝćr̂íp̂t́îón̂>"
   },
   "core/sdk/ServerTiming.ts | duplicateParameterSIgnored": {
     "message": "D̂úp̂ĺîćât́ê ṕâŕâḿêt́êŕ \"{PH1}\" îǵn̂ór̂éd̂."
@@ -1892,6 +1892,9 @@
   "models/trace/insights/FontDisplay.ts | wastedTimeColumn": {
     "message": "Ŵáŝt́êd́ t̂ím̂é"
   },
+  "models/trace/insights/ForcedReflow.ts | anonymous": {
+    "message": "(âńôńŷḿôúŝ)"
+  },
   "models/trace/insights/ForcedReflow.ts | description": {
     "message": "M̂án̂ý ÂṔÎś, t̂ýp̂íĉál̂ĺŷ ŕêád̂ín̂ǵ l̂áŷóût́ ĝéôḿêt́r̂ý, f̂ór̂ćê t́ĥé r̂én̂d́êŕîńĝ én̂ǵîńê t́ô ṕâúŝé ŝćr̂íp̂t́ êx́êćût́îón̂ ín̂ ór̂d́êŕ t̂ó ĉál̂ćûĺât́ê t́ĥé ŝt́ŷĺê án̂d́ l̂áŷóût́. L̂éâŕn̂ ḿôŕê áb̂óût́ [f̂ór̂ćêd́ r̂éf̂ĺôẃ](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) âńd̂ ít̂ś m̂ít̂íĝát̂íôńŝ."
   },
@@ -1908,7 +1911,7 @@
     "message": "T̂ót̂ál̂ ŕêf́l̂óŵ t́îḿê"
   },
   "models/trace/insights/ForcedReflow.ts | unattributed": {
-    "message": "Ûńât́t̂ŕîb́ût́êd́"
+    "message": "[ûńât́t̂ŕîb́ût́êd́]"
   },
   "models/trace/insights/ImageDelivery.ts | description": {
     "message": "R̂éd̂úĉín̂ǵ t̂h́ê d́ôẃn̂ĺôád̂ t́îḿê óf̂ ím̂áĝéŝ ćâń îḿp̂ŕôv́ê t́ĥé p̂ér̂ćêív̂éd̂ ĺôád̂ t́îḿê óf̂ t́ĥé p̂áĝé âńd̂ ĹĈṔ. [L̂éâŕn̂ ḿôŕê áb̂óût́ ôṕt̂ím̂íẑín̂ǵ îḿâǵê śîźê](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)"
@@ -2021,8 +2024,14 @@
   "models/trace/insights/LCPPhases.ts | title": {
     "message": "L̂ĆP̂ b́ŷ ṕĥáŝé"
   },
+  "models/trace/insights/LegacyJavaScript.ts | columnScript": {
+    "message": "Ŝćr̂íp̂t́"
+  },
+  "models/trace/insights/LegacyJavaScript.ts | columnWastedBytes": {
+    "message": "Ŵáŝt́êd́ b̂ýt̂éŝ"
+  },
   "models/trace/insights/LegacyJavaScript.ts | description": {
-    "message": "L̂éĝáĉý Ĵáv̂áŜćr̂íp̂t́"
+    "message": "P̂ól̂ýf̂íl̂ĺŝ án̂d́ t̂ŕâńŝf́ôŕm̂ś êńâb́l̂é l̂éĝáĉý b̂ŕôẃŝér̂ś t̂ó ûśê ńêẃ Ĵáv̂áŜćr̂íp̂t́ f̂éât́ûŕêś. Ĥóŵév̂ér̂, ḿâńŷ ár̂én̂'t́ n̂éĉéŝśâŕŷ f́ôŕ m̂ód̂ér̂ń b̂ŕôẃŝér̂ś. Ĉón̂śîd́êŕ m̂ód̂íf̂ýîńĝ ýôúr̂ J́âv́âŚĉŕîṕt̂ b́ûíl̂d́ p̂ŕôćêśŝ t́ô ńôt́ t̂ŕâńŝṕîĺê [B́âśêĺîńê](https://web.dev/articles/baseline-and-polyfills) f́êát̂úr̂éŝ, ún̂ĺêśŝ ýôú k̂ńôẃ ŷóû ḿûśt̂ śûṕp̂ór̂t́ l̂éĝáĉý b̂ŕôẃŝér̂ś. [L̂éâŕn̂ ẃĥý m̂óŝt́ ŝít̂éŝ ćâń d̂ép̂ĺôý ÊŚ6+ ĉód̂é ŵít̂h́ôút̂ t́r̂án̂śp̂íl̂ín̂ǵ](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)"
   },
   "models/trace/insights/LegacyJavaScript.ts | title": {
     "message": "L̂éĝáĉý Ĵáv̂áŜćr̂íp̂t́"
@@ -8696,6 +8705,45 @@
   "panels/network/BlockedURLsPane.ts | textPatternToBlockMatching": {
     "message": "T̂éx̂t́ p̂át̂t́êŕn̂ t́ô b́l̂óĉḱ m̂át̂ćĥín̂ǵ r̂éq̂úêśt̂ś; ûśê * f́ôŕ ŵíl̂d́ĉár̂d́"
   },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusAborted": {
+    "message": "Âb́ôŕt̂éd̂"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusClosed": {
+    "message": "Ĉĺôśêd́"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusOpen": {
+    "message": "Ôṕêń"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusOpening": {
+    "message": "Ôṕêńîńĝ"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketTypeTcp": {
+    "message": "T̂ĆP̂"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketTypeUdpBound": {
+    "message": "ÛD́P̂ (b́ôún̂d́)"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketTypeUdpConnected": {
+    "message": "ÛD́P̂ (ćôńn̂éĉt́êd́)"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | errorMessage": {
+    "message": "Êŕr̂ór̂ ḿêśŝáĝé"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | general": {
+    "message": "Ĝén̂ér̂ál̂"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | openInfo": {
+    "message": "Ôṕêń Îńf̂ó"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | options": {
+    "message": "Ôṕt̂íôńŝ"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | status": {
+    "message": "Ŝt́ât́ûś"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | type": {
+    "message": "D̂ír̂éĉt́Ŝóĉḱêt́ T̂ýp̂é"
+  },
   "panels/network/components/HeaderSectionRow.ts | activeClientExperimentVariation": {
     "message": "Âćt̂ív̂é client experiment variation IDs."
   },
@@ -9184,6 +9232,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | webBundleInnerRequest": {
     "message": "Ŝér̂v́êd́ f̂ŕôḿ Ŵéb̂ B́ûńd̂ĺê"
+  },
+  "panels/network/NetworkItemView.ts | connectionInfo": {
+    "message": "Ĉón̂ńêćt̂íôń Îńf̂ó"
   },
   "panels/network/NetworkItemView.ts | containsOverriddenHeaders": {
     "message": "T̂h́îś r̂éŝṕôńŝé ĉón̂t́âín̂ś ĥéâd́êŕŝ ẃĥíĉh́ âŕê óv̂ér̂ŕîd́d̂én̂ b́ŷ D́êv́T̂óôĺŝ"
@@ -12449,9 +12500,6 @@
   "panels/settings/SettingsScreen.ts | experiments": {
     "message": "Êx́p̂ér̂ím̂én̂t́ŝ"
   },
-  "panels/settings/SettingsScreen.ts | filterExperimentsLabel": {
-    "message": "F̂íl̂t́êŕ"
-  },
   "panels/settings/SettingsScreen.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
   },
@@ -12463,6 +12511,9 @@
   },
   "panels/settings/SettingsScreen.ts | restoreDefaultsAndReload": {
     "message": "R̂éŝt́ôŕê d́êf́âúl̂t́ŝ án̂d́ r̂él̂óâd́"
+  },
+  "panels/settings/SettingsScreen.ts | searchExperiments": {
+    "message": "Ŝéâŕĉh́ êx́p̂ér̂ím̂én̂t́ŝ"
   },
   "panels/settings/SettingsScreen.ts | sendFeedback": {
     "message": "Ŝén̂d́ f̂éêd́b̂áĉḱ"
@@ -13673,18 +13724,6 @@
   "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchS": {
     "message": "Îǵn̂ór̂é ŝćr̂íp̂t́ŝ ẃĥóŝé n̂ám̂éŝ ḿât́ĉh́ ''{regex}''"
   },
-  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExists": {
-    "message": "R̂úl̂é âĺr̂éâd́ŷ éx̂íŝt́ŝ"
-  },
-  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExistsWillBeEnables": {
-    "message": "T̂h́îś r̂úl̂é âĺr̂éâd́ŷ éx̂íŝt́ŝ b́ût́ îś d̂íŝáb̂ĺêd́. Ŝáv̂ín̂ǵ t̂h́îś v̂ál̂úê ẃîĺl̂ ŕê-én̂áb̂ĺê t́ĥé r̂úl̂é"
-  },
-  "panels/timeline/components/IgnoreListSetting.ts | patternCannotBeEmpty": {
-    "message": "R̂úl̂é ĉán̂'t́ b̂é êḿp̂t́ŷ"
-  },
-  "panels/timeline/components/IgnoreListSetting.ts | patternMustBeAValidRegular": {
-    "message": "R̂úl̂é m̂úŝt́ b̂é â v́âĺîd́ r̂éĝúl̂ár̂ éx̂ṕr̂éŝśîón̂"
-  },
   "panels/timeline/components/IgnoreListSetting.ts | removeRegex": {
     "message": "R̂ém̂óv̂é t̂h́ê ŕêǵêx́: ''{regex}''"
   },
@@ -14337,7 +14376,7 @@
     "message": "N̂ét̂ẃôŕk̂"
   },
   "panels/timeline/overlays/components/EntriesLinkOverlay.ts | diagram": {
-    "message": "L̂ín̂ḱŝ b́t̂éŵéêń êńt̂ŕîéŝ"
+    "message": "L̂ín̂ḱŝ b́êt́ŵéêń êńt̂ŕîéŝ"
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | entryLabel": {
     "message": "Êńt̂ŕŷ ĺâb́êĺ"
@@ -14355,7 +14394,7 @@
     "message": "L̂éâŕn̂ ḿôŕê áb̂óût́ âút̂ó âńn̂ót̂át̂íôńŝ ín̂ śêt́t̂ín̂ǵŝ"
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | moreInfoAriaLabel": {
-    "message": "M̂ór̂é îńf̂ó"
+    "message": "M̂ór̂é îńf̂ór̂ḿât́îón̂ áb̂óût́ t̂h́îś f̂éât́ûŕê"
   },
   "panels/timeline/overlays/components/TimeRangeOverlay.ts | timeRange": {
     "message": "T̂ím̂é r̂án̂ǵê"
@@ -14714,6 +14753,9 @@
   "panels/timeline/TimelinePanel.ts | SelectorStatsEnabled": {
     "message": "- Ŝél̂éĉt́ôŕ ŝt́ât́ŝ íŝ én̂áb̂ĺêd́"
   },
+  "panels/timeline/TimelinePanel.ts | shortcutsDialogTitle": {
+    "message": "K̂éŷb́ôár̂d́ ŝh́ôŕt̂ćût́ŝ f́ôŕ f̂ĺâḿêćĥár̂t́"
+  },
   "panels/timeline/TimelinePanel.ts | showCustomtracks": {
     "message": "Ŝh́ôẃ ĉúŝt́ôḿ t̂ŕâćk̂ś"
   },
@@ -14750,17 +14792,11 @@
   "panels/timeline/TimelinePanel.ts | time": {
     "message": "T̂ím̂é"
   },
-  "panels/timeline/TimelinePanel.ts | timelineFastZoomInOut": {
-    "message": "F̂áŝt́ ẑóôḿ îń/ôút̂"
+  "panels/timeline/TimelinePanel.ts | timelineScrollPan": {
+    "message": "Ŝćr̂ól̂ĺ & P̂án̂"
   },
-  "panels/timeline/TimelinePanel.ts | timelinePanLeftRight": {
-    "message": "M̂óv̂é l̂éf̂t́/r̂íĝh́t̂"
-  },
-  "panels/timeline/TimelinePanel.ts | timelineScrollUpDown": {
-    "message": "M̂óv̂é ûṕ/d̂óŵń"
-  },
-  "panels/timeline/TimelinePanel.ts | timelineZoomInOut": {
-    "message": "Ẑóôḿ îń/ôút̂"
+  "panels/timeline/TimelinePanel.ts | timelineZoom": {
+    "message": "Ẑóôḿ"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
     "message": "Ĉóp̂ý t̂áb̂ĺê"

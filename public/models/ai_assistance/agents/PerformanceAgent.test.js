@@ -82,6 +82,7 @@ describeWithEnvironment('PerformanceAgent', () => {
                         parts: [{ text: 'answer' }],
                     },
                 ],
+                facts: undefined,
                 metadata: {
                     disable_user_content_logging: false,
                     string_session_id: 'sessionId',
@@ -187,22 +188,6 @@ self: 3
             const enhancedQuery3 = await agent.enhanceQuery(query3, new CallTreeContext(mockAiCallTree));
             assert.strictEqual(enhancedQuery3, query3);
             assert.isFalse(enhancedQuery3.includes(mockAiCallTree.serialize()));
-        });
-    });
-    describe('generating an AI entry label', () => {
-        it('generates a label from the final answer and trims newlines', async function () {
-            const agent = new PerformanceAgent({
-                aidaClient: mockAidaClient([[{
-                            explanation: 'hello world\n',
-                        }]]),
-            });
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-            const evalScriptEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
-            assert.exists(evalScriptEvent);
-            const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(evalScriptEvent, parsedTrace);
-            assert.isOk(aiCallTree);
-            const label = await agent.generateAIEntryLabel(aiCallTree);
-            assert.strictEqual(label, 'hello world');
         });
     });
 });

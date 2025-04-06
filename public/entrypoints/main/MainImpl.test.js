@@ -11,6 +11,7 @@ describeWithMockConnection('MainMenuItem', () => {
     beforeEach(async () => {
         stubNoopSettings();
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
+            keyAndModifiersForAction: () => { },
             shortcutTitleForAction: () => { },
             shortcutsForAction: () => [],
         });

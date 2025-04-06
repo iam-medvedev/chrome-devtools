@@ -328,19 +328,20 @@ describeWithEnvironment('TraceProcessor', function () {
                 // It's been sorted already ... but let's add some fake estimated savings and re-sort to
                 // better test the sorting.
                 insightSet.model.CLSCulprits.metricSavings = { CLS: 0.07 };
-                processor.sortInsightSet(processor.insights, insightSet, metadata ?? null);
+                processor.sortInsightSet(insightSet, metadata ?? null);
                 return Object.keys(insightSet.model);
             };
             const orderWithoutMetadata = await getInsightOrder(false);
             assert.deepEqual(orderWithoutMetadata, [
                 'CLSCulprits',
                 'Viewport',
+                'Cache',
+                'ImageDelivery',
                 'InteractionToNextPaint',
                 'LCPPhases',
                 'LCPDiscovery',
                 'RenderBlocking',
                 'NetworkDependencyTree',
-                'ImageDelivery',
                 'DocumentLatency',
                 'FontDisplay',
                 'DOMSize',
@@ -348,7 +349,6 @@ describeWithEnvironment('TraceProcessor', function () {
                 'DuplicatedJavaScript',
                 'SlowCSSSelector',
                 'ForcedReflow',
-                'Cache',
                 'ModernHTTP',
                 'LegacyJavaScript',
             ]);
@@ -357,12 +357,13 @@ describeWithEnvironment('TraceProcessor', function () {
             assert.deepEqual(orderWithMetadata, [
                 'Viewport',
                 'CLSCulprits',
+                'Cache',
+                'ImageDelivery',
                 'InteractionToNextPaint',
                 'LCPPhases',
                 'LCPDiscovery',
                 'RenderBlocking',
                 'NetworkDependencyTree',
-                'ImageDelivery',
                 'DocumentLatency',
                 'FontDisplay',
                 'DOMSize',
@@ -370,7 +371,6 @@ describeWithEnvironment('TraceProcessor', function () {
                 'DuplicatedJavaScript',
                 'SlowCSSSelector',
                 'ForcedReflow',
-                'Cache',
                 'ModernHTTP',
                 'LegacyJavaScript',
             ]);

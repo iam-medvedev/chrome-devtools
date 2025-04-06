@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -441,7 +442,7 @@ export class AXBreadcrumb {
         if (!this.axNodeInternal.ignored() && this.axNodeInternal.hasOnlyUnloadedChildren()) {
             this.nodeElementInternal.classList.add('children-unloaded');
             UI.ARIAUtils.setExpanded(this.nodeElementInternal, false);
-            VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.expand()}`, this.elementInternal);
+            VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.expand()}`, this.elementInternal, new DOMRect(0, 0, 16, 16));
         }
         if (!this.axNodeInternal.isDOMNode()) {
             this.nodeElementInternal.classList.add('no-dom-node');
@@ -459,7 +460,7 @@ export class AXBreadcrumb {
         this.nodeElementInternal.classList.add('parent');
         UI.ARIAUtils.setExpanded(this.nodeElementInternal, true);
         this.childrenGroupElement.appendChild(breadcrumb.element());
-        VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.expand()}`, this.elementInternal);
+        VisualLogging.registerLoggable(this.expandLoggable, `${VisualLogging.expand()}`, this.elementInternal, new DOMRect(0, 0, 16, 16));
     }
     hasExpandedChildren() {
         return this.children.length;

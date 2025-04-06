@@ -28,7 +28,7 @@ export declare class TraceProcessor extends EventTarget {
      * Sort the insight models based on the impact of each insight's estimated savings, additionally weighted by the
      * worst metrics according to field data (if present).
      */
-    sortInsightSet(insights: Insights.Types.TraceInsightSets, insightSet: Insights.Types.InsightSet, metadata: Types.File.MetaData | null): void;
+    sortInsightSet(insightSet: Insights.Types.InsightSet, metadata: Types.File.MetaData | null): void;
 }
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are

@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 /*
  * Copyright (C) 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2008, 2009 Anthony Ricaud <rik@webkit.org>
@@ -1078,6 +1079,9 @@ export class NetworkRequestNode extends NetworkNode {
             const statusText = this.requestInternal.getInferredStatusText();
             this.appendSubtitle(cell, statusText);
             UI.Tooltip.Tooltip.install(cell, this.requestInternal.statusCode + ' ' + statusText);
+        }
+        else if (this.requestInternal.statusText) {
+            this.setTextAndTitle(cell, this.requestInternal.statusText);
         }
         else if (this.requestInternal.finished) {
             this.setTextAndTitle(cell, i18nString(UIStrings.finished));

@@ -28,6 +28,7 @@ export default {
 }
 
 .diff-line-marker {
+  user-select: none;
   border-right: 1px solid var(--sys-color-divider);
   width: 20px;
   text-align: center;
@@ -48,11 +49,19 @@ export default {
 }
 
 .diff-line-addition .inner-diff {
-  background-color: color-mix(in srgb, var(--ref-palette-green70) 40%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--ref-palette-green70) 40%,
+    transparent
+  );
 }
 
 .diff-line-deletion .inner-diff {
-  background-color: color-mix(in srgb, var(--ref-palette-error60) 40%, transparent);
+  background-color: color-mix(
+    in srgb,
+    var(--ref-palette-error60) 40%,
+    transparent
+  );
 }
 
 .diff-hidden-text {

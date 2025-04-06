@@ -12,7 +12,6 @@ export default {
 
 :host {
   user-select: none;
-  padding: 4px 12px 12px;
   border: 1px solid transparent;
 }
 

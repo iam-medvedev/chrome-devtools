@@ -21,7 +21,7 @@ import { AiAgent, ConversationContext, } from './AiAgent.js';
  *
  * Check token length in https://aistudio.google.com/
  */
-const preamble = `You are an expert performance analyst specializing in Chrome DevTools.
+const preamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
 This tree originates from the root task associated with the selected call frame.
@@ -179,8 +179,10 @@ export class CallTreeContext extends ConversationContext {
  * instance for a new conversation.
  */
 export class PerformanceAgent extends AiAgent {
-    type = "drjones-performance" /* AgentType.PERFORMANCE */;
     preamble = preamble;
+    // We have to set the type of clientFeature here to be the entire enum
+    // because in PerformanceAnnotationsAgent.ts we override it.
+    // TODO(b/406961576): split the agents apart rather than have one extend the other.
     clientFeature = Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_AGENT;
     get userTier() {
         return Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
@@ -221,36 +223,5 @@ export class PerformanceAgent extends AiAgent {
         const perfEnhancementQuery = treeStr ? `${treeStr}\n\n# User request\n\n` : '';
         return `${perfEnhancementQuery}${query}`;
     }
-    /**
-     * Used in the Performance panel to automatically generate a label for a selected entry.
-     */
-    async generateAIEntryLabel(callTree) {
-        const context = new CallTreeContext(callTree);
-        const response = await Array.fromAsync(this.run(AI_LABEL_GENERATION_PROMPT, { selected: context }));
-        const lastResponse = response.at(-1);
-        if (lastResponse && lastResponse.type === "answer" /* ResponseType.ANSWER */ && lastResponse.complete === true) {
-            return lastResponse.text.trim();
-        }
-        throw new Error('Failed to generate AI entry label');
-    }
 }
-const AI_LABEL_GENERATION_PROMPT = `## Instruction:
-Generate a concise label (max 60 chars, single line) describing the selected call tree's activity, based solely on the provided call tree data.
-
-You should focus on:
-1. What activity is happening within the call tree.
-2. What the code within the call tree is doing.
-3. What (if any) visible impact to the user there is.
-
-## Strict Constraints:
-- Output must be a single line of text.
-- Maximum 60 characters.
-- No full stops.
-- Base the description only on the information present within the call tree data.
-- Do not include the name of the selected event.
-- Do not make assumptions about when the activity happened.
-- Only include details on activity that you are highly confident about.
-- Prioritize brevity.
-- Only include third-party script names if their identification is highly confident.
-`;
 //# sourceMappingURL=PerformanceAgent.js.map

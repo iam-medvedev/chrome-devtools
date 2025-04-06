@@ -87,7 +87,6 @@ export class FileContext extends ConversationContext {
  * instance for a new conversation.
  */
 export class FileAgent extends AiAgent {
-    type = "drjones-file" /* AgentType.FILE */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_FILE_AGENT;
     get userTier() {

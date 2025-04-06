@@ -333,7 +333,7 @@ const formatName = (name) => {
                 { title: 'abstract async bar', subtitle: '()', lineNumber: 0, columnNumber: 45 },
             ]);
         });
-        it('for overriden methods', () => {
+        it('for overridden methods', () => {
             assert.deepEqual(typeScriptOutline('class Foo extends Bar {\n' +
                 ' override foo() {}\n' +
                 ' override *bar() {}\n' +

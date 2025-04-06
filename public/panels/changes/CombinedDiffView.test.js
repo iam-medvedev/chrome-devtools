@@ -37,14 +37,14 @@ function createWorkspaceDiff({ workspace }) {
 }
 async function createCombinedDiffView({ workspaceDiff }) {
     const view = createViewFunctionStub(CombinedDiffView.CombinedDiffView);
-    const combinedDiffView = new CombinedDiffView.CombinedDiffView(undefined, view);
-    combinedDiffView.workspaceDiff = workspaceDiff;
+    const widget = new CombinedDiffView.CombinedDiffView(undefined, view);
+    widget.workspaceDiff = workspaceDiff;
     const container = document.createElement('div');
     renderElementIntoDOM(container);
-    combinedDiffView.markAsRoot();
-    combinedDiffView.show(container);
+    widget.markAsRoot();
+    widget.show(container);
     await view.nextInput;
-    return { combinedDiffView, view };
+    return { widget, view };
 }
 describeWithEnvironment('CombinedDiffView', () => {
     let workspaceDiff;
@@ -101,6 +101,22 @@ describeWithEnvironment('CombinedDiffView', () => {
             const { view } = await createCombinedDiffView({ workspaceDiff });
             uiSourceCode.setWorkingCopy('const data={original:false}');
             assert.strictEqual((await view.nextInput).singleDiffViewInputs[0].fileName, '*/tmp/non-mapped.html');
+        });
+    });
+    describe('ignoredUrl', () => {
+        it('should ignore files in ignoredFileNames', async () => {
+            const { uiSourceCode } = createFileSystemUISourceCode({
+                url: urlString `inspector:///inspector-stylesheet`,
+                content: ORIGINAL_CONTENT,
+                autoMapping: true,
+                mimeType: 'text/css',
+                fileSystemPath: ''
+            });
+            const { widget, view } = await createCombinedDiffView({ workspaceDiff });
+            widget.ignoredUrls = ['inspector://'];
+            uiSourceCode.setWorkingCopy('const data={original:false}');
+            const input = await view.nextInput;
+            assert.deepEqual(input.singleDiffViewInputs, []);
         });
     });
 });

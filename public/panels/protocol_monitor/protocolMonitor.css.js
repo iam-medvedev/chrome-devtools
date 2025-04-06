@@ -10,11 +10,11 @@ export default {
  * found in the LICENSE file.
  */
 
-.protocol-monitor .protocol-monitor-toolbar {
+.protocol-monitor-toolbar {
   border-bottom: 1px solid var(--sys-color-divider);
 }
 
-.protocol-monitor .protocol-monitor-bottom-toolbar {
+.protocol-monitor-bottom-toolbar {
   border-top: 1px solid var(--sys-color-divider);
 }
 

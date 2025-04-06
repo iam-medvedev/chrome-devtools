@@ -814,8 +814,9 @@ describeWithEnvironment('JSONEditor', () => {
                 },
             };
             jsonEditor.parameters = inputParameters;
+            await jsonEditor.updateComplete;
             const promise = jsonEditor.once("submiteditor" /* ProtocolMonitor.JSONEditor.Events.SUBMIT_EDITOR */);
-            dispatchKeyDownEvent(jsonEditor.contentElement, { key: 'Enter', ctrlKey: true, metaKey: true });
+            dispatchKeyDownEvent(jsonEditor.contentElement.querySelector('.wrapper'), { key: 'Enter', ctrlKey: true, metaKey: true });
             const response = await promise;
             assert.deepEqual(response.parameters, expectedParameters);
         });
@@ -1026,7 +1027,7 @@ describeWithEnvironment('JSONEditor', () => {
         await jsonEditor.updateComplete;
         const promise = jsonEditor.once("submiteditor" /* ProtocolMonitor.JSONEditor.Events.SUBMIT_EDITOR */);
         // We send the command
-        dispatchKeyDownEvent(jsonEditor.contentElement, { key: 'Enter', ctrlKey: true, metaKey: true });
+        dispatchKeyDownEvent(jsonEditor.contentElement.querySelector('.wrapper'), { key: 'Enter', ctrlKey: true, metaKey: true });
         const response = await promise;
         const expectedParameters = {
             NoTypeRef: {

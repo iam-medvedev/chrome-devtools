@@ -165,11 +165,10 @@ export class InspectorView extends VBox {
         const closeDrawerButton = new ToolbarButton(i18nString(UIStrings.closeDrawer), 'cross');
         closeDrawerButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         closeDrawerButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, this.closeDrawer, this);
-        this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'drawer'), this);
+        this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
         const selectedDrawerTab = this.drawerTabbedPane.selectedTabId;
         if (this.drawerSplitWidget.showMode() !== "OnlyMain" /* ShowMode.ONLY_MAIN */ && selectedDrawerTab) {
             Host.userMetrics.panelShown(selectedDrawerTab, true);
-            Host.userMetrics.panelShownInLocation(selectedDrawerTab, 'drawer');
         }
         this.drawerTabbedPane.setTabDelegate(this.tabDelegate);
         const drawerElement = this.drawerTabbedPane.element;
@@ -193,11 +192,10 @@ export class InspectorView extends VBox {
         const allocatedSpace = Root.Runtime.conditions.canDock() ? '69px' : '41px';
         this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
         this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPaneStyles);
-        this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId, 'main'), this);
+        this.tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
         const selectedTab = this.tabbedPane.selectedTabId;
         if (selectedTab) {
             Host.userMetrics.panelShown(selectedTab, true);
-            Host.userMetrics.panelShownInLocation(selectedTab, 'main');
         }
         this.tabbedPane.setAccessibleName(i18nString(UIStrings.panels));
         this.tabbedPane.setTabDelegate(this.tabDelegate);
@@ -388,9 +386,8 @@ export class InspectorView extends VBox {
     toolbarItemResized() {
         this.tabbedPane.headerResized();
     }
-    tabSelected(tabId, location) {
+    tabSelected(tabId) {
         Host.userMetrics.panelShown(tabId);
-        Host.userMetrics.panelShownInLocation(tabId, location);
     }
     setOwnerSplit(splitWidget) {
         this.ownerSplitWidget = splitWidget;

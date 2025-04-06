@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as RenderCoordinator from '../../../components/render_coordinator/render_coordinator.js';
@@ -151,7 +152,9 @@ export class ChartViewport extends UI.Widget.VBox {
         }
     }
     scrollOffset() {
-        return this.vScrollElement.scrollTop;
+        // Return the cached value, rather than the live value (which typically incurs a forced reflow)
+        // In practice, this is true whenever scrollOffset() is called:  `this.scrollTop === this.vScrollElement.scrollTop`
+        return this.scrollTop;
     }
     chartHeight() {
         return this.offsetHeight;

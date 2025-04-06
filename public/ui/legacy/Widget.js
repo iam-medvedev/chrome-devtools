@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
  * Copyright (C) 2011 Google Inc. All Rights Reserved.
@@ -166,48 +167,39 @@ const UPDATE_COMPLETE_RESOLVE = (_result) => { };
 export class Widget {
     element;
     contentElement;
-    shadowRoot;
-    visibleInternal;
-    isRoot;
-    isShowingInternal;
-    childrenInternal;
-    hideOnDetach;
-    notificationDepth;
-    invalidationsSuspended;
-    defaultFocusedChild;
-    parentWidgetInternal;
-    defaultFocusedElement;
-    cachedConstraints;
-    constraintsInternal;
-    invalidationsRequested;
-    externallyManaged;
+    defaultFocusedChild = null;
+    #shadowRoot;
+    #visible = false;
+    #isRoot = false;
+    #isShowing = false;
+    #children = [];
+    #hideOnDetach = false;
+    #notificationDepth = 0;
+    #invalidationsSuspended = 0;
+    #parentWidget = null;
+    #defaultFocusedElement;
+    #cachedConstraints;
+    #constraints;
+    #invalidationsRequested;
+    #externallyManaged;
     #updateComplete = UPDATE_COMPLETE;
     #updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
     #updateRequestID = 0;
     constructor(useShadowDom, delegatesFocus, element) {
         this.element = element || document.createElement('div');
-        this.shadowRoot = this.element.shadowRoot;
-        if (useShadowDom && !this.shadowRoot) {
+        this.#shadowRoot = this.element.shadowRoot;
+        if (useShadowDom && !this.#shadowRoot) {
             this.element.classList.add('vbox');
             this.element.classList.add('flex-auto');
-            this.shadowRoot = createShadowRootWithCoreStyles(this.element, { delegatesFocus });
+            this.#shadowRoot = createShadowRootWithCoreStyles(this.element, { delegatesFocus });
             this.contentElement = document.createElement('div');
-            this.shadowRoot.appendChild(this.contentElement);
+            this.#shadowRoot.appendChild(this.contentElement);
         }
         else {
             this.contentElement = this.element;
         }
         this.contentElement.classList.add('widget');
         widgetMap.set(this.element, this);
-        this.visibleInternal = false;
-        this.isRoot = false;
-        this.isShowingInternal = false;
-        this.childrenInternal = [];
-        this.hideOnDetach = false;
-        this.notificationDepth = 0;
-        this.invalidationsSuspended = 0;
-        this.defaultFocusedChild = null;
-        this.parentWidgetInternal = null;
     }
     /**
      * Returns the {@link Widget} whose element is the given `node`, or `undefined`
@@ -231,27 +223,27 @@ export class Widget {
     }
     markAsRoot() {
         assert(!this.element.parentElement, 'Attempt to mark as root attached node');
-        this.isRoot = true;
+        this.#isRoot = true;
     }
     parentWidget() {
-        return this.parentWidgetInternal;
+        return this.#parentWidget;
     }
     children() {
-        return this.childrenInternal;
+        return this.#children;
     }
     childWasDetached(_widget) {
     }
     isShowing() {
-        return this.isShowingInternal;
+        return this.#isShowing;
     }
     shouldHideOnDetach() {
         if (!this.element.parentElement) {
             return false;
         }
-        if (this.hideOnDetach) {
+        if (this.#hideOnDetach) {
             return true;
         }
-        for (const child of this.childrenInternal) {
+        for (const child of this.#children) {
             if (child.shouldHideOnDetach()) {
                 return true;
             }
@@ -259,28 +251,28 @@ export class Widget {
         return false;
     }
     setHideOnDetach() {
-        this.hideOnDetach = true;
+        this.#hideOnDetach = true;
     }
     inNotification() {
-        return Boolean(this.notificationDepth) || Boolean(this.parentWidgetInternal?.inNotification());
+        return Boolean(this.#notificationDepth) || Boolean(this.#parentWidget?.inNotification());
     }
     parentIsShowing() {
-        if (this.isRoot) {
+        if (this.#isRoot) {
             return true;
         }
-        return this.parentWidgetInternal?.isShowing() ?? false;
+        return this.#parentWidget?.isShowing() ?? false;
     }
     callOnVisibleChildren(method) {
-        const copy = this.childrenInternal.slice();
+        const copy = this.#children.slice();
         for (let i = 0; i < copy.length; ++i) {
-            if (copy[i].parentWidgetInternal === this && copy[i].visibleInternal) {
+            if (copy[i].#parentWidget === this && copy[i].#visible) {
                 method.call(copy[i]);
             }
         }
     }
     processWillShow() {
         this.callOnVisibleChildren(this.processWillShow);
-        this.isShowingInternal = true;
+        this.#isShowing = true;
     }
     processWasShown() {
         if (this.inNotification()) {
@@ -297,7 +289,7 @@ export class Widget {
         this.storeScrollPositions();
         this.callOnVisibleChildren(this.processWillHide);
         this.notify(this.willHide);
-        this.isShowingInternal = false;
+        this.#isShowing = false;
     }
     processWasHidden() {
         this.callOnVisibleChildren(this.processWasHidden);
@@ -313,12 +305,12 @@ export class Widget {
         this.callOnVisibleChildren(this.processOnResize);
     }
     notify(notification) {
-        ++this.notificationDepth;
+        ++this.#notificationDepth;
         try {
             notification.call(this);
         }
         finally {
-            --this.notificationDepth;
+            --this.#notificationDepth;
         }
     }
     wasShown() {
@@ -335,14 +327,14 @@ export class Widget {
     }
     show(parentElement, insertBefore, suppressOrphanWidgetError = false) {
         assert(parentElement, 'Attempt to attach widget with no parent element');
-        if (!this.isRoot) {
+        if (!this.#isRoot) {
             // Update widget hierarchy.
             let currentParent = parentElement;
             let currentWidget = undefined;
             while (!currentWidget) {
                 if (!currentParent) {
                     if (suppressOrphanWidgetError) {
-                        this.isRoot = true;
+                        this.#isRoot = true;
                         console.warn('A Widget has silently been marked as a root widget');
                         this.show(parentElement, insertBefore);
                         return;
@@ -357,18 +349,18 @@ export class Widget {
         this.showWidgetInternal(parentElement, insertBefore);
     }
     attach(parentWidget) {
-        if (parentWidget === this.parentWidgetInternal) {
+        if (parentWidget === this.#parentWidget) {
             return;
         }
-        if (this.parentWidgetInternal) {
+        if (this.#parentWidget) {
             this.detach();
         }
-        this.parentWidgetInternal = parentWidget;
-        this.parentWidgetInternal.childrenInternal.push(this);
-        this.isRoot = false;
+        this.#parentWidget = parentWidget;
+        this.#parentWidget.#children.push(this);
+        this.#isRoot = false;
     }
     showWidget() {
-        if (this.visibleInternal) {
+        if (this.#visible) {
             return;
         }
         if (!this.element.parentElement) {
@@ -381,24 +373,24 @@ export class Widget {
         while (currentParent && !widgetMap.get(currentParent)) {
             currentParent = currentParent.parentElementOrShadowHost();
         }
-        if (this.isRoot) {
+        if (this.#isRoot) {
             assert(!currentParent, 'Attempt to show root widget under another widget');
         }
         else {
-            assert(currentParent && widgetMap.get(currentParent) === this.parentWidgetInternal, 'Attempt to show under node belonging to alien widget');
+            assert(currentParent && widgetMap.get(currentParent) === this.#parentWidget, 'Attempt to show under node belonging to alien widget');
         }
-        const wasVisible = this.visibleInternal;
+        const wasVisible = this.#visible;
         if (wasVisible && this.element.parentElement === parentElement) {
             return;
         }
-        this.visibleInternal = true;
+        this.#visible = true;
         if (!wasVisible && this.parentIsShowing()) {
             this.processWillShow();
         }
         this.element.classList.remove('hidden');
         // Reparent
         if (this.element.parentElement !== parentElement) {
-            if (!this.externallyManaged) {
+            if (!this.#externallyManaged) {
                 incrementWidgetCounter(parentElement, this.element);
             }
             if (insertBefore) {
@@ -411,21 +403,21 @@ export class Widget {
         if (!wasVisible && this.parentIsShowing()) {
             this.processWasShown();
         }
-        if (this.parentWidgetInternal && this.hasNonZeroConstraints()) {
-            this.parentWidgetInternal.invalidateConstraints();
+        if (this.#parentWidget && this.hasNonZeroConstraints()) {
+            this.#parentWidget.invalidateConstraints();
         }
         else {
             this.processOnResize();
         }
     }
     hideWidget() {
-        if (!this.visibleInternal) {
+        if (!this.#visible) {
             return;
         }
         this.hideWidgetInternal(false);
     }
     hideWidgetInternal(removeFromDOM) {
-        this.visibleInternal = false;
+        this.#visible = false;
         const { parentElement } = this.element;
         if (this.parentIsShowing()) {
             this.processWillHide();
@@ -444,12 +436,12 @@ export class Widget {
         if (this.parentIsShowing()) {
             this.processWasHidden();
         }
-        if (this.parentWidgetInternal && this.hasNonZeroConstraints()) {
-            this.parentWidgetInternal.invalidateConstraints();
+        if (this.#parentWidget && this.hasNonZeroConstraints()) {
+            this.#parentWidget.invalidateConstraints();
         }
     }
     detach(overrideHideOnDetach) {
-        if (!this.parentWidgetInternal && !this.isRoot) {
+        if (!this.#parentWidget && !this.#isRoot) {
             return;
         }
         // Cancel any pending update.
@@ -466,7 +458,7 @@ export class Widget {
         // overrideHideOnDetach will override hideOnDetach and the client takes
         // responsibility for the consequences.
         const removeFromDOM = overrideHideOnDetach || !this.shouldHideOnDetach();
-        if (this.visibleInternal) {
+        if (this.#visible) {
             this.hideWidgetInternal(removeFromDOM);
         }
         else if (removeFromDOM) {
@@ -478,22 +470,22 @@ export class Widget {
             }
         }
         // Update widget hierarchy.
-        if (this.parentWidgetInternal) {
-            const childIndex = this.parentWidgetInternal.childrenInternal.indexOf(this);
+        if (this.#parentWidget) {
+            const childIndex = this.#parentWidget.#children.indexOf(this);
             assert(childIndex >= 0, 'Attempt to remove non-child widget');
-            this.parentWidgetInternal.childrenInternal.splice(childIndex, 1);
-            if (this.parentWidgetInternal.defaultFocusedChild === this) {
-                this.parentWidgetInternal.defaultFocusedChild = null;
+            this.#parentWidget.#children.splice(childIndex, 1);
+            if (this.#parentWidget.defaultFocusedChild === this) {
+                this.#parentWidget.defaultFocusedChild = null;
             }
-            this.parentWidgetInternal.childWasDetached(this);
-            this.parentWidgetInternal = null;
+            this.#parentWidget.childWasDetached(this);
+            this.#parentWidget = null;
         }
         else {
-            assert(this.isRoot, 'Removing non-root widget from DOM');
+            assert(this.#isRoot, 'Removing non-root widget from DOM');
         }
     }
     detachChildWidgets() {
-        const children = this.childrenInternal.slice();
+        const children = this.#children.slice();
         for (let i = 0; i < children.length; ++i) {
             children[i].detach();
         }
@@ -535,7 +527,7 @@ export class Widget {
     }
     registerRequiredCSS(...cssFiles) {
         for (const cssFile of cssFiles) {
-            ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot ?? this.element, cssFile);
+            ThemeSupport.ThemeSupport.instance().appendStyle(this.#shadowRoot ?? this.element, cssFile);
         }
     }
     // Unused, but useful for debugging.
@@ -545,38 +537,38 @@ export class Widget {
         console.log(lines.join('\n')); // eslint-disable-line no-console
     }
     collectWidgetHierarchy(prefix, lines) {
-        lines.push(prefix + '[' + this.element.className + ']' + (this.childrenInternal.length ? ' {' : ''));
-        for (let i = 0; i < this.childrenInternal.length; ++i) {
-            this.childrenInternal[i].collectWidgetHierarchy(prefix + '    ', lines);
+        lines.push(prefix + '[' + this.element.className + ']' + (this.#children.length ? ' {' : ''));
+        for (let i = 0; i < this.#children.length; ++i) {
+            this.#children[i].collectWidgetHierarchy(prefix + '    ', lines);
         }
-        if (this.childrenInternal.length) {
+        if (this.#children.length) {
             lines.push(prefix + '}');
         }
     }
     setDefaultFocusedElement(element) {
-        this.defaultFocusedElement = element;
+        this.#defaultFocusedElement = element;
     }
     setDefaultFocusedChild(child) {
-        assert(child.parentWidgetInternal === this, 'Attempt to set non-child widget as default focused.');
+        assert(child.#parentWidget === this, 'Attempt to set non-child widget as default focused.');
         this.defaultFocusedChild = child;
     }
     focus() {
         if (!this.isShowing()) {
             return;
         }
-        const element = this.defaultFocusedElement;
+        const element = this.#defaultFocusedElement;
         if (element) {
             if (!element.hasFocus()) {
                 element.focus();
             }
             return;
         }
-        if (this.defaultFocusedChild?.visibleInternal) {
+        if (this.defaultFocusedChild && this.defaultFocusedChild.#visible) {
             this.defaultFocusedChild.focus();
         }
         else {
-            for (const child of this.childrenInternal) {
-                if (child.visibleInternal) {
+            for (const child of this.#children) {
+                if (child.#visible) {
                     child.focus();
                     return;
                 }
@@ -598,23 +590,23 @@ export class Widget {
         return new Constraints();
     }
     constraints() {
-        if (typeof this.constraintsInternal !== 'undefined') {
-            return this.constraintsInternal;
+        if (typeof this.#constraints !== 'undefined') {
+            return this.#constraints;
         }
-        if (typeof this.cachedConstraints === 'undefined') {
-            this.cachedConstraints = this.calculateConstraints();
+        if (typeof this.#cachedConstraints === 'undefined') {
+            this.#cachedConstraints = this.calculateConstraints();
         }
-        return this.cachedConstraints;
+        return this.#cachedConstraints;
     }
     setMinimumAndPreferredSizes(width, height, preferredWidth, preferredHeight) {
-        this.constraintsInternal = new Constraints(new Size(width, height), new Size(preferredWidth, preferredHeight));
+        this.#constraints = new Constraints(new Size(width, height), new Size(preferredWidth, preferredHeight));
         this.invalidateConstraints();
     }
     setMinimumSize(width, height) {
         this.minimumSize = new Size(width, height);
     }
     set minimumSize(size) {
-        this.constraintsInternal = new Constraints(size);
+        this.#constraints = new Constraints(size);
         this.invalidateConstraints();
     }
     hasNonZeroConstraints() {
@@ -623,25 +615,25 @@ export class Widget {
             constraints.preferred.height);
     }
     suspendInvalidations() {
-        ++this.invalidationsSuspended;
+        ++this.#invalidationsSuspended;
     }
     resumeInvalidations() {
-        --this.invalidationsSuspended;
-        if (!this.invalidationsSuspended && this.invalidationsRequested) {
+        --this.#invalidationsSuspended;
+        if (!this.#invalidationsSuspended && this.#invalidationsRequested) {
             this.invalidateConstraints();
         }
     }
     invalidateConstraints() {
-        if (this.invalidationsSuspended) {
-            this.invalidationsRequested = true;
+        if (this.#invalidationsSuspended) {
+            this.#invalidationsRequested = true;
             return;
         }
-        this.invalidationsRequested = false;
-        const cached = this.cachedConstraints;
-        delete this.cachedConstraints;
+        this.#invalidationsRequested = false;
+        const cached = this.#cachedConstraints;
+        this.#cachedConstraints = undefined;
         const actual = this.constraints();
-        if (!actual.isEqual(cached || null) && this.parentWidgetInternal) {
-            this.parentWidgetInternal.invalidateConstraints();
+        if (!actual.isEqual(cached || null) && this.#parentWidget) {
+            this.#parentWidget.invalidateConstraints();
         }
         else {
             this.doLayout();
@@ -656,8 +648,8 @@ export class Widget {
     // Also note that this must be called before the widget is shown so that
     // so that its ancestor's widgetCounter is not incremented.
     markAsExternallyManaged() {
-        assert(!this.parentWidgetInternal, 'Attempt to mark widget as externally managed after insertion to the DOM');
-        this.externallyManaged = true;
+        assert(!this.#parentWidget, 'Attempt to mark widget as externally managed after insertion to the DOM');
+        this.#externallyManaged = true;
     }
     /**
      * Override this method in derived classes to perform the actual view update.

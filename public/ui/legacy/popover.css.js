@@ -17,7 +17,7 @@ export default {
   color: var(--sys-color-on-surface);
   background-color: var(--sys-color-base-container-elevated);
   border-radius: var(--sys-shape-corner-small);
-  padding: var(--sys-size-6) var(--sys-size-8);
+  padding: var(--sys-size-4);
 }
 
 .squiggles-content {

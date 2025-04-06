@@ -44,7 +44,6 @@ export declare class ExperimentsSettingsTab extends SettingsTab {
     private createExperimentsWarningSubsection;
     private createExperimentCheckbox;
     highlightObject(experiment: Object): void;
-    setFilter(filterText: string): void;
     wasShown(): void;
     willHide(): void;
 }

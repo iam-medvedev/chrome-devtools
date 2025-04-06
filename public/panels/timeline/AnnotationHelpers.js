@@ -133,7 +133,8 @@ export function ariaDescriptionForOverlay(overlay) {
         return i18nString(UIStrings.entriesLink);
     }
     if (isEntryLabel(overlay)) {
-        return i18nString(UIStrings.entryLabel);
+        // Don't announce an empty label
+        return overlay.label.length > 0 ? i18nString(UIStrings.entryLabel) : null;
     }
     // Not an annotation overlay: ignore.
     return null;

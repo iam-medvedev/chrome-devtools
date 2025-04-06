@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -745,6 +746,9 @@ class ToolbarInputElement extends HTMLElement {
         this.item.addEventListener("EnterPressed" /* ToolbarInput.Event.ENTER_PRESSED */, event => {
             this.dispatchEvent(new CustomEvent('submit', { detail: event.data }));
         });
+    }
+    focus() {
+        this.item.focus();
     }
     async #onAutocomplete(expression, prefix, force) {
         if (!prefix && !force && expression || !this.datalist) {

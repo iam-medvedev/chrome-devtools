@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
@@ -79,6 +80,7 @@ const EXPERIMENTAL_INSIGHTS = new Set([]);
  * Order does not matter (but keep alphabetized).
  */
 const INSIGHT_NAME_TO_COMPONENT = {
+    Cache: Insights.Cache.Cache,
     CLSCulprits: Insights.CLSCulprits.CLSCulprits,
     DocumentLatency: Insights.DocumentLatency.DocumentLatency,
     DOMSize: Insights.DOMSize.DOMSize,
@@ -89,13 +91,13 @@ const INSIGHT_NAME_TO_COMPONENT = {
     InteractionToNextPaint: Insights.InteractionToNextPaint.InteractionToNextPaint,
     LCPDiscovery: Insights.LCPDiscovery.LCPDiscovery,
     LCPPhases: Insights.LCPPhases.LCPPhases,
+    LegacyJavaScript: Insights.LegacyJavaScript.LegacyJavaScript,
+    ModernHTTP: Insights.ModernHTTP.ModernHTTP,
     NetworkDependencyTree: Insights.NetworkDependencyTree.NetworkDependencyTree,
     RenderBlocking: Insights.RenderBlocking.RenderBlocking,
     SlowCSSSelector: Insights.SlowCSSSelector.SlowCSSSelector,
     ThirdParties: Insights.ThirdParties.ThirdParties,
     Viewport: Insights.Viewport.Viewport,
-    Cache: Insights.Cache.Cache,
-    ModernHTTP: Insights.ModernHTTP.ModernHTTP,
 };
 export class SidebarSingleInsightSet extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });

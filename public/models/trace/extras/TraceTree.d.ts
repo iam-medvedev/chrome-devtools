@@ -93,7 +93,7 @@ export declare class BottomUpRootNode extends Node {
     hasChildren(): boolean;
     filterChildren(children: ChildrenCache): ChildrenCache;
     children(): ChildrenCache;
-    private ungrouppedTopNodes;
+    private ungroupedTopNodes;
     private grouppedTopNodes;
 }
 export declare class GroupNode extends Node {

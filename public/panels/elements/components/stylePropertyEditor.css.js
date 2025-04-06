@@ -11,7 +11,6 @@ export default {
  */
 
 .container {
-  padding: 12px;
   min-width: 170px;
 }
 

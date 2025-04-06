@@ -12,6 +12,7 @@ export declare class NetworkItemView extends UI.TabbedPane.TabbedPane {
     private readonly responseView;
     private cookiesView;
     private initialTab?;
+    private readonly firstTab;
     constructor(request: SDK.NetworkRequest.NetworkRequest, calculator: NetworkTimeCalculator, initialTab?: NetworkForward.UIRequestLocation.UIRequestTabs);
     wasShown(): void;
     willHide(): void;
@@ -24,5 +25,5 @@ export declare class NetworkItemView extends UI.TabbedPane.TabbedPane {
     request(): SDK.NetworkRequest.NetworkRequest;
     revealResponseBody(position: SourceFrame.SourceFrame.RevealPosition): Promise<void>;
     revealHeader(section: NetworkForward.UIRequestLocation.UIHeaderSection, header: string | undefined): void;
-    getHeadersViewComponent(): NetworkComponents.RequestHeadersView.RequestHeadersView;
+    getHeadersViewComponent(): NetworkComponents.RequestHeadersView.RequestHeadersView | undefined;
 }

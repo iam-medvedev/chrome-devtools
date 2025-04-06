@@ -83,16 +83,11 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #command = '';
     #targetId;
     #hintPopoverHelper;
-    constructor(element) {
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
         super(/* useShadowDom=*/ true, undefined, element);
+        this.#view = view;
         this.registerRequiredCSS(editorWidgetStyles);
-        this.element.setAttribute('jslog', `${VisualLogging.pane('command-editor').track({ resize: true })}`);
-        this.contentElement.addEventListener('keydown', event => {
-            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
-                this.#handleParameterInputKeydown(event);
-                this.#handleCommandSend();
-            }
-        });
     }
     get metadataByCommand() {
         return this.#metadataByCommand;
@@ -321,7 +316,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (!Array.isArray(value)) {
             throw new Error('The value is not an array');
         }
-        const nestedType = this.#isTypePrimitive(typeRef) ? undefined : {
+        const nestedType = isTypePrimitive(typeRef) ? undefined : {
             optional: true,
             type: "object" /* ParameterType.OBJECT */,
             value: [],
@@ -559,12 +554,6 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.populateParametersForCommandWithDefaultValues();
     };
-    #isTypePrimitive(type) {
-        if (type === "string" /* ParameterType.STRING */ || type === "boolean" /* ParameterType.BOOLEAN */ || type === "number" /* ParameterType.NUMBER */) {
-            return true;
-        }
-        return false;
-    }
     #createNestedParameter(type, name) {
         if (type.type === "object" /* ParameterType.OBJECT */) {
             let typeRef = type.typeRef;
@@ -607,7 +596,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                 }
                 const nestedType = this.typesByName.get(typeRef) ?? [];
                 const nestedValue = nestedType.map(type => this.#createNestedParameter(type, type.name));
-                let type = this.#isTypePrimitive(typeRef) ? typeRef : "object" /* ParameterType.OBJECT */;
+                let type = isTypePrimitive(typeRef) ? typeRef : "object" /* ParameterType.OBJECT */;
                 // If the typeRef is actually a ref to an enum type, the type of the nested param should be a string
                 if (nestedType.length === 0) {
                     if (this.enumsByName.get(typeRef)) {
@@ -720,25 +709,6 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.requestUpdate();
     }
-    #renderTargetSelectorRow() {
-        // clang-format off
-        return html `
-    <div class="row attribute padded">
-      <div>target<span class="separator">:</span></div>
-      <select class="target-selector"
-              title=${i18nString(UIStrings.selectTarget)}
-              jslog=${VisualLogging.dropDown('target-selector').track({ change: true })}
-              @change=${this.#onTargetSelected}>
-        ${this.targets.map(target => html `
-          <option jslog=${VisualLogging.item('target').track({ click: true })}
-                  value=${target.id()} ?selected=${target.id() === this.targetId}>
-            ${target.name()} (${target.inspectedURL()})
-          </option>`)}
-      </select>
-    </div>
-  `;
-        // clang-format on
-    }
     #onTargetSelected(event) {
         if (event.target instanceof HTMLSelectElement) {
             this.targetId = event.target.value;
@@ -756,8 +726,82 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         return [];
     }
-    #renderInlineButton(opts) {
-        return html `
+    performUpdate() {
+        const viewInput = {
+            onParameterValueBlur: (event) => {
+                this.#saveParameterValue(event);
+            },
+            onParameterKeydown: (event) => {
+                this.#handleParameterInputKeydown(event);
+            },
+            onParameterFocus: (event) => {
+                this.#handleFocusParameter(event);
+            },
+            onParameterKeyBlur: (event) => {
+                this.#saveNestedObjectParameterKey(event);
+            },
+            onKeydown: (event) => {
+                if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                    this.#handleParameterInputKeydown(event);
+                    this.#handleCommandSend();
+                }
+            },
+            parameters: this.parameters,
+            metadataByCommand: this.metadataByCommand,
+            command: this.command,
+            typesByName: this.typesByName,
+            onCommandInputBlur: (event) => this.#handleCommandInputBlur(event),
+            onCommandSend: () => this.#handleCommandSend(),
+            onCopyToClipboard: () => this.#copyToClipboard(),
+            targets: this.targets,
+            targetId: this.targetId,
+            onAddParameter: (parameterId) => {
+                this.#handleAddParameter(parameterId);
+            },
+            onClearParameter: (parameter, isParentArray) => {
+                this.#handleClearParameter(parameter, isParentArray);
+            },
+            onDeleteParameter: (parameter, parentParameter) => {
+                this.#handleDeleteParameter(parameter, parentParameter);
+            },
+            onTargetSelected: (event) => {
+                this.#onTargetSelected(event);
+            },
+            computeDropdownValues: (parameter) => {
+                return this.#computeDropdownValues(parameter);
+            },
+        };
+        const viewOutput = {};
+        this.#view(viewInput, viewOutput, this.contentElement);
+    }
+}
+function isTypePrimitive(type) {
+    if (type === "string" /* ParameterType.STRING */ || type === "boolean" /* ParameterType.BOOLEAN */ || type === "number" /* ParameterType.NUMBER */) {
+        return true;
+    }
+    return false;
+}
+function renderTargetSelectorRow(input) {
+    // clang-format off
+    return html `
+  <div class="row attribute padded">
+    <div>target<span class="separator">:</span></div>
+    <select class="target-selector"
+            title=${i18nString(UIStrings.selectTarget)}
+            jslog=${VisualLogging.dropDown('target-selector').track({ change: true })}
+            @change=${input.onTargetSelected}>
+      ${input.targets.map(target => html `
+        <option jslog=${VisualLogging.item('target').track({ click: true })}
+                value=${target.id()} ?selected=${target.id() === input.targetId}>
+          ${target.name()} (${target.inspectedURL()})
+        </option>`)}
+    </select>
+  </div>
+`;
+    // clang-format on
+}
+function renderInlineButton(opts) {
+    return html `
           <devtools-button
             title=${opts.title}
             .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
@@ -767,263 +811,252 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             @click=${opts.onClick}
             .jslogContext=${opts.jslogContext}
           ></devtools-button>
-        `;
-    }
-    #renderWarningIcon() {
-        return html `<devtools-icon
+      `;
+}
+function renderWarningIcon() {
+    return html `<devtools-icon
     .data=${{
-            iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px',
-        }}
+        iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px',
+    }}
     class=${classMap({
-            'warning-icon': true,
-        })}
+        'warning-icon': true,
+    })}
   >
   </devtools-icon>`;
-    }
-    /**
-     * Renders the parameters list corresponding to a specific CDP command.
-     */
-    #renderParameters(parameters, id, parentParameter, parentParameterId) {
-        parameters.sort((a, b) => Number(a.optional) - Number(b.optional));
-        // clang-format off
+}
+/**
+ * Renders the parameters list corresponding to a specific CDP command.
+ */
+function renderParameters(input, parameters, id, parentParameter, parentParameterId) {
+    parameters.sort((a, b) => Number(a.optional) - Number(b.optional));
+    // clang-format off
+    return html `
+    <ul>
+      ${repeat(parameters, parameter => {
+        const parameterId = parentParameter ? `${parentParameterId}` + '.' + `${parameter.name}` : parameter.name;
+        const subparameters = parameter.type === "array" /* ParameterType.ARRAY */ || parameter.type === "object" /* ParameterType.OBJECT */ ? (parameter.value ?? []) : [];
+        const isPrimitive = isTypePrimitive(parameter.type);
+        const isArray = parameter.type === "array" /* ParameterType.ARRAY */;
+        const isParentArray = parentParameter && parentParameter.type === "array" /* ParameterType.ARRAY */;
+        const isParentObject = parentParameter && parentParameter.type === "object" /* ParameterType.OBJECT */;
+        const isObject = parameter.type === "object" /* ParameterType.OBJECT */;
+        const isParamValueUndefined = parameter.value === undefined;
+        const isParamOptional = parameter.optional;
+        const hasTypeRef = isObject && parameter.typeRef && input.typesByName.get(parameter.typeRef) !== undefined;
+        // This variable indicates that this parameter is a parameter nested inside an object parameter
+        // that no keys defined inside the CDP documentation.
+        const hasNoKeys = parameter.isKeyEditable;
+        const isCustomEditorDisplayed = isObject && !hasTypeRef;
+        const hasOptions = parameter.type === "string" /* ParameterType.STRING */ || parameter.type === "boolean" /* ParameterType.BOOLEAN */;
+        const canClearParameter = (isArray && !isParamValueUndefined && parameter.value?.length !== 0) || (isObject && !isParamValueUndefined);
+        const parametersClasses = {
+            'optional-parameter': parameter.optional,
+            parameter: true,
+            'undefined-parameter': parameter.value === undefined && parameter.optional,
+        };
+        const inputClasses = {
+            'json-input': true,
+        };
         return html `
-      <ul>
-        ${repeat(parameters, parameter => {
-            const parameterId = parentParameter ? `${parentParameterId}` + '.' + `${parameter.name}` : parameter.name;
-            const subparameters = parameter.type === "array" /* ParameterType.ARRAY */ || parameter.type === "object" /* ParameterType.OBJECT */ ? (parameter.value ?? []) : [];
-            const handleInputOnBlur = (event) => {
-                this.#saveParameterValue(event);
-            };
-            const handleKeydown = (event) => {
-                this.#handleParameterInputKeydown(event);
-            };
-            const handleFocus = (event) => {
-                this.#handleFocusParameter(event);
-            };
-            const handleParamKeyOnBlur = (event) => {
-                this.#saveNestedObjectParameterKey(event);
-            };
-            const isPrimitive = this.#isTypePrimitive(parameter.type);
-            const isArray = parameter.type === "array" /* ParameterType.ARRAY */;
-            const isParentArray = parentParameter && parentParameter.type === "array" /* ParameterType.ARRAY */;
-            const isParentObject = parentParameter && parentParameter.type === "object" /* ParameterType.OBJECT */;
-            const isObject = parameter.type === "object" /* ParameterType.OBJECT */;
-            const isParamValueUndefined = parameter.value === undefined;
-            const isParamOptional = parameter.optional;
-            const hasTypeRef = isObject && parameter.typeRef && this.typesByName.get(parameter.typeRef) !== undefined;
-            // This variable indicates that this parameter is a parameter nested inside an object parameter
-            // that no keys defined inside the CDP documentation.
-            const hasNoKeys = parameter.isKeyEditable;
-            const isCustomEditorDisplayed = isObject && !hasTypeRef;
-            const hasOptions = parameter.type === "string" /* ParameterType.STRING */ || parameter.type === "boolean" /* ParameterType.BOOLEAN */;
-            const canClearParameter = (isArray && !isParamValueUndefined && parameter.value?.length !== 0) || (isObject && !isParamValueUndefined);
-            const parametersClasses = {
-                'optional-parameter': parameter.optional,
-                parameter: true,
-                'undefined-parameter': parameter.value === undefined && parameter.optional,
-            };
-            const inputClasses = {
-                'json-input': true,
-            };
-            return html `
-                <li class="row">
-                  <div class="row-icons">
-                      ${!parameter.isCorrectType ? html `${this.#renderWarningIcon()}` : nothing}
+              <li class="row">
+                <div class="row-icons">
+                    ${!parameter.isCorrectType ? html `${renderWarningIcon()}` : nothing}
 
-                      <!-- If an object parameter has no predefined keys, show an input to enter the key, otherwise show the name of the parameter -->
-                      <div class=${classMap(parametersClasses)} data-paramId=${parameterId}>
-                          ${hasNoKeys ?
-                html `<devtools-suggestion-input
-                              data-paramId=${parameterId}
-                              isKey=${true}
-                              .isCorrectInput=${live(parameter.isCorrectType)}
-                              .options=${hasOptions ? this.#computeDropdownValues(parameter) : []}
-                              .autocomplete=${false}
-                              .value=${live(parameter.name ?? '')}
-                              .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
-                              @blur=${handleParamKeyOnBlur}
-                              @focus=${handleFocus}
-                              @keydown=${handleKeydown}
-                            ></devtools-suggestion-input>` :
-                html `${parameter.name}`} <span class="separator">:</span>
-                      </div>
+                    <!-- If an object parameter has no predefined keys, show an input to enter the key, otherwise show the name of the parameter -->
+                    <div class=${classMap(parametersClasses)} data-paramId=${parameterId}>
+                        ${hasNoKeys ?
+            html `<devtools-suggestion-input
+                            data-paramId=${parameterId}
+                            isKey=${true}
+                            .isCorrectInput=${live(parameter.isCorrectType)}
+                            .options=${hasOptions ? input.computeDropdownValues(parameter) : []}
+                            .autocomplete=${false}
+                            .value=${live(parameter.name ?? '')}
+                            .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
+                            @blur=${input.onParameterKeyBlur}
+                            @focus=${input.onParameterFocus}
+                            @keydown=${input.onParameterKeydown}
+                          ></devtools-suggestion-input>` :
+            html `${parameter.name}`} <span class="separator">:</span>
+                    </div>
 
-                      <!-- Render button to add values inside an array parameter -->
-                      ${isArray ? html `
-                        ${this.#renderInlineButton({
-                title: i18nString(UIStrings.addParameter),
-                iconName: 'plus',
-                onClick: () => this.#handleAddParameter(parameterId),
-                classMap: { 'add-button': true },
-                jslogContext: 'protocol-monitor.add-parameter',
-            })}
-                      ` : nothing}
-
-                      <!-- Render button to complete reset an array parameter or an object parameter-->
-                      ${canClearParameter ?
-                this.#renderInlineButton({
-                    title: i18nString(UIStrings.resetDefaultValue),
-                    iconName: 'clear',
-                    onClick: () => this.#handleClearParameter(parameter, isParentArray),
-                    classMap: { 'clear-button': true },
-                    jslogContext: 'protocol-monitor.reset-to-default-value',
-                }) : nothing}
-
-                      <!-- Render the buttons to change the value from undefined to empty string for optional primitive parameters -->
-                      ${isPrimitive && !isParentArray && isParamOptional && isParamValueUndefined ?
-                html `  ${this.#renderInlineButton({
-                    title: i18nString(UIStrings.addParameter),
-                    iconName: 'plus',
-                    onClick: () => this.#handleAddParameter(parameterId),
-                    classMap: { 'add-button': true },
-                    jslogContext: 'protocol-monitor.add-parameter',
-                })}` : nothing}
-
-                      <!-- Render the buttons to change the value from undefined to populate the values inside object with their default values -->
-                      ${isObject && isParamOptional && isParamValueUndefined && hasTypeRef ?
-                html `  ${this.#renderInlineButton({
-                    title: i18nString(UIStrings.addParameter),
-                    iconName: 'plus',
-                    onClick: () => this.#handleAddParameter(parameterId),
-                    classMap: { 'add-button': true },
-                    jslogContext: 'protocol-monitor.add-parameter',
-                })}` : nothing}
-                  </div>
-
-                  <div class="row-icons">
-                      <!-- If an object has no predefined keys, show an input to enter the value, and a delete icon to delete the whole key/value pair -->
-                      ${hasNoKeys && isParentObject ? html `
-                      <!-- @ts-ignore -->
-                      <devtools-suggestion-input
-                          data-paramId=${parameterId}
-                          .isCorrectInput=${live(parameter.isCorrectType)}
-                          .options=${hasOptions ? this.#computeDropdownValues(parameter) : []}
-                          .autocomplete=${false}
-                          .value=${live(parameter.value ?? '')}
-                          .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
-                          .jslogContext=${'parameter-value'}
-                          @blur=${handleInputOnBlur}
-                          @focus=${handleFocus}
-                          @keydown=${handleKeydown}
-                        ></devtools-suggestion-input>
-
-                        ${this.#renderInlineButton({
-                title: i18nString(UIStrings.deleteParameter),
-                iconName: 'bin',
-                onClick: () => this.#handleDeleteParameter(parameter, parentParameter),
-                classMap: { deleteButton: true, deleteIcon: true },
-                jslogContext: 'protocol-monitor.delete-parameter',
-            })}` : nothing}
-
-                    <!-- In case  the parameter is not optional or its value is not undefined render the input -->
-                    ${isPrimitive && !hasNoKeys && (!isParamValueUndefined || !isParamOptional) && (!isParentArray) ?
-                html `
-                        <!-- @ts-ignore -->
-                        <devtools-suggestion-input
-                          data-paramId=${parameterId}
-                          .strikethrough=${live(parameter.isCorrectType)}
-                          .options=${hasOptions ? this.#computeDropdownValues(parameter) : []}
-                          .autocomplete=${false}
-                          .value=${live(parameter.value ?? '')}
-                          .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
-                          .jslogContext=${'parameter-value'}
-                          @blur=${handleInputOnBlur}
-                          @focus=${handleFocus}
-                          @keydown=${handleKeydown}
-                        ></devtools-suggestion-input>` : nothing}
-
-                    <!-- Render the buttons to change the value from empty string to undefined for optional primitive parameters -->
-                    ${isPrimitive && !hasNoKeys && !isParentArray && isParamOptional && !isParamValueUndefined ?
-                html `  ${this.#renderInlineButton({
-                    title: i18nString(UIStrings.resetDefaultValue),
-                    iconName: 'clear',
-                    onClick: () => this.#handleClearParameter(parameter),
-                    classMap: { 'clear-button': true },
-                    jslogContext: 'protocol-monitor.reset-to-default-value',
-                })}` : nothing}
-
-                    <!-- If the parameter is an object with no predefined keys, renders a button to add key/value pairs to it's value -->
-                    ${isCustomEditorDisplayed ? html `
-                      ${this.#renderInlineButton({
-                title: i18nString(UIStrings.addCustomProperty),
-                iconName: 'plus',
-                onClick: () => this.#handleAddParameter(parameterId),
-                classMap: { 'add-button': true },
-                jslogContext: 'protocol-monitor.add-custom-property',
-            })}
+                    <!-- Render button to add values inside an array parameter -->
+                    ${isArray ? html `
+                      ${renderInlineButton({
+            title: i18nString(UIStrings.addParameter),
+            iconName: 'plus',
+            onClick: () => input.onAddParameter(parameterId),
+            classMap: { 'add-button': true },
+            jslogContext: 'protocol-monitor.add-parameter',
+        })}
                     ` : nothing}
 
-                    <!-- In case the parameter is nested inside an array we render the input field as well as a delete button -->
-                    ${isParentArray ? html `
-                    <!-- If the parameter is an object we don't want to display the input field we just want the delete button-->
-                    ${!isObject ? html `
+                    <!-- Render button to complete reset an array parameter or an object parameter-->
+                    ${canClearParameter ?
+            renderInlineButton({
+                title: i18nString(UIStrings.resetDefaultValue),
+                iconName: 'clear',
+                onClick: () => input.onClearParameter(parameter, isParentArray),
+                classMap: { 'clear-button': true },
+                jslogContext: 'protocol-monitor.reset-to-default-value',
+            }) : nothing}
+
+                    <!-- Render the buttons to change the value from undefined to empty string for optional primitive parameters -->
+                    ${isPrimitive && !isParentArray && isParamOptional && isParamValueUndefined ?
+            html `  ${renderInlineButton({
+                title: i18nString(UIStrings.addParameter),
+                iconName: 'plus',
+                onClick: () => input.onAddParameter(parameterId),
+                classMap: { 'add-button': true },
+                jslogContext: 'protocol-monitor.add-parameter',
+            })}` : nothing}
+
+                    <!-- Render the buttons to change the value from undefined to populate the values inside object with their default values -->
+                    ${isObject && isParamOptional && isParamValueUndefined && hasTypeRef ?
+            html `  ${renderInlineButton({
+                title: i18nString(UIStrings.addParameter),
+                iconName: 'plus',
+                onClick: () => input.onAddParameter(parameterId),
+                classMap: { 'add-button': true },
+                jslogContext: 'protocol-monitor.add-parameter',
+            })}` : nothing}
+                </div>
+
+                <div class="row-icons">
+                    <!-- If an object has no predefined keys, show an input to enter the value, and a delete icon to delete the whole key/value pair -->
+                    ${hasNoKeys && isParentObject ? html `
                     <!-- @ts-ignore -->
                     <devtools-suggestion-input
-                      data-paramId=${parameterId}
-                      .options=${hasOptions ? this.#computeDropdownValues(parameter) : []}
-                      .autocomplete=${false}
-                      .value=${live(parameter.value ?? '')}
-                      .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
-                      .jslogContext=${'parameter'}
-                      @blur=${handleInputOnBlur}
-                      @keydown=${handleKeydown}
-                      class=${classMap(inputClasses)}
-                    ></devtools-suggestion-input>` : nothing}
+                        data-paramId=${parameterId}
+                        .isCorrectInput=${live(parameter.isCorrectType)}
+                        .options=${hasOptions ? input.computeDropdownValues(parameter) : []}
+                        .autocomplete=${false}
+                        .value=${live(parameter.value ?? '')}
+                        .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
+                        .jslogContext=${'parameter-value'}
+                        @blur=${input.onParameterValueBlur}
+                        @focus=${input.onParameterFocus}
+                        @keydown=${input.onParameterKeydown}
+                      ></devtools-suggestion-input>
 
-                    ${this.#renderInlineButton({
-                title: i18nString(UIStrings.deleteParameter),
-                iconName: 'bin',
-                onClick: () => this.#handleDeleteParameter(parameter, parentParameter),
-                classMap: { 'delete-button': true },
-                jslogContext: 'protocol-monitor.delete-parameter',
+                      ${renderInlineButton({
+            title: i18nString(UIStrings.deleteParameter),
+            iconName: 'bin',
+            onClick: () => input.onDeleteParameter(parameter, parentParameter),
+            classMap: { deleteButton: true, deleteIcon: true },
+            jslogContext: 'protocol-monitor.delete-parameter',
+        })}` : nothing}
+
+                  <!-- In case  the parameter is not optional or its value is not undefined render the input -->
+                  ${isPrimitive && !hasNoKeys && (!isParamValueUndefined || !isParamOptional) && (!isParentArray) ?
+            html `
+                      <!-- @ts-ignore -->
+                      <devtools-suggestion-input
+                        data-paramId=${parameterId}
+                        .strikethrough=${live(parameter.isCorrectType)}
+                        .options=${hasOptions ? input.computeDropdownValues(parameter) : []}
+                        .autocomplete=${false}
+                        .value=${live(parameter.value ?? '')}
+                        .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
+                        .jslogContext=${'parameter-value'}
+                        @blur=${input.onParameterValueBlur}
+                        @focus=${input.onParameterFocus}
+                        @keydown=${input.onParameterKeydown}
+                      ></devtools-suggestion-input>` : nothing}
+
+                  <!-- Render the buttons to change the value from empty string to undefined for optional primitive parameters -->
+                  ${isPrimitive && !hasNoKeys && !isParentArray && isParamOptional && !isParamValueUndefined ?
+            html `  ${renderInlineButton({
+                title: i18nString(UIStrings.resetDefaultValue),
+                iconName: 'clear',
+                onClick: () => input.onClearParameter(parameter),
+                classMap: { 'clear-button': true },
+                jslogContext: 'protocol-monitor.reset-to-default-value',
             })}` : nothing}
-                  </div>
-                </li>
-                ${this.#renderParameters(subparameters, id, parameter, parameterId)}
-              `;
+
+                  <!-- If the parameter is an object with no predefined keys, renders a button to add key/value pairs to it's value -->
+                  ${isCustomEditorDisplayed ? html `
+                    ${renderInlineButton({
+            title: i18nString(UIStrings.addCustomProperty),
+            iconName: 'plus',
+            onClick: () => input.onAddParameter(parameterId),
+            classMap: { 'add-button': true },
+            jslogContext: 'protocol-monitor.add-custom-property',
         })}
-      </ul>
-    `;
-        // clang-format on
-    }
-    performUpdate() {
-        // clang-format off
-        render(html `
-    <div class="wrapper">
-      ${this.#renderTargetSelectorRow()}
-      <div class="row attribute padded">
-        <div class="command">command<span class="separator">:</span></div>
-        <devtools-suggestion-input
-          .options=${[...this.metadataByCommand.keys()]}
-          .value=${this.command}
-          .placeholder=${'Enter your command...'}
-          .suggestionFilter=${suggestionFilter}
-          .jslogContext=${'command'}
-          @blur=${this.#handleCommandInputBlur}
-          class=${classMap({ 'json-input': true })}
-        ></devtools-suggestion-input>
-      </div>
-      ${this.parameters.length ? html `
-      <div class="row attribute padded">
-        <div>parameters<span class="separator">:</span></div>
-      </div>
-        ${this.#renderParameters(this.parameters)}
-      ` : nothing}
-    </div>
-    <devtools-toolbar class="protocol-monitor-sidebar-toolbar">
-      <devtools-button title=${i18nString(UIStrings.copyCommand)}
-                       .iconName=${'copy'}
-                       .jslogContext=${'protocol-monitor.copy-command'}
-                       .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
-                       @click=${this.#copyToClipboard}></devtools-button>
-        <div class=toolbar-spacer></div>
-      <devtools-button title=${Host.Platform.isMac() ? i18nString(UIStrings.sendCommandCmdEnter) : i18nString(UIStrings.sendCommandCtrlEnter)}
-                       .iconName=${'send'}
-                       jslogContext=${'protocol-monitor.send-command'}
-                       .variant=${"primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */}
-                       @click=${this.#handleCommandSend}></devtools-button>
-    </devtools-toolbar>`, this.contentElement, { host: this });
-        // clang-format on
-    }
+                  ` : nothing}
+
+                  <!-- In case the parameter is nested inside an array we render the input field as well as a delete button -->
+                  ${isParentArray ? html `
+                  <!-- If the parameter is an object we don't want to display the input field we just want the delete button-->
+                  ${!isObject ? html `
+                  <!-- @ts-ignore -->
+                  <devtools-suggestion-input
+                    data-paramId=${parameterId}
+                    .options=${hasOptions ? input.computeDropdownValues(parameter) : []}
+                    .autocomplete=${false}
+                    .value=${live(parameter.value ?? '')}
+                    .placeholder=${parameter.value === '' ? EMPTY_STRING : `<${defaultValueByType.get(parameter.type)}>`}
+                    .jslogContext=${'parameter'}
+                    @blur=${input.onParameterValueBlur}
+                    @keydown=${input.onParameterKeydown}
+                    class=${classMap(inputClasses)}
+                  ></devtools-suggestion-input>` : nothing}
+
+                  ${renderInlineButton({
+            title: i18nString(UIStrings.deleteParameter),
+            iconName: 'bin',
+            onClick: () => input.onDeleteParameter(parameter, parentParameter),
+            classMap: { 'delete-button': true },
+            jslogContext: 'protocol-monitor.delete-parameter',
+        })}` : nothing}
+                </div>
+              </li>
+              ${renderParameters(input, subparameters, id, parameter, parameterId)}
+            `;
+    })}
+    </ul>
+  `;
+    // clang-format on
 }
+export const DEFAULT_VIEW = (input, output, target) => {
+    // clang-format off
+    render(html `
+    <div jslog=${VisualLogging.pane('command-editor').track({ resize: true })}>
+      <div class="wrapper" @keydown=${input.onKeydown}>
+        ${renderTargetSelectorRow(input)}
+        <div class="row attribute padded">
+          <div class="command">command<span class="separator">:</span></div>
+          <devtools-suggestion-input
+            .options=${[...input.metadataByCommand.keys()]}
+            .value=${input.command}
+            .placeholder=${'Enter your command...'}
+            .suggestionFilter=${suggestionFilter}
+            .jslogContext=${'command'}
+            @blur=${input.onCommandInputBlur}
+            class=${classMap({ 'json-input': true })}
+          ></devtools-suggestion-input>
+        </div>
+        ${input.parameters.length ? html `
+        <div class="row attribute padded">
+          <div>parameters<span class="separator">:</span></div>
+        </div>
+          ${renderParameters(input, input.parameters)}
+        ` : nothing}
+      </div>
+      <devtools-toolbar class="protocol-monitor-sidebar-toolbar">
+        <devtools-button title=${i18nString(UIStrings.copyCommand)}
+                        .iconName=${'copy'}
+                        .jslogContext=${'protocol-monitor.copy-command'}
+                        .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+                        @click=${input.onCopyToClipboard}></devtools-button>
+          <div class=toolbar-spacer></div>
+        <devtools-button title=${Host.Platform.isMac() ? i18nString(UIStrings.sendCommandCmdEnter) : i18nString(UIStrings.sendCommandCtrlEnter)}
+                        .iconName=${'send'}
+                        jslogContext=${'protocol-monitor.send-command'}
+                        .variant=${"primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */}
+                        @click=${input.onCommandSend}></devtools-button>
+      </devtools-toolbar>
+    </div>`, target, { host: input });
+    // clang-format on
+};
 //# sourceMappingURL=JSONEditor.js.map

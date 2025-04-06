@@ -52,6 +52,10 @@ export default {
   margin-bottom: 4px;
 }
 
+.force-specific-element-header:focus {
+  background-color: var(--sys-color-state-hover-on-subtle);
+}
+
 /*# sourceURL=${import.meta.resolve('./elementStatePaneWidget.css')} */
 `
 };

@@ -140,7 +140,7 @@ export class Item {
         throw new Error('Invalid item type:' + this.typeInternal);
     }
     setAccelerator(key, modifiers) {
-        const modifierSum = modifiers.reduce((result, modifier) => result + modifier.value, 0);
+        const modifierSum = modifiers.reduce((result, modifier) => result + ShortcutRegistry.instance().devToolsToChromeModifier(modifier), 0);
         this.accelerator = { keyCode: key.code, modifiers: modifierSum };
     }
     // This influences whether accelerators will be shown for native menus on Mac.
@@ -195,6 +195,10 @@ export class Section {
             jslogContext: actionId,
         });
         const shortcut = ShortcutRegistry.instance().shortcutTitleForAction(actionId);
+        const keyAndModifier = ShortcutRegistry.instance().keyAndModifiersForAction(actionId);
+        if (keyAndModifier) {
+            result.setAccelerator(keyAndModifier.key, [keyAndModifier.modifier]);
+        }
         if (shortcut) {
             result.setShortcut(shortcut);
         }
@@ -345,6 +349,8 @@ export class SubMenu extends Item {
     }
     static uniqueSectionName = 0;
 }
+const MENU_ITEM_HEIGHT_FOR_LOGGING = 20;
+const MENU_ITEM_WIDTH_FOR_LOGGING = 200;
 export class ContextMenu extends SubMenu {
     contextMenu;
     pendingTargets;
@@ -443,13 +449,13 @@ export class ContextMenu extends SubMenu {
         for (const descriptor of descriptors) {
             if (descriptor.jslogContext) {
                 if (descriptor.type === 'checkbox') {
-                    VisualLogging.registerLoggable(descriptor, `${VisualLogging.toggle().track({ click: true }).context(descriptor.jslogContext)}`, parent || descriptors);
+                    VisualLogging.registerLoggable(descriptor, `${VisualLogging.toggle().track({ click: true }).context(descriptor.jslogContext)}`, parent || descriptors, new DOMRect(0, 0, MENU_ITEM_WIDTH_FOR_LOGGING, MENU_ITEM_HEIGHT_FOR_LOGGING));
                 }
                 else if (descriptor.type === 'item') {
-                    VisualLogging.registerLoggable(descriptor, `${VisualLogging.action().track({ click: true }).context(descriptor.jslogContext)}`, parent || descriptors);
+                    VisualLogging.registerLoggable(descriptor, `${VisualLogging.action().track({ click: true }).context(descriptor.jslogContext)}`, parent || descriptors, new DOMRect(0, 0, MENU_ITEM_WIDTH_FOR_LOGGING, MENU_ITEM_HEIGHT_FOR_LOGGING));
                 }
                 else if (descriptor.type === 'subMenu') {
-                    VisualLogging.registerLoggable(descriptor, `${VisualLogging.item().context(descriptor.jslogContext)}`, parent || descriptors);
+                    VisualLogging.registerLoggable(descriptor, `${VisualLogging.item().context(descriptor.jslogContext)}`, parent || descriptors, new DOMRect(0, 0, MENU_ITEM_WIDTH_FOR_LOGGING, MENU_ITEM_HEIGHT_FOR_LOGGING));
                 }
                 if (descriptor.subItems) {
                     this.registerLoggablesWithin(descriptor.subItems, descriptor);
@@ -481,7 +487,7 @@ export class ContextMenu extends SubMenu {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuCleared, this.menuCleared, this);
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, this.onItemSelected, this);
             }
-            VisualLogging.registerLoggable(menuObject, `${VisualLogging.menu()}`, this.loggableParent);
+            VisualLogging.registerLoggable(menuObject, `${VisualLogging.menu()}`, this.loggableParent, new DOMRect(0, 0, MENU_ITEM_WIDTH_FOR_LOGGING, MENU_ITEM_HEIGHT_FOR_LOGGING * menuObject.length));
             this.registerLoggablesWithin(menuObject);
             this.openHostedMenu = menuObject;
             // showContextMenuAtPoint call above synchronously issues a clear event for previous context menu (if any),

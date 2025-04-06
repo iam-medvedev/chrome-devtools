@@ -57,6 +57,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Forced reflow',
             'Use efficient cache lifetimes',
             'Modern HTTP',
+            'Legacy JavaScript',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -74,6 +75,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Forced reflow',
             'Use efficient cache lifetimes',
             'Modern HTTP',
+            'Legacy JavaScript',
         ]);
     });
     it('does not render experimental insights by default', async function () {
@@ -113,6 +115,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'CSS Selector costs',
             'Forced reflow',
             'Modern HTTP',
+            'Legacy JavaScript',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -129,6 +132,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'CSS Selector costs',
             'Forced reflow',
             'Modern HTTP',
+            'Legacy JavaScript',
         ]);
     });
     it('renders experimental insights if the experiment is turned on', async function () {
@@ -168,6 +172,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'CSS Selector costs',
             'Forced reflow',
             'Modern HTTP',
+            'Legacy JavaScript',
         ]);
         const passedInsightTitles = getPassedInsights(component).flatMap(component => {
             return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
@@ -183,6 +188,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'CSS Selector costs',
             'Forced reflow',
             'Modern HTTP',
+            'Legacy JavaScript',
         ]);
     });
     it('will render the active insight fully', async function () {

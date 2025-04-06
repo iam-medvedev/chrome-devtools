@@ -72,7 +72,6 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private onCreateRecorderView;
     private inspectedURLChanged;
     hasSubscribers(type: string): boolean;
-    private isNotificationAllowedForExtension;
     private postNotification;
     private onSubscribe;
     private onUnsubscribe;

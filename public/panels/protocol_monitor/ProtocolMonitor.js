@@ -295,7 +295,6 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
         this.#view = view;
         this.started = false;
         this.startTime = 0;
-        this.contentElement.classList.add('protocol-monitor');
         this.#filterKeys = ['method', 'request', 'response', 'type', 'target', 'session'];
         this.filterParser = new TextUtils.TextUtils.FilterParser(this.#filterKeys);
         this.#selectedTargetId = 'main';

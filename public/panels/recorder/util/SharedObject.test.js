@@ -18,7 +18,7 @@ describe('SharedObject', () => {
         const [object1, release1] = await object.acquire();
         // Should be created.
         assert.notStrictEqual(object1, testObject);
-        // Acquired actually occured.
+        // Acquired actually occurred.
         assert.isTrue(testObject.value);
         // The second object should be the same.
         const [object2, release2] = await object.acquire();
@@ -51,7 +51,7 @@ describe('SharedObject', () => {
         promises.push(object.run(async (object1) => {
             // Should be created.
             assert.notStrictEqual(object1, testObject);
-            // Acquired actually occured.
+            // Acquired actually occurred.
             assert.isTrue(testObject.value);
             promises.push(object.run(async (object2) => {
                 // Should equal the first acquired object.

@@ -3,7 +3,7 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
-import { type AgentOptions as BaseAgentOptions, AgentType, AiAgent, type ContextResponse, ConversationContext, type FunctionCallHandlerResult, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type FunctionCallHandlerResult, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
 }): Promise<string>;
@@ -23,6 +23,7 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
     getItem(): SDK.DOMModel.DOMNode;
     getIcon(): HTMLElement;
     getTitle(): string | ReturnType<typeof Lit.Directives.until>;
+    getSuggestions(): Promise<[string, ...string[]] | undefined>;
 }
 /**
  * One agent instance handles one conversation. Create a new agent
@@ -30,7 +31,6 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
  */
 export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     #private;
-    readonly type = AgentType.STYLING;
     protected functionCallEmulationEnabled: boolean;
     preamble: string;
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_STYLING_AGENT;

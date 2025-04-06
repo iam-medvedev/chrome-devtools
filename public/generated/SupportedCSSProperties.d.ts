@@ -311,6 +311,18 @@ export const generatedPropertyValues: {
     "content-visibility": {
         values: string[];
     };
+    "corner-bottom-left-shape": {
+        values: string[];
+    };
+    "corner-bottom-right-shape": {
+        values: string[];
+    };
+    "corner-top-left-shape": {
+        values: string[];
+    };
+    "corner-top-right-shape": {
+        values: string[];
+    };
     "counter-increment": {
         values: string[];
     };

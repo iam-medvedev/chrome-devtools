@@ -1312,6 +1312,11 @@ export namespace ProtocolMapping {
      * For example, a value of '1em' is evaluated according to the computed
      * 'font-size' of the element and a value 'calc(1px + 2px)' will be
      * resolved to '3px'.
+     * If the `propertyName` was specified the `values` are resolved as if
+     * they were property's declaration. If a value cannot be parsed according
+     * to the provided property syntax, the value is parsed using combined
+     * syntax as if null `propertyName` was provided. If the value cannot be
+     * resolved even then, return the provided value without any changes.
      */
     'CSS.resolveValues': {
       paramsType: [Protocol.CSS.ResolveValuesRequest];
@@ -4744,17 +4749,52 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
-     * Adds a service with |uuid| to the peripheral with |address|.
+     * Adds a service with |serviceUuid| to the peripheral with |address|.
      */
     'BluetoothEmulation.addService': {
       paramsType: [Protocol.BluetoothEmulation.AddServiceRequest];
       returnType: Protocol.BluetoothEmulation.AddServiceResponse;
     };
     /**
-     * Removes the service respresented by |id| from the peripheral with |address|.
+     * Removes the service respresented by |serviceId| from the peripheral with
+     * |address|.
      */
     'BluetoothEmulation.removeService': {
       paramsType: [Protocol.BluetoothEmulation.RemoveServiceRequest];
+      returnType: void;
+    };
+    /**
+     * Adds a characteristic with |characteristicUuid| and |properties| to the
+     * service represented by |serviceId| in the peripheral with |address|.
+     */
+    'BluetoothEmulation.addCharacteristic': {
+      paramsType: [Protocol.BluetoothEmulation.AddCharacteristicRequest];
+      returnType: Protocol.BluetoothEmulation.AddCharacteristicResponse;
+    };
+    /**
+     * Removes the characteristic respresented by |characteristicId| from the
+     * service respresented by |serviceId| in the peripheral with |address|.
+     */
+    'BluetoothEmulation.removeCharacteristic': {
+      paramsType: [Protocol.BluetoothEmulation.RemoveCharacteristicRequest];
+      returnType: void;
+    };
+    /**
+     * Adds a descriptor with |descriptorUuid| to the characteristic respresented
+     * by |characteristicId| in the service represented by |serviceId| of the
+     * peripheral with |address|.
+     */
+    'BluetoothEmulation.addDescriptor': {
+      paramsType: [Protocol.BluetoothEmulation.AddDescriptorRequest];
+      returnType: Protocol.BluetoothEmulation.AddDescriptorResponse;
+    };
+    /**
+     * Removes the descriptor with |descriptorId| from the characteristic
+     * respresented by |characteristicId| in the service represented by |serviceId|
+     * of the peripheral with |address|.
+     */
+    'BluetoothEmulation.removeDescriptor': {
+      paramsType: [Protocol.BluetoothEmulation.RemoveDescriptorRequest];
       returnType: void;
     };
     /**

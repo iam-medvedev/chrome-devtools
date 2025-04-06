@@ -726,7 +726,7 @@
     "message": "Tritanopia (no blue)"
   },
   "core/sdk/ServerTiming.ts | deprecatedSyntaxFoundPleaseUse": {
-    "message": "Deprecated syntax found. Please use: <name>;dur=<duration>;desc=<description>"
+    "message": "Deprecated syntax found for metric \"{PH1}\". Please use: <name>;dur=<duration>;desc=<description>"
   },
   "core/sdk/ServerTiming.ts | duplicateParameterSIgnored": {
     "message": "Duplicate parameter \"{PH1}\" ignored."
@@ -1892,6 +1892,9 @@
   "models/trace/insights/FontDisplay.ts | wastedTimeColumn": {
     "message": "Wasted time"
   },
+  "models/trace/insights/ForcedReflow.ts | anonymous": {
+    "message": "(anonymous)"
+  },
   "models/trace/insights/ForcedReflow.ts | description": {
     "message": "Many APIs, typically reading layout geometry, force the rendering engine to pause script execution in order to calculate the style and layout. Learn more about [forced reflow](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and its mitigations."
   },
@@ -1908,7 +1911,7 @@
     "message": "Total reflow time"
   },
   "models/trace/insights/ForcedReflow.ts | unattributed": {
-    "message": "Unattributed"
+    "message": "[unattributed]"
   },
   "models/trace/insights/ImageDelivery.ts | description": {
     "message": "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)"
@@ -2021,8 +2024,14 @@
   "models/trace/insights/LCPPhases.ts | title": {
     "message": "LCP by phase"
   },
+  "models/trace/insights/LegacyJavaScript.ts | columnScript": {
+    "message": "Script"
+  },
+  "models/trace/insights/LegacyJavaScript.ts | columnWastedBytes": {
+    "message": "Wasted bytes"
+  },
   "models/trace/insights/LegacyJavaScript.ts | description": {
-    "message": "Legacy JavaScript"
+    "message": "Polyfills and transforms enable legacy browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support legacy browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)"
   },
   "models/trace/insights/LegacyJavaScript.ts | title": {
     "message": "Legacy JavaScript"
@@ -8696,6 +8705,45 @@
   "panels/network/BlockedURLsPane.ts | textPatternToBlockMatching": {
     "message": "Text pattern to block matching requests; use * for wildcard"
   },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusAborted": {
+    "message": "Aborted"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusClosed": {
+    "message": "Closed"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusOpen": {
+    "message": "Open"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusOpening": {
+    "message": "Opening"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketTypeTcp": {
+    "message": "TCP"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketTypeUdpBound": {
+    "message": "UDP (bound)"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | directSocketTypeUdpConnected": {
+    "message": "UDP (connected)"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | errorMessage": {
+    "message": "Error message"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | general": {
+    "message": "General"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | openInfo": {
+    "message": "Open Info"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | options": {
+    "message": "Options"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | status": {
+    "message": "Status"
+  },
+  "panels/network/components/DirectSocketConnectionView.ts | type": {
+    "message": "DirectSocket Type"
+  },
   "panels/network/components/HeaderSectionRow.ts | activeClientExperimentVariation": {
     "message": "Active client experiment variation IDs."
   },
@@ -9184,6 +9232,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | webBundleInnerRequest": {
     "message": "Served from Web Bundle"
+  },
+  "panels/network/NetworkItemView.ts | connectionInfo": {
+    "message": "Connection Info"
   },
   "panels/network/NetworkItemView.ts | containsOverriddenHeaders": {
     "message": "This response contains headers which are overridden by DevTools"
@@ -12449,9 +12500,6 @@
   "panels/settings/SettingsScreen.ts | experiments": {
     "message": "Experiments"
   },
-  "panels/settings/SettingsScreen.ts | filterExperimentsLabel": {
-    "message": "Filter"
-  },
   "panels/settings/SettingsScreen.ts | learnMore": {
     "message": "Learn more"
   },
@@ -12463,6 +12511,9 @@
   },
   "panels/settings/SettingsScreen.ts | restoreDefaultsAndReload": {
     "message": "Restore defaults and reload"
+  },
+  "panels/settings/SettingsScreen.ts | searchExperiments": {
+    "message": "Search experiments"
   },
   "panels/settings/SettingsScreen.ts | sendFeedback": {
     "message": "Send feedback"
@@ -13673,18 +13724,6 @@
   "panels/timeline/components/IgnoreListSetting.ts | ignoreScriptsWhoseNamesMatchS": {
     "message": "Ignore scripts whose names match ''{regex}''"
   },
-  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExists": {
-    "message": "Rule already exists"
-  },
-  "panels/timeline/components/IgnoreListSetting.ts | patternAlreadyExistsWillBeEnables": {
-    "message": "This rule already exists but is disabled. Saving this value will re-enable the rule"
-  },
-  "panels/timeline/components/IgnoreListSetting.ts | patternCannotBeEmpty": {
-    "message": "Rule can't be empty"
-  },
-  "panels/timeline/components/IgnoreListSetting.ts | patternMustBeAValidRegular": {
-    "message": "Rule must be a valid regular expression"
-  },
   "panels/timeline/components/IgnoreListSetting.ts | removeRegex": {
     "message": "Remove the regex: ''{regex}''"
   },
@@ -14337,7 +14376,7 @@
     "message": "Network"
   },
   "panels/timeline/overlays/components/EntriesLinkOverlay.ts | diagram": {
-    "message": "Links bteween entries"
+    "message": "Links between entries"
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | entryLabel": {
     "message": "Entry label"
@@ -14355,7 +14394,7 @@
     "message": "Learn more about auto annotations in settings"
   },
   "panels/timeline/overlays/components/EntryLabelOverlay.ts | moreInfoAriaLabel": {
-    "message": "More info"
+    "message": "More information about this feature"
   },
   "panels/timeline/overlays/components/TimeRangeOverlay.ts | timeRange": {
     "message": "Time range"
@@ -14714,6 +14753,9 @@
   "panels/timeline/TimelinePanel.ts | SelectorStatsEnabled": {
     "message": "- Selector stats is enabled"
   },
+  "panels/timeline/TimelinePanel.ts | shortcutsDialogTitle": {
+    "message": "Keyboard shortcuts for flamechart"
+  },
   "panels/timeline/TimelinePanel.ts | showCustomtracks": {
     "message": "Show custom tracks"
   },
@@ -14750,17 +14792,11 @@
   "panels/timeline/TimelinePanel.ts | time": {
     "message": "Time"
   },
-  "panels/timeline/TimelinePanel.ts | timelineFastZoomInOut": {
-    "message": "Fast zoom in/out"
+  "panels/timeline/TimelinePanel.ts | timelineScrollPan": {
+    "message": "Scroll & Pan"
   },
-  "panels/timeline/TimelinePanel.ts | timelinePanLeftRight": {
-    "message": "Move left/right"
-  },
-  "panels/timeline/TimelinePanel.ts | timelineScrollUpDown": {
-    "message": "Move up/down"
-  },
-  "panels/timeline/TimelinePanel.ts | timelineZoomInOut": {
-    "message": "Zoom in/out"
+  "panels/timeline/TimelinePanel.ts | timelineZoom": {
+    "message": "Zoom"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
     "message": "Copy table"

@@ -16,8 +16,8 @@ export declare function getCLS(insights: TraceInsightSets | null, key: string | 
     value: number;
     worstClusterEvent: Types.Events.Event | null;
 };
-export declare function evaluateLCPMetricScore(value: number): number;
-export declare function evaluateINPMetricScore(value: number): number;
+export declare function evaluateLCPMetricScore(value: Types.Timing.Milli): number;
+export declare function evaluateINPMetricScore(value: Types.Timing.Milli): number;
 export declare function evaluateCLSMetricScore(value: number): number;
 export interface CrUXFieldMetricTimingResult {
     value: Types.Timing.Micro;

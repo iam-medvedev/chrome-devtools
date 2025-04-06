@@ -128,6 +128,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private contextMenu?;
     private viewportElement;
     private canvas;
+    private context;
     private popoverElement;
     private readonly markerHighlighElement;
     readonly highlightElement: HTMLElement;
@@ -554,7 +555,7 @@ export declare class FlameChartTimelineData {
         initiatorsData?: FlameChartTimelineData['initiatorsData'];
     }): FlameChartTimelineData;
     static createEmpty(): FlameChartTimelineData;
-    resetFlowData(): void;
+    emptyInitiators(): void;
 }
 export interface DataProviderSearchResult {
     index: number;

@@ -233,8 +233,11 @@ async function process() {
     }
     for (let i = 0; i < nonDomRoots.length; ++i) {
         const root = nonDomRoots[i];
-        for (const { loggable, config, parent } of getNonDomLoggables(root)) {
+        for (const { loggable, config, parent, size } of getNonDomLoggables(root)) {
             const loggingState = getOrCreateLoggingState(loggable, config, parent);
+            if (size) {
+                loggingState.size = size;
+            }
             processForDebugging(loggable);
             visibleLoggables.push(loggable);
             loggingState.impressionLogged = true;

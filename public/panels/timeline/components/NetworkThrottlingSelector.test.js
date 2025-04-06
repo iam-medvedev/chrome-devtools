@@ -96,7 +96,7 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
         networkManager.setNetworkConditions(MobileThrottling.ThrottlingPresets.ThrottlingPresets.networkPresets[1]);
         renderElementIntoDOM(view);
         await RenderCoordinator.done();
-        // Ensure that the component picks up the new changes and has selected the right thorttling setting
+        // Ensure that the component picks up the new changes and has selected the right throttling setting
         const items = view.shadowRoot.querySelectorAll('devtools-menu-item');
         assert.isTrue(items[2].innerText.includes('Slow 4G'));
         assert.isTrue(items[2].selected);

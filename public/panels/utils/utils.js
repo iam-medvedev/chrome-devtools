@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Formatter from '../../models/formatter/formatter.js';
@@ -92,18 +93,18 @@ export class PanelUtils {
             iconElement.classList.add('icon');
             return iconElement;
         }
-        const isHeaderOverriden = request.hasOverriddenHeaders();
-        const isContentOverriden = request.hasOverriddenContent;
-        if (isHeaderOverriden || isContentOverriden) {
+        const isHeaderOverridden = request.hasOverriddenHeaders();
+        const isContentOverridden = request.hasOverriddenContent;
+        if (isHeaderOverridden || isContentOverridden) {
             const iconData = {
                 iconName: 'document',
                 color: 'var(--icon-default)',
             };
             let title;
-            if (isHeaderOverriden && isContentOverriden) {
+            if (isHeaderOverridden && isContentOverridden) {
                 title = i18nString(UIStrings.requestContentHeadersOverridden);
             }
-            else if (isContentOverriden) {
+            else if (isContentOverridden) {
                 title = i18nString(UIStrings.requestContentOverridden);
             }
             else {
@@ -182,7 +183,8 @@ export class PanelUtils {
         if (resourceType.name() === Common.ResourceType.resourceTypes.Wasm.name()) {
             return { iconName: 'file-wasm', color: 'var(--icon-default)' };
         }
-        if (resourceType.name() === Common.ResourceType.resourceTypes.WebSocket.name()) {
+        if (resourceType.name() === Common.ResourceType.resourceTypes.WebSocket.name() ||
+            resourceType.name() === Common.ResourceType.resourceTypes.DirectSocket.name()) {
             return { iconName: 'file-websocket', color: 'var(--icon-default)' };
         }
         if (resourceType.name() === Common.ResourceType.resourceTypes.Media.name()) {

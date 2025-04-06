@@ -29,6 +29,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/panels/network/components/DirectSocketConnectionView.ts",
     "../../../../../../../front_end/panels/network/components/EditableSpan.ts",
     "../../../../../../../front_end/panels/network/components/HeaderSectionRow.ts",
     "../../../../../../../front_end/panels/network/components/RequestHeaderSection.ts",

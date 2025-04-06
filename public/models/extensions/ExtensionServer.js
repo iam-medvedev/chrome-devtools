@@ -240,22 +240,22 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         return Boolean(this.registeredExtensions.size);
     }
     notifySearchAction(panelId, action, searchString) {
-        this.postNotification("panel-search-" /* PrivateAPI.Events.PanelSearch */ + panelId, action, searchString);
+        this.postNotification("panel-search-" /* PrivateAPI.Events.PanelSearch */ + panelId, [action, searchString]);
     }
     notifyViewShown(identifier, frameIndex) {
-        this.postNotification("view-shown-" /* PrivateAPI.Events.ViewShown */ + identifier, frameIndex);
+        this.postNotification("view-shown-" /* PrivateAPI.Events.ViewShown */ + identifier, [frameIndex]);
     }
     notifyViewHidden(identifier) {
-        this.postNotification("view-hidden," /* PrivateAPI.Events.ViewHidden */ + identifier);
+        this.postNotification("view-hidden," /* PrivateAPI.Events.ViewHidden */ + identifier, []);
     }
     notifyButtonClicked(identifier) {
-        this.postNotification("button-clicked-" /* PrivateAPI.Events.ButtonClicked */ + identifier);
+        this.postNotification("button-clicked-" /* PrivateAPI.Events.ButtonClicked */ + identifier, []);
     }
     profilingStarted() {
-        this.postNotification("profiling-started-" /* PrivateAPI.Events.ProfilingStarted */);
+        this.postNotification("profiling-started-" /* PrivateAPI.Events.ProfilingStarted */, []);
     }
     profilingStopped() {
-        this.postNotification("profiling-stopped-" /* PrivateAPI.Events.ProfilingStopped */);
+        this.postNotification("profiling-stopped-" /* PrivateAPI.Events.ProfilingStopped */, []);
     }
     registerLanguageExtensionEndpoint(message, _shared_port) {
         if (message.command !== "registerLanguageExtensionPlugin" /* PrivateAPI.Commands.RegisterLanguageExtensionPlugin */) {
@@ -372,13 +372,16 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         SDK.PageResourceLoader.PageResourceLoader.instance().resourceLoadedThroughExtension(pageResource);
         return this.status.OK();
     }
-    onSetFunctionRangesForScript(message) {
+    onSetFunctionRangesForScript(message, port) {
         if (message.command !== "setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */) {
             return this.status.E_BADARG('command', `expected ${"setFunctionRangesForScript" /* PrivateAPI.Commands.SetFunctionRangesForScript */}`);
         }
         const { scriptUrl, ranges } = message;
         if (!scriptUrl || !ranges?.length) {
             return this.status.E_BADARG('command', 'expected valid scriptUrl and non-empty NamedFunctionRanges');
+        }
+        if (!this.extensionAllowedOnURL(scriptUrl, port)) {
+            return this.status.E_FAILED('Permission denied');
         }
         const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptUrl);
         if (!uiSourceCode) {
@@ -445,26 +448,14 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         this.requests = new Map();
         this.enableExtensions();
         const url = event.data.inspectedURL();
-        this.postNotification("inspected-url-changed" /* PrivateAPI.Events.InspectedURLChanged */, url);
+        this.postNotification("inspected-url-changed" /* PrivateAPI.Events.InspectedURLChanged */, [url]);
         const extensions = this.#pendingExtensions.splice(0);
         extensions.forEach(e => this.addExtension(e));
     }
     hasSubscribers(type) {
         return this.subscribers.has(type);
     }
-    isNotificationAllowedForExtension(port, type, ..._args) {
-        if (type === "network-request-finished" /* PrivateAPI.Events.NetworkRequestFinished */) {
-            const entry = _args[1];
-            const origin = extensionOrigins.get(port);
-            const extension = origin && this.registeredExtensions.get(origin);
-            if (extension?.isAllowedOnTarget(entry.request.url)) {
-                return true;
-            }
-            return false;
-        }
-        return true;
-    }
-    postNotification(type, ..._vararg) {
+    postNotification(type, args, filter) {
         if (!this.extensionsEnabled) {
             return;
         }
@@ -472,11 +463,19 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (!subscribers) {
             return;
         }
-        const message = { command: 'notify-' + type, arguments: Array.prototype.slice.call(arguments, 1) };
+        const message = { command: 'notify-' + type, arguments: args };
         for (const subscriber of subscribers) {
-            if (this.extensionEnabled(subscriber) && this.isNotificationAllowedForExtension(subscriber, type, ..._vararg)) {
-                subscriber.postMessage(message);
+            if (!this.extensionEnabled(subscriber)) {
+                continue;
             }
+            if (filter) {
+                const origin = extensionOrigins.get(subscriber);
+                const extension = origin && this.registeredExtensions.get(origin);
+                if (!extension || !filter(extension)) {
+                    continue;
+                }
+            }
+            subscriber.postMessage(message);
         }
     }
     onSubscribe(message, port) {
@@ -732,7 +731,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         return undefined;
     }
     handleOpenURL(port, contentProvider, lineNumber) {
-        port.postMessage({ command: 'open-resource', resource: this.makeResource(contentProvider), lineNumber: lineNumber + 1 });
+        if (this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
+            port.postMessage({ command: 'open-resource', resource: this.makeResource(contentProvider), lineNumber: lineNumber + 1 });
+        }
     }
     extensionAllowedOnURL(url, port) {
         const origin = extensionOrigins.get(port);
@@ -801,7 +802,8 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     onGetPageResources(_message, port) {
         const resources = new Map();
         function pushResourceData(contentProvider) {
-            if (!resources.has(contentProvider.contentURL())) {
+            if (!resources.has(contentProvider.contentURL()) &&
+                this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
                 resources.set(contentProvider.contentURL(), this.makeResource(contentProvider));
             }
             return false;
@@ -854,7 +856,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         void this.getResourceContent(contentProvider, message, port);
         return undefined;
     }
-    onAttachSourceMapToResource(message) {
+    onAttachSourceMapToResource(message, port) {
         if (message.command !== "attachSourceMapToResource" /* PrivateAPI.Commands.AttachSourceMapToResource */) {
             return this.status.E_BADARG('command', `expected ${"getResourceContent" /* PrivateAPI.Commands.GetResourceContent */}`);
         }
@@ -862,6 +864,9 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             return this.status.E_FAILED('Expected a source map URL but got null');
         }
         const url = message.contentUrl;
+        if (!this.extensionAllowedOnURL(url, port)) {
+            return this.status.E_FAILED('Permission denied');
+        }
         const contentProvider = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
         if (!contentProvider) {
             return this.status.E_NOTFOUND(url);
@@ -970,28 +975,28 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
     }
     notifyResourceAdded(event) {
         const uiSourceCode = event.data;
-        this.postNotification("resource-added" /* PrivateAPI.Events.ResourceAdded */, this.makeResource(uiSourceCode));
+        this.postNotification("resource-added" /* PrivateAPI.Events.ResourceAdded */, [this.makeResource(uiSourceCode)], extension => extension.isAllowedOnTarget(uiSourceCode.url()));
     }
     notifyUISourceCodeContentCommitted(event) {
         const { uiSourceCode, content } = event.data;
-        this.postNotification("resource-content-committed" /* PrivateAPI.Events.ResourceContentCommitted */, this.makeResource(uiSourceCode), content);
+        this.postNotification("resource-content-committed" /* PrivateAPI.Events.ResourceContentCommitted */, [this.makeResource(uiSourceCode), content], extension => extension.isAllowedOnTarget(uiSourceCode.url()));
     }
     async notifyRequestFinished(event) {
         const request = event.data;
         const entry = await HAR.Log.Entry.build(request, { sanitize: false });
-        this.postNotification("network-request-finished" /* PrivateAPI.Events.NetworkRequestFinished */, this.requestId(request), entry);
+        this.postNotification("network-request-finished" /* PrivateAPI.Events.NetworkRequestFinished */, [this.requestId(request), entry], extension => extension.isAllowedOnTarget(entry.request.url));
     }
     notifyElementsSelectionChanged() {
-        this.postNotification("panel-objectSelected-" /* PrivateAPI.Events.PanelObjectSelected */ + 'elements');
+        this.postNotification("panel-objectSelected-" /* PrivateAPI.Events.PanelObjectSelected */ + 'elements', []);
     }
     sourceSelectionChanged(url, range) {
-        this.postNotification("panel-objectSelected-" /* PrivateAPI.Events.PanelObjectSelected */ + 'sources', {
-            startLine: range.startLine,
-            startColumn: range.startColumn,
-            endLine: range.endLine,
-            endColumn: range.endColumn,
-            url,
-        });
+        this.postNotification("panel-objectSelected-" /* PrivateAPI.Events.PanelObjectSelected */ + 'sources', [{
+                startLine: range.startLine,
+                startColumn: range.startColumn,
+                endLine: range.endLine,
+                endColumn: range.endColumn,
+                url,
+            }], extension => extension.isAllowedOnTarget(url));
     }
     setInspectedTabId(event) {
         const oldId = this.inspectedTabId;

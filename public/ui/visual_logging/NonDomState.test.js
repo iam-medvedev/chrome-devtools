@@ -6,18 +6,19 @@ describe('NonDomState', () => {
     it('registers, unregisters and returns loggables', () => {
         const parent = {};
         const child = {};
+        const size = new DOMRect(0, 0, 100, 100);
         VisualLogging.NonDomState.registerLoggable(parent, { ve: 1, context: '1' });
-        VisualLogging.NonDomState.registerLoggable(child, { ve: 1, context: '2' }, parent);
+        VisualLogging.NonDomState.registerLoggable(child, { ve: 1, context: '2' }, parent, size);
         assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), [
-            { loggable: parent, config: { ve: 1, context: '1' }, parent: undefined },
+            { loggable: parent, config: { ve: 1, context: '1' }, parent: undefined, size: undefined },
         ]);
         assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(parent), [
-            { loggable: child, config: { ve: 1, context: '2' }, parent },
+            { loggable: child, config: { ve: 1, context: '2' }, parent, size },
         ]);
         VisualLogging.NonDomState.unregisterLoggables(parent);
         assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(parent), []);
         assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), [
-            { loggable: parent, config: { ve: 1, context: '1' }, parent: undefined },
+            { loggable: parent, config: { ve: 1, context: '1' }, parent: undefined, size: undefined },
         ]);
         VisualLogging.NonDomState.unregisterLoggables();
         assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), []);
@@ -28,7 +29,7 @@ describe('NonDomState', () => {
         const loggables = VisualLogging.NonDomState.getNonDomLoggables();
         loggables.pop();
         assert.sameDeepMembers(VisualLogging.NonDomState.getNonDomLoggables(), [
-            { loggable, config: { ve: 1, context: '1' }, parent: undefined },
+            { loggable, config: { ve: 1, context: '1' }, parent: undefined, size: undefined },
         ]);
         VisualLogging.NonDomState.unregisterLoggables();
     });

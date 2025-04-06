@@ -23,7 +23,7 @@ describeWithEnvironment('ThirdParties', function () {
             const summaries = Trace.Extras.ThirdParties.summarizeThirdParties(parsedTrace, parsedTrace.Meta.traceBounds);
             const results = summaries.map(s => [s.entity.name, s.mainThreadTime, s.transferSize]);
             assert.deepEqual(results, [
-                ['localhost', 24.947999954223633, 2254],
+                ['localhost', 24.947999954223633, 1503],
                 ['Google Fonts', 0, 25325],
             ]);
             const urls = extractUrlsFromSummaries(summaries);

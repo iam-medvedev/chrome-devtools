@@ -29,7 +29,6 @@ export class PatchAgent extends AiAgent {
     handleContextDetails(_select) {
         return;
     }
-    type = "patch" /* AgentType.PATCH */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
     get userTier() {
@@ -43,7 +42,7 @@ export class PatchAgent extends AiAgent {
     }
     constructor(opts) {
         super(opts);
-        this.#project = new AgentProject();
+        this.#project = new AgentProject(opts.project);
         this.#fileUpdateAgent = opts.fileUpdateAgent ?? new FileUpdateAgent(opts);
         this.declareFunction('listFiles', {
             description: 'Returns a list of all files in the project.',
@@ -191,7 +190,6 @@ export class FileUpdateAgent extends AiAgent {
     handleContextDetails(_select) {
         return;
     }
-    type = "patch" /* AgentType.PATCH */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
     get userTier() {

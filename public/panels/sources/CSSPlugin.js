@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
@@ -407,8 +408,7 @@ const theme = CodeMirror.EditorView.baseTheme({
     '.cm-tooltip.cm-tooltip-swatchEdit': {
         'box-shadow': 'var(--sys-elevation-level2)',
         'background-color': 'var(--sys-color-base-container-elevated)',
-        'border-radius': 'var(--sys-shape-corner-small)',
-        padding: 'var(--sys-size-6) var(--sys-size-8)',
+        'border-radius': 'var(--sys-shape-corner-extra-small)',
     },
 });
 //# sourceMappingURL=CSSPlugin.js.map

@@ -10,7 +10,7 @@ export declare const logClick: (loggable: Loggable, event: Event, options?: {
 export declare const logResize: (l: Loggable, s: DOMRect) => void;
 export declare const logKeyDown: (l: Loggable | null, e: Event, context?: string) => Promise<void>;
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
-export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null): void;
+export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null, size: DOMRect): void;
 export declare function isUnderInspection(origin?: string): Promise<boolean>;
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the

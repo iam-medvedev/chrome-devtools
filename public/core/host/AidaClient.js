@@ -36,6 +36,8 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_NETWORK_AGENT"] = 7] = "CHROME_NETWORK_AGENT";
     // Chrome AI Assistance Performance Agent.
     ClientFeature[ClientFeature["CHROME_PERFORMANCE_AGENT"] = 8] = "CHROME_PERFORMANCE_AGENT";
+    // Chrome AI Annotations Performance Agent
+    ClientFeature[ClientFeature["CHROME_PERFORMANCE_ANNOTATIONS_AGENT"] = 20] = "CHROME_PERFORMANCE_ANNOTATIONS_AGENT";
     // Chrome AI Assistance File Agent.
     ClientFeature[ClientFeature["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
     // Chrome AI Patch Agent.

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Lit from '../../../../ui/lit/lit.js';
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import stylesRaw from './timespanBreakdownOverlay.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
 const styles = new CSSStyleSheet();

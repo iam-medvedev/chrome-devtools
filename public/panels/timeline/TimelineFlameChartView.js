@@ -1,6 +1,7 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -1049,7 +1050,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             if (!this.#loggableForGroupByLogContext.has(group.jslogContext)) {
                 // This is the first time this group has been created, so register its loggable.
                 this.#loggableForGroupByLogContext.set(group.jslogContext, loggable);
-                VisualLogging.registerLoggable(loggable, `${VisualLogging.section().context(`timeline.${group.jslogContext}`)}`, this.delegate.element);
+                VisualLogging.registerLoggable(loggable, `${VisualLogging.section().context(`timeline.${group.jslogContext}`)}`, this.delegate.element, new DOMRect(0, 0, 200, 100));
             }
         }
     }

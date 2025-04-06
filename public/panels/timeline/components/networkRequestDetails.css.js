@@ -41,7 +41,7 @@ export default {
 }
 
 .network-request-details-col {
-  width: 300px;
+  max-width: 300px;
 }
 
 .column-divider {
@@ -83,6 +83,10 @@ export default {
   user-select: text;
   text-overflow: ellipsis;
   overflow: hidden;
+
+  &.synthetic {
+    font-style: italic;
+  }
 }
 
 .devtools-link,

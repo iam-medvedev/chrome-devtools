@@ -27,7 +27,11 @@ export declare const UIStrings: {
     /**
      * @description Text to describe CPU processor tasks that could not be attributed to any specific source code.
      */
-    readonly unattributed: "Unattributed";
+    readonly unattributed: "[unattributed]";
+    /**
+     * @description Text for the name of anonymous functions
+     */
+    readonly anonymous: "(anonymous)";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
 export type ForcedReflowInsightModel = InsightModel<typeof UIStrings, {

@@ -866,6 +866,18 @@ main {
       align-self: center;
     }
 
+    .selected-folder {
+      display: flex;
+      align-items: center;
+      gap: var(--sys-size-3);
+    }
+
+    .change-workspace {
+      display: flex;
+      flex-direction: row;
+      gap: var(--sys-size-2);
+    }
+
     .info-tooltip-container {
       max-width: var(--sys-size-28);
 
@@ -884,7 +896,7 @@ main {
       gap: var(--sys-size-3);
     }
 
-    .apply-to-page-tree-container {
+    .apply-to-workspace-container {
       display: flex;
       align-items: center;
       gap: var(--sys-size-3);

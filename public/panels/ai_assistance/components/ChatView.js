@@ -1,6 +1,8 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -720,6 +722,19 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
     // clang-format on
 }
 function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
+    function renderPatchWidget() {
+        if (isLoading) {
+            return Lit.nothing;
+        }
+        // clang-format off
+        return html `<devtools-widget
+      .widgetConfig=${UI.Widget.widgetConfig(PatchWidget, {
+            changeSummary,
+            changeManager,
+        })}
+    ></devtools-widget>`;
+        // clang-format on
+    }
     // clang-format off
     return html `
     <div class="messages-container" ${ref(onMessageContainerRef)}>
@@ -734,14 +749,7 @@ function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, 
         onSuggestionClick,
         onFeedbackSubmit,
     }))}
-      ${changeSummary && !isLoading
-        ? html `<devtools-widget
-            .widgetConfig=${UI.Widget.widgetConfig(PatchWidget, {
-            changeSummary,
-            changeManager,
-        })}
-          ></devtools-widget>`
-        : Lit.nothing}
+      ${renderPatchWidget()}
     </div>
   `;
     // clang-format on
