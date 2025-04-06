@@ -1185,7 +1185,8 @@ export declare namespace Audits {
         RelyingPartyOriginIsOpaque = "RelyingPartyOriginIsOpaque",
         TypeNotMatching = "TypeNotMatching",
         UiDismissedNoEmbargo = "UiDismissedNoEmbargo",
-        CorsError = "CorsError"
+        CorsError = "CorsError",
+        SuppressedBySegmentationPlatform = "SuppressedBySegmentationPlatform"
     }
     interface FederatedAuthUserInfoRequestIssueDetails {
         federatedAuthUserInfoRequestIssueReason: FederatedAuthUserInfoRequestIssueReason;
@@ -15050,6 +15051,12 @@ export declare namespace Target {
          * Whether to create the target of type "tab".
          */
         forTab?: boolean;
+        /**
+         * Whether to create a hidden target. The hidden target is observable via protocol, but not
+         * present in the tab UI strip. Cannot be created with `forTab: true`, `newWindow: true` or
+         * `background: false`. The life-time of the tab is limited to the life-time of the session.
+         */
+        hidden?: boolean;
     }
     interface CreateTargetResponse extends ProtocolResponseWithError {
         /**
@@ -16972,6 +16979,20 @@ export declare namespace BluetoothEmulation {
         rssi: integer;
         scanRecord: ScanRecord;
     }
+    /**
+     * Describes the properties of a characteristic. This follows Bluetooth Core
+     * Specification BT 4.2 Vol 3 Part G 3.3.1. Characteristic Properties.
+     */
+    interface CharacteristicProperties {
+        broadcast?: boolean;
+        read?: boolean;
+        writeWithoutResponse?: boolean;
+        write?: boolean;
+        notify?: boolean;
+        indicate?: boolean;
+        authenticatedSignedWrites?: boolean;
+        extendedProperties?: boolean;
+    }
     interface EnableRequest {
         /**
          * State of the simulated central.
@@ -17010,11 +17031,46 @@ export declare namespace BluetoothEmulation {
         /**
          * An identifier that uniquely represents this service.
          */
-        id: string;
+        serviceId: string;
     }
     interface RemoveServiceRequest {
         address: string;
-        id: string;
+        serviceId: string;
+    }
+    interface AddCharacteristicRequest {
+        address: string;
+        serviceId: string;
+        characteristicUuid: string;
+        properties: CharacteristicProperties;
+    }
+    interface AddCharacteristicResponse extends ProtocolResponseWithError {
+        /**
+         * An identifier that uniquely represents this characteristic.
+         */
+        characteristicId: string;
+    }
+    interface RemoveCharacteristicRequest {
+        address: string;
+        serviceId: string;
+        characteristicId: string;
+    }
+    interface AddDescriptorRequest {
+        address: string;
+        serviceId: string;
+        characteristicId: string;
+        descriptorUuid: string;
+    }
+    interface AddDescriptorResponse extends ProtocolResponseWithError {
+        /**
+         * An identifier that uniquely represents this descriptor.
+         */
+        descriptorId: string;
+    }
+    interface RemoveDescriptorRequest {
+        address: string;
+        serviceId: string;
+        characteristicId: string;
+        descriptorId: string;
     }
     /**
      * Event for when a GATT operation of |type| to the peripheral with |address|

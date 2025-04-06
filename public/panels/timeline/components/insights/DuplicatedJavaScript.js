@@ -9,7 +9,7 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import * as Utils from '../../utils/utils.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-import { eventRef } from './EventRef.js';
+import { scriptRef } from './ScriptRef.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.DuplicatedJavaScript;
 const { html } = Lit;
 export class DuplicatedJavaScript extends BaseInsightComponent {
@@ -62,9 +62,7 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
         if (!this.model) {
             return Lit.nothing;
         }
-        const rows = [
-            ...this.model.duplicationGroupedByNodeModules.entries()
-        ].slice(0, 10).map(([source, data]) => {
+        const rows = [...this.model.duplicationGroupedByNodeModules.entries()].slice(0, 10).map(([source, data]) => {
             const scriptToOverlay = new Map();
             for (const { script } of data.duplicates) {
                 scriptToOverlay.set(script, {
@@ -84,7 +82,7 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
                     }
                     return {
                         values: [
-                            script.request ? eventRef(script.request) : script.url ?? 'unknown',
+                            scriptRef(script),
                             index === 0 ? '--' : i18n.ByteUtilities.bytesToString(resourceSize),
                         ],
                         overlays,

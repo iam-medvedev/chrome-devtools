@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../ui/components/expandable_list/expandable_list.js';
 import '../../../ui/components/report_view/report_view.js';
 import './StackTrace.js';
@@ -500,16 +501,16 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         }
         const adScriptLinkElement = this.#target ? this.#linkifier.linkifyScriptLocation(this.#target, this.#adScriptId?.scriptId || null, Platform.DevToolsPath.EmptyUrlString, undefined, undefined) :
             null;
+        adScriptLinkElement?.setAttribute('jslog', `${VisualLogging.link('ad-script').track({ click: true })}`);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
       <devtools-report-key>${i18nString(UIStrings.adStatus)}</devtools-report-key>
-      <devtools-report-value
-      jslog=${VisualLogging.section('ad-status')}>
+      <devtools-report-value class="ad-status-list" jslog=${VisualLogging.section('ad-status')}>
         <devtools-expandable-list .data=${{ rows, title: i18nString(UIStrings.adStatus) }}></devtools-expandable-list></devtools-report-value>
       ${this.#target ? html `
         <devtools-report-key>${i18nString(UIStrings.creatorAdScript)}</devtools-report-key>
-        <devtools-report-value class="ad-script-link">${adScriptLinkElement?.setAttribute('jslog', `${VisualLogging.link('ad-script').track({ click: true })}`)}</devtools-report-value>
+        <devtools-report-value class="ad-script-link">${adScriptLinkElement}</devtools-report-value>
       ` : Lit.nothing}
     `;
         // clang-format on

@@ -7,8 +7,8 @@ import { type TimelineSelection } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
-    private droppedFramePatternCanvas;
-    private partialFramePatternCanvas;
+    private droppedFramePattern;
+    private partialFramePattern;
     private timelineDataInternal;
     private currentLevel;
     private compatibilityTracksAppender;
@@ -19,8 +19,6 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
     private entryData;
     private entryTypeByLevel;
     private entryIndexToTitle;
-    private lastInitiatorEntry;
-    private lastInitiatorsData;
     private lastSelection;
     constructor();
     hasTrackConfigurationMode(): boolean;

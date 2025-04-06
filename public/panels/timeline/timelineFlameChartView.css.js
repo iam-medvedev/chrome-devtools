@@ -28,7 +28,13 @@ export default {
 .overlay-type-ENTRY_LABEL {
   /* keep these above the selected entry overline, else they can become hard to read */
   z-index: 2;
+
+  /* if an overlay is being edited, keep it above the rest so the user is not obstructed */
+  &:has([data-user-editing-label]) {
+    z-index: 3;
+  }
 }
+
 
 .overlay-type-ENTRY_SELECTED,
 .overlay-type-ENTRY_OUTLINE {
@@ -136,11 +142,11 @@ export default {
   contain: content;
   background-color: var(--sys-color-cdt-base-container);
   pointer-events: none;
-  padding: var(--sys-size-6) var(--sys-size-8);
-  border-radius: var(--sys-shape-corner-small);
+  padding: var(--sys-size-3) var(--sys-size-4);
+  border-radius: var(--sys-shape-corner-extra-small);
   white-space: nowrap;
   max-width: 80%;
-  box-shadow: var(--drop-shadow);
+  box-shadow: var(--sys-elevation-level2);
 }
 
 .overlay-type-TIMESPAN_BREAKDOWN {

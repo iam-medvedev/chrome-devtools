@@ -29,21 +29,7 @@ export declare class Widget {
     #private;
     readonly element: HTMLElement;
     contentElement: HTMLElement;
-    private shadowRoot;
-    protected visibleInternal: boolean;
-    private isRoot;
-    private isShowingInternal;
-    private readonly childrenInternal;
-    private hideOnDetach;
-    private notificationDepth;
-    private invalidationsSuspended;
     defaultFocusedChild: Widget | null;
-    private parentWidgetInternal;
-    private defaultFocusedElement?;
-    private cachedConstraints?;
-    private constraintsInternal?;
-    private invalidationsRequested?;
-    private externallyManaged?;
     constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
     /**
      * Returns the {@link Widget} whose element is the given `node`, or `undefined`

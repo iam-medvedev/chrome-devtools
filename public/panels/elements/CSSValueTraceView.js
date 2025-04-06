@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Lit from '../../third_party/lit/lit.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import cssValueTraceViewStyles from './cssValueTraceView.css.js';

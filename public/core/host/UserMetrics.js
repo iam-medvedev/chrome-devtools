@@ -46,11 +46,6 @@ export class UserMetrics {
             this.#panelChangedSinceLaunch = true;
         }
     }
-    panelShownInLocation(panelName, location) {
-        const panelWithLocationName = `${panelName}-${location}`;
-        const panelWithLocation = PanelWithLocation[panelWithLocationName] || 0;
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.PanelShownInLocation" /* EnumeratedHistogram.PanelShownInLocation */, panelWithLocation, PanelWithLocation.MAX_VALUE);
-    }
     settingsPanelShown(settingsViewId) {
         this.panelShown('settings-' + settingsViewId);
     }

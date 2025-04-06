@@ -23,7 +23,7 @@ export class ConversationContext {
     async refresh() {
         return;
     }
-    getSuggestions() {
+    async getSuggestions() {
         return;
     }
 }
@@ -56,6 +56,7 @@ export class AiAgent {
     #context;
     #id = crypto.randomUUID();
     #history = [];
+    #facts = new Set();
     constructor(opts) {
         this.#aidaClient = opts.aidaClient;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
@@ -63,6 +64,24 @@ export class AiAgent {
     }
     async enhanceQuery(query) {
         return query;
+    }
+    currentFacts() {
+        return this.#facts;
+    }
+    /**
+     * Add a fact which will be sent for any subsequent requests.
+     * Returns the new list of all facts.
+     * Facts are never automatically removed.
+     */
+    addFact(fact) {
+        this.#facts.add(fact);
+        return this.#facts;
+    }
+    removeFact(fact) {
+        return this.#facts.delete(fact);
+    }
+    clearFacts() {
+        this.#facts.clear();
     }
     buildRequest(part, role) {
         const parts = Array.isArray(part) ? part : [part];
@@ -85,11 +104,13 @@ export class AiAgent {
         const enableAidaFunctionCalling = declarations.length && !this.functionCallEmulationEnabled;
         const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
         const premable = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : undefined;
+        const facts = Array.from(this.#facts);
         const request = {
             client: Host.AidaClient.CLIENT_NAME,
             current_message: currentMessage,
             preamble: premable,
             historical_contexts: history.length ? history : undefined,
+            facts: facts.length ? facts : undefined,
             ...(enableAidaFunctionCalling ? { function_declarations: declarations } : {}),
             options: {
                 temperature: validTemperature(this.options.temperature),
@@ -196,9 +217,6 @@ export class AiAgent {
                             text: partialAnswer,
                             complete: false,
                         };
-                    }
-                    if (functionCall) {
-                        break;
                     }
                 }
             }
@@ -371,7 +389,6 @@ export class AiAgent {
     }
     async *#aidaFetch(request, options) {
         let aidaResponse = undefined;
-        let response = '';
         let rpcId;
         for await (aidaResponse of this.#aidaClient.fetch(request, options)) {
             if (aidaResponse.functionCalls?.length) {
@@ -397,7 +414,6 @@ export class AiAgent {
                     break;
                 }
             }
-            response = aidaResponse.explanation;
             rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
             yield {
                 rpcId,
@@ -409,10 +425,9 @@ export class AiAgent {
             request,
             response: aidaResponse,
         });
-        if (isDebugMode()) {
+        if (isDebugMode() && aidaResponse) {
             this.#structuredLog.push({
                 request: structuredClone(request),
-                response,
                 aidaResponse,
             });
             localStorage.setItem('aiAssistanceStructuredLog', JSON.stringify(this.#structuredLog));

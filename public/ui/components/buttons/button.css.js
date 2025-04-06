@@ -34,6 +34,7 @@ export default {
   display: inline-flex;
   flex-direction: row;
   align-items: center;
+  width: fit-content;
 }
 
 button {

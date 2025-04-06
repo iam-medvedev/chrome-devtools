@@ -17,6 +17,10 @@ export interface ViewInput {
 type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class CombinedDiffView extends UI.Widget.Widget {
     #private;
+    /**
+     * Ignores urls that start with any in the list
+     */
+    ignoredUrls: string[];
     constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
     willHide(): void;

@@ -1854,9 +1854,25 @@ export const generatedProperties = [
         "name": "content-visibility"
     },
     {
+        "keywords": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ],
         "name": "corner-bottom-left-shape"
     },
     {
+        "keywords": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ],
         "name": "corner-bottom-right-shape"
     },
     {
@@ -1881,9 +1897,25 @@ export const generatedProperties = [
         "name": "corner-start-start-shape"
     },
     {
+        "keywords": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ],
         "name": "corner-top-left-shape"
     },
     {
+        "keywords": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ],
         "name": "corner-top-right-shape"
     },
     {
@@ -5194,6 +5226,46 @@ export const generatedPropertyValues = {
             "visible",
             "auto",
             "hidden"
+        ]
+    },
+    "corner-bottom-left-shape": {
+        "values": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ]
+    },
+    "corner-bottom-right-shape": {
+        "values": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ]
+    },
+    "corner-top-left-shape": {
+        "values": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
+        ]
+    },
+    "corner-top-right-shape": {
+        "values": [
+            "notch",
+            "scoop",
+            "bevel",
+            "round",
+            "squircle",
+            "square"
         ]
     },
     "counter-increment": {

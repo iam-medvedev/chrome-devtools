@@ -20,7 +20,8 @@ export declare const enum UIRequestTabs {
     RESPONSE = "response",
     TIMING = "timing",
     TRUST_TOKENS = "trust-tokens",
-    WS_FRAMES = "web-socket-frames"
+    WS_FRAMES = "web-socket-frames",
+    DIRECT_SOCKET_CONNECTION = "direct-socket-connection"
 }
 export interface FilterOptions {
     clearFilter: boolean;

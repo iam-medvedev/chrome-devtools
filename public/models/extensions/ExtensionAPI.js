@@ -161,9 +161,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
                 userAction = true;
                 try {
                     const { resource, lineNumber } = message;
-                    if (canAccessResource(resource)) {
-                        callback.call(null, new (Constructor(Resource))(resource), lineNumber);
-                    }
+                    callback.call(null, new (Constructor(Resource))(resource), lineNumber);
                 }
                 finally {
                     userAction = false;
@@ -575,34 +573,13 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             });
         },
     };
-    const protocolGet = Object.getOwnPropertyDescriptor(URL.prototype, 'protocol')?.get;
-    function getProtocol(url) {
-        if (!protocolGet) {
-            throw new Error('URL.protocol is not available');
-        }
-        return protocolGet.call(new URL(url));
-    }
-    function canAccessResource(resource) {
-        try {
-            return extensionInfo.allowFileAccess || getProtocol(resource.url) !== 'file:';
-        }
-        catch {
-            return false;
-        }
-    }
     function InspectedWindow() {
         function dispatchResourceEvent(message) {
             const resourceData = message.arguments[0];
-            if (!canAccessResource(resourceData)) {
-                return;
-            }
             this._fire(new (Constructor(Resource))(resourceData));
         }
         function dispatchResourceContentEvent(message) {
             const resourceData = message.arguments[0];
-            if (!canAccessResource(resourceData)) {
-                return;
-            }
             this._fire(new (Constructor(Resource))(resourceData), message.arguments[1]);
         }
         this.onResourceAdded = new (Constructor(EventSink))("resource-added" /* PrivateAPI.Events.ResourceAdded */, dispatchResourceEvent);
@@ -645,15 +622,12 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
                 return new (Constructor(Resource))(resourceData);
             }
             function callbackWrapper(resources) {
-                callback?.(resources.filter(canAccessResource).map(wrapResource));
+                callback?.(resources.map(wrapResource));
             }
             extensionServer.sendRequest({ command: "getPageResources" /* PrivateAPI.Commands.GetPageResources */ }, callback && callbackWrapper);
         },
     };
     function ResourceImpl(resourceData) {
-        if (!canAccessResource(resourceData)) {
-            throw new Error('Resource access not allowed');
-        }
         this._url = resourceData.url;
         this._type = resourceData.type;
     }

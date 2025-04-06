@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../../ui/components/markdown_view/markdown_view.js';
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
@@ -42,7 +43,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Ba
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class BaseInsightComponent extends HTMLElement {
     // So we can use the TypeScript BaseInsight class without getting warnings
-    // about litTagName. Every child should overrwrite this.
+    // about litTagName. Every child should overwrite this.
     static litTagName = Lit.StaticHtml.literal ``;
     shadow = this.attachShadow({ mode: 'open' });
     // Flipped to true for Insights that have support for the "Ask AI" Insights
@@ -252,7 +253,9 @@ export class BaseInsightComponent extends HTMLElement {
         void action.execute();
     }
     #canShowAskAI() {
-        return this.#insightsAskAiEnabled && this.hasAskAISupport;
+        const aiDisabledByEnterprisePolicy = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
+            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE;
+        return !aiDisabledByEnterprisePolicy && this.#insightsAskAiEnabled && this.hasAskAISupport;
     }
     #renderInsightContent(insightModel) {
         if (!this.#selected) {

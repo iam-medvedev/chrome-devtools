@@ -38,8 +38,10 @@ export default {
 
 ul {
   list-style-type: none;
-  margin: 0;
-  padding: var(--sys-size-6) 0 var(--sys-size-4) 0;
+  padding: 0;
+  margin: var(--sys-size-6) 0 var(--sys-size-4) 0;
+  max-height: var(--sys-size-23);
+  overflow-y: auto;
 }
 
 li {

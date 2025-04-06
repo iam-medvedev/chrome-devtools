@@ -97,11 +97,29 @@ export class ShortcutRegistry {
         }
         return keys;
     }
+    keysForAction(actionId) {
+        const keys = [...this.actionToShortcut.get(actionId)].flatMap(shortcut => shortcut.descriptors.map(descriptor => descriptor.key));
+        return keys;
+    }
     shortcutTitleForAction(actionId) {
         for (const shortcut of this.actionToShortcut.get(actionId)) {
             return shortcut.title();
         }
         return undefined;
+    }
+    keyAndModifiersForAction(actionId) {
+        for (const keys of this.keysForAction(actionId)) {
+            const { keyCode, modifiers } = KeyboardShortcut.keyCodeAndModifiersFromKey(keys);
+            const key = KeyboardShortcut.keyCodeToKey(keyCode);
+            if (key) {
+                return { key, modifier: KeyboardShortcut.modifierValueToModifier(modifiers) || Modifiers.None };
+            }
+        }
+        return undefined;
+    }
+    // DevTools and Chrome modifier values do not match, see latter here: crsrc.org/c/ui/events/event_constants.h;l=24
+    devToolsToChromeModifier(devToolsModifier) {
+        return devToolsModifier.value * 2;
     }
     handleShortcut(event, handlers) {
         void this.handleKey(KeyboardShortcut.makeKeyFromEvent(event), event.key, event, handlers);

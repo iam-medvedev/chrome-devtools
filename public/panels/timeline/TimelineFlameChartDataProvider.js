@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
@@ -96,8 +97,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineFlameChartDataProvider.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper {
-    droppedFramePatternCanvas;
-    partialFramePatternCanvas;
+    droppedFramePattern;
+    partialFramePattern;
     timelineDataInternal = null;
     currentLevel = 0;
     compatibilityTracksAppender = null;
@@ -118,18 +119,21 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     entryData = [];
     entryTypeByLevel = [];
     entryIndexToTitle = [];
-    lastInitiatorEntry = -1;
-    lastInitiatorsData = [];
+    #lastInitiatorEntryIndex = -1;
     lastSelection = null;
     #font = `${PerfUI.Font.DEFAULT_FONT_SIZE} ${PerfUI.Font.getFontFamilyForCanvas()}`;
     #eventIndexByEvent = new WeakMap();
     #entityMapper = null;
+    /**
+     * When we create initiator chains for a selected event, we store those
+     * chains in this map so that if the user reselects the same event we do not
+     * have to recalculate. This is reset when the trace changes.
+     */
+    #initiatorsCache = new Map();
     constructor() {
         super();
         this.reset();
-        this.droppedFramePatternCanvas = document.createElement('canvas');
-        this.partialFramePatternCanvas = document.createElement('canvas');
-        this.preparePatternCanvas();
+        [this.droppedFramePattern, this.partialFramePattern] = this.preparePatternCanvas();
         this.framesGroupStyle = this.buildGroupStyle({ useFirstLineForOverview: true });
         this.screenshotsGroupStyle =
             this.buildGroupStyle({ useFirstLineForOverview: true, nestingLevel: 1, collapsible: false, itemsHeight: 150 });
@@ -476,6 +480,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.timelineDataInternal = null;
         this.parsedTrace = null;
         this.#entityMapper = null;
+        this.#lastInitiatorEntryIndex = -1;
+        this.#initiatorsCache.clear();
     }
     maxStackDepth() {
         return this.currentLevel;
@@ -784,33 +790,32 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     preparePatternCanvas() {
         // Set the candy stripe pattern to 17px so it repeats well.
         const size = 17;
-        this.droppedFramePatternCanvas.width = size;
-        this.droppedFramePatternCanvas.height = size;
-        this.partialFramePatternCanvas.width = size;
-        this.partialFramePatternCanvas.height = size;
-        const ctx = this.droppedFramePatternCanvas.getContext('2d');
-        if (ctx) {
-            // Make a dense solid-line pattern.
-            ctx.translate(size * 0.5, size * 0.5);
-            ctx.rotate(Math.PI * 0.25);
-            ctx.translate(-size * 0.5, -size * 0.5);
-            ctx.fillStyle = 'rgb(255, 255, 255)';
-            for (let x = -size; x < size * 2; x += 3) {
-                ctx.fillRect(x, -size, 1, size * 3);
-            }
+        const droppedFrameCanvas = document.createElement('canvas');
+        const partialFrameCanvas = document.createElement('canvas');
+        droppedFrameCanvas.width = droppedFrameCanvas.height = size;
+        partialFrameCanvas.width = partialFrameCanvas.height = size;
+        const ctx = droppedFrameCanvas.getContext('2d', { willReadFrequently: true });
+        // Make a dense solid-line pattern.
+        ctx.translate(size * 0.5, size * 0.5);
+        ctx.rotate(Math.PI * 0.25);
+        ctx.translate(-size * 0.5, -size * 0.5);
+        ctx.fillStyle = 'rgb(255, 255, 255)';
+        for (let x = -size; x < size * 2; x += 3) {
+            ctx.fillRect(x, -size, 1, size * 3);
         }
-        const ctx2 = this.partialFramePatternCanvas.getContext('2d');
-        if (ctx2) {
-            // Make a sparse dashed-line pattern.
-            ctx2.strokeStyle = 'rgb(255, 255, 255)';
-            ctx2.lineWidth = 2;
-            ctx2.beginPath();
-            ctx2.moveTo(17, 0);
-            ctx2.lineTo(10, 7);
-            ctx2.moveTo(8, 9);
-            ctx2.lineTo(2, 15);
-            ctx2.stroke();
-        }
+        const droppedFramePattern = ctx.createPattern(droppedFrameCanvas, 'repeat');
+        const ctx2 = partialFrameCanvas.getContext('2d', { willReadFrequently: true });
+        // Make a sparse dashed-line pattern.
+        ctx2.strokeStyle = 'rgb(255, 255, 255)';
+        ctx2.lineWidth = 2;
+        ctx2.beginPath();
+        ctx2.moveTo(17, 0);
+        ctx2.lineTo(10, 7);
+        ctx2.moveTo(8, 9);
+        ctx2.lineTo(2, 15);
+        ctx2.stroke();
+        const partialFramePattern = ctx.createPattern(partialFrameCanvas, 'repeat');
+        return [droppedFramePattern, partialFramePattern];
     }
     drawFrame(entryIndex, context, barX, barY, barWidth, barHeight, transformColor) {
         const hPadding = 1;
@@ -819,19 +824,16 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         barWidth -= 2 * hPadding;
         context.fillStyle = transformColor(this.entryColor(entryIndex));
         if (frame.dropped) {
+            context.fillRect(barX, barY, barWidth, barHeight);
             if (frame.isPartial) {
                 // For partially presented frame boxes, paint a yellow background with
                 // a sparse white dashed-line pattern overlay.
-                context.fillRect(barX, barY, barWidth, barHeight);
-                const overlay = context.createPattern(this.partialFramePatternCanvas, 'repeat');
-                context.fillStyle = overlay || context.fillStyle;
+                context.fillStyle = this.partialFramePattern || context.fillStyle;
             }
             else {
                 // For dropped frame boxes, paint a red background with a dense white
                 // solid-line pattern overlay.
-                context.fillRect(barX, barY, barWidth, barHeight);
-                const overlay = context.createPattern(this.droppedFramePatternCanvas, 'repeat');
-                context.fillStyle = overlay || context.fillStyle;
+                context.fillStyle = this.droppedFramePattern || context.fillStyle;
             }
         }
         context.fillRect(barX, barY, barWidth, barHeight);
@@ -1078,48 +1080,55 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
      * @returns if we should re-render the flame chart (canvas)
      */
     buildFlowForInitiator(entryIndex) {
-        if (!this.parsedTrace) {
+        if (!this.parsedTrace || !this.compatibilityTracksAppender || !this.timelineDataInternal) {
             return false;
         }
-        if (!this.timelineDataInternal) {
+        if (this.#lastInitiatorEntryIndex === entryIndex) {
+            // If the user clicks on an entry twice by mistake, this can fire. But if
+            // the entry matches the selected entry, then there is nothing more for
+            // us to do.
             return false;
         }
-        if (this.lastInitiatorEntry === entryIndex) {
-            if (this.lastInitiatorsData) {
-                this.timelineDataInternal.initiatorsData = this.lastInitiatorsData;
-            }
-            return false;
-        }
-        if (!this.compatibilityTracksAppender) {
-            return false;
-        }
-        // Remove all previously assigned decorations indicating that the flow event entries are hidden
+        this.#lastInitiatorEntryIndex = entryIndex;
         const previousInitiatorsDataLength = this.timelineDataInternal.initiatorsData.length;
-        // |entryIndex| equals -1 means there is no entry selected, just clear the
-        // initiator cache if there is any previous arrow and return true to
-        // re-render.
         if (entryIndex === -1) {
-            this.lastInitiatorEntry = entryIndex;
-            if (previousInitiatorsDataLength === 0) {
-                // This means there is no arrow before, so we don't need to re-render.
+            // User has deselected an event, so if it had any initiators we need to clear them.
+            if (this.timelineDataInternal.initiatorsData.length === 0) {
+                // The previous selected entry had no initiators, so we can early exit and not redraw anything.
                 return false;
             }
-            // Reset to clear any previous arrows from the last event.
-            this.timelineDataInternal.resetFlowData();
+            // Clear initiator data and trigger a re-render.
+            this.timelineDataInternal.emptyInitiators();
             return true;
         }
+        // If the user hasn't clicked on an event, bail, as there are no initiators
+        // for screenshots or frames.
         const entryType = this.#entryTypeForIndex(entryIndex);
         if (entryType !== "TrackAppender" /* EntryType.TRACK_APPENDER */) {
             return false;
         }
+        // Avoid re-building the initiators if we already did it previously.
+        const cached = this.#initiatorsCache.get(entryIndex);
+        if (cached) {
+            this.timelineDataInternal.initiatorsData = cached;
+            return true;
+        }
+        // At this point, we know we:
+        // 1. Have an event to build initiators for.
+        // 2. Know that it's not an event with initiators that are cached.
         const event = this.entryData[entryIndex];
         // Reset to clear any previous arrows from the last event.
-        this.timelineDataInternal.resetFlowData();
-        this.lastInitiatorEntry = entryIndex;
+        this.timelineDataInternal.emptyInitiators();
         const hiddenEvents = ModificationsManager.activeManager()?.getEntriesFilter().invisibleEntries() ?? [];
         const expandableEntries = ModificationsManager.activeManager()?.getEntriesFilter().expandableEntries() ?? [];
         const initiatorsData = initiatorsDataToDraw(this.parsedTrace, event, hiddenEvents, expandableEntries);
-        // This means there is no change for arrows.
+        if (initiatorsData.length === 0) {
+            // Small optimization: cache if this entry has 0 initiators, meaning if
+            // it gets reselected we don't redo the work to find out it has 0
+            // initiators.
+            this.#initiatorsCache.set(entryIndex, []);
+        }
+        // Previous event had 0 initiators, new event has 0, therefore exit early and don't render.
         if (previousInitiatorsDataLength === 0 && initiatorsData.length === 0) {
             return false;
         }
@@ -1136,7 +1145,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                 isEntryHidden: initiatorData.isEntryHidden,
             });
         }
-        this.lastInitiatorsData = this.timelineDataInternal.initiatorsData;
+        this.#initiatorsCache.set(entryIndex, this.timelineDataInternal.initiatorsData);
         return true;
     }
     eventByIndex(entryIndex) {

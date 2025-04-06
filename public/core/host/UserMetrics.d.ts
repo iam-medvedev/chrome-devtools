@@ -2,7 +2,6 @@ export declare class UserMetrics {
     #private;
     constructor();
     panelShown(panelName: string, isLaunching?: boolean): void;
-    panelShownInLocation(panelName: string, location: 'main' | 'drawer'): void;
     settingsPanelShown(settingsViewId: string): void;
     sourcesPanelFileDebugged(mediaType?: string): void;
     sourcesPanelFileOpened(mediaType?: string): void;

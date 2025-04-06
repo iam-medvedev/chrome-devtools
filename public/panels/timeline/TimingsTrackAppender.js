@@ -52,7 +52,7 @@ export class TimingsTrackAppender {
         const extensionMarkersAreEmpty = this.#extensionMarkers.length === 0;
         const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m));
         const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m));
-        const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents;
+        const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents.filter(timeStamp => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInConsoleTimeStamp(timeStamp));
         const consoleTimings = this.#parsedTrace.UserTimings.consoleTimings;
         if (extensionMarkersAreEmpty && performanceMarks.length === 0 && performanceMeasures.length === 0 &&
             timestampEvents.length === 0 && consoleTimings.length === 0) {

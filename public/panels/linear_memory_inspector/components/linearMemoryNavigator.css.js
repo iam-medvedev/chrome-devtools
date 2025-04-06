@@ -28,10 +28,15 @@ export default {
 }
 
 .address-input {
+  height: var(--sys-size-11);
+  padding: 0 var(--sys-size-5);
+  margin: 0 var(--sys-size-3);
   text-align: center;
+  align-items: center;
   outline: none;
   color: var(--sys-color-on-surface);
-  border: 1px solid var(--sys-color-neutral-outline);
+  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
+  border-radius: var(--sys-shape-corner-extra-small);
   background: transparent;
 }
 
@@ -41,8 +46,6 @@ export default {
 
 .navigator-button {
   display: flex;
-  width: 20px;
-  height: 20px;
   background: transparent;
   overflow: hidden;
   border: none;
@@ -50,7 +53,6 @@ export default {
   outline: none;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
 }
 
 .navigator-button:disabled devtools-icon {

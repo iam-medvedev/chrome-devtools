@@ -137,8 +137,8 @@ export function calculateMetricWeightsForSorting(insightSet, metadata) {
     const fieldLcp = fieldMetrics.lcp?.value ?? null;
     const fieldInp = fieldMetrics.inp?.value ?? null;
     const fieldCls = fieldMetrics.cls?.value ?? null;
-    const fieldLcpScore = fieldLcp !== null ? evaluateLCPMetricScore(fieldLcp) : 0;
-    const fieldInpScore = fieldInp !== null ? evaluateINPMetricScore(fieldInp) : 0;
+    const fieldLcpScore = fieldLcp !== null ? evaluateLCPMetricScore(Helpers.Timing.microToMilli(fieldLcp)) : 0;
+    const fieldInpScore = fieldInp !== null ? evaluateINPMetricScore(Helpers.Timing.microToMilli(fieldInp)) : 0;
     const fieldClsScore = fieldCls !== null ? evaluateCLSMetricScore(fieldCls) : 0;
     const fieldLcpScoreInverted = 1 - fieldLcpScore;
     const fieldInpScoreInverted = 1 - fieldInpScore;

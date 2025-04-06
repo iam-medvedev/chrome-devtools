@@ -175,9 +175,9 @@ function selectedElementFilter(maybeNode) {
     }
     return null;
 }
-function getEmptyStateSuggestions(context, conversationType) {
+async function getEmptyStateSuggestions(context, conversationType) {
     if (context) {
-        const specialSuggestions = context.getSuggestions();
+        const specialSuggestions = await context.getSuggestions();
         if (specialSuggestions) {
             return specialSuggestions;
         }
@@ -317,21 +317,23 @@ function createPerfInsightContext(insight) {
     }
     return new AiAssistanceModel.InsightContext(insight);
 }
-function agentTypeToConversationType(type) {
-    switch (type) {
-        case "freestyler" /* AiAssistanceModel.AgentType.STYLING */:
-            return "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
-        case "drjones-network-request" /* AiAssistanceModel.AgentType.NETWORK */:
-            return "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */;
-        case "drjones-file" /* AiAssistanceModel.AgentType.FILE */:
-            return "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
-        case "drjones-performance" /* AiAssistanceModel.AgentType.PERFORMANCE */:
-            return "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
-        case "performance-insight" /* AiAssistanceModel.AgentType.PERFORMANCE_INSIGHT */:
-            return "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */;
-        case "patch" /* AiAssistanceModel.AgentType.PATCH */:
-            throw new Error('PATCH AiAssistanceModel.AgentType does not have a corresponding AiAssistanceModels.ConversationType.');
+function agentToConversationType(agent) {
+    if (agent instanceof AiAssistanceModel.StylingAgent) {
+        return "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
     }
+    if (agent instanceof AiAssistanceModel.NetworkAgent) {
+        return "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */;
+    }
+    if (agent instanceof AiAssistanceModel.FileAgent) {
+        return "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
+    }
+    if (agent instanceof AiAssistanceModel.PerformanceAgent) {
+        return "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
+    }
+    if (agent instanceof AiAssistanceModel.PerformanceInsightsAgent) {
+        return "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */;
+    }
+    throw new Error('Provided agent does not have a corresponding conversation type');
 }
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
@@ -491,7 +493,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
             targetConversationType = "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
         }
-        if (this.#conversationAgent?.type === targetConversationType) {
+        if (this.#conversation?.type === targetConversationType) {
             // The above if makes sure even if we have an active agent it's empty
             // So we can just reuse it
             return;
@@ -512,7 +514,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             // If we get a new agent we need to
             // create a new conversation along side it
             if (agent) {
-                this.#conversation = new AiAssistanceModel.Conversation(agentTypeToConversationType(agent.type), [], agent.id, false);
+                this.#conversation = new AiAssistanceModel.Conversation(agentToConversationType(agent), [], agent.id, false);
                 this.#historicalConversations.push(this.#conversation);
             }
         }
@@ -654,6 +656,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         return this.#changeManager.formatChangesForPatching(this.#conversationAgent.id, /* includeSourceLocation= */ true);
     }
     async performUpdate() {
+        const emptyStateSuggestions = await getEmptyStateSuggestions(this.#selectedContext, this.#conversation?.type);
         this.view({
             state: this.#getChatUiState(),
             blockedByCrossOrigin: this.#blockedByCrossOrigin,
@@ -672,7 +675,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             imageInput: this.#imageInput,
             isDeleteHistoryButtonVisible: Boolean(this.#conversation && !this.#conversation.isEmpty),
             isTextInputDisabled: this.#isTextInputDisabled(),
-            emptyStateSuggestions: getEmptyStateSuggestions(this.#selectedContext, this.#conversation?.type),
+            emptyStateSuggestions,
             inputPlaceholder: this.#getChatInputPlaceholder(),
             disclaimerText: this.#getDisclaimerText(),
             isTextInputEmpty: this.#isTextInputEmpty,

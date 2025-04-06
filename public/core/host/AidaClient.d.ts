@@ -88,6 +88,7 @@ export declare enum ClientFeature {
     CHROME_STYLING_AGENT = 2,
     CHROME_NETWORK_AGENT = 7,
     CHROME_PERFORMANCE_AGENT = 8,
+    CHROME_PERFORMANCE_ANNOTATIONS_AGENT = 20,
     CHROME_FILE_AGENT = 9,
     CHROME_PATCH_AGENT = 12,
     CHROME_PERFORMANCE_INSIGHTS_AGENT = 14
@@ -98,6 +99,23 @@ export declare enum UserTier {
     BETA = 2,
     PUBLIC = 3
 }
+export interface RequestFactMetadata {
+    /**
+     * A description of where the fact comes from.
+     */
+    source: string;
+    /**
+     * Optional: a score to give this fact. Used because if there are more facts than space in the context window, higher scoring facts will be prioritised.
+     */
+    score?: number;
+}
+export interface RequestFact {
+    /**
+     * Content of the fact.
+     */
+    text: string;
+    metadata: RequestFactMetadata;
+}
 export type RpcGlobalId = string | number;
 export interface AidaRequest {
     client: string;
@@ -105,6 +123,7 @@ export interface AidaRequest {
     preamble?: string;
     historical_contexts?: Content[];
     function_declarations?: FunctionDeclaration[];
+    facts?: RequestFact[];
     options?: {
         temperature?: number;
         model_id?: string;

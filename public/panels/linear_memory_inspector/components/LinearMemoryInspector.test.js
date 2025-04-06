@@ -4,6 +4,7 @@
 /* eslint-disable rulesdir/es-modules-import */
 import { dispatchClickEvent, getElementsWithinComponent, getElementWithinComponent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
+import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LinearMemoryInspectorComponents from './components.js';
 import { NAVIGATOR_ADDRESS_SELECTOR, NAVIGATOR_HISTORY_BUTTON_SELECTOR, NAVIGATOR_PAGE_BUTTON_SELECTOR, } from './LinearMemoryNavigator.test.js';
 import { ENDIANNESS_SELECTOR } from './LinearMemoryValueInterpreter.test.js';
@@ -80,7 +81,7 @@ describeWithLocale('LinearMemoryInspector', () => {
         data.address = 0;
         component.data = data;
         const navigator = getNavigator(component);
-        const buttons = getElementsWithinComponent(navigator, NAVIGATOR_HISTORY_BUTTON_SELECTOR, HTMLButtonElement);
+        const buttons = getElementsWithinComponent(navigator, NAVIGATOR_HISTORY_BUTTON_SELECTOR, Buttons.Button.Button);
         const [backwardButton] = buttons;
         const viewer = getViewer(component);
         const byteCells = getElementsWithinComponent(viewer, VIEWER_BYTE_CELL_SELECTOR, HTMLSpanElement);
@@ -100,7 +101,7 @@ describeWithLocale('LinearMemoryInspector', () => {
     it('can navigate addresses back and forth in history', async () => {
         const { component, data: { address } } = setUpComponent();
         const navigator = getNavigator(component);
-        const buttons = getElementsWithinComponent(navigator, NAVIGATOR_HISTORY_BUTTON_SELECTOR, HTMLButtonElement);
+        const buttons = getElementsWithinComponent(navigator, NAVIGATOR_HISTORY_BUTTON_SELECTOR, Buttons.Button.Button);
         const [backwardButton, forwardButton] = buttons;
         const viewer = getViewer(component);
         const byteCells = getElementsWithinComponent(viewer, VIEWER_BYTE_CELL_SELECTOR, HTMLSpanElement);
@@ -126,7 +127,7 @@ describeWithLocale('LinearMemoryInspector', () => {
     it('can turn the page back and forth', () => {
         const { component } = setUpComponent();
         const navigator = getNavigator(component);
-        const buttons = getElementsWithinComponent(navigator, NAVIGATOR_PAGE_BUTTON_SELECTOR, HTMLButtonElement);
+        const buttons = getElementsWithinComponent(navigator, NAVIGATOR_PAGE_BUTTON_SELECTOR, Buttons.Button.Button);
         const [backwardButton, forwardButton] = buttons;
         const address = getElementWithinComponent(navigator, NAVIGATOR_ADDRESS_SELECTOR, HTMLInputElement);
         const addressBefore = parseInt(address.value, 16);

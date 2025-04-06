@@ -12,11 +12,11 @@ export const logClick = (loggable, event, options = {}) => LoggingEvents.logClic
 export const logResize = (l, s) => LoggingEvents.logResize(l, s);
 export const logKeyDown = async (l, e, context) => await LoggingEvents.logKeyDown(LoggingDriver.keyboardLogThrottler)(l, e, context);
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
-export function registerLoggable(loggable, config, parent) {
+export function registerLoggable(loggable, config, parent, size) {
     if (!LoggingDriver.isLogging()) {
         return;
     }
-    NonDomState.registerLoggable(loggable, LoggingConfig.parseJsLog(config), parent || undefined);
+    NonDomState.registerLoggable(loggable, LoggingConfig.parseJsLog(config), parent || undefined, size);
     void LoggingDriver.scheduleProcessing();
 }
 export async function isUnderInspection(origin) {

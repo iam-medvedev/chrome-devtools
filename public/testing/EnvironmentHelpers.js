@@ -204,6 +204,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-annotations-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-history-entries', [], "array" /* Common.Settings.SettingType.ARRAY */),
+        createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-patching-fre-completed', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];

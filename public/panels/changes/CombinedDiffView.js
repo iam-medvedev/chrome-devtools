@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -53,6 +54,10 @@ function renderSingleDiffView(singleDiffViewInput) {
   `;
 }
 export class CombinedDiffView extends UI.Widget.Widget {
+    /**
+     * Ignores urls that start with any in the list
+     */
+    ignoredUrls = [];
     #workspaceDiff;
     #modifiedUISourceCodes = [];
     #copiedFiles = {};
@@ -125,16 +130,24 @@ export class CombinedDiffView extends UI.Widget.Widget {
         await this.#initializeModifiedUISourceCodes();
     }
     async performUpdate() {
-        const uiSourceCodeAndDiffs = await Promise.all(this.#modifiedUISourceCodes.map(async (modifiedUISourceCode) => {
+        const uiSourceCodeAndDiffs = (await Promise.all(this.#modifiedUISourceCodes.map(async (modifiedUISourceCode) => {
+            for (const ignoredUrl of this.ignoredUrls) {
+                if (modifiedUISourceCode.url().startsWith(ignoredUrl)) {
+                    return;
+                }
+            }
             // `requestDiff` caches the response from the previous `requestDiff` calls if the file did not change
             // so we can safely call it here without concerns for performance.
             const diffResponse = await this.#workspaceDiff?.requestDiff(modifiedUISourceCode);
+            if (!diffResponse || diffResponse.diff.length === 0) {
+                return;
+            }
             return {
-                diff: diffResponse?.diff,
+                diff: diffResponse.diff,
                 uiSourceCode: modifiedUISourceCode,
             };
-        }));
-        const singleDiffViewInputs = uiSourceCodeAndDiffs.filter(uiSourceCodeAndDiff => Boolean(uiSourceCodeAndDiff.diff))
+        }))).filter(uiSourceCodeAndDiff => !!uiSourceCodeAndDiff);
+        const singleDiffViewInputs = uiSourceCodeAndDiffs
             .map(({ uiSourceCode, diff }) => {
             let displayText = uiSourceCode.fullDisplayName();
             // If the UISourceCode is backed by a workspace, we show the path as "{workspace-name}/path/relative/to/workspace"
@@ -146,7 +159,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
                 ].join('/');
             }
             return {
-                diff: diff, // We already filter above the ones that does not have `diff`.
+                diff,
                 fileName: `${uiSourceCode.isDirty() ? '*' : ''}${displayText}`,
                 fileUrl: uiSourceCode.url(),
                 mimeType: uiSourceCode.mimeType(),

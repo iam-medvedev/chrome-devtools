@@ -1,10 +1,9 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import * as Diff from '../../third_party/diff/diff.js';
+import * as Persistence from '../persistence/persistence.js';
 import * as TextUtils from '../text_utils/text_utils.js';
-import * as Workspace from '../workspace/workspace.js';
 import { debugLog } from './debug.js';
 /**
  * AgentProject wraps around a Workspace.Workspace.Project and
@@ -12,19 +11,18 @@ import { debugLog } from './debug.js';
  * including additional checks and restrictions.
  */
 export class AgentProject {
-    #projects;
-    #ignoredFileNames = new Set(['inspector-stylesheet']);
+    #project;
+    #ignoredFolderNames = new Set(['node_modules']);
     #filesChanged = new Set();
     #linesChanged = 0;
     #maxFilesChanged;
     #maxLinesChanged;
     #processedFiles = new Set();
-    constructor(options = {
+    constructor(project, options = {
         maxFilesChanged: 5,
         maxLinesChanged: 200,
     }) {
-        this.#projects =
-            Workspace.Workspace.WorkspaceImpl.instance().projectsForType(Workspace.Workspace.projectTypes.Network);
+        this.#project = project;
         this.#maxFilesChanged = options.maxFilesChanged;
         this.#maxLinesChanged = options.maxLinesChanged;
     }
@@ -122,21 +120,28 @@ export class AgentProject {
         }
         return matches;
     }
-    #indexFiles() {
-        const map = new Map();
-        // TODO: this could be optimized and cached.
-        for (const project of this.#projects) {
-            for (const uiSourceCode of project.uiSourceCodes()) {
-                const { path } = new Common.ParsedURL.ParsedURL(uiSourceCode.url());
-                if (this.#ignoredFileNames.has(uiSourceCode.name())) {
-                    continue;
-                }
-                // TODO: There can be multiple files in the same path. Make sure
-                // we choose one winner here for that case.
-                map.set(path, uiSourceCode);
+    #shouldSkipPath(pathParts) {
+        for (const part of pathParts) {
+            if (this.#ignoredFolderNames.has(part) || part.startsWith('.')) {
+                return true;
             }
         }
-        return { files: Array.from(map.keys()), map };
+        return false;
+    }
+    #indexFiles() {
+        const files = [];
+        const map = new Map();
+        // TODO: this could be optimized and cached.
+        for (const uiSourceCode of this.#project.uiSourceCodes()) {
+            const pathParths = Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode);
+            if (this.#shouldSkipPath(pathParths)) {
+                continue;
+            }
+            const path = pathParths.join('/');
+            files.push(path);
+            map.set(path, uiSourceCode);
+        }
+        return { files, map };
     }
 }
 //# sourceMappingURL=AgentProject.js.map

@@ -14,7 +14,7 @@ export default {
   display: flex;
   background: var(--sys-color-cdt-base-container);
   box-shadow: var(--sys-elevation-level2);
-  padding: var(--sys-size-6) var(--sys-size-8);
+  padding: var(--sys-size-4);
   border-radius: var(--sys-shape-corner-small);
 }
 

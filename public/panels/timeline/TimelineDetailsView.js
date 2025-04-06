@@ -1,6 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -336,7 +337,8 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             return null;
         }
         const frameTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
-        return frameTimeMilliSeconds - frame.endTime < 10 ? filmStripFrame : null;
+        const frameEndTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(frame.endTime);
+        return frameTimeMilliSeconds - frameEndTimeMilliSeconds < 10 ? filmStripFrame : null;
     }
     #setSelectionForTimelineFrame(frame) {
         const matchedFilmStripFrame = this.#getFilmStripFrame(frame);

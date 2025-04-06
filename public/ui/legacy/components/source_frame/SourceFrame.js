@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../../../core/common/common.js';
 import * as Host from '../../../../core/host/host.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
@@ -97,7 +98,7 @@ const UIStrings = {
      */
     allowPasting: 'allow pasting',
     /**
-     *@description Input box placeholder which instructs the user to type 'allow pasing' into the input box.
+     *@description Input box placeholder which instructs the user to type 'allow pasting' into the input box.
      *@example {allow pasting} PH1
      */
     typeAllowPasting: 'Type \'\'{PH1}\'\'',

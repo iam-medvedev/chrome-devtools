@@ -1,6 +1,8 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../ui/components/spinners/spinners.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -81,7 +83,7 @@ const UIStrings = {
      */
     errorBody: 'Something went wrong. Try again.',
     /**
-     * @description Label for screenreaders that is added to the end of the link
+     * @description Label for screen readers that is added to the end of the link
      * title to indicate that the link will be opened in a new tab.
      */
     opensInNewTab: '(opens in a new tab)',
@@ -171,7 +173,7 @@ function localizeType(sourceType) {
 const TERMS_OF_SERVICE_URL = 'https://policies.google.com/terms';
 const PRIVACY_POLICY_URL = 'https://policies.google.com/privacy';
 const CODE_SNIPPET_WARNING_URL = 'https://support.google.com/legal/answer/13505487';
-const LEARNMORE_URL = 'https://goo.gle/devtools-console-messages-ai';
+const LEARN_MORE_URL = 'https://goo.gle/devtools-console-messages-ai';
 const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504';
 const SIGN_IN_URL = 'https://accounts.google.com';
 const markedExtension = {
@@ -575,7 +577,7 @@ export class ConsoleInsight extends HTMLElement {
     }
     #renderLearnMoreAboutInsights() {
         // clang-format off
-        return html `<x-link href=${LEARNMORE_URL} class="link" jslog=${VisualLogging.link('learn-more').track({ click: true })}>
+        return html `<x-link href=${LEARN_MORE_URL} class="link" jslog=${VisualLogging.link('learn-more').track({ click: true })}>
       ${i18nString(UIStrings.learnMore)}
     </x-link>`;
         // clang-format on
@@ -803,7 +805,7 @@ export class ConsoleInsight extends HTMLElement {
         jslog=${VisualLogging.action('open-ai-settings').track({ click: true })}
       >Open settings</button>
       or
-      <x-link href=${LEARNMORE_URL} class="link" jslog=${VisualLogging.link('learn-more').track({ click: true })}>learn more</x-link>
+      <x-link href=${LEARN_MORE_URL} class="link" jslog=${VisualLogging.link('learn-more').track({ click: true })}>learn more</x-link>
     </span>`;
         // clang-format on
     }

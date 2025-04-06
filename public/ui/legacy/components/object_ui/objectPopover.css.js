@@ -10,6 +10,11 @@ export default {
  * found in the LICENSE file.
  */
 
+.widget:has(.object-popover-tree) {
+  padding: 0;
+  border-radius: var(--sys-shape-corner-extra-small);
+}
+
 .object-popover-content {
   display: flex;
   position: relative;
@@ -25,6 +30,7 @@ export default {
   font-weight: bold;
   padding-left: 18px;
   padding-bottom: 2px;
+  padding-top: var(--sys-size-3);
   flex-shrink: 0;
 }
 

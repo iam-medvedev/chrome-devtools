@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -50,6 +51,10 @@ const UIStrings = {
      *@description Text for network request headers
      */
     headers: 'Headers',
+    /**
+     *@description Text for network connection info. In case the request is not made over http.
+     */
+    connectionInfo: 'Connection Info',
     /**
      *@description Text in Network Item View of the Network panel
      */
@@ -145,6 +150,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     responseView;
     cookiesView;
     initialTab;
+    firstTab;
     constructor(request, calculator, initialTab) {
         super();
         this.requestInternal = request;
@@ -152,10 +158,16 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         this.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('request-details').track({
             keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space',
         })}`);
-        const headersTab = "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
-        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resource-view-tab', "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
-        this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
-        this.appendTab(headersTab, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
+        if (request.resourceType() === Common.ResourceType.resourceTypes.DirectSocket) {
+            this.firstTab = "direct-socket-connection" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION */;
+            this.appendTab("direct-socket-connection" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION */, i18nString(UIStrings.connectionInfo), new NetworkComponents.DirectSocketConnectionView.DirectSocketConnectionView(request), i18nString(UIStrings.headers));
+        }
+        else {
+            this.firstTab = "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
+            this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
+            this.appendTab("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
+        }
+        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resource-view-tab', this.firstTab);
         if (this.requestInternal.hasOverriddenHeaders()) {
             const statusDot = document.createElement('div');
             statusDot.className = 'status-dot';
@@ -168,6 +180,9 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         if (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket) {
             const frameView = new ResourceWebSocketFrameView(request);
             this.appendTab("web-socket-frames" /* NetworkForward.UIRequestLocation.UIRequestTabs.WS_FRAMES */, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
+        }
+        else if (request.resourceType() === Common.ResourceType.resourceTypes.DirectSocket) {
+            // TODO(@vkrot): add direct socket messages tab
         }
         else if (request.mimeType === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */) {
             this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EVENT_SOURCE */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
@@ -267,7 +282,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             // it makes sense to retry on the next tick
             window.setTimeout(() => {
                 if (!this.selectTab(tabId)) {
-                    this.selectTab("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
+                    this.selectTab(this.firstTab);
                 }
             }, 0);
         }
@@ -287,7 +302,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     }
     revealHeader(section, header) {
         this.selectTabInternal("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
-        this.headersViewComponent.revealHeader(section, header);
+        this.headersViewComponent?.revealHeader(section, header);
     }
     getHeadersViewComponent() {
         return this.headersViewComponent;

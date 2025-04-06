@@ -110,11 +110,6 @@ export const NativeFunctions = [
         receivers: ["CookieStore"]
     },
     {
-        name: "get",
-        signatures: [["instrumentKey"]],
-        receivers: ["PaymentInstruments"]
-    },
-    {
         name: "set",
         signatures: [["v"]],
         receivers: ["PropertyDescriptor"]
@@ -168,11 +163,6 @@ export const NativeFunctions = [
         name: "set",
         signatures: [["cookieInit"], ["name", "value"]],
         receivers: ["CookieStore"]
-    },
-    {
-        name: "set",
-        signatures: [["instrumentKey", "details"]],
-        receivers: ["PaymentInstruments"]
     },
     {
         name: "toLocaleString",
@@ -1580,11 +1570,6 @@ export const NativeFunctions = [
         receivers: ["CookieStore"]
     },
     {
-        name: "delete",
-        signatures: [["instrumentKey"]],
-        receivers: ["PaymentInstruments"]
-    },
-    {
         name: "matchAll",
         signatures: [["?request", "?options"]],
         receivers: ["Cache", "BackgroundFetchRegistration"]
@@ -1653,11 +1638,6 @@ export const NativeFunctions = [
         name: "has",
         signatures: [["value"]],
         receivers: ["Set", "ReadonlySet", "WeakSet", "ReadonlySetLike"]
-    },
-    {
-        name: "has",
-        signatures: [["instrumentKey"]],
-        receivers: ["PaymentInstruments"]
     },
     {
         name: "open",
@@ -3842,7 +3822,7 @@ export const NativeFunctions = [
     {
         name: "removeItem",
         signatures: [["index"]],
-        receivers: ["SVGLengthList", "SVGNumberList", "SVGPointList", "SVGStringList", "SVGTransformList"]
+        receivers: ["SVGLengthList", "SVGNumberList", "SVGPointList", "SVGStringList", "SVGTransformList", "SpeechRecognitionPhraseList"]
     },
     {
         name: "removeItem",
@@ -6973,6 +6953,10 @@ export const NativeFunctions = [
         signatures: [["type", "?eventInitDict"]]
     },
     {
+        name: "isTypeSupported",
+        signatures: [["type"]]
+    },
+    {
         name: "TrackEvent",
         signatures: [["type", "?eventInitDict"]]
     },
@@ -7772,10 +7756,6 @@ export const NativeFunctions = [
         signatures: [["stream", "?options"]]
     },
     {
-        name: "isTypeSupported",
-        signatures: [["type"]]
-    },
-    {
         name: "MediaMetadata",
         signatures: [["?init"]]
     },
@@ -8532,16 +8512,16 @@ export const NativeFunctions = [
         signatures: [["type", "?initDict"]]
     },
     {
+        name: "SpeechRecognitionPhraseList",
+        signatures: [["phrases"]]
+    },
+    {
         name: "addItem",
         signatures: [["item"]]
     },
     {
         name: "SpeechRecognitionPhrase",
         signatures: [["phrase", "?boost"]]
-    },
-    {
-        name: "updateContext",
-        signatures: [["context"]]
     },
     {
         name: "availableOnDevice",
@@ -8853,7 +8833,7 @@ export const NativeFunctions = [
     },
     {
         name: "copyBufferToBuffer",
-        signatures: [["src", "srcOffset", "dst", "dstOffset", "size"]]
+        signatures: [["source", "destination", "?size"], ["source", "sourceOffset", "destination", "destinationOffset", "?size"]]
     },
     {
         name: "copyBufferToTexture",

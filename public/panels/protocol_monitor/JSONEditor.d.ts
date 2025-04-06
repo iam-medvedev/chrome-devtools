@@ -46,6 +46,32 @@ export interface Command {
     };
     targetId?: string;
 }
+interface ViewInput {
+    onKeydown: (event: KeyboardEvent) => void;
+    metadataByCommand: Map<string, {
+        parameters: Parameter[];
+        description: string;
+        replyArgs: string[];
+    }>;
+    command: string;
+    parameters: Parameter[];
+    typesByName: Map<string, Parameter[]>;
+    onCommandInputBlur: (event: Event) => void;
+    onCommandSend: () => void;
+    onCopyToClipboard: () => void;
+    targets: SDK.Target.Target[];
+    targetId: string | undefined;
+    onAddParameter: (parameterId: string) => void;
+    onClearParameter: (parameter: Parameter, isParentArray?: boolean) => void;
+    onDeleteParameter: (parameter: Parameter, parentParameter: Parameter) => void;
+    onTargetSelected: (event: Event) => void;
+    computeDropdownValues: (parameter: Parameter) => string[];
+    onParameterFocus: (event: Event) => void;
+    onParameterKeydown: (event: KeyboardEvent) => void;
+    onParameterKeyBlur: (event: Event) => void;
+    onParameterValueBlur: (event: Event) => void;
+}
+export type View = (input: ViewInput, output: object, targer: HTMLElement) => void;
 export declare function suggestionFilter(option: string, query: string): boolean;
 export declare const enum Events {
     SUBMIT_EDITOR = "submiteditor"
@@ -63,7 +89,7 @@ declare const JSONEditor_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class JSONEditor extends JSONEditor_base {
     #private;
-    constructor(element: HTMLElement);
+    constructor(element: HTMLElement, view?: View);
     get metadataByCommand(): Map<string, {
         parameters: Parameter[];
         description: string;
@@ -96,4 +122,5 @@ export declare class JSONEditor extends JSONEditor_base {
     populateParametersForCommandWithDefaultValues(): void;
     performUpdate(): void;
 }
+export declare const DEFAULT_VIEW: View;
 export {};

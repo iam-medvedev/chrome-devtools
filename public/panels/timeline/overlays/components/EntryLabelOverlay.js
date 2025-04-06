@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../../ui/components/icon_button/icon_button.js';
 import '../../../../ui/components/tooltips/tooltips.js';
 import '../../../../ui/components/spinners/spinners.js';
@@ -46,7 +47,7 @@ const UIStrings = {
     /**
      *@description Screen-reader text for a tooltip icon.
      */
-    moreInfoAriaLabel: 'More info',
+    moreInfoAriaLabel: 'More information about this feature',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -169,7 +170,7 @@ export class EntryLabelOverlay extends HTMLElement {
     #callTree = null;
     // Creates or gets the setting if it exists.
     #aiAnnotationsEnabledSetting = Common.Settings.Settings.instance().createSetting('ai-annotations-enabled', false);
-    #performanceAgent = new AiAssistanceModels.PerformanceAgent({
+    #agent = new AiAssistanceModels.PerformanceAnnotationsAgent({
         aidaClient: new Host.AidaClient.AidaClient(),
         serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled(),
     });
@@ -227,7 +228,7 @@ export class EntryLabelOverlay extends HTMLElement {
      * So we can provide a mocked agent in tests. Do not call this method outside of a test!
      */
     overrideAIAgentForTest(agent) {
-        this.#performanceAgent = agent;
+        this.#agent = agent;
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
@@ -409,6 +410,14 @@ export class EntryLabelOverlay extends HTMLElement {
         if (this.#inAIConsentDialogFlow && editable === false) {
             return;
         }
+        // Set an attribute on the host; this is used in the overlays CSS to bring
+        // the focused, editable label to the top above any others.
+        if (editable) {
+            this.setAttribute('data-user-editing-label', 'true');
+        }
+        else {
+            this.removeAttribute('data-user-editing-label');
+        }
         this.#isLabelEditable = editable;
         this.#render();
         // If the label is editable, focus cursor on it & put the cursor at the end
@@ -459,13 +468,14 @@ export class EntryLabelOverlay extends HTMLElement {
             try {
                 // Trigger a re-render to display the loading component in the place of the button when the label is being generated.
                 this.#isAILabelLoading = true;
+                UI.ARIAUtils.alert(UIStringsNotTranslate.generatingLabel);
                 // Trigger a re-render to put focus back on the input box, otherwise
                 // when the button changes to a loading spinner, it loses focus and the
                 // editing state is reset because the component loses focus.
                 this.#render();
                 this.#focusInputBox();
                 void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
-                this.#label = await this.#performanceAgent.generateAIEntryLabel(this.#callTree);
+                this.#label = await this.#agent.generateAIEntryLabel(this.#callTree);
                 this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
                 this.#inputField.innerText = this.#label;
                 this.#isAILabelLoading = false;
@@ -576,7 +586,6 @@ export class EntryLabelOverlay extends HTMLElement {
         return html `<devtools-tooltip
     variant="rich"
     id="info-tooltip"
-    aria-label=${i18nString(UIStrings.moreInfoAriaLabel)}
     ${Directives.ref(this.#richTooltip)}>
       <div class="info-tooltip-container">
         ${opts.textContent}
@@ -649,6 +658,7 @@ export class EntryLabelOverlay extends HTMLElement {
         <devtools-button
           aria-details="info-tooltip"
           class="pen-icon"
+          .title=${i18nString(UIStrings.moreInfoAriaLabel)}
           .iconName=${'info'}
           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
           ></devtools-button>

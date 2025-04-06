@@ -100,14 +100,6 @@ export interface ParsedStep {
     action?: string;
 }
 export type ParsedResponse = ParsedAnswer | ParsedStep;
-export declare const enum AgentType {
-    STYLING = "freestyler",
-    FILE = "drjones-file",
-    NETWORK = "drjones-network-request",
-    PERFORMANCE = "drjones-performance",
-    PERFORMANCE_INSIGHT = "performance-insight",
-    PATCH = "patch"
-}
 export declare const MAX_STEPS = 10;
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
@@ -120,7 +112,7 @@ export declare abstract class ConversationContext<T> {
      * It will be overridden in subclasses to fetch data related to the context item.
      */
     refresh(): Promise<void>;
-    getSuggestions(): [string, ...string[]] | undefined;
+    getSuggestions(): Promise<[string, ...string[]] | undefined>;
 }
 export type FunctionCallHandlerResult<Result> = {
     result: Result;
@@ -175,8 +167,6 @@ export interface FunctionDeclaration<Args extends Record<string, unknown>, Retur
  */
 export declare abstract class AiAgent<T> {
     #private;
-    /** Subclasses need to define these. */
-    abstract readonly type: AgentType;
     /**
      * WARNING: preamble defined in code is only used when userTier is
      * TESTERS. Otherwise, a server-side preamble is used (see
@@ -190,6 +180,15 @@ export declare abstract class AiAgent<T> {
     readonly confirmSideEffect: typeof Promise.withResolvers;
     constructor(opts: AgentOptions);
     enhanceQuery(query: string, selected: ConversationContext<T> | null, hasImageInput?: boolean): Promise<string>;
+    currentFacts(): ReadonlySet<Host.AidaClient.RequestFact>;
+    /**
+     * Add a fact which will be sent for any subsequent requests.
+     * Returns the new list of all facts.
+     * Facts are never automatically removed.
+     */
+    addFact(fact: Host.AidaClient.RequestFact): ReadonlySet<Host.AidaClient.RequestFact>;
+    removeFact(fact: Host.AidaClient.RequestFact): boolean;
+    clearFacts(): void;
     buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.AidaRequest;
     get id(): string;
     get origin(): string | undefined;

@@ -44,12 +44,16 @@ export default {
     --top-left, --top-center;
 
   & .container {
+    max-width: calc(100vw - 2 * (/* host margin */ var(--tooltip-viewport-distance) +
+                                 /* container horizontal padding */ var(--sys-size-8) +
+                                 /* container margin */ var(--sys-size-3)));
     margin-inline: 0;
     margin-block: var(--sys-size-3);
     color: var(--sys-color-on-surface);
     background-color: var(--sys-color-base-container-elevated);
     border-radius: var(--sys-shape-corner-small);
     padding: var(--sys-size-6) var(--sys-size-8);
+    overflow: auto;
   }
 }
 

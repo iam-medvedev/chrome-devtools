@@ -63,15 +63,6 @@ export default {
   }
 }
 
-.input-validation {
-  /* 24px is the size of the checkbox, add this margin-left so the text can align with the input */
-  margin: 5px 0 5px 24px;
-
-  &.input-validation-error {
-    color: var(--sys-color-error);
-  }
-}
-
 /*# sourceURL=${import.meta.resolve('./ignoreListSetting.css')} */
 `
 };

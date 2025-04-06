@@ -116,8 +116,12 @@ export default {
   user-select: text;
 }
 
-.data-grid tr:has(th) {
-  background-color: var(--sys-color-surface1);
+.data-grid tr {
+  background-color: var(--sys-color-surface);
+
+  &:has(th) {
+    background-color: var(--sys-color-surface1);
+  }
 }
 
 .data-grid th {

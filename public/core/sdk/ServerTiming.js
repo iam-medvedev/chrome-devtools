@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
-import * as Platform from '../platform/platform.js';
 const UIStrings = {
     /**
      *@description Text in Server Timing
+     *@example {sql-lookup} PH1
      */
-    deprecatedSyntaxFoundPleaseUse: 'Deprecated syntax found. Please use: <name>;dur=<duration>;desc=<description>',
+    deprecatedSyntaxFoundPleaseUse: 'Deprecated syntax found for metric "{PH1}". Please use: <name>;dur=<duration>;desc=<description>',
     /**
      *@description Text in Server Timing
      *@example {https} PH1
@@ -37,6 +37,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('core/sdk/ServerTiming.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const cloudflarePrefix = '(cf) ';
+export const cloudinaryPrefix = '(cld) ';
 export class ServerTiming {
     metric;
     value;
@@ -51,20 +53,15 @@ export class ServerTiming {
         if (!rawServerTimingHeaders.length) {
             return null;
         }
-        const serverTimings = rawServerTimingHeaders.reduce((memo, header) => {
+        const serverTimings = rawServerTimingHeaders.reduce((timings, header) => {
             const timing = this.createFromHeaderValue(header.value);
-            memo.push(...timing.map(function (entry) {
-                return new ServerTiming(entry.name, entry.hasOwnProperty('dur') ? entry.dur : null, entry.hasOwnProperty('desc') ? entry.desc : '');
+            timings.push(...timing.map(function (entry) {
+                return new ServerTiming(entry.name, entry.dur ?? null, entry.desc ?? '');
             }));
-            return memo;
+            return timings;
         }, []);
-        serverTimings.sort((a, b) => Platform.StringUtilities.compare(a.metric.toLowerCase(), b.metric.toLowerCase()));
         return serverTimings;
     }
-    /**
-     * TODO(crbug.com/1011811): Instead of using !Object<string, *> we should have a proper type
-     *                          with #name, desc and dur properties.
-     */
     static createFromHeaderValue(valueString) {
         function trimLeadingWhiteSpace() {
             valueString = valueString.replace(/^\s*/, '');
@@ -130,7 +127,7 @@ export class ServerTiming {
         while ((name = consumeToken()) !== null) {
             const entry = { name };
             if (valueString.charAt(0) === '=') {
-                this.showWarning(i18nString(UIStrings.deprecatedSyntaxFoundPleaseUse));
+                this.showWarning(i18nString(UIStrings.deprecatedSyntaxFoundPleaseUse, { PH1: name }));
             }
             while (consumeDelimiter(';')) {
                 let paramName;
@@ -158,10 +155,25 @@ export class ServerTiming {
                 }
                 else {
                     // paramName is not valid
+                    // TODO(paulirish): consider showing other included params, like `start`: https://github.com/w3c/server-timing/issues/43
                     this.showWarning(i18nString(UIStrings.unrecognizedParameterS, { PH1: paramName }));
                 }
             }
             result.push(entry);
+            // Special parsing for cloudflare's bespoke format. https://blog.cloudflare.com/new-standards/#measuring-impact
+            // We extract the individual items of the cfL4 server-timing for clear presentation
+            if (entry.name === 'cfL4' && entry.desc) {
+                new URLSearchParams(entry.desc).entries().forEach(([key, val]) => {
+                    result.push({ name: `${cloudflarePrefix}${key}`, desc: val });
+                });
+            }
+            // Special parsing for cloudinary's bespoke format. https://cloudinary.com/blog/inside_the_black_box_with_server_timing#what_details_are_you_sharing_
+            // The format has changed since this blog post
+            if (entry.name === 'content-info' && entry.desc) {
+                new URLSearchParams(entry.desc.replace(/,/g, '&')).entries().forEach(([key, val]) => {
+                    result.push({ name: `${cloudinaryPrefix}${key}`, desc: val });
+                });
+            }
             if (!consumeDelimiter(',')) {
                 break;
             }
@@ -174,10 +186,7 @@ export class ServerTiming {
     static getParserForParameter(paramName) {
         switch (paramName) {
             case 'dur': {
-                function durParser(entry, 
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                paramValue) {
+                function durParser(entry, paramValue) {
                     entry.dur = 0;
                     if (paramValue !== null) {
                         const duration = parseFloat(paramValue);

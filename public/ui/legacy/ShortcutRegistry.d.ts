@@ -1,5 +1,5 @@
 import type { ActionRegistry } from './ActionRegistry.js';
-import { KeyboardShortcut } from './KeyboardShortcut.js';
+import { type Key, KeyboardShortcut, type Modifier } from './KeyboardShortcut.js';
 export declare class ShortcutRegistry {
     private readonly actionRegistry;
     private readonly actionToShortcut;
@@ -24,7 +24,13 @@ export declare class ShortcutRegistry {
         name: string;
     }>): string[];
     globalShortcutKeys(): number[];
+    keysForAction(actionId: string): number[];
     shortcutTitleForAction(actionId: string): string | undefined;
+    keyAndModifiersForAction(actionId: string): {
+        key: Key;
+        modifier: Modifier;
+    } | undefined;
+    devToolsToChromeModifier(devToolsModifier: Modifier): number;
     handleShortcut(event: KeyboardEvent, handlers?: {
         [x: string]: () => Promise<boolean>;
     }): void;

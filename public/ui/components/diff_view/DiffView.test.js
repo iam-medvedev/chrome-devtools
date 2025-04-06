@@ -60,4 +60,14 @@ describeWithLocale('DiffView', () => {
         assert.isNotNull(view.querySelector('.diff-line-spacer'));
     });
 });
+describe('DiffWrapper', () => {
+    describe('lineDiff', () => {
+        it('should work with no changes', () => {
+            let diff = Diff.Diff.DiffWrapper.lineDiff([''], ['']);
+            assert.deepEqual(diff, []);
+            diff = Diff.Diff.DiffWrapper.lineDiff(['initial'], ['initial']);
+            assert.deepEqual(diff, []);
+        });
+    });
+});
 //# sourceMappingURL=DiffView.test.js.map

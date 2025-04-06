@@ -4,13 +4,16 @@ export declare class EnhancedTracesParser {
     static readonly enhancedTraceVersion: number;
     constructor(trace: TraceFile);
     parseEnhancedTrace(): void;
-    data(): HydratingDataPerTarget;
+    data(): HydratingDataPerTarget[];
     private getEncodedSourceMapUrl;
     private getSourceMapFromMetadata;
     private getScriptIsolateId;
+    private getExecutionContextIsolateId;
     private isTraceEvent;
     private isTargetRundownEvent;
     private isScriptRundownEvent;
     private isScriptRundownSourceEvent;
+    private isTracingStartInBrowserEvent;
+    private isFunctionCallEvent;
     private groupContextsAndScriptsUnderTarget;
 }

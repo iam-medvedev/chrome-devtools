@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';

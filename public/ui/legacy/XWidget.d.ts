@@ -1,8 +1,7 @@
 import { XElement } from './XElement.js';
 export declare class XWidget extends XElement {
     private visible;
-    private readonly shadowRootInternal;
-    private defaultFocusedElement;
+    defaultFocusedElement: Element | null;
     private elementsToRestoreScrollPositionsFor;
     private onShownCallback;
     private onHiddenCallback;

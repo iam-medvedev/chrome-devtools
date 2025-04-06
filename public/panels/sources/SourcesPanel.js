@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
  * Copyright (C) 2011 Google Inc. All rights reserved.
@@ -435,9 +436,9 @@ export class SourcesPanel extends UI.Panel.Panel {
             !Common.Settings.Settings.instance().moduleSetting('disable-paused-state-overlay').get();
         if (withOverlay && !this.overlayLoggables) {
             this.overlayLoggables = { debuggerPausedMessage: {}, resumeButton: {}, stepOverButton: {} };
-            VisualLogging.registerLoggable(this.overlayLoggables.debuggerPausedMessage, `${VisualLogging.dialog('debugger-paused')}`, null);
-            VisualLogging.registerLoggable(this.overlayLoggables.resumeButton, `${VisualLogging.action('debugger.toggle-pause')}`, this.overlayLoggables.debuggerPausedMessage);
-            VisualLogging.registerLoggable(this.overlayLoggables.stepOverButton, `${VisualLogging.action('debugger.step-over')}`, this.overlayLoggables.debuggerPausedMessage);
+            VisualLogging.registerLoggable(this.overlayLoggables.debuggerPausedMessage, `${VisualLogging.dialog('debugger-paused')}`, null, new DOMRect(0, 0, 200, 20));
+            VisualLogging.registerLoggable(this.overlayLoggables.resumeButton, `${VisualLogging.action('debugger.toggle-pause')}`, this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 20, 20));
+            VisualLogging.registerLoggable(this.overlayLoggables.stepOverButton, `${VisualLogging.action('debugger.step-over')}`, this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 20, 20));
         }
         this.#lastPausedTarget = new WeakRef(details.debuggerModel.target());
     }

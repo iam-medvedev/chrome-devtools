@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './ButtonDialog.js';
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
@@ -27,19 +28,44 @@ export class ShortcutDialog extends HTMLElement {
     #renderBound = this.#render.bind(this);
     #shortcuts = [];
     #openOnRender = false;
+    #customTitle;
     #prependedElement = null;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [shortcutDialogStyles];
+    }
+    get data() {
+        return {
+            shortcuts: this.#shortcuts,
+            open: this.#openOnRender,
+            customTitle: this.#customTitle,
+        };
     }
     set data(data) {
         this.#shortcuts = data.shortcuts;
         if (data.open) {
             this.#openOnRender = data.open;
         }
+        if (data.customTitle) {
+            this.#customTitle = data.customTitle;
+        }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
     }
     prependElement(element) {
         this.#prependedElement = element;
+    }
+    #renderRow(row) {
+        if (!Array.isArray(row)) {
+            // If it's not an array it's a footnote, which is the easier case, so
+            // render that and return.
+            return html `<span class="footnote">${row.footnote}</span>`;
+        }
+        return html `${row.map(part => {
+            if ('key' in part) {
+                return html `<span class="keybinds-key">${part.key}</span>`;
+            }
+            return html `<span class="keybinds-join-text">${part.joinText}</span>`;
+        })}
+    `;
     }
     #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
@@ -50,7 +76,7 @@ export class ShortcutDialog extends HTMLElement {
       <devtools-button-dialog .data=${{
             openOnRender: this.#openOnRender,
             closeButton: true,
-            dialogTitle: i18nString(UIStrings.dialogTitle),
+            dialogTitle: this.#customTitle ?? i18nString(UIStrings.dialogTitle),
             variant: "toolbar" /* Buttons.Button.Variant.TOOLBAR */,
             iconName: 'help',
             iconTitle: i18nString(UIStrings.showShortcutTitle),
@@ -61,16 +87,11 @@ export class ShortcutDialog extends HTMLElement {
               <li class="keybinds-list-item">
                 <div class="keybinds-list-title">${shortcut.title}</div>
                 <div class="shortcuts-for-actions">
-                  ${shortcut.bindings.map(binding => {
-            return html `
-                    <div class="keys-container">
-                      ${binding.map(key => html `
-                          <span class="keybinds-key">${key}</span>
-                      `)}
-                    </div>
+                  ${shortcut.rows.map(row => {
+            return html `<div class="row-container">${this.#renderRow(row)}</div>
                   `;
         })}
-                  </div>
+                </div>
               </li>`)}
         </ul>
       </devtools-button-dialog>

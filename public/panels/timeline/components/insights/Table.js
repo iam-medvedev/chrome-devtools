@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
@@ -145,6 +146,7 @@ export class Table extends HTMLElement {
         if (!this.#headers || !this.#rows) {
             return;
         }
+        const numColumns = this.#headers.length;
         const flattenedRows = [];
         const rowEls = [];
         function traverse(row, depth = 0) {
@@ -155,7 +157,12 @@ export class Table extends HTMLElement {
             const trStyles = Lit.Directives.styleMap({
                 color: depth ? 'var(--sys-color-on-surface-subtle)' : '',
             });
-            const columnEls = row.values.map((value, i) => i === 0 ? html `<th scope="row" style=${thStyles}>${value}</th>` : html `<td>${value}</td>`);
+            const columnEls = row.values.map((value, i) => i === 0 ? html `<th
+                scope="row"
+                colspan=${i === row.values.length - 1 ? numColumns - i : 1}
+                style=${thStyles}>${value}
+              </th>` :
+                html `<td>${value}</td>`);
             rowEls.push(html `<tr style=${trStyles}>${columnEls}</tr>`);
             flattenedRows.push(row);
             for (const subRow of row.subRows ?? []) {

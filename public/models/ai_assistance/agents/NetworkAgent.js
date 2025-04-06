@@ -102,7 +102,6 @@ export class RequestContext extends ConversationContext {
  * instance for a new conversation.
  */
 export class NetworkAgent extends AiAgent {
-    type = "drjones-network-request" /* AgentType.NETWORK */;
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
     get userTier() {

@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../../../core/common/common.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as VisualLoggging from '../../../visual_logging/visual_logging.js';
@@ -413,7 +414,7 @@ export class OverviewInfo {
         this.anchorElement = anchor;
         this.glassPane = new UI.GlassPane.GlassPane();
         this.glassPane.setPointerEventsBehavior("PierceContents" /* UI.GlassPane.PointerEventsBehavior.PIERCE_CONTENTS */);
-        this.glassPane.setMarginBehavior("Arrow" /* UI.GlassPane.MarginBehavior.ARROW */);
+        this.glassPane.setMarginBehavior("DefaultMargin" /* UI.GlassPane.MarginBehavior.DEFAULT_MARGIN */);
         this.glassPane.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);
         this.visible = false;
         this.element =

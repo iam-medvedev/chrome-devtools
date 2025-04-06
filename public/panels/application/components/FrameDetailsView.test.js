@@ -6,7 +6,7 @@ import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
 import { getCleanTextContentFromElements, getElementsWithinComponent, getElementWithinComponent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { createTarget } from '../../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
+import { describeWithMockConnection, dispatchEvent, } from '../../../testing/MockConnection.js';
 import * as ExpandableList from '../../../ui/components/expandable_list/expandable_list.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as ReportView from '../../../ui/components/report_view/report_view.js';
@@ -90,11 +90,23 @@ describeWithMockConnection('FrameDetailsView', () => {
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         sinon.stub(SDK.DebuggerModel.DebuggerModel, 'modelForDebuggerId').resolves(debuggerModel);
+        const scriptParsedEvent = {
+            scriptId: '123',
+            url: 'https://www.google.com/ad-script.js',
+            startLine: 0,
+            startColumn: 0,
+            endLine: 10,
+            endColumn: 10,
+            executionContextId: 1234,
+            hash: '',
+            buildId: '',
+        };
+        dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent);
         const frame = makeFrame(target);
         frame.adFrameType = () => "root" /* Protocol.Page.AdFrameType.Root */;
         frame.parentFrame = () => ({
             getAdScriptId: () => ({
-                scriptId: 'scriptId',
+                scriptId: '123',
                 debuggerId: '42',
             }),
         });
@@ -143,7 +155,7 @@ describeWithMockConnection('FrameDetailsView', () => {
             '<iframe>',
             '',
             '',
-            '',
+            'ad-script.js:1',
             'Yes\xA0Localhost is always a secure context',
             'Yes',
             'None',
@@ -163,9 +175,16 @@ describeWithMockConnection('FrameDetailsView', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText[0], 'function1 \xA0@\xA0www.example.com/script.js:16');
+        const adStatusList = component.shadowRoot.querySelector('devtools-report-value.ad-status-list devtools-expandable-list');
+        assert.exists(adStatusList);
+        const adStatusExpandableButton = adStatusList.shadowRoot.querySelector('button');
+        assert.notExists(adStatusExpandableButton);
+        const adStatusItem = adStatusList.shadowRoot.querySelector('.expandable-list-items');
+        assert.exists(adStatusItem);
+        assert.strictEqual(adStatusItem.textContent?.trim(), 'root');
         const adScriptLink = component.shadowRoot.querySelector('devtools-report-value.ad-script-link');
         assert.exists(adScriptLink);
-        assert.strictEqual(adScriptLink.textContent, '');
+        assert.strictEqual(adScriptLink.textContent, 'ad-script.js:1');
     });
 });
 //# sourceMappingURL=FrameDetailsView.test.js.map

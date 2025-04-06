@@ -482,10 +482,9 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         await createUISourceCode(project, allowedUrl);
         assert.exists(context.chrome.devtools);
         const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
-        assert.deepEqual(resources.map(r => r.url), [blockedUrl, allowedUrl]);
+        assert.deepEqual(resources.map(r => r.url), [allowedUrl]);
         const resourceContents = await Promise.all(resources.map(resource => new Promise(r => resource.getContent((content, encoding) => r({ url: resource.url, content, encoding })))));
         assert.deepEqual(resourceContents, [
-            { url: blockedUrl, content: undefined, encoding: undefined },
             { url: allowedUrl, content: 'content', encoding: '' },
         ]);
     });
@@ -525,12 +524,12 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         await createUISourceCode(project, allowedUrl);
         assert.exists(context.chrome.devtools);
         const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
-        assert.deepEqual(resources.map(r => r.url), [blockedUrl, allowedUrl]);
+        assert.deepEqual(resources.map(r => r.url), [allowedUrl]);
         assert.deepEqual(project.uiSourceCodeForURL(allowedUrl)?.content(), 'content');
         assert.deepEqual(project.uiSourceCodeForURL(blockedUrl)?.content(), 'content');
         const responses = await Promise.all(resources.map(resource => new Promise(r => resource.setContent('modified', true, r))));
-        assert.deepEqual(responses.map(response => response?.code), ['E_FAILED', 'OK']);
-        assert.deepEqual(responses.map(response => response?.details), [['Permission denied'], []]);
+        assert.deepEqual(responses.map(response => response?.code), ['OK']);
+        assert.deepEqual(responses.map(response => response?.details), [[]]);
         assert.deepEqual(project.uiSourceCodeForURL(allowedUrl)?.content(), 'modified');
         assert.deepEqual(project.uiSourceCodeForURL(blockedUrl)?.content(), 'content');
     });

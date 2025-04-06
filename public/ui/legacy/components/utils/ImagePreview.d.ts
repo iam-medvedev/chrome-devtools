@@ -15,7 +15,7 @@ export declare class ImagePreview {
         imageAltText: (string | undefined);
         align: Align;
         hideFileData?: boolean;
-    } | undefined): Promise<Element | null>;
+    } | undefined): Promise<HTMLDivElement | null>;
     static loadDimensionsForNode(node: SDK.DOMModel.DOMNode): Promise<PrecomputedFeatures | undefined>;
     static defaultAltTextForImageURL(url: Platform.DevToolsPath.UrlString): string;
 }

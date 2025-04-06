@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -509,19 +510,23 @@ export class RequestTimingView extends UI.Widget.VBox {
             return tableElement;
         }
         serverTimings.filter(item => item.metric.toLowerCase() !== 'total')
-            .forEach(item => addTiming(item, lastTimingRightEdge));
+            .forEach(item => addServerTiming(item, lastTimingRightEdge));
         serverTimings.filter(item => item.metric.toLowerCase() === 'total')
-            .forEach(item => addTiming(item, lastTimingRightEdge));
+            .forEach(item => addServerTiming(item, lastTimingRightEdge));
         return tableElement;
-        function addTiming(serverTiming, right) {
+        function addServerTiming(serverTiming, right) {
             const colorGenerator = new Common.Color.Generator({ min: 0, max: 360, count: 36 }, { min: 50, max: 80, count: undefined }, 80);
             const isTotal = serverTiming.metric.toLowerCase() === 'total';
             const tr = tableElement.createChild('tr', isTotal ? 'network-timing-footer' : 'server-timing-row');
-            const metric = tr.createChild('td', 'network-timing-metric');
-            const description = serverTiming.description || serverTiming.metric;
-            UI.UIUtils.createTextChild(metric, description);
-            UI.Tooltip.Tooltip.install(metric, description);
-            const row = tr.createChild('td').createChild('div', 'network-timing-row');
+            const metricEl = tr.createChild('td', 'network-timing-metric');
+            const metricDesc = [serverTiming.metric, serverTiming.description].filter(Boolean).join(' — ');
+            // Mark entries from a bespoke format
+            if (serverTiming.metric.startsWith('(c')) {
+                tr.classList.add('synthetic');
+            }
+            UI.UIUtils.createTextChild(metricEl, metricDesc);
+            UI.Tooltip.Tooltip.install(metricEl, metricDesc);
+            const row = tr.createChild('td', 'server-timing-cell--value-bar').createChild('div', 'network-timing-row');
             if (serverTiming.value === null) {
                 return;
             }
@@ -535,7 +540,7 @@ export class RequestTimingView extends UI.Widget.VBox {
                     bar.style.backgroundColor = colorGenerator.colorForID(serverTiming.metric);
                 }
             }
-            const label = tr.createChild('td').createChild('div', 'network-timing-bar-title');
+            const label = tr.createChild('td', 'server-timing-cell--value-text').createChild('div', 'network-timing-bar-title');
             label.textContent = i18n.TimeUtilities.millisToString(serverTiming.value, true);
         }
         function createHeader(title) {

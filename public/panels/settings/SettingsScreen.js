@@ -27,6 +27,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../ui/components/cards/cards.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -36,6 +38,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { PanelUtils } from '../utils/utils.js';
 import * as PanelComponents from './components/components.js';
@@ -74,10 +77,6 @@ const UIStrings = {
      */
     oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect',
     /**
-     * @description Label for a filter text input that controls which experiments are shown.
-     */
-    filterExperimentsLabel: 'Filter',
-    /**
      * @description Warning text shown when the user has entered text to filter the
      * list of experiments, but no experiments match the filter.
      */
@@ -90,6 +89,10 @@ const UIStrings = {
      *@description Text that is usually a hyperlink to a feedback form
      */
     sendFeedback: 'Send feedback',
+    /**
+     *@description Placeholder text in search bar
+     */
+    searchExperiments: 'Search experiments',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/SettingsScreen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -333,22 +336,24 @@ export class GenericSettingsTab extends SettingsTab {
 export class ExperimentsSettingsTab extends SettingsTab {
     #experimentsSection;
     #unstableExperimentsSection;
-    #inputElement;
     experimentToControl = new Map();
     constructor() {
         super('experiments-tab-content');
         this.containerElement.classList.add('settings-card-container');
+        this.element.setAttribute('jslog', `${VisualLogging.pane('experiments')}`);
         const filterSection = this.containerElement.createChild('div');
         filterSection.classList.add('experiments-filter');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('experiments')}`);
-        const labelElement = filterSection.createChild('label');
-        labelElement.textContent = i18nString(UIStrings.filterExperimentsLabel);
-        this.#inputElement = UI.UIUtils.createInput('', 'text', 'experiments-filter');
-        UI.ARIAUtils.bindLabelToControl(labelElement, this.#inputElement);
-        filterSection.appendChild(this.#inputElement);
-        this.#inputElement.addEventListener('input', () => this.renderExperiments(this.#inputElement.value.toLowerCase()), false);
-        this.setDefaultFocusedElement(this.#inputElement);
-        this.setFilter('');
+        render(html `
+        <devtools-toolbar>
+          <devtools-toolbar-input type="filter" placeholder=${i18nString(UIStrings.searchExperiments)} style="flex-grow:1" @change=${this.#onFilterChanged.bind(this)}></devtools-toolbar-input>
+        </devtools-toolbar>
+    `, filterSection);
+        this.renderExperiments('');
+        const filter = filterSection.querySelector('devtools-toolbar-input');
+        this.setDefaultFocusedElement(filter);
+    }
+    #onFilterChanged(e) {
+        this.renderExperiments(e.detail.toLowerCase());
     }
     renderExperiments(filterText) {
         this.experimentToControl.clear();
@@ -447,10 +452,6 @@ export class ExperimentsSettingsTab extends SettingsTab {
                 PanelUtils.highlightElement(element);
             }
         }
-    }
-    setFilter(filterText) {
-        this.#inputElement.value = filterText;
-        this.#inputElement.dispatchEvent(new Event('input', { bubbles: true, cancelable: true }));
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(ExperimentsSettingsTab, this);

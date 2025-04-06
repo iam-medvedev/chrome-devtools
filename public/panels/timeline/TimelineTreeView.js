@@ -1,6 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -944,7 +945,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
     }
     // This is our groupingFunction that returns the eventId in Domain, Subdomain, and ThirdParty groupBy scenarios.
     // The eventid == the identity of a node that we expect in a bottomUp tree (either without grouping or with the groupBy grouping)
-    // A "top node" (in `ungrouppedTopNodes`) is aggregated by this. (But so are all the other nodes, except the `GroupNode`s)
+    // A "top node" (in `ungroupedTopNodes`) is aggregated by this. (But so are all the other nodes, except the `GroupNode`s)
     domainByEvent(groupBy, event) {
         const parsedTrace = this.parsedTrace();
         if (!parsedTrace) {

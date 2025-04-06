@@ -118,6 +118,7 @@ models/ai_assistance/agents/FileAgent.test.js
 models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
+models/ai_assistance/agents/PerformanceAnnotationsAgent.test.js
 models/ai_assistance/agents/PerformanceInsightsAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/data_formatters/FileFormatter.test.js
@@ -275,6 +276,7 @@ models/workspace_diff/WorkspaceDiff.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/PatchWidget.test.js
+panels/ai_assistance/SelectWorkspaceDialog.test.js
 panels/ai_assistance/components/ChatView.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
 panels/ai_assistance/components/UserActionRow.test.js
@@ -421,6 +423,7 @@ panels/network/RequestPayloadView.test.js
 panels/network/RequestPreviewView.test.js
 panels/network/RequestResponseView.test.js
 panels/network/RequestTimingView.test.js
+panels/network/components/DirectSocketConnectionView.test.js
 panels/network/components/HeaderSectionRow.test.js
 panels/network/components/RequestHeaderSection.test.js
 panels/network/components/RequestHeadersView.test.js

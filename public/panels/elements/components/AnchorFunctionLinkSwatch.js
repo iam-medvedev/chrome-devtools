@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../../ui/components/icon_button/icon_button.js';
 import '../../../ui/legacy/components/inline_editor/inline_editor.js';
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -18,7 +19,7 @@ const UIStrings = {
     /**
      *@description Text displayed in a tooltip shown when hovering over a CSS property value references a name that's not
      *             defined and can't be linked to.
-     *@example {--my-anchor-name} PH1
+     *@example {--my-linkable-name} PH1
      */
     sIsNotDefined: '{PH1} is not defined',
 };

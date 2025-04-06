@@ -1,7 +1,7 @@
+import '../../ui/legacy/legacy.js';
 import '../../ui/components/markdown_view/markdown_view.js';
 import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
-import '../../ui/legacy/legacy.js';
 import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
@@ -31,13 +31,16 @@ export interface ViewInput {
     patchSuggestionState: PatchSuggestionState;
     changeSummary?: string;
     sources?: string;
+    projectName?: string;
     savedToDisk?: boolean;
-    disclaimerTooltipText: Platform.UIString.LocalizedString;
+    projectPath: Platform.DevToolsPath.UrlString;
+    applyToWorkspaceTooltipText: Platform.UIString.LocalizedString;
     onLearnMoreTooltipClick: () => void;
-    onApplyToPageTree: () => void;
+    onApplyToWorkspace: () => void;
     onCancel: () => void;
     onDiscard: () => void;
-    onSaveToWorkspace?: () => void;
+    onSaveAll: () => void;
+    onChangeWorkspaceClick: () => void;
 }
 export interface ViewOutput {
     tooltipRef?: Directives.Ref<HTMLElement>;
@@ -52,6 +55,7 @@ export declare class PatchWidget extends UI.Widget.Widget {
     });
     performUpdate(): void;
     wasShown(): void;
+    willHide(): void;
 }
 export declare function isAiAssistancePatchingEnabled(): boolean;
 export {};

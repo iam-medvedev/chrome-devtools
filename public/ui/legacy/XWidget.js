@@ -6,7 +6,6 @@ let observer = null;
 const storedScrollPositions = new WeakMap();
 export class XWidget extends XElement {
     visible;
-    shadowRootInternal;
     defaultFocusedElement;
     elementsToRestoreScrollPositionsFor;
     onShownCallback;

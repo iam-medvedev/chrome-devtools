@@ -75,15 +75,6 @@ export default {
   align-items: center;
 }
 
-input[type="radio"] {
-  accent-color: var(--sys-color-primary-bright);
-  color: var(--sys-color-on-primary);
-
-  &:focus {
-    outline-width: 2px;
-  }
-}
-
 .lighthouse-radio-text {
   margin-left: 3px;
 }
