@@ -954,7 +954,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         return parsedSizes;
     }
-    checkSizeProblem(size, type, image, resourceName, imageUrl) {
+    checkSizeProblem(size, image, resourceName, imageUrl) {
         if ('any' in size) {
             return { hasSquareSize: image.naturalWidth === image.naturalHeight };
         }
@@ -1020,7 +1020,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                 imageResourceErrors.push(i18nString(UIStrings.screenshotPixelSize, { url: imageUrl }));
             }
             for (const size of sizes) {
-                const { error, hasSquareSize } = this.checkSizeProblem(size, imageResource['type'], image, resourceName, imageUrl);
+                const { error, hasSquareSize } = this.checkSizeProblem(size, image, resourceName, imageUrl);
                 squareSizedIconAvailable = squareSizedIconAvailable || hasSquareSize;
                 if (error) {
                     imageResourceErrors.push(error);

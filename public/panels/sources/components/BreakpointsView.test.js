@@ -928,7 +928,7 @@ describeWithMockConnection('BreakpointsView', () => {
         const breakpointsRemoved = sinon.stub(controller, 'breakpointsRemoved');
         removeFileBreakpointsButton.click();
         // await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(breakpointsRemoved.calledOnce);
+        sinon.assert.calledOnce(breakpointsRemoved);
         assert.deepEqual(breakpointsRemoved.firstCall.firstArg, [data.groups[0].breakpointItems[0]]);
     });
     it('triggers an event on editing one breakpoint', async () => {
@@ -952,7 +952,7 @@ describeWithMockConnection('BreakpointsView', () => {
         assert.strictEqual(editBreakpointButton.title, 'Edit condition');
     });
     describe('group checkboxes', () => {
-        async function waitForCheckboxToggledEventsWithCheckedUpdate(component, numBreakpointItems, checked) {
+        async function waitForCheckboxToggledEventsWithCheckedUpdate(numBreakpointItems, checked) {
             return await new Promise(resolve => {
                 let numCheckboxToggledEvents = 0;
                 const controller = SourcesComponents.BreakpointsView.BreakpointsSidebarController.instance();
@@ -1014,7 +1014,7 @@ describeWithMockConnection('BreakpointsView', () => {
             const groupCheckbox = firstGroupSummary.querySelector('input');
             assert.instanceOf(groupCheckbox, HTMLInputElement);
             // Wait until we receive all events fired that notify us of disabled breakpoints.
-            const waitForEventPromise = waitForCheckboxToggledEventsWithCheckedUpdate(component, numBreakpointItems, false);
+            const waitForEventPromise = waitForCheckboxToggledEventsWithCheckedUpdate(numBreakpointItems, false);
             groupCheckbox.click();
             await waitForEventPromise;
         });
@@ -1036,7 +1036,7 @@ describeWithMockConnection('BreakpointsView', () => {
             const groupCheckbox = firstGroupSummary.querySelector('input');
             assert.instanceOf(groupCheckbox, HTMLInputElement);
             // Wait until we receive all events fired that notify us of enabled breakpoints.
-            const waitForEventPromise = waitForCheckboxToggledEventsWithCheckedUpdate(component, numBreakpointItems, true);
+            const waitForEventPromise = waitForCheckboxToggledEventsWithCheckedUpdate(numBreakpointItems, true);
             groupCheckbox.click();
             await waitForEventPromise;
         });

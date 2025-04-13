@@ -103,7 +103,7 @@ export declare class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper
     private readonly activeWhenChecked;
     private label;
     private checkboxElement;
-    constructor(className: string, title: Common.UIString.LocalizedString, activeWhenChecked?: boolean, setting?: Common.Settings.Setting<boolean>, jslogContext?: string);
+    constructor(title: Common.UIString.LocalizedString, activeWhenChecked?: boolean, setting?: Common.Settings.Setting<boolean>, jslogContext?: string);
     isActive(): boolean;
     checked(): boolean;
     setChecked(checked: boolean): void;

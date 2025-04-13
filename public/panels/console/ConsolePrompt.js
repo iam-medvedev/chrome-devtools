@@ -42,7 +42,6 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     editor;
     eagerPreviewElement;
     textChangeThrottler;
-    formatter;
     requestPreviewBound;
     requestPreviewCurrent = 0;
     innerPreviewElement;
@@ -85,7 +84,6 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.eagerPreviewElement = document.createElement('div');
         this.eagerPreviewElement.classList.add('console-eager-preview');
         this.textChangeThrottler = new Common.Throttler.Throttler(150);
-        this.formatter = new ObjectUI.RemoteObjectPreviewFormatter.RemoteObjectPreviewFormatter();
         this.requestPreviewBound = this.requestPreview.bind(this);
         this.innerPreviewElement = this.eagerPreviewElement.createChild('div', 'console-eager-inner-preview');
         const previewIcon = new IconButton.Icon.Icon();
@@ -202,9 +200,6 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     }
     clearAutocomplete() {
         CodeMirror.closeCompletion(this.editor.editor);
-    }
-    isCaretAtEndOfPrompt() {
-        return this.editor.state.selection.main.head === this.editor.state.doc.length;
     }
     moveCaretToEndOfPrompt() {
         this.editor.dispatch({

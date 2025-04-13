@@ -138,7 +138,6 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
     searchResults;
     searchRegex;
     loadError;
-    muteChangeEventsForSetContent;
     sourcePosition;
     searchableView;
     editable;
@@ -180,7 +179,6 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.searchResults = [];
         this.searchRegex = null;
         this.loadError = false;
-        this.muteChangeEventsForSetContent = false;
         this.sourcePosition = new UI.Toolbar.ToolbarText();
         this.searchableView = null;
         this.editable = false;
@@ -639,7 +637,6 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         this.textEditor.dispatch({ effects: config.language.reconfigure(langExtension) });
     }
     async setContent(content) {
-        this.muteChangeEventsForSetContent = true;
         const { textEditor } = this;
         const wasLoaded = this.loadedInternal;
         const scrollTop = textEditor.editor.scrollDOM.scrollTop;
@@ -664,7 +661,6 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             this.delayedFindSearchMatches();
             this.delayedFindSearchMatches = null;
         }
-        this.muteChangeEventsForSetContent = false;
     }
     setSearchableView(view) {
         this.searchableView = view;
@@ -780,7 +776,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
             userEvent: 'select.search',
         });
     }
-    replaceSelectionWith(searchConfig, replacement) {
+    replaceSelectionWith(_searchConfig, replacement) {
         const range = this.searchResults[this.currentSearchResultIndex];
         if (!range) {
             return;

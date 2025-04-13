@@ -22,7 +22,7 @@ export default {
 
 .buttons {
   margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8);
-  display:  flex;
+  display: flex;
   justify-content: flex-start;
   gap: var(--sys-size-5);
 }
@@ -30,6 +30,7 @@ export default {
 .main-content {
   color: var(--sys-color-on-surface-subtle);
   margin: 0 var(--sys-size-8);
+  line-height: 18px;
 }
 
 .add-folder-button {
@@ -40,7 +41,7 @@ ul {
   list-style-type: none;
   padding: 0;
   margin: var(--sys-size-6) 0 var(--sys-size-4) 0;
-  max-height: var(--sys-size-23);
+  max-height: var(--sys-size-20);
   overflow-y: auto;
 }
 
@@ -79,6 +80,12 @@ li.selected {
   li.selected, .selected .folder-icon {
     color: var(--app-color-navigation-drawer-label-selected);
   }
+}
+
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /*# sourceURL=${import.meta.resolve('././selectWorkspaceDialog.css')} */

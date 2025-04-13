@@ -10,6 +10,6 @@ export declare class ContextDetailBuilder {
 }
 export declare class ContextSummaryBuilder {
     private readonly fragment;
-    constructor(contextId: string, contextRealtimeData: Protocol.WebAudio.ContextRealtimeData);
+    constructor(contextRealtimeData: Protocol.WebAudio.ContextRealtimeData);
     getFragment(): DocumentFragment;
 }

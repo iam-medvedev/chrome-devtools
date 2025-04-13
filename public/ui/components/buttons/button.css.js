@@ -181,6 +181,10 @@ button {
     background: transparent;
     color: var(--sys-color-primary);
 
+    &.micro {
+      --button-height: var(--sys-size-8);
+    }
+
     devtools-icon {
       color: var(--icon-primary);
     }

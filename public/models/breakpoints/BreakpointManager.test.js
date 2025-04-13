@@ -371,7 +371,7 @@ describeWithMockConnection('BreakpointManager', () => {
         assert.isNull(breakpoint.getLastResolvedState());
         const result = await update;
         // Make sure that no error occurred.
-        assert.isTrue(result === "OK" /* Breakpoints.BreakpointManager.DebuggerUpdateResult.OK */);
+        assert.strictEqual(result, "OK" /* Breakpoints.BreakpointManager.DebuggerUpdateResult.OK */);
         assert.strictEqual(breakpoint.getLastResolvedState()?.[0].lineNumber, 13);
         await breakpoint.remove(false);
         Workspace.Workspace.WorkspaceImpl.instance().removeProject(project);

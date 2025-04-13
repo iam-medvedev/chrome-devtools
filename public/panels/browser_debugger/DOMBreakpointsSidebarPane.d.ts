@@ -9,7 +9,7 @@ export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     heightForItem(_item: SDK.DOMDebuggerModel.DOMBreakpoint): number;
     isItemSelectable(_item: SDK.DOMDebuggerModel.DOMBreakpoint): boolean;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
-    selectedItemChanged(from: SDK.DOMDebuggerModel.DOMBreakpoint | null, to: SDK.DOMDebuggerModel.DOMBreakpoint | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
+    selectedItemChanged(_from: SDK.DOMDebuggerModel.DOMBreakpoint | null, _to: SDK.DOMDebuggerModel.DOMBreakpoint | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
     private breakpointAdded;
     private breakpointToggled;
     private breakpointsRemoved;
@@ -20,5 +20,5 @@ export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements
     update(): void;
 }
 export declare class ContextMenuProvider implements UI.ContextMenu.Provider<SDK.DOMModel.DOMNode> {
-    appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
+    appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
 }

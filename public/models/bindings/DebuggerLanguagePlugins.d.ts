@@ -10,7 +10,7 @@ declare class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl 
     variables: Chrome.DevTools.Variable[];
     stopId: StopId;
     constructor(callFrame: SDK.DebuggerModel.CallFrame, stopId: StopId, plugin: DebuggerLanguagePlugin);
-    doGetProperties(ownProperties: boolean, accessorPropertiesOnly: boolean, _generatePreview: boolean): Promise<SDK.RemoteObject.GetPropertiesResult>;
+    doGetProperties(_ownProperties: boolean, accessorPropertiesOnly: boolean, _generatePreview: boolean): Promise<SDK.RemoteObject.GetPropertiesResult>;
 }
 export declare class SourceScope implements SDK.DebuggerModel.ScopeChainEntry {
     #private;
@@ -39,7 +39,7 @@ export declare class ExtensionRemoteObject extends SDK.RemoteObject.RemoteObject
     get value(): unknown;
     unserializableValue(): string | undefined;
     get description(): string | undefined;
-    set description(description: string | undefined);
+    set description(_description: string | undefined);
     get hasChildren(): boolean;
     get preview(): Protocol.Runtime.ObjectPreview | undefined;
     get className(): string | null;

@@ -32,9 +32,7 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private lastModificationTime;
     private pausedInternal?;
     private switchToPausedTargetTimeout?;
-    private ignoreExecutionLineEvents?;
     private executionLineLocation?;
-    private pauseOnExceptionButton?;
     private sidebarPaneStack?;
     private tabbedLocationHeader?;
     private extensionSidebarPanesContainer?;

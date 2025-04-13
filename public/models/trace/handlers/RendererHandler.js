@@ -140,7 +140,7 @@ function gatherCompositorThreads() {
 export function assignMeta(processes, mainFrameId, rendererProcessesByFrame, threadsInProcess) {
     assignOrigin(processes, rendererProcessesByFrame);
     assignIsMainFrame(processes, mainFrameId, rendererProcessesByFrame);
-    assignThreadName(processes, rendererProcessesByFrame, threadsInProcess);
+    assignThreadName(processes, threadsInProcess);
 }
 /**
  * Assigns origins to all threads in all processes.
@@ -195,7 +195,7 @@ export function assignIsMainFrame(processes, mainFrameId, rendererProcessesByFra
  * Assigns the thread name to all threads in all processes.
  * @see assignMeta
  */
-export function assignThreadName(processes, rendererProcessesByFrame, threadsInProcess) {
+export function assignThreadName(processes, threadsInProcess) {
     for (const [pid, process] of processes) {
         for (const [tid, threadInfo] of threadsInProcess.get(pid) ?? []) {
             const thread = getOrCreateRendererThread(process, tid);

@@ -4,6 +4,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare const Types: {
     Authored: string;
+    AutomaticFileSystem: string;
     Deployed: string;
     Domain: string;
     File: string;
@@ -95,7 +96,7 @@ export declare class NavigatorView extends UI.Widget.VBox implements SDK.TargetM
     private groupingChanged;
     private ignoreListChanged;
     private initGrouping;
-    private resetForTest;
+    protected resetForTest(): void;
     private discardFrame;
     targetAdded(_target: SDK.Target.Target): void;
     targetRemoved(target: SDK.Target.Target): void;
@@ -109,8 +110,7 @@ export declare class NavigatorFolderTreeElement extends UI.TreeOutline.TreeEleme
     node: NavigatorTreeNode;
     private hovered?;
     private isIgnoreListed?;
-    private isFromSourceMap;
-    constructor(navigatorView: NavigatorView, type: string, title: string, hoverCallback?: ((arg0: boolean) => void));
+    constructor(navigatorView: NavigatorView, type: string, title: string, hoverCallback?: ((arg0: boolean) => void), expandable?: boolean);
     onpopulate(): Promise<void>;
     onattach(): void;
     setIgnoreListed(isIgnoreListed: boolean): void;

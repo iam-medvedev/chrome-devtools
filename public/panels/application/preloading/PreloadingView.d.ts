@@ -8,7 +8,6 @@ import type * as PreloadingHelper from './helper/helper.js';
 export declare class PreloadingRuleSetView extends UI.Widget.VBox {
     private model;
     private focusedRuleSetId;
-    private focusedPreloadingAttemptId;
     private readonly warningsContainer;
     private readonly warningsView;
     private readonly hsplit;

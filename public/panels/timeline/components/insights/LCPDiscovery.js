@@ -40,7 +40,9 @@ function getImageData(model) {
 export class LCPDiscovery extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-lcp-discovery`;
     internalName = 'lcp-discovery';
-    hasAskAISupport = true;
+    hasAskAiSupport() {
+        return true;
+    }
     #renderDiscoveryDelay(delay) {
         const timeWrapper = document.createElement('span');
         timeWrapper.classList.add('discovery-time-ms');

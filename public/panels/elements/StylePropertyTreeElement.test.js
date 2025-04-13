@@ -37,7 +37,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         };
         matchedStyles = await getMatchedStylesWithBlankRule(new SDK.CSSModel.CSSModel(createTarget()), undefined, { startLine: 0, startColumn: 0, endLine: 0, endColumn: 1 });
         sinon.stub(matchedStyles, 'availableCSSVariables').returns(Object.keys(mockVariableMap));
-        fakeComputeCSSVariable = sinon.stub(matchedStyles, 'computeCSSVariable').callsFake((style, name) => {
+        fakeComputeCSSVariable = sinon.stub(matchedStyles, 'computeCSSVariable').callsFake((_style, name) => {
             return {
                 value: mockVariableMap[name],
                 declaration: new SDK.CSSMatchedStyles.CSSValueSource(sinon.createStubInstance(SDK.CSSProperty.CSSProperty)),
@@ -214,7 +214,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 const matchedResult = property.parseValue(matchedStyles, new Map());
                 const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting());
                 assert.isTrue(context.nextEvaluation());
-                const { valueElement } = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map()), context);
+                const { valueElement } = Elements.PropertyRenderer.Renderer.renderValueElement(property, matchedResult, Elements.StylePropertyTreeElement.getPropertyRenderers(matchedStyles.nodeStyles()[0], stylesSidebarPane, matchedStyles, null, new Map()), context);
                 const colorSwatch = valueElement.querySelector('devtools-color-swatch');
                 assert.exists(colorSwatch);
                 const setColorTextCall = await spyCall(colorSwatch, 'setColorText');
@@ -392,7 +392,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 ['display', 'inline'],
             ]));
             stylePropertyTreeElement.updateAuthoringHint();
-            assert(!stylePropertyTreeElement.listItemElement.classList.contains('inactive-property'), 'CSS hint was rendered unexpectedly.');
+            assert.isNotOk(stylePropertyTreeElement.listItemElement.classList.contains('inactive-property'), 'CSS hint was rendered unexpectedly.');
         });
     });
     describe('custom-properties', () => {
@@ -638,7 +638,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.exists(angleSwatch);
             angleSwatch.updateAngle({ value: 130, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });
             assert.strictEqual(colorSwatch.getColor()?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(130deg 50% 25%)');
-            assert.isTrue(eventHandler.calledOnce);
+            sinon.assert.calledOnce(eventHandler);
             assert.strictEqual(eventHandler.args[0][0].data.color, colorSwatch.getColor());
         });
         it('renders relative colors', () => {
@@ -673,6 +673,12 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.isOk(colorSwatch);
             assert.isOk(colorSwatch.getColor());
             assert.strictEqual(colorSwatch?.getColor()?.asString("hsl" /* Common.Color.Format.HSL */), 'hsl(240deg 50% 50%)');
+        });
+        it('renders fallbacks correctly when the color fails to parse', () => {
+            const stylePropertyTreeElement = getTreeElement('color', 'lch(50 min(1, 8) 8deg)');
+            stylePropertyTreeElement.updateTitle();
+            const angle = stylePropertyTreeElement.valueElement?.querySelector('devtools-css-angle');
+            assert.exists(angle);
         });
     });
     describe('BezierRenderer', () => {
@@ -819,7 +825,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 .flat();
             {
                 swatches[0].iconElement().click();
-                assert.isTrue(showPopoverStub.calledOnce);
+                sinon.assert.calledOnce(showPopoverStub);
                 assert.instanceOf(showPopoverStub.args[0][0], InlineEditor.CSSShadowEditor.CSSShadowEditor);
                 const editor = showPopoverStub.args[0][0];
                 const text = editorProperties(editor);
@@ -827,7 +833,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             }
             {
                 swatches[1].iconElement().click();
-                assert.isTrue(showPopoverStub.calledTwice);
+                sinon.assert.calledTwice(showPopoverStub);
                 assert.instanceOf(showPopoverStub.args[1][0], InlineEditor.CSSShadowEditor.CSSShadowEditor);
                 const editor = showPopoverStub.args[1][0];
                 const text = editorProperties(editor);
@@ -842,7 +848,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.lengthOf(swatches, 1);
             const showPopoverStub = sinon.stub(stylePropertyTreeElement.parentPane().swatchPopoverHelper(), 'show');
             swatches[0].iconElement().click();
-            assert.isTrue(showPopoverStub.calledOnce);
+            sinon.assert.calledOnce(showPopoverStub);
             const applyStyleTextStub = sinon.stub(stylePropertyTreeElement, 'applyStyleText');
             const button = showPopoverStub.args[0][0].contentElement.querySelector('.shadow-editor-button-right');
             button?.click();
@@ -857,7 +863,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             assert.lengthOf(swatches, 1);
             const showPopoverStub = sinon.stub(stylePropertyTreeElement.parentPane().swatchPopoverHelper(), 'show');
             swatches[0].iconElement().click();
-            assert.isTrue(showPopoverStub.calledOnce);
+            sinon.assert.calledOnce(showPopoverStub);
             const applyStyleTextStub = sinon.stub(stylePropertyTreeElement, 'applyStyleText');
             const inputs = Array.from(showPopoverStub.args[0][0].contentElement.querySelectorAll('.shadow-editor-field'))
                 .map(field => field.querySelector('input'));
@@ -1076,7 +1082,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             await waitForDecorationPromise;
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
             anchorFunctionLinkSwatch.dataForTest().onMouseEnter();
-            assert.isTrue(highlightMock.calledOnce);
+            sinon.assert.calledOnce(highlightMock);
         });
         it('should clear DOM highlight when `onMouseLeave` triggered from `AnchorFunctionLinkSwatch`', async () => {
             const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
@@ -1086,7 +1092,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             await waitForDecorationPromise;
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
             anchorFunctionLinkSwatch.dataForTest().onMouseLeave();
-            assert.isTrue(hideDOMNodeHighlightStub.calledOnce);
+            sinon.assert.calledOnce(hideDOMNodeHighlightStub);
         });
         it('should reveal anchor node when `onLinkActivate` triggered from `AnchorFunctionLinkSwatch`', async () => {
             const waitForDecorationPromise = expectCall(anchorDecoratedForTestStub);
@@ -1096,7 +1102,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             await waitForDecorationPromise;
             const anchorFunctionLinkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-anchor-function-link-swatch');
             anchorFunctionLinkSwatch.dataForTest().onLinkActivate();
-            assert.isTrue(revealStub.calledOnce);
+            sinon.assert.calledOnce(revealStub);
             assert.isTrue(revealStub.calledWith(fakeDOMNode));
         });
     });
@@ -1271,7 +1277,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         });
     });
     describe('CSSWideKeywordRenderer', () => {
-        function mockResolvedKeyword(propertyName, keyword, propertyValue = '') {
+        function mockResolvedKeyword(propertyName, _keyword, propertyValue = '') {
             const originalDeclaration = sinon.createStubInstance(SDK.CSSProperty.CSSProperty);
             sinon.stub(matchedStyles, 'resolveGlobalKeyword')
                 .callsFake((property, keyword) => property.name === propertyName && property.value === keyword ?
@@ -1287,8 +1293,11 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const originalDeclaration = mockResolvedKeyword('width', keyword);
             const stylePropertyTreeElement = getTreeElement(originalDeclaration.name, keyword);
             stylePropertyTreeElement.updateTitle();
-            const linkSwatch = stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch');
+            assert.exists(stylePropertyTreeElement.valueElement);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            const linkSwatch = stylePropertyTreeElement.valueElement.querySelector('devtools-link-swatch');
             assert.isOk(linkSwatch);
+            assert.strictEqual(linkSwatch.innerText, keyword);
             const spy = sinon.spy(stylePropertyTreeElement.parentPane(), 'revealProperty');
             linkSwatch.querySelector('button')?.click();
             assert.isTrue(spy.calledOnceWithExactly(originalDeclaration));
@@ -1346,22 +1355,13 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const addPopoverPromise = Promise.withResolvers();
             sinon.stub(Elements.StylePropertyTreeElement.LengthRenderer.prototype, 'popOverAttachedForTest')
                 .callsFake(() => addPopoverPromise.resolve());
-            const stylePropertyTreeElement = getTreeElement('property', '5px 2em');
+            const stylePropertyTreeElement = getTreeElement('margin', '5px 2em');
             setMockConnectionResponseHandler('CSS.getComputedStyleForNode', () => ({ computedStyle: {} }));
             await stylePropertyTreeElement.onpopulate();
             stylePropertyTreeElement.updateTitle();
             await addPopoverPromise.promise;
             const popover = stylePropertyTreeElement.valueElement?.querySelector('devtools-tooltip');
             assert.strictEqual(popover?.innerText, '15px');
-        });
-        it('passes the property name to evaluations', async () => {
-            const cssModel = stylesSidebarPane.cssModel();
-            assert.exists(cssModel);
-            const resolveValuesStub = sinon.stub(cssModel, 'resolveValues').resolves([]);
-            const stylePropertyTreeElement = getTreeElement('left', '2%');
-            stylePropertyTreeElement.updateTitle();
-            assert.isTrue(resolveValuesStub.calledOnce);
-            assert.strictEqual(resolveValuesStub.args[0][0], 'left');
         });
     });
     describe('MathFunctionRenderer', () => {
@@ -1372,7 +1372,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const strikeOutSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyMathFunction');
             const stylePropertyTreeElement = getTreeElement('width', 'min(5em, 4px, 8pt)');
             stylePropertyTreeElement.updateTitle();
-            assert.isTrue(strikeOutSpy.calledOnce);
+            sinon.assert.calledOnce(strikeOutSpy);
             await strikeOutSpy.returnValues[0];
             const args = stylePropertyTreeElement.valueElement?.querySelectorAll(':scope > span > span');
             assert.lengthOf(args, 3);
@@ -1398,21 +1398,11 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             const evaluationSpy = sinon.spy(Elements.StylePropertyTreeElement.MathFunctionRenderer.prototype, 'applyEvaluation');
             const property = addProperty('width', 'calc(1 + 1)');
             const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, () => { });
-            view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, stylesSidebarPane, matchedStyles, null, new Map()));
-            assert.isTrue(evaluationSpy.calledOnce);
+            view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.ownerStyle, stylesSidebarPane, matchedStyles, null, new Map()));
+            sinon.assert.calledOnce(evaluationSpy);
             const originalText = evaluationSpy.args[0][0].textContent;
             await evaluationSpy.returnValues[0];
             assert.strictEqual(originalText, evaluationSpy.args[0][0].textContent);
-        });
-        it('shows the original text during tracing when evaluation fails', async () => {
-            const cssModel = stylesSidebarPane.cssModel();
-            assert.exists(cssModel);
-            const resolveValuesStub = sinon.stub(cssModel, 'resolveValues').resolves([]);
-            const property = addProperty('width', 'calc(1 + 1)');
-            const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, () => { });
-            view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, stylesSidebarPane, matchedStyles, null, new Map()));
-            assert.isTrue(resolveValuesStub.calledOnce);
-            assert.strictEqual(resolveValuesStub.args[0][0], 'width');
         });
     });
     describe('AutoBaseRenderer', () => {

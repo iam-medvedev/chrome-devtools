@@ -14,7 +14,6 @@ export interface EventProperties {
     duration?: number;
     name: string;
     color?: string;
-    hoverData?: Object | null;
 }
 /**
  * Wrapper class for each event displayed on the timeline.
@@ -29,7 +28,6 @@ export declare class Event {
     title: string;
     private colorInternal;
     private fontColorInternal;
-    private readonly hoverData;
     constructor(timelineData: PerfUI.FlameChart.FlameChartTimelineData, eventHandlers: EventHandlers, eventProperties?: EventProperties | undefined);
     /**
      * Render hovertext into the |htmlElement|

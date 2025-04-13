@@ -308,11 +308,14 @@ class DataGridElement extends HTMLElement {
     #editCallback(node, columnId, valueBeforeEditing, newText, moveDirection) {
         if (node.isCreationNode) {
             this.#usedCreationNode = node;
-            if (moveDirection === 'forward') {
-                const hasNextEditableColumn = this.#columns.slice(this.#columns.findIndex(({ id }) => id === columnId) + 1).some(({ editable }) => editable);
-                if (!hasNextEditableColumn) {
-                    node.deselect();
-                }
+            let hasNextEditableColumn = false;
+            if (moveDirection) {
+                const index = this.#columns.findIndex(({ id }) => id === columnId);
+                const nextColumns = moveDirection === 'forward' ? this.#columns.slice(index + 1) : this.#columns.slice(0, index);
+                hasNextEditableColumn = nextColumns.some(({ editable }) => editable);
+            }
+            if (!hasNextEditableColumn) {
+                node.deselect();
             }
             return;
         }

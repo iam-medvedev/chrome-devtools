@@ -1,11 +1,16 @@
+import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface Folder {
+    name: string;
+    path: string;
+    project?: Workspace.Workspace.Project;
+    automaticFileSystem?: Persistence.AutomaticFileSystemManager.AutomaticFileSystem;
+}
 interface ViewInput {
-    projects: Array<{
-        name: string;
-        path: string;
-    }>;
+    folders: Folder[];
     selectedIndex: number;
+    showAutomaticWorkspaceNudge: boolean;
     onProjectSelected: (index: number) => void;
     onSelectButtonClick: () => void;
     onCancelButtonClick: () => void;

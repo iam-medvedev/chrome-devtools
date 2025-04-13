@@ -5,17 +5,11 @@
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import valueInterpreterDisplayStylesRaw from './valueInterpreterDisplay.css.js';
+import valueInterpreterDisplayStyles from './valueInterpreterDisplay.css.js';
 import { format, getDefaultValueTypeMapping, getPointerAddress, isNumber, isPointer, isValidMode, VALUE_TYPE_MODE_LIST, } from './ValueInterpreterDisplayUtils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const valueInterpreterDisplayStyles = new CSSStyleSheet();
-valueInterpreterDisplayStyles.replaceSync(valueInterpreterDisplayStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an unsigned interpretation of the memory under the Value Interpreter
@@ -72,12 +66,6 @@ export class ValueInterpreterDisplay extends HTMLElement {
     #memoryLength = 0;
     constructor() {
         super();
-        this.#shadow.adoptedStyleSheets = [
-            inspectorCommonStyles,
-        ];
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [inspectorCommonStyles, valueInterpreterDisplayStyles];
     }
     set data(data) {
         this.#buffer = data.buffer;
@@ -97,6 +85,8 @@ export class ValueInterpreterDisplay extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${inspectorCommonStyles.cssText}</style>
+      <style>${valueInterpreterDisplayStyles.cssText}</style>
       <div class="value-types">
         ${SORTED_VALUE_TYPES.map(type => this.#valueTypes.has(type) ? this.#showValue(type) : '')}
       </div>

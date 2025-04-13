@@ -26,8 +26,10 @@ export class RenderBlocking extends BaseInsightComponent {
             overlays: remaining.map(r => this.#createOverlayForRequest(r)),
         };
     }
-    hasAskAISupport = true;
     internalName = 'render-blocking-requests';
+    hasAskAiSupport() {
+        return !!this.model;
+    }
     createOverlays() {
         if (!this.model) {
             return [];

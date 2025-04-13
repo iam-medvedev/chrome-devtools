@@ -40,7 +40,6 @@ export declare const enum Mode {
 }
 export declare class LinearMemoryNavigator extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: LinearMemoryNavigatorData);
 }
 declare global {

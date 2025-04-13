@@ -190,7 +190,7 @@ const AutoDetectIndent = CM.StateField.define({
 });
 function preservedLength(ch) {
     let len = 0;
-    ch.iterGaps((from, to, l) => {
+    ch.iterGaps((_from, _to, l) => {
         len += l;
     });
     return len;

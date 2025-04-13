@@ -73,7 +73,6 @@ class MessageLevelSelector {
     itemMap;
     hiddenLevels;
     bitFieldValue;
-    savedBitFieldValue;
     defaultTitleInternal;
     customTitle;
     allTitle;
@@ -84,7 +83,6 @@ class MessageLevelSelector {
         this.itemMap = new Map();
         this.hiddenLevels = [];
         this.bitFieldValue = 7 /* MessageLevelBitfield.DEFAULT */;
-        this.savedBitFieldValue = 7 /* MessageLevelBitfield.DEFAULT */;
         this.defaultTitleInternal = i18nString(UIStrings.default);
         this.customTitle = i18nString(UIStrings.custom);
         this.allTitle = i18nString(UIStrings.all);

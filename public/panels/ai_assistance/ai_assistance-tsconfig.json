@@ -18,6 +18,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
+    "noUnusedParameters": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/panels/ai_assistance",
     "skipLibCheck": true,
@@ -96,9 +97,6 @@
     },
     {
       "path": "../../ui/components/spinners/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/tooltips/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

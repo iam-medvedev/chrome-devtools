@@ -818,7 +818,7 @@ export class SplitWidgetElement extends WidgetElement {
         });
         return widget;
     }
-    attributeChangedCallback(name, oldValue, newValue) {
+    attributeChangedCallback(name, _oldValue, newValue) {
         const widget = Widget.get(this);
         if (!widget) {
             return;

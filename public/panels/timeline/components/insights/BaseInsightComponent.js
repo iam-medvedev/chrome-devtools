@@ -34,10 +34,22 @@ const UIStrings = {
      */
     estimatedSavingsTimingAndBytes: 'Est savings: {PH1} & {PH2}',
     /**
+     * @description Text to tell the user the estimated time or size savings for this insight that is used for screen readers.
+     * @example {401 ms} PH1
+     * @example {112 kB} PH1
+     */
+    estimatedSavingsAria: 'Estimated savings for this insight: {PH1}',
+    /**
+     * @description Text to tell the user the estimated time and size savings for this insight that is used for screen readers.
+     * @example {401 ms} PH1
+     * @example {112 kB} PH2
+     */
+    estimatedSavingsTimingAndBytesAria: 'Estimated savings for this insight: {PH1} and {PH2}',
+    /**
      * @description Used for screen-readers as a label on the button to expand an insight to view details
      * @example {LCP by phase} PH1
      */
-    viewDetails: 'View details for {PH1}',
+    viewDetails: 'View details for {PH1} insight.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/BaseInsightComponent.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -46,11 +58,6 @@ export class BaseInsightComponent extends HTMLElement {
     // about litTagName. Every child should overwrite this.
     static litTagName = Lit.StaticHtml.literal ``;
     shadow = this.attachShadow({ mode: 'open' });
-    // Flipped to true for Insights that have support for the "Ask AI" Insights
-    // experience. The "Ask AI" button will only be shown for an Insight if this
-    // is true and if the feature has been enabled by the user and they meet the
-    // requirements to use AI.
-    hasAskAISupport = false;
     // This flag tracks if the Insights AI feature is enabled within Chrome for
     // the active user.
     #insightsAskAiEnabled = false;
@@ -73,6 +80,13 @@ export class BaseInsightComponent extends HTMLElement {
     #initialOverlays = null;
     scheduleRender() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+    }
+    // Insights that do support the AI feature can override this to return true.
+    // The "Ask AI" button will only be shown for an Insight if this
+    // is true and if the feature has been enabled by the user and they meet the
+    // requirements to use AI.
+    hasAskAiSupport() {
+        return false;
     }
     connectedCallback() {
         this.shadow.adoptedStyleSheets.push(baseInsightComponentStyles);
@@ -196,7 +210,7 @@ export class BaseInsightComponent extends HTMLElement {
     getEstimatedSavingsBytes() {
         return null;
     }
-    #getEstimatedSavingsString() {
+    #getEstimatedSavingsTextParts() {
         const savingsTime = this.getEstimatedSavingsTime();
         const savingsBytes = this.getEstimatedSavingsBytes();
         let timeString, bytesString;
@@ -206,6 +220,33 @@ export class BaseInsightComponent extends HTMLElement {
         if (savingsBytes) {
             bytesString = i18n.ByteUtilities.bytesToString(savingsBytes);
         }
+        return {
+            timeString,
+            bytesString,
+        };
+    }
+    #getEstimatedSavingsAriaLabel() {
+        const { bytesString, timeString } = this.#getEstimatedSavingsTextParts();
+        if (timeString && bytesString) {
+            return i18nString(UIStrings.estimatedSavingsTimingAndBytesAria, {
+                PH1: timeString,
+                PH2: bytesString,
+            });
+        }
+        if (timeString) {
+            return i18nString(UIStrings.estimatedSavingsAria, {
+                PH1: timeString,
+            });
+        }
+        if (bytesString) {
+            return i18nString(UIStrings.estimatedSavingsAria, {
+                PH1: bytesString,
+            });
+        }
+        return null;
+    }
+    #getEstimatedSavingsString() {
+        const { bytesString, timeString } = this.#getEstimatedSavingsTextParts();
         if (timeString && bytesString) {
             return i18nString(UIStrings.estimatedSavingsTimingAndBytes, {
                 PH1: timeString,
@@ -255,12 +296,13 @@ export class BaseInsightComponent extends HTMLElement {
     #canShowAskAI() {
         const aiDisabledByEnterprisePolicy = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.DISABLE;
-        return !aiDisabledByEnterprisePolicy && this.#insightsAskAiEnabled && this.hasAskAISupport;
+        return !aiDisabledByEnterprisePolicy && this.#insightsAskAiEnabled && this.hasAskAiSupport();
     }
     #renderInsightContent(insightModel) {
         if (!this.#selected) {
             return Lit.nothing;
         }
+        const ariaLabel = `Ask AI about ${insightModel.title} insight`;
         // Only render the insight body content if it is selected.
         // To avoid re-rendering triggered from elsewhere.
         const content = this.renderContent();
@@ -277,6 +319,7 @@ export class BaseInsightComponent extends HTMLElement {
               data-insights-ask-ai
               jslog=${VisualLogging.action(`timeline.insight-ask-ai.${this.internalName}`).track({ click: true })}
               @click=${this.#askAIButtonClick}
+              aria-label=${ariaLabel}
             >Ask AI</devtools-button>
           </div>
         ` : Lit.nothing}
@@ -293,6 +336,12 @@ export class BaseInsightComponent extends HTMLElement {
             closed: !this.#selected,
         });
         const estimatedSavingsString = this.#getEstimatedSavingsString();
+        const estimatedSavingsAriaLabel = this.#getEstimatedSavingsAriaLabel();
+        let ariaLabel = `${i18nString(UIStrings.viewDetails, { PH1: this.#model.title })}`;
+        if (estimatedSavingsAriaLabel) {
+            // space prefix is deliberate to add a gap after the view details text
+            ariaLabel += ` ${estimatedSavingsAriaLabel}`;
+        }
         // clang-format off
         const output = html `
       <div class=${containerClasses}>
@@ -302,7 +351,7 @@ export class BaseInsightComponent extends HTMLElement {
           tabIndex="0"
           role="button"
           aria-expanded=${this.#selected}
-          aria-label=${i18nString(UIStrings.viewDetails, { PH1: this.#model.title })}
+          aria-label=${ariaLabel}
         >
           ${this.#renderHoverIcon(this.#selected)}
           <h3 class="insight-title">${this.#model?.title}</h3>

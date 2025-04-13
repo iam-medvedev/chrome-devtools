@@ -12,6 +12,8 @@ export declare class SidebarSingleInsightSet extends HTMLElement {
     #private;
     set data(data: SidebarSingleInsightSetData);
     connectedCallback(): void;
+    disconnectedCallback(): void;
+    highlightActiveInsight(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -119,7 +119,7 @@ describeWithMockConnection('StorageBucketsModel', () => {
                 getError: () => undefined,
             });
             storageBucketsModel.enable();
-            assert.isTrue(setStorageBucketTrackingSpy.notCalled);
+            sinon.assert.notCalled(setStorageBucketTrackingSpy);
             storageKeyManager.updateStorageKeys(new Set([storageKey]));
             assert.isTrue(setStorageBucketTrackingSpy.calledOnceWithExactly({ storageKey, enable: true }));
         });
@@ -131,7 +131,7 @@ describeWithMockConnection('StorageBucketsModel', () => {
             storageKeyManager.updateStorageKeys(new Set(storageKeys));
             storageBucketsModel.enable();
             await listener.waitForBucketEvents("BucketAdded" /* BucketEvents.BUCKET_ADDED */, bucketsForStorageKeyCount);
-            assert.isTrue(listener.eventCount("BucketAdded" /* BucketEvents.BUCKET_ADDED */) === bucketsForStorageKeyCount);
+            assert.strictEqual(listener.eventCount("BucketAdded" /* BucketEvents.BUCKET_ADDED */), bucketsForStorageKeyCount);
             assert.deepEqual(getBucketsForStorageKeys(...storageKeys), listener.bucketInfos("BucketAdded" /* BucketEvents.BUCKET_ADDED */));
         });
     });
@@ -142,10 +142,10 @@ describeWithMockConnection('StorageBucketsModel', () => {
                 getError: () => undefined,
             });
             storageBucketsModel.enable();
-            assert.isTrue(setStorageBucketTrackingSpy.notCalled);
+            sinon.assert.notCalled(setStorageBucketTrackingSpy);
             storageKeyManager.updateStorageKeys(new Set([storageKey]));
             storageKeyManager.updateStorageKeys(new Set([]));
-            assert.isTrue(setStorageBucketTrackingSpy.callCount === 2);
+            sinon.assert.callCount(setStorageBucketTrackingSpy, 2);
             assert.isTrue(setStorageBucketTrackingSpy.secondCall.calledWithExactly({ storageKey, enable: false }));
         });
         it('removes all buckets for removed storage key', async () => {
@@ -158,7 +158,7 @@ describeWithMockConnection('StorageBucketsModel', () => {
             const removedStorageKey = storageKeys.pop();
             storageKeyManager.updateStorageKeys(new Set(storageKeys));
             await listener.waitForBucketEvents("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */, 2);
-            assert.isTrue(listener.eventCount("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */) === 2);
+            assert.strictEqual(listener.eventCount("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */), 2);
             assert.deepEqual(getBucketsForStorageKeys(removedStorageKey), listener.bucketInfos("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */));
         });
     });
@@ -181,12 +181,12 @@ describeWithMockConnection('StorageBucketsModel', () => {
             storageBucketsModel.enable();
             storageKeyManager.updateStorageKeys(new Set(storageKeys));
             await listener.waitForBucketEvents("BucketAdded" /* BucketEvents.BUCKET_ADDED */, 3);
-            assert.isTrue(listener.eventCount("BucketAdded" /* BucketEvents.BUCKET_ADDED */) === 3);
+            assert.strictEqual(listener.eventCount("BucketAdded" /* BucketEvents.BUCKET_ADDED */), 3);
             const expectedBuckets = getBucketsForStorageKeys(...storageKeys);
             assert.deepEqual(expectedBuckets, listener.bucketInfos("BucketAdded" /* BucketEvents.BUCKET_ADDED */));
             storageBucketsModel.storageBucketCreatedOrUpdated({ bucketInfo: STORAGE_BUCKET_INFO_TO_CREATE });
             await listener.waitForBucketEvents("BucketAdded" /* BucketEvents.BUCKET_ADDED */, 4);
-            assert.isTrue(listener.eventCount("BucketAdded" /* BucketEvents.BUCKET_ADDED */) === 4);
+            assert.strictEqual(listener.eventCount("BucketAdded" /* BucketEvents.BUCKET_ADDED */), 4);
             expectedBuckets.push(STORAGE_BUCKET_INFO_TO_CREATE);
             assert.deepEqual(expectedBuckets, listener.bucketInfos("BucketAdded" /* BucketEvents.BUCKET_ADDED */));
         });
@@ -198,10 +198,10 @@ describeWithMockConnection('StorageBucketsModel', () => {
             storageBucketsModel.enable();
             storageKeyManager.updateStorageKeys(new Set(storageKeys));
             await listener.waitForBucketEvents("BucketAdded" /* BucketEvents.BUCKET_ADDED */, 3);
-            assert.isTrue(listener.eventCount("BucketChanged" /* BucketEvents.BUCKET_CHANGED */) === 0);
+            assert.strictEqual(listener.eventCount("BucketChanged" /* BucketEvents.BUCKET_CHANGED */), 0);
             storageBucketsModel.storageBucketCreatedOrUpdated({ bucketInfo: STORAGE_BUCKET_INFO_UPDATED });
             await listener.waitForBucketEvents("BucketChanged" /* BucketEvents.BUCKET_CHANGED */, 1);
-            assert.isTrue(listener.eventCount("BucketChanged" /* BucketEvents.BUCKET_CHANGED */) === 1);
+            assert.strictEqual(listener.eventCount("BucketChanged" /* BucketEvents.BUCKET_CHANGED */), 1);
             assert.deepEqual(listener.bucketInfos("BucketChanged" /* BucketEvents.BUCKET_CHANGED */)[0], STORAGE_BUCKET_INFO_UPDATED);
         });
         it('notifies when a bucket is deleted', async () => {
@@ -212,10 +212,10 @@ describeWithMockConnection('StorageBucketsModel', () => {
             storageBucketsModel.enable();
             storageKeyManager.updateStorageKeys(new Set(storageKeys));
             await listener.waitForBucketEvents("BucketAdded" /* BucketEvents.BUCKET_ADDED */, 3);
-            assert.isTrue(listener.eventCount("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */) === 0);
+            assert.strictEqual(listener.eventCount("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */), 0);
             storageBucketsModel.storageBucketDeleted({ bucketId: STORAGE_BUCKET_INFO_REMOVED.id });
             await listener.waitForBucketEvents("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */, 1);
-            assert.isTrue(listener.eventCount("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */) === 1);
+            assert.strictEqual(listener.eventCount("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */), 1);
             assert.deepEqual(listener.bucketInfos("BucketRemoved" /* BucketEvents.BUCKET_REMOVED */)[0], STORAGE_BUCKET_INFO_REMOVED);
         });
     });

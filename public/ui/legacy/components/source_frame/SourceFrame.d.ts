@@ -46,7 +46,6 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     private searchResults;
     private searchRegex;
     private loadError;
-    private muteChangeEventsForSetContent;
     private readonly sourcePosition;
     private searchableView;
     private editable;
@@ -125,7 +124,7 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     supportsCaseSensitiveSearch(): boolean;
     supportsRegexSearch(): boolean;
     jumpToSearchResult(index: number): void;
-    replaceSelectionWith(searchConfig: UI.SearchableView.SearchConfig, replacement: string): void;
+    replaceSelectionWith(_searchConfig: UI.SearchableView.SearchConfig, replacement: string): void;
     replaceAllWith(searchConfig: UI.SearchableView.SearchConfig, replacement: string): void;
     private collectRegexMatches;
     canEditSource(): boolean;

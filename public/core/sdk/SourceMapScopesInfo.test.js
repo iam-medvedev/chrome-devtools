@@ -477,7 +477,7 @@ describe('SourceMapScopesInfo', () => {
             assert.strictEqual(properties[1].name, 'barVariable');
             assert.isUndefined(properties[1].value);
             assert.isUndefined(properties[1].getter);
-            assert.isTrue(callFrame.evaluate.calledOnce);
+            sinon.assert.calledOnce(callFrame.evaluate);
         });
         it('works when generated ranges from outer scopes overlay ranges from inner scopes', async () => {
             // This happens when expressions (but not full functions) are inlined.

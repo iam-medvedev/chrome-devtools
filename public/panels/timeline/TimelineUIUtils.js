@@ -1005,7 +1005,7 @@ export class TimelineUIUtils {
                 let previewElement = null;
                 const url = Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace);
                 if (url) {
-                    previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(maybeTarget, url, false, {
+                    previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(url, false, {
                         imageAltText: LegacyComponents.ImagePreview.ImagePreview.defaultAltTextForImageURL(url),
                         precomputedFeatures: undefined,
                         align: "start" /* LegacyComponents.ImagePreview.Align.START */,
@@ -1909,7 +1909,7 @@ export class TimelineUIUtils {
         element.classList.add('hbox');
         const pieChart = new PerfUI.PieChart.PieChart();
         const slices = [];
-        function appendLegendRow(name, title, value, color) {
+        function appendLegendRow(title, value, color) {
             if (!value) {
                 return;
             }
@@ -1919,13 +1919,13 @@ export class TimelineUIUtils {
         if (selfCategory) {
             const selfTimeMilli = Trace.Helpers.Timing.microToMilli(selfTime || 0);
             if (selfTime) {
-                appendLegendRow(selfCategory.name, i18nString(UIStrings.sSelf, { PH1: selfCategory.title }), selfTimeMilli, selfCategory.getCSSValue());
+                appendLegendRow(i18nString(UIStrings.sSelf, { PH1: selfCategory.title }), selfTimeMilli, selfCategory.getCSSValue());
             }
             // Children of the same category.
             const categoryTime = aggregatedStats[selfCategory.name];
             const value = categoryTime - (selfTimeMilli || 0);
             if (value > 0) {
-                appendLegendRow(selfCategory.name, i18nString(UIStrings.sChildren, { PH1: selfCategory.title }), value, selfCategory.getCSSValue());
+                appendLegendRow(i18nString(UIStrings.sChildren, { PH1: selfCategory.title }), value, selfCategory.getCSSValue());
             }
         }
         // Add other categories.
@@ -1937,7 +1937,7 @@ export class TimelineUIUtils {
                 // self and children times).
                 continue;
             }
-            appendLegendRow(category.name, category.title, aggregatedStats[category.name], category.getCSSValue());
+            appendLegendRow(category.title, aggregatedStats[category.name], category.getCSSValue());
         }
         pieChart.data = {
             chartName: i18nString(UIStrings.timeSpentInRendering),

@@ -8,14 +8,12 @@ export declare class NetworkPersistenceManager extends Common.ObjectWrapper.Obje
     private bindings;
     private readonly originalResponseContentPromises;
     private savingForOverrides;
-    private readonly savingSymbol;
     private enabledSetting;
     private readonly workspace;
     private readonly networkUISourceCodeForEncodedPath;
     private readonly interceptionHandlerBound;
     private readonly updateInterceptionThrottler;
     private projectInternal;
-    private readonly activeProject;
     private activeInternal;
     private enabled;
     private eventDescriptors;

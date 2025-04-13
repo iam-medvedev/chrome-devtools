@@ -138,13 +138,12 @@ export declare function createRadioButton(name: string, title: string, jslogCont
 export declare function createSlider(min: number, max: number, tabIndex: number): HTMLInputElement;
 export declare function setTitle(element: HTMLElement, title: string): void;
 export declare class CheckboxLabel extends HTMLElement {
-    private readonly shadowRootInternal;
+    #private;
     checkboxElement: HTMLInputElement;
-    textElement: HTMLElement;
     constructor();
     static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
     /** Only to be used when the checkbox label is 'generated' (a regex, a className, etc). Most checkboxes should be create()'d with UIStrings */
-    static createWithStringLiteral(title?: string, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
+    static createWithStringLiteral(title?: string, checked?: boolean, jslogContext?: string, small?: boolean): CheckboxLabel;
     private static lastId;
 }
 export declare class DevToolsIconLabel extends HTMLElement {

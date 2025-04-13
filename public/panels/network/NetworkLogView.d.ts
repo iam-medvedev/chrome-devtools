@@ -227,7 +227,6 @@ export declare class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWr
     private networkShowBlockedCookiesOnlySetting;
     private networkOnlyBlockedRequestsSetting;
     private networkOnlyThirdPartySetting;
-    private contextMenu?;
     private activeFiltersCount;
     private activeFiltersCountAdorner;
     constructor();

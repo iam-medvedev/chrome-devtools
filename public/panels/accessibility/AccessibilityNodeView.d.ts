@@ -57,11 +57,10 @@ export declare class AXRelatedNodeSourceTreeElement extends UI.TreeOutline.TreeE
 export declare class AXRelatedNodeElement {
     private readonly deferredNode;
     private readonly idref;
-    private readonly value;
     constructor(node: {
         deferredNode?: SDK.DOMModel.DeferredDOMNode;
         idref?: string;
-    }, value?: Protocol.Accessibility.AXRelatedNode);
+    });
     render(): Element;
     /**
      * Attempts to cause the node referred to by the related node to be selected in the tree.

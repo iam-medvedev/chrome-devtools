@@ -72,6 +72,9 @@ export class TreeOutline extends HTMLElement {
         return ['nowrap', 'toplevelbordercolor'];
     }
     attributeChangedCallback(name, oldValue, newValue) {
+        if (oldValue === newValue) {
+            return;
+        }
         switch (name) {
             case 'nowrap': {
                 this.#setNodeKeyNoWrapCSSVariable(newValue);

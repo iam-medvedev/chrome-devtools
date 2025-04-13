@@ -10,7 +10,7 @@ import * as SDK from '../../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import preloadingGridStyles from './preloadingGrid.css.js';
-import { capitalizedAction, composedStatus, ruleSetLocationShort } from './PreloadingString.js';
+import { capitalizedAction, composedStatus, ruleSetTagOrLocationShort } from './PreloadingString.js';
 const { PreloadingStatus } = SDK.PreloadingModel;
 const UIStrings = {
     /**
@@ -73,7 +73,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
             return html `<tr data-id=${row.id}>
                 <td title=${attempt.key.url}>${this.#urlShort(row, securityOrigin)}</td>
                 <td>${capitalizedAction(attempt.action)}</td>
-                <td>${row.ruleSets.length === 0 ? '' : ruleSetLocationShort(row.ruleSets[0], pageURL)}</td>
+                <td>${row.ruleSets.length === 0 ? '' : ruleSetTagOrLocationShort(row.ruleSets[0], pageURL)}</td>
                 <td>
                   <div style=${styleMap({ color: hasWarning ? 'var(--sys-color-orange-bright)'
                     : hasError ? 'var(--sys-color-error)'

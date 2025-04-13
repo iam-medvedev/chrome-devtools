@@ -24,7 +24,6 @@ export interface LinearMemoryValueInterpreterData {
 }
 export declare class LinearMemoryValueInterpreter extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: LinearMemoryValueInterpreterData);
 }
 declare global {

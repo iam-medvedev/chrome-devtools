@@ -545,9 +545,6 @@ export class DebuggerPlugin extends Plugin {
         }
         return true;
     }
-    isVariableIdentifier(tokenType) {
-        return tokenType === 'VariableName' || tokenType === 'VariableDefinition';
-    }
     isIdentifier(tokenType) {
         return tokenType === 'VariableName' || tokenType === 'VariableDefinition' || tokenType === 'PropertyName' ||
             tokenType === 'PropertyDefinition';

@@ -18,6 +18,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
+    "noUnusedParameters": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/models/persistence",
     "skipLibCheck": true,
@@ -31,6 +32,7 @@
   "files": [
     "../../../../../../front_end/models/persistence/Automapping.ts",
     "../../../../../../front_end/models/persistence/AutomaticFileSystemManager.ts",
+    "../../../../../../front_end/models/persistence/AutomaticFileSystemWorkspaceBinding.ts",
     "../../../../../../front_end/models/persistence/EditFileSystemView.ts",
     "../../../../../../front_end/models/persistence/FileSystemWorkspaceBinding.ts",
     "../../../../../../front_end/models/persistence/IsolatedFileSystem.ts",

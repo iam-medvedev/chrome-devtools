@@ -15,7 +15,7 @@ export declare function desiredLuminance(luminance: number, contrast: number, li
  * Approach a value of the given component of `candidateHSVA` such that the
  * calculated luminance of `candidateHSVA` approximates `desiredLuminance`.
  */
-export declare function approachColorValue(candidateHSVA: Color4D, bgRGBA: Color4D, index: number, desiredLuminance: number, candidateLuminance: (arg0: Color4D) => number): number | null;
+export declare function approachColorValue(candidateHSVA: Color4D, index: number, desiredLuminance: number, candidateLuminance: (arg0: Color4D) => number): number | null;
 export declare function findFgColorForContrast(fgColor: Legacy, bgColor: Legacy, requiredContrast: number): Legacy | null;
 export declare function findFgColorForContrastAPCA(fgColor: Legacy, bgColor: Legacy, requiredContrast: number): Legacy | null;
 type ColorParameterSpec = [string, string, string, string | undefined];

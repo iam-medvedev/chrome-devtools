@@ -41,7 +41,7 @@ describeWithEnvironment('CodeBlock', () => {
         component.code = 'test';
         renderElementIntoDOM(component);
         const notice = component.shadowRoot.querySelector('.notice');
-        assert(notice === null, '.notice was found');
+        assert.isNull(notice, '.notice was found');
     });
     it('renders legal notice if configured', () => {
         const component = new MarkdownView.CodeBlock.CodeBlock();

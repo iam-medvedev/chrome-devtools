@@ -37,6 +37,7 @@ export var projectTypes;
     projectTypes["Inspector"] = "inspector";
     projectTypes["Network"] = "network";
     projectTypes["FileSystem"] = "filesystem";
+    projectTypes["ConnectableFileSystem"] = "connectablefilesystem";
     projectTypes["ContentScripts"] = "contentscripts";
     projectTypes["Service"] = "service";
 })(projectTypes || (projectTypes = {}));
@@ -188,6 +189,10 @@ export class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper {
     }
     project(projectId) {
         return this.projectsInternal.get(projectId) || null;
+    }
+    projectForFileSystemRoot(root) {
+        const projectId = Common.ParsedURL.ParsedURL.rawPathToUrlString(root);
+        return this.project(projectId);
     }
     projects() {
         return [...this.projectsInternal.values()];

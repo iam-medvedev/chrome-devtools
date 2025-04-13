@@ -67,5 +67,4 @@ export declare class LayerTreeBase {
         width: number;
         height: number;
     } | undefined;
-    private nodeForId;
 }

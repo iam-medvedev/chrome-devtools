@@ -18,14 +18,12 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
     bindings;
     originalResponseContentPromises;
     savingForOverrides;
-    savingSymbol;
     enabledSetting;
     workspace;
     networkUISourceCodeForEncodedPath;
     interceptionHandlerBound;
     updateInterceptionThrottler;
     projectInternal;
-    activeProject;
     activeInternal;
     enabled;
     eventDescriptors;
@@ -38,7 +36,6 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         this.bindings = new WeakMap();
         this.originalResponseContentPromises = new WeakMap();
         this.savingForOverrides = new WeakSet();
-        this.savingSymbol = Symbol('SavingForOverrides');
         this.enabledSetting = Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled');
         this.enabledSetting.addChangeListener(this.enabledChanged, this);
         this.workspace = workspace;
@@ -48,7 +45,6 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         this.#eventDispatchThrottler = new Common.Throttler.Throttler(50);
         this.#headerOverridesForEventDispatch = new Set();
         this.projectInternal = null;
-        this.activeProject = null;
         this.activeInternal = false;
         this.enabled = false;
         this.workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, event => {

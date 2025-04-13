@@ -45,6 +45,7 @@ export declare enum projectTypes {
     Inspector = "inspector",
     Network = "network",
     FileSystem = "filesystem",
+    ConnectableFileSystem = "connectablefilesystem",
     ContentScripts = "contentscripts",
     Service = "service"
 }
@@ -101,6 +102,7 @@ export declare class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper<Ev
     addProject(project: Project): void;
     removeProject(project: Project): void;
     project(projectId: string): Project | null;
+    projectForFileSystemRoot(root: Platform.DevToolsPath.RawPathString): Project | null;
     projects(): Project[];
     projectsForType(type: string): Project[];
     uiSourceCodes(): UISourceCode[];

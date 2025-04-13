@@ -49,7 +49,6 @@ export declare class DebuggerPlugin extends Plugin {
     private didDivergeFromVM;
     private setMuted;
     private consistentScripts;
-    private isVariableIdentifier;
     private isIdentifier;
     private getPopoverRequest;
     private onEditorUpdate;

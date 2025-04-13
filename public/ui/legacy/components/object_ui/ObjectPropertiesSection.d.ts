@@ -14,9 +14,9 @@ export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineI
     static compareProperties(propertyA: SDK.RemoteObject.RemoteObjectProperty, propertyB: SDK.RemoteObject.RemoteObjectProperty): number;
     static createNameElement(name: string | null, isPrivate?: boolean): Element;
     static valueElementForFunctionDescription(description?: string, includePreview?: boolean, defaultName?: string): Element;
-    static createPropertyValueWithCustomSupport(value: SDK.RemoteObject.RemoteObject, wasThrown: boolean, showPreview: boolean, parentElement?: Element, linkifier?: Components.Linkifier.Linkifier, isSyntheticProperty?: boolean, variableName?: string): ObjectPropertyValue;
+    static createPropertyValueWithCustomSupport(value: SDK.RemoteObject.RemoteObject, wasThrown: boolean, showPreview: boolean, linkifier?: Components.Linkifier.Linkifier, isSyntheticProperty?: boolean, variableName?: string): ObjectPropertyValue;
     static appendMemoryIcon(element: Element, object: SDK.RemoteObject.RemoteObject, expression?: string): void;
-    static createPropertyValue(value: SDK.RemoteObject.RemoteObject, wasThrown: boolean, showPreview: boolean, parentElement?: Element, linkifier?: Components.Linkifier.Linkifier, isSyntheticProperty?: boolean, variableName?: string): ObjectPropertyValue;
+    static createPropertyValue(value: SDK.RemoteObject.RemoteObject, wasThrown: boolean, showPreview: boolean, linkifier?: Components.Linkifier.Linkifier, isSyntheticProperty?: boolean, variableName?: string): ObjectPropertyValue;
     static formatObjectAsFunction(func: SDK.RemoteObject.RemoteObject, element: Element, linkify: boolean, includePreview?: boolean): Promise<void>;
     static isDisplayableProperty(property: SDK.RemoteObject.RemoteObjectProperty, parentProperty?: SDK.RemoteObject.RemoteObjectProperty): boolean;
     skipProto(): void;
@@ -28,8 +28,7 @@ export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineI
     titleLessMode(): void;
 }
 export declare class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
-    private readonly editable;
-    constructor(options?: TreeOutlineOptions | null);
+    constructor();
 }
 export declare const enum ObjectPropertiesMode {
     ALL = 0,// All properties, including prototype properties
@@ -147,7 +146,4 @@ export declare class ExpandableTextPropertyValue extends ObjectPropertyValue {
     appendApplicableItems(_event: Event, contextMenu: UI.ContextMenu.ContextMenu, _object: Object): void;
     private expandText;
     private copyText;
-}
-export interface TreeOutlineOptions {
-    readOnly?: boolean;
 }

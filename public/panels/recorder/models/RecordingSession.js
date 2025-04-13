@@ -466,7 +466,7 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
     #receiveTargetCreated(target, event) {
         void this.#handleEvent({ type: 'targetCreated', event, target });
     }
-    #receiveTargetClosed(eventTarget, event) {
+    #receiveTargetClosed(_eventTarget, event) {
         // TODO(alexrudenko): target here appears to be the parent target of the target that is closed.
         // Therefore, we need to find the real target via the targets map.
         const childTarget = this.#targets.get(event.data);

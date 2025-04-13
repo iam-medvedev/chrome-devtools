@@ -62,6 +62,14 @@ const UIStrings = {
      *@description Text informing the user that AI assistance is not available in Incognito mode or Guest mode.
      */
     notAvailableInIncognitoMode: 'AI assistance is not available in Incognito mode or Guest mode',
+    /**
+     *@description Label added to the text input to describe the context for screen readers. Not shown visibly on screen.
+     */
+    inputTextAriraDescription: 'You can also use one of the suggested prompts above to start your conversation',
+    /**
+     *@description Label added to the button that reveals the selected context item in DevTools
+     */
+    revealContextDescription: 'Reveal the selected context item in DevTools',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -225,6 +233,13 @@ export class ChatView extends HTMLElement {
     }
     disconnectedCallback() {
         this.#messagesContainerResizeObserver.disconnect();
+    }
+    clearTextInput() {
+        const textArea = this.#shadow.querySelector('.chat-input');
+        if (!textArea) {
+            return;
+        }
+        textArea.value = '';
     }
     focusTextInput() {
         const textArea = this.#shadow.querySelector('.chat-input');
@@ -715,6 +730,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
       tabindex=${hasPickerBehavior ? '-1' : '0'}
       @click=${onContextClick}
       @keydown=${handleKeyDown}
+      aria-label=${i18nString(UIStrings.revealContextDescription)}
     >
       ${icon}${selectedContext?.getTitle() ?? html `<span>${lockedString(UIStringsNotTranslate.noElementSelected)}</span>`}
     </div>
@@ -943,6 +959,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
         @input=${(event) => onTextInputChange(event.target.value)}
         placeholder=${inputPlaceholder}
         jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}
+        aria-description=${i18nString(UIStrings.inputTextAriraDescription)}
       ></textarea>
       <div class="chat-input-buttons">
         ${renderTakeScreenshotButton({

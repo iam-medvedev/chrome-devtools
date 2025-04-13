@@ -107,16 +107,15 @@ const UIStrings = {
      */
     saveAs: 'Save as...',
     /**
-     * @description Text in Workspaces tab in the Sources panel when an automatic
-     *              workspace folder is detected.
-     * @example {/path/to/foo} PH1
+     * @description Message shown in the Workspace tab of the Sources panel to nudge
+     *              developers into utilizing the Automatic Workspace Folders feature
+     *              in Chrome DevTools by setting up a `com.chrome.devtools.json`
+     *              file / endpoint in their project. This nudge is only shown when
+     *              the feature is enabled and there's no automatic workspace folder
+     *              detected.
+     * @example {com.chrome.devtools.json} PH1
      */
-    automaticWorkspaceFolderDetected: 'Workspace folder {PH1} detected',
-    /**
-     * @description Button description in Workspaces tab in the Sources panel
-     *              to connect to an automatic workspace folder.
-     */
-    automaticWorkspaceFolderConnect: 'Connect',
+    automaticWorkspaceNudge: 'Use {PH1} to automatically connect your project folder',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesNavigator.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -179,14 +178,19 @@ export class NetworkNavigatorView extends NavigatorView {
 }
 export class FilesNavigatorView extends NavigatorView {
     #automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
-    #infobar = null;
     #eventListeners = [];
+    #automaticFileSystemNudge;
     constructor() {
         super('navigator-files');
         this.registerRequiredCSS(sourcesNavigatorStyles);
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWorkspace), i18nString(UIStrings.explainWorkspace));
         this.setPlaceholder(placeholder);
         placeholder.appendLink('https://developer.chrome.com/docs/devtools/workspaces/');
+        const link = UI.XLink.XLink.create('https://goo.gle/devtools-automatic-workspace-folders', 'com.chrome.devtools.json');
+        this.#automaticFileSystemNudge =
+            i18n.i18n.getFormatLocalizedString(str_, UIStrings.automaticWorkspaceNudge, { PH1: link });
+        this.#automaticFileSystemNudge.classList.add('automatic-file-system-nudge');
+        this.contentElement.insertBefore(this.#automaticFileSystemNudge, this.contentElement.firstChild);
         const toolbar = document.createElement('devtools-toolbar');
         toolbar.classList.add('navigator-toolbar');
         void toolbar.appendItemsAtLocation('files-navigator-toolbar').then(() => {
@@ -199,6 +203,7 @@ export class FilesNavigatorView extends NavigatorView {
         super.wasShown();
         this.#eventListeners = [
             this.#automaticFileSystemManager.addEventListener("AutomaticFileSystemChanged" /* Persistence.AutomaticFileSystemManager.Events.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#automaticFileSystemChanged, this),
+            this.#automaticFileSystemManager.addEventListener("AvailabilityChanged" /* Persistence.AutomaticFileSystemManager.Events.AVAILABILITY_CHANGED */, this.#availabilityChanged, this),
         ];
         this.#automaticFileSystemChanged({ data: this.#automaticFileSystemManager.automaticFileSystem });
     }
@@ -212,6 +217,9 @@ export class FilesNavigatorView extends NavigatorView {
         super.sourceSelected(uiSourceCode, focusSource);
     }
     acceptProject(project) {
+        if (project.type() === Workspace.Workspace.projectTypes.ConnectableFileSystem) {
+            return true;
+        }
         return project.type() === Workspace.Workspace.projectTypes.FileSystem &&
             Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== 'overrides' &&
             !Snippets.ScriptSnippetFileSystem.isSnippetsProject(project);
@@ -221,24 +229,13 @@ export class FilesNavigatorView extends NavigatorView {
         contextMenu.defaultSection().appendAction('sources.add-folder-to-workspace', undefined, true);
         void contextMenu.show();
     }
-    #automaticFileSystemChanged(event) {
-        const automaticFileSystem = event.data;
-        if (automaticFileSystem === null || automaticFileSystem.state !== 'disconnected') {
-            this.#infobar?.dispose();
-            this.#infobar = null;
-        }
-        else {
-            this.#infobar = UI.Infobar.Infobar.create("info" /* UI.Infobar.Type.INFO */, i18nString(UIStrings.automaticWorkspaceFolderDetected, { PH1: automaticFileSystem.root }), [{
-                    text: i18nString(UIStrings.automaticWorkspaceFolderConnect),
-                    delegate: () => this.#automaticFileSystemManager.connectAutomaticFileSystem(/* addIfMissing= */ true),
-                    dismiss: true,
-                    jslogContext: 'automatic-workspace-folders.connect',
-                }], Common.Settings.Settings.instance().moduleSetting('persistence-automatic-workspace-folders'), 'automatic-workspace-folders');
-            if (this.#infobar) {
-                this.#infobar.element.classList.add('automatic-workspace-infobar');
-                this.contentElement.append(this.#infobar.element);
-            }
-        }
+    #automaticFileSystemChanged(_event) {
+        this.#availabilityChanged({ data: this.#automaticFileSystemManager.availability });
+    }
+    #availabilityChanged(event) {
+        const availability = event.data;
+        const { automaticFileSystem } = this.#automaticFileSystemManager;
+        this.#automaticFileSystemNudge.hidden = automaticFileSystem !== null || availability !== 'available';
     }
 }
 let overridesNavigatorViewInstance;
@@ -371,7 +368,7 @@ export class SnippetsNavigatorView extends NavigatorView {
     }
 }
 export class ActionDelegate {
-    handleAction(context, actionId) {
+    handleAction(_context, actionId) {
         switch (actionId) {
             case 'sources.create-snippet':
                 void Snippets.ScriptSnippetFileSystem.findSnippetsProject()

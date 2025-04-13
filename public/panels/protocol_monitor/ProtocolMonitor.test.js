@@ -35,8 +35,8 @@ describeWithEnvironment('ProtocolMonitor', () => {
     });
     it('sends commands', async () => {
         view.input.onCommandSubmitted(new CustomEvent('submit', { detail: '{"command":"Test.test","parameters":{"test":"test"}}' }));
-        assert.isTrue(sendRawMessageStub.calledOnce);
-        assert.isTrue(sendRawMessageStub.calledOnce);
+        sinon.assert.calledOnce(sendRawMessageStub);
+        sinon.assert.calledOnce(sendRawMessageStub);
         assert.strictEqual(sendRawMessageStub.getCall(0).args[0], 'Test.test');
         assert.deepEqual(sendRawMessageStub.getCall(0).args[1], { test: 'test' });
         assert.deepEqual(sendRawMessageStub.getCall(0).args[3], '');
@@ -118,7 +118,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
         clock.tick(TIMESTAMP);
         const FILENAME = 'ProtocolMonitor-' + Platform.DateUtilities.toISO8601Compact(new Date(TIMESTAMP)) + '.json';
         (await view.nextInput).onSave();
-        assert.isTrue(fileManager.save.calledOnce);
+        sinon.assert.calledOnce(fileManager.save);
         assert.isTrue(fileManager.save.calledOnceWith(FILENAME, '', true, false));
         await fileManagerCloseCall;
         assert.isTrue(fileManager.append.calledOnceWith(FILENAME, sinon.match('"method": "Test.test"')));
@@ -403,7 +403,7 @@ describeWithEnvironment('view', () => {
             targets: [],
             selectedTargetId: 'main',
         };
-        const viewOutput = { set editorWidget(value) { } };
+        const viewOutput = { set editorWidget(_value) { } };
         view(viewInput, viewOutput, target);
         await assertScreenshot('protocol_monitor/basic.png');
     });
@@ -457,7 +457,7 @@ describeWithEnvironment('view', () => {
             ],
             selectedTargetId: 'prerender',
         };
-        const viewOutput = { set editorWidget(value) { } };
+        const viewOutput = { set editorWidget(_value) { } };
         view(viewInput, viewOutput, target);
         await assertScreenshot('protocol_monitor/advanced.png');
     });

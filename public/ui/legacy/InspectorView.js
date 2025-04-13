@@ -541,7 +541,7 @@ function reloadDebuggedTab() {
     void ActionRegistry.instance().getAction('inspector-main.reload').execute();
 }
 export class ActionDelegate {
-    handleAction(context, actionId) {
+    handleAction(_context, actionId) {
         switch (actionId) {
             case 'main.toggle-drawer':
                 if (InspectorView.instance().drawerVisible()) {

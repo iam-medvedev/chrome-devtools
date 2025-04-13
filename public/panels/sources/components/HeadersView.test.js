@@ -194,7 +194,7 @@ describe('HeadersView', () => {
             'Apply to:*.jpg',
             'jpg-header:is image',
         ]);
-        assert.strictEqual(commitWorkingCopySpy.callCount, 4);
+        sinon.assert.callCount(commitWorkingCopySpy, 4);
     });
     it('resets edited value to previous state on Escape key', async () => {
         const editor = await renderEditor();
@@ -279,7 +279,7 @@ describe('HeadersView', () => {
         assert.strictEqual(applyTo.innerHTML, '');
         dispatchFocusOutEvent(applyTo, { bubbles: true });
         assert.strictEqual(applyTo.innerHTML, '*');
-        assert.strictEqual(commitWorkingCopySpy.callCount, 1);
+        sinon.assert.callCount(commitWorkingCopySpy, 1);
     });
     it('removes the entire header when the header name is deleted', async () => {
         const editor = await renderEditorWithinWrapper();
@@ -308,7 +308,7 @@ describe('HeadersView', () => {
             'Apply to:*.jpg',
             'jpg-header:only for jpg files',
         ]);
-        assert.strictEqual(commitWorkingCopySpy.callCount, 1);
+        sinon.assert.callCount(commitWorkingCopySpy, 1);
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideHeadersFileEdited));
     });
     it('allows adding headers', async () => {
@@ -411,7 +411,7 @@ describe('HeadersView', () => {
         ]);
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideHeadersFileEdited));
         let hiddenDeleteElements = await editor.shadowRoot.querySelectorAll('.row.padded > .remove-header[hidden]');
-        assert.isTrue(hiddenDeleteElements.length === 0, 'remove-header button is visible');
+        assert.lengthOf(hiddenDeleteElements, 0, 'remove-header button is visible');
         await pressButton(editor.shadowRoot, 1, '.remove-header');
         rows = getRowContent(editor.shadowRoot);
         assert.deepEqual(rows, [
@@ -421,7 +421,7 @@ describe('HeadersView', () => {
             'jpg-header:only for jpg files',
         ]);
         hiddenDeleteElements = await editor.shadowRoot.querySelectorAll('.row.padded > .remove-header[hidden]');
-        assert.isTrue(hiddenDeleteElements.length === 1, 'remove-header button is hidden');
+        assert.lengthOf(hiddenDeleteElements, 1, 'remove-header button is hidden');
     });
     it('allows removing "ApplyTo"-blocks', async () => {
         const editor = await renderEditorWithinWrapper();

@@ -56,7 +56,7 @@ describeWithMockConnection('BlockedURLsPane', () => {
             const blockedURLsPane = new Network.BlockedURLsPane.BlockedURLsPane();
             const updateStub = sinon.stub(blockedURLsPane, 'update');
             Logs.NetworkLog.NetworkLog.instance().dispatchEventToListeners(Logs.NetworkLog.Events.Reset, { clearIfPreserved: true });
-            assert.isTrue(updateStub.calledOnce);
+            sinon.assert.calledOnce(updateStub);
         });
     });
 });

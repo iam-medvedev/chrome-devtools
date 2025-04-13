@@ -4,7 +4,7 @@ export declare class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper<Eve
     private contrastRatioInternal;
     private contrastRatioAPCAInternal;
     private contrastRatioThresholds;
-    private readonly contrastRationAPCAThreshold;
+    private readonly contrastRatioAPCAThresholdInternal;
     private fgColor;
     private bgColorInternal;
     private colorFormatInternal;

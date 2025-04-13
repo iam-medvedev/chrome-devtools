@@ -1,4 +1,5 @@
 import type * as Platform from '../../core/platform/platform.js';
+import type * as Common from '../common/common.js';
 import type * as Root from '../root/root.js';
 export declare enum Events {
     AppendedToURL = "appendedToURL",
@@ -30,7 +31,7 @@ export declare enum Events {
     SetUseSoftMenu = "setUseSoftMenu",
     ShowPanel = "showPanel"
 }
-export declare const EventDescriptors: (string | string[])[][];
+export declare const EventDescriptors: readonly [readonly [Events.AppendedToURL, "appendedToURL", readonly ["url"]], readonly [Events.CanceledSaveURL, "canceledSaveURL", readonly ["url"]], readonly [Events.ColorThemeChanged, "colorThemeChanged", readonly []], readonly [Events.ContextMenuCleared, "contextMenuCleared", readonly []], readonly [Events.ContextMenuItemSelected, "contextMenuItemSelected", readonly ["id"]], readonly [Events.DeviceCountUpdated, "deviceCountUpdated", readonly ["count"]], readonly [Events.DevicesDiscoveryConfigChanged, "devicesDiscoveryConfigChanged", readonly ["config"]], readonly [Events.DevicesPortForwardingStatusChanged, "devicesPortForwardingStatusChanged", readonly ["status"]], readonly [Events.DevicesUpdated, "devicesUpdated", readonly ["devices"]], readonly [Events.DispatchMessage, "dispatchMessage", readonly ["messageObject"]], readonly [Events.DispatchMessageChunk, "dispatchMessageChunk", readonly ["messageChunk", "messageSize"]], readonly [Events.EnterInspectElementMode, "enterInspectElementMode", readonly []], readonly [Events.EyeDropperPickedColor, "eyeDropperPickedColor", readonly ["color"]], readonly [Events.FileSystemsLoaded, "fileSystemsLoaded", readonly ["fileSystems"]], readonly [Events.FileSystemRemoved, "fileSystemRemoved", readonly ["fileSystemPath"]], readonly [Events.FileSystemAdded, "fileSystemAdded", readonly ["errorMessage", "fileSystem"]], readonly [Events.FileSystemFilesChangedAddedRemoved, "fileSystemFilesChangedAddedRemoved", readonly ["changed", "added", "removed"]], readonly [Events.IndexingTotalWorkCalculated, "indexingTotalWorkCalculated", readonly ["requestId", "fileSystemPath", "totalWork"]], readonly [Events.IndexingWorked, "indexingWorked", readonly ["requestId", "fileSystemPath", "worked"]], readonly [Events.IndexingDone, "indexingDone", readonly ["requestId", "fileSystemPath"]], readonly [Events.KeyEventUnhandled, "keyEventUnhandled", readonly ["event"]], readonly [Events.ReloadInspectedPage, "reloadInspectedPage", readonly ["hard"]], readonly [Events.RevealSourceLine, "revealSourceLine", readonly ["url", "lineNumber", "columnNumber"]], readonly [Events.SavedURL, "savedURL", readonly ["url", "fileSystemPath"]], readonly [Events.SearchCompleted, "searchCompleted", readonly ["requestId", "fileSystemPath", "files"]], readonly [Events.SetInspectedTabId, "setInspectedTabId", readonly ["tabId"]], readonly [Events.SetUseSoftMenu, "setUseSoftMenu", readonly ["useSoftMenu"]], readonly [Events.ShowPanel, "showPanel", readonly ["panelName"]]];
 export interface DispatchMessageChunkEvent {
     messageChunk: string;
     messageSize: number;
@@ -175,6 +176,7 @@ export interface EventTypes {
     [Events.ShowPanel]: string;
 }
 export interface InspectorFrontendHostAPI {
+    events: Common.EventTarget.EventTarget<EventTypes>;
     connectAutomaticFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString, fileSystemUUID: string, addIfMissing: boolean, callback: (result: {
         success: boolean;
     }) => void): void;
@@ -207,6 +209,10 @@ export interface InspectorFrontendHostAPI {
     stopIndexing(requestId: number): void;
     bringToFront(): void;
     closeWindow(): void;
+    /**
+     * Don't use directly - use {@link CopyToClipboard.copyTextToClipboard} instead.
+     * @deprecated Marked to restrict usage.
+     */
     copyText(text: string | null | undefined): void;
     inspectedURLChanged(url: Platform.DevToolsPath.UrlString): void;
     isolatedFileSystem(fileSystemId: string, registeredName: string): FileSystem | null;

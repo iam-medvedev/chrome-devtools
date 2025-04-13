@@ -621,7 +621,7 @@ async function prototypesFromObject(object) {
             }
         }
         return result;
-    }, []);
+    }, []) ?? [];
 }
 // Given a function object that is probably a bound function, try to
 // retrieve the argument list from its target function.

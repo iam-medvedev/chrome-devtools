@@ -5,7 +5,7 @@ export declare class PopoverHelper {
     private getRequest;
     private scheduledRequest;
     private hidePopoverCallback;
-    readonly container: Element;
+    readonly container: HTMLElement;
     private showTimeout;
     private hideTimeout;
     private hidePopoverTimer;
@@ -15,7 +15,7 @@ export declare class PopoverHelper {
     private readonly boundMouseOut;
     private readonly boundKeyUp;
     jslogContext?: string;
-    constructor(container: Element, getRequest: (arg0: MouseEvent | KeyboardEvent) => PopoverRequest | null, jslogContext?: string);
+    constructor(container: HTMLElement, getRequest: (arg0: MouseEvent | KeyboardEvent) => PopoverRequest | null, jslogContext?: string);
     setTimeout(showTimeout: number, hideTimeout?: number): void;
     setDisableOnClick(disableOnClick: boolean): void;
     private eventInScheduledContent;

@@ -151,7 +151,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
      * @deprecated
      * This method is only kept for usage in a web test.
      */
-    private createNetworkRequest;
+    protected createNetworkRequest(requestId: Protocol.Network.RequestId, frameId: Protocol.Page.FrameId, loaderId: Protocol.Network.LoaderId, url: string, documentURL: string, initiator: Protocol.Network.Initiator | null): NetworkRequest;
 }
 export declare class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper<MultitargetNetworkManager.EventTypes> implements SDKModelObserver<NetworkManager> {
     #private;

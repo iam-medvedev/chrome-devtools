@@ -15,11 +15,11 @@ export declare abstract class BaseInsightComponent<T extends InsightModel> exten
     abstract internalName: string;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     protected readonly shadow: ShadowRoot;
-    protected readonly hasAskAISupport: boolean;
     get model(): T | null;
     protected data: BaseInsightData;
     readonly sharedTableState: TableState;
     protected scheduleRender(): void;
+    protected hasAskAiSupport(): boolean;
     connectedCallback(): void;
     set selected(selected: boolean);
     get selected(): boolean;

@@ -1,4 +1,8 @@
 import type * as Workspace from '../workspace/workspace.js';
+export declare const enum ReplaceStrategy {
+    FULL_FILE = "full",
+    UNIFIED_DIFF = "unified"
+}
 /**
  * AgentProject wraps around a Workspace.Workspace.Project and
  * implements AI Assistance-specific logic for accessing workspace files
@@ -28,7 +32,8 @@ export declare class AgentProject {
      * This method updates the file content in the working copy of the
      * UiSourceCode identified by the filepath.
      */
-    writeFile(filepath: string, content: string): void;
+    writeFile(filepath: string, update: string, mode?: ReplaceStrategy): void;
+    getLinesChanged(currentContent: string | undefined, updatedContent: string): number;
     /**
      * This method searches in files for the agent and provides the
      * matches to the agent.

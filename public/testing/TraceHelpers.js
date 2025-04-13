@@ -243,12 +243,12 @@ export function makeFlowPhaseEvent(name, ts, cat = '*', ph, id = 0, pid = 0, tid
  * flow. `events` must be ordered.
  */
 export function makeFlowEvents(events, flowId = 0) {
-    const lastEvent = events.at(-1);
     const firstEvent = events.at(0);
+    const lastEvent = events.at(-1);
     if (!lastEvent || !firstEvent) {
         return [];
     }
-    const flowName = events[0].name;
+    const flowName = firstEvent.name;
     const flowStart = makeFlowPhaseEvent(flowName, firstEvent.ts, firstEvent.cat, "s" /* Trace.Types.Events.Phase.FLOW_START */, flowId, firstEvent.pid, firstEvent.tid);
     const flowEnd = makeFlowPhaseEvent(flowName, lastEvent.ts, lastEvent.cat, "f" /* Trace.Types.Events.Phase.FLOW_END */, flowId, lastEvent.pid, lastEvent.tid);
     const flowSteps = [];

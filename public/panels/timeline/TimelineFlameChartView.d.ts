@@ -159,7 +159,7 @@ export declare class TimelineFlameChartMarker implements PerfUI.FlameChart.Flame
     startTime(): number;
     color(): string;
     title(): string | null;
-    draw(context: CanvasRenderingContext2D, x: number, height: number, pixelsPerMillisecond: number): void;
+    draw(context: CanvasRenderingContext2D, x: number, _height: number, pixelsPerMillisecond: number): void;
 }
 export declare const enum ColorBy {
     URL = "URL"

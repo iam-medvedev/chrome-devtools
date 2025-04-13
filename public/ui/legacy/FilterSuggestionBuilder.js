@@ -8,9 +8,9 @@ export class FilterSuggestionBuilder {
     valuesMap = new Map();
     constructor(keys, valueSorter) {
         this.keys = keys;
-        this.valueSorter = valueSorter || ((key, result) => result.sort());
+        this.valueSorter = valueSorter || ((_, result) => result.sort());
     }
-    completions(expression, prefix, force) {
+    completions(_expression, prefix, force) {
         if (!prefix && !force) {
             return Promise.resolve([]);
         }
@@ -25,7 +25,7 @@ export class FilterSuggestionBuilder {
             const matcher = new RegExp('^' + Platform.StringUtilities.escapeForRegExp(prefix), 'i');
             for (const key of this.keys) {
                 if (matcher.test(key)) {
-                    suggestions.push({ text: modifier + key + ':' });
+                    suggestions.push(({ text: modifier + key + ':' }));
                 }
             }
         }
@@ -37,7 +37,7 @@ export class FilterSuggestionBuilder {
             this.valueSorter(key, values);
             for (const item of values) {
                 if (matcher.test(item) && (item !== value)) {
-                    suggestions.push({ text: modifier + key + ':' + item });
+                    suggestions.push(({ text: modifier + key + ':' + item }));
                 }
             }
         }

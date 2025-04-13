@@ -586,8 +586,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         });
         return dropDownContainer;
     }
-    dropDownClicked(ev) {
-        const event = ev;
+    dropDownClicked(event) {
         if (event.button !== 0) {
             return;
         }
@@ -848,11 +847,10 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.allowTabReorder = allow;
         this.automaticReorder = automatic;
     }
-    keyDown(ev) {
+    keyDown(event) {
         if (!this.currentTab) {
             return;
         }
-        const event = ev;
         let nextTabElement = null;
         switch (event.key) {
             case 'ArrowUp':
@@ -1122,8 +1120,7 @@ export class TabbedPaneTab {
         return element?.classList.contains('tabbed-pane-close-button') ||
             element?.parentElement?.classList.contains('tabbed-pane-close-button') || false;
     }
-    tabClicked(ev) {
-        const event = ev;
+    tabClicked(event) {
         const middleButton = event.button === 1;
         const shouldClose = this.closeable && (middleButton || this.isCloseIconClicked(event.target));
         if (!shouldClose) {
@@ -1133,15 +1130,13 @@ export class TabbedPaneTab {
         this.closeTabs([this.id]);
         event.consume(true);
     }
-    tabMouseDown(ev) {
-        const event = ev;
+    tabMouseDown(event) {
         if (this.isCloseIconClicked(event.target) || event.button !== 0) {
             return;
         }
         this.tabbedPane.selectTab(this.id, true);
     }
-    tabMouseUp(ev) {
-        const event = ev;
+    tabMouseUp(event) {
         // This is needed to prevent middle-click pasting on linux when tabs are clicked.
         if (event.button === 1) {
             event.consume(true);
@@ -1192,8 +1187,7 @@ export class TabbedPaneTab {
         }
         void contextMenu.show();
     }
-    startTabDragging(ev) {
-        const event = ev;
+    startTabDragging(event) {
         if (this.isCloseIconClicked(event.target)) {
             return false;
         }
@@ -1204,8 +1198,7 @@ export class TabbedPaneTab {
         this.tabbedPane.tabSlider.remove();
         return true;
     }
-    tabDragging(ev) {
-        const event = ev;
+    tabDragging(event) {
         const tabElements = this.tabbedPane.tabsElement.childNodes;
         for (let i = 0; i < tabElements.length; ++i) {
             let tabElement = tabElements[i];

@@ -150,6 +150,8 @@
       <include file="Images/flex-wrap.svg" name="IMAGES_FLEX_WRAP_SVG" resource_path="Images/flex-wrap.svg" type="BINDATA" compress="false"/>
       <include file="Images/flow.svg" name="IMAGES_FLOW_SVG" resource_path="Images/flow.svg" type="BINDATA" compress="false"/>
       <include file="Images/fold-more.svg" name="IMAGES_FOLD_MORE_SVG" resource_path="Images/fold-more.svg" type="BINDATA" compress="false"/>
+      <include file="Images/folder-asterisk.svg" name="IMAGES_FOLDER_ASTERISK_SVG" resource_path="Images/folder-asterisk.svg" type="BINDATA" compress="false"/>
+      <include file="Images/folder-off.svg" name="IMAGES_FOLDER_OFF_SVG" resource_path="Images/folder-off.svg" type="BINDATA" compress="false"/>
       <include file="Images/folder.svg" name="IMAGES_FOLDER_SVG" resource_path="Images/folder.svg" type="BINDATA" compress="false"/>
       <include file="Images/frame-crossed.svg" name="IMAGES_FRAME_CROSSED_SVG" resource_path="Images/frame-crossed.svg" type="BINDATA" compress="false"/>
       <include file="Images/frame-icon.svg" name="IMAGES_FRAME_ICON_SVG" resource_path="Images/frame-icon.svg" type="BINDATA" compress="false"/>
@@ -748,6 +750,7 @@
       <include file="ui/components/cards/cards.js" name="UI_COMPONENTS_CARDS_CARDS_JS" resource_path="ui/components/cards/cards.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chrome_link.js" name="UI_COMPONENTS_CHROME_LINK_CHROME_LINK_JS" resource_path="ui/components/chrome_link/chrome_link.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/copy_to_clipboard/copy_to_clipboard.js" name="UI_COMPONENTS_COPY_TO_CLIPBOARD_COPY_TO_CLIPBOARD_JS" resource_path="ui/components/copy_to_clipboard/copy_to_clipboard.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/diff_view.js" name="UI_COMPONENTS_DIFF_VIEW_DIFF_VIEW_JS" resource_path="ui/components/diff_view/diff_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandable_list.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLE_LIST_JS" resource_path="ui/components/expandable_list/expandable_list.js" type="BINDATA" compress="false"/>
@@ -1081,6 +1084,7 @@
       <include file="models/logs/RequestResolver.js" name="MODELS_LOGS_REQUESTRESOLVER_JS" resource_path="models/logs/RequestResolver.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/Automapping.js" name="MODELS_PERSISTENCE_AUTOMAPPING_JS" resource_path="models/persistence/Automapping.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/AutomaticFileSystemManager.js" name="MODELS_PERSISTENCE_AUTOMATICFILESYSTEMMANAGER_JS" resource_path="models/persistence/AutomaticFileSystemManager.js" type="BINDATA" compress="false"/>
+      <include file="models/persistence/AutomaticFileSystemWorkspaceBinding.js" name="MODELS_PERSISTENCE_AUTOMATICFILESYSTEMWORKSPACEBINDING_JS" resource_path="models/persistence/AutomaticFileSystemWorkspaceBinding.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/EditFileSystemView.js" name="MODELS_PERSISTENCE_EDITFILESYSTEMVIEW_JS" resource_path="models/persistence/EditFileSystemView.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/FileSystemWorkspaceBinding.js" name="MODELS_PERSISTENCE_FILESYSTEMWORKSPACEBINDING_JS" resource_path="models/persistence/FileSystemWorkspaceBinding.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/IsolatedFileSystem.js" name="MODELS_PERSISTENCE_ISOLATEDFILESYSTEM_JS" resource_path="models/persistence/IsolatedFileSystem.js" type="BINDATA" compress="false"/>
@@ -2277,6 +2281,7 @@
       <include file="ui/components/chrome_link/chromeLink.css.js" name="UI_COMPONENTS_CHROME_LINK_CHROMELINK_CSS_JS" resource_path="ui/components/chrome_link/chromeLink.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/CodeHighlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODEHIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/CodeHighlighter.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/codeHighlighter.css.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODEHIGHLIGHTER_CSS_JS" resource_path="ui/components/code_highlighter/codeHighlighter.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/copy_to_clipboard/copyToClipboard.js" name="UI_COMPONENTS_COPY_TO_CLIPBOARD_COPYTOCLIPBOARD_JS" resource_path="ui/components/copy_to_clipboard/copyToClipboard.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/ButtonDialog.js" name="UI_COMPONENTS_DIALOGS_BUTTONDIALOG_JS" resource_path="ui/components/dialogs/ButtonDialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/Dialog.js" name="UI_COMPONENTS_DIALOGS_DIALOG_JS" resource_path="ui/components/dialogs/Dialog.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/ShortcutDialog.js" name="UI_COMPONENTS_DIALOGS_SHORTCUTDIALOG_JS" resource_path="ui/components/dialogs/ShortcutDialog.js" type="BINDATA" compress="false"/>

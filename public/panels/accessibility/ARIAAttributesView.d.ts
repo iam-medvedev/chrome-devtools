@@ -29,7 +29,6 @@ export declare class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElemen
 }
 export declare class ARIAAttributePrompt extends UI.TextPrompt.TextPrompt {
     private readonly ariaCompletions;
-    private readonly treeElement;
-    constructor(ariaCompletions: string[], treeElement: ARIAAttributesTreeElement);
+    constructor(ariaCompletions: string[]);
     private buildPropertyCompletions;
 }

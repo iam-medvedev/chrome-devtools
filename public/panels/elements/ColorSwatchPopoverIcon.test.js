@@ -39,12 +39,12 @@ describeWithMockConnection('ColorSwatchPopoverIcon', () => {
             const iconColorChanged = sinon.stub();
             icon.addEventListener("colorchanged" /* Elements.ColorSwatchPopoverIcon.ColorSwatchPopoverIconEvents.COLOR_CHANGED */, iconColorChanged);
             icon.showPopover();
-            assert.isTrue(showPopoverStub.calledOnce);
+            sinon.assert.calledOnce(showPopoverStub);
             const spectrum = showPopoverStub.args[0][0];
             assert.instanceOf(spectrum, ColorPicker.Spectrum.Spectrum);
             sinon.stub(spectrum, 'colorName').returns('--yellow');
             spectrum.dispatchEventToListeners("ColorChanged" /* ColorPicker.Spectrum.Events.COLOR_CHANGED */, 'yellow');
-            assert.isTrue(iconColorChanged.calledOnce);
+            sinon.assert.calledOnce(iconColorChanged);
             assert.strictEqual(iconColorChanged.args[0][0].data.asString(), '#ffff00');
             assert.strictEqual(iconColorChanged.args[0][0].data.getAuthoredText(), 'var(--yellow)');
         });

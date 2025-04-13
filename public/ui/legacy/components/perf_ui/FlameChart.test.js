@@ -104,7 +104,7 @@ describeWithEnvironment('FlameChart', () => {
             renderChart(chartInstance);
             // Pick the first event which is only 50ms long and therefore should be in view already.
             chartInstance.setSelectedEntry(0);
-            assert.strictEqual(windowChangedSpy.callCount, 0);
+            sinon.assert.callCount(windowChangedSpy, 0);
         });
         it('will change the window time to reveal the selected entry when the entry is off the right of the screen', async () => {
             const provider = new SetSelectedEntryTestProvider();
@@ -155,7 +155,7 @@ describeWithEnvironment('FlameChart', () => {
             // And that it is not hidden.
             assert.isFalse(chartInstance.highlightElement.classList.contains('hidden'));
             // Ensure that the event listener was called with the right index
-            assert.strictEqual(highlightedEventListener.callCount, 1);
+            sinon.assert.callCount(highlightedEventListener, 1);
             const event = highlightedEventListener.args[0][0];
             assert.strictEqual(event.data, entryIndexToHighlight);
         });
@@ -171,7 +171,7 @@ describeWithEnvironment('FlameChart', () => {
             // Ensure that there is only one event listener called, despite the
             // highlightEntry method being called twice, because it was called with
             // the same ID.
-            assert.strictEqual(highlightedEventListener.callCount, 1);
+            sinon.assert.callCount(highlightedEventListener, 1);
         });
         it('does nothing if the DataProvider entryColor() method returns a falsey value', async () => {
             class EmptyColorProvider extends FakeProvider {
@@ -187,7 +187,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance.addEventListener("EntryHovered" /* PerfUI.FlameChart.Events.ENTRY_HOVERED */, highlightedEventListener);
             chartInstance.highlightEntry(2);
             // No calls because entryColor returned a false value.
-            assert.strictEqual(highlightedEventListener.callCount, 0);
+            sinon.assert.callCount(highlightedEventListener, 0);
         });
         it('dispatches the highlight event with an ID of -1 when the highlight is hidden', async () => {
             const provider = new FakeProvider();

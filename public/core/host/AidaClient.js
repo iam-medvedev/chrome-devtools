@@ -43,7 +43,7 @@ export var ClientFeature;
     // Chrome AI Patch Agent.
     ClientFeature[ClientFeature["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
     // Chrome AI Assistance Performance Insights Agent.
-    ClientFeature[ClientFeature["CHROME_PERFORMANCE_INSIGHTS_AGENT"] = 14] = "CHROME_PERFORMANCE_INSIGHTS_AGENT";
+    ClientFeature[ClientFeature["CHROME_PERFORMANCE_INSIGHTS_AGENT"] = 13] = "CHROME_PERFORMANCE_INSIGHTS_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {
@@ -70,7 +70,7 @@ export var CitationSourceType;
     CitationSourceType["TRAINING_DATA"] = "TRAINING_DATA";
     CitationSourceType["WORLD_FACTS"] = "WORLD_FACTS";
     CitationSourceType["LOCAL_FACTS"] = "LOCAL_FACTS";
-    CitationSourceType["INDIRECT"] = "INDERECT";
+    CitationSourceType["INDIRECT"] = "INDIRECT";
 })(CitationSourceType || (CitationSourceType = {}));
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
 const CODE_CHUNK_SEPARATOR = '\n`````\n';

@@ -128,6 +128,9 @@ export class EventListenersView extends UI.Widget.VBox {
                 return isInternal;
             }
             function setIsInternal(isInternal) {
+                if (!isInternal) {
+                    return;
+                }
                 for (let i = 0; i < eventListeners.length; ++i) {
                     if (isInternal[i]) {
                         eventListeners[i].markAsFramework();

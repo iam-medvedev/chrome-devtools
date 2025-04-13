@@ -12,7 +12,7 @@ export declare class EntryLabelChangeEvent extends Event {
     static readonly eventName = "entrylabelchangeevent";
     constructor(newLabel: string);
 }
-export declare class LabelAnnotationsConsentDialogVisiblityChange extends Event {
+export declare class LabelAnnotationsConsentDialogVisibilityChange extends Event {
     isVisible: boolean;
     static readonly eventName = "labelannotationsconsentdialogvisiblitychange";
     constructor(isVisible: boolean);

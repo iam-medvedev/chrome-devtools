@@ -13,10 +13,10 @@ describeWithMockConnection('DOMModel', () => {
         assert.exists(domModel.agent);
         domModel.setDocumentForTest({ nodeId: 0 });
         const spy = sinon.spy(domModel.agent, 'invoke_getDocument');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         assert.isNotNull(domModel.existingDocument());
         domModel.documentUpdated();
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
     });
     it('does not request document if there is not a previous document', async () => {
         const parentTarget = createTarget();
@@ -26,10 +26,10 @@ describeWithMockConnection('DOMModel', () => {
         assert.exists(domModel.agent);
         domModel.setDocumentForTest(null);
         const spy = sinon.spy(domModel.agent, 'invoke_getDocument');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         assert.isNull(domModel.existingDocument());
         domModel.documentUpdated();
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
     });
     describe('DOMNode', () => {
         describe('simpleSelector', () => {

@@ -23,9 +23,9 @@ describe('RecorderShortcutHelper', () => {
         const stub = sinon.stub();
         helper.handleShortcut(stub);
         await waitFor(time + 10);
-        assert.strictEqual(stub.callCount, 1);
+        sinon.assert.callCount(stub, 1);
         dispatchShortcut();
-        assert.strictEqual(stub.callCount, 1);
+        sinon.assert.callCount(stub, 1);
     });
     it('should stop on click', async () => {
         const time = 100;
@@ -34,9 +34,9 @@ describe('RecorderShortcutHelper', () => {
         helper.handleShortcut(stub);
         dispatchShortcut();
         await waitFor(time / 2);
-        assert.strictEqual(stub.callCount, 1);
+        sinon.assert.callCount(stub, 1);
         await waitFor(time);
-        assert.strictEqual(stub.callCount, 1);
+        sinon.assert.callCount(stub, 1);
     });
 });
 //# sourceMappingURL=RecorderShorcutHelper.test.js.map

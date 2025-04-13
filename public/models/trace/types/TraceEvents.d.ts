@@ -1,3 +1,4 @@
+import type * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import type { Micro, Milli, Seconds, TraceWindowMicro } from './Timing.js';
 export declare const enum Phase {
@@ -1236,14 +1237,18 @@ declare const enum FrameType {
     FORKED = "FORKED",
     BACKFILL = "BACKFILL"
 }
+export interface OldChromeFrameReporterArgs {
+    chrome_frame_reporter: ChromeFrameReporter;
+}
+export interface NewChromeFrameReporterArgs {
+    frame_reporter: ChromeFrameReporter;
+}
 export interface PipelineReporter extends Event {
     id2?: {
         local?: string;
     };
     ph: Phase.ASYNC_NESTABLE_START | Phase.ASYNC_NESTABLE_END;
-    args: Args & {
-        chrome_frame_reporter: ChromeFrameReporter;
-    };
+    args: Args & (OldChromeFrameReporterArgs | NewChromeFrameReporterArgs);
 }
 export declare function isPipelineReporter(event: Event): event is PipelineReporter;
 export interface SyntheticBased<Ph extends Phase = Phase, T extends Event = Event> extends Event {
@@ -1511,35 +1516,17 @@ export interface DebuggerAsyncTaskRun extends Event {
     name: Name.DEBUGGER_ASYNC_TASK_RUN;
 }
 export declare function isDebuggerAsyncTaskRun(event: Event): event is DebuggerAsyncTaskRun;
-declare class ProfileIdTag {
-    #private;
-}
-export type ProfileID = string & ProfileIdTag;
+export type ProfileID = Platform.Brand.Brand<string, 'profileIdTag'>;
 export declare function ProfileID(value: string): ProfileID;
-declare class CallFrameIdTag {
-    #private;
-}
-export type CallFrameID = number & CallFrameIdTag;
+export type CallFrameID = Platform.Brand.Brand<number, 'callFrameIdTag'>;
 export declare function CallFrameID(value: number): CallFrameID;
-declare class SampleIndexTag {
-    #private;
-}
-export type SampleIndex = number & SampleIndexTag;
+export type SampleIndex = Platform.Brand.Brand<number, 'sampleIndexTag'>;
 export declare function SampleIndex(value: number): SampleIndex;
-declare class ProcessIdTag {
-    #private;
-}
-export type ProcessID = number & ProcessIdTag;
+export type ProcessID = Platform.Brand.Brand<number, 'processIdTag'>;
 export declare function ProcessID(value: number): ProcessID;
-declare class ThreadIdTag {
-    #private;
-}
-export type ThreadID = number & ThreadIdTag;
+export type ThreadID = Platform.Brand.Brand<number, 'threadIdTag'>;
 export declare function ThreadID(value: number): ThreadID;
-declare class WorkerIdTag {
-    #private;
-}
-export type WorkerId = string & WorkerIdTag;
+export type WorkerId = Platform.Brand.Brand<string, 'workerIdTag'>;
 export declare function WorkerId(value: string): WorkerId;
 export declare function isComplete(event: Event): event is Complete;
 export declare function isBegin(event: Event): event is Begin;
@@ -2277,4 +2264,16 @@ export interface V8SourceRundownSourcesLargeScriptCatchupEvent extends Event {
     };
 }
 export declare function isV8SourceRundownSourcesLargeScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesLargeScriptCatchupEvent;
+export interface V8SourceRundownSourcesStubScriptCatchupEvent extends Event {
+    cat: 'disabled-by-default-devtools.v8-source-rundown-sources';
+    name: 'StubScriptCatchup';
+    args: Args & {
+        data: {
+            isolate: string;
+            scriptId: number;
+        };
+    };
+}
+export declare function isV8SourceRundownSourcesStubScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesStubScriptCatchupEvent;
+export declare function isAnyScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesScriptCatchupEvent | V8SourceRundownSourcesLargeScriptCatchupEvent | V8SourceRundownSourcesStubScriptCatchupEvent;
 export {};

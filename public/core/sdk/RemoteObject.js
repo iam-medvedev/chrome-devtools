@@ -78,7 +78,7 @@ export class RemoteObject {
             return { value: object };
         }
         if (type === 'bigint') {
-            return { unserializableValue: unserializableDescription };
+            return { unserializableValue: unserializableDescription ?? undefined };
         }
         if (type === 'string' || type === 'boolean') {
             return { value: object };
@@ -192,94 +192,94 @@ export class RemoteObject {
     webIdl;
 }
 export class RemoteObjectImpl extends RemoteObject {
-    runtimeModelInternal;
+    #runtimeModel;
     #runtimeAgent;
-    #typeInternal;
-    #subtypeInternal;
-    #objectIdInternal;
-    #descriptionInternal;
-    hasChildrenInternal;
-    #previewInternal;
-    #unserializableValueInternal;
-    #valueInternal;
-    #customPreviewInternal;
-    #classNameInternal;
+    #type;
+    #subtype;
+    #objectId;
+    #description;
+    #hasChildren;
+    #preview;
+    #unserializableValue;
+    #value;
+    #customPreview;
+    #className;
     constructor(runtimeModel, objectId, type, subtype, value, unserializableValue, description, preview, customPreview, className) {
         super();
-        this.runtimeModelInternal = runtimeModel;
+        this.#runtimeModel = runtimeModel;
         this.#runtimeAgent = runtimeModel.target().runtimeAgent();
-        this.#typeInternal = type;
-        this.#subtypeInternal = subtype;
+        this.#type = type;
+        this.#subtype = subtype;
         if (objectId) {
             // handle
-            this.#objectIdInternal = objectId;
-            this.#descriptionInternal = description;
-            this.hasChildrenInternal = (type !== 'symbol');
-            this.#previewInternal = preview;
+            this.#objectId = objectId;
+            this.#description = description;
+            this.#hasChildren = (type !== 'symbol');
+            this.#preview = preview;
         }
         else {
-            this.#descriptionInternal = description;
+            this.#description = description;
             if (!this.description && unserializableValue) {
-                this.#descriptionInternal = unserializableValue;
+                this.#description = unserializableValue;
             }
-            if (!this.#descriptionInternal && (typeof value !== 'object' || value === null)) {
-                this.#descriptionInternal = String(value);
+            if (!this.#description && (typeof value !== 'object' || value === null)) {
+                this.#description = String(value);
             }
-            this.hasChildrenInternal = false;
+            this.#hasChildren = false;
             if (typeof unserializableValue === 'string') {
-                this.#unserializableValueInternal = unserializableValue;
+                this.#unserializableValue = unserializableValue;
                 if (unserializableValue === "Infinity" /* UnserializableNumber.INFINITY */ ||
                     unserializableValue === "-Infinity" /* UnserializableNumber.NEGATIVE_INFINITY */ ||
                     unserializableValue === "-0" /* UnserializableNumber.NEGATIVE_ZERO */ ||
                     unserializableValue === "NaN" /* UnserializableNumber.NAN */) {
-                    this.#valueInternal = Number(unserializableValue);
+                    this.#value = Number(unserializableValue);
                 }
                 else if (type === 'bigint' && unserializableValue.endsWith('n')) {
-                    this.#valueInternal = BigInt(unserializableValue.substring(0, unserializableValue.length - 1));
+                    this.#value = BigInt(unserializableValue.substring(0, unserializableValue.length - 1));
                 }
                 else {
-                    this.#valueInternal = unserializableValue;
+                    this.#value = unserializableValue;
                 }
             }
             else {
-                this.#valueInternal = value;
+                this.#value = value;
             }
         }
-        this.#customPreviewInternal = customPreview || null;
-        this.#classNameInternal = typeof className === 'string' ? className : null;
+        this.#customPreview = customPreview || null;
+        this.#className = typeof className === 'string' ? className : null;
     }
     customPreview() {
-        return this.#customPreviewInternal;
+        return this.#customPreview;
     }
     get objectId() {
-        return this.#objectIdInternal;
+        return this.#objectId;
     }
     get type() {
-        return this.#typeInternal;
+        return this.#type;
     }
     get subtype() {
-        return this.#subtypeInternal;
+        return this.#subtype;
     }
     get value() {
-        return this.#valueInternal;
+        return this.#value;
     }
     unserializableValue() {
-        return this.#unserializableValueInternal;
+        return this.#unserializableValue;
     }
     get description() {
-        return this.#descriptionInternal;
+        return this.#description;
     }
     set description(description) {
-        this.#descriptionInternal = description;
+        this.#description = description;
     }
     get hasChildren() {
-        return this.hasChildrenInternal;
+        return this.#hasChildren;
     }
     get preview() {
-        return this.#previewInternal;
+        return this.#preview;
     }
     get className() {
-        return this.#classNameInternal;
+        return this.#className;
     }
     getOwnProperties(generatePreview, nonIndexedPropertiesOnly = false) {
         return this.doGetProperties(true, false, nonIndexedPropertiesOnly, generatePreview);
@@ -288,14 +288,14 @@ export class RemoteObjectImpl extends RemoteObject {
         return this.doGetProperties(false, accessorPropertiesOnly, nonIndexedPropertiesOnly, generatePreview);
     }
     async createRemoteObject(object) {
-        return this.runtimeModelInternal.createRemoteObject(object);
+        return this.#runtimeModel.createRemoteObject(object);
     }
     async doGetProperties(ownProperties, accessorPropertiesOnly, nonIndexedPropertiesOnly, generatePreview) {
-        if (!this.#objectIdInternal) {
+        if (!this.#objectId) {
             return { properties: null, internalProperties: null };
         }
         const response = await this.#runtimeAgent.invoke_getProperties({
-            objectId: this.#objectIdInternal,
+            objectId: this.#objectId,
             ownProperties,
             accessorPropertiesOnly,
             nonIndexedPropertiesOnly,
@@ -305,34 +305,34 @@ export class RemoteObjectImpl extends RemoteObject {
             return { properties: null, internalProperties: null };
         }
         if (response.exceptionDetails) {
-            this.runtimeModelInternal.exceptionThrown(Date.now(), response.exceptionDetails);
+            this.#runtimeModel.exceptionThrown(Date.now(), response.exceptionDetails);
             return { properties: null, internalProperties: null };
         }
         const { result: properties = [], internalProperties = [], privateProperties = [] } = response;
         const result = [];
         for (const property of properties) {
             const propertyValue = property.value ? await this.createRemoteObject(property.value) : null;
-            const propertySymbol = property.symbol ? this.runtimeModelInternal.createRemoteObject(property.symbol) : null;
+            const propertySymbol = property.symbol ? this.#runtimeModel.createRemoteObject(property.symbol) : null;
             const remoteProperty = new RemoteObjectProperty(property.name, propertyValue, Boolean(property.enumerable), Boolean(property.writable), Boolean(property.isOwn), Boolean(property.wasThrown), propertySymbol);
             if (typeof property.value === 'undefined') {
                 if (property.get && property.get.type !== 'undefined') {
-                    remoteProperty.getter = this.runtimeModelInternal.createRemoteObject(property.get);
+                    remoteProperty.getter = this.#runtimeModel.createRemoteObject(property.get);
                 }
                 if (property.set && property.set.type !== 'undefined') {
-                    remoteProperty.setter = this.runtimeModelInternal.createRemoteObject(property.set);
+                    remoteProperty.setter = this.#runtimeModel.createRemoteObject(property.set);
                 }
             }
             result.push(remoteProperty);
         }
         for (const property of privateProperties) {
-            const propertyValue = property.value ? this.runtimeModelInternal.createRemoteObject(property.value) : null;
+            const propertyValue = property.value ? this.#runtimeModel.createRemoteObject(property.value) : null;
             const remoteProperty = new RemoteObjectProperty(property.name, propertyValue, true, true, true, false, undefined, false, undefined, true);
             if (typeof property.value === 'undefined') {
                 if (property.get && property.get.type !== 'undefined') {
-                    remoteProperty.getter = this.runtimeModelInternal.createRemoteObject(property.get);
+                    remoteProperty.getter = this.#runtimeModel.createRemoteObject(property.get);
                 }
                 if (property.set && property.set.type !== 'undefined') {
-                    remoteProperty.setter = this.runtimeModelInternal.createRemoteObject(property.set);
+                    remoteProperty.setter = this.#runtimeModel.createRemoteObject(property.set);
                 }
             }
             result.push(remoteProperty);
@@ -342,13 +342,13 @@ export class RemoteObjectImpl extends RemoteObject {
             if (!property.value) {
                 continue;
             }
-            const propertyValue = this.runtimeModelInternal.createRemoteObject(property.value);
+            const propertyValue = this.#runtimeModel.createRemoteObject(property.value);
             internalPropertiesResult.push(new RemoteObjectProperty(property.name, propertyValue, true, false, undefined, undefined, undefined, true));
         }
         return { properties: result, internalProperties: internalPropertiesResult };
     }
     async setPropertyValue(name, value) {
-        if (!this.#objectIdInternal) {
+        if (!this.#objectId) {
             return 'Can’t set a property of non-object.';
         }
         const response = await this.#runtimeAgent.invoke_evaluate({ expression: value, silent: true });
@@ -373,7 +373,7 @@ export class RemoteObjectImpl extends RemoteObject {
         const setPropertyValueFunction = 'function(a, b) { this[a] = b; }';
         const argv = [name, RemoteObject.toCallArgument(result)];
         const response = await this.#runtimeAgent.invoke_callFunctionOn({
-            objectId: this.#objectIdInternal,
+            objectId: this.#objectId,
             functionDeclaration: setPropertyValueFunction,
             arguments: argv,
             silent: true,
@@ -382,12 +382,12 @@ export class RemoteObjectImpl extends RemoteObject {
         return error || response.exceptionDetails ? error || response.result.description : undefined;
     }
     async deleteProperty(name) {
-        if (!this.#objectIdInternal) {
+        if (!this.#objectId) {
             return 'Can’t delete a property of non-object.';
         }
         const deletePropertyFunction = 'function(a) { delete this[a]; return !(a in this); }';
         const response = await this.#runtimeAgent.invoke_callFunctionOn({
-            objectId: this.#objectIdInternal,
+            objectId: this.#objectId,
             functionDeclaration: deletePropertyFunction,
             arguments: [name],
             silent: true,
@@ -402,7 +402,7 @@ export class RemoteObjectImpl extends RemoteObject {
     }
     async callFunction(functionDeclaration, args) {
         const response = await this.#runtimeAgent.invoke_callFunctionOn({
-            objectId: this.#objectIdInternal,
+            objectId: this.#objectId,
             functionDeclaration: functionDeclaration.toString(),
             arguments: args,
             silent: true,
@@ -412,13 +412,13 @@ export class RemoteObjectImpl extends RemoteObject {
         }
         // TODO: release exceptionDetails object
         return {
-            object: this.runtimeModelInternal.createRemoteObject(response.result),
+            object: this.#runtimeModel.createRemoteObject(response.result),
             wasThrown: Boolean(response.exceptionDetails),
         };
     }
     async callFunctionJSON(functionDeclaration, args) {
         const response = await this.#runtimeAgent.invoke_callFunctionOn({
-            objectId: this.#objectIdInternal,
+            objectId: this.#objectId,
             functionDeclaration: functionDeclaration.toString(),
             arguments: args,
             silent: true,
@@ -430,10 +430,10 @@ export class RemoteObjectImpl extends RemoteObject {
         return response.result.value;
     }
     release() {
-        if (!this.#objectIdInternal) {
+        if (!this.#objectId) {
             return;
         }
-        void this.#runtimeAgent.invoke_releaseObject({ objectId: this.#objectIdInternal });
+        void this.#runtimeAgent.invoke_releaseObject({ objectId: this.#objectId });
     }
     arrayLength() {
         return RemoteObject.arrayLength(this);
@@ -442,13 +442,13 @@ export class RemoteObjectImpl extends RemoteObject {
         return RemoteObject.arrayBufferByteLength(this);
     }
     debuggerModel() {
-        return this.runtimeModelInternal.debuggerModel();
+        return this.#runtimeModel.debuggerModel();
     }
     runtimeModel() {
-        return this.runtimeModelInternal;
+        return this.#runtimeModel;
     }
     isNode() {
-        return Boolean(this.#objectIdInternal) && this.type === 'object' && this.subtype === 'node';
+        return Boolean(this.#objectId) && this.type === 'object' && this.subtype === 'node';
     }
     isLinearMemoryInspectable() {
         return this.type === 'object' && this.subtype !== undefined &&
@@ -576,21 +576,21 @@ export class RemoteObjectProperty {
 // for traversing prototypes, extracting class names via constructor, handling #properties
 // or functions.
 export class LocalJSONObject extends RemoteObject {
-    valueInternal;
+    #value;
     #cachedDescription;
     #cachedChildren;
     constructor(value) {
         super();
-        this.valueInternal = value;
+        this.#value = value;
     }
     get objectId() {
         return undefined;
     }
     get value() {
-        return this.valueInternal;
+        return this.#value;
     }
     unserializableValue() {
-        const unserializableDescription = RemoteObject.unserializableDescription(this.valueInternal);
+        const unserializableDescription = RemoteObject.unserializableDescription(this.#value);
         return unserializableDescription || undefined;
     }
     get description() {
@@ -613,7 +613,7 @@ export class LocalJSONObject extends RemoteObject {
                     this.#cachedDescription = this.concatenate('[', ']', formatArrayItem.bind(this));
                     break;
                 case 'date':
-                    this.#cachedDescription = String(this.valueInternal);
+                    this.#cachedDescription = String(this.#value);
                     break;
                 case 'null':
                     this.#cachedDescription = 'null';
@@ -623,7 +623,7 @@ export class LocalJSONObject extends RemoteObject {
             }
         }
         else {
-            this.#cachedDescription = String(this.valueInternal);
+            this.#cachedDescription = String(this.#value);
         }
         return this.#cachedDescription;
     }
@@ -656,25 +656,25 @@ export class LocalJSONObject extends RemoteObject {
         return buffer;
     }
     get type() {
-        return typeof this.valueInternal;
+        return typeof this.#value;
     }
     get subtype() {
-        if (this.valueInternal === null) {
+        if (this.#value === null) {
             return 'null';
         }
-        if (Array.isArray(this.valueInternal)) {
+        if (Array.isArray(this.#value)) {
             return 'array';
         }
-        if (this.valueInternal instanceof Date) {
+        if (this.#value instanceof Date) {
             return 'date';
         }
         return undefined;
     }
     get hasChildren() {
-        if ((typeof this.valueInternal !== 'object') || (this.valueInternal === null)) {
+        if ((typeof this.#value !== 'object') || (this.#value === null)) {
             return false;
         }
-        return Boolean(Object.keys(this.valueInternal).length);
+        return Boolean(Object.keys(this.#value).length);
     }
     async getOwnProperties(_generatePreview, nonIndexedPropertiesOnly = false) {
         function isArrayIndex(name) {
@@ -698,17 +698,17 @@ export class LocalJSONObject extends RemoteObject {
             return [];
         }
         if (!this.#cachedChildren) {
-            this.#cachedChildren = Object.entries(this.valueInternal).map(([name, value]) => {
+            this.#cachedChildren = Object.entries(this.#value).map(([name, value]) => {
                 return new RemoteObjectProperty(name, value instanceof RemoteObject ? value : RemoteObject.fromLocalObject(value));
             });
         }
         return this.#cachedChildren;
     }
     arrayLength() {
-        return Array.isArray(this.valueInternal) ? this.valueInternal.length : 0;
+        return Array.isArray(this.#value) ? this.#value.length : 0;
     }
     async callFunction(functionDeclaration, args) {
-        const target = this.valueInternal;
+        const target = this.#value;
         const rawArgs = args ? args.map(arg => arg.value) : [];
         let result;
         let wasThrown = false;
@@ -722,7 +722,7 @@ export class LocalJSONObject extends RemoteObject {
         return { object, wasThrown };
     }
     async callFunctionJSON(functionDeclaration, args) {
-        const target = this.valueInternal;
+        const target = this.#value;
         const rawArgs = args ? args.map(arg => arg.value) : [];
         let result;
         try {
@@ -735,15 +735,15 @@ export class LocalJSONObject extends RemoteObject {
     }
 }
 export class RemoteArrayBuffer {
-    #objectInternal;
+    #object;
     constructor(object) {
         if (object.type !== 'object' || object.subtype !== 'arraybuffer') {
             throw new Error('Object is not an arraybuffer');
         }
-        this.#objectInternal = object;
+        this.#object = object;
     }
     byteLength() {
-        return this.#objectInternal.arrayBufferByteLength();
+        return this.#object.arrayBufferByteLength();
     }
     async bytes(start = 0, end = this.byteLength()) {
         if (start < 0 || start >= this.byteLength()) {
@@ -752,19 +752,19 @@ export class RemoteArrayBuffer {
         if (end < start || end > this.byteLength()) {
             throw new RangeError('end is out of range');
         }
-        return await this.#objectInternal.callFunctionJSON(bytes, [{ value: start }, { value: end - start }]);
+        return await this.#object.callFunctionJSON(bytes, [{ value: start }, { value: end - start }]);
         function bytes(offset, length) {
             return [...new Uint8Array(this, offset, length)];
         }
     }
     object() {
-        return this.#objectInternal;
+        return this.#object;
     }
 }
 export class RemoteArray {
-    #objectInternal;
+    #object;
     constructor(object) {
-        this.#objectInternal = object;
+        this.#object = object;
     }
     static objectAsArray(object) {
         if (!object || object.type !== 'object' || (object.subtype !== 'array' && object.subtype !== 'typedarray')) {
@@ -786,10 +786,10 @@ export class RemoteArray {
         }
     }
     async at(index) {
-        if (index < 0 || index > this.#objectInternal.arrayLength()) {
+        if (index < 0 || index > this.#object.arrayLength()) {
             throw new Error('Out of range');
         }
-        const result = await this.#objectInternal.callFunction(at, [RemoteObject.toCallArgument(index)]);
+        const result = await this.#object.callFunction(at, [RemoteObject.toCallArgument(index)]);
         if (result.wasThrown || !result.object) {
             throw new Error('Exception in callFunction or result value is empty');
         }
@@ -799,7 +799,7 @@ export class RemoteArray {
         }
     }
     length() {
-        return this.#objectInternal.arrayLength();
+        return this.#object.arrayLength();
     }
     map(func) {
         const promises = [];
@@ -809,7 +809,7 @@ export class RemoteArray {
         return Promise.all(promises);
     }
     object() {
-        return this.#objectInternal;
+        return this.#object;
     }
 }
 export class RemoteFunction {

@@ -211,8 +211,7 @@ async function getEmptyStateSuggestions(context, conversationType) {
                 'How can I reduce the time of this call tree?',
             ];
         case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-            // TODO(b/405925760): Define these.
-            return ['Help me optimize my LCP', 'Help me optimize my INP', 'For now'];
+            return ['Help me optimize my page load performance'];
     }
 }
 function toolbarView(input) {
@@ -220,7 +219,8 @@ function toolbarView(input) {
     return html `
     <div class="toolbar-container" role="toolbar" .jslogContext=${VisualLogging.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
-        <devtools-button
+      ${input.showChatActions
+        ? html `<devtools-button
           title=${i18nString(UIStrings.newChat)}
           aria-label=${i18nString(UIStrings.newChat)}
           .iconName=${'plus'}
@@ -234,8 +234,9 @@ function toolbarView(input) {
           .iconName=${'history'}
           .jslogContext=${'freestyler.history'}
           .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
-          @click=${input.onHistoryClick}></devtools-button>
-        ${input.isDeleteHistoryButtonVisible
+          @click=${input.onHistoryClick}></devtools-button>`
+        : Lit.nothing}
+        ${input.showDeleteHistoryAction
         ? html `<devtools-button
               title=${i18nString(UIStrings.deleteChat)}
               aria-label=${i18nString(UIStrings.deleteChat)}
@@ -673,7 +674,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() &&
                 this.#conversation?.type === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
             imageInput: this.#imageInput,
-            isDeleteHistoryButtonVisible: Boolean(this.#conversation && !this.#conversation.isEmpty),
+            showDeleteHistoryAction: Boolean(this.#conversation && !this.#conversation.isEmpty),
+            showChatActions: this.#shouldShowChatActions(),
             isTextInputDisabled: this.#isTextInputDisabled(),
             emptyStateSuggestions,
             inputPlaceholder: this.#getChatInputPlaceholder(),
@@ -733,6 +735,18 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return true;
         }
         return false;
+    }
+    #shouldShowChatActions() {
+        const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
+        const isBlockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+        if (!aiAssistanceSetting || isBlockedByAge) {
+            return false;
+        }
+        if (this.#aidaAvailability === "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */ ||
+            this.#aidaAvailability === "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */) {
+            return false;
+        }
+        return true;
     }
     #getChatInputPlaceholder() {
         const state = this.#getChatUiState();
@@ -822,6 +836,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             const event = item.selectedNode?.event ?? item.rootNode.event;
             const trace = new SDK.TraceObject.RevealableEvent(event);
             return Common.Revealer.reveal(trace);
+        }
+        if (context instanceof AiAssistanceModel.InsightContext) {
+            const item = context.getItem();
+            return Common.Revealer.reveal(item);
         }
         // Node picker is using linkifier.
     }
@@ -987,18 +1005,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#runAbortController.abort();
         this.#runAbortController = new AbortController();
     }
-    #onContextSelectionChanged(contextToRestore) {
+    #onContextSelectionChanged() {
         if (!this.#conversationAgent) {
             this.#blockedByCrossOrigin = false;
             return;
         }
-        const currentContext = contextToRestore ?? this.#getConversationContext();
-        this.#selectedContext = currentContext;
-        if (!currentContext) {
+        this.#selectedContext = this.#getConversationContext();
+        if (!this.#selectedContext) {
             this.#blockedByCrossOrigin = false;
+            // Clear out any text the user has entered into the input but never
+            // submitted now they have no active context
+            this.#viewOutput.chatView?.clearTextInput();
             return;
         }
-        this.#blockedByCrossOrigin = !currentContext.isOriginAllowed(this.#conversationAgent.origin);
+        this.#blockedByCrossOrigin = !this.#selectedContext.isOriginAllowed(this.#conversationAgent.origin);
     }
     #getConversationContext() {
         if (!this.#conversation) {

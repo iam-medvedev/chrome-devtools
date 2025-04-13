@@ -18,7 +18,7 @@ describeWithMockConnection('FocusDebuggeeActionDelegate', () => {
         const delegate = new InspectorMain.InspectorMain.FocusDebuggeeActionDelegate();
         const bringToFront = sinon.spy(frameTarget.pageAgent(), 'invoke_bringToFront');
         delegate.handleAction({}, 'foo');
-        assert.isTrue(bringToFront.calledOnce);
+        sinon.assert.calledOnce(bringToFront);
     });
 });
 describeWithMockConnection('InspectorMainImpl', () => {
@@ -80,7 +80,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
             const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
             await inspectorMain.run();
-            assert.isTrue(reloadRequiredInfobarSpy.notCalled);
+            sinon.assert.notCalled(reloadRequiredInfobarSpy);
         });
         it('does not show infobar when control setting is undefined', async () => {
             const restrictThirdPartyCookies = true;
@@ -90,7 +90,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
             const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
             await inspectorMain.run();
-            assert.isTrue(reloadRequiredInfobarSpy.notCalled);
+            sinon.assert.notCalled(reloadRequiredInfobarSpy);
         });
         it('does not show infobar when control settings match browser settings', async () => {
             const restrictThirdPartyCookies = true;
@@ -101,7 +101,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
             const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
             await inspectorMain.run();
-            assert.isTrue(reloadRequiredInfobarSpy.notCalled);
+            sinon.assert.notCalled(reloadRequiredInfobarSpy);
         });
         it('shows infobar when cookie control override differs from browser setting', async () => {
             const restrictThirdPartyCookies = true;
@@ -112,7 +112,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
             const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
             await inspectorMain.run();
-            assert.isTrue(reloadRequiredInfobarSpy.calledOnce);
+            sinon.assert.calledOnce(reloadRequiredInfobarSpy);
         });
         it('shows infobar when a mitigation override differs from browser setting', async () => {
             const restrictThirdPartyCookies = true;
@@ -123,7 +123,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const reloadRequiredInfobarSpy = sinon.spy(UI.InspectorView.InspectorView.instance(), 'displayDebuggedTabReloadRequiredWarning');
             const inspectorMain = InspectorMain.InspectorMain.InspectorMainImpl.instance({ forceNew: true });
             await inspectorMain.run();
-            assert.isTrue(reloadRequiredInfobarSpy.calledOnce);
+            sinon.assert.calledOnce(reloadRequiredInfobarSpy);
         });
     });
     describe('withNoopSettings', () => {
@@ -180,8 +180,8 @@ describeWithMockConnection('InspectorMainImpl', () => {
             setMockConnectionResponseHandler('Debugger.enable', () => ({ debuggerId: DEBUGGER_ID }));
             setMockConnectionResponseHandler('Debugger.pause', debuggerPause);
             await inspectorMain.run();
-            assert.isTrue(waitForDebugger.calledOnce);
-            assert.isTrue(debuggerPause.calledOnce);
+            sinon.assert.calledOnce(waitForDebugger);
+            sinon.assert.calledOnce(debuggerPause);
             Root.Runtime.Runtime.setQueryParamForTesting('panel', '');
         });
         it('wait for Debugger.enable before calling Debugger.pause', async () => {
@@ -197,10 +197,10 @@ describeWithMockConnection('InspectorMainImpl', () => {
             }));
             assert.notExists(SDK.TargetManager.TargetManager.instance().rootTarget());
             const result = inspectorMain.run();
-            assert.isFalse(debuggerPause.called);
+            sinon.assert.notCalled(debuggerPause);
             debuggerEnable({ debuggerId: DEBUGGER_ID, getError: () => undefined });
             await Promise.all([debuggerPauseCalled, result]);
-            assert.isTrue(debuggerPause.calledOnce);
+            sinon.assert.calledOnce(debuggerPause);
             Root.Runtime.Runtime.setQueryParamForTesting('panel', '');
         });
         it('frontend correctly registers if Debugger.enable fails', async () => {
@@ -219,7 +219,7 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             await inspectorMain.run();
-            assert.isTrue(runIfWaitingForDebugger.calledOnce);
+            sinon.assert.calledOnce(runIfWaitingForDebugger);
             Root.Runtime.Runtime.setQueryParamForTesting('v8only', '');
         });
         it('calls Runtime.runIfWaitingForDebugger for frame target', async () => {
@@ -227,14 +227,14 @@ describeWithMockConnection('InspectorMainImpl', () => {
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             await inspectorMain.run();
-            assert.isTrue(runIfWaitingForDebugger.calledOnce);
+            sinon.assert.calledOnce(runIfWaitingForDebugger);
         });
         it('does not call Runtime.runIfWaitingForDebugger for Tab target', async () => {
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', 'tab');
             const runIfWaitingForDebugger = sinon.spy();
             setMockConnectionResponseHandler('Runtime.runIfWaitingForDebugger', runIfWaitingForDebugger);
             await runForTabTarget();
-            assert.isFalse(runIfWaitingForDebugger.called);
+            sinon.assert.notCalled(runIfWaitingForDebugger);
             Root.Runtime.Runtime.setQueryParamForTesting('targetType', '');
         });
         it('sets frame target to "main"', async () => {

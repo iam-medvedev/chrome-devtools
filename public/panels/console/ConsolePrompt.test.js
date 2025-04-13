@@ -18,7 +18,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         registerNoopActions(['console.clear', 'console.clear.history', 'console.create-pin']);
         const keymapOf = sinon.spy(CodeMirror.keymap, 'of');
         consolePrompt = new Console.ConsolePrompt.ConsolePrompt();
-        assert.isTrue(keymapOf.called);
+        sinon.assert.called(keymapOf);
         keyBinding = keymapOf.firstCall.firstArg;
         const editorContainer = consolePrompt.element.querySelector('.console-prompt-editor-container');
         editor = editorContainer.firstElementChild;
@@ -58,7 +58,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
         enterBinding.run({});
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(evaluateOnTarget.called);
+        sinon.assert.called(evaluateOnTarget);
     });
     it('allows user to enable pasting by typing \'allow pasting\'', async () => {
         const setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
@@ -81,7 +81,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
             .resolves(compileScriptResponse('SyntaxError: Unexpected end of input'));
         enterBinding.run({});
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isFalse(evaluateOnTarget.called);
+        sinon.assert.notCalled(evaluateOnTarget);
     });
     it('evaluate incomplete expression if forced', async () => {
         const ctrlEnterBinding = keyBinding.find(b => b.key === 'Ctrl-Enter');
@@ -89,7 +89,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
             .resolves(compileScriptResponse('SyntaxError: Unexpected end of input'));
         ctrlEnterBinding.run({});
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(evaluateOnTarget.called);
+        sinon.assert.called(evaluateOnTarget);
     });
     it('does not evaluate if the current context has changed', async () => {
         const anotherTarget = createTarget();
@@ -101,8 +101,8 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         enterBinding.run({});
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, anotherTargetContext);
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isFalse(evaluateOnAnotherTarget.called);
-        assert.isFalse(evaluateOnTarget.called);
+        sinon.assert.notCalled(evaluateOnAnotherTarget);
+        sinon.assert.notCalled(evaluateOnTarget);
     });
 });
 //# sourceMappingURL=ConsolePrompt.test.js.map

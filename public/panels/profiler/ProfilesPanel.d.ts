@@ -27,7 +27,7 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
     fileSelectorElement: HTMLInputElement;
     selectedProfileType?: ProfileType;
     constructor(name: string, profileTypes: ProfileType[], recordingActionId: string);
-    onKeyDown(ev: Event): void;
+    onKeyDown(event: KeyboardEvent): void;
     searchableView(): UI.SearchableView.SearchableView | null;
     createFileSelectorElement(): void;
     findProfileTypeByExtension(fileName: string): ProfileType | null;

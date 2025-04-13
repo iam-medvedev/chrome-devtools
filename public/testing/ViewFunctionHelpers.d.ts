@@ -7,7 +7,7 @@ type ViewFunction<WidgetConstructorT extends WidgetConstructor> = FindViewFuncti
 type ViewFunctionParameters<WidgetConstructorT extends WidgetConstructor> = Parameters<ViewFunction<WidgetConstructorT>>;
 type ViewInput<WidgetConstructorT extends WidgetConstructor> = ViewFunctionParameters<WidgetConstructorT>[0];
 type ViewOutput<WidgetConstructorT extends WidgetConstructor> = ViewFunctionParameters<WidgetConstructorT>[1];
-interface ViewStubExtensions<WidgetConstructorT extends WidgetConstructor> {
+interface ViewStubExtensions<WidgetConstructorT extends WidgetConstructor> extends sinon.SinonSpy<[ViewInput<WidgetConstructorT>, ViewOutput<WidgetConstructorT>, HTMLElement], void> {
     input: ViewInput<WidgetConstructorT>;
     nextInput: Promise<ViewInput<WidgetConstructorT>>;
     callCount: number;

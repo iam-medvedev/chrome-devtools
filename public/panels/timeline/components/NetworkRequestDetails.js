@@ -324,7 +324,7 @@ export class NetworkRequestDetails extends HTMLElement {
                 align: "start" /* LegacyComponents.ImagePreview.Align.START */,
                 hideFileData: true,
             };
-            const previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(this.#maybeTarget, this.#networkRequest.args.data.url, false, previewOpts);
+            const previewElement = await LegacyComponents.ImagePreview.ImagePreview.build(this.#networkRequest.args.data.url, false, previewOpts);
             previewElement && this.#requestPreviewElements.set(this.#networkRequest, previewElement);
         }
         const requestPreviewElement = this.#requestPreviewElements.get(this.#networkRequest);

@@ -37,7 +37,7 @@ export class PerformanceTracing {
             'v8.execute',
             'v8',
         ].join(',');
-        const started = await this.#tracingManager.start(this, categories, '');
+        const started = await this.#tracingManager.start(this, categories);
         if (!started) {
             throw new Error('Unable to start tracing.');
         }

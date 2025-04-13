@@ -71,10 +71,10 @@ describeWithMockConnection('InterestGroupStorageView', () => {
         });
         const grid = view.getInterestGroupGridForTesting();
         const spy = sinon.spy(view, 'setSidebarWidget');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         grid.dispatchEvent(new CustomEvent('select', { detail: events[0] }));
         await raf();
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
     });
     it('Clears sidebarWidget upon receiving cellFocusedEvent on an additionalBid-type events', async function () {
@@ -91,10 +91,10 @@ describeWithMockConnection('InterestGroupStorageView', () => {
             const grid = view.getInterestGroupGridForTesting();
             const sideBarUpdateDone = expectCall(sinon.stub(view, 'sidebarUpdatedForTesting'));
             const spy = sinon.spy(view, 'setSidebarWidget');
-            assert.isTrue(spy.notCalled);
+            sinon.assert.notCalled(spy);
             grid.dispatchEvent(new CustomEvent('select', { detail: { ...events[0], type: eventType } }));
             await sideBarUpdateDone;
-            assert.isTrue(spy.calledOnce);
+            sinon.assert.calledOnce(spy);
             assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
             assert.isTrue(view.sidebarWidget()?.contentElement.firstChild?.textContent?.includes('No details'));
         }
@@ -110,10 +110,10 @@ describeWithMockConnection('InterestGroupStorageView', () => {
         });
         const grid = view.getInterestGroupGridForTesting();
         const spy = sinon.spy(view, 'setSidebarWidget');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         grid.dispatchEvent(new CustomEvent('select', { detail: events[0] }));
         await raf();
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
         assert.isTrue(view.sidebarWidget()?.contentElement.firstChild?.textContent?.includes('No details'));
     });
@@ -128,13 +128,13 @@ describeWithMockConnection('InterestGroupStorageView', () => {
         });
         const grid = view.getInterestGroupGridForTesting();
         const spy = sinon.spy(view, 'setSidebarWidget');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         grid.dispatchEvent(new CustomEvent('select', { detail: events[0] }));
         await raf();
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
         view.clearEvents();
-        assert.isTrue(spy.calledTwice);
+        sinon.assert.calledTwice(spy);
         assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
         assert.isTrue(view.sidebarWidget()?.contentElement.firstChild?.textContent?.includes('Click'));
     });

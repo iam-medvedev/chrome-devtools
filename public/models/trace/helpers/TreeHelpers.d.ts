@@ -1,3 +1,4 @@
+import type * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 export declare const makeTraceEntryNodeId: () => TraceEntryNodeId;
 export declare const makeEmptyTraceEntryTree: () => TraceEntryTree;
@@ -15,10 +16,7 @@ export interface TraceEntryNode {
     parent: TraceEntryNode | null;
     children: TraceEntryNode[];
 }
-declare class TraceEntryNodeIdTag {
-    #private;
-}
-export type TraceEntryNodeId = number & TraceEntryNodeIdTag;
+export type TraceEntryNodeId = Platform.Brand.Brand<number, 'traceEntryNodeIdTag'>;
 /**
  * Builds a hierarchy of the entries (trace events and profile calls) in
  * a particular thread of a particular process, assuming that they're
@@ -109,4 +107,3 @@ export declare function walkEntireTree(entryToNode: Map<Types.Events.Event, Trac
  * built, for example if none of the events overlap with each other.
  */
 export declare function canBuildTreesFromEvents(events: readonly Types.Events.Event[]): boolean;
-export {};

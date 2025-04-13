@@ -189,7 +189,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         locale.role = 'cell';
         return element;
     }
-    removeItemRequested(item, index) {
+    removeItemRequested(_item, index) {
         const list = this.customSetting.get();
         list.splice(index, 1);
         this.customSetting.set(list);
@@ -253,7 +253,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
         cell = fields.createChild('div', 'locations-list-text locations-input-container');
         cell.appendChild(editor.createInput('locale', 'text', i18nString(UIStrings.locale), localeValidator));
         return editor;
-        function titleValidator(item, index, input) {
+        function titleValidator(_item, _index, input) {
             const maxLength = 50;
             const value = input.value.trim();
             let errorMessage;
@@ -268,7 +268,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             }
             return { valid: true, errorMessage: undefined };
         }
-        function latValidator(item, index, input) {
+        function latValidator(_item, _index, input) {
             const minLat = -90;
             const maxLat = 90;
             const value = input.value.trim();
@@ -291,7 +291,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             }
             return { valid: true, errorMessage: undefined };
         }
-        function longValidator(item, index, input) {
+        function longValidator(_item, _index, input) {
             const minLong = -180;
             const maxLong = 180;
             const value = input.value.trim();
@@ -314,7 +314,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             }
             return { valid: true, errorMessage: undefined };
         }
-        function timezoneIdValidator(item, index, input) {
+        function timezoneIdValidator(_item, _index, input) {
             const value = input.value.trim();
             // Chromium uses ICU's timezone implementation, which is very
             // liberal in what it accepts. ICU does not simply use an allowlist
@@ -329,7 +329,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
             const errorMessage = i18nString(UIStrings.timezoneIdMustContainAlphabetic);
             return { valid: false, errorMessage };
         }
-        function localeValidator(item, index, input) {
+        function localeValidator(_item, _index, input) {
             const value = input.value.trim();
             // Similarly to timezone IDs, there's not much point in validating
             // input locales other than checking if it contains at least two

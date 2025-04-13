@@ -33,7 +33,7 @@ describeWithMockConnection('NetworkOverview', () => {
         networkOverview.show(document.body);
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
-        assert.isFalse(calculator.computePosition.called);
+        sinon.assert.notCalled(calculator.computePosition);
         resourceTreeModel.dispatchEventToListeners(event, ...[{ loadTime: 42 }]);
         await RenderCoordinator.done();
         assert.strictEqual(calculator.computePosition.called, inScope);

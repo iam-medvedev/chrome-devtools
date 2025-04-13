@@ -16,7 +16,6 @@ export declare class JumpToHighlightedMemoryEvent extends Event {
 }
 export declare class LinearMemoryHighlightChipList extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: LinearMemoryHighlightChipListData);
 }
 declare global {

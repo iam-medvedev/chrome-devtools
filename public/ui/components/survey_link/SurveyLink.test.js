@@ -5,16 +5,16 @@ import * as Common from '../../../core/common/common.js';
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as SurveyLink from './survey_link.js';
-function canShowSuccessfulCallback(trigger, callback) {
+function canShowSuccessfulCallback(_trigger, callback) {
     callback({ canShowSurvey: true });
 }
-function showSuccessfulCallback(trigger, callback) {
+function showSuccessfulCallback(_trigger, callback) {
     callback({ surveyShown: true });
 }
-function canShowFailureCallback(trigger, callback) {
+function canShowFailureCallback(_trigger, callback) {
     callback({ canShowSurvey: false });
 }
-function showFailureCallback(trigger, callback) {
+function showFailureCallback(_trigger, callback) {
     callback({ surveyShown: false });
 }
 const empty = Common.UIString.LocalizedEmptyString;

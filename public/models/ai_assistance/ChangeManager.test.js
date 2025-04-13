@@ -47,7 +47,7 @@ describe('ChangeManager', () => {
                 color: 'blue',
             },
         });
-        assert(cssModel.setStyleSheetText.calledOnce);
+        sinon.assert.calledOnce(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
     });
     it('can merge multiple changes with same className', async () => {
@@ -61,7 +61,7 @@ describe('ChangeManager', () => {
                 color: 'blue',
             },
         });
-        assert(cssModel.setStyleSheetText.calledOnce);
+        sinon.assert.calledOnce(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
         await changeManager.addChange(cssModel, frameId, {
             groupId: agentId,
@@ -71,7 +71,7 @@ describe('ChangeManager', () => {
                 color: 'green',
             },
         });
-        assert(cssModel.setStyleSheetText.calledTwice);
+        sinon.assert.calledTwice(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: green;\n  }\n}', true]);
     });
     it('can register multiple changes with the same selector', async () => {
@@ -93,7 +93,7 @@ describe('ChangeManager', () => {
                 color: 'green',
             },
         });
-        assert(cssModel.setStyleSheetText.calledTwice);
+        sinon.assert.calledTwice(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, [
             '1',
             '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}\n.ai-style-change-2 {\n  div& {\n    color: green;\n  }\n}',
@@ -111,7 +111,7 @@ describe('ChangeManager', () => {
                 color: 'blue',
             },
         });
-        assert(cssModel.setStyleSheetText.calledOnce);
+        sinon.assert.calledOnce(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
         await changeManager.addChange(cssModel, anotherFrameId, {
             groupId: agentId,
@@ -121,7 +121,7 @@ describe('ChangeManager', () => {
                 color: 'green',
             },
         });
-        assert(cssModel.setStyleSheetText.calledTwice);
+        sinon.assert.calledTwice(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['2', '.ai-style-change-2 {\n  div& {\n    color: green;\n  }\n}', true]);
     });
     it('can clear changes', async () => {
@@ -135,7 +135,7 @@ describe('ChangeManager', () => {
                 color: 'blue',
             },
         });
-        assert(cssModel.setStyleSheetText.calledOnce);
+        sinon.assert.calledOnce(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
         await changeManager.clear();
         cssModel = createModel();
@@ -147,7 +147,7 @@ describe('ChangeManager', () => {
                 color: 'green',
             },
         });
-        assert(cssModel.setStyleSheetText.calledOnce);
+        sinon.assert.calledOnce(cssModel.setStyleSheetText);
         assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['2', '.ai-style-change-1 {\n  body& {\n    color: green;\n  }\n}', true]);
     });
     describe('format changes', () => {
@@ -198,10 +198,10 @@ div {
                     color: 'blue',
                 },
             });
-            assert(cssModel.setStyleSheetText.calledOnce);
+            sinon.assert.calledOnce(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
             await changeManager.stashChanges();
-            assert(cssModel.setStyleSheetText.calledTwice);
+            sinon.assert.calledTwice(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '', true]);
         });
         it('can restore changes', async () => {
@@ -215,13 +215,13 @@ div {
                     color: 'blue',
                 },
             });
-            assert(cssModel.setStyleSheetText.calledOnce);
+            sinon.assert.calledOnce(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
             await changeManager.stashChanges();
-            assert(cssModel.setStyleSheetText.calledTwice);
+            sinon.assert.calledTwice(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '', true]);
             await changeManager.popStashedChanges();
-            assert(cssModel.setStyleSheetText.calledThrice);
+            sinon.assert.calledThrice(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
         });
         it('can discard changes', async () => {
@@ -235,13 +235,13 @@ div {
                     color: 'blue',
                 },
             });
-            assert(cssModel.setStyleSheetText.calledOnce);
+            sinon.assert.calledOnce(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '.ai-style-change-1 {\n  div& {\n    color: blue;\n  }\n}', true]);
             await changeManager.stashChanges();
-            assert(cssModel.setStyleSheetText.calledTwice);
+            sinon.assert.calledTwice(cssModel.setStyleSheetText);
             assert.deepEqual(cssModel.setStyleSheetText.lastCall.args, ['1', '', true]);
             await changeManager.dropStashedChanges();
-            assert(cssModel.setStyleSheetText.calledTwice);
+            sinon.assert.calledTwice(cssModel.setStyleSheetText);
         });
     });
 });

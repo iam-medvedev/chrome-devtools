@@ -266,8 +266,7 @@ export class ListControl {
             this.selectItem(item);
         }
     }
-    onKeyDown(ev) {
-        const event = ev;
+    onKeyDown(event) {
         let selected = false;
         switch (event.key) {
             case 'ArrowUp':

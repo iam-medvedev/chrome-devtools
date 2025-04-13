@@ -406,7 +406,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
         return subsection;
     }
     createExperimentCheckbox(experiment) {
-        const label = UI.UIUtils.CheckboxLabel.createWithStringLiteral(experiment.title, experiment.isEnabled(), undefined, experiment.name);
+        const label = UI.UIUtils.CheckboxLabel.createWithStringLiteral(experiment.title, experiment.isEnabled(), experiment.name);
         label.classList.add('experiment-label');
         const input = label.checkboxElement;
         input.name = experiment.name;
@@ -463,7 +463,7 @@ export class ExperimentsSettingsTab extends SettingsTab {
     }
 }
 export class ActionDelegate {
-    handleAction(context, actionId) {
+    handleAction(_context, actionId) {
         switch (actionId) {
             case 'settings.show':
                 void SettingsScreen.showSettingsScreen({ focusTabHeader: true });

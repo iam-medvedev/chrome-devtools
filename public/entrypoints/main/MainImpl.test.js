@@ -40,7 +40,7 @@ describeWithMockConnection('MainMenuItem', () => {
             bubbles: true,
             cancelable: true,
         }));
-        assert.isTrue(contextMenuShow.calledOnce);
+        sinon.assert.calledOnce(contextMenuShow);
         assert.notExists(contextMenuShow.thisValues[0].defaultSection().items.find((item) => item.buildDescriptor().label === 'Focus page'));
     });
 });

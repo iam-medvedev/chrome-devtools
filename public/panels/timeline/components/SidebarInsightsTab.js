@@ -159,6 +159,17 @@ export class SidebarInsightsTab extends HTMLElement {
     `;
         // clang-format on
     }
+    highlightActiveInsight() {
+        if (!this.#activeInsight) {
+            return;
+        }
+        // Find the right set for this insight via the set key.
+        const set = this.#shadow?.querySelector(`devtools-performance-sidebar-single-navigation[data-insight-set-key="${this.#activeInsight.insightSetKey}"]`);
+        if (!set) {
+            return;
+        }
+        set.highlightActiveInsight();
+    }
     #render() {
         if (!this.#parsedTrace || !this.#insights) {
             Lit.render(Lit.nothing, this.#shadow, { host: this });
@@ -181,6 +192,7 @@ export class SidebarInsightsTab extends HTMLElement {
             };
             const contents = html `
             <devtools-performance-sidebar-single-navigation
+              data-insight-set-key=${id}
               .data=${data}>
             </devtools-performance-sidebar-single-navigation>
           `;

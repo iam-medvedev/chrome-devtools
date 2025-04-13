@@ -392,16 +392,15 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         const color = Common.Color.Legacy.fromRGBA(rgba);
         this.contrastInfo.setBgColor(color);
         this.toggleBackgroundColorPickerInternal(false);
+        this.bgColorPickerButton.toggled(false);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
     }
 }
 export class Swatch {
-    parentElement;
     swatchElement;
     swatchInnerElement;
     textPreview;
     constructor(parentElement) {
-        this.parentElement = parentElement;
         this.swatchElement = parentElement.createChild('span', 'swatch contrast swatch-inner-white');
         this.swatchInnerElement = this.swatchElement.createChild('span', 'swatch-inner');
         this.textPreview = this.swatchElement.createChild('div', 'text-preview');

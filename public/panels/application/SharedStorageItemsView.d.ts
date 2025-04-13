@@ -34,7 +34,7 @@ export declare class SharedStorageItemsView extends KeyValueStorageItemsView {
     updateEntriesOnly(): Promise<void>;
     refreshItems(): Promise<void>;
     deleteAllItems(): Promise<void>;
-    protected isEditAllowed(columnIdentifier: string, oldText: string, newText: string): boolean;
+    protected isEditAllowed(columnIdentifier: string, _oldText: string, newText: string): boolean;
     protected setItem(key: string, value: string): Promise<void>;
     protected removeItem(key: string): Promise<void>;
     protected createPreview(key: string, value: string): Promise<UI.Widget.Widget | null>;

@@ -18,6 +18,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
+    "noUnusedParameters": true,
     "outDir": ".",
     "rootDir": "../../../../../../../front_end/panels/web_audio/graph_visualizer",
     "skipLibCheck": true,

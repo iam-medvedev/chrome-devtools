@@ -279,9 +279,8 @@ export class NetworkLogViewColumns {
         this.waterfallColumn.setMinimumSize(100, 0);
         this.splitWidget.setSidebarWidget(this.waterfallColumn);
         this.switchViewMode(false);
-        function handleContextMenu(ev) {
-            const event = ev;
-            const node = this.waterfallColumn.getNodeFromPoint(event.offsetX, event.offsetY);
+        function handleContextMenu(event) {
+            const node = this.waterfallColumn.getNodeFromPoint(event.offsetY);
             if (!node) {
                 return;
             }
@@ -294,26 +293,23 @@ export class NetworkLogViewColumns {
             void contextMenu.show();
         }
     }
-    onMouseWheel(shouldConsume, ev) {
+    onMouseWheel(shouldConsume, event) {
         if (shouldConsume) {
-            ev.consume(true);
+            event.consume(true);
         }
-        const event = ev;
         const hasRecentWheel = Date.now() - this.lastWheelTime < 80;
         this.activeScroller.scrollBy({ top: event.deltaY, behavior: hasRecentWheel ? 'auto' : 'smooth' });
         this.syncScrollers();
         this.lastWheelTime = Date.now();
     }
-    onTouchStart(ev) {
-        const event = ev;
+    onTouchStart(event) {
         this.hasScrollerTouchStarted = true;
         this.scrollerTouchStartPos = event.changedTouches[0].pageY;
     }
-    onTouchMove(ev) {
+    onTouchMove(event) {
         if (!this.hasScrollerTouchStarted) {
             return;
         }
-        const event = ev;
         const currentPos = event.changedTouches[0].pageY;
         const delta = this.scrollerTouchStartPos - currentPos;
         this.activeScroller.scrollBy({ top: delta, behavior: 'auto' });

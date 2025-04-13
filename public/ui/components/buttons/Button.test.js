@@ -91,8 +91,8 @@ describe('Button', () => {
     it('gets the no additional classes set for the inner button if only text is provided', () => {
         const button = renderButton();
         const innerButton = button.shadowRoot?.querySelector('button');
-        assert.isTrue(!innerButton.classList.contains('text-with-icon'));
-        assert.isTrue(!innerButton.classList.contains('only-icon'));
+        assert.isNotOk(innerButton.classList.contains('text-with-icon'));
+        assert.isNotOk(innerButton.classList.contains('only-icon'));
     });
     it('gets title set', () => {
         const button = renderButton({
@@ -111,7 +111,7 @@ describe('Button', () => {
         }, 'text');
         const innerButton = button.shadowRoot?.querySelector('button');
         assert.isTrue(innerButton.classList.contains('text-with-icon'));
-        assert.isTrue(!innerButton.classList.contains('only-icon'));
+        assert.isNotOk(innerButton.classList.contains('only-icon'));
     });
     it('gets the only-icon class set for the inner button if only icon is provided', () => {
         const button = renderButton({
@@ -119,7 +119,7 @@ describe('Button', () => {
             iconName,
         }, '');
         const innerButton = button.shadowRoot?.querySelector('button');
-        assert.isTrue(!innerButton.classList.contains('text-with-icon'));
+        assert.isNotOk(innerButton.classList.contains('text-with-icon'));
         assert.isTrue(innerButton.classList.contains('only-icon'));
     });
     it('gets the `small` class set for the inner button if size === SMALL', () => {
@@ -146,7 +146,7 @@ describe('Button', () => {
         dispatchKeyDownEvent(innerButton, { bubbles: true, composed: true, key: 'Enter' });
         dispatchKeyDownEvent(innerButton, { bubbles: true, composed: true, key: ' ' });
         dispatchKeyDownEvent(innerButton, { bubbles: true, composed: true, key: 'x' });
-        assert.isTrue(onKeydown.calledOnce);
+        sinon.assert.calledOnce(onKeydown);
         assert.strictEqual(onKeydown.getCall(0).args[0].key, 'x');
     });
     it('devtools-button width should not expand its content\'s width', () => {

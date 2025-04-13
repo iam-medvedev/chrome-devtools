@@ -36,7 +36,6 @@ export declare class AgentLayer implements SDK.LayerTreeBase.Layer {
     private scrollRectsInternal;
     private quadInternal;
     private childrenInternal;
-    private image;
     private parentInternal;
     private layerPayload;
     private layerTreeModel;

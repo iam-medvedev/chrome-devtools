@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
-import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { CSSModel } from './CSSModel.js';
@@ -454,13 +453,6 @@ export class DOMNode {
                 callback(response.getError() || null);
             }
         });
-    }
-    async copyNode() {
-        const { outerHTML } = await this.#agent.invoke_getOuterHTML({ nodeId: this.id });
-        if (outerHTML !== null) {
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(outerHTML);
-        }
-        return outerHTML;
     }
     path() {
         function getNodeKey(node) {

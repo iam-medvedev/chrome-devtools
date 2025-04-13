@@ -38,7 +38,6 @@ export declare class CallStackSidebarPane extends UI.View.SimpleView implements 
     private createIgnoreListMessageElementAndCheckbox;
     private createShowMoreMessageElement;
     private onContextMenu;
-    private onClick;
     private activateItem;
     activeCallFrameItem(): Item | null;
     appendIgnoreListURLContextMenuItems(contextMenu: UI.ContextMenu.ContextMenu, uiSourceCode: Workspace.UISourceCode.UISourceCode): void;
@@ -49,7 +48,7 @@ export declare class CallStackSidebarPane extends UI.View.SimpleView implements 
 export declare const elementSymbol: unique symbol;
 export declare const defaultMaxAsyncStackChainDepth = 32;
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
-    handleAction(context: UI.Context.Context, actionId: string): boolean;
+    handleAction(_context: UI.Context.Context, actionId: string): boolean;
 }
 export declare class Item {
     isIgnoreListed: boolean;

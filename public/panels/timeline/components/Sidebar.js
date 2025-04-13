@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../../core/common/common.js';
+import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { SidebarAnnotationsTab } from './SidebarAnnotationsTab.js';
 import { SidebarInsightsTab } from './SidebarInsightsTab.js';
@@ -76,8 +77,8 @@ export class SidebarWidget extends UI.Widget.VBox {
         this.#insightsView.setInsights(insights);
         this.#tabbedPane.setTabEnabled("insights" /* SidebarTabs.INSIGHTS */, insights !== null);
     }
-    setActiveInsight(activeInsight) {
-        this.#insightsView.setActiveInsight(activeInsight);
+    setActiveInsight(activeInsight, opts) {
+        this.#insightsView.setActiveInsight(activeInsight, opts);
         if (activeInsight) {
             this.#tabbedPane.selectTab("insights" /* SidebarTabs.INSIGHTS */);
         }
@@ -97,8 +98,16 @@ class InsightsView extends UI.Widget.VBox {
     setInsights(data) {
         this.#component.insights = data;
     }
-    setActiveInsight(active) {
+    setActiveInsight(active, opts) {
         this.#component.activeInsight = active;
+        if (opts.highlight && active) {
+            // Wait for the rendering of the component to be done, otherwise we
+            // might highlight the wrong insight. The UI needs to be fully
+            // re-rendered before we can highlight the newly-expanded insight.
+            void RenderCoordinator.done().then(() => {
+                this.#component.highlightActiveInsight();
+            });
+        }
     }
 }
 class AnnotationsView extends UI.Widget.VBox {

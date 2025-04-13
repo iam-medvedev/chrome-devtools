@@ -29,8 +29,7 @@ export class DropTarget {
             event.consume(true);
         }
     }
-    hasMatchingType(ev) {
-        const event = ev;
+    hasMatchingType(event) {
         if (!event.dataTransfer) {
             return false;
         }
@@ -44,8 +43,7 @@ export class DropTarget {
         }
         return false;
     }
-    onDragOver(ev) {
-        const event = ev;
+    onDragOver(event) {
         if (!this.enabled || !this.hasMatchingType(event)) {
             return;
         }
@@ -62,8 +60,7 @@ export class DropTarget {
         this.dragMaskElement.addEventListener('drop', this.onDrop.bind(this), true);
         this.dragMaskElement.addEventListener('dragleave', this.onDragLeave.bind(this), true);
     }
-    onDrop(ev) {
-        const event = ev;
+    onDrop(event) {
         event.consume(true);
         this.removeMask();
         if (this.enabled && event.dataTransfer) {

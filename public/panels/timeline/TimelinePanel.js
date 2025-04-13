@@ -385,11 +385,6 @@ export class TimelinePanel extends UI.Panel.Panel {
     fileSelectorElement;
     selection = null;
     traceLoadStart;
-    primaryPageTargetPromiseCallback = (_target) => { };
-    // Note: this is technically unused, but we need it to define the promiseCallback function above.
-    primaryPageTargetPromise = new Promise(res => {
-        this.primaryPageTargetPromiseCallback = res;
-    });
     #traceEngineModel;
     #sourceMapsResolver = null;
     #entityMapper = null;
@@ -603,23 +598,16 @@ export class TimelinePanel extends UI.Panel.Panel {
             modelRemoved: (_model) => {
             },
         });
-        SDK.TargetManager.TargetManager.instance().observeTargets({
-            targetAdded: (target) => {
-                if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
-                    return;
-                }
-                this.primaryPageTargetPromiseCallback(target);
-            },
-            targetRemoved: (_) => { },
-        });
     }
-    #setActiveInsight(insight) {
-        // When an insight is selected, ensure that the 3P checkbox is disabled
-        // to avoid dimming interference.
+    /**
+     * Activates an insight and ensures the sidebar is open too.
+     * Pass `highlightInsight: true` to flash the insight with the background highlight colour.
+     */
+    #setActiveInsight(insight, opts = { highlightInsight: false }) {
         if (insight) {
             this.#splitWidget.showBoth();
         }
-        this.#sideBar.setActiveInsight(insight);
+        this.#sideBar.setActiveInsight(insight, { highlight: opts.highlightInsight });
         this.flameChart.setActiveInsight(insight);
         if (insight) {
             const selectedInsight = new SelectedInsight(insight);
@@ -1146,7 +1134,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
-    async saveToFile(isEnhancedTrace = false, addModifications = false) {
+    async saveToFile(savingEnhancedTrace = false, addModifications = false) {
         if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
@@ -1158,16 +1146,30 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (!traceEvents) {
             return;
         }
-        if (!isEnhancedTrace ||
-            !Root.Runtime.experiments.isEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */)) {
-            traceEvents = traceEvents.filter(event => {
-                return event.cat !== 'disabled-by-default-devtools.v8-source-rundown-sources';
+        const shouldRetainScriptSources = savingEnhancedTrace &&
+            Root.Runtime.experiments.isEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */);
+        if (!shouldRetainScriptSources) {
+            traceEvents = traceEvents.map(event => {
+                if (Trace.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== 'StubScriptCatchup') {
+                    return {
+                        cat: event.cat,
+                        name: 'StubScriptCatchup',
+                        ts: event.ts,
+                        ph: event.ph,
+                        pid: event.pid,
+                        tid: event.tid,
+                        args: {
+                            data: { isolate: event.args.data.isolate, scriptId: event.args.data.scriptId },
+                        },
+                    };
+                }
+                return event;
             });
         }
         if (metadata) {
             metadata.modifications = addModifications ? ModificationsManager.activeManager()?.toJSON() : undefined;
             metadata.enhancedTraceVersion =
-                isEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
+                savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
         }
         const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
         let fileName;
@@ -1203,7 +1205,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             else {
                 const formattedTraceIter = traceJsonGenerator(traceEvents, {
                     ...metadata,
-                    sourceMaps: isEnhancedTrace ? metadata?.sourceMaps : undefined,
+                    sourceMaps: savingEnhancedTrace ? metadata?.sourceMaps : undefined,
                 });
                 traceAsString = Array.from(formattedTraceIter).join('');
             }
@@ -1445,7 +1447,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 // If we profile all target, but this will cause some bugs like time for the function is calculated wrong,
                 // because the profiles will be concated and sorted together, so the total time will be amplified.
                 // Multiple targets problem might happen when you inspect multiple node servers on different port at same time,
-                // or when you let DevTools listen to both locolhost:9229 & 127.0.0.1:9229.
+                // or when you let DevTools listen to both localhost:9229 & 127.0.0.1:9229.
                 const firstNodeTarget = SDK.TargetManager.TargetManager.instance().targets().find(target => target.type() === SDK.Target.Type.NODE);
                 if (!firstNodeTarget) {
                     throw new Error('Could not load any Node target.');
@@ -2407,6 +2409,18 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.setSelectionAndReveal(null);
         this.flameChart.selectDetailsViewTab(Tab.Details, null);
     }
+    /**
+     * Used to reveal an insight - and is called from the AI Assistance panel when the user clicks on the Insight context button that is shown.
+     * Revealing an insight should:
+     * 1. Ensure the sidebar is open
+     * 2. Ensure the insight is expanded
+     *    (both of these should be true in the AI Assistance case)
+     * 3. Flash the Insight with the highlight colour we use in other panels.
+     */
+    revealInsight(insightModel) {
+        const insightSetKey = insightModel.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
+        this.#setActiveInsight({ model: insightModel, insightSetKey }, { highlightInsight: true });
+    }
 }
 // Define row and header height, should be in sync with styles for timeline graphs.
 export const rowHeight = 18;
@@ -2556,6 +2570,12 @@ export class EventRevealer {
     async reveal(rEvent) {
         await UI.ViewManager.ViewManager.instance().showView('timeline');
         TimelinePanel.instance().select(selectionFromEvent(rEvent.event));
+    }
+}
+export class InsightRevealer {
+    async reveal(revealable) {
+        await UI.ViewManager.ViewManager.instance().showView('timeline');
+        TimelinePanel.instance().revealInsight(revealable.insight);
     }
 }
 export class ActionDelegate {

@@ -111,7 +111,7 @@ export class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElement {
             this.editingCommitted(text, previousContent);
         }
         const attributeName = this.nameElement.textContent || '';
-        this.prompt = new ARIAAttributePrompt(ariaMetadata().valuesForProperty(attributeName), this);
+        this.prompt = new ARIAAttributePrompt(ariaMetadata().valuesForProperty(attributeName));
         this.prompt.setAutocompletionTimeout(0);
         const proxyElement = this.prompt.attachAndStartEditing(valueElement, blurListener.bind(this, previousContent));
         proxyElement.addEventListener('keydown', event => this.editingValueKeyDown(previousContent, event), false);
@@ -158,12 +158,10 @@ export class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElement {
 }
 export class ARIAAttributePrompt extends UI.TextPrompt.TextPrompt {
     ariaCompletions;
-    treeElement;
-    constructor(ariaCompletions, treeElement) {
+    constructor(ariaCompletions) {
         super();
         this.initialize(this.buildPropertyCompletions.bind(this));
         this.ariaCompletions = ariaCompletions;
-        this.treeElement = treeElement;
     }
     async buildPropertyCompletions(expression, prefix, force) {
         prefix = prefix.toLowerCase();

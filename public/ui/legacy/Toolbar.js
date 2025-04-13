@@ -81,7 +81,6 @@ export class Toolbar extends HTMLElement {
     items = [];
     enabled = true;
     compactLayout = false;
-    mutationObserver = new MutationObserver(this.onItemsChange.bind(this));
     constructor() {
         super();
         this.#shadowRoot.createChild('style').textContent = toolbarStyles.cssText;
@@ -757,7 +756,7 @@ class ToolbarInputElement extends HTMLElement {
         const options = this.datalist.options;
         return [...options].map((({ value }) => value)).filter(value => value.startsWith(prefix)).map(text => ({ text }));
     }
-    attributeChangedCallback(name, oldValue, newValue) {
+    attributeChangedCallback(name, _oldValue, newValue) {
         if (name === 'value') {
             if (this.item && this.item.value() !== newValue) {
                 this.item.setValue(newValue, true);
@@ -770,11 +769,9 @@ class ToolbarInputElement extends HTMLElement {
 }
 customElements.define('devtools-toolbar-input', ToolbarInputElement);
 export class ToolbarToggle extends ToolbarButton {
-    untoggledGlyph;
     toggledGlyph;
     constructor(title, glyph, toggledGlyph, jslogContext, toggleOnClick) {
         super(title, glyph, '');
-        this.untoggledGlyph = glyph;
         this.toggledGlyph = toggledGlyph ? toggledGlyph : glyph;
         this.setToggledIcon(this.toggledGlyph || '');
         this.setToggleType("primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */);
@@ -892,7 +889,7 @@ export class ToolbarMenuButton extends ToolbarItem {
         const contextMenu = new ContextMenu(event, {
             useSoftMenu: this.useSoftMenu,
             keepOpen: this.keepOpen,
-            x: this.element.getBoundingClientRect().left,
+            x: this.element.getBoundingClientRect().right,
             y: this.element.getBoundingClientRect().top + this.element.offsetHeight,
             // Without adding a delay, pointer events will be un-ignored too early, and a single click causes
             // the context menu to be closed and immediately re-opened on Windows (https://crbug.com/339560549).
@@ -1024,9 +1021,9 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
         super(null, accessibleName, undefined, setting.name);
         this.optionsInternal = options;
         this.setting = setting;
-        this.element.addEventListener('change', this.valueChanged.bind(this), false);
+        this.element.addEventListener('change', this.onSelectValueChange.bind(this), false);
         this.setOptions(options);
-        setting.addChangeListener(this.settingChanged, this);
+        setting.addChangeListener(this.onDevToolsSettingChanged, this);
     }
     setOptions(options) {
         this.optionsInternal = options;
@@ -1043,7 +1040,26 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
     value() {
         return this.optionsInternal[this.selectedIndex()].value;
     }
-    settingChanged() {
+    select(option) {
+        const index = Array.prototype.indexOf.call(this.element, option);
+        this.setSelectedIndex(index);
+    }
+    setSelectedIndex(index) {
+        super.setSelectedIndex(index);
+        const option = this.optionsInternal.at(index);
+        if (option) {
+            this.setTitle(option.label);
+        }
+    }
+    /**
+     * Note: wondering why there are two event listeners and what the difference is?
+     * It is because this combo box <select> is backed by a Devtools setting and
+     * at any time there could be multiple instances of these elements that are
+     * backed by the same setting. So they have to listen to two things:
+     * 1. When the setting is changed via a different method.
+     * 2. When the value of the select is changed, triggering a change to the setting.
+     */
+    onDevToolsSettingChanged() {
         if (this.muteSettingListener) {
             return;
         }
@@ -1055,7 +1071,10 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
             }
         }
     }
-    valueChanged(_event) {
+    /**
+     * Run when the user interacts with the <select> element.
+     */
+    onSelectValueChange(_event) {
         const option = this.optionsInternal[this.selectedIndex()];
         this.muteSettingListener = true;
         this.setting.set(option.value);
@@ -1070,7 +1089,7 @@ export class ToolbarCheckbox extends ToolbarItem {
         if (tooltip) {
             // install on the checkbox
             Tooltip.install(this.inputElement, tooltip);
-            Tooltip.install(this.element.textElement, tooltip);
+            Tooltip.install(this.element, tooltip);
         }
         if (listener) {
             this.inputElement.addEventListener('click', listener, false);

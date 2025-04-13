@@ -11,7 +11,7 @@ async function renderHeaderSectionRow(header) {
     const component = new NetworkComponents.HeaderSectionRow.HeaderSectionRow();
     const scrollIntoViewSpy = sinon.spy(component, 'scrollIntoView');
     renderElementIntoDOM(component);
-    assert.isTrue(scrollIntoViewSpy.notCalled);
+    sinon.assert.notCalled(scrollIntoViewSpy);
     component.data = { header };
     await RenderCoordinator.done();
     assert.isNotNull(component.shadowRoot);
@@ -45,11 +45,11 @@ describeWithEnvironment('HeaderSectionRow', () => {
         };
         const { component, scrollIntoViewSpy } = await renderHeaderSectionRow(headerData);
         assert.isNotNull(component.shadowRoot);
-        assert.isTrue(scrollIntoViewSpy.notCalled);
+        sinon.assert.notCalled(scrollIntoViewSpy);
         const spy = sinon.spy(Host.userMetrics, 'actionTaken');
         const headerValue = component.shadowRoot.querySelector('.header-value');
         assert.instanceOf(headerValue, HTMLElement);
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         dispatchCopyEvent(headerValue);
         assert.isTrue(spy.calledWith(Host.UserMetrics.Action.NetworkPanelCopyValue));
     });
@@ -139,7 +139,7 @@ describeWithEnvironment('HeaderSectionRow', () => {
         assert.isNotNull(component.shadowRoot);
         const headerRowElement = component.shadowRoot.querySelector('.row.header-highlight');
         assert.instanceOf(headerRowElement, HTMLDivElement);
-        assert.isTrue(scrollIntoViewSpy.calledOnce);
+        sinon.assert.calledOnce(scrollIntoViewSpy);
     });
     it('allows editing header name and header value', async () => {
         const originalHeaderName = Platform.StringUtilities.toLowerCaseString('some-header-name');

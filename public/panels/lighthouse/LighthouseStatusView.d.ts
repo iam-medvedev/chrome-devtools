@@ -2,9 +2,7 @@ import * as Common from '../../core/common/common.js';
 import type { LighthousePanel } from './LighthousePanel.js';
 export declare class StatusView {
     private readonly panel;
-    private statusView;
     private statusHeader;
-    private progressWrapper;
     private progressBar;
     private statusText;
     private cancelButton;

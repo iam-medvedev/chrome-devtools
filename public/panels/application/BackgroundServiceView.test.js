@@ -98,7 +98,7 @@ describeWithMockConnection('BackgroundServiceView', () => {
         assert.deepEqual(recordButton?.textContent, 'Start recording events');
         const recordingSpy = sinon.spy(view, 'toggleRecording');
         dispatchClickEvent(recordButton);
-        assert.isTrue(recordingSpy.calledOnce);
+        sinon.assert.calledOnce(recordingSpy);
     });
 });
 //# sourceMappingURL=BackgroundServiceView.test.js.map

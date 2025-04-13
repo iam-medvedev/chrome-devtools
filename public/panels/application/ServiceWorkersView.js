@@ -436,7 +436,6 @@ export class Section {
     sourceField;
     statusField;
     clientsField;
-    linkifier;
     clientInfoCache;
     throttler;
     updateCycleField;
@@ -481,7 +480,6 @@ export class Section {
         this.createSyncNotificationField(i18nString(UIStrings.periodicSync), this.periodicSyncTagNameSetting.get(), i18nString(UIStrings.periodicSyncTag), tag => this.periodicSync(tag), 'periodic-sync-tag');
         this.createUpdateCycleField();
         this.maybeCreateRouterField();
-        this.linkifier = new Components.Linkifier.Linkifier();
         this.clientInfoCache = new Map();
         this.throttler = new Common.Throttler.Throttler(500);
     }

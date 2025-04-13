@@ -275,7 +275,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         sinon.stub(model, getter).returns([MOCK_GETTER_ITEM]);
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(expectedCall.called);
+        sinon.assert.called(expectedCall);
     };
     it('adds DOM storage element after scope change', testUiUpdateOnScopeChange(Application.DOMStorageModel.DOMStorageModel, 'storages', 'sessionStorageListTreeElement.appendChild'));
     it('adds shared storage after scope change', testUiUpdateOnScopeChange(Application.SharedStorageModel.SharedStorageModel, 'storages', 'sharedStorageListTreeElement.appendChild'));

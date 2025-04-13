@@ -111,7 +111,7 @@ export class NodeConnectionsView extends UI.Widget.VBox {
         element.createChild('div', 'network-discovery-value network-discovery-address').textContent = rule.address;
         return element;
     }
-    removeItemRequested(rule, index) {
+    removeItemRequested(_rule, index) {
         this.#networkDiscoveryConfig.splice(index, 1);
         this.#list.removeItem(index);
         this.#update();

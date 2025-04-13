@@ -768,7 +768,7 @@ main {
     pointer-events: none;
   }
 
-  summary {
+  & .header-container {
     display: flex;
     align-items: center;
     gap: var(--sys-size-3);
@@ -798,6 +798,9 @@ main {
     & .header-text {
       font: var(--sys-typescale-body4);
       color: var(--sys-color-on-surface);
+      white-space: nowrap;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
     }
 
     & .arrow {
@@ -809,7 +812,7 @@ main {
     }
   }
 
-  &:not(&[open]):hover::after {
+  &:not(.saved-to-disk, &[open]):hover::after {
     content: '';
     height: 100%;
     width: 100%;
@@ -852,39 +855,41 @@ main {
 
   .footer {
     display: flex;
-    flex-direction: row;
+    flex-flow: row wrap;
     justify-content: space-between;
     margin: var(--sys-size-5) 0 var(--sys-size-5) var(--sys-size-2);
-    gap: var(--sys-size-6);
+    gap: var(--sys-size-6) var(--sys-size-5);
 
     .disclaimer-link {
       align-self: center;
     }
 
-    .sources-link {
+    .left-side {
       flex-grow: 1;
+      display: flex;
       align-self: center;
+      gap: var(--sys-size-3);
     }
 
-    .selected-folder {
+    .save-or-discard-buttons {
+      flex-grow: 1;
       display: flex;
-      align-items: center;
+      justify-content: flex-end;
       gap: var(--sys-size-3);
     }
 
     .change-workspace {
       display: flex;
       flex-direction: row;
-      gap: var(--sys-size-2);
-    }
+      align-items: center;
+      gap: var(--sys-size-3);
+      min-width: var(--sys-size-22);
+      flex: 1 1 40%;
 
-    .info-tooltip-container {
-      max-width: var(--sys-size-28);
-
-      .tooltip-link {
-        display: block;
-        margin-top: var(--sys-size-4);
-        color: var(--sys-color-primary);
+      .folder-name {
+        white-space: nowrap;
+        overflow-x: hidden;
+        text-overflow: ellipsis;
       }
     }
 
@@ -900,7 +905,10 @@ main {
       display: flex;
       align-items: center;
       gap: var(--sys-size-3);
-      margin-left: auto;
+      min-width: fit-content;
+      justify-content: flex-end;
+      flex-grow: 1;
+      flex-shrink: 1;
 
       devtools-icon {
         /* var(--sys-size-8) is too small and var(--sys-size-9) is too big. */

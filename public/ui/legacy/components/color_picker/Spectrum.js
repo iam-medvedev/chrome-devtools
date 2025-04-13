@@ -209,7 +209,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     srgbOverlay;
     contrastOverlay;
     contrastDetails;
-    contrastDetailsBackgroundColorPickedToggledBound;
+    contrastDetailsBackgroundColorPickerToggledBound;
     palettes;
     palettePanel;
     palettePanelShowing;
@@ -348,8 +348,8 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             this.contrastInfo = contrastInfo;
             this.contrastOverlay = new ContrastOverlay(this.contrastInfo, this.colorElement);
             this.contrastDetails = new ContrastDetails(this.contrastInfo, this.contentElement, this.toggleColorPicker.bind(this), this.contrastPanelExpandedChanged.bind(this), this.colorSelected.bind(this));
-            this.contrastDetailsBackgroundColorPickedToggledBound =
-                this.contrastDetailsBackgroundColorPickedToggled.bind(this);
+            this.contrastDetailsBackgroundColorPickerToggledBound =
+                this.contrastDetailsBackgroundColorPickerToggled.bind(this);
         }
         this.element.classList.add('flex-none');
         this.palettes = new Map();
@@ -500,7 +500,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         callback(event);
         return true;
     }
-    contrastDetailsBackgroundColorPickedToggled(event) {
+    contrastDetailsBackgroundColorPickerToggled(event) {
         if (event.data) {
             void this.toggleColorPicker(false);
         }
@@ -1189,23 +1189,24 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         else {
             this.colorPickerButton.setToggled(false);
         }
-        if (this.contrastDetails && this.contrastDetailsBackgroundColorPickedToggledBound) {
-            this.contrastDetails.addEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickedToggledBound);
+        if (this.contrastDetails && this.contrastDetailsBackgroundColorPickerToggledBound) {
+            this.contrastDetails.addEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickerToggledBound);
         }
     }
     willHide() {
         void this.toggleColorPicker(false);
-        if (this.contrastDetails && this.contrastDetailsBackgroundColorPickedToggledBound) {
-            this.contrastDetails.removeEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickedToggledBound);
+        if (this.contrastDetails && this.contrastDetailsBackgroundColorPickerToggledBound) {
+            this.contrastDetails.removeEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickerToggledBound);
         }
     }
     async toggleColorPicker(enabled) {
         if (enabled === undefined) {
             enabled = this.colorPickerButton.isToggled();
         }
-        // This is to make sure that only one picker is open at a time
-        // Also have a look at this.contrastDetailsBackgroundColorPickedToggled
-        if (this.contrastDetails && enabled && this.contrastDetails.backgroundColorPickerEnabled()) {
+        // This is to make sure that only one picker is open at a time (enabled is true) and
+        // the background color picker gets dismissed whenever the popup is closed by an Esc (enabled is false).
+        // Also have a look at this.contrastDetailsBackgroundColorPickedToggled.
+        if (this.contrastDetails?.backgroundColorPickerEnabled()) {
             this.contrastDetails.toggleBackgroundColorPicker(false);
         }
         // With the old color picker, colors can only be picked up within the page.

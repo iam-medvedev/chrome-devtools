@@ -35,10 +35,10 @@ declare class Metric {
      * from the simulator. In this case, we need to adjust the coefficients as the target throttling
      * settings change.
      */
-    static getScaledCoefficients(rttMs: number): MetricCoefficients;
-    static getOptimisticGraph(dependencyGraph: Graph.Node, processedNavigation: Types.Simulation.ProcessedNavigation): Graph.Node;
-    static getPessimisticGraph(dependencyGraph: Graph.Node, processedNavigation: Types.Simulation.ProcessedNavigation): Graph.Node;
-    static getEstimateFromSimulation(simulationResult: Simulation.Result, extras: Extras): Simulation.Result;
+    static getScaledCoefficients(_rttMs: number): MetricCoefficients;
+    static getOptimisticGraph(_dependencyGraph: Graph.Node, _processedNavigation: Types.Simulation.ProcessedNavigation): Graph.Node;
+    static getPessimisticGraph(_dependencyGraph: Graph.Node, _processedNavigation: Types.Simulation.ProcessedNavigation): Graph.Node;
+    static getEstimateFromSimulation(simulationResult: Simulation.Result, _extras: Extras): Simulation.Result;
     static compute(data: MetricComputationDataInput, extras?: Omit<Extras, 'optimistic'>): MetricResult;
 }
 export { Metric };

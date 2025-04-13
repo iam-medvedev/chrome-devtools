@@ -12,11 +12,11 @@ describeWithMockConnection('EmulationModel', () => {
         const emulationAgent = target.emulationAgent();
         const spySetTouchEmulationEnabled = sinon.stub(emulationAgent, 'invoke_setTouchEmulationEnabled');
         const spySetEmitTouchEventsForMouse = sinon.stub(emulationAgent, 'invoke_setEmitTouchEventsForMouse');
-        assert.isTrue(spySetTouchEmulationEnabled.notCalled);
-        assert.isTrue(spySetEmitTouchEventsForMouse.notCalled);
+        sinon.assert.notCalled(spySetTouchEmulationEnabled);
+        sinon.assert.notCalled(spySetEmitTouchEventsForMouse);
         await emulationModel.emulateTouch(true, true);
-        assert.isTrue(spySetTouchEmulationEnabled.calledOnce);
-        assert.isTrue(spySetEmitTouchEventsForMouse.calledOnce);
+        sinon.assert.calledOnce(spySetTouchEmulationEnabled);
+        sinon.assert.calledOnce(spySetEmitTouchEventsForMouse);
         assert.isTrue(spySetTouchEmulationEnabled.calledWith({ enabled: true, maxTouchPoints: 1 }));
     });
     it('should `emulateTouch` not enable touch emulation when `setTouchEmulationAllowed` is called with false', async () => {
@@ -26,12 +26,12 @@ describeWithMockConnection('EmulationModel', () => {
         const emulationAgent = target.emulationAgent();
         const spySetTouchEmulationEnabled = sinon.stub(emulationAgent, 'invoke_setTouchEmulationEnabled');
         const spySetEmitTouchEventsForMouse = sinon.stub(emulationAgent, 'invoke_setEmitTouchEventsForMouse');
-        assert.isTrue(spySetTouchEmulationEnabled.notCalled);
-        assert.isTrue(spySetEmitTouchEventsForMouse.notCalled);
+        sinon.assert.notCalled(spySetTouchEmulationEnabled);
+        sinon.assert.notCalled(spySetEmitTouchEventsForMouse);
         emulationModel.setTouchEmulationAllowed(false);
         await emulationModel.emulateTouch(true, true);
-        assert.isFalse(spySetTouchEmulationEnabled.called);
-        assert.isFalse(spySetEmitTouchEventsForMouse.called);
+        sinon.assert.notCalled(spySetTouchEmulationEnabled);
+        sinon.assert.notCalled(spySetEmitTouchEventsForMouse);
     });
 });
 //# sourceMappingURL=EmulationModel.test.js.map

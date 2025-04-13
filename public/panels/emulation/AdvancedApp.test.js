@@ -62,7 +62,7 @@ describeWithMockConnection('AdvancedApp', () => {
         assert.exists(advancedApp);
         const fetchColorsSpy = sinon.spy(ThemeSupport.ThemeSupport.instance(), 'fetchColorsAndApplyHostTheme');
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged);
-        assert.isTrue(fetchColorsSpy.called);
+        sinon.assert.called(fetchColorsSpy);
     });
 });
 //# sourceMappingURL=AdvancedApp.test.js.map

@@ -60,6 +60,9 @@ export async function frameworkEventListeners(object) {
                 return { type: this.type, useCapture: this.useCapture, passive: this.passive, once: this.once };
             }
             function storeTruncatedListener(truncatedListener) {
+                if (!truncatedListener) {
+                    return;
+                }
                 if (truncatedListener.type !== undefined) {
                     type = truncatedListener.type;
                 }

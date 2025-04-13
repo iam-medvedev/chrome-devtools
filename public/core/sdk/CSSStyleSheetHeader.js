@@ -6,7 +6,6 @@ import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import { DeferredDOMNode } from './DOMModel.js';
-import { ResourceTreeModel } from './ResourceTreeModel.js';
 const UIStrings = {
     /**
      *@description Error message for when a CSS file can't be loaded
@@ -92,24 +91,6 @@ export class CSSStyleSheetHeader {
     }
     resourceURL() {
         return this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
-    }
-    getFrameURLPath() {
-        const model = this.#cssModelInternal.target().model(ResourceTreeModel);
-        console.assert(Boolean(model));
-        if (!model) {
-            return '';
-        }
-        const frame = model.frameForId(this.frameId);
-        if (!frame) {
-            return '';
-        }
-        console.assert(Boolean(frame));
-        const parsedURL = new Common.ParsedURL.ParsedURL(frame.url);
-        let urlPath = parsedURL.host + parsedURL.folderPathComponents;
-        if (!urlPath.endsWith('/')) {
-            urlPath += '/';
-        }
-        return urlPath;
     }
     viaInspectorResourceURL() {
         return `inspector:///inspector-stylesheet#${this.id}`;

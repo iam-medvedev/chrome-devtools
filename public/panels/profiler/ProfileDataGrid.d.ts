@@ -79,7 +79,7 @@ export declare class ProfileDataGridTree implements UI.SearchableView.Searchable
     save(): void;
     restore(): void;
     matchFunction(searchConfig: UI.SearchableView.SearchConfig): ((arg0: ProfileDataGridNode) => boolean) | null;
-    performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
+    performSearch(searchConfig: UI.SearchableView.SearchConfig, _shouldJump: boolean, jumpBackwards?: boolean): void;
     onSearchCanceled(): void;
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;

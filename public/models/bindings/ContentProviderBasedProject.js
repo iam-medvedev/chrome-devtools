@@ -88,14 +88,8 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
     canRename() {
         return false;
     }
-    rename(uiSourceCode, newName, callback) {
-        const path = uiSourceCode.url();
-        this.performRename(path, newName, (success, newName) => {
-            if (success && newName) {
-                this.renameUISourceCode(uiSourceCode, newName);
-            }
-            callback(success, newName);
-        });
+    rename(_uiSourceCode, _newName, callback) {
+        callback(false);
     }
     excludeFolder(_path) {
     }
@@ -111,9 +105,6 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
     deleteFile(_uiSourceCode) {
     }
     remove() {
-    }
-    performRename(path, newName, callback) {
-        callback(false);
     }
     searchInFileContent(uiSourceCode, query, caseSensitive, isRegex) {
         const { contentProvider } = this.#uiSourceCodeToData.get(uiSourceCode);

@@ -46,7 +46,7 @@ export declare class BreakpointManager extends Common.ObjectWrapper.ObjectWrappe
     allBreakpointLocations(): BreakpointLocation[];
     removeBreakpoint(breakpoint: Breakpoint, removeFromStorage: boolean): void;
     uiLocationAdded(breakpoint: Breakpoint, uiLocation: Workspace.UISourceCode.UILocation): void;
-    uiLocationRemoved(breakpoint: Breakpoint, uiLocation: Workspace.UISourceCode.UILocation): void;
+    uiLocationRemoved(uiLocation: Workspace.UISourceCode.UILocation): void;
     supportsConditionalBreakpoints(uiSourceCode: Workspace.UISourceCode.UISourceCode): boolean;
 }
 export declare enum Events {

@@ -177,7 +177,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     renderItem(item, _editable) {
         const element = document.createElement('div');
         const listSetting = this.setting;
-        const checkbox = UI.UIUtils.CheckboxLabel.createWithStringLiteral(item.pattern, !item.disabled, undefined, 'settings.ignore-list-pattern');
+        const checkbox = UI.UIUtils.CheckboxLabel.createWithStringLiteral(item.pattern, !item.disabled, 'settings.ignore-list-pattern');
         const helpText = i18nString(UIStrings.ignoreScriptsWhoseNamesMatchS, { PH1: item.pattern });
         UI.Tooltip.Tooltip.install(checkbox, helpText);
         checkbox.checkboxElement.ariaLabel = helpText;
@@ -195,7 +195,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
             }
         }
     }
-    removeItemRequested(item, index) {
+    removeItemRequested(_item, index) {
         const patterns = this.setting.getAsArray();
         patterns.splice(index, 1);
         this.setting.setAsArray(patterns);
@@ -227,7 +227,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
         UI.ARIAUtils.setLabel(pattern, i18nString(UIStrings.pattern));
         fields.createChild('div', 'ignore-list-pattern').appendChild(pattern);
         return editor;
-        function patternValidator(item, index, input) {
+        function patternValidator(_item, index, input) {
             const pattern = input.value.trim();
             const patterns = this.setting.getAsArray();
             if (!pattern.length) {

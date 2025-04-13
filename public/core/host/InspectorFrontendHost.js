@@ -99,23 +99,23 @@ export class InspectorFrontendHostStub {
     }
     closeWindow() {
     }
-    setIsDocked(isDocked, callback) {
+    setIsDocked(_isDocked, callback) {
         window.setTimeout(callback, 0);
     }
-    showSurvey(trigger, callback) {
+    showSurvey(_trigger, callback) {
         window.setTimeout(() => callback({ surveyShown: false }), 0);
     }
-    canShowSurvey(trigger, callback) {
+    canShowSurvey(_trigger, callback) {
         window.setTimeout(() => callback({ canShowSurvey: false }), 0);
     }
     /**
      * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
      */
-    setInspectedPageBounds(bounds) {
+    setInspectedPageBounds(_bounds) {
     }
     inspectElementCompleted() {
     }
-    setInjectedScriptForOrigin(origin, script) {
+    setInjectedScriptForOrigin(_origin, _script) {
     }
     inspectedURLChanged(url) {
         document.title = i18nString(UIStrings.devtoolsS, { PH1: url.replace(/^https?:\/\//, '') });
@@ -132,13 +132,13 @@ export class InspectorFrontendHostStub {
         }
         window.open(url, '_blank');
     }
-    openSearchResultsInNewTab(query) {
+    openSearchResultsInNewTab(_query) {
         Common.Console.Console.instance().error('Search is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
-    showItemInFolder(fileSystemPath) {
+    showItemInFolder(_fileSystemPath) {
         Common.Console.Console.instance().error('Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
-    save(url, content, forceSaveAs, isBase64) {
+    save(url, content, _forceSaveAs, _isBase64) {
         let buffer = this.#urlsBeingSaved.get(url);
         if (!buffer) {
             buffer = [];
@@ -176,7 +176,7 @@ export class InspectorFrontendHostStub {
         link.click();
         URL.revokeObjectURL(blobUrl);
     }
-    sendMessageToBackend(message) {
+    sendMessageToBackend(_message) {
     }
     recordCountHistogram(histogramName, sample, min, exclusiveMax, bucketSize) {
         if (this.recordedCountHistograms.length >= MAX_RECORDED_HISTOGRAMS_SIZE) {
@@ -184,7 +184,7 @@ export class InspectorFrontendHostStub {
         }
         this.recordedCountHistograms.push({ histogramName, sample, min, exclusiveMax, bucketSize });
     }
-    recordEnumeratedHistogram(actionName, actionCode, bucketSize) {
+    recordEnumeratedHistogram(actionName, actionCode, _bucketSize) {
         if (this.recordedEnumeratedHistograms.length >= MAX_RECORDED_HISTOGRAMS_SIZE) {
             this.recordedEnumeratedHistograms.shift();
         }
@@ -196,17 +196,17 @@ export class InspectorFrontendHostStub {
         }
         this.recordedPerformanceHistograms.push({ histogramName, duration });
     }
-    recordUserMetricsAction(umaName) {
+    recordUserMetricsAction(_umaName) {
     }
     connectAutomaticFileSystem(_fileSystemPath, _fileSystemUUID, _addIfMissing, callback) {
         queueMicrotask(() => callback({ success: false }));
     }
-    disconnectAutomaticFileSystem(fileSystemPath) {
+    disconnectAutomaticFileSystem(_fileSystemPath) {
     }
     requestFileSystems() {
         this.events.dispatchEventToListeners(Events.FileSystemsLoaded, []);
     }
-    addFileSystem(type) {
+    addFileSystem(_type) {
         const onFileSystem = (fs) => {
             this.#fileSystem = fs;
             const fileSystem = {
@@ -219,7 +219,7 @@ export class InspectorFrontendHostStub {
         };
         window.webkitRequestFileSystem(window.TEMPORARY, 1024 * 1024, onFileSystem);
     }
-    removeFileSystem(fileSystemPath) {
+    removeFileSystem(_fileSystemPath) {
         const removalCallback = (entries) => {
             entries.forEach(entry => {
                 if (entry.isDirectory) {
@@ -236,10 +236,10 @@ export class InspectorFrontendHostStub {
         this.#fileSystem = null;
         this.events.dispatchEventToListeners(Events.FileSystemRemoved, OVERRIDES_FILE_SYSTEM_PATH);
     }
-    isolatedFileSystem(fileSystemId, registeredName) {
+    isolatedFileSystem(_fileSystemId, _registeredName) {
         return this.#fileSystem;
     }
-    loadNetworkResource(url, headers, streamId, callback) {
+    loadNetworkResource(url, _headers, streamId, callback) {
         // Read the first 3 bytes looking for the gzip signature in the file header
         function isGzip(ab) {
             const buf = new Uint8Array(ab);
@@ -285,7 +285,7 @@ export class InspectorFrontendHostStub {
             });
         });
     }
-    registerPreference(name, options) {
+    registerPreference(_name, _options) {
     }
     getPreferences(callback) {
         const prefs = {};
@@ -350,13 +350,13 @@ export class InspectorFrontendHostStub {
         }
         callback(hostConfigForHostedMode);
     }
-    upgradeDraggedFileSystemPermissions(fileSystem) {
+    upgradeDraggedFileSystemPermissions(_fileSystem) {
     }
-    indexPath(requestId, fileSystemPath, excludedFolders) {
+    indexPath(_requestId, _fileSystemPath, _excludedFolders) {
     }
-    stopIndexing(requestId) {
+    stopIndexing(_requestId) {
     }
-    searchInPath(requestId, fileSystemPath, query) {
+    searchInPath(_requestId, _fileSystemPath, _query) {
     }
     zoomFactor() {
         return 1;
@@ -367,65 +367,65 @@ export class InspectorFrontendHostStub {
     }
     resetZoom() {
     }
-    setWhitelistedShortcuts(shortcuts) {
+    setWhitelistedShortcuts(_shortcuts) {
     }
-    setEyeDropperActive(active) {
+    setEyeDropperActive(_active) {
     }
-    showCertificateViewer(certChain) {
+    showCertificateViewer(_certChain) {
     }
-    reattach(callback) {
+    reattach(_callback) {
     }
     readyForTest() {
     }
     connectionReady() {
     }
-    setOpenNewWindowForPopups(value) {
+    setOpenNewWindowForPopups(_value) {
     }
-    setDevicesDiscoveryConfig(config) {
+    setDevicesDiscoveryConfig(_config) {
     }
-    setDevicesUpdatesEnabled(enabled) {
+    setDevicesUpdatesEnabled(_enabled) {
     }
-    openRemotePage(browserId, url) {
+    openRemotePage(_browserId, _url) {
     }
     openNodeFrontend() {
     }
-    showContextMenuAtPoint(x, y, items, document) {
+    showContextMenuAtPoint(_x, _y, _items, _document) {
         throw new Error('Soft context menu should be used');
     }
     isHostedMode() {
         return true;
     }
-    setAddExtensionCallback(callback) {
+    setAddExtensionCallback(_callback) {
         // Extensions are not supported in hosted mode.
     }
     async initialTargetId() {
         return null;
     }
-    doAidaConversation(request, streamId, callback) {
+    doAidaConversation(_request, _streamId, callback) {
         callback({
             error: 'Not implemented',
         });
     }
-    registerAidaClientEvent(request, callback) {
+    registerAidaClientEvent(_request, callback) {
         callback({
             error: 'Not implemented',
         });
     }
-    recordImpression(event) {
+    recordImpression(_event) {
     }
-    recordResize(event) {
+    recordResize(_event) {
     }
-    recordClick(event) {
+    recordClick(_event) {
     }
-    recordHover(event) {
+    recordHover(_event) {
     }
-    recordDrag(event) {
+    recordDrag(_event) {
     }
-    recordChange(event) {
+    recordChange(_event) {
     }
-    recordKeyDown(event) {
+    recordKeyDown(_event) {
     }
-    recordSettingAccess(event) {
+    recordSettingAccess(_event) {
     }
 }
 // @ts-expect-error Global injected by devtools_compatibility.js
@@ -438,7 +438,7 @@ class InspectorFrontendAPIImpl {
             this[descriptor[1]] = this.dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
         }
     }
-    dispatch(name, signature, runOnceLoaded, ...params) {
+    dispatch(name, signature, _runOnceLoaded, ...params) {
         // Single argument methods get dispatched with the param.
         if (signature.length < 2) {
             try {

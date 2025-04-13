@@ -111,14 +111,14 @@ describe('Tooltip', () => {
             container.addEventListener(eventName, callback);
             const tooltip = container.querySelector('devtools-tooltip');
             tooltip?.dispatchEvent(new Event(eventName, { bubbles: true }));
-            assert.isFalse(callback.called);
+            sinon.assert.notCalled(callback);
             container.removeEventListener(eventName, callback);
         });
     });
     it('should print a warning if rich tooltip is used with wrong aria label on anchor', () => {
         const consoleSpy = sinon.spy(console, 'warn');
         renderTooltip({ variant: 'rich' });
-        assert.isTrue(consoleSpy.calledOnce);
+        sinon.assert.calledOnce(consoleSpy);
     });
     it('can be instantiated programatically', () => {
         const container = document.createElement('div');

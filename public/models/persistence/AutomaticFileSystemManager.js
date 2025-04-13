@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as ProjectSettings from '../project_settings/project_settings.js';
 let automaticFileSystemManagerInstance;
 /**
@@ -11,6 +12,7 @@ let automaticFileSystemManagerInstance;
  */
 export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapper {
     #automaticFileSystem;
+    #availability = 'unavailable';
     #inspectorFrontendHost;
     #projectSettingsModel;
     /**
@@ -22,6 +24,20 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
         return this.#automaticFileSystem;
     }
     /**
+     * Yields the availability of the Automatic Workspace Folders feature.
+     *
+     * `'available'` means that the feature is enabled and the project settings
+     * are also available. It doesn't indicate whether or not the page is actually
+     * providing a `com.chrome.devtools.json` or not, and whether or not that file
+     * (if it exists) provides workspace information.
+     *
+     * @return `'available'` if the feature is available and the project settings
+     *         feature is also available, otherwise `'unavailable'`.
+     */
+    get availability() {
+        return this.#availability;
+    }
+    /**
      * @internal
      */
     constructor(hostConfig, inspectorFrontendHost, projectSettingsModel) {
@@ -30,6 +46,9 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
         this.#inspectorFrontendHost = inspectorFrontendHost;
         this.#projectSettingsModel = projectSettingsModel;
         if (hostConfig.devToolsAutomaticFileSystems?.enabled) {
+            this.#inspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
+            this.#projectSettingsModel.addEventListener("AvailabilityChanged" /* ProjectSettings.ProjectSettingsModel.Events.AVAILABILITY_CHANGED */, this.#availabilityChanged, this);
+            this.#availabilityChanged({ data: this.#projectSettingsModel.availability });
             this.#projectSettingsModel.addEventListener("ProjectSettingsChanged" /* ProjectSettings.ProjectSettingsModel.Events.PROJECT_SETTINGS_CHANGED */, this.#projectSettingsChanged, this);
             this.#projectSettingsChanged({ data: this.#projectSettingsModel.projectSettings });
         }
@@ -42,7 +61,7 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
     static instance({ forceNew, hostConfig, inspectorFrontendHost, projectSettingsModel } = { forceNew: false, hostConfig: null, inspectorFrontendHost: null, projectSettingsModel: null }) {
         if (!automaticFileSystemManagerInstance || forceNew) {
             if (!hostConfig || !inspectorFrontendHost || !projectSettingsModel) {
-                throw new Error('Unable to create AutomaticFileSysteManager: ' +
+                throw new Error('Unable to create AutomaticFileSystemManager: ' +
                     'hostConfig, inspectorFrontendHost, and projectSettingsModel must be provided');
             }
             automaticFileSystemManagerInstance = new AutomaticFileSystemManager(hostConfig, inspectorFrontendHost, projectSettingsModel);
@@ -59,7 +78,28 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
         }
     }
     #dispose() {
+        this.#inspectorFrontendHost.events.removeEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
+        this.#projectSettingsModel.removeEventListener("AvailabilityChanged" /* ProjectSettings.ProjectSettingsModel.Events.AVAILABILITY_CHANGED */, this.#availabilityChanged, this);
         this.#projectSettingsModel.removeEventListener("ProjectSettingsChanged" /* ProjectSettings.ProjectSettingsModel.Events.PROJECT_SETTINGS_CHANGED */, this.#projectSettingsChanged, this);
+    }
+    #availabilityChanged(event) {
+        const availability = event.data;
+        if (this.#availability !== availability) {
+            this.#availability = availability;
+            this.dispatchEventToListeners("AvailabilityChanged" /* Events.AVAILABILITY_CHANGED */, this.#availability);
+        }
+    }
+    #fileSystemRemoved(event) {
+        if (this.#automaticFileSystem === null) {
+            return;
+        }
+        if (this.#automaticFileSystem.root === event.data) {
+            this.#automaticFileSystem = Object.freeze({
+                ...this.#automaticFileSystem,
+                state: 'disconnected',
+            });
+            this.dispatchEventToListeners("AutomaticFileSystemChanged" /* Events.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#automaticFileSystem);
+        }
     }
     #projectSettingsChanged(event) {
         const projectSettings = event.data;

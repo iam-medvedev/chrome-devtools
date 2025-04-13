@@ -37,6 +37,8 @@ You will be told the following information about the Insight:
 
 You will be provided with a list of relevant URLs containing up-to-date information regarding web performance optimization. Treat these URLs as authoritative resources to supplement the Chrome DevTools data. Prioritize information from the provided URLs to ensure your recommendations are current and reflect best practices. Cross-reference information from the Chrome DevTools data with the external URLs to provide the most accurate and comprehensive analysis.
 
+Additionally, you may also be asked basic questions such as "What is LCP?". Ensure you give succinct, accurate answers to generic performance questions like this.
+
 *IMPORTANT*: All time units provided in the 'Detailed Analysis' are in milliseconds (ms). Ensure your response reflects this unit of measurement.
 
 ## Step-by-step instructions
@@ -49,9 +51,7 @@ You will be provided with a list of relevant URLs containing up-to-date informat
 - Your answer should contain the following sections:
     1. **Insight Analysis:** Clearly explain the observed performance issues, their impact on user experience, and the key metrics used to identify them. Include relevant timestamps and durations from the provided data.
     2. **Optimization Recommendations:** Provide 2-3 specific, actionable steps to address the identified performance issues. Prioritize the most impactful optimizations, focusing on those that will yield the greatest performance improvements. Provide a brief justification for each recommendation, explaining its potential impact. Keep each optimization recommendation concise, ideally within 1-2 sentences. Avoid lengthy explanations or detailed technical jargon unless absolutely necessary.
-    3. **Relevant Resources:** Include direct URLs to relevant documentation, tools, or examples that support your recommendations. Provide a brief explanation of how each resource can help the user address the identified performance issues.
 - Your response should immediately start with the "Insight Analysis" section.
-- Whenever possible, include direct URLs to relevant documentation, tools, or examples to support your recommendations. This allows the user to explore further and implement the suggested optimizations effectively.
 - Be direct and to the point. Avoid unnecessary introductory phrases or filler content. Focus on delivering actionable advice efficiently.
 
 ## Strict Constraints
@@ -62,6 +62,8 @@ You will be provided with a list of relevant URLs containing up-to-date informat
     - Ensure comprehensive data retrieval through function calls to provide accurate and complete recommendations.
     - Do not mention function names (e.g., \`getMainThreadActivity\`, \`getNetworkActivitySummary\`) in your output. These are internal implementation details.
     - Do not mention that you are an AI, or refer to yourself in the third person. You are simulating a performance expert.
+    - If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
+    - Refrain from providing answers on non-web-development topics, such as legal, financial, medical, or personal advice.
 `;
 /* clang-format on */
 export class InsightContext extends ConversationContext {
@@ -71,9 +73,19 @@ export class InsightContext extends ConversationContext {
         this.#insight = insight;
     }
     getOrigin() {
-        // TODO: probably use the origin of the navigation the insight is
-        // associated with? We can put that into the context.
-        return '';
+        /**
+         * We want to force a new conversation when the user imports / records a
+         * new trace. There is no concept of a "trace ID" in the trace events, and
+         * we can't use something like the main frame ID or main process ID as those
+         * can be the same if you record the same site / in the same session. We
+         * also can't use something like a URL, as people might record once, fix
+         * something, and re-record the same domain. So, we take the min & max time
+         * bounds and use that. It's not perfect but the chances of someone
+         * recording two traces with the exact same microsec start & end time are
+         * pretty small...
+         */
+        const { min, max } = this.#insight.parsedTrace.Meta.traceBounds;
+        return `trace-${min}-${max}`;
     }
     getItem() {
         return this.#insight;
@@ -158,6 +170,19 @@ export class InsightContext extends ConversationContext {
 export class PerformanceInsightsAgent extends AiAgent {
     #insight;
     #lastContextForEnhancedQuery;
+    /**
+     * Store results (as facts) for the functions that are pure and return the
+     * same data for the same insight.
+     * This fact is then passed into the request on all future
+     * queries for the conversation. This means that the LLM is far less likely to
+     * call the function again, because we have provided the same data as a
+     * fact. We cache based on the active insight to ensure that if the user
+     * changes which insight they are focusing we will call the function again.
+     * It's important that we store it as a Fact in the cache, because the AI
+     * Agent stores facts in a set, and we need to pass the same object through to
+     * make sure it isn't mistakenly duplicated in the request.
+     */
+    #functionCallCache = new Map();
     async *handleContextDetails(activeContext) {
         if (!activeContext) {
             return;
@@ -210,6 +235,13 @@ export class PerformanceInsightsAgent extends AiAgent {
                 const activeInsight = this.#insight.getItem();
                 const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
                 const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
+                const summaryFact = {
+                    text: `This is the network summary for this insight. You can use this and not call getNetworkActivitySummary again:\n${formatted.join('\n')}`,
+                    metadata: { source: 'getNetworkActivitySummary()' }
+                };
+                const cacheForInsight = this.#functionCallCache.get(activeInsight) ?? {};
+                cacheForInsight.getNetworkActivitySummary = summaryFact;
+                this.#functionCallCache.set(activeInsight, cacheForInsight);
                 return { result: { requests: formatted } };
             },
         });
@@ -289,7 +321,15 @@ The fields are:
                 if (!tree) {
                     return { error: 'No main thread activity found' };
                 }
-                return { result: { activity: tree.serialize() } };
+                const activity = tree.serialize();
+                const activityFact = {
+                    text: `This is the main thread activity for this insight. You can use this and not call getMainThreadActivity again:\n${activity}`,
+                    metadata: { source: 'getMainThreadActivity()' },
+                };
+                const cacheForInsight = this.#functionCallCache.get(activeInsight) ?? {};
+                cacheForInsight.getMainThreadActivity = activityFact;
+                this.#functionCallCache.set(activeInsight, cacheForInsight);
+                return { result: { activity } };
             },
         });
     }
@@ -327,6 +367,14 @@ The fields are:
     }
     async *run(initialQuery, options) {
         this.#insight = options.selected ?? undefined;
+        // Clear any previous facts in case the user changed the active context.
+        this.clearFacts();
+        const cachedFunctionCalls = this.#insight ? this.#functionCallCache.get(this.#insight.getItem()) : null;
+        if (cachedFunctionCalls) {
+            for (const fact of Object.values(cachedFunctionCalls)) {
+                this.addFact(fact);
+            }
+        }
         return yield* super.run(initialQuery, options);
     }
 }

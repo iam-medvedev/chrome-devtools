@@ -146,7 +146,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(deleteButton.textContent.trim(), 'Delete bucket');
         const showDialog = sinon.stub(UI.UIUtils.ConfirmDialog, 'show').resolves(true);
         deleteButton.click();
-        assert.isTrue(showDialog.calledOnce);
+        sinon.assert.calledOnce(showDialog);
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(storageBucketsModel.deleteBucket.calledOnceWithExactly(storageBucket));
     });

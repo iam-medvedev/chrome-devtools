@@ -103,6 +103,10 @@ const UIStrings = {
      */
     PrefetchNotEligiblePreloadingDisabled: 'The prefetch was not performed because speculative loading was disabled.',
     /**
+     *@description  Description text for Prefetch status PrefetchEvictedAfterBrowsingDataRemoved.
+     */
+    PrefetchEvictedAfterBrowsingDataRemoved: 'The prefetch was discarded because browsing data was removed.',
+    /**
      *  Description text for PrerenderFinalStatus::kLowEndDevice.
      */
     prerenderFinalStatusLowEndDevice: 'The prerender was not performed because this device does not have enough total system memory to support prerendering.',
@@ -316,6 +320,10 @@ const UIStrings = {
      */
     prerenderFinalStatusWindowClosed: 'The prerendered page was unloaded because it called window.close().',
     /**
+     * Description text for PrenderFinalStatus::kBrowsingDataRemoved.
+     */
+    prerenderFinalStatusBrowsingDataRemoved: 'The prerendered page was unloaded because browsing data was removed.',
+    /**
      *@description Text in grid and details: Preloading attempt is not yet triggered.
      */
     statusNotTriggered: 'Not triggered',
@@ -371,6 +379,7 @@ export const PrefetchReasonDescription = {
     PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler: { name: () => i18n.i18n.lockedString('Unknown') },
     PrefetchNotEligibleRedirectFromServiceWorker: { name: () => i18n.i18n.lockedString('Unknown') },
     PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n.i18n.lockedString('Unknown') },
+    PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterBrowsingDataRemoved) },
 };
 // Decoding PrefetchFinalStatus prefetchAttempt to failure description.
 export function prefetchFailureReason({ prefetchStatus }) {
@@ -451,8 +460,7 @@ export function prefetchFailureReason({ prefetchStatus }) {
         case "PrefetchNotEligibleRedirectToServiceWorker" /* Protocol.Preload.PrefetchStatus.PrefetchNotEligibleRedirectToServiceWorker */:
             return PrefetchReasonDescription['PrefetchNotEligibleRedirectToServiceWorker'].name();
         case "PrefetchEvictedAfterBrowsingDataRemoved" /* Protocol.Preload.PrefetchStatus.PrefetchEvictedAfterBrowsingDataRemoved */:
-            // TODO(crbug.com/40262310): Add description.
-            return null;
+            return PrefetchReasonDescription['PrefetchEvictedAfterBrowsingDataRemoved'].name();
         default:
             // Note that we use switch and exhaustiveness check to prevent to
             // forget updating these strings, but allow to handle unknown
@@ -626,6 +634,8 @@ export function prerenderFailureReason(attempt) {
             return i18nString(UIStrings.prerenderFinalStatusAllPrerenderingCanceled);
         case "WindowClosed" /* Protocol.Preload.PrerenderFinalStatus.WindowClosed */:
             return i18nString(UIStrings.prerenderFinalStatusWindowClosed);
+        case "BrowsingDataRemoved" /* Protocol.Preload.PrerenderFinalStatus.BrowsingDataRemoved */:
+            return i18nString(UIStrings.prerenderFinalStatusBrowsingDataRemoved);
         case "SlowNetwork" /* Protocol.Preload.PrerenderFinalStatus.SlowNetwork */:
         case "OtherPrerenderedPageActivated" /* Protocol.Preload.PrerenderFinalStatus.OtherPrerenderedPageActivated */:
         case "V8OptimizerDisabled" /* Protocol.Preload.PrerenderFinalStatus.V8OptimizerDisabled */:
@@ -643,6 +653,15 @@ export function prerenderFailureReason(attempt) {
 export function ruleSetLocationShort(ruleSet, pageURL) {
     const url = ruleSet.url === undefined ? pageURL : ruleSet.url;
     return Bindings.ResourceUtils.displayNameForURL(url);
+}
+export function ruleSetTagOrLocationShort(ruleSet, pageURL) {
+    if (!ruleSet.errorMessage) {
+        const parsedRuleset = JSON.parse(ruleSet['sourceText']);
+        if ('tag' in parsedRuleset) {
+            return '"' + parsedRuleset['tag'] + '"';
+        }
+    }
+    return ruleSetLocationShort(ruleSet, pageURL);
 }
 export function capitalizedAction(action) {
     // Use "prefetch"/"prerender" as is in SpeculationRules.

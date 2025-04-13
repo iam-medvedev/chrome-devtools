@@ -56,7 +56,6 @@ export interface EventTypes {
     [Events.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED]: boolean;
 }
 export declare class Swatch {
-    private readonly parentElement;
     private readonly swatchElement;
     private swatchInnerElement;
     private textPreview;

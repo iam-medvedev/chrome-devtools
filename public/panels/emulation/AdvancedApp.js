@@ -14,7 +14,6 @@ export class AdvancedApp {
     toolboxWindow;
     toolboxRootView;
     changingDockSide;
-    toolboxDocument;
     constructor() {
         UI.DockController.DockController.instance().addEventListener("BeforeDockSideChanged" /* UI.DockController.Events.BEFORE_DOCK_SIDE_CHANGED */, this.openToolboxWindow, this);
     }
@@ -66,7 +65,6 @@ export class AdvancedApp {
         UI.ContextMenu.ContextMenu.installHandler(toolboxDocument);
         this.toolboxRootView = new UI.RootView.RootView();
         this.toolboxRootView.attachToDocument(toolboxDocument);
-        this.toolboxDocument = toolboxDocument;
         this.updateDeviceModeView();
     }
     updateDeviceModeView() {

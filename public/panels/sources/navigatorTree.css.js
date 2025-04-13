@@ -53,6 +53,7 @@ export default {
   color: var(--icon-folder-workspace);
 }
 
+.navigator-automatic-fs-tree-item devtools-icon,
 .navigator-fs-tree-item devtools-icon {
   color: var(--icon-file-authored);
 }
@@ -111,13 +112,15 @@ export default {
   color: var(--icon-folder-authored);
 }
 
-.navigator-fs-tree-item:not(.has-mapped-files, .selected) > :not(.selection),
-.navigator-fs-folder-tree-item:not(.has-mapped-files, .selected) > :not(.selection) {
-  color: var(--sys-color-on-surface-subtle);
-  opacity: 40%;
-
-  & devtools-icon {
+.navigator-fs-tree-item:not(.has-mapped-files),
+.navigator-fs-tree-item:not(.has-mapped-files) + ol li {
+  & > :not(.selection) {
     color: var(--sys-color-on-surface-subtle);
+    opacity: 40%;
+
+    & devtools-icon {
+      color: var(--sys-color-on-surface-subtle);
+    }
   }
 }
 

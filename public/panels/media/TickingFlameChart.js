@@ -47,8 +47,7 @@ export class Event {
     title;
     colorInternal;
     fontColorInternal;
-    hoverData;
-    constructor(timelineData, eventHandlers, eventProperties = { color: undefined, duration: undefined, hoverData: {}, level: 0, name: '', startTime: 0 }) {
+    constructor(timelineData, eventHandlers, eventProperties = { color: undefined, duration: undefined, level: 0, name: '', startTime: 0 }) {
         // These allow the event to privately change it's own data in the timeline.
         this.timelineData = timelineData;
         this.setLive = eventHandlers.setLive;
@@ -69,7 +68,6 @@ export class Event {
         this.title = eventProperties['name'] || '';
         this.colorInternal = eventProperties['color'] || HotColorScheme[0];
         this.fontColorInternal = calculateFontColor(this.colorInternal);
-        this.hoverData = eventProperties['hoverData'] || {};
     }
     /**
      * Render hovertext into the |htmlElement|

@@ -16,13 +16,10 @@ declare const SourcesView_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class SourcesView extends SourcesView_base implements TabbedEditorContainerDelegate, UI.SearchableView.Searchable, UI.SearchableView.Replaceable {
     #private;
-    private selectedIndex;
     private readonly searchableViewInternal;
     private readonly sourceViewByUISourceCode;
     editorContainer: TabbedEditorContainer;
     private readonly historyManager;
-    private readonly toolbarContainerElementInternal;
-    private readonly scriptViewToolbar;
     private readonly bottomToolbarInternal;
     private toolbarChangedListener;
     private readonly focusedPlaceholderElement?;
@@ -35,9 +32,9 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     leftToolbar(): UI.Toolbar.Toolbar;
     rightToolbar(): UI.Toolbar.Toolbar;
     bottomToolbar(): UI.Toolbar.Toolbar;
+    scriptViewToolbar(): UI.Toolbar.Toolbar;
     wasShown(): void;
     willHide(): void;
-    toolbarContainerElement(): Element;
     searchableView(): UI.SearchableView.SearchableView;
     visibleView(): UI.Widget.Widget | null;
     currentSourceFrame(): UISourceCodeFrame | null;

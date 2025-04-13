@@ -175,10 +175,10 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         this.update();
     }
     onMouseMove(event) {
-        this.setHoveredNode(this.getNodeFromPoint(event.offsetX, event.offsetY), event.shiftKey);
+        this.setHoveredNode(this.getNodeFromPoint(event.offsetY), event.shiftKey);
     }
     onClick(event) {
-        const handled = this.setSelectedNode(this.getNodeFromPoint(event.offsetX, event.offsetY));
+        const handled = this.setSelectedNode(this.getNodeFromPoint(event.offsetY));
         if (handled) {
             event.consume(true);
         }
@@ -274,7 +274,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     setCalculator(calculator) {
         this.calculator = calculator;
     }
-    getNodeFromPoint(x, y) {
+    getNodeFromPoint(y) {
         if (y <= this.headerHeight) {
             return null;
         }

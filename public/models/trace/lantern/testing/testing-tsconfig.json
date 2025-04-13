@@ -19,6 +19,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
+    "noUnusedParameters": true,
     "outDir": ".",
     "rootDir": "../../../../../../../../front_end/models/trace/lantern/testing",
     "skipLibCheck": true,

@@ -34,7 +34,7 @@ export declare class Spectrum extends Spectrum_base {
     private srgbOverlay;
     private contrastOverlay;
     private contrastDetails;
-    private readonly contrastDetailsBackgroundColorPickedToggledBound;
+    private readonly contrastDetailsBackgroundColorPickerToggledBound;
     private readonly palettes;
     private readonly palettePanel;
     private palettePanelShowing;
@@ -68,7 +68,7 @@ export declare class Spectrum extends Spectrum_base {
     private colorStringInternal?;
     constructor(contrastInfo?: ContrastInfo | null);
     private dragStart;
-    private contrastDetailsBackgroundColorPickedToggled;
+    private contrastDetailsBackgroundColorPickerToggled;
     private contrastPanelExpandedChanged;
     private updatePalettePanel;
     private togglePalettePanel;

@@ -18,6 +18,7 @@
     "noImplicitOverride": true,
     "noImplicitReturns": true,
     "noUnusedLocals": false,
+    "noUnusedParameters": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/panels/changes",
     "skipLibCheck": true,
@@ -66,6 +67,9 @@
     },
     {
       "path": "../../third_party/diff/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/copy_to_clipboard/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/diff_view/bundle-tsconfig.json"

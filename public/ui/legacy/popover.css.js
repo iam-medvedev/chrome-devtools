@@ -18,6 +18,8 @@ export default {
   background-color: var(--sys-color-base-container-elevated);
   border-radius: var(--sys-shape-corner-small);
   padding: var(--sys-size-4);
+  user-select: text;
+  overflow: auto;
 }
 
 .squiggles-content {

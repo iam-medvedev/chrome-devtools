@@ -39,22 +39,6 @@ const UIStrings = {
      */
     close: 'Close',
     /**
-     *@description Text to dock the DevTools to the right of the browser tab
-     */
-    dockToRight: 'Dock to right',
-    /**
-     *@description Text to dock the DevTools to the bottom of the browser tab
-     */
-    dockToBottom: 'Dock to bottom',
-    /**
-     *@description Text to dock the DevTools to the left of the browser tab
-     */
-    dockToLeft: 'Dock to left',
-    /**
-     *@description Text to undock the DevTools
-     */
-    undockIntoSeparateWindow: 'Undock into separate window',
-    /**
      *@description Text announced when the DevTools are undocked
      */
     devtoolsUndocked: 'DevTools is undocked',
@@ -73,7 +57,6 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     currentDockStateSetting;
     lastDockStateSetting;
     dockSideInternal = undefined;
-    titles;
     constructor(canDock) {
         super();
         this.canDockInternal = canDock;
@@ -107,12 +90,6 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         if (!this.canDockInternal) {
             return;
         }
-        this.titles = [
-            i18nString(UIStrings.dockToRight),
-            i18nString(UIStrings.dockToBottom),
-            i18nString(UIStrings.dockToLeft),
-            i18nString(UIStrings.undockIntoSeparateWindow),
-        ];
         this.dockSideChanged();
     }
     dockSideChanged() {

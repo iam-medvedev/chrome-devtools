@@ -203,7 +203,7 @@ export class JSONView extends UI.Widget.VBox {
         this.updateSearchCount(0);
         this.updateSearchIndex(0);
     }
-    performSearch(searchConfig, shouldJump, jumpBackwards) {
+    performSearch(searchConfig, _shouldJump, jumpBackwards) {
         let newIndex = this.currentSearchFocusIndex;
         const previousSearchFocusElement = this.currentSearchTreeElements[newIndex];
         this.onSearchCanceled();

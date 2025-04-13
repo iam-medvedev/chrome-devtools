@@ -22,10 +22,10 @@ describeWithMockConnection('ReportingApiView', () => {
         new Application.ReportingApiView.ReportingApiView(endpointsGrid);
         const endpointsGridData = sinon.spy(endpointsGrid, 'data', ['set']);
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.ReportingApiEndpointsChangedForOrigin, { origin: ORIGIN_1, endpoints: ENDPOINTS_1 });
-        assert.isTrue(endpointsGridData.set.calledOnce);
+        sinon.assert.calledOnce(endpointsGridData.set);
         sinon.assert.calledWith(endpointsGridData.set, { endpoints: new Map([[ORIGIN_1, ENDPOINTS_1]]) });
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.ReportingApiEndpointsChangedForOrigin, { origin: ORIGIN_2, endpoints: ENDPOINTS_2 });
-        assert.isTrue(endpointsGridData.set.calledTwice);
+        sinon.assert.calledTwice(endpointsGridData.set);
         sinon.assert.calledWith(endpointsGridData.set, { endpoints: new Map([[ORIGIN_1, ENDPOINTS_1], [ORIGIN_2, ENDPOINTS_2]]) });
     });
     it('shows placeholder if no report or endpoint data is available yet', () => {
@@ -45,7 +45,7 @@ describeWithMockConnection('ReportingApiView', () => {
         const endpointsGrid = new ApplicationComponents.EndpointsGrid.EndpointsGrid();
         const view = new Application.ReportingApiView.ReportingApiView(endpointsGrid);
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.ReportingApiEndpointsChangedForOrigin, { origin: 'dummy', endpoints: [] });
-        assert.isTrue(view.showMode() === "Both" /* UI.SplitWidget.ShowMode.BOTH */);
+        assert.strictEqual(view.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
         assert.isNotNull(view.mainWidget());
         assert.instanceOf(view.mainWidget(), Application.ReportingApiReportsView.ReportingApiReportsView);
         assert.isNotNull(view.sidebarElement());
@@ -74,7 +74,7 @@ describeWithMockConnection('ReportingApiView', () => {
             status: "Queued" /* Protocol.Network.ReportStatus.Queued */,
         };
         networkManager.dispatchEventToListeners(SDK.NetworkManager.Events.ReportingApiReportAdded, report);
-        assert.isTrue(view.showMode() === "Both" /* UI.SplitWidget.ShowMode.BOTH */);
+        assert.strictEqual(view.showMode(), "Both" /* UI.SplitWidget.ShowMode.BOTH */);
         assert.isNotNull(view.mainWidget());
         assert.instanceOf(view.mainWidget(), Application.ReportingApiReportsView.ReportingApiReportsView);
         assert.isNotNull(view.sidebarElement());

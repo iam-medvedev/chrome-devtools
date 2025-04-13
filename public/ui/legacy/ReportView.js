@@ -73,7 +73,7 @@ export class ReportView extends VBox {
     }
     sortSections(comparator) {
         const sections = this.children().slice();
-        const sorted = sections.every((e, i, a) => !i || comparator(a[i - 1], a[i]) <= 0);
+        const sorted = sections.every((_, i, a) => !i || comparator(a[i - 1], a[i]) <= 0);
         if (sorted) {
             return;
         }

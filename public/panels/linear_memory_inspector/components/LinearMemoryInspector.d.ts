@@ -41,7 +41,6 @@ export declare class SettingsChangedEvent extends Event {
 }
 export declare class LinearMemoryInspector extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: LinearMemoryInspectorData);
 }
 declare global {

@@ -1320,7 +1320,7 @@ export class StylePropertiesSection {
             previousSection.addNewBlankProperty().startEditingName();
         }
     }
-    editingSelectorCommitted(element, newContent, oldContent, context, moveDirection) {
+    editingSelectorCommitted(_element, newContent, oldContent, _context, moveDirection) {
         this.editingSelectorEnded();
         if (newContent) {
             newContent = newContent.trim();

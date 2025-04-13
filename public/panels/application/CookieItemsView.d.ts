@@ -3,7 +3,6 @@ import { StorageItemsView } from './StorageItemsView.js';
 export declare class CookieItemsView extends StorageItemsView {
     private model;
     private cookieDomain;
-    private totalSize;
     private cookiesTable;
     private readonly splitWidget;
     private readonly previewPanel;

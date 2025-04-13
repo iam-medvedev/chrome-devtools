@@ -80,6 +80,7 @@ export declare class ChatView extends HTMLElement {
     set props(props: Props);
     connectedCallback(): void;
     disconnectedCallback(): void;
+    clearTextInput(): void;
     focusTextInput(): void;
     restoreScrollPosition(): void;
     scrollToBottom(): void;

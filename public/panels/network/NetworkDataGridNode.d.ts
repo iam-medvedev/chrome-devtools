@@ -86,7 +86,6 @@ export declare const _backgroundColors: {
 };
 export declare class NetworkRequestNode extends NetworkNode {
     #private;
-    private nameCell;
     private initiatorCell;
     private requestInternal;
     private readonly isNavigationRequestInternal;

@@ -144,31 +144,31 @@ describeWithEnvironment('MarkdownView', () => {
         const renderer = new MarkdownView.MarkdownView.MarkdownInsightRenderer();
         it('renders link as texts', () => {
             const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'https://example.test' });
-            assert(result.values[0] === 'learn more');
+            assert.strictEqual(result.values[0], 'learn more');
         });
         it('renders link urls as texts', () => {
             const result = renderer.renderToken({ type: 'link', href: 'https://example.test' });
-            assert(result.values[0] === 'https://example.test');
+            assert.strictEqual(result.values[0], 'https://example.test');
         });
         it('does not render URLs with "javascript:"', () => {
             const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'javascript:alert("test")' });
-            assert(result.values[0] === undefined);
+            assert.isUndefined(result.values[0]);
         });
         it('does not render chrome:// URLs', () => {
             const result = renderer.renderToken({ type: 'link', text: 'learn more', href: 'chrome://settings' });
-            assert(result.values[0] === undefined);
+            assert.isUndefined(result.values[0]);
         });
         it('does not render invalid URLs', () => {
             const result = renderer.renderToken({ type: 'link', text: 'learn more', href: '123' });
-            assert(result.values[0] === undefined);
+            assert.isUndefined(result.values[0]);
         });
         it('renders images as text', () => {
             const result = renderer.renderToken({ type: 'image', text: 'learn more', href: 'https://example.test' });
-            assert(result.values[0] === 'learn more');
+            assert.strictEqual(result.values[0], 'learn more');
         });
         it('renders image urls as text', () => {
             const result = renderer.renderToken({ type: 'image', href: 'https://example.test' });
-            assert(result.values[0] === 'https://example.test');
+            assert.strictEqual(result.values[0], 'https://example.test');
         });
         it('renders headings as headings with the `insight` class', () => {
             const renderResult = renderer.renderToken(getFakeToken({ type: 'heading', text: 'a heading text', depth: 3 }));

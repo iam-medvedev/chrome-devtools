@@ -204,8 +204,7 @@ export class ResourceType {
         return resourceTypeByExtension.get(ParsedURL.extractExtension(url)) || null;
     }
     static fromName(name) {
-        for (const resourceTypeId in resourceTypes) {
-            const resourceType = resourceTypes[resourceTypeId];
+        for (const resourceType of Object.values(resourceTypes)) {
             if (resourceType.name() === name) {
                 return resourceType;
             }

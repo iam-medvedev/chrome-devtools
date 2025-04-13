@@ -1195,7 +1195,7 @@ export class Overlays extends EventTarget {
                 const parsedTrace = this.#queries.parsedTrace();
                 const callTree = parsedTrace ? Utils.AICallTree.AICallTree.fromEvent(overlay.entry, parsedTrace) : null;
                 component.callTree = callTree;
-                component.addEventListener(Components.EntryLabelOverlay.LabelAnnotationsConsentDialogVisiblityChange.eventName, e => {
+                component.addEventListener(Components.EntryLabelOverlay.LabelAnnotationsConsentDialogVisibilityChange.eventName, e => {
                     const event = e;
                     this.dispatchEvent(new ConsentDialogVisibilityChange(event.isVisible));
                 });

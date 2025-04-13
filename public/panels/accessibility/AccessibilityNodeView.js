@@ -281,7 +281,7 @@ export class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElement {
     }
     appendRelatedNodeInline(relatedNode) {
         const deferredNode = new SDK.DOMModel.DeferredDOMNode(this.axNode.accessibilityModel().target(), relatedNode.backendDOMNodeId);
-        const linkedNode = new AXRelatedNodeElement({ deferredNode, idref: undefined }, relatedNode);
+        const linkedNode = new AXRelatedNodeElement({ deferredNode, idref: undefined });
         this.listItemElement.appendChild(linkedNode.render());
     }
     appendRelatedNodeListValueElement(value) {
@@ -476,7 +476,7 @@ export class AXRelatedNodeSourceTreeElement extends UI.TreeOutline.TreeElement {
     constructor(node, value) {
         super('');
         this.value = value;
-        this.axRelatedNodeElement = new AXRelatedNodeElement(node, value);
+        this.axRelatedNodeElement = new AXRelatedNodeElement(node);
         this.selectable = true;
     }
     onattach() {
@@ -496,11 +496,9 @@ export class AXRelatedNodeSourceTreeElement extends UI.TreeOutline.TreeElement {
 export class AXRelatedNodeElement {
     deferredNode;
     idref;
-    value;
-    constructor(node, value) {
+    constructor(node) {
         this.deferredNode = node.deferredNode;
         this.idref = node.idref;
-        this.value = value;
     }
     render() {
         const element = document.createElement('span');

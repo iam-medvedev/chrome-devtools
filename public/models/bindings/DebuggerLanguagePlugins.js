@@ -148,7 +148,7 @@ class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
         this.#plugin = plugin;
         this.stopId = stopId;
     }
-    async doGetProperties(ownProperties, accessorPropertiesOnly, _generatePreview) {
+    async doGetProperties(_ownProperties, accessorPropertiesOnly, _generatePreview) {
         if (accessorPropertiesOnly) {
             return { properties: [], internalProperties: [] };
         }
@@ -293,7 +293,7 @@ export class ExtensionRemoteObject extends SDK.RemoteObject.RemoteObject {
     get description() {
         return this.extensionObject.description;
     }
-    set description(description) {
+    set description(_description) {
     }
     get hasChildren() {
         return this.extensionObject.hasChildren;

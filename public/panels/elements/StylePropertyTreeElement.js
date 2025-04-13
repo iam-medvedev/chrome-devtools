@@ -167,7 +167,6 @@ export class CSSWideKeywordRenderer extends rendererBase(SDK.CSSPropertyParserMa
             return [document.createTextNode(match.text)];
         }
         const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
-        UI.UIUtils.createTextChild(swatch, match.text);
         swatch.data = {
             text: match.text,
             tooltip: resolvedProperty ? undefined : { title: i18nString(UIStrings.sIsNotDefined, { PH1: match.text }) },
@@ -208,7 +207,7 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         const substitution = context.tracing?.substitution();
         if (substitution) {
             if (declaration?.declaration) {
-                const { nodes, cssControls } = Renderer.renderValueNodes({ name: declaration.name, value: declaration.value ?? '' }, substitution.cachedParsedValue(declaration.declaration, this.#matchedStyles, this.#computedStyles), getPropertyRenderers(declaration.name, declaration.style, this.#stylesPane, this.#matchedStyles, null, this.#computedStyles), substitution);
+                const { nodes, cssControls } = Renderer.renderValueNodes({ name: declaration.name, value: declaration.value ?? '' }, substitution.cachedParsedValue(declaration.declaration, this.#matchedStyles, this.#computedStyles), getPropertyRenderers(declaration.style, this.#stylesPane, this.#matchedStyles, null, this.#computedStyles), substitution);
                 cssControls.forEach((value, key) => value.forEach(control => context.addControl(key, control)));
                 return nodes;
             }
@@ -326,6 +325,9 @@ export class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.Co
         // Now try render a color swatch if the result is parsable.
         const color = Common.Color.parse(colorText);
         if (!color) {
+            if (match.node.name === 'CallExpression') {
+                return Renderer.render(ASTUtils.children(match.node), context).nodes;
+            }
             return [document.createTextNode(colorText)];
         }
         const swatch = this.renderColorSwatch(color, valueChild);
@@ -534,7 +536,7 @@ export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
             context.addControl('color', swatch);
             const nodeId = this.#pane.node()?.id;
             if (nodeId !== undefined) {
-                void this.#pane.cssModel()?.resolveValues(undefined, nodeId, colorMixText).then(results => {
+                void this.#pane.cssModel()?.resolveValues(nodeId, colorMixText).then(results => {
                     if (results) {
                         const color = Common.Color.parse(results[0]);
                         if (color) {
@@ -1047,12 +1049,10 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
     // clang-format on
     #stylesPane;
     #treeElement;
-    #propertyName;
-    constructor(stylesPane, propertyName, treeElement) {
+    constructor(stylesPane, treeElement) {
         super();
         this.#stylesPane = stylesPane;
         this.#treeElement = treeElement;
-        this.#propertyName = propertyName;
     }
     render(match, context) {
         const container = document.createElement('span');
@@ -1071,7 +1071,7 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
         if (nodeId === undefined) {
             return;
         }
-        const pixelValue = await this.#stylesPane.cssModel()?.resolveValues(this.#propertyName, nodeId, value);
+        const pixelValue = await this.#stylesPane.cssModel()?.resolveValues(nodeId, value);
         if (pixelValue) {
             valueElement.textContent = pixelValue[0];
         }
@@ -1081,7 +1081,7 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
         if (nodeId === undefined) {
             return;
         }
-        const pixelValue = await this.#stylesPane.cssModel()?.resolveValues(this.#propertyName, nodeId, value);
+        const pixelValue = await this.#stylesPane.cssModel()?.resolveValues(nodeId, value);
         if (!pixelValue) {
             return;
         }
@@ -1104,14 +1104,12 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
     #matchedStyles;
     #computedStyles;
     #treeElement;
-    #propertyName;
-    constructor(stylesPane, matchedStyles, computedStyles, propertyName, treeElement) {
+    constructor(stylesPane, matchedStyles, computedStyles, treeElement) {
         super();
         this.#matchedStyles = matchedStyles;
         this.#computedStyles = computedStyles;
         this.#stylesPane = stylesPane;
         this.#treeElement = treeElement;
-        this.#propertyName = propertyName;
     }
     render(match, context) {
         const childTracingContexts = context.tracing?.evaluation(match.args);
@@ -1137,7 +1135,7 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
         if (nodeId === undefined) {
             return;
         }
-        const evaled = await this.#stylesPane.cssModel()?.resolveValues(this.#propertyName, nodeId, value);
+        const evaled = await this.#stylesPane.cssModel()?.resolveValues(nodeId, value);
         if (!evaled?.[0] || evaled[0] === value) {
             return;
         }
@@ -1152,7 +1150,7 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
         // and compare the function result to the values of all its arguments. Evaluating the arguments eliminates nested
         // function calls and normalizes all units to px.
         values.unshift(functionText);
-        const evaledArgs = await this.#stylesPane.cssModel()?.resolveValues(this.#propertyName, nodeId, ...values);
+        const evaledArgs = await this.#stylesPane.cssModel()?.resolveValues(nodeId, ...values);
         if (!evaledArgs) {
             return;
         }
@@ -1276,7 +1274,7 @@ export class PositionTryRenderer extends rendererBase(SDK.CSSPropertyParserMatch
         return content;
     }
 }
-export function getPropertyRenderers(propertyName, style, stylesPane, matchedStyles, treeElement, computedStyles) {
+export function getPropertyRenderers(style, stylesPane, matchedStyles, treeElement, computedStyles) {
     return [
         new VariableRenderer(stylesPane, treeElement, matchedStyles, computedStyles),
         new ColorRenderer(stylesPane, treeElement),
@@ -1295,8 +1293,8 @@ export function getPropertyRenderers(propertyName, style, stylesPane, matchedSty
         new PositionAnchorRenderer(stylesPane),
         new FlexGridRenderer(stylesPane, treeElement),
         new PositionTryRenderer(matchedStyles),
-        new LengthRenderer(stylesPane, propertyName, treeElement),
-        new MathFunctionRenderer(stylesPane, matchedStyles, computedStyles, propertyName, treeElement),
+        new LengthRenderer(stylesPane, treeElement),
+        new MathFunctionRenderer(stylesPane, matchedStyles, computedStyles, treeElement),
         new AutoBaseRenderer(computedStyles),
         new BinOpRenderer(),
     ];
@@ -1641,8 +1639,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.expandElement = IconButton.Icon.create('triangle-right', 'expand-icon');
             this.expandElement.setAttribute('jslog', `${VisualLogging.expand().track({ click: true })}`);
         }
-        const renderers = this.property.parsedOk ?
-            getPropertyRenderers(this.name, this.style, this.parentPaneInternal, this.matchedStylesInternal, this, this.getComputedStyles() ?? new Map()) :
+        const renderers = this.property.parsedOk ? getPropertyRenderers(this.style, this.parentPaneInternal, this.matchedStylesInternal, this, this.getComputedStyles() ?? new Map()) :
             [];
         if (Root.Runtime.experiments.isEnabled('font-editor') && this.property.parsedOk) {
             renderers.push(new FontRenderer(this));
@@ -1781,7 +1778,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             if (e.newState === 'open') {
                 this.querySelector('devtools-widget')
                     ?.getWidget()
-                    ?.showTrace(property, text, matchedStyles, computedStyles, getPropertyRenderers(property.name, property.ownerStyle, stylesPane, matchedStyles, null, computedStyles));
+                    ?.showTrace(property, text, matchedStyles, computedStyles, getPropertyRenderers(property.ownerStyle, stylesPane, matchedStyles, null, computedStyles));
             }
         }}
         ><devtools-widget
@@ -1902,7 +1899,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 if (this.treeOutline) {
                     const propertyIndex = this.treeOutline.rootElement().indexOfChild(this);
                     // order matters here: this.editingCancelled may invalidate this.treeOutline.
-                    this.editingCancelled(null, context);
+                    this.editingCancelled(context);
                     await this.toggleDisabled(!this.property.disabled);
                     event.consume();
                     this.parentPaneInternal.continueEditingElement(sectionIndex, propertyIndex);
@@ -2130,7 +2127,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (result) {
             switch (result) {
                 case 'cancel':
-                    this.editingCancelled(null, context);
+                    this.editingCancelled(context);
                     break;
                 case 'forward':
                 case 'backward':
@@ -2245,7 +2242,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.parentPaneInternal.setEditingStyle(false);
     }
-    editingCancelled(element, context) {
+    editingCancelled(context) {
         this.removePrompt();
         if (this.hasBeenEditedIncrementally) {
             void this.applyOriginalStyle(context);

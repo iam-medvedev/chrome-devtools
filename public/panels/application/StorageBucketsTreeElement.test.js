@@ -98,7 +98,7 @@ describeWithMockConnection('StorageBucketsTreeElement', function () {
         const parentTreeElement = new Application.StorageBucketsTreeElement.StorageBucketsTreeParentElement(panel);
         const appendChildSpy = sinon.spy(parentTreeElement, 'appendChild');
         parentTreeElement.initialize();
-        assert.strictEqual(appendChildSpy.callCount, getNonDefaultBuckets().length);
+        sinon.assert.callCount(appendChildSpy, getNonDefaultBuckets().length);
         panel.detach();
     });
     it('shows view on select', async () => {
@@ -114,7 +114,7 @@ describeWithMockConnection('StorageBucketsTreeElement', function () {
         treeElement.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeElement.selectable = true;
         treeElement.select();
-        assert.isTrue(showViewSpy.calledOnce);
+        sinon.assert.calledOnce(showViewSpy);
         panel.detach();
     });
 });

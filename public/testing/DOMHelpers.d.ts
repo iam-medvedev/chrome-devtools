@@ -4,6 +4,7 @@
  *
  * Note that `resetTestDOM` is automatically run before each test (see `test_setup.ts`).
  **/
+import type * as Platform from '../core/platform/platform.js';
 import type * as NodeText from '../ui/components/node_text/node_text.js';
 interface RenderOptions {
     allowMultipleChildren?: boolean;
@@ -22,15 +23,12 @@ export declare const setupTestDOM: () => Promise<void>;
  * This is run automatically between tests - you should not be manually calling this yourself.
  **/
 export declare const cleanTestDOM: () => Promise<void>;
-interface Constructor<T> {
-    new (...args: unknown[]): T;
-}
 /**
  * Asserts that all emenents of `nodeList` are at least of type `T`.
  */
-export declare function assertElements<T extends Element>(nodeList: NodeListOf<Element>, elementClass: Constructor<T>): asserts nodeList is NodeListOf<T>;
-export declare function getElementWithinComponent<T extends HTMLElement, V extends Element>(component: T, selector: string, elementClass: Constructor<V>): V;
-export declare function getElementsWithinComponent<T extends HTMLElement, V extends Element>(component: T, selector: string, elementClass: Constructor<V>): NodeListOf<V>;
+export declare function assertElements<T extends Element>(nodeList: NodeListOf<Element>, elementClass: Platform.Constructor.Constructor<T>): asserts nodeList is NodeListOf<T>;
+export declare function getElementWithinComponent<T extends HTMLElement, V extends Element>(component: T, selector: string, elementClass: Platform.Constructor.Constructor<V>): V;
+export declare function getElementsWithinComponent<T extends HTMLElement, V extends Element>(component: T, selector: string, elementClass: Platform.Constructor.Constructor<V>): NodeListOf<V>;
 export declare function waitForScrollLeft<T extends Element>(element: T, desiredScrollLeft: number): Promise<void>;
 /**
  * Dispatches a mouse click event.

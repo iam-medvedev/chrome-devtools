@@ -484,8 +484,7 @@ export class SoftContextMenu {
             this.highlightMenuItem(menuItemElement, false);
         }
     }
-    menuKeyDown(event) {
-        const keyboardEvent = event;
+    menuKeyDown(keyboardEvent) {
         function onEnterOrSpace() {
             if (!this.highlightedMenuItemElement) {
                 return;

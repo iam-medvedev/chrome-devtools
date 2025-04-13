@@ -89,7 +89,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
         const resetButtonComponent = component.shadowRoot.querySelector('devtools-button');
         assert.instanceOf(resetButtonComponent, HTMLElement);
         dispatchClickEvent(resetButtonComponent);
-        assert.isTrue(resetBudgetHandlerSpy.calledOnce);
+        sinon.assert.calledOnce(resetBudgetHandlerSpy);
     });
 });
 //# sourceMappingURL=SharedStorageMetadataView.test.js.map
