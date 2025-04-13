@@ -1679,9 +1679,6 @@
   "models/persistence/persistence-meta.ts | disableOverrideNetworkRequests": {
     "message": "D̂íŝáb̂ĺê óv̂ér̂ŕîd́ê ńêt́ŵór̂ḱ r̂éq̂úêśt̂ś"
   },
-  "models/persistence/persistence-meta.ts | enableAutomaticWorkspaceFolders": {
-    "message": "Êńâb́l̂é âút̂óm̂át̂íĉ ẃôŕk̂śp̂áĉé f̂ól̂d́êŕŝ"
-  },
   "models/persistence/persistence-meta.ts | enableLocalOverrides": {
     "message": "Êńâb́l̂é L̂óĉál̂ Óv̂ér̂ŕîd́êś"
   },
@@ -2609,6 +2606,9 @@
   "panels/ai_assistance/AiAssistancePanel.ts | settings": {
     "message": "Ŝét̂t́îńĝś"
   },
+  "panels/ai_assistance/components/ChatView.ts | inputTextAriraDescription": {
+    "message": "Ŷóû ćâń âĺŝó ûśê ón̂é ôf́ t̂h́ê śûǵĝéŝt́êd́ p̂ŕôḿp̂t́ŝ áb̂óv̂é t̂ó ŝt́âŕt̂ ýôúr̂ ćôńv̂ér̂śât́îón̂"
+  },
   "panels/ai_assistance/components/ChatView.ts | learnAbout": {
     "message": "L̂éâŕn̂ áb̂óût́ ÂÍ îń D̂év̂T́ôól̂ś"
   },
@@ -2620,6 +2620,9 @@
   },
   "panels/ai_assistance/components/ChatView.ts | offline": {
     "message": "Ĉh́êćk̂ ýôúr̂ ín̂t́êŕn̂ét̂ ćôńn̂éĉt́îón̂ án̂d́ t̂ŕŷ áĝáîń"
+  },
+  "panels/ai_assistance/components/ChatView.ts | revealContextDescription": {
+    "message": "R̂év̂éâĺ t̂h́ê śêĺêćt̂éd̂ ćôńt̂éx̂t́ ît́êḿ îń D̂év̂T́ôól̂ś"
   },
   "panels/ai_assistance/components/ChatView.ts | settingsLink": {
     "message": "ÂÍ âśŝíŝt́âńĉé îń Ŝét̂t́îńĝś"
@@ -4457,6 +4460,9 @@
   "panels/application/preloading/components/PreloadingMismatchedHeadersGrid.ts | missing": {
     "message": "(m̂íŝśîńĝ)"
   },
+  "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedAfterBrowsingDataRemoved": {
+    "message": "T̂h́ê ṕr̂éf̂ét̂ćĥ ẃâś d̂íŝćâŕd̂éd̂ b́êćâúŝé b̂ŕôẃŝín̂ǵ d̂át̂á ŵáŝ ŕêḿôv́êd́."
+  },
   "panels/application/preloading/components/PreloadingString.ts | PrefetchEvictedAfterCandidateRemoved": {
     "message": "T̂h́ê ṕr̂éf̂ét̂ćĥ ẃâś d̂íŝćâŕd̂éd̂ b́êćâúŝé n̂ó ŝṕêćûĺât́îón̂ ŕûĺê ín̂ t́ĥé îńît́ât́îńĝ ṕâǵê t́r̂íĝǵêŕŝ á p̂ŕêf́êt́ĉh́ f̂ór̂ t́ĥíŝ ÚR̂Ĺ âńŷḿôŕê."
   },
@@ -4555,6 +4561,9 @@
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusBlockedByClient": {
     "message": "Ŝóm̂é r̂éŝóûŕĉé l̂óâd́ ŵáŝ b́l̂óĉḱêd́."
+  },
+  "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusBrowsingDataRemoved": {
+    "message": "T̂h́ê ṕr̂ér̂én̂d́êŕêd́ p̂áĝé ŵáŝ ún̂ĺôád̂éd̂ b́êćâúŝé b̂ŕôẃŝín̂ǵ d̂át̂á ŵáŝ ŕêḿôv́êd́."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusClientCertRequested": {
     "message": "T̂h́ê ṕr̂ér̂én̂d́êŕîńĝ ńâv́îǵât́îón̂ ŕêq́ûír̂éd̂ á ĤT́T̂Ṕ ĉĺîén̂t́ ĉér̂t́îf́îćât́ê."
@@ -5500,6 +5509,9 @@
   },
   "panels/changes/CombinedDiffView.ts | copied": {
     "message": "Ĉóp̂íêd́ t̂ó ĉĺîṕb̂óâŕd̂"
+  },
+  "panels/changes/CombinedDiffView.ts | copyFile": {
+    "message": "Ĉóp̂ý f̂íl̂é {PH1} t̂ó ĉĺîṕb̂óâŕd̂"
   },
   "panels/common/common.ts | allow": {
     "message": "Âĺl̂óŵ"
@@ -11190,7 +11202,7 @@
     "message": "Êx́p̂ór̂t́"
   },
   "panels/recorder/RecorderController.ts | exportRecording": {
-    "message": "Êx́p̂ór̂t́"
+    "message": "Êx́p̂ór̂t́ r̂éĉór̂d́îńĝ"
   },
   "panels/recorder/RecorderController.ts | exportViaExtensions": {
     "message": "Êx́p̂ór̂t́ v̂íâ éx̂t́êńŝíôńŝ"
@@ -12968,6 +12980,12 @@
   "panels/sources/NavigatorView.ts | authoredTooltip": {
     "message": "Ĉón̂t́âín̂ś ôŕîǵîńâĺ ŝóûŕĉéŝ"
   },
+  "panels/sources/NavigatorView.ts | connect": {
+    "message": "Ĉón̂ńêćt̂"
+  },
+  "panels/sources/NavigatorView.ts | connectFolderToWorkspace": {
+    "message": "Ĉón̂ńêćt̂ t́ô ẃôŕk̂śp̂áĉé"
+  },
   "panels/sources/NavigatorView.ts | delete": {
     "message": "D̂él̂ét̂é"
   },
@@ -13076,8 +13094,8 @@
   "panels/sources/sources-meta.ts | activateBreakpoints": {
     "message": "Âćt̂ív̂át̂é b̂ŕêák̂ṕôín̂t́ŝ"
   },
-  "panels/sources/sources-meta.ts | addFolder": {
-    "message": "Âd́d̂ f́ôĺd̂ér̂"
+  "panels/sources/sources-meta.ts | addFolderManually": {
+    "message": "Âd́d̂ f́ôĺd̂ér̂ ḿâńûál̂ĺŷ"
   },
   "panels/sources/sources-meta.ts | addFolderToWorkspace": {
     "message": "Âd́d̂ f́ôĺd̂ér̂ t́ô ẃôŕk̂śp̂áĉé"
@@ -13391,11 +13409,8 @@
   "panels/sources/sources-meta.ts | workspace": {
     "message": "Ŵór̂ḱŝṕâćê"
   },
-  "panels/sources/SourcesNavigator.ts | automaticWorkspaceFolderConnect": {
-    "message": "Ĉón̂ńêćt̂"
-  },
-  "panels/sources/SourcesNavigator.ts | automaticWorkspaceFolderDetected": {
-    "message": "Ŵór̂ḱŝṕâćê f́ôĺd̂ér̂ {PH1} d́êt́êćt̂éd̂"
+  "panels/sources/SourcesNavigator.ts | automaticWorkspaceNudge": {
+    "message": "Ûśê {PH1} t́ô áût́ôḿât́îćâĺl̂ý ĉón̂ńêćt̂ ýôúr̂ ṕr̂óĵéĉt́ f̂ól̂d́êŕ"
   },
   "panels/sources/SourcesNavigator.ts | clearConfiguration": {
     "message": "Ĉĺêár̂ ćôńf̂íĝúr̂át̂íôń"
@@ -13733,11 +13748,17 @@
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavings": {
     "message": "Êśt̂ śâv́îńĝś: {PH1}"
   },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAria": {
+    "message": "Êśt̂ím̂át̂éd̂ śâv́îńĝś f̂ór̂ t́ĥíŝ ín̂śîǵĥt́: {PH1}"
+  },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytes": {
     "message": "Êśt̂ śâv́îńĝś: {PH1} & {PH2}"
   },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytesAria": {
+    "message": "Êśt̂ím̂át̂éd̂ śâv́îńĝś f̂ór̂ t́ĥíŝ ín̂śîǵĥt́: {PH1} âńd̂ {PH2}"
+  },
   "panels/timeline/components/insights/BaseInsightComponent.ts | viewDetails": {
-    "message": "V̂íêẃ d̂ét̂áîĺŝ f́ôŕ {PH1}"
+    "message": "V̂íêẃ d̂ét̂áîĺŝ f́ôŕ {PH1} îńŝíĝh́t̂."
   },
   "panels/timeline/components/insights/Checklist.ts | failedAriaLabel": {
     "message": "Îńŝíĝh́t̂ ćĥéĉḱ f̂áîĺêd́: {PH1}"
@@ -14247,7 +14268,7 @@
     "message": "Â \"{PH1}\" év̂én̂t́ âńn̂ót̂át̂éd̂ ẃît́ĥ t́ĥé t̂éx̂t́ \"{PH2}\""
   },
   "panels/timeline/components/SidebarAnnotationsTab.ts | entryLabelTutorialDescription": {
-    "message": "D̂óûb́l̂é-ĉĺîćk̂ ón̂ án̂ ít̂ém̂ án̂d́ t̂ýp̂é t̂ó ĉŕêát̂é âń ît́êḿ l̂áb̂él̂."
+    "message": "D̂óûb́l̂é-ĉĺîćk̂ ór̂ ṕr̂éŝś Êńt̂ér̂ ón̂ án̂ ít̂ém̂ án̂d́ t̂ýp̂é t̂ó ĉŕêát̂é âń ît́êḿ l̂áb̂él̂."
   },
   "panels/timeline/components/SidebarAnnotationsTab.ts | entryLabelTutorialTitle": {
     "message": "L̂áb̂él̂ án̂ ít̂ém̂"
@@ -16696,18 +16717,6 @@
   },
   "ui/legacy/DockController.ts | devtoolsUndocked": {
     "message": "D̂év̂T́ôól̂ś îś ûńd̂óĉḱêd́"
-  },
-  "ui/legacy/DockController.ts | dockToBottom": {
-    "message": "D̂óĉḱ t̂ó b̂ót̂t́ôḿ"
-  },
-  "ui/legacy/DockController.ts | dockToLeft": {
-    "message": "D̂óĉḱ t̂ó l̂éf̂t́"
-  },
-  "ui/legacy/DockController.ts | dockToRight": {
-    "message": "D̂óĉḱ t̂ó r̂íĝh́t̂"
-  },
-  "ui/legacy/DockController.ts | undockIntoSeparateWindow": {
-    "message": "Ûńd̂óĉḱ îńt̂ó ŝép̂ár̂át̂é ŵín̂d́ôẃ"
   },
   "ui/legacy/EmptyWidget.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"

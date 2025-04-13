@@ -87,8 +87,8 @@ describe('ContentProviderBasedProject', () => {
             const progress = sinon.spy(new Common.Progress.Progress());
             await project.findFilesMatchingSearchRequest(searchConfig, uiSourceCodes, progress);
             assert.isTrue(progress.setTotalWork.calledOnceWithExactly(2));
-            assert.isTrue(progress.incrementWorked.calledTwice);
-            assert.isTrue(progress.done.calledOnce);
+            sinon.assert.calledTwice(progress.incrementWorked);
+            sinon.assert.calledOnce(progress.done);
         });
     });
 });

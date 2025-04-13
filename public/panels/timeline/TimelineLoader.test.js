@@ -62,13 +62,13 @@ describeWithEnvironment('TimelineLoader', () => {
         const file = await loadWebDevTraceAsFile();
         const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromFile(file, client);
         await loader.traceFinalizedForTest();
-        assert.isTrue(loadingStartedSpy.calledOnce);
+        sinon.assert.calledOnce(loadingStartedSpy);
         // Exact number is deterministic so we can assert, but the fact it was 29
         // calls doesn't really matter. We just want to check it got called "a
         // bunch of times".
-        assert.strictEqual(loadingProgressSpy.callCount, 29);
-        assert.isTrue(processingStartedSpy.calledOnce);
-        assert.isTrue(loadingCompleteSpy.calledOnce);
+        sinon.assert.callCount(loadingProgressSpy, 29);
+        sinon.assert.calledOnce(processingStartedSpy);
+        sinon.assert.calledOnce(loadingCompleteSpy);
         // Get the arguments of the first (and only) call to the loadingComplete
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
@@ -83,12 +83,12 @@ describeWithEnvironment('TimelineLoader', () => {
         const file = await loadBasicCpuProfileAsFile();
         const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromFile(file, client);
         await loader.traceFinalizedForTest();
-        assert.isTrue(loadingStartedSpy.calledOnce);
+        sinon.assert.calledOnce(loadingStartedSpy);
         // For the CPU Profile we are testing, loadingProgress will be called three times, because the
         // file is not that big.
-        assert.strictEqual(loadingProgressSpy.callCount, 3);
-        assert.isTrue(processingStartedSpy.calledOnce);
-        assert.isTrue(loadingCompleteSpy.calledOnce);
+        sinon.assert.callCount(loadingProgressSpy, 3);
+        sinon.assert.calledOnce(processingStartedSpy);
+        sinon.assert.calledOnce(loadingCompleteSpy);
         // Get the arguments of the first (and only) call to the loadingComplete
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
@@ -107,12 +107,12 @@ describeWithEnvironment('TimelineLoader', () => {
         ];
         const loader = Timeline.TimelineLoader.TimelineLoader.loadFromEvents(testTraceEvents, client);
         await loader.traceFinalizedForTest();
-        assert.isTrue(loadingStartedSpy.calledOnce);
+        sinon.assert.calledOnce(loadingStartedSpy);
         // For the trace events we are testing, loadingProgress will be called only once, because the
         // fake trace events array is very short.
-        assert.isTrue(loadingProgressSpy.calledOnce);
-        assert.isTrue(processingStartedSpy.calledOnce);
-        assert.isTrue(loadingCompleteSpy.calledOnce);
+        sinon.assert.calledOnce(loadingProgressSpy);
+        sinon.assert.calledOnce(processingStartedSpy);
+        sinon.assert.calledOnce(loadingCompleteSpy);
         // Get the arguments of the first (and only) call to the loadingComplete
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the
@@ -127,12 +127,12 @@ describeWithEnvironment('TimelineLoader', () => {
         const testProfile = { nodes: [], startTime: 0, endTime: 0 };
         const loader = Timeline.TimelineLoader.TimelineLoader.loadFromCpuProfile(testProfile, client);
         await loader.traceFinalizedForTest();
-        assert.isTrue(loadingStartedSpy.calledOnce);
+        sinon.assert.calledOnce(loadingStartedSpy);
         // For the CPU Profile we are testing, loadingProgress will be called only once, because the
         // fake Profile is basically empty.
-        assert.strictEqual(loadingProgressSpy.callCount, 1);
-        assert.isTrue(processingStartedSpy.calledOnce);
-        assert.isTrue(loadingCompleteSpy.calledOnce);
+        sinon.assert.callCount(loadingProgressSpy, 1);
+        sinon.assert.calledOnce(processingStartedSpy);
+        sinon.assert.calledOnce(loadingCompleteSpy);
         // Get the arguments of the first (and only) call to the loadingComplete
         // function. TS doesn't know what the types are (they are [any, any] by
         // default), so we tell it that they align with the types of the

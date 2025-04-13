@@ -57,7 +57,7 @@ export declare class AppManifestView extends AppManifestView_base implements SDK
     getInstallabilityErrorMessages(installabilityErrors: Protocol.Page.InstallabilityError[]): string[];
     private loadImage;
     parseSizes(sizes: string, resourceName: Platform.UIString.LocalizedString, imageUrl: string, imageResourceErrors: Platform.UIString.LocalizedString[]): ParsedSize[];
-    checkSizeProblem(size: ParsedSize, type: string | undefined, image: HTMLImageElement, resourceName: Platform.UIString.LocalizedString, imageUrl: string): {
+    checkSizeProblem(size: ParsedSize, image: HTMLImageElement, resourceName: Platform.UIString.LocalizedString, imageUrl: string): {
         error?: Platform.UIString.LocalizedString;
         hasSquareSize: boolean;
     };

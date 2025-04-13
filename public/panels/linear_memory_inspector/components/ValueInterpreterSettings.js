@@ -1,17 +1,14 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view, rulesdir/inject-checkbox-styles */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { valueTypeToLocalizedString } from './ValueInterpreterDisplayUtils.js';
-import valueInterpreterSettingsStylesRaw from './valueInterpreterSettings.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const valueInterpreterSettingsStyles = new CSSStyleSheet();
-valueInterpreterSettingsStyles.replaceSync(valueInterpreterSettingsStylesRaw.cssText);
+import valueInterpreterSettingsStyles from './valueInterpreterSettings.css.js';
 const { render, html } = Lit;
 const UIStrings = {
     /**
@@ -44,9 +41,6 @@ export class TypeToggleEvent extends Event {
 export class ValueInterpreterSettings extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #valueTypes = new Set();
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, valueInterpreterSettingsStyles];
-    }
     set data(data) {
         this.#valueTypes = data.valueTypes;
         this.#render();
@@ -55,6 +49,8 @@ export class ValueInterpreterSettings extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${Input.checkboxStylesRaw.cssText}</style>
+      <style>${valueInterpreterSettingsStyles.cssText}</style>
       <div class="settings" jslog=${VisualLogging.pane('settings')}>
        ${[...GROUP_TO_TYPES.keys()].map(group => {
             return html `

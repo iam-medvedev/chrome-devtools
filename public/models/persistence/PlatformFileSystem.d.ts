@@ -32,6 +32,11 @@ export declare enum PlatformFileSystemType {
 export declare class PlatformFileSystem {
     #private;
     private readonly pathInternal;
+    /**
+     * True if the filesystem was automatically discovered (see
+     * https://goo.gle/devtools-json-design).
+     */
+    readonly automatic: boolean;
     constructor(path: Platform.DevToolsPath.UrlString, type: PlatformFileSystemType, automatic: boolean);
     getMetadata(_path: Platform.DevToolsPath.EncodedPathString): Promise<{
         modificationTime: Date;
@@ -42,11 +47,6 @@ export declare class PlatformFileSystem {
     path(): Platform.DevToolsPath.UrlString;
     embedderPath(): Platform.DevToolsPath.RawPathString;
     type(): PlatformFileSystemType;
-    /**
-     * True if the filesystem was automatically discovered (see
-     * https://goo.gle/devtools-json-design).
-     */
-    automatic(): boolean;
     createFile(_path: Platform.DevToolsPath.EncodedPathString, _name: Platform.DevToolsPath.RawPathString | null): Promise<Platform.DevToolsPath.EncodedPathString | null>;
     deleteFile(_path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;
     deleteDirectoryRecursively(_path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;

@@ -16,7 +16,6 @@ export declare class ReportSelector {
     selectNewReport(): void;
 }
 export declare class Item {
-    private readonly lighthouseResult;
     private readonly renderReport;
     private readonly showLandingCallback;
     private readonly element;

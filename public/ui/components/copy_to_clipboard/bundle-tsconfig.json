@@ -1,0 +1,1 @@
+{"compilerOptions":{"composite":true,"outDir":".","baseUrl":".","rootDir":"../../../../../../../front_end/ui/components/copy_to_clipboard"},"files":["../../../../../../../front_end/ui/components/copy_to_clipboard/copy_to_clipboard.ts"],"references":[{"path":"./copy_to_clipboard-tsconfig.json"}]}

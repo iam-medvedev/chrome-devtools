@@ -193,7 +193,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
     isItemSelectable(_item) {
         return true;
     }
-    selectedItemChanged(from, to, fromElement, toElement) {
+    selectedItemChanged(_from, to, fromElement, toElement) {
         if (fromElement) {
             fromElement.tabIndex = -1;
         }

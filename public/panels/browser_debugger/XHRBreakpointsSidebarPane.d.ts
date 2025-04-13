@@ -10,7 +10,7 @@ export declare class XHRBreakpointsSidebarPane extends UI.Widget.VBox implements
     isItemSelectable(_item: string): boolean;
     private setBreakpoint;
     createElementForItem(item: string): Element;
-    selectedItemChanged(from: string | null, to: string | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
+    selectedItemChanged(_from: string | null, _to: string | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
     private removeBreakpoint;
     private addListElement;

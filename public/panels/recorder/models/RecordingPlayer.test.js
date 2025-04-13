@@ -29,7 +29,7 @@ describe('RecordingPlayer', () => {
         });
         recordingPlayer.addEventListener("Step" /* Models.RecordingPlayer.Events.STEP */, stepEventHandlerStub);
         await recordingPlayer.play();
-        assert.isTrue(stepEventHandlerStub.getCalls().length === 3);
+        assert.lengthOf(stepEventHandlerStub.getCalls(), 3);
     });
     describe('Step by step execution', () => {
         it('should stop execution before executing a step that has a breakpoint', async () => {

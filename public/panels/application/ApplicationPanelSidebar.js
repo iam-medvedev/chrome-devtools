@@ -818,9 +818,6 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
     showFrame(frame) {
         this.resourcesSection.revealAndSelectFrame(frame);
     }
-    innerShowView(view) {
-        this.panel.showView(view);
-    }
     showPreloadingRuleSetView(revealInfo) {
         if (this.preloadingSummaryTreeElement) {
             this.preloadingSummaryTreeElement.expandAndRevealRuleSet(revealInfo);
@@ -1780,7 +1777,6 @@ export class ResourcesSection {
 export class FrameTreeElement extends ApplicationPanelTreeElement {
     section;
     frame;
-    frameId;
     categoryElements;
     treeElementForResource;
     treeElementForWindow;
@@ -1790,7 +1786,6 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         super(section.panel, '', false, 'frame');
         this.section = section;
         this.frame = frame;
-        this.frameId = frame.id;
         this.categoryElements = new Map();
         this.treeElementForResource = new Map();
         this.treeElementForWindow = new Map();
@@ -1811,7 +1806,6 @@ export class FrameTreeElement extends ApplicationPanelTreeElement {
         }
         this.setLeadingIcons([icon]);
         this.invalidateChildren();
-        this.frameId = frame.id;
         if (this.title !== frame.displayName()) {
             this.title = frame.displayName();
             UI.ARIAUtils.setLabel(this.listItemElement, this.title);

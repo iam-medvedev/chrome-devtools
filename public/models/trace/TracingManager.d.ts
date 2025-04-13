@@ -4,11 +4,11 @@ import type * as Types from './types/types.js';
 export declare class TracingManager extends SDK.SDKModel.SDKModel<void> {
     #private;
     constructor(target: SDK.Target.Target);
-    bufferUsage(usage?: number, eventCount?: number, percentFull?: number): void;
+    bufferUsage(usage?: number, percentFull?: number): void;
     eventsCollected(events: Types.Events.Event[]): void;
     tracingComplete(): void;
     reset(): Promise<void>;
-    start(client: TracingManagerClient, categoryFilter: string, options: string): Promise<Protocol.ProtocolResponseWithError>;
+    start(client: TracingManagerClient, categoryFilter: string): Promise<Protocol.ProtocolResponseWithError>;
     stop(): void;
 }
 export interface TracingManagerClient {

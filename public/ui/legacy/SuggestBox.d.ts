@@ -17,7 +17,6 @@ export declare class SuggestBox implements ListDelegate<Suggestion> {
     private readonly maxItemsHeight;
     private rowHeight;
     private userEnteredText;
-    private readonly defaultSelectionIsDimmed;
     private onlyCompletion;
     private readonly items;
     private readonly list;
@@ -36,7 +35,7 @@ export declare class SuggestBox implements ListDelegate<Suggestion> {
     createElementForItem(item: Suggestion): Element;
     heightForItem(_item: Suggestion): number;
     isItemSelectable(_item: Suggestion): boolean;
-    selectedItemChanged(from: Suggestion | null, to: Suggestion | null, fromElement: Element | null, toElement: Element | null): void;
+    selectedItemChanged(_from: Suggestion | null, _to: Suggestion | null, fromElement: Element | null, toElement: Element | null): void;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
     private onClick;
     private canShowBox;

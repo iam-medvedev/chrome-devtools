@@ -61,9 +61,7 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         this.summaryBarContainer = this.contentContainer.createChild('div', 'web-audio-summary-container');
         this.contextSelector.addEventListener("ContextSelected" /* SelectorEvents.CONTEXT_SELECTED */, (event) => {
             const context = event.data;
-            if (context) {
-                this.updateDetailView(context);
-            }
+            this.updateDetailView(context);
             void this.doUpdate();
         });
         SDK.TargetManager.TargetManager.instance().observeModels(WebAudioModel, this);
@@ -144,10 +142,10 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         this.contextSelector.contextChanged(event);
     }
     reset() {
+        this.contextSelector.reset();
         if (this.landingPage.isShowing()) {
             this.landingPage.detach();
         }
-        this.contextSelector.reset();
         this.detailViewContainer.removeChildren();
         this.landingPage.show(this.detailViewContainer);
         this.graphManager.clearGraphs();
@@ -282,6 +280,12 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         });
     }
     updateDetailView(context) {
+        if (!context) {
+            this.landingPage.detach();
+            this.detailViewContainer.removeChildren();
+            this.landingPage.show(this.detailViewContainer);
+            return;
+        }
         if (this.landingPage.isShowing()) {
             this.landingPage.detach();
         }
@@ -289,8 +293,8 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         this.detailViewContainer.removeChildren();
         this.detailViewContainer.appendChild(detailBuilder.getFragment());
     }
-    updateSummaryBar(contextId, contextRealtimeData) {
-        const summaryBuilder = new ContextSummaryBuilder(contextId, contextRealtimeData);
+    updateSummaryBar(contextRealtimeData) {
+        const summaryBuilder = new ContextSummaryBuilder(contextRealtimeData);
         this.summaryBarContainer.removeChildren();
         this.summaryBarContainer.appendChild(summaryBuilder.getFragment());
     }
@@ -311,7 +315,7 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
                 }
                 const realtimeData = await model.requestRealtimeData(context.contextId);
                 if (realtimeData) {
-                    this.updateSummaryBar(context.contextId, realtimeData);
+                    this.updateSummaryBar(realtimeData);
                 }
             }
             else {

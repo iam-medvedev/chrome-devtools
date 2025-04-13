@@ -7,7 +7,7 @@ export declare class InteractionToNextPaint extends BaseInsightComponent<INPInsi
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
-    protected hasAskAISupport: boolean;
+    protected hasAskAiSupport(): boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderContent(): Lit.LitTemplate;
 }

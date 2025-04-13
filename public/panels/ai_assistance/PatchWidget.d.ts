@@ -1,9 +1,8 @@
 import '../../ui/legacy/legacy.js';
 import '../../ui/components/markdown_view/markdown_view.js';
 import '../../ui/components/spinners/spinners.js';
-import '../../ui/components/tooltips/tooltips.js';
 import * as Host from '../../core/host/host.js';
-import type * as Platform from '../../core/platform/platform.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -26,24 +25,45 @@ export declare enum PatchSuggestionState {
      */
     ERROR = "error"
 }
+declare enum SelectedProjectType {
+    /**
+     * No project selected
+     */
+    NONE = "none",
+    /**
+     * The selected project is not an automatic workspace project
+     */
+    REGULAR = "regular",
+    /**
+     * The selected project is a disconnected automatic workspace project
+     */
+    AUTOMATIC_DISCONNECTED = "automaticDisconncted",
+    /**
+     * The selected project is a connected automatic workspace project
+     */
+    AUTOMATIC_CONNECTED = "automaticConnected"
+}
 export interface ViewInput {
     workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl;
     patchSuggestionState: PatchSuggestionState;
     changeSummary?: string;
     sources?: string;
-    projectName?: string;
+    projectName: string;
+    projectPath: Platform.DevToolsPath.RawPathString;
+    projectType: SelectedProjectType;
     savedToDisk?: boolean;
-    projectPath: Platform.DevToolsPath.UrlString;
     applyToWorkspaceTooltipText: Platform.UIString.LocalizedString;
     onLearnMoreTooltipClick: () => void;
     onApplyToWorkspace: () => void;
     onCancel: () => void;
     onDiscard: () => void;
     onSaveAll: () => void;
-    onChangeWorkspaceClick: () => void;
+    onChangeWorkspaceClick?: () => void;
 }
 export interface ViewOutput {
     tooltipRef?: Directives.Ref<HTMLElement>;
+    changeRef?: Directives.Ref<HTMLElement>;
+    summaryRef?: Directives.Ref<HTMLElement>;
 }
 type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class PatchWidget extends UI.Widget.Widget {

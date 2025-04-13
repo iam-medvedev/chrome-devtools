@@ -93,8 +93,5 @@ export class LayerTreeBase {
     viewportSize() {
         return this.#viewportSizeInternal;
     }
-    nodeForId(id) {
-        return this.#domModel ? this.#domModel.nodeForId(id) : null;
-    }
 }
 //# sourceMappingURL=LayerTreeBase.js.map

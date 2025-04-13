@@ -5,10 +5,7 @@
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { toHexString } from './LinearMemoryInspectorUtils.js';
-import linearMemoryViewerStylesRaw from './linearMemoryViewer.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const linearMemoryViewerStyles = new CSSStyleSheet();
-linearMemoryViewerStyles.replaceSync(linearMemoryViewerStylesRaw.cssText);
+import linearMemoryViewerStyles from './linearMemoryViewer.css.js';
 const { render, html } = Lit;
 export class ByteSelectedEvent extends Event {
     static eventName = 'byteselected';
@@ -58,7 +55,6 @@ export class LinearMemoryViewer extends HTMLElement {
     }
     connectedCallback() {
         this.style.setProperty('--byte-group-margin', `${BYTE_GROUP_MARGIN}px`);
-        this.#shadow.adoptedStyleSheets = [linearMemoryViewerStyles];
     }
     disconnectedCallback() {
         this.#isObservingResize = false;
@@ -141,6 +137,7 @@ export class LinearMemoryViewer extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${linearMemoryViewerStyles.cssText}</style>
       <div class="view" tabindex="0" @keydown=${this.#onKeyDown} jslog=${jslog}>
         ${this.#renderView()}
       </div>

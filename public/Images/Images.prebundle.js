@@ -150,6 +150,8 @@ style.setProperty('--image-file-flex-no-wrap', 'url(\"' + new URL('./src/flex-no
 style.setProperty('--image-file-flex-wrap', 'url(\"' + new URL('./src/flex-wrap.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-flow', 'url(\"' + new URL('./src/flow.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-fold-more', 'url(\"' + new URL('./src/fold-more.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-folder-asterisk', 'url(\"' + new URL('./src/folder-asterisk.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-folder-off', 'url(\"' + new URL('./src/folder-off.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-folder', 'url(\"' + new URL('./src/folder.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-frame-crossed', 'url(\"' + new URL('./src/frame-crossed.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-frame-icon', 'url(\"' + new URL('./src/frame-icon.svg', import.meta.url).toString() + '\")');

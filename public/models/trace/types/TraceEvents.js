@@ -183,38 +183,20 @@ export function isDebuggerAsyncTaskScheduled(event) {
 export function isDebuggerAsyncTaskRun(event) {
     return event.name === "v8::Debugger::AsyncTaskRun" /* Name.DEBUGGER_ASYNC_TASK_RUN */;
 }
-class ProfileIdTag {
-    #profileIdTag;
-}
 export function ProfileID(value) {
     return value;
-}
-class CallFrameIdTag {
-    #callFrameIdTag;
 }
 export function CallFrameID(value) {
     return value;
 }
-class SampleIndexTag {
-    #sampleIndexTag;
-}
 export function SampleIndex(value) {
     return value;
-}
-class ProcessIdTag {
-    #processIdTag;
 }
 export function ProcessID(value) {
     return value;
 }
-class ThreadIdTag {
-    #threadIdTag;
-}
 export function ThreadID(value) {
     return value;
-}
-class WorkerIdTag {
-    #workerIdTag;
 }
 export function WorkerId(value) {
     return value;
@@ -268,7 +250,7 @@ export function isCommitLoad(event) {
     return event.name === 'CommitLoad';
 }
 export function isAnimation(event) {
-    // We've found some rare traces with an Animtation trace event from a different category: https://crbug.com/1472375#comment7
+    // We've found some rare traces with an Animation trace event from a different category: https://crbug.com/1472375#comment7
     return event.name === 'Animation' && event.cat.includes('devtools.timeline');
 }
 export function isSyntheticAnimation(event) {
@@ -578,5 +560,11 @@ export function isV8SourceRundownSourcesScriptCatchupEvent(event) {
 }
 export function isV8SourceRundownSourcesLargeScriptCatchupEvent(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'LargeScriptCatchup';
+}
+export function isV8SourceRundownSourcesStubScriptCatchupEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'StubScriptCatchup';
+}
+export function isAnyScriptCatchupEvent(event) {
+    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';
 }
 //# sourceMappingURL=TraceEvents.js.map

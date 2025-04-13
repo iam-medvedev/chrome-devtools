@@ -130,7 +130,6 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private markersChanged;
     private topLayerElementsChanged;
     private scrollableFlagUpdated;
-    private static treeOutlineSymbol;
 }
 export declare namespace ElementsTreeOutline {
     enum Events {

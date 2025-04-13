@@ -83,8 +83,8 @@ describeWithMockConnection('ElementsPanel', () => {
         const outOfScopeSearch = sinon.spy(outOfScopeModel, 'performSearch');
         const panel = Elements.ElementsPanel.ElementsPanel.instance({ forceNew: true });
         panel.performSearch({ query: 'foo' }, false);
-        assert.isTrue(inScopeSearch.called);
-        assert.isFalse(outOfScopeSearch.called);
+        sinon.assert.called(inScopeSearch);
+        sinon.assert.notCalled(outOfScopeSearch);
     });
 });
 //# sourceMappingURL=ElementsPanel.test.js.map

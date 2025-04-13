@@ -6,7 +6,6 @@ export interface ElementsPanelLinkData {
 export declare class ElementsPanelLink extends HTMLElement {
     #private;
     set data(data: ElementsPanelLinkData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

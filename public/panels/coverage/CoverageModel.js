@@ -110,7 +110,7 @@ export class CoverageModel extends SDK.SDKModel.SDKModel {
             }
         }
     }
-    async preciseCoverageDeltaUpdate(timestamp, occasion, coverageData) {
+    async preciseCoverageDeltaUpdate(timestamp, coverageData) {
         this.coverageUpdateTimes.add(timestamp);
         const result = await this.backlogOrProcessJSCoverage(coverageData, timestamp);
         if (result.length) {

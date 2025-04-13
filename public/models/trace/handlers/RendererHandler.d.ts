@@ -29,7 +29,7 @@ export declare function assignIsMainFrame(processes: Map<Types.Events.ProcessID,
  * Assigns the thread name to all threads in all processes.
  * @see assignMeta
  */
-export declare function assignThreadName(processes: Map<Types.Events.ProcessID, RendererProcess>, rendererProcessesByFrame: FrameProcessData, threadsInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, Types.Events.ThreadName>>): void;
+export declare function assignThreadName(processes: Map<Types.Events.ProcessID, RendererProcess>, threadsInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, Types.Events.ThreadName>>): void;
 /**
  * Removes unneeded trace data opportunistically stored while handling events.
  * This currently does the following:

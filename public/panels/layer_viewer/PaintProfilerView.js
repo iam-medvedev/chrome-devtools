@@ -431,12 +431,10 @@ export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWid
 export class LogTreeElement extends UI.TreeOutline.TreeElement {
     logItem;
     ownerView;
-    filled;
     constructor(ownerView, logItem) {
         super('', Boolean(logItem.params));
         this.logItem = logItem;
         this.ownerView = ownerView;
-        this.filled = false;
     }
     onattach() {
         this.update();

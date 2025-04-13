@@ -6,10 +6,7 @@ import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import linearMemoryHighlightChipListStylesRaw from './linearMemoryHighlightChipList.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const linearMemoryHighlightChipListStyles = new CSSStyleSheet();
-linearMemoryHighlightChipListStyles.replaceSync(linearMemoryHighlightChipListStylesRaw.cssText);
+import linearMemoryHighlightChipListStyles from './linearMemoryHighlightChipList.css.js';
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over an inspected variable's button in the Linear Memory Highlight Chip List.
@@ -46,9 +43,6 @@ export class LinearMemoryHighlightChipList extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #highlightedAreas = [];
     #focusedMemoryHighlight;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [linearMemoryHighlightChipListStyles];
-    }
     set data(data) {
         this.#highlightedAreas = data.highlightInfos;
         this.#focusedMemoryHighlight = data.focusedMemoryHighlight;
@@ -62,6 +56,7 @@ export class LinearMemoryHighlightChipList extends HTMLElement {
             chips.push(this.#createChip(highlightInfo));
         }
         const result = html `
+            <style>${linearMemoryHighlightChipListStyles.cssText}</style>
             <div class="highlight-chip-list">
               ${chips}
             </div>

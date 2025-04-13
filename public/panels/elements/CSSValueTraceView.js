@@ -102,9 +102,9 @@ export class CSSValueTraceView extends UI.Widget.VBox {
         if (!matchedResult) {
             return undefined;
         }
-        return this.#showTrace(property, matchedResult, matchedStyles, computedStyles, renderers);
+        return this.#showTrace(property, matchedResult, renderers);
     }
-    #showTrace(property, matchedResult, matchedStyles, computedStyles, renderers) {
+    #showTrace(property, matchedResult, renderers) {
         this.#highlighting = new Highlighting();
         const rendererMap = new Map(renderers.map(r => [r.matchType, r]));
         // Compute all trace lines

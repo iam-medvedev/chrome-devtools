@@ -201,7 +201,6 @@ export class AgentLayer {
     scrollRectsInternal;
     quadInternal;
     childrenInternal;
-    image;
     parentInternal;
     layerPayload;
     layerTreeModel;
@@ -321,7 +320,6 @@ export class AgentLayer {
     didPaint(rect) {
         this.lastPaintRectInternal = rect;
         this.paintCountInternal = this.paintCount() + 1;
-        this.image = null;
     }
     reset(layerPayload) {
         this.nodeInternal = null;
@@ -329,7 +327,6 @@ export class AgentLayer {
         this.parentInternal = null;
         this.paintCountInternal = 0;
         this.layerPayload = layerPayload;
-        this.image = null;
         this.scrollRectsInternal = this.layerPayload.scrollRects || [];
         this.stickyPositionConstraintInternal = this.layerPayload.stickyPositionConstraint ?
             new SDK.LayerTreeBase.StickyPositionConstraint(this.layerTreeModel.layerTree(), this.layerPayload.stickyPositionConstraint) :

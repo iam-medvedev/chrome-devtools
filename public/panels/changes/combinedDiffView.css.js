@@ -34,6 +34,7 @@ export default {
       .summary-left {
         display: flex;
         align-items: center;
+        min-width: 0;
         flex-grow: 0;
 
         .file-name-link {

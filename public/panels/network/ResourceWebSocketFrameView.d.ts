@@ -15,7 +15,6 @@ export declare class ResourceWebSocketFrameView extends UI.Widget.VBox {
     private readonly filterTextInput;
     private filterRegex;
     private readonly frameEmptyWidget;
-    private readonly selectedNode;
     private currentSelectedNode?;
     private messageFilterSetting;
     constructor(request: SDK.NetworkRequest.NetworkRequest);

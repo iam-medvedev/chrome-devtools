@@ -341,8 +341,7 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
             this.toggleTypeFilter(typeName, toggle);
         }
     }
-    onTypeFilterKeydown(ev) {
-        const event = ev;
+    onTypeFilterKeydown(event) {
         const element = event.target;
         if (!element) {
             return;
@@ -411,7 +410,7 @@ export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     activeWhenChecked;
     label;
     checkboxElement;
-    constructor(className, title, activeWhenChecked, setting, jslogContext) {
+    constructor(title, activeWhenChecked, setting, jslogContext) {
         super();
         this.filterElement = document.createElement('div');
         this.filterElement.classList.add('filter-checkbox-filter');

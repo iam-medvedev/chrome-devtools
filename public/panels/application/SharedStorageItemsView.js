@@ -81,7 +81,7 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
         this.sharedStorageItemsDispatcher.dispatchEventToListeners("FilteredItemsCleared" /* SharedStorageItemsDispatcher.Events.FILTERED_ITEMS_CLEARED */);
         UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageFilteredItemsCleared));
     }
-    isEditAllowed(columnIdentifier, oldText, newText) {
+    isEditAllowed(columnIdentifier, _oldText, newText) {
         if (columnIdentifier === 'key' && newText === '') {
             // The Shared Storage backend does not currently allow '' as a key, so we only set a new entry with a new key if its new key is nonempty.
             void this.refreshItems().then(() => {

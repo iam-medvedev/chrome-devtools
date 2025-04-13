@@ -68,7 +68,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     oldTabIndex;
     completeTimeout;
     disableDefaultSuggestionForEmptyInputInternal;
-    changed;
     jslogContext = undefined;
     constructor() {
         super();
@@ -83,7 +82,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.ghostTextElement.classList.add('auto-complete-text');
         this.ghostTextElement.setAttribute('contenteditable', 'false');
         this.leftParenthesesIndices = [];
-        this.changed = false;
         ARIAUtils.setHidden(this.ghostTextElement, true);
     }
     initialize(completions, stopCharacters, usesSuggestionBuilder) {
@@ -305,9 +303,8 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     onMouseWheel(_event) {
         // Subclasses can implement.
     }
-    onKeyDown(ev) {
+    onKeyDown(event) {
         let handled = false;
-        const event = ev;
         if (this.isSuggestBoxVisible() && this.suggestBox?.keyPressed(event)) {
             void VisualLogging.logKeyDown(this.suggestBox.element, event);
             event.consume(true);
@@ -399,7 +396,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshGhostText();
         this.previousText = text;
         this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
-        this.changed = true;
         this.autoCompleteSoon();
     }
     acceptAutoComplete() {
@@ -426,7 +422,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshGhostText();
         if (beforeText !== this.textWithCurrentSuggestion()) {
             this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
-            this.changed = true;
         }
     }
     onBlur() {
@@ -545,7 +540,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.refreshGhostText();
         if (isIntermediateSuggestion) {
             this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
-            this.changed = true;
         }
     }
     acceptSuggestion() {
@@ -564,7 +558,6 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.updateLeftParenthesesIndices();
         this.clearAutocomplete();
         this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
-        this.changed = true;
         return true;
     }
     ownerElement() {

@@ -43,7 +43,7 @@ export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     setHeaderHeight(height: number): void;
     setRightPadding(padding: number): void;
     setCalculator(calculator: NetworkTimeCalculator): void;
-    getNodeFromPoint(x: number, y: number): NetworkNode | null;
+    getNodeFromPoint(y: number): NetworkNode | null;
     scheduleDraw(): void;
     update(scrollTop?: number, eventDividers?: Map<string, number[]>, nodes?: NetworkNode[]): void;
     private resetCanvas;

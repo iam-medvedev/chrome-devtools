@@ -480,7 +480,7 @@ export class ProfileDataGridTree {
         }
         return matchesQuery;
     }
-    performSearch(searchConfig, shouldJump, jumpBackwards) {
+    performSearch(searchConfig, _shouldJump, jumpBackwards) {
         this.onSearchCanceled();
         const matchesQuery = this.matchFunction(searchConfig);
         if (!matchesQuery) {

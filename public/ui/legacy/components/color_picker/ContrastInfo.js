@@ -7,7 +7,7 @@ export class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper {
     contrastRatioInternal;
     contrastRatioAPCAInternal;
     contrastRatioThresholds;
-    contrastRationAPCAThreshold;
+    contrastRatioAPCAThresholdInternal;
     fgColor;
     bgColorInternal;
     colorFormatInternal;
@@ -17,21 +17,23 @@ export class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper {
         this.contrastRatioInternal = null;
         this.contrastRatioAPCAInternal = null;
         this.contrastRatioThresholds = null;
-        this.contrastRationAPCAThreshold = 0;
+        this.contrastRatioAPCAThresholdInternal = 0;
         this.fgColor = null;
         this.bgColorInternal = null;
         if (!contrastInfo) {
             return;
         }
-        if (!contrastInfo.computedFontSize || !contrastInfo.computedFontWeight || !contrastInfo.backgroundColors ||
-            contrastInfo.backgroundColors.length !== 1) {
+        if (!contrastInfo.computedFontSize || !contrastInfo.computedFontWeight) {
             return;
         }
         this.isNullInternal = false;
         this.contrastRatioThresholds =
             Common.ColorUtils.getContrastThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
-        this.contrastRationAPCAThreshold =
+        this.contrastRatioAPCAThresholdInternal =
             Common.ColorUtils.getAPCAThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
+        if (!contrastInfo.backgroundColors || contrastInfo.backgroundColors.length !== 1) {
+            return;
+        }
         const bgColorText = contrastInfo.backgroundColors[0];
         const bgColor = Common.Color.parse(bgColorText)?.asLegacyColor();
         if (bgColor) {
@@ -60,7 +62,7 @@ export class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper {
         return this.contrastRatioAPCAInternal;
     }
     contrastRatioAPCAThreshold() {
-        return this.contrastRationAPCAThreshold;
+        return this.contrastRatioAPCAThresholdInternal;
     }
     setBgColor(bgColor) {
         this.setBgColorInternal(bgColor);

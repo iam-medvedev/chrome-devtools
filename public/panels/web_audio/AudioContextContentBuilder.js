@@ -80,7 +80,7 @@ export class ContextDetailBuilder {
 }
 export class ContextSummaryBuilder {
     fragment;
-    constructor(contextId, contextRealtimeData) {
+    constructor(contextRealtimeData) {
         const time = contextRealtimeData.currentTime.toFixed(3);
         const mean = (contextRealtimeData.callbackIntervalMean * 1000).toFixed(3);
         const stddev = (Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1000).toFixed(3);

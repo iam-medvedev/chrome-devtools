@@ -1078,7 +1078,7 @@ export class HeapSnapshot {
         switch (filterName) {
             case 'objectsRetainedByDetachedDomNodes':
                 // Traverse the graph, avoiding detached nodes.
-                traverse((node, edge) => {
+                traverse((_node, edge) => {
                     return edge.node().detachedness() !== 2 /* DOMLinkState.DETACHED */;
                 });
                 markUnreachableNodes();

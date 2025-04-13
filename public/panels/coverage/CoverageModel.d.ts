@@ -46,7 +46,7 @@ export declare class CoverageModel extends SDK.SDKModel.SDKModel<EventTypes> {
     private sourceMapAttached;
     private resolveSourceMapsAndUpdate;
     private resolveSourceMap;
-    preciseCoverageDeltaUpdate(timestamp: number, occasion: string, coverageData: Protocol.Profiler.ScriptCoverage[]): Promise<void>;
+    preciseCoverageDeltaUpdate(timestamp: number, coverageData: Protocol.Profiler.ScriptCoverage[]): Promise<void>;
     stop(): Promise<void>;
     reset(): void;
     startPolling(): Promise<void>;

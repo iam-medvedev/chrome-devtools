@@ -84,7 +84,7 @@ describeWithMockConnection('NetworkPanel', () => {
         assert.instanceOf(button, HTMLElement);
         button.click();
         await RenderCoordinator.done({ waitForWork: true });
-        assert.isTrue(networkLogResetSpy.called);
+        sinon.assert.called(networkLogResetSpy);
     });
 });
 //# sourceMappingURL=NetworkPanel.test.js.map

@@ -228,7 +228,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
     updateSelectedItemARIA(_fromElement, _toElement) {
         return true;
     }
-    selectedItemChanged(from, to, fromElement, toElement) {
+    selectedItemChanged(_from, _to, fromElement, toElement) {
         if (fromElement) {
             fromElement.tabIndex = -1;
         }
@@ -345,7 +345,7 @@ const BreakpointTypeLabels = new Map([
     ["node-removed" /* Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved */, i18nLazyString(UIStrings.nodeRemoved)],
 ]);
 export class ContextMenuProvider {
-    appendApplicableItems(event, contextMenu, node) {
+    appendApplicableItems(_event, contextMenu, node) {
         if (node.pseudoType()) {
             return;
         }

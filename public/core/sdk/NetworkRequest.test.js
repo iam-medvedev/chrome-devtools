@@ -348,7 +348,7 @@ describeWithMockConnection('requestStreamingContent', () => {
         });
         const responseBodySpy = sinon.spy(target.networkAgent(), 'invoke_getResponseBody');
         void networkManager.requestForId('1').requestStreamingContent();
-        assert.isTrue(responseBodySpy.calledOnce);
+        sinon.assert.calledOnce(responseBodySpy);
     });
     it('streams the full response body for in-flight requests', () => {
         networkManager.dispatcher.requestWillBeSent({
@@ -367,7 +367,7 @@ describeWithMockConnection('requestStreamingContent', () => {
         });
         const responseBodySpy = sinon.spy(target.networkAgent(), 'invoke_streamResourceContent');
         void networkManager.requestForId('1').requestStreamingContent();
-        assert.isTrue(responseBodySpy.calledOnce);
+        sinon.assert.calledOnce(responseBodySpy);
     });
     it('sends ChunkAdded events when new data is received', async () => {
         networkManager.dispatcher.requestWillBeSent({

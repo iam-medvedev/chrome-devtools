@@ -72,7 +72,6 @@ export declare class SubMenu extends Item {
     footerSection(): Section;
     buildDescriptor(): SoftContextMenuDescriptor | Host.InspectorFrontendHostAPI.ContextMenuDescriptor;
     appendItemsAtLocation(location: string): void;
-    private static uniqueSectionName;
 }
 export interface ContextMenuOptions {
     useSoftMenu?: boolean;
@@ -90,7 +89,6 @@ export declare class ContextMenu extends SubMenu {
     private x;
     private y;
     private onSoftMenuClosed?;
-    private jsLogContext?;
     private readonly handlers;
     idInternal: number;
     private softMenu?;

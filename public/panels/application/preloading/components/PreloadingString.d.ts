@@ -10,6 +10,7 @@ export declare const PrefetchReasonDescription: {
 export declare function prefetchFailureReason({ prefetchStatus }: SDK.PreloadingModel.PrefetchAttempt): string | null;
 export declare function prerenderFailureReason(attempt: SDK.PreloadingModel.PrerenderAttempt): string | null;
 export declare function ruleSetLocationShort(ruleSet: Protocol.Preload.RuleSet, pageURL: Platform.DevToolsPath.UrlString): string;
+export declare function ruleSetTagOrLocationShort(ruleSet: Protocol.Preload.RuleSet, pageURL: Platform.DevToolsPath.UrlString): string;
 export declare function capitalizedAction(action: Protocol.Preload.SpeculationAction): Common.UIString.LocalizedString;
 export declare function status(status: SDK.PreloadingModel.PreloadingStatus): string;
 export declare function composedStatus(attempt: SDK.PreloadingModel.PreloadingAttempt): string;

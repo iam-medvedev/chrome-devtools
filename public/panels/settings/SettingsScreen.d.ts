@@ -48,7 +48,7 @@ export declare class ExperimentsSettingsTab extends SettingsTab {
     willHide(): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
-    handleAction(context: UI.Context.Context, actionId: string): boolean;
+    handleAction(_context: UI.Context.Context, actionId: string): boolean;
 }
 export declare class Revealer implements Common.Revealer.Revealer<Root.Runtime.Experiment | Common.Settings.Setting<unknown>> {
     reveal(object: Root.Runtime.Experiment | Common.Settings.Setting<unknown>): Promise<void>;

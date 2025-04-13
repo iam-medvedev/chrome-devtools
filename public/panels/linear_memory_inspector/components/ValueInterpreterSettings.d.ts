@@ -12,7 +12,6 @@ export declare class TypeToggleEvent extends Event {
 }
 export declare class ValueInterpreterSettings extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: ValueInterpreterSettingsData);
 }
 declare global {

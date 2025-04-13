@@ -102,6 +102,7 @@ const INSIGHT_NAME_TO_COMPONENT = {
 export class SidebarSingleInsightSet extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #renderBound = this.#render.bind(this);
+    #activeInsightElement = null;
     #data = {
         insights: null,
         insightSetKey: null,
@@ -111,6 +112,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         traceMetadata: null,
     };
     #dismissedFieldMismatchNotice = false;
+    #activeHighlightTimeout = -1;
     set data(data) {
         this.#data = data;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
@@ -118,6 +120,23 @@ export class SidebarSingleInsightSet extends HTMLElement {
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
+    }
+    disconnectedCallback() {
+        window.clearTimeout(this.#activeHighlightTimeout);
+    }
+    highlightActiveInsight() {
+        if (!this.#activeInsightElement) {
+            return;
+        }
+        // First clear any existing highlight that is going on.
+        this.#activeInsightElement.removeAttribute('highlight-insight');
+        window.clearTimeout(this.#activeHighlightTimeout);
+        requestAnimationFrame(() => {
+            this.#activeInsightElement?.setAttribute('highlight-insight', 'true');
+            this.#activeHighlightTimeout = window.setTimeout(() => {
+                this.#activeInsightElement?.removeAttribute('highlight-insight');
+            }, 2_000);
+        });
     }
     #metricIsVisible(label) {
         if (this.#data.activeCategory === Trace.Insights.Types.InsightCategory.ALL) {
@@ -325,6 +344,11 @@ export class SidebarSingleInsightSet extends HTMLElement {
             const component = html `<div>
         <${componentClass.litTagName}
           .selected=${this.#data.activeInsight?.model === model}
+          ${Lit.Directives.ref(elem => {
+                if (this.#data.activeInsight?.model === model && elem) {
+                    this.#activeInsightElement = elem;
+                }
+            })}
           .model=${model}
           .bounds=${insightSet.bounds}
           .insightSetKey=${insightSetKey}

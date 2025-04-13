@@ -27,9 +27,9 @@ describeWithLocale('Preview toggle', () => {
         const input = component.shadowRoot.querySelector('input');
         assert.instanceOf(input, HTMLElement);
         dispatchClickEvent(input);
-        assert.strictEqual(setEnabledStub.callCount, 1);
+        sinon.assert.callCount(setEnabledStub, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', true), 'experiments.setEnabled was not called with the correct experiment');
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.firstCall.firstArg);
     });
     it('calls out correctly to disable experiment', async () => {
@@ -51,9 +51,9 @@ describeWithLocale('Preview toggle', () => {
         const input = component.shadowRoot.querySelector('input');
         assert.instanceOf(input, HTMLElement);
         dispatchClickEvent(input);
-        assert.strictEqual(setEnabledStub.callCount, 1);
+        sinon.assert.callCount(setEnabledStub, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', false), 'experiments.setEnabled was not called with the correct experiment');
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isFalse(spy.firstCall.firstArg);
     });
 });

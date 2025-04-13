@@ -411,7 +411,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.lengthOf(rows, 1);
         checkHeaderSectionRow(rows[0], 'foo', 'syn ax', false, false, true);
         await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'syn ax');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         checkHeaderSectionRow(rows[0], 'foo', 'syn ax', false, false, true);
         await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'syntax');
         const expected = [{
@@ -508,7 +508,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify(expected, null, 2)));
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideHeaderRemoved));
         rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
@@ -527,7 +527,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify(expected, null, 2)));
         rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.lengthOf(rows, 3);
@@ -556,7 +556,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         const { component, spy } = await setupHeaderEditing(headerOverridesFileContent, actualHeaders, originalHeaders);
         await removeHeaderRow(component, 0);
         const expected = [];
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify(expected, null, 2)));
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideHeaderRemoved));
     });
@@ -587,7 +587,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         checkHeaderSectionRow(rows[1], 'cache-control', 'max-age=600', false, false, true);
         await removeHeaderRow(component, 0);
         const expected = [];
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify(expected, null, 2)));
         rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.lengthOf(rows, 2);
@@ -609,11 +609,11 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify(expected, null, 2)));
         spy.resetHistory();
         await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'original server');
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify([], null, 2)));
     });
     it('can add headers', async () => {
@@ -698,11 +698,11 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         assert.instanceOf(addHeaderButton, HTMLElement);
         addHeaderButton.click();
         await RenderCoordinator.done();
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'valid');
-        assert.strictEqual(spy.callCount, 2);
+        sinon.assert.callCount(spy, 2);
         await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'in:valid');
-        assert.strictEqual(spy.callCount, 2);
+        sinon.assert.callCount(spy, 2);
     });
     it('can remove a newly added header', async () => {
         const actualHeaders = [
@@ -730,7 +730,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         checkHeaderSectionRow(rows[1], 'header-name', 'header value', true, true, true);
         spy.resetHistory();
         await removeHeaderRow(component, 1);
-        assert.strictEqual(spy.callCount, 1);
+        sinon.assert.callCount(spy, 1);
         assert.isTrue(spy.calledOnceWith(JSON.stringify([], null, 2)));
         rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.lengthOf(rows, 2);

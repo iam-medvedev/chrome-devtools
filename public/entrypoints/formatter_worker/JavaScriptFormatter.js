@@ -40,7 +40,7 @@ export class JavaScriptFormatter {
     constructor(builder) {
         this.#builder = builder;
     }
-    format(text, lineEndings, fromOffset, toOffset) {
+    format(text, _lineEndings, fromOffset, toOffset) {
         this.#fromOffset = fromOffset;
         this.#toOffset = toOffset;
         this.#content = text.substring(this.#fromOffset, this.#toOffset);

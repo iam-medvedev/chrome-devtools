@@ -39,7 +39,7 @@ describeWithMockConnection('ScopeChainModel', () => {
         const listenerStub = sinon.stub();
         scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
-        assert.isTrue(listenerStub.calledOnce);
+        sinon.assert.calledOnce(listenerStub);
     });
     it('does not emit an event after it was disposed even with an update still in-flight', async () => {
         // Stub out the pluginManagers `resolveScopeChain` with a promise that we control.
@@ -56,7 +56,7 @@ describeWithMockConnection('ScopeChainModel', () => {
         const listenerStub = sinon.stub();
         scopeChainModel.addEventListener("ScopeChainUpdated" /* SourceMapScopes.ScopeChainModel.Events.SCOPE_CHAIN_UPDATED */, listenerStub);
         await clock.tickAsync(10);
-        assert.isTrue(stubPluginManager.resolveScopeChain.calledOnce);
+        sinon.assert.calledOnce(stubPluginManager.resolveScopeChain);
         assert.isFalse(listenerStub.calledOnce);
         scopeChainModel.dispose();
         resolve(null);

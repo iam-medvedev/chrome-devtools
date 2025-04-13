@@ -13,7 +13,7 @@ describeWithEnvironment('ThemeSupport', () => {
     it('calls fetchColors on host ColorThemeChanged', async () => {
         const colorFetchSpy = sinon.spy(themeSupport, 'fetchColorsAndApplyHostTheme');
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ColorThemeChanged);
-        assert.isTrue(colorFetchSpy.called);
+        sinon.assert.called(colorFetchSpy);
     });
     describe('fetchColors', () => {
         it('fetchColors updates color node url', () => {

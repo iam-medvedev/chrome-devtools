@@ -378,7 +378,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         breakpoints.set(uiLocation.id(), breakpointLocation);
         this.dispatchEventToListeners(Events.BreakpointAdded, breakpointLocation);
     }
-    uiLocationRemoved(breakpoint, uiLocation) {
+    uiLocationRemoved(uiLocation) {
         const breakpoints = this.#breakpointsForUISourceCode.get(uiLocation.uiSourceCode);
         if (!breakpoints) {
             return;
@@ -561,7 +561,7 @@ export class Breakpoint {
             this.uiSourceCodes.delete(uiSourceCode);
             this.breakpointManager.removeHomeUISourceCode(uiSourceCode, this);
             if (!this.bound()) {
-                this.breakpointManager.uiLocationRemoved(this, this.defaultUILocation(uiSourceCode));
+                this.breakpointManager.uiLocationRemoved(this.defaultUILocation(uiSourceCode));
             }
         }
         // Do we need to do this? Not sure if bound locations will leak...
@@ -569,7 +569,7 @@ export class Breakpoint {
             for (const uiLocation of this.#uiLocations) {
                 if (uiLocation.uiSourceCode === uiSourceCode) {
                     this.#uiLocations.delete(uiLocation);
-                    this.breakpointManager.uiLocationRemoved(this, uiLocation);
+                    this.breakpointManager.uiLocationRemoved(uiLocation);
                 }
             }
             if (!this.bound() && !this.isRemoved) {
@@ -601,7 +601,7 @@ export class Breakpoint {
     uiLocationRemoved(uiLocation) {
         if (this.#uiLocations.has(uiLocation)) {
             this.#uiLocations.delete(uiLocation);
-            this.breakpointManager.uiLocationRemoved(this, uiLocation);
+            this.breakpointManager.uiLocationRemoved(uiLocation);
             if (!this.bound() && !this.isRemoved) {
                 this.addAllUnboundLocations();
             }
@@ -699,7 +699,7 @@ export class Breakpoint {
     }
     removeAllUnboundLocations() {
         for (const uiSourceCode of this.uiSourceCodes) {
-            this.breakpointManager.uiLocationRemoved(this, this.defaultUILocation(uiSourceCode));
+            this.breakpointManager.uiLocationRemoved(this.defaultUILocation(uiSourceCode));
         }
     }
     addAllUnboundLocations() {

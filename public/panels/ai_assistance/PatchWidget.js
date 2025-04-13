@@ -5,10 +5,10 @@
 import '../../ui/legacy/legacy.js';
 import '../../ui/components/markdown_view/markdown_view.js';
 import '../../ui/components/spinners/spinners.js';
-import '../../ui/components/tooltips/tooltips.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Persistence from '../../models/persistence/persistence.js';
@@ -21,7 +21,6 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as ChangesPanel from '../changes/changes.js';
 import * as PanelCommon from '../common/common.js';
 import { SelectWorkspaceDialog } from './SelectWorkspaceDialog.js';
-const { classMap } = Directives;
 /*
 * Strings that don't need to be translated at this time.
 */
@@ -42,6 +41,11 @@ const UIStringsNotTranslate = {
      *@description Button text to change the selected workspace
      */
     change: 'Change',
+    /**
+     * @description Accessible title of the Change button to indicate that
+     * the button can be used to change the root folder.
+     */
+    changeRootFolder: 'Change project root folder',
     /**
      *@description Button text to cancel applying to workspace
      */
@@ -71,9 +75,10 @@ const UIStringsNotTranslate = {
      */
     applyToWorkspaceTooltipNoLogging: 'Source code from the selected folder is sent to Google to generate code suggestions. This data will not be used to improve Google’s AI models.',
     /**
-     *@description Tooltip link for the navigating to "AI innovations" page in settings.
+     *@description The footer disclaimer that links to more information
+     * about the AI feature. Same text as in ChatView.
      */
-    learnMore: 'Learn more',
+    learnMore: 'Learn about AI in DevTools',
     /**
      *@description Header text for the AI-powered code suggestions disclaimer dialog.
      */
@@ -129,6 +134,25 @@ export var PatchSuggestionState;
      */
     PatchSuggestionState["ERROR"] = "error";
 })(PatchSuggestionState || (PatchSuggestionState = {}));
+var SelectedProjectType;
+(function (SelectedProjectType) {
+    /**
+     * No project selected
+     */
+    SelectedProjectType["NONE"] = "none";
+    /**
+     * The selected project is not an automatic workspace project
+     */
+    SelectedProjectType["REGULAR"] = "regular";
+    /**
+     * The selected project is a disconnected automatic workspace project
+     */
+    SelectedProjectType["AUTOMATIC_DISCONNECTED"] = "automaticDisconncted";
+    /**
+     * The selected project is a connected automatic workspace project
+     */
+    SelectedProjectType["AUTOMATIC_CONNECTED"] = "automaticConnected";
+})(SelectedProjectType || (SelectedProjectType = {}));
 export class PatchWidget extends UI.Widget.Widget {
     changeSummary = '';
     changeManager;
@@ -146,6 +170,9 @@ export class PatchWidget extends UI.Widget.Widget {
     #patchSuggestionState = PatchSuggestionState.INITIAL;
     #workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
     #workspace = Workspace.Workspace.WorkspaceImpl.instance();
+    #automaticFileSystem = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().automaticFileSystem;
+    #applyToDisconnectedAutomaticWorkspace = false;
+    #popoverHelper = null;
     constructor(element, view, opts) {
         super(false, false, element);
         this.#aidaClient = opts?.aidaClient ?? new Host.AidaClient.AidaClient();
@@ -157,12 +184,14 @@ export class PatchWidget extends UI.Widget.Widget {
                 return;
             }
             output.tooltipRef = output.tooltipRef ?? Directives.createRef();
+            output.changeRef = output.changeRef ?? Directives.createRef();
+            output.summaryRef = output.summaryRef ?? Directives.createRef();
             function renderSourcesLink() {
                 if (!input.sources) {
                     return nothing;
                 }
                 return html `<x-link
-          class="link sources-link"
+          class="link"
           title="${UIStringsNotTranslate.viewUploadedFiles} ${UIStringsNotTranslate.opensInNewTab}"
           href="data:text/plain,${encodeURIComponent(input.sources)}"
           jslog=${VisualLogging.link('files-used-in-patching').track({ click: true })}>
@@ -230,12 +259,14 @@ export class PatchWidget extends UI.Widget.Widget {
                 if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
                     return html `
           <div class="footer">
-            <x-link class="link disclaimer-link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({
+            <div class="left-side">
+              <x-link class="link disclaimer-link" href="https://support.google.com/legal/answer/13505487" jslog=${VisualLogging.link('code-disclaimer').track({
                         click: true,
                     })}>
-              ${lockedString(UIStringsNotTranslate.codeDisclaimer)}
-            </x-link>
-            ${renderSourcesLink()}
+                ${lockedString(UIStringsNotTranslate.codeDisclaimer)}
+              </x-link>
+              ${renderSourcesLink()}
+            </div>
             <div class="save-or-discard-buttons">
               <devtools-button
                 @click=${input.onDiscard}
@@ -253,22 +284,26 @@ export class PatchWidget extends UI.Widget.Widget {
           </div>
           `;
                 }
+                const iconName = input.projectType === SelectedProjectType.AUTOMATIC_DISCONNECTED ? 'folder-off' : input.projectType === SelectedProjectType.AUTOMATIC_CONNECTED ? 'folder-asterisk' : 'folder';
                 return html `
         <div class="footer">
           ${input.projectName ? html `
             <div class="change-workspace">
-              <div class="selected-folder">
-                <devtools-icon .name=${'folder'}></devtools-icon> <span title=${input.projectPath}>${input.projectName}</span>
-              </div>
-              <devtools-button
-                @click=${input.onChangeWorkspaceClick}
-                .jslogContext=${'change-workspace'}
-                .variant=${"text" /* Buttons.Button.Variant.TEXT */}>
-                  ${lockedString(UIStringsNotTranslate.change)}
-              </devtools-button>
+                <devtools-icon .name=${iconName}></devtools-icon>
+                <span class="folder-name" title=${input.projectPath}>${input.projectName}</span>
+              ${input.onChangeWorkspaceClick ? html `
+                <devtools-button
+                  @click=${input.onChangeWorkspaceClick}
+                  .jslogContext=${'change-workspace'}
+                  .variant=${"text" /* Buttons.Button.Variant.TEXT */}
+                  .title=${lockedString(UIStringsNotTranslate.changeRootFolder)}
+                  .disabled=${input.patchSuggestionState === PatchSuggestionState.LOADING}
+                  ${Directives.ref(output.changeRef)}
+                >${lockedString(UIStringsNotTranslate.change)}</devtools-button>
+              ` : nothing}
             </div>
           ` : nothing}
-          <div class="apply-to-workspace-container">
+          <div class="apply-to-workspace-container" aria-live="polite">
             ${input.patchSuggestionState === PatchSuggestionState.LOADING ? html `
               <div class="loading-text-container">
                 <devtools-spinner></devtools-spinner>
@@ -277,7 +312,7 @@ export class PatchWidget extends UI.Widget.Widget {
                 </span>
               </div>
             ` : html `
-              <devtools-button
+                <devtools-button
                 @click=${input.onApplyToWorkspace}
                 .jslogContext=${'stage-to-workspace'}
                 .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>
@@ -294,36 +329,80 @@ export class PatchWidget extends UI.Widget.Widget {
               aria-details="info-tooltip"
               .iconName=${'info'}
               .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-              ></devtools-button>
-            <devtools-tooltip variant="rich" id="info-tooltip" ${Directives.ref(output.tooltipRef)}>
-              <div class="info-tooltip-container">
-                ${input.applyToWorkspaceTooltipText}
-                <button
-                  class="link tooltip-link"
-                  role="link"
-                  jslog=${VisualLogging.link('open-ai-settings').track({
-                    click: true,
-                })}
-                  @click=${input.onLearnMoreTooltipClick}
-                >${lockedString(UIStringsNotTranslate.learnMore)}</button>
-              </div>
-            </devtools-tooltip>
+              .title=${input.applyToWorkspaceTooltipText}
+            ></devtools-button>
           </div>
         </div>`;
             }
-            render(html `
-          <details class=${classMap({
-                'change-summary': true,
-                'saved-to-disk': Boolean(input.savedToDisk)
-            })}>
-            <summary>
+            // Use a simple div for the "Saved to disk" state as it's not expandable,
+            // otherwise use the interactive <details> element.
+            const template = input.savedToDisk
+                ? html `
+          <div class="change-summary saved-to-disk" role="status" aria-live="polite">
+            <div class="header-container">
+             ${renderHeader()}
+             </div>
+          </div>`
+                : html `
+          <details class="change-summary">
+            <summary class="header-container" ${Directives.ref(output.summaryRef)}>
               ${renderHeader()}
             </summary>
             ${renderContent()}
             ${renderFooter()}
           </details>
-        `, target, { host: target });
+        `;
+            render(template, target, { host: target });
         });
+        // We're using PopoverHelper as a workaround instead of using <devtools-tooltip>. See the bug for more details.
+        // TODO: Update here when b/409965560 is fixed.
+        this.#popoverHelper = new UI.PopoverHelper.PopoverHelper(this.contentElement, event => {
+            // There are two ways this event is received for showing a popover case:
+            // * The latest element on the composed path is `<devtools-button>`
+            // * The 2nd element on the composed path is `<devtools-button>` (the last element is the `<button>` inside it.)
+            const hoveredNode = event.composedPath()[0];
+            const maybeDevToolsButton = event.composedPath()[2];
+            const popoverShownNode = hoveredNode instanceof HTMLElement && hoveredNode.getAttribute('aria-details') === 'info-tooltip' ? hoveredNode
+                : maybeDevToolsButton instanceof HTMLElement && maybeDevToolsButton.getAttribute('aria-details') === 'info-tooltip' ? maybeDevToolsButton
+                    : null;
+            if (!popoverShownNode) {
+                return null;
+            }
+            return {
+                box: popoverShownNode.boxInWindow(),
+                show: async (popover) => {
+                    // clang-format off
+                    render(html `
+            <style>
+              .info-tooltip-container {
+                max-width: var(--sys-size-28);
+                padding: var(--sys-size-4) var(--sys-size-5);
+
+                .tooltip-link {
+                  display: block;
+                  margin-top: var(--sys-size-4);
+                  color: var(--sys-color-primary);
+                  padding-left: 0;
+                }
+              }
+            </style>
+            <div class="info-tooltip-container">
+              ${UIStringsNotTranslate.applyToWorkspaceTooltip}
+              <button
+                class="link tooltip-link"
+                role="link"
+                jslog=${VisualLogging.link('open-ai-settings').track({
+                        click: true,
+                    })}
+                @click=${this.#onLearnMoreTooltipClick}
+              >${lockedString(UIStringsNotTranslate.learnMore)}</button>
+            </div>`, popover.contentElement, { host: this });
+                    // clang-forat on
+                    return true;
+                },
+            };
+        }, 'patch-widget.info-tooltip');
+        this.#popoverHelper.setTimeout(0);
         // clang-format on
         this.requestUpdate();
     }
@@ -331,14 +410,49 @@ export class PatchWidget extends UI.Widget.Widget {
         this.#viewOutput.tooltipRef?.value?.hidePopover();
         void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
     }
+    #getDisplayedProject() {
+        if (this.#project) {
+            return {
+                projectName: Common.ParsedURL.ParsedURL.encodedPathToRawPathString(this.#project.displayName()),
+                projectPath: Common.ParsedURL.ParsedURL.urlToRawPathString(this.#project.id(), Host.Platform.isWin()),
+            };
+        }
+        if (this.#automaticFileSystem) {
+            return {
+                projectName: Common.ParsedURL.ParsedURL.extractName(this.#automaticFileSystem.root),
+                projectPath: this.#automaticFileSystem.root,
+            };
+        }
+        return {
+            projectName: '',
+            projectPath: Platform.DevToolsPath.EmptyRawPathString,
+        };
+    }
+    #shouldShowChangeButton() {
+        const automaticFileSystemProject = this.#automaticFileSystem ? this.#workspace.projectForFileSystemRoot(this.#automaticFileSystem.root) : null;
+        const regularProjects = this.#workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem)
+            .filter(project => project instanceof Persistence.FileSystemWorkspaceBinding.FileSystem &&
+            project.fileSystem().type() ===
+                Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT)
+            .filter(project => project !== automaticFileSystemProject);
+        return regularProjects.length > 0;
+    }
+    #getSelectedProjectType(projectPath) {
+        if (this.#automaticFileSystem && this.#automaticFileSystem.root === projectPath) {
+            return this.#project ? SelectedProjectType.AUTOMATIC_CONNECTED : SelectedProjectType.AUTOMATIC_DISCONNECTED;
+        }
+        return this.#project ? SelectedProjectType.NONE : SelectedProjectType.REGULAR;
+    }
     performUpdate() {
+        const { projectName, projectPath } = this.#getDisplayedProject();
         this.#view({
             workspaceDiff: this.#workspaceDiff,
             changeSummary: this.changeSummary,
             patchSuggestionState: this.#patchSuggestionState,
             sources: this.#patchSources,
-            projectName: this.#project?.displayName(),
-            projectPath: Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath((this.#project?.id() || '')),
+            projectName,
+            projectPath,
+            projectType: this.#getSelectedProjectType(projectPath),
             savedToDisk: this.#savedToDisk,
             applyToWorkspaceTooltipText: this.#noLogging ?
                 lockedString(UIStringsNotTranslate.applyToWorkspaceTooltipNoLogging) :
@@ -350,13 +464,16 @@ export class PatchWidget extends UI.Widget.Widget {
             },
             onDiscard: this.#onDiscard.bind(this),
             onSaveAll: this.#onSaveAll.bind(this),
-            onChangeWorkspaceClick: this.#showSelectWorkspaceDialog.bind(this, { applyPatch: false }),
+            onChangeWorkspaceClick: this.#shouldShowChangeButton() ?
+                this.#showSelectWorkspaceDialog.bind(this, { applyPatch: false }) :
+                undefined,
         }, this.#viewOutput, this.contentElement);
     }
     wasShown() {
         super.wasShown();
         this.#selectDefaultProject();
         if (isAiAssistancePatchingEnabled()) {
+            this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
             this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
             // @ts-expect-error temporary global function for local testing.
             window.aiAssistanceTestPatchPrompt = async (changeSummary) => {
@@ -365,7 +482,9 @@ export class PatchWidget extends UI.Widget.Widget {
         }
     }
     willHide() {
+        this.#applyToDisconnectedAutomaticWorkspace = false;
         if (isAiAssistancePatchingEnabled()) {
+            this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
             this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
         }
     }
@@ -391,7 +510,7 @@ export class PatchWidget extends UI.Widget.Widget {
                     // clang-format off
                     content: html `<x-link
             href=${CODE_SNIPPET_WARNING_URL}
-            class="link"
+            class="link devtools-link"
             jslog=${VisualLogging.link('code-snippets-explainer.patch-widget').track({
                         click: true
                     })}
@@ -401,7 +520,9 @@ export class PatchWidget extends UI.Widget.Widget {
             ],
             onLearnMoreClick: () => {
                 void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
-            }
+            },
+            ariaLabel: lockedString(UIStringsNotTranslate.freDisclaimerHeader),
+            learnMoreButtonTitle: lockedString(UIStringsNotTranslate.learnMore),
         });
         if (result) {
             this.#aiPatchingFreCompletedSetting.set(true);
@@ -409,7 +530,8 @@ export class PatchWidget extends UI.Widget.Widget {
         return result;
     }
     #selectDefaultProject() {
-        const project = this.#workspace.project(this.#projectIdSetting.get());
+        const automaticFileSystemProject = this.#automaticFileSystem ? this.#workspace.projectForFileSystemRoot(this.#automaticFileSystem.root) : null;
+        const project = automaticFileSystemProject || this.#workspace.project(this.#projectIdSetting.get());
         if (project) {
             this.#project = project;
         }
@@ -418,6 +540,18 @@ export class PatchWidget extends UI.Widget.Widget {
             this.#projectIdSetting.set('');
         }
         this.requestUpdate();
+    }
+    #onProjectAdded(event) {
+        const addedProject = event.data;
+        if (this.#applyToDisconnectedAutomaticWorkspace && this.#automaticFileSystem &&
+            addedProject === this.#workspace.projectForFileSystemRoot(this.#automaticFileSystem.root)) {
+            this.#applyToDisconnectedAutomaticWorkspace = false;
+            this.#project = addedProject;
+            void this.#applyPatchAndUpdateUI();
+        }
+        else if (this.#project === undefined) {
+            this.#selectDefaultProject();
+        }
     }
     #onProjectRemoved() {
         if (this.#project && !this.#workspace.project(this.#project.id())) {
@@ -452,6 +586,11 @@ export class PatchWidget extends UI.Widget.Widget {
         if (this.#project) {
             await this.#applyPatchAndUpdateUI();
         }
+        else if (this.#automaticFileSystem) {
+            this.#applyToDisconnectedAutomaticWorkspace = true;
+            await Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().connectAutomaticFileSystem(
+            /* addIfMissing= */ true);
+        }
         else {
             this.#showSelectWorkspaceDialog({ applyPatch: true });
         }
@@ -479,6 +618,11 @@ export class PatchWidget extends UI.Widget.Widget {
 Files:
 ${processedFiles.map(filename => `* ${filename}`).join('\n')}`;
         this.requestUpdate();
+        if (this.#patchSuggestionState === PatchSuggestionState.SUCCESS) {
+            void this.updateComplete.then(() => {
+                this.#viewOutput.summaryRef?.value?.focus();
+            });
+        }
     }
     #onDiscard() {
         this.#workspaceDiff.modifiedUISourceCodes().forEach(modifiedUISourceCode => {
@@ -488,6 +632,9 @@ ${processedFiles.map(filename => `* ${filename}`).join('\n')}`;
         this.#patchSources = undefined;
         void this.changeManager?.popStashedChanges();
         this.requestUpdate();
+        void this.updateComplete.then(() => {
+            this.#viewOutput.changeRef?.value?.focus();
+        });
     }
     #onSaveAll() {
         this.#workspaceDiff.modifiedUISourceCodes().forEach(modifiedUISourceCode => {

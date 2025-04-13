@@ -506,7 +506,7 @@ export class SecurityPanel extends UI.Panel.Panel {
     eventListeners;
     securityModel;
     splitWidget;
-    constructor(view = (input, output, target) => {
+    constructor(view = (_input, output, target) => {
         // clang-format off
         render(html `
     <devtools-split-view direction="column" name="security"
@@ -589,7 +589,7 @@ export class SecurityPanel extends UI.Panel.Panel {
             return;
         }
         if (!originState.originView) {
-            originState.originView = new SecurityOriginView(this, origin, originState);
+            originState.originView = new SecurityOriginView(origin, originState);
         }
         this.setVisibleView(originState.originView);
     }
@@ -1100,13 +1100,11 @@ export class SecurityMainView extends UI.Widget.VBox {
     }
 }
 export class SecurityOriginView extends UI.Widget.VBox {
-    panel;
     originLockIcon;
-    constructor(panel, origin, originState) {
+    constructor(origin, originState) {
         super();
         this.registerRequiredCSS(originViewStyles, lockIconStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('security.origin-view')}`);
-        this.panel = panel;
         this.setMinimumSize(200, 100);
         this.element.classList.add('security-origin-view');
         const titleSection = this.element.createChild('div', 'title-section');

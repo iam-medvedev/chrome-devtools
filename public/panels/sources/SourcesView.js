@@ -46,13 +46,11 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    selectedIndex;
     searchableViewInternal;
     sourceViewByUISourceCode;
     editorContainer;
     historyManager;
-    toolbarContainerElementInternal;
-    scriptViewToolbar;
+    #scriptViewToolbar;
     bottomToolbarInternal;
     toolbarChangedListener;
     focusedPlaceholderElement;
@@ -64,7 +62,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.element.id = 'sources-panel-sources-view';
         this.element.setAttribute('jslog', `${VisualLogging.pane('editor').track({ keydown: 'Escape' })}`);
         this.setMinimumAndPreferredSizes(88, 52, 150, 100);
-        this.selectedIndex = 0;
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this, this, 'sources-view-search-config');
         this.searchableViewInternal.setMinimalSearchQuerySize(0);
@@ -75,11 +72,11 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.editorContainer.addEventListener("EditorSelected" /* TabbedEditorContainerEvents.EDITOR_SELECTED */, this.editorSelected, this);
         this.editorContainer.addEventListener("EditorClosed" /* TabbedEditorContainerEvents.EDITOR_CLOSED */, this.editorClosed, this);
         this.historyManager = new EditingLocationHistoryManager(this);
-        this.toolbarContainerElementInternal = this.element.createChild('div', 'sources-toolbar');
-        this.toolbarContainerElementInternal.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
-        this.scriptViewToolbar = this.toolbarContainerElementInternal.createChild('devtools-toolbar');
-        this.scriptViewToolbar.style.flex = 'auto';
-        this.bottomToolbarInternal = this.toolbarContainerElementInternal.createChild('devtools-toolbar');
+        const toolbarContainerElementInternal = this.element.createChild('div', 'sources-toolbar');
+        toolbarContainerElementInternal.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
+        this.#scriptViewToolbar = toolbarContainerElementInternal.createChild('devtools-toolbar');
+        this.#scriptViewToolbar.style.flex = 'auto';
+        this.bottomToolbarInternal = toolbarContainerElementInternal.createChild('devtools-toolbar');
         this.toolbarChangedListener = null;
         UI.UIUtils.startBatchUpdate();
         workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
@@ -184,6 +181,9 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     bottomToolbar() {
         return this.bottomToolbarInternal;
     }
+    scriptViewToolbar() {
+        return this.#scriptViewToolbar;
+    }
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().setFlavor(SourcesView, this);
@@ -191,9 +191,6 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     willHide() {
         UI.Context.Context.instance().setFlavor(SourcesView, null);
         super.willHide();
-    }
-    toolbarContainerElement() {
-        return this.toolbarContainerElementInternal;
     }
     searchableView() {
         return this.searchableViewInternal;
@@ -285,11 +282,11 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         const view = this.visibleView();
         if (view instanceof UI.View.SimpleView) {
             void view.toolbarItems().then(items => {
-                this.scriptViewToolbar.removeToolbarItems();
+                this.#scriptViewToolbar.removeToolbarItems();
                 for (const action of getRegisteredEditorActions()) {
-                    this.scriptViewToolbar.appendToolbarItem(action.getOrCreateButton(this));
+                    this.#scriptViewToolbar.appendToolbarItem(action.getOrCreateButton(this));
                 }
-                items.map(item => this.scriptViewToolbar.appendToolbarItem(item));
+                items.map(item => this.#scriptViewToolbar.appendToolbarItem(item));
             });
         }
     }

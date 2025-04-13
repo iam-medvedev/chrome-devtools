@@ -19,6 +19,7 @@ import * as Network from '../network/network.js';
 import * as Sources from '../sources/sources.js';
 import * as Timeline from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
+import * as AiAssistancePanel from './ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('AI Assistance Panel', () => {
     beforeEach(() => {
@@ -254,7 +255,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     throw new Error('Context is not available');
                 }
                 UI.Context.Context.instance().setFlavor(test.flavor, contextItem);
-                assert.strictEqual(view.callCount, callCount);
+                sinon.assert.callCount(view, callCount);
             });
         }
         it('should set selected context to null when the change DOMNode flavor is not an ELEMENT_NODE', async () => {
@@ -266,6 +267,18 @@ describeWithMockConnection('AI Assistance Panel', () => {
             });
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
             assert.isNull((await view.nextInput).selectedContext);
+        });
+        it('should clear the text input when the context changes to null', async () => {
+            const chatView = sinon.createStubInstance(AiAssistancePanel.ChatView);
+            const { panel, view } = await createAiAssistancePanel({ chatView });
+            // Firstly, start a conversation and set a context
+            const context = new AiAssistanceModel.CallTreeContext(sinon.createStubInstance(TimelineUtils.AICallTree.AICallTree));
+            UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, context.getItem());
+            panel.handleAction('drjones.performance-panel-context');
+            await view.nextInput;
+            // Now clear the context and check we cleared out the text
+            UI.Context.Context.instance().setFlavor(TimelineUtils.AICallTree.AICallTree, null);
+            sinon.assert.callCount(chatView.clearTextInput, 1);
         });
     });
     describe('toggle search element action', () => {
@@ -294,7 +307,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             toggleSearchElementAction.setToggled(true);
             const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
             UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
-            assert.strictEqual(view.callCount, callCount);
+            sinon.assert.callCount(view, callCount);
         });
     });
     describe('toolbar actions', () => {
@@ -303,6 +316,36 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const { view } = await createAiAssistancePanel();
             view.input.onSettingsClick();
             assert.isTrue(stub.calledWith('chrome-ai'));
+        });
+        it('should not show chat and delete history actions when ai assistance enabled setting is disabled', async () => {
+            Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(true);
+            const { view } = await createAiAssistancePanel();
+            assert.isFalse(view.input.showChatActions);
+            assert.isFalse(view.input.showDeleteHistoryAction);
+        });
+        it('should not show chat and delete history actions when ai assistance setting is marked as false', async () => {
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(false);
+            const { view } = await createAiAssistancePanel();
+            assert.isFalse(view.input.showChatActions);
+            assert.isFalse(view.input.showDeleteHistoryAction);
+        });
+        it('should not show chat and delete history actions when the user is blocked by age', async () => {
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            updateHostConfig({
+                aidaAvailability: {
+                    blockedByAge: true,
+                },
+            });
+            const { view } = await createAiAssistancePanel();
+            assert.isFalse(view.input.showChatActions);
+            assert.isFalse(view.input.showDeleteHistoryAction);
+        });
+        it('should not show chat and delete history actions when Aida availability status is SYNC IS PAUSED', async () => {
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
+            const { view } = await createAiAssistancePanel({ aidaAvailability: "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */ });
+            assert.isFalse(view.input.showChatActions);
+            assert.isFalse(view.input.showDeleteHistoryAction);
         });
     });
     describe('history interactions', () => {
@@ -524,7 +567,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             await view.nextInput;
             view.input.onDeleteClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            assert.strictEqual(deleteHistoryEntryStub.callCount, 1);
+            sinon.assert.callCount(deleteHistoryEntryStub, 1);
             assert.isString(deleteHistoryEntryStub.lastCall.args[0]);
             const menuAfterDelete = openHistoryContextMenu(view.input, 'User question to Freestyler?');
             assert.isUndefined(menuAfterDelete.id);

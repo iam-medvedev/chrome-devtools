@@ -239,7 +239,7 @@ describeWithEnvironment('TraceProcessor', function () {
                         UIStrings: {},
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         i18nString: (() => { }),
-                        isRenderBlocking: (x) => false,
+                        isRenderBlocking: (_x) => false,
                         generateInsight: () => {
                             throw new Error('forced error');
                         },

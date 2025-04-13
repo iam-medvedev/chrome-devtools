@@ -127,7 +127,7 @@ export class ContrastRatioLineBuilder {
             // Extrapolate the approximate next value for `v` using the approximate
             // gradient of the curve.
             candidateHSVA[V] = lastV + currentSlope * dS;
-            const v = Common.Color.approachColorValue(candidateHSVA, bgRGBA, V, desiredLuminance, candidateLuminance);
+            const v = Common.Color.approachColorValue(candidateHSVA, V, desiredLuminance, candidateLuminance);
             if (v === null) {
                 break;
             }
@@ -143,7 +143,7 @@ export class ContrastRatioLineBuilder {
         if (s < 1 + dS) {
             s -= dS;
             candidateHSVA[V] = 1;
-            s = Common.Color.approachColorValue(candidateHSVA, bgRGBA, S, desiredLuminance, candidateLuminance);
+            s = Common.Color.approachColorValue(candidateHSVA, S, desiredLuminance, candidateLuminance);
             if (s !== null) {
                 pathBuilder = pathBuilder.concat(['L', (s * width).toFixed(2), '-0.1']);
             }

@@ -12,7 +12,9 @@ const { html } = Lit;
 export class InteractionToNextPaint extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-inp`;
     internalName = 'inp';
-    hasAskAISupport = true;
+    hasAskAiSupport() {
+        return this.model?.longestInteractionEvent !== undefined;
+    }
     createOverlays() {
         if (!this.model) {
             return [];

@@ -16,10 +16,6 @@ export const makeEmptyTraceEntryNode = (entry, id) => ({
     children: [],
     depth: 0,
 });
-class TraceEntryNodeIdTag {
-    /* eslint-disable-next-line no-unused-private-class-members */
-    #tag;
-}
 /**
  * Builds a hierarchy of the entries (trace events and profile calls) in
  * a particular thread of a particular process, assuming that they're

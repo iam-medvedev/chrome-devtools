@@ -222,7 +222,7 @@ describe('VersionController', () => {
             const spies = spyAllUpdateMethods(versionController);
             versionController.updateVersion();
             for (const spy of spies) {
-                assert.isFalse(spy.called);
+                sinon.assert.notCalled(spy);
             }
         });
         it('does not run any update* methods if all version settings are already current', () => {
@@ -234,7 +234,7 @@ describe('VersionController', () => {
             const spies = spyAllUpdateMethods(versionController);
             versionController.updateVersion();
             for (const spy of spies) {
-                assert.isFalse(spy.called);
+                sinon.assert.notCalled(spy);
             }
         });
         it('runs correct update* methods if the local bucket lags behind', () => {
@@ -248,11 +248,11 @@ describe('VersionController', () => {
             versionController.updateVersion();
             const expectedUncalledSpies = spies.slice(0, -3);
             for (const spy of expectedUncalledSpies) {
-                assert.isFalse(spy.called);
+                sinon.assert.notCalled(spy);
             }
             const expectedCalledSpies = spies.slice(-3);
             for (const spy of expectedCalledSpies) {
-                assert.isTrue(spy.called);
+                sinon.assert.called(spy);
             }
         });
         it('runs correct update* methods if the synced bucket runs ahead', () => {
@@ -266,11 +266,11 @@ describe('VersionController', () => {
             versionController.updateVersion();
             const expectedUncalledSpies = spies.slice(0, -1);
             for (const spy of expectedUncalledSpies) {
-                assert.isFalse(spy.called);
+                sinon.assert.notCalled(spy);
             }
             const expectedCalledSpies = spies.slice(-1);
             for (const spy of expectedCalledSpies) {
-                assert.isTrue(spy.called);
+                sinon.assert.called(spy);
             }
         });
     });
@@ -537,18 +537,18 @@ describe('access logging', () => {
     });
     it('logs access on the first read', async () => {
         const setting = settings.createSetting('test-setting', false);
-        assert.isFalse(logSettingAccess.called);
+        sinon.assert.notCalled(logSettingAccess);
         setting.get();
         assert.isTrue(logSettingAccess.calledOnceWith('test-setting', false));
         setting.get();
-        assert.isTrue(logSettingAccess.calledOnce);
+        sinon.assert.calledOnce(logSettingAccess);
     });
     it('logs access on the every write', async () => {
         const setting = settings.createSetting('test-setting', false);
         setting.set(true);
         assert.isTrue(logSettingAccess.calledOnceWith('test-setting', true));
         setting.set(false);
-        assert.isTrue(logSettingAccess.calledTwice);
+        sinon.assert.calledTwice(logSettingAccess);
         assert.deepEqual(logSettingAccess.secondCall.args, ['test-setting', false]);
     });
 });

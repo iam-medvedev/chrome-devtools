@@ -22,7 +22,7 @@ export class JSONFormatter {
         const tokenize = createTokenizer('application/json');
         tokenize(text.substring(this.fromOffset, this.toOffset), this.tokenCallback.bind(this));
     }
-    tokenCallback(token, type, startPosition) {
+    tokenCallback(token, _type, startPosition) {
         switch (token.charAt(0)) {
             case '{':
             case '[':

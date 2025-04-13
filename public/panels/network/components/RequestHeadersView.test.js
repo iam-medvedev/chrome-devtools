@@ -149,7 +149,7 @@ describeWithMockConnection('RequestHeadersView', () => {
         const spy = sinon.spy(Host.userMetrics, 'actionTaken');
         const headerValue = generalCategory.querySelector('.header-value');
         assert.instanceOf(headerValue, HTMLElement);
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         dispatchCopyEvent(headerValue);
         assert.isTrue(spy.calledWith(Host.UserMetrics.Action.NetworkPanelCopyValue));
     });
@@ -208,10 +208,10 @@ describeWithMockConnection('RequestHeadersView', () => {
         const responseHeadersCategory = component.shadowRoot.querySelector('[aria-label="Response Headers"]');
         assert.instanceOf(responseHeadersCategory, HTMLElement);
         const spy = sinon.spy(component, 'render');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['originalname', 'originalValue']]);
         request.responseHeaders = [{ name: 'updatedName', value: 'updatedValue' }];
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         await RenderCoordinator.done();
         assert.deepEqual(getRowsTextFromCategory(responseHeadersCategory), [['updatedname', 'updatedValue']]);
     });

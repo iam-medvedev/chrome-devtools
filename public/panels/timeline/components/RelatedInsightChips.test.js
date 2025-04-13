@@ -80,7 +80,7 @@ describeWithEnvironment('RelatedInsightChips', () => {
         const button = component.shadowRoot.querySelector('button');
         assert.isOk(button);
         dispatchClickEvent(button);
-        assert.isTrue(activateStub.called);
+        sinon.assert.called(activateStub);
     });
 });
 //# sourceMappingURL=RelatedInsightChips.test.js.map

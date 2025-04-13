@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import audioContextSelectorStyles from './audioContextSelector.css.js';
 const UIStrings = {
     /**
      *@description Text that shows there is no recording
@@ -21,91 +19,87 @@ const str_ = i18n.i18n.registerUIStrings('panels/web_audio/AudioContextSelector.
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class AudioContextSelector extends Common.ObjectWrapper.ObjectWrapper {
     placeholderText;
+    selectElement;
     items;
-    dropDown;
     toolbarItemInternal;
-    selectedContextInternal;
     constructor() {
         super();
         this.placeholderText = i18nString(UIStrings.noRecordings);
         this.items = new UI.ListModel.ListModel();
-        this.dropDown = new UI.SoftDropDown.SoftDropDown(this.items, this, 'audio-context');
-        this.dropDown.setPlaceholderText(this.placeholderText);
-        this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
-        this.toolbarItemInternal.setEnabled(false);
+        this.selectElement = document.createElement('select');
+        this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.selectElement);
         this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.placeholderText }));
+        this.selectElement.addEventListener('change', this.onSelectionChanged.bind(this));
+        this.selectElement.disabled = true;
+        this.addPlaceholderOption();
         this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, this.onListItemReplaced, this);
-        this.toolbarItemInternal.element.classList.add('toolbar-has-dropdown');
-        this.selectedContextInternal = null;
+    }
+    addPlaceholderOption() {
+        const placeholderOption = UI.Fragment.html `
+    <option value="" hidden>${this.placeholderText}</option>`;
+        this.selectElement.appendChild(placeholderOption);
     }
     onListItemReplaced() {
-        const hasItems = Boolean(this.items.length);
-        this.toolbarItemInternal.setEnabled(hasItems);
-        if (!hasItems) {
-            this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.placeholderText }));
+        this.selectElement.removeChildren();
+        if (this.items.length === 0) {
+            this.addPlaceholderOption();
+            this.selectElement.disabled = true;
+            this.onSelectionChanged();
+            return;
         }
+        for (const context of this.items) {
+            const option = UI.Fragment.html `
+    <option value=${context.contextId}>${this.titleFor(context)}</option>`;
+            this.selectElement.appendChild(option);
+        }
+        this.selectElement.disabled = false;
+        this.onSelectionChanged();
     }
     contextCreated({ data: context }) {
         this.items.insert(this.items.length, context);
-        // Select if this is the first item.
-        if (this.items.length === 1) {
-            this.dropDown.selectItem(context);
-        }
+        this.onListItemReplaced();
     }
     contextDestroyed({ data: contextId }) {
-        const contextIndex = this.items.findIndex((context) => context.contextId === contextId);
-        if (contextIndex > -1) {
-            this.items.remove(contextIndex);
+        const index = this.items.findIndex(context => context.contextId === contextId);
+        if (index !== -1) {
+            this.items.remove(index);
+            this.onListItemReplaced();
         }
     }
     contextChanged({ data: changedContext }) {
-        const contextIndex = this.items.findIndex((context) => context.contextId === changedContext.contextId);
-        if (contextIndex > -1) {
-            this.items.replace(contextIndex, changedContext);
-            // If the changed context is currently selected by user. Re-select it
-            // because the actual element is replaced with a new one.
-            if (this.selectedContextInternal && this.selectedContextInternal.contextId === changedContext.contextId) {
-                this.dropDown.selectItem(changedContext);
-            }
+        const index = this.items.findIndex(context => context.contextId === changedContext.contextId);
+        if (index !== -1) {
+            this.items.replace(index, changedContext);
+            this.onListItemReplaced();
         }
-    }
-    createElementForItem(item) {
-        const element = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: audioContextSelectorStyles });
-        const title = shadowRoot.createChild('div', 'title');
-        UI.UIUtils.createTextChild(title, Platform.StringUtilities.trimEndWithMaxLength(this.titleFor(item), 100));
-        return element;
     }
     selectedContext() {
-        if (!this.selectedContextInternal) {
+        const selectedValue = this.selectElement.value;
+        if (!selectedValue) {
             return null;
         }
-        return this.selectedContextInternal;
+        return this.items.find(context => context.contextId === selectedValue) || null;
     }
-    highlightedItemChanged(from, to, fromElement, toElement) {
-        if (fromElement) {
-            fromElement.classList.remove('highlighted');
+    onSelectionChanged() {
+        const selectedContext = this.selectedContext();
+        if (selectedContext) {
+            this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.titleFor(selectedContext) }));
         }
-        if (toElement) {
-            toElement.classList.add('highlighted');
+        else {
+            this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.placeholderText }));
         }
-    }
-    isItemSelectable(_item) {
-        return true;
+        this.dispatchEventToListeners("ContextSelected" /* Events.CONTEXT_SELECTED */, selectedContext);
     }
     itemSelected(item) {
         if (!item) {
             return;
         }
-        // It's possible that no context is selected yet.
-        if (!this.selectedContextInternal || this.selectedContextInternal.contextId !== item.contextId) {
-            this.selectedContextInternal = item;
-            this.toolbarItemInternal.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.titleFor(item) }));
-        }
-        this.dispatchEventToListeners("ContextSelected" /* Events.CONTEXT_SELECTED */, item);
+        this.selectElement.value = item.contextId;
+        this.onSelectionChanged();
     }
     reset() {
         this.items.replaceAll([]);
+        this.onListItemReplaced();
     }
     titleFor(context) {
         return `${context.contextType} (${context.contextId.substr(-6)})`;

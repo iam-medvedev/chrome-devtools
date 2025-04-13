@@ -28,7 +28,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private oldTabIndex?;
     private completeTimeout?;
     private disableDefaultSuggestionForEmptyInputInternal?;
-    private changed;
     jslogContext: string | undefined;
     constructor();
     initialize(completions: (this: null, expression: string, filter: string, force?: boolean | undefined) => Promise<Suggestion[]>, stopCharacters?: string, usesSuggestionBuilder?: boolean): void;
@@ -62,7 +61,7 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private startEditing;
     private stopEditing;
     onMouseWheel(_event: Event): void;
-    onKeyDown(ev: Event): void;
+    onKeyDown(event: KeyboardEvent): void;
     private acceptSuggestionOnStopCharacters;
     onInput(ev: Event): void;
     acceptAutoComplete(): boolean;

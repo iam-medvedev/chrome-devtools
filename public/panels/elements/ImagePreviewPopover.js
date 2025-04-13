@@ -38,7 +38,7 @@ export class ImagePreviewPopover {
                     return false;
                 }
                 const precomputedFeatures = await Components.ImagePreview.ImagePreview.loadDimensionsForNode(node);
-                const preview = await Components.ImagePreview.ImagePreview.build(node.domModel().target(), href, true, {
+                const preview = await Components.ImagePreview.ImagePreview.build(href, true, {
                     imageAltText: undefined,
                     precomputedFeatures,
                     align: "center" /* Components.ImagePreview.Align.CENTER */,

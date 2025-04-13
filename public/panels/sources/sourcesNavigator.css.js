@@ -19,6 +19,14 @@ export default {
   border-top: var(--sys-size-1) solid var(--sys-color-divider);
 }
 
+.automatic-file-system-nudge {
+  font-style: italic;
+  border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
+  padding: var(--sys-size-3);
+  text-align: center;
+  color: var(--sys-color-on-surface-subtle);
+}
+
 /*# sourceURL=${import.meta.resolve('./sourcesNavigator.css')} */
 `
 };

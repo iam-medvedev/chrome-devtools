@@ -77,7 +77,6 @@ export declare class PaintProfilerCommandLogView extends UI.ThrottledWidget.Thro
 export declare class LogTreeElement extends UI.TreeOutline.TreeElement {
     readonly logItem: SDK.PaintProfiler.PaintProfilerLogItem;
     private readonly ownerView;
-    private readonly filled;
     constructor(ownerView: PaintProfilerCommandLogView, logItem: SDK.PaintProfiler.PaintProfilerLogItem);
     onattach(): void;
     onpopulate(): Promise<void>;

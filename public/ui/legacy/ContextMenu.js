@@ -347,7 +347,6 @@ export class SubMenu extends Item {
             }
         }
     }
-    static uniqueSectionName = 0;
 }
 const MENU_ITEM_HEIGHT_FOR_LOGGING = 20;
 const MENU_ITEM_WIDTH_FOR_LOGGING = 200;
@@ -360,7 +359,6 @@ export class ContextMenu extends SubMenu {
     x;
     y;
     onSoftMenuClosed;
-    jsLogContext;
     handlers;
     idInternal;
     softMenu;

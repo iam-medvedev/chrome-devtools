@@ -22,7 +22,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     readonly agent: ProtocolProxyApi.CSSApi;
     constructor(target: Target);
     colorScheme(): Promise<ColorScheme | undefined>;
-    resolveValues(propertyName: string | undefined, nodeId: Protocol.DOM.NodeId, ...values: string[]): Promise<string[] | null>;
+    resolveValues(nodeId: Protocol.DOM.NodeId, ...values: string[]): Promise<string[] | null>;
     headersForSourceURL(sourceURL: Platform.DevToolsPath.UrlString): CSSStyleSheetHeader[];
     createRawLocationsByURL(sourceURL: Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber?: number | undefined): CSSLocation[];
     sourceMapManager(): SourceMapManager<CSSStyleSheetHeader>;

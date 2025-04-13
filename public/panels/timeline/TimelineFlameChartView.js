@@ -1545,7 +1545,7 @@ export class TimelineFlameChartMarker {
         const startTime = i18n.TimeUtilities.millisToString(this.startOffset);
         return i18nString(UIStrings.sAtS, { PH1: this.style.title, PH2: startTime });
     }
-    draw(context, x, height, pixelsPerMillisecond) {
+    draw(context, x, _height, pixelsPerMillisecond) {
         const lowPriorityVisibilityThresholdInPixelsPerMs = 4;
         if (this.style.lowPriority && pixelsPerMillisecond < lowPriorityVisibilityThresholdInPixelsPerMs) {
             return;

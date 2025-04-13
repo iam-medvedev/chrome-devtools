@@ -8,7 +8,7 @@ export declare class LCPDiscovery extends BaseInsightComponent<LCPDiscoveryInsig
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
-    protected hasAskAISupport: boolean;
+    protected hasAskAiSupport(): boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     renderContent(): Lit.LitTemplate;

@@ -23,7 +23,6 @@ export declare class Toolbar extends HTMLElement {
     private items;
     enabled: boolean;
     private compactLayout;
-    private mutationObserver;
     constructor();
     onItemsChange(mutationList: MutationRecord[]): void;
     connectedCallback(): void;
@@ -162,7 +161,6 @@ export declare namespace ToolbarInput {
     }
 }
 export declare class ToolbarToggle extends ToolbarButton {
-    private readonly untoggledGlyph;
     private readonly toggledGlyph;
     constructor(title: string, glyph?: string, toggledGlyph?: string, jslogContext?: string, toggleOnClick?: boolean);
     setToggleOnClick(toggleOnClick: boolean): void;
@@ -234,8 +232,21 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
     constructor(options: Option[], setting: Common.Settings.Setting<string>, accessibleName: string);
     setOptions(options: Option[]): void;
     value(): string;
-    private settingChanged;
-    private valueChanged;
+    select(option: Element): void;
+    setSelectedIndex(index: number): void;
+    /**
+     * Note: wondering why there are two event listeners and what the difference is?
+     * It is because this combo box <select> is backed by a Devtools setting and
+     * at any time there could be multiple instances of these elements that are
+     * backed by the same setting. So they have to listen to two things:
+     * 1. When the setting is changed via a different method.
+     * 2. When the value of the select is changed, triggering a change to the setting.
+     */
+    private onDevToolsSettingChanged;
+    /**
+     * Run when the user interacts with the <select> element.
+     */
+    private onSelectValueChange;
 }
 export declare class ToolbarCheckbox extends ToolbarItem<void> {
     inputElement: HTMLInputElement;

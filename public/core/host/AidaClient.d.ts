@@ -91,7 +91,7 @@ export declare enum ClientFeature {
     CHROME_PERFORMANCE_ANNOTATIONS_AGENT = 20,
     CHROME_FILE_AGENT = 9,
     CHROME_PATCH_AGENT = 12,
-    CHROME_PERFORMANCE_INSIGHTS_AGENT = 14
+    CHROME_PERFORMANCE_INSIGHTS_AGENT = 13
 }
 export declare enum UserTier {
     USER_TIER_UNSPECIFIED = 0,
@@ -161,7 +161,7 @@ export declare enum CitationSourceType {
     TRAINING_DATA = "TRAINING_DATA",
     WORLD_FACTS = "WORLD_FACTS",
     LOCAL_FACTS = "LOCAL_FACTS",
-    INDIRECT = "INDERECT"
+    INDIRECT = "INDIRECT"
 }
 export interface Citation {
     startIndex?: number;

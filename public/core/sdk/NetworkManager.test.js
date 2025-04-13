@@ -311,7 +311,7 @@ describeWithMockConnection('NetworkManager', () => {
         const expectedCall = sinon.spy(target.networkAgent(), 'invoke_setCookieControls');
         new SDK.NetworkManager.NetworkManager(target);
         // function should not be called since there is a enterprise policy blocking third-party cookies
-        assert.isTrue(expectedCall.notCalled);
+        sinon.assert.notCalled(expectedCall);
     });
     it('setCookieControls gets invoked with expected values when network agent auto attach', () => {
         updateHostConfig({ devToolsPrivacyUI: { enabled: true } });
@@ -361,12 +361,12 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
         const requestPromise = initialNetworkManager.once(SDK.NetworkManager.Events.RequestStarted);
         initialNetworkManager.dispatcher.requestWillBeSent({ requestId, loaderId: '', request: { url: 'example.com' } });
         const { request } = await requestPromise;
-        assert.isOk(SDK.NetworkManager.NetworkManager.forRequest(request) === initialNetworkManager);
+        assert.strictEqual(SDK.NetworkManager.NetworkManager.forRequest(request), initialNetworkManager);
         assert.isOk(multiTargetNetworkManager.inflightMainResourceRequests.has(requestId));
         const workerNetworkManager = workerTarget.model(SDK.NetworkManager.NetworkManager);
         workerNetworkManager.dispatcher.loadingFinished({ requestId });
-        assert.isOk(SDK.NetworkManager.NetworkManager.forRequest(request) === workerNetworkManager);
-        assert.isOk(!multiTargetNetworkManager.inflightMainResourceRequests.has(requestId));
+        assert.strictEqual(SDK.NetworkManager.NetworkManager.forRequest(request), workerNetworkManager);
+        assert.isNotOk(multiTargetNetworkManager.inflightMainResourceRequests.has(requestId));
     });
     it('uses main frame to get certificate', () => {
         SDK.ChildTargetManager.ChildTargetManager.install();
@@ -378,7 +378,7 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
         const expectedCall = sinon.spy(mainFrameTarget.networkAgent(), 'invoke_getCertificate');
         void SDK.NetworkManager.MultitargetNetworkManager.instance().getCertificate('https://example.com');
         for (const unexpectedCall of unexpectedCalls) {
-            assert.isTrue(unexpectedCall.notCalled);
+            sinon.assert.notCalled(unexpectedCall);
         }
         assert.isTrue(expectedCall.calledOnceWith({ origin: 'https://example.com' }));
     });
@@ -655,7 +655,7 @@ describeWithMockConnection('InterceptedRequest', () => {
         interceptedRequest.responseBody = async () => {
             return new TextUtils.ContentData.ContentData(responseBody, false, 'text/html');
         };
-        assert.isTrue(fulfillRequestSpy.notCalled);
+        sinon.assert.notCalled(fulfillRequestSpy);
         await multitargetNetworkManager.requestIntercepted(interceptedRequest);
         await fulfilledRequest;
         assert.isTrue(fulfillRequestSpy.calledOnceWithExactly(expectedOverriddenResponse));
@@ -867,10 +867,10 @@ describeWithMockConnection('InterceptedRequest', () => {
         interceptedRequest.responseBody = async () => {
             return new TextUtils.ContentData.ContentData('interceptedRequest content', false, 'text/html');
         };
-        assert.isTrue(continueRequestSpy.notCalled);
+        sinon.assert.notCalled(continueRequestSpy);
         await SDK.NetworkManager.MultitargetNetworkManager.instance().requestIntercepted(interceptedRequest);
-        assert.isTrue(fulfillRequestSpy.notCalled);
-        assert.isTrue(continueRequestSpy.calledOnce);
+        sinon.assert.notCalled(fulfillRequestSpy);
+        sinon.assert.calledOnce(continueRequestSpy);
     });
     it('can override headers and content for a status 200 request', async () => {
         const responseCode = 200;

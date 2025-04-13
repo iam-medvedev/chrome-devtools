@@ -20,7 +20,7 @@ export const extractIconGroups = (shadowRoot) => {
     assertElements(icons, IconButton.Icon.Icon);
     const labels = shadowRoot.querySelectorAll('.icon-button-title');
     assertElements(labels, HTMLSpanElement);
-    assert(icons.length === labels.length, 'Expected icons and labels to appear in pairs');
+    assert.strictEqual(icons.length, labels.length, 'Expected icons and labels to appear in pairs');
     const iconGroups = [];
     for (let i = 0; i < icons.length; ++i) {
         const labelElement = labels[i];

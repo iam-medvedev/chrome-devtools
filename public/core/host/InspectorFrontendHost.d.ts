@@ -36,43 +36,43 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     loadCompleted(): void;
     bringToFront(): void;
     closeWindow(): void;
-    setIsDocked(isDocked: boolean, callback: () => void): void;
-    showSurvey(trigger: string, callback: (arg0: ShowSurveyResult) => void): void;
-    canShowSurvey(trigger: string, callback: (arg0: CanShowSurveyResult) => void): void;
+    setIsDocked(_isDocked: boolean, callback: () => void): void;
+    showSurvey(_trigger: string, callback: (arg0: ShowSurveyResult) => void): void;
+    canShowSurvey(_trigger: string, callback: (arg0: CanShowSurveyResult) => void): void;
     /**
      * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
      */
-    setInspectedPageBounds(bounds: {
+    setInspectedPageBounds(_bounds: {
         x: number;
         y: number;
         width: number;
         height: number;
     }): void;
     inspectElementCompleted(): void;
-    setInjectedScriptForOrigin(origin: string, script: string): void;
+    setInjectedScriptForOrigin(_origin: string, _script: string): void;
     inspectedURLChanged(url: Platform.DevToolsPath.UrlString): void;
     copyText(text: string | null | undefined): void;
     openInNewTab(url: Platform.DevToolsPath.UrlString): void;
-    openSearchResultsInNewTab(query: string): void;
-    showItemInFolder(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
-    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean, isBase64: boolean): void;
+    openSearchResultsInNewTab(_query: string): void;
+    showItemInFolder(_fileSystemPath: Platform.DevToolsPath.RawPathString): void;
+    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, _forceSaveAs: boolean, _isBase64: boolean): void;
     append(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string): void;
     close(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString): void;
-    sendMessageToBackend(message: string): void;
+    sendMessageToBackend(_message: string): void;
     recordCountHistogram(histogramName: string, sample: number, min: number, exclusiveMax: number, bucketSize: number): void;
-    recordEnumeratedHistogram(actionName: EnumeratedHistogram, actionCode: number, bucketSize: number): void;
+    recordEnumeratedHistogram(actionName: EnumeratedHistogram, actionCode: number, _bucketSize: number): void;
     recordPerformanceHistogram(histogramName: string, duration: number): void;
-    recordUserMetricsAction(umaName: string): void;
+    recordUserMetricsAction(_umaName: string): void;
     connectAutomaticFileSystem(_fileSystemPath: Platform.DevToolsPath.RawPathString, _fileSystemUUID: string, _addIfMissing: boolean, callback: (result: {
         success: boolean;
     }) => void): void;
-    disconnectAutomaticFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
+    disconnectAutomaticFileSystem(_fileSystemPath: Platform.DevToolsPath.RawPathString): void;
     requestFileSystems(): void;
-    addFileSystem(type?: string): void;
-    removeFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString): void;
-    isolatedFileSystem(fileSystemId: string, registeredName: string): FileSystem | null;
-    loadNetworkResource(url: string, headers: string, streamId: number, callback: (arg0: LoadNetworkResourceResult) => void): void;
-    registerPreference(name: string, options: {
+    addFileSystem(_type?: string): void;
+    removeFileSystem(_fileSystemPath: Platform.DevToolsPath.RawPathString): void;
+    isolatedFileSystem(_fileSystemId: string, _registeredName: string): FileSystem | null;
+    loadNetworkResource(url: string, _headers: string, streamId: number, callback: (arg0: LoadNetworkResourceResult) => void): void;
+    registerPreference(_name: string, _options: {
         synced?: boolean;
     }): void;
     getPreferences(callback: (arg0: {
@@ -84,39 +84,39 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     clearPreferences(): void;
     getSyncInformation(callback: (arg0: SyncInformation) => void): void;
     getHostConfig(callback: (hostConfig: Root.Runtime.HostConfig) => void): void;
-    upgradeDraggedFileSystemPermissions(fileSystem: FileSystem): void;
-    indexPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, excludedFolders: string): void;
-    stopIndexing(requestId: number): void;
-    searchInPath(requestId: number, fileSystemPath: Platform.DevToolsPath.RawPathString, query: string): void;
+    upgradeDraggedFileSystemPermissions(_fileSystem: FileSystem): void;
+    indexPath(_requestId: number, _fileSystemPath: Platform.DevToolsPath.RawPathString, _excludedFolders: string): void;
+    stopIndexing(_requestId: number): void;
+    searchInPath(_requestId: number, _fileSystemPath: Platform.DevToolsPath.RawPathString, _query: string): void;
     zoomFactor(): number;
     zoomIn(): void;
     zoomOut(): void;
     resetZoom(): void;
-    setWhitelistedShortcuts(shortcuts: string): void;
-    setEyeDropperActive(active: boolean): void;
-    showCertificateViewer(certChain: string[]): void;
-    reattach(callback: () => void): void;
+    setWhitelistedShortcuts(_shortcuts: string): void;
+    setEyeDropperActive(_active: boolean): void;
+    showCertificateViewer(_certChain: string[]): void;
+    reattach(_callback: () => void): void;
     readyForTest(): void;
     connectionReady(): void;
-    setOpenNewWindowForPopups(value: boolean): void;
-    setDevicesDiscoveryConfig(config: Adb.Config): void;
-    setDevicesUpdatesEnabled(enabled: boolean): void;
-    openRemotePage(browserId: string, url: string): void;
+    setOpenNewWindowForPopups(_value: boolean): void;
+    setDevicesDiscoveryConfig(_config: Adb.Config): void;
+    setDevicesUpdatesEnabled(_enabled: boolean): void;
+    openRemotePage(_browserId: string, _url: string): void;
     openNodeFrontend(): void;
-    showContextMenuAtPoint(x: number, y: number, items: ContextMenuDescriptor[], document: Document): void;
+    showContextMenuAtPoint(_x: number, _y: number, _items: ContextMenuDescriptor[], _document: Document): void;
     isHostedMode(): boolean;
-    setAddExtensionCallback(callback: (arg0: ExtensionDescriptor) => void): void;
+    setAddExtensionCallback(_callback: (arg0: ExtensionDescriptor) => void): void;
     initialTargetId(): Promise<string | null>;
-    doAidaConversation(request: string, streamId: number, callback: (result: DoAidaConversationResult) => void): void;
-    registerAidaClientEvent(request: string, callback: (result: AidaClientResult) => void): void;
-    recordImpression(event: ImpressionEvent): void;
-    recordResize(event: ResizeEvent): void;
-    recordClick(event: ClickEvent): void;
-    recordHover(event: HoverEvent): void;
-    recordDrag(event: DragEvent): void;
-    recordChange(event: ChangeEvent): void;
-    recordKeyDown(event: KeyDownEvent): void;
-    recordSettingAccess(event: SettingAccessEvent): void;
+    doAidaConversation(_request: string, _streamId: number, callback: (result: DoAidaConversationResult) => void): void;
+    registerAidaClientEvent(_request: string, callback: (result: AidaClientResult) => void): void;
+    recordImpression(_event: ImpressionEvent): void;
+    recordResize(_event: ResizeEvent): void;
+    recordClick(_event: ClickEvent): void;
+    recordHover(_event: HoverEvent): void;
+    recordDrag(_event: DragEvent): void;
+    recordChange(_event: ChangeEvent): void;
+    recordKeyDown(_event: KeyDownEvent): void;
+    recordSettingAccess(_event: SettingAccessEvent): void;
 }
 export declare let InspectorFrontendHostInstance: InspectorFrontendHostStub;
 export declare function isUnderTest(prefs?: {

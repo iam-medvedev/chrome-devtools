@@ -24,14 +24,14 @@ describe('LoggingEvents', () => {
     });
     async function assertThrottled(stub) {
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isFalse(stub.called);
+        sinon.assert.notCalled(stub);
         await throttler.process?.();
-        assert.isTrue(stub.calledOnce);
+        sinon.assert.calledOnce(stub);
     }
     it('calls UI binding to log an impression', async () => {
         const recordImpression = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordImpression');
         await VisualLogging.LoggingEvents.logImpressions([element, parent]);
-        assert.isTrue(recordImpression.calledOnce);
+        sinon.assert.calledOnce(recordImpression);
         assert.sameDeepMembers(recordImpression.firstCall.firstArg.impressions, [
             { id: veid, type: 1, context: 42, parent: getVeId(parent), height: 0, width: 0 },
             { id: getVeId(parent), type: 1, height: 0, width: 0 },
@@ -62,14 +62,14 @@ describe('LoggingEvents', () => {
     it('calls UI binding to log a change', async () => {
         const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
         await VisualLogging.LoggingEvents.logChange(element);
-        assert.isTrue(recordChange.calledOnce);
+        sinon.assert.calledOnce(recordChange);
         assert.deepEqual(recordChange.firstCall.firstArg, { veid });
     });
     it('calls UI binding to log a change of specific type', async () => {
         const recordChange = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordChange');
         VisualLogging.LoggingState.getLoggingState(element).pendingChangeContext = 'instertText';
         await VisualLogging.LoggingEvents.logChange(element);
-        assert.isTrue(recordChange.calledOnce);
+        sinon.assert.calledOnce(recordChange);
         assert.deepEqual(recordChange.firstCall.firstArg, { veid, context: 296063892 });
     });
     it('calls UI binding to log a keydown with any code', async () => {
@@ -116,9 +116,9 @@ describe('LoggingEvents', () => {
         void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '1');
         void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event, '2');
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(recordKeyDown.calledOnce);
+        sinon.assert.calledOnce(recordKeyDown);
         await throttler.process?.();
-        assert.isTrue(recordKeyDown.calledTwice);
+        sinon.assert.calledTwice(recordKeyDown);
         assert.deepEqual(recordKeyDown.firstCall.firstArg, { veid, context: 1 });
         assert.deepEqual(recordKeyDown.secondCall.firstArg, { veid, context: 2 });
     });
@@ -136,7 +136,7 @@ describe('LoggingEvents', () => {
         const event = new KeyboardEvent('keydown', { code: 'KeyQ' });
         VisualLogging.LoggingState.getLoggingState(element).config.track = { keydown: 'Enter|Escape' };
         void VisualLogging.LoggingEvents.logKeyDown(throttler)(element, event);
-        assert.isFalse(recordKeyDown.called);
+        sinon.assert.notCalled(recordKeyDown);
     });
     it('calls UI binding to log a hover event', async () => {
         const recordHover = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'recordHover');

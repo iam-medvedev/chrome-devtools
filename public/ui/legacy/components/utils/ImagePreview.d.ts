@@ -10,7 +10,7 @@ export declare const enum Align {
     CENTER = "center"
 }
 export declare class ImagePreview {
-    static build(target: SDK.Target.Target, originalImageURL: Platform.DevToolsPath.UrlString, showDimensions: boolean, options?: {
+    static build(originalImageURL: Platform.DevToolsPath.UrlString, showDimensions: boolean, options?: {
         precomputedFeatures: (PrecomputedFeatures | undefined);
         imageAltText: (string | undefined);
         align: Align;

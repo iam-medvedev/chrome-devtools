@@ -9,7 +9,7 @@ export declare class NodeConnectionsView extends UI.Widget.VBox implements UI.Li
     constructor(callback: (arg0: Adb.NetworkDiscoveryConfig) => void);
     discoveryConfigChanged(networkDiscoveryConfig: Adb.NetworkDiscoveryConfig): void;
     renderItem(rule: Adb.PortForwardingRule, _editable: boolean): Element;
-    removeItemRequested(rule: Adb.PortForwardingRule, index: number): void;
+    removeItemRequested(_rule: Adb.PortForwardingRule, index: number): void;
     commitEdit(rule: Adb.PortForwardingRule, editor: UI.ListWidget.Editor<Adb.PortForwardingRule>, isNew: boolean): void;
     beginEdit(rule: Adb.PortForwardingRule): UI.ListWidget.Editor<Adb.PortForwardingRule>;
 }

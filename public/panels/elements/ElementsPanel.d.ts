@@ -100,8 +100,8 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     isAdornerEnabled(adornerText: string): boolean;
     registerAdorner(adorner: Adorners.Adorner.Adorner): void;
     deregisterAdorner(adorner: Adorners.Adorner.Adorner): void;
-    private static firstInspectElementCompletedForTest;
-    private static firstInspectElementNodeNameForTest;
+    protected static firstInspectElementCompletedForTest: () => void;
+    protected static firstInspectElementNodeNameForTest: string;
 }
 export declare class ContextMenuProvider implements UI.ContextMenu.Provider<SDK.RemoteObject.RemoteObject | SDK.DOMModel.DOMNode | SDK.DOMModel.DeferredDOMNode> {
     appendApplicableItems(event: Event, contextMenu: UI.ContextMenu.ContextMenu, object: SDK.RemoteObject.RemoteObject | SDK.DOMModel.DOMNode | SDK.DOMModel.DeferredDOMNode): void;

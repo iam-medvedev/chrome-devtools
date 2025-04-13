@@ -9,8 +9,8 @@ export declare class RenderBlocking extends BaseInsightComponent<RenderBlockingI
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     mapToRow(request: Trace.Types.Events.SyntheticNetworkRequest): TableDataRow;
     createAggregatedTableRow(remaining: Trace.Types.Events.SyntheticNetworkRequest[]): TableDataRow;
-    protected hasAskAISupport: boolean;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     renderContent(): Lit.LitTemplate;

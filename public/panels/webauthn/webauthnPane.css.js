@@ -53,12 +53,16 @@ export default {
 }
 
 .authenticator-option {
-  > select, > devtools-button {
+  > select {
     margin: 0 var(--sys-size-9) var(--sys-size-3) var(--sys-size-9);
   }
 
-  > dt-checkbox {
-    margin: 0 var(--sys-size-9) 0 var(--sys-size-8);
+  > devtools-button {
+    margin: var(--sys-size-3) var(--sys-size-9);
+  }
+
+  > input[type="checkbox"] {
+    margin: var(--sys-size-5) var(--sys-size-9);
   }
 }
 
@@ -123,11 +127,6 @@ export default {
   line-height: 18px;
 }
 
-.authenticator-option-checkbox {
-  position: relative;
-  top: 2px;
-}
-
 .authenticator-field {
   margin: var(--sys-size-3) 0;
 }
@@ -143,7 +142,7 @@ export default {
   font: var(--sys-typescale-body5-medium);
   padding-right: var(--sys-size-6);
   text-align: left;
-  min-width: 150px;
+  min-width: 152px;
   line-height: 18px;
 }
 

@@ -14,7 +14,6 @@ export declare class PerformanceMonitorImpl extends UI.Widget.HBox implements SD
     private width;
     private height;
     private model?;
-    private startTimestamp?;
     private pollTimer?;
     constructor(pollIntervalMs?: number);
     wasShown(): void;

@@ -46,7 +46,7 @@ describe('ComponentHelpers', () => {
                 }
                 fakeComponentRender.call(targetDiv);
                 assert.isNotEmpty(targetDiv.innerHTML);
-                assert.strictEqual(callback.callCount, 1);
+                sinon.assert.callCount(callback, 1);
             });
             it('runs again when Lit re-renders', () => {
                 const targetDiv = document.createElement('div');
@@ -62,9 +62,9 @@ describe('ComponentHelpers', () => {
                     targetDiv, { host: this });
                 }
                 fakeComponentRender.call(targetDiv, 'render one');
-                assert.strictEqual(callback.callCount, 1);
+                sinon.assert.callCount(callback, 1);
                 fakeComponentRender.call(targetDiv, 'render two');
-                assert.strictEqual(callback.callCount, 2);
+                sinon.assert.callCount(callback, 2);
             });
         });
     });

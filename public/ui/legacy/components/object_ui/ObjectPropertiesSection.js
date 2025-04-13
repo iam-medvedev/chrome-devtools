@@ -327,13 +327,13 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             }
         }
     }
-    static createPropertyValueWithCustomSupport(value, wasThrown, showPreview, parentElement, linkifier, isSyntheticProperty, variableName) {
+    static createPropertyValueWithCustomSupport(value, wasThrown, showPreview, linkifier, isSyntheticProperty, variableName) {
         if (value.customPreview()) {
             const result = (new CustomPreviewComponent(value)).element;
             result.classList.add('object-properties-section-custom-section');
             return new ObjectPropertyValue(result);
         }
-        return ObjectPropertiesSection.createPropertyValue(value, wasThrown, showPreview, parentElement, linkifier, isSyntheticProperty, variableName);
+        return ObjectPropertiesSection.createPropertyValue(value, wasThrown, showPreview, linkifier, isSyntheticProperty, variableName);
     }
     static appendMemoryIcon(element, object, expression) {
         if (!object.isLinearMemoryInspectable()) {
@@ -360,7 +360,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         memoryIcon.style.setProperty('cursor', 'pointer');
         element.appendChild(memoryIcon);
     }
-    static createPropertyValue(value, wasThrown, showPreview, parentElement, linkifier, isSyntheticProperty = false, variableName) {
+    static createPropertyValue(value, wasThrown, showPreview, linkifier, isSyntheticProperty = false, variableName) {
         let propertyValue;
         const type = value.type;
         const subtype = value.subtype;
@@ -527,11 +527,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
 const ARRAY_LOAD_THRESHOLD = 100;
 const maxRenderableStringLength = 10000;
 export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
-    editable;
-    constructor(options) {
+    constructor() {
         super();
         this.registerRequiredCSS(objectValueStyles, objectPropertiesSectionStyles);
-        this.editable = !(options?.readOnly);
         this.contentElement.classList.add('source-code');
         this.contentElement.classList.add('object-properties-section');
     }
@@ -890,7 +888,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         else if (this.property.value) {
             const showPreview = this.property.name !== '[[Prototype]]';
-            this.propertyValue = ObjectPropertiesSection.createPropertyValueWithCustomSupport(this.property.value, this.property.wasThrown, showPreview, this.listItemElement, this.linkifier, this.property.synthetic, this.path() /* variableName */);
+            this.propertyValue = ObjectPropertiesSection.createPropertyValueWithCustomSupport(this.property.value, this.property.wasThrown, showPreview, this.linkifier, this.property.synthetic, this.path() /* variableName */);
             this.valueElement = this.propertyValue.element;
         }
         else if (this.property.getter) {

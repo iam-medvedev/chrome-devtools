@@ -269,7 +269,7 @@ describeWithMockConnection('LiveMetricsView', () => {
         const interactions = getInteractions(view);
         assert.lengthOf(interactions, 2);
         assert(interactions[0].querySelector('.log-extra-details-button'), 'First interaction should have log details button');
-        assert(!interactions[1].querySelector('.log-extra-details-button'), 'Second interaction should not have log details button');
+        assert.isNotOk(interactions[1].querySelector('.log-extra-details-button'), 'Second interaction should not have log details button');
     });
     it('should show help icon for interaction that is longer than INP', async () => {
         const view = renderLiveMetrics();

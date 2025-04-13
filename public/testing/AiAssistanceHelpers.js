@@ -9,6 +9,7 @@ import * as Bindings from '../models/bindings/bindings.js';
 import * as Breakpoints from '../models/breakpoints/breakpoints.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
+import * as ProjectSettings from '../models/project_settings/project_settings.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../models/workspace_diff/workspace_diff.js';
 import * as AiAssistancePanel from '../panels/ai_assistance/ai_assistance.js';
@@ -140,7 +141,7 @@ let panels = [];
  */
 export async function createAiAssistancePanel(options) {
     let aidaAvailabilityForStub = options?.aidaAvailability ?? "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
-    const view = createViewFunctionStub(AiAssistancePanel.AiAssistancePanel);
+    const view = createViewFunctionStub(AiAssistancePanel.AiAssistancePanel, { chatView: options?.chatView });
     const aidaClient = options?.aidaClient ?? mockAidaClient();
     const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions').callsFake(() => {
         return Promise.resolve(aidaAvailabilityForStub);
@@ -165,6 +166,25 @@ export async function createAiAssistancePanel(options) {
         stubAidaCheckAccessPreconditions,
     };
 }
+export const setupAutomaticFileSystem = (options = {
+    hasFileSystem: false
+}) => {
+    const root = '/path/to/my-automatic-file-system';
+    const uuid = '549bbf9b-48b2-4af7-aebd-d3ba68993094';
+    const hostConfig = { devToolsAutomaticFileSystems: { enabled: true } };
+    const inspectorFrontendHost = sinon.createStubInstance(Host.InspectorFrontendHost.InspectorFrontendHostStub);
+    inspectorFrontendHost.events = sinon.createStubInstance(Common.ObjectWrapper.ObjectWrapper);
+    const projectSettingsModel = sinon.createStubInstance(ProjectSettings.ProjectSettingsModel.ProjectSettingsModel);
+    sinon.stub(projectSettingsModel, 'availability').value('available');
+    sinon.stub(projectSettingsModel, 'projectSettings').value(options.hasFileSystem ? { workspace: { root, uuid } } : {});
+    const manager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance({
+        forceNew: true,
+        hostConfig,
+        inspectorFrontendHost,
+        projectSettingsModel,
+    });
+    sinon.stub(manager, 'connectAutomaticFileSystem').resolves(true);
+};
 let patchWidgets = [];
 /**
  * Creates and shows an AiAssistancePanel instance returning the view

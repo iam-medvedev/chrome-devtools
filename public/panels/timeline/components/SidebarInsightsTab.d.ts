@@ -8,6 +8,7 @@ export declare class SidebarInsightsTab extends HTMLElement {
     set traceMetadata(data: Trace.Types.File.MetaData | null);
     set insights(data: Trace.Insights.Types.TraceInsightSets | null);
     set activeInsight(active: ActiveInsight | null);
+    highlightActiveInsight(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

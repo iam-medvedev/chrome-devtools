@@ -290,7 +290,7 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
         function userAgentMetadataValidator() {
             return uaMetadata.validate();
         }
-        function titleValidator(item, index, input) {
+        function titleValidator(_item, _index, input) {
             let valid = false;
             let errorMessage;
             const value = input.value.trim();
@@ -306,13 +306,13 @@ export class DevicesSettingsTab extends UI.Widget.VBox {
             }
             return { valid, errorMessage };
         }
-        function widthValidator(item, index, input) {
+        function widthValidator(_item, _index, input) {
             return EmulationModel.DeviceModeModel.DeviceModeModel.widthValidator(input.value);
         }
-        function heightValidator(item, index, input) {
+        function heightValidator(_item, _index, input) {
             return EmulationModel.DeviceModeModel.DeviceModeModel.heightValidator(input.value);
         }
-        function scaleValidator(item, index, input) {
+        function scaleValidator(_item, _index, input) {
             return EmulationModel.DeviceModeModel.DeviceModeModel.scaleValidator(input.value);
         }
     }

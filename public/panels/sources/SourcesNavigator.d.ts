@@ -47,5 +47,5 @@ export declare class SnippetsNavigatorView extends NavigatorView {
     private addJSExtension;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
-    handleAction(context: UI.Context.Context, actionId: string): boolean;
+    handleAction(_context: UI.Context.Context, actionId: string): boolean;
 }

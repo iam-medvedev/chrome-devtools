@@ -9,6 +9,7 @@ import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import { type TimelineSelection } from './TimelineSelection.js';
+import * as Utils from './utils/utils.js';
 export declare class TimelinePanel extends UI.Panel.Panel implements Client, TimelineModeViewDelegate {
     #private;
     private readonly dropTarget;
@@ -48,8 +49,6 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private fileSelectorElement?;
     private selection;
     private traceLoadStart;
-    private primaryPageTargetPromiseCallback;
-    private primaryPageTargetPromise;
     constructor(traceModel?: Trace.TraceModel.Model);
     /**
      * This "disables" the 3P checkbox in the toolbar.
@@ -94,7 +93,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private prepareToLoadTimeline;
     private createFileSelector;
     private contextMenu;
-    saveToFile(isEnhancedTrace?: boolean, addModifications?: boolean): Promise<void>;
+    saveToFile(savingEnhancedTrace?: boolean, addModifications?: boolean): Promise<void>;
     showHistoryDropdown(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;
@@ -143,6 +142,15 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     selectEntryAtTime(events: Trace.Types.Events.Event[] | null, time: number): void;
     highlightEvent(event: Trace.Types.Events.Event | null): void;
     private handleDrop;
+    /**
+     * Used to reveal an insight - and is called from the AI Assistance panel when the user clicks on the Insight context button that is shown.
+     * Revealing an insight should:
+     * 1. Ensure the sidebar is open
+     * 2. Ensure the insight is expanded
+     *    (both of these should be true in the AI Assistance case)
+     * 3. Flash the Insight with the highlight colour we use in other panels.
+     */
+    revealInsight(insightModel: Trace.Insights.Types.InsightModel): void;
 }
 export declare const enum State {
     IDLE = "Idle",
@@ -202,6 +210,9 @@ export declare class TraceRevealer implements Common.Revealer.Revealer<SDK.Trace
 }
 export declare class EventRevealer implements Common.Revealer.Revealer<SDK.TraceObject.RevealableEvent> {
     reveal(rEvent: SDK.TraceObject.RevealableEvent): Promise<void>;
+}
+export declare class InsightRevealer implements Common.Revealer.Revealer<Utils.InsightAIContext.ActiveInsight> {
+    reveal(revealable: Utils.InsightAIContext.ActiveInsight): Promise<void>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

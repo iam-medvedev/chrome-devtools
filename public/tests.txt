@@ -170,6 +170,7 @@ models/javascript_metadata/JavaScriptMetadata.test.js
 models/logs/NetworkLog.test.js
 models/logs/RequestResolver.test.js
 models/persistence/AutomaticFileSystemManager.test.js
+models/persistence/AutomaticFileSystemWorkspaceBinding.test.js
 models/persistence/NetworkPersistenceManager.test.js
 models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
@@ -529,6 +530,7 @@ panels/timeline/components/TimelineSummary.test.js
 panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/BaseInsightComponent.test.js
 panels/timeline/components/insights/CLSCulprits.test.js
+panels/timeline/components/insights/InteractionToNextPaint.test.js
 panels/timeline/components/insights/Table.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
 panels/timeline/overlays/components/TimespanBreakdownOverlay.test.js

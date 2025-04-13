@@ -65,7 +65,7 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     private attachInfobar;
 }
 export declare class ActionDelegate implements ActionDelegateInterface {
-    handleAction(context: Context, actionId: string): boolean;
+    handleAction(_context: Context, actionId: string): boolean;
 }
 export declare class InspectorViewTabDelegate implements TabbedPaneTabDelegate {
     closeTabs(tabbedPane: TabbedPane, ids: string[]): void;

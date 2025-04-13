@@ -137,7 +137,7 @@ async function fetchLocaleData(locales) {
         else {
             localeUrl = new URL(`../../third_party/lighthouse/locales/${locale}.json`, import.meta.url).toString();
         }
-        const timeoutPromise = new Promise((resolve, reject) => setTimeout(() => reject(new Error('timed out fetching locale')), 5000));
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('timed out fetching locale')), 5000));
         const localeData = await Promise.race([timeoutPromise, fetch(localeUrl).then(result => result.json())]);
         // @ts-expect-error https://github.com/GoogleChrome/lighthouse/issues/11628
         self.registerLocaleData(locale, localeData);

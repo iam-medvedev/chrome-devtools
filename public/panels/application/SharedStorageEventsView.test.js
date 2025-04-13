@@ -178,10 +178,10 @@ describeWithMockConnection('SharedStorageEventsView', () => {
         const grid = view.getSharedStorageAccessGridForTesting();
         // Use a spy to assert that the sidebar preview pane gets updated when expected.
         const spy = sinon.spy(view, 'setSidebarWidget');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         grid.dispatchEvent(new CustomEvent('select', { detail: EVENTS[0] }));
         await raf();
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
     });
     it('clears sidebarWidget upon clearEvents', async () => {
@@ -193,13 +193,13 @@ describeWithMockConnection('SharedStorageEventsView', () => {
         const grid = view.getSharedStorageAccessGridForTesting();
         // Use a spy to assert that the sidebar preview pane gets updated when expected.
         const spy = sinon.spy(view, 'setSidebarWidget');
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         grid.dispatchEvent(new CustomEvent('select', { detail: EVENTS[0] }));
         await raf();
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
         view.clearEvents();
-        assert.isTrue(spy.calledTwice);
+        sinon.assert.calledTwice(spy);
         assert.notDeepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
         assert.deepEqual(view.sidebarWidget()?.contentElement.firstChild?.textContent, 'No shared storage event selected');
     });

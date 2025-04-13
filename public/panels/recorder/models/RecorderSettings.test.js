@@ -10,8 +10,8 @@ describeWithEnvironment('RecorderSettings', () => {
         recorderSettings = new Models.RecorderSettings.RecorderSettings();
     });
     it('should have correct default values', async () => {
-        assert.isTrue(recorderSettings.selectorAttribute === '');
-        assert.isTrue(recorderSettings.speed === "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
+        assert.strictEqual(recorderSettings.selectorAttribute, '');
+        assert.strictEqual(recorderSettings.speed, "normal" /* Models.RecordingPlayer.PlayRecordingSpeed.NORMAL */);
         Object.values(Models.Schema.SelectorType).forEach(type => {
             assert.isTrue(recorderSettings.getSelectorByType(type));
         });

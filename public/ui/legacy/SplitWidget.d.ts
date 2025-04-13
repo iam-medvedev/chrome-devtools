@@ -116,7 +116,7 @@ export declare class SplitWidget extends SplitWidget_base {
 export declare class SplitWidgetElement extends WidgetElement<SplitWidget> {
     static readonly observedAttributes: string[];
     createWidget(): SplitWidget;
-    attributeChangedCallback(name: string, oldValue: string, newValue: string): void;
+    attributeChangedCallback(name: string, _oldValue: string, newValue: string): void;
 }
 export declare const enum ShowMode {
     BOTH = "Both",

@@ -148,8 +148,7 @@ export class ProfilesPanel extends UI.Panel.PanelWithSidebar {
         UI.Context.Context.instance().addFlavorChangeListener(SDK.CPUProfilerModel.CPUProfilerModel, this.updateProfileTypeSpecificUI, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.HeapProfilerModel.HeapProfilerModel, this.updateProfileTypeSpecificUI, this);
     }
-    onKeyDown(ev) {
-        const event = ev;
+    onKeyDown(event) {
         let handled = false;
         if (event.key === 'ArrowDown' && !event.altKey) {
             handled = this.sidebarTree.selectNext();

@@ -23,7 +23,6 @@ export declare class JumpToPointerAddressEvent extends Event {
 export declare class ValueInterpreterDisplay extends HTMLElement {
     #private;
     constructor();
-    connectedCallback(): void;
     set data(data: ValueDisplayData);
 }
 declare global {

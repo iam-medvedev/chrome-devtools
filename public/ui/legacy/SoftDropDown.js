@@ -124,8 +124,7 @@ export class SoftDropDown {
         this.element.focus();
         event.consume(true);
     }
-    onKeyDownButton(ev) {
-        const event = ev;
+    onKeyDownButton(event) {
         let handled = false;
         switch (event.key) {
             case 'ArrowUp':
@@ -150,8 +149,7 @@ export class SoftDropDown {
             event.consume(true);
         }
     }
-    onKeyDownList(ev) {
-        const event = ev;
+    onKeyDownList(event) {
         let handled = false;
         switch (event.key) {
             case 'ArrowLeft':

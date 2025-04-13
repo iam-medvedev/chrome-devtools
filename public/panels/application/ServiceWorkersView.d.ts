@@ -39,7 +39,6 @@ export declare class Section {
     private sourceField;
     private readonly statusField;
     private readonly clientsField;
-    private readonly linkifier;
     private readonly clientInfoCache;
     private readonly throttler;
     private updateCycleField?;

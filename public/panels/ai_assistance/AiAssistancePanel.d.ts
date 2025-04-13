@@ -8,7 +8,8 @@ interface ToolbarViewInput {
     onDeleteClick: () => void;
     onHelpClick: () => void;
     onSettingsClick: () => void;
-    isDeleteHistoryButtonVisible: boolean;
+    showDeleteHistoryAction: boolean;
+    showChatActions: boolean;
 }
 export type ViewInput = ChatViewProps & ToolbarViewInput;
 export interface PanelViewOutput {

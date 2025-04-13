@@ -271,9 +271,9 @@ export async function assertScreenshot(filename) {
     }
     await raf();
     // @ts-expect-error see karma config.
-    const result = await window.assertScreenshot(`#${TEST_CONTAINER_ID}`, filename);
-    if (result) {
-        throw new Error(result);
+    const errorMessage = await window.assertScreenshot(`#${TEST_CONTAINER_ID}`, filename);
+    if (errorMessage) {
+        throw new Error(errorMessage);
     }
 }
 //# sourceMappingURL=DOMHelpers.js.map

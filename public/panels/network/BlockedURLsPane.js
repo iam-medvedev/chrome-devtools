@@ -144,7 +144,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
         this.manager.setBlockingEnabled(!this.manager.blockingEnabled());
         this.update();
     }
-    removeItemRequested(pattern, index) {
+    removeItemRequested(_pattern, index) {
         const patterns = this.manager.blockedPatterns();
         patterns.splice(index, 1);
         this.manager.setBlockedPatterns(patterns);

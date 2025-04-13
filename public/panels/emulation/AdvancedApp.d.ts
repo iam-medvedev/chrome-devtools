@@ -6,7 +6,6 @@ export declare class AdvancedApp implements Common.App.App {
     private toolboxWindow?;
     private toolboxRootView?;
     private changingDockSide?;
-    private toolboxDocument?;
     constructor();
     /**
      * Note: it's used by toolbox.ts without real type checks.

@@ -10,6 +10,22 @@ export default {
  * found in the LICENSE file.
  */
 
+@keyframes insight-highlight-fade-out {
+  from {
+    background-color: var(--sys-color-yellow-container);
+  }
+
+  to {
+    background-color: transparent;
+  }
+}
+
+:host([highlight-insight]) {
+  .insight {
+    animation: insight-highlight-fade-out 2s 0s;
+  }
+}
+
 .insight {
   display: block;
   position: relative;

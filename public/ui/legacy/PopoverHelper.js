@@ -80,8 +80,7 @@ export class PopoverHelper {
     setDisableOnClick(disableOnClick) {
         this.disableOnClick = disableOnClick;
     }
-    eventInScheduledContent(ev) {
-        const event = ev;
+    eventInScheduledContent(event) {
         return this.scheduledRequest ? this.scheduledRequest.box.contains(event.clientX, event.clientY) : false;
     }
     mouseDown(event) {
@@ -96,8 +95,7 @@ export class PopoverHelper {
         this.stopShowPopoverTimer();
         this.startShowPopoverTimer(event, 0);
     }
-    keyUp(ev) {
-        const event = ev;
+    keyUp(event) {
         if (event.altKey && event.key === 'ArrowDown') {
             if (this.isPopoverVisible()) {
                 this.hidePopover();
@@ -107,15 +105,14 @@ export class PopoverHelper {
                 this.startHidePopoverTimer(0);
                 this.startShowPopoverTimer(event, 0);
             }
-            ev.stopPropagation();
+            event.stopPropagation();
         }
         else if (event.key === 'Escape' && this.isPopoverVisible()) {
             this.hidePopover();
-            ev.stopPropagation();
+            event.stopPropagation();
         }
     }
-    mouseMove(ev) {
-        const event = ev;
+    mouseMove(event) {
         if (this.eventInScheduledContent(event)) {
             // Reschedule showing popover since mouse moved and
             // we only want to show the popover when the mouse is
@@ -134,8 +131,7 @@ export class PopoverHelper {
     popoverMouseMove(_event) {
         this.stopHidePopoverTimer();
     }
-    popoverMouseOut(popover, ev) {
-        const event = ev;
+    popoverMouseOut(popover, event) {
         if (!popover.isShowing()) {
             return;
         }

@@ -59,7 +59,6 @@ export class SuggestBox {
     maxItemsHeight;
     rowHeight;
     userEnteredText;
-    defaultSelectionIsDimmed;
     onlyCompletion;
     items;
     list;
@@ -70,7 +69,6 @@ export class SuggestBox {
         this.maxItemsHeight = maxItemsHeight;
         this.rowHeight = 17;
         this.userEnteredText = '';
-        this.defaultSelectionIsDimmed = false;
         this.onlyCompletion = null;
         this.items = new ListModel();
         this.list = new ListControl(this.items, this, ListMode.EqualHeightItems);
@@ -211,7 +209,7 @@ export class SuggestBox {
     isItemSelectable(_item) {
         return true;
     }
-    selectedItemChanged(from, to, fromElement, toElement) {
+    selectedItemChanged(_from, _to, fromElement, toElement) {
         if (fromElement) {
             fromElement.classList.remove('selected', 'force-white-icons');
         }

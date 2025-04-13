@@ -31,7 +31,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.isUndefined(context.chrome.devtools);
         const addExtensionStub = sinon.stub(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
         createTarget().setInspectedURL(urlString `chrome://version`);
-        assert.isTrue(addExtensionStub.notCalled);
+        sinon.assert.notCalled(addExtensionStub);
     });
     it('defers loading extensions until after navigation from a privileged to a non-privileged host', async () => {
         const addExtensionSpy = sinon.spy(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
@@ -99,7 +99,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
                 assert.strictEqual(e.code, 'E_BADARG');
             }
             assert.isTrue(didThrow, 'SetFunctionRangesForScript did not throw an error as expected.');
-            assert.isTrue(workspaceBindingSetFunctionRangesStub.notCalled);
+            sinon.assert.notCalled(workspaceBindingSetFunctionRangesStub);
             await sourceMapScripts[0].setFunctionRangesForScript(validFunctionRanges);
             assert.isTrue(workspaceBindingSetFunctionRangesStub.calledOnceWithExactly(uiSourceCode, validFunctionRanges));
         });
@@ -179,7 +179,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             name: 'test',
             steps: [],
         });
-        assert.isTrue(stub.called);
+        sinon.assert.called(stub);
         await context.chrome.devtools?.recorder.unregisterRecorderExtensionPlugin(extensionPlugin);
     });
     it('can create and show a view for Recorder', async () => {
@@ -273,8 +273,8 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const reloadPromise = new Promise(resolve => reloadStub.callsFake(resolve));
         context.chrome.devtools.inspectedWindow.reload();
         await reloadPromise;
-        assert.isTrue(reloadStub.calledOnce);
-        assert.isTrue(secondReloadStub.notCalled);
+        sinon.assert.calledOnce(reloadStub);
+        sinon.assert.notCalled(secondReloadStub);
     });
     it('correcly installs blocked extensions after navigation', async () => {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -329,7 +329,7 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
             const target = createTarget({ type: SDK.Target.Type.FRAME });
             const addExtensionStub = sinon.stub(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
             target.setInspectedURL(urlString `${`${protocol}://foo`}`);
-            assert.isTrue(addExtensionStub.notCalled);
+            sinon.assert.notCalled(addExtensionStub);
             assert.isUndefined(context.chrome.devtools);
         });
     }
@@ -642,7 +642,7 @@ describeWithDevtoolsExtension('Wasm extension API', {}, context => {
         const log = captureError('Extension server error: Invalid argument global: No global with index 0');
         const result = await context.chrome.devtools?.languageServices.getWasmGlobal(0, stopId);
         assertIsStatus(result);
-        assert.isTrue(log.calledOnce);
+        sinon.assert.calledOnce(log);
         assert.strictEqual(result.code, 'E_BADARG');
         assert.strictEqual(result.details[0], 'global');
     });
@@ -650,7 +650,7 @@ describeWithDevtoolsExtension('Wasm extension API', {}, context => {
         const log = captureError('Extension server error: Invalid argument local: No local with index 0');
         const result = await context.chrome.devtools?.languageServices.getWasmLocal(0, stopId);
         assertIsStatus(result);
-        assert.isTrue(log.calledOnce);
+        sinon.assert.calledOnce(log);
         assert.strictEqual(result.code, 'E_BADARG');
         assert.strictEqual(result.details[0], 'local');
     });
@@ -658,7 +658,7 @@ describeWithDevtoolsExtension('Wasm extension API', {}, context => {
         const log = captureError('Extension server error: Invalid argument op: No operand with index 0');
         const result = await context.chrome.devtools?.languageServices.getWasmOp(0, stopId);
         assertIsStatus(result);
-        assert.isTrue(log.calledOnce);
+        sinon.assert.calledOnce(log);
         assert.strictEqual(result.code, 'E_BADARG');
         assert.strictEqual(result.details[0], 'op');
     });
@@ -709,7 +709,7 @@ describeWithDevtoolsExtension('Language Extension API', {}, context => {
         const pageResourceLoader = SDK.PageResourceLoader.PageResourceLoader.instance({ forceNew: true, loadOverride: null, maxConcurrentLoads: 1 });
         const spy = sinon.spy(pageResourceLoader, 'resourceLoadedThroughExtension');
         await context.chrome.devtools?.languageServices.reportResourceLoad('test.dwo', { success: true, size: 10 });
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
         assert.strictEqual(pageResourceLoader.getNumberOfResources().resources, 1);
         const resource = spy.args[0][0];
         const extensionId = getExtensionOrigin();
@@ -750,7 +750,7 @@ for (const allowFileAccess of [true, false]) {
                     type: "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */,
                     externalURL: 'file:///source/url.map',
                 }], null);
-            assert.isTrue(endpointSpy.calledOnce);
+            sinon.assert.calledOnce(endpointSpy);
             assert.strictEqual(endpointSpy.thisValues[0]
                 .allowFileAccess, allowFileAccess);
         });

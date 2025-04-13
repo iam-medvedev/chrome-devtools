@@ -96,7 +96,6 @@ export declare class DOMNode {
     getOuterHTML(): Promise<string | null>;
     setOuterHTML(html: string, callback?: ((arg0: string | null) => void)): void;
     removeNode(callback?: ((arg0: string | null, arg1?: Protocol.DOM.NodeId | undefined) => void)): Promise<void>;
-    copyNode(): Promise<string | null>;
     path(): string;
     isAncestor(node: DOMNode): boolean;
     isDescendant(descendant: DOMNode): boolean;

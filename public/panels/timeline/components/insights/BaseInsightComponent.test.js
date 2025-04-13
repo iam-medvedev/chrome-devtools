@@ -15,6 +15,9 @@ describeWithEnvironment('BaseInsightComponent', () => {
     const { BaseInsightComponent } = Insights.BaseInsightComponent;
     class TestInsightComponentNoAISupport extends BaseInsightComponent {
         internalName = 'test-insight';
+        hasAskAiSupport() {
+            return false;
+        }
         createOverlays() {
             return [];
         }
@@ -24,7 +27,9 @@ describeWithEnvironment('BaseInsightComponent', () => {
     }
     class TestInsightComponentWithAISupport extends BaseInsightComponent {
         internalName = 'test-insight';
-        hasAskAISupport = true;
+        hasAskAiSupport() {
+            return true;
+        }
         createOverlays() {
             return [];
         }
@@ -85,6 +90,96 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.strictEqual(contentElement.textContent, 'test content');
         });
     });
+    describe('estimated savings output', () => {
+        let testComponentIndex = 0; // used for defining the custom element and making it unique
+        function makeTestComponent(opts) {
+            class TestInsight extends BaseInsightComponent {
+                internalName = 'test-insight';
+                createOverlays() {
+                    return [];
+                }
+                getEstimatedSavingsTime() {
+                    return opts.timeSavings ? Trace.Types.Timing.Milli(opts.timeSavings) : null;
+                }
+                getEstimatedSavingsBytes() {
+                    return opts.byteSavings ?? null;
+                }
+                renderContent() {
+                    return html `<div>test content</div>`;
+                }
+            }
+            customElements.define(`test-insight-est-savings-${testComponentIndex++}`, TestInsight);
+            return new TestInsight();
+        }
+        it('outputs the correct estimated savings for both bytes and time', async () => {
+            const component = makeTestComponent({ byteSavings: 5_000, timeSavings: 50 });
+            component.model = {
+                insightKey: 'LCPPhases',
+                strings: {},
+                title: 'LCP by Phase',
+                description: 'some description',
+                category: Trace.Insights.Types.InsightCategory.ALL,
+                state: 'fail',
+                frameId: '123',
+            };
+            renderElementIntoDOM(component);
+            await RenderCoordinator.done();
+            const estSavings = component.shadowRoot?.querySelector('slot[name=insight-savings]');
+            assert.isOk(estSavings);
+            assert.strictEqual(estSavings.innerText, 'Est savings: 50 ms & 5.0 kB');
+        });
+        it('outputs the correct estimated savings for bytes only', async () => {
+            const component = makeTestComponent({ byteSavings: 5_000 });
+            component.model = {
+                insightKey: 'LCPPhases',
+                strings: {},
+                title: 'LCP by Phase',
+                description: 'some description',
+                category: Trace.Insights.Types.InsightCategory.ALL,
+                state: 'fail',
+                frameId: '123',
+            };
+            renderElementIntoDOM(component);
+            await RenderCoordinator.done();
+            const estSavings = component.shadowRoot?.querySelector('slot[name=insight-savings]');
+            assert.isOk(estSavings);
+            assert.strictEqual(estSavings.innerText, 'Est savings: 5.0 kB');
+        });
+        it('outputs the correct estimated savings for time only', async () => {
+            const component = makeTestComponent({ timeSavings: 50 });
+            component.model = {
+                insightKey: 'LCPPhases',
+                strings: {},
+                title: 'LCP by Phase',
+                description: 'some description',
+                category: Trace.Insights.Types.InsightCategory.ALL,
+                state: 'fail',
+                frameId: '123',
+            };
+            renderElementIntoDOM(component);
+            await RenderCoordinator.done();
+            const estSavings = component.shadowRoot?.querySelector('slot[name=insight-savings]');
+            assert.isOk(estSavings);
+            assert.strictEqual(estSavings.innerText, 'Est savings: 50 ms');
+        });
+        it('includes the output in the insight aria label', async () => {
+            const component = makeTestComponent({ byteSavings: 5_000, timeSavings: 50 });
+            component.model = {
+                insightKey: 'LCPPhases',
+                strings: {},
+                title: 'LCP by Phase',
+                description: 'some description',
+                category: Trace.Insights.Types.InsightCategory.ALL,
+                state: 'fail',
+                frameId: '123',
+            };
+            renderElementIntoDOM(component);
+            await RenderCoordinator.done();
+            const label = component.shadowRoot?.querySelector('header')?.getAttribute('aria-label');
+            assert.isOk(label);
+            assert.strictEqual(label, 'View details for LCP by Phase insight. Estimated savings for this insight: 50 ms and 5.0 kB');
+        });
+    });
     describe('Ask AI Insights', () => {
         const FAKE_PARSED_TRACE = {};
         const FAKE_LCP_MODEL = {
@@ -117,6 +212,19 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
+        });
+        it('adds a descriptive aria label to the button', async () => {
+            updateHostConfig({
+                devToolsAiAssistancePerformanceAgent: {
+                    enabled: true,
+                    insightsEnabled: true,
+                }
+            });
+            const component = await renderComponent({ insightHasAISupport: true });
+            assert.isOk(component.shadowRoot);
+            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
+            assert.isOk(button);
+            assert.strictEqual(button.getAttribute('aria-label'), 'Ask AI about LCP by Phase insight');
         });
         it('does not render the "Ask AI" button if disabled by enterprise policy', async () => {
             updateHostConfig({

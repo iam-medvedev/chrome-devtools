@@ -518,9 +518,11 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     }
     wasShown() {
         this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange, this);
+        this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, this.#onDataGridDeselection, this);
     }
     childWasDetached(_widget) {
         this.dataGrid.removeEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, this.#onDataGridSelectionChange);
+        this.dataGrid.removeEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, this.#onDataGridDeselection);
     }
     /**
      * This event fires when the user selects a row in the grid, either by
@@ -530,6 +532,16 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     #onDataGridSelectionChange(event) {
         this.onClick(event.data.profileNode);
         this.onHover(event.data.profileNode);
+    }
+    /**
+     * Called when the user deselects a row.
+     * This can either be because they have selected a new row
+     * (you should expect a SELECTED_NODE event after this one)
+     * or because they have deselected without a new selection.
+     */
+    #onDataGridDeselection() {
+        this.onClick(null);
+        this.onHover(null);
     }
     onGridNodeOpened() {
         const gridNode = this.dataGrid.selectedNode;

@@ -85,7 +85,7 @@ describeWithEnvironment('OverlayPersistentHighlighter', () => {
             }]);
         highlighter.hideFlexInOverlay(EXISTING_NODE_ID);
         assert.deepEqual(stubbedCallbacks.onFlexOverlayStateChanged.secondCall.args, [{ nodeId: EXISTING_NODE_ID, enabled: false }]);
-        assert(!highlighter.isFlexHighlighted(EXISTING_NODE_ID));
+        assert.isNotOk(highlighter.isFlexHighlighted(EXISTING_NODE_ID));
         assertSavedSettingState([]);
     });
     it('is able to highlight grid elements', () => {
@@ -99,7 +99,7 @@ describeWithEnvironment('OverlayPersistentHighlighter', () => {
             }]);
         highlighter.hideGridInOverlay(EXISTING_NODE_ID);
         assert.deepEqual(stubbedCallbacks.onGridOverlayStateChanged.secondCall.args, [{ nodeId: EXISTING_NODE_ID, enabled: false }]);
-        assert(!highlighter.isGridHighlighted(EXISTING_NODE_ID));
+        assert.isNotOk(highlighter.isGridHighlighted(EXISTING_NODE_ID));
         assertSavedSettingState([]);
     });
     it('is able to highlight scroll snap elements', () => {
@@ -112,7 +112,7 @@ describeWithEnvironment('OverlayPersistentHighlighter', () => {
                 type: "SCROLL_SNAP" /* SDK.OverlayPersistentHighlighter.HighlightType.SCROLL_SNAP */,
             }]);
         highlighter.hideScrollSnapInOverlay(EXISTING_NODE_ID);
-        assert(!highlighter.isScrollSnapHighlighted(EXISTING_NODE_ID));
+        assert.isNotOk(highlighter.isScrollSnapHighlighted(EXISTING_NODE_ID));
         assert.deepEqual(stubbedCallbacks.onScrollSnapOverlayStateChanged.secondCall.args, [{ nodeId: EXISTING_NODE_ID, enabled: false }]);
         assertSavedSettingState([]);
     });
@@ -126,7 +126,7 @@ describeWithEnvironment('OverlayPersistentHighlighter', () => {
                 type: "CONTAINER_QUERY" /* SDK.OverlayPersistentHighlighter.HighlightType.CONTAINER_QUERY */,
             }]);
         highlighter.hideContainerQueryInOverlay(EXISTING_NODE_ID);
-        assert(!highlighter.isContainerQueryHighlighted(EXISTING_NODE_ID));
+        assert.isNotOk(highlighter.isContainerQueryHighlighted(EXISTING_NODE_ID));
         assert.deepEqual(stubbedCallbacks.onContainerQueryOverlayStateChanged.secondCall.args, [{ nodeId: EXISTING_NODE_ID, enabled: false }]);
         assertSavedSettingState([]);
     });
@@ -139,7 +139,7 @@ describeWithEnvironment('OverlayPersistentHighlighter', () => {
                 type: "ISOLATED_ELEMENT" /* SDK.OverlayPersistentHighlighter.HighlightType.ISOLATED_ELEMENT */,
             }]);
         highlighter.hideIsolatedElementInOverlay(EXISTING_NODE_ID);
-        assert(!highlighter.isIsolatedElementHighlighted(EXISTING_NODE_ID));
+        assert.isNotOk(highlighter.isIsolatedElementHighlighted(EXISTING_NODE_ID));
         assertSavedSettingState([]);
     });
     it('updating setting state keeps the highlights not related to the current document', () => {

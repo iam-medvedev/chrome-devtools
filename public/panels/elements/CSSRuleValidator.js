@@ -144,7 +144,7 @@ export class FlexItemValidator extends CSSRuleValidator {
     getMetricType() {
         return 2 /* Host.UserMetrics.CSSHintType.FLEX_ITEM */;
     }
-    getHint(propertyName, computedStyles, parentComputedStyles) {
+    getHint(propertyName, _computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
             return;
         }
@@ -234,7 +234,7 @@ export class GridItemValidator extends CSSRuleValidator {
     getMetricType() {
         return 5 /* Host.UserMetrics.CSSHintType.GRID_ITEM */;
     }
-    getHint(propertyName, computedStyles, parentComputedStyles) {
+    getHint(propertyName, _computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
             return;
         }
@@ -262,7 +262,7 @@ export class FlexOrGridItemValidator extends CSSRuleValidator {
     getMetricType() {
         return 12 /* Host.UserMetrics.CSSHintType.FLEX_OR_GRID_ITEM */;
     }
-    getHint(propertyName, computedStyles, parentComputedStyles) {
+    getHint(propertyName, _computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
             return;
         }
@@ -467,7 +467,7 @@ export class SizingValidator extends CSSRuleValidator {
     getMetricType() {
         return 11 /* Host.UserMetrics.CSSHintType.SIZING */;
     }
-    getHint(propertyName, computedStyles, parentComputedStyles, nodeName) {
+    getHint(propertyName, computedStyles, _parentComputedStyles, nodeName) {
         if (!computedStyles || !nodeName) {
             return;
         }
@@ -501,7 +501,7 @@ export class FontVariationSettingsValidator extends CSSRuleValidator {
     getMetricType() {
         return 13 /* Host.UserMetrics.CSSHintType.FONT_VARIATION_SETTINGS */;
     }
-    getHint(propertyName, computedStyles, parentComputedStyles, nodeName, fontFaces) {
+    getHint(_propertyName, computedStyles, _parentComputedStyles, _nodeName, fontFaces) {
         if (!computedStyles) {
             return;
         }

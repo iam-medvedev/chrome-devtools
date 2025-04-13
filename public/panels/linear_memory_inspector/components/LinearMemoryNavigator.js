@@ -7,10 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import linearMemoryNavigatorStylesRaw from './linearMemoryNavigator.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const linearMemoryNavigatorStyles = new CSSStyleSheet();
-linearMemoryNavigatorStyles.replaceSync(linearMemoryNavigatorStylesRaw.cssText);
+import linearMemoryNavigatorStyles from './linearMemoryNavigator.css.js';
 const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over a valid memory address (e.g. 0x0) in the address line in the Linear memory inspector.
@@ -77,9 +74,6 @@ export class LinearMemoryNavigator extends HTMLElement {
     #valid = true;
     #canGoBackInHistory = false;
     #canGoForwardInHistory = false;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [linearMemoryNavigatorStyles];
-    }
     set data(data) {
         this.#address = data.address;
         this.#error = data.error;
@@ -101,6 +95,7 @@ export class LinearMemoryNavigator extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         const result = html `
+      <style>${linearMemoryNavigatorStyles.cssText}</style>
       <div class="navigator">
         <div class="navigator-item">
           ${this.#createButton({ icon: 'undo', title: i18nString(UIStrings.goBackInAddressHistory),

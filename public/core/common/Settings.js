@@ -429,7 +429,7 @@ export class Setting {
                 this.storage.set(this.name, settingString);
             }
             catch (e) {
-                this.printSettingsSavingError(e.message, this.name, settingString);
+                this.printSettingsSavingError(e.message, settingString);
             }
         }
         catch (e) {
@@ -507,7 +507,7 @@ export class Setting {
         }
         return this.#deprecation;
     }
-    printSettingsSavingError(message, name, value) {
+    printSettingsSavingError(message, value) {
         const errorMessage = 'Error saving setting with name: ' + this.name + ', value length: ' + value.length + '. Error: ' + message;
         console.error(errorMessage);
         Console.instance().error(errorMessage);

@@ -9,7 +9,7 @@ export declare class LocationsSettingsTab extends UI.Widget.VBox implements UI.L
     private locationsUpdated;
     private addButtonClicked;
     renderItem(location: LocationDescription, _editable: boolean): Element;
-    removeItemRequested(item: LocationDescription, index: number): void;
+    removeItemRequested(_item: LocationDescription, index: number): void;
     commitEdit(location: LocationDescription, editor: UI.ListWidget.Editor<LocationDescription>, isNew: boolean): void;
     beginEdit(location: LocationDescription): UI.ListWidget.Editor<LocationDescription>;
     private createEditor;

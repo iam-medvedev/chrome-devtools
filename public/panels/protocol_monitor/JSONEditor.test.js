@@ -1069,7 +1069,7 @@ describeWithEnvironment('JSONEditor', () => {
         it('filters the commands by substring match', async () => {
             assert(ProtocolMonitor.JSONEditor.suggestionFilter('Test', 'Tes'));
             assert(ProtocolMonitor.JSONEditor.suggestionFilter('Test', 'est'));
-            assert(!ProtocolMonitor.JSONEditor.suggestionFilter('Test', 'dest'));
+            assert.isNotOk(ProtocolMonitor.JSONEditor.suggestionFilter('Test', 'dest'));
         });
     });
 });

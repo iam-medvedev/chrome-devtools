@@ -10,7 +10,7 @@ export declare class ImagePreviewPopover {
     private readonly getLinkElement;
     private readonly getDOMNode;
     private readonly popover;
-    constructor(container: Element, getLinkElement: (arg0: Event) => Element | null, getDOMNode: (arg0: Element) => SDK.DOMModel.DOMNode | null);
+    constructor(container: HTMLElement, getLinkElement: (arg0: Event) => Element | null, getDOMNode: (arg0: Element) => SDK.DOMModel.DOMNode | null);
     private handleRequest;
     hide(): void;
     static setImageUrl(element: Element, url: Platform.DevToolsPath.UrlString): Element;

@@ -1,3 +1,4 @@
+import type { Brand } from './Brand.js';
 export declare const escapeCharacters: (inputString: string, charsToEscape: string) => string;
 export declare const formatAsJSLiteral: (content: string) => string;
 /**
@@ -51,10 +52,7 @@ export declare const DOUBLE_QUOTE = "\"";
 export declare const findUnclosedCssQuote: (str: string) => string;
 export declare const countUnmatchedLeftParentheses: (str: string) => number;
 export declare const createPlainTextSearchRegex: (query: string, flags?: string) => RegExp;
-declare class LowerCaseStringTag {
-    private lowerCaseStringTag;
-}
-export type LowerCaseString = string & LowerCaseStringTag;
+export type LowerCaseString = Brand<string, 'lowerCaseStringTag'>;
 export declare const toLowerCaseString: (input: string) => LowerCaseString;
 export declare const toKebabCase: (input: string) => Lowercase<string>;
 export declare function toKebabCaseKeys(settingValue: {
@@ -68,4 +66,3 @@ export declare const stringifyWithPrecision: (s: number, precision?: number) => 
  * Somewhat efficiently concatenates 2 base64 encoded strings.
  */
 export declare const concatBase64: (lhs: string, rhs: string) => string;
-export {};

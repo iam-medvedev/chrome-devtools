@@ -24,7 +24,7 @@ export declare class TargetManager extends Common.ObjectWrapper.ObjectWrapper<Ev
         scoped: boolean;
     }): void;
     unobserveModels<T extends SDKModel>(modelClass: ModelClass<T>, observer: SDKModelObserver<T>): void;
-    modelAdded(target: Target, modelClass: ModelClass, model: SDKModel, inScope: boolean): void;
+    modelAdded(modelClass: ModelClass, model: SDKModel, inScope: boolean): void;
     private modelRemoved;
     addModelListener<Events, T extends keyof Events>(modelClass: ModelClass<SDKModel<Events>>, eventType: T, listener: Common.EventTarget.EventListener<Events, T>, thisObject?: Object, opts?: {
         scoped: boolean;

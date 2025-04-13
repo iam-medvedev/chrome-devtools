@@ -130,7 +130,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/media/PlayerPropertiesView.ts',
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 export class PropertyRenderer extends UI.Widget.VBox {
-    title;
     contents;
     value;
     pseudoColorProtectionElement;
@@ -140,15 +139,14 @@ export class PropertyRenderer extends UI.Widget.VBox {
         const titleElement = this.contentElement.createChild('span', 'media-property-renderer-title');
         this.contents = this.contentElement.createChild('div', 'media-property-renderer-contents');
         UI.UIUtils.createTextChild(titleElement, title);
-        this.title = title;
         this.value = null;
         this.pseudoColorProtectionElement = null;
         this.contentElement.classList.add('media-property-renderer-hidden');
     }
-    updateData(propname, propvalue) {
+    updateData(propvalue) {
         // convert all empty possibilities into nulls for easier handling.
         if (propvalue === '' || propvalue === null) {
-            return this.updateDataInternal(propname, null);
+            return this.updateDataInternal(null);
         }
         try {
             propvalue = JSON.parse(propvalue);
@@ -158,9 +156,9 @@ export class PropertyRenderer extends UI.Widget.VBox {
             // something defined or sourced from the c++ definitions.
             // Do nothing, some strings just stay strings!
         }
-        return this.updateDataInternal(propname, propvalue);
+        return this.updateDataInternal(propvalue);
     }
-    updateDataInternal(propname, propvalue) {
+    updateDataInternal(propvalue) {
         if (propvalue === null) {
             this.changeContents(null);
         }
@@ -220,7 +218,7 @@ export class FormattedPropertyRenderer extends PropertyRenderer {
         super(title);
         this.formatfunction = formatfunction;
     }
-    updateDataInternal(propname, propvalue) {
+    updateDataInternal(propvalue) {
         if (propvalue === null) {
             this.changeContents(null);
         }
@@ -269,7 +267,7 @@ export class TrackManager {
         this.type = type;
         this.view = propertiesView;
     }
-    updateData(_name, value) {
+    updateData(value) {
         const tabs = this.view.getTabs(this.type);
         const newTabs = JSON.parse(value);
         let enumerate = 1;
@@ -368,7 +366,6 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
     mediaElements;
     videoDecoderElements;
     audioDecoderElements;
-    textTrackElements;
     attributeMap;
     videoProperties;
     videoDecoderProperties;
@@ -384,7 +381,6 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
         this.mediaElements = [];
         this.videoDecoderElements = [];
         this.audioDecoderElements = [];
-        this.textTrackElements = [];
         this.attributeMap = new Map();
         this.populateAttributesAndElements();
         this.videoProperties = new AttributesView(this.mediaElements);
@@ -425,7 +421,7 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
         if (!renderer) {
             throw new Error(`Player property "${property.name}" not supported.`);
         }
-        renderer.updateData(property.name, property.value);
+        renderer.updateData(property.value);
     }
     formatKbps(bitsPerSecond) {
         if (bitsPerSecond === '') {

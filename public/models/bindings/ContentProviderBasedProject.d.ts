@@ -13,14 +13,13 @@ export declare class ContentProviderBasedProject extends Workspace.Workspace.Pro
     fullDisplayName(uiSourceCode: Workspace.UISourceCode.UISourceCode): string;
     mimeType(uiSourceCode: Workspace.UISourceCode.UISourceCode): string;
     canRename(): boolean;
-    rename(uiSourceCode: Workspace.UISourceCode.UISourceCode, newName: Platform.DevToolsPath.RawPathString, callback: (arg0: boolean, arg1?: string | undefined, arg2?: Platform.DevToolsPath.UrlString | undefined, arg3?: Common.ResourceType.ResourceType | undefined) => void): void;
+    rename(_uiSourceCode: Workspace.UISourceCode.UISourceCode, _newName: Platform.DevToolsPath.RawPathString, callback: (arg0: boolean, arg1?: string | undefined, arg2?: Platform.DevToolsPath.UrlString | undefined, arg3?: Common.ResourceType.ResourceType | undefined) => void): void;
     excludeFolder(_path: Platform.DevToolsPath.UrlString): void;
     canExcludeFolder(_path: Platform.DevToolsPath.EncodedPathString): boolean;
     createFile(_path: Platform.DevToolsPath.EncodedPathString, _name: string | null, _content: string, _isBase64?: boolean): Promise<Workspace.UISourceCode.UISourceCode | null>;
     canCreateFile(): boolean;
     deleteFile(_uiSourceCode: Workspace.UISourceCode.UISourceCode): void;
     remove(): void;
-    performRename(path: Platform.DevToolsPath.UrlString, newName: string, callback: (arg0: boolean, arg1?: string | undefined) => void): void;
     searchInFileContent(uiSourceCode: Workspace.UISourceCode.UISourceCode, query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     findFilesMatchingSearchRequest(searchConfig: Workspace.SearchConfig.SearchConfig, filesMatchingFileQuery: Workspace.UISourceCode.UISourceCode[], progress: Common.Progress.Progress): Promise<Map<Workspace.UISourceCode.UISourceCode, TextUtils.ContentProvider.SearchMatch[] | null>>;
     indexContent(progress: Common.Progress.Progress): void;

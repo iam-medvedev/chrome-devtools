@@ -107,14 +107,14 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         this.#modelObservers.delete(modelClass, observer);
         this.#scopedObservers.delete(observer);
     }
-    modelAdded(target, modelClass, model, inScope) {
+    modelAdded(modelClass, model, inScope) {
         for (const observer of this.#modelObservers.get(modelClass).values()) {
             if (!this.#scopedObservers.has(observer) || inScope) {
                 observer.modelAdded(model);
             }
         }
     }
-    modelRemoved(target, modelClass, model, inScope) {
+    modelRemoved(modelClass, model, inScope) {
         for (const observer of this.#modelObservers.get(modelClass).values()) {
             if (!this.#scopedObservers.has(observer) || inScope) {
                 observer.modelRemoved(model);
@@ -182,7 +182,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         for (const [modelClass, model] of target.models().entries()) {
-            this.modelAdded(target, modelClass, model, inScope);
+            this.modelAdded(modelClass, model, inScope);
         }
         for (const key of this.#modelListeners.keysArray()) {
             for (const info of this.#modelListeners.get(key)) {
@@ -208,7 +208,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         for (const modelClass of target.models().keys()) {
             const model = target.models().get(modelClass);
             assertNotNullOrUndefined(model);
-            this.modelRemoved(target, modelClass, model, inScope);
+            this.modelRemoved(modelClass, model, inScope);
         }
         // Iterate over a copy. #observers might be modified during iteration.
         for (const observer of [...this.#observers]) {

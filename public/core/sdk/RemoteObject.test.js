@@ -336,7 +336,7 @@ describeWithMockConnection('RemoteError', () => {
         const error = SDK.RemoteObject.RemoteError.objectAsError(object);
         assert.isUndefined(await error.exceptionDetails());
         assert.isUndefined(await error.exceptionDetails());
-        assert.isTrue(exceptionDetailsStub.calledOnce);
+        sinon.assert.calledOnce(exceptionDetailsStub);
     });
     it('caches the cause', async () => {
         const object = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, '1', 'object', 'error', {});
@@ -344,7 +344,7 @@ describeWithMockConnection('RemoteError', () => {
         const error = SDK.RemoteObject.RemoteError.objectAsError(object);
         assert.isUndefined(await error.cause());
         assert.isUndefined(await error.cause());
-        assert.isTrue(getAllPropertiesStub.calledOnce);
+        sinon.assert.calledOnce(getAllPropertiesStub);
     });
     it('returns undefined if error has no "cause" property', async () => {
         const object = new SDK.RemoteObject.RemoteObjectImpl(runtimeModel, '1', 'object', 'error', {});

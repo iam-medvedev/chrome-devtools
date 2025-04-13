@@ -68,7 +68,6 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     width;
     height;
     model;
-    startTimestamp;
     pollTimer;
     constructor(pollIntervalMs = 500) {
         super(true);
@@ -148,7 +147,6 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
         this.contentElement.classList.toggle('suspended', suspended);
     }
     startPolling() {
-        this.startTimestamp = 0;
         this.pollTimer = window.setInterval(() => this.poll(), this.pollIntervalMs);
         this.onResize();
         const animate = () => {

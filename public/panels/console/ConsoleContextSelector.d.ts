@@ -6,7 +6,7 @@ export declare class ConsoleContextSelector implements SDK.TargetManager.SDKMode
     private readonly toolbarItemInternal;
     constructor();
     toolbarItem(): UI.Toolbar.ToolbarItem;
-    highlightedItemChanged(from: SDK.RuntimeModel.ExecutionContext | null, to: SDK.RuntimeModel.ExecutionContext | null, fromElement: Element | null, toElement: Element | null): void;
+    highlightedItemChanged(_from: SDK.RuntimeModel.ExecutionContext | null, to: SDK.RuntimeModel.ExecutionContext | null, fromElement: Element | null, toElement: Element | null): void;
     titleFor(executionContext: SDK.RuntimeModel.ExecutionContext): string;
     private depthFor;
     private executionContextCreated;

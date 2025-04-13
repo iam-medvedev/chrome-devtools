@@ -97,7 +97,7 @@ describeWithMockConnection('SharedStorageListTreeElement', function () {
         treeElement.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeElement.selectable = true;
         treeElement.select();
-        assert.isTrue(wasShownSpy.calledOnce);
+        sinon.assert.calledOnce(wasShownSpy);
         panel.detach();
     });
     it('adds events', async () => {

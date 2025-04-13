@@ -79,7 +79,7 @@ describe('UISourceCode', () => {
         const sutObject = setupMockedUISourceCode();
         sutObject.projectStub.workspace.returns(sinon.createStubInstance(Workspace.Workspace.WorkspaceImpl));
         const rawPathstringExample = 'newName.html';
-        sutObject.projectStub.rename.callsFake((uiSourceCode, rawPathstringExample, innerCallback) => {
+        sutObject.projectStub.rename.callsFake((_uiSourceCode, rawPathstringExample, innerCallback) => {
             innerCallback(true, rawPathstringExample);
         });
         await sutObject.sut.rename(rawPathstringExample);

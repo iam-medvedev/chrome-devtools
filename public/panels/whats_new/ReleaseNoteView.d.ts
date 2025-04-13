@@ -14,9 +14,9 @@ export interface ViewInput {
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export type ViewOutput = unknown;
 export declare function getMarkdownContent(): Promise<Marked.Marked.Token[][]>;
-export declare class ReleaseNoteView extends UI.Widget.VBox {
+export declare class ReleaseNoteView extends UI.Panel.Panel {
     #private;
-    constructor(element?: HTMLElement, view?: View);
+    constructor(view?: View);
     static getFileContent(): Promise<string>;
     performUpdate(): Promise<void>;
 }

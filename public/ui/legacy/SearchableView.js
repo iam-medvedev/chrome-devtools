@@ -490,8 +490,7 @@ export class SearchableView extends VBox {
             this.updateSecondRowVisibility();
         }
     }
-    onSearchKeyDown(ev) {
-        const event = ev;
+    onSearchKeyDown(event) {
         if (Platform.KeyboardUtilities.isEscKey(event)) {
             this.closeSearch();
             event.consume(true);

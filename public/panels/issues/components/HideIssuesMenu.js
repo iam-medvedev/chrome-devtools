@@ -7,10 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import { html, render } from '../../../ui/lit/lit.js';
-import hideIssuesMenuStylesRaw from './hideIssuesMenu.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const hideIssuesMenuStyles = new CSSStyleSheet();
-hideIssuesMenuStyles.replaceSync(hideIssuesMenuStylesRaw.cssText);
+import hideIssuesMenuStyles from './hideIssuesMenu.css.js';
 const UIStrings = {
     /**
      *@description Title for the tooltip of the (3 dots) Hide Issues menu icon.
@@ -28,9 +25,6 @@ export class HideIssuesMenu extends HTMLElement {
         this.#menuItemAction = data.menuItemAction;
         this.#render();
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [hideIssuesMenuStyles];
-    }
     onMenuOpen(event) {
         event.stopPropagation();
         const buttonElement = this.#shadow.querySelector('devtools-button');
@@ -45,6 +39,7 @@ export class HideIssuesMenu extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+    <style>${hideIssuesMenuStyles.cssText}</style>
     <devtools-button
       .data=${{ variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: 'dots-vertical', title: i18nString(UIStrings.tooltipTitle) }}
       .jslogContext=${'hide-issues'}

@@ -33,13 +33,12 @@ export declare const enum PlayerPropertyKeys {
     VIDEO_PLAYBACK_FREEZING = "kVideoPlaybackFreezing"
 }
 export declare class PropertyRenderer extends UI.Widget.VBox {
-    private readonly title;
     private readonly contents;
     private value;
     private pseudoColorProtectionElement;
     constructor(title: Platform.UIString.LocalizedString);
-    updateData(propname: string, propvalue: string): void;
-    protected updateDataInternal(propname: string, propvalue: string | null): void;
+    updateData(propvalue: string): void;
+    protected updateDataInternal(propvalue: string | null): void;
     protected unsetNestedContents(): void;
     changeNestedContents(value: object): void;
     changeContents(value: string | null): void;
@@ -47,7 +46,7 @@ export declare class PropertyRenderer extends UI.Widget.VBox {
 export declare class FormattedPropertyRenderer extends PropertyRenderer {
     private readonly formatfunction;
     constructor(title: Platform.UIString.LocalizedString, formatfunction: (arg0: string) => string);
-    updateDataInternal(propname: string, propvalue: string | null): void;
+    updateDataInternal(propvalue: string | null): void;
 }
 export declare class DefaultPropertyRenderer extends PropertyRenderer {
     constructor(title: Platform.UIString.LocalizedString, defaultText: string);
@@ -64,7 +63,7 @@ export declare class TrackManager {
     private readonly type;
     private readonly view;
     constructor(propertiesView: PlayerPropertiesView, type: string);
-    updateData(_name: string, value: string): void;
+    updateData(value: string): void;
     addNewTab(tabs: GenericTrackMenu | NoTracksPlaceholderMenu, tabData: TabData, tabNumber: number): void;
 }
 export declare class VideoTrackManager extends TrackManager {
@@ -92,7 +91,6 @@ export declare class PlayerPropertiesView extends UI.Widget.VBox {
     private readonly mediaElements;
     private readonly videoDecoderElements;
     private readonly audioDecoderElements;
-    private readonly textTrackElements;
     private readonly attributeMap;
     private readonly videoProperties;
     private readonly videoDecoderProperties;

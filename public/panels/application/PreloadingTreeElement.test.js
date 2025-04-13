@@ -16,9 +16,9 @@ describeWithMockConnection('PreloadingTreeElement', () => {
         };
         const preloadingRuleSetTreeElement = new Application.PreloadingTreeElement.PreloadingRuleSetTreeElement(panel);
         preloadingRuleSetTreeElement.onselect(false);
-        assert.isTrue(spy.notCalled);
+        sinon.assert.notCalled(spy);
         preloadingRuleSetTreeElement.initialize(model);
-        assert.isTrue(spy.calledOnce);
+        sinon.assert.calledOnce(spy);
     });
 });
 //# sourceMappingURL=PreloadingTreeElement.test.js.map

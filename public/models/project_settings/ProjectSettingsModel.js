@@ -49,8 +49,22 @@ let projectSettingsModelInstance;
 export class ProjectSettingsModel extends Common.ObjectWrapper.ObjectWrapper {
     #pageResourceLoader;
     #targetManager;
+    #availability = 'unavailable';
     #projectSettings = EMPTY_PROJECT_SETTINGS;
     #promise = IDLE_PROMISE;
+    /**
+     * Yields the availability of the project settings feature.
+     *
+     * `'available'` means that the feature is enabled, the origin of the inspected
+     * page is `localhost`. It doesn't however indicate whether or not the page is
+     * actually providing a `com.chrome.devtools.json` or not.
+     *
+     * @return `'available'` if the feature is enabled and the inspected page is
+     *         `localhost`, otherwise `'unavailable'`.
+     */
+    get availability() {
+        return this.#availability;
+    }
     /**
      * Yields the current project settings.
      *
@@ -124,7 +138,15 @@ export class ProjectSettingsModel extends Common.ObjectWrapper.ObjectWrapper {
     async #loadAndValidateProjectSettings(target) {
         const frame = target.model(SDK.ResourceTreeModel.ResourceTreeModel)?.mainFrame;
         if (!isLocalFrame(frame)) {
+            if (this.#availability !== 'unavailable') {
+                this.#availability = 'unavailable';
+                this.dispatchEventToListeners("AvailabilityChanged" /* Events.AVAILABILITY_CHANGED */, this.#availability);
+            }
             return EMPTY_PROJECT_SETTINGS;
+        }
+        if (this.#availability !== 'available') {
+            this.#availability = 'available';
+            this.dispatchEventToListeners("AvailabilityChanged" /* Events.AVAILABILITY_CHANGED */, this.#availability);
         }
         const initiatorUrl = frame.url;
         const frameId = frame.id;

@@ -5,7 +5,7 @@ export declare class DropTarget {
     private readonly handleDrop;
     private enabled;
     private dragMaskElement;
-    constructor(element: Element, transferTypes: Array<{
+    constructor(element: HTMLElement, transferTypes: Array<{
         kind: string;
         type: RegExp;
     }>, messageText: string, handleDrop: (arg0: DataTransfer) => void);

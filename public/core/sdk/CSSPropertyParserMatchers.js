@@ -314,12 +314,10 @@ export class LinearGradientMatcher extends matcherBase(LinearGradientMatch) {
 export class ColorMatch {
     text;
     node;
-    currentColorCallback;
     computedText;
     constructor(text, node, currentColorCallback) {
         this.text = text;
         this.node = node;
-        this.currentColorCallback = currentColorCallback;
         this.computedText = currentColorCallback;
     }
 }
@@ -645,10 +643,10 @@ export class LengthMatch {
 export class LengthMatcher extends matcherBase(LengthMatch) {
     // clang-format on
     static LENGTH_UNITS = new Set([
-        'em', 'ex', 'ch', 'cap', 'ic', 'lh', 'rem', 'rex', 'rch', 'rlh', 'ric', 'rcap', 'pt', 'pc',
-        'in', 'cm', 'mm', 'Q', 'vw', 'vh', 'vi', 'vb', 'vmin', 'vmax', 'dvw', 'dvh', 'dvi', 'dvb',
-        'dvmin', 'dvmax', 'svw', 'svh', 'svi', 'svb', 'svmin', 'svmax', 'lvw', 'lvh', 'lvi', 'lvb', 'lvmin', 'lvmax',
-        'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch', '%'
+        'em', 'ex', 'ch', 'cap', 'ic', 'lh', 'rem', 'rex', 'rch', 'rlh', 'ric', 'rcap', 'pt',
+        'pc', 'in', 'cm', 'mm', 'Q', 'vw', 'vh', 'vi', 'vb', 'vmin', 'vmax', 'dvw', 'dvh',
+        'dvi', 'dvb', 'dvmin', 'dvmax', 'svw', 'svh', 'svi', 'svb', 'svmin', 'svmax', 'lvw', 'lvh', 'lvi',
+        'lvb', 'lvmin', 'lvmax', 'cqw', 'cqh', 'cqi', 'cqb', 'cqmin', 'cqmax', 'cqem', 'cqlh', 'cqex', 'cqch',
     ]);
     matches(node, matching) {
         if (node.name !== 'NumberLiteral') {

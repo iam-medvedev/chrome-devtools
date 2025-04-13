@@ -80,9 +80,9 @@ function cleanUserAgentPayload(payload) {
         if (rule.origin !== 'user-agent' || !matchingSelectors.length) {
             return;
         }
-        rule.selectorList.selectors = rule.selectorList.selectors.filter((item, i) => matchingSelectors.includes(i));
+        rule.selectorList.selectors = rule.selectorList.selectors.filter((_, i) => matchingSelectors.includes(i));
         rule.selectorList.text = rule.selectorList.selectors.map(item => item.text).join(', ');
-        ruleMatch.matchingSelectors = matchingSelectors.map((item, i) => i);
+        ruleMatch.matchingSelectors = matchingSelectors.map((_, i) => i);
     }
 }
 /**

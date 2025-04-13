@@ -81,12 +81,10 @@ export class ReportSelector {
     }
 }
 export class Item {
-    lighthouseResult;
     renderReport;
     showLandingCallback;
     element;
     constructor(lighthouseResult, renderReport, showLandingCallback) {
-        this.lighthouseResult = lighthouseResult;
         this.renderReport = renderReport;
         this.showLandingCallback = showLandingCallback;
         // In Lighthouse 10.0, `finalUrl` is not provided on snapshot or timespan reports.

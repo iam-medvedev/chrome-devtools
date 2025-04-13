@@ -42,11 +42,15 @@ export var PlatformFileSystemType;
 export class PlatformFileSystem {
     pathInternal;
     #type;
-    #automatic;
+    /**
+     * True if the filesystem was automatically discovered (see
+     * https://goo.gle/devtools-json-design).
+     */
+    automatic;
     constructor(path, type, automatic) {
         this.pathInternal = path;
         this.#type = type;
-        this.#automatic = automatic;
+        this.automatic = automatic;
     }
     getMetadata(_path) {
         return Promise.resolve(null);
@@ -65,13 +69,6 @@ export class PlatformFileSystem {
     }
     type() {
         return this.#type;
-    }
-    /**
-     * True if the filesystem was automatically discovered (see
-     * https://goo.gle/devtools-json-design).
-     */
-    automatic() {
-        return this.#automatic;
     }
     async createFile(_path, _name) {
         return await Promise.resolve(null);

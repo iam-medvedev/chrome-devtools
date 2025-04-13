@@ -205,7 +205,7 @@ export class IgnoreListSetting extends HTMLElement {
         this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
     }
     #renderItem(regex, index) {
-        const checkboxWithLabel = UI.UIUtils.CheckboxLabel.createWithStringLiteral(regex.pattern, !regex.disabled, /* subtitle*/ undefined, /* jslogContext*/ 'timeline.ignore-list-pattern');
+        const checkboxWithLabel = UI.UIUtils.CheckboxLabel.createWithStringLiteral(regex.pattern, !regex.disabled, /* jslogContext*/ 'timeline.ignore-list-pattern');
         const helpText = i18nString(UIStrings.ignoreScriptsWhoseNamesMatchS, { regex: regex.pattern });
         UI.Tooltip.Tooltip.install(checkboxWithLabel, helpText);
         checkboxWithLabel.checkboxElement.ariaLabel = helpText;

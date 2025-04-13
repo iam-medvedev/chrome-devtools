@@ -69,7 +69,7 @@ describeWithLocale('FilteredListWidget', () => {
         const filteredListWidget = new QuickOpen.FilteredListWidget.FilteredListWidget(provider, [], () => undefined);
         const keyboardEvent = new KeyboardEvent('keydown', { key: 'Enter' });
         filteredListWidget.contentElement.dispatchEvent(keyboardEvent);
-        assert.isTrue(selectItem.notCalled);
+        sinon.assert.notCalled(selectItem);
     });
     it('empty query matches everything', async () => {
         await testMatch(['a', 'bc'], '', 0, [0, 1]);

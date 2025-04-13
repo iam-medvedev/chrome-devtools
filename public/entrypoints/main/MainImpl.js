@@ -275,7 +275,7 @@ export class MainImpl {
         // Advanced Perceptual Contrast Algorithm.
         Root.Runtime.experiments.register('apca', 'Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#apca');
         // Full Accessibility Tree
-        Root.Runtime.experiments.register('full-accessibility-tree', 'Enable full accessibility tree view in the Elements panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#accesibility-tree', 'https://g.co/devtools/a11y-tree-feedback');
+        Root.Runtime.experiments.register('full-accessibility-tree', 'Enable full accessibility tree view in the Elements panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree', 'https://g.co/devtools/a11y-tree-feedback');
         // Font Editor
         Root.Runtime.experiments.register('font-editor', 'Enable new font editor within the Styles tab', undefined, 'https://developer.chrome.com/blog/new-in-devtools-89/#font');
         // Contrast issues reported via the Issues panel.
@@ -402,11 +402,16 @@ export class MainImpl {
             pageResourceLoader: SDK.PageResourceLoader.PageResourceLoader.instance(),
             targetManager,
         });
-        Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance({
+        const automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance({
             forceNew: true,
             hostConfig: Root.Runtime.hostConfig,
             inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
             projectSettingsModel,
+        });
+        Persistence.AutomaticFileSystemWorkspaceBinding.AutomaticFileSystemWorkspaceBinding.instance({
+            forceNew: true,
+            automaticFileSystemManager,
+            workspace: Workspace.Workspace.WorkspaceImpl.instance(),
         });
         AutofillManager.AutofillManager.AutofillManager.instance();
         LiveMetrics.LiveMetrics.instance();

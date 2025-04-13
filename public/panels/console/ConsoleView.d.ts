@@ -74,7 +74,7 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     modelAdded(model: SDK.ConsoleModel.ConsoleModel): void;
     modelRemoved(model: SDK.ConsoleModel.ConsoleModel): void;
     private onFilterChanged;
-    private setImmediatelyFilterMessagesForTest;
+    protected setImmediatelyFilterMessagesForTest(): void;
     searchableView(): UI.SearchableView.SearchableView;
     clearHistory(): void;
     private consoleHistoryAutocompleteChanged;

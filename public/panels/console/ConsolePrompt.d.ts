@@ -17,14 +17,13 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     private editor;
     private readonly eagerPreviewElement;
     private textChangeThrottler;
-    private readonly formatter;
     private requestPreviewBound;
     private requestPreviewCurrent;
     private readonly innerPreviewElement;
     private readonly promptIcon;
     private readonly iconThrottler;
     private readonly eagerEvalSetting;
-    private previewRequestForTest;
+    protected previewRequestForTest: Promise<void> | null;
     private highlightingNode;
     constructor();
     private eagerSettingChanged;
@@ -34,7 +33,6 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     willHide(): void;
     history(): TextEditor.AutocompleteHistory.AutocompleteHistory;
     clearAutocomplete(): void;
-    private isCaretAtEndOfPrompt;
     moveCaretToEndOfPrompt(): void;
     clear(): void;
     text(): string;

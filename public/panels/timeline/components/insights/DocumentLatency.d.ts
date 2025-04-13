@@ -7,7 +7,7 @@ import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class DocumentLatency extends BaseInsightComponent<DocumentLatencyInsightModel> {
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
-    protected hasAskAISupport: boolean;
+    protected hasAskAiSupport(): boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     getEstimatedSavingsBytes(): number | null;

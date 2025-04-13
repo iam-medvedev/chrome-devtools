@@ -21,12 +21,12 @@ describeWithEnvironment('UserActionRow', () => {
             onSuggestionClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
-        assert.strictEqual(view.callCount, 1);
+        sinon.assert.callCount(view, 1);
         {
             expect(view.input.isShowingFeedbackForm).equals(false);
             view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
-        assert.strictEqual(view.callCount, 2);
+        sinon.assert.callCount(view, 2);
         {
             expect(view.input.isShowingFeedbackForm).equals(true);
         }
@@ -38,12 +38,12 @@ describeWithEnvironment('UserActionRow', () => {
             onSuggestionClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
-        assert.strictEqual(view.callCount, 1);
+        sinon.assert.callCount(view, 1);
         {
             expect(view.input.isShowingFeedbackForm).equals(false);
             view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
-        assert.strictEqual(view.callCount, 2);
+        sinon.assert.callCount(view, 2);
         {
             expect(view.input.isShowingFeedbackForm).equals(false);
         }
@@ -55,12 +55,12 @@ describeWithEnvironment('UserActionRow', () => {
             onSuggestionClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
-        assert.strictEqual(view.callCount, 1);
+        sinon.assert.callCount(view, 1);
         {
             expect(view.input.isSubmitButtonDisabled).equals(true);
             view.input.onRatingClick("POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
         }
-        assert.strictEqual(view.callCount, 2);
+        sinon.assert.callCount(view, 2);
         {
             expect(view.input.isShowingFeedbackForm).equals(true);
             view.input.onInputChange('test');

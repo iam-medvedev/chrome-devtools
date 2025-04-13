@@ -199,7 +199,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
             UI.ARIAUtils.setDescription(element, i18nString(UIStrings.breakpointHit));
         }
         label.classList.add('cursor-auto');
-        label.textElement.addEventListener('dblclick', this.labelClicked.bind(this, item), false);
+        label.addEventListener('dblclick', this.labelClicked.bind(this, item), false);
         this.#breakpointElements.set(item, listItemElement);
         listItemElement.setAttribute('jslog', `${VisualLogging.item().track({
             click: true,
@@ -208,7 +208,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
         })}`);
         return listItemElement;
     }
-    selectedItemChanged(from, to, fromElement, toElement) {
+    selectedItemChanged(_from, _to, fromElement, toElement) {
         if (fromElement) {
             const breakpointEntryElement = containerToBreakpointEntry.get(fromElement);
             if (!breakpointEntryElement) {

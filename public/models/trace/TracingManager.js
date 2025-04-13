@@ -14,7 +14,7 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         this.#activeClient = null;
         this.#eventsRetrieved = 0;
     }
-    bufferUsage(usage, eventCount, percentFull) {
+    bufferUsage(usage, percentFull) {
         if (this.#activeClient) {
             this.#activeClient.tracingBufferUsage(usage || percentFull || 0);
         }
@@ -54,9 +54,7 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         this.#activeClient = null;
         this.#finishing = false;
     }
-    // TODO(petermarshall): Use the traceConfig argument instead of deprecated
-    // categories + options.
-    async start(client, categoryFilter, options) {
+    async start(client, categoryFilter) {
         if (this.#activeClient) {
             throw new Error('Tracing is already started');
         }
@@ -64,9 +62,12 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
         this.#activeClient = client;
         const args = {
             bufferUsageReportingInterval: bufferUsageReportingIntervalMs,
-            categories: categoryFilter,
-            options,
             transferMode: "ReportEvents" /* Protocol.Tracing.StartRequestTransferMode.ReportEvents */,
+            traceConfig: {
+                recordMode: "recordUntilFull" /* Protocol.Tracing.TraceConfigRecordMode.RecordUntilFull */,
+                traceBufferSizeInKb: 400 * 1000,
+                includedCategories: categoryFilter.split(','),
+            },
         };
         const response = await this.#tracingAgent.invoke_start(args);
         if (response.getError()) {
@@ -91,8 +92,8 @@ class TracingDispatcher {
         this.#tracingManager = tracingManager;
     }
     // `eventCount` will always be 0 as perfetto no longer calculates `approximate_event_count`
-    bufferUsage({ value, eventCount, percentFull }) {
-        this.#tracingManager.bufferUsage(value, eventCount, percentFull);
+    bufferUsage({ value, percentFull }) {
+        this.#tracingManager.bufferUsage(value, percentFull);
     }
     dataCollected({ value }) {
         this.#tracingManager.eventsCollected(value);

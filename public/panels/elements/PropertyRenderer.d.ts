@@ -6,7 +6,7 @@ export interface MatchRenderer<MatchT extends SDK.CSSPropertyParser.Match> {
     render(match: MatchT, context: RenderingContext): Node[];
 }
 export declare function rendererBase<MatchT extends SDK.CSSPropertyParser.Match>(matchT: Platform.Constructor.Constructor<MatchT>): abstract new () => {
-    readonly matchType: Platform.Constructor.Constructor<MatchT>;
+    readonly matchType: Platform.Constructor.Constructor<MatchT, any[]>;
     render(_match: MatchT, _context: RenderingContext): Node[];
 };
 export declare class Highlighting {
@@ -75,7 +75,7 @@ export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     };
 }
 declare const URLRenderer_base: abstract new () => {
-    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.URLMatch>;
+    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.URLMatch, any[]>;
     render(_match: SDK.CSSPropertyParserMatchers.URLMatch, _context: RenderingContext): Node[];
 };
 export declare class URLRenderer extends URLRenderer_base {
@@ -85,14 +85,14 @@ export declare class URLRenderer extends URLRenderer_base {
     render(match: SDK.CSSPropertyParserMatchers.URLMatch): Node[];
 }
 declare const StringRenderer_base: abstract new () => {
-    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.StringMatch>;
+    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.StringMatch, any[]>;
     render(_match: SDK.CSSPropertyParserMatchers.StringMatch, _context: RenderingContext): Node[];
 };
 export declare class StringRenderer extends StringRenderer_base {
     render(match: SDK.CSSPropertyParserMatchers.StringMatch): Node[];
 }
 declare const BinOpRenderer_base: abstract new () => {
-    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.BinOpMatch>;
+    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.BinOpMatch, any[]>;
     render(_match: SDK.CSSPropertyParserMatchers.BinOpMatch, _context: RenderingContext): Node[];
 };
 export declare class BinOpRenderer extends BinOpRenderer_base {

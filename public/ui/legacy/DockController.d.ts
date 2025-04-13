@@ -8,7 +8,6 @@ export declare class DockController extends Common.ObjectWrapper.ObjectWrapper<E
     private readonly currentDockStateSetting;
     private readonly lastDockStateSetting;
     private dockSideInternal;
-    private titles?;
     constructor(canDock: boolean);
     static instance(opts?: {
         forceNew: boolean | null;

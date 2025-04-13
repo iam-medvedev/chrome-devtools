@@ -1,5 +1,6 @@
 import * as Automapping from './Automapping.js';
 import * as AutomaticFileSystemManager from './AutomaticFileSystemManager.js';
+import * as AutomaticFileSystemWorkspaceBinding from './AutomaticFileSystemWorkspaceBinding.js';
 import * as EditFileSystemView from './EditFileSystemView.js';
 import * as FileSystemWorkspaceBinding from './FileSystemWorkspaceBinding.js';
 import * as IsolatedFileSystem from './IsolatedFileSystem.js';
@@ -10,4 +11,4 @@ import * as Persistence from './PersistenceImpl.js';
 import * as PersistenceUtils from './PersistenceUtils.js';
 import * as PlatformFileSystem from './PlatformFileSystem.js';
 import * as WorkspaceSettingsTab from './WorkspaceSettingsTab.js';
-export { Automapping, AutomaticFileSystemManager, EditFileSystemView, FileSystemWorkspaceBinding, IsolatedFileSystem, IsolatedFileSystemManager, NetworkPersistenceManager, Persistence, PersistenceActions, PersistenceUtils, PlatformFileSystem, WorkspaceSettingsTab, };
+export { Automapping, AutomaticFileSystemManager, AutomaticFileSystemWorkspaceBinding, EditFileSystemView, FileSystemWorkspaceBinding, IsolatedFileSystem, IsolatedFileSystemManager, NetworkPersistenceManager, Persistence, PersistenceActions, PersistenceUtils, PlatformFileSystem, WorkspaceSettingsTab, };

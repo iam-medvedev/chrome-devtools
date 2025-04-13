@@ -6,7 +6,6 @@ export interface HiddenIssuesMenuData {
 export declare class HideIssuesMenu extends HTMLElement {
     #private;
     set data(data: HiddenIssuesMenuData);
-    connectedCallback(): void;
     onMenuOpen(event: Event): void;
 }
 declare global {

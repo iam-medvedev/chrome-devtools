@@ -150,7 +150,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         }
     }
     Panels.prototype = {
-        create: function (title, icon, page, callback) {
+        create: function (title, _icon, page, callback) {
             const id = 'extension-panel-' + extensionServer.nextObjectId();
             extensionServer.sendRequest({ command: "createPanel" /* PrivateAPI.Commands.CreatePanel */, id, title, page }, callback && (() => callback.call(this, new (Constructor(ExtensionPanel))(id))));
         },

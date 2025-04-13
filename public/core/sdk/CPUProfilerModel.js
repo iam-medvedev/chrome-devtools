@@ -116,9 +116,9 @@ export class CPUProfilerModel extends SDKModel {
         this.#preciseCoverageDeltaUpdateCallback = null;
         return this.#profilerAgent.invoke_stopPreciseCoverage();
     }
-    preciseCoverageDeltaUpdate({ timestamp, occasion, result }) {
+    preciseCoverageDeltaUpdate({ timestamp, result }) {
         if (this.#preciseCoverageDeltaUpdateCallback) {
-            void this.#preciseCoverageDeltaUpdateCallback(timestamp, occasion, result);
+            void this.#preciseCoverageDeltaUpdateCallback(timestamp, result);
         }
     }
 }

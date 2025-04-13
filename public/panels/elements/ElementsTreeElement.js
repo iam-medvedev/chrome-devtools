@@ -1146,7 +1146,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             moveToNextAttributeIfNeeded.call(newTreeItem);
         });
     }
-    textNodeEditingCommitted(textNode, element, newText) {
+    textNodeEditingCommitted(textNode, _element, newText) {
         this.editing = null;
         function callback() {
             this.updateTitle();

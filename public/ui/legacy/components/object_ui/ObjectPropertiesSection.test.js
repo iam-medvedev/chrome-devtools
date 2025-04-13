@@ -30,7 +30,7 @@ describe('ObjectPropertiesSection', () => {
         }
         async function setupTreeOutline(code, accessorPropertiesOnly, generatePreview) {
             const { object, properties } = await evaluateAndGetProperties(code, accessorPropertiesOnly, generatePreview);
-            const treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({ readOnly: true });
+            const treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
             ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement.populateWithProperties(treeOutline.rootElement(), properties, null, true /* skipProto */, false /* skipGettersAndSetters */, object);
             return treeOutline;
         }

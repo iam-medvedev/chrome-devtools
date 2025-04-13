@@ -46,11 +46,11 @@ describeWithEnvironment('ContextMenu', () => {
         dispatchMouseUpEvent(item1);
         assert.isTrue(item0.hasAttribute('checked'));
         assert.isTrue(item1.hasAttribute('checked'));
-        assert.isTrue(!contextMenuDiscardSpy.called);
+        sinon.assert.notCalled(contextMenuDiscardSpy);
         dispatchMouseUpEvent(item0);
         assert.isFalse(item0.hasAttribute('checked'));
         assert.isTrue(item1.hasAttribute('checked'));
-        assert.isTrue(!contextMenuDiscardSpy.called);
+        sinon.assert.notCalled(contextMenuDiscardSpy);
         softMenu.discard();
     });
     it('closes after clicking on an item when keepOpen is false', () => {
@@ -61,7 +61,7 @@ describeWithEnvironment('ContextMenu', () => {
         const item0 = softMenuElement.querySelector('[aria-label^="item0"]');
         assert.instanceOf(item0, HTMLElement);
         dispatchMouseUpEvent(item0);
-        assert.isTrue(contextMenuDiscardSpy.called);
+        sinon.assert.called(contextMenuDiscardSpy);
         softMenu.discard();
     });
     it('uses hosted menu when possible', async () => {
@@ -71,7 +71,7 @@ describeWithEnvironment('ContextMenu', () => {
         sinon.stub(event, 'target').value(document);
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         await contextMenu.show();
-        assert.isTrue(showContextMenuAtPoint.called);
+        sinon.assert.called(showContextMenuAtPoint);
     });
     it('logs impressions and clicks for hosted menu', async () => {
         const throttler = new Common.Throttler.Throttler(1000000000);
@@ -89,7 +89,7 @@ describeWithEnvironment('ContextMenu', () => {
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.exists(throttler.process);
         await throttler.process?.();
-        assert.isTrue(recordImpression.calledOnce);
+        sinon.assert.calledOnce(recordImpression);
         const impressions = recordImpression.firstCall.firstArg.impressions;
         const menuId = impressions.find(i => !i.parent)?.id;
         assert.exists(menuId);
@@ -100,7 +100,7 @@ describeWithEnvironment('ContextMenu', () => {
         ]);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 1);
         await new Promise(resolve => setTimeout(resolve, 0));
-        assert.isTrue(recordClick.calledOnce);
+        sinon.assert.calledOnce(recordClick);
         await VisualLogging.stopLogging();
     });
 });

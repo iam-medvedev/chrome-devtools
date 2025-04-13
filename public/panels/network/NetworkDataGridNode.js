@@ -457,7 +457,6 @@ export const _backgroundColors = {
     FromFrame: '--network-grid-from-frame-color',
 };
 export class NetworkRequestNode extends NetworkNode {
-    nameCell;
     initiatorCell;
     requestInternal;
     isNavigationRequestInternal;
@@ -467,7 +466,6 @@ export class NetworkRequestNode extends NetworkNode {
     linkifiedInitiatorAnchor;
     constructor(parentView, request) {
         super(parentView);
-        this.nameCell = null;
         this.initiatorCell = null;
         this.requestInternal = request;
         this.isNavigationRequestInternal = false;
@@ -776,7 +774,6 @@ export class NetworkRequestNode extends NetworkNode {
         return this.isFailed() && !this.isPrefetch();
     }
     createCells(element) {
-        this.nameCell = null;
         this.initiatorCell = null;
         element.classList.toggle('network-warning-row', this.isWarning());
         element.classList.toggle('network-error-row', this.isError());
@@ -929,7 +926,6 @@ export class NetworkRequestNode extends NetworkNode {
             const leftPadding = this.leftPadding ? this.leftPadding + 'px' : '';
             cell.style.setProperty('padding-left', leftPadding);
             cell.tabIndex = -1;
-            this.nameCell = cell;
             cell.addEventListener('dblclick', this.openInNewTab.bind(this), false);
             cell.addEventListener('mousedown', () => {
                 // When the request panel isn't visible yet, firing the RequestActivated event

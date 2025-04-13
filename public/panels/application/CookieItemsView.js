@@ -151,7 +151,6 @@ class CookiePreviewWidget extends UI.Widget.VBox {
 export class CookieItemsView extends StorageItemsView {
     model;
     cookieDomain;
-    totalSize;
     cookiesTable;
     splitWidget;
     previewPanel;
@@ -168,7 +167,6 @@ export class CookieItemsView extends StorageItemsView {
         this.element.setAttribute('jslog', `${VisualLogging.pane('cookies-data')}`);
         this.model = model;
         this.cookieDomain = cookieDomain;
-        this.totalSize = 0;
         this.cookiesTable = new CookieTable.CookiesTable.CookiesTable(
         /* renderInline */ false, this.saveCookie.bind(this), this.refreshItems.bind(this), this.handleCookieSelected.bind(this), this.deleteCookie.bind(this));
         this.cookiesTable.setMinimumSize(0, 50);
@@ -231,7 +229,6 @@ export class CookieItemsView extends StorageItemsView {
     }
     updateWithCookies(allCookies) {
         this.allCookies = allCookies;
-        this.totalSize = allCookies.reduce((size, cookie) => size + cookie.size(), 0);
         const parsedURL = Common.ParsedURL.ParsedURL.fromString(this.cookieDomain);
         const host = parsedURL ? parsedURL.host : '';
         this.cookiesTable.setCookieDomain(host);

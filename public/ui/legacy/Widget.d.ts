@@ -1,4 +1,5 @@
 import '../../core/dom_extension/dom_extension.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Lit from '../../ui/lit/lit.js';
 import { Constraints, Size } from './Geometry.js';
 interface WidgetConstructor<WidgetT extends Widget & WidgetParams, WidgetParams> {
@@ -21,10 +22,7 @@ export declare class WidgetElement<WidgetT extends Widget & WidgetParams, Widget
     removeChild<T extends Node>(child: T): T;
     removeChildren(): void;
 }
-interface Constructor<T, Args extends unknown[]> {
-    new (...args: Args): T;
-}
-export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
+export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Platform.Constructor.Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
 export declare class Widget {
     #private;
     readonly element: HTMLElement;

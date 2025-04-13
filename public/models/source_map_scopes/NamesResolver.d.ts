@@ -53,7 +53,7 @@ export declare class RemoteObject extends SDK.RemoteObject.RemoteObject {
     setPropertyValue(argumentName: string | Protocol.Runtime.CallArgument, value: string): Promise<string | undefined>;
     deleteProperty(name: Protocol.Runtime.CallArgument): Promise<string | undefined>;
     callFunction<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<SDK.RemoteObject.CallFunctionResult>;
-    callFunctionJSON<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<T>;
+    callFunctionJSON<T, U>(functionDeclaration: (this: U, ...args: any[]) => T, args?: Protocol.Runtime.CallArgument[]): Promise<T | null>;
     release(): void;
     debuggerModel(): SDK.DebuggerModel.DebuggerModel;
     runtimeModel(): SDK.RuntimeModel.RuntimeModel;

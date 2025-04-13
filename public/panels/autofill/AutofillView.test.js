@@ -161,7 +161,7 @@ describeWithMockConnection('AutofillView', () => {
         let event = new Event('change');
         checkbox.dispatchEvent(event);
         autofillModel.addressFormFilled(addressFormFilledEvent);
-        assert.isTrue(showViewStub.notCalled);
+        sinon.assert.notCalled(showViewStub);
         checkbox.checked = true;
         event = new Event('change');
         checkbox.dispatchEvent(event);
@@ -179,11 +179,11 @@ describeWithMockConnection('AutofillView', () => {
         assert.isNotNull(checkbox);
         assert.isFalse(checkbox.checked);
         const setAddressSpy = sinon.spy(autofillModel.agent, 'invoke_setAddresses');
-        assert.isTrue(setAddressSpy.notCalled);
+        sinon.assert.notCalled(setAddressSpy);
         checkbox.checked = true;
         const event = new Event('change');
         checkbox.dispatchEvent(event);
-        assert.isTrue(setAddressSpy.calledOnce);
+        sinon.assert.calledOnce(setAddressSpy);
         await RenderCoordinator.done();
     });
     it('highlights corresponding grid row when hovering over address span', async () => {
@@ -241,14 +241,14 @@ describeWithMockConnection('AutofillView', () => {
         fourthGridRow.dispatchEvent(new MouseEvent('mouseenter'));
         await RenderCoordinator.done({ waitForWork: true });
         assert.isTrue(zipCodeSpan.classList.contains('highlighted'));
-        assert.isTrue(overlaySpy.calledOnce);
+        sinon.assert.calledOnce(overlaySpy);
         const deferredNode = overlaySpy.getCall(0).args[0].deferredNode;
         assert.strictEqual(deferredNode.backendNodeId(), 4);
-        assert.isTrue(hideOverlaySpy.notCalled);
+        sinon.assert.notCalled(hideOverlaySpy);
         fourthGridRow.dispatchEvent(new MouseEvent('mouseleave'));
         await RenderCoordinator.done({ waitForWork: true });
         assert.isFalse(zipCodeSpan.classList.contains('highlighted'));
-        assert.isTrue(hideOverlaySpy.calledOnce);
+        sinon.assert.calledOnce(hideOverlaySpy);
         getFrameStub.restore();
     });
 });

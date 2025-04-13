@@ -11,7 +11,6 @@ declare const FontEditor_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class FontEditor extends FontEditor_base {
-    private readonly selectedNode;
     private readonly propertyMap;
     private readonly fontSelectorSection;
     private fontSelectors;

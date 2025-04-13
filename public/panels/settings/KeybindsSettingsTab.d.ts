@@ -13,7 +13,7 @@ export declare class KeybindsSettingsTab extends UI.Widget.VBox implements UI.Li
      */
     heightForItem(_item: KeybindsItem): number;
     isItemSelectable(_item: KeybindsItem): boolean;
-    selectedItemChanged(from: KeybindsItem | null, to: KeybindsItem | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
+    selectedItemChanged(_from: KeybindsItem | null, to: KeybindsItem | null, fromElement: HTMLElement | null, toElement: HTMLElement | null): void;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
     startEditing(action: UI.ActionRegistration.Action): void;
     stopEditing(action: UI.ActionRegistration.Action): void;

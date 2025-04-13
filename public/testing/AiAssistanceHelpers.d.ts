@@ -41,12 +41,16 @@ export declare function createAiAssistancePanel(options?: {
     aidaClient?: Host.AidaClient.AidaClient;
     aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
     syncInfo?: Host.InspectorFrontendHostAPI.SyncInformation;
+    chatView?: AiAssistancePanel.ChatView;
 }): Promise<{
     panel: AiAssistancePanel.AiAssistancePanel;
     view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.AiAssistancePanel>;
     aidaClient: Host.AidaClient.AidaClient;
     stubAidaCheckAccessPreconditions: (aidaAvailability: Host.AidaClient.AidaAccessPreconditions) => import("sinon").SinonStub<[], Promise<Host.AidaClient.AidaAccessPreconditions>>;
 }>;
+export declare const setupAutomaticFileSystem: (options?: {
+    hasFileSystem: boolean;
+}) => void;
 /**
  * Creates and shows an AiAssistancePanel instance returning the view
  * stubs and the initial view input caused by Widget.show().
