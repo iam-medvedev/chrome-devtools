@@ -232,7 +232,7 @@ export class RenderingOptionsView extends UI.Widget.VBox {
     }
     #appendCheckbox(label, subtitle, setting, metric) {
         const checkbox = UI.UIUtils.CheckboxLabel.create(label, false, subtitle, setting.name);
-        UI.SettingsUI.bindCheckbox(checkbox.checkboxElement, setting, metric);
+        UI.SettingsUI.bindCheckbox(checkbox, setting, metric);
         this.contentElement.appendChild(checkbox);
         return checkbox;
     }

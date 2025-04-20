@@ -107,7 +107,7 @@ function finalize(partialModel) {
 }
 function getBottomCallFrameForEvent(event, traceParsedData) {
     const profileStackTrace = Extras.StackTraceForEvent.get(event, traceParsedData);
-    const eventStackTrace = Helpers.Trace.getZeroIndexedStackTraceForEvent(event);
+    const eventStackTrace = Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
     return profileStackTrace?.callFrames[0] ?? eventStackTrace?.[0] ?? null;
 }
 export function generateInsight(traceParsedData, context) {

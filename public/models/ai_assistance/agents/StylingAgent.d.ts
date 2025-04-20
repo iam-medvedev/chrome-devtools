@@ -3,7 +3,7 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
-import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type FunctionCallHandlerResult, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type FunctionCallHandlerResult, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
 }): Promise<string>;
@@ -23,7 +23,7 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
     getItem(): SDK.DOMModel.DOMNode;
     getIcon(): HTMLElement;
     getTitle(): string | ReturnType<typeof Lit.Directives.until>;
-    getSuggestions(): Promise<[string, ...string[]] | undefined>;
+    getSuggestions(): Promise<[ConversationSuggestion, ...ConversationSuggestion[]] | undefined>;
 }
 /**
  * One agent instance handles one conversation. Create a new agent

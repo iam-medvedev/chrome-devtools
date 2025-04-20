@@ -305,7 +305,6 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(overlayDOM);
             const component = overlayDOM?.querySelector('devtools-entry-label-overlay');
             assert.isOk(component?.shadowRoot);
-            component.connectedCallback();
             const elementsWrapper = component.shadowRoot.querySelector('.label-parts-wrapper');
             assert.isOk(elementsWrapper);
             const inputField = elementsWrapper.querySelector('.input-field');
@@ -658,7 +657,6 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(overlayDOM);
             const component = overlayDOM?.querySelector('devtools-time-range-overlay');
             assert.isOk(component?.shadowRoot);
-            component.connectedCallback();
             const rangeContainer = component.shadowRoot.querySelector('.range-container');
             assert.isOk(rangeContainer);
             const labelBox = rangeContainer.querySelector('.label-text');
@@ -689,7 +687,6 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(overlayDOM);
             const component = overlayDOM?.querySelector('devtools-time-range-overlay');
             assert.isOk(component?.shadowRoot);
-            component.connectedCallback();
             const rangeContainer = component.shadowRoot.querySelector('.range-container');
             assert.isOk(rangeContainer);
             const labelBox = rangeContainer.querySelector('.label-text');
@@ -749,7 +746,6 @@ describeWithEnvironment('Overlays', () => {
             assert.isOk(overlayDOM);
             const component = overlayDOM?.querySelector('devtools-entry-label-overlay');
             assert.isOk(component?.shadowRoot);
-            component.connectedCallback();
             component.dispatchEvent(new Components.EntryLabelOverlay.EntryLabelChangeEvent('new label'));
             const updatedOverlay = overlays.overlaysForEntry(event)[0];
             assert.isOk(updatedOverlay);

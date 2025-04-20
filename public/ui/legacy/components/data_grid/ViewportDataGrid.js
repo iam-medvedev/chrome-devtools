@@ -40,7 +40,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         this.isStriped = striped;
         let startsWithOdd = true;
         if (this.visibleNodes.length) {
-            const allChildren = this.rootNode().flatChildren();
+            const allChildren = this.filteredNodes();
             startsWithOdd = Boolean(allChildren.indexOf(this.visibleNodes[0]));
         }
         this.updateStripesClass(startsWithOdd);
@@ -132,7 +132,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         return true;
     }
     calculateVisibleNodes(clientHeight, scrollTop) {
-        const nodes = this.rootNode().flatChildren().filter(this.testNodeWithFilters.bind(this));
+        const nodes = this.filteredNodes();
         if (this.inline) {
             return { topPadding: 0, bottomPadding: 0, contentHeight: 0, visibleNodes: nodes, offset: 0 };
         }
@@ -165,13 +165,10 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         };
     }
     getNumberOfRows() {
-        return this.rootNode()
-            .flatChildren()
-            .filter(this.testNodeWithFilters.bind(this))
-            .length;
+        return this.filteredNodes().length;
     }
     contentHeight() {
-        const nodes = this.rootNode().flatChildren();
+        const nodes = this.filteredNodes();
         let result = 0;
         for (let i = 0, size = nodes.length; i < size; ++i) {
             result += nodes[i].nodeSelfHeight();
@@ -209,7 +206,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         const tBody = this.dataTableBody;
         let offset = viewportState.offset;
         if (visibleNodes.length) {
-            const nodes = this.rootNode().flatChildren();
+            const nodes = this.filteredNodes();
             const index = nodes.indexOf(visibleNodes[0]);
             this.updateStripesClass(Boolean(index % 2));
             if (this.keepScrollingToBottom && index !== -1 && Boolean(index % 2) !== this.firstVisibleIsStriped) {
@@ -241,7 +238,7 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
         this.dispatchEventToListeners("ViewportCalculated" /* Events.VIEWPORT_CALCULATED */);
     }
     revealViewportNode(node) {
-        const nodes = this.rootNode().flatChildren();
+        const nodes = this.filteredNodes();
         const index = nodes.indexOf(node);
         if (index === -1) {
             return;
@@ -261,6 +258,9 @@ export class ViewportDataGrid extends Common.ObjectWrapper.eventMixin(DataGridIm
             scrollTop = toY - visibleHeight;
         }
         this.scrollContainer.scrollTop = scrollTop;
+    }
+    filteredNodes() {
+        return this.rootNode().flatChildren().filter(this.testNodeWithFilters.bind(this));
     }
 }
 export class ViewportDataGridNode extends DataGridNode {

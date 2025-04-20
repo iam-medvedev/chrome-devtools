@@ -4382,6 +4382,9 @@
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailsStatus": {
     "message": "Status"
   },
+  "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailsTargetHint": {
+    "message": "Target hint"
+  },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | noElementSelected": {
     "message": "No element selected"
   },
@@ -6254,6 +6257,12 @@
   "panels/developer_resources/DeveloperResourcesListView.ts | initiator": {
     "message": "Initiator"
   },
+  "panels/developer_resources/DeveloperResourcesListView.ts | noResourceMatches": {
+    "message": "No resource matches"
+  },
+  "panels/developer_resources/DeveloperResourcesListView.ts | numberOfResourceMatch": {
+    "message": "{n, plural, =1 {# resource matches} other {# resources match}}"
+  },
   "panels/developer_resources/DeveloperResourcesListView.ts | pending": {
     "message": "pending"
   },
@@ -6280,12 +6289,6 @@
   },
   "panels/developer_resources/DeveloperResourcesView.ts | loadHttpsDeveloperResources": {
     "message": "Load HTTP(S) developer resources through the website you inspect, not through DevTools"
-  },
-  "panels/developer_resources/DeveloperResourcesView.ts | noResourceMatches": {
-    "message": "No resource matches"
-  },
-  "panels/developer_resources/DeveloperResourcesView.ts | numberOfResourceMatch": {
-    "message": "{n, plural, =1 {# resource matches} other {# resources match}}"
   },
   "panels/developer_resources/DeveloperResourcesView.ts | resources": {
     "message": "{n, plural, =1 {# resource} other {# resources}}"
@@ -6568,6 +6571,9 @@
   },
   "panels/elements/elements-meta.ts | stackTrace": {
     "message": "Stack Trace"
+  },
+  "panels/elements/elements-meta.ts | toggleA11yTree": {
+    "message": "Toggle accessibility tree"
   },
   "panels/elements/elements-meta.ts | toggleEyeDropper": {
     "message": "Toggle eye dropper"
@@ -9205,6 +9211,12 @@
   },
   "panels/network/NetworkDataGridNode.ts | servedFromMemoryCacheResource": {
     "message": "Served from memory cache, resource size: {PH1}"
+  },
+  "panels/network/NetworkDataGridNode.ts | servedFromNetwork": {
+    "message": "{PH1} transferred over network, resource size: {PH2}"
+  },
+  "panels/network/NetworkDataGridNode.ts | servedFromNetworkMissingServiceWorkerRoute": {
+    "message": "{PH1} transferred over network, resource size: {PH2}, no matching ServiceWorker routes"
   },
   "panels/network/NetworkDataGridNode.ts | servedFromPrefetchCacheResource": {
     "message": "Served from prefetch cache, resource size: {PH1}"

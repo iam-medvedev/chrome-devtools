@@ -63,6 +63,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/KeyValueStorageItemsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const MAX_VALUE_LENGTH = 4096;
 /**
  * A helper typically used in the Application panel. Renders a split view
  * between a DataGrid displaying key-value pairs and a preview Widget.
@@ -108,7 +109,7 @@ export class KeyValueStorageItemsView extends StorageItemsView {
                       <tr data-key=${item.key} data-value=${item.value}
                           selected=${(input.selectedKey === item.key) || nothing}>
                         <td>${item.key}</td>
-                        <td>${item.value}</td>
+                        <td>${item.value.substr(0, MAX_VALUE_LENGTH)}</td>
                       </tr>`)}
                       <tr placeholder></tr>
                   </table>

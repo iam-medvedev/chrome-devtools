@@ -9,16 +9,10 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import metricCardStylesRaw from './metricCard.css.js';
+import metricCardStyles from './metricCard.css.js';
 import { renderCompareText, renderDetailedCompareText } from './MetricCompareStrings.js';
-import metricValueStylesRaw from './metricValueStyles.css.js';
+import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, determineCompareRating, INP_THRESHOLDS, LCP_THRESHOLDS, rateMetric, renderMetricValue, } from './Utils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const metricCardStyles = new CSSStyleSheet();
-metricCardStyles.replaceSync(metricCardStylesRaw.cssText);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const metricValueStyles = new CSSStyleSheet();
-metricValueStyles.replaceSync(metricValueStylesRaw.cssText);
 const { html, nothing } = Lit;
 const UIStrings = {
     /**
@@ -144,7 +138,6 @@ export class MetricCard extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [metricCardStyles, metricValueStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #hideTooltipOnEsc = (event) => {
@@ -514,6 +507,8 @@ export class MetricCard extends HTMLElement {
         const fieldValueEl = renderMetricValue(this.#getMetricValueLogContext(false), fieldValue, thresholds, formatFn);
         // clang-format off
         const output = html `
+      <style>${metricCardStyles.cssText}</style>
+      <style>${metricValueStyles.cssText}</style>
       <div class="metric-card">
         <h3 class="title">
           ${this.#getTitle()}

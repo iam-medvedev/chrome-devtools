@@ -1082,40 +1082,33 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
     }
 }
 export class ToolbarCheckbox extends ToolbarItem {
-    inputElement;
     constructor(text, tooltip, listener, jslogContext) {
-        super(CheckboxLabel.create(text));
-        this.inputElement = this.element.checkboxElement;
+        super(CheckboxLabel.create(text, undefined, undefined, jslogContext));
         if (tooltip) {
-            // install on the checkbox
-            Tooltip.install(this.inputElement, tooltip);
             Tooltip.install(this.element, tooltip);
         }
         if (listener) {
-            this.inputElement.addEventListener('click', listener, false);
-        }
-        if (jslogContext) {
-            this.inputElement.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context(jslogContext)}`);
+            this.element.addEventListener('click', listener, false);
         }
     }
     checked() {
-        return this.inputElement.checked;
+        return this.element.checked;
     }
     setChecked(value) {
-        this.inputElement.checked = value;
+        this.element.checked = value;
     }
     applyEnabledState(enabled) {
         super.applyEnabledState(enabled);
-        this.inputElement.disabled = !enabled;
+        this.element.disabled = !enabled;
     }
     setIndeterminate(indeterminate) {
-        this.inputElement.indeterminate = indeterminate;
+        this.element.indeterminate = indeterminate;
     }
 }
 export class ToolbarSettingCheckbox extends ToolbarCheckbox {
     constructor(setting, tooltip, alternateTitle) {
         super(alternateTitle || setting.title(), tooltip, undefined, setting.name);
-        bindCheckbox(this.inputElement, setting);
+        bindCheckbox(this.element, setting);
     }
 }
 const registeredToolbarItems = [];

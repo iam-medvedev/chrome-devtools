@@ -9,11 +9,8 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as TimelineUtils from '../utils/utils.js';
-import networkRequestTooltipStylesRaw from './networkRequestTooltip.css.js';
+import networkRequestTooltipStyles from './networkRequestTooltip.css.js';
 import { colorForNetworkRequest, networkResourceCategory } from './Utils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const networkRequestTooltipStyles = new CSSStyleSheet();
-networkRequestTooltipStyles.replaceSync(networkRequestTooltipStylesRaw.cssText);
 const { html } = Lit;
 const MAX_URL_LENGTH = 60;
 const UIStrings = {
@@ -52,7 +49,6 @@ export class NetworkRequestTooltip extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #data = { networkRequest: null, entityMapper: null };
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [networkRequestTooltipStyles];
         this.#render();
     }
     set data(data) {
@@ -133,6 +129,7 @@ export class NetworkRequestTooltip extends HTMLElement {
         const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
         // clang-format off
         const output = html `
+      <style>${networkRequestTooltipStyles.cssText}</style>
       <div class="performance-card">
         <div class="url">${Platform.StringUtilities.trimMiddle(url.href.replace(url.origin, ''), MAX_URL_LENGTH)}</div>
         <div class="url url--host">${originWithEntity}</div>

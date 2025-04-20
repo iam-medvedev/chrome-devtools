@@ -120,7 +120,7 @@ describeWithEnvironment('SourcesView', () => {
             sinon.stub(uiSourceCodeFrame, 'loadPlugins').callsFake(() => { });
             uiSourceCodeFrame.wasShown();
             await contentLoadedPromise;
-            assert.isTrue(sourcesPanelFileOpenedSpy.calledWithExactly('text/typescript'));
+            sinon.assert.calledWithExactly(sourcesPanelFileOpenedSpy, 'text/typescript');
         });
     });
 });

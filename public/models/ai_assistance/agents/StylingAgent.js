@@ -216,37 +216,37 @@ export class NodeContext extends ConversationContext {
         }
         if (layoutProps.isFlex) {
             return [
-                'How can I make flex items wrap?',
-                'How do I distribute flex items evenly?',
-                'What is flexbox?',
+                { title: 'How can I make flex items wrap?', jslogContext: 'flex-wrap' },
+                { title: 'How do I distribute flex items evenly?', jslogContext: 'flex-distribute' },
+                { title: 'What is flexbox?', jslogContext: 'flex-what' },
             ];
         }
         if (layoutProps.isSubgrid) {
             return [
-                'Where is this grid defined?',
-                'How to overwrite parent grid properties?',
-                'How do subgrids work? ',
+                { title: 'Where is this grid defined?', jslogContext: 'subgrid-where' },
+                { title: 'How to overwrite parent grid properties?', jslogContext: 'subgrid-override' },
+                { title: 'How do subgrids work? ', jslogContext: 'subgrid-how' },
             ];
         }
         if (layoutProps.isGrid) {
             return [
-                'How do I align items in a grid?',
-                'How to add spacing between grid items?',
-                'How does grid layout work?',
+                { title: 'How do I align items in a grid?', jslogContext: 'grid-align' },
+                { title: 'How to add spacing between grid items?', jslogContext: 'grid-gap' },
+                { title: 'How does grid layout work?', jslogContext: 'grid-how' },
             ];
         }
         if (layoutProps.hasScroll) {
             return [
-                'How do I remove scrollbars for this element?',
-                'How can I style a scrollbar?',
-                'Why does this element scroll?',
+                { title: 'How do I remove scrollbars for this element?', jslogContext: 'scroll-remove' },
+                { title: 'How can I style a scrollbar?', jslogContext: 'scroll-style' },
+                { title: 'Why does this element scroll?', jslogContext: 'scroll-why' },
             ];
         }
         if (layoutProps.isContainer) {
             return [
-                'What are container queries?',
-                'How do I use container-type?',
-                'What\'s the container context for this element?',
+                { title: 'What are container queries?', jslogContext: 'container-what' },
+                { title: 'How do I use container-type?', jslogContext: 'container-how' },
+                { title: 'What\'s the container context for this element?', jslogContext: 'container-context' },
             ];
         }
         return;

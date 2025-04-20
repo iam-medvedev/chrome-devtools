@@ -669,7 +669,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         setIconMaskedCheckbox.classList.add('mask-checkbox');
         setIconMaskedCheckbox.setAttribute('jslog', `${VisualLogging.toggle('show-minimal-safe-area-for-maskable-icons').track({ change: true })}`);
         setIconMaskedCheckbox.addEventListener('click', () => {
-            this.iconsSection.setIconMasked(setIconMaskedCheckbox.checkboxElement.checked);
+            this.iconsSection.setIconMasked(setIconMaskedCheckbox.checked);
         });
         this.iconsSection.appendRow().appendChild(setIconMaskedCheckbox);
         const documentationLink = UI.XLink.XLink.create('https://web.dev/maskable-icon/', i18nString(UIStrings.documentationOnMaskableIcons), undefined, undefined, 'learn-more');
@@ -1058,8 +1058,8 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         }
         await overlayModel.toggleWindowControlsToolbar(false);
         const wcoOsCheckbox = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectWindowControlsOverlayEmulationOs), false);
-        wcoOsCheckbox.checkboxElement.addEventListener('click', async () => {
-            await this.overlayModel?.toggleWindowControlsToolbar(wcoOsCheckbox.checkboxElement.checked);
+        wcoOsCheckbox.addEventListener('click', async () => {
+            await this.overlayModel?.toggleWindowControlsToolbar(wcoOsCheckbox.checked);
         });
         const osSelectElement = wcoOsCheckbox.createChild('select');
         osSelectElement.appendChild(UI.UIUtils.createOption('Windows', "Windows" /* SDK.OverlayModel.EmulatedOSType.WINDOWS */, 'windows'));
@@ -1073,7 +1073,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             const selectedOS = osSelectElement.options[osSelectElement.selectedIndex].value;
             if (this.overlayModel) {
                 this.overlayModel.setWindowControlsPlatform(selectedOS);
-                await this.overlayModel.toggleWindowControlsToolbar(wcoOsCheckbox.checkboxElement.checked);
+                await this.overlayModel.toggleWindowControlsToolbar(wcoOsCheckbox.checked);
             }
         });
         this.windowControlsSection.appendRow().appendChild(wcoOsCheckbox);

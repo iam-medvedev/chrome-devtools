@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as MobileThrottling from './mobile_throttling.js';
 describeWithEnvironment('ThrottlingManager', () => {
@@ -33,15 +32,15 @@ describeWithEnvironment('ThrottlingManager', () => {
             multiTargetNetworkManager.setNetworkConditions(SDK.NetworkManager.OfflineConditions);
             const checkbox = throttlingManager.createOfflineToolbarCheckbox();
             assert.isTrue(checkbox.checked());
-            dispatchClickEvent(checkbox.inputElement);
+            checkbox.element.click();
             assert.isFalse(checkbox.checked());
             assert.strictEqual(SDK.NetworkManager.NoThrottlingConditions, multiTargetNetworkManager.networkConditions());
             multiTargetNetworkManager.setNetworkConditions(SDK.NetworkManager.Slow3GConditions);
             assert.isFalse(checkbox.checked());
-            dispatchClickEvent(checkbox.inputElement);
+            checkbox.element.click();
             assert.isTrue(checkbox.checked());
             assert.strictEqual(SDK.NetworkManager.OfflineConditions, multiTargetNetworkManager.networkConditions());
-            dispatchClickEvent(checkbox.inputElement);
+            checkbox.element.click();
             assert.isFalse(checkbox.checked());
             assert.strictEqual(SDK.NetworkManager.Slow3GConditions, multiTargetNetworkManager.networkConditions());
         });

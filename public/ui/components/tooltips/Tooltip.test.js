@@ -62,6 +62,13 @@ describe('Tooltip', () => {
         await checkForPendingActivity();
         assert.isFalse(container.querySelector('devtools-tooltip')?.open);
     });
+    it('should not be activated if dragged', async () => {
+        const container = renderTooltip();
+        const button = container.querySelector('button');
+        button?.dispatchEvent(new MouseEvent('mouseenter', { buttons: 1 }));
+        await checkForPendingActivity();
+        assert.isFalse(container.querySelector('devtools-tooltip')?.open);
+    });
     it('should not be activated if un-focused', async () => {
         const container = renderTooltip();
         const button = container.querySelector('button');
@@ -116,7 +123,7 @@ describe('Tooltip', () => {
         });
     });
     it('should print a warning if rich tooltip is used with wrong aria label on anchor', () => {
-        const consoleSpy = sinon.spy(console, 'warn');
+        const consoleSpy = sinon.stub(console, 'warn');
         renderTooltip({ variant: 'rich' });
         sinon.assert.calledOnce(consoleSpy);
     });

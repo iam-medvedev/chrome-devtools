@@ -15,6 +15,7 @@ interface ViewInput {
     onSelectButtonClick: () => void;
     onCancelButtonClick: () => void;
     onAddFolderButtonClick: () => void;
+    onListItemKeyDown: (event: KeyboardEvent) => void;
 }
 type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class SelectWorkspaceDialog extends UI.Widget.VBox {

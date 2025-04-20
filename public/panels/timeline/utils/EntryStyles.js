@@ -743,8 +743,9 @@ export function maybeInitSylesMap() {
         ["AbortPostTaskCallback" /* Trace.Types.Events.Name.ABORT_POST_TASK_CALLBACK */]: new TimelineRecordStyle(i18nString(UIStrings.abortPostTaskCallback), defaultCategoryStyles.scripting),
         ["V8Console::runTask" /* Trace.Types.Events.Name.V8_CONSOLE_RUN_TASK */]: new TimelineRecordStyle(i18nString(UIStrings.consoleTaskRun), defaultCategoryStyles.scripting),
     };
-    // TODO: remove assertion after deduped eventStylesMap for VISIBLE_TRACE_EVENT_TYPES.
-    const visibleTraceEventsComplete = (Object.keys(eventStylesMap)).every(eventType => {
+    // TODO(crbug.com/410884528): remove assertion after deduped eventStylesMap for VISIBLE_TRACE_EVENT_TYPES.
+    const visibleEventStyles = Object.entries(eventStylesMap).filter(([, style]) => style.hidden === false).map(([key,]) => key);
+    const visibleTraceEventsComplete = visibleEventStyles.every(eventType => {
         return Trace.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.has(eventType);
     });
     const eventStylesMapKeys = Object.keys(eventStylesMap);

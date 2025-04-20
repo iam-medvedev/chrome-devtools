@@ -48,6 +48,10 @@ const UIStrings = {
     /**
      *@description Text in details
      */
+    detailsTargetHint: 'Target hint',
+    /**
+     *@description Text in details
+     */
     detailsFailureReason: 'Failure reason',
     /**
      *@description Header of rule set
@@ -125,6 +129,15 @@ class PreloadingUIUtils {
                 return i18n.i18n.lockedString('Internal error');
         }
     }
+    static detailedTargetHint(key) {
+        assertNotNullOrUndefined(key.targetHint);
+        switch (key.targetHint) {
+            case "Blank" /* Protocol.Preload.SpeculationTargetHint.Blank */:
+                return '_blank';
+            case "Self" /* Protocol.Preload.SpeculationTargetHint.Self */:
+                return '_self';
+        }
+    }
 }
 export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -167,6 +180,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
           ${this.#url()}
           ${this.#action(isFallbackToPrefetch)}
           ${this.#status(isFallbackToPrefetch)}
+          ${this.#targetHint()}
           ${this.#maybePrefetchFailureReason()}
           ${this.#maybePrerenderFailureReason()}
 
@@ -298,6 +312,20 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         <devtools-report-key>${i18nString(UIStrings.detailsFailureReason)}</devtools-report-key>
         <devtools-report-value>
           ${failureDescription}
+        </devtools-report-value>
+    `;
+    }
+    #targetHint() {
+        assertNotNullOrUndefined(this.#data);
+        const attempt = this.#data.pipeline.getOriginallyTriggered();
+        const hasTargetHint = attempt.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */ && attempt.key.targetHint !== undefined;
+        if (!hasTargetHint) {
+            return Lit.nothing;
+        }
+        return html `
+        <devtools-report-key>${i18nString(UIStrings.detailsTargetHint)}</devtools-report-key>
+        <devtools-report-value>
+          ${PreloadingUIUtils.detailedTargetHint(attempt.key)}
         </devtools-report-value>
     `;
     }

@@ -33,7 +33,7 @@ describe('UIUtils', () => {
             for (const url of URLs) {
                 const stub = sinon.stub(InspectorFrontendHostInstance, 'openInNewTab');
                 openInNewTab(url);
-                assert.isTrue(stub.calledOnceWithExactly(urlString `${url}`));
+                sinon.assert.calledOnceWithExactly(stub, urlString `${url}`);
                 stub.restore();
             }
         });

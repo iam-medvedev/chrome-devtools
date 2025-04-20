@@ -8,10 +8,12 @@ import { data as rendererHandlerData } from './RendererHandler.js';
 const schedulerToRunEntryPoints = new Map();
 const taskScheduleForTaskRunEvent = new Map();
 const asyncCallToScheduler = new Map();
+const runEntryPointToScheduler = new Map();
 export function reset() {
     schedulerToRunEntryPoints.clear();
     asyncCallToScheduler.clear();
     taskScheduleForTaskRunEvent.clear();
+    runEntryPointToScheduler.clear();
 }
 export function handleEvent(_) {
 }
@@ -61,21 +63,21 @@ export async function finalize() {
         taskScheduleForTaskRunEvent.set(asyncTaskRun, maybeAsyncTaskScheduled);
         // Get the JS call scheduled the task.
         const asyncCaller = findNearestJSAncestor(maybeAsyncTaskScheduled, entryToNode);
-        if (!asyncCaller) {
-            // Unexpected async call trace data shape, ignore.
-            continue;
-        }
+        // Get the trace entrypoint for the scheduled task (e.g. FunctionCall, etc.).
         const asyncEntryPoint = findFirstJsInvocationForAsyncTaskRun(asyncTaskRun, entryToNode);
-        if (!asyncEntryPoint) {
+        // Store the async relationship between traces to be shown with initiator arrows.
+        // Default to the AsyncTask events in case the JS entrypoints aren't found.
+        runEntryPointToScheduler.set(asyncEntryPoint || asyncTaskRun, { taskName, scheduler: asyncCaller || maybeAsyncTaskScheduled });
+        if (!asyncCaller || !asyncEntryPoint) {
             // Unexpected async call trace data shape, ignore.
             continue;
         }
-        // Set scheduler -> schedulee mapping.
-        // The schedulee being the JS entrypoint
+        // Set scheduler -> scheduled mapping.
+        // The scheduled being the JS entrypoint
         const entryPoints = Platform.MapUtilities.getWithDefault(schedulerToRunEntryPoints, asyncCaller, () => []);
         entryPoints.push(asyncEntryPoint);
-        // Set schedulee -> scheduler mapping.
-        // The schedulees being the JS calls (instead of the entrypoints as
+        // Set scheduled -> scheduler mapping.
+        // The scheduled being the JS calls (instead of the entrypoints as
         // above, for usage ergonomics).
         const scheduledProfileCalls = findFirstJSCallsForAsyncTaskRun(asyncTaskRun, entryToNode);
         for (const call of scheduledProfileCalls) {
@@ -177,6 +179,7 @@ export function data() {
     return {
         schedulerToRunEntryPoints,
         asyncCallToScheduler,
+        runEntryPointToScheduler,
     };
 }
 export function deps() {

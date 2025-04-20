@@ -1,7 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view, rulesdir/inject-checkbox-styles */
 import './RequestHeaderSection.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -20,11 +20,8 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Sources from '../../sources/sources.js';
-import requestHeadersViewStylesRaw from './RequestHeadersView.css.js';
+import requestHeadersViewStyles from './RequestHeadersView.css.js';
 import { RESPONSE_HEADER_SECTION_DATA_KEY, } from './ResponseHeaderSection.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const requestHeadersViewStyles = new CSSStyleSheet();
-requestHeadersViewStyles.replaceSync(requestHeadersViewStylesRaw.cssText);
 const RAW_HEADER_CUTOFF = 3000;
 const { render, html } = Lit;
 const UIStrings = {
@@ -147,7 +144,6 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         void this.render();
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [requestHeadersViewStyles];
         this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this.#uiSourceCodeAddedOrRemoved, this);
         this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this.#uiSourceCodeAddedOrRemoved, this);
         Common.Settings.Settings.instance()
@@ -174,6 +170,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             render(html `
+        <style>${requestHeadersViewStyles.cssText}</style>
         ${this.#renderGeneralSection()}
         ${this.#renderEarlyHintsHeaders()}
         ${this.#renderResponseHeaders()}
@@ -480,9 +477,6 @@ export class Category extends HTMLElement {
     #additionalContent = undefined;
     #forceOpen = undefined;
     #loggingContext = '';
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [requestHeadersViewStyles, Input.checkboxStyles];
-    }
     set data(data) {
         this.#title = data.title;
         this.#expandedSetting =
@@ -502,6 +496,8 @@ export class Category extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${requestHeadersViewStyles.cssText}</style>
+      <style>${Input.checkboxStyles.cssText}</style>
       <details ?open=${isOpen} @toggle=${this.#onToggle}>
         <summary
           class="header"

@@ -29,7 +29,6 @@ export interface CategoryData {
 }
 export declare class Category extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: CategoryData);
 }
 declare global {

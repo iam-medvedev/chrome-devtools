@@ -21,7 +21,7 @@ export default {
   display: flex;
 
   /* The tag name of CheckboxLabel element */
-  dt-checkbox {
+  devtools-checkbox {
     flex: auto;
   }
 

@@ -52,7 +52,7 @@ export default {
 .tree-outline span {
   font: var(--sys-typescale-body4-medium);
 
-  &:hover:not(:has(dt-checkbox)) .selection {
+  &:hover:not(:has(devtools-checkbox)) .selection {
     background: transparent;
   }
 }

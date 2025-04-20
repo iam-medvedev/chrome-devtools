@@ -24,7 +24,7 @@ describeWithMockConnection('CPUThrottlingManager', () => {
         const manager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
         manager.setHardwareConcurrency(5);
         sinon.assert.calledOnce(cdpStub);
-        assert.isTrue(cdpStub.calledWithExactly({ hardwareConcurrency: 5 }));
+        sinon.assert.calledWithExactly(cdpStub, { hardwareConcurrency: 5 });
     });
     it('does not set concurrency to 0 or negative numbers', async () => {
         const cdpStub = sinon.stub(target.emulationAgent(), 'invoke_setHardwareConcurrencyOverride').resolves();

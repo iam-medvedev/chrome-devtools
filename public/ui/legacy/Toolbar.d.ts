@@ -249,7 +249,6 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
     private onSelectValueChange;
 }
 export declare class ToolbarCheckbox extends ToolbarItem<void> {
-    inputElement: HTMLInputElement;
     constructor(text: Common.UIString.LocalizedString, tooltip?: Common.UIString.LocalizedString, listener?: ((arg0: MouseEvent) => void), jslogContext?: string);
     checked(): boolean;
     setChecked(value: boolean): void;

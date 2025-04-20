@@ -184,6 +184,18 @@ const UIStrings = {
     /**
      *@description Cell title in Network Data Grid Node of the Network panel
      *@example {4 B} PH1
+     *@example {10 B} PH2
+     */
+    servedFromNetwork: '{PH1} transferred over network, resource size: {PH2}',
+    /**
+     *@description Cell title in Network Data Grid Node of the Network panel
+     *@example {4 B} PH1
+     *@example {10 B} PH2
+     */
+    servedFromNetworkMissingServiceWorkerRoute: '{PH1} transferred over network, resource size: {PH2}, no matching ServiceWorker routes',
+    /**
+     *@description Cell title in Network Data Grid Node of the Network panel
+     *@example {4 B} PH1
      */
     servedFromServiceWorkerResource: 'Served from `ServiceWorker`, resource size: {PH1}',
     /**
@@ -1224,13 +1236,12 @@ export class NetworkRequestNode extends NetworkNode {
             UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromMemoryCacheResource, { PH1: resourceSize }));
             cell.classList.add('network-dim-cell');
         }
-        else if (this.requestInternal.serviceWorkerRouterInfo) {
-            const { serviceWorkerRouterInfo } = this.requestInternal;
-            // If `serviceWorkerRouterInfo.ruleIdMatched` is undefined,store 0 to indicate invalid ID.
-            const ruleIdMatched = serviceWorkerRouterInfo.ruleIdMatched ?? 0;
+        else if (this.requestInternal.hasMatchingServiceWorkerRouter()) {
+            const ruleIdMatched = this.requestInternal.serviceWorkerRouterInfo?.ruleIdMatched;
+            const matchedSourceType = this.requestInternal.serviceWorkerRouterInfo?.matchedSourceType;
             UI.UIUtils.createTextChild(cell, i18n.i18n.lockedString('(ServiceWorker router)'));
             let tooltipText;
-            if (serviceWorkerRouterInfo.matchedSourceType === "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */) {
+            if (matchedSourceType === "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */) {
                 const transferSize = i18n.ByteUtilities.formatBytesToKb(this.requestInternal.transferSize);
                 tooltipText = i18nString(UIStrings.matchedToServiceWorkerRouterWithNetworkSource, { PH1: ruleIdMatched, PH2: transferSize, PH3: resourceSize });
             }
@@ -1239,6 +1250,13 @@ export class NetworkRequestNode extends NetworkNode {
             }
             UI.Tooltip.Tooltip.install(cell, tooltipText);
             cell.classList.add('network-dim-cell');
+        }
+        else if (this.requestInternal.serviceWorkerRouterInfo) {
+            // ServiceWorker routers are registered, but the request fallbacks to network
+            // because no matching router rules found.
+            const transferSize = i18n.ByteUtilities.formatBytesToKb(this.requestInternal.transferSize);
+            UI.UIUtils.createTextChild(cell, transferSize);
+            UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromNetworkMissingServiceWorkerRoute, { PH1: transferSize, PH2: resourceSize }));
         }
         else if (this.requestInternal.fetchedViaServiceWorker) {
             UI.UIUtils.createTextChild(cell, i18nString(UIStrings.serviceWorker));
@@ -1268,7 +1286,7 @@ export class NetworkRequestNode extends NetworkNode {
         else {
             const transferSize = i18n.ByteUtilities.formatBytesToKb(this.requestInternal.transferSize);
             UI.UIUtils.createTextChild(cell, transferSize);
-            UI.Tooltip.Tooltip.install(cell, `${transferSize} transferred over network, resource size: ${resourceSize}`);
+            UI.Tooltip.Tooltip.install(cell, i18nString(UIStrings.servedFromNetwork, { PH1: transferSize, PH2: resourceSize }));
         }
         this.appendSubtitle(cell, resourceSize);
     }

@@ -21,6 +21,11 @@ export default {
   border-radius: var(--sys-shape-corner-extra-small);
 }
 
+.with-padding {
+  padding: var(--sys-size-4);
+  border-radius: var(--sys-shape-corner-small);
+}
+
 /*# sourceURL=${import.meta.resolve('./swatchPopover.css')} */
 `
 };

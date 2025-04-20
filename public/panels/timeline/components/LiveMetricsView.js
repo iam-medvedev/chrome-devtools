@@ -24,15 +24,9 @@ import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
 import { getThrottlingRecommendations, md } from '../utils/Helpers.js';
-import liveMetricsViewStylesRaw from './liveMetricsView.css.js';
-import metricValueStylesRaw from './metricValueStyles.css.js';
+import liveMetricsViewStyles from './liveMetricsView.css.js';
+import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const liveMetricsViewStyles = new CSSStyleSheet();
-liveMetricsViewStyles.replaceSync(liveMetricsViewStylesRaw.cssText);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const metricValueStyles = new CSSStyleSheet();
-metricValueStyles.replaceSync(metricValueStylesRaw.cssText);
 const { html, nothing } = Lit;
 const DEVICE_OPTION_LIST = ['AUTO', ...CrUXManager.DEVICE_SCOPE_LIST];
 const RTT_MINIMUM = 60;
@@ -355,7 +349,6 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [liveMetricsViewStyles, metricValueStyles];
         const liveMetrics = LiveMetrics.LiveMetrics.instance();
         liveMetrics.addEventListener("status" /* LiveMetrics.Events.STATUS */, this.#onMetricStatus, this);
         const cruxManager = CrUXManager.CrUXManager.instance();
@@ -927,6 +920,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderNodeView() {
         return html `
+      <style>${liveMetricsViewStyles.cssText}</style>
+      <style>${metricValueStyles.cssText}</style>
       <div class="node-view">
         <main>
           <h2 class="section-title">${i18nString(UIStrings.nodePerformanceTimeline)}</h2>
@@ -946,6 +941,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const helpLink = 'https://web.dev/articles/lab-and-field-data-differences#lab_data_versus_field_data';
         // clang-format off
         const output = html `
+      <style>${liveMetricsViewStyles.cssText}</style>
+      <style>${metricValueStyles.cssText}</style>
       <div class="container">
         <div class="live-metrics-view">
           <main class="live-metrics">

@@ -45,6 +45,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private initializeFullAccessibilityTreeView;
     private showAccessibilityTree;
     private showDOMTree;
+    toggleAccessibilityTree(): void;
     static instance(opts?: {
         forceNew: boolean | null;
     } | undefined): ElementsPanel;

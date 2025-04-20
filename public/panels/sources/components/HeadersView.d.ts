@@ -15,7 +15,6 @@ export interface HeadersViewComponentData {
 export declare class HeadersViewComponent extends HTMLElement {
     #private;
     constructor();
-    connectedCallback(): void;
     set data(data: HeadersViewComponentData);
 }
 declare global {

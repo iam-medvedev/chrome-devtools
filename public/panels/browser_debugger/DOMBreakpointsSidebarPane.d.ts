@@ -2,7 +2,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class DOMBreakpointsSidebarPane extends UI.Widget.VBox implements UI.ContextFlavorListener.ContextFlavorListener, UI.ListControl.ListDelegate<SDK.DOMDebuggerModel.DOMBreakpoint> {
     #private;
-    elementToCheckboxes: WeakMap<Element, HTMLInputElement>;
+    elementToCheckboxes: WeakMap<Element, UI.UIUtils.CheckboxLabel>;
     private constructor();
     static instance(): DOMBreakpointsSidebarPane;
     createElementForItem(item: SDK.DOMDebuggerModel.DOMBreakpoint): Element;

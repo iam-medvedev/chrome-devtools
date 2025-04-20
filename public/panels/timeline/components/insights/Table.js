@@ -7,7 +7,7 @@ import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js'
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { EventReferenceClick } from './EventRef.js';
-import tableStylesRaw from './table.css.js';
+import tableStyles from './table.css.js';
 const UIStrings = {
     /**
      * @description Table row value representing the remaining items not shown in the table due to size constraints. This row will always represent at least 2 items.
@@ -17,9 +17,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/insights/Table.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const tableStyles = new CSSStyleSheet();
-tableStyles.replaceSync(tableStylesRaw.cssText);
 const { html } = Lit;
 export function renderOthersLabel(numOthers) {
     return i18nString(UIStrings.others, { PH1: numOthers });
@@ -49,7 +46,6 @@ export function createLimitedRows(arr, aggregator, limit = 10) {
 }
 export class Table extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #insight;
     #state;
     #headers;
@@ -66,12 +62,11 @@ export class Table extends HTMLElement {
         this.#rows = data.rows;
         // If this table isn't interactive, don't attach mouse listeners or use CSS :hover.
         this.#interactive = this.#rows.some(row => row.overlays);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets.push(tableStyles);
         UI.UIUtils.injectCoreStyles(this.#shadow);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onHoverRow(e) {
         if (!(e.target instanceof HTMLElement)) {
@@ -173,7 +168,8 @@ export class Table extends HTMLElement {
             traverse(row);
         }
         this.#flattenedRows = flattenedRows;
-        Lit.render(html `<table
+        Lit.render(html `<style>${tableStyles.cssText}</style>
+      <table
           class=${Lit.Directives.classMap({
             interactive: this.#interactive,
         })}

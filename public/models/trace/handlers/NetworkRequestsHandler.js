@@ -388,7 +388,7 @@ export async function finalize() {
         HandlerHelpers.addNetworkRequestToEntityMapping(networkEvent, entityMappings, request);
         // Establish initiator relationships
         const initiatorUrl = networkEvent.args.data.initiator?.url ||
-            Helpers.Trace.getZeroIndexedStackTraceForEvent(networkEvent)?.at(0)?.url;
+            Helpers.Trace.getZeroIndexedStackTraceInEventPayload(networkEvent)?.at(0)?.url;
         if (initiatorUrl) {
             const events = networkRequestEventByInitiatorUrl.get(initiatorUrl) ?? [];
             events.push(networkEvent);

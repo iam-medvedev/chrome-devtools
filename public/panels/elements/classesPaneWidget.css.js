@@ -22,7 +22,7 @@ export default {
   justify-content: flex-start;
 }
 
-.styles-element-classes-pane dt-checkbox {
+.styles-element-classes-pane devtools-checkbox {
   margin-right: 15px;
 }
 

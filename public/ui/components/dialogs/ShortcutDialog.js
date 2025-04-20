@@ -25,7 +25,6 @@ const str_ = i18n.i18n.registerUIStrings('ui/components/dialogs/ShortcutDialog.t
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ShortcutDialog extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #shortcuts = [];
     #openOnRender = false;
     #customTitle;
@@ -48,7 +47,7 @@ export class ShortcutDialog extends HTMLElement {
         if (data.customTitle) {
             this.#customTitle = data.customTitle;
         }
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     prependElement(element) {
         this.#prependedElement = element;

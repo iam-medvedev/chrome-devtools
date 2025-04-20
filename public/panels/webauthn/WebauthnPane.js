@@ -283,9 +283,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         this.#topToolbar = this.#topToolbarContainer.createChild('devtools-toolbar', 'webauthn-toolbar');
         this.#topToolbar.role = 'presentation';
         const enableCheckboxTitle = i18nString(UIStrings.enableVirtualAuthenticator);
-        this.#enableCheckbox =
-            new UI.Toolbar.ToolbarCheckbox(enableCheckboxTitle, enableCheckboxTitle, this.#handleCheckboxToggle.bind(this));
-        this.#enableCheckbox.inputElement.setAttribute('jslog', `${VisualLogging.toggle('virtual-authenticators').track({ click: true })}`);
+        this.#enableCheckbox = new UI.Toolbar.ToolbarCheckbox(enableCheckboxTitle, enableCheckboxTitle, this.#handleCheckboxToggle.bind(this), 'virtual-authenticators');
         this.#topToolbar.appendToolbarItem(this.#enableCheckbox);
     }
     #createCredentialsDataGrid(authenticatorId) {

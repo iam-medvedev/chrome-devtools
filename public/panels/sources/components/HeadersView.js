@@ -12,10 +12,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import HeadersViewStylesRaw from './HeadersView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const HeadersViewStyles = new CSSStyleSheet();
-HeadersViewStyles.replaceSync(HeadersViewStylesRaw.cssText);
+import headersViewStyles from './HeadersView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -105,7 +102,6 @@ export class HeadersView extends UI.View.SimpleView {
 }
 export class HeadersViewComponent extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #headerOverrides = [];
     #uiSourceCode = null;
     #parsingError = false;
@@ -121,14 +117,11 @@ export class HeadersViewComponent extends HTMLElement {
         this.#shadow.addEventListener('paste', this.#onPaste.bind(this));
         this.addEventListener('contextmenu', this.#onContextMenu.bind(this));
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [HeadersViewStyles];
-    }
     set data(data) {
         this.#headerOverrides = data.headerOverrides;
         this.#uiSourceCode = data.uiSourceCode;
         this.#parsingError = data.parsingError;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     // 'Enter' key should not create a new line in the contenteditable. Focus
     // on the next contenteditable instead.
@@ -301,6 +294,7 @@ export class HeadersViewComponent extends HTMLElement {
             const fileName = this.#uiSourceCode?.name() || '.headers';
             // clang-format off
             Lit.render(html `
+        <style>${headersViewStyles.cssText}</style>
         <div class="center-wrapper">
           <div class="centered">
             <div class="error-header">${i18nString(UIStrings.errorWhenParsing, { PH1: fileName })}</div>
@@ -313,6 +307,7 @@ export class HeadersViewComponent extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${headersViewStyles.cssText}</style>
       ${this.#headerOverrides.map((headerOverride, blockIndex) => html `
           ${this.#renderApplyToRow(headerOverride.applyTo, blockIndex)}
           ${headerOverride.headers.map((header, headerIndex) => html `

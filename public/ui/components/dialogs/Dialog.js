@@ -43,7 +43,6 @@ export const DIALOG_PADDING_FROM_WINDOW = 3 * CONNECTOR_HEIGHT;
 export const MODAL = 'MODAL';
 export class Dialog extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #forceDialogCloseInDevToolsBound = this.#forceDialogCloseInDevToolsMutation.bind(this);
     #handleScrollAttemptBound = this.#handleScrollAttempt.bind(this);
     #props = {
@@ -150,7 +149,7 @@ export class Dialog extends HTMLElement {
         this.#dialogClientRect = this.#getDialog().getBoundingClientRect();
     }
     #onStateChange() {
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [dialogStyles];

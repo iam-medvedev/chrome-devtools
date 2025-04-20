@@ -6,6 +6,7 @@ import * as Persistence from '../persistence/persistence.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import { debugLog } from './debug.js';
 const LINE_END_RE = /\r\n?|\n/;
+const MAX_RESULTS_PER_FILE = 10;
 /**
  * AgentProject wraps around a Workspace.Workspace.Project and
  * implements AI Assistance-specific logic for accessing workspace files
@@ -13,7 +14,7 @@ const LINE_END_RE = /\r\n?|\n/;
  */
 export class AgentProject {
     #project;
-    #ignoredFolderNames = new Set(['node_modules']);
+    #ignoredFileOrFolderNames = new Set(['node_modules', 'package-lock.json']);
     #filesChanged = new Set();
     #totalLinesChanged = 0;
     #maxFilesChanged;
@@ -44,16 +45,15 @@ export class AgentProject {
      * Provides access to the file content in the working copy
      * of the matching UiSourceCode.
      */
-    readFile(filepath) {
+    async readFile(filepath) {
         const { map } = this.#indexFiles();
         const uiSourceCode = map.get(filepath);
         if (!uiSourceCode) {
             return;
         }
+        const content = uiSourceCode.isDirty() ? uiSourceCode.workingCopyContentData() : await uiSourceCode.requestContentData();
         this.#processedFiles.add(filepath);
-        // TODO: needs additional handling for binary files.
-        const content = uiSourceCode.workingCopyContentData();
-        if (!content.isTextContent) {
+        if (TextUtils.ContentData.ContentData.isError(content) || !content.isTextContent) {
             return;
         }
         return content.text;
@@ -62,13 +62,13 @@ export class AgentProject {
      * This method updates the file content in the working copy of the
      * UiSourceCode identified by the filepath.
      */
-    writeFile(filepath, update, mode = "full" /* ReplaceStrategy.FULL_FILE */) {
+    async writeFile(filepath, update, mode = "full" /* ReplaceStrategy.FULL_FILE */) {
         const { map } = this.#indexFiles();
         const uiSourceCode = map.get(filepath);
         if (!uiSourceCode) {
             throw new Error(`UISourceCode ${filepath} not found`);
         }
-        const currentContent = this.readFile(filepath);
+        const currentContent = await this.readFile(filepath);
         let content;
         switch (mode) {
             case "full" /* ReplaceStrategy.FULL_FILE */:
@@ -182,11 +182,10 @@ export class AgentProject {
             if (signal?.aborted) {
                 break;
             }
-            await file.requestContentData();
             debugLog('searching in', filepath, 'for', query);
             const content = file.isDirty() ? file.workingCopyContentData() : await file.requestContentData();
             const results = TextUtils.TextUtils.performSearchInContentData(content, query, caseSensitive ?? true, isRegex ?? false);
-            for (const result of results) {
+            for (const result of results.slice(0, MAX_RESULTS_PER_FILE)) {
                 debugLog('matches in', filepath);
                 matches.push({
                     filepath,
@@ -200,7 +199,7 @@ export class AgentProject {
     }
     #shouldSkipPath(pathParts) {
         for (const part of pathParts) {
-            if (this.#ignoredFolderNames.has(part) || part.startsWith('.')) {
+            if (this.#ignoredFileOrFolderNames.has(part) || part.startsWith('.')) {
                 return true;
             }
         }

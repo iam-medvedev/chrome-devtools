@@ -111,7 +111,7 @@ export default {
   position: relative;
 }
 
-.filter-checkbox-filter > dt-checkbox {
+.filter-checkbox-filter > devtools-checkbox {
   display: flex;
   margin: auto 0;
 }

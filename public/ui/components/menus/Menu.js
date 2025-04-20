@@ -24,7 +24,6 @@ const { html } = Lit;
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #dialog = null;
     #itemIsFocused = false;
     #props = {
@@ -41,7 +40,7 @@ export class Menu extends HTMLElement {
     }
     set origin(origin) {
         this.#props.origin = origin;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get open() {
         return this.#props.open;
@@ -53,42 +52,42 @@ export class Menu extends HTMLElement {
         this.#props.open = open;
         this.toggleAttribute('has-open-dialog', this.open);
         void this.#getDialog().setDialogVisible(this.open);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get position() {
         return this.#props.position;
     }
     set position(position) {
         this.#props.position = position;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get showDivider() {
         return this.#props.showDivider;
     }
     set showDivider(showDivider) {
         this.#props.showDivider = showDivider;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get showSelectedItem() {
         return this.#props.showSelectedItem;
     }
     set showSelectedItem(showSelectedItem) {
         this.#props.showSelectedItem = showSelectedItem;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get horizontalAlignment() {
         return this.#props.horizontalAlignment;
     }
     set horizontalAlignment(horizontalAlignment) {
         this.#props.horizontalAlignment = horizontalAlignment;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get getConnectorCustomXPosition() {
         return this.#props.getConnectorCustomXPosition;
     }
     set getConnectorCustomXPosition(connectorXPosition) {
         this.#props.getConnectorCustomXPosition = connectorXPosition;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [menuStyles];
@@ -334,7 +333,6 @@ export class Menu extends HTMLElement {
 }
 export class MenuItem extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [menuItemStyles];
         this.tabIndex = 0;
@@ -351,28 +349,28 @@ export class MenuItem extends HTMLElement {
     }
     set preventMenuCloseOnSelection(preventMenuCloseOnSelection) {
         this.#props.preventMenuCloseOnSelection = preventMenuCloseOnSelection;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get value() {
         return this.#props.value;
     }
     set value(value) {
         this.#props.value = value;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get selected() {
         return this.#props.selected;
     }
     set selected(selected) {
         this.#props.selected = selected;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get disabled() {
         return this.#props.disabled;
     }
     set disabled(disabled) {
         this.#props.disabled = disabled;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     async #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
@@ -395,7 +393,6 @@ export class MenuItem extends HTMLElement {
 }
 export class MenuGroup extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [menuGroupStyles];
     }
@@ -407,7 +404,7 @@ export class MenuGroup extends HTMLElement {
     }
     set name(name) {
         this.#props.name = name;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     async #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {

@@ -35,7 +35,7 @@ describeWithMockConnection('TracingManager', () => {
         const bufferUsageSpy = sinon.spy(client, 'tracingBufferUsage');
         await manager.start(client, 'devtools-timeline');
         manager.bufferUsage(10);
-        assert.isTrue(bufferUsageSpy.calledWith(10));
+        sinon.assert.calledWith(bufferUsageSpy, 10);
     });
     it('sends events to the client when they are collected and updates the client with progress', async () => {
         const target = createTarget();
@@ -46,7 +46,7 @@ describeWithMockConnection('TracingManager', () => {
         await manager.start(client, 'devtools-timeline');
         manager.bufferUsage(0);
         manager.eventsCollected(fakeEvents);
-        assert.isTrue(eventsCollectedSpy.calledWith(fakeEvents));
+        sinon.assert.calledWith(eventsCollectedSpy, fakeEvents);
         assert.approximately(0.15, eventsRetrievalProgressSpy.args[0][0], 0.01);
     });
     it('notifies the client when tracing is complete', async () => {

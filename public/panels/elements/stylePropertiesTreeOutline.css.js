@@ -111,8 +111,15 @@ export default {
 ol:not(.tree-outline) {
   display: none;
   margin: 0;
-  padding-inline-start: 12px;
   list-style: none;
+}
+
+.tree-outline > ol {
+  padding-inline-start: 16px;
+
+  ol {
+    padding-left: 0;
+  }
 }
 
 ol.expanded {
@@ -283,8 +290,7 @@ devtools-icon.open-in-animations-panel {
   display: inline-block;
   padding-left: 18px;  /* should match enabled-button width */
   margin-left: -38px;  /* should match .webkit-css-property margin-left */
-
-  --webkit-css-property-color: var(--app-color-element-sidebar-subtitle);
+  color: var(--app-color-element-sidebar-subtitle);
 }
 
 /*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */

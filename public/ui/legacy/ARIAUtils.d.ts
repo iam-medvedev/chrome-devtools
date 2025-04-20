@@ -85,21 +85,20 @@ export declare function setDescription(element: Element, description: string): v
 export declare function setActiveDescendant(element: Element, activedescendant: Element | null): void;
 export declare function setSetSize(element: Element, size: number): void;
 export declare function setPositionInSet(element: Element, position: number): void;
-interface AlertState {
-    one: HTMLDivElement;
-    two: HTMLDivElement;
-    alertToggle: boolean;
-}
-export declare function getOrCreateAlertElements(container?: HTMLElement): AlertState;
+export declare function getOrCreateAlertElement(container?: HTMLElement, opts?: {
+    force: boolean;
+}): HTMLElement;
 /**
- * This function instantiates and switches off returning one of two offscreen alert elements.
- * We utilize two alert elements to ensure that alerts with the same string are still registered
- * as changes and trigger screen reader announcement.
- */
-export declare function alertElementInstance(container?: HTMLElement): HTMLElement;
-/**
- * This function is used to announce a message with the screen reader.
- * Setting the textContent would allow the SR to access the offscreen element via browse mode
+ * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
+ * Ensures messages are announced even if identical to the previous message by appending
+ * a non-breaking space ('\u00A0') when necessary. This works around screen reader
+ * optimizations that might otherwise silence repeated identical alerts. The element's
+ * `aria-atomic="true"` attribute ensures the entire message is announced upon change.
+ *
+ * The alert element is associated with the currently active dialog's content element
+ * if a dialog is showing, otherwise defaults to an element associated with the document body.
+ * Messages longer than 10000 characters will be trimmed.
+ *
+ * @param message The message to be announced.
  */
 export declare function alert(message: string): void;
-export {};

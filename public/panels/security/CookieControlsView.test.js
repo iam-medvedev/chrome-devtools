@@ -42,7 +42,7 @@ describeWithMockConnection('CookieControlsView', () => {
         const resourceSite = urlString `https://test.com/`;
         const r = new SDK.Resource.Resource(model, null, resourceSite, resourceSite, null, null, Common.ResourceType.resourceTypes.Document, '', null, null);
         model.dispatchEventToListeners(SDK.ResourceTreeModel.Events.ResourceAdded, r);
-        assert.isTrue(getAffectedUrlsSpy.calledOnceWithExactly({ firstPartyUrl: '', thirdPartyUrls: [resourceSite] }));
+        sinon.assert.calledOnceWithExactly(getAffectedUrlsSpy, { firstPartyUrl: '', thirdPartyUrls: [resourceSite] });
     });
 });
 //# sourceMappingURL=CookieControlsView.test.js.map

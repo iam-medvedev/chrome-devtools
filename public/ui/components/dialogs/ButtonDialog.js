@@ -10,7 +10,6 @@ const buttonDialogStyles = new CSSStyleSheet();
 buttonDialogStyles.replaceSync(buttonDialogStylesRaw.cssText);
 export class ButtonDialog extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #dialog = null;
     #showButton = null;
     #data = null;
@@ -19,14 +18,14 @@ export class ButtonDialog extends HTMLElement {
     }
     set data(data) {
         this.#data = data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #showDialog() {
         if (!this.#dialog) {
             throw new Error('Dialog not found');
         }
         void this.#dialog.setDialogVisible(true);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #closeDialog(evt) {
         if (!this.#dialog) {
@@ -36,7 +35,7 @@ export class ButtonDialog extends HTMLElement {
         if (evt) {
             evt.stopImmediatePropagation();
         }
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #render() {
         if (!this.#data) {

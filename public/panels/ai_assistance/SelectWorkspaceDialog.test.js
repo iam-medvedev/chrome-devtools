@@ -4,7 +4,7 @@
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { createTestFilesystem, setupAutomaticFileSystem } from '../../testing/AiAssistanceHelpers.js';
-import { dispatchKeyDownEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -21,7 +21,7 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
         }
         Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.removeInstance();
     });
-    function createComponent() {
+    async function createComponent() {
         createTestFilesystem('file://test1');
         const { project } = createTestFilesystem('file://test2');
         const dialog = new UI.Dialog.Dialog('select-workspace');
@@ -33,12 +33,13 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         component.show(container);
+        await view.nextInput;
         sinon.assert.callCount(view, 1);
         assert.strictEqual(view.input.selectedIndex, 0);
         return { view, component, onProjectSelected, hideDialogSpy, project };
     }
     it('selects a project', async () => {
-        const { view, onProjectSelected, hideDialogSpy, project } = createComponent();
+        const { view, onProjectSelected, hideDialogSpy, project } = await createComponent();
         view.input.onProjectSelected(1);
         const input = await view.nextInput;
         sinon.assert.callCount(view, 2);
@@ -48,7 +49,7 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
         sinon.assert.calledOnce(hideDialogSpy);
     });
     it('can be canceled', async () => {
-        const { view, onProjectSelected, hideDialogSpy } = createComponent();
+        const { view, onProjectSelected, hideDialogSpy } = await createComponent();
         view.input.onProjectSelected(1);
         const input = await view.nextInput;
         sinon.assert.callCount(view, 2);
@@ -58,19 +59,19 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
         sinon.assert.calledOnce(hideDialogSpy);
     });
     it('listens to ArrowUp/Down', async () => {
-        const { view, component } = createComponent();
-        dispatchKeyDownEvent(component.element, { key: 'ArrowDown', bubbles: true, composed: true });
+        const { view } = await createComponent();
+        view.input.onListItemKeyDown(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
         let input = await view.nextInput;
         sinon.assert.callCount(view, 2);
         assert.strictEqual(input.selectedIndex, 1);
-        dispatchKeyDownEvent(component.element, { key: 'ArrowUp', bubbles: true, composed: true });
+        view.input.onListItemKeyDown(new KeyboardEvent('keydown', { key: 'ArrowUp' }));
         input = await view.nextInput;
         sinon.assert.callCount(view, 3);
         assert.strictEqual(input.selectedIndex, 0);
     });
     it('can add projects', async () => {
         const addProjectSpy = sinon.spy(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(), 'addFileSystem');
-        const { view } = createComponent();
+        const { view } = await createComponent();
         sinon.assert.callCount(view, 1);
         assert.lengthOf(view.input.folders, 2);
         assert.strictEqual(view.input.selectedIndex, 0);
@@ -85,7 +86,7 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
     });
     it('handles project removal', async () => {
         const addProjectSpy = sinon.spy(Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance(), 'addFileSystem');
-        const { view, project } = createComponent();
+        const { view, project } = await createComponent();
         view.input.onProjectSelected(1);
         let input = await view.nextInput;
         sinon.assert.callCount(view, 2);
@@ -100,7 +101,7 @@ describeWithEnvironment('SelectWorkspaceDialog', () => {
     });
     it('allows selecting an automatic workspace', async () => {
         setupAutomaticFileSystem({ hasFileSystem: true });
-        const { view, onProjectSelected, hideDialogSpy } = createComponent();
+        const { view, onProjectSelected, hideDialogSpy } = await createComponent();
         sinon.assert.callCount(view, 1);
         assert.lengthOf(view.input.folders, 3);
         assert.strictEqual(view.input.selectedIndex, 0);

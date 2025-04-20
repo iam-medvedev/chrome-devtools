@@ -11,9 +11,8 @@ const { render, html } = Lit;
 function getAccessibleText(element) {
     element.blur();
     element.focus();
-    const alertElements = UI.ARIAUtils.getOrCreateAlertElements();
-    const alertElement = alertElements.alertToggle ? alertElements.one : alertElements.two;
-    return alertElement.textContent || '';
+    const alertElement = UI.ARIAUtils.getOrCreateAlertElement();
+    return alertElement.textContent?.trim() || '';
 }
 function getFocusedElement() {
     let root = document;

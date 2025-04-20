@@ -47,10 +47,8 @@ export interface ReportJSON {
     finalUrl?: string;
     runWarnings?: string[];
     artifacts: {
-        traces: {
-            defaultPass: {
-                traceEvents: unknown[];
-            };
+        Trace: {
+            traceEvents: unknown[];
         };
     };
     audits: {
@@ -71,10 +69,8 @@ export interface DetailsJSON {
     displayUnit?: string;
 }
 export interface RunnerResultArtifacts {
-    traces: {
-        defaultPass: {
-            traceEvents: Trace.Types.Events.Event[];
-        };
+    Trace: {
+        traceEvents: Trace.Types.Events.Event[];
     };
     settings: {
         throttlingMethod: string;

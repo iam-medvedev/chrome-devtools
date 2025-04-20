@@ -1,21 +1,15 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
-import stylesRaw from './timespanBreakdownOverlay.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
+import timespanBreakdownOverlayStyles from './timespanBreakdownOverlay.css.js';
 const { html } = Lit;
 export class TimespanBreakdownOverlay extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #canvasRect = null;
     #sections = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
-    }
     set isBelowEntry(isBelow) {
         this.classList.toggle('is-below', isBelow);
     }
@@ -147,7 +141,8 @@ export class TimespanBreakdownOverlay extends HTMLElement {
             this.classList.toggle('odd-number-of-sections', this.#sections.length % 2 === 1);
             this.classList.toggle('even-number-of-sections', this.#sections.length % 2 === 0);
         }
-        Lit.render(html `${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
+        Lit.render(html `<style>${timespanBreakdownOverlayStyles.cssText}</style>
+             ${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
         this.checkSectionLabelPositioning();
     }
 }

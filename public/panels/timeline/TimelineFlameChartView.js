@@ -27,7 +27,7 @@ import { TimelineRegExp } from './TimelineFilters.js';
 import { TimelineFlameChartDataProvider, } from './TimelineFlameChartDataProvider.js';
 import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetworkDataProvider.js';
 import timelineFlameChartViewStyles from './timelineFlameChartView.css.js';
-import { rangeForSelection, selectionFromEvent, selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, } from './TimelineSelection.js';
+import { rangeForSelection, selectionFromEvent, selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, selectionsEqual } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
@@ -133,6 +133,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #treeRowClickDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: false });
     #activeInsightDimmer = this.#registerFlameChartDimmer({ inclusive: false, outline: true });
     #thirdPartyCheckboxDimmer = this.#registerFlameChartDimmer({ inclusive: true, outline: false });
+    /**
+     * Determines if we respect the user's prefers-reduced-motion setting. We
+     * absolutely should care about this; the only time we don't is in unit tests
+     * when we need to force animations on and don't want the environment to
+     * determine if they are on or not.
+     * It is not expected that this flag is ever disabled in non-test environments.
+     */
+    #checkReducedMotion = true;
     constructor(delegate) {
         super();
         this.registerRequiredCSS(timelineFlameChartViewStyles);
@@ -601,7 +609,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(this.#currentInsightOverlays);
             if (overlaysBounds) {
                 // Trace window covering all overlays expanded by 100% so that the overlays cover 50% of the visible window.
-                const expandedBounds = Trace.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, traceBounds, 100);
+                const percentage = options.updateTraceWindowPercentage ?? 100;
+                const expandedBounds = Trace.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, traceBounds, percentage);
                 // Set the timeline visible window and ignore the minimap bounds. This
                 // allows us to pick a visible window even if the overlays are outside of
                 // the current breadcrumb. If this happens, the event listener for
@@ -849,6 +858,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         this.runBrickBreakerGame();
     }
+    forceAnimationsForTest() {
+        this.#checkReducedMotion = false;
+    }
     runBrickBreakerGame() {
         if (!SHOULD_SHOW_EASTER_EGG) {
             return;
@@ -869,7 +881,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         const visibleWindow = event.state.milli.timelineTraceWindow;
         // If the user has set a preference for reduced motion, we disable any animations.
         const userHasReducedMotionSet = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const shouldAnimate = Boolean(event.options.shouldAnimate) && !userHasReducedMotionSet;
+        const shouldAnimate = Boolean(event.options.shouldAnimate) && (this.#checkReducedMotion ? !userHasReducedMotionSet : true);
         this.mainFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max, shouldAnimate);
         this.networkDataProvider.setWindowTimes(visibleWindow.min, visibleWindow.max);
         this.networkFlameChart.setWindowTimes(visibleWindow.min, visibleWindow.max, shouldAnimate);
@@ -1151,6 +1163,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
     }
     setSelectionAndReveal(selection) {
+        if (selection && this.#currentSelection && selectionsEqual(selection, this.#currentSelection)) {
+            return;
+        }
         this.#currentSelection = selection;
         // Clear any existing entry selection.
         this.#overlays.removeOverlaysOfType('ENTRY_SELECTED');

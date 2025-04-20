@@ -17,17 +17,11 @@ import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as Input from '../../../ui/components/input/input.js';
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
 // eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import recordingViewStylesRaw from './recordingView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw.cssText);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const recordingViewStyles = new CSSStyleSheet();
-recordingViewStyles.replaceSync(recordingViewStylesRaw.cssText);
+import recordingViewStyles from './recordingView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -285,11 +279,6 @@ export class RecordingView extends HTMLElement {
         this.#render();
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [
-            inspectorCommonStyles,
-            recordingViewStyles,
-            Input.textInputStyles,
-        ];
         document.addEventListener('copy', this.#onCopyBound);
         this.#render();
     }
@@ -1028,6 +1017,9 @@ export class RecordingView extends HTMLElement {
         };
         // clang-format off
         Lit.render(html `
+      <style>${inspectorCommonStyles.cssText}</style>
+      <style>${recordingViewStyles.cssText}</style>
+      <style>${Input.textInputStyles.cssText}</style>
       <div @click=${this.#onWrapperClick} class=${Lit.Directives.classMap(classNames)}>
         <div class="main">
           ${this.#renderHeader()}

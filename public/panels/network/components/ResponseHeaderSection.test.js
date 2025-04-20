@@ -647,7 +647,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
         assert.isTrue(recordedMetricsContain("DevTools.ActionTaken" /* Host.InspectorFrontendHostAPI.EnumeratedHistogram.ActionTaken */, Host.UserMetrics.Action.HeaderOverrideHeaderAdded));
         await editHeaderRow(component, 1, "HeaderName" /* HeaderAttribute.HEADER_NAME */, 'foo');
         expected = [{
@@ -663,7 +663,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
         await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'bar');
         expected = [{
                 applyTo: 'index.html',
@@ -678,7 +678,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
     });
     it('does not persist invalid header names', async () => {
         const headerOverridesFileContent = `[
@@ -723,7 +723,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
         let rows = component.shadowRoot.querySelectorAll('devtools-header-section-row');
         assert.lengthOf(rows, 2);
         checkHeaderSectionRow(rows[0], 'server', 'original server', false, false, true);
@@ -824,7 +824,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.lastCall, JSON.stringify(expected, null, 2));
     });
     it('can edit multiple headers which have the same name', async () => {
         const headerOverridesFileContent = '[]';
@@ -847,7 +847,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.lastCall, JSON.stringify(expected, null, 2));
         await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'fourth value');
         expected = [{
                 applyTo: 'index.html',
@@ -862,7 +862,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.lastCall, JSON.stringify(expected, null, 2));
     });
     it('can edit multiple headers which have the same name and which are already overridden', async () => {
         const headerOverridesFileContent = `[
@@ -903,7 +903,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.lastCall, JSON.stringify(expected, null, 2));
         await editHeaderRow(component, 0, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'sixth value');
         expected = [{
                 applyTo: 'index.html',
@@ -918,7 +918,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.lastCall.calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.lastCall, JSON.stringify(expected, null, 2));
     });
     it('persists edits to header overrides and resurfaces them upon component (re-)creation', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/index.html`, urlString ``, null, null, null);
@@ -955,7 +955,7 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
         component.remove();
         const component2 = await renderResponseHeaderSection(request);
         assert.isNotNull(component2.shadowRoot);
@@ -1095,10 +1095,10 @@ describeWithEnvironment('ResponseHeaderSection', () => {
                     },
                 ],
             }];
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
         await editHeaderRow(component, 1, "HeaderValue" /* HeaderAttribute.HEADER_VALUE */, 'bar=edited');
         expected[0].headers.push({ name: 'set-cookie', value: 'bar=edited' });
-        assert.isTrue(spy.getCall(-1).calledWith(JSON.stringify(expected, null, 2)));
+        sinon.assert.calledWith(spy.getCall(-1), JSON.stringify(expected, null, 2));
     });
     it('ignores capitalisation of the `set-cookie` header when marking as overridden', async () => {
         const request = {

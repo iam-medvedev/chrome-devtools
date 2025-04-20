@@ -8,10 +8,7 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as Utils from '../../utils/utils.js';
-import baseInsightComponentStylesRaw from './baseInsightComponent.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const baseInsightComponentStyles = new CSSStyleSheet();
-baseInsightComponentStyles.replaceSync(baseInsightComponentStylesRaw.cssText);
+import baseInsightComponentStyles from './baseInsightComponent.css.js';
 const { html } = Lit;
 export class EventReferenceClick extends Event {
     event;
@@ -23,19 +20,15 @@ export class EventReferenceClick extends Event {
 }
 class EventRef extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #text = null;
     #event = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [baseInsightComponentStyles];
-    }
     set text(text) {
         this.#text = text;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set event(event) {
         this.#event = event;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #render() {
         if (!this.#text || !this.#event) {
@@ -43,6 +36,7 @@ class EventRef extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${baseInsightComponentStyles.cssText}</style>
       <button type="button" class="timeline-link" @click=${(e) => {
             e.stopPropagation();
             if (this.#event) {
@@ -71,14 +65,10 @@ export function eventRef(event, options) {
 }
 class ImageRef extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #request;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [baseInsightComponentStyles];
-    }
     set request(request) {
         this.#request = request;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #render() {
         if (!this.#request) {
@@ -86,6 +76,7 @@ class ImageRef extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${baseInsightComponentStyles.cssText}</style>
       <div class="image-ref">
         ${this.#request.args.data.mimeType.includes('image') ? html `
           <img

@@ -18,13 +18,12 @@ const str_ = i18n.i18n.registerUIStrings('ui/components/panel_feedback/FeedbackB
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class FeedbackButton extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #props = {
         feedbackUrl: Platform.DevToolsPath.EmptyUrlString,
     };
     set data(data) {
         this.#props = data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onFeedbackClick() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(this.#props.feedbackUrl);

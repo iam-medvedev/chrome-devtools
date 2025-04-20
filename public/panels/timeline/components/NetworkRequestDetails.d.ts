@@ -6,7 +6,6 @@ import type * as TimelineUtils from '../utils/utils.js';
 export declare class NetworkRequestDetails extends HTMLElement {
     #private;
     constructor(linkifier: LegacyComponents.Linkifier.Linkifier);
-    connectedCallback(): void;
     setData(parsedTrace: Trace.Handlers.Types.ParsedTrace, networkRequest: Trace.Types.Events.SyntheticNetworkRequest, maybeTarget: SDK.Target.Target | null, entityMapper: TimelineUtils.EntityMapper.EntityMapper | null): Promise<void>;
 }
 declare global {

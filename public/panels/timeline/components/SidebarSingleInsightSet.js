@@ -14,11 +14,8 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { md } from '../utils/Helpers.js';
 import { shouldRenderForCategory } from './insights/Helpers.js';
 import * as Insights from './insights/insights.js';
-import stylesRaw from './sidebarSingleInsightSet.css.js';
+import sidebarSingleInsightSetStyles from './sidebarSingleInsightSet.css.js';
 import { determineCompareRating, NumberWithUnit } from './Utils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
 const { html } = Lit.StaticHtml;
 const UIStrings = {
     /**
@@ -101,7 +98,6 @@ const INSIGHT_NAME_TO_COMPONENT = {
 };
 export class SidebarSingleInsightSet extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #activeInsightElement = null;
     #data = {
         insights: null,
@@ -115,10 +111,9 @@ export class SidebarSingleInsightSet extends HTMLElement {
     #activeHighlightTimeout = -1;
     set data(data) {
         this.#data = data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
     }
     disconnectedCallback() {
@@ -386,6 +381,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${sidebarSingleInsightSetStyles.cssText}</style>
       <div class="navigation">
         ${this.#renderMetrics(insightSetKey)}
         ${this.#renderInsights(insights, insightSetKey)}

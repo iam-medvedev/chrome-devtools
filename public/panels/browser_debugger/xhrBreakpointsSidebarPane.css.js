@@ -46,7 +46,7 @@ export default {
   background-color: var(--sys-color-tonal-container);
 }
 
-.breakpoint-entry dt-checkbox {
+.breakpoint-entry devtools-checkbox {
   max-width: 100%;
 }
 

@@ -1,17 +1,14 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view, rulesdir/inject-checkbox-styles */
 import '../../../ui/legacy/legacy.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Input from '../../../ui/components/input/input.js';
 import { html, nothing, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import CSSPropertyDocsViewStylesRaw from './cssPropertyDocsView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const CSSPropertyDocsViewStyles = new CSSStyleSheet();
-CSSPropertyDocsViewStyles.replaceSync(CSSPropertyDocsViewStylesRaw.cssText);
+import CSSPropertyDocsViewStyles from './cssPropertyDocsView.css.js';
 const UIStrings = {
     /**
      *@description Text for button that redirects to CSS property documentation.
@@ -30,7 +27,6 @@ export class CSSPropertyDocsView extends HTMLElement {
     constructor(cssProperty) {
         super();
         this.#cssProperty = cssProperty;
-        this.#shadow.adoptedStyleSheets = [Input.checkboxStyles, CSSPropertyDocsViewStyles];
         this.#render();
     }
     #dontShowChanged(e) {
@@ -45,6 +41,8 @@ export class CSSPropertyDocsView extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${Input.checkboxStyles.cssText}</style>
+      <style>${CSSPropertyDocsViewStyles.cssText}</style>
       <div class="docs-popup-wrapper">
         ${description ? html `
           <div id="description">

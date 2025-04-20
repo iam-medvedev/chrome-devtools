@@ -76,7 +76,7 @@ describeWithMockConnection('StylePropertyHighlighter', () => {
         const firstChild = section.propertiesTreeOutline.firstChild();
         assert.exists(firstChild);
         assert.deepEqual(firstChild.property, property);
-        assert.isTrue(highlightSpy.calledOnceWithExactly(block.titleElement()));
+        sinon.assert.calledOnceWithExactly(highlightSpy, block.titleElement());
     });
     it('highlights sections', async () => {
         const { stylesSidebarPane, matchedStyles } = await setupStylesPane();
@@ -88,7 +88,7 @@ describeWithMockConnection('StylePropertyHighlighter', () => {
         const highlightSpy = sinon.stub(PanelUtils.PanelUtils, 'highlightElement');
         highlighter.findAndHighlightSection('sectionname', 'blockname');
         sinon.assert.called(blockExpandSpy);
-        assert.isTrue(highlightSpy.calledOnceWithExactly(block.sections[0].element));
+        sinon.assert.calledOnceWithExactly(highlightSpy, block.sections[0].element);
     });
     it('highlights properties in sections in blocks', async () => {
         const { stylesSidebarPane, matchedStyles } = await setupStylesPane();
@@ -114,7 +114,7 @@ describeWithMockConnection('StylePropertyHighlighter', () => {
         sinon.assert.called(block2ExpandSpy);
         const element = block2.sections[1].propertiesTreeOutline.firstChild()?.listItemElement;
         assert.exists(element);
-        assert.isTrue(highlightSpy.calledOnceWithExactly(element));
+        sinon.assert.calledOnceWithExactly(highlightSpy, element);
     });
 });
 //# sourceMappingURL=StylePropertyHighlighter.test.js.map

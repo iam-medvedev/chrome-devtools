@@ -6,10 +6,7 @@ import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import { html, render } from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
-import stylesRaw from './timeRangeOverlay.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
+import timeRangeOverlayStyles from './timeRangeOverlay.css.js';
 const UIStrings = {
     /**
      *@description Accessible label used to explain to a user that they are viewing an entry label.
@@ -42,9 +39,6 @@ export class TimeRangeOverlay extends HTMLElement {
     #isLabelEditable = true;
     #rangeContainer = null;
     #labelBox = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
-    }
     constructor(initialLabel) {
         super();
         this.#render();
@@ -227,6 +221,7 @@ export class TimeRangeOverlay extends HTMLElement {
         const durationText = this.#duration ? i18n.TimeUtilities.formatMicroSecondsTime(this.#duration) : '';
         // clang-format off
         render(html `
+          <style>${timeRangeOverlayStyles.cssText}</style>
           <span class="range-container" role="region" aria-label=${i18nString(UIStrings.timeRange)}>
             <span
              class="label-text"

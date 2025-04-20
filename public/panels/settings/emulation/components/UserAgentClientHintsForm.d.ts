@@ -23,7 +23,6 @@ export interface UserAgentClientHintsFormData {
  */
 export declare class UserAgentClientHintsForm extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set value(data: UserAgentClientHintsFormData);
     get value(): UserAgentClientHintsFormData;
     set disabled(disableForm: boolean);

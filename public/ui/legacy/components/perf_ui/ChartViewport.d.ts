@@ -102,6 +102,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private requestWindowTimes;
     scheduleUpdate(): void;
     update(): void;
+    willHide(): void;
     setWindowTimes(startTime: number, endTime: number, animate?: boolean): void;
     windowLeftTime(): number;
     windowRightTime(): number;

@@ -24,7 +24,7 @@ describeWithEnvironment('RequestResponseView', () => {
         component.markAsRoot();
         component.show(document.body);
         const widget = await showPreviewSpy.returnValues[0];
-        assert.isTrue(viewStub.calledOnceWithExactly(request, 'application/wasm'));
+        sinon.assert.calledOnceWithExactly(viewStub, request, 'application/wasm');
         assert.strictEqual(widget, mockedSourceView);
         component.detach();
     });

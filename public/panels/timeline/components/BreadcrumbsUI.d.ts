@@ -11,7 +11,6 @@ export declare class BreadcrumbActivatedEvent extends Event {
 }
 export declare class BreadcrumbsUI extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: BreadcrumbsUIData);
 }
 declare global {

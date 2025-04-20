@@ -36,7 +36,6 @@ const previewFeatureUrl = new URL('../../../Images/experiment.svg', import.meta.
 const videoThumbnailUrl = new URL('../../../Images/preview_feature_video_thumbnail.svg', import.meta.url).toString();
 export class PanelFeedback extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #props = {
         feedbackUrl: Platform.DevToolsPath.EmptyUrlString,
         quickStartUrl: Platform.DevToolsPath.EmptyUrlString,
@@ -47,7 +46,7 @@ export class PanelFeedback extends HTMLElement {
     }
     set data(data) {
         this.#props = data;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {

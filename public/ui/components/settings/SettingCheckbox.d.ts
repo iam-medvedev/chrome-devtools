@@ -10,7 +10,6 @@ export interface SettingCheckboxData {
  */
 export declare class SettingCheckbox extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: SettingCheckboxData);
     icon(): Lit.TemplateResult | undefined;
 }

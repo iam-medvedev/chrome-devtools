@@ -179,24 +179,24 @@ describeWithMockConnection('SharedStorageModel', () => {
         const sharedStorage = new Resources.SharedStorageModel.SharedStorageForOrigin(sharedStorageModel, TEST_ORIGIN_A);
         assert.strictEqual(sharedStorage.securityOrigin, TEST_ORIGIN_A);
         const metadata = await sharedStorage.getMetadata();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN_A }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN_A });
         assert.deepEqual(METADATA, metadata);
         const entries = await sharedStorage.getEntries();
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN_A }));
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN_A });
         assert.deepEqual(ENTRIES, entries);
         await sharedStorage.setEntry('new-key1', 'new-value1', true);
-        assert.isTrue(setEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN_A, key: 'new-key1', value: 'new-value1', ignoreIfPresent: true }));
+        sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN_A, key: 'new-key1', value: 'new-value1', ignoreIfPresent: true });
         await sharedStorage.deleteEntry('new-key1');
-        assert.isTrue(deleteEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN_A, key: 'new-key1' }));
+        sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN_A, key: 'new-key1' });
         await sharedStorage.clear();
-        assert.isTrue(clearSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN_A }));
+        sinon.assert.calledOnceWithExactly(clearSpy, { ownerOrigin: TEST_ORIGIN_A });
     });
     it('adds/removes SharedStorageForOrigin on SecurityOrigin events', async () => {
         const setTrackingSpy = sinon.stub(sharedStorageModel.storageAgent, 'invoke_setSharedStorageTracking').resolves({
             getError: () => undefined,
         });
         await sharedStorageModel.enable();
-        assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
+        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         assert.isEmpty(sharedStorageModel.storages());
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         assert.exists(manager);
@@ -212,7 +212,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             getError: () => undefined,
         });
         await sharedStorageModel.enable();
-        assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
+        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         assert.isEmpty(sharedStorageModel.storages());
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         assert.exists(manager);
@@ -224,7 +224,7 @@ describeWithMockConnection('SharedStorageModel', () => {
             getError: () => undefined,
         });
         await sharedStorageModel.enable();
-        assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
+        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         assert.isEmpty(sharedStorageModel.storages());
         const addedPromise = listener.waitForStoragesAdded(1);
         navigate(getMainFrame(target), { url: TEST_ORIGIN_A });
@@ -245,7 +245,7 @@ describeWithMockConnection('SharedStorageModel', () => {
         assert.lengthOf(manager.securityOrigins(), 3);
         const addedPromise = listener.waitForStoragesAdded(3);
         await sharedStorageModel.enable();
-        assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
+        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         await addedPromise;
         assert.strictEqual(3, sharedStorageModel.numStoragesForTesting());
         assert.exists(sharedStorageModel.storageForOrigin(TEST_ORIGIN_A));
@@ -261,7 +261,7 @@ describeWithMockConnection('SharedStorageModel', () => {
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         assert.exists(manager);
         await sharedStorageModel.enable();
-        assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
+        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         for (const event of EVENTS) {
             sharedStorageModel.sharedStorageAccessed(event);
         }
@@ -274,7 +274,7 @@ describeWithMockConnection('SharedStorageModel', () => {
         const manager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         assert.exists(manager);
         await sharedStorageModel.enable();
-        assert.isTrue(setTrackingSpy.calledOnceWithExactly({ enable: true }));
+        sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
         // For change events whose origins aren't yet in the model, the origin is added
         // to the model, with the `SharedStorageAdded` event being subsequently dispatched
         // instead of the `SharedStorageChanged` event.

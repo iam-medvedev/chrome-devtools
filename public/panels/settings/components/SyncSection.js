@@ -40,14 +40,13 @@ export class SyncSection extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #syncInfo = { isSyncActive: false };
     #syncSetting;
-    #boundRender = this.#render.bind(this);
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [syncSectionStyles];
     }
     set data(data) {
         this.#syncInfo = data.syncInfo;
         this.#syncSetting = data.syncSetting;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #render() {
         if (!this.#syncSetting) {

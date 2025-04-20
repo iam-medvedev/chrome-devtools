@@ -339,7 +339,7 @@ export class ThrottlingManager {
         icon.data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
         const warning = new UI.Toolbar.ToolbarItem(icon);
         warning.setTitle(i18nString(UIStrings.excessConcurrency));
-        checkbox.checkboxElement.disabled = true; // Prevent modification while still wiring things up asynchronously below
+        checkbox.disabled = true; // Prevent modification while still wiring things up asynchronously below
         reset.element.classList.add('concurrency-hidden');
         warning.element.classList.add('concurrency-hidden');
         void this.cpuThrottlingManager.getHardwareConcurrency().then(defaultValue => {
@@ -365,9 +365,9 @@ export class ThrottlingManager {
             };
             inputElement.value = `${defaultValue}`;
             inputElement.oninput = () => setHardwareConcurrency(Number(inputElement.value));
-            checkbox.checkboxElement.disabled = false;
-            checkbox.checkboxElement.addEventListener('change', () => {
-                this.#hardwareConcurrencyOverrideEnabled = checkbox.checkboxElement.checked;
+            checkbox.disabled = false;
+            checkbox.addEventListener('change', () => {
+                this.#hardwareConcurrencyOverrideEnabled = checkbox.checked;
                 numericInput.setEnabled(this.hardwareConcurrencyOverrideEnabled);
                 setHardwareConcurrency(this.hardwareConcurrencyOverrideEnabled ? Number(inputElement.value) : defaultValue);
             });

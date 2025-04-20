@@ -408,41 +408,36 @@ export class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrapper {
 export class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper {
     filterElement;
     activeWhenChecked;
-    label;
-    checkboxElement;
+    checkbox;
     constructor(title, activeWhenChecked, setting, jslogContext) {
         super();
         this.filterElement = document.createElement('div');
         this.filterElement.classList.add('filter-checkbox-filter');
         this.activeWhenChecked = Boolean(activeWhenChecked);
-        this.label = CheckboxLabel.create(title);
-        this.filterElement.appendChild(this.label);
-        this.checkboxElement = this.label.checkboxElement;
+        this.checkbox = CheckboxLabel.create(title, undefined, undefined, jslogContext);
+        this.filterElement.appendChild(this.checkbox);
         if (setting) {
-            bindCheckbox(this.checkboxElement, setting);
+            bindCheckbox(this.checkbox, setting);
         }
         else {
-            this.checkboxElement.checked = true;
+            this.checkbox.checked = true;
         }
-        this.checkboxElement.addEventListener('change', this.fireUpdated.bind(this), false);
-        if (jslogContext) {
-            this.checkboxElement.setAttribute('jslog', `${VisualLogging.toggle().track({ change: true }).context(jslogContext)}`);
-        }
+        this.checkbox.addEventListener('change', this.fireUpdated.bind(this), false);
     }
     isActive() {
-        return this.activeWhenChecked === this.checkboxElement.checked;
+        return this.activeWhenChecked === this.checkbox.checked;
     }
     checked() {
-        return this.checkboxElement.checked;
+        return this.checkbox.checked;
     }
     setChecked(checked) {
-        this.checkboxElement.checked = checked;
+        this.checkbox.checked = checked;
     }
     element() {
         return this.filterElement;
     }
     labelElement() {
-        return this.label;
+        return this.checkbox;
     }
     fireUpdated() {
         this.dispatchEventToListeners("FilterChanged" /* FilterUIEvents.FILTER_CHANGED */);

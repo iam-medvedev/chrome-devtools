@@ -89,7 +89,7 @@ export default {
   font: var(--sys-typescale-body4-regular);
   margin: var(--sys-size-3) 0;
 
-  > dt-checkbox:first-child {
+  > devtools-checkbox:first-child {
     margin-left: calc(var(--sys-size-4) * -1);
   }
 

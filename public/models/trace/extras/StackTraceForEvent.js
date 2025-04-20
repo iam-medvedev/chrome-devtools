@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 export const stackTraceForEventInTrace = new Map();
 export function clearCacheForTrace(parsedTrace) {
@@ -23,20 +24,23 @@ export function get(event, parsedTrace) {
         return resultFromCache;
     }
     let result = null;
-    if (Types.Events.isProfileCall(event)) {
-        result = getForProfileCall(event, parsedTrace);
-    }
-    else if (Types.Extensions.isSyntheticExtensionEntry(event)) {
+    if (Types.Extensions.isSyntheticExtensionEntry(event)) {
         result = getForExtensionEntry(event, parsedTrace);
     }
-    else if (Types.Events.isUserTiming(event)) {
-        result = getForUserTiming(event, parsedTrace);
+    else if (Types.Events.isPerformanceMeasureBegin(event)) {
+        result = getForPerformanceMeasure(event, parsedTrace);
     }
-    else if (Types.Events.isLayout(event) || Types.Events.isUpdateLayoutTree(event)) {
-        const node = parsedTrace.Renderer.entryToNode.get(event);
-        const parent = node?.parent?.entry;
-        if (parent) {
-            result = get(parent, parsedTrace);
+    else {
+        result = getForEvent(event, parsedTrace);
+        const maybeProtocolCallFrame = getPayloadStackAsProtocolCallFrame(event);
+        if (result && maybeProtocolCallFrame && !isNativeJSFunction(maybeProtocolCallFrame)) {
+            // If the event has a payload stack trace, replace the top frame
+            // of the calculated stack with the top frame of the payload stack
+            // because trace payload call frames contain call locations, unlike
+            // profile call frames (which contain function declaration locations).
+            // This way the user knows which exact JS location triggered an
+            // event.
+            result.callFrames[0] = maybeProtocolCallFrame;
         }
     }
     if (result) {
@@ -44,21 +48,36 @@ export function get(event, parsedTrace) {
     }
     return result;
 }
-function getForProfileCall(event, parsedTrace) {
+/**
+ * Fallback method to obtain a stack trace using the parsed event tree
+ * hierarchy. This shouldn't be called outside of this file, use `get`
+ * instead to ensure the correct event in the tree hierarchy is used.
+ */
+function getForEvent(event, parsedTrace) {
     // When working with a CPU profile the renderer handler won't have
     // entries in its tree.
     const entryToNode = parsedTrace.Renderer.entryToNode.size > 0 ? parsedTrace.Renderer.entryToNode : parsedTrace.Samples.entryToNode;
     const topStackTrace = { callFrames: [] };
     let stackTrace = topStackTrace;
-    let currentEntry = event;
+    let currentEntry;
     let node = entryToNode.get(event);
     const traceCache = stackTraceForEventInTrace.get(parsedTrace) || new Map();
     stackTraceForEventInTrace.set(parsedTrace, traceCache);
-    // Move up this node's ancestor tree appending frames to its
-    // stack trace.
+    // Move up this node's ancestor tree appending JS frames to its
+    // stack trace. If an async caller is detected, move up in the async
+    // stack instead.
     while (node) {
         if (!Types.Events.isProfileCall(node.entry)) {
-            node = node.parent;
+            const maybeAsyncParent = parsedTrace.AsyncJSCalls.runEntryPointToScheduler.get(node.entry);
+            if (!maybeAsyncParent) {
+                node = node.parent;
+                continue;
+            }
+            const maybeAsyncParentNode = maybeAsyncParent && entryToNode.get(maybeAsyncParent.scheduler);
+            if (maybeAsyncParentNode) {
+                stackTrace = addAsyncParentToStack(stackTrace, maybeAsyncParent.taskName);
+                node = maybeAsyncParentNode;
+            }
             continue;
         }
         currentEntry = node.entry;
@@ -83,18 +102,7 @@ function getForProfileCall(event, parsedTrace) {
         const maybeAsyncParentEvent = parsedTrace.AsyncJSCalls.asyncCallToScheduler.get(currentEntry);
         const maybeAsyncParentNode = maybeAsyncParentEvent && entryToNode.get(maybeAsyncParentEvent.scheduler);
         if (maybeAsyncParentNode) {
-            // The Protocol.Runtime.StackTrace type is recursive, so we
-            // move one level deeper in it as we walk up the ancestor tree.
-            stackTrace.parent = { callFrames: [] };
-            stackTrace = stackTrace.parent;
-            // Note: this description effectively corresponds to the name
-            // of the task that scheduled the stack trace we are jumping
-            // FROM, so it would make sense that it was set to that stack
-            // trace instead of the one we are jumping TO. However, the
-            // JS presentation utils we use to present async stack traces
-            // assume the description is added to the stack trace that
-            // scheduled the async task, so we build the data that way.
-            stackTrace.description = maybeAsyncParentEvent.taskName;
+            stackTrace = addAsyncParentToStack(stackTrace, maybeAsyncParentEvent.taskName);
             node = maybeAsyncParentNode;
             continue;
         }
@@ -102,39 +110,54 @@ function getForProfileCall(event, parsedTrace) {
     }
     return topStackTrace;
 }
+function addAsyncParentToStack(stackTrace, taskName) {
+    const parent = { callFrames: [] };
+    // The Protocol.Runtime.StackTrace type is recursive, so we
+    // move one level deeper in it as we walk up the ancestor tree.
+    stackTrace.parent = parent;
+    // Note: this description effectively corresponds to the name
+    // of the task that scheduled the stack trace we are jumping
+    // FROM, so it would make sense that it was set to that stack
+    // trace instead of the one we are jumping TO. However, the
+    // JS presentation utils we use to present async stack traces
+    // assume the description is added to the stack trace that
+    // scheduled the async task, so we build the data that way.
+    parent.description = taskName;
+    return parent;
+}
 /**
  * Finds the JS call in which an extension entry was injected (the
  * code location that called the extension API), and returns its stack
  * trace.
  */
 function getForExtensionEntry(event, parsedTrace) {
-    return getForUserTiming(event.rawSourceEvent, parsedTrace);
-}
-/**
- * Finds the JS call in which the user timing API was called and returns
- * its stack trace.
- */
-function getForUserTiming(event, parsedTrace) {
-    let rawEvent = event;
-    if (Types.Events.isPerformanceMeasureBegin(event)) {
-        if (event.args.traceId === undefined) {
-            return null;
-        }
-        rawEvent = parsedTrace.UserTimings.measureTraceByTraceId.get(event.args.traceId);
+    const rawEvent = event.rawSourceEvent;
+    if (Types.Events.isPerformanceMeasureBegin(rawEvent)) {
+        return getForPerformanceMeasure(rawEvent, parsedTrace);
     }
     if (!rawEvent) {
         return null;
     }
-    // Look for the nearest profile call ancestor of the event tracing
-    // the call to the API.
-    let node = parsedTrace.Renderer.entryToNode.get(rawEvent);
-    while (node && !Types.Events.isProfileCall(node.entry)) {
-        node = node.parent;
+    return get(rawEvent, parsedTrace);
+}
+/**
+ * Gets the raw event for a user timing and obtains its stack trace.
+ */
+function getForPerformanceMeasure(event, parsedTrace) {
+    let rawEvent = event;
+    if (event.args.traceId === undefined) {
+        return null;
     }
-    if (node && Types.Events.isProfileCall(node.entry)) {
-        return get(node.entry, parsedTrace);
+    // performance.measure calls dispatch 2 events: one for the call
+    // itself and another to represent the measured entry in the trace
+    // timeline. They are connected via a common traceId. At this
+    // point `rawEvent` corresponds to the second case, we must
+    // encounter the event for the call itself to obtain its callstack.
+    rawEvent = parsedTrace.UserTimings.measureTraceByTraceId.get(event.args.traceId);
+    if (!rawEvent) {
+        return null;
     }
-    return null;
+    return get(rawEvent, parsedTrace);
 }
 /**
  * Determines if a function is a native JS API (like setTimeout,
@@ -147,5 +170,15 @@ function getForUserTiming(event, parsedTrace) {
  */
 function isNativeJSFunction({ columnNumber, lineNumber, url, scriptId }) {
     return lineNumber === -1 && columnNumber === -1 && url === '' && scriptId === '0';
+}
+/**
+ * Extracts the top frame in the stack contained in a trace event's payload
+ * (if any) and casts it as a Protocol.Runtime.CallFrame.
+ */
+function getPayloadStackAsProtocolCallFrame(event) {
+    const maybeCallStack = Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
+    const maybeCallFrame = maybeCallStack?.at(0);
+    const maybeProtocolCallFrame = maybeCallFrame && { ...maybeCallFrame, scriptId: String(maybeCallFrame.scriptId) };
+    return maybeProtocolCallFrame || null;
 }
 //# sourceMappingURL=StackTraceForEvent.js.map

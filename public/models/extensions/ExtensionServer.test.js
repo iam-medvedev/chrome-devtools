@@ -23,7 +23,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.isUndefined(context.chrome.devtools);
         const addExtensionStub = sinon.stub(Extensions.ExtensionServer.ExtensionServer.instance(), 'addExtension');
         createTarget().setInspectedURL(urlString `http://example.com`);
-        assert.isTrue(addExtensionStub.calledOnceWithExactly(context.extensionDescriptor));
+        sinon.assert.calledOnceWithExactly(addExtensionStub, context.extensionDescriptor);
     });
     it('are not initialized before the target is initialized and navigated to a non-privileged URL', async () => {
         // This check is a proxy for verifying that the extension has been initialized. Outside of the test the extension
@@ -101,7 +101,7 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             assert.isTrue(didThrow, 'SetFunctionRangesForScript did not throw an error as expected.');
             sinon.assert.notCalled(workspaceBindingSetFunctionRangesStub);
             await sourceMapScripts[0].setFunctionRangesForScript(validFunctionRanges);
-            assert.isTrue(workspaceBindingSetFunctionRangesStub.calledOnceWithExactly(uiSourceCode, validFunctionRanges));
+            sinon.assert.calledOnceWithExactly(workspaceBindingSetFunctionRangesStub, uiSourceCode, validFunctionRanges);
         });
     });
 });

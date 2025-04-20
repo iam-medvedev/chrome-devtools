@@ -511,11 +511,11 @@ export const generatedProperties = [
             "inset-block-start",
             "inset-inline-end",
             "inset-inline-start",
-            "interactivity",
             "interest-target-hide-delay",
             "interest-target-show-delay",
             "interpolate-size",
             "isolation",
+            "item-tolerance",
             "justify-content",
             "justify-items",
             "justify-self",
@@ -551,7 +551,6 @@ export const generatedProperties = [
             "masonry-auto-tracks",
             "masonry-direction",
             "masonry-fill",
-            "masonry-slack",
             "masonry-template-tracks",
             "masonry-track-end",
             "masonry-track-start",
@@ -1769,6 +1768,7 @@ export const generatedProperties = [
     },
     {
         "keywords": [
+            "auto",
             "nowrap",
             "wrap"
         ],
@@ -2704,6 +2704,12 @@ export const generatedProperties = [
         "name": "isolation"
     },
     {
+        "keywords": [
+            "normal"
+        ],
+        "name": "item-tolerance"
+    },
+    {
         "name": "justify-content"
     },
     {
@@ -2976,12 +2982,6 @@ export const generatedProperties = [
             "masonry-fill"
         ],
         "name": "masonry-flow"
-    },
-    {
-        "keywords": [
-            "normal"
-        ],
-        "name": "masonry-slack"
     },
     {
         "name": "masonry-template-tracks"
@@ -3636,6 +3636,13 @@ export const generatedProperties = [
             "under"
         ],
         "name": "ruby-position"
+    },
+    {
+        "longhands": [
+            "column-rule-color",
+            "row-rule-color"
+        ],
+        "name": "rule-color"
     },
     {
         "keywords": [
@@ -5181,6 +5188,7 @@ export const generatedPropertyValues = {
     },
     "column-wrap": {
         "values": [
+            "auto",
             "nowrap",
             "wrap"
         ]
@@ -5752,6 +5760,11 @@ export const generatedPropertyValues = {
             "isolate"
         ]
     },
+    "item-tolerance": {
+        "values": [
+            "normal"
+        ]
+    },
     "left": {
         "values": [
             "auto"
@@ -5889,11 +5902,6 @@ export const generatedPropertyValues = {
         "values": [
             "normal",
             "reverse"
-        ]
-    },
-    "masonry-slack": {
-        "values": [
-            "normal"
         ]
     },
     "masonry-track-end": {

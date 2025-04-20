@@ -50,7 +50,7 @@ export default {
   z-index: -1;
 }
 
-dt-checkbox.source-code {
+devtools-checkbox.source-code {
   max-width: 100%;
 }
 

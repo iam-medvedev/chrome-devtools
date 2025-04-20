@@ -329,8 +329,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { view, itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         // Clicking "Refresh" will cause `getMetadata()` and `getEntries()` to be called.
         itemsListener.resetRefreshed();
@@ -338,9 +338,9 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         dispatchClickEvent(view.refreshButton.element);
         await refreshedPromise2;
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
     });
     it('clears entries when "Delete All" is clicked', async () => {
@@ -371,18 +371,18 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { view, itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         // Clicking "Delete All" will cause `clear()`, `getMetadata()`, and `getEntries()` to be called.
         const clearedPromise = itemsListener.waitForItemsCleared();
         dispatchClickEvent(view.deleteAllButton.element);
         await clearedPromise;
-        assert.isTrue(clearSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(clearSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, []);
     });
     it('clears filtered entries when "Delete All" is clicked with a filter set', async () => {
@@ -429,8 +429,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { view, itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         // Adding a filter to the text box will cause `getMetadata()`, and `getEntries()` to be called.
         itemsListener.resetRefreshed();
@@ -438,20 +438,20 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.filterItem.dispatchEventToListeners("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, 'b');
         await refreshedPromise2;
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         // Only the filtered entries are displayed.
         assert.deepEqual(viewFunction.input.items, ENTRIES_1);
         // Clicking "Delete All" will cause `deleteEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const clearedPromise = itemsListener.waitForFilteredItemsCleared();
         dispatchClickEvent(view.deleteAllButton.element);
         await clearedPromise;
-        assert.isTrue(deleteEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key2' }));
+        sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2' });
         sinon.assert.callCount(getMetadataSpy, 3);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledThrice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         // The filtered entries are cleared.
         assert.deepEqual(viewFunction.input.items, []);
         // Changing the filter in the text box will cause `getMetadata()`, and `getEntries()` to be called.
@@ -460,9 +460,9 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         view.filterItem.dispatchEventToListeners("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, '');
         await refreshedPromise3;
         sinon.assert.callCount(getMetadataSpy, 4);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.callCount(getEntriesSpy, 4);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES_2);
     });
     it('deletes selected entry when "Delete Selected" is clicked', async () => {
@@ -493,8 +493,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { view, itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         // Select the second row.
         viewFunction.input.onSelect(new CustomEvent('select', { detail: createMockElement('key2', 'b') }));
@@ -502,11 +502,11 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         const deletedPromise = itemsListener.waitForItemsDeletedTotal(1);
         dispatchClickEvent(view.deleteSelectedButton.element);
         await deletedPromise;
-        assert.isTrue(deleteEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key2' }));
+        sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2' });
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, []);
         assert.deepEqual(itemsListener.deletedKeys, ['key2']);
     });
@@ -545,8 +545,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         viewFunction.input.onEdit(new CustomEvent('edit', {
             detail: {
@@ -558,12 +558,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         }));
         //  Editing a key will cause `deleteEntry()`, `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         await itemsListener.waitForItemsEditedTotal(1);
-        assert.isTrue(deleteEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key2' }));
-        assert.isTrue(setEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key0', value: 'b', ignoreIfPresent: false }));
+        sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2' });
+        sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key0', value: 'b', ignoreIfPresent: false });
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledThrice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES_KEY_EDITED_1);
     });
     it('edits key of selected entry to a preexisting key', async () => {
@@ -601,8 +601,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         viewFunction.input.onEdit(new CustomEvent('edit', {
             detail: {
@@ -613,12 +613,12 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             },
         }));
         await itemsListener.waitForItemsEditedTotal(1);
-        assert.isTrue(deleteEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key2' }));
-        assert.isTrue(setEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key1', value: 'b', ignoreIfPresent: false }));
+        sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2' });
+        sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key1', value: 'b', ignoreIfPresent: false });
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledThrice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES_KEY_EDITED_2);
         // Verify that the preview loads.
         assert.instanceOf(viewFunction.input.preview, UI.SearchableView.SearchableView);
@@ -654,8 +654,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         viewFunction.input.onEdit(new CustomEvent('edit', {
             detail: {
@@ -667,11 +667,11 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         }));
         await itemsListener.waitForItemsEditedTotal(1);
         sinon.assert.notCalled(deleteEntrySpy);
-        assert.isTrue(setEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key2', value: 'd', ignoreIfPresent: false }));
+        sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2', value: 'd', ignoreIfPresent: false });
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES_VALUE_EDITED);
         // Verify that the preview loads.
         assert.instanceOf(viewFunction.input.preview, UI.SearchableView.SearchableView);
@@ -707,8 +707,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         viewFunction.input.onCreate(new CustomEvent('edit', {
             detail: {
@@ -718,11 +718,11 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         }));
         await itemsListener.waitForItemsEditedTotal(1);
         sinon.assert.notCalled(deleteEntrySpy);
-        assert.isTrue(setEntrySpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN, key: 'key4', value: 'e', ignoreIfPresent: false }));
+        sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key4', value: 'e', ignoreIfPresent: false });
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES_NEW_KEY);
         // Verify that the preview loads.
         assert.instanceOf(viewFunction.input.preview, UI.SearchableView.SearchableView);
@@ -744,8 +744,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
             getError: () => undefined,
         });
         const { itemsListener, viewFunction } = await createView();
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
-        assert.isTrue(getEntriesSpy.calledOnceWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
+        sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         viewFunction.input.onSelect(new CustomEvent('select', { detail: createMockElement('key2', 'b') }));
         viewFunction.input.onEdit(new CustomEvent('edit', {
@@ -760,9 +760,9 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.notCalled(deleteEntrySpy);
         sinon.assert.notCalled(setEntrySpy);
         sinon.assert.calledTwice(getMetadataSpy);
-        assert.isTrue(getMetadataSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledTwice(getEntriesSpy);
-        assert.isTrue(getEntriesSpy.alwaysCalledWithExactly({ ownerOrigin: TEST_ORIGIN }));
+        sinon.assert.alwaysCalledWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         // Verify that the preview loads.
         assert.instanceOf(viewFunction.input.preview, UI.SearchableView.SearchableView);

@@ -14,11 +14,8 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import { md } from '../../utils/Helpers.js';
 import * as Utils from '../../utils/utils.js';
-import baseInsightComponentStylesRaw from './baseInsightComponent.css.js';
+import baseInsightComponentStyles from './baseInsightComponent.css.js';
 import * as SidebarInsight from './SidebarInsight.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const baseInsightComponentStyles = new CSSStyleSheet();
-baseInsightComponentStyles.replaceSync(baseInsightComponentStylesRaw.cssText);
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -72,14 +69,13 @@ export class BaseInsightComponent extends HTMLElement {
         bounds: null,
         insightSetKey: null,
     };
-    #boundRender = this.#render.bind(this);
     sharedTableState = {
         selectedRowEl: null,
         selectionIsSticky: false,
     };
     #initialOverlays = null;
     scheduleRender() {
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     // Insights that do support the AI feature can override this to return true.
     // The "Ask AI" button will only be shown for an Insight if this
@@ -89,7 +85,6 @@ export class BaseInsightComponent extends HTMLElement {
         return false;
     }
     connectedCallback() {
-        this.shadow.adoptedStyleSheets.push(baseInsightComponentStyles);
         this.setAttribute('jslog', `${VisualLogging.section(`timeline.insights.${this.internalName}`)}`);
         // Used for unit test purposes when querying the DOM.
         this.dataset.insightName = this.internalName;
@@ -99,28 +94,29 @@ export class BaseInsightComponent extends HTMLElement {
     }
     set selected(selected) {
         if (!this.#selected && selected) {
-            this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(this.getInitialOverlays(), { updateTraceWindow: true }));
+            const options = this.getOverlayOptionsForInitialOverlays();
+            this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(this.getInitialOverlays(), options));
         }
         this.#selected = selected;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get selected() {
         return this.#selected;
     }
     set model(model) {
         this.#model = model;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set insightSetKey(insightSetKey) {
         this.data.insightSetKey = insightSetKey;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get bounds() {
         return this.data.bounds;
     }
     set bounds(bounds) {
         this.data.bounds = bounds;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set parsedTrace(parsedTrace) {
         this.#parsedTrace = parsedTrace;
@@ -130,6 +126,9 @@ export class BaseInsightComponent extends HTMLElement {
     }
     get fieldMetrics() {
         return this.#fieldMetrics;
+    }
+    getOverlayOptionsForInitialOverlays() {
+        return { updateTraceWindow: true };
     }
     #dispatchInsightToggle() {
         if (this.#selected) {
@@ -189,7 +188,11 @@ export class BaseInsightComponent extends HTMLElement {
         if (!this.#selected) {
             return;
         }
-        this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(overlays ?? this.getInitialOverlays(), options));
+        if (!overlays) {
+            this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(this.getInitialOverlays(), this.getOverlayOptionsForInitialOverlays()));
+            return;
+        }
+        this.dispatchEvent(new SidebarInsight.InsightProvideOverlays(overlays, options));
     }
     getInitialOverlays() {
         if (this.#initialOverlays) {
@@ -344,10 +347,12 @@ export class BaseInsightComponent extends HTMLElement {
         }
         // clang-format off
         const output = html `
+      <style>${baseInsightComponentStyles.cssText}</style>
       <div class=${containerClasses}>
         <header @click=${this.#dispatchInsightToggle}
           @keydown=${this.#handleHeaderKeyDown}
           jslog=${VisualLogging.action(`timeline.toggle-insight.${this.internalName}`).track({ click: true })}
+          data-insight-header-title=${this.#model?.title}
           tabIndex="0"
           role="button"
           aria-expanded=${this.#selected}

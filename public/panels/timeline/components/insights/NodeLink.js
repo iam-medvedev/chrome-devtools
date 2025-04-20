@@ -10,7 +10,6 @@ import * as Lit from '../../../../ui/lit/lit.js';
 const { html } = Lit;
 export class NodeLink extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #backendNodeId;
     #frame;
     #options;
@@ -22,7 +21,7 @@ export class NodeLink extends HTMLElement {
         this.#options = data.options;
         this.#fallbackHtmlSnippet = data.fallbackHtmlSnippet;
         this.#fallbackText = data.fallbackText;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     async #linkify() {
         if (this.#backendNodeId === undefined) {

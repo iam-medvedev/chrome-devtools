@@ -159,7 +159,6 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
             }
             const checkbox = new UI.Toolbar.ToolbarCheckbox(category.title, undefined, categoriesFilterChanged.bind(this, categoryName), categoryName);
             checkbox.setChecked(true);
-            checkbox.inputElement.style.backgroundColor = category.color;
             categoryFiltersUI.set(category.name, checkbox);
             toolbar.appendToolbarItem(checkbox);
         }

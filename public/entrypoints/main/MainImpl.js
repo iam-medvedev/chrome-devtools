@@ -453,7 +453,7 @@ export class MainImpl {
             Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
         }
         // Initialize ARIAUtils.alert Element
-        UI.ARIAUtils.getOrCreateAlertElements();
+        UI.ARIAUtils.getOrCreateAlertElement();
         UI.DockController.DockController.instance().announceDockLocation();
         // Allow UI cycles to repaint prior to creating connection.
         window.setTimeout(this.#initializeTarget.bind(this), 0);

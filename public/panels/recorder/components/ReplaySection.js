@@ -101,7 +101,6 @@ export class StartReplayEvent extends Event {
 const REPLAY_EXTENSION_PREFIX = 'extension';
 export class ReplaySection extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #props = { disabled: false };
     #settings;
     #replayExtensions = [];
@@ -114,10 +113,10 @@ export class ReplaySection extends HTMLElement {
     }
     set disabled(disabled) {
         this.#props.disabled = disabled;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #handleSelectMenuSelected(event) {
         const speed = event.value;
@@ -126,7 +125,7 @@ export class ReplaySection extends HTMLElement {
             this.#settings.replayExtension = '';
         }
         Host.userMetrics.recordingReplaySpeed(replaySpeedToMetricSpeedMap[speed]);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #handleSelectButtonClick(event) {
         event.stopPropagation();
@@ -136,11 +135,11 @@ export class ReplaySection extends HTMLElement {
             }
             const extensionIdx = Number(event.value.substring(REPLAY_EXTENSION_PREFIX.length));
             this.dispatchEvent(new StartReplayEvent("normal" /* PlayRecordingSpeed.NORMAL */, this.#replayExtensions[extensionIdx]));
-            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
             return;
         }
         this.dispatchEvent(new StartReplayEvent(this.#settings ? this.#settings.speed : "normal" /* PlayRecordingSpeed.NORMAL */));
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #render() {
         const groups = [{ name: i18nString(UIStrings.speedGroup), items }];

@@ -10,16 +10,10 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import NetworkRequestDetailsStylesRaw from './networkRequestDetails.css.js';
-import networkRequestTooltipStylesRaw from './networkRequestTooltip.css.js';
+import networkRequestDetailsStyles from './networkRequestDetails.css.js';
+import networkRequestTooltipStyles from './networkRequestTooltip.css.js';
 import { NetworkRequestTooltip } from './NetworkRequestTooltip.js';
 import { colorForNetworkRequest } from './Utils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const NetworkRequestDetailsStyles = new CSSStyleSheet();
-NetworkRequestDetailsStyles.replaceSync(NetworkRequestDetailsStylesRaw.cssText);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const networkRequestTooltipStyles = new CSSStyleSheet();
-networkRequestTooltipStyles.replaceSync(networkRequestTooltipStylesRaw.cssText);
 const { html } = Lit;
 const MAX_URL_LENGTH = 100;
 const UIStrings = {
@@ -126,9 +120,6 @@ export class NetworkRequestDetails extends HTMLElement {
     constructor(linkifier) {
         super();
         this.#linkifier = linkifier;
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [NetworkRequestDetailsStyles, networkRequestTooltipStyles];
     }
     async setData(parsedTrace, networkRequest, maybeTarget, entityMapper) {
         if (this.#networkRequest === networkRequest && parsedTrace === this.#parsedTrace) {
@@ -277,7 +268,7 @@ export class NetworkRequestDetails extends HTMLElement {
         let link = null;
         // If we have a stack trace, that is the most reliable way to get the initiator data and display a link to the source.
         if (hasStackTrace) {
-            const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(this.#networkRequest)?.at(0) ?? null;
+            const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(this.#networkRequest)?.at(0) ?? null;
             if (topFrame) {
                 link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
             }
@@ -343,6 +334,8 @@ export class NetworkRequestDetails extends HTMLElement {
         const networkData = this.#networkRequest.args.data;
         // clang-format off
         const output = html `
+      <style>${networkRequestDetailsStyles.cssText}</style>
+      <style>${networkRequestTooltipStyles.cssText}</style>
       <div class="network-request-details-content">
         ${this.#renderTitle()}
         ${this.#renderURL()}

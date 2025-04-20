@@ -18,11 +18,8 @@ import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import * as PanelCommon from '../../../common/common.js';
-import stylesRaw from './entryLabelOverlay.css.js';
+import entryLabelOverlayStyles from './entryLabelOverlay.css.js';
 const { html, Directives } = Lit;
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
 const UIStrings = {
     /**
      * @description Accessible label used to explain to a user that they are viewing an entry label.
@@ -146,7 +143,6 @@ export class EntryLabelOverlay extends HTMLElement {
     // Set the max label length to avoid labels that could signicantly increase the file size.
     static MAX_LABEL_LENGTH = 100;
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     // Once a label is bound for deletion, we remove it from the DOM via events
     // that are dispatched. But in the meantime the blur event of the input box
     // can fire, and that triggers a second removal. So we set this flag after
@@ -227,9 +223,6 @@ export class EntryLabelOverlay extends HTMLElement {
     overrideAIAgentForTest(agent) {
         this.#agent = agent;
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
-    }
     entryHighlightWrapper() {
         return this.#entryHighlightWrapper;
     }
@@ -309,7 +302,7 @@ export class EntryLabelOverlay extends HTMLElement {
             return;
         }
         this.#entryLabelVisibleHeight = entryLabelVisibleHeight;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
         // If the label is editable, focus cursor on it.
         // This method needs to be called after rendering the wrapper because it is the last label overlay element to render.
         // By doing this, the cursor focuses when the label is created.
@@ -473,7 +466,7 @@ export class EntryLabelOverlay extends HTMLElement {
                 // editing state is reset because the component loses focus.
                 this.#render();
                 this.#focusInputBox();
-                void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+                void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
                 this.#label = await this.#agent.generateAIEntryLabel(this.#callTree);
                 this.dispatchEvent(new EntryLabelChangeEvent(this.#label));
                 this.#inputField.innerText = this.#label;
@@ -485,7 +478,7 @@ export class EntryLabelOverlay extends HTMLElement {
             }
             catch {
                 this.#currAIButtonState = "generation_failed" /* AIButtonState.GENERATION_FAILED */;
-                void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+                void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
             }
         }
         else {
@@ -741,6 +734,7 @@ export class EntryLabelOverlay extends HTMLElement {
         });
         // clang-format off
         Lit.render(html `
+        <style>${entryLabelOverlayStyles.cssText}</style>
         <span class="label-parts-wrapper" role="region" aria-label=${i18nString(UIStrings.entryLabel)}
           @focusout=${this.#handleFocusOutEvent}
         >

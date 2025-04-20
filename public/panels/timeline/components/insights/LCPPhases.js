@@ -127,6 +127,12 @@ export class LCPPhases extends BaseInsightComponent {
     `;
         // clang-format on
     }
+    toggleTemporaryOverlays(overlays, options) {
+        super.toggleTemporaryOverlays(overlays, { ...options, updateTraceWindowPercentage: 0 });
+    }
+    getOverlayOptionsForInitialOverlays() {
+        return { updateTraceWindow: true, updateTraceWindowPercentage: 0 };
+    }
     renderContent() {
         if (!this.model) {
             return Lit.nothing;

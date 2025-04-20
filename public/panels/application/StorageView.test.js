@@ -54,7 +54,7 @@ describeWithMockConnection('StorageView', () => {
         const view = new Resources.StorageView.StorageView();
         const container = view.element.shadowRoot?.querySelector('.clear-storage-header') || null;
         assert.instanceOf(container, HTMLDivElement);
-        const customQuotaCheckbox = container.shadowRoot.querySelector('.quota-override-row dt-checkbox').shadowRoot.querySelector('[title="Simulate custom storage quota"]');
+        const customQuotaCheckbox = container.shadowRoot.querySelector('.quota-override-row devtools-checkbox').shadowRoot.querySelector('[title="Simulate custom storage quota"]');
         assert.instanceOf(customQuotaCheckbox, HTMLInputElement);
         customQuotaCheckbox.checked = true;
         const errorDiv = container.shadowRoot.querySelector('.quota-override-error');
@@ -72,8 +72,8 @@ describeWithMockConnection('StorageView', () => {
         const clearByOriginSpy = sinon.spy(target.storageAgent(), 'invoke_clearDataForOrigin');
         const cookieClearSpy = sinon.spy(cookieModel, 'clear');
         Resources.StorageView.StorageView.clear(target, testKey, SECURITY_ORIGIN, ["all" /* Protocol.Storage.StorageType.All */], false);
-        assert.isTrue(clearByOriginSpy.calledOnceWithExactly({ origin: SECURITY_ORIGIN, storageTypes: 'cookies' }));
-        assert.isTrue(cookieClearSpy.calledOnceWithExactly(undefined, SECURITY_ORIGIN));
+        sinon.assert.calledOnceWithExactly(clearByOriginSpy, { origin: SECURITY_ORIGIN, storageTypes: 'cookies' });
+        sinon.assert.calledOnceWithExactly(cookieClearSpy, undefined, SECURITY_ORIGIN);
     });
     it('clears cache on clear', async () => {
         const cacheStorageModel = target.model(SDK.ServiceWorkerCacheModel.ServiceWorkerCacheModel);

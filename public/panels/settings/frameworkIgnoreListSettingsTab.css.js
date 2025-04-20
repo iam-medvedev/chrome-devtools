@@ -57,7 +57,7 @@ export default {
   flex: auto;
 }
 
-.ignore-list-item > dt-checkbox {
+.ignore-list-item > devtools-checkbox {
   width: 100%;
 }
 

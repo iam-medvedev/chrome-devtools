@@ -4382,6 +4382,9 @@
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailsStatus": {
     "message": "Ŝt́ât́ûś"
   },
+  "panels/application/preloading/components/PreloadingDetailsReportView.ts | detailsTargetHint": {
+    "message": "T̂ár̂ǵêt́ ĥín̂t́"
+  },
   "panels/application/preloading/components/PreloadingDetailsReportView.ts | noElementSelected": {
     "message": "N̂ó êĺêḿêńt̂ śêĺêćt̂éd̂"
   },
@@ -6254,6 +6257,12 @@
   "panels/developer_resources/DeveloperResourcesListView.ts | initiator": {
     "message": "Îńît́îát̂ór̂"
   },
+  "panels/developer_resources/DeveloperResourcesListView.ts | noResourceMatches": {
+    "message": "N̂ó r̂éŝóûŕĉé m̂át̂ćĥéŝ"
+  },
+  "panels/developer_resources/DeveloperResourcesListView.ts | numberOfResourceMatch": {
+    "message": "{n, plural, =1 {# r̂éŝóûŕĉé m̂át̂ćĥéŝ} other {# ŕêśôúr̂ćêś m̂át̂ćĥ}}"
+  },
   "panels/developer_resources/DeveloperResourcesListView.ts | pending": {
     "message": "p̂én̂d́îńĝ"
   },
@@ -6280,12 +6289,6 @@
   },
   "panels/developer_resources/DeveloperResourcesView.ts | loadHttpsDeveloperResources": {
     "message": "L̂óâd́ HTTP(S) d̂év̂él̂óp̂ér̂ ŕêśôúr̂ćêś t̂h́r̂óûǵĥ t́ĥé ŵéb̂śît́ê ýôú îńŝṕêćt̂, ńôt́ t̂h́r̂óûǵĥ D́êv́T̂óôĺŝ"
-  },
-  "panels/developer_resources/DeveloperResourcesView.ts | noResourceMatches": {
-    "message": "N̂ó r̂éŝóûŕĉé m̂át̂ćĥéŝ"
-  },
-  "panels/developer_resources/DeveloperResourcesView.ts | numberOfResourceMatch": {
-    "message": "{n, plural, =1 {# r̂éŝóûŕĉé m̂át̂ćĥéŝ} other {# ŕêśôúr̂ćêś m̂át̂ćĥ}}"
   },
   "panels/developer_resources/DeveloperResourcesView.ts | resources": {
     "message": "{n, plural, =1 {# r̂éŝóûŕĉé} other {# r̂éŝóûŕĉéŝ}}"
@@ -6568,6 +6571,9 @@
   },
   "panels/elements/elements-meta.ts | stackTrace": {
     "message": "Ŝt́âćk̂ T́r̂áĉé"
+  },
+  "panels/elements/elements-meta.ts | toggleA11yTree": {
+    "message": "T̂óĝǵl̂é âćĉéŝśîb́îĺît́ŷ t́r̂éê"
   },
   "panels/elements/elements-meta.ts | toggleEyeDropper": {
     "message": "T̂óĝǵl̂é êýê d́r̂óp̂ṕêŕ"
@@ -9205,6 +9211,12 @@
   },
   "panels/network/NetworkDataGridNode.ts | servedFromMemoryCacheResource": {
     "message": "Ŝér̂v́êd́ f̂ŕôḿ m̂ém̂ór̂ý ĉáĉh́ê, ŕêśôúr̂ćê śîźê: {PH1}"
+  },
+  "panels/network/NetworkDataGridNode.ts | servedFromNetwork": {
+    "message": "{PH1} t̂ŕâńŝf́êŕr̂éd̂ óv̂ér̂ ńêt́ŵór̂ḱ, r̂éŝóûŕĉé ŝíẑé: {PH2}"
+  },
+  "panels/network/NetworkDataGridNode.ts | servedFromNetworkMissingServiceWorkerRoute": {
+    "message": "{PH1} t̂ŕâńŝf́êŕr̂éd̂ óv̂ér̂ ńêt́ŵór̂ḱ, r̂éŝóûŕĉé ŝíẑé: {PH2}, n̂ó m̂át̂ćĥín̂ǵ Ŝér̂v́îćêẂôŕk̂ér̂ ŕôút̂éŝ"
   },
   "panels/network/NetworkDataGridNode.ts | servedFromPrefetchCacheResource": {
     "message": "Ŝér̂v́êd́ f̂ŕôḿ p̂ŕêf́êt́ĉh́ ĉáĉh́ê, ŕêśôúr̂ćê śîźê: {PH1}"

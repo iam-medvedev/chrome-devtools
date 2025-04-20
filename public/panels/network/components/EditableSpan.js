@@ -11,7 +11,6 @@ const editableSpanStyles = new CSSStyleSheet();
 editableSpanStyles.replaceSync(editableSpanStylesRaw.cssText);
 export class EditableSpan extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #value = '';
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [editableSpanStyles];
@@ -21,7 +20,7 @@ export class EditableSpan extends HTMLElement {
     }
     set data(data) {
         this.#value = data.value;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get value() {
         return this.#shadow.querySelector('span')?.innerText || '';

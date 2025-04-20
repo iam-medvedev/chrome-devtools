@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view, rulesdir/inject-checkbox-styles */
 import './OriginMap.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
@@ -12,10 +12,7 @@ import * as Input from '../../../ui/components/input/input.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import fieldSettingsDialogStylesRaw from './fieldSettingsDialog.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const fieldSettingsDialogStyles = new CSSStyleSheet();
-fieldSettingsDialogStyles.replaceSync(fieldSettingsDialogStylesRaw.cssText);
+import fieldSettingsDialogStyles from './fieldSettingsDialog.css.js';
 const UIStrings = {
     /**
      * @description Text label for a button that opens a dialog to set up field data.
@@ -174,7 +171,6 @@ export class FieldSettingsDialog extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [fieldSettingsDialogStyles, Input.textInputStyles, Input.checkboxStyles];
         this.#configSetting.addChangeListener(this.#onSettingsChanged, this);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
@@ -298,6 +294,9 @@ export class FieldSettingsDialog extends HTMLElement {
         const descriptionEl = i18n.i18n.getFormatLocalizedString(str_, UIStrings.fetchAggregated, { PH1: linkEl });
         // clang-format off
         const output = html `
+      <style>${fieldSettingsDialogStyles.cssText}</style>
+      <style>${Input.textInputStyles.cssText}</style>
+      <style>${Input.checkboxStyles.cssText}</style>
       <div class="open-button-section">${this.#renderOpenButton()}</div>
       <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}

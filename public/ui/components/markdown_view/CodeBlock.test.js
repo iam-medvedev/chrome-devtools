@@ -22,7 +22,7 @@ describeWithEnvironment('CodeBlock', () => {
                 bubbles: true,
                 composed: true,
             });
-            assert.isTrue(copyText.calledWith('test'));
+            sinon.assert.calledWith(copyText, 'test');
             clock.tick(100);
             let buttonContainer = component.shadowRoot.querySelector('.copy-button-container');
             assert.exists(buttonContainer);

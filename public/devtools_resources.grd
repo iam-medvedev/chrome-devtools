@@ -51,6 +51,7 @@
       <include file="Images/arrow-up-down-circle.svg" name="IMAGES_ARROW_UP_DOWN_CIRCLE_SVG" resource_path="Images/arrow-up-down-circle.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-up-down.svg" name="IMAGES_ARROW_UP_DOWN_SVG" resource_path="Images/arrow-up-down.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-up.svg" name="IMAGES_ARROW_UP_SVG" resource_path="Images/arrow-up.svg" type="BINDATA" compress="false"/>
+      <include file="Images/attach-file.svg" name="IMAGES_ATTACH_FILE_SVG" resource_path="Images/attach-file.svg" type="BINDATA" compress="false"/>
       <include file="Images/bell.svg" name="IMAGES_BELL_SVG" resource_path="Images/bell.svg" type="BINDATA" compress="false"/>
       <include file="Images/bezier-curve-filled.svg" name="IMAGES_BEZIER_CURVE_FILLED_SVG" resource_path="Images/bezier-curve-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/bin.svg" name="IMAGES_BIN_SVG" resource_path="Images/bin.svg" type="BINDATA" compress="false"/>
@@ -376,10 +377,7 @@
       <include file="entrypoints/wasmparser_worker/wasmparser_worker.js" name="ENTRYPOINTS_WASMPARSER_WORKER_WASMPARSER_WORKER_JS" resource_path="entrypoints/wasmparser_worker/wasmparser_worker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/worker_app/worker_app.js" name="ENTRYPOINTS_WORKER_APP_WORKER_APP_JS" resource_path="entrypoints/worker_app/worker_app.js" type="BINDATA" compress="false"/>
       <include file="inspector.html" name="INSPECTOR_HTML" resource_path="inspector.html" type="BINDATA" compress="false"/>
-      <include file="integration_test_runner.html" name="INTEGRATION_TEST_RUNNER_HTML" resource_path="integration_test_runner.html" type="BINDATA" compress="false"/>
       <include file="js_app.html" name="JS_APP_HTML" resource_path="js_app.html" type="BINDATA" compress="false"/>
-      <include file="legacy_test_runner/legacy_test_runner.js" name="LEGACY_TEST_RUNNER_LEGACY_TEST_RUNNER_JS" resource_path="legacy_test_runner/legacy_test_runner.js" type="BINDATA" compress="false"/>
-      <include file="legacy_test_runner/test_runner/test_runner.js" name="LEGACY_TEST_RUNNER_TEST_RUNNER_TEST_RUNNER_JS" resource_path="legacy_test_runner/test_runner/test_runner.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
@@ -982,7 +980,6 @@
       <include file="generated/InspectorBackendCommands.js" name="GENERATED_INSPECTORBACKENDCOMMANDS_JS" resource_path="generated/InspectorBackendCommands.js" type="BINDATA" compress="false"/>
       <include file="generated/SupportedCSSProperties.js" name="GENERATED_SUPPORTEDCSSPROPERTIES_JS" resource_path="generated/SupportedCSSProperties.js" type="BINDATA" compress="false"/>
       <include file="generated/protocol.js" name="GENERATED_PROTOCOL_JS" resource_path="generated/protocol.js" type="BINDATA" compress="false"/>
-      <include file="legacy_test_runner/test_runner/TestRunner.js" name="LEGACY_TEST_RUNNER_TEST_RUNNER_TESTRUNNER_JS" resource_path="legacy_test_runner/test_runner/TestRunner.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/AgentProject.js" name="MODELS_AI_ASSISTANCE_AGENTPROJECT_JS" resource_path="models/ai_assistance/AgentProject.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/AiHistoryStorage.js" name="MODELS_AI_ASSISTANCE_AIHISTORYSTORAGE_JS" resource_path="models/ai_assistance/AiHistoryStorage.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ChangeManager.js" name="MODELS_AI_ASSISTANCE_CHANGEMANAGER_JS" resource_path="models/ai_assistance/ChangeManager.js" type="BINDATA" compress="false"/>

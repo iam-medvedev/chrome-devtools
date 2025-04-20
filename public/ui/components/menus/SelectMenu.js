@@ -21,7 +21,6 @@ const { html } = Lit;
 const deployMenuArrow = new URL('../../../Images/triangle-down.svg', import.meta.url).toString();
 export class SelectMenu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #button = null;
     #open = false;
     #props = {
@@ -40,63 +39,63 @@ export class SelectMenu extends HTMLElement {
     }
     set buttonTitle(buttonTitle) {
         this.#props.buttonTitle = buttonTitle;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get position() {
         return this.#props.position;
     }
     set position(position) {
         this.#props.position = position;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get horizontalAlignment() {
         return this.#props.horizontalAlignment;
     }
     set horizontalAlignment(horizontalAlignment) {
         this.#props.horizontalAlignment = horizontalAlignment;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get showArrow() {
         return this.#props.showArrow;
     }
     set showArrow(showArrow) {
         this.#props.showArrow = showArrow;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get sideButton() {
         return this.#props.sideButton;
     }
     set sideButton(sideButton) {
         this.#props.sideButton = sideButton;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get disabled() {
         return this.#props.disabled;
     }
     set disabled(disabled) {
         this.#props.disabled = disabled;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get showDivider() {
         return this.#props.showDivider;
     }
     set showDivider(showDivider) {
         this.#props.showDivider = showDivider;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get showSelectedItem() {
         return this.#props.showSelectedItem;
     }
     set showSelectedItem(showSelectedItem) {
         this.#props.showSelectedItem = showSelectedItem;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get jslogContext() {
         return this.#props.jslogContext;
     }
     set jslogContext(jslogContext) {
         this.#props.jslogContext = jslogContext;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [selectMenuStyles];
@@ -113,7 +112,7 @@ export class SelectMenu extends HTMLElement {
     #showMenu() {
         this.#open = true;
         this.setAttribute('has-open-dialog', 'has-open-dialog');
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     click() {
         this.#getButton().click();
@@ -165,7 +164,7 @@ export class SelectMenu extends HTMLElement {
             this.removeAttribute('has-open-dialog');
         });
         this.#open = false;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onItemSelected(evt) {
         this.dispatchEvent(new SelectMenuItemSelectedEvent(evt.itemValue));
@@ -195,7 +194,6 @@ export class SelectMenu extends HTMLElement {
 }
 export class SelectMenuButton extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #showButton = null;
     connectedCallback() {
         this.#shadow.adoptedStyleSheets = [selectMenuButtonStyles];
@@ -228,21 +226,21 @@ export class SelectMenuButton extends HTMLElement {
     }
     set showArrow(showArrow) {
         this.#props.showArrow = showArrow;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get arrowDirection() {
         return this.#props.arrowDirection;
     }
     set arrowDirection(arrowDirection) {
         this.#props.arrowDirection = arrowDirection;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get disabled() {
         return this.#props.disabled;
     }
     set disabled(disabled) {
         this.#props.disabled = disabled;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set open(open) {
         void RenderCoordinator.write(() => {
@@ -251,14 +249,14 @@ export class SelectMenuButton extends HTMLElement {
     }
     set singleArrow(singleArrow) {
         this.#props.singleArrow = singleArrow;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get jslogContext() {
         return this.#props.jslogContext;
     }
     set jslogContext(jslogContext) {
         this.#props.jslogContext = jslogContext;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     click() {
         this.#getShowButton()?.click();
