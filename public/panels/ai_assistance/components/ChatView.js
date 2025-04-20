@@ -730,7 +730,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
       tabindex=${hasPickerBehavior ? '-1' : '0'}
       @click=${onContextClick}
       @keydown=${handleKeyDown}
-      aria-label=${i18nString(UIStrings.revealContextDescription)}
+      aria-description=${i18nString(UIStrings.revealContextDescription)}
     >
       ${icon}${selectedContext?.getTitle() ?? html `<span>${lockedString(UIStringsNotTranslate.noElementSelected)}</span>`}
     </div>
@@ -782,18 +782,18 @@ function renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick 
       <h1>${lockedString(UIStringsNotTranslate.emptyStateText)}</h1>
     </div>
     <div class="empty-state-content">
-      ${suggestions.map(suggestion => {
+      ${suggestions.map(({ title, jslogContext }) => {
         return html `<devtools-button
           class="suggestion"
-          @click=${() => onSuggestionClick(suggestion)}
+          @click=${() => onSuggestionClick(title)}
           .data=${{
             variant: "outlined" /* Buttons.Button.Variant.OUTLINED */,
             size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
-            title: suggestion,
-            jslogContext: 'suggestion',
+            title,
+            jslogContext: jslogContext ?? 'suggestion',
             disabled: isTextInputDisabled,
         }}
-        >${suggestion}</devtools-button>`;
+        >${title}</devtools-button>`;
     })}
     </div>
   </div>`;

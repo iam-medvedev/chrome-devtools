@@ -14,7 +14,7 @@ export default {
   padding: 12px;
 }
 
-dt-checkbox {
+devtools-checkbox {
   margin: 0 0 10px;
   flex: none;
 }

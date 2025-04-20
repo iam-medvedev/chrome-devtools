@@ -638,6 +638,15 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#serviceWorkerRouterInfoInternal = x;
     }
     /**
+     * Returns true if the request was matched to a route when using the
+     * ServiceWorker static routing API.
+     */
+    hasMatchingServiceWorkerRouter() {
+        // See definitions in `browser_protocol.pdl` for justification.
+        return this.#serviceWorkerRouterInfoInternal !== undefined &&
+            this.serviceWorkerRouterInfo?.matchedSourceType !== undefined;
+    }
+    /**
      * Returns true if the request was sent by a service worker.
      */
     initiatedByServiceWorker() {

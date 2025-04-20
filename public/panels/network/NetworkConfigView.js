@@ -187,9 +187,8 @@ export class NetworkConfigView extends UI.Widget.VBox {
         const customUserAgentSetting = Common.Settings.Settings.instance().createSetting('custom-user-agent', '');
         const title = i18nString(UIStrings.userAgent);
         const section = this.createSection(title, 'network-config-ua');
-        const checkboxLabel = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true, undefined, customUserAgentSetting.name);
-        section.appendChild(checkboxLabel);
-        const autoCheckbox = checkboxLabel.checkboxElement;
+        const autoCheckbox = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true, undefined, customUserAgentSetting.name);
+        section.appendChild(autoCheckbox);
         customUserAgentSetting.addChangeListener(() => {
             if (autoCheckbox.checked) {
                 return;
@@ -254,9 +253,8 @@ export class NetworkConfigView extends UI.Widget.VBox {
         const customAcceptedEncodingSetting = Common.Settings.Settings.instance().createSetting('custom-accepted-encodings', `${"gzip" /* Protocol.Network.ContentEncoding.Gzip */},${"br" /* Protocol.Network.ContentEncoding.Br */},${"deflate" /* Protocol.Network.ContentEncoding.Deflate */}`);
         const title = i18nString(UIStrings.acceptedEncoding);
         const section = this.createSection(title, 'network-config-accepted-encoding');
-        const checkboxLabel = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true, undefined, useCustomAcceptedEncodingSetting.name);
-        section.appendChild(checkboxLabel);
-        const autoCheckbox = checkboxLabel.checkboxElement;
+        const autoCheckbox = UI.UIUtils.CheckboxLabel.create(i18nString(UIStrings.selectAutomatically), true, undefined, useCustomAcceptedEncodingSetting.name);
+        section.appendChild(autoCheckbox);
         function onSettingChange() {
             if (!useCustomAcceptedEncodingSetting.get()) {
                 SDK.NetworkManager.MultitargetNetworkManager.instance().clearCustomAcceptedEncodingsOverride();
@@ -281,9 +279,9 @@ export class NetworkConfigView extends UI.Widget.VBox {
             Zstd: "zstd" /* Protocol.Network.ContentEncoding.Zstd */,
         };
         for (const encoding of Object.values(contentEncodings)) {
-            const label = UI.UIUtils.CheckboxLabel.createWithStringLiteral(encoding, true, encoding);
-            encodingsSection.appendChild(label);
-            checkboxes.set(encoding, label.checkboxElement);
+            const checkbox = UI.UIUtils.CheckboxLabel.createWithStringLiteral(encoding, true, encoding);
+            encodingsSection.appendChild(checkbox);
+            checkboxes.set(encoding, checkbox);
         }
         for (const [encoding, checkbox] of checkboxes) {
             checkbox.checked = customAcceptedEncodingSetting.get().includes(encoding);

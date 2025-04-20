@@ -131,7 +131,11 @@ export class Tooltip extends HTMLElement {
         this.#removeEventListeners();
         this.#anchorObserver?.disconnect();
     }
-    showTooltip = () => {
+    showTooltip = (event) => {
+        // Don't show the tooltip if the mouse is down.
+        if (event && 'buttons' in event && event.buttons) {
+            return;
+        }
         if (this.#timeout) {
             window.clearTimeout(this.#timeout);
         }

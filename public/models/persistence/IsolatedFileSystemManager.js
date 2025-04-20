@@ -168,7 +168,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     onFileSystemAdded(event) {
         const { errorMessage, fileSystem } = event.data;
         if (errorMessage) {
-            if (errorMessage !== '<selection cancelled>') {
+            if (errorMessage !== '<selection cancelled>' && errorMessage !== '<permission denied>') {
                 Common.Console.Console.instance().error(i18nString(UIStrings.unableToAddFilesystemS, { PH1: errorMessage }));
             }
             if (!this.fileSystemRequestResolve) {

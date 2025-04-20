@@ -62,7 +62,6 @@ export declare class BreakpointsView extends LegacyWrapper.LegacyWrapper.Wrappab
     }): BreakpointsView;
     constructor();
     set data(data: BreakpointsViewData);
-    connectedCallback(): void;
     render(): Promise<void>;
 }
 declare global {

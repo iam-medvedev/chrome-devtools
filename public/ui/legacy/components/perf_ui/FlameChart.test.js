@@ -64,7 +64,7 @@ describeWithEnvironment('FlameChart', () => {
         chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
         renderChart(chartInstance);
         chartInstance.windowChanged(0, 5, false);
-        assert.isTrue(windowChangedSpy.calledWith(0, 5, false));
+        sinon.assert.calledWith(windowChangedSpy, 0, 5, false);
     });
     it('notifies the delegate when the range selection has changed', async () => {
         const provider = new FakeProvider();
@@ -73,7 +73,7 @@ describeWithEnvironment('FlameChart', () => {
         chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
         renderChart(chartInstance);
         chartInstance.updateRangeSelection(0, 5);
-        assert.isTrue(updateRangeSpy.calledWith(0, 5));
+        sinon.assert.calledWith(updateRangeSpy, 0, 5);
     });
     describe('setSelectedEntry', () => {
         class SetSelectedEntryTestProvider extends FakeFlameChartProvider {
@@ -117,7 +117,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance.setWindowTimes(0, 100);
             renderChart(chartInstance);
             chartInstance.setSelectedEntry(3);
-            assert.isTrue(windowChangedSpy.calledOnceWithExactly(300, 400, true));
+            sinon.assert.calledOnceWithExactly(windowChangedSpy, 300, 400, true);
         });
         it('will change the window time to reveal the selected entry when the entry is off the left of the screen', async () => {
             const provider = new SetSelectedEntryTestProvider();
@@ -130,7 +130,7 @@ describeWithEnvironment('FlameChart', () => {
             chartInstance.setWindowTimes(250, 600);
             renderChart(chartInstance);
             chartInstance.setSelectedEntry(0);
-            assert.isTrue(windowChangedSpy.calledOnceWithExactly(5, 355, true));
+            sinon.assert.calledOnceWithExactly(windowChangedSpy, 5, 355, true);
         });
     });
     describe('highlightEntry', () => {

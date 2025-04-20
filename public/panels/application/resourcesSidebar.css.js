@@ -12,7 +12,7 @@ export default {
 
 .tree-outline {
   li.storage-group-list-item,
-  li.storage-group-list-item:not(:has(dt-checkbox)) {
+  li.storage-group-list-item:not(:has(devtools-checkbox)) {
     padding: 0 var(--sys-size-8) 0 var(--sys-size-3);
 
     &::before {

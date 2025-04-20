@@ -66,6 +66,14 @@ const UIStrings = {
      *@description Accessible text for the value in bytes in memory allocation.
      */
     sBytes: '{n, plural, =1 {# byte} other {# bytes}}',
+    /**
+     * @description Number of resource(s) match
+     */
+    numberOfResourceMatch: '{n, plural, =1 {# resource matches} other {# resources match}}',
+    /**
+     * @description No resource matches
+     */
+    noResourceMatches: 'No resource matches',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/developer_resources/DeveloperResourcesListView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -73,9 +81,10 @@ const { withThousandsSeparator } = Platform.NumberUtilities;
 export class DeveloperResourcesListView extends UI.Widget.VBox {
     #items = [];
     #selectedItem = null;
+    #onSelect = null;
     #view;
     #filters = [];
-    constructor(view = (input, _, target) => {
+    constructor(element, view = (input, _, target) => {
         // clang-format off
         render(html `
             <devtools-data-grid
@@ -83,6 +92,7 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
               striped
               .filters=${input.filters}
                @contextmenu=${input.onContextMenu}
+               @selected=${input.onSelect}
               class="flex-auto"
             >
               <table>
@@ -106,10 +116,11 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
                     ${i18nString(UIStrings.error)}
                   </th>
                 </tr>
-                ${input.items.map(item => html `
+                ${input.items.map((item, index) => html `
                   <tr selected=${(item === this.#selectedItem) || nothing}
                       data-url=${item.url ?? nothing}
-                      data-initiator-url=${item.initiator.initiatorUrl ?? nothing}>
+                      data-initiator-url=${item.initiator.initiatorUrl ?? nothing}
+                      data-index=${index}>
                     <td>${item.success === true ? i18nString(UIStrings.success) :
             item.success === false ? i18nString(UIStrings.failure) :
                 i18nString(UIStrings.pending)}</td>
@@ -153,16 +164,16 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
             return outer;
         }
     }) {
-        super(true);
+        super(true, undefined, element);
         this.#view = view;
         this.registerRequiredCSS(developerResourcesListViewStyles);
     }
-    select(item) {
+    set selectedItem(item) {
         this.#selectedItem = item;
         this.requestUpdate();
     }
-    selectedItem() {
-        return this.#selectedItem;
+    set onSelect(onSelect) {
+        this.#onSelect = onSelect;
     }
     #populateContextMenu(contextMenu, element) {
         const url = element.dataset.url;
@@ -186,13 +197,20 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
         this.items = [];
         this.requestUpdate();
     }
-    updateFilterAndHighlight(filters) {
+    set filters(filters) {
         this.#filters = filters;
         this.requestUpdate();
-    }
-    getNumberOfVisibleItems() {
-        return parseInt(this.contentElement.querySelector('devtools-data-grid')?.getAttribute('aria-rowcount') || '', 10) ??
-            0;
+        void this.updateComplete.then(() => {
+            const numberOfResourceMatch = Number(this.contentElement.querySelector('devtools-data-grid')?.getAttribute('aria-rowcount')) ?? 0;
+            let resourceMatch = '';
+            if (numberOfResourceMatch === 0) {
+                resourceMatch = i18nString(UIStrings.noResourceMatches);
+            }
+            else {
+                resourceMatch = i18nString(UIStrings.numberOfResourceMatch, { n: numberOfResourceMatch });
+            }
+            UI.ARIAUtils.alert(resourceMatch);
+        });
     }
     performUpdate() {
         const input = {
@@ -203,6 +221,10 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
                 if (e.detail?.element) {
                     this.#populateContextMenu(e.detail.menu, e.detail.element);
                 }
+            },
+            onSelect: (e) => {
+                this.#selectedItem = e.detail ? this.#items[Number(e.detail.dataset.index)] : null;
+                this.#onSelect?.(this.#selectedItem);
             },
             onInitiatorMouseEnter: (frameId) => {
                 const frame = frameId ? SDK.FrameManager.FrameManager.instance().getFrame(frameId) : null;

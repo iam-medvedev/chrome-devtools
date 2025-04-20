@@ -41,7 +41,7 @@ function renderSingleDiffView(singleDiffViewInput) {
         </div>
         <div class="summary-right">
           <devtools-button
-            title=${i18nString(UIStrings.copyFile, { PH1: fileName })}
+            .title=${i18nString(UIStrings.copyFile, { PH1: fileName })}
             .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
             .iconName=${'copy'}
             .jslogContext=${'combined-diff-view.copy'}

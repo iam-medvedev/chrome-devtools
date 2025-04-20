@@ -7,7 +7,6 @@ export declare class EventReferenceClick extends Event {
 }
 declare class EventRef extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set text(text: string);
     set event(event: Trace.Types.Events.Event);
 }
@@ -18,7 +17,6 @@ export declare function eventRef(event: EventRefSupportedEvents, options?: {
 }): Lit.TemplateResult;
 declare class ImageRef extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set request(request: Trace.Types.Events.SyntheticNetworkRequest);
 }
 export declare function imageRef(request: Trace.Types.Events.SyntheticNetworkRequest): Lit.TemplateResult;

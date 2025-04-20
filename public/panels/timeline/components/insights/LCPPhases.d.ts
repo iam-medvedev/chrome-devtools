@@ -9,6 +9,8 @@ export declare class LCPPhases extends BaseInsightComponent<LCPPhasesInsightMode
     internalName: string;
     protected hasAskAiSupport(): boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    toggleTemporaryOverlays(overlays: Overlays.Overlays.TimelineOverlay[] | null, options: Overlays.Overlays.TimelineOverlaySetOptions): void;
+    getOverlayOptionsForInitialOverlays(): Overlays.Overlays.TimelineOverlaySetOptions;
     renderContent(): Lit.LitTemplate;
 }
 declare global {

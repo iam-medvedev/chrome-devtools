@@ -113,7 +113,7 @@ describeWithMockConnection('ConsoleMessage', () => {
         sinon.assert.calledOnce(addMessage);
         runtimeModel.dispatchEventToListeners(SDK.RuntimeModel.Events.ConsoleAPICalled, { ...consoleAPICall, timestamp: 123457.000 });
         sinon.assert.calledTwice(addMessage);
-        assert.isTrue(addMessage.secondCall.calledWith(sinon.match({ messageText: 'log me' })));
+        sinon.assert.calledWith(addMessage.secondCall, sinon.match({ messageText: 'log me' }));
     });
     it('clears when main frame global object cleared', async () => {
         Common.Settings.Settings.instance().moduleSetting('preserve-console-log').set(false);

@@ -39,7 +39,7 @@ export declare class Tooltip extends HTMLElement {
     attributeChangedCallback(name: string, oldValue: string, newValue: string): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
-    showTooltip: () => void;
+    showTooltip: (event?: MouseEvent | FocusEvent) => void;
     hideTooltip: (event?: MouseEvent | FocusEvent) => void;
     toggle: () => void;
 }

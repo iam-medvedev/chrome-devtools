@@ -2,59 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
-const pendingRenders = new WeakSet();
-const activeRenders = new WeakSet();
-const subsequentRender = new WeakMap();
-const wrappedCallbacks = new WeakMap();
-export async function scheduleRender(component, callback) {
-    // If scheduleRender is called when there is already a render scheduled for this
-    // component, store the callback against the renderer for after the current
-    // call has finished.
-    if (activeRenders.has(component)) {
-        subsequentRender.set(component, callback);
-        return;
-    }
-    // If this render was already scheduled but hasn't started yet, just return.
-    if (pendingRenders.has(component)) {
-        return;
-    }
-    pendingRenders.add(component);
-    // Create a wrapper around the callback so that we know that it has moved from
-    // pending to active. When it has completed we remove it from the active renderers.
-    let wrappedCallback = wrappedCallbacks.get(callback);
-    if (!wrappedCallback) {
-        wrappedCallback = async () => {
-            pendingRenders.delete(component);
-            activeRenders.add(component);
-            try {
-                await callback.call(component);
-            }
-            catch (error) {
-                console.error(`ScheduledRender: rendering ${component.nodeName.toLowerCase()}:`);
-                console.error(error);
-                throw error;
-            }
-            finally {
-                activeRenders.delete(component);
-            }
-        };
-        // Store it for next time so we aren't creating wrappers unnecessarily.
-        wrappedCallbacks.set(callback, wrappedCallback);
-    }
-    // Track that there is render rendering, wait for it to finish, and stop tracking.
-    await RenderCoordinator.write(wrappedCallback);
-    // If during the render there was another schedule render call, get
-    // the callback and schedule it to happen now.
-    if (subsequentRender.has(component)) {
-        const newCallback = subsequentRender.get(component);
-        subsequentRender.delete(component);
-        if (!newCallback) {
-            return;
+const requests = new Map();
+const active = new Set();
+export function scheduleRender(component, callback) {
+    const request = requests.get(component);
+    if (request !== undefined) {
+        if (request.callback !== callback) {
+            throw new TypeError(`Incompatible callback arguments for scheduling rendering of ${component.nodeName.toLowerCase()}`);
         }
-        void scheduleRender(component, newCallback);
+        return request.promise;
     }
+    const promise = RenderCoordinator.write(async () => {
+        try {
+            active.add(component);
+            requests.delete(component);
+            await callback.call(component);
+        }
+        catch (error) {
+            console.error(`ScheduledRender: rendering ${component.nodeName.toLowerCase()}:`);
+            console.error(error);
+            throw error;
+        }
+        finally {
+            active.delete(component);
+        }
+    });
+    requests.set(component, { callback, promise });
+    return promise;
 }
 export function isScheduledRender(component) {
-    return activeRenders.has(component);
+    return active.has(component);
 }
 //# sourceMappingURL=scheduled-render.js.map

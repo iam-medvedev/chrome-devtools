@@ -32,7 +32,7 @@ export default {
     margin-top: var(--sys-size-1);
     margin-left: var(--sys-size-10);
 
-    & > dt-checkbox {
+    & > devtools-checkbox {
       display: flex;
     }
   }

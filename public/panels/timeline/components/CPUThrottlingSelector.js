@@ -11,10 +11,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
-import cpuThrottlingSelectorStylesRaw from './cpuThrottlingSelector.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const cpuThrottlingSelectorStyles = new CSSStyleSheet();
-cpuThrottlingSelectorStyles.replaceSync(cpuThrottlingSelectorStylesRaw.cssText);
+import cpuThrottlingSelectorStyles from './cpuThrottlingSelector.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -70,7 +67,6 @@ export class CPUThrottlingSelector extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [cpuThrottlingSelectorStyles];
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.#onOptionChange, this);
         this.#calibratedThrottlingSetting.addChangeListener(this.#onCalibratedSettingChanged, this);
         this.#onOptionChange();
@@ -135,6 +131,7 @@ export class CPUThrottlingSelector extends HTMLElement {
         const calibrationLabel = hasCalibratedOnce ? i18nString(UIStrings.recalibrate) : i18nString(UIStrings.calibrate);
         // clang-format off
         const output = html `
+      <style>${cpuThrottlingSelectorStyles.cssText}</style>
       <devtools-select-menu
             @selectmenuselected=${this.#onMenuItemSelected}
             .showDivider=${true}

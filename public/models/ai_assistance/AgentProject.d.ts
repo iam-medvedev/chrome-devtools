@@ -27,12 +27,12 @@ export declare class AgentProject {
      * Provides access to the file content in the working copy
      * of the matching UiSourceCode.
      */
-    readFile(filepath: string): string | undefined;
+    readFile(filepath: string): Promise<string | undefined>;
     /**
      * This method updates the file content in the working copy of the
      * UiSourceCode identified by the filepath.
      */
-    writeFile(filepath: string, update: string, mode?: ReplaceStrategy): void;
+    writeFile(filepath: string, update: string, mode?: ReplaceStrategy): Promise<void>;
     getLinesChanged(currentContent: string | undefined, updatedContent: string): number;
     /**
      * This method searches in files for the agent and provides the

@@ -193,8 +193,8 @@ describeWithMockConnection('StylesPropertySection', () => {
         setNameSpy.returns(Promise.resolve(true));
         await section.setHeaderText(rule, propertyName.text);
         assert.isTrue(forceUpdateSpy.calledAfter(setNameSpy));
-        assert.isTrue(setNameSpy.calledOnceWithExactly(styleSheetId, sinon.match((r) => r.startLine === range.startLine &&
-            r.startColumn === range.startColumn && r.endLine === range.endLine && r.endColumn === range.endColumn), propertyName.text));
+        sinon.assert.calledOnceWithExactly(setNameSpy, styleSheetId, sinon.match((r) => r.startLine === range.startLine &&
+            r.startColumn === range.startColumn && r.endLine === range.endLine && r.endColumn === range.endColumn), propertyName.text);
     });
     it('renders braces correctly with a non-style-rule section', async () => {
         Common.Settings.Settings.instance().moduleSetting('text-editor-indent').set('  ');

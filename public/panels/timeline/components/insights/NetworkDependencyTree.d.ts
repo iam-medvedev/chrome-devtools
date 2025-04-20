@@ -7,7 +7,6 @@ export declare class NetworkDependencyTree extends BaseInsightComponent<NetworkD
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
-    connectedCallback(): void;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderTree(nodes: CriticalRequestNode[]): Lit.LitTemplate | null;
     renderContent(): Lit.LitTemplate;

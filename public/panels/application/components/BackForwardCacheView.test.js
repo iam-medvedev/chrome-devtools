@@ -257,7 +257,7 @@ describeWithMockConnection('BackForwardCacheView', () => {
                 }
             });
         });
-        assert.isTrue(navigateToHistoryEntrySpy.calledOnceWithExactly(entries[0]));
+        sinon.assert.calledOnceWithExactly(navigateToHistoryEntrySpy, entries[0]);
     });
 });
 //# sourceMappingURL=BackForwardCacheView.test.js.map

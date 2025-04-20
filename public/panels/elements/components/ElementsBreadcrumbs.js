@@ -42,7 +42,6 @@ export class NodeSelectedEvent extends Event {
 export class ElementsBreadcrumbs extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #resizeObserver = new ResizeObserver(() => this.#checkForOverflowOnResize());
-    #renderBound = this.#render.bind(this);
     #crumbsData = [];
     #selectedDOMNode = null;
     #overflowing = false;
@@ -56,7 +55,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
         this.#selectedDOMNode = data.selectedNode;
         this.#crumbsData = data.crumbs;
         this.#userHasManuallyScrolled = false;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     disconnectedCallback() {
         this.#isObservingResize = false;

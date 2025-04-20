@@ -12,10 +12,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
-import networkThrottlingSelectorStylesRaw from './networkThrottlingSelector.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const networkThrottlingSelectorStyles = new CSSStyleSheet();
-networkThrottlingSelectorStyles.replaceSync(networkThrottlingSelectorStylesRaw.cssText);
+import networkThrottlingSelectorStyles from './networkThrottlingSelector.css.js';
 const { html, nothing } = Lit;
 const UIStrings = {
     /**
@@ -75,7 +72,6 @@ export class NetworkThrottlingSelector extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [networkThrottlingSelectorStyles];
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.#onConditionsChanged, this);
         // Also call onConditionsChanged immediately to make sure we get the
         // latest snapshot. Otherwise if another panel updated this value and this
@@ -153,6 +149,7 @@ export class NetworkThrottlingSelector extends HTMLElement {
         }
         // clang-format off
         const output = html `
+      <style>${networkThrottlingSelectorStyles.cssText}</style>
       <devtools-select-menu
         @selectmenuselected=${this.#onMenuItemSelected}
         .showDivider=${true}

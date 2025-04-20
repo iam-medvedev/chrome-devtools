@@ -7,10 +7,7 @@ import '../../../ui/components/panel_introduction_steps/panel_introduction_steps
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import { html, render } from '../../../ui/lit/lit.js';
-import cssOverviewStartViewStylesRaw from './cssOverviewStartView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const cssOverviewStartViewStyles = new CSSStyleSheet();
-cssOverviewStartViewStyles.replaceSync(cssOverviewStartViewStylesRaw.cssText);
+import cssOverviewStartViewStyles from './cssOverviewStartView.css.js';
 const UIStrings = {
     /**
      *@description Label for the capture button in the CSS overview panel
@@ -50,7 +47,6 @@ export class OverviewStartRequestedEvent extends Event {
 export class CSSOverviewStartView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [cssOverviewStartViewStyles];
         this.#render();
     }
     show() {
@@ -66,6 +62,7 @@ export class CSSOverviewStartView extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${cssOverviewStartViewStyles.cssText}</style>
       <div class="css-overview-start-view">
         <devtools-panel-introduction-steps>
           <span slot="title">${i18nString(UIStrings.identifyCSSImprovements)}</span>

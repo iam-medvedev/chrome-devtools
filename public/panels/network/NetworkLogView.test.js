@@ -144,8 +144,8 @@ describeWithMockConnection('NetworkLogView', () => {
             resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.DOMContentLoaded, 6);
             if (inScope) {
                 sinon.assert.calledTwice(addEventDividers);
-                assert.isTrue(addEventDividers.getCall(0).calledWith([5], 'network-load-divider'));
-                assert.isTrue(addEventDividers.getCall(1).calledWith([6], 'network-dcl-divider'));
+                sinon.assert.calledWith(addEventDividers.getCall(0), [5], 'network-load-divider');
+                sinon.assert.calledWith(addEventDividers.getCall(1), [6], 'network-dcl-divider');
             }
             else {
                 sinon.assert.notCalled(addEventDividers);
@@ -784,11 +784,12 @@ function testPlaceholderButton(networkLogView, expectedButtonText, actionId) {
 }
 function clickCheckbox(checkbox) {
     checkbox.checked = true;
-    const event = new Event('change');
+    const event = new Event('change', { bubbles: true, composed: true });
     checkbox.dispatchEvent(event);
 }
 function getCheckbox(filterBar, title) {
-    const checkbox = filterBar.element.querySelector(`[title="${title}"] dt-checkbox`)?.shadowRoot?.querySelector('input') || null;
+    const checkbox = filterBar.element.querySelector(`[title="${title}"] devtools-checkbox`)?.shadowRoot?.querySelector('input') ||
+        null;
     assert.instanceOf(checkbox, HTMLInputElement);
     return checkbox;
 }

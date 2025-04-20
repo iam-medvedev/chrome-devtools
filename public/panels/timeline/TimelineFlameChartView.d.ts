@@ -66,6 +66,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
     addTimestampMarkerOverlay(timestamp: Trace.Types.Timing.Micro): void;
     removeTimestampMarkerOverlay(): Promise<void>;
+    forceAnimationsForTest(): void;
     runBrickBreakerGame(): void;
     isNetworkTrackShownForTests(): boolean;
     getLinkSelectionAnnotation(): Trace.Types.File.EntriesLinkAnnotation | null;

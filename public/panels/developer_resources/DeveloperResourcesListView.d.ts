@@ -11,18 +11,18 @@ export interface ViewInput {
         menu: UI.ContextMenu.ContextMenu;
         element: HTMLElement;
     }>) => void;
+    onSelect: (e: CustomEvent<HTMLElement>) => void;
     onInitiatorMouseEnter: (frameId: Protocol.Page.FrameId | null) => void;
     onInitiatorMouseLeave: () => void;
 }
 export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     #private;
-    constructor(view?: View);
-    select(item: SDK.PageResourceLoader.PageResource): void;
-    selectedItem(): SDK.PageResourceLoader.PageResource | null;
+    constructor(element: HTMLElement, view?: View);
+    set selectedItem(item: SDK.PageResourceLoader.PageResource);
+    set onSelect(onSelect: (item: SDK.PageResourceLoader.PageResource | null) => void);
     set items(items: Iterable<SDK.PageResourceLoader.PageResource>);
     reset(): void;
-    updateFilterAndHighlight(filters: TextUtils.TextUtils.ParsedFilter[]): void;
-    getNumberOfVisibleItems(): number;
+    set filters(filters: TextUtils.TextUtils.ParsedFilter[]);
     performUpdate(): void;
 }

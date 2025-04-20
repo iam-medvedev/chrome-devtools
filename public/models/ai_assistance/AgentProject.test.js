@@ -26,31 +26,79 @@ describeWithEnvironment('AgentProject', () => {
         ]);
         assert.deepEqual(project.getFiles(), ['index.html']);
     });
-    it('can search files', async () => {
-        const { project } = await mockProject();
-        assert.deepEqual(await project.searchFiles('content'), [{
-                columnNumber: 0,
-                filepath: 'index.html',
+    it('ignores package-lock.json', async () => {
+        const { project } = await mockProject([
+            {
+                path: 'node_modules/test.js',
+                content: 'content',
+            },
+            {
+                path: 'package-lock.json',
+                content: 'content',
+            },
+            {
+                path: 'test/another/node_modules/test2.js',
+                content: 'content',
+            }
+        ]);
+        assert.deepEqual(project.getFiles(), ['index.html']);
+    });
+    describe('searchFiles', () => {
+        it('can search files', async () => {
+            const { project } = await mockProject();
+            assert.deepEqual(await project.searchFiles('content'), [{
+                    columnNumber: 0,
+                    filepath: 'index.html',
+                    lineNumber: 0,
+                    matchLength: 7,
+                }]);
+        });
+        it('limits results per file', async () => {
+            const { project } = await mockProject([
+                {
+                    path: 'many-matches.js',
+                    content: Array(20).fill('find me').join('\n'),
+                },
+                {
+                    path: 'one-match.js',
+                    content: 'find me',
+                }
+            ]);
+            const results = await project.searchFiles('find me');
+            assert.lengthOf(results, 11); // 10 from many-matches.js + 1 from one-match.js
+            const manyMatchesResults = results.filter(r => r.filepath === 'many-matches.js');
+            assert.lengthOf(manyMatchesResults, 10);
+            // Check line numbers to confirm they are the first 10
+            for (let i = 0; i < 10; i++) {
+                assert.strictEqual(manyMatchesResults[i].lineNumber, i);
+                assert.strictEqual(manyMatchesResults[i].columnNumber, 0);
+                assert.strictEqual(manyMatchesResults[i].matchLength, 7);
+            }
+            const oneMatchResult = results.find(r => r.filepath === 'one-match.js');
+            assert.deepEqual(oneMatchResult, {
+                filepath: 'one-match.js',
                 lineNumber: 0,
+                columnNumber: 0,
                 matchLength: 7,
-            }]);
+            });
+        });
     });
     it('can read files', async () => {
         const { project } = await mockProject();
-        assert.deepEqual(project.readFile('index.html'), 'content');
+        assert.deepEqual(await project.readFile('index.html'), 'content');
     });
     it('can report processed files', async () => {
         const { project } = await mockProject();
         assert.deepEqual(project.getProcessedFiles(), []);
-        project.readFile('index.html');
+        await project.readFile('index.html');
         assert.deepEqual(project.getProcessedFiles(), ['index.html']);
     });
     describe('write file', () => {
         describe('full', () => {
             it('can write files files', async () => {
                 const { project } = await mockProject();
-                project.writeFile('index.html', 'updated');
-                assert.deepEqual(project.readFile('index.html'), 'updated');
+                await project.writeFile('index.html', 'updated');
+                assert.deepEqual(await project.readFile('index.html'), 'updated');
             });
         });
         describe('unified', () => {
@@ -64,8 +112,8 @@ diff
 -content
 +updated
 \`\`\`\`\``;
-                project.writeFile('index.html', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.html'), 'updated');
+                await project.writeFile('index.html', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.html'), 'updated');
             });
             it('can write files with multiple changes', async () => {
                 const { project } = await mockProject([
@@ -89,8 +137,8 @@ diff
 -Line:4
 +LineUpdated:4
 \`\`\`\`\``;
-                project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.css'), `LineUpdated:1
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.css'), `LineUpdated:1
 Line:2
 Line:3
 LineUpdated:4
@@ -111,8 +159,8 @@ diff
 +Line:1
 +Line:4
 \`\`\`\`\``;
-                project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.css'), `Line:1
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.css'), `Line:1
 Line:4`);
             });
             it('can write files with multiple additions', async () => {
@@ -135,8 +183,8 @@ diff
 +LineUpdated:1
 +LineUpdated:1.5
 \`\`\`\`\``;
-                project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.css'), `LineUpdated:1
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.css'), `LineUpdated:1
 LineUpdated:1.5
 Line:2
 Line:3
@@ -163,8 +211,8 @@ diff
 -Line:2
  Line:3
 \`\`\`\`\``;
-                project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.css'), `Line:1
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.css'), `Line:1
 Line:3
 Line:4
 Line:5`);
@@ -183,8 +231,8 @@ diff
 @@ -817,1 +817,1 @@
 -Line:1
 \`\`\`\`\``;
-                project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.css'), '');
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.css'), '');
             });
             it('can write files with first line next to @@', async () => {
                 const { project } = await mockProject([
@@ -205,8 +253,8 @@ diff
 -Line:2
  Line:3
 \`\`\`\`\``;
-                project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
-                assert.deepEqual(project.readFile('index.css'), `Line:3
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                assert.deepEqual(await project.readFile('index.css'), `Line:3
 Line:4
 Line:5`);
             });
@@ -221,21 +269,25 @@ Line:5`);
                 maxFilesChanged: 1,
                 maxLinesChanged: 10,
             });
-            project.writeFile('index.html', 'updated');
-            expect(() => {
-                project.writeFile('example2.js', 'updated2');
-            }).throws('Too many files changed');
-            assert.deepEqual(project.readFile('index.html'), 'updated');
-            assert.deepEqual(project.readFile('example2.js'), 'content');
+            await project.writeFile('index.html', 'updated');
+            try {
+                await project.writeFile('example2.js', 'updated2');
+                expect.fail('did not throw');
+            }
+            catch (err) {
+                expect(err.message).to.eq('Too many files changed');
+            }
+            assert.deepEqual(await project.readFile('index.html'), 'updated');
+            assert.deepEqual(await project.readFile('example2.js'), 'content');
         });
         it('cannot write same file multiple times', async () => {
             const { project } = await mockProject(undefined, {
                 maxFilesChanged: 1,
                 maxLinesChanged: 10,
             });
-            project.writeFile('index.html', 'updated');
-            project.writeFile('index.html', 'updated2');
-            assert.deepEqual(project.readFile('index.html'), 'updated2');
+            await project.writeFile('index.html', 'updated');
+            await project.writeFile('index.html', 'updated2');
+            assert.deepEqual(await project.readFile('index.html'), 'updated2');
         });
         it('cannot write more lines than allowed', async () => {
             const { project } = await mockProject([{
@@ -245,10 +297,14 @@ Line:5`);
                 maxFilesChanged: 1,
                 maxLinesChanged: 1,
             });
-            expect(() => {
-                project.writeFile('example2.js', 'updated2\nupdated3');
-            }).throws('Too many lines changed');
-            assert.deepEqual(project.readFile('example2.js'), 'content');
+            try {
+                await project.writeFile('example2.js', 'updated2\nupdated3');
+                expect.fail('did not throw');
+            }
+            catch (err) {
+                expect(err.message).to.eq('Too many lines changed');
+            }
+            assert.deepEqual(await project.readFile('example2.js'), 'content');
         });
     });
 });

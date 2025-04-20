@@ -17,7 +17,7 @@ describeWithMockConnection('EmulationModel', () => {
         await emulationModel.emulateTouch(true, true);
         sinon.assert.calledOnce(spySetTouchEmulationEnabled);
         sinon.assert.calledOnce(spySetEmitTouchEventsForMouse);
-        assert.isTrue(spySetTouchEmulationEnabled.calledWith({ enabled: true, maxTouchPoints: 1 }));
+        sinon.assert.calledWith(spySetTouchEmulationEnabled, { enabled: true, maxTouchPoints: 1 });
     });
     it('should `emulateTouch` not enable touch emulation when `setTouchEmulationAllowed` is called with false', async () => {
         const parentTarget = createTarget();

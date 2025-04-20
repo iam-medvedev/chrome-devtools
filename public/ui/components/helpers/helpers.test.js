@@ -7,15 +7,13 @@ import * as ComponentHelpers from './helpers.js';
 const TestElement = class extends HTMLElement {
     renderCount = 0;
     renderAsyncCount = 0;
-    renderBound = this.#render.bind(this);
-    renderAsyncBound = this.#renderAsync.bind(this);
-    #render() {
+    render() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('Render is not scheduled');
         }
         this.renderCount++;
     }
-    #renderAsync() {
+    renderAsync() {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('Render is not scheduled');
         }
@@ -72,21 +70,21 @@ describe('ComponentHelpers', () => {
         it('throws if renders are unscheduled', () => {
             const element = new TestElement();
             assert.throws(() => {
-                element.renderBound();
+                element.render();
             }, 'Render is not scheduled');
         });
         it('only renders once if second render call is made before the first has been handled', async () => {
             const element = new TestElement();
-            void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderBound);
-            void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderBound);
+            void ComponentHelpers.ScheduledRender.scheduleRender(element, element.render);
+            void ComponentHelpers.ScheduledRender.scheduleRender(element, element.render);
             await RenderCoordinator.done();
             assert.strictEqual(element.renderCount, 1);
         });
         it('handles async callbacks', async () => {
             const element = new TestElement();
             void ComponentHelpers.ScheduledRender.scheduleRender(element, async () => {
-                void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderAsyncBound);
-                await element.renderAsyncBound();
+                void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderAsync);
+                await element.renderAsync();
             });
             await RenderCoordinator.done();
             assert.strictEqual(element.renderAsyncCount, 2);
@@ -94,8 +92,8 @@ describe('ComponentHelpers', () => {
         it('re-renders if second render call is made during the first', async () => {
             const element = new TestElement();
             void ComponentHelpers.ScheduledRender.scheduleRender(element, () => {
-                void ComponentHelpers.ScheduledRender.scheduleRender(element, element.renderBound);
-                element.renderBound();
+                void ComponentHelpers.ScheduledRender.scheduleRender(element, element.render);
+                element.render();
             });
             await RenderCoordinator.done();
             assert.strictEqual(element.renderCount, 2);

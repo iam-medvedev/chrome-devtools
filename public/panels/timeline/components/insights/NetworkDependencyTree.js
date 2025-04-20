@@ -7,20 +7,13 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
-import networkDependencyTreeInsightRaw from './networkDependencyTreeInsight.css.js';
+import networkDependencyTreeInsightStyles from './networkDependencyTreeInsight.css.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.NetworkDependencyTree;
 const { html } = Lit;
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const networkDependencyTreeInsightComponentStyles = new CSSStyleSheet();
-networkDependencyTreeInsightComponentStyles.replaceSync(networkDependencyTreeInsightRaw.cssText);
 export class NetworkDependencyTree extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
     internalName = 'long-critical-network-tree';
     #relatedRequests = null;
-    connectedCallback() {
-        super.connectedCallback();
-        this.shadow.adoptedStyleSheets.push(networkDependencyTreeInsightComponentStyles);
-    }
     createOverlays() {
         if (!this.model) {
             return [];
@@ -90,10 +83,16 @@ export class NetworkDependencyTree extends BaseInsightComponent {
             return Lit.nothing;
         }
         if (!this.model.rootNodes.length) {
-            return html `<div class="insight-section">${i18nString(UIStrings.noNetworkDependencyTree)}</div>`;
+            // clang-format off
+            return html `
+        <style>${networkDependencyTreeInsightStyles.cssText}</style>
+        <div class="insight-section">${i18nString(UIStrings.noNetworkDependencyTree)}</div>
+      `;
+            // clang-format on
         }
         // clang-format off
         return html `
+      <style>${networkDependencyTreeInsightStyles.cssText}</style>
       <div class="insight-section">
         <div class="max-time">
           ${i18nString(UIStrings.maxCriticalPathLatency)}

@@ -1,5 +1,6 @@
 import * as Host from '../../../core/host/host.js';
 import type * as Workspace from '../../workspace/workspace.js';
+import { AgentProject } from '../AgentProject.js';
 import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, type ConversationContext, type RequestOptions, type ResponseData } from './AiAgent.js';
 export declare class PatchAgent extends AiAgent<Workspace.Workspace.Project> {
     #private;
@@ -8,6 +9,7 @@ export declare class PatchAgent extends AiAgent<Workspace.Workspace.Project> {
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
     get userTier(): string | undefined;
     get options(): RequestOptions;
+    get agentProject(): AgentProject;
     constructor(opts: BaseAgentOptions & {
         fileUpdateAgent?: FileUpdateAgent;
         project: Workspace.Workspace.Project;

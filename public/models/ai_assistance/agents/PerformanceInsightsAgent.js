@@ -44,12 +44,14 @@ Additionally, you may also be asked basic questions such as "What is LCP?". Ensu
 ## Step-by-step instructions
 
 - Utilize the provided functions (e.g., \`getMainThreadActivity\`, \`getNetworkActivitySummary\`) to retrieve detailed performance data. Prioritize function calls that provide context relevant to the Insight being analyzed.
+- Make sure you use \`getNetworkRequestDetail\` to get vital information about any network requests that you are referencing in your suggestions. Use this information to verify your assumptions.
 - Retrieve all necessary data through function calls before generating your response. Do not rely on assumptions or incomplete information.
 - Provide clear, actionable recommendations. Avoid technical jargon unless necessary, and explain any technical terms used.
+- If you see a generic task like "Task", "Evaluate script" or "(anonymous)" in the main thread activity, try to look at its children to see what actual functions executed and refer to those. When referencing main thread activity, be as specific as you can. Ensure you identify to the user relevant functions and which script they were defined in. Avoid referencing "Task", "Evaluate script" and "(anonymous)" nodes if possible and instead focus on their children.
 - Prioritize recommendations based on their potential impact on performance. Focus on the most significant bottlenecks.
 - Structure your response using markdown headings and bullet points for improved readability.
 - Your answer should contain the following sections:
-    1. **Insight Analysis:** Clearly explain the observed performance issues, their impact on user experience, and the key metrics used to identify them. Include relevant timestamps and durations from the provided data.
+    1. **Insight Analysis:** Clearly explain the observed performance issues, their impact on user experience, and the key metrics used to identify them. Include relevant timestamps and durations from the provided data. Avoid large paragraphs and use bullet points to keep this section digestable for the user. Include references to relevant main thread or network activity that is useful to help the user understand the analysis and provide them with additional context. Be specific: for example, rather than saying "optimize main thread activity", you can say "optimize main thread activity in the \`sleepFor\` function of \`render-blocking-script.js\`."
     2. **Optimization Recommendations:** Provide 2-3 specific, actionable steps to address the identified performance issues. Prioritize the most impactful optimizations, focusing on those that will yield the greatest performance improvements. Provide a brief justification for each recommendation, explaining its potential impact. Keep each optimization recommendation concise, ideally within 1-2 sentences. Avoid lengthy explanations or detailed technical jargon unless absolutely necessary.
 - Your response should immediately start with the "Insight Analysis" section.
 - Be direct and to the point. Avoid unnecessary introductory phrases or filler content. Focus on delivering actionable advice efficiently.
@@ -64,6 +66,12 @@ Additionally, you may also be asked basic questions such as "What is LCP?". Ensu
     - Do not mention that you are an AI, or refer to yourself in the third person. You are simulating a performance expert.
     - If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
     - Refrain from providing answers on non-web-development topics, such as legal, financial, medical, or personal advice.
+
+## Additional guidance for specific insights
+- If you are being asked any questions that relate to LCP, it is CRITICAL that you use \`getNetworkActivitySummary\` to get a summary of network requests.
+- If the LCP resource was fetched over the network, you MUST use the \`getNetworkRequestDetail\` function to find out more information before providing your analysis.
+- If you are asked about "LCP by Phase" and there was a large render delay phase, that indicates that there was main thread activity that blocked the browser painting. In this case, inspect the main thread activity and include information on what functions caused the main thread to be busy. Thoroughly inspect the main thread activity so you can be accurate in your responses.
+- Only suggest image size and format optimizations as a solution if you are confident that the download time of the image was a major contribution to the performance problems you have investigated, or if the user specifically asks about image optimization techniques.
 `;
 /* clang-format on */
 export class InsightContext extends ConversationContext {
@@ -110,58 +118,64 @@ export class InsightContext extends ConversationContext {
         switch (this.#insight.insight.insightKey) {
             case 'CLSCulprits':
                 return [
-                    'How can I improve my CLS score',
-                    'How can I prevent layout shifts on this page?',
+                    { title: 'How can I improve my CLS score' },
+                    { title: 'How can I prevent layout shifts on this page?' },
                 ];
             case 'DocumentLatency':
                 return [
-                    'How do I decrease the initial loading time of my page?',
-                    'Did anything slow down the request for this document?',
+                    { title: 'How do I decrease the initial loading time of my page?' },
+                    { title: 'Did anything slow down the request for this document?' },
                 ];
             case 'DOMSize':
-                return ['How can I reduce the size of my DOM?'];
+                return [{ title: 'How can I reduce the size of my DOM?' }];
             case 'DuplicatedJavaScript':
-                return ['How do I deduplicate the identified scripts in my bundle?'];
+                return [{ title: 'How do I deduplicate the identified scripts in my bundle?' }];
             case 'FontDisplay':
-                return ['How can I update my CSS to avoid layout shifts caused by incorrect `font-display` properties?'];
+                return [
+                    { title: 'How can I update my CSS to avoid layout shifts caused by incorrect `font-display` properties?' }
+                ];
             case 'ForcedReflow':
-                return ['How can I avoid layout thrashing?', 'What is forced reflow and why is it problematic?'];
+                return [
+                    { title: 'How can I avoid layout thrashing?' }, { title: 'What is forced reflow and why is it problematic?' }
+                ];
             case 'ImageDelivery':
-                return ['What should I do to improve and optimize the time taken to fetch and display images on the page?'];
+                return [
+                    { title: 'What should I do to improve and optimize the time taken to fetch and display images on the page?' }
+                ];
             case 'InteractionToNextPaint':
                 return [
-                    'Help me optimize my INP score', 'Help me understand why a large INP score is problematic',
-                    'What was the biggest contributor to my longest interaction duration time?'
+                    { title: 'Help me optimize my INP score' }, { title: 'Help me understand why a large INP score is problematic' },
+                    { title: 'What was the biggest contributor to my longest interaction duration time?' }
                 ];
             case 'LCPDiscovery':
                 return [
-                    'Help me optimize my LCP score', 'What can I do to reduce my LCP discovery time?',
-                    'Why is LCP discovery time important?'
+                    { title: 'Help me optimize my LCP score' }, { title: 'What can I do to reduce my LCP discovery time?' },
+                    { title: 'Why is LCP discovery time important?' }
                 ];
             case 'LCPPhases':
                 return [
-                    'Help me optimize my LCP score', 'Which LCP phase was most problematic?',
-                    'What can I do to reduce the LCP time for this page load?'
+                    { title: 'Help me optimize my LCP score' }, { title: 'Which LCP phase was most problematic?' },
+                    { title: 'What can I do to reduce the LCP time for this page load?' }
                 ];
             case 'NetworkDependencyTree':
-                return ['How do I optimize my network dependency tree?'];
+                return [{ title: 'How do I optimize my network dependency tree?' }];
             case 'RenderBlocking':
                 return [
-                    'Show me the render blocking requests, listed by impact',
-                    'How can I reduce the number of render blocking requests?'
+                    { title: 'Show me the render blocking requests, listed by impact' },
+                    { title: 'How can I reduce the number of render blocking requests?' }
                 ];
             case 'SlowCSSSelector':
-                return ['How can I optimize my CSS to increase the performance of CSS selectors?'];
+                return [{ title: 'How can I optimize my CSS to increase the performance of CSS selectors?' }];
             case 'ThirdParties':
-                return ['Which third parties are having the largest impact on my page performance?'];
+                return [{ title: 'Which third parties are having the largest impact on my page performance?' }];
             case 'Cache':
-                return ['What caching strategies can I apply to improve my page performance?'];
+                return [{ title: 'What caching strategies can I apply to improve my page performance?' }];
             case 'Viewport':
-                return ['How do I make sure my page is optimized for mobile viewing?'];
+                return [{ title: 'How do I make sure my page is optimized for mobile viewing?' }];
             case 'ModernHTTP':
-                return ['Is my site being served using the recommended HTTP best practices?'];
+                return [{ title: 'Is my site being served using the recommended HTTP best practices?' }];
             case 'LegacyJavaScript':
-                return ['Is my site polyfilling modern JavaScript features?'];
+                return [{ title: 'Is my site polyfilling modern JavaScript features?' }];
             default:
                 Platform.assertNever(this.#insight.insight.insightKey, 'Unknown insight key');
         }
@@ -246,7 +260,7 @@ export class PerformanceInsightsAgent extends AiAgent {
             },
         });
         this.declareFunction('getNetworkRequestDetail', {
-            description: 'Returns detailed debugging information about a specific network request',
+            description: 'Returns detailed debugging information about a specific network request. Use this eagerly to gather information about a network request to improve your diagnosis and optimization recommendations',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',

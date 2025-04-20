@@ -30,6 +30,7 @@ export declare abstract class BaseInsightComponent<T extends InsightModel> exten
     set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace);
     set fieldMetrics(fieldMetrics: Trace.Insights.Common.CrUXFieldMetricResults);
     get fieldMetrics(): Trace.Insights.Common.CrUXFieldMetricResults | null;
+    getOverlayOptionsForInitialOverlays(): Overlays.Overlays.TimelineOverlaySetOptions;
     /**
      * Replaces the initial insight overlays with the ones provided.
      *

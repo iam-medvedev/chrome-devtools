@@ -182,7 +182,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                         nodeType: Node.ELEMENT_NODE,
                     });
                     sinon.stub(AiAssistanceModel.NodeContext.prototype, 'getSuggestions')
-                        .returns(Promise.resolve(['test suggestion']));
+                        .returns(Promise.resolve([{ title: 'test suggestion' }]));
                     return new AiAssistanceModel.NodeContext(node);
                 },
                 action: 'freestyler.elements-floating-button',
@@ -206,7 +206,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 createContext: () => {
                     const context = new AiAssistanceModel.InsightContext(sinon.createStubInstance(TimelineUtils.InsightAIContext.ActiveInsight));
                     sinon.stub(AiAssistanceModel.InsightContext.prototype, 'getSuggestions')
-                        .returns(Promise.resolve(['test suggestion']));
+                        .returns(Promise.resolve([{ title: 'test suggestion' }]));
                     return context;
                 },
                 action: 'drjones.performance-insight-context'
@@ -315,7 +315,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const stub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
             const { view } = await createAiAssistancePanel();
             view.input.onSettingsClick();
-            assert.isTrue(stub.calledWith('chrome-ai'));
+            sinon.assert.calledWith(stub, 'chrome-ai');
         });
         it('should not show chat and delete history actions when ai assistance enabled setting is disabled', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').setDisabled(true);

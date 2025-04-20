@@ -136,7 +136,7 @@ export default {
   }
 
   .tree-outline li:hover:not(.selected) .selection,
-  .tree-outline li:hover:not(:has(dt-checkbox)) .selection {
+  .tree-outline li:hover:not(:has(devtools-checkbox)) .selection {
     forced-color-adjust: none;
     background-color: Highlight;
   }

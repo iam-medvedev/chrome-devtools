@@ -1859,7 +1859,8 @@ export declare namespace Browser {
      */
     const enum BrowserCommandId {
         OpenTabSearch = "openTabSearch",
-        CloseTabSearch = "closeTabSearch"
+        CloseTabSearch = "closeTabSearch",
+        OpenGlic = "openGlic"
     }
     /**
      * Chrome histogram bucket.
@@ -6120,6 +6121,22 @@ export declare namespace Emulation {
          * Mock accuracy
          */
         accuracy?: number;
+        /**
+         * Mock altitude
+         */
+        altitude?: number;
+        /**
+         * Mock altitudeAccuracy
+         */
+        altitudeAccuracy?: number;
+        /**
+         * Mock heading
+         */
+        heading?: number;
+        /**
+         * Mock speed
+         */
+        speed?: number;
     }
     interface GetOverriddenSensorInformationRequest {
         type: SensorType;
@@ -8294,7 +8311,8 @@ export declare namespace Network {
         Network = "network",
         Cache = "cache",
         FetchEvent = "fetch-event",
-        RaceNetworkAndFetchHandler = "race-network-and-fetch-handler"
+        RaceNetworkAndFetchHandler = "race-network-and-fetch-handler",
+        RaceNetworkAndCache = "race-network-and-cache"
     }
     interface ServiceWorkerRouterInfo {
         /**
@@ -10124,6 +10142,35 @@ export declare namespace Network {
         timestamp: MonotonicTime;
     }
     /**
+     * Fired when data is sent to tcp direct socket stream.
+     */
+    interface DirectTCPSocketChunkSentEvent {
+        identifier: RequestId;
+        data: binary;
+        timestamp: MonotonicTime;
+    }
+    /**
+     * Fired when data is received from tcp direct socket stream.
+     */
+    interface DirectTCPSocketChunkReceivedEvent {
+        identifier: RequestId;
+        data: binary;
+        timestamp: MonotonicTime;
+    }
+    /**
+     * Fired when there is an error
+     * when writing to tcp direct socket stream.
+     * For example, if user writes illegal type like string
+     * instead of ArrayBuffer or ArrayBufferView.
+     * There's no reporting for reading, because
+     * we cannot know errors on the other side.
+     */
+    interface DirectTCPSocketChunkErrorEvent {
+        identifier: RequestId;
+        errorMessage: string;
+        timestamp: MonotonicTime;
+    }
+    /**
      * Fired when additional information about a requestWillBeSent event is available from the
      * network stack. Not every requestWillBeSent event will have an additional
      * requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
@@ -11167,6 +11214,7 @@ export declare namespace Page {
         CrossOriginIsolated = "cross-origin-isolated",
         DeferredFetch = "deferred-fetch",
         DeferredFetchMinimal = "deferred-fetch-minimal",
+        DeviceAttributes = "device-attributes",
         DigitalCredentialsGet = "digital-credentials-get",
         DirectSockets = "direct-sockets",
         DirectSocketsPrivate = "direct-sockets-private",
@@ -14449,6 +14497,11 @@ export declare namespace Storage {
          */
         matchedUrls: string[];
     }
+    interface SetProtectedAudienceKAnonymityRequest {
+        owner: string;
+        name: string;
+        hashes: binary[];
+    }
     /**
      * A cache's contents have been modified.
      */
@@ -17034,11 +17087,9 @@ export declare namespace BluetoothEmulation {
         serviceId: string;
     }
     interface RemoveServiceRequest {
-        address: string;
         serviceId: string;
     }
     interface AddCharacteristicRequest {
-        address: string;
         serviceId: string;
         characteristicUuid: string;
         properties: CharacteristicProperties;
@@ -17050,13 +17101,9 @@ export declare namespace BluetoothEmulation {
         characteristicId: string;
     }
     interface RemoveCharacteristicRequest {
-        address: string;
-        serviceId: string;
         characteristicId: string;
     }
     interface AddDescriptorRequest {
-        address: string;
-        serviceId: string;
         characteristicId: string;
         descriptorUuid: string;
     }
@@ -17067,9 +17114,6 @@ export declare namespace BluetoothEmulation {
         descriptorId: string;
     }
     interface RemoveDescriptorRequest {
-        address: string;
-        serviceId: string;
-        characteristicId: string;
         descriptorId: string;
     }
     /**

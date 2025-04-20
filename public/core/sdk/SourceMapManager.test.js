@@ -104,11 +104,11 @@ describe('SourceMapManager', () => {
             sinon.stub(SDK.PageResourceLoader.PageResourceLoader.instance(), 'loadResource').resolves({ content });
             sourceMapManager.attachSourceMap(client, sourceURL, sourceMappingURL);
             assert.strictEqual(sourceMapWillAttach.callCount, 1, 'SourceMapWillAttach events');
-            assert.isTrue(sourceMapWillAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapWillAttach, sinon.match.hasNested('data.client', client));
             const sourceMap = await sourceMapManager.sourceMapForClientPromise(client);
             assert.strictEqual(sourceMapAttached.callCount, 1, 'SourceMapAttached events');
-            assert.isTrue(sourceMapAttached.calledWith(sinon.match.hasNested('data.client', client)));
-            assert.isTrue(sourceMapAttached.calledWith(sinon.match.hasNested('data.sourceMap', sourceMap)));
+            sinon.assert.calledWith(sourceMapAttached, sinon.match.hasNested('data.client', client));
+            sinon.assert.calledWith(sourceMapAttached, sinon.match.hasNested('data.sourceMap', sourceMap));
             assert.isTrue(sourceMapAttached.calledAfter(sourceMapWillAttach));
         });
         it('triggers the correct lifecycle events when loading fails', async () => {
@@ -122,10 +122,10 @@ describe('SourceMapManager', () => {
             sinon.stub(SDK.PageResourceLoader.PageResourceLoader.instance(), 'loadResource').rejects('Error');
             sourceMapManager.attachSourceMap(client, sourceURL, sourceMappingURL);
             assert.strictEqual(sourceMapWillAttach.callCount, 1, 'SourceMapWillAttach events');
-            assert.isTrue(sourceMapWillAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapWillAttach, sinon.match.hasNested('data.client', client));
             await sourceMapManager.sourceMapForClientPromise(client);
             assert.strictEqual(sourceMapFailedToAttach.callCount, 1, 'SourceMapFailedToAttach events');
-            assert.isTrue(sourceMapFailedToAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapFailedToAttach, sinon.match.hasNested('data.client', client));
             assert.isTrue(sourceMapFailedToAttach.calledAfter(sourceMapWillAttach));
         });
         it('correctly handles the case where sourcemap reattaches immediately', async () => {
@@ -139,11 +139,11 @@ describe('SourceMapManager', () => {
             sinon.stub(SDK.PageResourceLoader.PageResourceLoader.instance(), 'loadResource').resolves({ content });
             sourceMapManager.attachSourceMap(client, sourceURL, sourceMappingURL);
             sourceMapManager.detachSourceMap(client);
-            assert.isTrue(sourceMapFailedToAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapFailedToAttach, sinon.match.hasNested('data.client', client));
             sourceMapManager.attachSourceMap(client, sourceURL, sourceMappingURL);
             await sourceMapManager.sourceMapForClientPromise(client);
             assert.strictEqual(sourceMapAttached.callCount, 1, 'SourceMapAttached events');
-            assert.isTrue(sourceMapAttached.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapAttached, sinon.match.hasNested('data.client', client));
             assert.isTrue(sourceMapAttached.calledAfter(sourceMapFailedToAttach));
         });
         it('correctly handles separate clients with same sourceURL and sourceMappingURL', async () => {
@@ -186,7 +186,7 @@ describe('SourceMapManager', () => {
             assert.strictEqual(loadResource.callCount, 0, 'loadResource calls');
             await sourceMapManager.sourceMapForClientPromise(client);
             assert.strictEqual(sourceMapFailedToAttach.callCount, 1, 'SourceMapFailedToAttach events');
-            assert.isTrue(sourceMapFailedToAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapFailedToAttach, sinon.match.hasNested('data.client', client));
         });
     });
     describe('detachSourceMap', () => {
@@ -207,8 +207,8 @@ describe('SourceMapManager', () => {
             const sourceMap = await sourceMapManager.sourceMapForClientPromise(client);
             sourceMapManager.detachSourceMap(client);
             assert.strictEqual(sourceMapDetached.callCount, 1, 'SourceMapDetached events');
-            assert.isTrue(sourceMapDetached.calledWith(sinon.match.hasNested('data.client', client)));
-            assert.isTrue(sourceMapDetached.calledWith(sinon.match.hasNested('data.sourceMap', sourceMap)));
+            sinon.assert.calledWith(sourceMapDetached, sinon.match.hasNested('data.client', client));
+            sinon.assert.calledWith(sourceMapDetached, sinon.match.hasNested('data.sourceMap', sourceMap));
         });
         it('triggers the correct lifecycle events when disabled', async () => {
             const target = createTarget();
@@ -236,7 +236,7 @@ describe('SourceMapManager', () => {
             sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapFailedToAttach, sourceMapFailedToAttach);
             sourceMapManager.setEnabled(false);
             assert.strictEqual(sourceMapFailedToAttach.callCount, 1, 'SourceMapFailedToAttach events');
-            assert.isTrue(sourceMapFailedToAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapFailedToAttach, sinon.match.hasNested('data.client', client));
         });
         it('triggers the correct lifecycle events when disabling once attached', async () => {
             const target = createTarget();
@@ -249,8 +249,8 @@ describe('SourceMapManager', () => {
             sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapDetached, sourceMapDetached);
             sourceMapManager.setEnabled(false);
             assert.strictEqual(sourceMapDetached.callCount, 1, 'SourceMapDetached events');
-            assert.isTrue(sourceMapDetached.calledWith(sinon.match.hasNested('data.client', client)));
-            assert.isTrue(sourceMapDetached.calledWith(sinon.match.hasNested('data.sourceMap', sourceMap)));
+            sinon.assert.calledWith(sourceMapDetached, sinon.match.hasNested('data.client', client));
+            sinon.assert.calledWith(sourceMapDetached, sinon.match.hasNested('data.sourceMap', sourceMap));
         });
         it('triggers the correct lifecycle events when re-enabling', async () => {
             const target = createTarget();
@@ -273,11 +273,11 @@ describe('SourceMapManager', () => {
             assert.strictEqual(sourceMapDetached.callCount, 0, 'SourceMapDetached events');
             assert.strictEqual(sourceMapFailedToAttach.callCount, 0, 'SourceMapFailedToAttach events');
             assert.strictEqual(sourceMapWillAttach.callCount, 1, 'SourceMapWillAttach events');
-            assert.isTrue(sourceMapWillAttach.calledWith(sinon.match.hasNested('data.client', client)));
+            sinon.assert.calledWith(sourceMapWillAttach, sinon.match.hasNested('data.client', client));
             assert.isTrue(sourceMapAttached.calledAfter(sourceMapWillAttach));
             assert.strictEqual(sourceMapAttached.callCount, 1, 'SourceMapAttached events');
-            assert.isTrue(sourceMapAttached.calledWith(sinon.match.hasNested('data.client', client)));
-            assert.isTrue(sourceMapAttached.calledWith(sinon.match.hasNested('data.sourceMap', sourceMap)));
+            sinon.assert.calledWith(sourceMapAttached, sinon.match.hasNested('data.client', client));
+            sinon.assert.calledWith(sourceMapAttached, sinon.match.hasNested('data.sourceMap', sourceMap));
         });
     });
 });

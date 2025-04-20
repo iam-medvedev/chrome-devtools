@@ -69,7 +69,7 @@ export interface Props {
     multimodalInputEnabled?: boolean;
     imageInput?: ImageInputData;
     isTextInputDisabled: boolean;
-    emptyStateSuggestions: string[];
+    emptyStateSuggestions: AiAssistanceModel.ConversationSuggestion[];
     inputPlaceholder: Platform.UIString.LocalizedString;
     disclaimerText: Platform.UIString.LocalizedString;
     isTextInputEmpty: boolean;

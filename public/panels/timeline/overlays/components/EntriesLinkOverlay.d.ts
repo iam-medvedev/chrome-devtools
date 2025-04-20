@@ -15,7 +15,6 @@ export declare class EntriesLinkOverlay extends HTMLElement {
     set canvasRect(rect: DOMRect | null);
     entryFromWrapper(): HTMLElement | null;
     entryToWrapper(): HTMLElement | null;
-    connectedCallback(): void;
     /**
      * If one entry that is linked is in a collapsed track, we show the outlines
      * but hide only the arrow.

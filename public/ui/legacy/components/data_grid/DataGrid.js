@@ -524,11 +524,10 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         const column = this.visibleColumnsArray[cellIndex];
         if (column.dataType === "Boolean" /* DataType.BOOLEAN */) {
-            const checkboxLabel = UI.UIUtils.CheckboxLabel.create(undefined, node.data[column.id]);
-            UI.ARIAUtils.setLabel(checkboxLabel, column.title || '');
+            const checkboxElement = UI.UIUtils.CheckboxLabel.create(undefined, node.data[column.id]);
+            UI.ARIAUtils.setLabel(checkboxElement, column.title || '');
             let hasChanged = false;
-            checkboxLabel.style.height = '100%';
-            const checkboxElement = checkboxLabel.checkboxElement;
+            checkboxElement.style.height = '100%';
             checkboxElement.classList.add('inside-datagrid');
             const initialValue = checkboxElement.checked;
             checkboxElement.addEventListener('change', () => {
@@ -558,7 +557,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                 this.editingCommitted(element, checkboxElement.checked, checkboxElement.checked, undefined, 'next');
             }, false);
             element.innerHTML = '';
-            element.appendChild(checkboxLabel);
+            element.appendChild(checkboxElement);
             checkboxElement.focus();
         }
         else {
@@ -1159,6 +1158,20 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
     columnIdFromNode(target) {
         const cellElement = UI.UIUtils.enclosingNodeOrSelfWithNodeName(target, 'td');
         return (cellElement && nodeToColumnIdMap.get(cellElement)) || null;
+    }
+    /**
+     * Mark the data-grid as inert, meaning that it will not capture any user interactions.
+     * Useful in some panels where the empty state is actually an absolutely
+     * positioned div put over the panel, and in that case we need to ensure the
+     * hidden, empty data grid, does not capture any user interaction - in particular if they tab through the UI.
+     */
+    setInert(isInert) {
+        if (isInert) {
+            this.element.setAttribute('inert', 'inert');
+        }
+        else {
+            this.element.removeAttribute('inert');
+        }
     }
     clickInHeaderCell(event) {
         const cell = UI.UIUtils.enclosingNodeOrSelfWithNodeName(event.target, 'th');

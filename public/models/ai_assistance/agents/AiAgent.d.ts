@@ -101,6 +101,10 @@ export interface ParsedStep {
 }
 export type ParsedResponse = ParsedAnswer | ParsedStep;
 export declare const MAX_STEPS = 10;
+export interface ConversationSuggestion {
+    title: string;
+    jslogContext?: string;
+}
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
@@ -112,7 +116,7 @@ export declare abstract class ConversationContext<T> {
      * It will be overridden in subclasses to fetch data related to the context item.
      */
     refresh(): Promise<void>;
-    getSuggestions(): Promise<[string, ...string[]] | undefined>;
+    getSuggestions(): Promise<[ConversationSuggestion, ...ConversationSuggestion[]] | undefined>;
 }
 export type FunctionCallHandlerResult<Result> = {
     result: Result;

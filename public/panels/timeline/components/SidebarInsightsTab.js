@@ -11,10 +11,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as Utils from '../utils/utils.js';
 import * as Insights from './insights/insights.js';
-import stylesRaw from './sidebarInsightsTab.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
+import sidebarInsightsTabStyles from './sidebarInsightsTab.css.js';
 const { html } = Lit;
 const FEEDBACK_URL = 'https://crbug.com/371170842';
 const UIStrings = {
@@ -30,7 +27,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/SidebarInsightsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SidebarInsightsTab extends HTMLElement {
-    #boundRender = this.#render.bind(this);
     #shadow = this.attachShadow({ mode: 'open' });
     #parsedTrace = null;
     #traceMetadata = null;
@@ -44,9 +40,6 @@ export class SidebarInsightsTab extends HTMLElement {
      * You can only have one of these open at any time, and we track it via this ID.
      */
     #insightSetKey = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
-    }
     // TODO(paulirish): add back a disconnectedCallback() to avoid memory leaks that doesn't cause b/372943062
     set parsedTrace(data) {
         if (data === this.#parsedTrace) {
@@ -54,7 +47,7 @@ export class SidebarInsightsTab extends HTMLElement {
         }
         this.#parsedTrace = data;
         this.#insightSetKey = null;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set traceMetadata(data) {
         if (data === this.#traceMetadata) {
@@ -62,7 +55,7 @@ export class SidebarInsightsTab extends HTMLElement {
         }
         this.#traceMetadata = data;
         this.#insightSetKey = null;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set insights(data) {
         if (data === this.#insights) {
@@ -83,7 +76,7 @@ export class SidebarInsightsTab extends HTMLElement {
             insightSets.find(insightSet => insightSet.navigation || insightSet.bounds.range > trivialThreshold)?.id
                 // If everything is "trivial", just select the first one.
                 ?? insightSets[0]?.id ?? null;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set activeInsight(active) {
         if (active === this.#activeInsight) {
@@ -98,7 +91,7 @@ export class SidebarInsightsTab extends HTMLElement {
         if (this.#activeInsight) {
             this.#insightSetKey = this.#activeInsight.insightSetKey;
         }
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #insightSetToggled(id) {
         this.#insightSetKey = this.#insightSetKey === id ? null : id;
@@ -106,7 +99,7 @@ export class SidebarInsightsTab extends HTMLElement {
         if (this.#insightSetKey !== this.#activeInsight?.insightSetKey) {
             this.dispatchEvent(new Insights.SidebarInsight.InsightDeactivated());
         }
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #insightSetHovered(id) {
         const data = this.#insights?.get(id);
@@ -180,6 +173,7 @@ export class SidebarInsightsTab extends HTMLElement {
         const contents = 
         // clang-format off
         html `
+      <style>${sidebarInsightsTabStyles.cssText}</style>
       <div class="insight-sets-wrapper">
         ${[...this.#insights.values()].map(({ id, url }, index) => {
             const data = {

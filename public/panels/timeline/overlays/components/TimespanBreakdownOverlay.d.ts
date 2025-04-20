@@ -10,7 +10,6 @@ export interface EntryBreakdown {
 }
 export declare class TimespanBreakdownOverlay extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set isBelowEntry(isBelow: boolean);
     set canvasRect(rect: DOMRect | null);
     set sections(sections: EntryBreakdown[] | null);

@@ -49,7 +49,7 @@ describeWithMockConnection('IndexedDBModel', () => {
             const trackIndexedDBSpy = sinon.spy(target.storageAgent(), 'invoke_trackIndexedDBForStorageKey');
             indexedDBModel.enable();
             manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
-            assert.isTrue(trackIndexedDBSpy.calledOnceWithExactly({ storageKey: testKey }));
+            sinon.assert.calledOnceWithExactly(trackIndexedDBSpy, { storageKey: testKey });
         });
     });
     describe('StorageKeyRemoved', () => {
@@ -58,26 +58,26 @@ describeWithMockConnection('IndexedDBModel', () => {
             indexedDBModel.enable();
             manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
             manager?.storageBucketDeleted({ bucketId: testStorageBucketInfo.id });
-            assert.isTrue(untrackIndexedDBSpy.calledOnceWithExactly({ storageKey: testKey }));
+            sinon.assert.calledOnceWithExactly(untrackIndexedDBSpy, { storageKey: testKey });
         });
     });
     it('calls protocol method on clearObjectStore', () => {
         const clearObjectStoreSpy = sinon.spy(indexedDBAgent, 'invoke_clearObjectStore');
         indexedDBModel.enable();
         void indexedDBModel.clearObjectStore(testDBId, 'test-store');
-        assert.isTrue(clearObjectStoreSpy.calledOnceWithExactly({ storageBucket: testStorageBucket, databaseName: 'test-database', objectStoreName: 'test-store' }));
+        sinon.assert.calledOnceWithExactly(clearObjectStoreSpy, { storageBucket: testStorageBucket, databaseName: 'test-database', objectStoreName: 'test-store' });
     });
     it('calls protocol method on deleteEntries', () => {
         const testKeyRange = { lower: undefined, lowerOpen: false, upper: undefined, upperOpen: true };
         const deleteEntriesSpy = sinon.spy(indexedDBAgent, 'invoke_deleteObjectStoreEntries');
         indexedDBModel.enable();
         void indexedDBModel.deleteEntries(testDBId, 'test-store', testKeyRange);
-        assert.isTrue(deleteEntriesSpy.calledOnceWithExactly({
+        sinon.assert.calledOnceWithExactly(deleteEntriesSpy, {
             storageBucket: testStorageBucket,
             databaseName: 'test-database',
             objectStoreName: 'test-store',
             keyRange: testKeyRange,
-        }));
+        });
     });
     it('calls protocol method on refreshDatabaseNames and dispatches event', async () => {
         const requestDBNamesSpy = sinon.spy(indexedDBAgent, 'invoke_requestDatabaseNames');
@@ -90,20 +90,20 @@ describeWithMockConnection('IndexedDBModel', () => {
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         void indexedDBModel.refreshDatabaseNames();
-        assert.isTrue(requestDBNamesSpy.calledWithExactly({ storageBucket: testStorageBucket }));
+        sinon.assert.calledWithExactly(requestDBNamesSpy, { storageBucket: testStorageBucket });
         await dbRefreshedPromise;
     });
     it('requests database with storage key on refreshDatabase', async () => {
         const requestDatabaseSpy = sinon.spy(indexedDBAgent, 'invoke_requestDatabase');
         indexedDBModel.enable();
         void indexedDBModel.refreshDatabase(testDBId);
-        assert.isTrue(requestDatabaseSpy.calledOnceWithExactly({ storageBucket: testStorageBucket, databaseName: 'test-database' }));
+        sinon.assert.calledOnceWithExactly(requestDatabaseSpy, { storageBucket: testStorageBucket, databaseName: 'test-database' });
     });
     it('requests data with storage key on loadObjectStoreData', () => {
         const requestDataSpy = sinon.spy(indexedDBAgent, 'invoke_requestData');
         indexedDBModel.enable();
         indexedDBModel.loadObjectStoreData(testDBId, 'test-store', null, 0, 50, () => { });
-        assert.isTrue(requestDataSpy.calledOnceWithExactly({
+        sinon.assert.calledOnceWithExactly(requestDataSpy, {
             storageBucket: testStorageBucket,
             databaseName: 'test-database',
             objectStoreName: 'test-store',
@@ -111,20 +111,20 @@ describeWithMockConnection('IndexedDBModel', () => {
             skipCount: 0,
             pageSize: 50,
             keyRange: undefined,
-        }));
+        });
     });
     it('calls protocol method on getMetadata', async () => {
         const getMetadataSpy = sinon.stub(indexedDBAgent, 'invoke_getMetadata')
             .resolves({ entriesCount: 0, keyGeneratorValue: 0, getError: () => undefined });
         indexedDBModel.enable();
         await indexedDBModel.getMetadata(testDBId, new Resources.IndexedDBModel.ObjectStore('test-store', null, false));
-        assert.isTrue(getMetadataSpy.calledOnceWithExactly({ storageBucket: testStorageBucket, databaseName: 'test-database', objectStoreName: 'test-store' }));
+        sinon.assert.calledOnceWithExactly(getMetadataSpy, { storageBucket: testStorageBucket, databaseName: 'test-database', objectStoreName: 'test-store' });
     });
     it('dispatches event on indexedDBContentUpdated', () => {
         const dispatcherSpy = sinon.spy(indexedDBModel, 'dispatchEventToListeners');
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         indexedDBModel.indexedDBContentUpdated({ origin: '', storageKey: testKey, bucketId: '0', databaseName: 'test-database', objectStoreName: 'test-store' });
-        assert.isTrue(dispatcherSpy.calledOnceWithExactly(Resources.IndexedDBModel.Events.IndexedDBContentUpdated, { databaseId: testDBId, objectStoreName: 'test-store', model: indexedDBModel }));
+        sinon.assert.calledOnceWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.IndexedDBContentUpdated, { databaseId: testDBId, objectStoreName: 'test-store', model: indexedDBModel });
     });
     it('requests database names and loads db on indexedDBListUpdated', async () => {
         const requestDBNamesSpy = sinon.spy(indexedDBAgent, 'invoke_requestDatabaseNames');
@@ -138,7 +138,7 @@ describeWithMockConnection('IndexedDBModel', () => {
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         indexedDBModel.indexedDBListUpdated({ origin: '', storageKey: testKey, bucketId: '0' });
-        assert.isTrue(requestDBNamesSpy.calledWithExactly({ storageBucket: testStorageBucket }));
+        sinon.assert.calledWithExactly(requestDBNamesSpy, { storageBucket: testStorageBucket });
         await databaseLoadedPromise;
     });
     it('gets databases added for storage key', async () => {
@@ -156,7 +156,7 @@ describeWithMockConnection('IndexedDBModel', () => {
         indexedDBModel.enable();
         manager?.storageBucketCreatedOrUpdated({ bucketInfo: testStorageBucketInfo });
         void indexedDBModel.deleteDatabase(testDBId);
-        assert.isTrue(deleteDBSpy.calledOnceWithExactly({ storageBucket: testStorageBucket, databaseName: 'test-database' }));
+        sinon.assert.calledOnceWithExactly(deleteDBSpy, { storageBucket: testStorageBucket, databaseName: 'test-database' });
     });
     it('removes databases for storage key on clearForStorageKey', async () => {
         const dbNames = ['test-database1', 'test-database-2'];
@@ -178,7 +178,7 @@ describeWithMockConnection('IndexedDBModel', () => {
             databaseName: 'test-database',
             objectStoreName: 'test-store',
         });
-        assert.isTrue(dispatcherSpy.calledOnceWithExactly(Resources.IndexedDBModel.Events.IndexedDBContentUpdated, { databaseId: testDBId, objectStoreName: 'test-store', model: indexedDBModel }));
+        sinon.assert.calledOnceWithExactly(dispatcherSpy, Resources.IndexedDBModel.Events.IndexedDBContentUpdated, { databaseId: testDBId, objectStoreName: 'test-store', model: indexedDBModel });
     });
 });
 //# sourceMappingURL=IndexedDBModel.test.js.map

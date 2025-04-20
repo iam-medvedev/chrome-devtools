@@ -296,7 +296,7 @@ describeWithEnvironment('BreakpointsSidebarController', () => {
         assert.strictEqual(breakpointItem.status, "ENABLED" /* SourcesComponents.BreakpointsView.BreakpointStatus.ENABLED */);
         const breakpoint = location.breakpoint;
         SourcesComponents.BreakpointsView.BreakpointsSidebarController.instance().breakpointStateChanged(breakpointItem, false);
-        assert.isTrue(breakpoint.setEnabled.calledWith(false));
+        sinon.assert.calledWith(breakpoint.setEnabled, false);
     });
     it('correctly reveals source location', async () => {
         const { groups, location: { uiLocation } } = await setUpTestWithOneBreakpointLocation();

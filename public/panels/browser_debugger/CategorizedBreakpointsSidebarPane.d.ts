@@ -18,5 +18,5 @@ export declare abstract class CategorizedBreakpointsSidebarPane extends UI.Widge
 }
 export interface Item {
     element: UI.TreeOutline.TreeElement;
-    checkbox: HTMLInputElement;
+    checkbox: UI.UIUtils.CheckboxLabel;
 }

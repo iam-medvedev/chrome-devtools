@@ -33,6 +33,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Settings from '../components/settings/settings.js';
+import { Directives } from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { InspectorView } from './InspectorView.js';
@@ -52,8 +53,8 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/SettingsUI.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function createSettingCheckbox(name, setting, tooltip) {
     const label = CheckboxLabel.create(name, undefined, undefined, setting.name);
-    label.checkboxElement.name = name;
-    bindCheckbox(label.checkboxElement, setting);
+    label.name = name;
+    bindCheckbox(label, setting);
     if (tooltip) {
         Tooltip.install(label, tooltip);
     }
@@ -111,14 +112,27 @@ const createSettingSelect = function (name, options, requiresReload, setting, su
         }
     }
 };
+export const bindToSetting = (setting) => {
+    if (typeof setting === 'string') {
+        setting = Common.Settings.Settings.instance().moduleSetting(setting);
+    }
+    return Directives.ref(e => bindCheckbox(e, setting));
+};
 export const bindCheckbox = function (inputElement, setting, metric) {
-    const input = inputElement;
     function settingChanged() {
+        const input = inputElement;
         if (input.checked !== setting.get()) {
             input.checked = setting.get();
         }
     }
-    setting.addChangeListener(settingChanged);
+    if (inputElement) {
+        setting.addChangeListener(settingChanged);
+    }
+    else {
+        setting.removeChangeListener(settingChanged);
+        return;
+    }
+    const input = inputElement;
     settingChanged();
     function inputChanged() {
         if (setting.get() !== input.checked) {

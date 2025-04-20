@@ -5,10 +5,7 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import stylesRaw from './relatedInsightChips.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
+import relatedInsightsStyles from './relatedInsightChips.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -25,10 +22,8 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/RelatedInsi
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class RelatedInsightChips extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #data = { eventToRelatedInsightsMap: new Map(), activeEvent: null };
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
         this.#render();
     }
     set activeEvent(event) {
@@ -36,11 +31,11 @@ export class RelatedInsightChips extends HTMLElement {
             return;
         }
         this.#data.activeEvent = event;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set eventToRelatedInsightsMap(map) {
         this.#data.eventToRelatedInsightsMap = map;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #insightClick(insight) {
         return (event) => {
@@ -83,6 +78,7 @@ export class RelatedInsightChips extends HTMLElement {
         });
         // clang-format off
         Lit.render(html `
+      <style>${relatedInsightsStyles.cssText}</style>
       <ul>${insightMessages}</ul>
       <ul>${insightChips}</ul>
     `, this.#shadow, { host: this });

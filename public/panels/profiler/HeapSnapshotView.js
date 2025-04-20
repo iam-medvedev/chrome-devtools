@@ -1138,7 +1138,7 @@ export class HeapSnapshotProfileType extends Common.ObjectWrapper.eventMixin(Pro
     }
     setCustomContentEnabled(enable) {
         if (this.customContentInternal) {
-            this.customContentInternal.checkboxElement.disabled = !enable;
+            this.customContentInternal.disabled = !enable;
         }
     }
     createProfileLoadedFromFile(title) {
@@ -1312,7 +1312,7 @@ export class TrackingHeapSnapshotProfileType extends Common.ObjectWrapper.eventM
     }
     setCustomContentEnabled(enable) {
         if (this.customContentInternal) {
-            this.customContentInternal.checkboxElement.disabled = !enable;
+            this.customContentInternal.disabled = !enable;
         }
     }
     recordAllocationStacksSetting() {

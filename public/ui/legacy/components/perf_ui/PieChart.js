@@ -5,10 +5,7 @@
 import * as i18n from '../../../../core/i18n/i18n.js';
 import { html, render, svg } from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
-import pieChartStylesRaw from './pieChart.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const pieChartStyles = new CSSStyleSheet();
-pieChartStyles.replaceSync(pieChartStylesRaw.cssText);
+import pieChartStyles from './pieChart.css.js';
 const UIStrings = {
     /**
      *@description Text for sum
@@ -33,9 +30,6 @@ export class PieChart extends HTMLElement {
     sliceSelected = -1;
     innerR = 0.618;
     lastAngle = -Math.PI / 2;
-    connectedCallback() {
-        this.shadow.adoptedStyleSheets = [pieChartStyles];
-    }
     set data(data) {
         this.chartName = data.chartName;
         this.size = data.size;
@@ -49,6 +43,7 @@ export class PieChart extends HTMLElement {
         this.lastAngle = -Math.PI / 2;
         // clang-format off
         const output = html `
+      <style>${pieChartStyles.cssText}</style>
       <div class="root" role="group" @keydown=${this.onKeyDown} aria-label=${this.chartName}
           jslog=${VisualLogging.pieChart().track({ keydown: 'ArrowUp|ArrowDown' })}>
         <div class="chart-root" style="width: ${this.size}px; height: ${this.size}px;">

@@ -1032,6 +1032,12 @@ export class NetworkDispatcher {
         networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
         this.finishNetworkRequest(networkRequest, event.timestamp, 0);
     }
+    directTCPSocketChunkSent(_event) {
+    }
+    directTCPSocketChunkReceived(_event) {
+    }
+    directTCPSocketChunkError(_event) {
+    }
     trustTokenOperationDone(event) {
         const request = this.#requestsById.get(event.requestId);
         if (!request) {

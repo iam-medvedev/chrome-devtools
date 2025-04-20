@@ -101,8 +101,7 @@ export declare class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrap
 export declare class CheckboxFilterUI extends Common.ObjectWrapper.ObjectWrapper<FilterUIEventTypes> implements FilterUI {
     private readonly filterElement;
     private readonly activeWhenChecked;
-    private label;
-    private checkboxElement;
+    private checkbox;
     constructor(title: Common.UIString.LocalizedString, activeWhenChecked?: boolean, setting?: Common.Settings.Setting<boolean>, jslogContext?: string);
     isActive(): boolean;
     checked(): boolean;

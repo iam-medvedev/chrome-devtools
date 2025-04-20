@@ -104,6 +104,11 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     get serviceWorkerRouterInfo(): Protocol.Network.ServiceWorkerRouterInfo | undefined;
     set serviceWorkerRouterInfo(x: Protocol.Network.ServiceWorkerRouterInfo);
     /**
+     * Returns true if the request was matched to a route when using the
+     * ServiceWorker static routing API.
+     */
+    hasMatchingServiceWorkerRouter(): boolean;
+    /**
      * Returns true if the request was sent by a service worker.
      */
     initiatedByServiceWorker(): boolean;

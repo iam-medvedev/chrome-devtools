@@ -475,10 +475,6 @@ export class PatchWidget extends UI.Widget.Widget {
         if (isAiAssistancePatchingEnabled()) {
             this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
             this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
-            // @ts-expect-error temporary global function for local testing.
-            window.aiAssistanceTestPatchPrompt = async (changeSummary) => {
-                return await this.#applyPatch(changeSummary);
-            };
         }
     }
     willHide() {
@@ -530,8 +526,9 @@ export class PatchWidget extends UI.Widget.Widget {
         return result;
     }
     #selectDefaultProject() {
-        const automaticFileSystemProject = this.#automaticFileSystem ? this.#workspace.projectForFileSystemRoot(this.#automaticFileSystem.root) : null;
-        const project = automaticFileSystemProject || this.#workspace.project(this.#projectIdSetting.get());
+        const project = this.#automaticFileSystem ?
+            this.#workspace.projectForFileSystemRoot(this.#automaticFileSystem.root) :
+            this.#workspace.project(this.#projectIdSetting.get());
         if (project) {
             this.#project = project;
         }
@@ -569,6 +566,11 @@ export class PatchWidget extends UI.Widget.Widget {
             }
             else {
                 this.requestUpdate();
+                void this.updateComplete.then(() => {
+                    this.contentElement?.querySelector('.apply-to-workspace-container devtools-button')
+                        ?.shadowRoot?.querySelector('button')
+                        ?.focus();
+                });
             }
         };
         SelectWorkspaceDialog.show(onProjectSelected, this.#project);
@@ -668,4 +670,67 @@ ${processedFiles.map(filename => `* ${filename}`).join('\n')}`;
 export function isAiAssistancePatchingEnabled() {
     return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.patching);
 }
+// @ts-expect-error temporary global function for local testing.
+window.aiAssistanceTestPatchPrompt =
+    async (projectName, changeSummary, expectedChanges) => {
+        if (!isAiAssistancePatchingEnabled()) {
+            return;
+        }
+        const workspaceDiff = WorkspaceDiff.WorkspaceDiff.workspaceDiff();
+        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
+        const project = workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem)
+            .filter(project => project instanceof Persistence.FileSystemWorkspaceBinding.FileSystem &&
+            project.fileSystem().type() ===
+                Persistence.PlatformFileSystem.PlatformFileSystemType.WORKSPACE_PROJECT)
+            .find(project => project.displayName() === projectName);
+        if (!project) {
+            throw new Error('project not found');
+        }
+        const aidaClient = new Host.AidaClient.AidaClient();
+        const agent = new AiAssistanceModel.PatchAgent({
+            aidaClient,
+            serverSideLoggingEnabled: false,
+            project,
+        });
+        const results = [];
+        try {
+            const { processedFiles } = await agent.applyChanges(changeSummary);
+            for (const file of processedFiles) {
+                const change = expectedChanges.find(change => change.path === file);
+                if (!change) {
+                    results.push(`Patched ${file} that was not expected`);
+                    break;
+                }
+                const agentProject = agent.agentProject;
+                const content = await agentProject.readFile(file);
+                if (!content) {
+                    throw new Error(`${file} has no content`);
+                }
+                for (const m of change.matches) {
+                    if (!content.match(new RegExp(m, 'gm'))) {
+                        results.push({
+                            message: `Did not match ${m} in ${file}`,
+                            file,
+                            content,
+                        });
+                    }
+                }
+                for (const m of change.doesNotMatch || []) {
+                    if (content.match(new RegExp(m, 'gm'))) {
+                        results.push({
+                            message: `Unexpectedly matched ${m} in ${file}`,
+                            file,
+                            content,
+                        });
+                    }
+                }
+            }
+        }
+        finally {
+            workspaceDiff.modifiedUISourceCodes().forEach(modifiedUISourceCode => {
+                modifiedUISourceCode.resetWorkingCopy();
+            });
+        }
+        return results;
+    };
 //# sourceMappingURL=PatchWidget.js.map

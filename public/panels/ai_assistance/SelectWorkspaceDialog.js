@@ -22,6 +22,10 @@ const UIStringsNotTranslate = {
      */
     selectFolder: 'Select folder',
     /**
+     *@description Heading of dialog box which asks user to select a workspace folder for a11y clients.
+     */
+    selectFolderAccessibleLabel: 'Select a folder to apply changes',
+    /**
      *@description Button text for canceling workspace selection.
      */
     cancel: 'Cancel',
@@ -44,7 +48,6 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
     #workspace = Workspace.Workspace.WorkspaceImpl.instance();
     #selectedIndex = 0;
     #onProjectSelected;
-    #boundOnKeyDown;
     #dialog;
     #automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
     #folders = [];
@@ -52,7 +55,6 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
         super();
         this.element.classList.add('dialog-container');
         this.registerRequiredCSS(selectWorkspaceDialogStyles);
-        this.#boundOnKeyDown = this.#onKeyDown.bind(this);
         this.#onProjectSelected = options.onProjectSelected;
         this.#dialog = options.dialog;
         this.#updateProjectsAndFolders();
@@ -80,15 +82,20 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
             ` : nothing}
           </div>
           ${hasFolders ? html `
-            <ul role="listbox" aria-label=${lockedString(UIStringsNotTranslate.selectFolder)} tabindex="0">
+            <ul role="listbox" aria-label=${lockedString(UIStringsNotTranslate.selectFolder)}
+              aria-activedescendant=${input.folders.length > 0 ? `option-${input.selectedIndex}` : ''}>
               ${input.folders.map((folder, index) => {
+                const optionId = `option-${index}`;
                 return html `
                   <li
+                    id=${optionId}
                     @click=${() => input.onProjectSelected(index)}
+                    @keydown=${input.onListItemKeyDown}
                     class=${index === input.selectedIndex ? 'selected' : ''}
                     aria-selected=${index === input.selectedIndex ? 'true' : 'false'}
                     title=${folder.path}
                     role="option"
+                    tabindex=${index === input.selectedIndex ? '0' : '-1'}
                   >
                     <devtools-icon class="folder-icon" .name=${'folder'}></devtools-icon>
                     <span class="ellipsis">${folder.name}</span>
@@ -123,30 +130,53 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
         `, target, { host: target });
         });
         // clang-format on
-        this.performUpdate();
+        this.requestUpdate();
+        void this.updateComplete.then(() => {
+            this.contentElement?.querySelector('.selected')?.focus();
+        });
     }
     wasShown() {
-        const document = UI.InspectorView.InspectorView.instance().element.ownerDocument;
-        document.addEventListener('keydown', this.#boundOnKeyDown, true);
         this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
         this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
     }
     willHide() {
-        const document = UI.InspectorView.InspectorView.instance().element.ownerDocument;
-        document.removeEventListener('keydown', this.#boundOnKeyDown, true);
         this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
         this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
     }
-    #onKeyDown(event) {
+    #onListItemKeyDown(event) {
         switch (event.key) {
-            case 'ArrowDown':
+            case 'ArrowDown': {
+                event.preventDefault();
                 this.#selectedIndex = Math.min(this.#selectedIndex + 1, this.#folders.length - 1);
+                const targetItem = this.contentElement.querySelectorAll('li')[this.#selectedIndex];
+                targetItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                targetItem?.focus({ preventScroll: true });
                 this.requestUpdate();
                 break;
-            case 'ArrowUp':
+            }
+            case 'ArrowUp': {
+                event.preventDefault();
                 this.#selectedIndex = Math.max(this.#selectedIndex - 1, 0);
+                const targetItem = this.contentElement.querySelectorAll('li')[this.#selectedIndex];
+                targetItem?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                targetItem?.focus({ preventScroll: true });
                 this.requestUpdate();
                 break;
+            }
+            case 'Enter':
+                event.preventDefault();
+                this.#onSelectButtonClick();
+                break;
+        }
+    }
+    #onSelectButtonClick() {
+        const selectedFolder = this.#folders[this.#selectedIndex];
+        if (selectedFolder.project) {
+            this.#dialog.hide();
+            this.#onProjectSelected(selectedFolder.project);
+        }
+        else {
+            void this.#connectToAutomaticFilesystem();
         }
     }
     performUpdate() {
@@ -159,24 +189,20 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
                 this.#selectedIndex = index;
                 this.requestUpdate();
             },
-            onSelectButtonClick: () => {
-                const selectedFolder = this.#folders[this.#selectedIndex];
-                if (selectedFolder.project) {
-                    this.#dialog.hide();
-                    this.#onProjectSelected(selectedFolder.project);
-                }
-                else {
-                    void this.#connectToAutomaticFilesystem();
-                }
-            },
+            onSelectButtonClick: this.#onSelectButtonClick.bind(this),
             onCancelButtonClick: () => {
                 this.#dialog.hide();
             },
             onAddFolderButtonClick: () => {
-                void Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
-            }
+                void this.#addFileSystem();
+            },
+            onListItemKeyDown: this.#onListItemKeyDown.bind(this),
         };
         this.#view(viewInput, undefined, this.contentElement);
+    }
+    async #addFileSystem() {
+        await Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
+        this.contentElement?.querySelector('[aria-label="Select"]')?.shadowRoot?.querySelector('button')?.focus();
     }
     async #connectToAutomaticFilesystem() {
         const success = await this.#automaticFileSystemManager.connectAutomaticFileSystem(/* addIfMissing= */ true);
@@ -230,6 +256,9 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
             this.#selectedIndex = projectIndex;
         }
         this.requestUpdate();
+        void this.updateComplete.then(() => {
+            this.contentElement?.querySelector('.selected')?.scrollIntoView();
+        });
     }
     #onProjectRemoved() {
         const selectedProject = (this.#selectedIndex >= 0 && this.#selectedIndex < this.#folders.length) ?
@@ -252,6 +281,7 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
     }
     static show(onProjectSelected, currentProject) {
         const dialog = new UI.Dialog.Dialog('select-workspace');
+        dialog.setAriaLabel(UIStringsNotTranslate.selectFolderAccessibleLabel);
         dialog.setMaxContentSize(new UI.Geometry.Size(384, 340));
         dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);

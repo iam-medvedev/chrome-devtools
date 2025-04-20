@@ -976,6 +976,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     setHidden(value) {
         this.columnsInternal.setHidden(value);
+        this.dataGrid.setInert(value);
         UI.ARIAUtils.setHidden(this.summaryToolbarInternal, value);
     }
     elementsToRestoreScrollPositionsFor() {

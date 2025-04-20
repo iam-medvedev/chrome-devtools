@@ -88,7 +88,7 @@ export declare function getZeroIndexedLineAndColumnForEvent(event: Types.Events.
  * stack. If you want to obtain the whole stack trace you might need to
  * use the @see Trace.Extras.StackTraceForEvent util.
  */
-export declare function getZeroIndexedStackTraceForEvent(event: Types.Events.Event): Types.Events.CallFrame[] | null;
+export declare function getZeroIndexedStackTraceInEventPayload(event: Types.Events.Event): Types.Events.CallFrame[] | null;
 /**
  * Given a 1-based call frame creates a 0-based one.
  */

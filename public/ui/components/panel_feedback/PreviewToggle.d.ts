@@ -10,7 +10,6 @@ export interface PreviewToggleData {
 }
 export declare class PreviewToggle extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: PreviewToggleData);
 }
 declare global {

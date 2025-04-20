@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../../ui/components/menus/menus.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -12,10 +13,7 @@ import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import ignoreListSettingStylesRaw from './ignoreListSetting.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const ignoreListSettingStyles = new CSSStyleSheet();
-ignoreListSettingStyles.replaceSync(ignoreListSettingStylesRaw.cssText);
+import ignoreListSettingStyles from './ignoreListSetting.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -55,7 +53,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/IgnoreListS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class IgnoreListSetting extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #renderBound = this.#render.bind(this);
     #ignoreListEnabled = Common.Settings.Settings.instance().moduleSetting('enable-ignore-listing');
     #regexPatterns = this.#getSkipStackFramesPatternSetting().getAsArray();
     #newRegexCheckbox = UI.UIUtils.CheckboxLabel.create(
@@ -75,7 +72,6 @@ export class IgnoreListSetting extends HTMLElement {
             .addChangeListener(this.#scheduleRender.bind(this));
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [ignoreListSettingStyles];
         this.#scheduleRender();
         // Prevent the event making its way to the TimelinePanel element which will
         // cause the "Load Profile" context menu to appear.
@@ -84,7 +80,7 @@ export class IgnoreListSetting extends HTMLElement {
         });
     }
     #scheduleRender() {
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#renderBound);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #getSkipStackFramesPatternSetting() {
         return Common.Settings.Settings.instance().moduleSetting('skip-stack-frames-pattern');
@@ -112,7 +108,7 @@ export class IgnoreListSetting extends HTMLElement {
         this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
     }
     #resetInput() {
-        this.#newRegexCheckbox.checkboxElement.checked = false;
+        this.#newRegexCheckbox.checked = false;
         this.#newRegexInput.value = '';
     }
     #addNewRegexToIgnoreList() {
@@ -189,7 +185,7 @@ export class IgnoreListSetting extends HTMLElement {
      * not deal with enabling/disabling the new regex.
      */
     #onExistingRegexEnableToggle(regex, checkbox) {
-        regex.disabled = !checkbox.checkboxElement.checked;
+        regex.disabled = !checkbox.checked;
         // Technically we don't need to call the set function, because the regex is a reference, so it changed the setting
         // value directly.
         // But we need to call the set function to trigger the setting change event. which is needed by view update of flame
@@ -208,8 +204,8 @@ export class IgnoreListSetting extends HTMLElement {
         const checkboxWithLabel = UI.UIUtils.CheckboxLabel.createWithStringLiteral(regex.pattern, !regex.disabled, /* jslogContext*/ 'timeline.ignore-list-pattern');
         const helpText = i18nString(UIStrings.ignoreScriptsWhoseNamesMatchS, { regex: regex.pattern });
         UI.Tooltip.Tooltip.install(checkboxWithLabel, helpText);
-        checkboxWithLabel.checkboxElement.ariaLabel = helpText;
-        checkboxWithLabel.checkboxElement.addEventListener('change', this.#onExistingRegexEnableToggle.bind(this, regex, checkboxWithLabel), false);
+        checkboxWithLabel.ariaLabel = helpText;
+        checkboxWithLabel.addEventListener('change', this.#onExistingRegexEnableToggle.bind(this, regex, checkboxWithLabel), false);
         // clang-format off
         return html `
       <div class='regex-row'>
@@ -232,6 +228,7 @@ export class IgnoreListSetting extends HTMLElement {
         }
         // clang-format off
         const output = html `
+      <style>${ignoreListSettingStyles.cssText}</style>
       <devtools-button-dialog .data=${{
             openOnRender: false,
             jslogContext: 'timeline.ignore-list',

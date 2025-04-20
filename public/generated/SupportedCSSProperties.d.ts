@@ -500,6 +500,9 @@ export const generatedPropertyValues: {
     isolation: {
         values: string[];
     };
+    "item-tolerance": {
+        values: string[];
+    };
     left: {
         values: string[];
     };
@@ -570,9 +573,6 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "masonry-fill": {
-        values: string[];
-    };
-    "masonry-slack": {
         values: string[];
     };
     "masonry-track-end": {

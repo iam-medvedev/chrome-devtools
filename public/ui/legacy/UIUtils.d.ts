@@ -8,7 +8,7 @@ import type { ToolbarButton } from './Toolbar.js';
 import type { TreeOutline } from './Treeoutline.js';
 declare global {
     interface HTMLElementTagNameMap {
-        'dt-checkbox': CheckboxLabel;
+        'devtools-checkbox': CheckboxLabel;
         'dt-close-button': DevToolsCloseButton;
         'dt-icon-label': DevToolsIconLabel;
         'dt-small-bubble': DevToolsSmallBubble;
@@ -139,9 +139,19 @@ export declare function createSlider(min: number, max: number, tabIndex: number)
 export declare function setTitle(element: HTMLElement, title: string): void;
 export declare class CheckboxLabel extends HTMLElement {
     #private;
-    checkboxElement: HTMLInputElement;
+    static readonly observedAttributes: string[];
     constructor();
     static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
+    attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void;
+    get checked(): boolean;
+    set checked(checked: boolean);
+    set disabled(disabled: boolean);
+    get disabled(): boolean;
+    set indeterminate(indeterminate: boolean);
+    get indeterminate(): boolean;
+    set name(name: string);
+    get name(): string;
+    click(): void;
     /** Only to be used when the checkbox label is 'generated' (a regex, a className, etc). Most checkboxes should be create()'d with UIStrings */
     static createWithStringLiteral(title?: string, checked?: boolean, jslogContext?: string, small?: boolean): CheckboxLabel;
     private static lastId;

@@ -261,6 +261,7 @@ export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrappe
             return;
         }
         this.cssShadowEditor = new InlineEditor.CSSShadowEditor.CSSShadowEditor();
+        this.cssShadowEditor.element.classList.toggle('with-padding', true);
         this.cssShadowEditor.setModel(this.shadowSwatch.model());
         this.cssShadowEditor.addEventListener("ShadowChanged" /* InlineEditor.CSSShadowEditor.Events.SHADOW_CHANGED */, this.boundShadowChanged);
         this.swatchPopoverHelper.show(this.cssShadowEditor, this.iconElement, this.onPopoverHidden.bind(this));

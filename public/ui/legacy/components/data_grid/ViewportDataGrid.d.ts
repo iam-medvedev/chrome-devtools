@@ -48,6 +48,7 @@ export declare class ViewportDataGrid<T> extends ViewportDataGrid_base<ViewportD
     private contentHeight;
     private update;
     revealViewportNode(node: ViewportDataGridNode<T>): void;
+    private filteredNodes;
 }
 export declare const enum Events {
     VIEWPORT_CALCULATED = "ViewportCalculated"

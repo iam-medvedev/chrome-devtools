@@ -26,7 +26,7 @@ describeWithMockConnection('AutofillManager', () => {
             autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.ADDRESS_FORM_FILLED */, event => dispatchedAutofillEvents.push(event.data));
             model.dispatchEventToListeners("AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, { autofillModel: model, event: inEvent });
             await new Promise(resolve => setTimeout(resolve, 0));
-            assert.isTrue(showViewStub.calledOnceWithExactly('autofill-view'));
+            sinon.assert.calledOnceWithExactly(showViewStub, 'autofill-view');
             assert.deepEqual(dispatchedAutofillEvents, [outEvent]);
         };
         it('with a single match', async () => {

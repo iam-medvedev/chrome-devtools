@@ -8,7 +8,7 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as ThemeSupport from '../../../../ui/legacy/theme_support/theme_support.js';
 import { html, render } from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
-import stylesRaw from './entriesLinkOverlay.css.js';
+import entriesLinkOverlayStyles from './entriesLinkOverlay.css.js';
 const UIStrings = {
     /**
      *@description Accessible label used to explain to a user that they are viewing an arrow representing a link between two entries.
@@ -17,9 +17,6 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/EntriesLinkOverlay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
 export class EntryLinkStartCreating extends Event {
     static eventName = 'entrylinkstartcreating';
     constructor() {
@@ -82,9 +79,6 @@ export class EntriesLinkOverlay extends HTMLElement {
     }
     entryToWrapper() {
         return this.#entryToWrapper;
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
     }
     /**
      * If one entry that is linked is in a collapsed track, we show the outlines
@@ -285,6 +279,7 @@ export class EntriesLinkOverlay extends HTMLElement {
         const arrowColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
         // clang-format off
         render(html `
+          <style>${entriesLinkOverlayStyles.cssText}</style>
           <svg class="connectorContainer" width="100%" height="100%" role="region" aria-label=${i18nString(UIStrings.diagram)}>
             <defs>
               <linearGradient

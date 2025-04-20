@@ -13,10 +13,7 @@ import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Utils from '../utils/utils.js';
 import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
-import sidebarAnnotationsTabStylesRaw from './sidebarAnnotationsTab.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const sidebarAnnotationsTabStyles = new CSSStyleSheet();
-sidebarAnnotationsTabStyles.replaceSync(sidebarAnnotationsTabStylesRaw.cssText);
+import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
 const { html } = Lit;
 const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
 const entryLabelImageUrl = new URL('../../../Images/performance-panel-entry-label.svg', import.meta.url).toString();
@@ -87,7 +84,6 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/SidebarAnno
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SidebarAnnotationsTab extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    #boundRender = this.#render.bind(this);
     #annotations = [];
     // A map with annotated entries and the colours that are used to display them in the FlameChart.
     // We need this map to display the entries in the sidebar with the same colours.
@@ -102,7 +98,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
     }
     set annotations(annotations) {
         this.#annotations = this.#processAnnotationsList(annotations);
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     set annotationEntryToColorMap(annotationEntryToColorMap) {
         this.#annotationEntryToColorMap = annotationEntryToColorMap;
@@ -166,8 +162,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
         }
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [sidebarAnnotationsTabStyles];
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#boundRender);
+        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #renderEntryToIdentifier(annotation) {
         if (annotation.entryTo) {
@@ -299,6 +294,7 @@ export class SidebarAnnotationsTab extends HTMLElement {
     #render() {
         // clang-format off
         Lit.render(html `
+        <style>${sidebarAnnotationsTabStyles.cssText}</style>
         <span class="annotations">
           ${this.#annotations.length === 0 ?
             this.#renderTutorialCard() :

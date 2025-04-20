@@ -45,7 +45,7 @@ import * as CodeHighlighter from '../../ui/components/code_highlighter/code_high
 import codeHighlighterStyles from '../../ui/components/code_highlighter/codeHighlighter.css.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 // eslint-disable-next-line rulesdir/es-modules-import
-import imagePreviewStylesRaw from '../../ui/legacy/components/utils/imagePreview.css.js';
+import imagePreviewStyles from '../../ui/legacy/components/utils/imagePreview.css.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { getDurationString } from './AppenderUtils.js';
@@ -58,9 +58,6 @@ import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
 import { TimelinePanel } from './TimelinePanel.js';
 import { selectionFromEvent } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const imagePreviewStyles = new CSSStyleSheet();
-imagePreviewStyles.replaceSync(imagePreviewStylesRaw.cssText);
 const UIStrings = {
     /**
      *@description Text that only contain a placeholder
@@ -768,7 +765,7 @@ export class TimelineUIUtils {
         }
         return detailsText;
         function linkifyTopCallFrameAsText() {
-            const frame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.at(0) ?? null;
+            const frame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.at(0) ?? null;
             if (!frame) {
                 return null;
             }
@@ -831,7 +828,7 @@ export class TimelineUIUtils {
             case "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */: {
                 details = document.createElement('span');
                 // FunctionCall events have an args.data that could be a CallFrame, if all the details are present, so we check for that.
-                const callFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.at(0);
+                const callFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.at(0);
                 if (Trace.Types.Events.isFunctionCall(event) && callFrame) {
                     UI.UIUtils.createTextChild(details, TimelineUIUtils.frameDisplayName({ ...callFrame, scriptId: String(callFrame.scriptId) }));
                 }
@@ -938,7 +935,7 @@ export class TimelineUIUtils {
         return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
     }
     static linkifyTopCallFrame(event, target, linkifier, isFreshRecording = false) {
-        let frame = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(event)?.[0];
+        let frame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.[0];
         if (Trace.Types.Events.isProfileCall(event)) {
             frame = event.callFrame;
         }
@@ -1464,7 +1461,7 @@ export class TimelineUIUtils {
                 contentHelper.appendElementRow(i18nString(UIStrings.origin), originWithEntity);
             }
         }
-        const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(event);
+        const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
         if (Trace.Types.Events.isUserTiming(event) || Trace.Types.Extensions.isSyntheticExtensionEntry(event) ||
             Trace.Types.Events.isProfileCall(event) || initiator || initiatorFor || stackTrace ||
             parsedTrace?.Invalidations.invalidationsForEvent.get(event)) {
@@ -1612,14 +1609,14 @@ export class TimelineUIUtils {
         let initiatorStackLabel = i18nString(UIStrings.initiatorStackTrace);
         let stackLabel = i18nString(UIStrings.stackTrace);
         const stackTraceForEvent = Trace.Extras.StackTraceForEvent.get(event, parsedTrace);
-        if (stackTraceForEvent) {
+        if (stackTraceForEvent?.callFrames.length || stackTraceForEvent?.description || stackTraceForEvent?.parent) {
             contentHelper.addSection(i18nString(UIStrings.stackTrace));
             contentHelper.createChildStackTraceElement(stackTraceForEvent);
             // TODO(andoli): also build stack trace component for other events
             // that have a stack trace using the StackTraceForEvent helper.
         }
         else {
-            const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(event);
+            const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
             if (stackTrace?.length) {
                 contentHelper.addSection(stackLabel);
                 contentHelper.createChildStackTraceElement(TimelineUIUtils.stackTraceFromCallFrames(stackTrace));
@@ -1650,7 +1647,7 @@ export class TimelineUIUtils {
         if (initiator) {
             // If we have an initiator for the event, we can show its stack trace, a link to reveal the initiator,
             // and the time since the initiator (Pending For).
-            const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(initiator);
+            const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(initiator);
             if (stackTrace) {
                 contentHelper.addSection(initiatorStackLabel);
                 contentHelper.createChildStackTraceElement(TimelineUIUtils.stackTraceFromCallFrames(stackTrace.map(frame => {
@@ -1756,7 +1753,7 @@ export class TimelineUIUtils {
         }
         const generatedItems = new Set();
         for (const invalidation of invalidations) {
-            const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceForEvent(invalidation);
+            const stackTrace = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(invalidation);
             let scriptLink = null;
             const callFrame = stackTrace?.at(0);
             if (callFrame) {
@@ -1860,7 +1857,7 @@ export class TimelineUIUtils {
         }
         const stylesContainer = document.createElement('div');
         const shadowRoot = stylesContainer.attachShadow({ mode: 'open' });
-        shadowRoot.adoptedStyleSheets = [imagePreviewStyles];
+        shadowRoot.createChild('style').textContent = imagePreviewStyles.cssText;
         const container = shadowRoot.createChild('div');
         container.classList.add('image-preview-container', 'vbox', 'link');
         const img = container.createChild('img');

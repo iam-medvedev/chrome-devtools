@@ -281,6 +281,17 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
         treeElement.select();
     }
+    toggleAccessibilityTree() {
+        if (!this.domTreeButton) {
+            return;
+        }
+        if (this.splitWidget.mainWidget() === this.accessibilityTreeView) {
+            this.showDOMTree();
+        }
+        else {
+            this.showAccessibilityTree();
+        }
+    }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
         if (!elementsPanelInstance || forceNew) {
@@ -1189,6 +1200,9 @@ export class ElementsActionDelegate {
             case 'elements.redo':
                 void SDK.DOMModel.DOMModelUndoStack.instance().redo();
                 ElementsPanel.instance().stylesWidget.forceUpdate();
+                return true;
+            case 'elements.toggle-a11y-tree':
+                ElementsPanel.instance().toggleAccessibilityTree();
                 return true;
             case 'elements.show-styles':
                 ElementsPanel.instance().selectAndShowSidebarTab("styles" /* SidebarPaneTabId.STYLES */);

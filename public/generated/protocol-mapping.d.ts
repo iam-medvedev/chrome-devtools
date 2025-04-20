@@ -287,6 +287,23 @@ export namespace ProtocolMapping {
      */
     'Network.directTCPSocketClosed': [Protocol.Network.DirectTCPSocketClosedEvent];
     /**
+     * Fired when data is sent to tcp direct socket stream.
+     */
+    'Network.directTCPSocketChunkSent': [Protocol.Network.DirectTCPSocketChunkSentEvent];
+    /**
+     * Fired when data is received from tcp direct socket stream.
+     */
+    'Network.directTCPSocketChunkReceived': [Protocol.Network.DirectTCPSocketChunkReceivedEvent];
+    /**
+     * Fired when there is an error
+     * when writing to tcp direct socket stream.
+     * For example, if user writes illegal type like string
+     * instead of ArrayBuffer or ArrayBufferView.
+     * There's no reporting for reading, because
+     * we cannot know errors on the other side.
+     */
+    'Network.directTCPSocketChunkError': [Protocol.Network.DirectTCPSocketChunkErrorEvent];
+    /**
      * Fired when additional information about a requestWillBeSent event is available from the
      * network stack. Not every requestWillBeSent event will have an additional
      * requestWillBeSentExtraInfo fired for it, and there is no guarantee whether requestWillBeSent
@@ -2300,8 +2317,8 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
-     * Overrides the Geolocation Position or Error. Omitting any of the parameters emulates position
-     * unavailable.
+     * Overrides the Geolocation Position or Error. Omitting latitude, longitude or
+     * accuracy emulates position unavailable.
      */
     'Emulation.setGeolocationOverride': {
       paramsType: [Protocol.Emulation.SetGeolocationOverrideRequest?];
@@ -4127,6 +4144,10 @@ export namespace ProtocolMapping {
       paramsType: [Protocol.Storage.GetAffectedUrlsForThirdPartyCookieMetadataRequest];
       returnType: Protocol.Storage.GetAffectedUrlsForThirdPartyCookieMetadataResponse;
     };
+    'Storage.setProtectedAudienceKAnonymity': {
+      paramsType: [Protocol.Storage.SetProtectedAudienceKAnonymityRequest];
+      returnType: void;
+    };
     /**
      * Returns information about the system.
      */
@@ -4251,11 +4272,14 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
-     * Controls whether to automatically attach to new targets which are considered to be related to
-     * this one. When turned on, attaches to all existing related targets as well. When turned off,
+     * Controls whether to automatically attach to new targets which are considered
+     * to be directly related to this one (for example, iframes or workers).
+     * When turned on, attaches to all existing related targets as well. When turned off,
      * automatically detaches from all currently attached targets.
      * This also clears all targets added by `autoAttachRelated` from the list of targets to watch
      * for creation of related targets.
+     * You might want to call this recursively for auto-attached targets to attach
+     * to all available targets.
      */
     'Target.setAutoAttach': {
       paramsType: [Protocol.Target.SetAutoAttachRequest];
@@ -4756,8 +4780,7 @@ export namespace ProtocolMapping {
       returnType: Protocol.BluetoothEmulation.AddServiceResponse;
     };
     /**
-     * Removes the service respresented by |serviceId| from the peripheral with
-     * |address|.
+     * Removes the service respresented by |serviceId| from the simulated central.
      */
     'BluetoothEmulation.removeService': {
       paramsType: [Protocol.BluetoothEmulation.RemoveServiceRequest];
@@ -4765,7 +4788,7 @@ export namespace ProtocolMapping {
     };
     /**
      * Adds a characteristic with |characteristicUuid| and |properties| to the
-     * service represented by |serviceId| in the peripheral with |address|.
+     * service represented by |serviceId|.
      */
     'BluetoothEmulation.addCharacteristic': {
       paramsType: [Protocol.BluetoothEmulation.AddCharacteristicRequest];
@@ -4773,7 +4796,7 @@ export namespace ProtocolMapping {
     };
     /**
      * Removes the characteristic respresented by |characteristicId| from the
-     * service respresented by |serviceId| in the peripheral with |address|.
+     * simulated central.
      */
     'BluetoothEmulation.removeCharacteristic': {
       paramsType: [Protocol.BluetoothEmulation.RemoveCharacteristicRequest];
@@ -4781,17 +4804,14 @@ export namespace ProtocolMapping {
     };
     /**
      * Adds a descriptor with |descriptorUuid| to the characteristic respresented
-     * by |characteristicId| in the service represented by |serviceId| of the
-     * peripheral with |address|.
+     * by |characteristicId|.
      */
     'BluetoothEmulation.addDescriptor': {
       paramsType: [Protocol.BluetoothEmulation.AddDescriptorRequest];
       returnType: Protocol.BluetoothEmulation.AddDescriptorResponse;
     };
     /**
-     * Removes the descriptor with |descriptorId| from the characteristic
-     * respresented by |characteristicId| in the service represented by |serviceId|
-     * of the peripheral with |address|.
+     * Removes the descriptor with |descriptorId| from the simulated central.
      */
     'BluetoothEmulation.removeDescriptor': {
       paramsType: [Protocol.BluetoothEmulation.RemoveDescriptorRequest];

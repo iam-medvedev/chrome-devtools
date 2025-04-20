@@ -108,7 +108,7 @@ export default {
     margin-bottom: 0;
   }
 
-  &:not(:has(dt-checkbox)) {
+  &:not(:has(devtools-checkbox)) {
     margin-bottom: 6px;
   }
 }

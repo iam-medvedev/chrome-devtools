@@ -413,6 +413,15 @@ export class ChartViewport extends UI.Widget.VBox {
     update() {
         this.delegate.update();
     }
+    willHide() {
+        // Stop animations when the view is hidden (or destroyed).
+        // In this case, we also jump the time immediately to the target time, so
+        // that if the view is restored, the time shown is correct.
+        if (this.cancelWindowTimesAnimation) {
+            this.cancelWindowTimesAnimation();
+            this.setWindowTimes(this.targetLeftTime, this.targetRightTime, false);
+        }
+    }
     setWindowTimes(startTime, endTime, animate) {
         if (startTime === this.targetLeftTime && endTime === this.targetRightTime) {
             return;
@@ -438,6 +447,11 @@ export class ChartViewport extends UI.Widget.VBox {
             this.cancelWindowTimesAnimation = null;
         });
         function animateWindowTimes(startTime, endTime) {
+            // We cancel the animation in the willHide method, but as an extra check
+            // bail here if we are hidden rather than queue an update.
+            if (!this.isShowing()) {
+                return;
+            }
             this.visibleLeftTime = startTime;
             this.visibleRightTime = endTime;
             this.update();

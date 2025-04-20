@@ -55,6 +55,9 @@ export class PatchAgent extends AiAgent {
             modelId: undefined,
         };
     }
+    get agentProject() {
+        return this.#project;
+    }
     constructor(opts) {
         super(opts);
         this.#project = new AgentProject(opts.project);
@@ -129,7 +132,7 @@ export class PatchAgent extends AiAgent {
                 debugLog('updateFiles', args.files);
                 for (const file of args.files) {
                     debugLog('updating', file);
-                    const content = this.#project.readFile(file);
+                    const content = await this.#project.readFile(file);
                     if (content === undefined) {
                         debugLog(file, 'not found');
                         return {
@@ -167,7 +170,7 @@ ${content}
                         };
                     }
                     const updated = response.text;
-                    this.#project.writeFile(file, updated, strategy);
+                    await this.#project.writeFile(file, updated, strategy);
                     debugLog('updated', updated);
                 }
                 return {
