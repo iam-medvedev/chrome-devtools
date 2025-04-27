@@ -4,10 +4,7 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import computedStylePropertyStylesRaw from './computedStyleProperty.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const computedStylePropertyStyles = new CSSStyleSheet();
-computedStylePropertyStyles.replaceSync(computedStylePropertyStylesRaw.cssText);
+import computedStylePropertyStyles from './computedStyleProperty.css.js';
 export class NavigateToSourceEvent extends Event {
     static eventName = 'onnavigatetosource';
     constructor() {
@@ -19,7 +16,6 @@ export class ComputedStyleProperty extends HTMLElement {
     #inherited = false;
     #traceable = false;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [computedStylePropertyStyles];
         this.#render();
     }
     set inherited(inherited) {
@@ -43,6 +39,7 @@ export class ComputedStyleProperty extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${computedStylePropertyStyles.cssText}</style>
       <div class="computed-style-property ${this.#inherited ? 'inherited' : ''}">
         <div class="property-name">
           <slot name="name"></slot>

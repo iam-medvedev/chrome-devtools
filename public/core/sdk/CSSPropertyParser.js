@@ -201,6 +201,17 @@ export class BottomUpTreeMatching extends TreeWalker {
     getComputedText(node, substitutions) {
         return this.getComputedTextRange(node, node, substitutions);
     }
+    getLonghandValuesCount() {
+        const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
+        if (!from || !to) {
+            return 0;
+        }
+        return this.computedText.countTopLevelValues(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
+    }
+    getComputedLonghandName(to) {
+        const from = ASTUtils.declValue(this.ast.tree) ?? this.ast.tree;
+        return this.computedText.countTopLevelValues(from.from - this.ast.tree.from, to.from - this.ast.tree.from);
+    }
     getComputedPropertyValueText() {
         const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
         return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
@@ -213,6 +224,7 @@ class ComputedTextChunk {
     match;
     offset;
     #cachedComputedText = null;
+    #topLevelValueCount = null;
     constructor(match, offset) {
         this.match = match;
         this.offset = offset;
@@ -229,6 +241,27 @@ class ComputedTextChunk {
         }
         return this.#cachedComputedText;
     }
+    // If the match is top-level, i.e. is an outermost subexpression in the property value, count the number of outermost
+    // subexpressions after applying any potential substitutions.
+    get topLevelValueCount() {
+        if (this.match.node.parent?.name !== 'Declaration') {
+            // Not a top-level matchh.
+            return 0;
+        }
+        const computedText = this.computedText;
+        if (computedText === '') {
+            // Substitutions elided the match altogether.
+            return 0;
+        }
+        if (this.#topLevelValueCount === null) {
+            // computedText may be null, in which case the match text was not replaced.
+            this.#topLevelValueCount =
+                ASTUtils
+                    .siblings(ASTUtils.declValue(tokenizeDeclaration('--p', computedText ?? this.match.text)?.tree ?? null))
+                    .length;
+        }
+        return this.#topLevelValueCount;
+    }
 }
 // This class constructs the "computed" text from the input property text, i.e., it will strip comments and substitute
 // var() functions if possible. It's intended for use during the bottom-up tree matching process. The original text is
@@ -239,12 +272,14 @@ class ComputedTextChunk {
 export class ComputedText {
     #chunks = [];
     text;
+    #topLevelValueCounts = new Map();
     #sorted = true;
     constructor(text) {
         this.text = text;
     }
     clear() {
         this.#chunks.splice(0);
+        this.#topLevelValueCounts.clear();
     }
     get chunkCount() {
         return this.#chunks.length;
@@ -351,6 +386,21 @@ export class ComputedText {
         }
         return pieces.join('');
     }
+    #countTopLevelValuesInStringPiece(piece) {
+        let count = this.#topLevelValueCounts.get(piece);
+        if (count === undefined) {
+            count = ASTUtils.siblings(ASTUtils.declValue(tokenizeDeclaration('--p', piece)?.tree ?? null)).length;
+            this.#topLevelValueCounts.set(piece, count);
+        }
+        return count;
+    }
+    countTopLevelValues(begin, end) {
+        const pieces = Array.from(this.#getPieces(begin, end));
+        const counts = pieces.map(chunk => (chunk instanceof ComputedTextChunk ? chunk.topLevelValueCount :
+            this.#countTopLevelValuesInStringPiece(chunk)));
+        const count = counts.reduce((sum, v) => sum + v, 0);
+        return count;
+    }
 }
 export function requiresSpace(a, b) {
     const tail = Array.isArray(a) ? a.findLast(node => node.textContent)?.textContent : a;
@@ -383,7 +433,7 @@ export var ASTUtils;
     }
     ASTUtils.range = range;
     function declValue(node) {
-        if (node.name !== 'Declaration') {
+        if (node?.name !== 'Declaration') {
             return null;
         }
         return children(node).find(node => node.name === ':')?.nextSibling ?? null;

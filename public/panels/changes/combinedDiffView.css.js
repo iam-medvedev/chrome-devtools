@@ -20,6 +20,11 @@ export default {
 
   details {
     flex-shrink: 0;
+    border-radius: 12px;
+
+    &.selected {
+      outline: var(--sys-size-2) solid var(--sys-color-divider-on-tonal-container);
+    }
 
     summary {
       background-color: var(--sys-color-surface1);
@@ -31,6 +36,12 @@ export default {
       justify-content: space-between;
       gap: var(--sys-size-2);
 
+      &:focus-visible {
+        outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+        /* Prevents outline clipping by drawing it inside the element's bounds instead of outside. */
+        outline-offset: calc(-1 * var(--sys-size-2));
+      }
+
       .summary-left {
         display: flex;
         align-items: center;
@@ -38,7 +49,7 @@ export default {
         flex-grow: 0;
 
         .file-name-link {
-          padding-left: var(--sys-size-5);
+          margin-left: var(--sys-size-5);
           width: 100%;
           text-overflow: ellipsis;
           overflow: hidden;
@@ -46,11 +57,17 @@ export default {
           border: none;
           background: none;
           font: inherit;
+          padding: 0;
 
           &:hover {
             color: var(--sys-color-primary);
             text-decoration: underline;
             cursor: pointer;
+          }
+
+          &:focus-visible {
+            outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+            outline-offset: var(--sys-size-2);
           }
         }
 
@@ -65,9 +82,12 @@ export default {
 
       .summary-right {
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        gap: var(--sys-size-2);
+        padding-right: var(--sys-size-4);
 
         .copied {
-          padding-right: var(--sys-size-4);
           font: var(--sys-typescale-body5-regular);
         }
       }

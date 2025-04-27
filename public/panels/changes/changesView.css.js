@@ -28,7 +28,8 @@ export default {
   }
 
   .combined-diff-view {
-    padding: var(--sys-size-6);
+    padding-inline: var(--sys-size-6);
+    padding-block: var(--sys-size-4);
   }
 }
 

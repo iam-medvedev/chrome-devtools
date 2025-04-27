@@ -184,7 +184,7 @@ const TYPE_ORDERS = new Map([
     [Types.File, 10],
     [Types.Frame, 70],
     [Types.Worker, 90],
-    [Types.AutomaticFileSystem, 100],
+    [Types.AutomaticFileSystem, 99],
     [Types.FileSystem, 100],
 ]);
 export class NavigatorView extends UI.Widget.VBox {

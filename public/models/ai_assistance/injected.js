@@ -7,6 +7,10 @@
  * They need remain isolated for importing other function so
  * bundling them for production does not create issues.
  */
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * The scripts in this file aren't executed as part of DevTools front-end,
+ * but are injected into the page.
+ **/
 export const AI_ASSISTANCE_CSS_CLASS_NAME = 'ai-style-change';
 export const FREESTYLER_WORLD_NAME = 'DevTools AI Assistance';
 export const FREESTYLER_BINDING_NAME = '__freestyler';
@@ -18,11 +22,12 @@ function freestylerBindingFunc(bindingName) {
     const global = globalThis;
     if (!global.freestyler) {
         const freestyler = (args) => {
-            const { resolve, promise } = Promise.withResolvers();
+            const { resolve, reject, promise } = Promise.withResolvers();
             freestyler.callbacks.set(freestyler.id, {
                 args: JSON.stringify(args),
                 element: args.element,
                 resolve,
+                reject,
             });
             // @ts-expect-error this is binding added though CDP
             globalThis[bindingName](String(freestyler.id));
@@ -37,8 +42,13 @@ function freestylerBindingFunc(bindingName) {
         freestyler.getArgs = (callbackId) => {
             return freestyler.callbacks.get(callbackId)?.args;
         };
-        freestyler.respond = (callbackId, styleChanges) => {
-            freestyler.callbacks.get(callbackId)?.resolve(styleChanges);
+        freestyler.respond = (callbackId, styleChangesOrError) => {
+            if (typeof styleChangesOrError === 'string') {
+                freestyler.callbacks.get(callbackId)?.resolve(styleChangesOrError);
+            }
+            else {
+                freestyler.callbacks.get(callbackId)?.reject(styleChangesOrError);
+            }
             freestyler.callbacks.delete(callbackId);
         };
         global.freestyler = freestyler;

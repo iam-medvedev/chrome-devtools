@@ -12,7 +12,6 @@ export declare class Cache extends BaseInsightComponent<CacheInsightModel> {
     createAggregatedTableRow(remaining: Trace.Insights.Models.Cache.CacheableRequest[]): TableDataRow;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    getEstimatedSavingsBytes(): number | null;
     renderContent(): Lit.LitTemplate;
 }
 declare global {

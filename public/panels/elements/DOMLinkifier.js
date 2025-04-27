@@ -85,6 +85,7 @@ export const linkifyNodeReference = function (node, options = {
     preventKeyboardFocus: undefined,
     textContent: undefined,
     isDynamicLink: false,
+    disabled: false,
 }) {
     if (!node) {
         return document.createTextNode(i18nString(UIStrings.node));
@@ -94,6 +95,7 @@ export const linkifyNodeReference = function (node, options = {
     const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(root, { cssFile: domLinkifierStyles });
     const link = shadowRoot.createChild('button', 'node-link text-button link-style');
     link.classList.toggle('dynamic-link', options.isDynamicLink);
+    link.classList.toggle('disabled', options.disabled);
     link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}`);
     decorateNodeLabel(node, link, options);
     link.addEventListener('click', () => {

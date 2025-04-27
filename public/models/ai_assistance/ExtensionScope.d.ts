@@ -15,4 +15,5 @@ export declare class ExtensionScope {
     static getSelectorsFromStyleRule(styleRule: SDK.CSSRule.CSSStyleRule, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles): string;
     static getSelectorForNode(node: SDK.DOMModel.DOMNode): string;
     static getSourceLocation(styleRule: SDK.CSSRule.CSSStyleRule): string | undefined;
+    sanitizedStyleChanges(selector: string, styles: Record<string, string>): Promise<Record<string, string>>;
 }

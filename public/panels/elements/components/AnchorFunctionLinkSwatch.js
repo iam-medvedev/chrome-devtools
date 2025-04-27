@@ -7,10 +7,7 @@ import '../../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import anchorFunctionLinkSwatchStylesRaw from './anchorFunctionLinkSwatch.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const anchorFunctionLinkSwatchStyles = new CSSStyleSheet();
-anchorFunctionLinkSwatchStyles.replaceSync(anchorFunctionLinkSwatchStylesRaw.cssText);
+import anchorFunctionLinkSwatchStyles from './anchorFunctionLinkSwatch.css.js';
 const UIStrings = {
     /**
      *@description Title in the styles tab for the icon button for jumping to the anchor node.
@@ -38,7 +35,6 @@ export class AnchorFunctionLinkSwatch extends HTMLElement {
         return this.#data;
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [anchorFunctionLinkSwatchStyles];
         this.render();
     }
     set data(data) {
@@ -56,7 +52,8 @@ export class AnchorFunctionLinkSwatch extends HTMLElement {
         if (this.#data.identifier) {
             render(
             // clang-format off
-            html `<devtools-link-swatch
+            html `<style>${anchorFunctionLinkSwatchStyles.cssText}</style>
+               <devtools-link-swatch
                 @mouseenter=${this.#data.onMouseEnter}
                 @mouseleave=${this.#data.onMouseLeave}
                 .data=${{
@@ -73,7 +70,8 @@ export class AnchorFunctionLinkSwatch extends HTMLElement {
         }
         else {
             // clang-format off
-            render(html `<devtools-icon
+            render(html `<style>${anchorFunctionLinkSwatchStyles.cssText}</style>
+                  <devtools-icon
                    role='button'
                    title=${i18nString(UIStrings.jumpToAnchorNode)}
                    class='icon-link'

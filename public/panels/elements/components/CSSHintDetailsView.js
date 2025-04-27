@@ -6,7 +6,9 @@ import '../../../ui/legacy/legacy.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import { Directives, html, render } from '../../../ui/lit/lit.js';
 import cssHintDetailsViewStylesRaw from './cssHintDetailsView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const cssHintDetailsViewStyles = new CSSStyleSheet();
 cssHintDetailsViewStyles.replaceSync(cssHintDetailsViewStylesRaw.cssText);
 const UIStrings = {

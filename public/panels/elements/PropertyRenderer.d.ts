@@ -19,14 +19,23 @@ export declare class TracingContext {
     #private;
     constructor(highlighting: Highlighting, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
     get highlighting(): Highlighting;
+    get propertyName(): string | null;
+    get longhandOffset(): number;
     renderingContext(context: RenderingContext): RenderingContext;
     nextSubstitution(): boolean;
     nextEvaluation(): boolean;
     didApplyEvaluations(): boolean;
     evaluation(args: unknown[]): TracingContext[] | null;
-    applyEvaluation(children: TracingContext[]): boolean;
-    substitution(): TracingContext | null;
+    applyEvaluation(children: TracingContext[], evaluation: () => ({
+        placeholder: Node[];
+        asyncEvalCallback?: () => Promise<boolean>;
+    })): Node[] | null;
+    substitution(match?: {
+        match: SDK.CSSPropertyParser.Match;
+        matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching;
+    }): TracingContext | null;
     cachedParsedValue(declaration: SDK.CSSProperty.CSSProperty | SDK.CSSMatchedStyles.CSSRegisteredProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>): SDK.CSSPropertyParser.BottomUpTreeMatching | null;
+    runAsyncEvaluations(): Promise<boolean>;
 }
 export declare class RenderingContext {
     readonly ast: SDK.CSSPropertyParser.SyntaxTree;
@@ -42,6 +51,7 @@ export declare class RenderingContext {
         readonly?: boolean;
     }, tracing?: TracingContext | undefined);
     addControl(cssType: string, control: HTMLElement): void;
+    getComputedLonghandName(node: CodeMirror.SyntaxNode): string | null;
 }
 export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     #private;

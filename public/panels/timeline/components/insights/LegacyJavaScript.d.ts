@@ -9,7 +9,6 @@ export declare class LegacyJavaScript extends BaseInsightComponent<LegacyJavaScr
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
-    getEstimatedSavingsBytes(): number | null;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderContent(): Lit.LitTemplate;
 }

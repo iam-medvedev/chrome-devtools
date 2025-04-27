@@ -6,6 +6,7 @@ export declare class CLSCulprits extends BaseInsightComponent<CLSCulpritsInsight
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderContent(): Lit.LitTemplate;
 }

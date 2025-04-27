@@ -216,7 +216,8 @@ describeWithEnvironment('ScriptDuplication', function () {
     });
     describe('computeScriptDuplication', () => {
         function getDuplication(scriptsData) {
-            return Trace.Extras.ScriptDuplication.computeScriptDuplication(scriptsData).duplicationGroupedByNodeModules;
+            return Trace.Extras.ScriptDuplication.computeScriptDuplication(scriptsData, new Map())
+                .duplicationGroupedByNodeModules;
         }
         it('works (simple, no duplication)', async () => {
             const scriptsData = {

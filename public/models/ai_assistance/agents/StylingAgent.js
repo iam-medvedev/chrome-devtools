@@ -135,22 +135,29 @@ OBSERVATION: {"elementStyles":{"display":"block","visibility":"visible","positio
 ANSWER: Even though the popup itself has a z-index of 3, its parent container has position: relative and z-index: 1. This creates a new stacking context for the popup. Because the "background" div has a z-index of 2, which is higher than the stacking context of the popup, it is rendered on top, obscuring the popup.
 SUGGESTIONS: ["What is a stacking context?", "How can I change the stacking order?"]
 `;
-const promptForMultimodalInputEvaluation = `The user has provided you a screenshot of the page (as visible in the viewport) in base64-encoded format. You SHOULD use it while answering user's queries.
+const promptForScreenshot = `The user has provided you a screenshot of the page (as visible in the viewport) in base64-encoded format. You SHOULD use it while answering user's queries.
 
-# Considerations for evaluating image:
-* Pay close attention to the spatial details as well as the visual appearance of the selected element in the image, particularly in relation to layout, spacing, and styling.
 * Try to connect the screenshot to actual DOM elements in the page.
+`;
+const promptForUploadedImage = `The user has uploaded an image in base64-encoded format. You SHOULD use it while answering user's queries.
+`;
+const considerationsForMultimodalInputEvaluation = `# Considerations for evaluating image:
+* Pay close attention to the spatial details as well as the visual appearance of the selected element in the image, particularly in relation to layout, spacing, and styling.
 * Analyze the image to identify the layout structure surrounding the element, including the positioning of neighboring elements.
 * Extract visual information from the image, such as colors, fonts, spacing, and sizes, that might be relevant to the user's query.
 * If the image suggests responsiveness issues (e.g., cropped content, overlapping elements), consider those in your response.
 * Consider the surrounding elements and overall layout in the image, but prioritize the selected element's styling and positioning.
-* **CRITICAL** When the user provides a screenshot, interpret and use content and information from the screenshot STRICTLY for web site debugging purposes.
+* **CRITICAL** When the user provides image input, interpret and use content and information from the image STRICTLY for web site debugging purposes.
 
 * As part of THOUGHT, evaluate the image to gather data that might be needed to answer the question.
 In case query is related to the image, ALWAYS first use image evaluation to get all details from the image. ONLY after you have all data needed from image, you should move to other steps.
 
 `;
 /* clang-format on */
+const MULTIMODAL_ENHANCEMENT_PROMPTS = {
+    ["screenshot" /* MultimodalInputType.SCREENSHOT */]: promptForScreenshot + considerationsForMultimodalInputEvaluation,
+    ["uploaded-image" /* MultimodalInputType.UPLOADED_IMAGE */]: promptForUploadedImage + considerationsForMultimodalInputEvaluation,
+};
 async function executeJsCode(functionDeclaration, { throwOnSideEffect }) {
     const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
@@ -203,11 +210,10 @@ export class NodeContext extends ConversationContext {
         return this.#node;
     }
     getIcon() {
-        return document.createElement('span');
     }
-    getTitle() {
+    getTitle(opts) {
         const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
-        return Lit.Directives.until(ElementsPanel.DOMLinkifier.linkifyNodeReference(this.#node, { hiddenClassList }));
+        return Lit.Directives.until(ElementsPanel.DOMLinkifier.linkifyNodeReference(this.#node, { hiddenClassList, disabled: opts.disabled }));
     }
     async getSuggestions() {
         const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
@@ -677,11 +683,11 @@ export class StylingAgent extends AiAgent {
                 }],
         };
     }
-    async enhanceQuery(query, selectedElement, hasImageInput) {
+    async enhanceQuery(query, selectedElement, multimodalInputType) {
         const elementEnchancementQuery = selectedElement ?
             `# Inspected element\n\n${await StylingAgent.describeElement(selectedElement.getItem())}\n\n# User request\n\n` :
             '';
-        const multimodalInputEnhancementQuery = this.multimodalInputEnabled && hasImageInput ? promptForMultimodalInputEvaluation : '';
+        const multimodalInputEnhancementQuery = this.multimodalInputEnabled && multimodalInputType ? MULTIMODAL_ENHANCEMENT_PROMPTS[multimodalInputType] : '';
         return `${multimodalInputEnhancementQuery}${elementEnchancementQuery}QUERY: ${query}`;
     }
     formatParsedAnswer({ answer }) {

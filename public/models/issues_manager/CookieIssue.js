@@ -21,17 +21,9 @@ const UIStrings = {
      */
     firstPartySetsExplained: '`First-Party Sets` and the `SameParty` attribute',
     /**
-     * @description Label for a link for third-party cookie Issues.
-     */
-    thirdPartyPhaseoutExplained: 'Changes to Chrome\'s treatment of third-party cookies',
-    /**
      * @description Label for a link for cross-site redirect Issues.
      */
     fileCrosSiteRedirectBug: 'File a bug',
-    /**
-     * @description text to show in Console panel when a third-party cookie accessed.
-     */
-    consoleTpcdWarningMessage: 'Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies.',
     /**
      * @description text to show in Console panel when a third-party cookie is blocked in Chrome.
      */
@@ -237,11 +229,19 @@ export class CookieIssue extends Issue {
         }
         return "GenericCookie" /* CookieIssueSubCategory.GENERIC_COOKIE */;
     }
+    static isThirdPartyCookiePhaseoutRelatedIssue(issue) {
+        const excludeFromAggregate = [
+            "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */,
+            "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */,
+            "WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */,
+            "ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */,
+        ];
+        return (excludeFromAggregate.some(exclude => issue.code().includes(exclude)));
+    }
     maybeCreateConsoleMessage() {
         const issuesModel = this.model();
-        if (issuesModel && CookieIssue.getSubCategory(this.code()) === "ThirdPartyPhaseoutCookie" /* CookieIssueSubCategory.THIRD_PARTY_PHASEOUT_COOKIE */) {
-            return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ISSUE_PANEL, "warning" /* Protocol.Log.LogEntryLevel.Warning */, this.getKind() === "PageError" /* IssueKind.PAGE_ERROR */ ? UIStrings.consoleTpcdErrorMessage :
-                UIStrings.consoleTpcdWarningMessage, {
+        if (issuesModel && this.code().includes("ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */)) {
+            return new SDK.ConsoleModel.ConsoleMessage(issuesModel.target().model(SDK.RuntimeModel.RuntimeModel), Common.Console.FrontendMessageSource.ISSUE_PANEL, "warning" /* Protocol.Log.LogEntryLevel.Warning */, UIStrings.consoleTpcdErrorMessage, {
                 url: this.#issueDetails.request?.url,
                 affectedResources: { requestId: this.#issueDetails.request?.requestId, issueId: this.issueId },
                 isCookieReportIssue: true
@@ -436,34 +436,6 @@ const excludeBlockedWithinRelatedWebsiteSet = {
     file: 'cookieExcludeBlockedWithinRelatedWebsiteSet.md',
     links: [],
 };
-const cookieWarnThirdPartyPhaseoutSet = {
-    file: 'cookieWarnThirdPartyPhaseoutSet.md',
-    links: [{
-            link: 'https://goo.gle/3pc-dev-issue',
-            linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
-        }],
-};
-const cookieWarnThirdPartyPhaseoutRead = {
-    file: 'cookieWarnThirdPartyPhaseoutRead.md',
-    links: [{
-            link: 'https://goo.gle/3pc-dev-issue',
-            linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
-        }],
-};
-const cookieExcludeThirdPartyPhaseoutSet = {
-    file: 'cookieExcludeThirdPartyPhaseoutSet.md',
-    links: [{
-            link: 'https://goo.gle/report-3pc-dev-issue',
-            linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
-        }],
-};
-const cookieExcludeThirdPartyPhaseoutRead = {
-    file: 'cookieExcludeThirdPartyPhaseoutRead.md',
-    links: [{
-            link: 'https://goo.gle/report-3pc-dev-issue',
-            linkTitle: i18nLazyString(UIStrings.thirdPartyPhaseoutExplained),
-        }],
-};
 const cookieCrossSiteRedirectDowngrade = {
     file: 'cookieCrossSiteRedirectDowngrade.md',
     links: [{
@@ -527,14 +499,14 @@ const issueDescriptions = new Map([
         'CookieIssue::ExcludeThirdPartyCookieBlockedInRelatedWebsiteSet::SetCookie',
         excludeBlockedWithinRelatedWebsiteSet,
     ],
-    ['CookieIssue::WarnThirdPartyPhaseout::ReadCookie', cookieWarnThirdPartyPhaseoutRead],
-    ['CookieIssue::WarnThirdPartyPhaseout::SetCookie', cookieWarnThirdPartyPhaseoutSet],
+    ['CookieIssue::WarnThirdPartyPhaseout::ReadCookie', placeholderDescriptionForInvisibleIssues],
+    ['CookieIssue::WarnThirdPartyPhaseout::SetCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::WarnDeprecationTrialMetadata::ReadCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::WarnDeprecationTrialMetadata::SetCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::WarnThirdPartyCookieHeuristic::ReadCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::WarnThirdPartyCookieHeuristic::SetCookie', placeholderDescriptionForInvisibleIssues],
-    ['CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie', cookieExcludeThirdPartyPhaseoutRead],
-    ['CookieIssue::ExcludeThirdPartyPhaseout::SetCookie', cookieExcludeThirdPartyPhaseoutSet],
+    ['CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie', placeholderDescriptionForInvisibleIssues],
+    ['CookieIssue::ExcludeThirdPartyPhaseout::SetCookie', placeholderDescriptionForInvisibleIssues],
     ['CookieIssue::CrossSiteRedirectDowngradeChangesInclusion', cookieCrossSiteRedirectDowngrade],
     ['CookieIssue::ExcludePortMismatch', ExcludePortMismatch],
     ['CookieIssue::ExcludeSchemeMismatch', ExcludeSchemeMismatch],

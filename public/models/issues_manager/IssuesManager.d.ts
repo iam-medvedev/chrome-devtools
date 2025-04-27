@@ -49,6 +49,7 @@ export declare class IssuesManager extends Common.ObjectWrapper.ObjectWrapper<Ev
     issues(): Iterable<Issue>;
     numberOfIssues(kind?: IssueKind): number;
     numberOfHiddenIssues(kind?: IssueKind): number;
+    numberOfThirdPartyCookiePhaseoutIssues(kind?: IssueKind): number;
     numberOfAllStoredIssues(): number;
     unhideAllIssues(): void;
     getIssueById(id: string): Issue | undefined;

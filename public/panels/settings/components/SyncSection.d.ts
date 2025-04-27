@@ -8,7 +8,6 @@ export interface SyncSectionData {
 }
 export declare class SyncSection extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: SyncSectionData);
 }
 declare global {

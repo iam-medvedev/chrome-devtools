@@ -9,7 +9,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 import * as Lit from '../../../ui/lit/lit.js';
 import controlButtonStylesRaw from './controlButton.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+// TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
 const controlButtonStyles = new CSSStyleSheet();
 controlButtonStyles.replaceSync(controlButtonStylesRaw.cssText);
 const { html, Decorators, LitElement } = Lit;

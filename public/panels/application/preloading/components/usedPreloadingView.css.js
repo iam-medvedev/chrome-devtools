@@ -70,7 +70,7 @@ devtools-report-divider {
 }
 
 .status-badge-success {
-  background: var(--sys-color-tertiary-container);
+  background: var(--sys-color-surface-green);
 }
 
 .status-badge-failure {

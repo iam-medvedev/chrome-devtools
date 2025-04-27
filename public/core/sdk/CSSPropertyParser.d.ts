@@ -75,6 +75,8 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
     hasUnresolvedVarsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;
     getComputedText(node: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
+    getLonghandValuesCount(): number;
+    getComputedLonghandName(to: CodeMirror.SyntaxNode): number;
     getComputedPropertyValueText(): string;
     getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
 }
@@ -87,6 +89,7 @@ export declare class ComputedText {
     push(match: Match, offset: number): void;
     hasUnresolvedVars(begin: number, end: number): boolean;
     get(begin: number, end: number, substitutions?: Map<Match, string>): string;
+    countTopLevelValues(begin: number, end: number): number;
 }
 export declare function requiresSpace(a: string, b: string): boolean;
 export declare function requiresSpace(a: Node[], b: Node[]): boolean;
@@ -105,7 +108,7 @@ export declare namespace ASTUtils {
         CodeMirror.SyntaxNode,
         CodeMirror.SyntaxNode
     ] | [undefined, undefined];
-    function declValue(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode | null;
+    function declValue(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode | null;
     function stripComments(nodes: CodeMirror.SyntaxNode[]): Generator<CodeMirror.SyntaxNode>;
     function split(nodes: CodeMirror.SyntaxNode[]): CodeMirror.SyntaxNode[][];
     function callArgs(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode[][];

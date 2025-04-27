@@ -1202,6 +1202,9 @@
   "generated/Deprecation.ts | CanRequestURLHTTPContainingNewline": {
     "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
   },
+  "generated/Deprecation.ts | CharsetAutoDetectionISO2022JP": {
+    "message": "Auto-detection of ISO-2022-JP character set is deprecated and it will be disabled in the near future. Please specify character set in the Content Type header or by using a meta tag (https://developer.mozilla.org/en-US/docs/Glossary/Character_encoding)."
+  },
   "generated/Deprecation.ts | ChromeLoadTimesConnectionInfo": {
     "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
   },
@@ -1496,9 +1499,6 @@
   "models/issues_manager/CookieIssue.ts | consoleTpcdErrorMessage": {
     "message": "Third-party cookie is blocked in Chrome either because of Chrome flags or browser configuration."
   },
-  "models/issues_manager/CookieIssue.ts | consoleTpcdWarningMessage": {
-    "message": "Chrome is moving towards a new experience that allows users to choose to browse without third-party cookies."
-  },
   "models/issues_manager/CookieIssue.ts | fileCrosSiteRedirectBug": {
     "message": "File a bug"
   },
@@ -1510,9 +1510,6 @@
   },
   "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
     "message": "SameSite cookies explained"
-  },
-  "models/issues_manager/CookieIssue.ts | thirdPartyPhaseoutExplained": {
-    "message": "Changes to Chrome's treatment of third-party cookies"
   },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Cross-Origin Resource Sharing (CORS)"
@@ -13565,8 +13562,11 @@
   "panels/sources/TabbedEditorContainer.ts | areYouSureYouWantToCloseUnsaved": {
     "message": "Are you sure you want to close unsaved file: {PH1}?"
   },
-  "panels/sources/TabbedEditorContainer.ts | changesToThisFileWereNotSavedTo": {
-    "message": "Changes to this file were not saved to file system."
+  "panels/sources/TabbedEditorContainer.ts | changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace": {
+    "message": "Changes weren't saved to file system. To save, add {PH1} to your Workspace."
+  },
+  "panels/sources/TabbedEditorContainer.ts | changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace": {
+    "message": "Changes weren't saved to file system. To save, set up your {PH1}."
   },
   "panels/sources/TabbedEditorContainer.ts | unableToLoadThisContent": {
     "message": "Unable to load this content."
@@ -13760,14 +13760,17 @@
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavings": {
     "message": "Est savings: {PH1}"
   },
-  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAria": {
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAriaBytes": {
+    "message": "Estimated savings for this insight: {PH1} transfer size"
+  },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAriaTiming": {
     "message": "Estimated savings for this insight: {PH1}"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytes": {
     "message": "Est savings: {PH1} & {PH2}"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytesAria": {
-    "message": "Estimated savings for this insight: {PH1} and {PH2}"
+    "message": "Estimated savings for this insight: {PH1} and {PH2} transfer size"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | viewDetails": {
     "message": "View details for {PH1} insight."

@@ -8,13 +8,17 @@ interface SingleDiffViewInput {
     icon: HTMLElement;
     diff: Diff.Diff.DiffArray;
     copied: boolean;
+    selectedFileUrl?: string;
     onCopy: (fileUrl: string) => void;
     onFileNameClick: (fileUrl: string) => void;
+}
+export interface ViewOutput {
+    scrollToSelectedDiff?: () => void;
 }
 export interface ViewInput {
     singleDiffViewInputs: SingleDiffViewInput[];
 }
-type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class CombinedDiffView extends UI.Widget.Widget {
     #private;
     /**
@@ -25,6 +29,7 @@ export declare class CombinedDiffView extends UI.Widget.Widget {
     wasShown(): void;
     willHide(): void;
     set workspaceDiff(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
+    set selectedFileUrl(fileUrl: string);
     performUpdate(): Promise<void>;
 }
 export {};

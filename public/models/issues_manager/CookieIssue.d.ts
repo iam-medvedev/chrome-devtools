@@ -51,6 +51,7 @@ export declare class CookieIssue extends Issue {
     static getCookieStatus(cookieIssueDetails: Protocol.Audits.CookieIssueDetails): CookieStatus | undefined;
     static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): CookieIssue[];
     static getSubCategory(code: string): CookieIssueSubCategory;
+    static isThirdPartyCookiePhaseoutRelatedIssue(issue: Issue): boolean;
     maybeCreateConsoleMessage(): SDK.ConsoleModel.ConsoleMessage | undefined;
 }
 /**

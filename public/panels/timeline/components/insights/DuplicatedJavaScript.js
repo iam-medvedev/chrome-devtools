@@ -35,16 +35,6 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    getEstimatedSavingsBytes() {
-        if (!this.model) {
-            return null;
-        }
-        let totalDuplicatedBytes = 0;
-        for (const data of this.model.duplicationGroupedByNodeModules.values()) {
-            totalDuplicatedBytes += data.estimatedDuplicateBytes;
-        }
-        return totalDuplicatedBytes;
-    }
     createOverlays() {
         if (!this.model) {
             return [];
@@ -74,7 +64,7 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
             return {
                 values: [source, i18n.ByteUtilities.bytesToString(data.estimatedDuplicateBytes)],
                 overlays: [...scriptToOverlay.values()],
-                subRows: data.duplicates.map(({ script, attributedSize: resourceSize }, index) => {
+                subRows: data.duplicates.map(({ script, attributedSize }, index) => {
                     let overlays;
                     const overlay = scriptToOverlay.get(script);
                     if (overlay) {
@@ -83,7 +73,7 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
                     return {
                         values: [
                             scriptRef(script),
-                            index === 0 ? '--' : i18n.ByteUtilities.bytesToString(resourceSize),
+                            index === 0 ? '--' : i18n.ByteUtilities.bytesToString(attributedSize),
                         ],
                         overlays,
                     };

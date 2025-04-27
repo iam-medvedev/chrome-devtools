@@ -183,7 +183,7 @@ export class LayoutShiftDetails extends HTMLElement {
       ${rootCauses?.fontRequests.map(fontReq => this.#renderFontRequest(fontReq))}
       ${rootCauses?.iframeIds.map(iframe => this.#renderIframe(iframe))}
       ${rootCauses?.nonCompositedAnimations.map(failure => this.#renderAnimation(failure))}
-      ${rootCauses?.unsizedImages.map(backendNodeId => this.#renderUnsizedImage(frame, backendNodeId))}
+      ${rootCauses?.unsizedImages.map(unsizedImage => this.#renderUnsizedImage(frame, unsizedImage.backendNodeId))}
     `;
     }
     #renderStartTime(shift, parsedTrace) {

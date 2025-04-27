@@ -18,6 +18,15 @@ export declare const enum ErrorType {
     MAX_STEPS = "max-steps",
     BLOCK = "block"
 }
+export declare const enum MultimodalInputType {
+    SCREENSHOT = "screenshot",
+    UPLOADED_IMAGE = "uploaded-image"
+}
+export interface MultimodalInput {
+    input: Host.AidaClient.Part;
+    type: MultimodalInputType;
+    id: string;
+}
 export interface AnswerResponse {
     type: ResponseType.ANSWER;
     text: string;
@@ -108,8 +117,10 @@ export interface ConversationSuggestion {
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
-    abstract getIcon(): HTMLElement;
-    abstract getTitle(): string | ReturnType<typeof Lit.Directives.until>;
+    abstract getIcon(): HTMLElement | undefined;
+    abstract getTitle(opts?: {
+        disabled: boolean;
+    }): string | ReturnType<typeof Lit.Directives.until>;
     isOriginAllowed(agentOrigin: string | undefined): boolean;
     /**
      * This method is called at the start of `AiAgent.run`.
@@ -183,7 +194,7 @@ export declare abstract class AiAgent<T> {
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     readonly confirmSideEffect: typeof Promise.withResolvers;
     constructor(opts: AgentOptions);
-    enhanceQuery(query: string, selected: ConversationContext<T> | null, hasImageInput?: boolean): Promise<string>;
+    enhanceQuery(query: string, selected: ConversationContext<T> | null, multimodalInputType?: MultimodalInputType): Promise<string>;
     currentFacts(): ReadonlySet<Host.AidaClient.RequestFact>;
     /**
      * Add a fact which will be sent for any subsequent requests.
@@ -224,5 +235,5 @@ export declare abstract class AiAgent<T> {
     run(initialQuery: string, options: {
         signal?: AbortSignal;
         selected: ConversationContext<T> | null;
-    }, imageInput?: Host.AidaClient.Part, imageId?: string): AsyncGenerator<ResponseData, void, void>;
+    }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }

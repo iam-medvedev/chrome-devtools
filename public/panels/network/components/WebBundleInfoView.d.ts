@@ -5,7 +5,6 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 export declare class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
-    connectedCallback(): void;
     render(): Promise<void>;
 }
 declare global {

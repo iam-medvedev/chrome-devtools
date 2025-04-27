@@ -59,6 +59,9 @@ describe('CodeHighlighter', () => {
 [keyword type] [type X] = {
   [property x]: [type boolean]
 }`, 'text/typescript'));
+    it('can highlight TypeScript with the new `satisfies` keyword', testHighlight(`
+[keyword const] [definition bar] = {} [keyword satisfies] [type X];
+`, 'text/typescript'));
     it('can highlight TypeScript with the new `using` keyword', testHighlight(`
 [keyword using] [definition resource] = [variable getResource]()
 `, 'text/typescript'));

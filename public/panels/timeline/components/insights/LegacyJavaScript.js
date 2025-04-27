@@ -18,16 +18,6 @@ export class LegacyJavaScript extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    getEstimatedSavingsBytes() {
-        if (!this.model) {
-            return null;
-        }
-        let estimatedByteSavings = 0;
-        for (const result of this.model.legacyJavaScriptResults.values()) {
-            estimatedByteSavings += result.estimatedByteSavings;
-        }
-        return estimatedByteSavings;
-    }
     createOverlays() {
         if (!this.model) {
             return [];

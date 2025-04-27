@@ -1253,7 +1253,7 @@ const extraPropertyValues = new Map([
             'scoop',
             'bevel',
             'notch',
-            'straight',
+            'square',
             'squircle',
             'superellipse(0.5)',
             'superellipse(infinity)',

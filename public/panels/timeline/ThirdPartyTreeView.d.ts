@@ -23,9 +23,6 @@ export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineT
         color: string;
         icon: (Element | undefined);
     };
-    extractThirdPartySummary(node: Trace.Extras.TraceTree.Node): {
-        transferSize: number;
-    };
     nodeIsFirstParty(node: Trace.Extras.TraceTree.Node): boolean;
     nodeIsExtension(node: Trace.Extras.TraceTree.Node): boolean;
 }

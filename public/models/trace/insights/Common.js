@@ -285,6 +285,9 @@ export function estimateCompressionRatioForScript(script) {
     const request = script.request;
     const contentLength = request.args.data.decodedBodyLength ?? script.content?.length ?? 0;
     const compressedSize = estimateCompressedContentSize(request, contentLength, "Script" /* Protocol.Network.ResourceType.Script */);
+    if (contentLength === 0 || compressedSize === 0) {
+        return 1;
+    }
     const compressionRatio = compressedSize / contentLength;
     return compressionRatio;
 }

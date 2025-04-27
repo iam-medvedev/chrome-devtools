@@ -101,11 +101,16 @@ export interface NoncompositedAnimationFailure {
      */
     animation?: Types.Events.SyntheticAnimationPair;
 }
+export interface UnsizedImage {
+    backendNodeId: Protocol.DOM.BackendNodeId;
+    paintImageEvent: Types.Events.PaintImage;
+}
 export interface LayoutShiftRootCausesData {
     iframeIds: string[];
     fontRequests: Types.Events.SyntheticNetworkRequest[];
     nonCompositedAnimations: NoncompositedAnimationFailure[];
-    unsizedImages: Protocol.DOM.BackendNodeId[];
+    unsizedImages: UnsizedImage[];
 }
 export declare function getNonCompositedFailure(animationEvent: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
+export declare function isCLSCulprits(insight: InsightModel): insight is CLSCulpritsInsightModel;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): CLSCulpritsInsightModel;

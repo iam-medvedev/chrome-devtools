@@ -193,6 +193,7 @@ export function generateInsight(parsedTrace, context) {
             },
         },
         metricSavings,
+        wastedBytes: uncompressedResponseBytes,
     });
 }
 //# sourceMappingURL=DocumentLatency.js.map

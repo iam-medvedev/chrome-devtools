@@ -5,7 +5,7 @@ import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as ApplicationComponents from './components/components.js';
-import type { Database, DatabaseId, Index, IndexedDBModel, ObjectStore } from './IndexedDBModel.js';
+import type { Database, DatabaseId, Entry, Index, IndexedDBModel, ObjectStore } from './IndexedDBModel.js';
 export declare class IDBDatabaseView extends ApplicationComponents.StorageMetadataView.StorageMetadataView {
     private readonly model;
     private database;
@@ -35,12 +35,11 @@ export declare class IDBDataView extends UI.View.SimpleView {
     private clearingObjectStore;
     private pageSize;
     private skipCount;
-    private entries;
+    protected entries: Entry[];
     private objectStore;
     private index;
     private keyInput;
     private dataGrid;
-    private previouslySelectedNode?;
     private lastPageSize;
     private lastSkipCount;
     private pageBackButton;
@@ -67,7 +66,6 @@ export declare class IDBDataView extends UI.View.SimpleView {
     private deleteButtonClicked;
     clear(): void;
     private updateToolbarEnablement;
-    private updateSelectionColor;
 }
 export declare class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode<unknown> {
     selectable: boolean;

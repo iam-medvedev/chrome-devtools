@@ -245,11 +245,7 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
         this.dispatchEventToListeners("FullUpdateRequired" /* Events.FULL_UPDATE_REQUIRED */);
     }
     #aggregateIssue(issue) {
-        const excludeFromAggregate = [
-            "WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */,
-            "WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */,
-        ];
-        if (excludeFromAggregate.some(exclude => issue.code().includes(exclude))) {
+        if (IssuesManager.CookieIssue.CookieIssue.isThirdPartyCookiePhaseoutRelatedIssue(issue)) {
             return;
         }
         const map = issue.isHidden() ? this.#hiddenAggregatedIssuesByKey : this.#aggregatedIssuesByKey;

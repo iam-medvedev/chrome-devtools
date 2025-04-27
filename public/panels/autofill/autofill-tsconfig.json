@@ -17,7 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "noImplicitReturns": true,
-    "noUnusedLocals": false,
+    "noUnusedLocals": true,
     "noUnusedParameters": true,
     "outDir": ".",
     "rootDir": "../../../../../../front_end/panels/autofill",
@@ -50,6 +50,9 @@
     },
     {
       "path": "../../ui/components/legacy_wrapper/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"

@@ -34,6 +34,16 @@ export default {
   }
 }
 
+.node-link.disabled {
+  .node-label-name,
+  .node-label-class,
+  .node-label-pseudo,
+  .node-label-name .dynamic-link,
+  .node-label-id {
+    color: var(--sys-color-state-disabled);
+  }
+}
+
 .node-label-name {
   color: var(--sys-color-token-property-special);
 

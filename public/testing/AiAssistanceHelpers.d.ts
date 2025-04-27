@@ -5,6 +5,7 @@ import * as SDK from '../core/sdk/sdk.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import * as AiAssistancePanel from '../panels/ai_assistance/ai_assistance.js';
+import * as UI from '../ui/legacy/legacy.js';
 export declare const MockAidaAbortError: {
     readonly abortError: true;
 };
@@ -62,7 +63,9 @@ export declare function createPatchWidget(options?: {
     view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
 }>;
-export declare function createPatchWidgetWithDiffView(): Promise<{
+export declare function createPatchWidgetWithDiffView(options?: {
+    aidaClient?: Host.AidaClient.AidaClient;
+}): Promise<{
     widget: AiAssistancePanel.PatchWidget.PatchWidget;
     view: import("./ViewFunctionHelpers.js").ViewFunctionStub<typeof AiAssistancePanel.PatchWidget.PatchWidget>;
     aidaClient: Host.AidaClient.AidaClient;
@@ -70,7 +73,7 @@ export declare function createPatchWidgetWithDiffView(): Promise<{
 export declare function initializePersistenceImplForTests(): void;
 export declare function cleanup(): void;
 export declare function openHistoryContextMenu(lastUpdate: AiAssistancePanel.ViewInput, item: string): {
-    contextMenu: import("../ui/legacy/ContextMenu.js").ContextMenu;
+    contextMenu: UI.ContextMenu.ContextMenu;
     id: number | undefined;
 };
 export declare function createTestFilesystem(fileSystemPath: string, files?: Array<{

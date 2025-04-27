@@ -189,7 +189,7 @@ export function generateInsight(parsedTrace, context) {
         relatedEvents: results.map(r => r.request),
         requests: results,
         metricSavings: metricSavingsForWastedBytes(wastedBytesByRequestId, context),
-        totalWastedBytes,
+        wastedBytes: totalWastedBytes,
     });
 }
 //# sourceMappingURL=Cache.js.map

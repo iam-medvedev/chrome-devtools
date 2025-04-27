@@ -7,10 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { findFlexContainerIcon, findGridContainerIcon } from './CSSPropertyIconResolver.js';
-import stylePropertyEditorStylesRaw from './stylePropertyEditor.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const stylePropertyEditorStyles = new CSSStyleSheet();
-stylePropertyEditorStyles.replaceSync(stylePropertyEditorStylesRaw.cssText);
+import stylePropertyEditorStyles from './stylePropertyEditor.css.js';
 const UIStrings = {
     /**
      * @description Title of the button that selects a flex property.
@@ -49,12 +46,6 @@ export class StylePropertyEditor extends HTMLElement {
     #authoredProperties = new Map();
     #computedProperties = new Map();
     editableProperties = [];
-    constructor() {
-        super();
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [stylePropertyEditorStyles];
-    }
     getEditableProperties() {
         return this.editableProperties;
     }
@@ -67,6 +58,7 @@ export class StylePropertyEditor extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${stylePropertyEditorStyles.cssText}</style>
       <div class="container">
         ${this.editableProperties.map(prop => this.#renderProperty(prop))}
       </div>

@@ -112,6 +112,13 @@ export default {
   color: var(--icon-folder-authored);
 }
 
+.navigator-automatic-fs-tree-item {
+  & > devtools-button,
+  & > devtools-spinner {
+    margin-left: var(--sys-size-4);
+  }
+}
+
 .navigator-fs-tree-item:not(.has-mapped-files),
 .navigator-fs-tree-item:not(.has-mapped-files) + ol li {
   & > :not(.selection) {

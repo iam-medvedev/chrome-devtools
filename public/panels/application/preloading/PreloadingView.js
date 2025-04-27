@@ -9,7 +9,6 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import { assertNotNullOrUndefined } from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 // eslint-disable-next-line rulesdir/es-modules-import
 import emptyWidgetStyles from '../../../ui/legacy/emptyWidget.css.js';
@@ -17,6 +16,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as PreloadingComponents from './components/components.js';
+import { ruleSetTagOrLocationShort } from './components/PreloadingString.js';
 import preloadingViewStyles from './preloadingView.css.js';
 import preloadingViewDropDownStyles from './preloadingViewDropDown.css.js';
 const UIStrings = {
@@ -163,15 +163,6 @@ class PreloadingUIUtils {
         // RuleSetId is form of '<processId>.<processLocalId>'
         const index = id.indexOf('.');
         return index === -1 ? id : id.slice(index + 1);
-    }
-    // TODO(https://crbug.com/1410709): Move
-    // front_end/panels/application/preloading/components/PreloadingString.ts
-    // to
-    // front_end/panels/application/preloading/helper/PreloadingString.ts
-    // and use PreloadingString.ruleSetLocationShort.
-    static ruleSetLocationShort(ruleSet, pageURL) {
-        const url = ruleSet.url === undefined ? pageURL : ruleSet.url;
-        return Bindings.ResourceUtils.displayNameForURL(url);
     }
 }
 function pageURL() {
@@ -512,13 +503,10 @@ class PreloadingRuleSetSelector {
         const ids = this.model.getAllRuleSets().map(({ id }) => id);
         const items = [AllRuleSetRootId, ...ids];
         const selected = this.dropDown.getSelectedItem();
+        // Use `AllRuleSetRootId` by default. For example, `selected` is null or has gone.
+        const newSelected = (selected === null || !items.includes(selected)) ? AllRuleSetRootId : selected;
         this.listModel.replaceAll(items);
-        if (selected === null) {
-            this.dropDown.selectItem(AllRuleSetRootId);
-        }
-        else {
-            this.dropDown.selectItem(selected);
-        }
+        this.dropDown.selectItem(newSelected);
         this.updateWidth(items);
     }
     // Updates the width for the DropDown element.
@@ -562,12 +550,7 @@ class PreloadingRuleSetSelector {
         if (ruleSet === null) {
             return i18n.i18n.lockedString('Internal error');
         }
-        // TODO(https://crbug.com/393408589): Use `PreloadingString.ruleSetTagOrLocationShort` to reduce code redundancy.
-        const sourceJson = JSON.parse(ruleSet['sourceText']);
-        if ('tag' in sourceJson) {
-            return '"' + sourceJson['tag'] + '"';
-        }
-        return PreloadingUIUtils.ruleSetLocationShort(ruleSet, pageURL());
+        return ruleSetTagOrLocationShort(ruleSet, pageURL());
     }
     subtitleFor(id) {
         const convertedId = this.translateItemIdToRuleSetId(id);

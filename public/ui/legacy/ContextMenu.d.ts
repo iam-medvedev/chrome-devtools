@@ -47,6 +47,7 @@ export declare class Section {
     appendCheckboxItem(label: string, handler: () => void, options?: {
         checked?: boolean;
         disabled?: boolean;
+        experimental?: boolean;
         additionalElement?: Element;
         tooltip?: Platform.UIString.LocalizedString;
         jslogContext?: string;
@@ -127,6 +128,59 @@ export declare class ContextMenu extends SubMenu {
     private static pendingMenu;
     private static useSoftMenu;
     static readonly groupWeights: string[];
+}
+/**
+ * @attr soft-menu - Whether to use the soft menu implementation.
+ * @attr keep-open - Whether the menu should stay open after an item is clicked.
+ * @attr icon-name - Name of the icon to display on the button.
+ * @attr disabled - Whether the menu button is disabled
+ * @attr jslogContext - The jslog context for the button.
+ *
+ * @prop {Function} populateMenuCall - Callback function to populate the menu.
+ * @prop {Boolean} softMenu - Reflects the `"soft-menu"` attribute.
+ * @prop {Boolean} keepOpen -Reflects the `"keep-open"` attribute.
+ * @prop {String} iconName - Reflects the `"icon-name"` attribute.
+ * @prop {Boolean} disabled - Reflects the `"disabled"` attribute.
+ * @prop {String} jslogContext - Reflects the `"jslogContext"` attribute.
+ */
+export declare class MenuButton extends HTMLElement {
+    #private;
+    static readonly observedAttributes: string[];
+    /**
+     * Sets the callback function used to populate the context menu when the button is clicked.
+     * @param {Function} populateCall - A function that takes a `ContextMenu` instance and adds items to it.
+     */
+    set populateMenuCall(populateCall: (arg0: ContextMenu) => void);
+    /**
+     * Reflects the `soft-menu` attribute. If true, uses the `SoftContextMenu` implementation.
+     * @default false
+     */
+    get softMenu(): boolean;
+    set softMenu(softMenu: boolean);
+    /**
+     * Reflects the `keep-open` attribute. If true, the menu stays open after an item click.
+     * @default false
+     */
+    get keepOpen(): boolean;
+    set keepOpen(keepOpen: boolean);
+    /**
+     * Reflects the `icon-name` attribute. Sets the icon to display on the button.
+     */
+    set iconName(iconName: string);
+    get iconName(): string | null;
+    /**
+     * Reflects the `jslogContext` attribute. Sets the visual logging context for the button.
+     */
+    set jslogContext(jslogContext: string);
+    get jslogContext(): string | null;
+    /**
+     * Reflects the `disabled` attribute. If true, the button is disabled and cannot be clicked.
+     * @default false
+     */
+    get disabled(): boolean;
+    set disabled(disabled: boolean);
+    attributeChangedCallback(_: string, oldValue: string, newValue: string): void;
+    connectedCallback(): void;
 }
 export interface Provider<T> {
     appendApplicableItems(event: Event, contextMenu: ContextMenu, target: T): void;

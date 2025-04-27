@@ -10,7 +10,9 @@ import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
 import recordingListViewStylesRaw from './recordingListView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const recordingListViewStyles = new CSSStyleSheet();
 recordingListViewStyles.replaceSync(recordingListViewStylesRaw.cssText);
 const { html } = Lit;

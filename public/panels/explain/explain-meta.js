@@ -120,7 +120,7 @@ for (const action of actions) {
             return new Explain.ActionDelegate();
         },
         condition: config => {
-            return isFeatureEnabled(config) && !isPolicyRestricted(config);
+            return isFeatureEnabled(config) && !isPolicyRestricted(config) && !isGeoRestricted(config);
         },
     });
 }

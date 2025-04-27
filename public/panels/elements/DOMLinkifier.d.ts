@@ -2,6 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 export interface Options extends Common.Linkifier.Options {
     hiddenClassList?: string[];
+    disabled?: boolean;
 }
 export declare const decorateNodeLabel: (node: SDK.DOMModel.DOMNode, parentElement: HTMLElement, options: Options) => void;
 export declare const linkifyNodeReference: (node: SDK.DOMModel.DOMNode | null, options?: Options | undefined) => Node;

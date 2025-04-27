@@ -68,6 +68,7 @@ export function screenshotImageDataUri(event) {
  * We match that up with the "PipelineReporter" trace events as they terminate at presentation.
  * Presentation == when the pixels hit the screen. AKA Swap on the GPU
  */
+// @ts-expect-error expected to be used.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function getPresentationTimestamp(screenshotEvent) {
     const frameSequence = parseInt(screenshotEvent.id, 16);

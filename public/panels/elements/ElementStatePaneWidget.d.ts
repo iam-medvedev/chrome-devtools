@@ -1,18 +1,24 @@
 import * as UI from '../../ui/legacy/legacy.js';
+interface ElementState {
+    state: string;
+    checked?: boolean;
+    disabled?: boolean;
+    hidden?: boolean;
+    type: 'persistent' | 'specific';
+}
+interface ViewInput {
+    states: ElementState[];
+    onStateCheckboxClicked: (event: MouseEvent) => void;
+}
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class ElementStatePaneWidget extends UI.Widget.Widget {
-    private readonly inputs;
-    private readonly inputStates;
-    private readonly duals;
-    private cssModel?;
-    private specificPseudoStateDivs;
-    private specificHeader;
-    private readonly throttler;
-    constructor();
+    #private;
+    constructor(view?: View);
+    private onStateCheckboxClicked;
     private updateModel;
     wasShown(): void;
-    update(): void;
-    private updateElementSpecificStatesTable;
-    updateElementSpecificStatesTableForTest(): void;
+    performUpdate(): Promise<void>;
 }
 export declare class ButtonProvider implements UI.Toolbar.Provider {
     private readonly button;
@@ -24,3 +30,4 @@ export declare class ButtonProvider implements UI.Toolbar.Provider {
     private clicked;
     item(): UI.Toolbar.ToolbarToggle;
 }
+export {};

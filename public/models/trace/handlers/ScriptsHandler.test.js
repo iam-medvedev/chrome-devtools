@@ -31,7 +31,7 @@ describe('ScriptsHandler', () => {
         assert.deepEqual([...data.scripts], [
             {
                 frame: '',
-                inline: false,
+                inline: true,
                 isolate: '12345',
                 request: undefined,
                 scriptId: '3',
@@ -41,7 +41,7 @@ describe('ScriptsHandler', () => {
             },
             {
                 frame: '',
-                inline: false,
+                inline: true,
                 isolate: '12345',
                 request: undefined,
                 scriptId: '4',
@@ -51,7 +51,7 @@ describe('ScriptsHandler', () => {
             },
             {
                 frame: '',
-                inline: false,
+                inline: true,
                 isolate: '1357',
                 request: undefined,
                 scriptId: '1',
@@ -65,7 +65,7 @@ describe('ScriptsHandler', () => {
                 frame: '21D58E83A5C17916277166140F6A464B',
                 request: undefined,
                 ts: 50442438976,
-                inline: false,
+                inline: true,
                 url: 'http://localhost:8080/index.html',
                 content: 'source text 1',
                 sourceMapUrl: 'http://localhost:8080/source.map.json',
@@ -77,7 +77,7 @@ describe('ScriptsHandler', () => {
                 frame: '21D58E83A5C17916277166140F6A464B',
                 request: undefined,
                 ts: 50442438976,
-                inline: false,
+                inline: true,
                 url: 'http://localhost:8080/index.html',
                 content: 'source text 2'
             },
@@ -88,7 +88,7 @@ describe('ScriptsHandler', () => {
                 content: ' text ',
                 request: undefined,
                 ts: 50442438976,
-                inline: false,
+                inline: true,
                 url: 'http://localhost:8080/index.html',
             },
         ]);

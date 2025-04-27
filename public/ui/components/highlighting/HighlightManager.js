@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import highlightingStylesRaw from './highlighting.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const highlightingStyles = new CSSStyleSheet();
 highlightingStyles.replaceSync(highlightingStylesRaw.cssText);
 export class RangeWalker {

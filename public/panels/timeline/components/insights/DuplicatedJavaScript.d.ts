@@ -9,7 +9,6 @@ export declare class DuplicatedJavaScript extends BaseInsightComponent<Duplicate
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
-    getEstimatedSavingsBytes(): number | null;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     renderContent(): Lit.LitTemplate;
 }

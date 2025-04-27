@@ -29,6 +29,8 @@
  */
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
+import * as Buttons from '../components/buttons/buttons.js';
+import { html, render } from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import { ActionRegistry } from './ActionRegistry.js';
 import { ShortcutRegistry } from './ShortcutRegistry.js';
@@ -126,6 +128,7 @@ export class Item {
                     id: this.idInternal,
                     label: this.label,
                     checked: Boolean(this.checked),
+                    isExperimentalFeature: this.previewFeature,
                     enabled: !this.disabled,
                     subItems: undefined,
                     tooltip: this.#tooltip,
@@ -210,7 +213,7 @@ export class Section {
         return item;
     }
     appendCheckboxItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'checkbox', label, undefined, options?.disabled, options?.checked, undefined, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'checkbox', label, options?.experimental, options?.disabled, options?.checked, undefined, options?.tooltip, options?.jslogContext);
         this.items.push(item);
         if (this.contextMenu) {
             this.contextMenu.setHandler(item.id(), handler);
@@ -574,6 +577,142 @@ export class ContextMenu extends SubMenu {
         'footer'
     ];
 }
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/**
+ * @attr soft-menu - Whether to use the soft menu implementation.
+ * @attr keep-open - Whether the menu should stay open after an item is clicked.
+ * @attr icon-name - Name of the icon to display on the button.
+ * @attr disabled - Whether the menu button is disabled
+ * @attr jslogContext - The jslog context for the button.
+ *
+ * @prop {Function} populateMenuCall - Callback function to populate the menu.
+ * @prop {Boolean} softMenu - Reflects the `"soft-menu"` attribute.
+ * @prop {Boolean} keepOpen -Reflects the `"keep-open"` attribute.
+ * @prop {String} iconName - Reflects the `"icon-name"` attribute.
+ * @prop {Boolean} disabled - Reflects the `"disabled"` attribute.
+ * @prop {String} jslogContext - Reflects the `"jslogContext"` attribute.
+ */
+export class MenuButton extends HTMLElement {
+    static observedAttributes = ['icon-name', 'disabled'];
+    #shadow = this.attachShadow({ mode: 'open' });
+    #triggerTimeoutId;
+    #populateMenuCall;
+    /**
+     * Sets the callback function used to populate the context menu when the button is clicked.
+     * @param {Function} populateCall - A function that takes a `ContextMenu` instance and adds items to it.
+     */
+    set populateMenuCall(populateCall) {
+        this.#populateMenuCall = populateCall;
+    }
+    /**
+     * Reflects the `soft-menu` attribute. If true, uses the `SoftContextMenu` implementation.
+     * @default false
+     */
+    get softMenu() {
+        return Boolean(this.getAttribute('soft-menu'));
+    }
+    set softMenu(softMenu) {
+        this.toggleAttribute('soft-menu', softMenu);
+    }
+    /**
+     * Reflects the `keep-open` attribute. If true, the menu stays open after an item click.
+     * @default false
+     */
+    get keepOpen() {
+        return Boolean(this.getAttribute('keep-open'));
+    }
+    set keepOpen(keepOpen) {
+        this.toggleAttribute('keep-open', keepOpen);
+    }
+    /**
+     * Reflects the `icon-name` attribute. Sets the icon to display on the button.
+     */
+    set iconName(iconName) {
+        this.setAttribute('icon-name', iconName);
+    }
+    get iconName() {
+        return this.getAttribute('icon-name');
+    }
+    /**
+     * Reflects the `jslogContext` attribute. Sets the visual logging context for the button.
+     */
+    set jslogContext(jslogContext) {
+        this.setAttribute('jslog', VisualLogging.dropDown(jslogContext).track({ click: true }).toString());
+    }
+    get jslogContext() {
+        return this.getAttribute('jslogContext');
+    }
+    /**
+     * Reflects the `disabled` attribute. If true, the button is disabled and cannot be clicked.
+     * @default false
+     */
+    get disabled() {
+        return this.hasAttribute('disabled');
+    }
+    set disabled(disabled) {
+        this.toggleAttribute('disabled', disabled);
+    }
+    /**
+     * Creates and shows the `ContextMenu`. It calls the `populateMenuCall`
+     * callback to fill the menu with items before displaying it relative to the button.
+     * Manages the `aria-expanded` state.
+     * @param {Event} event - The event that triggered the menu
+     */
+    #openMenu(event) {
+        this.#triggerTimeoutId = undefined;
+        if (!this.#populateMenuCall) {
+            return;
+        }
+        const button = this.#shadow.querySelector('devtools-button');
+        const contextMenu = new ContextMenu(event, {
+            useSoftMenu: this.softMenu,
+            keepOpen: this.keepOpen,
+            x: this.getBoundingClientRect().right,
+            y: this.getBoundingClientRect().top + this.offsetHeight,
+            // Without adding a delay, pointer events will be un-ignored too early, and a single click causes
+            // the context menu to be closed and immediately re-opened on Windows (https://crbug.com/339560549).
+            onSoftMenuClosed: () => setTimeout(() => button?.removeAttribute('aria-expanded'), 50),
+        });
+        this.#populateMenuCall(contextMenu);
+        button?.setAttribute('aria-expanded', 'true');
+        void contextMenu.show();
+    }
+    /**
+     * Handles the click event on the button. It clears any pending trigger timeout
+     * and immediately calls the `openMenu` method to show the context menu.
+     * @param {Event} event - The click event.
+     */
+    #triggerContextMenu(event) {
+        const triggerTimeout = 50;
+        if (!this.#triggerTimeoutId) {
+            this.#triggerTimeoutId = window.setTimeout(this.#openMenu.bind(this, event), triggerTimeout);
+        }
+    }
+    attributeChangedCallback(_, oldValue, newValue) {
+        if (oldValue !== newValue) {
+            this.#render();
+        }
+    }
+    connectedCallback() {
+        this.#render();
+    }
+    #render() {
+        if (!this.iconName) {
+            throw new Error('<devtools-menu-button> expects an icon.');
+        }
+        // clang-format off
+        render(html `
+              <devtools-button
+                .disabled=${this.disabled}
+                .iconName=${this.iconName}
+                .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                .title=${this.title}
+                aria-haspopup='menu'
+                @click=${this.#triggerContextMenu}></devtools-button>`, this.#shadow, { host: this });
+        // clang-format on
+    }
+}
+customElements.define('devtools-menu-button', MenuButton);
 const registeredProviders = [];
 export function registerProvider(registration) {
     registeredProviders.push(registration);

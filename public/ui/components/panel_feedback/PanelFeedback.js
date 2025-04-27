@@ -9,7 +9,9 @@ import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import { html, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import panelFeedbackStylesRaw from './panelFeedback.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const panelFeedbackStyles = new CSSStyleSheet();
 panelFeedbackStyles.replaceSync(panelFeedbackStylesRaw.cssText);
 const UIStrings = {

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as PanelCommon from '../../panels/common/common.js';
 import { cleanup, createPatchWidget, createPatchWidgetWithDiffView, createTestFilesystem, initializePersistenceImplForTests, MockAidaAbortError, mockAidaClient, MockAidaFetchError, setupAutomaticFileSystem, } from '../../testing/AiAssistanceHelpers.js';
 import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as AiAssistance from './ai_assistance.js';
 describeWithMockConnection('PatchWidget', () => {
@@ -276,6 +278,54 @@ Files:
             const nextInput = await view.nextInput;
             assert.strictEqual(nextInput.patchSuggestionState, AiAssistance.PatchWidget.PatchSuggestionState.INITIAL);
             sinon.assert.calledOnce(changeManager.popStashedChanges);
+        });
+        it('on discard should submit a negative rating if rpcId exists', async () => {
+            const rpcId = 'discard-test-123';
+            const aidaClientMock = mockAidaClient([[{
+                        explanation: 'patch',
+                        metadata: { rpcGlobalId: rpcId },
+                    }]]);
+            const { view, aidaClient } = await createPatchWidgetWithDiffView({ aidaClient: aidaClientMock });
+            const aidaClientCall = expectCall(aidaClient.registerClientEvent);
+            view.input.onDiscard();
+            await view.nextInput;
+            const [aidaClientEvent] = await aidaClientCall;
+            assert.strictEqual(aidaClientEvent.corresponding_aida_rpc_global_id, rpcId);
+            assert.strictEqual(aidaClientEvent.do_conversation_client_event?.user_feedback?.sentiment, "NEGATIVE" /* Host.AidaClient.Rating.NEGATIVE */);
+            assert.isTrue(aidaClientEvent.disable_user_content_logging, 'Logging should always be disabled');
+        });
+        it('on save should submit a positive rating if rpcId exists', async () => {
+            const rpcId = 'save-test-456';
+            const aidaClientMock = mockAidaClient([[{
+                        explanation: 'patch',
+                        metadata: { rpcGlobalId: rpcId },
+                    }]]);
+            const { view, aidaClient } = await createPatchWidgetWithDiffView({ aidaClient: aidaClientMock });
+            const aidaClientCall = expectCall(aidaClient.registerClientEvent);
+            view.input.onSaveAll();
+            await view.nextInput;
+            const [aidaClientEvent] = await aidaClientCall;
+            assert.strictEqual(aidaClientEvent.corresponding_aida_rpc_global_id, rpcId);
+            assert.strictEqual(aidaClientEvent.do_conversation_client_event?.user_feedback?.sentiment, "POSITIVE" /* Host.AidaClient.Rating.POSITIVE */);
+            assert.isTrue(aidaClientEvent.disable_user_content_logging, 'Logging should always be disabled');
+        });
+        it('on discard should not submit a rating if rpcId does not exist in apply response', async () => {
+            const aidaClientMock = mockAidaClient([[{
+                        explanation: 'patch',
+                    }]]);
+            const { view, aidaClient } = await createPatchWidgetWithDiffView({ aidaClient: aidaClientMock });
+            view.input.onDiscard();
+            await view.nextInput;
+            sinon.assert.notCalled(aidaClient.registerClientEvent);
+        });
+        it('on save should not submit a rating if rpcId does not exist in apply response', async () => {
+            const aidaClientMock = mockAidaClient([[{
+                        explanation: 'patch',
+                    }]]);
+            const { view, aidaClient } = await createPatchWidgetWithDiffView({ aidaClient: aidaClientMock });
+            view.input.onSaveAll();
+            await view.nextInput;
+            sinon.assert.notCalled(aidaClient.registerClientEvent);
         });
     });
 });

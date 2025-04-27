@@ -8,10 +8,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../forward/forward.js';
-import requestHeaderSectionStylesRaw from './RequestHeaderSection.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const requestHeaderSectionStyles = new CSSStyleSheet();
-requestHeaderSectionStyles.replaceSync(requestHeaderSectionStylesRaw.cssText);
+import requestHeaderSectionStyles from './RequestHeaderSection.css.js';
 const { render, html } = Lit;
 const UIStrings = {
     /**
@@ -37,9 +34,6 @@ export class RequestHeaderSection extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #request;
     #headers = [];
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [requestHeaderSectionStyles];
-    }
     set data(data) {
         this.#request = data.request;
         this.#headers = this.#request.requestHeaders().map(header => ({
@@ -62,6 +56,7 @@ export class RequestHeaderSection extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${requestHeaderSectionStyles.cssText}</style>
       ${this.#maybeRenderProvisionalHeadersWarning()}
       ${this.#headers.map(header => html `
         <devtools-header-section-row

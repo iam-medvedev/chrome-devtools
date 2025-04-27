@@ -8,8 +8,7 @@ import './ValueInterpreterSettings.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
-// eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStyles from '../../../ui/legacy/inspectorCommon.css.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import linearMemoryValueInterpreterStyles from './linearMemoryValueInterpreter.css.js';
@@ -63,7 +62,7 @@ export class LinearMemoryValueInterpreter extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
-      <style>${inspectorCommonStyles.cssText}</style>
+      <style>${UI.inspectorCommonStyles.cssText}</style>
       <style>${linearMemoryValueInterpreterStyles.cssText}</style>
       <div class="value-interpreter">
         <div class="settings-toolbar">

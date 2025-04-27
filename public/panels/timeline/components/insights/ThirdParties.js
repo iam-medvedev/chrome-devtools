@@ -17,7 +17,7 @@ export class ThirdParties extends BaseInsightComponent {
             return [];
         }
         const overlays = [];
-        const summaries = this.model.summaries ?? [];
+        const summaries = this.model.entitySummaries ?? [];
         for (const summary of summaries) {
             if (summary.entity === this.model.firstPartyEntity) {
                 continue;
@@ -29,8 +29,7 @@ export class ThirdParties extends BaseInsightComponent {
     }
     #createOverlaysForSummary(summary) {
         const overlays = [];
-        const events = summary.relatedEvents ?? [];
-        for (const event of events) {
+        for (const event of summary.relatedEvents) {
             // The events found for a third party can be vast, as they gather every
             // single main thread task along with everything else on the page. If the
             // main thread is busy with large icicles, we can easily create tens of
@@ -77,7 +76,7 @@ export class ThirdParties extends BaseInsightComponent {
         if (!this.model) {
             return Lit.nothing;
         }
-        let result = this.model.summaries ?? [];
+        let result = this.model.entitySummaries ?? [];
         if (this.model.firstPartyEntity) {
             result = result.filter(s => s.entity !== this.model?.firstPartyEntity || null);
         }

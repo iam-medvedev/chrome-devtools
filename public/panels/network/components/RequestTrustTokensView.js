@@ -9,10 +9,7 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import requestTrustTokensViewStylesRaw from './RequestTrustTokensView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const requestTrustTokensViewStyles = new CSSStyleSheet();
-requestTrustTokensViewStyles.replaceSync(requestTrustTokensViewStylesRaw.cssText);
+import requestTrustTokensViewStyles from './RequestTrustTokensView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -109,16 +106,15 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
     willHide() {
         this.#request.removeEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.render, this);
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [requestTrustTokensViewStyles];
-    }
     async render() {
         if (!this.#request) {
             throw new Error('Trying to render a Trust Token report without providing data');
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        Lit.render(html `<devtools-report>
+        Lit.render(html `
+      <style>${requestTrustTokensViewStyles.cssText}</style>
+      <devtools-report>
         ${this.#renderParameterSection()}
         ${this.#renderResultSection()}
       </devtools-report>

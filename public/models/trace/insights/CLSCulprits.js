@@ -297,8 +297,11 @@ function getIframeRootCauses(iframeCreatedEvents, prePaintEvents, shiftsByPrePai
 function getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsByPrePaint, rootCausesByShift) {
     shiftsByPrePaint.forEach((shifts, prePaint) => {
         const paintImage = getNextEvent(paintImageEvents, prePaint);
+        if (!paintImage) {
+            return;
+        }
         // The unsized image corresponds to this PaintImage.
-        const matchingNode = unsizedImageEvents.find(unsizedImage => unsizedImage.args.data.nodeId === paintImage?.args.data.nodeId);
+        const matchingNode = unsizedImageEvents.find(unsizedImage => unsizedImage.args.data.nodeId === paintImage.args.data.nodeId);
         if (!matchingNode) {
             return;
         }
@@ -308,10 +311,16 @@ function getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsB
             if (!rootCausesForShift) {
                 throw new Error('Unaccounted shift');
             }
-            rootCausesForShift.unsizedImages.push(matchingNode.args.data.nodeId);
+            rootCausesForShift.unsizedImages.push({
+                backendNodeId: matchingNode.args.data.nodeId,
+                paintImageEvent: paintImage,
+            });
         }
     });
     return rootCausesByShift;
+}
+export function isCLSCulprits(insight) {
+    return insight.insightKey === "CLSCulprits" /* InsightKeys.CLS_CULPRITS */;
 }
 /**
  * A font request is considered a root cause if the request occurs before a prePaint event
