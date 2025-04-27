@@ -3,7 +3,7 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
-import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type FunctionCallHandlerResult, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type FunctionCallHandlerResult, MultimodalInputType, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect }: {
     throwOnSideEffect: boolean;
 }): Promise<string>;
@@ -21,8 +21,10 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
     constructor(node: SDK.DOMModel.DOMNode);
     getOrigin(): string;
     getItem(): SDK.DOMModel.DOMNode;
-    getIcon(): HTMLElement;
-    getTitle(): string | ReturnType<typeof Lit.Directives.until>;
+    getIcon(): undefined;
+    getTitle(opts: {
+        disabled: boolean;
+    }): string | ReturnType<typeof Lit.Directives.until>;
     getSuggestions(): Promise<[ConversationSuggestion, ...ConversationSuggestion[]] | undefined>;
 }
 /**
@@ -55,7 +57,7 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
         approved?: boolean;
     }): Promise<FunctionCallHandlerResult<unknown>>;
     handleContextDetails(selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null, hasImageInput?: boolean): Promise<string>;
+    enhanceQuery(query: string, selectedElement: ConversationContext<SDK.DOMModel.DOMNode> | null, multimodalInputType?: MultimodalInputType): Promise<string>;
     formatParsedAnswer({ answer }: ParsedAnswer): string;
 }
 export declare class StylingAgentWithFunctionCalling extends StylingAgent {

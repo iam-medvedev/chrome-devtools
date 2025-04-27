@@ -232,8 +232,8 @@ export function generateInsight(parsedTrace, context) {
     });
     return finalize({
         optimizableImages,
-        totalByteSavings: optimizableImages.reduce((total, img) => total + img.byteSavings, 0),
         metricSavings: metricSavingsForWastedBytes(wastedBytesByRequestId, context),
+        wastedBytes: optimizableImages.reduce((total, img) => total + img.byteSavings, 0),
     });
 }
 //# sourceMappingURL=ImageDelivery.js.map

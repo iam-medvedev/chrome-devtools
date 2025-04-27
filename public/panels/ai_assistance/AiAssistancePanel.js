@@ -27,6 +27,7 @@ const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
 const AI_ASSISTANCE_HELP = 'https://developer.chrome.com/docs/devtools/ai-assistance';
 const SCREENSHOT_QUALITY = 100;
 const SHOW_LOADING_STATE_TIMEOUT = 100;
+const JPEG_MIME_TYPE = 'image/jpeg';
 const UIStrings = {
     /**
      *@description AI assistance UI text creating a new chat.
@@ -230,13 +231,12 @@ function toolbarView(input) {
           .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
           @click=${input.onNewChatClick}></devtools-button>
         <div class="toolbar-divider"></div>
-        <devtools-button
+        <devtools-menu-button
           title=${i18nString(UIStrings.history)}
           aria-label=${i18nString(UIStrings.history)}
           .iconName=${'history'}
           .jslogContext=${'freestyler.history'}
-          .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
-          @click=${input.onHistoryClick}></devtools-button>`
+          .populateMenuCall=${input.populateHistoryMenu}></devtools-menu-button>`
         : Lit.nothing}
         ${input.showDeleteHistoryAction
         ? html `<devtools-button
@@ -684,8 +684,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             disclaimerText: this.#getDisclaimerText(),
             isTextInputEmpty: this.#isTextInputEmpty,
             changeManager: this.#changeManager,
+            uploadImageInputEnabled: isAiAssistanceMultimodalUploadInputEnabled() &&
+                this.#conversation?.type === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
             onNewChatClick: this.#handleNewChatRequest.bind(this),
-            onHistoryClick: this.#onHistoryClicked.bind(this),
+            populateHistoryMenu: this.#populateHistoryMenu.bind(this),
             onDeleteClick: this.#onDeleteClicked.bind(this),
             onHelpClick: () => {
                 UI.UIUtils.openInNewTab(AI_ASSISTANCE_HELP);
@@ -693,11 +695,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onSettingsClick: () => {
                 void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
             },
-            onTextSubmit: async (text, imageInput) => {
+            onTextSubmit: async (text, imageInput, multimodalInputType) => {
                 this.#imageInput = undefined;
                 this.#isTextInputEmpty = true;
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
-                await this.#startConversation(text, imageInput);
+                await this.#startConversation(text, imageInput, multimodalInputType);
             },
             onInspectElementClick: this.#handleSelectElementClick.bind(this),
             onFeedbackSubmit: this.#handleFeedbackSubmit.bind(this),
@@ -708,6 +710,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onRemoveImageInput: isAiAssistanceMultimodalInputEnabled() ? this.#handleRemoveImageInput.bind(this) :
                 undefined,
             onTextInputChange: this.#handleTextInputChange.bind(this),
+            onLoadImage: isAiAssistanceMultimodalUploadInputEnabled() ? this.#handleLoadImage.bind(this) : undefined,
         }, this.#viewOutput, this.contentElement);
     }
     #handleSelectElementClick() {
@@ -906,14 +909,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#updateConversationState(agent);
         this.#viewOutput.chatView?.focusTextInput();
     }
-    #onHistoryClicked(event) {
-        const target = event.target;
-        const clientRect = target?.getBoundingClientRect();
-        const contextMenu = new UI.ContextMenu.ContextMenu(event, {
-            useSoftMenu: true,
-            x: clientRect?.left,
-            y: clientRect?.bottom,
-        });
+    #populateHistoryMenu(contextMenu) {
         for (const conversation of [...this.#historicalConversations].reverse()) {
             if (conversation.isEmpty) {
                 continue;
@@ -937,7 +933,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }, {
             disabled: historyEmpty,
         });
-        void contextMenu.show();
     }
     #clearHistory() {
         this.#historicalConversations = [];
@@ -981,7 +976,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const bytes = await model.captureScreenshot("jpeg" /* Protocol.Page.CaptureScreenshotRequestFormat.Jpeg */, SCREENSHOT_QUALITY, "fromViewport" /* SDK.ScreenCaptureModel.ScreenshotMode.FROM_VIEWPORT */);
         clearTimeout(showLoadingTimeout);
         if (bytes) {
-            this.#imageInput = { isLoading: false, data: bytes };
+            this.#imageInput = {
+                isLoading: false,
+                data: bytes,
+                mimeType: JPEG_MIME_TYPE,
+                inputType: "screenshot" /* AiAssistanceModel.MultimodalInputType.SCREENSHOT */
+            };
             this.requestUpdate();
             void this.updateComplete.then(() => {
                 this.#viewOutput.chatView?.focusTextInput();
@@ -1001,6 +1001,53 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#isTextInputEmpty = disableSubmit;
             void this.requestUpdate();
         }
+    }
+    async #handleLoadImage(file) {
+        const showLoadingTimeout = setTimeout(() => {
+            this.#imageInput = { isLoading: true };
+            this.requestUpdate();
+        }, SHOW_LOADING_STATE_TIMEOUT);
+        const reader = new FileReader();
+        let dataUrl;
+        try {
+            dataUrl = await new Promise((resolve, reject) => {
+                reader.onload = () => {
+                    if (typeof reader.result === 'string') {
+                        resolve(reader.result);
+                    }
+                    else {
+                        reject(new Error('FileReader result was not a string.'));
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        catch {
+            clearTimeout(showLoadingTimeout);
+            this.#imageInput =
+                { isLoading: false, data: '', mimeType: '', inputType: "uploaded-image" /* AiAssistanceModel.MultimodalInputType.UPLOADED_IMAGE */ };
+            this.requestUpdate();
+            void this.updateComplete.then(() => {
+                this.#viewOutput.chatView?.focusTextInput();
+            });
+            return;
+        }
+        clearTimeout(showLoadingTimeout);
+        if (!dataUrl) {
+            return;
+        }
+        const commaIndex = dataUrl.indexOf(',');
+        const bytes = dataUrl.substring(commaIndex + 1);
+        this.#imageInput = {
+            isLoading: false,
+            data: bytes,
+            mimeType: file.type,
+            inputType: "uploaded-image" /* AiAssistanceModel.MultimodalInputType.UPLOADED_IMAGE */
+        };
+        this.requestUpdate();
+        void this.updateComplete.then(() => {
+            this.#viewOutput.chatView?.focusTextInput();
+        });
     }
     #runAbortController = new AbortController();
     #cancel() {
@@ -1046,7 +1093,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         return context;
     }
-    async #startConversation(text, imageInput) {
+    async #startConversation(text, imageInput, multimodalInputType) {
         if (!this.#conversationAgent) {
             return;
         }
@@ -1062,10 +1109,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         const image = isAiAssistanceMultimodalInputEnabled() ? imageInput : undefined;
         const imageId = image ? crypto.randomUUID() : undefined;
+        const multimodalInput = image && imageId && multimodalInputType ? {
+            input: image,
+            id: imageId,
+            type: multimodalInputType,
+        } :
+            undefined;
         const runner = this.#conversationAgent.run(text, {
             signal,
             selected: context,
-        }, image, imageId);
+        }, multimodalInput);
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerLoading));
         await this.#doConversation(this.#saveResponsesToCurrentConversation(runner));
         UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
@@ -1238,6 +1291,10 @@ export class ActionDelegate {
         }
         return false;
     }
+}
+function isAiAssistanceMultimodalUploadInputEnabled() {
+    return isAiAssistanceMultimodalInputEnabled() &&
+        Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
 }
 function isAiAssistanceMultimodalInputEnabled() {
     return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.multimodal);

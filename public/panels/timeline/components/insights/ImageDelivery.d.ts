@@ -12,7 +12,6 @@ export declare class ImageDelivery extends BaseInsightComponent<ImageDeliveryIns
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
     mapToRow(image: Trace.Insights.Models.ImageDelivery.OptimizableImage): TableDataRow;
     createAggregatedTableRow(remaining: Trace.Insights.Models.ImageDelivery.OptimizableImage[]): TableDataRow;
-    getEstimatedSavingsBytes(): number | null;
     renderContent(): Lit.LitTemplate;
 }
 declare global {

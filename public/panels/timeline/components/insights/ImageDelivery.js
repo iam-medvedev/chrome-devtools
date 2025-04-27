@@ -38,9 +38,6 @@ export class ImageDelivery extends BaseInsightComponent {
             overlays: remaining.map(r => this.#createOverlayForRequest(r.request)),
         };
     }
-    getEstimatedSavingsBytes() {
-        return this.model?.totalByteSavings ?? null;
-    }
     renderContent() {
         if (!this.model) {
             return Lit.nothing;

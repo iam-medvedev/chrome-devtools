@@ -10,7 +10,9 @@ import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Extensions from '../extensions/extensions.js';
 import extensionViewStylesRaw from './extensionView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const extensionViewStyles = new CSSStyleSheet();
 extensionViewStyles.replaceSync(extensionViewStylesRaw.cssText);
 const { html } = Lit;

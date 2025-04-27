@@ -170,7 +170,7 @@ export class AiAgent {
     emulateFunctionCall(_aidaResponse) {
         throw new Error('Unexpected emulateFunctionCall. Only StylingAgent implements function call emulation');
     }
-    async *run(initialQuery, options, imageInput, imageId) {
+    async *run(initialQuery, options, multimodalInput) {
         await options.selected?.refresh();
         // First context set on the agent determines its origin from now on.
         if (options.selected && this.#origin === undefined && options.selected) {
@@ -180,17 +180,17 @@ export class AiAgent {
         if (options.selected && !this.#context) {
             this.#context = options.selected;
         }
-        const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, Boolean(imageInput));
+        const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, multimodalInput?.type);
         Host.userMetrics.freestylerQueryLength(enhancedQuery.length);
         let query;
-        query = imageInput ? [{ text: enhancedQuery }, imageInput] : [{ text: enhancedQuery }];
+        query = multimodalInput ? [{ text: enhancedQuery }, multimodalInput.input] : [{ text: enhancedQuery }];
         // Request is built here to capture history up to this point.
         let request = this.buildRequest(query, Host.AidaClient.Role.USER);
         yield {
             type: "user-query" /* ResponseType.USER_QUERY */,
             query: initialQuery,
-            imageInput,
-            imageId,
+            imageInput: multimodalInput?.input,
+            imageId: multimodalInput?.id,
         };
         yield* this.handleContextDetails(options.selected);
         for (let i = 0; i < MAX_STEPS; i++) {

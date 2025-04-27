@@ -4,7 +4,9 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Lit from '../../../ui/lit/lit.js';
 import nodeTextStylesRaw from './nodeText.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const nodeTextStyles = new CSSStyleSheet();
 nodeTextStyles.replaceSync(nodeTextStylesRaw.cssText);
 const { render, html } = Lit;

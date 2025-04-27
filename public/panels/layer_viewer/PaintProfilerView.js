@@ -390,7 +390,7 @@ export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWid
     appendLogItem(logItem) {
         let treeElement = this.treeItemCache.get(logItem);
         if (!treeElement) {
-            treeElement = new LogTreeElement(this, logItem);
+            treeElement = new LogTreeElement(logItem);
             this.treeItemCache.set(logItem, treeElement);
         }
         else if (treeElement.parent) {
@@ -430,11 +430,9 @@ export class PaintProfilerCommandLogView extends UI.ThrottledWidget.ThrottledWid
 }
 export class LogTreeElement extends UI.TreeOutline.TreeElement {
     logItem;
-    ownerView;
-    constructor(ownerView, logItem) {
+    constructor(logItem) {
         super('', Boolean(logItem.params));
         this.logItem = logItem;
-        this.ownerView = ownerView;
     }
     onattach() {
         this.update();

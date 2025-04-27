@@ -293,6 +293,10 @@ devtools-icon.open-in-animations-panel {
   color: var(--app-color-element-sidebar-subtitle);
 }
 
+.tracing-anchor {
+  text-decoration: underline dotted var(--sys-color-token-meta);
+}
+
 /*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */
 `
 };

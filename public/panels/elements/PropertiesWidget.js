@@ -68,6 +68,7 @@ export class PropertiesWidget extends UI.ThrottledWidget.ThrottledWidget {
     filterRegex = null;
     noMatchesElement;
     treeOutline;
+    // @ts-expect-error keep local reference
     expandController;
     lastRequestedNode;
     constructor(throttlingTimeout) {

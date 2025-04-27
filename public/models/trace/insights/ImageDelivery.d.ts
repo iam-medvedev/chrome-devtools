@@ -85,7 +85,6 @@ export interface OptimizableImage {
 export type ImageDeliveryInsightModel = InsightModel<typeof UIStrings, {
     /** Sorted by potential byte savings, then by size of image. */
     optimizableImages: OptimizableImage[];
-    totalByteSavings: number;
 }>;
 export declare function getOptimizationMessage(optimization: ImageOptimization): string;
 export declare function getOptimizationMessageWithBytes(optimization: ImageOptimization): string;

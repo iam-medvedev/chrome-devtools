@@ -58,9 +58,6 @@ export class DocumentLatency extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    getEstimatedSavingsBytes() {
-        return this.model?.data?.uncompressedResponseBytes ?? null;
-    }
     renderContent() {
         if (!this.model?.data) {
             return Lit.nothing;

@@ -69,6 +69,7 @@ export function makeScriptNode(src, sourceRoot, sourcesData) {
         return {
             name,
             resourceBytes: 0,
+            encodedBytes: undefined,
         };
     }
     const sourceRootNode = newNode(sourceRoot);
@@ -144,6 +145,15 @@ export function makeScriptNode(src, sourceRoot, sourcesData) {
     scriptNode.children = [sourceRootNode];
     return scriptNode;
 }
+function getNetworkRequestSizes(request) {
+    const resourceSize = request.args.data.decodedBodyLength;
+    const transferSize = request.args.data.encodedDataLength;
+    // TODO: add something like `responseHeadersTransferSize` to trace
+    // SyntheticNetworkRequest (see Lighthouse). For now, incorrectly include the size
+    // of the headers here.
+    const headersTransferSize = 0;
+    return { resourceSize, transferSize, headersTransferSize };
+}
 /**
  * Returns an array of nodes, where the first level of nodes represents every script.
  *
@@ -175,6 +185,7 @@ export function createTreemapData(scripts, duplication) {
             for (const [source, resourceBytes] of Object.entries(sizes.files)) {
                 const sourceData = {
                     resourceBytes,
+                    encodedBytes: undefined,
                 };
                 const key = Trace.Extras.ScriptDuplication.normalizeSource(source);
                 if (duplication.has(key)) {
@@ -195,6 +206,7 @@ export function createTreemapData(scripts, duplication) {
             node = {
                 name,
                 resourceBytes: script.content?.length ?? 0,
+                encodedBytes: undefined,
             };
         }
         // If this is an inline script, place the node inside a top-level (aka depth-one)
@@ -206,6 +218,7 @@ export function createTreemapData(scripts, duplication) {
                 htmlNode = {
                     name,
                     resourceBytes: 0,
+                    encodedBytes: undefined,
                     children: [],
                 };
                 htmlNodesByFrameId.set(script.frame, htmlNode);
@@ -218,6 +231,28 @@ export function createTreemapData(scripts, duplication) {
         else {
             // Non-inline scripts each have their own top-level node.
             nodes.push(node);
+            if (script.request) {
+                const { transferSize, headersTransferSize } = getNetworkRequestSizes(script.request);
+                const bodyTransferSize = transferSize - headersTransferSize;
+                node.encodedBytes = bodyTransferSize;
+            }
+            else {
+                node.encodedBytes = node.resourceBytes;
+            }
+        }
+    }
+    // For the HTML nodes, set encodedBytes to be the size of all the inline
+    // scripts multiplied by the average compression ratio of the HTML document.
+    for (const [frameId, node] of htmlNodesByFrameId) {
+        const script = scripts.scripts.find(s => s.request?.args.data.resourceType === 'Document' && s.request?.args.data.frame === frameId);
+        if (script?.request) {
+            const { resourceSize, transferSize, headersTransferSize } = getNetworkRequestSizes(script.request);
+            const inlineScriptsPct = node.resourceBytes / resourceSize;
+            const bodyTransferSize = transferSize - headersTransferSize;
+            node.encodedBytes = Math.floor(bodyTransferSize * inlineScriptsPct);
+        }
+        else {
+            node.encodedBytes = node.resourceBytes;
         }
     }
     return nodes;

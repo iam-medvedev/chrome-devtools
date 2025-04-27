@@ -2,6 +2,7 @@ import '../../../ui/components/icon_button/icon_button.js';
 import './StepEditor.js';
 import './TimelineSection.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import type * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
 import type { StepEditedEvent } from './StepEditor.js';
@@ -117,7 +118,7 @@ export interface ViewInput extends StepViewData {
     handleStepAction: (event: Menus.Menu.MenuItemSelectedEvent) => void;
     toggleShowDetails: () => void;
     onToggleShowDetailsKeydown: (event: Event) => void;
-    onStepContextMenu: (event: MouseEvent) => void;
+    populateStepContextMenu: (contextMenu: UI.ContextMenu.ContextMenu) => void;
 }
 export type ViewOutput = unknown;
 declare function viewFunction(input: ViewInput, _output: ViewOutput, target: HTMLElement | ShadowRoot): void;

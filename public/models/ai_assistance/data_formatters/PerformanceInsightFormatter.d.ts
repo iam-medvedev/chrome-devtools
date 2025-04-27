@@ -10,6 +10,7 @@ export interface NetworkRequestFormatOptions {
     customTitle?: string;
 }
 export declare class TraceEventFormatter {
+    static layoutShift(shift: Trace.Types.Events.SyntheticLayoutShift, index: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, rootCauses?: Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData): string;
     /**
      * This is the data passed to a network request when the Performance Insights
      * agent is asking for information. It is a slimmed down version of the

@@ -9,10 +9,13 @@ import { Highlighting, Renderer, RenderingContext, TracingContext, } from './Pro
 import stylePropertiesTreeOutlineStyles from './stylePropertiesTreeOutline.css.js';
 const { html, render, Directives: { ref, classMap, ifDefined } } = Lit;
 function defaultView(input, output, target) {
-    const [firstEvaluation, ...intermediateEvaluations] = input.evaluations;
+    const substitutions = [...input.substitutions];
+    const evaluations = [...input.evaluations];
+    const finalResult = evaluations.pop() ?? substitutions.pop();
+    const [firstEvaluation, ...intermediateEvaluations] = evaluations;
     const hiddenSummary = !firstEvaluation || intermediateEvaluations.length === 0;
     const summaryTabIndex = hiddenSummary ? undefined : 0;
-    const singleResult = input.evaluations.length === 0 && input.substitutions.length === 0;
+    const singleResult = evaluations.length === 0 && substitutions.length === 0;
     render(
     // clang-format off
     html `
@@ -24,7 +27,7 @@ function defaultView(input, output, target) {
        class="css-value-trace monospace"
        @keydown=${onKeyDown}
        >
-        ${input.substitutions.map(line => html `<span class="trace-line-icon" aria-label="is equal to">↳</span
+        ${substitutions.map(line => html `<span class="trace-line-icon" aria-label="is equal to">↳</span
               ><span class="trace-line">${line}</span>`)}
         ${firstEvaluation && intermediateEvaluations.length === 0
         ? html `<span class="trace-line-icon" aria-label="is equal to">↳</span
@@ -44,14 +47,14 @@ function defaultView(input, output, target) {
                       ><span class="trace-line">${evaluation}</span>`)}
               </div>
             </details>`}
-        ${!input.finalResult
+        ${!finalResult
         ? ''
         : html `<span
                 class="trace-line-icon"
                 aria-label="is equal to"
                 ?hidden=${singleResult}
               >↳</span
-              ><span class=${classMap({ 'trace-line': true, 'full-row': singleResult })}>${input.finalResult}</span>`}
+              ><span class=${classMap({ 'trace-line': true, 'full-row': singleResult })}>${finalResult}</span>`}
       </div>
     `, 
     // clang-format on
@@ -86,7 +89,6 @@ function defaultView(input, output, target) {
 export class CSSValueTraceView extends UI.Widget.VBox {
     #highlighting;
     #view;
-    #finalResult = undefined;
     #evaluations = [];
     #substitutions = [];
     constructor(element, view = defaultView) {
@@ -95,16 +97,16 @@ export class CSSValueTraceView extends UI.Widget.VBox {
         this.#view = view;
         this.requestUpdate();
     }
-    showTrace(property, subexpression, matchedStyles, computedStyles, renderers) {
+    async showTrace(property, subexpression, matchedStyles, computedStyles, renderers) {
         const matchedResult = subexpression === null ?
             property.parseValue(matchedStyles, computedStyles) :
             property.parseExpression(subexpression, matchedStyles, computedStyles);
         if (!matchedResult) {
             return undefined;
         }
-        return this.#showTrace(property, matchedResult, renderers);
+        return await this.#showTrace(property, matchedResult, renderers);
     }
-    #showTrace(property, matchedResult, renderers) {
+    async #showTrace(property, matchedResult, renderers) {
         this.#highlighting = new Highlighting();
         const rendererMap = new Map(renderers.map(r => [r.matchType, r]));
         // Compute all trace lines
@@ -119,17 +121,24 @@ export class CSSValueTraceView extends UI.Widget.VBox {
             substitutions.push(Renderer.render(matchedResult.ast.tree, context).nodes);
         }
         // 2nd: Apply evaluations for calc, min, max, etc.
+        const asyncCallbackResults = [];
         while (tracing.nextEvaluation()) {
             const context = new RenderingContext(matchedResult.ast, property, rendererMap, matchedResult, 
             /* cssControls */ undefined, 
             /* options */ {}, tracing);
             evaluations.push(Renderer.render(matchedResult.ast.tree, context).nodes);
+            asyncCallbackResults.push(tracing.runAsyncEvaluations());
         }
         this.#substitutions = substitutions;
-        this.#finalResult = evaluations.pop();
-        this.#evaluations = evaluations;
-        if (evaluations.length === 0 && !tracing.didApplyEvaluations()) {
-            this.#substitutions.pop();
+        this.#evaluations = [];
+        for (const [index, success] of (await Promise.all(asyncCallbackResults)).entries()) {
+            if (success) {
+                this.#evaluations.push(evaluations[index]);
+            }
+        }
+        if (this.#substitutions.length === 0 && this.#evaluations.length === 0) {
+            const context = new RenderingContext(matchedResult.ast, property, rendererMap, matchedResult);
+            this.#evaluations.push(Renderer.render(matchedResult.ast.tree, context).nodes);
         }
         this.requestUpdate();
     }
@@ -137,7 +146,6 @@ export class CSSValueTraceView extends UI.Widget.VBox {
         const viewInput = {
             substitutions: this.#substitutions,
             evaluations: this.#evaluations,
-            finalResult: this.#finalResult,
             onToggle: () => this.onResize(),
         };
         const viewOutput = {};

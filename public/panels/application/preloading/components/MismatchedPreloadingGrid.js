@@ -82,7 +82,6 @@ export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.Wrappa
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [];
         this.#render();
     }
     set data(data) {

@@ -41,7 +41,6 @@ export declare class LayerViewHost {
     private hoveredObject;
     private showInternalLayersSettingInternal;
     private snapshotLayers;
-    private target?;
     constructor();
     registerView(layerView: LayerView): void;
     setLayerSnapshotMap(snapshotLayers: Map<SDK.LayerTreeBase.Layer, SnapshotSelection>): void;

@@ -78,17 +78,26 @@ export class NodeChildTargetManager extends SDK.SDKModel.SDKModel {
         if (targetInfo.type === 'node' && !targetInfo.attached) {
             void this.#targetAgent.invoke_attachToTarget({ targetId: targetInfo.targetId, flatten: false });
         }
+        else if (targetInfo.type === 'node_worker') {
+            void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: false });
+        }
     }
     targetInfoChanged(_event) {
     }
     targetDestroyed(_event) {
     }
     attachedToTarget({ sessionId, targetInfo }) {
-        const name = i18nString(UIStrings.nodejsS, { PH1: targetInfo.url });
-        document.title = i18nString(UIStrings.NodejsTitleS, { PH1: targetInfo.url });
-        const connection = new NodeConnection(this.#targetAgent, sessionId);
-        this.#childConnections.set(sessionId, connection);
-        const target = this.#targetManager.createTarget(targetInfo.targetId, name, SDK.Target.Type.NODE, this.#parentTarget, undefined, undefined, connection);
+        let target;
+        if (targetInfo.type === 'node_worker') {
+            target = this.#targetManager.createTarget(targetInfo.targetId, targetInfo.title, SDK.Target.Type.NODE_WORKER, this.#parentTarget, sessionId, true, undefined, targetInfo);
+        }
+        else {
+            const name = i18nString(UIStrings.nodejsS, { PH1: targetInfo.url });
+            document.title = i18nString(UIStrings.NodejsTitleS, { PH1: targetInfo.url });
+            const connection = new NodeConnection(this.#targetAgent, sessionId);
+            this.#childConnections.set(sessionId, connection);
+            target = this.#targetManager.createTarget(targetInfo.targetId, name, SDK.Target.Type.NODE, this.#parentTarget, undefined, undefined, connection);
+        }
         this.#childTargets.set(sessionId, target);
         void target.runtimeAgent().invoke_runIfWaitingForDebugger();
     }

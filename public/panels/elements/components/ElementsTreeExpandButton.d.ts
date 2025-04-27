@@ -5,7 +5,6 @@ export interface ElementsTreeExpandButtonData {
 export declare class ElementsTreeExpandButton extends HTMLElement {
     #private;
     set data(data: ElementsTreeExpandButtonData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

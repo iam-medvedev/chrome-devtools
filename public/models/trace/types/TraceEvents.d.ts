@@ -1615,6 +1615,7 @@ export interface Paint extends Complete {
             frame: string;
             layerId: number;
             nodeId?: Protocol.DOM.BackendNodeId;
+            nodeName?: string;
         };
     };
 }
@@ -1635,6 +1636,7 @@ export interface PaintImage extends Complete {
             srcHeight: number;
             srcWidth: number;
             nodeId?: Protocol.DOM.BackendNodeId;
+            nodeName?: string;
             frame?: string;
         };
     };
@@ -2223,10 +2225,6 @@ export interface V8SourceRundownEvent extends Event {
             isolate: string;
             executionContextId: Protocol.Runtime.ExecutionContextId;
             scriptId: number;
-            startLine: number;
-            startColumn: number;
-            endLine: number;
-            endColumn: number;
             hash: string;
             isModule: boolean;
             hasSourceUrl: boolean;

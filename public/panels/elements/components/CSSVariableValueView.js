@@ -4,10 +4,7 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import cssVariableValueViewStylesRaw from './cssVariableValueView.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const cssVariableValueViewStyles = new CSSStyleSheet();
-cssVariableValueViewStyles.replaceSync(cssVariableValueViewStylesRaw.cssText);
+import cssVariableValueViewStyles from './cssVariableValueView.css.js';
 const UIStrings = {
     /**
      *@description Text for a link from custom property to its defining registration
@@ -41,12 +38,12 @@ export class CSSVariableParserError extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     constructor(details) {
         super();
-        this.#shadow.adoptedStyleSheets = [cssVariableValueViewStyles];
         this.#render(details);
     }
     #render(details) {
         const type = html `<span class="monospace css-property">${details.registration.syntax()}</span>`;
         render(html `
+      <style>${cssVariableValueViewStyles.cssText}</style>
       <div class="variable-value-popup-wrapper">
         ${i18nTemplate(UIStrings.invalidPropertyValue, { type })}
         ${getLinkSection(details)}
@@ -62,7 +59,6 @@ export class CSSVariableValueView extends HTMLElement {
     details;
     constructor({ variableName, value, details, }) {
         super();
-        this.#shadow.adoptedStyleSheets = [cssVariableValueViewStyles];
         this.variableName = variableName;
         this.details = details;
         this.value = value;
@@ -88,7 +84,8 @@ export class CSSVariableValueView extends HTMLElement {
         </div>` :
             '';
         const valueText = this.value ?? i18nString(UIStrings.sIsNotDefined, { PH1: this.variableName });
-        render(html `<div class="variable-value-popup-wrapper">
+        render(html `<style>${cssVariableValueViewStyles.cssText}</style>
+             <div class="variable-value-popup-wrapper">
                ${valueText}
              </div>
              ${registrationView}

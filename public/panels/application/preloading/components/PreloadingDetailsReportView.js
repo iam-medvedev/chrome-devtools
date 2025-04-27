@@ -12,8 +12,6 @@ import * as Logs from '../../../../models/logs/logs.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as LegacyWrapper from '../../../../ui/components/legacy_wrapper/legacy_wrapper.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
-// eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStyles from '../../../../ui/legacy/inspectorCommon.css.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
@@ -153,7 +151,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
                 // clang-format off
                 Lit.render(html `
           <style>${preloadingDetailsReportViewStyles.cssText}</style>
-          <style>${inspectorCommonStyles.cssText}</style>
+          <style>${UI.inspectorCommonStyles.cssText}</style>
           <div class="empty-state">
             <span class="empty-state-header">${i18nString(UIStrings.noElementSelected)}</span>
             <span class="empty-state-description">${i18nString(UIStrings.selectAnElementForMoreDetails)}</span>
@@ -171,7 +169,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
             // clang-format off
             Lit.render(html `
         <style>${preloadingDetailsReportViewStyles.cssText}</style>
-        <style>${inspectorCommonStyles.cssText}</style>
+        <style>${UI.inspectorCommonStyles.cssText}</style>
         <devtools-report
           .data=${{ reportTitle: 'Speculative Loading Attempt' }}
           jslog=${VisualLogging.section('preloading-details')}>

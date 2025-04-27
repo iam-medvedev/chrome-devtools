@@ -5,15 +5,11 @@
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import { html, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import editableSpanStylesRaw from './EditableSpan.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const editableSpanStyles = new CSSStyleSheet();
-editableSpanStyles.replaceSync(editableSpanStylesRaw.cssText);
+import editableSpanStyles from './EditableSpan.css.js';
 export class EditableSpan extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #value = '';
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [editableSpanStyles];
         this.#shadow.addEventListener('focusin', this.#selectAllText.bind(this));
         this.#shadow.addEventListener('keydown', this.#onKeyDown.bind(this));
         this.#shadow.addEventListener('input', this.#onInput.bind(this));
@@ -55,13 +51,15 @@ export class EditableSpan extends HTMLElement {
         }
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
-        render(html `<span
+        render(html `
+      <style>${editableSpanStyles.cssText}</style>
+      <span
         contenteditable="plaintext-only"
         class="editable"
         tabindex="0"
         .innerText=${this.#value}
         jslog=${VisualLogging.value('header-editor').track({ change: true, keydown: 'Enter|Escape' })}
-    </span>`, this.#shadow, { host: this });
+      </span>`, this.#shadow, { host: this });
         // clang-format on
     }
     focus() {

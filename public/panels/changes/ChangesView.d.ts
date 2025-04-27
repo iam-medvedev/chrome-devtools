@@ -13,6 +13,7 @@ export declare class ChangesView extends UI.Widget.VBox {
     private readonly diffView?;
     private readonly combinedDiffView?;
     constructor();
+    private renderDiffOrEmptyState;
     private selectedUISourceCodeChanged;
     revert(): void;
     copy(): Promise<void>;
@@ -22,6 +23,8 @@ export declare class ChangesView extends UI.Widget.VBox {
     willHide(): void;
     private refreshDiff;
     private hideDiff;
+    private showDiffContainer;
+    private showEmptyState;
     private renderDiffRows;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {

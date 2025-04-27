@@ -15,7 +15,6 @@ declare global {
 export declare class ImageView extends UI.View.SimpleView {
     private url;
     private parsedURL;
-    private readonly mimeType;
     private readonly contentProvider;
     private uiSourceCode;
     private readonly sizeLabel;

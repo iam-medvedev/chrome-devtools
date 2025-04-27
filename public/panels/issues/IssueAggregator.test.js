@@ -289,7 +289,7 @@ describeWithMockConnection('IssueAggregator', () => {
     });
 });
 describeWithMockConnection('IssueAggregator', () => {
-    function getTestMitigationCookieIssue(warningReason) {
+    function getTestCookieIssue(warningReason, exclusionReason) {
         return IssuesManager.IssuesManager.createIssuesFromProtocolIssue(model, {
             code: "CookieIssue" /* Protocol.Audits.InspectorIssueCode.CookieIssue */,
             details: {
@@ -299,8 +299,8 @@ describeWithMockConnection('IssueAggregator', () => {
                         path: '/',
                         domain: 'a.test',
                     },
-                    cookieExclusionReasons: [],
-                    cookieWarningReasons: [warningReason],
+                    cookieExclusionReasons: exclusionReason ? [exclusionReason] : [],
+                    cookieWarningReasons: warningReason ? [warningReason] : [],
                     operation: "ReadCookie" /* Protocol.Audits.CookieOperation.ReadCookie */,
                     cookieUrl: 'a.test',
                 },
@@ -315,15 +315,24 @@ describeWithMockConnection('IssueAggregator', () => {
         const target = createTarget();
         model = target.model(SDK.IssuesModel.IssuesModel);
     });
-    it('should not aggregate mitigation related cookie issues', async () => {
+    it('should not aggregate third-party cookie phaseout or mitigation related issues', async () => {
         // Preexisting issues should not be added
-        issuesManager.addIssue(model, getTestMitigationCookieIssue("WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */));
-        issuesManager.addIssue(model, getTestMitigationCookieIssue("WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */));
+        issuesManager.addIssue(model, getTestCookieIssue("WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */));
+        issuesManager.addIssue(model, getTestCookieIssue("WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */));
+        issuesManager.addIssue(model, getTestCookieIssue("WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */));
+        issuesManager.addIssue(model, getTestCookieIssue(undefined, "ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */));
         const aggregator = new Issues.IssueAggregator.IssueAggregator(issuesManager);
         // Issues added after aggregator creation should not exist either
-        issuesManager.addIssue(model, getTestMitigationCookieIssue("WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */));
-        issuesManager.addIssue(model, getTestMitigationCookieIssue("WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */));
+        issuesManager.addIssue(model, getTestCookieIssue("WarnDeprecationTrialMetadata" /* Protocol.Audits.CookieWarningReason.WarnDeprecationTrialMetadata */));
+        issuesManager.addIssue(model, getTestCookieIssue("WarnThirdPartyCookieHeuristic" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyCookieHeuristic */));
+        issuesManager.addIssue(model, getTestCookieIssue("WarnThirdPartyPhaseout" /* Protocol.Audits.CookieWarningReason.WarnThirdPartyPhaseout */));
+        issuesManager.addIssue(model, getTestCookieIssue(undefined, "ExcludeThirdPartyPhaseout" /* Protocol.Audits.CookieExclusionReason.ExcludeThirdPartyPhaseout */));
         assert.strictEqual(aggregator.numberOfAggregatedIssues(), 0);
+        assert.strictEqual(aggregator.numberOfHiddenAggregatedIssues(), 0);
+        // But other cookie issues should get aggregated
+        issuesManager.addIssue(model, getTestCookieIssue("WarnDomainNonASCII" /* Protocol.Audits.CookieWarningReason.WarnDomainNonASCII */));
+        issuesManager.addIssue(model, getTestCookieIssue(undefined, "ExcludeDomainNonASCII" /* Protocol.Audits.CookieExclusionReason.ExcludeDomainNonASCII */));
+        assert.strictEqual(aggregator.numberOfAggregatedIssues(), 2);
         assert.strictEqual(aggregator.numberOfHiddenAggregatedIssues(), 0);
     });
 });

@@ -4,7 +4,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { ChatView, type Props as ChatViewProps } from './components/ChatView.js';
 interface ToolbarViewInput {
     onNewChatClick: () => void;
-    onHistoryClick: (event: MouseEvent) => void;
+    populateHistoryMenu: (contextMenu: UI.ContextMenu.ContextMenu) => void;
     onDeleteClick: () => void;
     onHelpClick: () => void;
     onSettingsClick: () => void;

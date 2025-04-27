@@ -36,7 +36,6 @@ export type CacheInsightModel = InsightModel<typeof UIStrings, {
         ttl: number;
         wastedBytes: number;
     }>;
-    totalWastedBytes: number;
 }>;
 /**
  * Determines if a request is "cacheable".

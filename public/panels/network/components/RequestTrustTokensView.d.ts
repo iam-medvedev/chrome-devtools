@@ -8,7 +8,6 @@ export declare class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     wasShown(): void;
     willHide(): void;
-    connectedCallback(): void;
     render(): Promise<void>;
 }
 export declare function statusConsideredSuccess(status: Protocol.Network.TrustTokenOperationDoneEventStatus): boolean;

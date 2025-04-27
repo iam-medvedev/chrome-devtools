@@ -43,6 +43,15 @@ export function getNonResolvedURL(entry, parsedTrace) {
     if (entry.args?.data?.url) {
         return entry.args.data.url;
     }
+    // Many events don't have a url, but are associated with a request. Use the
+    // request's url.
+    const requestId = entry.args?.data?.requestId;
+    if (parsedTrace && requestId) {
+        const url = parsedTrace.NetworkRequests.byId.get(requestId)?.args.data.url;
+        if (url) {
+            return url;
+        }
+    }
     return null;
 }
 export function makeUpEntity(entityCache, url) {

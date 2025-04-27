@@ -9,7 +9,6 @@ interface SharedStorageMetadataGetter {
 export declare class SharedStorageMetadataView extends StorageMetadataView {
     #private;
     constructor(sharedStorageMetadataGetter: SharedStorageMetadataGetter, owner: string);
-    connectedCallback(): void;
     getTitle(): string;
     renderReportContent(): Promise<Lit.LitTemplate>;
 }

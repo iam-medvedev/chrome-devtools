@@ -5,7 +5,9 @@
 import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import expandableListStylesRaw from './expandableList.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const expandableListStyles = new CSSStyleSheet();
 expandableListStyles.replaceSync(expandableListStylesRaw.cssText);
 const { html, Directives: { ifDefined } } = Lit;

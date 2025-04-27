@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import * as TraceFilter from './TraceFilter.js';
@@ -25,22 +26,32 @@ function collectMainThreadActivity(parsedTrace) {
     }
     return mainFrameMainThread.entries;
 }
-/**
- * @param networkRequests Won't be filtered by trace bounds, so callers should ensure it is filtered.
- */
-export function summarizeThirdParties(parsedTrace, traceBounds) {
+export function summarizeByThirdParty(parsedTrace, traceBounds) {
     const mainThreadEvents = collectMainThreadActivity(parsedTrace).sort(Helpers.Trace.eventTimeComparator);
-    const node = getBottomUpTree(mainThreadEvents, parsedTrace, traceBounds);
-    const summaries = summarizeBottomUp(node, parsedTrace);
+    const groupingFunction = (event) => {
+        const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(event);
+        return entity?.name ?? '';
+    };
+    const node = getBottomUpTree(mainThreadEvents, traceBounds, groupingFunction);
+    const summaries = summarizeBottomUpByEntity(node, parsedTrace);
     return summaries;
 }
-function summarizeBottomUp(thirdPartyBottomUp, parsedTrace) {
-    const summaryForEntity = new Map();
+/**
+ * Used only by Lighthouse.
+ */
+export function summarizeByURL(parsedTrace, traceBounds) {
+    const mainThreadEvents = collectMainThreadActivity(parsedTrace).sort(Helpers.Trace.eventTimeComparator);
+    const groupingFunction = (event) => {
+        return Handlers.Helpers.getNonResolvedURL(event, parsedTrace) ?? '';
+    };
+    const node = getBottomUpTree(mainThreadEvents, traceBounds, groupingFunction);
+    const summaries = summarizeBottomUpByURL(node, parsedTrace);
+    return summaries;
+}
+function summarizeBottomUpByEntity(root, parsedTrace) {
     const summaries = [];
-    // Our top nodes are the 3P entities.
-    // Tree nodes are built lazily, .children() is essential, it triggers the
-    // construction of the root node's child nodes.
-    const topNodes = [...thirdPartyBottomUp.children().values()].flat();
+    // Top nodes are the 3P entities.
+    const topNodes = [...root.children().values()].flat();
     for (const node of topNodes) {
         if (node.id === '') {
             continue;
@@ -49,25 +60,45 @@ function summarizeBottomUp(thirdPartyBottomUp, parsedTrace) {
         if (!entity) {
             continue;
         }
+        // Lets use the mapper events as our source of events, since we use the main thread to construct
+        // the bottom up tree. The mapper will give us all related events.
         const summary = {
             transferSize: node.transferSize,
             mainThreadTime: Types.Timing.Milli(node.selfTime),
-            // Lets use the mapper events as our source of events, since we use the main thread to construct
-            // the bottom up tree. The mapper will give us all related events.
-            relatedEvents: parsedTrace.Renderer.entityMappings.eventsByEntity.get(entity) ?? [],
             entity,
+            relatedEvents: parsedTrace.Renderer.entityMappings.eventsByEntity.get(entity) ?? [],
         };
-        summaryForEntity.set(entity, summary);
         summaries.push(summary);
     }
     return summaries;
 }
-function getBottomUpTree(mainThreadEvents, parsedTrace, tracebounds) {
-    const mappings = parsedTrace.Renderer.entityMappings;
-    const groupingFunction = (event) => {
-        const entity = mappings?.entityByEvent.get(event);
-        return entity?.name ?? '';
-    };
+function summarizeBottomUpByURL(root, parsedTrace) {
+    const summaries = [];
+    const allRequests = parsedTrace.NetworkRequests.byTime;
+    // Top nodes are URLs.
+    const topNodes = [...root.children().values()].flat();
+    for (const node of topNodes) {
+        if (node.id === '' || typeof node.id !== 'string') {
+            continue;
+        }
+        const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(node.event);
+        if (!entity) {
+            continue;
+        }
+        const url = node.id;
+        const request = allRequests.find(r => r.args.data.url === url);
+        const summary = {
+            request,
+            url,
+            entity,
+            transferSize: node.transferSize,
+            mainThreadTime: Types.Timing.Milli(node.selfTime),
+        };
+        summaries.push(summary);
+    }
+    return summaries;
+}
+function getBottomUpTree(mainThreadEvents, tracebounds, groupingFunction) {
     // Use the same filtering as front_end/panels/timeline/TimelineTreeView.ts.
     const visibleEvents = Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
     const filter = new TraceFilter.VisibleEventsFilter(visibleEvents.concat(["SyntheticNetworkRequest" /* Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */]));

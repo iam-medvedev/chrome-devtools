@@ -7,7 +7,9 @@ import * as Lit from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import cssAngleEditorStylesRaw from './cssAngleEditor.css.js';
 import { get2DTranslationsForAngle, getAngleFromRadians, getNewAngleFromEvent, getRadiansFromAngle, } from './CSSAngleUtils.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
+/* eslint-disable rulesdir/no-adopted-style-sheets --
+ * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
+ **/
 const cssAngleEditorStyles = new CSSStyleSheet();
 cssAngleEditorStyles.replaceSync(cssAngleEditorStylesRaw.cssText);
 const { render, html } = Lit;

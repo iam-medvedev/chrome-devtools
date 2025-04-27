@@ -41,6 +41,9 @@ export class ChildTargetManager extends SDKModel {
                 void browserTarget.targetAgent().invoke_autoAttachRelated({ targetId: parentTarget.id(), waitForDebuggerOnStart: true });
             }
         }
+        else if (parentTarget.type() === Type.NODE) {
+            void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: true, flatten: false });
+        }
         else {
             void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
         }
@@ -168,6 +171,9 @@ export class ChildTargetManager extends SDKModel {
         }
         else if (targetInfo.type === 'auction_worklet') {
             type = Type.AUCTION_WORKLET;
+        }
+        else if (targetInfo.type === 'node_worker') {
+            type = Type.NODE_WORKER;
         }
         const target = this.#targetManager.createTarget(targetInfo.targetId, targetName, type, this.#parentTarget, sessionId, undefined, undefined, targetInfo);
         this.#childTargetsBySessionId.set(sessionId, target);

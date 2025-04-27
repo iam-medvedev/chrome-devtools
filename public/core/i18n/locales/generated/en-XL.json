@@ -1202,6 +1202,9 @@
   "generated/Deprecation.ts | CanRequestURLHTTPContainingNewline": {
     "message": "R̂éŝóûŕĉé r̂éq̂úêśt̂ś ŵh́ôśê ÚR̂Ĺŝ ćôńt̂áîńêd́ b̂ót̂h́ r̂ém̂óv̂éd̂ ẃĥít̂éŝṕâćê \\(n|r|t) ćĥár̂áĉt́êŕŝ án̂d́ l̂éŝś-t̂h́âń ĉh́âŕâćt̂ér̂ś (<) âŕê b́l̂óĉḱêd́. P̂ĺêáŝé r̂ém̂óv̂é n̂éŵĺîńêś âńd̂ én̂ćôd́ê ĺêśŝ-t́ĥán̂ ćĥár̂áĉt́êŕŝ f́r̂óm̂ ṕl̂áĉéŝ ĺîḱê él̂ém̂én̂t́ ât́t̂ŕîb́ût́ê v́âĺûéŝ ín̂ ór̂d́êŕ t̂ó l̂óâd́ t̂h́êśê ŕêśôúr̂ćêś."
   },
+  "generated/Deprecation.ts | CharsetAutoDetectionISO2022JP": {
+    "message": "Âút̂ó-d̂ét̂éĉt́îón̂ óf̂ ÍŜÓ-2022-ĴṔ ĉh́âŕâćt̂ér̂ śêt́ îś d̂ép̂ŕêćât́êd́ âńd̂ ít̂ ẃîĺl̂ b́ê d́îśâb́l̂éd̂ ín̂ t́ĥé n̂éâŕ f̂út̂úr̂é. P̂ĺêáŝé ŝṕêćîf́ŷ ćĥár̂áĉt́êŕ ŝét̂ ín̂ t́ĥé Ĉón̂t́êńt̂ T́ŷṕê h́êád̂ér̂ ór̂ b́ŷ úŝín̂ǵ â ḿêt́â t́âǵ (ĥt́t̂ṕŝ://d́êv́êĺôṕêŕ.m̂óẑíl̂ĺâ.ór̂ǵ/êń-ÛŚ/d̂óĉś/Ĝĺôśŝár̂ý/Ĉh́âŕâćt̂ér̂_én̂ćôd́îńĝ)."
+  },
   "generated/Deprecation.ts | ChromeLoadTimesConnectionInfo": {
     "message": "chrome.loadTimes() îś d̂ép̂ŕêćât́êd́, îńŝt́êád̂ úŝé ŝt́âńd̂ár̂d́îźêd́ ÂṔÎ: Ńâv́îǵât́îón̂ T́îḿîńĝ 2."
   },
@@ -1496,9 +1499,6 @@
   "models/issues_manager/CookieIssue.ts | consoleTpcdErrorMessage": {
     "message": "T̂h́îŕd̂-ṕâŕt̂ý ĉóôḱîé îś b̂ĺôćk̂éd̂ ín̂ Ćĥŕôḿê éît́ĥér̂ b́êćâúŝé ôf́ Ĉh́r̂óm̂é f̂ĺâǵŝ ór̂ b́r̂óŵśêŕ ĉón̂f́îǵûŕât́îón̂."
   },
-  "models/issues_manager/CookieIssue.ts | consoleTpcdWarningMessage": {
-    "message": "Ĉh́r̂óm̂é îś m̂óv̂ín̂ǵ t̂óŵár̂d́ŝ á n̂éŵ éx̂ṕêŕîén̂ćê t́ĥát̂ ál̂ĺôẃŝ úŝér̂ś t̂ó ĉh́ôóŝé t̂ó b̂ŕôẃŝé ŵít̂h́ôút̂ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íêś."
-  },
   "models/issues_manager/CookieIssue.ts | fileCrosSiteRedirectBug": {
     "message": "F̂íl̂é â b́ûǵ"
   },
@@ -1510,9 +1510,6 @@
   },
   "models/issues_manager/CookieIssue.ts | samesiteCookiesExplained": {
     "message": "Ŝám̂éŜít̂é ĉóôḱîéŝ éx̂ṕl̂áîńêd́"
-  },
-  "models/issues_manager/CookieIssue.ts | thirdPartyPhaseoutExplained": {
-    "message": "Ĉh́âńĝéŝ t́ô Ćĥŕôḿê'ś t̂ŕêát̂ḿêńt̂ óf̂ t́ĥír̂d́-p̂ár̂t́ŷ ćôók̂íêś"
   },
   "models/issues_manager/CorsIssue.ts | CORS": {
     "message": "Ĉŕôśŝ-Ór̂íĝín̂ Ŕêśôúr̂ćê Śĥár̂ín̂ǵ (CORS)"
@@ -13565,8 +13562,11 @@
   "panels/sources/TabbedEditorContainer.ts | areYouSureYouWantToCloseUnsaved": {
     "message": "Âŕê ýôú ŝúr̂é ŷóû ẃâńt̂ t́ô ćl̂óŝé ûńŝáv̂éd̂ f́îĺê: {PH1}?"
   },
-  "panels/sources/TabbedEditorContainer.ts | changesToThisFileWereNotSavedTo": {
-    "message": "Ĉh́âńĝéŝ t́ô t́ĥíŝ f́îĺê ẃêŕê ńôt́ ŝáv̂éd̂ t́ô f́îĺê śŷśt̂ém̂."
+  "panels/sources/TabbedEditorContainer.ts | changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace": {
+    "message": "Ĉh́âńĝéŝ ẃêŕêń't̂ śâv́êd́ t̂ó f̂íl̂é ŝýŝt́êḿ. T̂ó ŝáv̂é, âd́d̂ {PH1} t́ô ýôúr̂ Ẃôŕk̂śp̂áĉé."
+  },
+  "panels/sources/TabbedEditorContainer.ts | changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace": {
+    "message": "Ĉh́âńĝéŝ ẃêŕêń't̂ śâv́êd́ t̂ó f̂íl̂é ŝýŝt́êḿ. T̂ó ŝáv̂é, ŝét̂ úp̂ ýôúr̂ {PH1}."
   },
   "panels/sources/TabbedEditorContainer.ts | unableToLoadThisContent": {
     "message": "Ûńâb́l̂é t̂ó l̂óâd́ t̂h́îś ĉón̂t́êńt̂."
@@ -13760,14 +13760,17 @@
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavings": {
     "message": "Êśt̂ śâv́îńĝś: {PH1}"
   },
-  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAria": {
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAriaBytes": {
+    "message": "Êśt̂ím̂át̂éd̂ śâv́îńĝś f̂ór̂ t́ĥíŝ ín̂śîǵĥt́: {PH1} t̂ŕâńŝf́êŕ ŝíẑé"
+  },
+  "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsAriaTiming": {
     "message": "Êśt̂ím̂át̂éd̂ śâv́îńĝś f̂ór̂ t́ĥíŝ ín̂śîǵĥt́: {PH1}"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytes": {
     "message": "Êśt̂ śâv́îńĝś: {PH1} & {PH2}"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | estimatedSavingsTimingAndBytesAria": {
-    "message": "Êśt̂ím̂át̂éd̂ śâv́îńĝś f̂ór̂ t́ĥíŝ ín̂śîǵĥt́: {PH1} âńd̂ {PH2}"
+    "message": "Êśt̂ím̂át̂éd̂ śâv́îńĝś f̂ór̂ t́ĥíŝ ín̂śîǵĥt́: {PH1} âńd̂ {PH2} t́r̂án̂śf̂ér̂ śîźê"
   },
   "panels/timeline/components/insights/BaseInsightComponent.ts | viewDetails": {
     "message": "V̂íêẃ d̂ét̂áîĺŝ f́ôŕ {PH1} îńŝíĝh́t̂."

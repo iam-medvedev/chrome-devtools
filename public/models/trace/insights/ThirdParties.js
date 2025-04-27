@@ -32,8 +32,7 @@ function getRelatedEvents(summaries, firstPartyEntity) {
     const relatedEvents = [];
     for (const summary of summaries) {
         if (summary.entity !== firstPartyEntity) {
-            const events = summary.relatedEvents ?? [];
-            relatedEvents.push(...events);
+            relatedEvents.push(...summary.relatedEvents);
         }
     }
     return relatedEvents;
@@ -45,20 +44,21 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
-        state: partialModel.summaries.find(summary => summary.entity !== partialModel.firstPartyEntity) ? 'informative' :
+        state: partialModel.entitySummaries.find(summary => summary.entity !== partialModel.firstPartyEntity) ?
+            'informative' :
             'pass',
         ...partialModel,
     };
 }
 export function generateInsight(parsedTrace, context) {
-    const summaries = Extras.ThirdParties.summarizeThirdParties(parsedTrace, context.bounds);
+    const entitySummaries = Extras.ThirdParties.summarizeByThirdParty(parsedTrace, context.bounds);
     const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) ||
         Handlers.Helpers.makeUpEntity(parsedTrace.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
     return finalize({
-        relatedEvents: getRelatedEvents(summaries, firstPartyEntity),
+        relatedEvents: getRelatedEvents(entitySummaries, firstPartyEntity),
         firstPartyEntity,
-        summaries,
+        entitySummaries,
     });
 }
 //# sourceMappingURL=ThirdParties.js.map

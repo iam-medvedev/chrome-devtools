@@ -12,10 +12,7 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import headerSectionRowStylesRaw from './HeaderSectionRow.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const headerSectionRowStyles = new CSSStyleSheet();
-headerSectionRowStyles.replaceSync(headerSectionRowStylesRaw.cssText);
+import headerSectionRowStyles from './HeaderSectionRow.css.js';
 const { render, html } = Lit;
 const UIStrings = {
     /**
@@ -101,9 +98,6 @@ export class HeaderSectionRow extends HTMLElement {
     #header = null;
     #isHeaderValueEdited = false;
     #isValidHeaderName = true;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [headerSectionRowStyles];
-    }
     set data(data) {
         this.#header = data.header;
         this.#isHeaderValueEdited =
@@ -147,6 +141,7 @@ export class HeaderSectionRow extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${headerSectionRowStyles.cssText}</style>
       <div class=${rowClasses}>
         <div class=${headerNameClasses}>
           ${this.#header.headerNotSet ?

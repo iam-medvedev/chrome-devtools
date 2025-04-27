@@ -107,7 +107,7 @@ function sorted(duplication) {
  * 2. `duplication` keys correspond to authored files, except all files within the same
  *    node_module package are aggregated under the same entry.
  */
-export function computeScriptDuplication(scriptsData) {
+export function computeScriptDuplication(scriptsData, compressionRatios) {
     const sourceDatasMap = new Map();
     // Determine size of each `sources` entry.
     for (const script of scriptsData.scripts) {
@@ -144,9 +144,11 @@ export function computeScriptDuplication(scriptsData) {
                 data = { estimatedDuplicateBytes: 0, duplicates: [] };
                 duplication.set(sourceData.source, data);
             }
+            const compressionRatio = script.request ? compressionRatios.get(script.request?.args.data.requestId) ?? 1 : 1;
+            const transferSize = Math.round(sourceData.resourceSize * compressionRatio);
             data.duplicates.push({
                 script,
-                attributedSize: sourceData.resourceSize,
+                attributedSize: transferSize,
             });
         }
     }

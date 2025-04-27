@@ -4,6 +4,7 @@ export interface Change {
     groupId: string;
     sourceLocation?: string;
     selector: string;
+    simpleSelector?: string;
     className: string;
     styles: Record<string, string>;
 }

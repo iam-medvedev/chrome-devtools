@@ -25,7 +25,6 @@ export interface HeaderSectionRowData {
 }
 export declare class HeaderSectionRow extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: HeaderSectionRowData);
     focus(): void;
 }

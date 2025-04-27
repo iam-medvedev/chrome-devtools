@@ -10,7 +10,6 @@ export interface RequestHeaderSectionData {
 }
 export declare class RequestHeaderSection extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: RequestHeaderSectionData);
 }
 declare global {

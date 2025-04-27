@@ -4,7 +4,6 @@ import { type MatchRenderer } from './PropertyRenderer.js';
 export interface ViewInput {
     substitutions: Node[][];
     evaluations: Node[][];
-    finalResult: Node[] | undefined;
     onToggle: () => void;
 }
 export interface ViewOutput {
@@ -14,6 +13,6 @@ export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) =
 export declare class CSSValueTraceView extends UI.Widget.VBox {
     #private;
     constructor(element?: HTMLElement, view?: View);
-    showTrace(property: SDK.CSSProperty.CSSProperty, subexpression: string | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>): void;
+    showTrace(property: SDK.CSSProperty.CSSProperty, subexpression: string | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>): Promise<void>;
     performUpdate(): void;
 }

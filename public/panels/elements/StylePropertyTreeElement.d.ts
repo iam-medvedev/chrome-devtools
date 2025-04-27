@@ -174,13 +174,14 @@ declare const GridTemplateRenderer_base: abstract new () => {
 export declare class GridTemplateRenderer extends GridTemplateRenderer_base {
     render(match: SDK.CSSPropertyParserMatchers.GridTemplateMatch, context: RenderingContext): Node[];
 }
+export declare const SHORTHANDS_FOR_PERCENTAGES: Set<string>;
 declare const LengthRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.LengthMatch, any[]>;
     render(_match: SDK.CSSPropertyParserMatchers.LengthMatch, _context: RenderingContext): Node[];
 };
 export declare class LengthRenderer extends LengthRenderer_base {
     #private;
-    constructor(stylesPane: StylesSidebarPane, treeElement: StylePropertyTreeElement | null);
+    constructor(stylesPane: StylesSidebarPane, propertyName: string, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.LengthMatch, context: RenderingContext): Node[];
     popOverAttachedForTest(): void;
 }
@@ -190,10 +191,10 @@ declare const MathFunctionRenderer_base: abstract new () => {
 };
 export declare class MathFunctionRenderer extends MathFunctionRenderer_base {
     #private;
-    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, treeElement: StylePropertyTreeElement | null);
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, propertyName: string, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Node[];
-    applyEvaluation(span: HTMLSpanElement, value: string): Promise<void>;
-    applyMathFunction(renderedArgs: HTMLElement[], values: string[], functionText: string): Promise<void>;
+    applyEvaluation(span: HTMLSpanElement, match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Promise<boolean>;
+    applyMathFunction(renderedArgs: HTMLElement[], match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Promise<void>;
 }
 declare const AnchorFunctionRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, any[]>;
@@ -224,7 +225,7 @@ export declare class PositionTryRenderer extends PositionTryRenderer_base {
     constructor(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles);
     render(match: SDK.CSSPropertyParserMatchers.PositionTryMatch, context: RenderingContext): Node[];
 }
-export declare function getPropertyRenderers(style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, treeElement: StylePropertyTreeElement | null, computedStyles: Map<string, string>): Array<MatchRenderer<SDK.CSSPropertyParser.Match>>;
+export declare function getPropertyRenderers(propertyName: string, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, treeElement: StylePropertyTreeElement | null, computedStyles: Map<string, string>): Array<MatchRenderer<SDK.CSSPropertyParser.Match>>;
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;
     private readonly style;

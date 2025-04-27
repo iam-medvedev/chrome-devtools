@@ -75,7 +75,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 524288 /* Capability.EVENT_BREAKPOINTS */ | 16 /* Capability.NETWORK */;
                 break;
             case Type.NODE:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */;
                 break;
             case Type.AUCTION_WORKLET:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
@@ -86,6 +86,8 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
             case Type.TAB:
                 this.#capabilitiesMask = 32 /* Capability.TARGET */ | 128 /* Capability.TRACING */;
                 break;
+            case Type.NODE_WORKER:
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */;
         }
         this.#typeInternal = type;
         this.#parentTargetInternal = parentTarget;
@@ -257,5 +259,6 @@ export var Type;
     Type["AUCTION_WORKLET"] = "auction-worklet";
     Type["WORKLET"] = "worklet";
     Type["TAB"] = "tab";
+    Type["NODE_WORKER"] = "node-worker";
 })(Type || (Type = {}));
 //# sourceMappingURL=Target.js.map

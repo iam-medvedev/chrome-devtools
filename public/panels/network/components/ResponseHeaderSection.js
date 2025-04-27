@@ -15,10 +15,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import { html, nothing, render } from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { compareHeaders, isValidHeaderName, } from './HeaderSectionRow.js';
-import responseHeaderSectionStylesRaw from './ResponseHeaderSection.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const responseHeaderSectionStyles = new CSSStyleSheet();
-responseHeaderSectionStyles.replaceSync(responseHeaderSectionStylesRaw.cssText);
+import responseHeaderSectionStyles from './ResponseHeaderSection.css.js';
 const UIStrings = {
     /**
      *@description Label for a button which allows adding an HTTP header.
@@ -60,9 +57,6 @@ export const RESPONSE_HEADER_SECTION_DATA_KEY = 'ResponseHeaderSection';
 class ResponseHeaderSectionBase extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     headerDetails = [];
-    connectedCallback() {
-        this.shadow.adoptedStyleSheets = [responseHeaderSectionStyles];
-    }
     setHeaders(headers) {
         headers.sort(function (a, b) {
             return Platform.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
@@ -96,6 +90,7 @@ export class EarlyHintsHeaderSection extends ResponseHeaderSectionBase {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${responseHeaderSectionStyles.cssText}</style>
       ${this.headerDetails.map(header => html `
         <devtools-header-section-row .data=${{
             header,
@@ -452,6 +447,7 @@ export class ResponseHeaderSection extends ResponseHeaderSectionBase {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${responseHeaderSectionStyles.cssText}</style>
       ${headerDescriptors.map((header, index) => html `
         <devtools-header-section-row
             .data=${{ header }}

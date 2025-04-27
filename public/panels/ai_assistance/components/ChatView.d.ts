@@ -24,6 +24,8 @@ export type ImageInputData = {
 } | {
     isLoading: false;
     data: string;
+    mimeType: string;
+    inputType: AiAssistanceModel.MultimodalInputType;
 };
 export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
@@ -44,7 +46,7 @@ export declare const enum State {
     CHAT_VIEW = "chat-view"
 }
 export interface Props {
-    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part) => void;
+    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part, multimodalInputType?: AiAssistanceModel.MultimodalInputType) => void;
     onInspectElementClick: () => void;
     onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onCancelClick: () => void;
@@ -53,6 +55,7 @@ export interface Props {
     onTakeScreenshot?: () => void;
     onRemoveImageInput?: () => void;
     onTextInputChange: (input: string) => void;
+    onLoadImage?: (file: File) => Promise<void>;
     changeManager: AiAssistanceModel.ChangeManager;
     inspectElementToggled: boolean;
     state: State;
@@ -73,6 +76,7 @@ export interface Props {
     inputPlaceholder: Platform.UIString.LocalizedString;
     disclaimerText: Platform.UIString.LocalizedString;
     isTextInputEmpty: boolean;
+    uploadImageInputEnabled?: boolean;
 }
 export declare class ChatView extends HTMLElement {
     #private;

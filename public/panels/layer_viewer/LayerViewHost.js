@@ -74,7 +74,6 @@ export class LayerViewHost {
     hoveredObject;
     showInternalLayersSettingInternal;
     snapshotLayers;
-    target;
     constructor() {
         this.views = [];
         this.selectedObject = null;
@@ -96,7 +95,6 @@ export class LayerViewHost {
         if (!layerTree) {
             return;
         }
-        this.target = layerTree.target();
         const selectedLayer = this.selectedObject?.layer();
         if (selectedLayer && (!layerTree?.layerById(selectedLayer.id()))) {
             this.selectObject(null);

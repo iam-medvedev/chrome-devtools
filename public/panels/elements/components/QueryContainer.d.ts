@@ -14,7 +14,6 @@ export interface QueryContainerData {
 export declare class QueryContainer extends HTMLElement {
     #private;
     set data(data: QueryContainerData);
-    connectedCallback(): void;
     updateContainerQueriedSizeDetails(details: SDK.CSSContainerQuery.ContainerQueriedSizeDetails): void;
 }
 declare global {

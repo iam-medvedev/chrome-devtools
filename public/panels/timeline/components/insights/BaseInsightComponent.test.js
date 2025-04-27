@@ -102,7 +102,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                     return opts.timeSavings ? Trace.Types.Timing.Milli(opts.timeSavings) : null;
                 }
                 getEstimatedSavingsBytes() {
-                    return opts.byteSavings ?? null;
+                    return opts.wastedBytes ?? null;
                 }
                 renderContent() {
                     return html `<div>test content</div>`;
@@ -112,7 +112,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             return new TestInsight();
         }
         it('outputs the correct estimated savings for both bytes and time', async () => {
-            const component = makeTestComponent({ byteSavings: 5_000, timeSavings: 50 });
+            const component = makeTestComponent({ wastedBytes: 5_000, timeSavings: 50 });
             component.model = {
                 insightKey: 'LCPPhases',
                 strings: {},
@@ -129,7 +129,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.strictEqual(estSavings.innerText, 'Est savings: 50 ms & 5.0 kB');
         });
         it('outputs the correct estimated savings for bytes only', async () => {
-            const component = makeTestComponent({ byteSavings: 5_000 });
+            const component = makeTestComponent({ wastedBytes: 5_000 });
             component.model = {
                 insightKey: 'LCPPhases',
                 strings: {},
@@ -163,7 +163,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.strictEqual(estSavings.innerText, 'Est savings: 50 ms');
         });
         it('includes the output in the insight aria label', async () => {
-            const component = makeTestComponent({ byteSavings: 5_000, timeSavings: 50 });
+            const component = makeTestComponent({ wastedBytes: 5_000, timeSavings: 50 });
             component.model = {
                 insightKey: 'LCPPhases',
                 strings: {},
@@ -177,7 +177,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             await RenderCoordinator.done();
             const label = component.shadowRoot?.querySelector('header')?.getAttribute('aria-label');
             assert.isOk(label);
-            assert.strictEqual(label, 'View details for LCP by Phase insight. Estimated savings for this insight: 50 ms and 5.0 kB');
+            assert.strictEqual(label, 'View details for LCP by Phase insight. Estimated savings for this insight: 50 ms and 5.0 kB transfer size');
         });
     });
     describe('Ask AI Insights', () => {

@@ -24,6 +24,6 @@ export declare const i18nString: (id: string, values?: import("../../../core/i18
 export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
     /** The entity for this navigation's URL. Any other entity is from a third party. */
     firstPartyEntity?: Extras.ThirdParties.Entity;
-    summaries: Extras.ThirdParties.Summary[];
+    entitySummaries: Extras.ThirdParties.EntitySummary[];
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ThirdPartiesInsightModel;

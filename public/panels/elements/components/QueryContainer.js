@@ -7,10 +7,7 @@ import '../../../ui/components/node_text/node_text.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import queryContainerStylesRaw from './queryContainer.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of constructed style sheets.
-const queryContainerStyles = new CSSStyleSheet();
-queryContainerStyles.replaceSync(queryContainerStylesRaw.cssText);
+import queryContainerStyles from './queryContainer.css.js';
 const { render, html } = Lit;
 const { PhysicalAxis, QueryAxis } = SDK.CSSContainerQuery;
 export class QueriedSizeRequestedEvent extends Event {
@@ -31,9 +28,6 @@ export class QueryContainer extends HTMLElement {
         this.#container = data.container;
         this.#onContainerLinkClick = data.onContainerLinkClick;
         this.#render();
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [queryContainerStyles];
     }
     updateContainerQueriedSizeDetails(details) {
         this.#queriedSizeDetails = details;
@@ -63,6 +57,7 @@ export class QueryContainer extends HTMLElement {
         // clang-format off
         // eslint-disable-next-line rulesdir/no-a-tags-in-lit
         render(html `
+      <style>${queryContainerStyles.cssText}</style>
       →
       <a href="#"
         draggable=false

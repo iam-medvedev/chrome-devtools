@@ -232,12 +232,12 @@ export class IDBDataView extends UI.View.SimpleView {
     clearingObjectStore;
     pageSize;
     skipCount;
+    // Used in Web Tests
     entries;
     objectStore;
     index;
     keyInput;
     dataGrid;
-    previouslySelectedNode;
     lastPageSize;
     lastSkipCount;
     pageBackButton;
@@ -332,7 +332,6 @@ export class IDBDataView extends UI.View.SimpleView {
         dataGrid.setStriped(true);
         dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, () => {
             this.updateToolbarEnablement();
-            this.updateSelectionColor();
         }, this);
         return dataGrid;
     }
@@ -489,7 +488,6 @@ export class IDBDataView extends UI.View.SimpleView {
             this.pageForwardButton.setEnabled(hasMore);
             this.needsRefresh.setVisible(false);
             this.updateToolbarEnablement();
-            this.updateSelectionColor();
             this.updatedDataForTests();
         }
         const idbKeyRange = key ? window.IDBKeyRange.lowerBound(key) : null;
@@ -559,21 +557,6 @@ export class IDBDataView extends UI.View.SimpleView {
     updateToolbarEnablement() {
         const empty = !this.dataGrid || this.dataGrid.rootNode().children.length === 0;
         this.deleteSelectedButton.setEnabled(!empty && this.dataGrid.selectedNode !== null);
-    }
-    updateSelectionColor() {
-        if (this.previouslySelectedNode) {
-            this.previouslySelectedNode.element().querySelectorAll('.source-code').forEach(element => {
-                const shadowRoot = element.shadowRoot;
-                shadowRoot?.adoptedStyleSheets.pop();
-            });
-        }
-        this.previouslySelectedNode = this.dataGrid.selectedNode ?? undefined;
-        this.dataGrid.selectedNode?.element().querySelectorAll('.source-code').forEach(element => {
-            const shadowRoot = element.shadowRoot;
-            const sheet = new CSSStyleSheet();
-            sheet.replaceSync('::selection {background-color: var(--sys-color-state-focus-select); color: currentColor;}');
-            shadowRoot?.adoptedStyleSheets.push(sheet);
-        });
     }
 }
 export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {

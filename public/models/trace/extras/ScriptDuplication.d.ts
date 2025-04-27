@@ -26,7 +26,10 @@ export type ScriptDuplication = Map<string, {
     estimatedDuplicateBytes: number;
     duplicates: Array<{
         script: Handlers.ModelHandlers.Scripts.Script;
-        /** The number of bytes in the script bundle that map back to this module. */
+        /**
+         * The number of bytes in the script bundle that map back to this module,
+         * in terms of estimated impact on transfer size.
+         */
         attributedSize: number;
     }>;
 }>;
@@ -43,7 +46,7 @@ export declare function getNodeModuleName(source: string): string;
  * 2. `duplication` keys correspond to authored files, except all files within the same
  *    node_module package are aggregated under the same entry.
  */
-export declare function computeScriptDuplication(scriptsData: Handlers.ModelHandlers.Scripts.ScriptsData): {
+export declare function computeScriptDuplication(scriptsData: Handlers.ModelHandlers.Scripts.ScriptsData, compressionRatios: Map<string, number>): {
     duplication: ScriptDuplication;
     duplicationGroupedByNodeModules: ScriptDuplication;
 };

@@ -6778,7 +6778,7 @@ export const NativeFunctions = [
     },
     {
         name: "redirect",
-        signatures: [["url"]],
+        signatures: [["url", "?options"]],
         receivers: ["NavigationPrecommitController"]
     },
     {

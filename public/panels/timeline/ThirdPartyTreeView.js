@@ -30,7 +30,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/ThirdPartyTreeView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView {
-    #thirdPartySummaries = null;
     // By default the TimelineTreeView will auto-select the first row
     // when the grid is refreshed but for the ThirdParty view we only
     // want to do this when the user hovers.
@@ -176,20 +175,6 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         // TODO(paulirish,aixba): Improve attribution to reduce amount of items in [unattributed].
         const domainName = id ? this.entityMapper()?.entityForEvent(node.event)?.name || id : undefined;
         return { name: domainName || unattributed, color, icon: undefined };
-    }
-    extractThirdPartySummary(node) {
-        if (!this.#thirdPartySummaries) {
-            return { transferSize: 0 };
-        }
-        const entity = this.#thirdPartySummaries.entityByEvent.get(node.event);
-        if (!entity) {
-            return { transferSize: 0 };
-        }
-        const summary = this.#thirdPartySummaries.summaries.byEntity.get(entity);
-        if (!summary) {
-            return { transferSize: 0 };
-        }
-        return { transferSize: summary.transferSize };
     }
     nodeIsFirstParty(node) {
         const mapper = this.entityMapper();

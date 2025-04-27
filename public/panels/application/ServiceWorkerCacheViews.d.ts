@@ -5,7 +5,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ServiceWorkerCacheView extends UI.View.SimpleView {
     private model;
-    private entriesForTest;
+    protected entriesForTest: Protocol.CacheStorage.DataEntry[] | null;
     private readonly splitWidget;
     private readonly previewPanel;
     private preview;

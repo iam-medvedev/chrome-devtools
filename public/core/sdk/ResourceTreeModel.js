@@ -605,8 +605,8 @@ export class ResourceTreeFrame {
         return this.#domainAndRegistryInternal;
     }
     async getAdScriptId(frameId) {
-        const res = await this.#model.agent.invoke_getAdScriptId({ frameId });
-        return res.adScriptId || null;
+        const res = await this.#model.agent.invoke_getAdScriptAncestryIds({ frameId });
+        return res.adScriptAncestryIds?.[0] || null;
     }
     get securityOrigin() {
         return this.#securityOrigin;

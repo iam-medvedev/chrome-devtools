@@ -27,7 +27,7 @@ export function handleEvent(event) {
         return;
     }
     if (Types.Events.isV8SourceRundownEvent(event)) {
-        const { isolate, scriptId, url, sourceUrl, sourceMapUrl, startLine, startColumn } = event.args.data;
+        const { isolate, scriptId, url, sourceUrl, sourceMapUrl } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.url = url;
         if (sourceUrl) {
@@ -36,7 +36,6 @@ export function handleEvent(event) {
         if (sourceMapUrl) {
             script.sourceMapUrl = sourceMapUrl;
         }
-        script.inline = Boolean(startLine || startColumn);
         return;
     }
     if (Types.Events.isV8SourceRundownSourcesScriptCatchupEvent(event)) {
@@ -155,14 +154,21 @@ function findCachedRawSourceMap(sourceMapUrl, options) {
     return;
 }
 export async function finalize(options) {
+    const meta = metaHandlerData();
     const networkRequests = [...networkRequestsHandlerData().byId.values()];
+    const documentUrls = new Set();
+    for (const frames of meta.frameByProcessId.values()) {
+        for (const frame of frames.values()) {
+            documentUrls.add(frame.url);
+        }
+    }
     for (const script of scriptById.values()) {
         script.request = findNetworkRequest(networkRequests, script) ?? undefined;
+        script.inline = !!script.url && documentUrls.has(script.url);
     }
     if (!options.resolveSourceMap) {
         return;
     }
-    const meta = metaHandlerData();
     const promises = [];
     for (const script of scriptById.values()) {
         // No frame or url means the script came from somewhere we don't care about.

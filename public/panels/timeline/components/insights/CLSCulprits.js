@@ -11,6 +11,9 @@ const { html } = Lit;
 export class CLSCulprits extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-cls-culprits`;
     internalName = 'cls-culprits';
+    hasAskAiSupport() {
+        return true;
+    }
     createOverlays() {
         const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
         const worstCluster = clustersByScore[0];
