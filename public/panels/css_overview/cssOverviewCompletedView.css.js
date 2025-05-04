@@ -336,13 +336,13 @@ export default {
   min-width: initial;
 }
 
-.data .nodeId-column {
+.data .node-id-column {
   align-items: center;
   display: flex;
   height: 20px;
 }
 
-.nodeId-column .monospace {
+.node-id-column .monospace {
   overflow: hidden;
 }
 
@@ -360,8 +360,8 @@ export default {
   --icon-show-element: var(--icon-default-hover);
 }
 
-.nodeId-column:focus-within .show-element,
-.nodeId-column:hover .show-element {
+.node-id-column:focus-within .show-element,
+.node-id-column:hover .show-element {
   display: inline-block;
 }
 

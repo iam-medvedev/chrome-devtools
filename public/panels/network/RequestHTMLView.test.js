@@ -12,6 +12,7 @@ describe('RequestHTMLView', () => {
         htmlView.markAsRoot();
         const div = document.createElement('div');
         htmlView.show(div);
+        await htmlView.updateComplete;
         const iframe = htmlView.contentElement.querySelector('iframe');
         assert.exists(iframe);
         assert.strictEqual(iframe.src, contentData.asDataUrl());

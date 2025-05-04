@@ -658,7 +658,6 @@ main {
   */
   transform: translateZ(1px);
   scroll-timeline: --scroll-timeline y;
-  scroll-padding-bottom: var(--sys-size-19);
 }
 
 .empty-state-container {

@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../../models/trace/trace.js';
-import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import { FakeFlameChartProvider, MockFlameChartDelegate, } from '../../../../testing/TraceHelpers.js';
+import { FakeFlameChartProvider, MockFlameChartDelegate, renderFlameChartIntoDOM, } from '../../../../testing/TraceHelpers.js';
 import * as PerfUI from './perf_ui.js';
 describeWithEnvironment('FlameChart', () => {
     it('sorts decorations, putting candy striping before warning triangles', async () => {
@@ -883,6 +883,20 @@ describeWithEnvironment('FlameChart', () => {
             groupNode1.endLevel = 3;
             groupNode2.startLevel = 3;
             assert.deepEqual(root, expectedGroupNodeRoot);
+        });
+    });
+    describe('rendering tracks', () => {
+        it('renders the main thread correctly', async function () {
+            await renderFlameChartIntoDOM(this, {
+                traceFile: 'one-second-interaction.json.gz',
+                filterTracks(trackName) {
+                    return trackName.startsWith('Main');
+                },
+                expandTracks() {
+                    return true;
+                },
+            });
+            await assertScreenshot('timeline/render_main_thread.png');
         });
     });
 });

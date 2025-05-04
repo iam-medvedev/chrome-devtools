@@ -1,5 +1,6 @@
+import './Table.js';
 import '../../../../ui/components/icon_button/icon_button.js';
-import type { CriticalRequestNode, NetworkDependencyTreeInsightModel } from '../../../../models/trace/insights/NetworkDependencyTree.js';
+import type { NetworkDependencyTreeInsightModel } from '../../../../models/trace/insights/NetworkDependencyTree.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
@@ -8,7 +9,6 @@ export declare class NetworkDependencyTree extends BaseInsightComponent<NetworkD
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
     createOverlays(): Overlays.Overlays.TimelineOverlay[];
-    renderTree(nodes: CriticalRequestNode[]): Lit.LitTemplate | null;
     renderContent(): Lit.LitTemplate;
 }
 declare global {

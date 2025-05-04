@@ -25,7 +25,8 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
     contentLength: number;
     originStackTrace: Protocol.Runtime.StackTrace | null;
     readonly isModule: boolean | null;
-    constructor(debuggerModel: DebuggerModel, scriptId: Protocol.Runtime.ScriptId, sourceURL: Platform.DevToolsPath.UrlString, startLine: number, startColumn: number, endLine: number, endColumn: number, executionContextId: number, hash: string, isContentScript: boolean, isLiveEdit: boolean, sourceMapURL: string | undefined, hasSourceURL: boolean, length: number, isModule: boolean | null, originStackTrace: Protocol.Runtime.StackTrace | null, codeOffset: number | null, scriptLanguage: string | null, debugSymbols: Protocol.Debugger.DebugSymbols | null, embedderName: Platform.DevToolsPath.UrlString | null);
+    readonly buildId: string | null;
+    constructor(debuggerModel: DebuggerModel, scriptId: Protocol.Runtime.ScriptId, sourceURL: Platform.DevToolsPath.UrlString, startLine: number, startColumn: number, endLine: number, endColumn: number, executionContextId: number, hash: string, isContentScript: boolean, isLiveEdit: boolean, sourceMapURL: string | undefined, hasSourceURL: boolean, length: number, isModule: boolean | null, originStackTrace: Protocol.Runtime.StackTrace | null, codeOffset: number | null, scriptLanguage: string | null, debugSymbols: Protocol.Debugger.DebugSymbols | null, embedderName: Platform.DevToolsPath.UrlString | null, buildId: string | null);
     embedderName(): Platform.DevToolsPath.UrlString | null;
     target(): Target;
     private static trimSourceURLComment;

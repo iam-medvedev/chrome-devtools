@@ -36,6 +36,7 @@ export declare class StorageBucketsModel extends SDKModel<EventTypes> implements
     cacheStorageContentUpdated(_event: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
     sharedStorageAccessed(_event: Protocol.Storage.SharedStorageAccessedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
+    attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
 }
 export declare const enum Events {
     BUCKET_ADDED = "BucketAdded",

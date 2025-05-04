@@ -56,6 +56,7 @@ export var UserTier;
     // Users in the general public.
     UserTier[UserTier["PUBLIC"] = 3] = "PUBLIC";
 })(UserTier || (UserTier = {}));
+/* eslint-enable @typescript-eslint/naming-convention */
 export var RecitationAction;
 (function (RecitationAction) {
     RecitationAction["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
@@ -72,8 +73,25 @@ export var CitationSourceType;
     CitationSourceType["LOCAL_FACTS"] = "LOCAL_FACTS";
     CitationSourceType["INDIRECT"] = "INDIRECT";
 })(CitationSourceType || (CitationSourceType = {}));
+const AidaLanguageToMarkdown = {
+    CPP: 'cpp',
+    PYTHON: 'py',
+    KOTLIN: 'kt',
+    JAVA: 'java',
+    JAVASCRIPT: 'js',
+    GO: 'go',
+    TYPESCRIPT: 'ts',
+    HTML: 'html',
+    BASH: 'sh',
+    CSS: 'css',
+    DART: 'dart',
+    JSON: 'json',
+    MARKDOWN: 'md',
+    VUE: 'vue',
+    XML: 'xml',
+};
 export const CLIENT_NAME = 'CHROME_DEVTOOLS';
-const CODE_CHUNK_SEPARATOR = '\n`````\n';
+const CODE_CHUNK_SEPARATOR = (lang = '') => ('\n`````' + lang + '\n');
 export class AidaAbortError extends Error {
 }
 export class AidaBlockError extends Error {
@@ -205,7 +223,7 @@ export class AidaClient {
                 }
                 if ('textChunk' in result) {
                     if (inCodeChunk) {
-                        text.push(CODE_CHUNK_SEPARATOR);
+                        text.push(CODE_CHUNK_SEPARATOR());
                         inCodeChunk = false;
                     }
                     text.push(result.textChunk.text);
@@ -213,7 +231,8 @@ export class AidaClient {
                 }
                 else if ('codeChunk' in result) {
                     if (!inCodeChunk) {
-                        text.push(CODE_CHUNK_SEPARATOR);
+                        const language = AidaLanguageToMarkdown[result.codeChunk.inferenceLanguage] ?? '';
+                        text.push(CODE_CHUNK_SEPARATOR(language));
                         inCodeChunk = true;
                     }
                     text.push(result.codeChunk.code);
@@ -234,14 +253,14 @@ export class AidaClient {
             }
             if (textUpdated) {
                 yield {
-                    explanation: text.join('') + (inCodeChunk ? CODE_CHUNK_SEPARATOR : ''),
+                    explanation: text.join('') + (inCodeChunk ? CODE_CHUNK_SEPARATOR() : ''),
                     metadata,
                     completed: false,
                 };
             }
         }
         yield {
-            explanation: text.join('') + (inCodeChunk ? CODE_CHUNK_SEPARATOR : ''),
+            explanation: text.join('') + (inCodeChunk ? CODE_CHUNK_SEPARATOR() : ''),
             metadata,
             functionCalls: functionCalls.length ? functionCalls :
                 undefined,

@@ -1,11 +1,11 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
+import { html, render } from '../../ui/lit/lit.js';
 import { Dialog } from './Dialog.js';
 import remoteDebuggingTerminatedScreenStyles from './remoteDebuggingTerminatedScreen.css.js';
-import { createTextButton } from './UIUtils.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
     /**
@@ -36,18 +36,33 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/RemoteDebuggingTerminatedScreen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${remoteDebuggingTerminatedScreenStyles.cssText}</style>
+    <div class="header">${i18nString(UIStrings.debuggingConnectionWasClosed)}</div>
+    <div class="content">
+      <div class="reason">${i18nString(UIStrings.connectionClosedReason, { PH1: input.reason })}</div>
+      <div class="message">${i18nString(UIStrings.reconnectWhenReadyByReopening)}</div>
+    </div>
+    <div class="button-container">
+      <div class="button">
+        <devtools-button @click=${input.onReconnect} .jslogContext=${'reconnect'}
+            .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.reconnectDevtools)}</devtools-button>
+      </div>
+    </div>`, target, { host: input });
+    // clang-format on
+};
 export class RemoteDebuggingTerminatedScreen extends VBox {
-    constructor(reason) {
+    constructor(reason, view = DEFAULT_VIEW) {
         super(true);
-        this.registerRequiredCSS(remoteDebuggingTerminatedScreenStyles);
-        this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.debuggingConnectionWasClosed);
-        const contentContainer = this.contentElement.createChild('div', 'content');
-        contentContainer.createChild('div', 'reason').textContent =
-            i18nString(UIStrings.connectionClosedReason, { PH1: reason });
-        contentContainer.createChild('div', 'message').textContent = i18nString(UIStrings.reconnectWhenReadyByReopening);
-        const buttonContainer = this.contentElement.createChild('div', 'button-container');
-        const button = createTextButton(i18nString(UIStrings.reconnectDevtools), () => window.location.reload(), { jslogContext: 'reconnect' });
-        buttonContainer.createChild('div', 'button').appendChild(button);
+        const input = {
+            reason,
+            onReconnect: () => {
+                window.location.reload();
+            },
+        };
+        view(input, {}, this.contentElement);
     }
     static show(reason) {
         const dialog = new Dialog('remote-debnugging-terminated');

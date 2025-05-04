@@ -397,6 +397,8 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     }
     attributionReportingSourceRegistered(_event) {
     }
+    attributionReportingReportSent(_event) {
+    }
 }
 SDK.SDKModel.SDKModel.register(IndexedDBModel, { capabilities: 8192 /* SDK.Target.Capability.STORAGE */, autostart: false });
 export var Events;

@@ -8,6 +8,8 @@ import * as Trace from '../models/trace/trace.js';
 import * as Workspace from '../models/workspace/workspace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
+import * as UI from '../ui/legacy/legacy.js';
+import { raf, renderElementIntoDOM } from './DOMHelpers.js';
 import { initializeGlobalVars } from './EnvironmentHelpers.js';
 import { TraceLoader } from './TraceLoader.js';
 // This mock class is used for instancing a flame chart in the helpers.
@@ -22,11 +24,14 @@ export class MockFlameChartDelegate {
     }
 }
 /**
+ * @deprecated this will be removed once we have migrated from interaction tests for screenshots. Please use `renderFlameChartIntoDOM`.
+ *
  * Draws a set of tracks track in the flame chart using the new system.
  * For this to work, every track that will be rendered must have a
  * corresponding track appender registered in the
  * CompatibilityTracksAppender.
  *
+ * @param context The unit test context.
  * @param traceFileName The name of the trace file to be loaded into the
  * flame chart.
  * @param trackAppenderNames A Set with the names of the tracks to be
@@ -35,18 +40,16 @@ export class MockFlameChartDelegate {
  * @param trackName optional param to filter tracks by their name.
  * @returns a flame chart element and its corresponding data provider.
  */
-export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNames, expanded, trackName) {
+export async function getMainFlameChartWithTracks(context, traceFileName, trackAppenderNames, expanded, trackName) {
     await initializeGlobalVars();
     // This function is used to load a component example.
-    const { parsedTrace } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
+    const { parsedTrace } = await TraceLoader.traceEngine(context, traceFileName);
     const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
     const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
-    // The data provider still needs a reference to the legacy model to
-    // work properly.
     dataProvider.setModel(parsedTrace, entityMapper);
     const tracksAppender = dataProvider.compatibilityTracksAppenderInstance();
     tracksAppender.setVisibleTracks(trackAppenderNames);
-    dataProvider.buildFromTrackAppendersForTest({ filterThreadsByName: trackName, expandedTracks: expanded ? trackAppenderNames : undefined });
+    dataProvider.buildWithCustomTracksForTest({ filterTracks: name => trackName ? name.includes(trackName) : true, expandTracks: _ => expanded });
     const delegate = new MockFlameChartDelegate();
     const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
     const minTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
@@ -55,6 +58,54 @@ export async function getMainFlameChartWithTracks(traceFileName, trackAppenderNa
     flameChart.markAsRoot();
     flameChart.update();
     return { flameChart, dataProvider };
+}
+/**
+ * Renders a flame chart into the unit test DOM.
+ * It will take care of all the setup and configuration for you.
+ */
+export async function renderFlameChartIntoDOM(context, options) {
+    const targetManager = SDK.TargetManager.TargetManager.instance({ forceNew: true });
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+    const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+    const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        forceNew: true,
+        resourceMapping,
+        targetManager,
+    });
+    Bindings.IgnoreListManager.IgnoreListManager.instance({
+        forceNew: true,
+        debuggerWorkspaceBinding,
+    });
+    const { parsedTrace } = await TraceLoader.traceEngine(context, options.traceFile);
+    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
+    dataProvider.setModel(parsedTrace, entityMapper);
+    dataProvider.buildWithCustomTracksForTest({
+        filterTracks: options.filterTracks,
+        expandTracks: options.expandTracks,
+    });
+    const delegate = new MockFlameChartDelegate();
+    const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
+    const minTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+    const maxTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
+    flameChart.setWindowTimes(minTime, maxTime);
+    flameChart.markAsRoot();
+    const target = document.createElement('div');
+    target.innerHTML = `<style>${UI.inspectorCommonStyles.cssText}</style>`;
+    const timingsTrackOffset = flameChart.levelToOffset(dataProvider.maxStackDepth());
+    // Allow an extra 10px so no scrollbar is shown.
+    target.style.height = `${timingsTrackOffset + 10}px`;
+    target.style.display = 'flex';
+    target.style.width = '800px';
+    renderElementIntoDOM(target);
+    flameChart.show(target);
+    flameChart.update();
+    await raf();
+    return {
+        flameChart,
+        dataProvider,
+        target,
+    };
 }
 /**
  * Draws the network track in the flame chart using the legacy system.

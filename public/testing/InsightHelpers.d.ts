@@ -1,5 +1,5 @@
 import * as Trace from '../models/trace/trace.js';
-export declare function processTrace(testContext: Mocha.Suite | Mocha.Context | null, traceFile: string): Promise<{
+export declare function processTrace(context: Mocha.Suite | Mocha.Context, traceFile: string): Promise<{
     data: Readonly<Trace.Handlers.Types.EnabledHandlerDataWithMeta<typeof Trace.Handlers.ModelHandlers>>;
     insights: Trace.Insights.Types.TraceInsightSets;
     metadata: Trace.Types.File.MetaData | null;

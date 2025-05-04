@@ -41,7 +41,8 @@ export class Script {
     #contentPromise;
     #embedderNameInternal;
     isModule;
-    constructor(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName) {
+    buildId;
+    constructor(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
         this.debuggerModel = debuggerModel;
         this.scriptId = scriptId;
         this.sourceURL = sourceURL;
@@ -50,6 +51,7 @@ export class Script {
         this.endLine = endLine;
         this.endColumn = endColumn;
         this.isModule = isModule;
+        this.buildId = buildId;
         this.executionContextId = executionContextId;
         this.hash = hash;
         this.#isContentScriptInternal = isContentScript;

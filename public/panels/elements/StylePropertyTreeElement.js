@@ -216,7 +216,7 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
             }
         }
         const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
-        const varCall = this.#treeElement?.getTracingTooltip('var', match.text, this.#matchedStyles, this.#computedStyles, context);
+        const varCall = this.#treeElement?.getTracingTooltip('var', match.node, this.#matchedStyles, this.#computedStyles, context);
         const tooltipContents = this.#stylesPane.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null);
         const tooltipId = this.#treeElement?.getTooltipId('custom-property-var');
         const tooltip = tooltipId ? { tooltipId } : undefined;
@@ -518,7 +518,7 @@ export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         const contentChild = document.createElement('span');
         const color1 = Renderer.renderInto(match.color1, childRenderingContexts[1], contentChild);
         const color2 = Renderer.renderInto(match.color2, childRenderingContexts[2], contentChild);
-        render(html `${this.#treeElement?.getTracingTooltip('color-mix', match.text, this.#matchedStyles, this.#computedStyles, context) ??
+        render(html `${this.#treeElement?.getTracingTooltip('color-mix', match.node, this.#matchedStyles, this.#computedStyles, context) ??
             'color-mix'}(${Renderer.render(match.space, childRenderingContexts[0]).nodes}, ${color1.nodes}, ${color2.nodes})`, contentChild);
         const color1Controls = color1.cssControls.get('color') ?? [];
         const color2Controls = color2.cssControls.get('color') ?? [];
@@ -1066,9 +1066,7 @@ async function resolveValues(stylesPane, propertyName, match, context, ...values
     // so try to look up the original name.
     propertyName = context.tracing?.propertyName ?? context.matchedResult.ast.propertyName ?? propertyName;
     if (SHORTHANDS_FOR_PERCENTAGES.has(propertyName) &&
-        context.matchedResult.getLonghandValuesCount() >
-            1 // If the shorthand only has a single value we can't tell width and height apart
-    ) {
+        (context.tracing?.expandPercentagesInShorthands ?? context.matchedResult.getLonghandValuesCount() > 1)) {
         propertyName = context.getComputedLonghandName(match.node) ?? propertyName;
     }
     const nodeId = stylesPane.node()?.id;
@@ -1154,7 +1152,7 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
             return span;
         });
         const span = document.createElement('span');
-        render(html `${this.#treeElement?.getTracingTooltip(match.func, match.text, this.#matchedStyles, this.#computedStyles, context) ??
+        render(html `${this.#treeElement?.getTracingTooltip(match.func, match.node, this.#matchedStyles, this.#computedStyles, context) ??
             match.func}(${renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [html `, `, arg]).flat()})`, span);
         if (childTracingContexts) {
             const evaluation = context.tracing?.applyEvaluation(childTracingContexts, () => ({ placeholder: [span], asyncEvalCallback: () => this.applyEvaluation(span, match, context) }));
@@ -1804,10 +1802,13 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         property.setDisplayedStringForInvalidProperty(invalidString);
         return container;
     }
-    getTracingTooltip(functionName, text, matchedStyles, computedStyles, context) {
+    getTracingTooltip(functionName, node, matchedStyles, computedStyles, context) {
         if (!Root.Runtime.hostConfig.devToolsCssValueTracing?.enabled || context.tracing || !context.property) {
             return html `${functionName}`;
         }
+        const text = context.ast.text(node);
+        const expandPercentagesInShorthands = context.matchedResult.getLonghandValuesCount() > 1;
+        const shorthandPositionOffset = context.matchedResult.getComputedLonghandName(node);
         const { property } = context;
         const stylesPane = this.parentPane();
         const tooltipId = this.getTooltipId(`${functionName}-trace`);
@@ -1821,7 +1822,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             if (e.newState === 'open') {
                 void this.querySelector('devtools-widget')
                     ?.getWidget()
-                    ?.showTrace(property, text, matchedStyles, computedStyles, getPropertyRenderers(property.name, property.ownerStyle, stylesPane, matchedStyles, null, computedStyles));
+                    ?.showTrace(property, text, matchedStyles, computedStyles, getPropertyRenderers(property.name, property.ownerStyle, stylesPane, matchedStyles, null, computedStyles), expandPercentagesInShorthands, shorthandPositionOffset);
             }
         }}
         ><devtools-widget

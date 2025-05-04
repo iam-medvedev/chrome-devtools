@@ -4,8 +4,8 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-export async function processTrace(testContext, traceFile) {
-    const { parsedTrace, insights } = await TraceLoader.traceEngine(testContext, traceFile);
+export async function processTrace(context, traceFile) {
+    const { parsedTrace, insights } = await TraceLoader.traceEngine(context, traceFile);
     if (!insights) {
         throw new Error('No insights');
     }

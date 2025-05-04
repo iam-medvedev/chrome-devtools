@@ -105,8 +105,6 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
-    "timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */,
-    "timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -128,6 +126,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'enable-ignore-listing', true),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'skip-stack-frames-pattern', '/node_modules/|^node:', "regex" /* Common.Settings.SettingType.REGEX */),
         createSettingValue("DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */, 'navigator-group-by-folder', true),
+        createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'dom-word-wrap', true),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-detailed-inspect-tooltip', true),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-html-comments', true),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-ua-shadow-dom', false),
@@ -158,6 +157,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'auto-pretty-print-minified', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'js-source-maps-enabled', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'show-whitespaces-in-editor', 'none'),
+        createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'sources.word-wrap', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-autocompletion', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-auto-detect-indent', false),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-bracket-closing', true),
@@ -165,7 +165,6 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-code-folding', true),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-indent', '    '),
         createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'text-editor-tab-moves-focus', false),
-        createSettingValue("SOURCES" /* Common.Settings.SettingCategory.SOURCES */, 'dom-word-wrap', true),
         createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.touch', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.idle-detection', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("EMULATION" /* Common.Settings.SettingCategory.EMULATION */, 'emulation.cpu-pressure', '', "enum" /* Common.Settings.SettingType.ENUM */),
@@ -207,6 +206,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-patching-fre-completed', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'timeline.user-had-shortcuts-dialog-opened-once', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.

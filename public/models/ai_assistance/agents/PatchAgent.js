@@ -53,8 +53,8 @@ export class PatchAgent extends AiAgent {
     }
     get options() {
         return {
-            temperature: undefined,
-            modelId: undefined,
+            temperature: Root.Runtime.hostConfig.devToolsFreestyler?.temperature,
+            modelId: Root.Runtime.hostConfig.devToolsFreestyler?.modelId,
         };
     }
     get agentProject() {
@@ -210,10 +210,12 @@ CRITICAL: before searching always call listFiles first.
 CRITICAL: never call updateFiles with files that do not need updates.
 `;
         const responses = await Array.fromAsync(this.run(prompt, { selected: null, signal }));
-        return {
+        const result = {
             responses,
             processedFiles: this.#project.getProcessedFiles(),
         };
+        debugLog('applyChanges result', result);
+        return result;
     }
 }
 /**
@@ -232,8 +234,8 @@ export class FileUpdateAgent extends AiAgent {
     }
     get options() {
         return {
-            temperature: undefined,
-            modelId: undefined,
+            temperature: Root.Runtime.hostConfig.devToolsFreestyler?.temperature,
+            modelId: Root.Runtime.hostConfig.devToolsFreestyler?.modelId,
         };
     }
 }

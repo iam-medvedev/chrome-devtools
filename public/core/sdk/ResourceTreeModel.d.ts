@@ -139,7 +139,7 @@ export declare class ResourceTreeFrame {
     get name(): string;
     get url(): Platform.DevToolsPath.UrlString;
     domainAndRegistry(): string;
-    getAdScriptId(frameId: Protocol.Page.FrameId): Promise<Protocol.Page.AdScriptId | null>;
+    getAdScriptAncestryIds(frameId: Protocol.Page.FrameId): Promise<Protocol.Page.AdScriptId[] | null>;
     get securityOrigin(): string | null;
     get securityOriginDetails(): Protocol.Page.SecurityOriginDetails | null;
     getStorageKey(forceFetch: boolean): Promise<string | null>;

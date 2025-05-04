@@ -4,11 +4,13 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { TraceLoader } from '../../testing/TraceLoader.js';
 describeWithMockConnection('LighthouseController', () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     let Lighthouse;
     let target;
-    beforeEach(async () => {
+    beforeEach(async function () {
+        TraceLoader.setTestTimeout(this);
         stubNoopSettings();
         Lighthouse = await import('./lighthouse.js');
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });

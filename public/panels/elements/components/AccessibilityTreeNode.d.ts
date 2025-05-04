@@ -9,7 +9,6 @@ export interface AccessibilityTreeNodeData {
 export declare class AccessibilityTreeNode extends HTMLElement {
     #private;
     set data(data: AccessibilityTreeNodeData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

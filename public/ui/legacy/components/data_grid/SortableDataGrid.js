@@ -76,6 +76,9 @@ export class SortableDataGrid extends ViewportDataGrid {
             }
             let columnIsNumeric = true;
             for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].isCreationNode) {
+                    continue;
+                }
                 const value = nodes[i].data[sortColumnId];
                 if (isNaN(value instanceof Node ? value.textContent : value)) {
                     columnIsNumeric = false;

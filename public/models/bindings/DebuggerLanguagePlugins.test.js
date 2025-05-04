@@ -72,7 +72,7 @@ describe('DebuggerLanguagePlugins', () => {
             function createAndRegisterScript() {
                 const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
                 const scriptUrl = urlString `https://script-host/script.js`;
-                return debuggerModel.parsedScriptSource('0', scriptUrl, 0, 0, 0, 0, 0, '', null, false, undefined, false, false, 0, null, null, null, null, null, null);
+                return debuggerModel.parsedScriptSource('0', scriptUrl, 0, 0, 0, 0, 0, '', null, false, undefined, false, false, 0, null, null, null, null, null, null, null);
             }
             it('correctly processes missing debug info if available', async () => {
                 const plugin = new Plugin('TestPlugin');

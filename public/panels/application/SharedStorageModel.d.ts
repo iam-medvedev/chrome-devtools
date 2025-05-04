@@ -52,6 +52,7 @@ export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes
     storageBucketCreatedOrUpdated(_event: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
+    attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
 }
 export declare const enum Events {
     SHARED_STORAGE_ACCESS = "SharedStorageAccess",

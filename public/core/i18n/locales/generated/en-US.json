@@ -2045,14 +2045,35 @@
   "models/trace/insights/ModernHTTP.ts | title": {
     "message": "Modern HTTP"
   },
+  "models/trace/insights/NetworkDependencyTree.ts | columnOrigin": {
+    "message": "Origin"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | columnRequest": {
+    "message": "Request"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | columnTime": {
+    "message": "Time"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | columnWastedMs": {
+    "message": "Est LCP savings"
+  },
   "models/trace/insights/NetworkDependencyTree.ts | description": {
     "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
+    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=lighthouse&utm_medium=devtools) hints to your most important origins, but try to use fewer than 4."
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
+    "message": "Preconnect candidates"
   },
   "models/trace/insights/NetworkDependencyTree.ts | maxCriticalPathLatency": {
     "message": "Max critical path latency:"
   },
   "models/trace/insights/NetworkDependencyTree.ts | noNetworkDependencyTree": {
     "message": "No rendering tasks impacted by network dependencies"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | noPreconnectCandidates": {
+    "message": "No origins are good candidates for preconnecting"
   },
   "models/trace/insights/NetworkDependencyTree.ts | title": {
     "message": "Network dependency tree"
@@ -3189,7 +3210,7 @@
     "message": "Start recording events"
   },
   "panels/application/BackgroundServiceView.ts | startRecordingToDebug": {
-    "message": "Start to debug background services by using the \"{PH1}\" button or by hitting {PH2}."
+    "message": "Start to debug background services by using the \"{PH1}\" button or by pressing {PH2}."
   },
   "panels/application/BackgroundServiceView.ts | stopRecordingEvents": {
     "message": "Stop recording events"
@@ -3725,8 +3746,8 @@
   "panels/application/components/FrameDetailsView.ts | creationStackTraceExplanation": {
     "message": "This frame was created programmatically. The stack trace shows where this happened."
   },
-  "panels/application/components/FrameDetailsView.ts | creatorAdScript": {
-    "message": "Creator Ad Script"
+  "panels/application/components/FrameDetailsView.ts | creatorAdScriptAncestry": {
+    "message": "Creator Ad Script Ancestry"
   },
   "panels/application/components/FrameDetailsView.ts | crossoriginIsolated": {
     "message": "Cross-Origin Isolated"
@@ -5673,7 +5694,7 @@
     "message": "Console prompt"
   },
   "panels/console/ConsolePrompt.ts | selfXssWarning": {
-    "message": "Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below and hit Enter to allow pasting."
+    "message": "Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below and press Enter to allow pasting."
   },
   "panels/console/ConsoleSidebar.ts | dErrors": {
     "message": "{n, plural, =0 {No errors} =1 {# error} other {# errors}}"
@@ -6488,9 +6509,6 @@
   "panels/elements/elements-meta.ts | copyStyles": {
     "message": "Copy styles"
   },
-  "panels/elements/elements-meta.ts | disableDomWordWrap": {
-    "message": "Disable DOM word wrap"
-  },
   "panels/elements/elements-meta.ts | duplicateElement": {
     "message": "Duplicate element"
   },
@@ -6499,9 +6517,6 @@
   },
   "panels/elements/elements-meta.ts | elements": {
     "message": "Elements"
-  },
-  "panels/elements/elements-meta.ts | enableDomWordWrap": {
-    "message": "Enable DOM word wrap"
   },
   "panels/elements/elements-meta.ts | eventListeners": {
     "message": "Event Listeners"
@@ -6574,6 +6589,9 @@
   },
   "panels/elements/elements-meta.ts | toggleEyeDropper": {
     "message": "Toggle eye dropper"
+  },
+  "panels/elements/elements-meta.ts | toggleWordWrap": {
+    "message": "Toggle word wrap"
   },
   "panels/elements/elements-meta.ts | undo": {
     "message": "Undo"
@@ -9486,13 +9504,13 @@
     "message": "Override headers"
   },
   "panels/network/NetworkLogView.ts | performARequestOrHitSToRecordThe": {
-    "message": "Perform a request or reload the page by using the \"{PH1}\" button or by hitting {PH2}."
+    "message": "Perform a request or reload the page by using the \"{PH1}\" button or by pressing {PH2}."
   },
   "panels/network/NetworkLogView.ts | recordingNetworkActivity": {
     "message": "Currently recording network activity"
   },
   "panels/network/NetworkLogView.ts | recordToDisplayNetworkActivity": {
-    "message": "Record network log to display network activity by using the \"{PH1}\" button or by hitting {PH2}."
+    "message": "Record network log to display network activity by using the \"{PH1}\" button or by pressing {PH2}."
   },
   "panels/network/NetworkLogView.ts | reloadPage": {
     "message": "Reload page"
@@ -9687,7 +9705,7 @@
     "message": "Group requests by top level request frame"
   },
   "panels/network/NetworkPanel.ts | hitSToReloadAndCaptureFilmstrip": {
-    "message": "Hit {PH1} to reload and capture filmstrip."
+    "message": "Press {PH1} to reload and capture filmstrip."
   },
   "panels/network/NetworkPanel.ts | importHarFile": {
     "message": "Import HAR file..."
@@ -13406,6 +13424,9 @@
   "panels/sources/sources-meta.ts | toggleNavigatorSidebar": {
     "message": "Toggle navigator sidebar"
   },
+  "panels/sources/sources-meta.ts | toggleWordWrap": {
+    "message": "Toggle word wrap"
+  },
   "panels/sources/sources-meta.ts | trailing": {
     "message": "Trailing"
   },
@@ -13414,6 +13435,9 @@
   },
   "panels/sources/sources-meta.ts | watch": {
     "message": "Watch"
+  },
+  "panels/sources/sources-meta.ts | wordWrap": {
+    "message": "Word wrap"
   },
   "panels/sources/sources-meta.ts | workspace": {
     "message": "Workspace"

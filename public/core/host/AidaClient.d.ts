@@ -105,7 +105,9 @@ export interface RequestFactMetadata {
      */
     source: string;
     /**
-     * Optional: a score to give this fact. Used because if there are more facts than space in the context window, higher scoring facts will be prioritised.
+     * Optional: a score to give this fact. Used because
+     * if there are more facts than space in the context window,
+     * higher scoring facts will be prioritized.
      */
     score?: number;
 }

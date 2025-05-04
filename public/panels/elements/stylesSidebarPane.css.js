@@ -107,7 +107,7 @@ export default {
 }
 
 .styles-section-subtitle {
-  color: var(--sys-color-token-subtle);
+  color: var(--sys-color-on-surface-subtle);
   float: right;
   padding: var(--sys-size-2) var(--sys-size-2) 0 var(--sys-size-8);
   max-width: 100%;

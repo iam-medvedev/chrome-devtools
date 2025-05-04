@@ -1,10 +1,10 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import cssOverviewProcessingViewStyles from './cssOverviewProcessingView.css.js';
 const UIStrings = {
     /**
@@ -14,26 +14,33 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/css_overview/CSSOverviewProcessingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${cssOverviewProcessingViewStyles.cssText}</style>
+    <div style="overflow:auto">
+      <div class="vbox overview-processing-view">
+        <h1>Processing page</h1>
+        <div>
+          <devtools-button
+              @click=${input.onCancel}
+              .jslogContext=${'css-overview.cancel-processing'}
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.cancel)}</devtools-button>
+        </div>
+      </div>
+    </div>`, target, { host: input });
+    // clang-format on
+};
 export class CSSOverviewProcessingView extends UI.Widget.Widget {
     #controller;
     fragment;
-    constructor(controller) {
+    constructor(controller, view = DEFAULT_VIEW) {
         super();
-        this.registerRequiredCSS(cssOverviewProcessingViewStyles);
         this.#controller = controller;
-        this.#render();
-    }
-    #render() {
-        const cancelButton = UI.UIUtils.createTextButton(i18nString(UIStrings.cancel), () => this.#controller.dispatchEventToListeners("RequestOverviewCancel" /* Events.REQUEST_OVERVIEW_CANCEL */), { jslogContext: 'css-overview.cancel-processing', variant: "outlined" /* Buttons.Button.Variant.OUTLINED */ });
-        this.setDefaultFocusedElement(cancelButton);
-        this.fragment = UI.Fragment.Fragment.build `
-      <div class="vbox overview-processing-view">
-        <h1>Processing page</h1>
-        <div>${cancelButton}</div>
-      </div>
-    `;
-        this.contentElement.appendChild(this.fragment.element());
-        this.contentElement.style.overflow = 'auto';
+        const input = {
+            onCancel: () => this.#controller.dispatchEventToListeners("RequestOverviewCancel" /* Events.REQUEST_OVERVIEW_CANCEL */),
+        };
+        view(input, {}, this.contentElement);
     }
 }
 //# sourceMappingURL=CSSOverviewProcessingView.js.map

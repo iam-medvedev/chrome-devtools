@@ -43,6 +43,7 @@ export declare class ServiceWorkerCacheModel extends SDKModel<EventTypes> implem
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     setThrottlerSchedulesAsSoonAsPossibleForTest(): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
+    attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
 }
 export declare const enum Events {
     CACHE_ADDED = "CacheAdded",

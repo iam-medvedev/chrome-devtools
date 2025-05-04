@@ -27,7 +27,8 @@ const renderReportsGrid = async (data) => {
 };
 const getHeaderText = (cell) => {
     const ret = cell.textContent?.trim() ||
-        cell.querySelector('devtools-resources-reports-grid-status-header').shadowRoot.textContent.trim();
+        cell.querySelector('devtools-resources-reports-grid-status-header').shadowRoot.querySelector('.status-header')
+            .textContent.trim();
     return ret;
 };
 describeWithEnvironment('ReportsGrid', () => {

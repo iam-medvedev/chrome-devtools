@@ -5,13 +5,9 @@
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import { html, nothing, render } from '../../../ui/lit/lit.js';
-import accessibilityTreeNodeStylesRaw from './accessibilityTreeNode.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const accessibilityTreeNodeStyles = new CSSStyleSheet();
-accessibilityTreeNodeStyles.replaceSync(accessibilityTreeNodeStylesRaw.cssText);
+import accessibilityTreeNodeStyles from './accessibilityTreeNode.css.js';
 const UIStrings = {
     /**
      *@description Ignored node element text content in Accessibility Tree View of the Elements panel
@@ -41,7 +37,7 @@ function isPrintable(valueType) {
     }
 }
 export class AccessibilityTreeNode extends HTMLElement {
-    #shadow = this.attachShadow({ mode: 'open' });
+    #shadow = UI.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: accessibilityTreeNodeStyles });
     #ignored = true;
     #name = '';
     #role = '';
@@ -54,9 +50,6 @@ export class AccessibilityTreeNode extends HTMLElement {
         this.#properties = data.properties;
         this.#id = data.id;
         void this.#render();
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [accessibilityTreeNodeStyles];
     }
     async #render() {
         const role = html `<span class='role-value'>${truncateTextIfNeeded(this.#role)}</span>`;

@@ -17,7 +17,8 @@ export declare class Highlighting {
 }
 export declare class TracingContext {
     #private;
-    constructor(highlighting: Highlighting, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
+    readonly expandPercentagesInShorthands: boolean;
+    constructor(highlighting: Highlighting, expandPercentagesInShorthands: boolean, initialLonghandOffset?: number, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
     get highlighting(): Highlighting;
     get propertyName(): string | null;
     get longhandOffset(): number;

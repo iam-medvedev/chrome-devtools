@@ -803,7 +803,6 @@ export class ConsoleInsight extends HTMLElement {
         // clang-format on
     }
     #renderFooter() {
-        const showThumbsUpDownButtons = !(Root.Runtime.hostConfig.aidaAvailability?.disallowLogging ?? true);
         const disclaimer = this.#renderDisclaimer();
         // clang-format off
         switch (this.#state.type) {
@@ -873,10 +872,9 @@ export class ConsoleInsight extends HTMLElement {
         </div>
         <div class="filler"></div>
         <div class="rating">
-          ${showThumbsUpDownButtons ? html `
-            <devtools-button
-              data-rating=${'true'}
-              .data=${{
+          <devtools-button
+            data-rating=${'true'}
+            .data=${{
                     variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-up',
@@ -888,11 +886,11 @@ export class ConsoleInsight extends HTMLElement {
                     title: i18nString(UIStrings.goodResponse),
                     jslogContext: 'thumbs-up',
                 }}
-              @click=${this.#onRating}
-            ></devtools-button>
-            <devtools-button
-              data-rating=${'false'}
-              .data=${{
+            @click=${this.#onRating}
+          ></devtools-button>
+          <devtools-button
+            data-rating=${'false'}
+            .data=${{
                     variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
                     size: "SMALL" /* Buttons.Button.Size.SMALL */,
                     iconName: 'thumb-down',
@@ -904,9 +902,8 @@ export class ConsoleInsight extends HTMLElement {
                     title: i18nString(UIStrings.badResponse),
                     jslogContext: 'thumbs-down',
                 }}
-              @click=${this.#onRating}
-            ></devtools-button>
-          ` : Lit.nothing}
+            @click=${this.#onRating}
+          ></devtools-button>
           <devtools-button
             .data=${{
                     variant: "icon" /* Buttons.Button.Variant.ICON */,
@@ -1025,7 +1022,7 @@ class ConsoleInsightSourcesList extends HTMLElement {
       <style>${Input.checkboxStyles.cssText}</style>
       <ul>
         ${Directives.repeat(this.#sources, item => item.value, item => {
-            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href="data:text/plain,${encodeURIComponent(item.value)}" jslog=${VisualLogging.link('source-' + item.type).track({ click: true })}>
+            return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href="data:text/plain;charset=utf-8,${encodeURIComponent(item.value)}" jslog=${VisualLogging.link('source-' + item.type).track({ click: true })}>
             <devtools-icon name="open-externally"></devtools-icon>
             ${localizeType(item.type)}
           </x-link></li>`;

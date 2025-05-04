@@ -13,6 +13,6 @@ export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) =
 export declare class CSSValueTraceView extends UI.Widget.VBox {
     #private;
     constructor(element?: HTMLElement, view?: View);
-    showTrace(property: SDK.CSSProperty.CSSProperty, subexpression: string | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>): Promise<void>;
+    showTrace(property: SDK.CSSProperty.CSSProperty, subexpression: string | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, expandPercentagesInShorthands: boolean, shorthandPositionOffset: number): Promise<void>;
     performUpdate(): void;
 }

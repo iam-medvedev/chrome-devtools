@@ -58,6 +58,7 @@ export class RequestPreviewView extends RequestResponseView {
     }
     async showPreview() {
         const view = await super.showPreview();
+        await view.updateComplete;
         if (!(view instanceof UI.View.SimpleView)) {
             return view;
         }

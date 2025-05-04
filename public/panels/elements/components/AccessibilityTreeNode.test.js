@@ -17,7 +17,7 @@ describeWithLocale('AccessibilityTreeNode', () => {
             id: 'NodeId',
         };
         await RenderCoordinator.done();
-        assert.strictEqual(component.shadowRoot.textContent, 'NodeRole\xa0"NodeName"');
+        assert.strictEqual(component.shadowRoot?.querySelector('.container')?.textContent, 'NodeRole\xa0"NodeName"');
     });
     it('renders ignored nodes as "ignored"', async () => {
         const component = new ElementsComponents.AccessibilityTreeNode.AccessibilityTreeNode();
@@ -30,7 +30,7 @@ describeWithLocale('AccessibilityTreeNode', () => {
             id: 'NodeId',
         };
         await RenderCoordinator.done();
-        assert.strictEqual(component.shadowRoot.textContent, 'Ignored');
+        assert.strictEqual(component.shadowRoot?.querySelector('.container')?.textContent, 'Ignored');
     });
 });
 //# sourceMappingURL=AccessibilityTreeNode.test.js.map

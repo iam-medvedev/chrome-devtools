@@ -221,6 +221,14 @@ describeWithEnvironment('MarkdownView', () => {
             result = renderer.detectCodeLanguage({ text: '.foo::[name="bar"] {}', lang: '' });
             assert.strictEqual(result, 'css');
         });
+        it('doesn`t detects JSON as CSS language', () => {
+            let result = renderer.detectCodeLanguage({ text: '{ "test": "test" }', lang: '' });
+            assert.strictEqual(result, '');
+            result = renderer.detectCodeLanguage({ text: '{}', lang: '' });
+            assert.strictEqual(result, '');
+            result = renderer.detectCodeLanguage({ text: '{\n"test": "test"\n}', lang: '' });
+            assert.strictEqual(result, '');
+        });
     });
     const paragraphText = 'Single paragraph with a sentence of text and some list items to test that the component works end-to-end.';
     const listItemTexts = ['Simple unordered list item 1', 'Simple unordered list item 2'];

@@ -115,7 +115,6 @@ export class ScreencastView extends UI.Widget.VBox {
     inspectModeConfig;
     navigationBar;
     navigationReload;
-    // @ts-expect-error keep local reference
     navigationProgressBar;
     touchInputToggle;
     mouseInputToggle;

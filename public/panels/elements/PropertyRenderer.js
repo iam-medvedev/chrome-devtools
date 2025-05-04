@@ -147,17 +147,20 @@ export class TracingContext {
     #evaluationCount = 0;
     #appliedEvaluations = 0;
     #hasMoreEvaluations = true;
-    #longhandOffset = 0;
+    #longhandOffset;
     #highlighting;
     #parsedValueCache = new Map();
     #propertyName;
     #asyncEvalCallbacks = [];
-    constructor(highlighting, matchedResult) {
+    expandPercentagesInShorthands;
+    constructor(highlighting, expandPercentagesInShorthands, initialLonghandOffset = 0, matchedResult) {
         this.#highlighting = highlighting;
         this.#hasMoreSubstitutions =
             matchedResult?.hasMatches(SDK.CSSPropertyParserMatchers.VariableMatch, SDK.CSSPropertyParserMatchers.BaseVariableMatch) ??
                 false;
         this.#propertyName = matchedResult?.ast.propertyName ?? null;
+        this.#longhandOffset = initialLonghandOffset;
+        this.expandPercentagesInShorthands = expandPercentagesInShorthands;
     }
     get highlighting() {
         return this.#highlighting;
@@ -207,7 +210,7 @@ export class TracingContext {
     // be passed to the Renderer calls for the respective subtrees.
     evaluation(args) {
         const childContexts = args.map(() => {
-            const child = new TracingContext(this.#highlighting);
+            const child = new TracingContext(this.#highlighting, this.expandPercentagesInShorthands);
             child.#parent = this;
             child.#substitutionDepth = this.#substitutionDepth;
             child.#evaluationCount = this.#evaluationCount;
@@ -254,7 +257,7 @@ export class TracingContext {
             this.#setHasMoreSubstitutions();
             return null;
         }
-        const child = new TracingContext(this.#highlighting);
+        const child = new TracingContext(this.#highlighting, this.expandPercentagesInShorthands);
         child.#parent = this;
         child.#substitutionDepth = this.#substitutionDepth - 1;
         child.#evaluationCount = this.#evaluationCount;

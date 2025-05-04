@@ -76,6 +76,8 @@ export default {
         }
 
         devtools-file-source-icon {
+          height: var(--sys-size-8);
+          width: var(--sys-size-8);
           flex-shrink: 0;
         }
       }

@@ -279,7 +279,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     updateTitle(): void;
     private innerUpdateTitle;
     createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | null): Element;
-    getTracingTooltip(functionName: string, text: string, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, context: RenderingContext): Lit.TemplateResult;
+    getTracingTooltip(functionName: string, node: CodeMirror.SyntaxNode, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, context: RenderingContext): Lit.TemplateResult;
     getTooltipId(key: string): string;
     updateAuthoringHint(): void;
     private mouseUp;

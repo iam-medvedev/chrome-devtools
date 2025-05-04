@@ -27,45 +27,66 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
+const { render, html, Directives: { ref } } = Lit;
+const DEFAULT_VIEW = (input, output, target) => {
+    // clang-format off
+    render(html `<iframe
+    ${ref(element => { output.iframe = element; })}
+    src=${input.src}
+    className=${input.className}
+    @load=${input.onLoad}></iframe>`, target, { host: input });
+    // clang-format on
+};
 export class ExtensionView extends UI.Widget.Widget {
-    server;
-    id;
-    iframe;
-    frameIndex;
-    constructor(server, id, src, className) {
+    #server;
+    #id;
+    #src;
+    #className;
+    #iframe;
+    #frameIndex;
+    #view;
+    constructor(server, id, src, className, view = DEFAULT_VIEW) {
         super();
-        this.setHideOnDetach();
-        this.element.className = 'vbox flex-auto'; // Override
-        // TODO(crbug.com/872438): remove once we can use this.iframe instead
-        this.element.tabIndex = -1;
-        this.server = server;
-        this.id = id;
-        this.iframe = document.createElement('iframe');
-        this.iframe.addEventListener('load', this.onLoad.bind(this), false);
-        this.iframe.src = src;
-        this.iframe.className = className;
-        // TODO(crbug.com/872438): make this.iframe the default focused element
-        this.setDefaultFocusedElement(this.element);
-        this.element.appendChild(this.iframe);
+        this.#view = view;
+        this.#server = server;
+        this.#src = src;
+        this.#className = className;
+        this.#id = id;
+        this.setHideOnDetach(); // Override
+        void this.performUpdate();
+    }
+    performUpdate() {
+        const output = {};
+        this.#view({
+            src: this.#src,
+            className: this.#className,
+            onLoad: this.onLoad.bind(this),
+        }, output, this.element);
+        if (output.iframe) {
+            this.#iframe = output.iframe;
+        }
     }
     wasShown() {
         super.wasShown();
-        if (typeof this.frameIndex === 'number') {
-            this.server.notifyViewShown(this.id, this.frameIndex);
+        if (typeof this.#frameIndex === 'number') {
+            this.#server.notifyViewShown(this.#id, this.#frameIndex);
         }
     }
     willHide() {
-        if (typeof this.frameIndex === 'number') {
-            this.server.notifyViewHidden(this.id);
+        if (typeof this.#frameIndex === 'number') {
+            this.#server.notifyViewHidden(this.#id);
         }
     }
     onLoad() {
+        if (!this.#iframe) {
+            return;
+        }
         const frames = window.frames;
-        this.frameIndex = Array.prototype.indexOf.call(frames, this.iframe.contentWindow);
+        this.#frameIndex = Array.prototype.indexOf.call(frames, this.#iframe.contentWindow);
         if (this.isShowing()) {
-            this.server.notifyViewShown(this.id, this.frameIndex);
+            this.#server.notifyViewShown(this.#id, this.#frameIndex);
         }
     }
 }

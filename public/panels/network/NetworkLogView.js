@@ -129,7 +129,7 @@ const UIStrings = {
      *@example {Reload page} PH1
      *@example {Ctrl + R} PH2
      */
-    performARequestOrHitSToRecordThe: 'Perform a request or reload the page by using the "{PH1}" button or by hitting {PH2}.',
+    performARequestOrHitSToRecordThe: 'Perform a request or reload the page by using the "{PH1}" button or by pressing {PH2}.',
     /**
      *@description Shown in the Network Log View of the Network panel when the user has not yet
      * recorded any network activity. This is an instruction to the user to start recording in order to
@@ -137,7 +137,7 @@ const UIStrings = {
      * @example {Start recording} PH1
      * @example {Ctrl + E} PH2
      */
-    recordToDisplayNetworkActivity: 'Record network log to display network activity by using the "{PH1}" button or by hitting {PH2}.',
+    recordToDisplayNetworkActivity: 'Record network log to display network activity by using the "{PH1}" button or by pressing {PH2}.',
     /**
      *@description Label of a button in the Network Log View of the Network panel.
      */

@@ -231,6 +231,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
     }
     attributionReportingSourceRegistered(_event) {
     }
+    attributionReportingReportSent(_event) {
+    }
 }
 export class Cache {
     #model;

@@ -187,7 +187,7 @@ describeWithMockConnection('TextEditor autocompletion', () => {
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
         const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, targetManager, resourceMapping });
-        const testScript = debuggerModel.parsedScriptSource('1', urlString `script://1`, 0, 0, 0, 0, executionContext.id, '', undefined, false, undefined, false, false, 0, null, null, null, null, null, null);
+        const testScript = debuggerModel.parsedScriptSource('1', urlString `script://1`, 0, 0, 0, 0, executionContext.id, '', undefined, false, undefined, false, false, 0, null, null, null, null, null, null, null);
         const payload = {
             callFrameId: '0',
             functionName: 'test',

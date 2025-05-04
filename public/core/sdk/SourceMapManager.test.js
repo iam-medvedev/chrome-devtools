@@ -33,7 +33,7 @@ describeWithMockConnection('SourceMapManager', () => {
         const debuggerModel = workerTarget.model(SDK.DebuggerModel.DebuggerModel);
         assert.isNotNull(debuggerModel);
         const sourceMapManager = debuggerModel.sourceMapManager();
-        const script = new SDK.Script.Script(debuggerModel, '1', scriptUrl, 0, 0, 0, 0, 0, '', false, false, sourceMapUrl, false, 0, null, null, null, null, null, null);
+        const script = new SDK.Script.Script(debuggerModel, '1', scriptUrl, 0, 0, 0, 0, 0, '', false, false, sourceMapUrl, false, 0, null, null, null, null, null, null, null);
         sourceMapManager.attachSourceMap(script, sourceUrl, sourceMapUrl);
         const sourceMap = await sourceMapManager.sourceMapForClientPromise(script);
         // Check that the URLs are resolved relative to the frame.
@@ -52,7 +52,7 @@ describeWithMockConnection('SourceMapManager', () => {
         const debuggerModel = mainTarget.model(SDK.DebuggerModel.DebuggerModel);
         assert.isNotNull(debuggerModel);
         const sourceMapManager = debuggerModel.sourceMapManager();
-        const script = new SDK.Script.Script(debuggerModel, '1', scriptUrl, 0, 0, 0, 0, 0, '', false, false, sourceMapUrl, false, 0, null, null, null, null, null, null);
+        const script = new SDK.Script.Script(debuggerModel, '1', scriptUrl, 0, 0, 0, 0, 0, '', false, false, sourceMapUrl, false, 0, null, null, null, null, null, null, null);
         sourceMapManager.attachSourceMap(script, sourceUrl, sourceMapUrl);
         const sourceMap = await sourceMapManager.sourceMapForClientPromise(script);
         assert.deepEqual(sourceMap?.sourceURLs(), [urlString `/original-script.js`]);
