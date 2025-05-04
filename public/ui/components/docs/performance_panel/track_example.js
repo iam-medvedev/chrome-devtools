@@ -57,7 +57,7 @@ async function renderContent(expanded) {
         // @ts-expect-error: allow to check if a const string array contains a string.
         if (Timeline.CompatibilityTracksAppender.TrackNames.includes(track)) {
             const trackAppenderName = track;
-            flameChartData = await FrontendHelpers.getMainFlameChartWithTracks(file, new Set([trackAppenderName]), expanded, additionalTrackFilter);
+            flameChartData = await FrontendHelpers.getMainFlameChartWithTracks(null, file, new Set([trackAppenderName]), expanded, additionalTrackFilter);
         }
         else if (track === 'Network') {
             flameChartData = await FrontendHelpers.getNetworkFlameChart(file, expanded);

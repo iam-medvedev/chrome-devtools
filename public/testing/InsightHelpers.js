@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import * as Trace from '../models/trace/trace.js';
 import { TraceLoader } from './TraceLoader.js';
-export async function processTrace(testContext, traceFile) {
-    const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(testContext, traceFile);
+export async function processTrace(context, traceFile) {
+    const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(context, traceFile);
     if (!insights) {
         throw new Error('No insights');
     }

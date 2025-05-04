@@ -14,11 +14,7 @@ describeWithEnvironment('LegacyJavaScript', function () {
         assert.deepEqual(results, {});
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
     });
-    // crbug.com/412603772 flaky.
-    it.skip('[crbug.com/412603772]: has results when savings are big enough', async function () {
-        if (this.timeout() > 0) {
-            this.timeout(20000);
-        }
+    it('has results when savings are big enough', async function () {
         const { data, insights } = await processTrace(this, 'yahoo-news.json.gz');
         assert.strictEqual(insights.size, 1);
         const insight = getInsightOrError('LegacyJavaScript', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));

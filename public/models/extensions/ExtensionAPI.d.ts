@@ -494,10 +494,12 @@ declare namespace APIImpl {
     interface ResourceData {
         url: string;
         type: string;
+        buildId?: string;
     }
     interface Resource extends PublicAPI.Chrome.DevTools.Resource {
         _type: string;
         _url: string;
+        _buildId?: string;
         get type(): string;
     }
 }

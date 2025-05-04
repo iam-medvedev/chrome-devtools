@@ -305,6 +305,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     responseReceivedPromise;
     responseReceivedPromiseResolve;
     directSocketInfo;
+    #directSocketChunksInternal;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestIdInternal = requestId;
@@ -371,6 +372,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#wasIntercepted = false;
         this.#hasOverriddenContent = false;
         this.#hasThirdPartyCookiePhaseoutIssue = false;
+        this.#directSocketChunksInternal = [];
     }
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -1270,6 +1272,13 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#framesInternal.push(frame);
         this.dispatchEventToListeners(Events.WEBSOCKET_FRAME_ADDED, frame);
     }
+    directSocketChunks() {
+        return this.#directSocketChunksInternal;
+    }
+    addDirectSocketChunk(chunk) {
+        this.#directSocketChunksInternal.push(chunk);
+        this.dispatchEventToListeners(Events.DIRECTSOCKET_CHUNK_ADDED, chunk);
+    }
     eventSourceMessages() {
         return this.#serverSentEvents?.eventSourceMessages ?? [];
     }
@@ -1490,6 +1499,7 @@ export var Events;
     Events["REQUEST_HEADERS_CHANGED"] = "RequestHeadersChanged";
     Events["RESPONSE_HEADERS_CHANGED"] = "ResponseHeadersChanged";
     Events["WEBSOCKET_FRAME_ADDED"] = "WebsocketFrameAdded";
+    Events["DIRECTSOCKET_CHUNK_ADDED"] = "DirectsocketChunkAdded";
     Events["EVENT_SOURCE_MESSAGE_ADDED"] = "EventSourceMessageAdded";
     Events["TRUST_TOKEN_RESULT_ADDED"] = "TrustTokenResultAdded";
 })(Events || (Events = {}));
@@ -1672,4 +1682,10 @@ export var DirectSocketStatus;
     DirectSocketStatus[DirectSocketStatus["CLOSED"] = 3] = "CLOSED";
     DirectSocketStatus[DirectSocketStatus["ABORTED"] = 4] = "ABORTED";
 })(DirectSocketStatus || (DirectSocketStatus = {}));
+export var DirectSocketChunkType;
+(function (DirectSocketChunkType) {
+    DirectSocketChunkType["SEND"] = "send";
+    DirectSocketChunkType["RECEIVE"] = "receive";
+    DirectSocketChunkType["ERROR"] = "error";
+})(DirectSocketChunkType || (DirectSocketChunkType = {}));
 //# sourceMappingURL=NetworkRequest.js.map

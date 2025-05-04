@@ -45,7 +45,7 @@ export default {
 }
 
 .node-label-name {
-  color: var(--sys-color-token-property-special);
+  color: var(--sys-color-token-tag);
 
   .dynamic-link & {
     color: var(--text-link);

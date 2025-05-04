@@ -2,7 +2,7 @@ import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { CompatibilityTracksAppender, type DrawOverride, type TrackAppenderName } from './CompatibilityTracksAppender.js';
+import { CompatibilityTracksAppender, type DrawOverride } from './CompatibilityTracksAppender.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.FlameChart.FlameChartDataProvider {
@@ -40,11 +40,18 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
      */
     compatibilityTracksAppenderInstance(forceNew?: boolean): CompatibilityTracksAppender;
     /**
-     * Builds the flame chart data using the track appenders
+     * Builds the flame chart data whilst allowing for a custom filtering of track appenders.
+     * This is ONLY to be used in test environments.
      */
-    buildFromTrackAppendersForTest(options?: {
-        filterThreadsByName?: string;
-        expandedTracks?: Set<TrackAppenderName>;
+    buildWithCustomTracksForTest(options?: {
+        /**
+         * Filters the track by the given name. Only tracks that match this filter will be drawn.
+         */
+        filterTracks?: (name: string) => boolean;
+        /**
+         * Choose if a given track is expanded based on the name
+         */
+        expandTracks?: (name: string) => boolean;
     }): void;
     groupTreeEvents(group: PerfUI.FlameChart.Group): Trace.Types.Events.Event[] | null;
     mainFrameNavigationStartEvents(): readonly Trace.Types.Events.NavigationStart[];

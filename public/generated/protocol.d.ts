@@ -1300,6 +1300,21 @@ export declare namespace Audits {
          */
         propertyValue?: string;
     }
+    const enum UserReidentificationIssueType {
+        BlockedFrameNavigation = "BlockedFrameNavigation",
+        BlockedSubresource = "BlockedSubresource"
+    }
+    /**
+     * This issue warns about uses of APIs that may be considered misuse to
+     * re-identify users.
+     */
+    interface UserReidentificationIssueDetails {
+        type: UserReidentificationIssueType;
+        /**
+         * Applies to BlockedFrameNavigation and BlockedSubresource issue types.
+         */
+        request?: AffectedRequest;
+    }
     /**
      * A unique identifier for the type of issue. Each type may use one of the
      * optional fields in InspectorIssueDetails to convey more specific
@@ -1329,7 +1344,8 @@ export declare namespace Audits {
         PropertyRuleIssue = "PropertyRuleIssue",
         SharedDictionaryIssue = "SharedDictionaryIssue",
         SelectElementAccessibilityIssue = "SelectElementAccessibilityIssue",
-        SRIMessageSignatureIssue = "SRIMessageSignatureIssue"
+        SRIMessageSignatureIssue = "SRIMessageSignatureIssue",
+        UserReidentificationIssue = "UserReidentificationIssue"
     }
     /**
      * This struct holds a list of optional fields with additional information
@@ -1361,6 +1377,7 @@ export declare namespace Audits {
         sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails;
         selectElementAccessibilityIssueDetails?: SelectElementAccessibilityIssueDetails;
         sriMessageSignatureIssueDetails?: SRIMessageSignatureIssueDetails;
+        userReidentificationIssueDetails?: UserReidentificationIssueDetails;
     }
     /**
      * A unique id for a DevTools inspector issue. Allows other entities (e.g.
@@ -11179,6 +11196,7 @@ export declare namespace Page {
     /**
      * All Permissions Policy features. This enum should match the one defined
      * in services/network/public/cpp/permissions_policy/permissions_policy_features.json5.
+     * LINT.IfChange(PermissionsPolicyFeature)
      */
     const enum PermissionsPolicyFeature {
         Accelerometer = "accelerometer",
@@ -11245,6 +11263,7 @@ export declare namespace Page {
         KeyboardMap = "keyboard-map",
         LanguageDetector = "language-detector",
         LocalFonts = "local-fonts",
+        LocalNetworkAccess = "local-network-access",
         Magnetometer = "magnetometer",
         MediaPlaybackWhileNotVisible = "media-playback-while-not-visible",
         Microphone = "microphone",
@@ -11258,6 +11277,7 @@ export declare namespace Page {
         PrivateStateTokenRedemption = "private-state-token-redemption",
         PublickeyCredentialsCreate = "publickey-credentials-create",
         PublickeyCredentialsGet = "publickey-credentials-get",
+        RecordAdAuctionEvents = "record-ad-auction-events",
         Rewriter = "rewriter",
         RunAdAuction = "run-ad-auction",
         ScreenWakeLock = "screen-wake-lock",
@@ -14312,6 +14332,12 @@ export declare namespace Storage {
         ReportWindowPassed = "reportWindowPassed",
         ExcessiveReports = "excessiveReports"
     }
+    const enum AttributionReportingReportResult {
+        Sent = "sent",
+        Prohibited = "prohibited",
+        FailedToAssemble = "failedToAssemble",
+        Expired = "expired"
+    }
     /**
      * A single Related Website Set object.
      */
@@ -14773,6 +14799,17 @@ export declare namespace Storage {
         registration: AttributionReportingTriggerRegistration;
         eventLevel: AttributionReportingEventLevelResult;
         aggregatable: AttributionReportingAggregatableResult;
+    }
+    interface AttributionReportingReportSentEvent {
+        url: string;
+        body: any;
+        result: AttributionReportingReportResult;
+        /**
+         * If result is `sent`, populated with net/HTTP status.
+         */
+        netError?: integer;
+        netErrorName?: string;
+        httpStatusCode?: integer;
     }
 }
 /**
@@ -17075,6 +17112,30 @@ export declare namespace BluetoothEmulation {
         Discovery = "discovery"
     }
     /**
+     * Indicates the various types of characteristic write.
+     */
+    const enum CharacteristicWriteType {
+        WriteDefaultDeprecated = "write-default-deprecated",
+        WriteWithResponse = "write-with-response",
+        WriteWithoutResponse = "write-without-response"
+    }
+    /**
+     * Indicates the various types of characteristic operation.
+     */
+    const enum CharacteristicOperationType {
+        Read = "read",
+        Write = "write",
+        SubscribeToNotifications = "subscribe-to-notifications",
+        UnsubscribeFromNotifications = "unsubscribe-from-notifications"
+    }
+    /**
+     * Indicates the various types of descriptor operation.
+     */
+    const enum DescriptorOperationType {
+        Read = "read",
+        Write = "write"
+    }
+    /**
      * Stores the manufacturer data
      */
     interface ManufacturerData {
@@ -17161,6 +17222,18 @@ export declare namespace BluetoothEmulation {
         type: GATTOperationType;
         code: integer;
     }
+    interface SimulateCharacteristicOperationResponseRequest {
+        characteristicId: string;
+        type: CharacteristicOperationType;
+        code: integer;
+        data?: binary;
+    }
+    interface SimulateDescriptorOperationResponseRequest {
+        descriptorId: string;
+        type: DescriptorOperationType;
+        code: integer;
+        data?: binary;
+    }
     interface AddServiceRequest {
         address: string;
         serviceUuid: string;
@@ -17201,6 +17274,9 @@ export declare namespace BluetoothEmulation {
     interface RemoveDescriptorRequest {
         descriptorId: string;
     }
+    interface SimulateGATTDisconnectionRequest {
+        address: string;
+    }
     /**
      * Event for when a GATT operation of |type| to the peripheral with |address|
      * happened.
@@ -17208,6 +17284,27 @@ export declare namespace BluetoothEmulation {
     interface GattOperationReceivedEvent {
         address: string;
         type: GATTOperationType;
+    }
+    /**
+     * Event for when a characteristic operation of |type| to the characteristic
+     * respresented by |characteristicId| happened. |data| and |writeType| is
+     * expected to exist when |type| is write.
+     */
+    interface CharacteristicOperationReceivedEvent {
+        characteristicId: string;
+        type: CharacteristicOperationType;
+        data?: binary;
+        writeType?: CharacteristicWriteType;
+    }
+    /**
+     * Event for when a descriptor operation of |type| to the descriptor
+     * respresented by |descriptorId| happened. |data| is expected to exist when
+     * |type| is write.
+     */
+    interface DescriptorOperationReceivedEvent {
+        descriptorId: string;
+        type: CharacteristicOperationType;
+        data?: binary;
     }
 }
 /**

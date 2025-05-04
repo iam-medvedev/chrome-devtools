@@ -57,51 +57,68 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         const resources = await new Promise(r => context.chrome.devtools.inspectedWindow.getResources(r));
         assert.deepEqual(resources.map(r => r.url), ['https://example.com/', 'http://example.com']);
     });
-    describe('Resource.setFunctionRangesForScript API', () => {
-        const validFunctionRanges = [{ start: { line: 0, column: 0 }, end: { line: 10, column: 1 }, name: 'foo' }];
-        it('correctly calls DebuggerWorkspaceBindings.setFunctionRanges via Resource.setFunctionRangesForScript API', async () => {
-            const target = createTarget();
+    describe('Resource', () => {
+        let target;
+        let project;
+        beforeEach(() => {
+            target = createTarget();
             const inspectedUrl = urlString `https://www.example.com/`;
-            const scriptUrl = urlString `https://example.com/foo.js.map/foo.js`;
             target.setInspectedURL(inspectedUrl);
-            const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
+            project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
             const targetManager = target.targetManager();
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
             Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
-            // create a mock uiSourceCode for the sourceMap script
-            project.addUISourceCode(new Workspace.UISourceCode.UISourceCode(project, scriptUrl, Common.ResourceType.resourceTypes.SourceMapScript));
-            const uiSourceCode = project.uiSourceCodeForURL(scriptUrl);
-            assert.exists(uiSourceCode);
-            assert.exists(context.chrome.devtools);
+        });
+        describe('setFunctionRangesForScript', () => {
+            const validFunctionRanges = [{ start: { line: 0, column: 0 }, end: { line: 10, column: 1 }, name: 'foo' }];
+            it('correctly calls DebuggerWorkspaceBindings.setFunctionRanges via Resource.setFunctionRangesForScript API', async () => {
+                // create a mock uiSourceCode for the sourceMap script
+                const scriptUrl = urlString `https://example.com/foo.js.map/foo.js`;
+                project.addUISourceCode(new Workspace.UISourceCode.UISourceCode(project, scriptUrl, Common.ResourceType.resourceTypes.SourceMapScript));
+                const uiSourceCode = project.uiSourceCodeForURL(scriptUrl);
+                assert.exists(uiSourceCode);
+                assert.exists(context.chrome.devtools);
+                const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
+                const nonSourceMapScripts = resources.filter(r => r.type !== 'sm-script');
+                const sourceMapScripts = resources.filter(r => r.type === 'sm-script');
+                const workspaceBindingSetFunctionRangesStub = sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), 'setFunctionRanges');
+                // The assert.throws() helper does not work with async/await, hence the manual try catch
+                let didThrow = false;
+                try {
+                    // Should throw if called with a non-sourceMap script
+                    await nonSourceMapScripts[0].setFunctionRangesForScript(validFunctionRanges);
+                }
+                catch (e) {
+                    didThrow = true;
+                    assertIsStatus(e);
+                    assert.strictEqual(e.code, 'E_BADARG');
+                }
+                assert.isTrue(didThrow, 'SetFunctionRangesForScript did not throw an error as expected.');
+                try {
+                    // Should throw if called with invalid/empty ranges
+                    await sourceMapScripts[0].setFunctionRangesForScript([ /** empty ranges */]);
+                }
+                catch (e) {
+                    didThrow = true;
+                    assertIsStatus(e);
+                    assert.strictEqual(e.code, 'E_BADARG');
+                }
+                assert.isTrue(didThrow, 'SetFunctionRangesForScript did not throw an error as expected.');
+                sinon.assert.notCalled(workspaceBindingSetFunctionRangesStub);
+                await sourceMapScripts[0].setFunctionRangesForScript(validFunctionRanges);
+                sinon.assert.calledOnceWithExactly(workspaceBindingSetFunctionRangesStub, uiSourceCode, validFunctionRanges);
+            });
+        });
+        it('returns the buildId', async () => {
+            const stubScript = sinon.createStubInstance(SDK.Script.Script);
+            // @ts-expect-error
+            stubScript.buildId = 'my-build-id';
+            sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), 'scriptsForUISourceCode')
+                .returns([stubScript]);
+            project.addUISourceCode(new Workspace.UISourceCode.UISourceCode(project, urlString `http://example.com/index.js`, Common.ResourceType.resourceTypes.Script));
             const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
-            const nonSourceMapScripts = resources.filter(r => r.type !== 'sm-script');
-            const sourceMapScripts = resources.filter(r => r.type === 'sm-script');
-            const workspaceBindingSetFunctionRangesStub = sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), 'setFunctionRanges');
-            // The assert.throws() helper does not work with async/await, hence the manual try catch
-            let didThrow = false;
-            try {
-                // Should throw if called with a non-sourceMap script
-                await nonSourceMapScripts[0].setFunctionRangesForScript(validFunctionRanges);
-            }
-            catch (e) {
-                didThrow = true;
-                assertIsStatus(e);
-                assert.strictEqual(e.code, 'E_BADARG');
-            }
-            assert.isTrue(didThrow, 'SetFunctionRangesForScript did not throw an error as expected.');
-            try {
-                // Should throw if called with invalid/empty ranges
-                await sourceMapScripts[0].setFunctionRangesForScript([ /** empty ranges */]);
-            }
-            catch (e) {
-                didThrow = true;
-                assertIsStatus(e);
-                assert.strictEqual(e.code, 'E_BADARG');
-            }
-            assert.isTrue(didThrow, 'SetFunctionRangesForScript did not throw an error as expected.');
-            sinon.assert.notCalled(workspaceBindingSetFunctionRangesStub);
-            await sourceMapScripts[0].setFunctionRangesForScript(validFunctionRanges);
-            sinon.assert.calledOnceWithExactly(workspaceBindingSetFunctionRangesStub, uiSourceCode, validFunctionRanges);
+            assert.strictEqual(resources[0].url, 'http://example.com/index.js');
+            assert.strictEqual(resources[0].buildId, 'my-build-id');
         });
     });
 });
@@ -477,6 +494,8 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
     it('blocks getting resource contents on blocked urls', async () => {
         const target = createTarget({ id: 'target' });
         target.setInspectedURL(allowedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, { scriptsForUISourceCode: [] }));
         const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
         await createUISourceCode(project, blockedUrl);
         await createUISourceCode(project, allowedUrl);
@@ -519,6 +538,8 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
     it('blocks setting resource contents on blocked urls', async () => {
         const target = createTarget({ id: 'target' });
         target.setInspectedURL(allowedUrl);
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance')
+            .returns(sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, { scriptsForUISourceCode: [] }));
         const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
         await createUISourceCode(project, blockedUrl);
         await createUISourceCode(project, allowedUrl);
@@ -749,7 +770,7 @@ for (const allowFileAccess of [true, false]) {
             debuggerModel.parsedScriptSource('0', urlString `file:///source/url`, 0, 0, 100, 100, 0, '', {}, false, 'file:///source/url.map', false, false, 200, true, null, null, "JavaScript" /* Protocol.Debugger.ScriptLanguage.JavaScript */, [{
                     type: "SourceMap" /* Protocol.Debugger.DebugSymbolsType.SourceMap */,
                     externalURL: 'file:///source/url.map',
-                }], null);
+                }], null, null);
             sinon.assert.calledOnce(endpointSpy);
             assert.strictEqual(endpointSpy.thisValues[0]
                 .allowFileAccess, allowFileAccess);

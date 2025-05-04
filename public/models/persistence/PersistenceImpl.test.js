@@ -34,6 +34,7 @@ describeWithMockConnection('PersistenceImpl', () => {
         hasSourceURL: false,
     };
     beforeEach(() => {
+        backend = new MockProtocolBackend();
         target = createTarget();
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
@@ -45,7 +46,6 @@ describeWithMockConnection('PersistenceImpl', () => {
         });
         Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
         breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({ forceNew: true, targetManager, workspace, debuggerWorkspaceBinding });
-        backend = new MockProtocolBackend();
         Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
     });
     async function setBreakpointOnFileSystem(fileSystemUiSourceCode, breakpointLine) {

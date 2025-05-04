@@ -547,7 +547,8 @@ export function addPlatformClass(element) {
     element.classList.add('platform-' + Host.Platform.platform());
 }
 export function installComponentRootStyles(element) {
-    injectCoreStyles(element);
+    ThemeSupport.ThemeSupport.instance().appendStyle(element, inspectorCommonStyles);
+    ThemeSupport.ThemeSupport.instance().appendStyle(element, Buttons.textButtonStyles);
     // Detect overlay scrollbar enable by checking for nonzero scrollbar width.
     if (!Host.Platform.isMac() && measuredScrollbarWidth(element.ownerDocument) === 0) {
         element.classList.add('overlay-scrollbar-enabled');
@@ -1611,10 +1612,6 @@ function focusChanged(event) {
     updateWidgetfocusWidgetForNode(element);
     updateXWidgetfocusWidgetForNode(element);
 }
-export function injectCoreStyles(elementOrShadowRoot) {
-    ThemeSupport.ThemeSupport.instance().appendStyle(elementOrShadowRoot, inspectorCommonStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(elementOrShadowRoot, Buttons.textButtonStyles);
-}
 /**
  * Creates a new shadow DOM tree with the core styles and an optional list of
  * additional styles, and attaches it to the specified `element`.
@@ -1630,7 +1627,8 @@ export function createShadowRootWithCoreStyles(element, options = {
 }) {
     const { cssFile, delegatesFocus, } = options;
     const shadowRoot = element.attachShadow({ mode: 'open', delegatesFocus });
-    injectCoreStyles(shadowRoot);
+    ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, inspectorCommonStyles);
+    ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, Buttons.textButtonStyles);
     if (Array.isArray(cssFile)) {
         for (const cf of cssFile) {
             ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, cf);

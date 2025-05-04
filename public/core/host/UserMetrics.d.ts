@@ -655,8 +655,6 @@ export declare enum DevtoolsExperiments {
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
     'timeline-experimental-insights' = 102,
-    'timeline-dim-unrelated-events' = 103,
-    'timeline-alternative-navigation' = 104,
     MAX_VALUE = 106
 }
 export declare enum IssueExpanded {

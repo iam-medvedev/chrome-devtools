@@ -56,7 +56,6 @@ export class LighthousePanel extends UI.Panel.Panel {
     warningText;
     unauditableExplanation;
     cachedRenderedReports;
-    // @ts-expect-error keep local reference
     dropTarget;
     auditResultsElement;
     clearButton;

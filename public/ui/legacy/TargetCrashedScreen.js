@@ -1,8 +1,8 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
+import { html, render } from '../lit/lit.js';
 import targetCrashedScreenStyles from './targetCrashedScreen.css.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
@@ -17,15 +17,19 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/TargetCrashedScreen.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${targetCrashedScreenStyles.cssText}</style>
+    <div class="message">${i18nString(UIStrings.devtoolsWasDisconnectedFromThe)}</div>
+    <div class="message">${i18nString(UIStrings.oncePageIsReloadedDevtoolsWill)}</div>`, target, { host: input });
+    // clang-format on
+};
 export class TargetCrashedScreen extends VBox {
     hideCallback;
-    constructor(hideCallback) {
+    constructor(hideCallback, view = DEFAULT_VIEW) {
         super(true);
-        this.registerRequiredCSS(targetCrashedScreenStyles);
-        this.contentElement.createChild('div', 'message').textContent =
-            i18nString(UIStrings.devtoolsWasDisconnectedFromThe);
-        this.contentElement.createChild('div', 'message').textContent =
-            i18nString(UIStrings.oncePageIsReloadedDevtoolsWill);
+        view({}, {}, this.contentElement);
         this.hideCallback = hideCallback;
     }
     willHide() {

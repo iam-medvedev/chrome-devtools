@@ -8,11 +8,14 @@ export declare class MockFlameChartDelegate implements PerfUI.FlameChart.FlameCh
     updateSelectedGroup(_flameChart: PerfUI.FlameChart.FlameChart, _group: PerfUI.FlameChart.Group | null): void;
 }
 /**
+ * @deprecated this will be removed once we have migrated from interaction tests for screenshots. Please use `renderFlameChartIntoDOM`.
+ *
  * Draws a set of tracks track in the flame chart using the new system.
  * For this to work, every track that will be rendered must have a
  * corresponding track appender registered in the
  * CompatibilityTracksAppender.
  *
+ * @param context The unit test context.
  * @param traceFileName The name of the trace file to be loaded into the
  * flame chart.
  * @param trackAppenderNames A Set with the names of the tracks to be
@@ -21,9 +24,34 @@ export declare class MockFlameChartDelegate implements PerfUI.FlameChart.FlameCh
  * @param trackName optional param to filter tracks by their name.
  * @returns a flame chart element and its corresponding data provider.
  */
-export declare function getMainFlameChartWithTracks(traceFileName: string, trackAppenderNames: Set<Timeline.CompatibilityTracksAppender.TrackAppenderName>, expanded: boolean, trackName?: string): Promise<{
+export declare function getMainFlameChartWithTracks(context: Mocha.Context | null, traceFileName: string, trackAppenderNames: Set<Timeline.CompatibilityTracksAppender.TrackAppenderName>, expanded: boolean, trackName?: string): Promise<{
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
+}>;
+export interface RenderFlameChartOptions {
+    /**
+     * The trace file to import. You must include `.json.gz` at the end of the file name.
+     */
+    traceFile: string;
+    /**
+     * Filter the tracks that will be rendered by their name. The name here is
+     * the user visible name that is drawn onto the flame chart.
+     */
+    filterTracks?: (trackName: string) => boolean;
+    /**
+     * Choose which track(s) that have been drawn should be expanded. The name
+     * here is the user visible name that is drawn onto the flame chart.
+     */
+    expandTracks?: (trackName: string) => boolean;
+}
+/**
+ * Renders a flame chart into the unit test DOM.
+ * It will take care of all the setup and configuration for you.
+ */
+export declare function renderFlameChartIntoDOM(context: Mocha.Context | null, options: RenderFlameChartOptions): Promise<{
+    flameChart: PerfUI.FlameChart.FlameChart;
+    dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
+    target: HTMLElement;
 }>;
 /**
  * Draws the network track in the flame chart using the legacy system.

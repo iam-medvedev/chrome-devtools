@@ -21,6 +21,7 @@ export declare const showWhitespace: DynamicSetting<string>;
 export declare const allowScrollPastEof: DynamicSetting<boolean>;
 export declare const indentUnit: DynamicSetting<string>;
 export declare const domWordWrap: DynamicSetting<boolean>;
+export declare const sourcesWordWrap: DynamicSetting<boolean>;
 export declare const dummyDarkTheme: CM.Extension;
 export declare const themeSelection: CM.Compartment;
 export declare function theme(): CM.Extension;

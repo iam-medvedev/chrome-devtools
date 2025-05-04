@@ -159,6 +159,8 @@ export class StorageBucketsModel extends SDKModel {
     }
     attributionReportingSourceRegistered(_event) {
     }
+    attributionReportingReportSent(_event) {
+    }
 }
 SDKModel.register(StorageBucketsModel, { capabilities: 8192 /* Capability.STORAGE */, autostart: false });
 //# sourceMappingURL=StorageBucketsModel.js.map

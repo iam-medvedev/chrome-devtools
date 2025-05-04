@@ -4,6 +4,7 @@
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as Root from '../../../core/root/root.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import * as PanelUtils from '../../../panels/utils/utils.js';
 import { PerformanceInsightFormatter, TraceEventFormatter } from '../data_formatters/PerformanceInsightFormatter.js';
@@ -218,13 +219,18 @@ export class PerformanceInsightsAgent extends AiAgent {
     }
     preamble = preamble;
     clientFeature = Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_INSIGHTS_AGENT;
+    // Note: for both userTier and options we purposefully reuse the flags from
+    // the Performance Agent, rather than define new ones as we didn't think that
+    // was necessary.
     get userTier() {
-        return 'TESTERS';
+        return Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
     }
     get options() {
+        const temperature = Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+        const modelId = Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
         return {
-            temperature: undefined,
-            modelId: undefined,
+            temperature,
+            modelId,
         };
     }
     constructor(opts) {

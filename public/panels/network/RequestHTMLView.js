@@ -28,14 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import requestHTMLViewStyles from './requestHTMLView.css.js';
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // Forbid to run JavaScript and set unique origin.
+    // clang-format off
+    render(html `
+    <style>${requestHTMLViewStyles.cssText}</style>
+    <div class="html request-view">
+      ${input.dataURL ? html `
+        <!-- @ts-ignore -->
+        <iframe class="html-preview-frame" sandbox
+          csp="default-src 'none';img-src data:;style-src 'unsafe-inline'" src=${input.dataURL}
+          tabindex="-1" role="presentation"></iframe>` : nothing}
+    </div>`, target, { host: input });
+    // clang-format on
+};
 export class RequestHTMLView extends UI.Widget.VBox {
-    dataURL;
-    constructor(dataURL) {
+    #dataURL;
+    #view;
+    constructor(dataURL, view = DEFAULT_VIEW) {
         super(true);
-        this.registerRequiredCSS(requestHTMLViewStyles);
-        this.dataURL = dataURL;
-        this.contentElement.classList.add('html', 'request-view');
+        this.#dataURL = dataURL;
+        this.#view = view;
     }
     static create(contentData) {
         const dataURL = contentData.asDataUrl();
@@ -43,23 +58,13 @@ export class RequestHTMLView extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        this.createIFrame();
+        this.requestUpdate();
     }
     willHide() {
-        this.contentElement.removeChildren();
+        this.requestUpdate();
     }
-    createIFrame() {
-        // We need to create iframe again each time because contentDocument
-        // is deleted when iframe is removed from its parent.
-        this.contentElement.removeChildren();
-        const iframe = document.createElement('iframe');
-        iframe.className = 'html-preview-frame';
-        iframe.setAttribute('sandbox', ''); // Forbid to run JavaScript and set unique origin.
-        iframe.setAttribute('csp', 'default-src \'none\';img-src data:;style-src \'unsafe-inline\'');
-        iframe.setAttribute('src', this.dataURL);
-        iframe.tabIndex = -1;
-        UI.ARIAUtils.markAsPresentation(iframe);
-        this.contentElement.appendChild(iframe);
+    performUpdate() {
+        this.#view({ dataURL: this.#dataURL }, {}, this.contentElement);
     }
 }
 //# sourceMappingURL=RequestHTMLView.js.map

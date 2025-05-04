@@ -14,10 +14,7 @@ export declare class PanelUtils {
         iconName: string;
         color: string;
     };
-    static getIconForSourceFile(uiSourceCode: Workspace.UISourceCode.UISourceCode, options?: {
-        width?: number;
-        height?: number;
-    }): IconButton.FileSourceIcon.FileSourceIcon;
+    static getIconForSourceFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): IconButton.FileSourceIcon.FileSourceIcon;
     static formatCSSChangesFromDiff(diff: Diff.Diff.DiffArray): Promise<string>;
     static highlightElement(element: HTMLElement): void;
 }

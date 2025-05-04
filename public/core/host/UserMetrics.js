@@ -871,8 +871,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-dim-unrelated-events"] = 103] = "timeline-dim-unrelated-events";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-alternative-navigation"] = 104] = "timeline-alternative-navigation";
     // 106 was historically used [https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/6230097]
     // next experiment should be 107
     /* eslint-enable @typescript-eslint/naming-convention */

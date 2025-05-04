@@ -70,19 +70,19 @@ describe('TracingContext', () => {
     it('assumes no substitutions by default', () => {
         const matchedResult = SDK.CSSPropertyParser.matchDeclaration('prop', 'value', []);
         assert.exists(matchedResult);
-        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), matchedResult);
+        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
         assert.isFalse(context.nextSubstitution());
         sinon.stub(matchedResult, 'hasMatches').returns(true);
-        const context2 = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), matchedResult);
+        const context2 = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
         assert.isTrue(context2.nextSubstitution());
-        const context3 = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting());
+        const context3 = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false);
         assert.isFalse(context3.nextSubstitution());
     });
     it('controls substitution by creating "nested" tracing contexts', () => {
         const matchedResult = SDK.CSSPropertyParser.matchDeclaration('prop', 'value', []);
         assert.exists(matchedResult);
         sinon.stub(matchedResult, 'hasMatches').returns(true);
-        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), matchedResult);
+        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
         assert.isTrue(context.nextSubstitution());
         assert.exists(context.substitution());
         assert.notExists(context.substitution()?.substitution());
@@ -104,7 +104,7 @@ describe('TracingContext', () => {
         const matchedResult = SDK.CSSPropertyParser.matchDeclaration('prop', 'value', []);
         assert.exists(matchedResult);
         sinon.stub(matchedResult, 'hasMatches').returns(true);
-        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), matchedResult);
+        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
         assert.throw(() => context.nextEvaluation());
         context.nextSubstitution();
         assert.doesNotThrow(() => context.nextEvaluation());
@@ -112,7 +112,7 @@ describe('TracingContext', () => {
     it('controls evaluations creating nested context', () => {
         const matchedResult = SDK.CSSPropertyParser.matchDeclaration('prop', 'value', []);
         assert.exists(matchedResult);
-        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), matchedResult);
+        const context = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
         const evaluation = () => ({ placeholder: [] });
         // Evaluations are applied bottom up
         assert.isTrue(context.nextEvaluation());
@@ -172,7 +172,7 @@ describe('TracingContext', () => {
         assert.isFalse(context.nextEvaluation());
     });
     it('can inject itself into a RenderingContext', () => {
-        const tracingContext = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting());
+        const tracingContext = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false);
         const renderingContext = sinon.createStubInstance(Elements.PropertyRenderer.RenderingContext);
         assert.strictEqual(tracingContext.renderingContext(renderingContext).tracing, tracingContext);
     });
@@ -181,7 +181,7 @@ describe('TracingContext', () => {
         // of longhands.
         const matchedResult = SDK.CSSPropertyParser.matchDeclaration('animation', 'a b var(--c)', [new SDK.CSSPropertyParserMatchers.BaseVariableMatcher(match => match.name === '--c' ? 'ddd' : null)]);
         assert.exists(matchedResult);
-        const tracingContext = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), matchedResult);
+        const tracingContext = new Elements.PropertyRenderer.TracingContext(new Elements.PropertyRenderer.Highlighting(), false, 0, matchedResult);
         // The initial offset is 0.
         assert.strictEqual(tracingContext.longhandOffset, 0);
         const varNode = matchedResult.ast.tree.lastChild;

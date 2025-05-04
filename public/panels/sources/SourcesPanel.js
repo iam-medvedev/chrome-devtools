@@ -1200,6 +1200,11 @@ export class ActionDelegate {
                 panel.toggleDebuggerSidebar();
                 return true;
             }
+            case 'sources.toggle-word-wrap': {
+                const setting = Common.Settings.Settings.instance().moduleSetting('sources.word-wrap');
+                setting.set(!setting.get());
+                return true;
+            }
         }
         return false;
     }

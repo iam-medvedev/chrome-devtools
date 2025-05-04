@@ -11,6 +11,14 @@ export default {
  */
 
 :host {
+  height: var(--sys-size-9);
+  width: var(--sys-size-9);
+
+  devtools-icon {
+    height: 100%;
+    width: 100%;
+  }
+
   devtools-icon.document {
     color: var(--override-file-source-icon-color, var(--icon-default));
   }
@@ -33,12 +41,12 @@ export default {
 
   devtools-icon.dot::before {
     content: var(--image-file-empty);
-    width: 7px;
-    height: 7px;
+    width: 35%;
+    height: 35%;
     border-radius: 50%;
     outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
-    top: 12px;
-    left: 11px;
+    top: 60%;
+    left: 55%;
     position: absolute;
     z-index: 1;
   }

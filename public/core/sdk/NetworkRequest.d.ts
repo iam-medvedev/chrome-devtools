@@ -217,6 +217,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     addProtocolFrameError(errorMessage: string, time: number): void;
     addProtocolFrame(response: Protocol.Network.WebSocketFrame, time: number, sent: boolean): void;
     addFrame(frame: WebSocketFrame): void;
+    directSocketChunks(): DirectSocketChunk[];
+    addDirectSocketChunk(chunk: DirectSocketChunk): void;
     eventSourceMessages(): readonly EventSourceMessage[];
     addEventSourceMessage(time: number, eventName: string, eventId: string, data: string): void;
     markAsRedirect(redirectCount: number): void;
@@ -260,6 +262,7 @@ export declare enum Events {
     REQUEST_HEADERS_CHANGED = "RequestHeadersChanged",
     RESPONSE_HEADERS_CHANGED = "ResponseHeadersChanged",
     WEBSOCKET_FRAME_ADDED = "WebsocketFrameAdded",
+    DIRECTSOCKET_CHUNK_ADDED = "DirectsocketChunkAdded",
     EVENT_SOURCE_MESSAGE_ADDED = "EventSourceMessageAdded",
     TRUST_TOKEN_RESULT_ADDED = "TrustTokenResultAdded"
 }
@@ -270,6 +273,7 @@ export interface EventTypes {
     [Events.REQUEST_HEADERS_CHANGED]: void;
     [Events.RESPONSE_HEADERS_CHANGED]: void;
     [Events.WEBSOCKET_FRAME_ADDED]: WebSocketFrame;
+    [Events.DIRECTSOCKET_CHUNK_ADDED]: DirectSocketChunk;
     [Events.EVENT_SOURCE_MESSAGE_ADDED]: EventSourceMessage;
     [Events.TRUST_TOKEN_RESULT_ADDED]: void;
 }
@@ -402,4 +406,15 @@ export interface DirectSocketInfo {
     errorMessage?: string;
     createOptions: DirectSocketCreateOptions;
     openInfo?: DirectSocketOpenInfo;
+}
+export interface DirectSocketChunk {
+    data: string;
+    type: DirectSocketChunkType;
+    timestamp: number;
+    remoteUrl?: string;
+}
+export declare enum DirectSocketChunkType {
+    SEND = "send",
+    RECEIVE = "receive",
+    ERROR = "error"
 }

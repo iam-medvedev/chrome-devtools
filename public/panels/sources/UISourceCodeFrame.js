@@ -38,6 +38,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
+import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AiWarningInfobarPlugin } from './AiWarningInfobarPlugin.js';
@@ -85,6 +86,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         return [
             super.editorConfiguration(doc),
             rowMessages(this.allMessages()),
+            TextEditor.Config.sourcesWordWrap.instance(),
             // Inject editor extensions from plugins
             pluginCompartment.of(this.plugins.map(plugin => plugin.editorExtension())),
         ];

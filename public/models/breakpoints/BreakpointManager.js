@@ -777,6 +777,18 @@ export class ModelBreakpoint {
         let result = "PENDING" /* DebuggerUpdateResult.PENDING */;
         while (result === "PENDING" /* DebuggerUpdateResult.PENDING */) {
             result = await this.#updateInDebugger();
+            // TODO(crbug.com/1229541): This is a mirror to the quickfix
+            // in #updateInDebugger. If the model didn't enable yet, instead of
+            // spamming the "setBreakpoint" call to the backend, we'll wait for
+            // it to finish enabling.
+            if (this.#debuggerModel.debuggerEnabled() && !this.#debuggerModel.isReadyToPause()) {
+                await this.#debuggerModel.once(SDK.DebuggerModel.Events.DebuggerIsReadyToPause);
+                if (!this.#debuggerModel.debuggerEnabled()) {
+                    // If the model failed to enable, we won't try to set the breakpoint.
+                    result = "OK" /* DebuggerUpdateResult.OK */;
+                    break;
+                }
+            }
         }
         release();
         return result;

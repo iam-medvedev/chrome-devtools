@@ -97,23 +97,23 @@ export class CSSValueTraceView extends UI.Widget.VBox {
         this.#view = view;
         this.requestUpdate();
     }
-    async showTrace(property, subexpression, matchedStyles, computedStyles, renderers) {
+    async showTrace(property, subexpression, matchedStyles, computedStyles, renderers, expandPercentagesInShorthands, shorthandPositionOffset) {
         const matchedResult = subexpression === null ?
             property.parseValue(matchedStyles, computedStyles) :
             property.parseExpression(subexpression, matchedStyles, computedStyles);
         if (!matchedResult) {
             return undefined;
         }
-        return await this.#showTrace(property, matchedResult, renderers);
+        return await this.#showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset);
     }
-    async #showTrace(property, matchedResult, renderers) {
+    async #showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset) {
         this.#highlighting = new Highlighting();
         const rendererMap = new Map(renderers.map(r => [r.matchType, r]));
         // Compute all trace lines
         // 1st: Apply substitutions for var() functions
         const substitutions = [];
         const evaluations = [];
-        const tracing = new TracingContext(this.#highlighting, matchedResult);
+        const tracing = new TracingContext(this.#highlighting, expandPercentagesInShorthands, shorthandPositionOffset, matchedResult);
         while (tracing.nextSubstitution()) {
             const context = new RenderingContext(matchedResult.ast, property, rendererMap, matchedResult, 
             /* cssControls */ undefined, 

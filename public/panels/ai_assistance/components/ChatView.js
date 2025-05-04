@@ -972,7 +972,7 @@ function renderMultimodalInputButtons({ multimodalInputEnabled, blockedByCrossOr
         variant: "icon" /* Buttons.Button.Variant.ICON */,
         size: "REGULAR" /* Buttons.Button.Size.REGULAR */,
         disabled: isTextInputDisabled || imageInput?.isLoading,
-        iconName: 'attach-file',
+        iconName: 'add-photo',
         title: lockedString(UIStringsNotTranslate.addImageButtonTitle),
         jslogContext: 'upload-image',
     }}

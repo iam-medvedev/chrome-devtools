@@ -624,10 +624,8 @@ export class TimelinePanel extends UI.Panel.Panel {
      * 2) gives the checkbox UI an indeterminate state
      */
     set3PCheckboxDisabled(disabled) {
-        if (Root.Runtime.experiments.isEnabled("timeline-dim-unrelated-events" /* Root.Runtime.ExperimentName.TIMELINE_DIM_UNRELATED_EVENTS */)) {
-            this.#thirdPartyCheckbox?.applyEnabledState(!disabled);
-            this.#thirdPartyCheckbox?.setIndeterminate(disabled);
-        }
+        this.#thirdPartyCheckbox?.applyEnabledState(!disabled);
+        this.#thirdPartyCheckbox?.setIndeterminate(disabled);
     }
     static instance(opts = { forceNew: null, isNode: false }) {
         const { forceNew, isNode: isNodeMode } = opts;
@@ -907,7 +905,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
             this.selectFileToLoad();
         });
-        this.saveButton = new UI.Toolbar.ToolbarMenuButton(this.#populateDownloadMenu.bind(this), true, true, 'timeline.save-to-file-more-options', 'download');
+        this.saveButton = new UI.Toolbar.ToolbarMenuButton(this.#populateDownloadMenu.bind(this), true, false, 'timeline.save-to-file-more-options', 'download');
         this.saveButton.setTitle(i18nString(UIStrings.saveProfile));
         if (Root.Runtime.experiments.isEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */)) {
             this.saveButton.element.addEventListener('contextmenu', event => {
@@ -1831,8 +1829,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#showSidebarIfRequired();
         // When the timeline is loaded for the first time, setup the shortcuts dialog and log what navigation setting is selected.
         // Logging the setting on the first timeline load will allow us to get an estimate number of people using each option.
-        if (this.#traceEngineModel.size() === 1 &&
-            Root.Runtime.experiments.isEnabled("timeline-alternative-navigation" /* Root.Runtime.ExperimentName.TIMELINE_ALTERNATIVE_NAVIGATION */)) {
+        if (this.#traceEngineModel.size() === 1) {
             this.#setupNavigationSetting();
             if (Common.Settings.moduleSetting('flamechart-selected-navigation').get() === 'classic') {
                 Host.userMetrics.navigationSettingAtFirstTimelineLoad(0 /* Host.UserMetrics.TimelineNavigationSetting.CLASSIC_AT_SESSION_FIRST_TRACE */);

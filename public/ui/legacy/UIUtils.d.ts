@@ -236,7 +236,6 @@ export interface ConfirmDialogOptions {
     cancelButtonLabel?: string;
     jslogContext?: string;
 }
-export declare function injectCoreStyles(elementOrShadowRoot: Element | ShadowRoot): void;
 /**
  * Creates a new shadow DOM tree with the core styles and an optional list of
  * additional styles, and attaches it to the specified `element`.

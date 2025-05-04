@@ -1,7 +1,17 @@
 import type * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface ViewInput {
+    label: Platform.UIString.LocalizedString;
+    onKeyDown: (event: KeyboardEvent) => void;
+    apply: () => void;
+}
+interface ViewOutput {
+    input: HTMLInputElement;
+}
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class AddDebugInfoURLDialog extends UI.Widget.HBox {
-    private readonly input;
+    private input;
     private readonly dialog;
     private readonly callback;
     private constructor();
@@ -12,3 +22,4 @@ export declare class AddDebugInfoURLDialog extends UI.Widget.HBox {
     private apply;
     private onKeyDown;
 }
+export {};

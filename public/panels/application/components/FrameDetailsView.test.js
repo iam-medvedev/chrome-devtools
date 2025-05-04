@@ -19,7 +19,7 @@ const makeFrame = (target) => {
         unreachableUrl: () => '',
         adFrameType: () => "none" /* Protocol.Page.AdFrameType.None */,
         adFrameStatus: () => undefined,
-        getAdScriptId: () => '1',
+        getAdScriptAncestryIds: () => null,
         resourceForURL: () => null,
         isSecureContext: () => true,
         isCrossOriginIsolated: () => true,
@@ -90,9 +90,9 @@ describeWithMockConnection('FrameDetailsView', () => {
         const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
         assert.exists(debuggerModel);
         sinon.stub(SDK.DebuggerModel.DebuggerModel, 'modelForDebuggerId').resolves(debuggerModel);
-        const scriptParsedEvent = {
+        const scriptParsedEvent1 = {
             scriptId: '123',
-            url: 'https://www.google.com/ad-script.js',
+            url: 'https://www.google.com/ad-script1.js',
             startLine: 0,
             startColumn: 0,
             endLine: 10,
@@ -101,14 +101,32 @@ describeWithMockConnection('FrameDetailsView', () => {
             hash: '',
             buildId: '',
         };
-        dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent);
+        dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent1);
+        const scriptParsedEvent2 = {
+            scriptId: '456',
+            url: 'https://www.google.com/ad-script2.js',
+            startLine: 0,
+            startColumn: 0,
+            endLine: 10,
+            endColumn: 10,
+            executionContextId: 1234,
+            hash: '',
+            buildId: '',
+        };
+        dispatchEvent(target, 'Debugger.scriptParsed', scriptParsedEvent2);
         const frame = makeFrame(target);
         frame.adFrameType = () => "root" /* Protocol.Page.AdFrameType.Root */;
         frame.parentFrame = () => ({
-            getAdScriptId: () => ({
-                scriptId: '123',
-                debuggerId: '42',
-            }),
+            getAdScriptAncestryIds: () => ([
+                {
+                    scriptId: '123',
+                    debuggerId: '42',
+                },
+                {
+                    scriptId: '456',
+                    debuggerId: '42',
+                }
+            ]),
         });
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);
@@ -139,7 +157,7 @@ describeWithMockConnection('FrameDetailsView', () => {
             'Owner Element',
             'Frame Creation Stack Trace',
             'Ad Status',
-            'Creator Ad Script',
+            'Creator Ad Script Ancestry',
             'Secure Context',
             'Cross-Origin Isolated',
             'Cross-Origin Embedder Policy (COEP)',
@@ -155,7 +173,7 @@ describeWithMockConnection('FrameDetailsView', () => {
             '<iframe>',
             '',
             '',
-            'ad-script.js:1',
+            '',
             'Yes\xA0Localhost is always a secure context',
             'Yes',
             'None',
@@ -182,9 +200,14 @@ describeWithMockConnection('FrameDetailsView', () => {
         const adStatusItem = adStatusList.shadowRoot.querySelector('.expandable-list-items');
         assert.exists(adStatusItem);
         assert.strictEqual(adStatusItem.textContent?.trim(), 'root');
-        const adScriptLink = component.shadowRoot.querySelector('devtools-report-value.ad-script-link');
-        assert.exists(adScriptLink);
-        assert.strictEqual(adScriptLink.textContent, 'ad-script.js:1');
+        const adScriptAncestryList = component.shadowRoot.querySelector('devtools-report-value.creator-ad-script-ancestry-list devtools-expandable-list');
+        assert.exists(adScriptAncestryList);
+        const adScriptAncestryExpandableButton = adScriptAncestryList.shadowRoot.querySelector('button');
+        assert.exists(adScriptAncestryExpandableButton);
+        adScriptAncestryExpandableButton.click();
+        const adScriptAncestryItems = adScriptAncestryList.shadowRoot.querySelectorAll('.expandable-list-items .devtools-link');
+        const adScriptsText = Array.from(adScriptAncestryItems).map(adScript => adScript.textContent?.trim());
+        assert.deepEqual(adScriptsText, ['ad-script1.js:1', 'ad-script2.js:1']);
     });
 });
 //# sourceMappingURL=FrameDetailsView.test.js.map

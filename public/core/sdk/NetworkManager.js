@@ -8,7 +8,7 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { Cookie } from './Cookie.js';
-import { DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest } from './NetworkRequest.js';
+import { DirectSocketChunkType, DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
@@ -1032,11 +1032,44 @@ export class NetworkDispatcher {
         networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
         this.finishNetworkRequest(networkRequest, event.timestamp, 0);
     }
-    directTCPSocketChunkSent(_event) {
+    directTCPSocketChunkSent(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest) {
+            return;
+        }
+        networkRequest.addDirectSocketChunk({
+            data: event.data,
+            type: DirectSocketChunkType.SEND,
+            timestamp: event.timestamp,
+        });
+        networkRequest.responseReceivedTime = event.timestamp;
+        this.updateNetworkRequest(networkRequest);
     }
-    directTCPSocketChunkReceived(_event) {
+    directTCPSocketChunkReceived(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest) {
+            return;
+        }
+        networkRequest.addDirectSocketChunk({
+            data: event.data,
+            type: DirectSocketChunkType.RECEIVE,
+            timestamp: event.timestamp,
+        });
+        networkRequest.responseReceivedTime = event.timestamp;
+        this.updateNetworkRequest(networkRequest);
     }
-    directTCPSocketChunkError(_event) {
+    directTCPSocketChunkError(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest) {
+            return;
+        }
+        networkRequest.addDirectSocketChunk({
+            data: event.errorMessage,
+            type: DirectSocketChunkType.ERROR,
+            timestamp: event.timestamp,
+        });
+        networkRequest.responseReceivedTime = event.timestamp;
+        this.updateNetworkRequest(networkRequest);
     }
     trustTokenOperationDone(event) {
         const request = this.#requestsById.get(event.requestId);

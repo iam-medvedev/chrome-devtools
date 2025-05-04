@@ -50,7 +50,7 @@ async function showTrace(property, matchedStyles, treeElement) {
     const viewFunction = createViewFunctionStub(Elements.CSSValueTraceView.CSSValueTraceView);
     const view = new Elements.CSSValueTraceView.CSSValueTraceView(undefined, viewFunction);
     await viewFunction.nextInput;
-    void view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, treeElement.parentPane(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map()));
+    void view.showTrace(property, null, matchedStyles, new Map(), Elements.StylePropertyTreeElement.getPropertyRenderers(property.name, property.ownerStyle, treeElement.parentPane(), matchedStyles, treeElement, treeElement.getComputedStyles() ?? new Map()), false, 0);
     return await viewFunction.nextInput;
 }
 function getLineText(line) {

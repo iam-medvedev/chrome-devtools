@@ -630,6 +630,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
     function ResourceImpl(resourceData) {
         this._url = resourceData.url;
         this._type = resourceData.type;
+        this._buildId = resourceData.buildId;
     }
     ResourceImpl.prototype = {
         get url() {
@@ -637,6 +638,9 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
         },
         get type() {
             return this._type;
+        },
+        get buildId() {
+            return this._buildId;
         },
         getContent: function (callback) {
             function callbackWrapper(response) {

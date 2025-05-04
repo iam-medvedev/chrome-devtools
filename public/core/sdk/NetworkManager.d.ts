@@ -138,9 +138,9 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     directTCPSocketOpened(event: Protocol.Network.DirectTCPSocketOpenedEvent): void;
     directTCPSocketAborted(event: Protocol.Network.DirectTCPSocketAbortedEvent): void;
     directTCPSocketClosed(event: Protocol.Network.DirectTCPSocketClosedEvent): void;
-    directTCPSocketChunkSent(_event: Protocol.Network.DirectTCPSocketChunkSentEvent): void;
-    directTCPSocketChunkReceived(_event: Protocol.Network.DirectTCPSocketChunkReceivedEvent): void;
-    directTCPSocketChunkError(_event: Protocol.Network.DirectTCPSocketChunkErrorEvent): void;
+    directTCPSocketChunkSent(event: Protocol.Network.DirectTCPSocketChunkSentEvent): void;
+    directTCPSocketChunkReceived(event: Protocol.Network.DirectTCPSocketChunkReceivedEvent): void;
+    directTCPSocketChunkError(event: Protocol.Network.DirectTCPSocketChunkErrorEvent): void;
     trustTokenOperationDone(event: Protocol.Network.TrustTokenOperationDoneEvent): void;
     subresourceWebBundleMetadataReceived({ requestId, urls }: Protocol.Network.SubresourceWebBundleMetadataReceivedEvent): void;
     subresourceWebBundleMetadataError({ requestId, errorMessage }: Protocol.Network.SubresourceWebBundleMetadataErrorEvent): void;

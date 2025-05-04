@@ -460,6 +460,18 @@ const UIStrings = {
      * @description Title of an action that navigates to the next editor in the Sources panel.
      */
     previousEditorTab: 'Previous editor',
+    /**
+     * @description Title of a setting under the Sources category in Settings. If
+     *              this option is on, the Sources panel will automatically wrap
+     *              long lines and try to avoid showing a horizontal scrollbar if
+     *              possible.
+     */
+    wordWrap: 'Word wrap',
+    /**
+     * @description Title of an action in the Sources panel that toggles the 'Word
+     *              wrap' setting.
+     */
+    toggleWordWrap: 'Toggle word wrap',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/sources-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -1633,6 +1645,32 @@ Common.Settings.registerSettingExtension({
             title: i18nLazyString(UIStrings.showTrailingWhitespaceCharacters),
             text: i18nLazyString(UIStrings.trailing),
             value: 'trailing',
+        },
+    ],
+});
+Common.Settings.registerSettingExtension({
+    category: "SOURCES" /* Common.Settings.SettingCategory.SOURCES */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.wordWrap),
+    settingName: 'sources.word-wrap',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: false,
+});
+UI.ActionRegistration.registerActionExtension({
+    category: "SOURCES" /* UI.ActionRegistration.ActionCategory.SOURCES */,
+    actionId: 'sources.toggle-word-wrap',
+    async loadActionDelegate() {
+        const Sources = await loadSourcesModule();
+        return new Sources.SourcesPanel.ActionDelegate();
+    },
+    title: i18nLazyString(UIStrings.toggleWordWrap),
+    contextTypes() {
+        return maybeRetrieveContextTypes(Sources => [Sources.SourcesView.SourcesView]);
+    },
+    bindings: [
+        {
+            shortcut: 'Alt+Z',
+            keybindSets: ["vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */],
         },
     ],
 });

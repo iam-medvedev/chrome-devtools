@@ -6,7 +6,6 @@ export interface ComputedStyleTraceData {
 }
 export declare class ComputedStyleTrace extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: ComputedStyleTraceData);
 }
 declare global {

@@ -90,7 +90,7 @@ describeWithMockConnection('BackgroundServiceView', () => {
         const header = view.contentElement.querySelector('.empty-state-header')?.textContent;
         const description = view.contentElement.querySelector('.empty-state-description')?.textContent;
         assert.deepEqual(header, 'No recording yet');
-        assert.deepEqual(description, 'Start to debug background services by using the "Start recording events" button or by hitting Ctrl.Learn more');
+        assert.deepEqual(description, 'Start to debug background services by using the "Start recording events" button or by pressing Ctrl.Learn more');
     });
     it('Triggers record on button click', async () => {
         const recordButton = view.contentElement.querySelector('.empty-state devtools-button');
