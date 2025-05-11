@@ -221,7 +221,7 @@ export class TimeRangeOverlay extends HTMLElement {
         const durationText = this.#duration ? i18n.TimeUtilities.formatMicroSecondsTime(this.#duration) : '';
         // clang-format off
         render(html `
-          <style>${timeRangeOverlayStyles.cssText}</style>
+          <style>${timeRangeOverlayStyles}</style>
           <span class="range-container" role="region" aria-label=${i18nString(UIStrings.timeRange)}>
             <span
              class="label-text"

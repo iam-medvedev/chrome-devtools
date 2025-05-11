@@ -60,6 +60,7 @@ export class Button extends HTMLElement {
         this.#props.title = data.title;
         this.#props.jslogContext = data.jslogContext;
         this.#props.longClickable = data.longClickable;
+        this.#props.inverseColorTheme = data.inverseColorTheme;
         this.#render();
     }
     set iconName(iconName) {
@@ -136,6 +137,10 @@ export class Button extends HTMLElement {
     }
     set longClickable(longClickable) {
         this.#props.longClickable = longClickable;
+        this.#render();
+    }
+    set inverseColorTheme(inverseColorTheme) {
+        this.#props.inverseColorTheme = inverseColorTheme;
         this.#render();
     }
     #setDisabledProperty(disabled) {
@@ -231,6 +236,7 @@ export class Button extends HTMLElement {
             small: this.#props.size === "SMALL" /* Size.SMALL */,
             'reduced-focus-ring': Boolean(this.#props.reducedFocusRing),
             active: this.#props.active,
+            inverse: Boolean(this.#props.inverseColorTheme),
         };
         const spinnerClasses = {
             primary: this.#props.variant === "primary" /* Variant.PRIMARY */,
@@ -241,7 +247,7 @@ export class Button extends HTMLElement {
         const jslog = this.#props.jslogContext && VisualLogging.action().track({ click: true }).context(this.#props.jslogContext);
         // clang-format off
         Lit.render(html `
-        <style>${buttonStyles.cssText}</style>
+        <style>${buttonStyles}</style>
         <button title=${ifDefined(this.#props.title)}
                 .disabled=${this.#props.disabled}
                 class=${classMap(classes)}

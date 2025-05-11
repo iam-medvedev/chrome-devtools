@@ -66,7 +66,14 @@ export class TimelineLoader {
     static loadFromEvents(events, client) {
         const loader = new TimelineLoader(client);
         window.setTimeout(async () => {
-            void loader.addEvents(events);
+            void loader.addEvents(events, null);
+        });
+        return loader;
+    }
+    static loadFromTraceFile(traceFile, client) {
+        const loader = new TimelineLoader(client);
+        window.setTimeout(async () => {
+            void loader.addEvents(traceFile.traceEvents, traceFile.metadata);
         });
         return loader;
     }
@@ -76,7 +83,7 @@ export class TimelineLoader {
         try {
             const contents = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
             window.setTimeout(async () => {
-                void loader.addEvents(contents.traceEvents);
+                void loader.addEvents(contents.traceEvents, null);
             });
         }
         catch (e) {
@@ -142,7 +149,8 @@ export class TimelineLoader {
             }
         }
     }
-    async addEvents(events) {
+    async addEvents(events, metadata) {
+        this.#metadata = metadata;
         this.client?.loadingStarted();
         /**
          * See the `eventsPerChunk` comment in `models/trace/types/Configuration.ts`.

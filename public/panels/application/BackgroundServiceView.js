@@ -377,7 +377,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             this.storageKeyManager.storageKeys().includes(storageKey);
     }
     createLearnMoreLink() {
-        let url = 'https://developer.chrome.com/docs/devtools/javascript/background-services/?utm_source=devtools';
+        let url = 'https://developer.chrome.com/docs/devtools/javascript/background-services/';
         switch (this.serviceName) {
             case "backgroundFetch" /* Protocol.BackgroundService.ServiceName.BackgroundFetch */:
                 url += '#fetch';

@@ -920,8 +920,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #renderNodeView() {
         return html `
-      <style>${liveMetricsViewStyles.cssText}</style>
-      <style>${metricValueStyles.cssText}</style>
+      <style>${liveMetricsViewStyles}</style>
+      <style>${metricValueStyles}</style>
       <div class="node-view">
         <main>
           <h2 class="section-title">${i18nString(UIStrings.nodePerformanceTimeline)}</h2>
@@ -941,8 +941,8 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const helpLink = 'https://web.dev/articles/lab-and-field-data-differences#lab_data_versus_field_data';
         // clang-format off
         const output = html `
-      <style>${liveMetricsViewStyles.cssText}</style>
-      <style>${metricValueStyles.cssText}</style>
+      <style>${liveMetricsViewStyles}</style>
+      <style>${metricValueStyles}</style>
       <div class="container">
         <div class="live-metrics-view">
           <main class="live-metrics">

@@ -1364,6 +1364,9 @@
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Êx́t̂én̂śîón̂ś ŝh́ôúl̂d́ ôṕt̂ ín̂t́ô ćr̂óŝś-ôŕîǵîń îśôĺât́îón̂ t́ô ćôńt̂ín̂úê úŝín̂ǵ SharedArrayBuffer. Ŝéê h́t̂t́p̂ś://d̂év̂él̂óp̂ér̂.ćĥŕôḿê.ćôḿ/d̂óĉś/êx́t̂én̂śîón̂ś/m̂v́3/ĉŕôśŝ-ór̂íĝín̂-íŝól̂át̂íôń/."
   },
+  "generated/Deprecation.ts | WebGPUAdapterIsFallbackAdapter": {
+    "message": "T̂h́ê ǴP̂ÚÂd́âṕt̂ér̂ isFallbackAdapter át̂t́r̂íb̂út̂é îś d̂ép̂ŕêćât́êd́, îńŝt́êád̂ úŝé t̂h́ê ǴP̂ÚÂd́âṕt̂ér̂Ín̂f́ô isFallbackAdapter át̂t́r̂íb̂út̂é."
+  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "ÛT́F̂-16 íŝ ńôt́ ŝúp̂ṕôŕt̂éd̂ b́ŷ ŕêśp̂ón̂śê j́ŝón̂ ín̂ XMLHttpRequest"
   },
@@ -2051,6 +2054,9 @@
   "models/trace/insights/NetworkDependencyTree.ts | columnRequest": {
     "message": "R̂éq̂úêśt̂"
   },
+  "models/trace/insights/NetworkDependencyTree.ts | columnSource": {
+    "message": "Ŝóûŕĉé"
+  },
   "models/trace/insights/NetworkDependencyTree.ts | columnTime": {
     "message": "T̂ím̂é"
   },
@@ -2061,7 +2067,7 @@
     "message": "[Âv́ôíd̂ ćĥáîńîńĝ ćr̂ít̂íĉál̂ ŕêq́ûéŝt́ŝ](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) b́ŷ ŕêd́ûćîńĝ t́ĥé l̂én̂ǵt̂h́ ôf́ ĉh́âín̂ś, r̂éd̂úĉín̂ǵ t̂h́ê d́ôẃn̂ĺôád̂ śîźê óf̂ ŕêśôúr̂ćêś, ôŕ d̂éf̂ér̂ŕîńĝ t́ĥé d̂óŵńl̂óâd́ ôf́ ûńn̂éĉéŝśâŕŷ ŕêśôúr̂ćêś t̂ó îḿp̂ŕôv́ê ṕâǵê ĺôád̂."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
-    "message": "Âd́d̂ [ṕr̂éĉón̂ńêćt̂](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=lighthouse&utm_medium=devtools) h́îńt̂ś t̂ó ŷóûŕ m̂óŝt́ îḿp̂ór̂t́âńt̂ ór̂íĝín̂ś, b̂út̂ t́r̂ý t̂ó ûśê f́êẃêŕ t̂h́âń 4."
+    "message": "Âd́d̂ [ṕr̂éĉón̂ńêćt̂](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) h́îńt̂ś t̂ó ŷóûŕ m̂óŝt́ îḿp̂ór̂t́âńt̂ ór̂íĝín̂ś, b̂út̂ t́r̂ý t̂ó ûśê f́êẃêŕ t̂h́âń 4."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
     "message": "P̂ŕêćôńn̂éĉt́ ĉán̂d́îd́ât́êś"
@@ -2073,7 +2079,16 @@
     "message": "N̂ó r̂én̂d́êŕîńĝ t́âśk̂ś îḿp̂áĉt́êd́ b̂ý n̂ét̂ẃôŕk̂ d́êṕêńd̂én̂ćîéŝ"
   },
   "models/trace/insights/NetworkDependencyTree.ts | noPreconnectCandidates": {
-    "message": "N̂ó ôŕîǵîńŝ ár̂é ĝóôd́ ĉán̂d́îd́ât́êś f̂ór̂ ṕr̂éĉón̂ńêćt̂ín̂ǵ"
+    "message": "N̂ó âd́d̂ít̂íôńâĺ ôŕîǵîńŝ ár̂é ĝóôd́ ĉán̂d́îd́ât́êś f̂ór̂ ṕr̂éĉón̂ńêćt̂ín̂ǵ"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | noPreconnectOrigins": {
+    "message": "n̂ó ôŕîǵîńŝ ẃêŕê ṕr̂éĉón̂ńêćt̂éd̂"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableDescription": {
+    "message": "[p̂ŕêćôńn̂éĉt́](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) ĥín̂t́ŝ h́êĺp̂ t́ĥé b̂ŕôẃŝér̂ éŝt́âb́l̂íŝh́ â ćôńn̂éĉt́îón̂ éâŕl̂íêŕ îń t̂h́ê ṕâǵê ĺôád̂, śâv́îńĝ t́îḿê ẃĥén̂ t́ĥé f̂ír̂śt̂ ŕêq́ûéŝt́ f̂ór̂ t́ĥát̂ ór̂íĝín̂ íŝ ḿâd́ê. T́ĥé f̂ól̂ĺôẃîńĝ ár̂é t̂h́ê ór̂íĝín̂ś t̂h́ât́ t̂h́ê ṕâǵê ṕr̂éĉón̂ńêćt̂éd̂ t́ô."
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableTitle": {
+    "message": "P̂ŕêćôńn̂éĉt́ ôŕîǵîńŝ"
   },
   "models/trace/insights/NetworkDependencyTree.ts | title": {
     "message": "N̂ét̂ẃôŕk̂ d́êṕêńd̂én̂ćŷ t́r̂éê"
@@ -5213,9 +5228,6 @@
   "panels/application/StorageView.ts | usage": {
     "message": "Ûśâǵê"
   },
-  "panels/application/StorageView.ts | webSql": {
-    "message": "Ŵéb̂ ŚQ̂Ĺ"
-  },
   "panels/application/TrustTokensTreeElement.ts | trustTokens": {
     "message": "P̂ŕîv́ât́ê śt̂át̂é t̂ók̂én̂ś"
   },
@@ -6211,6 +6223,12 @@
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | typeSelectors": {
     "message": "T̂ýp̂é ŝél̂éĉt́ôŕŝ"
+  },
+  "panels/css_overview/CSSOverviewCompletedView.ts | unableToLink": {
+    "message": "(ûńâb́l̂é t̂ó l̂ín̂ḱ)"
+  },
+  "panels/css_overview/CSSOverviewCompletedView.ts | unableToLinkToInlineStyle": {
+    "message": "(ûńâb́l̂é t̂ó l̂ín̂ḱ t̂ó îńl̂ín̂é ŝt́ŷĺê)"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | universalSelectors": {
     "message": "Ûńîv́êŕŝál̂ śêĺêćt̂ór̂ś"
@@ -9995,17 +10013,47 @@
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "Ŵát̂ér̂f́âĺl̂"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | all": {
+  "panels/network/ResourceChunkView.ts | all": {
     "message": "Âĺl̂"
+  },
+  "panels/network/ResourceChunkView.ts | clearAll": {
+    "message": "Ĉĺêár̂ Ál̂ĺ"
+  },
+  "panels/network/ResourceChunkView.ts | clearAllL": {
+    "message": "Ĉĺêár̂ ál̂ĺ"
+  },
+  "panels/network/ResourceChunkView.ts | copyMessage": {
+    "message": "Ĉóp̂ý m̂éŝśâǵê"
+  },
+  "panels/network/ResourceChunkView.ts | copyMessageD": {
+    "message": "Ĉóp̂ý m̂éŝśâǵê..."
+  },
+  "panels/network/ResourceChunkView.ts | data": {
+    "message": "D̂át̂á"
+  },
+  "panels/network/ResourceChunkView.ts | filter": {
+    "message": "F̂íl̂t́êŕ"
+  },
+  "panels/network/ResourceChunkView.ts | length": {
+    "message": "L̂én̂ǵt̂h́"
+  },
+  "panels/network/ResourceChunkView.ts | noMessageSelected": {
+    "message": "N̂ó m̂éŝśâǵê śêĺêćt̂éd̂"
+  },
+  "panels/network/ResourceChunkView.ts | receive": {
+    "message": "R̂éĉéîv́ê"
+  },
+  "panels/network/ResourceChunkView.ts | selectMessageToBrowseItsContent": {
+    "message": "Ŝél̂éĉt́ m̂éŝśâǵê t́ô b́r̂óŵśê ít̂ś ĉón̂t́êńt̂."
+  },
+  "panels/network/ResourceChunkView.ts | send": {
+    "message": "Ŝén̂d́"
+  },
+  "panels/network/ResourceChunkView.ts | time": {
+    "message": "T̂ím̂é"
   },
   "panels/network/ResourceWebSocketFrameView.ts | binaryMessage": {
     "message": "B̂ín̂ár̂ý M̂éŝśâǵê"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | clearAll": {
-    "message": "Ĉĺêár̂ Ál̂ĺ"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | clearAllL": {
-    "message": "Ĉĺêár̂ ál̂ĺ"
   },
   "panels/network/ResourceWebSocketFrameView.ts | connectionCloseMessage": {
     "message": "Ĉón̂ńêćt̂íôń Ĉĺôśê Ḿêśŝáĝé"
@@ -10013,44 +10061,17 @@
   "panels/network/ResourceWebSocketFrameView.ts | continuationFrame": {
     "message": "Ĉón̂t́îńûát̂íôń F̂ŕâḿê"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | copyMessage": {
-    "message": "Ĉóp̂ý m̂éŝśâǵê"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | copyMessageD": {
-    "message": "Ĉóp̂ý m̂éŝśâǵê..."
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | data": {
-    "message": "D̂át̂á"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | filter": {
-    "message": "F̂íl̂t́êŕ"
-  },
   "panels/network/ResourceWebSocketFrameView.ts | filterUsingRegex": {
     "message": "F̂íl̂t́êŕ ûśîńĝ ŕêǵêx́ (êx́âḿp̂ĺê: (ẃêb́)?ŝóĉḱêt́)"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | length": {
-    "message": "L̂én̂ǵt̂h́"
-  },
   "panels/network/ResourceWebSocketFrameView.ts | na": {
     "message": "N̂/Á"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | noMessageSelected": {
-    "message": "N̂ó m̂éŝśâǵê śêĺêćt̂éd̂"
   },
   "panels/network/ResourceWebSocketFrameView.ts | pingMessage": {
     "message": "P̂ín̂ǵ M̂éŝśâǵê"
   },
   "panels/network/ResourceWebSocketFrameView.ts | pongMessage": {
     "message": "P̂ón̂ǵ M̂éŝśâǵê"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | receive": {
-    "message": "R̂éĉéîv́ê"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | selectMessageToBrowseItsContent": {
-    "message": "Ŝél̂éĉt́ m̂éŝśâǵê t́ô b́r̂óŵśê ít̂ś ĉón̂t́êńt̂."
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | send": {
-    "message": "Ŝén̂d́"
   },
   "panels/network/ResourceWebSocketFrameView.ts | sOpcodeS": {
     "message": "{PH1} (Ôṕĉód̂é {PH2})"
@@ -10060,9 +10081,6 @@
   },
   "panels/network/ResourceWebSocketFrameView.ts | textMessage": {
     "message": "T̂éx̂t́ M̂éŝśâǵê"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | time": {
-    "message": "T̂ím̂é"
   },
   "panels/network/ResourceWebSocketFrameView.ts | webSocketFrame": {
     "message": "Ŵéb̂ Śôćk̂ét̂ F́r̂ám̂é"
@@ -14237,6 +14255,9 @@
   "panels/timeline/components/NetworkRequestTooltip.ts | queuingAndConnecting": {
     "message": "Q̂úêúîńĝ án̂d́ ĉón̂ńêćt̂ín̂ǵ"
   },
+  "panels/timeline/components/NetworkRequestTooltip.ts | redirects": {
+    "message": "R̂éd̂ír̂éĉt́ŝ"
+  },
   "panels/timeline/components/NetworkRequestTooltip.ts | renderBlocking": {
     "message": "R̂én̂d́êŕ b̂ĺôćk̂ín̂ǵ"
   },
@@ -14657,6 +14678,9 @@
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} ât́ {PH2}"
   },
+  "panels/timeline/TimelineHistoryManager.ts | backButtonTooltip": {
+    "message": "V̂íêẃ l̂ív̂é m̂ét̂ŕîćŝ ṕâǵê"
+  },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Ĉúr̂ŕêńt̂ śêśŝíôń: {PH1}. {PH2}"
   },
@@ -14714,12 +14738,6 @@
   "panels/timeline/TimelinePanel.ts | dimThirdParties": {
     "message": "D̂ím̂ 3ŕd̂ ṕâŕt̂íêś"
   },
-  "panels/timeline/TimelinePanel.ts | disableJavascriptSamples": {
-    "message": "D̂íŝáb̂ĺê J́âv́âŚĉŕîṕt̂ śâḿp̂ĺêś"
-  },
-  "panels/timeline/TimelinePanel.ts | disablesJavascriptSampling": {
-    "message": "D̂íŝáb̂ĺêś Ĵáv̂áŜćr̂íp̂t́ ŝám̂ṕl̂ín̂ǵ, r̂éd̂úĉéŝ óv̂ér̂h́êád̂ ẃĥén̂ ŕûńn̂ín̂ǵ âǵâín̂śt̂ ḿôb́îĺê d́êv́îćêś"
-  },
   "panels/timeline/TimelinePanel.ts | downloadAfterError": {
     "message": "D̂óŵńl̂óâd́ t̂ŕâćê"
   },
@@ -14755,9 +14773,6 @@
   },
   "panels/timeline/TimelinePanel.ts | initializingProfiler": {
     "message": "Îńît́îál̂íẑín̂ǵ p̂ŕôf́îĺêŕ…"
-  },
-  "panels/timeline/TimelinePanel.ts | JavascriptSamplingIsDisabled": {
-    "message": "- Ĵáv̂áŜćr̂íp̂t́ ŝám̂ṕl̂ín̂ǵ îś d̂íŝáb̂ĺêd́"
   },
   "panels/timeline/TimelinePanel.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
@@ -16024,6 +16039,9 @@
   },
   "ui/components/settings/SettingCheckbox.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
+  },
+  "ui/components/snackbars/Snackbar.ts | dismiss": {
+    "message": "D̂íŝḿîśŝ"
   },
   "ui/components/survey_link/SurveyLink.ts | anErrorOccurredWithTheSurvey": {
     "message": "Âń êŕr̂ór̂ óĉćûŕr̂éd̂ ẃît́ĥ t́ĥé ŝúr̂v́êý"

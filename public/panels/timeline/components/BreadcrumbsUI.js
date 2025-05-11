@@ -109,7 +109,7 @@ export class BreadcrumbsUI extends HTMLElement {
     #render() {
         // clang-format off
         const output = html `
-      <style>${breadcrumbsUIStyles.cssText}</style>
+      <style>${breadcrumbsUIStyles}</style>
       ${this.#initialBreadcrumb === null ? Lit.nothing : html `<div class="breadcrumbs" jslog=${VisualLogging.section('breadcrumbs')}>
         ${flattenBreadcrumbs(this.#initialBreadcrumb).map((breadcrumb, index) => this.#renderElement(breadcrumb, index))}
       </div>`}

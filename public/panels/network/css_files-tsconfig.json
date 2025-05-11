@@ -20,8 +20,8 @@
         "requestInitiatorViewTree.css.js",
         "requestPayloadTree.css.js",
         "requestPayloadView.css.js",
+        "resourceChunkView.css.js",
         "signedExchangeInfoTree.css.js",
-        "signedExchangeInfoView.css.js",
-        "webSocketFrameView.css.js"
+        "signedExchangeInfoView.css.js"
     ]
 }

@@ -131,7 +131,7 @@ export class CPUThrottlingSelector extends HTMLElement {
         const calibrationLabel = hasCalibratedOnce ? i18nString(UIStrings.recalibrate) : i18nString(UIStrings.calibrate);
         // clang-format off
         const output = html `
-      <style>${cpuThrottlingSelectorStyles.cssText}</style>
+      <style>${cpuThrottlingSelectorStyles}</style>
       <devtools-select-menu
             @selectmenuselected=${this.#onMenuItemSelected}
             .showDivider=${true}

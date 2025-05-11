@@ -294,9 +294,9 @@ export class FieldSettingsDialog extends HTMLElement {
         const descriptionEl = i18n.i18n.getFormatLocalizedString(str_, UIStrings.fetchAggregated, { PH1: linkEl });
         // clang-format off
         const output = html `
-      <style>${fieldSettingsDialogStyles.cssText}</style>
-      <style>${Input.textInputStyles.cssText}</style>
-      <style>${Input.checkboxStyles.cssText}</style>
+      <style>${fieldSettingsDialogStyles}</style>
+      <style>${Input.textInputStyles}</style>
+      <style>${Input.checkboxStyles}</style>
       <div class="open-button-section">${this.#renderOpenButton()}</div>
       <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}

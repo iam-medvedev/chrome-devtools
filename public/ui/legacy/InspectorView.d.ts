@@ -47,6 +47,9 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     drawerVisible(): boolean;
     closeDrawer(): void;
     setDrawerMinimized(minimized: boolean): void;
+    drawerSize(): number;
+    setDrawerSize(size: number): void;
+    totalSize(): number;
     isDrawerMinimized(): boolean;
     private keyDown;
     onResize(): void;

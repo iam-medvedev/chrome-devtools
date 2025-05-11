@@ -42,12 +42,13 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
-import * as FloatingButton from '../../ui/components/floating_button/floating_button.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { render } from '../../ui/lit/lit.js';
 import { PanelUtils } from '../utils/utils.js';
 const UIStrings = {
     /**
@@ -948,7 +949,8 @@ export class NetworkRequestNode extends NetworkNode {
             cell.addEventListener('focus', () => this.parentView().resetFocus());
             // render icons
             const iconElement = PanelUtils.getIconForNetworkRequest(this.requestInternal);
-            cell.appendChild(iconElement);
+            // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+            render(iconElement, cell);
             // render Ask AI button
             const aiButtonContainer = this.createAiButtonIfAvailable();
             if (aiButtonContainer) {
@@ -958,12 +960,9 @@ export class NetworkRequestNode extends NetworkNode {
         if (columnId === 'name') {
             const webBundleInnerRequestInfo = this.requestInternal.webBundleInnerRequestInfo();
             if (webBundleInnerRequestInfo) {
-                const iconData = {
-                    iconName: 'bundle',
-                    color: 'var(--icon-info)',
-                };
-                const secondIconElement = PanelUtils.createIconElement(iconData, i18nString(UIStrings.webBundleInnerRequest));
-                secondIconElement.classList.add('icon');
+                const secondIconElement = IconButton.Icon.create('bundle', 'icon');
+                secondIconElement.style.color = 'var(--icon-info)';
+                secondIconElement.title = i18nString(UIStrings.webBundleInnerRequest);
                 const networkManager = SDK.NetworkManager.NetworkManager.forRequest(this.requestInternal);
                 if (webBundleInnerRequestInfo.bundleRequestId && networkManager) {
                     cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(new NetworkForward.NetworkRequestId.NetworkRequestId(webBundleInnerRequestInfo.bundleRequestId, networkManager), secondIconElement, undefined, undefined, undefined, 'webbundle-request'));
@@ -1320,10 +1319,7 @@ export class NetworkRequestNode extends NetworkNode {
             const action = UI.ActionRegistry.ActionRegistry.instance().getAction('drjones.network-floating-button');
             const aiButtonContainer = document.createElement('span');
             aiButtonContainer.classList.add('ai-button-container');
-            const floatingButton = new FloatingButton.FloatingButton.FloatingButton({
-                title: action.title(),
-                iconName: 'smart-assistant',
-            });
+            const floatingButton = Buttons.FloatingButton.create('smart-assistant', action.title());
             floatingButton.addEventListener('click', ev => {
                 ev.stopPropagation();
                 this.select();

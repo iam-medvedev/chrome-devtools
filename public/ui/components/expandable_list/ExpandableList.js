@@ -4,12 +4,7 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import expandableListStylesRaw from './expandableList.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const expandableListStyles = new CSSStyleSheet();
-expandableListStyles.replaceSync(expandableListStylesRaw.cssText);
+import expandableListStyles from './expandableList.css.js';
 const { html, Directives: { ifDefined } } = Lit;
 export class ExpandableList extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
@@ -25,9 +20,6 @@ export class ExpandableList extends HTMLElement {
         this.#expanded = !this.#expanded;
         this.#render();
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [expandableListStyles];
-    }
     #render() {
         if (this.#rows.length < 1) {
             return;
@@ -35,6 +27,7 @@ export class ExpandableList extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         Lit.render(html `
+      <style>${expandableListStyles}</style>
       <div class="expandable-list-container">
         <div>
           ${this.#rows.length > 1 ?

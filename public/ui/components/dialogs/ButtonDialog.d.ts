@@ -16,7 +16,6 @@ export interface ButtonDialogData {
 }
 export declare class ButtonDialog extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: ButtonDialogData);
 }
 declare global {

@@ -4,6 +4,7 @@
 import * as Host from '../../../core/host/host.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
+import { html } from '../../../ui/lit/lit.js';
 import * as AiAssistance from '../ai_assistance.js';
 const { AiAgent, ResponseType, ConversationContext, ErrorType } = AiAssistance;
 function mockConversationContext() {
@@ -15,7 +16,7 @@ function mockConversationContext() {
             return null;
         }
         getIcon() {
-            return document.createElement('span');
+            return html `<span></span>`;
         }
         getTitle() {
             return 'title';

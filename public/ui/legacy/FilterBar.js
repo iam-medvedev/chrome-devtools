@@ -230,7 +230,7 @@ export class NamedBitSetFilterUIElement extends HTMLElement {
         const namedBitSetFilterUI = new NamedBitSetFilterUI(this.#options.items, this.#options.setting);
         namedBitSetFilterUI.element().classList.add('named-bitset-filter');
         const styleElement = this.#shadow.createChild('style');
-        styleElement.textContent = filterStyles.cssText;
+        styleElement.textContent = filterStyles;
         const disclosureElement = this.#shadow.createChild('div', 'named-bit-set-filter-disclosure');
         disclosureElement.appendChild(namedBitSetFilterUI.element());
         // Translate existing filter ("ObjectWrapper") events to DOM CustomEvents so clients can

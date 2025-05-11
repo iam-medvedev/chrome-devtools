@@ -140,7 +140,12 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     directTCPSocketClosed(event: Protocol.Network.DirectTCPSocketClosedEvent): void;
     directTCPSocketChunkSent(event: Protocol.Network.DirectTCPSocketChunkSentEvent): void;
     directTCPSocketChunkReceived(event: Protocol.Network.DirectTCPSocketChunkReceivedEvent): void;
-    directTCPSocketChunkError(event: Protocol.Network.DirectTCPSocketChunkErrorEvent): void;
+    directUDPSocketCreated(event: Protocol.Network.DirectUDPSocketCreatedEvent): void;
+    directUDPSocketOpened(event: Protocol.Network.DirectUDPSocketOpenedEvent): void;
+    directUDPSocketAborted(event: Protocol.Network.DirectUDPSocketAbortedEvent): void;
+    directUDPSocketClosed(event: Protocol.Network.DirectUDPSocketClosedEvent): void;
+    directUDPSocketChunkSent(event: Protocol.Network.DirectUDPSocketChunkSentEvent): void;
+    directUDPSocketChunkReceived(event: Protocol.Network.DirectUDPSocketChunkReceivedEvent): void;
     trustTokenOperationDone(event: Protocol.Network.TrustTokenOperationDoneEvent): void;
     subresourceWebBundleMetadataReceived({ requestId, urls }: Protocol.Network.SubresourceWebBundleMetadataReceivedEvent): void;
     subresourceWebBundleMetadataError({ requestId, errorMessage }: Protocol.Network.SubresourceWebBundleMetadataErrorEvent): void;
@@ -155,6 +160,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
      * This method is only kept for usage in a web test.
      */
     protected createNetworkRequest(requestId: Protocol.Network.RequestId, frameId: Protocol.Page.FrameId, loaderId: Protocol.Network.LoaderId, url: string, documentURL: string, initiator: Protocol.Network.Initiator | null): NetworkRequest;
+    private concatHostPort;
 }
 export declare class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper<MultitargetNetworkManager.EventTypes> implements SDKModelObserver<NetworkManager> {
     #private;

@@ -31,7 +31,6 @@ import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Lit from '../../ui/lit/lit.js';
 import { Constraints, Size } from './Geometry.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
 import { XWidget } from './XWidget.js';
 // Remember the original DOM mutation methods here, since we
@@ -60,15 +59,23 @@ export class WidgetElement extends HTMLElement {
     #widgetClass;
     #widgetParams;
     createWidget() {
-        if (!this.#widgetClass) {
-            throw new Error('No widgetClass defined');
-        }
-        const widget = new this.#widgetClass(this);
+        const widget = this.#instantiateWidget();
         if (this.#widgetParams) {
             Object.assign(widget, this.#widgetParams);
         }
         widget.requestUpdate();
         return widget;
+    }
+    #instantiateWidget() {
+        if (!this.#widgetClass) {
+            throw new Error('No widgetClass defined');
+        }
+        if (Widget.isPrototypeOf(this.#widgetClass)) {
+            const ctor = this.#widgetClass;
+            return new ctor(this);
+        }
+        const factory = this.#widgetClass;
+        return factory(this);
     }
     set widgetConfig(config) {
         const widget = Widget.get(this);
@@ -527,7 +534,7 @@ export class Widget {
     }
     registerRequiredCSS(...cssFiles) {
         for (const cssFile of cssFiles) {
-            ThemeSupport.ThemeSupport.instance().appendStyle(this.#shadowRoot ?? this.element, cssFile);
+            Platform.DOMUtilities.appendStyle(this.#shadowRoot ?? this.element, cssFile);
         }
     }
     // Unused, but useful for debugging.

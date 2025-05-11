@@ -73,12 +73,12 @@ export interface EventTypes {
 }
 export declare class ElementDetailsView extends UI.Widget.Widget {
     #private;
-    constructor(controller: OverviewController, domModel: SDK.DOMModel.DOMModel, cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier);
+    constructor(domModel: SDK.DOMModel.DOMModel, cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier);
     populateNodes(data: PopulateNodesEventNodes): Promise<void>;
 }
 export declare class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode<ElementNode> {
     #private;
-    constructor(data: PopulateNodesEventNodeTypes, frontendNode: SDK.DOMModel.DOMNode | null | undefined, linkifier: Components.Linkifier.Linkifier, cssModel: SDK.CSSModel.CSSModel);
+    constructor(data: PopulateNodesEventNodeTypes, link?: HTMLElement, show?: () => Promise<void>);
     createCell(columnId: string): HTMLElement;
 }
 export {};

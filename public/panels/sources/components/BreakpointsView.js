@@ -147,10 +147,6 @@ export class BreakpointsSidebarController {
     static removeInstance() {
         breakpointsViewControllerInstance = null;
     }
-    static targetSupportsIndependentPauseOnExceptionToggles() {
-        const hasNodeTargets = SDK.TargetManager.TargetManager.instance().targets().some(target => target.type() === SDK.Target.Type.NODE);
-        return !hasNodeTargets;
-    }
     flavorChanged(_object) {
         void this.update();
     }
@@ -230,7 +226,6 @@ export class BreakpointsSidebarController {
     }
     async getUpdatedBreakpointViewData() {
         const breakpointsActive = this.#breakpointsActiveSetting.get();
-        const independentPauseToggles = BreakpointsSidebarController.targetSupportsIndependentPauseOnExceptionToggles();
         const pauseOnUncaughtExceptions = this.#pauseOnUncaughtExceptionSetting.get();
         const pauseOnCaughtExceptions = this.#pauseOnCaughtExceptionSetting.get();
         const breakpointLocations = this.#getBreakpointLocations();
@@ -239,7 +234,6 @@ export class BreakpointsSidebarController {
                 breakpointsActive,
                 pauseOnCaughtExceptions,
                 pauseOnUncaughtExceptions,
-                independentPauseToggles,
                 groups: [],
             };
         }
@@ -303,7 +297,6 @@ export class BreakpointsSidebarController {
             breakpointsActive,
             pauseOnCaughtExceptions,
             pauseOnUncaughtExceptions,
-            independentPauseToggles,
             groups: Array.from(scriptIdToGroup.values()),
         };
     }
@@ -431,15 +424,12 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     #shadow = this.attachShadow({ mode: 'open' });
     #pauseOnUncaughtExceptions = false;
     #pauseOnCaughtExceptions = false;
-    // TODO(crbug.com/1382762): Remove special casing with dependent toggles as soon as Node LTS caught up on independent pause of exception toggles.
-    #independentPauseToggles = false;
     #breakpointsActive = true;
     #breakpointGroups = [];
     #urlToDifferentiatingPath = new Map();
     set data(data) {
         this.#pauseOnUncaughtExceptions = data.pauseOnUncaughtExceptions;
         this.#pauseOnCaughtExceptions = data.pauseOnCaughtExceptions;
-        this.#independentPauseToggles = data.independentPauseToggles;
         this.#breakpointsActive = data.breakpointsActive;
         this.#breakpointGroups = data.groups;
         const titleInfos = [];
@@ -456,12 +446,10 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
                 await this.#setSelected(currentTarget);
                 event.consume();
             };
-            const pauseOnCaughtIsChecked = (this.#independentPauseToggles || this.#pauseOnUncaughtExceptions) && this.#pauseOnCaughtExceptions;
-            const pauseOnCaughtExceptionIsDisabled = !this.#independentPauseToggles && !this.#pauseOnUncaughtExceptions;
             // clang-format off
             const out = html `
         <style>${Input.checkboxStyles}</style>
-        <style>${breakpointsViewStyles.cssText}</style>
+        <style>${breakpointsViewStyles}</style>
         <div class='pause-on-uncaught-exceptions'
             tabindex='0'
             @click=${clickHandler}
@@ -479,10 +467,10 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
               @click=${clickHandler}
               @keydown=${this.#keyDownHandler}
               role='checkbox'
-              aria-checked=${pauseOnCaughtIsChecked}
+              aria-checked=${this.#pauseOnCaughtExceptions}
               data-last-pause>
             <label class='checkbox-label'>
-              <input data-pause-on-caught-checkbox type='checkbox' class="small" tabindex=-1 ?checked=${pauseOnCaughtIsChecked} ?disabled=${pauseOnCaughtExceptionIsDisabled} @change=${this.#onPauseOnCaughtExceptionsStateChanged.bind(this)} jslog=${VisualLogging.toggle('pause-on-caught-exception').track({ change: true })}>
+              <input data-pause-on-caught-checkbox type='checkbox' class="small" tabindex=-1 ?checked=${this.#pauseOnCaughtExceptions} @change=${this.#onPauseOnCaughtExceptionsStateChanged.bind(this)} jslog=${VisualLogging.toggle('pause-on-caught-exception').track({ change: true })}>
               <span>${i18nString(UIStrings.pauseOnCaughtExceptions)}</span>
             </label>
         </div>
@@ -831,25 +819,6 @@ export class BreakpointsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     }
     #onPauseOnUncaughtExceptionsStateChanged(e) {
         const { checked } = e.target;
-        if (!this.#independentPauseToggles) {
-            const pauseOnCaughtCheckbox = this.#shadow.querySelector('[data-pause-on-caught-checkbox]');
-            assertNotNullOrUndefined(pauseOnCaughtCheckbox);
-            if (!checked && pauseOnCaughtCheckbox.checked) {
-                // If we can only pause on caught exceptions if we pause on uncaught exceptions, make sure to
-                // uncheck the pause on caught exception checkbox.
-                pauseOnCaughtCheckbox.click();
-            }
-            void RenderCoordinator.write('BreakpointsView update pause-on-uncaught-exception', () => {
-                // Disable/enable the pause on caught exception checkbox depending on whether
-                // or not we are pausing on uncaught exceptions.
-                if (checked) {
-                    pauseOnCaughtCheckbox.disabled = false;
-                }
-                else {
-                    pauseOnCaughtCheckbox.disabled = true;
-                }
-            });
-        }
         this.#controller.setPauseOnUncaughtExceptions(checked);
     }
 }

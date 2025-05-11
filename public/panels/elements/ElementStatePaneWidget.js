@@ -79,7 +79,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     };
     // clang-format off
     render(html `
-    <style>${elementStatePaneWidgetStyles.cssText}</style>
+    <style>${elementStatePaneWidgetStyles}</style>
     <div class="styles-element-state-pane"
         jslog=${VisualLogging.pane('element-states')}>
       <div class="page-state-checkbox">

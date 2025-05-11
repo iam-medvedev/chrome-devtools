@@ -79,7 +79,7 @@ export class ImagePreview {
             function buildContent() {
                 const shadowBoundary = document.createElement('div');
                 const shadowRoot = shadowBoundary.attachShadow({ mode: 'open' });
-                shadowRoot.createChild('style').textContent = imagePreviewStyles.cssText;
+                shadowRoot.createChild('style').textContent = imagePreviewStyles;
                 const container = shadowRoot.createChild('table');
                 container.className = 'image-preview-container';
                 const imageRow = container.createChild('tr').createChild('td', 'image-container');

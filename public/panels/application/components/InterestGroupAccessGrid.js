@@ -71,8 +71,8 @@ export class InterestGroupAccessGrid extends HTMLElement {
     #render() {
         // clang-format off
         Lit.render(html `
-      <style>${interestGroupAccessGridStyles.cssText}</style>
-      <style>${UI.inspectorCommonStyles.cssText}</style>
+      <style>${interestGroupAccessGridStyles}</style>
+      <style>${UI.inspectorCommonStyles}</style>
       ${this.#datastores.length === 0 ?
             html `
           <div class="empty-state">

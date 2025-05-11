@@ -507,8 +507,8 @@ export class MetricCard extends HTMLElement {
         const fieldValueEl = renderMetricValue(this.#getMetricValueLogContext(false), fieldValue, thresholds, formatFn);
         // clang-format off
         const output = html `
-      <style>${metricCardStyles.cssText}</style>
-      <style>${metricValueStyles.cssText}</style>
+      <style>${metricCardStyles}</style>
+      <style>${metricValueStyles}</style>
       <div class="metric-card">
         <h3 class="title">
           ${this.#getTitle()}

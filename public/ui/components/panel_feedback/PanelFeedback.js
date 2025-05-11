@@ -8,12 +8,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as ComponentHelpers from '../../components/helpers/helpers.js';
 import { html, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import panelFeedbackStylesRaw from './panelFeedback.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const panelFeedbackStyles = new CSSStyleSheet();
-panelFeedbackStyles.replaceSync(panelFeedbackStylesRaw.cssText);
+import panelFeedbackStyles from './panelFeedback.css.js';
 const UIStrings = {
     /**
      *@description Introduction sentence to convey the feature is being actively worked on and we are looking for feedback.
@@ -43,9 +38,6 @@ export class PanelFeedback extends HTMLElement {
         quickStartUrl: Platform.DevToolsPath.EmptyUrlString,
         quickStartLinkText: '',
     };
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [panelFeedbackStyles];
-    }
     set data(data) {
         this.#props = data;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
@@ -56,6 +48,7 @@ export class PanelFeedback extends HTMLElement {
         }
         // clang-format off
         render(html `
+      <style>${panelFeedbackStyles}</style>
       <div class="preview">
         <h2 class="flex">
           <devtools-icon .data=${{

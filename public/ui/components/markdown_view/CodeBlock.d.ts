@@ -1,5 +1,9 @@
 import '../../../ui/legacy/legacy.js';
 import * as CodeMirror from '../../../third_party/codemirror.next/codemirror.next.js';
+export interface Citation {
+    index: Number;
+    clickHandler: () => void;
+}
 export declare function languageFromToken(lang: string): Promise<CodeMirror.LanguageSupport>;
 export declare class CodeBlock extends HTMLElement {
     #private;
@@ -11,6 +15,7 @@ export declare class CodeBlock extends HTMLElement {
     set displayNotice(value: boolean);
     set header(header: string);
     set showCopyButton(show: boolean);
+    set citations(citations: Citation[]);
 }
 declare global {
     interface HTMLElementTagNameMap {

@@ -45,7 +45,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { FontEditorSectionManager } from './ColorSwatchPopoverIcon.js';
 import * as ElementsComponents from './components/components.js';
-import { linkifyDeferredNodeReference } from './DOMLinkifier.js';
+import { DeferredDOMNodeLink } from './DOMLinkifier.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import stylePropertiesTreeOutlineStyles from './stylePropertiesTreeOutline.css.js';
 import { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
@@ -357,10 +357,8 @@ export class StylePropertiesSection {
         }
         function linkifyNode(label) {
             if (header?.ownerNode) {
-                const link = linkifyDeferredNodeReference(header.ownerNode, {
-                    preventKeyboardFocus: false,
-                    tooltip: undefined,
-                });
+                const link = document.createElement('devtools-widget');
+                link.widgetConfig = UI.Widget.widgetConfig(e => new DeferredDOMNodeLink(e, header.ownerNode));
                 link.textContent = label;
                 return link;
             }

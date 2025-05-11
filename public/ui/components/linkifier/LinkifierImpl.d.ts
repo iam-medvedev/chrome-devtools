@@ -15,7 +15,6 @@ export declare class Linkifier extends HTMLElement {
     #private;
     set data(data: LinkifierData);
     cloneNode(deep?: boolean): Node;
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

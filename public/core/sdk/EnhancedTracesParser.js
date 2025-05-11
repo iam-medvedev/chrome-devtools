@@ -93,10 +93,10 @@ export class EnhancedTracesParser {
                         scriptId: data.scriptId,
                         isolate: data.isolate,
                         executionContextId: data.executionContextId,
-                        startLine: data.startLine,
-                        startColumn: data.startColumn,
-                        endLine: data.endLine,
-                        endColumn: data.endColumn,
+                        startLine: data.startLine ?? 0,
+                        startColumn: data.startColumn ?? 0,
+                        endLine: data.endLine ?? 0,
+                        endColumn: data.endColumn ?? 0,
                         hash: data.hash,
                         isModule: data.isModule,
                         url: data.url,
@@ -179,25 +179,23 @@ export class EnhancedTracesParser {
             // Encoded as a data url so that the debugger model makes no network request.
             // NOTE: consider passing directly as object and hacking `parsedScriptSource` in DebuggerModel.ts to handle
             // this fake event. Would avoid a lot of wasteful (de)serialization. Maybe add SDK.Script.hydratedSourceMap.
-            script.sourceMapURL = this.getEncodedSourceMapUrl(script);
+            this.resolveSourceMap(script);
         }
         return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts);
     }
-    getEncodedSourceMapUrl(script) {
+    resolveSourceMap(script) {
         if (script.sourceMapURL?.startsWith('data:')) {
-            return script.sourceMapURL;
+            return;
         }
         const sourceMap = this.getSourceMapFromMetadata(script);
         if (!sourceMap) {
             return;
         }
-        try {
-            return `data:text/plain;base64,${btoa(JSON.stringify(sourceMap))}`;
-        }
-        catch {
-            // TODO(cjamcl): getting InvalidCharacterError (try loading dupe-js.json.gz).
-            return;
-        }
+        // Note: this encoding + re-parsing overhead cost ~10ms per 1MB of JSON on my
+        // Mac M1 Pro.
+        // See https://crrev.com/c/6490409/comments/f294c12a_69781e24
+        const payload = encodeURIComponent(JSON.stringify(sourceMap));
+        script.sourceMapURL = `data:application/json;charset=utf-8,${payload}`;
     }
     getSourceMapFromMetadata(script) {
         const { hasSourceURL, sourceURL, url, sourceMapURL, isolate, scriptId } = script;

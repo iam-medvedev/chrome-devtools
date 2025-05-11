@@ -12,7 +12,6 @@ export declare const extractShortPath: (path: string) => string;
 export declare class IssueLinkIcon extends HTMLElement {
     #private;
     set data(data: IssueLinkIconData);
-    connectedCallback(): void;
     get data(): IssueLinkIconData;
     handleClick(event: MouseEvent): void;
 }

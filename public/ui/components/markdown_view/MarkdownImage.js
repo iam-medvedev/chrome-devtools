@@ -4,13 +4,8 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../components/icon_button/icon_button.js';
 import * as Lit from '../../lit/lit.js';
-import markdownImageStylesRaw from './markdownImage.css.js';
+import markdownImageStyles from './markdownImage.css.js';
 import { getMarkdownImage } from './MarkdownImagesMap.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const markdownImageStyles = new CSSStyleSheet();
-markdownImageStyles.replaceSync(markdownImageStylesRaw.cssText);
 const { html, Directives: { ifDefined } } = Lit;
 /**
  * Component to render images from parsed markdown.
@@ -21,9 +16,6 @@ export class MarkdownImage extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #imageData;
     #imageTitle;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [markdownImageStyles];
-    }
     set data(data) {
         const { key, title } = data;
         const markdownImage = getMarkdownImage(key);
@@ -55,7 +47,10 @@ export class MarkdownImage extends HTMLElement {
         }
         const { isIcon } = this.#imageData;
         const imageComponent = isIcon ? this.#getIconComponent() : this.#getImageComponent();
-        Lit.render(imageComponent, this.#shadow, { host: this });
+        Lit.render(html `
+      <style>${markdownImageStyles}</style>
+      ${imageComponent}
+    `, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-markdown-image', MarkdownImage);

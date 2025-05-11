@@ -76,6 +76,7 @@ export declare class SplitWidget extends SplitWidget_base {
     isResizable(): boolean;
     setSidebarSize(size: number): void;
     sidebarSize(): number;
+    totalSize(): number;
     /**
      * Returns total size in DIP.
      */

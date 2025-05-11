@@ -80,10 +80,6 @@ const UIStrings = {
      */
     dropTimelineFileOrUrlHere: 'Drop timeline file or URL here',
     /**
-     *@description Title of disable capture jsprofile setting in timeline panel of the performance panel
-     */
-    disableJavascriptSamples: 'Disable JavaScript samples',
-    /**
      *@description Title of capture layers and pictures setting in timeline panel of the performance panel
      */
     enableAdvancedPaint: 'Enable advanced paint instrumentation (slow)',
@@ -138,10 +134,6 @@ const UIStrings = {
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
-    disablesJavascriptSampling: 'Disables JavaScript sampling, reduces overhead when running against mobile devices',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
-     */
     capturesAdvancedPaint: 'Captures advanced paint instrumentation, introduces significant performance overhead',
     /**
      *@description Text in Timeline Panel of the Performance panel
@@ -181,10 +173,6 @@ const UIStrings = {
      *@description Text in Timeline Panel of the Performance panel
      */
     SelectorStatsEnabled: '- Selector stats is enabled',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
-     */
-    JavascriptSamplingIsDisabled: '- JavaScript sampling is disabled',
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
@@ -335,7 +323,6 @@ export class TimelinePanel extends UI.Panel.Panel {
     toggleRecordAction;
     recordReloadAction;
     #historyManager;
-    disableCaptureJSProfileSetting;
     captureLayersAndPicturesSetting;
     captureSelectorStatsSetting;
     #thirdPartyTracksSetting;
@@ -456,8 +443,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
         this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
         this.traceLoadStart = null;
-        this.disableCaptureJSProfileSetting = Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
-        this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
         this.captureLayersAndPicturesSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.captureLayersAndPicturesSetting.setTitle(i18nString(UIStrings.enableAdvancedPaint));
         this.captureSelectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
@@ -686,6 +671,13 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         this.prepareToLoadTimeline();
         this.loader = TimelineLoader.loadFromEvents(events, this);
+    }
+    loadFromTraceFile(traceFile) {
+        if (this.state !== "Idle" /* State.IDLE */) {
+            return;
+        }
+        this.prepareToLoadTimeline();
+        this.loader = TimelineLoader.loadFromTraceFile(traceFile, this);
     }
     getFlameChart() {
         return this.flameChart;
@@ -1077,12 +1069,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled', 'timeline-settings-toggle');
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.updateShowSettingsToolbarButton, this);
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.updateShowSettingsToolbarButton, this);
-        this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureSelectorStatsSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.settingsPane = this.element.createChild('div', 'timeline-settings-pane');
         this.settingsPane.setAttribute('jslog', `${VisualLogging.pane('timeline-settings-pane').track({ resize: true })}`);
-        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
         const cpuThrottlingPane = this.settingsPane.createChild('div');
         cpuThrottlingPane.append(i18nString(UIStrings.cpu));
         this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
@@ -1370,9 +1360,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (this.captureSelectorStatsSetting.get()) {
             messages.push(i18nString(UIStrings.SelectorStatsEnabled));
         }
-        if (this.disableCaptureJSProfileSetting.get()) {
-            messages.push(i18nString(UIStrings.JavascriptSamplingIsDisabled));
-        }
         this.showSettingsPaneButton.setChecked(messages.length > 0);
         this.showSettingsPaneButton.element.style.setProperty('--dot-toggle-top', '16px');
         this.showSettingsPaneButton.element.style.setProperty('--dot-toggle-left', '15px');
@@ -1501,7 +1488,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 await this.#navigateToAboutBlank();
             }
             const recordingOptions = {
-                enableJSSampling: !this.disableCaptureJSProfileSetting.get(),
+                enableJSSampling: true,
                 capturePictures: this.captureLayersAndPicturesSetting.get(),
                 captureFilmStrip: this.showScreenshotsSetting.get(),
                 captureSelectorStats: this.captureSelectorStatsSetting.get(),
@@ -2112,6 +2099,16 @@ export class TimelinePanel extends UI.Panel.Panel {
      */
     async #retainSourceMapsForEnhancedTrace(parsedTrace, metadata) {
         const handleScript = async (script) => {
+            if (script.sourceMapUrlElided) {
+                if (metadata.sourceMaps?.find(m => m.url === script.url)) {
+                    return;
+                }
+                const rawSourceMap = script.sourceMap?.json();
+                if (rawSourceMap && script.url) {
+                    metadata.sourceMaps?.push({ url: script.url, sourceMap: rawSourceMap });
+                }
+                return;
+            }
             if (!script.sourceMapUrl || script.sourceMapUrl.startsWith('data:')) {
                 return;
             }
@@ -2122,7 +2119,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             // which means the raw source map is present (assuming `script.sourceMap` is too).
             let rawSourceMap = script.sourceMap?.json();
             // If the raw map is not present for some reason, fetch it again.
-            if (!rawSourceMap) {
+            if (!rawSourceMap && !script.sourceMapUrlElided) {
                 const initiator = {
                     target: null,
                     frameId: script.frame,
@@ -2142,10 +2139,6 @@ export class TimelinePanel extends UI.Panel.Panel {
         await Promise.all(promises);
     }
     #createSourceMapResolver(isFreshRecording, metadata) {
-        // Currently, only experimental insights need source maps.
-        if (!Root.Runtime.experiments.isEnabled("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */)) {
-            return;
-        }
         const debuggerModelForFrameId = new Map();
         for (const target of SDK.TargetManager.TargetManager.instance().targets()) {
             const debuggerModel = target.model(SDK.DebuggerModel.DebuggerModel);
@@ -2170,9 +2163,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             return await debuggerModel.sourceMapManager().sourceMapForClientPromise(script);
         }
         return async function resolveSourceMap(params) {
-            const { scriptId, scriptUrl, sourceMapUrl, frame, cachedRawSourceMap } = params;
+            const { scriptId, scriptUrl, sourceUrl, sourceMapUrl, frame, cachedRawSourceMap } = params;
             if (cachedRawSourceMap) {
-                return new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, cachedRawSourceMap);
+                return new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl ?? '', cachedRawSourceMap);
             }
             // For still-active frames, the source map is likely already fetched or at least in-flight.
             if (isFreshRecording) {
@@ -2181,13 +2174,16 @@ export class TimelinePanel extends UI.Panel.Panel {
                     return map;
                 }
             }
+            if (!sourceMapUrl) {
+                return null;
+            }
             // If loading from disk, check the metadata for source maps.
             // The metadata doesn't store data url source maps.
             const isDataUrl = sourceMapUrl.startsWith('data:');
             if (!isFreshRecording && metadata?.sourceMaps && !isDataUrl) {
                 const cachedSourceMap = metadata.sourceMaps.find(m => m.sourceMapUrl === sourceMapUrl);
                 if (cachedSourceMap) {
-                    return new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, cachedSourceMap.sourceMap);
+                    return new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, cachedSourceMap.sourceMap);
                 }
             }
             // Never fetch source maps if the trace is not fresh - the source maps may not
@@ -2195,7 +2191,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             if (!isFreshRecording && !isDataUrl) {
                 return null;
             }
-            if (!scriptUrl) {
+            if (!sourceUrl) {
                 return null;
             }
             // In all other cases, fetch the source map.
@@ -2206,9 +2202,9 @@ export class TimelinePanel extends UI.Panel.Panel {
             // For example, since the debugger model is disable during recording, any
             // non-final navigations during the trace will never have their source maps
             // fetched by the debugger model. That's only ever done here.
-            const initiator = { target: null, frameId: frame, initiatorUrl: scriptUrl };
+            const initiator = { target: null, frameId: frame, initiatorUrl: sourceUrl };
             const payload = await SDK.SourceMapManager.tryLoadSourceMap(sourceMapUrl, initiator);
-            return payload ? new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, payload) : null;
+            return payload ? new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, payload) : null;
         };
     }
     async #executeNewTrace(collectedEvents, isFreshRecording, metadata) {
@@ -2246,6 +2242,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }, () => this.stopRecording());
         this.statusPane.showPane(this.statusPaneContainer);
         this.statusPane.updateStatus(i18nString(UIStrings.initializingProfiler));
+        this.statusPane.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
     }
     cancelLoading() {
         if (this.loader) {
@@ -2447,9 +2444,9 @@ export class StatusPane extends UI.Widget.VBox {
             this.time = timeLine.createChild('div', 'content');
         }
         if (options.showProgress) {
-            const progressLine = this.contentElement.createChild('div', 'status-dialog-line progress');
-            this.progressLabel = progressLine.createChild('div', 'label');
-            this.progressBar = progressLine.createChild('div', 'indicator-container').createChild('div', 'indicator');
+            const progressBarContainer = this.contentElement.createChild('div', 'status-dialog-line progress');
+            this.progressLabel = progressBarContainer.createChild('div', 'label');
+            this.progressBar = progressBarContainer.createChild('div', 'indicator-container').createChild('div', 'indicator');
             UI.ARIAUtils.markAsProgressBar(this.progressBar);
         }
         if (typeof options.description === 'string') {
@@ -2510,9 +2507,13 @@ export class StatusPane extends UI.Widget.VBox {
         this.status.textContent = text;
     }
     updateProgressBar(activity, percent) {
-        this.progressLabel.textContent = activity;
-        this.progressBar.style.width = percent.toFixed(1) + '%';
-        UI.ARIAUtils.setValueNow(this.progressBar, percent);
+        if (this.progressLabel) {
+            this.progressLabel.textContent = activity;
+        }
+        if (this.progressBar) {
+            this.progressBar.style.width = percent.toFixed(1) + '%';
+            UI.ARIAUtils.setValueNow(this.progressBar, percent);
+        }
         this.updateTimer();
     }
     startTimer() {
@@ -2557,10 +2558,8 @@ export class LoadTimelineHandler {
 }
 export class TraceRevealer {
     async reveal(trace) {
-        // TODO(cjamcl): This needs to be given a TraceFile, so that metadata is loaded too. Important
-        // for source maps (which otherwise won't be saved on export).
         await UI.ViewManager.ViewManager.instance().showView('timeline');
-        TimelinePanel.instance().loadFromEvents(trace.traceEvents);
+        TimelinePanel.instance().loadFromTraceFile(trace);
     }
 }
 export class EventRevealer {

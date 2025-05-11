@@ -133,7 +133,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
-      <style>${usedPreloadingStyles.cssText}</style>
+      <style>${usedPreloadingStyles}</style>
       <devtools-report>
         ${this.#speculativeLoadingStatusForThisPageSections()}
 

@@ -9,7 +9,7 @@ import { get2DTranslationsForAngle } from './CSSAngleUtils.js';
  * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
  **/
 const cssAngleSwatchStyles = new CSSStyleSheet();
-cssAngleSwatchStyles.replaceSync(cssAngleSwatchStylesRaw.cssText);
+cssAngleSwatchStyles.replaceSync(cssAngleSwatchStylesRaw);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 const swatchWidth = 11;

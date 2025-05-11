@@ -74,10 +74,6 @@ const UIStrings = {
     /**
      * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
      */
-    webSql: 'Web SQL',
-    /**
-     * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
-     */
     cookies: 'Cookies',
     /**
      * @description Checkbox label in the Clear Storage section of the Storage View of the Application panel
@@ -172,7 +168,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
             ["indexeddb" /* Protocol.Storage.StorageType.Indexeddb */, 'rgb(155, 127, 230)'], // purple
             ["local_storage" /* Protocol.Storage.StorageType.Local_storage */, 'rgb(116, 178, 102)'], // green
             ["service_workers" /* Protocol.Storage.StorageType.Service_workers */, 'rgb(255, 167, 36)'], // orange
-            ["websql" /* Protocol.Storage.StorageType.Websql */, 'rgb(203, 220, 56)'], // lime
         ]);
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         this.reportView = new UI.ReportView.ReportView(i18nString(UIStrings.storageTitle));
@@ -240,7 +235,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         storage.element.setAttribute('jslog', `${VisualLogging.section('storage')}`);
         this.appendItem(storage, i18nString(UIStrings.localAndSessionStorage), "local_storage" /* Protocol.Storage.StorageType.Local_storage */);
         this.appendItem(storage, i18nString(UIStrings.indexDB), "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */);
-        this.appendItem(storage, i18nString(UIStrings.webSql), "websql" /* Protocol.Storage.StorageType.Websql */);
         this.appendItem(storage, i18nString(UIStrings.cookies), "cookies" /* Protocol.Storage.StorageType.Cookies */);
         this.appendItem(storage, i18nString(UIStrings.cacheStorage), "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */);
         storage.markFieldListAsGroup();
@@ -480,8 +474,6 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         switch (type) {
             case "file_systems" /* Protocol.Storage.StorageType.File_systems */:
                 return i18nString(UIStrings.fileSystem);
-            case "websql" /* Protocol.Storage.StorageType.Websql */:
-                return i18nString(UIStrings.webSql);
             case "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */:
                 return i18nString(UIStrings.indexDB);
             case "cache_storage" /* Protocol.Storage.StorageType.Cache_storage */:
@@ -499,7 +491,6 @@ export const AllStorageTypes = [
     "indexeddb" /* Protocol.Storage.StorageType.Indexeddb */,
     "local_storage" /* Protocol.Storage.StorageType.Local_storage */,
     "service_workers" /* Protocol.Storage.StorageType.Service_workers */,
-    "websql" /* Protocol.Storage.StorageType.Websql */,
 ];
 export class ActionDelegate {
     handleAction(_context, actionId) {

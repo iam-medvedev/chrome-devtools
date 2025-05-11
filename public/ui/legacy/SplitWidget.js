@@ -391,6 +391,10 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         const sizeDIP = Math.max(0, this.sidebarSizeDIP);
         return ZoomManager.instance().dipToCSS(sizeDIP);
     }
+    totalSize() {
+        const sizeDIP = Math.max(0, this.totalSizeDIP());
+        return ZoomManager.instance().dipToCSS(sizeDIP);
+    }
     /**
      * Returns total size in DIP.
      */

@@ -67,8 +67,8 @@ const SCROLL_ROUNDING_OFFSET = 1;
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     Lit.render(html `
-    <style>${Input.textInputStyles.cssText}</style>
-    <style>${userActionRowStyles.cssText}</style>
+    <style>${Input.textInputStyles}</style>
+    <style>${userActionRowStyles}</style>
     <div class="ai-assistance-feedback-row">
       <div class="rate-buttons">
         ${input.showRateButtons ? html `

@@ -33,8 +33,8 @@ export class CSSQuery extends HTMLElement {
       <span class="query-text" @click=${this.#onQueryTextClick}>${this.#queryText}</span>
     `;
         render(html `
-      <style>${cssQueryStyles.cssText}</style>
-      <style>${UI.inspectorCommonStyles.cssText}</style>
+      <style>${cssQueryStyles}</style>
+      <style>${UI.inspectorCommonStyles}</style>
       <div class=${queryClasses} jslog=${VisualLogging.cssRuleHeader(this.#jslogContext).track({ click: true, change: true })}>
         <slot name="indent"></slot>${this.#queryPrefix ? html `<span>${this.#queryPrefix + ' '}</span>` : Lit.nothing}${this.#queryName ? html `<span>${this.#queryName + ' '}</span>` : Lit.nothing}${queryText} {
       </div>

@@ -5,18 +5,10 @@
 import '../icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as Lit from '../../lit/lit.js';
-import settingDeprecationWarningRaw from './settingDeprecationWarning.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const settingDeprecationWarning = new CSSStyleSheet();
-settingDeprecationWarning.replaceSync(settingDeprecationWarningRaw.cssText);
+import settingDeprecationWarningStyles from './settingDeprecationWarning.css.js';
 const { html } = Lit;
 export class SettingDeprecationWarning extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [settingDeprecationWarning];
-    }
     set data(data) {
         this.#render(data);
     }
@@ -30,7 +22,9 @@ export class SettingDeprecationWarning extends HTMLElement {
                 void Common.Revealer.reveal(experiment);
             };
         }
-        Lit.render(html `<devtools-icon class=${Lit.Directives.classMap(classes)} .data=${iconData} title=${warning} @click=${onclick}></devtools-icon>`, this.#shadow, { host: this });
+        Lit.render(html `
+        <style>${settingDeprecationWarningStyles}</style>
+        <devtools-icon class=${Lit.Directives.classMap(classes)} .data=${iconData} title=${warning} @click=${onclick}></devtools-icon>`, this.#shadow, { host: this });
     }
 }
 customElements.define('devtools-setting-deprecation-warning', SettingDeprecationWarning);

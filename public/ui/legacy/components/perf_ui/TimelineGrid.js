@@ -31,6 +31,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import * as Platform from '../../../../core/platform/platform.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
 import { DEFAULT_FONT_SIZE, getFontFamilyForCanvas } from './Font.js';
 import timelineGridStyles from './timelineGrid.css.js';
@@ -43,7 +44,7 @@ export class TimelineGrid {
     dividersLabelBarElementInternal;
     constructor() {
         this.element = document.createElement('div');
-        ThemeSupport.ThemeSupport.instance().appendStyle(this.element, timelineGridStyles);
+        Platform.DOMUtilities.appendStyle(this.element, timelineGridStyles);
         this.dividersElementInternal = this.element.createChild('div', 'resources-dividers');
         this.gridHeaderElement = document.createElement('div');
         this.gridHeaderElement.classList.add('timeline-grid-header');
@@ -113,7 +114,7 @@ export class TimelineGrid {
         context.scale(window.devicePixelRatio, window.devicePixelRatio);
         const width = Math.ceil(context.canvas.width / window.devicePixelRatio);
         context.beginPath();
-        context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-opacity-50');
+        context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-background-opacity-80');
         context.fillRect(0, 0, width, headerHeight);
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-on-surface');
         context.textBaseline = 'hanging';

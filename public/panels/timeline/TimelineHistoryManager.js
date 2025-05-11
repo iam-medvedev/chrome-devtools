@@ -48,6 +48,10 @@ const UIStrings = {
      * @example {2} PH1
      */
     dSlowdown: '{PH1}× slowdown',
+    /**
+     * @description Tooltip text that appears when hovering over the Back arrow inside the 'Select Timeline Session' dropdown in the Performance pane.
+     */
+    backButtonTooltip: 'View live metrics page',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineHistoryManager.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -450,6 +454,8 @@ export class DropDown {
         div.classList.add('landing-page-item');
         div.style.width = `${previewWidth}px`;
         const icon = IconButton.Icon.create('arrow-back');
+        icon.title = i18nString(UIStrings.backButtonTooltip);
+        icon.classList.add('back-arrow');
         div.appendChild(icon);
         const text = document.createElement('span');
         text.innerText = this.#landingPageTitle;

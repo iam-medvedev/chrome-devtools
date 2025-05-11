@@ -399,14 +399,16 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
     buildWithCustomTracksForTest(options) {
         const compatAppender = this.compatibilityTracksAppenderInstance(); // Make sure the instance exists in tests
         const appenders = compatAppender.allVisibleTrackAppenders();
+        let visibleTrackIndexCounter = 0;
         for (const appender of appenders) {
             const trackName = appender instanceof ThreadAppender ? appender.trackName() : appender.appenderName;
-            const shouldIncludeTrack = options?.filterTracks?.call(null, trackName) ?? true;
+            const shouldIncludeTrack = options?.filterTracks?.call(null, trackName, visibleTrackIndexCounter) ?? true;
             if (!shouldIncludeTrack) {
                 continue;
             }
-            const shouldExpandTrack = options?.expandTracks?.call(null, trackName) ?? true;
+            const shouldExpandTrack = options?.expandTracks?.call(null, trackName, visibleTrackIndexCounter) ?? true;
             this.currentLevel = appender.appendTrackAtLevel(this.currentLevel, shouldExpandTrack);
+            visibleTrackIndexCounter++;
         }
     }
     groupTreeEvents(group) {

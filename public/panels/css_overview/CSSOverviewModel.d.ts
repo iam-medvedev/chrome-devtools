@@ -1,5 +1,5 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Protocol from '../../generated/protocol.js';
+import type * as Protocol from '../../generated/protocol.js';
 import type { ContrastIssue } from './CSSOverviewCompletedView.js';
 import { type UnusedDeclaration } from './CSSOverviewUnusedDeclarations.js';
 interface NodeStyleStats {
@@ -28,7 +28,6 @@ export interface GlobalStyleStats {
 export declare class CSSOverviewModel extends SDK.SDKModel.SDKModel<void> {
     #private;
     constructor(target: SDK.Target.Target);
-    highlightNode(node: Protocol.DOM.BackendNodeId): void;
     getNodeStyleStats(): Promise<NodeStyleStats>;
     getComputedStyleForNode(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.GetComputedStyleForNodeResponse>;
     getMediaQueries(): Promise<Map<string, Protocol.CSS.CSSMedia[]>>;

@@ -32,7 +32,7 @@ import recorderControllerStylesRaw from './recorderController.css.js';
 import * as Events from './RecorderEvents.js';
 // TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
 const recorderControllerStyles = new CSSStyleSheet();
-recorderControllerStyles.replaceSync(recorderControllerStylesRaw.cssText);
+recorderControllerStyles.replaceSync(recorderControllerStylesRaw);
 const { html, Decorators, LitElement } = Lit;
 const { customElement, state } = Decorators;
 const UIStrings = {
@@ -464,6 +464,7 @@ let RecorderController = class RecorderController extends LitElement {
             await UI.InspectorView.InspectorView.instance().showPanel(event.data?.targetPanel);
             switch (event.data?.targetPanel) {
                 case "timeline" /* Components.RecordingView.TargetPanel.PERFORMANCE_PANEL */:
+                    // Note: this is not passing any metadata to the Performance panel.
                     Timeline.TimelinePanel.TimelinePanel.instance().loadFromEvents(events);
                     break;
             }

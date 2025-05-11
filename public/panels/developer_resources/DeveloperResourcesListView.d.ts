@@ -19,7 +19,7 @@ export type View = (input: ViewInput, output: object, target: HTMLElement) => vo
 export declare class DeveloperResourcesListView extends UI.Widget.VBox {
     #private;
     constructor(element: HTMLElement, view?: View);
-    set selectedItem(item: SDK.PageResourceLoader.PageResource);
+    set selectedItem(item: SDK.PageResourceLoader.PageResource | null);
     set onSelect(onSelect: (item: SDK.PageResourceLoader.PageResource | null) => void);
     set items(items: Iterable<SDK.PageResourceLoader.PageResource>);
     reset(): void;

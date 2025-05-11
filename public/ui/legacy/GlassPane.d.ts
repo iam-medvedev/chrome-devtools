@@ -17,8 +17,8 @@ export declare class GlassPane {
     constructor(jslog?: string);
     setJsLog(jslog: string): void;
     isShowing(): boolean;
-    registerRequiredCSS(...cssFiles: Array<{
-        cssText: string;
+    registerRequiredCSS(...cssFiles: Array<string & {
+        _tag: 'CSS-in-JS';
     }>): void;
     setDefaultFocusedElement(element: Element | null): void;
     setDimmed(dimmed: boolean): void;

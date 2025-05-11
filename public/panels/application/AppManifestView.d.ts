@@ -58,8 +58,8 @@ export declare class AppManifestView extends AppManifestView_base implements SDK
     private loadImage;
     parseSizes(sizes: string, resourceName: Platform.UIString.LocalizedString, imageUrl: string, imageResourceErrors: Platform.UIString.LocalizedString[]): ParsedSize[];
     checkSizeProblem(size: ParsedSize, image: HTMLImageElement, resourceName: Platform.UIString.LocalizedString, imageUrl: string): {
-        error?: Platform.UIString.LocalizedString;
         hasSquareSize: boolean;
+        error?: Platform.UIString.LocalizedString;
     };
     private appendImageResourceToSection;
     private appendWindowControlsToSection;

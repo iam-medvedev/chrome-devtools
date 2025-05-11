@@ -14,9 +14,9 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import contentEditableStylesRaw from './suggestionInput.css.js';
 // TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
 const codeHighlighterStyles = new CSSStyleSheet();
-codeHighlighterStyles.replaceSync(codeHighlighterStylesRaw.cssText);
+codeHighlighterStyles.replaceSync(codeHighlighterStylesRaw);
 const contentEditableStyles = new CSSStyleSheet();
-contentEditableStyles.replaceSync(contentEditableStylesRaw.cssText);
+contentEditableStyles.replaceSync(contentEditableStylesRaw);
 const mod = (a, n) => {
     return ((a % n) + n) % n;
 };

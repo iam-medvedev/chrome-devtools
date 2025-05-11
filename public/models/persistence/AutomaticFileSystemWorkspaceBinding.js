@@ -1,8 +1,10 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Workspace from '../workspace/workspace.js';
+import { Events as IsolatedFileSystemManagerEvents } from './IsolatedFileSystemManager.js';
 /**
  * Placeholder project that acts as an empty file system within the workspace,
  * and automatically disappears when the user connects the automatic workspace
@@ -111,28 +113,38 @@ let automaticFileSystemWorkspaceBindingInstance;
 export class AutomaticFileSystemWorkspaceBinding {
     #automaticFileSystemManager;
     #fileSystem = null;
+    #isolatedFileSystemManager;
     #workspace;
     /**
      * @internal
      */
-    constructor(automaticFileSystemManager, workspace) {
+    constructor(automaticFileSystemManager, isolatedFileSystemManager, workspace) {
         this.#automaticFileSystemManager = automaticFileSystemManager;
+        this.#isolatedFileSystemManager = isolatedFileSystemManager;
         this.#workspace = workspace;
-        this.#automaticFileSystemManager.addEventListener("AutomaticFileSystemChanged" /* Events.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#automaticFileSystemChanged, this);
-        this.#automaticFileSystemChanged({ data: this.#automaticFileSystemManager.automaticFileSystem });
+        this.#automaticFileSystemManager.addEventListener("AutomaticFileSystemChanged" /* AutomaticFileSystemManagerEvents.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#update, this);
+        this.#isolatedFileSystemManager.addEventListener(IsolatedFileSystemManagerEvents.FileSystemAdded, this.#update, this);
+        this.#isolatedFileSystemManager.addEventListener(IsolatedFileSystemManagerEvents.FileSystemRemoved, this.#update, this);
+        this.#update();
     }
     /**
      * Yields the `AutomaticFileSystemWorkspaceBinding` singleton.
      *
      * @returns the singleton.
      */
-    static instance({ forceNew, automaticFileSystemManager, workspace } = { forceNew: false, automaticFileSystemManager: null, workspace: null }) {
+    static instance({ forceNew, automaticFileSystemManager, isolatedFileSystemManager, workspace } = {
+        forceNew: false,
+        automaticFileSystemManager: null,
+        isolatedFileSystemManager: null,
+        workspace: null,
+    }) {
         if (!automaticFileSystemWorkspaceBindingInstance || forceNew) {
-            if (!automaticFileSystemManager || !workspace) {
+            if (!automaticFileSystemManager || !isolatedFileSystemManager || !workspace) {
                 throw new Error('Unable to create AutomaticFileSystemWorkspaceBinding: ' +
-                    'automaticFileSystemManager and workspace must be provided');
+                    'automaticFileSystemManager, isolatedFileSystemManager, ' +
+                    'and workspace must be provided');
             }
-            automaticFileSystemWorkspaceBindingInstance = new AutomaticFileSystemWorkspaceBinding(automaticFileSystemManager, workspace);
+            automaticFileSystemWorkspaceBindingInstance = new AutomaticFileSystemWorkspaceBinding(automaticFileSystemManager, isolatedFileSystemManager, workspace);
         }
         return automaticFileSystemWorkspaceBindingInstance;
     }
@@ -149,10 +161,12 @@ export class AutomaticFileSystemWorkspaceBinding {
         if (this.#fileSystem) {
             this.#workspace.removeProject(this.#fileSystem);
         }
-        this.#automaticFileSystemManager.removeEventListener("AutomaticFileSystemChanged" /* Events.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#automaticFileSystemChanged, this);
+        this.#automaticFileSystemManager.removeEventListener("AutomaticFileSystemChanged" /* AutomaticFileSystemManagerEvents.AUTOMATIC_FILE_SYSTEM_CHANGED */, this.#update, this);
+        this.#isolatedFileSystemManager.removeEventListener(IsolatedFileSystemManagerEvents.FileSystemAdded, this.#update, this);
+        this.#isolatedFileSystemManager.removeEventListener(IsolatedFileSystemManagerEvents.FileSystemRemoved, this.#update, this);
     }
-    #automaticFileSystemChanged(event) {
-        const automaticFileSystem = event.data;
+    #update() {
+        const automaticFileSystem = this.#automaticFileSystemManager.automaticFileSystem;
         if (this.#fileSystem !== null) {
             if (this.#fileSystem.automaticFileSystem === automaticFileSystem) {
                 return;
@@ -161,8 +175,13 @@ export class AutomaticFileSystemWorkspaceBinding {
             this.#fileSystem = null;
         }
         if (automaticFileSystem !== null && automaticFileSystem.state !== 'connected') {
-            this.#fileSystem = new FileSystem(automaticFileSystem, this.#automaticFileSystemManager, this.#workspace);
-            this.#workspace.addProject(this.#fileSystem);
+            // Check if we already have a (manually added) file system, and if so, don't
+            // offer the option to connect the automatic file system.
+            const fileSystemURL = Common.ParsedURL.ParsedURL.rawPathToUrlString(automaticFileSystem.root);
+            if (this.#isolatedFileSystemManager.fileSystem(fileSystemURL) === null) {
+                this.#fileSystem = new FileSystem(automaticFileSystem, this.#automaticFileSystemManager, this.#workspace);
+                this.#workspace.addProject(this.#fileSystem);
+            }
         }
     }
 }

@@ -37,16 +37,14 @@ import { metadataForURL } from './ResourceUtils.js';
 const uiSourceCodeToStyleMap = new WeakMap();
 export class StylesSourceMapping {
     #cssModel;
-    #networkProject;
-    #inspectorProject;
+    #project;
     #styleFiles;
     #eventListeners;
     constructor(cssModel, workspace) {
         this.#cssModel = cssModel;
         const target = this.#cssModel.target();
-        this.#networkProject = new ContentProviderBasedProject(workspace, 'css:' + target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
-        NetworkProject.setTargetForProject(this.#networkProject, target);
-        this.#inspectorProject = new ContentProviderBasedProject(workspace, 'inspector:' + target.id(), Workspace.Workspace.projectTypes.Inspector, '', true /* isServiceProject */);
+        this.#project = new ContentProviderBasedProject(workspace, 'css:' + target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
+        NetworkProject.setTargetForProject(this.#project, target);
         this.#styleFiles = new Map();
         this.#eventListeners = [
             this.#cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this.styleSheetAdded, this),
@@ -118,8 +116,7 @@ export class StylesSourceMapping {
         const url = header.resourceURL();
         let styleFile = this.#styleFiles.get(url);
         if (!styleFile) {
-            const project = header.isViaInspector() ? this.#inspectorProject : this.#networkProject;
-            styleFile = new StyleFile(this.#cssModel, project, header);
+            styleFile = new StyleFile(this.#cssModel, this.#project, header);
             this.#styleFiles.set(url, styleFile);
         }
         else {
@@ -159,8 +156,7 @@ export class StylesSourceMapping {
         }
         this.#styleFiles.clear();
         Common.EventTarget.removeEventListeners(this.#eventListeners);
-        this.#inspectorProject.removeProject();
-        this.#networkProject.removeProject();
+        this.#project.removeProject();
     }
 }
 export class StyleFile {

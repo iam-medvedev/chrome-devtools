@@ -1,13 +1,14 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import domLinkifierStyles from './domLinkifier.css.js';
+const { classMap } = Directives;
 const UIStrings = {
     /**
      * @description Text displayed when trying to create a link to a node in the UI, but the node
@@ -18,116 +19,159 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/DOMLinkifier.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export const decorateNodeLabel = function (node, parentElement, options) {
-    const originalNode = node;
-    const isPseudo = node.nodeType() === Node.ELEMENT_NODE && node.pseudoType();
-    if (isPseudo && node.parentNode) {
-        node = node.parentNode;
+const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `${(input.tagName || input.pseudo) ?
+        html `<style>${domLinkifierStyles}</style
+    ><span class="monospace"
+     ><button class="node-link text-button link-style ${classMap({
+            'dynamic-link': Boolean(input.dynamic),
+            disabled: Boolean(input.disabled)
+        })}"
+          jslog=${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}
+          tabindex=${input.preventKeyboardFocus ? -1 : 0}
+          @click=${input.onClick}
+          @mouseover=${input.onMouseOver}
+          @mouseleave=${input.onMouseLeave}
+          title=${[
+            input.tagName ?? '',
+            input.id ? `#${input.id}` : '',
+            ...input.classes.map(c => `.${c}`),
+            input.pseudo ? `::${input.pseudo}` : '',
+        ].join(' ')}>${[
+            input.tagName ? html `<span class="node-label-name">${input.tagName}</span>` : nothing,
+            input.id ? html `<span class="node-label-id">#${input.id}</span>` : nothing,
+            ...input.classes.map(className => html `<span class="extra node-label-class">.${className}</span>`),
+            input.pseudo ? html `<span class="extra node-label-pseudo">${input.pseudo}</span>` : nothing,
+        ]}</button
+    ></span>` : i18nString(UIStrings.node)}`, target, { host: input });
+    // clang-format on
+};
+export class DOMNodeLink extends UI.Widget.Widget {
+    #node = undefined;
+    #options = undefined;
+    #view;
+    constructor(element, node, options, view = DEFAULT_VIEW) {
+        super(true, undefined, element);
+        this.element.classList.remove('vbox');
+        this.#node = node;
+        this.#options = options;
+        this.#view = view;
+        this.performUpdate();
     }
-    // Special case rendering the node links for view transition pseudo elements.
-    // We don't include the ancestor name in the node link because
-    // they always have the same ancestor. See crbug.com/340633630.
-    if (node.isViewTransitionPseudoNode()) {
-        const pseudoElement = parentElement.createChild('span', 'extra node-label-pseudo');
-        const viewTransitionPseudoText = `::${originalNode.pseudoType()}(${originalNode.pseudoIdentifier()})`;
-        UI.UIUtils.createTextChild(pseudoElement, viewTransitionPseudoText);
-        UI.Tooltip.Tooltip.install(parentElement, options.tooltip || viewTransitionPseudoText);
-        return;
-    }
-    const nameElement = parentElement.createChild('span', 'node-label-name');
-    if (options.textContent) {
-        nameElement.textContent = options.textContent;
-        UI.Tooltip.Tooltip.install(parentElement, options.tooltip || options.textContent);
-        return;
-    }
-    let title = node.nodeNameInCorrectCase();
-    nameElement.textContent = title;
-    const idAttribute = node.getAttribute('id');
-    if (idAttribute) {
-        const idElement = parentElement.createChild('span', 'node-label-id');
-        const part = '#' + idAttribute;
-        title += part;
-        UI.UIUtils.createTextChild(idElement, part);
-        // Mark the name as extra, since the ID is more important.
-        nameElement.classList.add('extra');
-    }
-    const classAttribute = node.getAttribute('class');
-    if (classAttribute) {
-        const classes = classAttribute.split(/\s+/);
-        if (classes.length) {
-            const foundClasses = new Set();
-            const classesElement = parentElement.createChild('span', 'extra node-label-class');
-            for (let i = 0; i < classes.length; ++i) {
-                const className = classes[i];
-                if (className && !options.hiddenClassList?.includes(className) && !foundClasses.has(className)) {
-                    const part = '.' + className;
-                    title += part;
-                    UI.UIUtils.createTextChild(classesElement, part);
-                    foundClasses.add(className);
+    performUpdate() {
+        const options = this.#options ?? {
+            tooltip: undefined,
+            preventKeyboardFocus: undefined,
+            textContent: undefined,
+            isDynamicLink: false,
+            disabled: false,
+        };
+        const viewInput = {
+            dynamic: options.isDynamicLink,
+            disabled: options.disabled,
+            preventKeyboardFocus: options.preventKeyboardFocus,
+            classes: [],
+            onClick: () => {
+                void Common.Revealer.reveal(this.#node);
+                return false;
+            },
+            onMouseOver: () => {
+                this.#node?.highlight?.();
+            },
+            onMouseLeave: () => {
+                SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+            },
+        };
+        if (!this.#node) {
+            this.#view(viewInput, {}, this.contentElement);
+            return;
+        }
+        let node = this.#node;
+        const isPseudo = node.nodeType() === Node.ELEMENT_NODE && node.pseudoType();
+        if (isPseudo && node.parentNode) {
+            node = node.parentNode;
+        }
+        // Special case rendering the node links for view transition pseudo elements.
+        // We don't include the ancestor name in the node link because
+        // they always have the same ancestor. See crbug.com/340633630.
+        if (node.isViewTransitionPseudoNode()) {
+            viewInput.pseudo = `::${this.#node.pseudoType()}(${this.#node.pseudoIdentifier()})`;
+            this.#view(viewInput, {}, this.contentElement);
+            return;
+        }
+        if (options.textContent) {
+            viewInput.tagName = options.textContent;
+            this.#view(viewInput, {}, this.contentElement);
+            return;
+        }
+        viewInput.tagName = node.nodeNameInCorrectCase();
+        const idAttribute = node.getAttribute('id');
+        if (idAttribute) {
+            viewInput.id = idAttribute;
+        }
+        const classAttribute = node.getAttribute('class');
+        if (classAttribute) {
+            const classes = classAttribute.split(/\s+/);
+            if (classes.length) {
+                const foundClasses = new Set();
+                for (let i = 0; i < classes.length; ++i) {
+                    const className = classes[i];
+                    if (className && !options.hiddenClassList?.includes(className) && !foundClasses.has(className)) {
+                        foundClasses.add(className);
+                    }
                 }
+                viewInput.classes = [...foundClasses];
             }
         }
-    }
-    if (isPseudo) {
-        const pseudoIdentifier = originalNode.pseudoIdentifier();
-        const pseudoElement = parentElement.createChild('span', 'extra node-label-pseudo');
-        let pseudoText = '::' + originalNode.pseudoType();
-        if (pseudoIdentifier) {
-            pseudoText += `(${pseudoIdentifier})`;
+        if (isPseudo) {
+            const pseudoIdentifier = this.#node.pseudoIdentifier();
+            let pseudoText = '::' + this.#node.pseudoType();
+            if (pseudoIdentifier) {
+                pseudoText += `(${pseudoIdentifier})`;
+            }
+            viewInput.pseudo = pseudoText;
         }
-        UI.UIUtils.createTextChild(pseudoElement, pseudoText);
-        title += pseudoText;
+        this.#view(viewInput, {}, this.contentElement);
     }
-    UI.Tooltip.Tooltip.install(parentElement, options.tooltip || title);
+}
+const DEFERRED_DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+      <style>${domLinkifierStyles}</style>
+      <button class="node-link text-button link-style"
+          jslog=${VisualLogging.link('node').track({ click: true })}
+          tabindex=${input.preventKeyboardFocus ? -1 : 0}
+          @click=${input.onClick}
+          @mousedown=${(e) => e.consume()}>
+        <slot></slot>
+      </button>`, target, { host: input });
+    // clang-format on
 };
-export const linkifyNodeReference = function (node, options = {
-    tooltip: undefined,
-    preventKeyboardFocus: undefined,
-    textContent: undefined,
-    isDynamicLink: false,
-    disabled: false,
-}) {
-    if (!node) {
-        return document.createTextNode(i18nString(UIStrings.node));
+export class DeferredDOMNodeLink extends UI.Widget.Widget {
+    #deferredNode = undefined;
+    #options = undefined;
+    #view;
+    constructor(element, deferredNode, options, view = DEFERRED_DEFAULT_VIEW) {
+        super(true, undefined, element);
+        this.element.classList.remove('vbox');
+        this.#deferredNode = deferredNode;
+        this.#options = options;
+        this.#view = view;
+        this.performUpdate();
     }
-    const root = document.createElement('span');
-    root.classList.add('monospace');
-    const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(root, { cssFile: domLinkifierStyles });
-    const link = shadowRoot.createChild('button', 'node-link text-button link-style');
-    link.classList.toggle('dynamic-link', options.isDynamicLink);
-    link.classList.toggle('disabled', options.disabled);
-    link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}`);
-    decorateNodeLabel(node, link, options);
-    link.addEventListener('click', () => {
-        void Common.Revealer.reveal(node, false);
-        return false;
-    }, false);
-    link.addEventListener('mouseover', node.highlight.bind(node, undefined), false);
-    link.addEventListener('mouseleave', () => SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight(), false);
-    if (options.preventKeyboardFocus) {
-        link.tabIndex = -1;
+    performUpdate() {
+        const viewInput = {
+            preventKeyboardFocus: this.#options?.preventKeyboardFocus,
+            onClick: () => {
+                this.#deferredNode?.resolve?.(node => {
+                    void Common.Revealer.reveal(node);
+                });
+            },
+        };
+        this.#view(viewInput, {}, this.contentElement);
     }
-    return root;
-};
-export const linkifyDeferredNodeReference = function (deferredNode, options = {
-    tooltip: undefined,
-    preventKeyboardFocus: undefined,
-}) {
-    const root = document.createElement('div');
-    const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(root, { cssFile: domLinkifierStyles });
-    const link = shadowRoot.createChild('button', 'node-link text-button link-style');
-    link.setAttribute('jslog', `${VisualLogging.link('node').track({ click: true })}`);
-    link.createChild('slot');
-    link.addEventListener('click', deferredNode.resolve.bind(deferredNode, onDeferredNodeResolved), false);
-    link.addEventListener('mousedown', e => e.consume(), false);
-    if (options.preventKeyboardFocus) {
-        link.tabIndex = -1;
-    }
-    function onDeferredNodeResolved(node) {
-        void Common.Revealer.reveal(node);
-    }
-    return root;
-};
+}
 let linkifierInstance;
 export class Linkifier {
     static instance(opts = { forceNew: null }) {
@@ -139,10 +183,14 @@ export class Linkifier {
     }
     linkify(object, options) {
         if (object instanceof SDK.DOMModel.DOMNode) {
-            return linkifyNodeReference(object, options);
+            const link = document.createElement('devtools-widget');
+            link.widgetConfig = UI.Widget.widgetConfig(e => new DOMNodeLink(e, object, options));
+            return link;
         }
         if (object instanceof SDK.DOMModel.DeferredDOMNode) {
-            return linkifyDeferredNodeReference(object, options);
+            const link = document.createElement('devtools-widget');
+            link.widgetConfig = UI.Widget.widgetConfig(e => new DeferredDOMNodeLink(e, object, options));
+            return link;
         }
         throw new Error('Can\'t linkify non-node');
     }

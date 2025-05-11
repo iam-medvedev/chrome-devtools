@@ -14,7 +14,7 @@ import extensionViewStylesRaw from './extensionView.css.js';
  * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
  **/
 const extensionViewStyles = new CSSStyleSheet();
-extensionViewStyles.replaceSync(extensionViewStylesRaw.cssText);
+extensionViewStyles.replaceSync(extensionViewStylesRaw);
 const { html } = Lit;
 const UIStrings = {
     /**

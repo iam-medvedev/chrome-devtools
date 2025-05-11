@@ -32,15 +32,21 @@ export function get(event, parsedTrace) {
     }
     else {
         result = getForEvent(event, parsedTrace);
-        const maybeProtocolCallFrame = getPayloadStackAsProtocolCallFrame(event);
-        if (result && maybeProtocolCallFrame && !isNativeJSFunction(maybeProtocolCallFrame)) {
-            // If the event has a payload stack trace, replace the top frame
-            // of the calculated stack with the top frame of the payload stack
-            // because trace payload call frames contain call locations, unlike
-            // profile call frames (which contain function declaration locations).
-            // This way the user knows which exact JS location triggered an
-            // event.
-            result.callFrames[0] = maybeProtocolCallFrame;
+        const payloadCallFrames = getTraceEventPayloadStackAsProtocolCallFrame(event).filter(callFrame => !isNativeJSFunction(callFrame));
+        // If the event has a payload stack trace, replace the synchronous
+        // portion of the calculated stack with the payload's call frames.
+        // We do this because trace payload call frames contain call
+        // locations, unlike profile call frames obtained with getForEvent
+        // (which contain function declaration locations).
+        // This way the user knows which exact JS location triggered an
+        // event.
+        if (!result.callFrames.length) {
+            result.callFrames = payloadCallFrames;
+        }
+        else {
+            for (let i = 0; i < payloadCallFrames.length && i < result.callFrames.length; i++) {
+                result.callFrames[i] = payloadCallFrames[i];
+            }
         }
     }
     if (result) {
@@ -172,13 +178,15 @@ function isNativeJSFunction({ columnNumber, lineNumber, url, scriptId }) {
     return lineNumber === -1 && columnNumber === -1 && url === '' && scriptId === '0';
 }
 /**
- * Extracts the top frame in the stack contained in a trace event's payload
- * (if any) and casts it as a Protocol.Runtime.CallFrame.
+ * Converts a stack trace from a trace event's payload into an array of
+ * Protocol.Runtime.CallFrame.
  */
-function getPayloadStackAsProtocolCallFrame(event) {
-    const maybeCallStack = Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
-    const maybeCallFrame = maybeCallStack?.at(0);
-    const maybeProtocolCallFrame = maybeCallFrame && { ...maybeCallFrame, scriptId: String(maybeCallFrame.scriptId) };
-    return maybeProtocolCallFrame || null;
+function getTraceEventPayloadStackAsProtocolCallFrame(event) {
+    const payloadCallStack = Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event) || [];
+    const callFrames = [];
+    for (const frame of payloadCallStack) {
+        callFrames.push({ ...frame, scriptId: String(frame.scriptId) });
+    }
+    return callFrames;
 }
 //# sourceMappingURL=StackTraceForEvent.js.map

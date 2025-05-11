@@ -92,9 +92,6 @@ export class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper {
             case Workspace.Workspace.projectTypes.FileSystem:
                 // We track differences for FileSystem resources without bindings.
                 return this.#persistence.binding(uiSourceCode) === null;
-            case Workspace.Workspace.projectTypes.Inspector:
-                // We track differences for all Inspector resources (style sheets).
-                return true;
             default:
                 return false;
         }

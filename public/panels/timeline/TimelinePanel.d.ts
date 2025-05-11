@@ -19,7 +19,6 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private readonly millisecondsToRecordAfterLoadEvent;
     private readonly toggleRecordAction;
     private readonly recordReloadAction;
-    private disableCaptureJSProfileSetting;
     private readonly captureLayersAndPicturesSetting;
     private readonly captureSelectorStatsSetting;
     private showScreenshotsSetting;
@@ -68,6 +67,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     wasShown(): void;
     willHide(): void;
     loadFromEvents(events: Trace.Types.Events.Event[]): void;
+    loadFromTraceFile(traceFile: Trace.Types.File.TraceFile): void;
     getFlameChart(): TimelineFlameChartView;
     getMinimap(): TimelineMiniMap;
     /**
@@ -173,8 +173,8 @@ export declare class StatusPane extends UI.Widget.VBox {
     #private;
     private status;
     private time;
-    private progressLabel;
-    private progressBar;
+    private progressLabel?;
+    private progressBar?;
     private readonly description;
     private button;
     private downloadTraceButton;

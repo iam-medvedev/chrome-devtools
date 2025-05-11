@@ -347,6 +347,15 @@ export class InspectorView extends VBox {
         this.drawerSplitWidget.setSidebarMinimized(minimized);
         this.drawerSplitWidget.setResizable(!minimized);
     }
+    drawerSize() {
+        return this.drawerSplitWidget.sidebarSize();
+    }
+    setDrawerSize(size) {
+        this.drawerSplitWidget.setSidebarSize(size);
+    }
+    totalSize() {
+        return this.drawerSplitWidget.totalSize();
+    }
     isDrawerMinimized() {
         return this.drawerSplitWidget.isSidebarMinimized();
     }

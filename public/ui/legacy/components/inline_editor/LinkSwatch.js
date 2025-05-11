@@ -43,7 +43,7 @@ export class LinkSwatch extends HTMLElement {
         const tooltipId = tooltip && 'tooltipId' in tooltip && tooltip.tooltipId || undefined;
         render(
         // clang-format off
-        html `<style>${Buttons.textButtonStyles.cssText}</style><style>${linkSwatchStyles.cssText}</style><button
+        html `<style>${Buttons.textButtonStyles}</style><style>${linkSwatchStyles}</style><button
           .disabled=${!isDefined}
           jslog=${jslogContext ? VisualLogging.link().track({ click: true }).context(jslogContext) : nothing}
           class=${classes}

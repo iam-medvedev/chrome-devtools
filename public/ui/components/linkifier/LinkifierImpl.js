@@ -5,13 +5,8 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as Lit from '../../lit/lit.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
-import linkifierImplStylesRaw from './linkifierImpl.css.js';
+import linkifierImplStyles from './linkifierImpl.css.js';
 import * as LinkifierUtils from './LinkifierUtils.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const linkifierImplStyles = new CSSStyleSheet();
-linkifierImplStyles.replaceSync(linkifierImplStylesRaw.cssText);
 const { html } = Lit;
 export class LinkifierClick extends Event {
     data;
@@ -54,9 +49,6 @@ export class Linkifier extends HTMLElement {
         };
         return node;
     }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [linkifierImplStyles];
-    }
     #onLinkActivation(event) {
         event.preventDefault();
         const linkifierClickEvent = new LinkifierClick({
@@ -72,7 +64,10 @@ export class Linkifier extends HTMLElement {
         await RenderCoordinator.write(() => {
             // clang-format off
             // eslint-disable-next-line rulesdir/no-a-tags-in-lit
-            Lit.render(html `<a class="link" href=${this.#url} @click=${this.#onLinkActivation} title=${Lit.Directives.ifDefined(this.#title)}><slot>${linkText}</slot></a>`, this.#shadow, { host: this });
+            Lit.render(html `
+        <style>${linkifierImplStyles}</style>
+        <a class="link" href=${this.#url} @click=${this.#onLinkActivation} title=${Lit.Directives.ifDefined(this.#title)}><slot>${linkText}</slot></a>
+      `, this.#shadow, { host: this });
             // clang-format on
         });
     }

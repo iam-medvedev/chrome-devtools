@@ -117,7 +117,7 @@ export interface ConversationSuggestion {
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
-    abstract getIcon(): HTMLElement | undefined;
+    abstract getIcon(): Lit.TemplateResult | undefined;
     abstract getTitle(opts?: {
         disabled: boolean;
     }): string | ReturnType<typeof Lit.Directives.until>;
@@ -233,7 +233,7 @@ export declare abstract class AiAgent<T> {
     protected functionCallEmulationEnabled: boolean;
     protected emulateFunctionCall(_aidaResponse: Host.AidaClient.AidaResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
     run(initialQuery: string, options: {
-        signal?: AbortSignal;
         selected: ConversationContext<T> | null;
+        signal?: AbortSignal;
     }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }

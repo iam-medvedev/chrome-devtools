@@ -11,7 +11,7 @@ import { get2DTranslationsForAngle, getAngleFromRadians, getNewAngleFromEvent, g
  * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
  **/
 const cssAngleEditorStyles = new CSSStyleSheet();
-cssAngleEditorStyles.replaceSync(cssAngleEditorStylesRaw.cssText);
+cssAngleEditorStyles.replaceSync(cssAngleEditorStylesRaw);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 const CLOCK_DIAL_LENGTH = 6;

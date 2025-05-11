@@ -8,7 +8,7 @@ import timelineSectionStylesRaw from './timelineSection.css.js';
  * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
  **/
 const timelineSectionStyles = new CSSStyleSheet();
-timelineSectionStyles.replaceSync(timelineSectionStylesRaw.cssText);
+timelineSectionStyles.replaceSync(timelineSectionStylesRaw);
 const { html } = Lit;
 export class TimelineSection extends HTMLElement {
     #isEndOfGroup = false;

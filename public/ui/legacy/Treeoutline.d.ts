@@ -1,6 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import type * as Buttons from '../components/buttons/buttons.js';
-import type * as IconButton from '../components/icon_button/icon_button.js';
+import * as IconButton from '../components/icon_button/icon_button.js';
+import { type TemplateResult } from '../lit/lit.js';
 import { type Config } from './InplaceEditor.js';
 export declare enum Events {
     ElementAttached = "ElementAttached",
@@ -69,8 +70,8 @@ export declare class TreeOutlineInShadow extends TreeOutline {
     private readonly disclosureElement;
     renderSelection: boolean;
     constructor(variant?: TreeVariant);
-    registerRequiredCSS(...cssFiles: Array<{
-        cssText: string;
+    registerRequiredCSS(...cssFiles: Array<string & {
+        _tag: 'CSS-in-JS';
     }>): void;
     hideOverflow(): void;
     makeDense(): void;
@@ -129,7 +130,7 @@ export declare class TreeElement {
     set title(x: string | Node);
     titleAsText(): string;
     startEditingTitle<T>(editingConfig: Config<T>): void;
-    setLeadingIcons(icons: IconButton.Icon.Icon[] | IconButton.FileSourceIcon.FileSourceIcon[]): void;
+    setLeadingIcons(icons: IconButton.Icon.Icon[] | TemplateResult[]): void;
     get tooltip(): string;
     set tooltip(x: string);
     isExpandable(): boolean;

@@ -133,8 +133,8 @@ const enumsByName = ProtocolClient.InspectorBackend.inspectorBackend.enumMap;
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-        <style>${UI.inspectorCommonStyles.cssText}</style>
-        <style>${protocolMonitorStyles.cssText}</style>
+        <style>${UI.inspectorCommonStyles}</style>
+        <style>${protocolMonitorStyles}</style>
         <devtools-split-view name="protocol-monitor-split-container"
                              direction="column"
                              sidebar-initial-size="400"
@@ -453,6 +453,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
     setRecording(recording) {
         const test = ProtocolClient.InspectorBackend.test;
         if (recording) {
+            // @ts-expect-error
             test.onMessageSent = this.messageSent.bind(this);
             // @ts-expect-error
             test.onMessageReceived = this.messageReceived.bind(this);

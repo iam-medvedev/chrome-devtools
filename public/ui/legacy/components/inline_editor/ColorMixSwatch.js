@@ -11,7 +11,7 @@ import colorMixSwatchStylesRaw from './colorMixSwatch.css.js';
  * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
  **/
 const colorMixSwatchStyles = new CSSStyleSheet();
-colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw.cssText);
+colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw);
 const { html, render, Directives: { ref } } = Lit;
 export class ColorMixChangedEvent extends Event {
     static eventName = 'colormixchanged';

@@ -24,7 +24,6 @@ export interface ShortcutDialogData {
 }
 export declare class ShortcutDialog extends HTMLElement {
     #private;
-    connectedCallback(): void;
     get data(): ShortcutDialogData;
     set data(data: ShortcutDialogData);
     prependElement(element: HTMLElement): void;

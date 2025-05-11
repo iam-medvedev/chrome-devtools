@@ -5,12 +5,7 @@
 import * as Common from '../../../core/common/common.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import { html, render } from '../../../ui/lit/lit.js';
-import srgbOverlayStylesRaw from './srgbOverlay.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const srgbOverlayStyles = new CSSStyleSheet();
-srgbOverlayStyles.replaceSync(srgbOverlayStylesRaw.cssText);
+import srgbOverlayStyles from './srgbOverlay.css.js';
 const SRGB_LABEL_HEIGHT = 10;
 const SRGB_LABEL_BOTTOM = 3;
 const SRGB_TEXT_UPPER_POINT_FROM_BOTTOM = SRGB_LABEL_HEIGHT + SRGB_LABEL_BOTTOM;
@@ -26,9 +21,6 @@ export class SrgbOverlay extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     constructor() {
         super();
-        this.#shadow.adoptedStyleSheets = [
-            srgbOverlayStyles,
-        ];
     }
     #getLinePoints({ hue, width, height }) {
         if (width === 0 || height === 0) {
@@ -81,6 +73,7 @@ export class SrgbOverlay extends HTMLElement {
                 return;
             }
             render(html `
+          <style>${srgbOverlayStyles}</style>
           <span class="label" style="right: ${width - closestPoint.x}px">sRGB</span>
           <svg>
             <polyline points=${points.map(point => `${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ')} class="gamut-line" />

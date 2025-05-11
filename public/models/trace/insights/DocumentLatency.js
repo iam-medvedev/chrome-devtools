@@ -63,7 +63,15 @@ const IGNORE_THRESHOLD_IN_BYTES = 1400;
 export function isDocumentLatency(x) {
     return x.insightKey === 'DocumentLatency';
 }
-function getServerResponseTime(request) {
+function getServerResponseTime(request, context) {
+    // Prefer the value as given by the Lantern provider.
+    // For PSI, Lighthouse uses this to set a better value for the server response
+    // time. For technical reasons, in Lightrider we do not have `sendEnd` timing
+    // values. See Lighthouse's `asLanternNetworkRequest` function for more.
+    const lanternRequest = context.navigation && context.lantern?.requests.find(r => r.rawRequest === request);
+    if (lanternRequest?.serverResponseTime !== undefined) {
+        return lanternRequest.serverResponseTime;
+    }
     const timing = request.args.data.timing;
     if (!timing) {
         return null;
@@ -149,7 +157,7 @@ export function generateInsight(parsedTrace, context) {
     if (!documentRequest) {
         return finalize({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
     }
-    const serverResponseTime = getServerResponseTime(documentRequest);
+    const serverResponseTime = getServerResponseTime(documentRequest, context);
     if (serverResponseTime === null) {
         throw new Error('missing document request timing');
     }

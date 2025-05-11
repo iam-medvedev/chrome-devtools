@@ -43,6 +43,7 @@ interface CommonButtonData {
     title?: string;
     jslogContext?: string;
     longClickable?: boolean;
+    inverseColorTheme?: boolean;
 }
 export type ButtonData = CommonButtonData & ({
     variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
@@ -86,6 +87,7 @@ export declare class Button extends HTMLElement {
     get jslogContext(): string | undefined;
     set jslogContext(jslogContext: string | undefined);
     set longClickable(longClickable: boolean);
+    set inverseColorTheme(inverseColorTheme: boolean);
     connectedCallback(): void;
     get value(): string;
     set value(value: string);

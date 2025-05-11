@@ -8,7 +8,7 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as ElementsPanel from '../../../panels/elements/elements.js';
 import * as UI from '../../../ui/legacy/legacy.js';
-import * as Lit from '../../../ui/lit/lit.js';
+import { html } from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
 import { debugLog } from '../debug.js';
 import { EvaluateAction, formatError, SideEffectError } from '../EvaluateAction.js';
@@ -50,6 +50,7 @@ The user selected a DOM element in the browser's DevTools and sends a query abou
 * When answering, always consider MULTIPLE possible solutions.
 * You're also capable of executing the fix for the issue user mentioned. Reflect this in your suggestions.
 * Use \`window.getComputedStyle\` to gather **rendered** styles and make sure that you take the distinction between authored styles and computed styles into account.
+* **CRITICAL** When answering questions about positioning or layout, ALWAYS inspect \`position\`, \`display\` and ALL related properties.
 * **CRITICAL** Call \`window.getComputedStyle\` only once per element and store results into a local variable. Never try to return all the styles of the element in \`data\`. Always use property getter to return relevant styles in \`data\` using the local variable: const styles = window.getComputedStyle($0); const data = { elementColor: styles['color']}.
 * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
 * **CRITICAL** Consider that \`data\` variable from the previous ACTION blocks are not available in a different ACTION block.
@@ -213,7 +214,9 @@ export class NodeContext extends ConversationContext {
     }
     getTitle(opts) {
         const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
-        return Lit.Directives.until(ElementsPanel.DOMLinkifier.linkifyNodeReference(this.#node, { hiddenClassList, disabled: opts.disabled }));
+        const { DOMNodeLink } = ElementsPanel.DOMLinkifier;
+        const { widgetConfig } = UI.Widget;
+        return html `<devtools-widget .widgetConfig=${widgetConfig(e => new DOMNodeLink(e, this.#node, { hiddenClassList, disabled: opts.disabled }))}></devtools-widget>`;
     }
     async getSuggestions() {
         const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);

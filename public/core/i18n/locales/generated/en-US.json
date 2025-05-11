@@ -1364,6 +1364,9 @@
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
   },
+  "generated/Deprecation.ts | WebGPUAdapterIsFallbackAdapter": {
+    "message": "The GPUAdapter isFallbackAdapter attribute is deprecated, instead use the GPUAdapterInfo isFallbackAdapter attribute."
+  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "UTF-16 is not supported by response json in XMLHttpRequest"
   },
@@ -2051,6 +2054,9 @@
   "models/trace/insights/NetworkDependencyTree.ts | columnRequest": {
     "message": "Request"
   },
+  "models/trace/insights/NetworkDependencyTree.ts | columnSource": {
+    "message": "Source"
+  },
   "models/trace/insights/NetworkDependencyTree.ts | columnTime": {
     "message": "Time"
   },
@@ -2061,7 +2067,7 @@
     "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
-    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=lighthouse&utm_medium=devtools) hints to your most important origins, but try to use fewer than 4."
+    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints to your most important origins, but try to use fewer than 4."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
     "message": "Preconnect candidates"
@@ -2073,7 +2079,16 @@
     "message": "No rendering tasks impacted by network dependencies"
   },
   "models/trace/insights/NetworkDependencyTree.ts | noPreconnectCandidates": {
-    "message": "No origins are good candidates for preconnecting"
+    "message": "No additional origins are good candidates for preconnecting"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | noPreconnectOrigins": {
+    "message": "no origins were preconnected"
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableDescription": {
+    "message": "[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to."
+  },
+  "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableTitle": {
+    "message": "Preconnect origins"
   },
   "models/trace/insights/NetworkDependencyTree.ts | title": {
     "message": "Network dependency tree"
@@ -5213,9 +5228,6 @@
   "panels/application/StorageView.ts | usage": {
     "message": "Usage"
   },
-  "panels/application/StorageView.ts | webSql": {
-    "message": "Web SQL"
-  },
   "panels/application/TrustTokensTreeElement.ts | trustTokens": {
     "message": "Private state tokens"
   },
@@ -6211,6 +6223,12 @@
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | typeSelectors": {
     "message": "Type selectors"
+  },
+  "panels/css_overview/CSSOverviewCompletedView.ts | unableToLink": {
+    "message": "(unable to link)"
+  },
+  "panels/css_overview/CSSOverviewCompletedView.ts | unableToLinkToInlineStyle": {
+    "message": "(unable to link to inline style)"
   },
   "panels/css_overview/CSSOverviewCompletedView.ts | universalSelectors": {
     "message": "Universal selectors"
@@ -9995,17 +10013,47 @@
   "panels/network/RequestTimingView.ts | waterfall": {
     "message": "Waterfall"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | all": {
+  "panels/network/ResourceChunkView.ts | all": {
     "message": "All"
+  },
+  "panels/network/ResourceChunkView.ts | clearAll": {
+    "message": "Clear All"
+  },
+  "panels/network/ResourceChunkView.ts | clearAllL": {
+    "message": "Clear all"
+  },
+  "panels/network/ResourceChunkView.ts | copyMessage": {
+    "message": "Copy message"
+  },
+  "panels/network/ResourceChunkView.ts | copyMessageD": {
+    "message": "Copy message..."
+  },
+  "panels/network/ResourceChunkView.ts | data": {
+    "message": "Data"
+  },
+  "panels/network/ResourceChunkView.ts | filter": {
+    "message": "Filter"
+  },
+  "panels/network/ResourceChunkView.ts | length": {
+    "message": "Length"
+  },
+  "panels/network/ResourceChunkView.ts | noMessageSelected": {
+    "message": "No message selected"
+  },
+  "panels/network/ResourceChunkView.ts | receive": {
+    "message": "Receive"
+  },
+  "panels/network/ResourceChunkView.ts | selectMessageToBrowseItsContent": {
+    "message": "Select message to browse its content."
+  },
+  "panels/network/ResourceChunkView.ts | send": {
+    "message": "Send"
+  },
+  "panels/network/ResourceChunkView.ts | time": {
+    "message": "Time"
   },
   "panels/network/ResourceWebSocketFrameView.ts | binaryMessage": {
     "message": "Binary Message"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | clearAll": {
-    "message": "Clear All"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | clearAllL": {
-    "message": "Clear all"
   },
   "panels/network/ResourceWebSocketFrameView.ts | connectionCloseMessage": {
     "message": "Connection Close Message"
@@ -10013,44 +10061,17 @@
   "panels/network/ResourceWebSocketFrameView.ts | continuationFrame": {
     "message": "Continuation Frame"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | copyMessage": {
-    "message": "Copy message"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | copyMessageD": {
-    "message": "Copy message..."
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | data": {
-    "message": "Data"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | filter": {
-    "message": "Filter"
-  },
   "panels/network/ResourceWebSocketFrameView.ts | filterUsingRegex": {
     "message": "Filter using regex (example: (web)?socket)"
   },
-  "panels/network/ResourceWebSocketFrameView.ts | length": {
-    "message": "Length"
-  },
   "panels/network/ResourceWebSocketFrameView.ts | na": {
     "message": "N/A"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | noMessageSelected": {
-    "message": "No message selected"
   },
   "panels/network/ResourceWebSocketFrameView.ts | pingMessage": {
     "message": "Ping Message"
   },
   "panels/network/ResourceWebSocketFrameView.ts | pongMessage": {
     "message": "Pong Message"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | receive": {
-    "message": "Receive"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | selectMessageToBrowseItsContent": {
-    "message": "Select message to browse its content."
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | send": {
-    "message": "Send"
   },
   "panels/network/ResourceWebSocketFrameView.ts | sOpcodeS": {
     "message": "{PH1} (Opcode {PH2})"
@@ -10060,9 +10081,6 @@
   },
   "panels/network/ResourceWebSocketFrameView.ts | textMessage": {
     "message": "Text Message"
-  },
-  "panels/network/ResourceWebSocketFrameView.ts | time": {
-    "message": "Time"
   },
   "panels/network/ResourceWebSocketFrameView.ts | webSocketFrame": {
     "message": "Web Socket Frame"
@@ -14237,6 +14255,9 @@
   "panels/timeline/components/NetworkRequestTooltip.ts | queuingAndConnecting": {
     "message": "Queuing and connecting"
   },
+  "panels/timeline/components/NetworkRequestTooltip.ts | redirects": {
+    "message": "Redirects"
+  },
   "panels/timeline/components/NetworkRequestTooltip.ts | renderBlocking": {
     "message": "Render blocking"
   },
@@ -14657,6 +14678,9 @@
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"
   },
+  "panels/timeline/TimelineHistoryManager.ts | backButtonTooltip": {
+    "message": "View live metrics page"
+  },
   "panels/timeline/TimelineHistoryManager.ts | currentSessionSS": {
     "message": "Current session: {PH1}. {PH2}"
   },
@@ -14714,12 +14738,6 @@
   "panels/timeline/TimelinePanel.ts | dimThirdParties": {
     "message": "Dim 3rd parties"
   },
-  "panels/timeline/TimelinePanel.ts | disableJavascriptSamples": {
-    "message": "Disable JavaScript samples"
-  },
-  "panels/timeline/TimelinePanel.ts | disablesJavascriptSampling": {
-    "message": "Disables JavaScript sampling, reduces overhead when running against mobile devices"
-  },
   "panels/timeline/TimelinePanel.ts | downloadAfterError": {
     "message": "Download trace"
   },
@@ -14755,9 +14773,6 @@
   },
   "panels/timeline/TimelinePanel.ts | initializingProfiler": {
     "message": "Initializing profiler…"
-  },
-  "panels/timeline/TimelinePanel.ts | JavascriptSamplingIsDisabled": {
-    "message": "- JavaScript sampling is disabled"
   },
   "panels/timeline/TimelinePanel.ts | learnMore": {
     "message": "Learn more"
@@ -16024,6 +16039,9 @@
   },
   "ui/components/settings/SettingCheckbox.ts | learnMore": {
     "message": "Learn more"
+  },
+  "ui/components/snackbars/Snackbar.ts | dismiss": {
+    "message": "Dismiss"
   },
   "ui/components/survey_link/SurveyLink.ts | anErrorOccurredWithTheSurvey": {
     "message": "An error occurred with the survey"

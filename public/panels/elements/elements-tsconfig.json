@@ -130,13 +130,13 @@
       "path": "../../ui/components/adorners/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/copy_to_clipboard/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/floating_button/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/highlighting/bundle-tsconfig.json"

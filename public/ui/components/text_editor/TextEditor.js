@@ -30,7 +30,7 @@ export class TextEditor extends HTMLElement {
     constructor(pendingState) {
         super();
         this.#pendingState = pendingState;
-        this.#shadow.createChild('style').textContent = CodeHighlighter.codeHighlighterStyles.cssText;
+        this.#shadow.createChild('style').textContent = CodeHighlighter.codeHighlighterStyles;
     }
     #createEditor() {
         this.#activeEditor = new CodeMirror.EditorView({

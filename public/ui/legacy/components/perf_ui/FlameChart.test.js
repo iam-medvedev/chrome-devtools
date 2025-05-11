@@ -898,6 +898,89 @@ describeWithEnvironment('FlameChart', () => {
             });
             await assertScreenshot('timeline/render_main_thread.png');
         });
+        it('renders iframe main threads correctly', async function () {
+            await renderFlameChartIntoDOM(this, {
+                traceFile: 'multiple-navigations-with-iframes.json.gz',
+                filterTracks(trackName) {
+                    return trackName.startsWith('Frame');
+                },
+                expandTracks() {
+                    return true;
+                },
+            });
+            await assertScreenshot('timeline/render_iframe_main_thread.png');
+        });
+        it('renders the rasterizer tracks, nested correctly', async function () {
+            await renderFlameChartIntoDOM(this, {
+                traceFile: 'web-dev.json.gz',
+                filterTracks(trackName) {
+                    return trackName.startsWith('Raster');
+                },
+                expandTracks() {
+                    return true;
+                },
+            });
+            await assertScreenshot('timeline/render_rasterizer_track.png');
+        });
+        it('renders tracks for workers', async function () {
+            await renderFlameChartIntoDOM(this, {
+                traceFile: 'two-workers.json.gz',
+                filterTracks(trackName) {
+                    return trackName.startsWith('Worker');
+                },
+                expandTracks(_trackName, trackIndex) {
+                    // We render two worker tracks: leave the first closed and expand the second.
+                    return trackIndex === 1;
+                },
+                // Zoom in on the part of the trace with activity to make the screenshot better.
+                customStartTime: 107351290.697,
+                customEndTime: 107351401.004,
+            });
+            await assertScreenshot('timeline/worker_tracks.png');
+        });
+        it('renders threadpool groups correctly', async function () {
+            await renderFlameChartIntoDOM(this, {
+                traceFile: 'web-dev.json.gz',
+                filterTracks(trackName) {
+                    return trackName.startsWith('Thread');
+                },
+                expandTracks() {
+                    return true;
+                },
+                // Zoom in on the part of the trace with activity to make the screenshot better.
+                customStartTime: 1020034891.352,
+                customEndTime: 1020035181.509,
+            });
+            await assertScreenshot('timeline/threadpool_tracks.png');
+        });
+    });
+    it('renders the interactions track correctly', async function () {
+        await renderFlameChartIntoDOM(this, {
+            traceFile: 'slow-interaction-button-click.json.gz',
+            filterTracks(trackName) {
+                return trackName.startsWith('Interactions');
+            },
+            expandTracks() {
+                return true;
+            },
+            customStartTime: 337944700,
+            customEndTime: 337945100,
+        });
+        await assertScreenshot('timeline/interactions_track.png');
+    });
+    it('candy stripes long interactions', async function () {
+        await renderFlameChartIntoDOM(this, {
+            traceFile: 'one-second-interaction.json.gz',
+            filterTracks(trackName) {
+                return trackName.startsWith('Interactions');
+            },
+            expandTracks() {
+                return true;
+            },
+            customStartTime: 141251500,
+            customEndTime: 141253000,
+        });
+        await assertScreenshot('timeline/interactions_track_candystripe.png');
     });
 });
 //# sourceMappingURL=FlameChart.test.js.map

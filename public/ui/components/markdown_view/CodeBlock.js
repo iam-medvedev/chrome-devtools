@@ -10,12 +10,7 @@ import * as CopyToClipboard from '../../../ui/components/copy_to_clipboard/copy_
 import * as TextEditor from '../../../ui/components/text_editor/text_editor.js';
 import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import stylesRaw from './codeBlock.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const styles = new CSSStyleSheet();
-styles.replaceSync(stylesRaw.cssText);
+import styles from './codeBlock.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -112,8 +107,8 @@ export class CodeBlock extends HTMLElement {
     #displayNotice = false;
     #header;
     #showCopyButton = true;
+    #citations = [];
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [styles];
         void this.#render();
     }
     set code(value) {
@@ -151,6 +146,9 @@ export class CodeBlock extends HTMLElement {
     set showCopyButton(show) {
         this.#showCopyButton = show;
         void this.#render();
+    }
+    set citations(citations) {
+        this.#citations = citations;
     }
     #onCopy() {
         CopyToClipboard.copyTextToClipboard(this.#code, i18nString(UIStrings.copied));
@@ -191,6 +189,22 @@ export class CodeBlock extends HTMLElement {
       </div>`;
         // clang-format on
     }
+    #maybeRenderCitations() {
+        if (!this.#citations.length) {
+            return Lit.nothing;
+        }
+        // clang-format off
+        return html `
+      ${this.#citations.map(citation => html `
+        <button
+          class="citation"
+          jslog=${VisualLogging.link('inline-citation').track({ click: true })}
+          @click=${citation.clickHandler}
+        >[${citation.index}]</button>
+      `)}
+    `;
+        // clang-format on
+    }
     async #render() {
         const header = (this.#header ?? this.#codeLang) || i18nString(UIStrings.code);
         if (!this.#editorState) {
@@ -198,9 +212,13 @@ export class CodeBlock extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `<div class='codeblock' jslog=${VisualLogging.section('code')}>
-      <div class="editor-wrapper">
+      <style>${styles}</style>
+        <div class="editor-wrapper">
         <div class="heading">
-          <h4 class="heading-text">${header}</h4>
+          <div class="heading-text-wrapper">
+            <h4 class="heading-text">${header}</h4>
+            ${this.#maybeRenderCitations()}
+          </div>
           ${this.#showCopyButton ? this.#renderCopyButton() : Lit.nothing}
         </div>
         <div class="code">

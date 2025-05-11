@@ -334,6 +334,9 @@ export class SidebarSingleInsightSet extends HTMLElement {
                 !shouldRenderForCategory({ activeCategory: this.#data.activeCategory, insightCategory: model.category })) {
                 continue;
             }
+            if (model instanceof Error) {
+                continue;
+            }
             const fieldMetrics = this.#getFieldMetrics(insightSetKey);
             // clang-format off
             const component = html `<div>
@@ -381,7 +384,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
-      <style>${sidebarSingleInsightSetStyles.cssText}</style>
+      <style>${sidebarSingleInsightSetStyles}</style>
       <div class="navigation">
         ${this.#renderMetrics(insightSetKey)}
         ${this.#renderInsights(insights, insightSetKey)}

@@ -5,7 +5,7 @@ export declare class EnhancedTracesParser {
     constructor(trace: TraceFile);
     parseEnhancedTrace(): void;
     data(): HydratingDataPerTarget[];
-    private getEncodedSourceMapUrl;
+    private resolveSourceMap;
     private getSourceMapFromMetadata;
     private getScriptIsolateId;
     private getExecutionContextIsolateId;

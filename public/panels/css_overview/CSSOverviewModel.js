@@ -10,23 +10,11 @@ export class CSSOverviewModel extends SDK.SDKModel.SDKModel {
     #runtimeAgent;
     #cssAgent;
     #domSnapshotAgent;
-    #overlayAgent;
     constructor(target) {
         super(target);
         this.#runtimeAgent = target.runtimeAgent();
         this.#cssAgent = target.cssAgent();
         this.#domSnapshotAgent = target.domsnapshotAgent();
-        this.#overlayAgent = target.overlayAgent();
-    }
-    highlightNode(node) {
-        const highlightConfig = {
-            contentColor: Common.Color.PageHighlight.Content.toProtocolRGBA(),
-            showInfo: true,
-            contrastAlgorithm: Root.Runtime.experiments.isEnabled('apca') ? "apca" /* Protocol.Overlay.ContrastAlgorithm.Apca */ :
-                "aa" /* Protocol.Overlay.ContrastAlgorithm.Aa */,
-        };
-        void this.#overlayAgent.invoke_hideHighlight();
-        void this.#overlayAgent.invoke_highlightNode({ backendNodeId: node, highlightConfig });
     }
     async getNodeStyleStats() {
         const backgroundColors = new Map();

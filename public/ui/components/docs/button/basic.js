@@ -12,6 +12,7 @@ const TONAL_SECTION = '#tonal-buttons';
 const OUTLINED_SECTION = '#outlined-buttons';
 const TEXT_SECTION = '#text-buttons';
 const ICON_SECTION = '#icon-buttons';
+const FLOATING_SECTION = '#floating-buttons';
 const DEFAULT_TEXT = 'Default';
 const WITH_ICON_TEXT = 'With icon';
 const MICRO_TEXT = 'Micro';
@@ -142,5 +143,10 @@ function append(section, element) {
     toggledWithLabel.textContent = '(Toggle)';
     append(ICON_SECTION, iconToggle);
     append(ICON_SECTION, toggledWithLabel);
+}
+// Floating buttons
+{
+    const floatingButton = Buttons.FloatingButton.create('smart-assistant', 'Ask AI!');
+    append(FLOATING_SECTION, floatingButton);
 }
 //# sourceMappingURL=basic.js.map

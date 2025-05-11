@@ -83,7 +83,7 @@ export class Toolbar extends HTMLElement {
     compactLayout = false;
     constructor() {
         super();
-        this.#shadowRoot.createChild('style').textContent = toolbarStyles.cssText;
+        this.#shadowRoot.createChild('style').textContent = toolbarStyles;
         this.#shadowRoot.createChild('slot');
     }
     onItemsChange(mutationList) {

@@ -39,8 +39,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
-import * as FloatingButton from '../../ui/components/floating_button/floating_button.js';
 import * as Highlighting from '../../ui/components/highlighting/highlighting.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
@@ -475,10 +475,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction('freestyler.elements-floating-button');
         if (this.contentElement && !this.aiButtonContainer) {
             this.aiButtonContainer = this.contentElement.createChild('span', 'ai-button-container');
-            const floatingButton = new FloatingButton.FloatingButton.FloatingButton({
-                title: action.title(),
-                iconName: 'smart-assistant',
-            });
+            const floatingButton = Buttons.FloatingButton.create('smart-assistant', action.title());
             floatingButton.addEventListener('click', ev => {
                 ev.stopPropagation();
                 this.select(true, false);

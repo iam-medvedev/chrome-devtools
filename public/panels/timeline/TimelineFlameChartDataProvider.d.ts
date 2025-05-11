@@ -47,11 +47,11 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
         /**
          * Filters the track by the given name. Only tracks that match this filter will be drawn.
          */
-        filterTracks?: (name: string) => boolean;
+        filterTracks?: (name: string, trackIndex: number) => boolean;
         /**
          * Choose if a given track is expanded based on the name
          */
-        expandTracks?: (name: string) => boolean;
+        expandTracks?: (name: string, trackIndex: number) => boolean;
     }): void;
     groupTreeEvents(group: PerfUI.FlameChart.Group): Trace.Types.Events.Event[] | null;
     mainFrameNavigationStartEvents(): readonly Trace.Types.Events.NavigationStart[];

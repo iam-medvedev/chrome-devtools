@@ -1,12 +1,13 @@
 import * as Host from '../../../core/host/host.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
+import type { TemplateResult } from '../../../ui/lit/lit.js';
 import { AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class RequestContext extends ConversationContext<SDK.NetworkRequest.NetworkRequest> {
     #private;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
     getOrigin(): string;
     getItem(): SDK.NetworkRequest.NetworkRequest;
-    getIcon(): HTMLElement;
+    getIcon(): TemplateResult;
     getTitle(): string;
 }
 /**

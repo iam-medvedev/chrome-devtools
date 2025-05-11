@@ -279,7 +279,7 @@ export class EntriesLinkOverlay extends HTMLElement {
         const arrowColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
         // clang-format off
         render(html `
-          <style>${entriesLinkOverlayStyles.cssText}</style>
+          <style>${entriesLinkOverlayStyles}</style>
           <svg class="connectorContainer" width="100%" height="100%" role="region" aria-label=${i18nString(UIStrings.diagram)}>
             <defs>
               <linearGradient

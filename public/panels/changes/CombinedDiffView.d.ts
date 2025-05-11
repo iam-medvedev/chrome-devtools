@@ -1,11 +1,12 @@
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import type * as Diff from '../../third_party/diff/diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 interface SingleDiffViewInput {
     fileName: string;
     fileUrl: string;
     mimeType: string;
-    icon: HTMLElement;
+    icon: Lit.TemplateResult;
     diff: Diff.Diff.DiffArray;
     copied: boolean;
     selectedFileUrl?: string;

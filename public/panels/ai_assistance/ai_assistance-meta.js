@@ -232,4 +232,12 @@ UI.ActionRegistration.registerActionExtension({
     },
     condition: config => isFileAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config),
 });
+// Called by MCP server via Puppeteer
+// TODO(http://b/416460908) Make this generic and select the agent based on an input parameter
+// @ts-expect-error
+globalThis.debugProblem = async (prompt) => {
+    const AiAssistance = await loadAiAssistanceModule();
+    const panelInstance = await AiAssistance.AiAssistancePanel.instance();
+    return await panelInstance.debugProblem(prompt);
+};
 //# sourceMappingURL=ai_assistance-meta.js.map

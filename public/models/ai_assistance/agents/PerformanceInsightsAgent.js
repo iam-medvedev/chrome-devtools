@@ -6,7 +6,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
-import * as PanelUtils from '../../../panels/utils/utils.js';
+import { html } from '../../../ui/lit/lit.js';
 import { PerformanceInsightFormatter, TraceEventFormatter } from '../data_formatters/PerformanceInsightFormatter.js';
 import { debugLog } from '../debug.js';
 import { AiAgent, ConversationContext } from './AiAgent.js';
@@ -102,13 +102,8 @@ export class InsightContext extends ConversationContext {
         return this.#insight;
     }
     getIcon() {
-        const iconData = {
-            iconName: 'performance',
-            color: 'var(--sys-color-on-surface-subtle)',
-        };
-        const icon = PanelUtils.PanelUtils.createIconElement(iconData, 'Performance');
-        icon.classList.add('icon');
-        return icon;
+        return html `<devtools-icon name="performance" title="Performance"
+        style="color: var(--sys-color-on-surface-subtle);"></devtools-icon>`;
     }
     getTitle() {
         return `Insight: ${this.#insight.title()}`;

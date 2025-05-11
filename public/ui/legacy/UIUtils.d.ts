@@ -85,8 +85,8 @@ export declare function createSelect(name: string, options: string[] | Array<Map
 export declare function createOption(title: string, value?: string, jslogContext?: string): HTMLOptionElement;
 export declare function createLabel(title: string, className?: string, associatedControl?: Element): Element;
 export declare function createIconLabel(options: {
-    title?: string;
     iconName: string;
+    title?: string;
     color?: string;
     width?: '14px' | '20px';
     height?: '14px' | '20px';
@@ -246,11 +246,7 @@ export interface ConfirmDialogOptions {
  * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
  */
 export declare function createShadowRootWithCoreStyles(element: Element, options?: {
-    cssFile?: Array<{
-        cssText: string;
-    }> | {
-        cssText: string;
-    };
+    cssFile?: CSSInJS[] | CSSInJS;
     delegatesFocus?: boolean;
 }): ShadowRoot;
 export declare function resetMeasuredScrollbarWidthForTest(): void;

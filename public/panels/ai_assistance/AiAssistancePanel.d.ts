@@ -32,6 +32,7 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     willHide(): void;
     performUpdate(): Promise<void>;
     handleAction(actionId: string): void;
+    debugProblem(prompt: string): Promise<string>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string): boolean;
