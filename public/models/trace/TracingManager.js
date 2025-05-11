@@ -65,7 +65,7 @@ export class TracingManager extends SDK.SDKModel.SDKModel {
             transferMode: "ReportEvents" /* Protocol.Tracing.StartRequestTransferMode.ReportEvents */,
             traceConfig: {
                 recordMode: "recordUntilFull" /* Protocol.Tracing.TraceConfigRecordMode.RecordUntilFull */,
-                traceBufferSizeInKb: 400 * 1000,
+                traceBufferSizeInKb: 1200 * 1000,
                 includedCategories: categoryFilter.split(','),
             },
         };

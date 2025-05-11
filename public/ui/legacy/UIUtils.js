@@ -51,7 +51,6 @@ import inlineButtonStyles from './inlineButton.css.js';
 import inspectorCommonStyles from './inspectorCommon.css.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
 import smallBubbleStyles from './smallBubble.css.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { Tooltip } from './Tooltip.js';
 import { Widget } from './Widget.js';
 const UIStrings = {
@@ -547,8 +546,8 @@ export function addPlatformClass(element) {
     element.classList.add('platform-' + Host.Platform.platform());
 }
 export function installComponentRootStyles(element) {
-    ThemeSupport.ThemeSupport.instance().appendStyle(element, inspectorCommonStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(element, Buttons.textButtonStyles);
+    Platform.DOMUtilities.appendStyle(element, inspectorCommonStyles);
+    Platform.DOMUtilities.appendStyle(element, Buttons.textButtonStyles);
     // Detect overlay scrollbar enable by checking for nonzero scrollbar width.
     if (!Host.Platform.isMac() && measuredScrollbarWidth(element.ownerDocument) === 0) {
         element.classList.add('overlay-scrollbar-enabled');
@@ -1625,17 +1624,14 @@ export function createShadowRootWithCoreStyles(element, options = {
     delegatesFocus: undefined,
     cssFile: undefined,
 }) {
-    const { cssFile, delegatesFocus, } = options;
+    const { cssFile, delegatesFocus } = options;
     const shadowRoot = element.attachShadow({ mode: 'open', delegatesFocus });
-    ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, inspectorCommonStyles);
-    ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, Buttons.textButtonStyles);
+    Platform.DOMUtilities.appendStyle(shadowRoot, inspectorCommonStyles, Buttons.textButtonStyles);
     if (Array.isArray(cssFile)) {
-        for (const cf of cssFile) {
-            ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, cf);
-        }
+        Platform.DOMUtilities.appendStyle(shadowRoot, ...cssFile);
     }
     else if (cssFile) {
-        ThemeSupport.ThemeSupport.instance().appendStyle(shadowRoot, cssFile);
+        Platform.DOMUtilities.appendStyle(shadowRoot, cssFile);
     }
     shadowRoot.addEventListener('focus', focusChanged, true);
     return shadowRoot;
@@ -1682,12 +1678,15 @@ export function measuredScrollbarWidth(document) {
 export function openInNewTab(url) {
     url = new URL(`${url}`);
     if (['developer.chrome.com', 'developers.google.com', 'web.dev'].includes(url.hostname)) {
-        if (!url.searchParams.has('utm_source')) {
-            url.searchParams.append('utm_source', 'devtools');
-        }
         const { channel } = Root.Runtime.hostConfig;
         if (!url.searchParams.has('utm_campaign') && typeof channel === 'string') {
             url.searchParams.append('utm_campaign', channel);
+        }
+        if (!url.searchParams.has('utm_medium')) {
+            url.searchParams.append('utm_medium', 'referral');
+        }
+        if (!url.searchParams.has('utm_source')) {
+            url.searchParams.append('utm_source', 'devtools');
         }
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(Platform.DevToolsPath.urlString `${url}`);

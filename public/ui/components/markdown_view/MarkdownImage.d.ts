@@ -10,7 +10,6 @@ export interface MarkdownImageData {
  */
 export declare class MarkdownImage extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: MarkdownImageData);
 }
 declare global {

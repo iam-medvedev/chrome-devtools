@@ -332,10 +332,11 @@ export class NetworkRequestDetails extends HTMLElement {
             return;
         }
         const networkData = this.#networkRequest.args.data;
+        const redirectsHtml = NetworkRequestTooltip.renderRedirects(this.#networkRequest);
         // clang-format off
         const output = html `
-      <style>${networkRequestDetailsStyles.cssText}</style>
-      <style>${networkRequestTooltipStyles.cssText}</style>
+      <style>${networkRequestDetailsStyles}</style>
+      <style>${networkRequestTooltipStyles}</style>
       <div class="network-request-details-content">
         ${this.#renderTitle()}
         ${this.#renderURL()}
@@ -359,6 +360,12 @@ export class NetworkRequestDetails extends HTMLElement {
             </div>
           </div>
           ${this.#renderServerTimings()}
+          ${redirectsHtml ? html `
+            <div class="column-divider"></div>
+            <div class="network-request-details-col">
+              ${redirectsHtml}
+            </div>
+          ` : Lit.nothing}
         </div>
         ${this.#renderInitiatedBy()}
       </div>

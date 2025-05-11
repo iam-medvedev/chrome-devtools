@@ -106,4 +106,18 @@ export function rangeOfWord(rootNode, offset, stopCharacters, stayWithinNode, di
     result.setEnd(endNode, endOffset);
     return result;
 }
+/**
+ * Appends the list of `styles` as individual `<style>` elements to the
+ * given `node`.
+ *
+ * @param node the `Node` to append the `<style>` elements to.
+ * @param styles an optional list of styles to append to the `node`.
+ */
+export function appendStyle(node, ...styles) {
+    for (const cssText of styles) {
+        const style = (node.ownerDocument ?? document).createElement('style');
+        style.textContent = cssText;
+        node.appendChild(style);
+    }
+}
 //# sourceMappingURL=DOMUtilities.js.map

@@ -52,7 +52,7 @@ export class AnchorFunctionLinkSwatch extends HTMLElement {
         if (this.#data.identifier) {
             render(
             // clang-format off
-            html `<style>${anchorFunctionLinkSwatchStyles.cssText}</style>
+            html `<style>${anchorFunctionLinkSwatchStyles}</style>
                <devtools-link-swatch
                 @mouseenter=${this.#data.onMouseEnter}
                 @mouseleave=${this.#data.onMouseLeave}
@@ -70,7 +70,7 @@ export class AnchorFunctionLinkSwatch extends HTMLElement {
         }
         else {
             // clang-format off
-            render(html `<style>${anchorFunctionLinkSwatchStyles.cssText}</style>
+            render(html `<style>${anchorFunctionLinkSwatchStyles}</style>
                   <devtools-icon
                    role='button'
                    title=${i18nString(UIStrings.jumpToAnchorNode)}

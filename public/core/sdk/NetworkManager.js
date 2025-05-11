@@ -120,7 +120,7 @@ export class NetworkManager extends SDKModel {
                 Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', undefined).get())) {
             this.cookieControlFlagsSettingChanged();
         }
-        void this.#networkAgent.invoke_enable({ maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH });
+        void this.#networkAgent.invoke_enable({ maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH, reportDirectSocketTraffic: true });
         void this.#networkAgent.invoke_setAttachDebugStack({ enabled: true });
         this.#bypassServiceWorkerSetting =
             Common.Settings.Settings.instance().createSetting('bypass-service-worker', false);
@@ -692,7 +692,7 @@ export class NetworkDispatcher {
         this.finishNetworkRequest(networkRequest, time, -1);
     }
     webSocketCreated({ requestId, url: requestURL, initiator }) {
-        const networkRequest = NetworkRequest.createForWebSocket(requestId, requestURL, initiator);
+        const networkRequest = NetworkRequest.createForSocket(requestId, requestURL, initiator);
         requestToManagerMap.set(networkRequest, this.#manager);
         networkRequest.setResourceType(Common.ResourceType.resourceTypes.WebSocket);
         this.startNetworkRequest(networkRequest, null);
@@ -939,7 +939,7 @@ export class NetworkDispatcher {
         }
     }
     webTransportCreated({ transportId, url: requestURL, timestamp: time, initiator }) {
-        const networkRequest = NetworkRequest.createForWebSocket(transportId, requestURL, initiator);
+        const networkRequest = NetworkRequest.createForSocket(transportId, requestURL, initiator);
         networkRequest.hasNetworkData = true;
         requestToManagerMap.set(networkRequest, this.#manager);
         networkRequest.setResourceType(Common.ResourceType.resourceTypes.WebTransport);
@@ -969,8 +969,8 @@ export class NetworkDispatcher {
         this.finishNetworkRequest(networkRequest, time, 0);
     }
     directTCPSocketCreated(event) {
-        const requestURL = event.remotePort === 0 ? event.remoteAddr : `${event.remoteAddr}:${event.remotePort}`;
-        const networkRequest = NetworkRequest.createForWebSocket(event.identifier, requestURL, event.initiator);
+        const requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
+        const networkRequest = NetworkRequest.createForSocket(event.identifier, requestURL, event.initiator);
         networkRequest.hasNetworkData = true;
         networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
         networkRequest.protocol = i18n.i18n.lockedString('tcp');
@@ -1008,7 +1008,7 @@ export class NetworkDispatcher {
             localPort: event.localPort,
         };
         networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
-        const requestURL = event.remotePort === 0 ? event.remoteAddr : `${event.remoteAddr}:${event.remotePort}`;
+        const requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
         networkRequest.setUrl(requestURL);
         this.updateNetworkRequest(networkRequest);
     }
@@ -1058,15 +1058,122 @@ export class NetworkDispatcher {
         networkRequest.responseReceivedTime = event.timestamp;
         this.updateNetworkRequest(networkRequest);
     }
-    directTCPSocketChunkError(event) {
+    directUDPSocketCreated(event) {
+        let requestURL = '';
+        let type;
+        if (event.options.remoteAddr && event.options.remotePort) {
+            requestURL = this.concatHostPort(event.options.remoteAddr, event.options.remotePort);
+            type = DirectSocketType.UDP_CONNECTED;
+        }
+        else if (event.options.localAddr) {
+            requestURL = this.concatHostPort(event.options.localAddr, event.options.localPort);
+            type = DirectSocketType.UDP_BOUND;
+        }
+        else {
+            // Must be present in a valid command if remoteAddr
+            // is not specified.
+            return;
+        }
+        const networkRequest = NetworkRequest.createForSocket(event.identifier, requestURL, event.initiator);
+        networkRequest.hasNetworkData = true;
+        if (event.options.remoteAddr && event.options.remotePort) {
+            networkRequest.setRemoteAddress(event.options.remoteAddr, event.options.remotePort);
+        }
+        networkRequest.protocol = i18n.i18n.lockedString('udp');
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpening);
+        networkRequest.directSocketInfo = {
+            type,
+            status: DirectSocketStatus.OPENING,
+            createOptions: {
+                remoteAddr: event.options.remoteAddr,
+                remotePort: event.options.remotePort,
+                localAddr: event.options.localAddr,
+                localPort: event.options.localPort,
+                sendBufferSize: event.options.sendBufferSize,
+                receiveBufferSize: event.options.receiveBufferSize,
+                dnsQueryType: event.options.dnsQueryType,
+            }
+        };
+        networkRequest.setResourceType(Common.ResourceType.resourceTypes.DirectSocket);
+        networkRequest.setIssueTime(event.timestamp, event.timestamp);
+        requestToManagerMap.set(networkRequest, this.#manager);
+        this.startNetworkRequest(networkRequest, null);
+    }
+    directUDPSocketOpened(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        let requestURL;
+        if (networkRequest.directSocketInfo.type === DirectSocketType.UDP_CONNECTED) {
+            if (!event.remoteAddr || !event.remotePort) {
+                // Connected socket must have remoteAdd and remotePort.
+                return;
+            }
+            networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
+            requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
+        }
+        else {
+            requestURL = this.concatHostPort(event.localAddr, event.localPort);
+        }
+        networkRequest.setUrl(requestURL);
+        networkRequest.responseReceivedTime = event.timestamp;
+        networkRequest.directSocketInfo.status = DirectSocketStatus.OPEN;
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpen);
+        networkRequest.directSocketInfo.openInfo = {
+            remoteAddr: event.remoteAddr,
+            remotePort: event.remotePort,
+            localAddr: event.localAddr,
+            localPort: event.localPort,
+        };
+        this.updateNetworkRequest(networkRequest);
+    }
+    directUDPSocketAborted(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        networkRequest.failed = true;
+        networkRequest.directSocketInfo.status = DirectSocketStatus.ABORTED;
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusAborted);
+        networkRequest.directSocketInfo.errorMessage = event.errorMessage;
+        this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+    }
+    directUDPSocketClosed(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest?.directSocketInfo) {
+            return;
+        }
+        networkRequest.statusText = i18nString(UIStrings.directSocketStatusClosed);
+        networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
+        this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+    }
+    directUDPSocketChunkSent(event) {
         const networkRequest = this.#requestsById.get(event.identifier);
         if (!networkRequest) {
             return;
         }
         networkRequest.addDirectSocketChunk({
-            data: event.errorMessage,
-            type: DirectSocketChunkType.ERROR,
+            data: event.message.data,
+            type: DirectSocketChunkType.SEND,
             timestamp: event.timestamp,
+            remoteAddress: event.message.remoteAddr,
+            remotePort: event.message.remotePort
+        });
+        networkRequest.responseReceivedTime = event.timestamp;
+        this.updateNetworkRequest(networkRequest);
+    }
+    directUDPSocketChunkReceived(event) {
+        const networkRequest = this.#requestsById.get(event.identifier);
+        if (!networkRequest) {
+            return;
+        }
+        networkRequest.addDirectSocketChunk({
+            data: event.message.data,
+            type: DirectSocketChunkType.RECEIVE,
+            timestamp: event.timestamp,
+            remoteAddress: event.message.remoteAddr,
+            remotePort: event.message.remotePort
         });
         networkRequest.responseReceivedTime = event.timestamp;
         this.updateNetworkRequest(networkRequest);
@@ -1130,6 +1237,12 @@ export class NetworkDispatcher {
         const request = NetworkRequest.create(requestId, url, documentURL, frameId, loaderId, initiator);
         requestToManagerMap.set(request, this.#manager);
         return request;
+    }
+    concatHostPort(host, port) {
+        if (!port || port === 0) {
+            return host;
+        }
+        return `${host}:${port}`;
     }
 }
 let multiTargetNetworkManagerInstance;

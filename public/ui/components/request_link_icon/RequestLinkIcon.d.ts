@@ -26,7 +26,6 @@ export declare const extractShortPath: (path: Platform.DevToolsPath.UrlString) =
 export declare class RequestLinkIcon extends HTMLElement {
     #private;
     set data(data: RequestLinkIconData);
-    connectedCallback(): void;
     get data(): RequestLinkIconData;
     handleClick(event: MouseEvent): void;
 }

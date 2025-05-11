@@ -33,11 +33,12 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as IconButton from '../components/icon_button/icon_button.js';
+import { render } from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { InplaceEditor } from './InplaceEditor.js';
 import { Keys } from './KeyboardShortcut.js';
-import * as ThemeSupport from './theme_support/theme_support.js';
 import { Tooltip } from './Tooltip.js';
 import treeoutlineStyles from './treeoutline.css.js';
 import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, isEditing, } from './UIUtils.js';
@@ -362,7 +363,7 @@ export class TreeOutlineInShadow extends TreeOutline {
     }
     registerRequiredCSS(...cssFiles) {
         for (const cssFile of cssFiles) {
-            ThemeSupport.ThemeSupport.instance().appendStyle(this.shadowRoot, cssFile);
+            Platform.DOMUtilities.appendStyle(this.shadowRoot, cssFile);
         }
     }
     hideOverflow() {
@@ -704,7 +705,13 @@ export class TreeElement {
         }
         this.leadingIconsElement.removeChildren();
         for (const icon of icons) {
-            this.leadingIconsElement.appendChild(icon);
+            if (icon instanceof IconButton.Icon.Icon) {
+                this.leadingIconsElement.appendChild(icon);
+            }
+            else {
+                // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+                render(icon, this.leadingIconsElement);
+            }
         }
     }
     get tooltip() {

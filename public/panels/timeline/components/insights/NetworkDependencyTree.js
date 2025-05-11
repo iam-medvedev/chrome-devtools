@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './Table.js';
+import './NodeLink.js';
 import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
@@ -89,14 +90,14 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         if (!this.model.rootNodes.length) {
             // clang-format off
             return html `
-        <style>${networkDependencyTreeInsightStyles.cssText}</style>
+        <style>${networkDependencyTreeInsightStyles}</style>
         <div class="insight-section">${i18nString(UIStrings.noNetworkDependencyTree)}</div>
       `;
             // clang-format on
         }
         // clang-format off
         return html `
-      <style>${networkDependencyTreeInsightStyles.cssText}</style>
+      <style>${networkDependencyTreeInsightStyles}</style>
       <div class="insight-section">
         <div class="max-time">
           ${i18nString(UIStrings.maxCriticalPathLatency)}
@@ -110,12 +111,59 @@ export class NetworkDependencyTree extends BaseInsightComponent {
     `;
         // clang-format on
     }
+    #renderPreconnectOriginsTable() {
+        if (!this.model) {
+            return Lit.nothing;
+        }
+        const preconnectOriginsTableTitle = html `
+      <style>${networkDependencyTreeInsightStyles}</style>
+      <div class='section-title'>${i18nString(UIStrings.preconnectOriginsTableTitle)}</div>
+      <div class="insight-description">${md(i18nString(UIStrings.preconnectOriginsTableDescription))}</div>
+    `;
+        if (!this.model.preconnectOrigins.length) {
+            // clang-format off
+            return html `
+        <div class="insight-section">
+          ${preconnectOriginsTableTitle}
+          ${i18nString(UIStrings.noPreconnectOrigins)}
+        </div>
+      `;
+            // clang-format on
+        }
+        const rows = this.model.preconnectOrigins.map(preconnectOrigin => {
+            const nodeEl = html `
+            <devtools-performance-node-link
+              .data=${{
+                backendNodeId: preconnectOrigin.node_id,
+                frame: preconnectOrigin.frame,
+                fallbackHtmlSnippet: `<link rel="preconnect" href="${preconnectOrigin.url}">`,
+            }}>
+            </devtools-performance-node-link>`;
+            return {
+                values: [preconnectOrigin.url, nodeEl],
+            };
+        });
+        // clang-format off
+        return html `
+      <div class="insight-section">
+        ${preconnectOriginsTableTitle}
+        <devtools-performance-table
+          .data=${{
+            insight: this,
+            headers: [i18nString(UIStrings.columnOrigin), i18nString(UIStrings.columnSource)],
+            rows,
+        }}>
+        </devtools-performance-table>
+      </div>
+    `;
+        // clang-format on
+    }
     #renderEstSavingTable() {
         if (!this.model) {
             return Lit.nothing;
         }
         const estSavingTableTitle = html `
-      <style>${networkDependencyTreeInsightStyles.cssText}</style>
+      <style>${networkDependencyTreeInsightStyles}</style>
       <div class='section-title'>${i18nString(UIStrings.estSavingTableTitle)}</div>
       <div class="insight-description">${md(i18nString(UIStrings.estSavingTableDescription))}</div>
     `;
@@ -150,6 +198,7 @@ export class NetworkDependencyTree extends BaseInsightComponent {
     renderContent() {
         return html `
       ${this.#renderNetworkTreeSection()}
+      ${this.#renderPreconnectOriginsTable()}
       ${this.#renderEstSavingTable()}
     `;
     }

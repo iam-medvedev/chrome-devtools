@@ -12,7 +12,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components.js';
 const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest() {
-    const networkRequest = SDK.NetworkRequest.NetworkRequest.createForWebSocket('requestId', urlString `www.example.com/some/path:3000`);
+    const networkRequest = SDK.NetworkRequest.NetworkRequest.createForSocket('requestId', urlString `www.example.com/some/path:3000`);
     networkRequest.hasNetworkData = true;
     networkRequest.setRemoteAddress('www.example.com', 3000);
     networkRequest.protocol = 'tcp';

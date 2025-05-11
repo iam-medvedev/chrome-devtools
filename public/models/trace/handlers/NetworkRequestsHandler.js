@@ -9,6 +9,7 @@ import { data as metaHandlerData } from './MetaHandler.js';
 const MILLISECONDS_TO_MICROSECONDS = 1000;
 const SECONDS_TO_MICROSECONDS = 1000000;
 const webSocketData = new Map();
+const linkPreconnectEvents = [];
 const requestMap = new Map();
 const requestsById = new Map();
 const requestsByOrigin = new Map();
@@ -64,6 +65,7 @@ export function reset() {
     entityMappings.eventsByEntity.clear();
     entityMappings.entityByEvent.clear();
     entityMappings.createdEntityCache.clear();
+    linkPreconnectEvents.length = 0;
 }
 export function handleEvent(event) {
     if (Types.Events.isResourceChangePriority(event)) {
@@ -116,6 +118,10 @@ export function handleEvent(event) {
             }
         }
         webSocketData.get(identifier)?.events.push(event);
+    }
+    if (Types.Events.isLinkPreconnect(event)) {
+        linkPreconnectEvents.push(event);
+        return;
     }
 }
 export async function finalize() {
@@ -417,6 +423,7 @@ export function data() {
             eventsByEntity: new Map(entityMappings.eventsByEntity),
             createdEntityCache: new Map(entityMappings.createdEntityCache),
         },
+        linkPreconnectEvents,
     };
 }
 export function deps() {

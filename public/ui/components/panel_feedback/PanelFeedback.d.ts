@@ -7,7 +7,6 @@ export interface PanelFeedbackData {
 }
 export declare class PanelFeedback extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: PanelFeedbackData);
 }
 declare global {

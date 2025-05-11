@@ -20,62 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
-import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { BinaryResourceView } from './BinaryResourceView.js';
-import webSocketFrameViewStyles from './webSocketFrameView.css.js';
+import { DataGridItem, ResourceChunkView } from './ResourceChunkView.js';
 const UIStrings = {
-    /**
-     *@description Text in Event Source Messages View of the Network panel
-     */
-    data: 'Data',
-    /**
-     *@description Text in Resource Web Socket Frame View of the Network panel
-     */
-    length: 'Length',
-    /**
-     *@description Text that refers to the time
-     */
-    time: 'Time',
-    /**
-     *@description Data grid name for Web Socket Frame data grids
-     */
-    webSocketFrame: 'Web Socket Frame',
-    /**
-     *@description Text to clear everything
-     */
-    clearAll: 'Clear All',
-    /**
-     *@description Text to filter result items
-     */
-    filter: 'Filter',
-    /**
-     *@description Text in Resource Web Socket Frame View of the Network panel that shows if no message is selected for viewing its content
-     */
-    noMessageSelected: 'No message selected',
-    /**
-     *@description Text in Resource Web Socket Frame View of the Network panel
-     */
-    selectMessageToBrowseItsContent: 'Select message to browse its content.',
-    /**
-     *@description Text in Resource Web Socket Frame View of the Network panel
-     */
-    copyMessageD: 'Copy message...',
-    /**
-     *@description A context menu item in the Resource Web Socket Frame View of the Network panel
-     */
-    copyMessage: 'Copy message',
-    /**
-     *@description Text to clear everything
-     */
-    clearAllL: 'Clear all',
     /**
      * @description Text in Resource Web Socket Frame View of the Network panel. Displays which Opcode
      * is relevant to a particular operation. 'mask' indicates that the Opcode used a mask, which is a
@@ -118,17 +71,9 @@ const UIStrings = {
      */
     pongMessage: 'Pong Message',
     /**
-     *@description Text for everything
+     *@description Data grid name for Web Socket Frame data grids
      */
-    all: 'All',
-    /**
-     *@description Text in Resource Web Socket Frame View of the Network panel
-     */
-    send: 'Send',
-    /**
-     *@description Text in Resource Web Socket Frame View of the Network panel
-     */
-    receive: 'Receive',
+    webSocketFrame: 'Web Socket Frame',
     /**
      *@description Text for something not available
      */
@@ -141,100 +86,33 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/network/ResourceWebSocketFrameView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-export class ResourceWebSocketFrameView extends UI.Widget.VBox {
-    request;
-    splitWidget;
-    dataGrid;
-    timeComparator;
-    mainToolbar;
-    clearAllButton;
-    filterTypeCombobox;
-    filterType;
-    filterTextInput;
-    filterRegex;
-    frameEmptyWidget;
-    currentSelectedNode;
-    messageFilterSetting = Common.Settings.Settings.instance().createSetting('network-web-socket-message-filter', '');
+export class ResourceWebSocketFrameView extends ResourceChunkView {
     constructor(request) {
-        super();
-        this.registerRequiredCSS(webSocketFrameViewStyles);
-        this.element.classList.add('websocket-frame-view');
+        super(request, 'network-web-socket-message-filter', 'resource-web-socket-frame-split-view-state', i18nString(UIStrings.webSocketFrame), i18nString(UIStrings.filterUsingRegex));
         this.element.setAttribute('jslog', `${VisualLogging.pane('web-socket-messages').track({ resize: true })}`);
-        this.request = request;
-        this.splitWidget = new UI.SplitWidget.SplitWidget(false, true, 'resource-web-socket-frame-split-view-state');
-        this.splitWidget.show(this.element);
-        const columns = [
-            { id: 'data', title: i18nString(UIStrings.data), sortable: false, weight: 88 },
-            {
-                id: 'length',
-                title: i18nString(UIStrings.length),
-                sortable: false,
-                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
-                weight: 5,
-            },
-            { id: 'time', title: i18nString(UIStrings.time), sortable: true, weight: 7 },
-        ];
-        this.dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid({
-            displayName: i18nString(UIStrings.webSocketFrame),
-            columns,
-            deleteCallback: undefined,
-            refreshCallback: undefined,
-        });
-        this.dataGrid.setRowContextMenuCallback(onRowContextMenu.bind(this));
-        this.dataGrid.setEnableAutoScrollToBottom(true);
-        this.dataGrid.setCellClass('websocket-frame-view-td');
-        this.timeComparator =
-            resourceWebSocketFrameNodeTimeComparator;
-        this.dataGrid.sortNodes(this.timeComparator, false);
-        this.dataGrid.markColumnAsSortedBy('time', DataGrid.DataGrid.Order.Ascending);
-        this.dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortItems, this);
-        this.dataGrid.setName('resource-web-socket-frame-view');
-        this.dataGrid.addEventListener("SelectedNode" /* DataGrid.DataGrid.Events.SELECTED_NODE */, event => {
-            void this.onFrameSelected(event);
-        }, this);
-        this.dataGrid.addEventListener("DeselectedNode" /* DataGrid.DataGrid.Events.DESELECTED_NODE */, this.onFrameDeselected, this);
-        this.mainToolbar = document.createElement('devtools-toolbar');
-        this.clearAllButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearAll), 'clear');
-        this.clearAllButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.clearFrames, this);
-        this.mainToolbar.appendToolbarItem(this.clearAllButton);
-        this.filterTypeCombobox =
-            new UI.Toolbar.ToolbarComboBox(this.updateFilterSetting.bind(this), i18nString(UIStrings.filter));
-        for (const filterItem of FILTER_TYPES) {
-            const option = this.filterTypeCombobox.createOption(filterItem.label(), filterItem.name);
-            this.filterTypeCombobox.addOption(option);
+    }
+    getRequestChunks() {
+        return this.request.frames();
+    }
+    createGridItem(frame) {
+        return new ResourceFrameNode(frame);
+    }
+    chunkFilter(frame) {
+        if (this.filterType && frame.type !== this.filterType) {
+            return false;
         }
-        this.mainToolbar.appendToolbarItem(this.filterTypeCombobox);
-        this.filterType = null;
-        const placeholder = i18nString(UIStrings.filterUsingRegex);
-        this.filterTextInput = new UI.Toolbar.ToolbarFilter(placeholder, 0.4);
-        this.filterTextInput.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.updateFilterSetting, this);
-        const filter = this.messageFilterSetting.get();
-        if (filter) {
-            this.filterTextInput.setValue(filter);
-        }
-        this.filterRegex = null;
-        this.mainToolbar.appendToolbarItem(this.filterTextInput);
-        const mainContainer = new UI.Widget.VBox();
-        mainContainer.element.appendChild(this.mainToolbar);
-        this.dataGrid.asWidget().show(mainContainer.element);
-        mainContainer.setMinimumSize(0, 72);
-        this.splitWidget.setMainWidget(mainContainer);
-        this.frameEmptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMessageSelected), i18nString(UIStrings.selectMessageToBrowseItsContent));
-        this.splitWidget.setSidebarWidget(this.frameEmptyWidget);
-        if (filter) {
-            this.applyFilter(filter);
-        }
-        function onRowContextMenu(contextMenu, genericNode) {
-            const node = genericNode;
-            const binaryView = node.binaryView();
-            if (binaryView) {
-                binaryView.addCopyToContextMenu(contextMenu, i18nString(UIStrings.copyMessageD));
-            }
-            else {
-                contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyMessage), Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance, node.data.data), { jslogContext: 'copy' });
-            }
-            contextMenu.footerSection().appendItem(i18nString(UIStrings.clearAllL), this.clearFrames.bind(this), { jslogContext: 'clear-all' });
-        }
+        return !this.filterRegex || this.filterRegex.test(frame.text);
+    }
+    wasShown() {
+        super.wasShown();
+        this.refresh();
+        this.request.addEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.onWebSocketFrameAdded, this);
+    }
+    willHide() {
+        this.request.removeEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.onWebSocketFrameAdded, this);
+    }
+    onWebSocketFrameAdded(event) {
+        this.chunkAdded(event.data);
     }
     static opCodeDescription(opCode, mask) {
         const localizedDescription = opCodeDescriptions[opCode] || (() => '');
@@ -243,85 +121,8 @@ export class ResourceWebSocketFrameView extends UI.Widget.VBox {
         }
         return i18nString(UIStrings.sOpcodeS, { PH1: localizedDescription(), PH2: opCode });
     }
-    wasShown() {
-        super.wasShown();
-        this.refresh();
-        this.request.addEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.frameAdded, this);
-    }
-    willHide() {
-        this.request.removeEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.frameAdded, this);
-    }
-    frameAdded(event) {
-        const frame = event.data;
-        if (!this.frameFilter(frame)) {
-            return;
-        }
-        this.dataGrid.insertChild(new ResourceWebSocketFrameNode(frame));
-    }
-    frameFilter(frame) {
-        if (this.filterType && frame.type !== this.filterType) {
-            return false;
-        }
-        return !this.filterRegex || this.filterRegex.test(frame.text);
-    }
-    clearFrames() {
-        // TODO(allada): actially remove frames from request.
-        clearFrameOffsets.set(this.request, this.request.frames().length);
-        this.refresh();
-    }
-    updateFilterSetting() {
-        const text = this.filterTextInput.value();
-        this.messageFilterSetting.set(text);
-        this.applyFilter(text);
-    }
-    applyFilter(text) {
-        const type = this.filterTypeCombobox.selectedOption().value;
-        if (text) {
-            try {
-                this.filterRegex = new RegExp(text, 'i');
-            }
-            catch {
-                this.filterRegex = new RegExp(Platform.StringUtilities.escapeForRegExp(text), 'i');
-            }
-        }
-        else {
-            this.filterRegex = null;
-        }
-        this.filterType = type === 'all' ? null : type;
-        this.refresh();
-    }
-    async onFrameSelected(event) {
-        this.currentSelectedNode = event.data;
-        const content = this.currentSelectedNode.dataText();
-        const binaryView = this.currentSelectedNode.binaryView();
-        if (binaryView) {
-            this.splitWidget.setSidebarWidget(binaryView);
-            return;
-        }
-        const jsonView = await SourceFrame.JSONView.JSONView.createView(content);
-        if (jsonView) {
-            this.splitWidget.setSidebarWidget(jsonView);
-            return;
-        }
-        this.splitWidget.setSidebarWidget(new SourceFrame.ResourceSourceFrame.ResourceSourceFrame(TextUtils.StaticContentProvider.StaticContentProvider.fromString(this.request.url(), Common.ResourceType.resourceTypes.WebSocket, content), ''));
-    }
-    onFrameDeselected() {
-        this.currentSelectedNode = null;
-        this.splitWidget.setSidebarWidget(this.frameEmptyWidget);
-    }
-    refresh() {
-        this.dataGrid.rootNode().removeChildren();
-        let frames = this.request.frames();
-        const offset = clearFrameOffsets.get(this.request) || 0;
-        frames = frames.slice(offset);
-        frames = frames.filter(this.frameFilter.bind(this));
-        frames.forEach(frame => this.dataGrid.insertChild(new ResourceWebSocketFrameNode(frame)));
-    }
-    sortItems() {
-        this.dataGrid.sortNodes(this.timeComparator, !this.dataGrid.isSortOrderAscending());
-    }
 }
-export const opCodeDescriptions = (function () {
+const opCodeDescriptions = (function () {
     const map = [];
     map[0 /* OpCodes.CONTINUATION_FRAME */] = i18nLazyString(UIStrings.continuationFrame);
     map[1 /* OpCodes.TEXT_FRAME */] = i18nLazyString(UIStrings.textMessage);
@@ -331,12 +132,7 @@ export const opCodeDescriptions = (function () {
     map[10 /* OpCodes.PONG_FRAME */] = i18nLazyString(UIStrings.pongMessage);
     return map;
 })();
-const FILTER_TYPES = [
-    { name: 'all', label: i18nLazyString(UIStrings.all), jslogContext: 'all' },
-    { name: 'send', label: i18nLazyString(UIStrings.send), jslogContext: 'send' },
-    { name: 'receive', label: i18nLazyString(UIStrings.receive), jslogContext: 'receive' },
-];
-export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
+class ResourceFrameNode extends DataGridItem {
     frame;
     isTextFrame;
     dataTextInternal;
@@ -373,9 +169,9 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
         this.binaryViewInternal = null;
     }
     createCells(element) {
-        element.classList.toggle('websocket-frame-view-row-error', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Error);
-        element.classList.toggle('websocket-frame-view-row-send', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Send);
-        element.classList.toggle('websocket-frame-view-row-receive', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Receive);
+        element.classList.toggle('resource-chunk-view-row-error', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Error);
+        element.classList.toggle('resource-chunk-view-row-send', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Send);
+        element.classList.toggle('resource-chunk-view-row-receive', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Receive);
         super.createCells(element);
     }
     nodeSelfHeight() {
@@ -383,9 +179,6 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
     }
     dataText() {
         return this.dataTextInternal;
-    }
-    opCode() {
-        return this.frame.opCode;
     }
     binaryView() {
         if (this.isTextFrame || this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Error) {
@@ -398,9 +191,8 @@ export class ResourceWebSocketFrameNode extends DataGrid.SortableDataGrid.Sortab
         }
         return this.binaryViewInternal;
     }
+    getTime() {
+        return this.frame.time;
+    }
 }
-function resourceWebSocketFrameNodeTimeComparator(a, b) {
-    return a.frame.time - b.frame.time;
-}
-const clearFrameOffsets = new WeakMap();
 //# sourceMappingURL=ResourceWebSocketFrameView.js.map

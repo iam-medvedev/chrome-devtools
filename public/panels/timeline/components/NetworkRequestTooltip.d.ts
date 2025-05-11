@@ -12,6 +12,7 @@ export declare class NetworkRequestTooltip extends HTMLElement {
     set data(data: NetworkTooltipData);
     static renderPriorityValue(networkRequest: Trace.Types.Events.SyntheticNetworkRequest): Lit.TemplateResult;
     static renderTimings(networkRequest: Trace.Types.Events.SyntheticNetworkRequest): Lit.TemplateResult | null;
+    static renderRedirects(networkRequest: Trace.Types.Events.SyntheticNetworkRequest): Lit.TemplateResult | null;
 }
 declare global {
     interface HTMLElementTagNameMap {

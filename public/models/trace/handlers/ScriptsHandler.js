@@ -27,13 +27,21 @@ export function handleEvent(event) {
         return;
     }
     if (Types.Events.isV8SourceRundownEvent(event)) {
-        const { isolate, scriptId, url, sourceUrl, sourceMapUrl } = event.args.data;
+        const { isolate, scriptId, url, sourceUrl, sourceMapUrl, sourceMapUrlElided } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.url = url;
         if (sourceUrl) {
             script.sourceUrl = sourceUrl;
         }
-        if (sourceMapUrl) {
+        // Older traces may have data source map urls. Those can be very large, so a change
+        // was made to elide them from the trace.
+        // If elided, a fresh trace will fetch the source map from the Script model
+        // (see TimelinePanel getExistingSourceMap). If not fresh, the source map is resolved
+        // instead in this handler via `findCachedRawSourceMap`.
+        if (sourceMapUrlElided) {
+            script.sourceMapUrlElided = true;
+        }
+        else if (sourceMapUrl) {
             script.sourceMapUrl = sourceMapUrl;
         }
         return;
@@ -138,15 +146,31 @@ export function getScriptGeneratedSizes(script) {
     }
     return script.sizes ?? null;
 }
-function findCachedRawSourceMap(sourceMapUrl, options) {
-    if (!sourceMapUrl) {
+function findCachedRawSourceMap(script, options) {
+    if (options.isFreshRecording || !options.metadata?.sourceMaps) {
+        // Exit if this is not a loaded trace w/ source maps in the metadata.
         return;
     }
-    // If loading from disk, check the metadata for source maps.
-    // The metadata doesn't store data url source maps.
-    const isDataUrl = sourceMapUrl.startsWith('data:');
-    if (!options.isFreshRecording && options.metadata?.sourceMaps && !isDataUrl) {
-        const cachedSourceMap = options.metadata.sourceMaps.find(m => m.sourceMapUrl === sourceMapUrl);
+    // For elided data url source maps, search the metadata source maps by script url.
+    if (script.sourceMapUrlElided) {
+        if (!script.url) {
+            return;
+        }
+        const cachedSourceMap = options.metadata.sourceMaps.find(m => m.url === script.url);
+        if (cachedSourceMap) {
+            return cachedSourceMap.sourceMap;
+        }
+        return;
+    }
+    if (!script.sourceMapUrl) {
+        return;
+    }
+    // Otherwise, search by source map url.
+    // Note: early enhanced traces may have this field set for data urls. Ignore those,
+    // as they were never stored in metadata sourcemap.
+    const isDataUrl = script.sourceMapUrl.startsWith('data:');
+    if (!isDataUrl) {
+        const cachedSourceMap = options.metadata.sourceMaps.find(m => m.sourceMapUrl === script.sourceMapUrl);
         if (cachedSourceMap) {
             return cachedSourceMap.sourceMap;
         }
@@ -174,7 +198,7 @@ export async function finalize(options) {
         // No frame or url means the script came from somewhere we don't care about.
         // Note: scripts from inline <SCRIPT> elements use the url of the HTML document,
         // so aren't ignored.
-        if (!script.frame || !script.url || !script.sourceMapUrl) {
+        if (!script.frame || !script.url || (!script.sourceMapUrl && !script.sourceMapUrlElided)) {
             continue;
         }
         const frameUrl = findFrame(meta, script.frame)?.url;
@@ -187,26 +211,33 @@ export async function finalize(options) {
         if (script.sourceUrl) {
             sourceUrl = Common.ParsedURL.ParsedURL.completeURL(frameUrl, script.sourceUrl) ?? script.sourceUrl;
         }
-        // Resolve the source map url. The value given by v8 may be relative, so resolve it here.
-        // This process should match the one in `SourceMapManager.attachSourceMap`.
-        const sourceMapUrl = Common.ParsedURL.ParsedURL.completeURL(sourceUrl, script.sourceMapUrl);
-        if (!sourceMapUrl) {
-            continue;
+        let sourceMapUrl;
+        if (script.sourceMapUrl) {
+            // Resolve the source map url. The value given by v8 may be relative, so resolve it here.
+            // This process should match the one in `SourceMapManager.attachSourceMap`.
+            sourceMapUrl =
+                Common.ParsedURL.ParsedURL.completeURL(sourceUrl, script.sourceMapUrl);
+            if (!sourceMapUrl) {
+                continue;
+            }
+            script.sourceMapUrl = sourceMapUrl;
         }
-        script.sourceMapUrl = sourceMapUrl;
         const params = {
             scriptId: script.scriptId,
-            scriptUrl: sourceUrl,
-            sourceMapUrl: sourceMapUrl,
+            scriptUrl: script.url,
+            sourceUrl: sourceUrl,
+            sourceMapUrl: sourceMapUrl ?? '',
             frame: script.frame,
-            cachedRawSourceMap: findCachedRawSourceMap(sourceMapUrl, options),
+            cachedRawSourceMap: findCachedRawSourceMap(script, options),
         };
         const promise = options.resolveSourceMap(params).then(sourceMap => {
             if (sourceMap) {
                 script.sourceMap = sourceMap;
             }
         });
-        promises.push(promise);
+        promises.push(promise.catch(e => {
+            console.error('Uncaught error when resolving source map', params, e);
+        }));
     }
     await Promise.all(promises);
 }

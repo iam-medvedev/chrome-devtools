@@ -20,6 +20,9 @@ export function getNonResolvedURL(entry, parsedTrace) {
     if (Types.Events.isSyntheticNetworkRequest(entry)) {
         return entry.args.data.url;
     }
+    if (Types.Events.isParseAuthorStyleSheetEvent(entry) && entry.args) {
+        return entry.args.data.stylesheetUrl;
+    }
     if (entry.args?.data?.stackTrace && entry.args.data.stackTrace.length > 0) {
         return entry.args.data.stackTrace[0].url;
     }

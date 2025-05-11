@@ -9,7 +9,6 @@ export interface BreakpointsViewData {
     breakpointsActive: boolean;
     pauseOnUncaughtExceptions: boolean;
     pauseOnCaughtExceptions: boolean;
-    independentPauseToggles: boolean;
     groups: BreakpointGroup[];
 }
 export interface BreakpointGroup {
@@ -42,7 +41,6 @@ export declare class BreakpointsSidebarController implements UI.ContextFlavorLis
         settings: Common.Settings.Settings;
     }): BreakpointsSidebarController;
     static removeInstance(): void;
-    static targetSupportsIndependentPauseOnExceptionToggles(): boolean;
     flavorChanged(_object: Object | null): void;
     breakpointEditFinished(breakpoint: Breakpoints.BreakpointManager.Breakpoint | null, edited: boolean): void;
     breakpointStateChanged(breakpointItem: BreakpointItem, checked: boolean): void;

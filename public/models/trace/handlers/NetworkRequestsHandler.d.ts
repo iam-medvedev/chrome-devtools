@@ -34,6 +34,7 @@ interface NetworkRequestData {
     eventToInitiator: Map<Types.Events.SyntheticNetworkRequest, Types.Events.SyntheticNetworkRequest>;
     webSocket: WebSocketTraceData[];
     entityMappings: HandlerHelpers.EntityMappings;
+    linkPreconnectEvents: Types.Events.LinkPreconnect[];
 }
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;

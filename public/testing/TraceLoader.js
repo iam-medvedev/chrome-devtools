@@ -191,9 +191,13 @@ export class TraceLoader {
                 metadata,
                 isFreshRecording: emulateFreshRecording,
                 async resolveSourceMap(params) {
-                    const { scriptUrl, sourceMapUrl, cachedRawSourceMap } = params;
+                    const { sourceUrl, sourceMapUrl, cachedRawSourceMap } = params;
                     if (cachedRawSourceMap) {
-                        return new SDK.SourceMap.SourceMap(scriptUrl, sourceMapUrl, cachedRawSourceMap);
+                        return new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, cachedRawSourceMap);
+                    }
+                    if (sourceMapUrl.startsWith('data:')) {
+                        const rawSourceMap = await (await fetch(sourceMapUrl)).json();
+                        return new SDK.SourceMap.SourceMap(sourceUrl, sourceMapUrl, rawSourceMap);
                     }
                     return null;
                 },

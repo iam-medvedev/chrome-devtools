@@ -353,7 +353,7 @@ export class BaseInsightComponent extends HTMLElement {
         }
         // clang-format off
         const output = html `
-      <style>${baseInsightComponentStyles.cssText}</style>
+      <style>${baseInsightComponentStyles}</style>
       <div class=${containerClasses}>
         <header @click=${this.#dispatchInsightToggle}
           @keydown=${this.#handleHeaderKeyDown}

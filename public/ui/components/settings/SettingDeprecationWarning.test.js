@@ -13,7 +13,7 @@ function createWarningElement(deprecationNotice) {
     };
     const component = new SettingComponents.SettingDeprecationWarning.SettingDeprecationWarning();
     component.data = new Common.Settings.Deprecation(registration);
-    const element = component.shadowRoot?.firstElementChild;
+    const element = component.shadowRoot.querySelector('devtools-icon');
     return { component, element };
 }
 const warning = () => 'Warning';

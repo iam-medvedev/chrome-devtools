@@ -23,7 +23,7 @@ export declare const UIStrings: {
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
     /** The entity for this navigation's URL. Any other entity is from a third party. */
-    firstPartyEntity?: Extras.ThirdParties.Entity;
     entitySummaries: Extras.ThirdParties.EntitySummary[];
+    firstPartyEntity?: Extras.ThirdParties.Entity;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ThirdPartiesInsightModel;

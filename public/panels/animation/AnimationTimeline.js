@@ -436,7 +436,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
             this.#selectedGroup.togglePause(pause);
             const preview = this.#previewMap.get(this.#selectedGroup);
             if (preview) {
-                preview.element.classList.toggle('paused', pause);
+                preview.setPaused(pause);
             }
         }
         if (this.#scrubberPlayer) {
@@ -540,10 +540,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#screenshotPopovers = [];
     }
     createPreview(group) {
-        const preview = new AnimationGroupPreviewUI(group);
-        const previewUiContainer = document.createElement('div');
-        previewUiContainer.classList.add('preview-ui-container');
-        previewUiContainer.appendChild(preview.element);
         const screenshotsContainer = document.createElement('div');
         screenshotsContainer.classList.add('screenshots-container', 'no-screenshots');
         screenshotsContainer.createChild('span', 'screenshot-arrow');
@@ -555,38 +551,58 @@ export class AnimationTimeline extends UI.Widget.VBox {
                 screenshotsContainer.classList.add('to-the-left');
             }
         });
+        const preview = new AnimationGroupPreviewUI({
+            animationGroup: group,
+            label: i18nString(UIStrings.animationPreviewS, { PH1: this.#groupBuffer.length + 1 }),
+            onRemoveAnimationGroup: () => {
+                this.removeAnimationGroup(group);
+            },
+            onSelectAnimationGroup: () => {
+                void this.selectAnimationGroup(group);
+            },
+            // Screenshot popover is created only once.
+            // Then, its visibility is controlled via CSS `:hover`.
+            onCreateScreenshotPopover: () => {
+                const screenshots = group.screenshots();
+                if (!screenshots.length) {
+                    return;
+                }
+                screenshotsContainer.classList.remove('no-screenshots');
+                const createAndShowScreenshotPopover = () => {
+                    const screenshotPopover = new AnimationScreenshotPopover(screenshots);
+                    // This is needed for clearing out the widgets
+                    this.#screenshotPopovers.push(screenshotPopover);
+                    screenshotPopover.show(screenshotsContainer);
+                };
+                if (!screenshots[0].complete) {
+                    screenshots[0].onload = createAndShowScreenshotPopover;
+                }
+                else {
+                    createAndShowScreenshotPopover();
+                }
+            },
+            onFocusNextGroup: () => {
+                this.focusNextGroup(group);
+            },
+            onFocusPreviousGroup: () => {
+                this.focusNextGroup(group, /* focusPrevious */ true);
+            }
+        });
+        const previewUiContainer = document.createElement('div');
+        previewUiContainer.classList.add('preview-ui-container');
+        preview.markAsRoot();
+        preview.show(previewUiContainer);
         previewUiContainer.appendChild(screenshotsContainer);
         this.#groupBuffer.push(group);
         this.#previewMap.set(group, preview);
         this.#previewContainer.appendChild(previewUiContainer);
-        preview.removeButton().addEventListener('click', this.removeAnimationGroup.bind(this, group));
-        preview.element.addEventListener('click', this.selectAnimationGroup.bind(this, group));
-        preview.element.addEventListener('keydown', this.handleAnimationGroupKeyDown.bind(this, group));
-        preview.element.addEventListener('mouseover', () => {
-            const screenshots = group.screenshots();
-            if (!screenshots.length) {
-                return;
-            }
-            screenshotsContainer.classList.remove('no-screenshots');
-            const createAndShowScreenshotPopover = () => {
-                const screenshotPopover = new AnimationScreenshotPopover(screenshots);
-                // This is needed for clearing out the widgets
-                this.#screenshotPopovers.push(screenshotPopover);
-                screenshotPopover.show(screenshotsContainer);
-            };
-            if (!screenshots[0].complete) {
-                screenshots[0].onload = createAndShowScreenshotPopover;
-            }
-            else {
-                createAndShowScreenshotPopover();
-            }
-        }, { once: true });
-        UI.ARIAUtils.setLabel(preview.element, i18nString(UIStrings.animationPreviewS, { PH1: this.#groupBuffer.indexOf(group) + 1 }));
-        UI.ARIAUtils.markAsOption(preview.element);
+        // If this is the first preview attached, we want it to be focusable directly.
+        // Otherwise, we don't want the previews to be focusable via Tabbing and manage
+        // their focus via arrow keys.
         if (this.#previewMap.size === 1) {
             const preview = this.#previewMap.get(this.#groupBuffer[0]);
             if (preview) {
-                preview.element.tabIndex = 0;
+                preview.setFocusable(true);
             }
         }
     }
@@ -638,7 +654,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
             if (!discardGroup) {
                 continue;
             }
-            discardGroup.element.remove();
+            discardGroup.detach();
             this.#previewMap.delete(g);
             g.release();
         }
@@ -647,22 +663,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#collectedGroups.push(group);
         return this.#createPreviewForCollectedGroupsThrottler.schedule(() => Promise.resolve(this.createPreviewForCollectedGroups()));
     }
-    handleAnimationGroupKeyDown(group, event) {
-        switch (event.key) {
-            case 'Backspace':
-            case 'Delete':
-                this.removeAnimationGroup(group, event);
-                break;
-            case 'ArrowLeft':
-            case 'ArrowUp':
-                this.focusNextGroup(group, /* target */ event.target, /* focusPrevious */ true);
-                break;
-            case 'ArrowRight':
-            case 'ArrowDown':
-                this.focusNextGroup(group, /* target */ event.target);
-        }
-    }
-    focusNextGroup(group, target, focusPrevious) {
+    focusNextGroup(group, focusPrevious) {
         const currentGroupIndex = this.#groupBuffer.indexOf(group);
         const nextIndex = focusPrevious ? currentGroupIndex - 1 : currentGroupIndex + 1;
         if (nextIndex < 0 || nextIndex >= this.#groupBuffer.length) {
@@ -670,23 +671,23 @@ export class AnimationTimeline extends UI.Widget.VBox {
         }
         const preview = this.#previewMap.get(this.#groupBuffer[nextIndex]);
         if (preview) {
-            preview.element.tabIndex = 0;
-            preview.element.focus();
+            preview.setFocusable(true);
+            preview.focus();
         }
-        if (target) {
-            target.tabIndex = -1;
+        const previousPreview = this.#previewMap.get(group);
+        if (previousPreview) {
+            previousPreview.setFocusable(false);
         }
     }
-    removeAnimationGroup(group, event) {
+    removeAnimationGroup(group) {
         const currentGroupIndex = this.#groupBuffer.indexOf(group);
         Platform.ArrayUtilities.removeElement(this.#groupBuffer, group);
         const previewGroup = this.#previewMap.get(group);
         if (previewGroup) {
-            previewGroup.element.remove();
+            previewGroup.detach();
         }
         this.#previewMap.delete(group);
         group.release();
-        event.consume(true);
         if (this.#selectedGroup === group) {
             this.clearTimeline();
             this.renderGrid();
@@ -700,8 +701,8 @@ export class AnimationTimeline extends UI.Widget.VBox {
             this.#previewMap.get(this.#groupBuffer[this.#groupBuffer.length - 1]) :
             this.#previewMap.get(this.#groupBuffer[currentGroupIndex]);
         if (nextGroup) {
-            nextGroup.element.tabIndex = 0;
-            nextGroup.element.focus();
+            nextGroup.setFocusable(true);
+            nextGroup.focus();
         }
     }
     clearCurrentTimeText() {
@@ -723,7 +724,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.clearTimeline();
         this.#selectedGroup = group;
         this.#previewMap.forEach((previewUI, group) => {
-            previewUI.element.classList.toggle('selected', this.#selectedGroup === group);
+            previewUI.setSelected(this.#selectedGroup === group);
         });
         if (group.isScrollDriven()) {
             const animationNode = await group.scrollNode();

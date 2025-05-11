@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Button from './Button.js';
+import * as FloatingButton from './FloatingButton.js';
 import textButtonStyles from './textButton.css.js';
-export { Button, textButtonStyles, };
+export { Button, FloatingButton, textButtonStyles, };
 //# sourceMappingURL=buttons.js.map

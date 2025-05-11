@@ -52,8 +52,8 @@ export declare abstract class AffectedResourcesView extends UI.TreeOutline.TreeE
     protected createElementCell({ backendNodeId, nodeName, target }: IssuesManager.Issue.AffectedElement, issueCategory: IssuesManager.Issue.IssueCategory): Promise<Element>;
     protected appendSourceLocation(element: HTMLElement, sourceLocation: {
         url: string;
-        scriptId?: Protocol.Runtime.ScriptId;
         lineNumber: number;
+        scriptId?: Protocol.Runtime.ScriptId;
         columnNumber?: number;
     } | undefined, target: SDK.Target.Target | null | undefined): void;
     protected appendColumnTitle(header: HTMLElement, title: string, additionalClass?: string | null): void;

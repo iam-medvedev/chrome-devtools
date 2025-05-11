@@ -7,12 +7,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import { html, nothing, render } from '../../../ui/lit/lit.js';
-import shortcutDialogStylesRaw from './shortcutDialog.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const shortcutDialogStyles = new CSSStyleSheet();
-shortcutDialogStyles.replaceSync(shortcutDialogStylesRaw.cssText);
+import shortcutDialogStyles from './shortcutDialog.css.js';
 const UIStrings = {
     /**
      * @description Title of question mark button for the shortcuts dialog.
@@ -31,9 +26,6 @@ export class ShortcutDialog extends HTMLElement {
     #openOnRender = false;
     #customTitle;
     #prependedElement = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [shortcutDialogStyles];
-    }
     get data() {
         return {
             shortcuts: this.#shortcuts,
@@ -74,6 +66,7 @@ export class ShortcutDialog extends HTMLElement {
         }
         // clang-format off
         render(html `
+      <style>${shortcutDialogStyles}</style>
       <devtools-button-dialog .data=${{
             openOnRender: this.#openOnRender,
             closeButton: true,

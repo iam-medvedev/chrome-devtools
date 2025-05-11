@@ -37,12 +37,14 @@ export interface RenderFlameChartOptions {
      * Filter the tracks that will be rendered by their name. The name here is
      * the user visible name that is drawn onto the flame chart.
      */
-    filterTracks?: (trackName: string) => boolean;
+    filterTracks?: (trackName: string, trackIndex: number) => boolean;
     /**
      * Choose which track(s) that have been drawn should be expanded. The name
      * here is the user visible name that is drawn onto the flame chart.
      */
-    expandTracks?: (trackName: string) => boolean;
+    expandTracks?: (trackName: string, trackIndex: number) => boolean;
+    customStartTime?: Trace.Types.Timing.Milli;
+    customEndTime?: Trace.Types.Timing.Milli;
 }
 /**
  * Renders a flame chart into the unit test DOM.

@@ -4,7 +4,6 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -172,8 +171,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
                 uiSourceCode: modifiedUISourceCode,
             };
         }))).filter(uiSourceCodeAndDiff => !!uiSourceCodeAndDiff);
-        const singleDiffViewInputs = uiSourceCodeAndDiffs
-            .map(({ uiSourceCode, diff }) => {
+        const singleDiffViewInputs = uiSourceCodeAndDiffs.map(({ uiSourceCode, diff }) => {
             let displayText = uiSourceCode.fullDisplayName();
             // If the UISourceCode is backed by a workspace, we show the path as "{workspace-name}/path/relative/to/workspace"
             const fileSystemUiSourceCode = Persistence.Persistence.PersistenceImpl.instance().fileSystem(uiSourceCode);
@@ -194,8 +192,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
                 onCopy: this.#onCopyFileContent.bind(this),
                 onFileNameClick: this.#onFileNameClick.bind(this),
             };
-        })
-            .sort((a, b) => Platform.StringUtilities.compare(a.fileName, b.fileName));
+        });
         this.#view({ singleDiffViewInputs }, this.#viewOutput, this.contentElement);
     }
 }

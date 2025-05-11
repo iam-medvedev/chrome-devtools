@@ -8,9 +8,9 @@ export interface ParsedErrorFrame {
         url: Platform.DevToolsPath.UrlString;
         prefix: string;
         suffix: string;
+        enclosedInBraces: boolean;
         lineNumber?: number;
         columnNumber?: number;
-        enclosedInBraces: boolean;
         scriptId?: Protocol.Runtime.ScriptId;
     };
 }

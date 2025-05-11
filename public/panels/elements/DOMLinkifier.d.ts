@@ -1,15 +1,42 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as UI from '../../ui/legacy/legacy.js';
 export interface Options extends Common.Linkifier.Options {
     hiddenClassList?: string[];
     disabled?: boolean;
 }
-export declare const decorateNodeLabel: (node: SDK.DOMModel.DOMNode, parentElement: HTMLElement, options: Options) => void;
-export declare const linkifyNodeReference: (node: SDK.DOMModel.DOMNode | null, options?: Options | undefined) => Node;
-export declare const linkifyDeferredNodeReference: (deferredNode: SDK.DOMModel.DeferredDOMNode, options?: Options | undefined) => Node;
+interface ViewInput {
+    dynamic?: boolean;
+    disabled?: boolean;
+    preventKeyboardFocus?: boolean;
+    tagName?: string;
+    id?: string;
+    classes: string[];
+    pseudo?: string;
+    onClick: () => void;
+    onMouseOver: () => void;
+    onMouseLeave: () => void;
+}
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare class DOMNodeLink extends UI.Widget.Widget {
+    #private;
+    constructor(element?: HTMLElement, node?: SDK.DOMModel.DOMNode, options?: Options, view?: View);
+    performUpdate(): void;
+}
+interface DeferredViewInput {
+    preventKeyboardFocus?: boolean;
+    onClick: () => void;
+}
+type DeferredView = (input: DeferredViewInput, output: object, target: HTMLElement) => void;
+export declare class DeferredDOMNodeLink extends UI.Widget.Widget {
+    #private;
+    constructor(element?: HTMLElement, deferredNode?: SDK.DOMModel.DeferredDOMNode, options?: Options, view?: DeferredView);
+    performUpdate(): void;
+}
 export declare class Linkifier implements Common.Linkifier.Linkifier {
     static instance(opts?: {
         forceNew: boolean | null;
     }): Linkifier;
     linkify(object: Object, options?: Options): Node;
 }
+export {};

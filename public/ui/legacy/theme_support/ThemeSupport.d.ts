@@ -17,9 +17,6 @@ export declare class ThemeSupport extends EventTarget {
     addDocumentToTheme(document: Document): void;
     getComputedValue(propertyName: string, target?: Element | null): string;
     themeName(): string;
-    appendStyle(node: Node, { cssText }: {
-        cssText: string;
-    }): void;
     static clearThemeCache(): void;
     fetchColorsAndApplyHostTheme(): void;
 }

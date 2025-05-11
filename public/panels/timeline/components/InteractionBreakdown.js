@@ -40,7 +40,7 @@ export class InteractionBreakdown extends HTMLElement {
         const inputDelay = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(this.#entry.inputDelay);
         const mainThreadTime = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(this.#entry.mainThreadHandling);
         const presentationDelay = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(this.#entry.presentationDelay);
-        Lit.render(html `<style>${interactionBreakdownStyles.cssText}</style>
+        Lit.render(html `<style>${interactionBreakdownStyles}</style>
              <ul class="breakdown">
                      <li data-entry="input-delay">${i18nString(UIStrings.inputDelay)}<span class="value">${inputDelay}</span></li>
                      <li data-entry="processing-duration">${i18nString(UIStrings.processingDuration)}<span class="value">${mainThreadTime}</span></li>

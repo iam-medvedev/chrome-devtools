@@ -16,29 +16,29 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 78,
-    header: 'What\'s new in DevTools 137',
+    version: 77,
+    header: 'What\'s new in DevTools 136',
     markdownLinks: [
         {
-            key: 'ai-annotations',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-137/#ai-annotations',
+            key: 'perf-insights',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-136/#perf-insights',
         },
         {
-            key: 'ai-insights',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-137/#ai-insights',
+            key: 'click-to-highlight',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-136/#click-to-highlight',
         },
         {
-            key: 'new-perf-insights',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-137/#new-perf-insights',
+            key: 'cookies-filter',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-136/#cookies-filter',
         },
     ],
     videoLinks: [
         {
-            description: 'See the highlights from Chrome 137',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-137',
+            description: 'See the highlights from Chrome 136',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-136',
             type: "WhatsNew" /* VideoType.WHATS_NEW */,
         },
     ],
-    link: 'https://developer.chrome.com/blog/new-in-devtools-137/',
+    link: 'https://developer.chrome.com/blog/new-in-devtools-136/',
 };
 //# sourceMappingURL=ReleaseNoteText.js.map

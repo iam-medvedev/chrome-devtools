@@ -234,22 +234,19 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         profileCall2.callFrame.columnNumber = 0;
         profileCall2.callFrame.lineNumber = 0;
         const traceEvent = makeCompleteEvent("UpdateLayoutTree" /* Trace.Types.Events.Name.UPDATE_LAYOUT_TREE */, 100, 10, '', pid, tid);
-        const payloadCallFrame = {
-            columnNumber: payloadColumnNumber,
-            functionName: 'bar',
-            lineNumber: payloadLineNumber,
-            scriptId: '115',
-            url: ''
-        };
-        traceEvent.args = { elementCount: 1, beginData: { frame: '', stackTrace: [payloadCallFrame] } };
+        const payloadCallStack = [
+            { columnNumber: payloadColumnNumber, functionName: 'bar', lineNumber: payloadLineNumber, scriptId: '115', url: '' },
+            { columnNumber: payloadColumnNumber, functionName: 'foo', lineNumber: payloadLineNumber, scriptId: '115', url: '' },
+        ];
+        traceEvent.args = { elementCount: 1, beginData: { frame: '', stackTrace: payloadCallStack } };
         const trace = parsedTraceFromEvents([profileCall1, profileCall2, traceEvent]);
         const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(traceEvent, trace);
         assert.exists(stackTraceForExtensionEntry);
         assert.deepEqual(shapeStackTraceAsArray(stackTraceForExtensionEntry), [
             {
                 callFrames: [
-                    { ...payloadCallFrame, lineNumber: payloadLineNumber - 1, columnNumber: payloadColumnNumber - 1 },
-                    profileCall1.callFrame
+                    { ...payloadCallStack[0], lineNumber: payloadLineNumber - 1, columnNumber: payloadColumnNumber - 1 },
+                    { ...payloadCallStack[1], lineNumber: payloadLineNumber - 1, columnNumber: payloadColumnNumber - 1 },
                 ],
                 description: undefined
             },

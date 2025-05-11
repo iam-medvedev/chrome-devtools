@@ -6,5 +6,5 @@ import * as ComponentHelpers from '../../helpers/helpers.js';
 import * as Input from '../../input/input.js';
 await ComponentHelpers.ComponentServerSetup.setup();
 await FrontendHelpers.initializeGlobalVars();
-document.head.appendChild(document.createElement('style')).textContent = Input.textInputStyles.cssText;
+document.head.appendChild(document.createElement('style')).textContent = Input.textInputStyles;
 //# sourceMappingURL=basic.js.map

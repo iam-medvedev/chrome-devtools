@@ -192,7 +192,7 @@ export class PermissionsPolicySection extends HTMLElement {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
-          <style>${permissionsPolicySectionStyles.cssText}</style>
+          <style>${permissionsPolicySectionStyles}</style>
           <devtools-report-section-header>${i18n.i18n.lockedString('Permissions Policy')}</devtools-report-section-header>
           ${this.#renderAllowed()}
           ${(this.#permissionsPolicySectionData.policies.findIndex(p => p.allowed) > 0 ||

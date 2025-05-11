@@ -133,9 +133,6 @@
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
-      "path": "../../ui/components/floating_button/bundle-tsconfig.json"
-    },
-    {
       "path": "../../ui/components/icon_button/bundle-tsconfig.json"
     },
     {

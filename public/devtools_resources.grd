@@ -753,7 +753,6 @@
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/diff_view.js" name="UI_COMPONENTS_DIFF_VIEW_DIFF_VIEW_JS" resource_path="ui/components/diff_view/diff_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandable_list.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLE_LIST_JS" resource_path="ui/components/expandable_list/expandable_list.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/floating_button/floating_button.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATING_BUTTON_JS" resource_path="ui/components/floating_button/floating_button.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/helpers.js" name="UI_COMPONENTS_HELPERS_HELPERS_JS" resource_path="ui/components/helpers/helpers.js" type="BINDATA" compress="false"/>
       <include file="ui/components/highlighting/highlighting.js" name="UI_COMPONENTS_HIGHLIGHTING_HIGHLIGHTING_JS" resource_path="ui/components/highlighting/highlighting.js" type="BINDATA" compress="false"/>
       <include file="ui/components/icon_button/icon_button.js" name="UI_COMPONENTS_ICON_BUTTON_ICON_BUTTON_JS" resource_path="ui/components/icon_button/icon_button.js" type="BINDATA" compress="false"/>
@@ -1621,6 +1620,7 @@
       <include file="panels/network/RequestPreviewView.js" name="PANELS_NETWORK_REQUESTPREVIEWVIEW_JS" resource_path="panels/network/RequestPreviewView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestResponseView.js" name="PANELS_NETWORK_REQUESTRESPONSEVIEW_JS" resource_path="panels/network/RequestResponseView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestTimingView.js" name="PANELS_NETWORK_REQUESTTIMINGVIEW_JS" resource_path="panels/network/RequestTimingView.js" type="BINDATA" compress="false"/>
+      <include file="panels/network/ResourceChunkView.js" name="PANELS_NETWORK_RESOURCECHUNKVIEW_JS" resource_path="panels/network/ResourceChunkView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/ResourceWebSocketFrameView.js" name="PANELS_NETWORK_RESOURCEWEBSOCKETFRAMEVIEW_JS" resource_path="panels/network/ResourceWebSocketFrameView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/SignedExchangeInfoView.js" name="PANELS_NETWORK_SIGNEDEXCHANGEINFOVIEW_JS" resource_path="panels/network/SignedExchangeInfoView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/binaryResourceView.css.js" name="PANELS_NETWORK_BINARYRESOURCEVIEW_CSS_JS" resource_path="panels/network/binaryResourceView.css.js" type="BINDATA" compress="false"/>
@@ -1657,9 +1657,9 @@
       <include file="panels/network/requestInitiatorViewTree.css.js" name="PANELS_NETWORK_REQUESTINITIATORVIEWTREE_CSS_JS" resource_path="panels/network/requestInitiatorViewTree.css.js" type="BINDATA" compress="false"/>
       <include file="panels/network/requestPayloadTree.css.js" name="PANELS_NETWORK_REQUESTPAYLOADTREE_CSS_JS" resource_path="panels/network/requestPayloadTree.css.js" type="BINDATA" compress="false"/>
       <include file="panels/network/requestPayloadView.css.js" name="PANELS_NETWORK_REQUESTPAYLOADVIEW_CSS_JS" resource_path="panels/network/requestPayloadView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/network/resourceChunkView.css.js" name="PANELS_NETWORK_RESOURCECHUNKVIEW_CSS_JS" resource_path="panels/network/resourceChunkView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/network/signedExchangeInfoTree.css.js" name="PANELS_NETWORK_SIGNEDEXCHANGEINFOTREE_CSS_JS" resource_path="panels/network/signedExchangeInfoTree.css.js" type="BINDATA" compress="false"/>
       <include file="panels/network/signedExchangeInfoView.css.js" name="PANELS_NETWORK_SIGNEDEXCHANGEINFOVIEW_CSS_JS" resource_path="panels/network/signedExchangeInfoView.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/network/webSocketFrameView.css.js" name="PANELS_NETWORK_WEBSOCKETFRAMEVIEW_CSS_JS" resource_path="panels/network/webSocketFrameView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/performance_monitor/PerformanceMonitor.js" name="PANELS_PERFORMANCE_MONITOR_PERFORMANCEMONITOR_JS" resource_path="panels/performance_monitor/PerformanceMonitor.js" type="BINDATA" compress="false"/>
       <include file="panels/performance_monitor/performanceMonitor.css.js" name="PANELS_PERFORMANCE_MONITOR_PERFORMANCEMONITOR_CSS_JS" resource_path="panels/performance_monitor/performanceMonitor.css.js" type="BINDATA" compress="false"/>
       <include file="panels/profiler/BottomUpProfileDataGrid.js" name="PANELS_PROFILER_BOTTOMUPPROFILEDATAGRID_JS" resource_path="panels/profiler/BottomUpProfileDataGrid.js" type="BINDATA" compress="false"/>
@@ -2271,7 +2271,9 @@
       <include file="ui/components/adorners/Adorner.js" name="UI_COMPONENTS_ADORNERS_ADORNER_JS" resource_path="ui/components/adorners/Adorner.js" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorner.css.js" name="UI_COMPONENTS_ADORNERS_ADORNER_CSS_JS" resource_path="ui/components/adorners/adorner.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/Button.js" name="UI_COMPONENTS_BUTTONS_BUTTON_JS" resource_path="ui/components/buttons/Button.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/buttons/FloatingButton.js" name="UI_COMPONENTS_BUTTONS_FLOATINGBUTTON_JS" resource_path="ui/components/buttons/FloatingButton.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/button.css.js" name="UI_COMPONENTS_BUTTONS_BUTTON_CSS_JS" resource_path="ui/components/buttons/button.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/buttons/floatingButton.css.js" name="UI_COMPONENTS_BUTTONS_FLOATINGBUTTON_CSS_JS" resource_path="ui/components/buttons/floatingButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/textButton.css.js" name="UI_COMPONENTS_BUTTONS_TEXTBUTTON_CSS_JS" resource_path="ui/components/buttons/textButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/cards/Card.js" name="UI_COMPONENTS_CARDS_CARD_JS" resource_path="ui/components/cards/Card.js" type="BINDATA" compress="false"/>
       <include file="ui/components/cards/card.css.js" name="UI_COMPONENTS_CARDS_CARD_CSS_JS" resource_path="ui/components/cards/card.css.js" type="BINDATA" compress="false"/>
@@ -2290,8 +2292,6 @@
       <include file="ui/components/diff_view/diffView.css.js" name="UI_COMPONENTS_DIFF_VIEW_DIFFVIEW_CSS_JS" resource_path="ui/components/diff_view/diffView.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/ExpandableList.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLELIST_JS" resource_path="ui/components/expandable_list/ExpandableList.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandableList.css.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLELIST_CSS_JS" resource_path="ui/components/expandable_list/expandableList.css.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/floating_button/FloatingButton.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATINGBUTTON_JS" resource_path="ui/components/floating_button/FloatingButton.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/floating_button/floatingButton.css.js" name="UI_COMPONENTS_FLOATING_BUTTON_FLOATINGBUTTON_CSS_JS" resource_path="ui/components/floating_button/floatingButton.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/component-server-setup.js" name="UI_COMPONENTS_HELPERS_COMPONENT_SERVER_SETUP_JS" resource_path="ui/components/helpers/component-server-setup.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/directives.js" name="UI_COMPONENTS_HELPERS_DIRECTIVES_JS" resource_path="ui/components/helpers/directives.js" type="BINDATA" compress="false"/>
       <include file="ui/components/helpers/get-root-node.js" name="UI_COMPONENTS_HELPERS_GET_ROOT_NODE_JS" resource_path="ui/components/helpers/get-root-node.js" type="BINDATA" compress="false"/>

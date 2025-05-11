@@ -15,8 +15,12 @@ export interface Script {
     url?: string;
     sourceUrl?: string;
     content?: string;
-    /** Note: this is the literal text given as the sourceMappingURL value. It has not been resolved relative to the script url. */
+    /** Note: this is the literal text given as the sourceMappingURL value. It has not been resolved relative to the script url.
+     * Since M138, data urls are never set here.
+     */
     sourceMapUrl?: string;
+    /** If true, the source map url was a data URL, so it got removed from the trace event. */
+    sourceMapUrlElided?: boolean;
     sourceMap?: SDK.SourceMap.SourceMap;
     request?: Types.Events.SyntheticNetworkRequest;
     /** Lazily generated - use getScriptGeneratedSizes to access. */

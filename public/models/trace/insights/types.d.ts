@@ -19,6 +19,7 @@ export interface InsightSetContextWithNavigation {
     lantern?: LanternContext;
 }
 export interface LanternContext {
+    requests: Array<Lantern.Types.NetworkRequest<Types.Events.SyntheticNetworkRequest>>;
     graph: Lantern.Graph.Node<Types.Events.SyntheticNetworkRequest>;
     simulator: Lantern.Simulation.Simulator<Types.Events.SyntheticNetworkRequest>;
     metrics: Record<string, Lantern.Metrics.MetricResult>;

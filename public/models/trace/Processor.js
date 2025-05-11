@@ -277,7 +277,7 @@ export class TraceProcessor extends EventTarget {
             largestContentfulPaint: lcpResult,
             totalBlockingTime: tbtResult,
         };
-        return { graph, simulator, metrics };
+        return { requests, graph, simulator, metrics };
     }
     /**
      * Sort the insight models based on the impact of each insight's estimated savings, additionally weighted by the

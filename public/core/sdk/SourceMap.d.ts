@@ -37,7 +37,6 @@ export interface SourceMapV3Object {
  */
 export type SourceMapV3 = SourceMapV3Object | {
     version: number;
-    file?: string;
     sections: Array<{
         offset: {
             line: number;
@@ -51,6 +50,7 @@ export type SourceMapV3 = SourceMapV3Object | {
         };
         url: string;
     }>;
+    file?: string;
 };
 /**
  * Parses the {@link content} as JSON, ignoring BOM markers in the beginning, and

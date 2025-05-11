@@ -1,9 +1,10 @@
-import type * as Common from '../../core/common/common.js';
+import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import type { ContentDataOrError } from '../text_utils/ContentData.js';
 import type { SearchMatch } from '../text_utils/ContentProvider.js';
 import * as Workspace from '../workspace/workspace.js';
 import { type AutomaticFileSystem, type AutomaticFileSystemManager } from './AutomaticFileSystemManager.js';
+import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
 /**
  * Placeholder project that acts as an empty file system within the workspace,
  * and automatically disappears when the user connects the automatic workspace
@@ -60,9 +61,10 @@ export declare class AutomaticFileSystemWorkspaceBinding {
      *
      * @returns the singleton.
      */
-    static instance({ forceNew, automaticFileSystemManager, workspace }?: {
+    static instance({ forceNew, automaticFileSystemManager, isolatedFileSystemManager, workspace }?: {
         forceNew: boolean | null;
         automaticFileSystemManager: AutomaticFileSystemManager | null;
+        isolatedFileSystemManager: IsolatedFileSystemManager | null;
         workspace: Workspace.Workspace.WorkspaceImpl | null;
     }): AutomaticFileSystemWorkspaceBinding;
     /**

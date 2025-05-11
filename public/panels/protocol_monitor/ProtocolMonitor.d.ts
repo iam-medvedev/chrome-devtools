@@ -12,9 +12,15 @@ export declare const buildProtocolMetadata: (domains: Iterable<ProtocolDomain>) 
 export interface Message {
     id?: number;
     method: string;
-    error?: Object;
-    result?: Object;
-    params?: Object;
+    error?: {
+        [x: string]: unknown;
+    };
+    result?: {
+        [x: string]: unknown;
+    };
+    params?: {
+        [x: string]: unknown;
+    };
     requestTime: number;
     elapsedTime?: number;
     sessionId?: string;

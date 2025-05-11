@@ -45,7 +45,6 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     previewsCreatedForTest(): void;
     private createPreviewForCollectedGroups;
     private addAnimationGroup;
-    private handleAnimationGroupKeyDown;
     private focusNextGroup;
     private removeAnimationGroup;
     private clearCurrentTimeText;

@@ -377,7 +377,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
     }
-    static createForWebSocket(backendRequestId, requestURL, initiator) {
+    static createForSocket(backendRequestId, requestURL, initiator) {
         return new NetworkRequest(backendRequestId, backendRequestId, requestURL, Platform.DevToolsPath.EmptyUrlString, null, null, initiator || null);
     }
     static createWithoutBackendRequest(requestId, url, documentURL, initiator) {
@@ -1686,6 +1686,5 @@ export var DirectSocketChunkType;
 (function (DirectSocketChunkType) {
     DirectSocketChunkType["SEND"] = "send";
     DirectSocketChunkType["RECEIVE"] = "receive";
-    DirectSocketChunkType["ERROR"] = "error";
 })(DirectSocketChunkType || (DirectSocketChunkType = {}));
 //# sourceMappingURL=NetworkRequest.js.map

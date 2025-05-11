@@ -79,8 +79,8 @@ export class SettingCheckbox extends HTMLElement {
     ` :
             Lit.nothing;
         Lit.render(html `
-      <style>${Input.checkboxStyles.cssText}</style>
-      <style>${settingCheckboxStyles.cssText}</style>
+      <style>${Input.checkboxStyles}</style>
+      <style>${settingCheckboxStyles}</style>
       <p>
         <label title=${title}>
           <input

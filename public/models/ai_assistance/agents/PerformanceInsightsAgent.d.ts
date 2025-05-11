@@ -1,14 +1,14 @@
 import * as Host from '../../../core/host/host.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
-import type * as Lit from '../../../ui/lit/lit.js';
+import { type TemplateResult } from '../../../ui/lit/lit.js';
 import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type ParsedResponse, type RequestOptions, type ResponseData } from './AiAgent.js';
 export declare class InsightContext extends ConversationContext<TimelineUtils.InsightAIContext.ActiveInsight> {
     #private;
     constructor(insight: TimelineUtils.InsightAIContext.ActiveInsight);
     getOrigin(): string;
     getItem(): TimelineUtils.InsightAIContext.ActiveInsight;
-    getIcon(): HTMLElement;
-    getTitle(): string | ReturnType<typeof Lit.Directives.until>;
+    getIcon(): TemplateResult;
+    getTitle(): string;
     /**
      * Presents the default suggestions that are shown when the user first clicks
      * "Ask AI" on an Insight.
@@ -26,7 +26,7 @@ export declare class PerformanceInsightsAgent extends AiAgent<TimelineUtils.Insi
     parseTextResponse(response: string): ParsedResponse;
     enhanceQuery(query: string, selectedInsight: ConversationContext<TimelineUtils.InsightAIContext.ActiveInsight> | null): Promise<string>;
     run(initialQuery: string, options: {
-        signal?: AbortSignal;
         selected: ConversationContext<TimelineUtils.InsightAIContext.ActiveInsight> | null;
+        signal?: AbortSignal;
     }): AsyncGenerator<ResponseData, void, void>;
 }

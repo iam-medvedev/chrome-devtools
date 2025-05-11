@@ -443,7 +443,7 @@ export class ChatView extends HTMLElement {
         };
         // clang-format off
         Lit.render(html `
-      <style>${chatViewStyles.cssText}</style>
+      <style>${chatViewStyles}</style>
       <div class="chat-ui" ${Lit.Directives.ref(this.#handleChatUiRef)}>
         <main @scroll=${this.#handleScroll} ${ref(this.#mainElementRef)}>
           ${renderMainContents({
@@ -833,7 +833,7 @@ function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, 
         // clang-format off
         return html `<devtools-widget
       .widgetConfig=${UI.Widget.widgetConfig(PatchWidget, {
-            changeSummary,
+            changeSummary: changeSummary ?? '',
             changeManager,
         })}
     ></devtools-widget>`;

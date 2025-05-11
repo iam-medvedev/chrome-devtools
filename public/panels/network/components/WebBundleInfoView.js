@@ -38,7 +38,7 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
     async render() {
         // clang-format off
         render(html `
-      <style>${webBundleInfoViewStyles.cssText}</style>
+      <style>${webBundleInfoViewStyles}</style>
       <div class="header">
         <devtools-icon class="icon"
           .data=${{ color: 'var(--icon-default)', iconName: 'bundle', width: '20px' }}>

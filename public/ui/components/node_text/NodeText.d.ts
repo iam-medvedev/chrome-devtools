@@ -5,7 +5,6 @@ export interface NodeTextData {
 }
 export declare class NodeText extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: NodeTextData);
 }
 declare global {

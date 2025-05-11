@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 describe('Injected', () => {
     let iframe;
     // TODO: use smaller test pages per test.
@@ -105,11 +106,13 @@ describe('Injected', () => {
      */
     async function createSandbox() {
         const url = new URL('./injected/injected.generated.js', import.meta.url);
+        // Some tests run this method twice, so ensure we tidy up any previous iframe.
+        iframe?.remove();
         iframe = document.createElement('iframe');
         const { promise, resolve } = Promise.withResolvers();
         iframe.srcdoc = testPage;
         iframe.onload = resolve;
-        document.body.append(iframe);
+        renderElementIntoDOM(iframe);
         await promise;
         const iframeDocument = iframe.contentDocument;
         {
@@ -302,5 +305,4 @@ describe('Injected', () => {
         });
     });
 });
-export {};
 //# sourceMappingURL=injected.test.js.map

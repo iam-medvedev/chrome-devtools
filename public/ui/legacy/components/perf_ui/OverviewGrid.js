@@ -34,7 +34,6 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as IconButton from '../../../components/icon_button/icon_button.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
-import * as ThemeSupport from '../../theme_support/theme_support.js';
 import overviewGridStyles from './overviewGrid.css.js';
 import { TimelineGrid } from './TimelineGrid.js';
 const UIStrings = {
@@ -166,7 +165,7 @@ export class Window extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.parentElement.addEventListener('wheel', this.onMouseWheel.bind(this), true);
         this.parentElement.addEventListener('dblclick', this.resizeWindowMaximum.bind(this), true);
-        ThemeSupport.ThemeSupport.instance().appendStyle(this.parentElement, overviewGridStyles);
+        Platform.DOMUtilities.appendStyle(this.parentElement, overviewGridStyles);
         this.leftResizeElement = parentElement.createChild('div', 'overview-grid-window-resizer');
         UI.UIUtils.installDragHandle(this.leftResizeElement, this.resizerElementStartDragging.bind(this), this.leftResizeElementDragging.bind(this), null, 'ew-resize');
         this.rightResizeElement = parentElement.createChild('div', 'overview-grid-window-resizer');

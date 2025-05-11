@@ -48,8 +48,8 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
         await RenderCoordinator.write('RuleSetDetailsView render', async () => {
             if (this.#data === null) {
                 Lit.render(html `
-          <style>${ruleSetDetailsViewStyles.cssText}</style>
-          <style>${UI.inspectorCommonStyles.cssText}</style>
+          <style>${ruleSetDetailsViewStyles}</style>
+          <style>${UI.inspectorCommonStyles}</style>
           <div class="placeholder">
             <div class="empty-state">
               <span class="empty-state-header">${i18nString(UIStrings.noElementSelected)}</span>
@@ -64,8 +64,8 @@ export class RuleSetDetailsView extends LegacyWrapper.LegacyWrapper.WrappableCom
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
-        <style>${ruleSetDetailsViewStyles.cssText}</style>
-        <style>${UI.inspectorCommonStyles.cssText}</style>
+        <style>${ruleSetDetailsViewStyles}</style>
+        <style>${UI.inspectorCommonStyles}</style>
         <div class="content">
           <div class="ruleset-header" id="ruleset-url">${this.#data?.url || SDK.TargetManager.TargetManager.instance().inspectedURL()}</div>
           ${this.#maybeError()}

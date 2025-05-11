@@ -3,27 +3,12 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import { html, nothing, render } from '../../lit/lit.js';
-import reportStylesRaw from './report.css.js';
-import reportKeyStylesRaw from './reportKey.css.js';
-import reportSectionStylesRaw from './reportSection.css.js';
-import reportSectionDividerStylesRaw from './reportSectionDivider.css.js';
-import reportSectionHeaderStylesRaw from './reportSectionHeader.css.js';
-import reportValueStylesRaw from './reportValue.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const reportStyles = new CSSStyleSheet();
-reportStyles.replaceSync(reportStylesRaw.cssText);
-const reportKeyStyles = new CSSStyleSheet();
-reportKeyStyles.replaceSync(reportKeyStylesRaw.cssText);
-const reportSectionStyles = new CSSStyleSheet();
-reportSectionStyles.replaceSync(reportSectionStylesRaw.cssText);
-const reportSectionDividerStyles = new CSSStyleSheet();
-reportSectionDividerStyles.replaceSync(reportSectionDividerStylesRaw.cssText);
-const reportSectionHeaderStyles = new CSSStyleSheet();
-reportSectionHeaderStyles.replaceSync(reportSectionHeaderStylesRaw.cssText);
-const reportValueStyles = new CSSStyleSheet();
-reportValueStyles.replaceSync(reportValueStylesRaw.cssText);
+import reportStyles from './report.css.js';
+import reportKeyStyles from './reportKey.css.js';
+import reportSectionStyles from './reportSection.css.js';
+import reportSectionDividerStyles from './reportSectionDivider.css.js';
+import reportSectionHeaderStyles from './reportSectionHeader.css.js';
+import reportValueStyles from './reportValue.css.js';
 export class Report extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #reportTitle = '';
@@ -32,13 +17,13 @@ export class Report extends HTMLElement {
         this.#render();
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportStyles];
         this.#render();
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${reportStyles}</style>
       ${this.#reportTitle ? html `<div class="report-title">${this.#reportTitle}</div>` : nothing}
       <div class="content">
         <slot></slot>
@@ -50,13 +35,13 @@ export class Report extends HTMLElement {
 export class ReportSection extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportSectionStyles];
         this.#render();
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${reportSectionStyles}</style>
       <div class="section">
         <slot></slot>
       </div>
@@ -67,13 +52,13 @@ export class ReportSection extends HTMLElement {
 export class ReportSectionHeader extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportSectionHeaderStyles];
         this.#render();
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${reportSectionHeaderStyles}</style>
       <div class="section-header">
         <slot></slot>
       </div>
@@ -84,13 +69,13 @@ export class ReportSectionHeader extends HTMLElement {
 export class ReportSectionDivider extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportSectionDividerStyles];
         this.#render();
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${reportSectionDividerStyles}</style>
       <div class="section-divider">
       </div>
     `, this.#shadow, { host: this });
@@ -100,13 +85,13 @@ export class ReportSectionDivider extends HTMLElement {
 export class ReportKey extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportKeyStyles];
         this.#render();
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${reportKeyStyles}</style>
       <div class="key"><slot></slot></div>
     `, this.#shadow, { host: this });
         // clang-format on
@@ -115,13 +100,13 @@ export class ReportKey extends HTMLElement {
 export class ReportValue extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [reportValueStyles];
         this.#render();
     }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${reportValueStyles}</style>
       <div class="value"><slot></slot></div>
     `, this.#shadow, { host: this });
         // clang-format on

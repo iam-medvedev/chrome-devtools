@@ -5,6 +5,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as userInteractionsHandlerData } from './UserInteractionsHandler.js';
+import { data as workersData } from './WorkersHandler.js';
 const warningsPerEvent = new Map();
 const eventsPerWarning = new Map();
 /**
@@ -21,6 +22,10 @@ const jsInvokeStack = [];
  * Tracks reflow events in a task.
  */
 const taskReflowEvents = [];
+/**
+ * Tracks events containing long running tasks. These are compared later against the worker thread pool to filter out long tasks from worker threads.
+ */
+const longTaskEvents = [];
 export const FORCED_REFLOW_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(30));
 export const LONG_MAIN_THREAD_TASK_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(50));
 export function reset() {
@@ -29,6 +34,7 @@ export function reset() {
     allEventsStack.length = 0;
     jsInvokeStack.length = 0;
     taskReflowEvents.length = 0;
+    longTaskEvents.length = 0;
 }
 function storeWarning(event, warning) {
     const existingWarnings = Platform.MapUtilities.getWithDefault(warningsPerEvent, event, () => []);
@@ -43,7 +49,7 @@ export function handleEvent(event) {
     if (event.name === "RunTask" /* Types.Events.Name.RUN_TASK */) {
         const { duration } = Helpers.Timing.eventTimingsMicroSeconds(event);
         if (duration > LONG_MAIN_THREAD_TASK_THRESHOLD) {
-            storeWarning(event, 'LONG_TASK');
+            longTaskEvents.push(event);
         }
         return;
     }
@@ -101,7 +107,7 @@ function accomodateEventInStack(event, stack, pushEventToStack = true) {
     stack.push(event);
 }
 export function deps() {
-    return ['UserInteractions'];
+    return ['UserInteractions', 'Workers'];
 }
 export async function finalize() {
     // These events do exist on the UserInteractionsHandler, but we also put
@@ -113,6 +119,12 @@ export async function finalize() {
     for (const interaction of longInteractions) {
         storeWarning(interaction, 'LONG_INTERACTION');
     }
+    for (const event of longTaskEvents) {
+        if (!(event.tid, workersData().workerIdByThread.has(event.tid))) {
+            storeWarning(event, 'LONG_TASK');
+        }
+    }
+    longTaskEvents.length = 0;
 }
 export function data() {
     return {

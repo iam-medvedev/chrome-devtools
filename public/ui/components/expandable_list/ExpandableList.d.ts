@@ -6,7 +6,6 @@ export interface ExpandableListData {
 export declare class ExpandableList extends HTMLElement {
     #private;
     set data(data: ExpandableListData);
-    connectedCallback(): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

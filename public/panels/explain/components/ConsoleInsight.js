@@ -464,12 +464,35 @@ export class ConsoleInsight extends HTMLElement {
         directCitationUrls.reverse();
         return { explanationWithCitations, directCitationUrls };
     }
+    #modifyTokensToHandleCitationsInCode(tokens) {
+        for (const token of tokens) {
+            if (token.type === 'code') {
+                // Find and remove '[^number]' from within code block
+                const matches = token.text.match(/\[\^\d+\]/g);
+                token.text = token.text.replace(/\[\^\d+\]/g, '');
+                // And add as a citation for the whole code block
+                if (matches?.length) {
+                    const citations = matches.map(match => {
+                        const index = parseInt(match.slice(2, -1), 10);
+                        return {
+                            index,
+                            clickHandler: this.#citationClickHandler.bind(this, index),
+                        };
+                    });
+                    token.citations = citations;
+                }
+            }
+        }
+    }
     async #generateInsight() {
         try {
             for await (const { sources, isPageReloadRecommended, explanation, metadata, completed } of this.#getInsight()) {
                 const { explanationWithCitations, directCitationUrls } = this.#insertCitations(explanation, metadata);
                 const tokens = this.#validateMarkdown(explanationWithCitations);
                 const valid = tokens !== false;
+                if (valid) {
+                    this.#modifyTokensToHandleCitationsInCode(tokens);
+                }
                 this.#transitionTo({
                     type: "insight" /* State.INSIGHT */,
                     tokens: valid ? tokens : [],
@@ -990,8 +1013,8 @@ export class ConsoleInsight extends HTMLElement {
     #render() {
         // clang-format off
         render(html `
-      <style>${styles.cssText}</style>
-      <style>${Input.checkboxStyles.cssText}</style>
+      <style>${styles}</style>
+      <style>${Input.checkboxStyles}</style>
       <div class="wrapper" jslog=${VisualLogging.pane('console-insights').track({ resize: true })}>
         <div class="animation-wrapper">
           ${this.#renderHeader()}
@@ -1018,8 +1041,8 @@ class ConsoleInsightSourcesList extends HTMLElement {
     #render() {
         // clang-format off
         render(html `
-      <style>${listStyles.cssText}</style>
-      <style>${Input.checkboxStyles.cssText}</style>
+      <style>${listStyles}</style>
+      <style>${Input.checkboxStyles}</style>
       <ul>
         ${Directives.repeat(this.#sources, item => item.value, item => {
             return html `<li><x-link class="link" title="${localizeType(item.type)} ${i18nString(UIStrings.opensInNewTab)}" href="data:text/plain;charset=utf-8,${encodeURIComponent(item.value)}" jslog=${VisualLogging.link('source-' + item.type).track({ click: true })}>

@@ -78,7 +78,7 @@ export class RelatedInsightChips extends HTMLElement {
         });
         // clang-format off
         Lit.render(html `
-      <style>${relatedInsightsStyles.cssText}</style>
+      <style>${relatedInsightsStyles}</style>
       <ul>${insightMessages}</ul>
       <ul>${insightChips}</ul>
     `, this.#shadow, { host: this });

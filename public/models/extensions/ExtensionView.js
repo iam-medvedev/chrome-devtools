@@ -35,7 +35,7 @@ const DEFAULT_VIEW = (input, output, target) => {
     render(html `<iframe
     ${ref(element => { output.iframe = element; })}
     src=${input.src}
-    className=${input.className}
+    class=${input.className}
     @load=${input.onLoad}></iframe>`, target, { host: input });
     // clang-format on
 };

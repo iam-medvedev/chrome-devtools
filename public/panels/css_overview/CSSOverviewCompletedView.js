@@ -164,6 +164,14 @@ const UIStrings = {
      *@description Title of the button to show the element in the CSS overview panel
      */
     showElement: 'Show element',
+    /**
+     * @description Text to show in a table if the link to the style could not be created.
+     */
+    unableToLink: '(unable to link)',
+    /**
+     * @description Text to show in a table if the link to the inline style could not be created.
+     */
+    unableToLinkToInlineStyle: '(unable to link to inline style)',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/css_overview/CSSOverviewCompletedView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -532,7 +540,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
             if (!this.#domModel || !this.#cssModel) {
                 throw new Error('Unable to initialize CSS overview, missing models');
             }
-            view = new ElementDetailsView(this.#controller, this.#domModel, this.#cssModel, this.#linkifier);
+            view = new ElementDetailsView(this.#domModel, this.#cssModel, this.#linkifier);
             void view.populateNodes(payload.nodes);
             this.#viewMap.set(id, view);
         }
@@ -718,15 +726,13 @@ export class DetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     }
 }
 export class ElementDetailsView extends UI.Widget.Widget {
-    #controller;
     #domModel;
     #cssModel;
     #linkifier;
     #elementGridColumns;
     #elementGrid;
-    constructor(controller, domModel, cssModel, linkifier) {
+    constructor(domModel, cssModel, linkifier) {
         super();
-        this.#controller = controller;
         this.#domModel = domModel;
         this.#cssModel = cssModel;
         this.#linkifier = linkifier;
@@ -811,7 +817,6 @@ export class ElementDetailsView extends UI.Widget.Widget {
             refreshCallback: undefined,
         });
         this.#elementGrid.element.classList.add('element-grid');
-        this.#elementGrid.element.addEventListener('mouseover', this.#onMouseOver.bind(this));
         this.#elementGrid.setStriped(true);
         this.#elementGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.#sortMediaQueryDataGrid.bind(this));
         this.#elementGrid.asWidget().show(this.element);
@@ -823,16 +828,6 @@ export class ElementDetailsView extends UI.Widget.Widget {
         }
         const comparator = DataGrid.SortableDataGrid.SortableDataGrid.StringComparator.bind(null, sortColumnId);
         this.#elementGrid.sortNodes(comparator, !this.#elementGrid.isSortOrderAscending());
-    }
-    #onMouseOver(evt) {
-        // Traverse the event path on the grid to find the nearest element with a backend node ID attached. Use
-        // that for the highlighting.
-        const node = evt.composedPath().find(el => el.dataset?.backendNodeId);
-        if (!node) {
-            return;
-        }
-        const backendNodeId = Number(node.dataset.backendNodeId);
-        this.#controller.dispatchEventToListeners("RequestNodeHighlight" /* CSSOverViewControllerEvents.REQUEST_NODE_HIGHLIGHT */, backendNodeId);
     }
     async populateNodes(data) {
         this.#elementGrid.rootNode().removeChildren();
@@ -860,17 +855,30 @@ export class ElementDetailsView extends UI.Widget.Widget {
             relatedNodesMap = await this.#domModel.pushNodesByBackendIdsToFrontend(nodeIds);
         }
         for (const item of data) {
-            let frontendNode;
+            let link, showNode;
             if ('nodeId' in item && visibility.has('node-id')) {
                 if (!relatedNodesMap) {
                     continue;
                 }
-                frontendNode = relatedNodesMap.get(item.nodeId);
+                const frontendNode = relatedNodesMap.get(item.nodeId);
                 if (!frontendNode) {
                     continue;
                 }
+                link = await Common.Linkifier.Linkifier.linkify(frontendNode);
+                showNode = () => frontendNode.scrollIntoView();
             }
-            const node = new ElementNode(item, frontendNode, this.#linkifier, this.#cssModel);
+            if ('range' in item && item.range && item.styleSheetId && visibility.has('source-url')) {
+                const ruleLocation = TextUtils.TextRange.TextRange.fromObject(item.range);
+                const styleSheetHeader = this.#cssModel.styleSheetHeaderForId(item.styleSheetId);
+                if (!styleSheetHeader) {
+                    return;
+                }
+                const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
+                const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
+                const matchingSelectorLocation = new SDK.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
+                link = this.#linkifier.linkifyCSSLocation(matchingSelectorLocation);
+            }
+            const node = new ElementNode(item, link, showNode);
             node.selectable = false;
             this.#elementGrid.insertChild(node);
         }
@@ -880,52 +888,45 @@ export class ElementDetailsView extends UI.Widget.Widget {
     }
 }
 export class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
-    #linkifier;
-    #cssModel;
-    #frontendNode;
-    constructor(data, frontendNode, linkifier, cssModel) {
+    #link;
+    #show;
+    constructor(data, link, show) {
         super(data);
-        this.#frontendNode = frontendNode;
-        this.#linkifier = linkifier;
-        this.#cssModel = cssModel;
+        this.#link = link;
+        this.#show = show;
     }
     createCell(columnId) {
         // Nodes.
-        const frontendNode = this.#frontendNode;
         if (columnId === 'node-id') {
             const cell = this.createTD(columnId);
             cell.textContent = '...';
-            if (!frontendNode) {
-                throw new Error('Node entry is missing a related frontend node.');
+            if (!this.#link) {
+                throw new Error('Node entry is missing a related link.');
             }
-            void Common.Linkifier.Linkifier.linkify(frontendNode).then(link => {
-                cell.textContent = '';
-                link.dataset.backendNodeId = frontendNode.backendNodeId().toString();
-                cell.appendChild(link);
-                const showNodeIcon = new IconButton.Icon.Icon();
-                showNodeIcon.data = { iconName: 'select-element', color: 'var(--icon-show-element)', width: '16px' };
-                showNodeIcon.classList.add('show-element');
-                UI.Tooltip.Tooltip.install(showNodeIcon, i18nString(UIStrings.showElement));
-                showNodeIcon.tabIndex = 0;
-                showNodeIcon.onclick = () => frontendNode.scrollIntoView();
-                cell.appendChild(showNodeIcon);
-            });
+            cell.textContent = '';
+            cell.appendChild(this.#link);
+            const showNodeIcon = new IconButton.Icon.Icon();
+            showNodeIcon.data = { iconName: 'select-element', color: 'var(--icon-show-element)', width: '16px' };
+            showNodeIcon.classList.add('show-element');
+            UI.Tooltip.Tooltip.install(showNodeIcon, i18nString(UIStrings.showElement));
+            showNodeIcon.tabIndex = 0;
+            showNodeIcon.onclick = () => this.#show && this.#show();
+            cell.appendChild(showNodeIcon);
             return cell;
         }
         // Links to CSS.
         if (columnId === 'source-url') {
             const cell = this.createTD(columnId);
             if (this.data.range) {
-                const link = this.#linkifyRuleLocation(this.#cssModel, this.#linkifier, this.data.styleSheetId, TextUtils.TextRange.TextRange.fromObject(this.data.range));
-                if (!link || link.textContent === '') {
-                    cell.textContent = '(unable to link)';
+                if (!this.#link) {
+                    cell.textContent = i18nString(UIStrings.unableToLink);
                 }
                 else {
-                    cell.appendChild(link);
+                    cell.appendChild(this.#link);
                 }
             }
             else {
-                cell.textContent = '(unable to link to inlined styles)';
+                cell.textContent = i18nString(UIStrings.unableToLinkToInlineStyle);
             }
             return cell;
         }
@@ -975,16 +976,6 @@ export class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
             return cell;
         }
         return super.createCell(columnId);
-    }
-    #linkifyRuleLocation(cssModel, linkifier, styleSheetId, ruleLocation) {
-        const styleSheetHeader = cssModel.styleSheetHeaderForId(styleSheetId);
-        if (!styleSheetHeader) {
-            return;
-        }
-        const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
-        const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
-        const matchingSelectorLocation = new SDK.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
-        return linkifier.linkifyCSSLocation(matchingSelectorLocation);
     }
 }
 function createClearIcon() {

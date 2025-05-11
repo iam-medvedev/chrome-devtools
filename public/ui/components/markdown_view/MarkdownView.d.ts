@@ -3,14 +3,17 @@ import './MarkdownImage.js';
 import './MarkdownLink.js';
 import type * as Marked from '../../../third_party/marked/marked.js';
 import * as Lit from '../../lit/lit.js';
+import type * as Codeblock from './CodeBlock.js';
 export interface MarkdownViewData {
     tokens: Marked.Marked.Token[];
     renderer?: MarkdownLitRenderer;
     animationEnabled?: boolean;
 }
+export type CodeTokenWithCitation = Marked.Marked.Tokens.Generic & {
+    citations: Codeblock.Citation[];
+};
 export declare class MarkdownView extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: MarkdownViewData);
 }
 declare global {

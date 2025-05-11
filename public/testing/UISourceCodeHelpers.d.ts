@@ -8,8 +8,8 @@ import * as Workspace from '../models/workspace/workspace.js';
 export declare function createContentProviderUISourceCodes(options: {
     items: Array<{
         url: Platform.DevToolsPath.UrlString;
-        content?: string;
         mimeType: string;
+        content?: string;
         resourceType?: Common.ResourceType.ResourceType;
         metadata?: Workspace.UISourceCode.UISourceCodeMetadata;
     }>;
@@ -22,8 +22,8 @@ export declare function createContentProviderUISourceCodes(options: {
 };
 export declare function createContentProviderUISourceCode(options: {
     url: Platform.DevToolsPath.UrlString;
-    content?: string;
     mimeType: string;
+    content?: string;
     projectType?: Workspace.Workspace.projectTypes;
     projectId?: string;
     metadata?: Workspace.UISourceCode.UISourceCodeMetadata;

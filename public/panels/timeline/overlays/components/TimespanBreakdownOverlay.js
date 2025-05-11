@@ -141,7 +141,7 @@ export class TimespanBreakdownOverlay extends HTMLElement {
             this.classList.toggle('odd-number-of-sections', this.#sections.length % 2 === 1);
             this.classList.toggle('even-number-of-sections', this.#sections.length % 2 === 0);
         }
-        Lit.render(html `<style>${timespanBreakdownOverlayStyles.cssText}</style>
+        Lit.render(html `<style>${timespanBreakdownOverlayStyles}</style>
              ${this.#sections?.map(this.#renderSection)}`, this.#shadow, { host: this });
         this.checkSectionLabelPositioning();
     }

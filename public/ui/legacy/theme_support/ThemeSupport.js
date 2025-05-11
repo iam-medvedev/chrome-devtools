@@ -121,11 +121,6 @@ export class ThemeSupport extends EventTarget {
     themeName() {
         return this.themeNameInternal;
     }
-    appendStyle(node, { cssText }) {
-        const styleElement = document.createElement('style');
-        styleElement.textContent = cssText;
-        node.appendChild(styleElement);
-    }
     #applyTheme() {
         for (const document of this.#documentsToTheme) {
             this.#applyThemeToDocument(document);

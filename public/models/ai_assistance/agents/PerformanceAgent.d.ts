@@ -1,12 +1,14 @@
+import '../../../ui/components/icon_button/icon_button.js';
 import * as Host from '../../../core/host/host.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
+import { type TemplateResult } from '../../../ui/lit/lit.js';
 import { AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class CallTreeContext extends ConversationContext<TimelineUtils.AICallTree.AICallTree> {
     #private;
     constructor(callTree: TimelineUtils.AICallTree.AICallTree);
     getOrigin(): string;
     getItem(): TimelineUtils.AICallTree.AICallTree;
-    getIcon(): HTMLElement;
+    getIcon(): TemplateResult;
     getTitle(): string;
 }
 /**

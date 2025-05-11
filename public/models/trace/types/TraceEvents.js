@@ -81,6 +81,9 @@ export function isBeginCommitCompositorFrame(event) {
 export function isParseMetaViewport(event) {
     return event.name === "ParseMetaViewport" /* Name.PARSE_META_VIEWPORT */;
 }
+export function isLinkPreconnect(event) {
+    return event.name === "LinkPreconnect" /* Name.LINK_PRECONNECT */;
+}
 export function isScheduleStyleRecalculation(event) {
     return event.name === "ScheduleStyleRecalculation" /* Name.SCHEDULE_STYLE_RECALCULATION */;
 }
@@ -538,6 +541,9 @@ export function isConsoleRunTask(event) {
 }
 export function isFlowPhaseEvent(event) {
     return event.ph === "s" /* Phase.FLOW_START */ || event.ph === "t" /* Phase.FLOW_STEP */ || event.ph === "f" /* Phase.FLOW_END */;
+}
+export function isParseAuthorStyleSheetEvent(event) {
+    return event.name === "ParseAuthorStyleSheet" /* Name.PARSE_AUTHOR_STYLE_SHEET */;
 }
 // NOT AN EXHAUSTIVE LIST: just some categories we use and refer
 // to in multiple places.

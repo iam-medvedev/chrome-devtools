@@ -4,12 +4,7 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import { html, nothing, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
-import switchStylesRaw from './switch.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const switchStyles = new CSSStyleSheet();
-switchStyles.replaceSync(switchStylesRaw.cssText);
+import switchStyles from './switch.css.js';
 export class SwitchChangeEvent extends Event {
     checked;
     static eventName = 'switchchange';
@@ -24,7 +19,6 @@ export class Switch extends HTMLElement {
     #disabled = false;
     #jslogContext = '';
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [switchStyles];
         this.#render();
     }
     set checked(isChecked) {
@@ -57,6 +51,7 @@ export class Switch extends HTMLElement {
         /* eslint-disable rulesdir/inject-checkbox-styles */
         // clang-format off
         render(html `
+    <style>${switchStyles}</style>
     <label role="button" jslog=${jslog || nothing}>
       <input type="checkbox"
         @change=${this.#handleChange}

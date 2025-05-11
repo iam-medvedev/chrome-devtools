@@ -1093,6 +1093,37 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         return context;
     }
+    // Called by MCP server via Puppeteer
+    // TODO(http://b/416460908) Make this generic and select the agent based on an input parameter
+    async debugProblem(prompt) {
+        const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
+        const isBlockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+        const isAidaAvailable = this.#aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
+        if (!aiAssistanceSetting || isBlockedByAge || !isAidaAvailable) {
+            throw new Error('For AI features to be available, you need to log into Chrome and enable AI assistance in DevTools settings');
+        }
+        const stylingAgent = this.#createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+        // Cancel any previous in-flight conversation.
+        this.#cancel();
+        const runner = stylingAgent.run(prompt, {
+            signal: this.#runAbortController.signal,
+            // TODO(crbug.com/416134018) provide context via MCP instead of using the currently selected element
+            selected: this.#getConversationContext(),
+        });
+        for await (const data of runner) {
+            if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
+                data.confirm(true);
+            }
+            if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
+                await this.#changeManager.stashChanges();
+                this.#changeManager.dropStashedChanges();
+                return data.text;
+            }
+        }
+        await this.#changeManager.stashChanges();
+        this.#changeManager.dropStashedChanges();
+        throw new Error('Something went wrong. No answer was generated.');
+    }
     async #startConversation(text, imageInput, multimodalInputType) {
         if (!this.#conversationAgent) {
             return;
@@ -1280,11 +1311,18 @@ export class ActionDelegate {
             case 'drjones.sources-panel-context': {
                 void (async () => {
                     const view = UI.ViewManager.ViewManager.instance().view(AiAssistancePanel.panelName);
-                    if (view) {
-                        await UI.ViewManager.ViewManager.instance().showView(AiAssistancePanel.panelName);
-                        const widget = (await view.widget());
-                        widget.handleAction(actionId);
+                    if (!view) {
+                        return;
                     }
+                    await UI.ViewManager.ViewManager.instance().showView(AiAssistancePanel.panelName);
+                    const minDrawerSize = UI.InspectorView.InspectorView.instance().totalSize() / 4;
+                    if (UI.InspectorView.InspectorView.instance().drawerSize() < minDrawerSize) {
+                        // If the drawer is too small, resize it to the quarter of the total size.
+                        // This ensures the AI Assistance panel has enough space to be usable when opened via an action.
+                        UI.InspectorView.InspectorView.instance().setDrawerSize(minDrawerSize);
+                    }
+                    const widget = (await view.widget());
+                    widget.handleAction(actionId);
                 })();
                 return true;
             }

@@ -124,7 +124,7 @@ describe('Widget', () => {
                     // no-op
                 }
             }
-            widget.widgetConfig = UI.Widget.widgetConfig(WidgetInstance, {});
+            widget.widgetConfig = UI.Widget.widgetConfig(WidgetInstance);
             renderElementIntoDOM(widget);
         });
     });

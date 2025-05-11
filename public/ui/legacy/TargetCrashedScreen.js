@@ -20,7 +20,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${targetCrashedScreenStyles.cssText}</style>
+    <style>${targetCrashedScreenStyles}</style>
     <div class="message">${i18nString(UIStrings.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString(UIStrings.oncePageIsReloadedDevtoolsWill)}</div>`, target, { host: input });
     // clang-format on

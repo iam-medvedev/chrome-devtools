@@ -2,19 +2,19 @@ import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Lit from '../../ui/lit/lit.js';
 import { Constraints, Size } from './Geometry.js';
-interface WidgetConstructor<WidgetT extends Widget & WidgetParams, WidgetParams> {
-    new (element: WidgetElement<WidgetT, WidgetParams>): WidgetT;
+type WidgetConstructor<WidgetT extends Widget> = new (element: WidgetElement<WidgetT>) => WidgetT;
+type WidgetProducer<WidgetT extends Widget> = (element: WidgetElement<WidgetT>) => WidgetT;
+type WidgetFactory<WidgetT extends Widget> = WidgetConstructor<WidgetT> | WidgetProducer<WidgetT>;
+export declare class WidgetConfig<WidgetT extends Widget> {
+    readonly widgetClass: WidgetFactory<WidgetT>;
+    readonly widgetParams?: Partial<WidgetT> | undefined;
+    constructor(widgetClass: WidgetFactory<WidgetT>, widgetParams?: Partial<WidgetT> | undefined);
 }
-export declare class WidgetConfig<WidgetT extends Widget & WidgetParams, WidgetParams> {
-    readonly widgetClass: WidgetConstructor<WidgetT, WidgetParams>;
-    readonly widgetParams?: WidgetParams | undefined;
-    constructor(widgetClass: WidgetConstructor<WidgetT, WidgetParams>, widgetParams?: WidgetParams | undefined);
-}
-export declare function widgetConfig<WidgetT extends Widget & WidgetParams, WidgetParams>(widgetClass: WidgetConstructor<WidgetT, WidgetParams>, widgetParams?: WidgetParams): WidgetConfig<any, any>;
-export declare class WidgetElement<WidgetT extends Widget & WidgetParams, WidgetParams = object> extends HTMLElement {
+export declare function widgetConfig<WidgetT extends Widget, ParamKeys extends keyof WidgetT>(widgetClass: WidgetFactory<WidgetT>, widgetParams?: Pick<WidgetT, ParamKeys> & Partial<WidgetT>): WidgetConfig<any>;
+export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     #private;
     createWidget(): WidgetT;
-    set widgetConfig(config: WidgetConfig<WidgetT, WidgetParams>);
+    set widgetConfig(config: WidgetConfig<WidgetT>);
     getWidget(): WidgetT | undefined;
     connectedCallback(): void;
     appendChild<T extends Node>(child: T): T;
@@ -73,8 +73,8 @@ export declare class Widget {
     restoreScrollPositions(): void;
     doResize(): void;
     doLayout(): void;
-    registerRequiredCSS(...cssFiles: Array<{
-        cssText: string;
+    registerRequiredCSS(...cssFiles: Array<string & {
+        _tag: 'CSS-in-JS';
     }>): void;
     printWidgetHierarchy(): void;
     private collectWidgetHierarchy;

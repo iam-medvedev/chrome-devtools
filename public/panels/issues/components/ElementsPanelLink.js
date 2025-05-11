@@ -22,7 +22,7 @@ export class ElementsPanelLink extends HTMLElement {
     #render() {
         // clang-format off
         render(html `
-      <style>${elementsPanelLinkStyles.cssText}</style>
+      <style>${elementsPanelLinkStyles}</style>
       <span
         class="element-reveal-icon"
         jslog=${VisualLogging.link('elements-panel').track({ click: true })}

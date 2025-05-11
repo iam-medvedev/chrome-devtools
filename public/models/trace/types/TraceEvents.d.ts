@@ -174,10 +174,10 @@ export interface ParseHTML extends Complete {
     name: 'ParseHTML';
     args: Args & {
         beginData: {
-            sampleTraceId?: number;
             frame: string;
             startLine: number;
             url: string;
+            sampleTraceId?: number;
         };
         endData?: {
             endLine: number;
@@ -363,11 +363,11 @@ export interface SyntheticAuctionWorklet extends Instant, SyntheticBased<Phase.I
             runningInProcessEvent: AuctionWorkletRunningInProcess;
             doneWithProcessEvent: AuctionWorkletDoneWithProcess;
         } | {
-            runningInProcessEvent?: AuctionWorkletRunningInProcess;
             doneWithProcessEvent: AuctionWorkletDoneWithProcess;
+            runningInProcessEvent?: AuctionWorkletRunningInProcess;
         } | {
-            doneWithProcessEvent?: AuctionWorkletDoneWithProcess;
             runningInProcessEvent: AuctionWorkletRunningInProcess;
+            doneWithProcessEvent?: AuctionWorkletDoneWithProcess;
         });
     };
 }
@@ -623,8 +623,8 @@ export interface TracingStartedInBrowser extends Instant {
     args: Args & {
         data?: ArgsData & {
             frameTreeNodeId: number;
-            frames?: TraceFrame[];
             persistentIds: boolean;
+            frames?: TraceFrame[];
         };
     };
 }
@@ -676,8 +676,8 @@ export interface MarkDOMContent extends Instant {
         data?: ArgsData & {
             frame: string;
             isMainFrame: boolean;
-            isOutermostMainFrame?: boolean;
             page: string;
+            isOutermostMainFrame?: boolean;
         };
     };
 }
@@ -887,9 +887,9 @@ export interface ResourceReceiveResponse extends Instant {
             requestId: string;
             responseTime: Milli;
             statusCode: number;
-            timing?: ResourceReceiveResponseTimingData;
             connectionId: number;
             connectionReused: boolean;
+            timing?: ResourceReceiveResponseTimingData;
             headers?: Array<{
                 name: string;
                 value: string;
@@ -969,8 +969,8 @@ export interface StyleInvalidatorInvalidationTracking extends Instant {
             nodeId: Protocol.DOM.BackendNodeId;
             reason: string;
             invalidationList: Array<{
-                classes?: string[];
                 id: string;
+                classes?: string[];
             }>;
             subtree: boolean;
             nodeName?: string;
@@ -998,6 +998,17 @@ export interface ParseMetaViewport extends Instant {
     };
 }
 export declare function isParseMetaViewport(event: Event): event is ParseMetaViewport;
+export interface LinkPreconnect extends Instant {
+    name: Name.LINK_PRECONNECT;
+    args: Args & {
+        data: {
+            node_id: Protocol.DOM.BackendNodeId;
+            url: string;
+            frame?: string;
+        };
+    };
+}
+export declare function isLinkPreconnect(event: Event): event is LinkPreconnect;
 export interface ScheduleStyleRecalculation extends Instant {
     name: Name.SCHEDULE_STYLE_RECALCULATION;
     args: Args & {
@@ -1316,8 +1327,8 @@ export interface SyntheticJSSample extends Event {
     name: Name.JS_SAMPLE;
     args: Args & {
         data: ArgsData & {
-            traceId?: number;
             stackTrace: Protocol.Runtime.CallFrame[];
+            traceId?: number;
         };
     };
     ph: Phase.INSTANT;
@@ -1467,8 +1478,8 @@ export interface UpdateLayoutTree extends Complete {
     args: Args & {
         elementCount: number;
         beginData?: {
-            sampleTraceId?: number;
             frame: string;
+            sampleTraceId?: number;
             stackTrace?: CallFrame[];
         };
     };
@@ -1478,11 +1489,11 @@ export interface Layout extends Complete {
     name: Name.LAYOUT;
     args: Args & {
         beginData: {
-            sampleTraceId?: number;
             frame: string;
             dirtyObjects: number;
             partialLayout: boolean;
             totalObjects: number;
+            sampleTraceId?: number;
             stackTrace?: CallFrame[];
         };
         endData?: {
@@ -1629,12 +1640,12 @@ export interface PaintImage extends Complete {
             x: number;
             y: number;
             isCSS: boolean;
+            srcHeight: number;
+            srcWidth: number;
             isPicture?: boolean;
             loadingAttribute?: string;
             srcsetAttribute?: string;
             url?: string;
-            srcHeight: number;
-            srcWidth: number;
             nodeId?: Protocol.DOM.BackendNodeId;
             nodeName?: string;
             frame?: string;
@@ -1764,9 +1775,9 @@ export interface TimerInstall extends Instant {
         data: {
             frame: string;
             singleShot: boolean;
-            stackTrace?: CallFrame;
             timeout: number;
             timerId: number;
+            stackTrace?: CallFrame;
         };
     };
 }
@@ -1824,9 +1835,9 @@ export interface WebSocketTransfer extends Instant {
         data: ArgsData & {
             identifier: number;
             url: string;
+            dataLength: number;
             frame?: string;
             workerId?: string;
-            dataLength: number;
         };
     };
 }
@@ -1838,9 +1849,9 @@ export interface WebSocketSend extends Instant {
         data: ArgsData & {
             identifier: number;
             url: string;
+            dataLength: number;
             frame?: string;
             workerId?: string;
-            dataLength: number;
         };
     };
 }
@@ -1851,9 +1862,9 @@ export interface WebSocketReceive extends Instant {
         data: ArgsData & {
             identifier: number;
             url: string;
+            dataLength: number;
             frame?: string;
             workerId?: string;
-            dataLength: number;
         };
     };
 }
@@ -1976,6 +1987,15 @@ export interface FlowEvent extends Event {
     ph: Phase.FLOW_START | Phase.FLOW_END | Phase.FLOW_STEP;
 }
 export declare function isFlowPhaseEvent(event: Event): event is FlowEvent;
+export interface ParseAuthorStyleSheet extends Complete {
+    name: Name.PARSE_AUTHOR_STYLE_SHEET;
+    args?: Args & {
+        data: {
+            stylesheetUrl: string;
+        };
+    };
+}
+export declare function isParseAuthorStyleSheetEvent(event: Event): event is ParseAuthorStyleSheet;
 /**
  * This is an exhaustive list of events we track in the Performance
  * panel. Note not all of them are necessarliry shown in the flame
@@ -2150,7 +2170,8 @@ export declare const enum Name {
     ANIMATION_FRAME = "AnimationFrame",
     ANIMATION_FRAME_PRESENTATION = "AnimationFrame::Presentation",
     SYNTHETIC_NETWORK_REQUEST = "SyntheticNetworkRequest",
-    USER_TIMING_MEASURE = "UserTiming::Measure"
+    USER_TIMING_MEASURE = "UserTiming::Measure",
+    LINK_PRECONNECT = "LinkPreconnect"
 }
 export declare const Categories: {
     readonly Console: "blink.console";
@@ -2231,6 +2252,7 @@ export interface V8SourceRundownEvent extends Event {
             url?: string;
             sourceUrl?: string;
             sourceMapUrl?: string;
+            sourceMapUrlElided?: boolean;
         };
     };
 }

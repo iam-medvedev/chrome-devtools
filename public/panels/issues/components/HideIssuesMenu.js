@@ -39,7 +39,7 @@ export class HideIssuesMenu extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
-    <style>${hideIssuesMenuStyles.cssText}</style>
+    <style>${hideIssuesMenuStyles}</style>
     <devtools-button
       .data=${{ variant: "icon" /* Buttons.Button.Variant.ICON */, iconName: 'dots-vertical', title: i18nString(UIStrings.tooltipTitle) }}
       .jslogContext=${'hide-issues'}

@@ -27,9 +27,9 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import platformFontsWidgetStyles from './platformFontsWidget.css.js';
 const UIStrings = {
     /**
@@ -63,57 +63,52 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/PlatformFontsWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    const isEmptySection = !input.platformFonts?.length;
+    // clang-format off
+    render(html `
+    <style>${platformFontsWidgetStyles}</style>
+    <div class="platform-fonts">
+      ${isEmptySection ? '' : html `
+        <div class="title">${i18nString(UIStrings.renderedFonts)}</div>
+        <div class="stats-section">
+          ${input.platformFonts?.map(platformFont => {
+        const fontOrigin = platformFont.isCustomFont ? i18nString(UIStrings.networkResource) : i18nString(UIStrings.localFile);
+        const usage = platformFont.glyphCount;
+        return html `
+              <div class="font-stats-item">
+                <div><span class="font-property-name">${i18nString(UIStrings.familyName)}</span>: ${platformFont.familyName}</div>
+                <div><span class="font-property-name">${i18nString(UIStrings.postScriptName)}</span>: ${platformFont.postScriptName}</div>
+                <div><span class="font-property-name">${i18nString(UIStrings.fontOrigin)}</span>: ${fontOrigin}<span class="font-usage">${i18nString(UIStrings.dGlyphs, { n: usage })}</span></div>
+              </div>
+            `;
+    })}
+        </div>
+      `}
+    </div>`, target, { host: input });
+    // clang-format on
+};
 export class PlatformFontsWidget extends UI.ThrottledWidget.ThrottledWidget {
     sharedModel;
-    sectionTitle;
-    fontStatsSection;
-    constructor(sharedModel) {
+    #view;
+    constructor(sharedModel, view = DEFAULT_VIEW) {
         super(true);
+        this.#view = view;
         this.registerRequiredCSS(platformFontsWidgetStyles);
         this.sharedModel = sharedModel;
-        this.sharedModel.addEventListener("CSSModelChanged" /* Events.CSS_MODEL_CHANGED */, this.update, this);
-        this.sharedModel.addEventListener("ComputedStyleChanged" /* Events.COMPUTED_STYLE_CHANGED */, this.update, this);
-        this.sectionTitle = document.createElement('div');
-        this.sectionTitle.classList.add('title');
-        this.contentElement.classList.add('platform-fonts');
-        this.contentElement.appendChild(this.sectionTitle);
-        this.sectionTitle.textContent = i18nString(UIStrings.renderedFonts);
-        this.fontStatsSection = this.contentElement.createChild('div', 'stats-section');
+        this.sharedModel.addEventListener("CSSModelChanged" /* ComputedStyleModelEvents.CSS_MODEL_CHANGED */, this.update, this);
+        this.sharedModel.addEventListener("ComputedStyleChanged" /* ComputedStyleModelEvents.COMPUTED_STYLE_CHANGED */, this.update, this);
     }
-    doUpdate() {
+    async doUpdate() {
         const cssModel = this.sharedModel.cssModel();
         const node = this.sharedModel.node();
         if (!node || !cssModel) {
-            return Promise.resolve();
-        }
-        return cssModel.getPlatformFonts(node.id).then(this.refreshUI.bind(this, node));
-    }
-    refreshUI(node, platformFonts) {
-        if (this.sharedModel.node() !== node) {
+            this.#view({ platformFonts: null }, {}, this.contentElement);
             return;
         }
-        this.fontStatsSection.removeChildren();
-        const isEmptySection = !platformFonts?.length;
-        this.sectionTitle.classList.toggle('hidden', isEmptySection);
-        if (isEmptySection || !platformFonts) {
-            return;
-        }
-        platformFonts.sort(function (a, b) {
-            return b.glyphCount - a.glyphCount;
-        });
-        for (const platformFont of platformFonts) {
-            const fontStatElement = this.fontStatsSection.createChild('div', 'font-stats-item');
-            const familyNameElement = fontStatElement.createChild('div');
-            familyNameElement.textContent = `${UIStrings.familyName}: ${platformFont.familyName}`;
-            const postScriptNameElement = fontStatElement.createChild('div');
-            postScriptNameElement.textContent = `${UIStrings.postScriptName}: ${platformFont.postScriptName}`;
-            const fontOriginElement = fontStatElement.createChild('div');
-            const fontOrigin = platformFont.isCustomFont ? i18nString(UIStrings.networkResource) : i18nString(UIStrings.localFile);
-            fontOriginElement.textContent = `${UIStrings.fontOrigin}: ${fontOrigin}`;
-            const fontUsageElement = fontOriginElement.createChild('span', 'font-usage');
-            const usage = platformFont.glyphCount;
-            fontUsageElement.textContent = i18nString(UIStrings.dGlyphs, { n: usage });
-        }
+        const platformFonts = await cssModel.getPlatformFonts(node.id);
+        const sortedPlatformFonts = platformFonts?.sort((a, b) => b.glyphCount - a.glyphCount) || null;
+        this.#view({ platformFonts: sortedPlatformFonts }, {}, this.contentElement);
     }
 }
 //# sourceMappingURL=PlatformFontsWidget.js.map

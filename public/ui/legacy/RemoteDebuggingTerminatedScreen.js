@@ -39,7 +39,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${remoteDebuggingTerminatedScreenStyles.cssText}</style>
+    <style>${remoteDebuggingTerminatedScreenStyles}</style>
     <div class="header">${i18nString(UIStrings.debuggingConnectionWasClosed)}</div>
     <div class="content">
       <div class="reason">${i18nString(UIStrings.connectionClosedReason, { PH1: input.reason })}</div>

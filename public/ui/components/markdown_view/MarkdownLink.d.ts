@@ -10,7 +10,6 @@ export interface MarkdownLinkData {
  */
 export declare class MarkdownLink extends HTMLElement {
     #private;
-    connectedCallback(): void;
     set data(data: MarkdownLinkData);
 }
 declare global {

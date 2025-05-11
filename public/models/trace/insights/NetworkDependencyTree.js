@@ -34,9 +34,25 @@ export const UIStrings = {
     /** Label for a column in a data table; entries will be the time from main document till current network request. */
     columnTime: 'Time',
     /**
+     * @description Title of the table of the detected preconnect origins.
+     */
+    preconnectOriginsTableTitle: 'Preconnect origins',
+    /**
+     * @description Description of the table of the detected preconnect origins.
+     */
+    preconnectOriginsTableDescription: '[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to.',
+    /**
+     * @description Text status indicating that there isn't any preconnected origins.
+     */
+    noPreconnectOrigins: 'no origins were preconnected',
+    /**
+     * @description Label for a column in a data table; entries will be the source of the origin.
+     */
+    columnSource: 'Source',
+    /**
      * @description Text status indicating that there isn't preconnect candidates.
      */
-    noPreconnectCandidates: 'No origins are good candidates for preconnecting',
+    noPreconnectCandidates: 'No additional origins are good candidates for preconnecting',
     /**
      * @description Title of the table that shows the origins that the page should have preconnected to.
      */
@@ -44,7 +60,7 @@ export const UIStrings = {
     /**
      * @description Description of the table that recommends preconnecting to the origins to save time.
      */
-    estSavingTableDescription: 'Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=lighthouse&utm_medium=devtools) hints to your most important origins, but try to use fewer than 4.',
+    estSavingTableDescription: 'Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints to your most important origins, but try to use fewer than 4.',
     /**
      * @description Label for a column in a data table; entries will be the origin of a web resource
      */
@@ -332,12 +348,18 @@ export function generatePreconnectCandidates(parsedTrace, context) {
 }
 export function generateInsight(parsedTrace, context) {
     const { rootNodes, maxTime, fail, relatedEvents, } = generateNetworkDependencyTree(context);
+    const preconnectOrigins = parsedTrace.NetworkRequests.linkPreconnectEvents.map(event => ({
+        node_id: event.args.data.node_id,
+        frame: event.args.data.frame,
+        url: event.args.data.url,
+    }));
     const preconnectCandidates = generatePreconnectCandidates(parsedTrace, context);
     return finalize({
         rootNodes,
         maxTime,
         fail,
         relatedEvents,
+        preconnectOrigins,
         preconnectCandidates,
     });
 }

@@ -22,7 +22,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     directSocketInfo?: DirectSocketInfo;
     constructor(requestId: string, backendRequestId: Protocol.Network.RequestId | undefined, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, initiator: Protocol.Network.Initiator | null, hasUserGesture?: boolean);
     static create(backendRequestId: Protocol.Network.RequestId, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, frameId: Protocol.Page.FrameId | null, loaderId: Protocol.Network.LoaderId | null, initiator: Protocol.Network.Initiator | null, hasUserGesture?: boolean): NetworkRequest;
-    static createForWebSocket(backendRequestId: Protocol.Network.RequestId, requestURL: Platform.DevToolsPath.UrlString, initiator?: Protocol.Network.Initiator): NetworkRequest;
+    static createForSocket(backendRequestId: Protocol.Network.RequestId, requestURL: Platform.DevToolsPath.UrlString, initiator?: Protocol.Network.Initiator): NetworkRequest;
     static createWithoutBackendRequest(requestId: string, url: Platform.DevToolsPath.UrlString, documentURL: Platform.DevToolsPath.UrlString, initiator: Protocol.Network.Initiator | null): NetworkRequest;
     identityCompare(other: NetworkRequest): number;
     requestId(): string;
@@ -274,6 +274,7 @@ export interface EventTypes {
     [Events.RESPONSE_HEADERS_CHANGED]: void;
     [Events.WEBSOCKET_FRAME_ADDED]: WebSocketFrame;
     [Events.DIRECTSOCKET_CHUNK_ADDED]: DirectSocketChunk;
+    [Events.DIRECTSOCKET_CHUNK_ADDED]: DirectSocketChunk;
     [Events.EVENT_SOURCE_MESSAGE_ADDED]: EventSourceMessage;
     [Events.TRUST_TOKEN_RESULT_ADDED]: void;
 }
@@ -411,10 +412,10 @@ export interface DirectSocketChunk {
     data: string;
     type: DirectSocketChunkType;
     timestamp: number;
-    remoteUrl?: string;
+    remoteAddress?: string;
+    remotePort?: number;
 }
 export declare enum DirectSocketChunkType {
     SEND = "send",
-    RECEIVE = "receive",
-    ERROR = "error"
+    RECEIVE = "receive"
 }

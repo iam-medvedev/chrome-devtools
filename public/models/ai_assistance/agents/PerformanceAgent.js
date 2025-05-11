@@ -1,12 +1,13 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
-import * as PanelUtils from '../../../panels/utils/utils.js';
+import { html } from '../../../ui/lit/lit.js';
 import * as Trace from '../../trace/trace.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 /**
@@ -158,13 +159,8 @@ export class CallTreeContext extends ConversationContext {
         return this.#callTree;
     }
     getIcon() {
-        const iconData = {
-            iconName: 'performance',
-            color: 'var(--sys-color-on-surface-subtle)',
-        };
-        const icon = PanelUtils.PanelUtils.createIconElement(iconData, 'Performance');
-        icon.classList.add('icon');
-        return icon;
+        return html `<devtools-icon name="performance" title="Performance"
+        style="color: var(--sys-color-on-surface-subtle);"></devtools-icon>`;
     }
     getTitle() {
         const event = this.#callTree.selectedNode?.event ?? this.#callTree.rootNode.event;

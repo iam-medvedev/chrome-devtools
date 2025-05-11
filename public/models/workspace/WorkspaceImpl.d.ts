@@ -42,7 +42,6 @@ export interface Project {
 export declare enum projectTypes {
     Debugger = "debugger",
     Formatter = "formatter",
-    Inspector = "inspector",
     Network = "network",
     FileSystem = "filesystem",
     ConnectableFileSystem = "connectablefilesystem",

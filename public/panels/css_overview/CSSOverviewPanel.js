@@ -42,7 +42,6 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
         }, this);
         this.#controller.addEventListener("OverviewCompleted" /* Events.OVERVIEW_COMPLETED */, this.#overviewCompleted, this);
         this.#controller.addEventListener("Reset" /* Events.RESET */, this.#reset, this);
-        this.#controller.addEventListener("RequestNodeHighlight" /* Events.REQUEST_NODE_HIGHLIGHT */, this.#requestNodeHighlight, this);
         this.#reset();
     }
     targetAdded(target) {
@@ -87,9 +86,6 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
         };
         this.#textColorContrastIssues = new Map();
         this.#renderInitialView();
-    }
-    #requestNodeHighlight(evt) {
-        this.#getModel().highlightNode(evt.data);
     }
     #renderInitialView() {
         this.#processingView.hideWidget();

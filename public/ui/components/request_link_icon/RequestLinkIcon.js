@@ -9,12 +9,7 @@ import * as NetworkForward from '../../../panels/network/forward/forward.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import requestLinkIconStylesRaw from './requestLinkIcon.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const requestLinkIconStyles = new CSSStyleSheet();
-requestLinkIconStyles.replaceSync(requestLinkIconStylesRaw.cssText);
+import requestLinkIconStyles from './requestLinkIcon.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -81,9 +76,6 @@ export class RequestLinkIcon extends HTMLElement {
             });
         }
         void this.#render();
-    }
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [requestLinkIconStyles];
     }
     get data() {
         return {
@@ -162,7 +154,7 @@ export class RequestLinkIcon extends HTMLElement {
           </button>`;
                 // clang-format on
             }
-            Lit.render(template, this.#shadow, { host: this });
+            Lit.render(html `<style>${requestLinkIconStyles}</style>${template}`, this.#shadow, { host: this });
         });
     }
 }

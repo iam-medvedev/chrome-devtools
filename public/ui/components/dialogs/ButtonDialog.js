@@ -4,20 +4,12 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import { html, render } from '../../../ui/lit/lit.js';
-import buttonDialogStylesRaw from './buttonDialog.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const buttonDialogStyles = new CSSStyleSheet();
-buttonDialogStyles.replaceSync(buttonDialogStylesRaw.cssText);
+import buttonDialogStyles from './buttonDialog.css.js';
 export class ButtonDialog extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #dialog = null;
     #showButton = null;
     #data = null;
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [buttonDialogStyles];
-    }
     set data(data) {
         this.#data = data;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
@@ -48,6 +40,7 @@ export class ButtonDialog extends HTMLElement {
         }
         // clang-format off
         render(html `
+      <style>${buttonDialogStyles}</style>
       <devtools-button
         @click=${this.#showDialog}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {

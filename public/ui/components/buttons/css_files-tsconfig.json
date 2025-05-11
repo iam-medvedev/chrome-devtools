@@ -5,6 +5,7 @@
     },
     "files": [
         "button.css.js",
+        "floatingButton.css.js",
         "textButton.css.js"
     ]
 }

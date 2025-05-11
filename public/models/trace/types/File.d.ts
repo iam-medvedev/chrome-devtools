@@ -151,7 +151,8 @@ export interface MetaData {
 }
 interface MetadataSourceMap {
     url: string;
-    sourceMapUrl: string;
+    /** If not defined, then this was a data url. */
+    sourceMapUrl?: string;
     sourceMap: SDK.SourceMap.SourceMapV3;
 }
 export type Contents = TraceFile | Event[];

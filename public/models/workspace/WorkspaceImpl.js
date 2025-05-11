@@ -34,7 +34,6 @@ export var projectTypes;
 (function (projectTypes) {
     projectTypes["Debugger"] = "debugger";
     projectTypes["Formatter"] = "formatter";
-    projectTypes["Inspector"] = "inspector";
     projectTypes["Network"] = "network";
     projectTypes["FileSystem"] = "filesystem";
     projectTypes["ConnectableFileSystem"] = "connectablefilesystem";
