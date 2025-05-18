@@ -133,7 +133,7 @@ export interface EventTypes {
     [Events.SHOW_MODE_CHANGED]: string;
 }
 export interface SettingForOrientation {
-    showMode: string;
+    showMode: ShowMode;
     size: number;
 }
 export {};

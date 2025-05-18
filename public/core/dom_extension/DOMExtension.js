@@ -209,12 +209,9 @@ Event.prototype.consume = function (preventDefault) {
     }
     this.handled = true;
 };
-Node.prototype.deepTextContent = function () {
-    return this.childTextNodes()
-        .map(function (node) {
-        return node.textContent;
-    })
-        .join('');
+Node.prototype.deepTextContent = function (normalizeWhitespace = false) {
+    const text = this.childTextNodes().map(node => node.textContent).join('');
+    return normalizeWhitespace ? text.replace(/\s+/g, ' ') : text;
 };
 Node.prototype.childTextNodes = function () {
     let node = this.traverseNextTextNode(this);

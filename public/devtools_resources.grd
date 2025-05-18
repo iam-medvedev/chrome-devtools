@@ -567,6 +567,7 @@
       <include file="models/issues_manager/descriptions/sriValidationFailedSignatureMismatch.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_SRIVALIDATIONFAILEDSIGNATUREMISMATCH_MD" resource_path="models/issues_manager/descriptions/sriValidationFailedSignatureMismatch.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/stylesheetLateImport.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_STYLESHEETLATEIMPORT_MD" resource_path="models/issues_manager/descriptions/stylesheetLateImport.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/stylesheetRequestFailed.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_STYLESHEETREQUESTFAILED_MD" resource_path="models/issues_manager/descriptions/stylesheetRequestFailed.md" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/descriptions/userReidentificationBlocked.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_USERREIDENTIFICATIONBLOCKED_MD" resource_path="models/issues_manager/descriptions/userReidentificationBlocked.md" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/issues_manager.js" name="MODELS_ISSUES_MANAGER_ISSUES_MANAGER_JS" resource_path="models/issues_manager/issues_manager.js" type="BINDATA" compress="false"/>
       <include file="models/javascript_metadata/javascript_metadata.js" name="MODELS_JAVASCRIPT_METADATA_JAVASCRIPT_METADATA_JS" resource_path="models/javascript_metadata/javascript_metadata.js" type="BINDATA" compress="false"/>
       <include file="models/live-metrics/live-metrics.js" name="MODELS_LIVE_METRICS_LIVE_METRICS_JS" resource_path="models/live-metrics/live-metrics.js" type="BINDATA" compress="false"/>
@@ -769,6 +770,7 @@
       <include file="ui/components/report_view/report_view.js" name="UI_COMPONENTS_REPORT_VIEW_REPORT_VIEW_JS" resource_path="ui/components/report_view/report_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/request_link_icon/request_link_icon.js" name="UI_COMPONENTS_REQUEST_LINK_ICON_REQUEST_LINK_ICON_JS" resource_path="ui/components/request_link_icon/request_link_icon.js" type="BINDATA" compress="false"/>
       <include file="ui/components/settings/settings.js" name="UI_COMPONENTS_SETTINGS_SETTINGS_JS" resource_path="ui/components/settings/settings.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/snackbars/snackbars.js" name="UI_COMPONENTS_SNACKBARS_SNACKBARS_JS" resource_path="ui/components/snackbars/snackbars.js" type="BINDATA" compress="false"/>
       <include file="ui/components/spinners/spinners.js" name="UI_COMPONENTS_SPINNERS_SPINNERS_JS" resource_path="ui/components/spinners/spinners.js" type="BINDATA" compress="false"/>
       <include file="ui/components/srgb_overlay/srgb_overlay.js" name="UI_COMPONENTS_SRGB_OVERLAY_SRGB_OVERLAY_JS" resource_path="ui/components/srgb_overlay/srgb_overlay.js" type="BINDATA" compress="false"/>
       <include file="ui/components/suggestion_input/suggestion_input.js" name="UI_COMPONENTS_SUGGESTION_INPUT_SUGGESTION_INPUT_JS" resource_path="ui/components/suggestion_input/suggestion_input.js" type="BINDATA" compress="false"/>
@@ -1070,6 +1072,7 @@
       <include file="models/issues_manager/SharedDictionaryIssue.js" name="MODELS_ISSUES_MANAGER_SHAREDDICTIONARYISSUE_JS" resource_path="models/issues_manager/SharedDictionaryIssue.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/SourceFrameIssuesManager.js" name="MODELS_ISSUES_MANAGER_SOURCEFRAMEISSUESMANAGER_JS" resource_path="models/issues_manager/SourceFrameIssuesManager.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/StylesheetLoadingIssue.js" name="MODELS_ISSUES_MANAGER_STYLESHEETLOADINGISSUE_JS" resource_path="models/issues_manager/StylesheetLoadingIssue.js" type="BINDATA" compress="false"/>
+      <include file="models/issues_manager/UserReidentificationIssue.js" name="MODELS_ISSUES_MANAGER_USERREIDENTIFICATIONISSUE_JS" resource_path="models/issues_manager/UserReidentificationIssue.js" type="BINDATA" compress="false"/>
       <include file="models/javascript_metadata/JavaScriptMetadata.js" name="MODELS_JAVASCRIPT_METADATA_JAVASCRIPTMETADATA_JS" resource_path="models/javascript_metadata/JavaScriptMetadata.js" type="BINDATA" compress="false"/>
       <include file="models/javascript_metadata/NativeFunctions.js" name="MODELS_JAVASCRIPT_METADATA_NATIVEFUNCTIONS_JS" resource_path="models/javascript_metadata/NativeFunctions.js" type="BINDATA" compress="false"/>
       <include file="models/live-metrics/LiveMetrics.js" name="MODELS_LIVE_METRICS_LIVEMETRICS_JS" resource_path="models/live-metrics/LiveMetrics.js" type="BINDATA" compress="false"/>
@@ -1276,7 +1279,7 @@
       <include file="panels/application/SharedStorageModel.js" name="PANELS_APPLICATION_SHAREDSTORAGEMODEL_JS" resource_path="panels/application/SharedStorageModel.js" type="BINDATA" compress="false"/>
       <include file="panels/application/SharedStorageTreeElement.js" name="PANELS_APPLICATION_SHAREDSTORAGETREEELEMENT_JS" resource_path="panels/application/SharedStorageTreeElement.js" type="BINDATA" compress="false"/>
       <include file="panels/application/StorageBucketsTreeElement.js" name="PANELS_APPLICATION_STORAGEBUCKETSTREEELEMENT_JS" resource_path="panels/application/StorageBucketsTreeElement.js" type="BINDATA" compress="false"/>
-      <include file="panels/application/StorageItemsView.js" name="PANELS_APPLICATION_STORAGEITEMSVIEW_JS" resource_path="panels/application/StorageItemsView.js" type="BINDATA" compress="false"/>
+      <include file="panels/application/StorageItemsToolbar.js" name="PANELS_APPLICATION_STORAGEITEMSTOOLBAR_JS" resource_path="panels/application/StorageItemsToolbar.js" type="BINDATA" compress="false"/>
       <include file="panels/application/StorageView.js" name="PANELS_APPLICATION_STORAGEVIEW_JS" resource_path="panels/application/StorageView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/TrustTokensTreeElement.js" name="PANELS_APPLICATION_TRUSTTOKENSTREEELEMENT_JS" resource_path="panels/application/TrustTokensTreeElement.js" type="BINDATA" compress="false"/>
       <include file="panels/application/appManifestView.css.js" name="PANELS_APPLICATION_APPMANIFESTVIEW_CSS_JS" resource_path="panels/application/appManifestView.css.js" type="BINDATA" compress="false"/>
@@ -1621,6 +1624,7 @@
       <include file="panels/network/RequestResponseView.js" name="PANELS_NETWORK_REQUESTRESPONSEVIEW_JS" resource_path="panels/network/RequestResponseView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/RequestTimingView.js" name="PANELS_NETWORK_REQUESTTIMINGVIEW_JS" resource_path="panels/network/RequestTimingView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/ResourceChunkView.js" name="PANELS_NETWORK_RESOURCECHUNKVIEW_JS" resource_path="panels/network/ResourceChunkView.js" type="BINDATA" compress="false"/>
+      <include file="panels/network/ResourceDirectSocketChunkView.js" name="PANELS_NETWORK_RESOURCEDIRECTSOCKETCHUNKVIEW_JS" resource_path="panels/network/ResourceDirectSocketChunkView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/ResourceWebSocketFrameView.js" name="PANELS_NETWORK_RESOURCEWEBSOCKETFRAMEVIEW_JS" resource_path="panels/network/ResourceWebSocketFrameView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/SignedExchangeInfoView.js" name="PANELS_NETWORK_SIGNEDEXCHANGEINFOVIEW_JS" resource_path="panels/network/SignedExchangeInfoView.js" type="BINDATA" compress="false"/>
       <include file="panels/network/binaryResourceView.css.js" name="PANELS_NETWORK_BINARYRESOURCEVIEW_CSS_JS" resource_path="panels/network/binaryResourceView.css.js" type="BINDATA" compress="false"/>
@@ -2353,6 +2357,8 @@
       <include file="ui/components/settings/SettingDeprecationWarning.js" name="UI_COMPONENTS_SETTINGS_SETTINGDEPRECATIONWARNING_JS" resource_path="ui/components/settings/SettingDeprecationWarning.js" type="BINDATA" compress="false"/>
       <include file="ui/components/settings/settingCheckbox.css.js" name="UI_COMPONENTS_SETTINGS_SETTINGCHECKBOX_CSS_JS" resource_path="ui/components/settings/settingCheckbox.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/settings/settingDeprecationWarning.css.js" name="UI_COMPONENTS_SETTINGS_SETTINGDEPRECATIONWARNING_CSS_JS" resource_path="ui/components/settings/settingDeprecationWarning.css.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/snackbars/Snackbar.js" name="UI_COMPONENTS_SNACKBARS_SNACKBAR_JS" resource_path="ui/components/snackbars/Snackbar.js" type="BINDATA" compress="false"/>
+      <include file="ui/components/snackbars/snackbar.css.js" name="UI_COMPONENTS_SNACKBARS_SNACKBAR_CSS_JS" resource_path="ui/components/snackbars/snackbar.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/spinners/Spinner.js" name="UI_COMPONENTS_SPINNERS_SPINNER_JS" resource_path="ui/components/spinners/Spinner.js" type="BINDATA" compress="false"/>
       <include file="ui/components/spinners/spinner.css.js" name="UI_COMPONENTS_SPINNERS_SPINNER_CSS_JS" resource_path="ui/components/spinners/spinner.css.js" type="BINDATA" compress="false"/>
       <include file="ui/components/srgb_overlay/SrgbOverlay.js" name="UI_COMPONENTS_SRGB_OVERLAY_SRGBOVERLAY_JS" resource_path="ui/components/srgb_overlay/SrgbOverlay.js" type="BINDATA" compress="false"/>

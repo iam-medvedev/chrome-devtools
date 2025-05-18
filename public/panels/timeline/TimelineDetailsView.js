@@ -313,6 +313,9 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (!this.updateContentsScheduled) {
             this.updateContentsScheduled = true;
             setTimeout(() => {
+                if (!this.updateContentsScheduled) {
+                    return;
+                }
                 this.updateContentsScheduled = false;
                 this.updateContentsFromWindow();
             }, 100);
@@ -400,6 +403,8 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             return;
         }
         if (selectionIsEvent(selection)) {
+            // Cancel any pending debounced range stats update
+            this.updateContentsScheduled = false;
             if (Trace.Types.Events.isSyntheticNetworkRequest(selection.event)) {
                 await this.#setSelectionForNetworkEvent(selection.event);
             }

@@ -1,13 +1,15 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { Directives, html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import cssOverviewSidebarPanelStyles from './cssOverviewSidebarPanel.css.js';
+const { classMap } = Directives;
 const UIStrings = {
     /**
      *@description Label for the 'Clear overview' button in the CSS overview report
@@ -20,83 +22,91 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/css_overview/CSSOverviewSidebarPanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const ITEM_CLASS_NAME = 'overview-sidebar-panel-item';
-const SELECTED_CLASS_NAME = 'selected';
+export const DEFAULT_VIEW = (input, _output, target) => {
+    const onClick = (event) => {
+        if (event.target instanceof HTMLElement) {
+            const id = event.target.dataset.id;
+            if (id) {
+                input.onItemClick(id);
+            }
+        }
+    };
+    const onKeyDown = (event) => {
+        if (event.key !== 'Enter' && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
+            return;
+        }
+        if (event.target instanceof HTMLElement) {
+            const id = event.target.dataset.id;
+            if (id) {
+                input.onItemKeyDown(id, event.key);
+            }
+        }
+        event.consume(true);
+    };
+    // clang-format off
+    render(html `
+      <style>${cssOverviewSidebarPanelStyles}</style>
+      <div class="overview-sidebar-panel" @click=${onClick} @keydown=${onKeyDown}
+           aria-label=${i18nString(UIStrings.cssOverviewPanelSidebar)} role="tree">
+        <div class="overview-toolbar">
+          <devtools-toolbar>
+            <devtools-button title=${i18nString(UIStrings.clearOverview)} @click=${input.onReset}
+                .iconName=${'clear'} .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+                .jslogContext=${'css-overview.clear-overview'}></devtools-button>
+          </devtools-toolbar>
+        </div>
+        ${input.items.map(({ id, name }) => {
+        const selected = id === input.selectedId;
+        return html `
+            <div class="overview-sidebar-panel-item ${classMap({ selected })}"
+                ?autofocus=${selected}
+                role="treeitem" data-id=${id} tabindex="0"
+                jslog=${VisualLogging.item(`css-overview.${id}`)
+            .track({ click: true, keydown: 'Enter|ArrowUp|ArrowDown' })}>
+              ${name}
+            </div>`;
+    })}
+      </div>`, target, { host: input });
+    // clang-format on
+};
 export class CSSOverviewSidebarPanel extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    containerElement;
-    constructor() {
-        super(true);
-        this.registerRequiredCSS(cssOverviewSidebarPanelStyles);
-        this.contentElement.classList.add('overview-sidebar-panel');
-        this.contentElement.addEventListener('click', this.#onItemClick.bind(this));
-        this.contentElement.addEventListener('keydown', this.#onItemKeyDown.bind(this));
-        // We need a container so that each item covers the full width of the
-        // longest item, so that the selected item's background expands fully
-        // even when the sidebar overflows.
-        // Also see crbug/1408003
-        this.containerElement = this.contentElement.createChild('div', 'overview-sidebar-panel-container');
-        UI.ARIAUtils.setLabel(this.containerElement, i18nString(UIStrings.cssOverviewPanelSidebar));
-        UI.ARIAUtils.markAsTree(this.containerElement);
-        // Clear overview.
-        const clearResultsButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clearOverview), 'clear', undefined, 'css-overview.clear-overview');
-        clearResultsButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#reset, this);
-        // Toolbar.
-        const toolbarElement = this.containerElement.createChild('div', 'overview-toolbar');
-        const toolbar = toolbarElement.createChild('devtools-toolbar');
-        toolbar.appendToolbarItem(clearResultsButton);
+    #view;
+    #items = [];
+    #selectedId;
+    constructor(view = DEFAULT_VIEW) {
+        super(true, true);
+        this.#view = view;
     }
-    addItem(name, id) {
-        const item = this.containerElement.createChild('div', ITEM_CLASS_NAME);
-        item.setAttribute('jslog', `${VisualLogging.item()
-            .track({ click: true, keydown: 'Enter|ArrowUp|ArrowDown' })
-            .context(`css-overview.${id}`)}`);
-        UI.ARIAUtils.markAsTreeitem(item);
-        item.textContent = name;
-        item.dataset.id = id;
-        item.tabIndex = 0;
+    performUpdate() {
+        const viewInput = {
+            items: this.#items,
+            selectedId: this.#selectedId,
+            onReset: () => this.#reset(),
+            onItemClick: this.#onItemClick.bind(this),
+            onItemKeyDown: this.#onItemKeyDown.bind(this)
+        };
+        this.#view(viewInput, {}, this.contentElement);
+    }
+    set items(items) {
+        this.#items = items;
+        this.requestUpdate();
     }
     #reset() {
         this.dispatchEventToListeners("Reset" /* SidebarEvents.RESET */);
     }
-    #deselectAllItems() {
-        const items = this.containerElement.querySelectorAll(`.${ITEM_CLASS_NAME}`);
-        items.forEach(item => {
-            item.classList.remove(SELECTED_CLASS_NAME);
-        });
-    }
-    #onItemClick(event) {
-        const target = event.composedPath()[0];
-        if (!target.classList.contains(ITEM_CLASS_NAME)) {
-            return;
-        }
-        const { id } = target.dataset;
-        if (!id) {
-            return;
-        }
-        this.select(id, false);
+    #onItemClick(id) {
+        this.selectedId = id;
         this.dispatchEventToListeners("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, { id, isMouseEvent: true, key: undefined });
     }
-    #onItemKeyDown(event) {
-        if (event.key !== 'Enter' && event.key !== 'ArrowUp' && event.key !== 'ArrowDown') {
-            return;
-        }
-        const target = event.composedPath()[0];
-        if (!target.classList.contains(ITEM_CLASS_NAME)) {
-            return;
-        }
-        const { id } = target.dataset;
-        if (!id) {
-            return;
-        }
-        if (event.key === 'Enter') {
-            this.select(id, false);
-            this.dispatchEventToListeners("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, { id, isMouseEvent: false, key: event.key });
+    #onItemKeyDown(id, key) {
+        if (key === 'Enter') {
+            this.selectedId = id;
+            this.dispatchEventToListeners("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, { id, isMouseEvent: false, key });
         }
         else { // arrow up/down key
-            const items = this.containerElement.querySelectorAll(`.${ITEM_CLASS_NAME}`);
             let currItemIndex = -1;
-            for (let idx = 0; idx < items.length; idx++) {
-                if (items[idx].dataset.id === id) {
+            for (let idx = 0; idx < this.#items.length; idx++) {
+                if (this.#items[idx].id === id) {
                     currItemIndex = idx;
                     break;
                 }
@@ -104,32 +114,23 @@ export class CSSOverviewSidebarPanel extends Common.ObjectWrapper.eventMixin(UI.
             if (currItemIndex < 0) {
                 return;
             }
-            const moveTo = (event.key === 'ArrowDown' ? 1 : -1);
-            const nextItemIndex = (currItemIndex + moveTo) % items.length;
-            const nextItemId = items[nextItemIndex].dataset.id;
+            const moveTo = (key === 'ArrowDown' ? 1 : -1);
+            const nextItemIndex = (currItemIndex + moveTo) % this.#items.length;
+            const nextItemId = this.#items[nextItemIndex].id;
             if (!nextItemId) {
                 return;
             }
-            this.select(nextItemId, true);
-            this.dispatchEventToListeners("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, { id: nextItemId, isMouseEvent: false, key: event.key });
+            this.selectedId = nextItemId;
+            void this.updateComplete.then(() => {
+                this.element.blur();
+                this.element.focus();
+            });
+            this.dispatchEventToListeners("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, { id: nextItemId, isMouseEvent: false, key });
         }
-        event.consume(true);
     }
-    select(id, focus) {
-        const target = this.containerElement.querySelector(`[data-id=${CSS.escape(id)}]`);
-        if (!target) {
-            return;
-        }
-        if (target.classList.contains(SELECTED_CLASS_NAME)) {
-            return;
-        }
-        this.#deselectAllItems();
-        target.classList.add(SELECTED_CLASS_NAME);
-        if (focus) {
-            target.contentEditable = 'true';
-            target.focus();
-            target.contentEditable = 'false';
-        }
+    set selectedId(id) {
+        this.#selectedId = id;
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=CSSOverviewSidebarPanel.js.map

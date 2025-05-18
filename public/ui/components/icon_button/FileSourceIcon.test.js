@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import * as IconButton from './icon_button.js';
-const renderFileSourceIconButton = (iconType, data) => {
-    const component = new IconButton.FileSourceIcon.FileSourceIcon(iconType);
+const renderFileSourceIconButton = (data) => {
+    const component = new IconButton.FileSourceIcon.FileSourceIcon();
     component.data = data;
     renderElementIntoDOM(component);
     assert.isNotNull(component.shadowRoot);
@@ -12,7 +12,8 @@ const renderFileSourceIconButton = (iconType, data) => {
 };
 describe('FileSourceIcon', () => {
     it('returns document icon', async () => {
-        const { shadowRoot } = renderFileSourceIconButton('document', {
+        const { shadowRoot } = renderFileSourceIconButton({
+            iconType: 'document',
             contentType: 'icon',
         });
         const icon = shadowRoot.querySelector('.icon');

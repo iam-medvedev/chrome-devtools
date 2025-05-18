@@ -111,6 +111,7 @@ export declare class CSSFunctionRule extends CSSRule {
     functionName(): CSSValue;
     parameters(): string[];
     children(): CSSNestedStyle[];
+    nameWithParameters(): string;
     protocolNodesToNestedStyles(nodes: Protocol.CSS.CSSFunctionNode[]): CSSNestedStyle[];
     protocolNodeToNestedStyle(node: Protocol.CSS.CSSFunctionNode): CSSNestedStyle | undefined;
 }

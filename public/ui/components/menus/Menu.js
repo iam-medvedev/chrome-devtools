@@ -8,18 +8,9 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Dialogs from '../dialogs/dialogs.js';
-import menuStylesRaw from './menu.css.js';
-import menuGroupStylesRaw from './menuGroup.css.js';
-import menuItemStylesRaw from './menuItem.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const menuStyles = new CSSStyleSheet();
-menuStyles.replaceSync(menuStylesRaw);
-const menuGroupStyles = new CSSStyleSheet();
-menuGroupStyles.replaceSync(menuGroupStylesRaw);
-const menuItemStyles = new CSSStyleSheet();
-menuItemStyles.replaceSync(menuItemStylesRaw);
+import menuStyles from './menu.css.js';
+import menuGroupStyles from './menuGroup.css.js';
+import menuItemStyles from './menuItem.css.js';
 const { html } = Lit;
 const selectedItemCheckmark = new URL('../../../Images/checkmark.svg', import.meta.url).toString();
 export class Menu extends HTMLElement {
@@ -90,7 +81,6 @@ export class Menu extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [menuStyles];
         void RenderCoordinator.write(() => {
             this.style.setProperty('--selected-item-check', `url(${selectedItemCheckmark})`);
             this.style.setProperty('--menu-checkmark-width', this.#props.showSelectedItem ? '26px' : '0px');
@@ -310,6 +300,7 @@ export class Menu extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${menuStyles}</style>
       <devtools-dialog
         @clickoutsidedialog=${this.#closeDialog}
         @forceddialogclose=${this.#closeDialog}
@@ -334,7 +325,6 @@ export class Menu extends HTMLElement {
 export class MenuItem extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [menuItemStyles];
         this.tabIndex = 0;
         this.setAttribute('role', 'menuitem');
     }
@@ -378,6 +368,7 @@ export class MenuItem extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${menuItemStyles}</style>
       <span class=${Lit.Directives.classMap({
             'menu-item': true,
             'is-selected-item': this.selected,
@@ -393,9 +384,6 @@ export class MenuItem extends HTMLElement {
 }
 export class MenuGroup extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [menuGroupStyles];
-    }
     #props = {
         name: null,
     };
@@ -412,6 +400,7 @@ export class MenuGroup extends HTMLElement {
         }
         // clang-format off
         Lit.render(html `
+      <style>${menuGroupStyles}</style>
       <span class="menu-group">
         <span class="menu-group-label">${this.name}</span>
         <slot></slot>

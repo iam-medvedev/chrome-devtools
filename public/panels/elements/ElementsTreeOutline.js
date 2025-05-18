@@ -241,12 +241,15 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         const treeElement = this.findTreeElement(node);
         if (treeElement) {
             treeElement.addIssue(issue);
-            const treeElementNodeElementsToIssue = treeElement.issuesByNodeElement;
+            const treeElementNodeElementsToIssues = treeElement.issuesByNodeElement;
             // This element could be the treeElement tags name or an attribute.
-            for (const [element, issue] of treeElementNodeElementsToIssue) {
-                this.#nodeElementToIssues.set(element, issue);
+            for (const [element, issues] of treeElementNodeElementsToIssues) {
+                this.#nodeElementToIssues.set(element, issues);
             }
         }
+    }
+    updateNodeElementToIssue(element, issues) {
+        this.#nodeElementToIssues.set(element, issues);
     }
     onShowHTMLCommentsChange() {
         const selectedNode = this.selectedDOMNode();

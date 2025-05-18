@@ -20,21 +20,28 @@ export declare class TracingContext {
     readonly expandPercentagesInShorthands: boolean;
     constructor(highlighting: Highlighting, expandPercentagesInShorthands: boolean, initialLonghandOffset?: number, matchedResult?: SDK.CSSPropertyParser.BottomUpTreeMatching);
     get highlighting(): Highlighting;
+    get root(): {
+        match: SDK.CSSPropertyParser.Match;
+        context: RenderingContext;
+    } | null;
     get propertyName(): string | null;
     get longhandOffset(): number;
     renderingContext(context: RenderingContext): RenderingContext;
     nextSubstitution(): boolean;
     nextEvaluation(): boolean;
     didApplyEvaluations(): boolean;
-    evaluation(args: unknown[]): TracingContext[] | null;
+    evaluation(args: unknown[], root?: {
+        match: SDK.CSSPropertyParser.Match;
+        context: RenderingContext;
+    } | null): TracingContext[] | null;
     applyEvaluation(children: TracingContext[], evaluation: () => ({
         placeholder: Node[];
         asyncEvalCallback?: () => Promise<boolean>;
     })): Node[] | null;
-    substitution(match?: {
+    substitution(root?: {
         match: SDK.CSSPropertyParser.Match;
-        matchedResult: SDK.CSSPropertyParser.BottomUpTreeMatching;
-    }): TracingContext | null;
+        context: RenderingContext;
+    } | null): TracingContext | null;
     cachedParsedValue(declaration: SDK.CSSProperty.CSSProperty | SDK.CSSMatchedStyles.CSSRegisteredProperty, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>): SDK.CSSPropertyParser.BottomUpTreeMatching | null;
     runAsyncEvaluations(): Promise<boolean>;
 }
@@ -53,6 +60,7 @@ export declare class RenderingContext {
     }, tracing?: TracingContext | undefined);
     addControl(cssType: string, control: HTMLElement): void;
     getComputedLonghandName(node: CodeMirror.SyntaxNode): string | null;
+    findParent<MatchT extends SDK.CSSPropertyParser.Match>(node: CodeMirror.SyntaxNode | null, matchType: Platform.Constructor.Constructor<MatchT>): MatchT | null;
 }
 export declare class Renderer extends SDK.CSSPropertyParser.TreeWalker {
     #private;

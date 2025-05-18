@@ -210,7 +210,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private startDragging;
     private dragging;
     private endDragging;
-    timelineData(rebuid?: boolean): FlameChartTimelineData | null;
+    timelineData(rebuild?: boolean): FlameChartTimelineData | null;
     revealEntryVertically(entryIndex: number): void;
     revealEntry(entryIndex: number): void;
     setWindowTimes(startTime: number, endTime: number, animate?: boolean): void;

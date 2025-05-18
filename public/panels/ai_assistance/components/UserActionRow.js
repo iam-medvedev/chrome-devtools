@@ -210,11 +210,11 @@ export class UserActionRow extends UI.Widget.Widget {
     #currentRating;
     #isShowingFeedbackForm = false;
     #isSubmitButtonDisabled = true;
-    view;
+    #view;
     #viewOutput = {};
     constructor(element, view) {
         super(false, false, element);
-        this.view = view ?? DEFAULT_VIEW;
+        this.#view = view ?? DEFAULT_VIEW;
     }
     wasShown() {
         super.wasShown();
@@ -225,7 +225,7 @@ export class UserActionRow extends UI.Widget.Widget {
         }
     }
     performUpdate() {
-        this.view({
+        this.#view({
             onSuggestionClick: this.onSuggestionClick,
             onRatingClick: this.#handleRateClick.bind(this),
             onReportClick: () => UI.UIUtils.openInNewTab(REPORT_URL),
@@ -263,7 +263,7 @@ export class UserActionRow extends UI.Widget.Widget {
         leftScrollButtonContainer.classList.toggle('hidden', !shouldShowLeftButton);
         rightScrollButtonContainer.classList.toggle('hidden', !shouldShowRightButton);
     };
-    disconnectedCallback() {
+    willHide() {
         this.#suggestionsResizeObserver.disconnect();
     }
     #handleSuggestionsScrollOrResize() {

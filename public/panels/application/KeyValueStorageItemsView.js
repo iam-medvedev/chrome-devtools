@@ -1,7 +1,6 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 /*
  * Copyright (C) 2008 Nokia Inc.  All rights reserved.
  * Copyright (C) 2013 Samsung Electronics. All rights reserved.
@@ -32,7 +31,8 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives as LitDirectives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { StorageItemsView } from './StorageItemsView.js';
+import * as ApplicationComponents from './components/components.js';
+import { StorageItemsToolbar } from './StorageItemsToolbar.js';
 const { ARIAUtils } = UI;
 const { EmptyWidget } = UI.EmptyWidget;
 const { VBox, widgetConfig } = UI.Widget;
@@ -68,7 +68,7 @@ const MAX_VALUE_LENGTH = 4096;
  * A helper typically used in the Application panel. Renders a split view
  * between a DataGrid displaying key-value pairs and a preview Widget.
  */
-export class KeyValueStorageItemsView extends StorageItemsView {
+export class KeyValueStorageItemsView extends UI.Widget.VBox {
     #preview;
     #previewValue;
     #items = [];
@@ -76,11 +76,19 @@ export class KeyValueStorageItemsView extends StorageItemsView {
     #view;
     #isSortOrderAscending = true;
     #editable;
+    #toolbar;
+    metadataView;
     constructor(title, id, editable, view, metadataView) {
+        metadataView ??= new ApplicationComponents.StorageMetadataView.StorageMetadataView();
         if (!view) {
-            view = (input, _, target) => {
+            view = (input, output, target) => {
                 // clang-format off
                 render(html `
+            <devtools-widget
+              .widgetConfig=${widgetConfig(StorageItemsToolbar, { metadataView })}
+              class=flex-none
+              ${UI.Widget.widgetRef(StorageItemsToolbar, view => { output.toolbar = view; })}
+            ></devtools-widget>
             <devtools-split-view sidebar-position="second" name="${id}-split-view-state">
                <devtools-widget
                   slot="main"
@@ -126,7 +134,8 @@ export class KeyValueStorageItemsView extends StorageItemsView {
                 target, { host: input });
             };
         }
-        super(title, id, metadataView);
+        super(false);
+        this.metadataView = metadataView;
         this.#editable = editable;
         this.#view = view;
         this.performUpdate();
@@ -135,14 +144,29 @@ export class KeyValueStorageItemsView extends StorageItemsView {
         this.#previewValue = null;
         this.showPreview(null, null);
     }
+    wasShown() {
+        this.refreshItems();
+    }
     performUpdate() {
+        const that = this;
+        const viewOutput = {
+            set toolbar(toolbar) {
+                that.#toolbar?.removeEventListener("DeleteSelected" /* StorageItemsToolbar.Events.DELETE_SELECTED */, that.deleteSelectedItem, that);
+                that.#toolbar?.removeEventListener("DeleteAll" /* StorageItemsToolbar.Events.DELETE_ALL */, that.deleteAllItems, that);
+                that.#toolbar?.removeEventListener("Refresh" /* StorageItemsToolbar.Events.REFRESH */, that.refreshItems, that);
+                that.#toolbar = toolbar;
+                that.#toolbar.addEventListener("DeleteSelected" /* StorageItemsToolbar.Events.DELETE_SELECTED */, that.deleteSelectedItem, that);
+                that.#toolbar.addEventListener("DeleteAll" /* StorageItemsToolbar.Events.DELETE_ALL */, that.deleteAllItems, that);
+                that.#toolbar.addEventListener("Refresh" /* StorageItemsToolbar.Events.REFRESH */, that.refreshItems, that);
+            }
+        };
         const viewInput = {
             items: this.#items,
             selectedKey: this.#selectedKey,
             editable: this.#editable,
             preview: this.#preview,
             onSelect: (event) => {
-                this.setCanDeleteSelected(Boolean(event.detail));
+                this.#toolbar?.setCanDeleteSelected(Boolean(event.detail));
                 if (!event.detail) {
                     void this.#previewEntry(null);
                 }
@@ -166,12 +190,19 @@ export class KeyValueStorageItemsView extends StorageItemsView {
                 this.refreshItems();
             },
         };
-        this.#view(viewInput, {}, this.contentElement);
+        this.#view(viewInput, viewOutput, this.contentElement);
+    }
+    get toolbar() {
+        return this.#toolbar;
+    }
+    refreshItems() {
+    }
+    deleteAllItems() {
     }
     itemsCleared() {
         this.#items = [];
         this.performUpdate();
-        this.setCanDeleteSelected(false);
+        this.#toolbar?.setCanDeleteSelected(false);
     }
     itemRemoved(key) {
         const index = this.#items.findIndex(item => item.key === key);
@@ -180,7 +211,7 @@ export class KeyValueStorageItemsView extends StorageItemsView {
         }
         this.#items.splice(index, 1);
         this.performUpdate();
-        this.setCanDeleteSelected(this.#items.length > 1);
+        this.#toolbar?.setCanDeleteSelected(this.#items.length > 1);
     }
     itemAdded(key, value) {
         if (this.#items.some(item => item.key === key)) {
@@ -205,7 +236,7 @@ export class KeyValueStorageItemsView extends StorageItemsView {
         if (this.#previewValue !== value) {
             void this.#previewEntry({ key, value });
         }
-        this.setCanDeleteSelected(true);
+        this.#toolbar?.setCanDeleteSelected(true);
     }
     showItems(items) {
         const sortDirection = this.#isSortOrderAscending ? 1 : -1;
@@ -218,7 +249,7 @@ export class KeyValueStorageItemsView extends StorageItemsView {
             void this.#previewEntry(selectedItem);
         }
         this.performUpdate();
-        this.setCanDeleteSelected(Boolean(this.#selectedKey));
+        this.#toolbar?.setCanDeleteSelected(Boolean(this.#selectedKey));
         ARIAUtils.alert(i18nString(UIStrings.numberEntries, { PH1: this.#items.length }));
     }
     deleteSelectedItem() {

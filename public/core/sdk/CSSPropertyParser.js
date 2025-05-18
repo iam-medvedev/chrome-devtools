@@ -198,8 +198,8 @@ export class BottomUpTreeMatching extends TreeWalker {
     hasUnresolvedVarsRange(from, to) {
         return this.computedText.hasUnresolvedVars(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
     }
-    getComputedText(node, substitutions) {
-        return this.getComputedTextRange(node, node, substitutions);
+    getComputedText(node, substitutionHook) {
+        return this.getComputedTextRange(node, node, substitutionHook);
     }
     getLonghandValuesCount() {
         const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
@@ -216,8 +216,8 @@ export class BottomUpTreeMatching extends TreeWalker {
         const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
         return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
     }
-    getComputedTextRange(from, to, substitutions) {
-        return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from, substitutions);
+    getComputedTextRange(from, to, substitutionHook) {
+        return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from, substitutionHook);
     }
 }
 class ComputedTextChunk {
@@ -362,14 +362,14 @@ export class ComputedText {
     // Get a slice of the computed text corresponding to the property text in the range [begin, end). The slice may not
     // start within a substitution chunk, e.g., it's invalid to request the computed text for the property value text
     // slice "1px var(--".
-    get(begin, end, substitutions) {
+    get(begin, end, substitutionHook) {
         const pieces = [];
         const getText = (piece) => {
             if (typeof piece === 'string') {
                 return piece;
             }
-            const substitution = substitutions?.get(piece.match);
-            if (substitution) {
+            const substitution = substitutionHook?.(piece.match) ?? null;
+            if (substitution !== null) {
                 return getText(substitution);
             }
             return piece.computedText ?? piece.match.text;
@@ -464,7 +464,7 @@ export var ASTUtils;
     }
     ASTUtils.split = split;
     function callArgs(node) {
-        const args = children(node.getChild('ArgList'));
+        const args = children(node?.getChild('ArgList') ?? null);
         const openParen = args.splice(0, 1)[0];
         const closingParen = args.pop();
         if (openParen?.name !== '(' || closingParen?.name !== ')') {

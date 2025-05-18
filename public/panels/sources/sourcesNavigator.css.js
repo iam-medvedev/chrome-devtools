@@ -19,6 +19,7 @@ export default `/*
 }
 
 .automatic-file-system-nudge {
+  flex-shrink: 0;
   font-style: italic;
   border-bottom: var(--sys-size-1) solid var(--sys-color-divider);
   padding: var(--sys-size-3);

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { assertElements, dispatchKeyDownEvent, } from './DOMHelpers.js';
-export const getFocusableCell = (shadowRoot) => {
+export const getFocusableCell = (node) => {
     // We only expect one here, but we qSA so we can assert on only one.
     // Can't use td as it may be a th if the user has focused a column header.
-    const tabIndexCells = shadowRoot.querySelectorAll('table [tabindex="0"]');
+    const tabIndexCells = node.querySelectorAll('table [tabindex="0"]');
     assert.lengthOf(tabIndexCells, 1);
     assert.instanceOf(tabIndexCells[0], HTMLTableCellElement);
     return tabIndexCells[0];
 };
-export const getCellByIndexes = (shadowRoot, indexes) => {
-    const cell = shadowRoot.querySelector(`tr:nth-child(${indexes.row + 1}) td:nth-child(${indexes.column + 1})`);
+export const getCellByIndexes = (node, indexes) => {
+    const cell = node.querySelector(`tr:nth-child(${indexes.row + 1}) td:nth-child(${indexes.column + 1})`);
     assert.instanceOf(cell, HTMLTableCellElement);
     return cell;
 };
-export const getHeaderCells = (shadowRoot, options = {
+export const getHeaderCells = (node, options = {
     onlyVisible: false,
 }) => {
-    const cells = shadowRoot.querySelectorAll('th[jslog]');
+    const cells = node.querySelectorAll('th[jslog]');
     assertElements(cells, HTMLTableCellElement);
     return Array.from(cells).filter(cell => {
         if (!options.onlyVisible) {
@@ -27,8 +27,8 @@ export const getHeaderCells = (shadowRoot, options = {
         return cell.classList.contains('hidden') === false;
     });
 };
-export const getAllRows = (shadowRoot) => {
-    const rows = shadowRoot.querySelectorAll('tbody tr[jslog]');
+export const getAllRows = (node) => {
+    const rows = node.querySelectorAll('tbody tr[jslog]');
     assertElements(rows, HTMLTableRowElement);
     return Array.from(rows);
 };
@@ -46,10 +46,10 @@ export const emulateUserKeyboardNavigation = (shadowRoot, key) => {
     assert.instanceOf(table, HTMLTableElement);
     dispatchKeyDownEvent(table, { key });
 };
-export const getValuesOfAllBodyRows = (shadowRoot, options = {
+export const getValuesOfAllBodyRows = (node, options = {
     onlyVisible: false,
 }) => {
-    const rows = getAllRows(shadowRoot);
+    const rows = getAllRows(node);
     return rows
         .map(row => {
         // now decide if the row should be included or not

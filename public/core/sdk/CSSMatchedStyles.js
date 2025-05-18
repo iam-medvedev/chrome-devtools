@@ -5,7 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -212,6 +212,7 @@ export class CSSMatchedStyles {
     #pseudoDOMCascades;
     #customHighlightPseudoDOMCascades;
     #functionRules;
+    #functionRuleMap = new Map();
     #fontPaletteValuesRule;
     static async create(payload) {
         const cssMatchedStyles = new CSSMatchedStyles(payload);
@@ -252,6 +253,9 @@ export class CSSMatchedStyles {
         }
         for (const prop of this.#registeredProperties) {
             this.#registeredPropertyMap.set(prop.propertyName(), prop);
+        }
+        for (const rule of this.#functionRules) {
+            this.#functionRuleMap.set(rule.functionName().text, rule);
         }
     }
     async buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload) {
@@ -585,6 +589,10 @@ export class CSSMatchedStyles {
     getRegisteredProperty(name) {
         return this.#registeredPropertyMap.get(name);
     }
+    getRegisteredFunction(name) {
+        const functionRule = this.#functionRuleMap.get(name);
+        return functionRule ? functionRule.nameWithParameters() : undefined;
+    }
     functionRules() {
         return this.#functionRules;
     }
@@ -677,6 +685,7 @@ export class CSSMatchedStyles {
             new MathFunctionMatcher(),
             new AutoBaseMatcher(),
             new BinOpMatcher(),
+            new RelativeColorChannelMatcher(),
         ];
     }
 }

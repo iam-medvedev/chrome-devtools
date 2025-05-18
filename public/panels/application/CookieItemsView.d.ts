@@ -1,6 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import { StorageItemsView } from './StorageItemsView.js';
-export declare class CookieItemsView extends StorageItemsView {
+import { StorageItemsToolbar } from './StorageItemsToolbar.js';
+export declare class CookieItemsView extends StorageItemsToolbar {
     private model;
     private cookieDomain;
     private cookiesTable;
@@ -14,6 +14,7 @@ export declare class CookieItemsView extends StorageItemsView {
     private selectedCookie;
     constructor(model: SDK.CookieModel.CookieModel, cookieDomain: string);
     setCookiesDomain(model: SDK.CookieModel.CookieModel, domain: string): void;
+    wasShown(): void;
     private showPreview;
     private handleCookieSelected;
     private saveCookie;

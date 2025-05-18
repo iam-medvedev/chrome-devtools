@@ -23,6 +23,7 @@ export declare class Tooltip extends HTMLElement {
     #private;
     static readonly observedAttributes: string[];
     static lastOpenedTooltipId: string | null;
+    get openedViaHotkey(): boolean;
     get open(): boolean;
     get useHotkey(): boolean;
     set useHotkey(useHotkey: boolean);

@@ -53,6 +53,7 @@
     "../../../../../../front_end/panels/network/RequestResponseView.ts",
     "../../../../../../front_end/panels/network/RequestTimingView.ts",
     "../../../../../../front_end/panels/network/ResourceChunkView.ts",
+    "../../../../../../front_end/panels/network/ResourceDirectSocketChunkView.ts",
     "../../../../../../front_end/panels/network/ResourceWebSocketFrameView.ts",
     "../../../../../../front_end/panels/network/SignedExchangeInfoView.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

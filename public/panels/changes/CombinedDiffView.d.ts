@@ -3,11 +3,11 @@ import type * as Diff from '../../third_party/diff/diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 interface SingleDiffViewInput {
+    diff: Diff.Diff.DiffArray;
     fileName: string;
     fileUrl: string;
     mimeType: string;
     icon: Lit.TemplateResult;
-    diff: Diff.Diff.DiffArray;
     copied: boolean;
     selectedFileUrl?: string;
     onCopy: (fileUrl: string) => void;

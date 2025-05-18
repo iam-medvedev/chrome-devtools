@@ -60,9 +60,6 @@
       "path": "../emulation/bundle-tsconfig.json"
     },
     {
-      "path": "../timeline/bundle-tsconfig.json"
-    },
-    {
       "path": "../../services/tracing/bundle-tsconfig.json"
     },
     {

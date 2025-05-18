@@ -10,11 +10,18 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as Components from './components.js';
 function getUserVisibleInsights(component) {
     assert.isOk(component.shadowRoot);
-    return [...component.shadowRoot.querySelectorAll('[data-insight-name]')];
+    return [...component.shadowRoot.querySelectorAll('[data-insight-name]')]
+        .flatMap(component => getCleanTextContentFromElements(component.shadowRoot, '.insight-title'))
+        .filter(Boolean);
 }
 function getPassedInsights(component) {
     assert.isOk(component.shadowRoot);
-    return [...component.shadowRoot.querySelectorAll('.passed-insights-section [data-insight-name]')];
+    const passedInsightsSection = component.shadowRoot.querySelector('.passed-insights-section');
+    assert.isOk(passedInsightsSection);
+    passedInsightsSection.open = true;
+    return [
+        ...passedInsightsSection.querySelectorAll('.passed-insights-section [data-insight-name]')
+    ].flatMap(component => getCleanTextContentFromElements(component.shadowRoot, '.insight-title'));
 }
 describeWithEnvironment('SidebarSingleInsightSet', () => {
     it('renders a list of insights', async function () {
@@ -36,32 +43,15 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             traceMetadata: metadata,
         };
         await RenderCoordinator.done();
-        const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
-            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
-        });
+        const userVisibleTitles = getUserVisibleInsights(component);
         assert.deepEqual(userVisibleTitles, [
             'LCP by phase',
             'LCP request discovery',
             'Render blocking requests',
             'Document request latency',
             '3rd parties',
-            'INP by phase',
-            'Layout shift culprits',
-            'Network dependency tree',
-            'Improve image delivery',
-            'Font display',
-            'Optimize viewport for mobile',
-            'Optimize DOM size',
-            'Duplicated JavaScript',
-            'CSS Selector costs',
-            'Forced reflow',
-            'Use efficient cache lifetimes',
-            'Modern HTTP',
-            'Legacy JavaScript',
         ]);
-        const passedInsightTitles = getPassedInsights(component).flatMap(component => {
-            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
-        });
+        const passedInsightTitles = getPassedInsights(component);
         assert.deepEqual(passedInsightTitles, [
             'INP by phase',
             'Layout shift culprits',
@@ -93,9 +83,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             traceMetadata: metadata,
         };
         await RenderCoordinator.done();
-        const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
-            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
-        });
+        const userVisibleTitles = getUserVisibleInsights(component);
         // Does not include "font display", which is experimental.
         assert.deepEqual(userVisibleTitles, [
             'LCP by phase',
@@ -105,21 +93,8 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Font display',
             '3rd parties',
             'Use efficient cache lifetimes',
-            'INP by phase',
-            'LCP request discovery',
-            'Render blocking requests',
-            'Document request latency',
-            'Optimize viewport for mobile',
-            'Optimize DOM size',
-            'Duplicated JavaScript',
-            'CSS Selector costs',
-            'Forced reflow',
-            'Modern HTTP',
-            'Legacy JavaScript',
         ]);
-        const passedInsightTitles = getPassedInsights(component).flatMap(component => {
-            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
-        });
+        const passedInsightTitles = getPassedInsights(component);
         // Does not include "font display", which is experimental.
         assert.deepEqual(passedInsightTitles, [
             'INP by phase',
@@ -151,9 +126,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             traceMetadata: metadata,
         };
         await RenderCoordinator.done();
-        const userVisibleTitles = getUserVisibleInsights(component).flatMap(component => {
-            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
-        });
+        const userVisibleTitles = getUserVisibleInsights(component);
         assert.deepEqual(userVisibleTitles, [
             'LCP by phase',
             'Layout shift culprits',
@@ -162,21 +135,8 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             'Font display',
             '3rd parties',
             'Use efficient cache lifetimes',
-            'INP by phase',
-            'LCP request discovery',
-            'Render blocking requests',
-            'Document request latency',
-            'Optimize viewport for mobile',
-            'Optimize DOM size',
-            'Duplicated JavaScript',
-            'CSS Selector costs',
-            'Forced reflow',
-            'Modern HTTP',
-            'Legacy JavaScript',
         ]);
-        const passedInsightTitles = getPassedInsights(component).flatMap(component => {
-            return getCleanTextContentFromElements(component.shadowRoot, '.insight-title');
-        });
+        const passedInsightTitles = getPassedInsights(component);
         assert.deepEqual(passedInsightTitles, [
             'INP by phase',
             'LCP request discovery',
@@ -217,7 +177,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             traceMetadata: metadata,
         };
         await RenderCoordinator.done();
-        const expandedInsight = getUserVisibleInsights(component).find(insight => {
+        const expandedInsight = [...component.shadowRoot.querySelectorAll('[data-insight-name]')].find(insight => {
             return insight.selected;
         });
         assert.isOk(expandedInsight);

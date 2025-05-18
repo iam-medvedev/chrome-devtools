@@ -1285,7 +1285,7 @@ export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
         input.classList.toggle('error-input', !validate(input.value));
     }
     function onChange() {
-        const { valid } = validate(input.value);
+        const valid = validate(input.value);
         input.classList.toggle('error-input', !valid);
         if (valid) {
             apply(input.value);
@@ -1293,7 +1293,7 @@ export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
     }
     function onKeyDown(event) {
         if (event.key === 'Enter') {
-            const { valid } = validate(input.value);
+            const valid = validate(input.value);
             if (valid) {
                 apply(input.value);
             }
@@ -1308,7 +1308,7 @@ export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
             return;
         }
         const stringValue = String(value);
-        const { valid } = validate(stringValue);
+        const valid = validate(stringValue);
         if (valid) {
             setValue(stringValue);
         }
@@ -1318,7 +1318,7 @@ export function bindInput(input, apply, validate, numeric, modifierMultiplier) {
         if (value === input.value) {
             return;
         }
-        const { valid } = validate(value);
+        const valid = validate(value);
         input.classList.toggle('error-input', !valid);
         input.value = value;
     }
@@ -1678,15 +1678,12 @@ export function measuredScrollbarWidth(document) {
 export function openInNewTab(url) {
     url = new URL(`${url}`);
     if (['developer.chrome.com', 'developers.google.com', 'web.dev'].includes(url.hostname)) {
+        if (!url.searchParams.has('utm_source')) {
+            url.searchParams.append('utm_source', 'devtools');
+        }
         const { channel } = Root.Runtime.hostConfig;
         if (!url.searchParams.has('utm_campaign') && typeof channel === 'string') {
             url.searchParams.append('utm_campaign', channel);
-        }
-        if (!url.searchParams.has('utm_medium')) {
-            url.searchParams.append('utm_medium', 'referral');
-        }
-        if (!url.searchParams.has('utm_source')) {
-            url.searchParams.append('utm_source', 'devtools');
         }
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(Platform.DevToolsPath.urlString `${url}`);

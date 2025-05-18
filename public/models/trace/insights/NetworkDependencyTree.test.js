@@ -92,6 +92,66 @@ describeWithEnvironment('NetworkDependencyTree', function () {
         assert.deepEqual(relatedEvents.get(child00.request), [Trace.Insights.Models.NetworkDependencyTree.UIStrings.warningDescription]);
     });
 });
+describe('generatePreconnectedOrigins', () => {
+    const mockParsedTrace = {
+        NetworkRequests: {
+            linkPreconnectEvents: [],
+        },
+    };
+    beforeEach(() => {
+        mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;
+    });
+    it('should mark preconnect origins as not unused when they match context requests', () => {
+        const mockLinkPreconnectEvents = [{
+                args: {
+                    data: {
+                        url: 'https://example.com',
+                        node_id: 1,
+                        frame: 'frame-id',
+                    },
+                },
+            }];
+        const mockContextRequests = [{
+                args: {
+                    data: {
+                        url: 'https://example.com/script.js',
+                    },
+                },
+            }];
+        const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockLinkPreconnectEvents, mockContextRequests);
+        assert.deepEqual(preconnectOrigins, [{
+                node_id: 1,
+                frame: 'frame-id',
+                url: 'https://example.com',
+                unused: false,
+            }]);
+    });
+    it('should mark preconnect origins as unused when they do not match context requests', () => {
+        const mockLinkPreconnectEvents = [{
+                args: {
+                    data: {
+                        url: 'https://example.com',
+                        node_id: 1,
+                        frame: 'frame-id',
+                    },
+                },
+            }];
+        const mockContextRequests = [{
+                args: {
+                    data: {
+                        url: 'https://other.com/image.png',
+                    },
+                },
+            }];
+        const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockLinkPreconnectEvents, mockContextRequests);
+        assert.deepEqual(preconnectOrigins, [{
+                node_id: 1,
+                frame: 'frame-id',
+                url: 'https://example.com',
+                unused: true,
+            }]);
+    });
+});
 describeWithEnvironment('generatePreconnectCandidates', () => {
     const mockParsedTrace = {
         NetworkRequests: {
@@ -157,7 +217,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
     });
     it('generates preconnect results for valid requests', () => {
         mockParsedTrace.NetworkRequests.byTime.push(validRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 1);
         assert.strictEqual(preconnectCandidates[0].origin, 'https://example.com');
         // |validRequest->sendStartTime| - |mainRequest->finishTime| + |validRequest->dnsStart|
@@ -169,7 +229,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         otherValidRequest.args.data.url = 'https://other.com/image.png';
         otherValidRequest.args.data.syntheticData.sendStartTime = Trace.Types.Timing.Micro(3_000);
         mockParsedTrace.NetworkRequests.byTime.push(otherValidRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 2);
         // other.com has a wasted time of 102 ms, while example.com has 101 ms. So other.com will be the first.
         assert.strictEqual(preconnectCandidates[0].origin, 'https://other.com');
@@ -183,7 +243,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         const sameOriginRequest = JSON.parse(JSON.stringify(validRequest));
         sameOriginRequest.args.data.url = 'https://main.com/some-resource';
         mockParsedTrace.NetworkRequests.byTime.push(sameOriginRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 0);
     });
     it('shouldn\'t suggest preconnect when initiator is main resource', () => {
@@ -191,14 +251,14 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         initiatedByMainRequest.args.data.url = 'https://example.com/script.js';
         mockParsedTrace.NetworkRequests.byTime.push(initiatedByMainRequest);
         mockParsedTrace.NetworkRequests.eventToInitiator.set(initiatedByMainRequest, mainRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 0);
     });
     it('shouldn\'t suggest non http(s) protocols as preconnect', () => {
         const nonHttpRequest = JSON.parse(JSON.stringify(validRequest));
         nonHttpRequest.args.data.url = 'data:text/plain;base64,hello';
         mockParsedTrace.NetworkRequests.byTime.push(nonHttpRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 0);
     });
     it('shouldn\'t suggest preconnect when request has been fired after 15s', () => {
@@ -206,14 +266,14 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         // sendStartTime is way above the threshold (15000ms)
         aboveThresholdRequest.args.data.syntheticData.sendStartTime = Trace.Types.Timing.Micro(20_000_000);
         mockParsedTrace.NetworkRequests.byTime.push(aboveThresholdRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 0);
     });
     it('shouldn\'t suggest preconnect when requests are not in LCP graph', () => {
         const notInLCPRequest = JSON.parse(JSON.stringify(validRequest));
         notInLCPRequest.args.data.url = 'https://not-in-lcp.com/some-resource';
         mockParsedTrace.NetworkRequests.byTime.push(notInLCPRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 0);
     });
     it('should only list an origin once', () => {
@@ -223,7 +283,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         const secondRequest = JSON.parse(JSON.stringify(validRequest));
         secondRequest.args.data.url = 'https://example.com/second.js';
         mockParsedTrace.NetworkRequests.byTime.push(secondRequest);
-        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext);
+        const preconnectCandidates = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectCandidates(mockParsedTrace, mockContext, mockParsedTrace.NetworkRequests.byTime);
         assert.lengthOf(preconnectCandidates, 1);
         assert.strictEqual(preconnectCandidates[0].origin, 'https://example.com');
         // First request has a wasted time of 101 ms, while second request has 51 ms.

@@ -33,7 +33,6 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as IconButton from '../components/icon_button/icon_button.js';
 import { render } from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
@@ -703,16 +702,8 @@ export class TreeElement {
             this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
             this.ensureSelection();
         }
-        this.leadingIconsElement.removeChildren();
-        for (const icon of icons) {
-            if (icon instanceof IconButton.Icon.Icon) {
-                this.leadingIconsElement.appendChild(icon);
-            }
-            else {
-                // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
-                render(icon, this.leadingIconsElement);
-            }
-        }
+        // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+        render(icons, this.leadingIconsElement);
     }
     get tooltip() {
         return this.tooltipInternal;

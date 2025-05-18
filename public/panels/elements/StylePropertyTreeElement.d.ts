@@ -52,6 +52,15 @@ declare const LinearGradientRenderer_base: abstract new () => {
 export declare class LinearGradientRenderer extends LinearGradientRenderer_base {
     render(match: SDK.CSSPropertyParserMatchers.LinearGradientMatch, context: RenderingContext): Node[];
 }
+declare const RelativeColorChannelRenderer_base: abstract new () => {
+    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.RelativeColorChannelMatch, any[]>;
+    render(_match: SDK.CSSPropertyParserMatchers.RelativeColorChannelMatch, _context: RenderingContext): Node[];
+};
+export declare class RelativeColorChannelRenderer extends RelativeColorChannelRenderer_base {
+    #private;
+    constructor(treeElement: StylePropertyTreeElement | null);
+    render(match: SDK.CSSPropertyParserMatchers.RelativeColorChannelMatch, context: RenderingContext): Node[];
+}
 declare const ColorRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.ColorMatch, any[]>;
     render(_match: SDK.CSSPropertyParserMatchers.ColorMatch, _context: RenderingContext): Node[];

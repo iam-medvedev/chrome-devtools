@@ -94,6 +94,31 @@ describeWithMockConnection('NetworkRequestDetails', () => {
             ],
         ]);
     });
+    it('renders the redirect details for a network event', async function () {
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'many-redirects.json.gz');
+        const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+        const networkRequests = parsedTrace.NetworkRequests.byTime;
+        const htmlRequest = networkRequests.find(request => {
+            return request.args.data.url === 'http://localhost:10200/redirects-final.html';
+        });
+        if (!htmlRequest) {
+            throw new Error('Could not find expected network request.');
+        }
+        const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(new Components.Linkifier.Linkifier());
+        await details.setData(parsedTrace, htmlRequest, Timeline.TargetForEvent.targetForEvent(parsedTrace, htmlRequest), entityMapper);
+        if (!details.shadowRoot) {
+            throw new Error('Could not find expected element to test.');
+        }
+        const titleSwatch = details.shadowRoot.querySelector('.network-request-details-title div');
+        assert.strictEqual(titleSwatch?.style.backgroundColor, 'rgb(76, 141, 246)');
+        const rowData = getRedirectDetailsElement(details.shadowRoot);
+        assert.deepEqual(rowData, [
+            'Redirects ' +
+                'http://localhost:10200/online-only.html?delay=1000&redirect_count=3&redirect=%2Fredirects-final.html ' +
+                'http://localhost:10200/online-only.html?delay=1000&redirect_count=2&redirect=%2Fredirects-final.html ' +
+                'http://localhost:10200/online-only.html?delay=1000&redirect_count=1&redirect=%2Fredirects-final.html',
+        ]);
+    });
 });
 function getRowDataForDetailsElement(details) {
     return Array
@@ -117,5 +142,9 @@ function getServerTimingDataDetailsElement(details) {
         row.push(current);
         return result;
     }, []);
+}
+function getRedirectDetailsElement(details) {
+    return Array.from(details.querySelectorAll('.redirect-details'))
+        .map(row => cleanTextContent(row.innerText));
 }
 //# sourceMappingURL=NetworkRequestDetails.test.js.map

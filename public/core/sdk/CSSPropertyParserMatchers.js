@@ -4,7 +4,7 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import { CSSMetadata, cssMetadata, CubicBezierKeywordValues, } from './CSSMetadata.js';
-import { ASTUtils, matcherBase, tokenizeDeclaration } from './CSSPropertyParser.js';
+import { ASTUtils, matchDeclaration, matcherBase, tokenizeDeclaration } from './CSSPropertyParser.js';
 export class BaseVariableMatch {
     text;
     node;
@@ -314,10 +314,14 @@ export class LinearGradientMatcher extends matcherBase(LinearGradientMatch) {
 export class ColorMatch {
     text;
     node;
+    currentColorCallback;
+    relativeColor;
     computedText;
-    constructor(text, node, currentColorCallback) {
+    constructor(text, node, currentColorCallback, relativeColor) {
         this.text = text;
         this.node = node;
+        this.currentColorCallback = currentColorCallback;
+        this.relativeColor = relativeColor;
         this.computedText = currentColorCallback;
     }
 }
@@ -348,9 +352,125 @@ export class ColorMatcher extends matcherBase(ColorMatch) {
         }
         if (node.name === 'CallExpression') {
             const callee = node.getChild('Callee');
-            if (callee && matching.ast.text(callee).match(/^(rgba?|hsla?|hwba?|lab|lch|oklab|oklch|color)$/)) {
-                return new ColorMatch(text, node);
+            const colorFunc = matching.ast.text(callee).toLowerCase();
+            if (callee && colorFunc.match(/^(rgba?|hsla?|hwba?|lab|lch|oklab|oklch|color)$/)) {
+                const args = ASTUtils.children(node.getChild('ArgList'));
+                // args are the tokens for the parthesized expression following the function name, so in a well-formed case
+                // should at least contain the open and closing parens.
+                const colorText = args.length >= 2 ? matching.getComputedTextRange(args[0], args[args.length - 1]) : '';
+                // colorText holds the fully substituted parenthesized expression, so colorFunc + colorText is the color
+                // function call.
+                const isRelativeColorSyntax = Boolean(colorText.match(/^[^)]*\(\W*from\W+/) && !matching.hasUnresolvedVars(node) &&
+                    CSS.supports('color', colorFunc + colorText));
+                if (!isRelativeColorSyntax) {
+                    return new ColorMatch(text, node);
+                }
+                const tokenized = matchDeclaration('--color', '--colorFunc' + colorText, [new ColorMatcher()]);
+                if (!tokenized) {
+                    return null;
+                }
+                const [colorArgs] = ASTUtils.callArgs(ASTUtils.declValue(tokenized.ast.tree));
+                // getComputedText already removed comments and such, so there must be 5 or 6 args:
+                // rgb(from red c0 c1 c2) or color(from yellow srgb c0 c1 c2)
+                // If any of the C is a calc expression that is a single root node. If the value contains an alpha channel that
+                // is parsed as a BinOp into c2.
+                if (colorArgs.length !== (colorFunc === 'color' ? 6 : 5)) {
+                    return null;
+                }
+                const colorSpace = Common.Color.getFormat(colorFunc !== 'color' ? colorFunc : matching.ast.text(colorArgs[2]));
+                if (!colorSpace) {
+                    return null;
+                }
+                const baseColor = tokenized.getMatch(colorArgs[1]);
+                if (tokenized.ast.text(colorArgs[0]) !== 'from' || !(baseColor instanceof ColorMatch)) {
+                    return null;
+                }
+                return new ColorMatch(text, node, undefined, { colorSpace, baseColor });
             }
+        }
+        return null;
+    }
+}
+function isRelativeColorChannelName(channel) {
+    const maybeChannel = channel;
+    switch (maybeChannel) {
+        case "a" /* RelativeColorChannel.A */:
+        case "alpha" /* RelativeColorChannel.ALPHA */:
+        case "b" /* RelativeColorChannel.B */:
+        case "c" /* RelativeColorChannel.C */:
+        case "g" /* RelativeColorChannel.G */:
+        case "h" /* RelativeColorChannel.H */:
+        case "l" /* RelativeColorChannel.L */:
+        case "r" /* RelativeColorChannel.R */:
+        case "s" /* RelativeColorChannel.S */:
+        case "w" /* RelativeColorChannel.W */:
+        case "x" /* RelativeColorChannel.X */:
+        case "y" /* RelativeColorChannel.Y */:
+        case "z" /* RelativeColorChannel.Z */:
+            return true;
+    }
+    // This assignment catches missed values in the switch above.
+    const catchFallback = maybeChannel; // eslint-disable-line @typescript-eslint/no-unused-vars
+    return false;
+}
+export class RelativeColorChannelMatch {
+    text;
+    node;
+    constructor(text, node) {
+        this.text = text;
+        this.node = node;
+    }
+    getColorChannelValue(relativeColor) {
+        const color = Common.Color.parse(relativeColor.baseColor.text)?.as(relativeColor.colorSpace);
+        if (color instanceof Common.Color.ColorFunction) {
+            switch (this.text) {
+                case "r" /* RelativeColorChannel.R */:
+                    return color.isXYZ() ? null : color.p0;
+                case "g" /* RelativeColorChannel.G */:
+                    return color.isXYZ() ? null : color.p1;
+                case "b" /* RelativeColorChannel.B */:
+                    return color.isXYZ() ? null : color.p2;
+                case "x" /* RelativeColorChannel.X */:
+                    return color.isXYZ() ? color.p0 : null;
+                case "y" /* RelativeColorChannel.Y */:
+                    return color.isXYZ() ? color.p1 : null;
+                case "z" /* RelativeColorChannel.Z */:
+                    return color.isXYZ() ? color.p2 : null;
+                case "alpha" /* RelativeColorChannel.ALPHA */:
+                    return color.alpha;
+            }
+        }
+        else if (color instanceof Common.Color.Legacy) {
+            switch (this.text) {
+                case "r" /* RelativeColorChannel.R */:
+                    return color.rgba()[0];
+                case "g" /* RelativeColorChannel.G */:
+                    return color.rgba()[1];
+                case "b" /* RelativeColorChannel.B */:
+                    return color.rgba()[2];
+                case "alpha" /* RelativeColorChannel.ALPHA */:
+                    return color.rgba()[3];
+            }
+        }
+        else if (color && this.text in color) {
+            return color[this.text];
+        }
+        return null;
+    }
+    computedText() {
+        return this.text;
+    }
+}
+// clang-format off
+export class RelativeColorChannelMatcher extends matcherBase(RelativeColorChannelMatch) {
+    // clang-format on
+    accepts(propertyName) {
+        return cssMetadata().isColorAwareProperty(propertyName);
+    }
+    matches(node, matching) {
+        const text = matching.ast.text(node);
+        if (node.name === 'ValueName' && isRelativeColorChannelName(text)) {
+            return new RelativeColorChannelMatch(text, node);
         }
         return null;
     }
@@ -500,14 +620,17 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
         }
         return null;
     }
-    accepts(propertyName) {
-        return LinkableNameMatcher.isLinkableNameProperty(propertyName);
-    }
     matches(node, matching) {
         const { propertyName } = matching.ast;
         const text = matching.ast.text(node);
         const parentNode = node.parent;
         if (!parentNode) {
+            return null;
+        }
+        if (parentNode.name === 'CallExpression' && node.name === 'Callee' && text.startsWith('--')) {
+            return new LinkableNameMatch(text, node, "function" /* LinkableNameProperties.FUNCTION */);
+        }
+        if (!(propertyName && LinkableNameMatcher.isLinkableNameProperty(propertyName))) {
             return null;
         }
         const isParentADeclaration = parentNode.name === 'Declaration';

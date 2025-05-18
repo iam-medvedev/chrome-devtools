@@ -51,6 +51,7 @@ export declare class NetworkLogViewColumns {
     setHidden(value: boolean): void;
     dataGrid(): DataGrid.SortableDataGrid.SortableDataGrid<NetworkNode>;
     sortByCurrentColumn(): void;
+    filterChanged(): void;
     private sortHandler;
     private dataGridSortedForTest;
     private updateColumns;

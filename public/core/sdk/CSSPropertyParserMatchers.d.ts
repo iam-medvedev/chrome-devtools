@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import type * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import type { CSSMatchedStyles, CSSValueSource, CSSVariableValue } from './CSSMatchedStyles.js';
@@ -149,11 +150,17 @@ export declare class LinearGradientMatcher extends LinearGradientMatcher_base {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): Match | null;
     accepts(propertyName: string): boolean;
 }
+interface RelativeColor {
+    colorSpace: Common.Color.Format;
+    baseColor: ColorMatch;
+}
 export declare class ColorMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
+    private readonly currentColorCallback?;
+    readonly relativeColor?: RelativeColor | undefined;
     computedText: (() => string | null) | undefined;
-    constructor(text: string, node: CodeMirror.SyntaxNode, currentColorCallback?: () => string | null);
+    constructor(text: string, node: CodeMirror.SyntaxNode, currentColorCallback?: (() => string | null) | undefined, relativeColor?: RelativeColor | undefined);
 }
 declare const ColorMatcher_base: {
     new (): {
@@ -167,6 +174,39 @@ export declare class ColorMatcher extends ColorMatcher_base {
     constructor(currentColorCallback?: (() => string | null) | undefined);
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): ColorMatch | null;
+}
+export declare const enum RelativeColorChannel {
+    A = "a",
+    ALPHA = "alpha",
+    B = "b",
+    C = "c",
+    G = "g",
+    H = "h",
+    L = "l",
+    R = "r",
+    S = "s",
+    W = "w",
+    X = "x",
+    Y = "y",
+    Z = "z"
+}
+export declare class RelativeColorChannelMatch implements Match {
+    readonly text: RelativeColorChannel;
+    readonly node: CodeMirror.SyntaxNode;
+    constructor(text: RelativeColorChannel, node: CodeMirror.SyntaxNode);
+    getColorChannelValue(relativeColor: RelativeColor): number | null;
+    computedText(): string;
+}
+declare const RelativeColorChannelMatcher_base: {
+    new (): {
+        matchType: Platform.Constructor.ConstructorOrAbstract<RelativeColorChannelMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): RelativeColorChannelMatch | null;
+    };
+};
+export declare class RelativeColorChannelMatcher extends RelativeColorChannelMatcher_base {
+    accepts(propertyName: string): boolean;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): RelativeColorChannelMatch | null;
 }
 export declare class LightDarkColorMatch implements Match {
     readonly text: string;
@@ -211,7 +251,8 @@ export declare const enum LinkableNameProperties {
     ANIMATION_NAME = "animation-name",
     FONT_PALETTE = "font-palette",
     POSITION_TRY_FALLBACKS = "position-try-fallbacks",
-    POSITION_TRY = "position-try"
+    POSITION_TRY = "position-try",
+    FUNCTION = "function"
 }
 declare const enum AnimationLonghandPart {
     DIRECTION = "direction",
@@ -237,7 +278,6 @@ export declare class LinkableNameMatcher extends LinkableNameMatcher_base {
     private static isLinkableNameProperty;
     static readonly identifierAnimationLonghandMap: Map<string, AnimationLonghandPart>;
     private matchAnimationNameInShorthand;
-    accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): LinkableNameMatch | null;
 }
 export declare class BezierMatch implements Match {

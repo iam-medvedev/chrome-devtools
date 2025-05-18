@@ -78,4 +78,12 @@ export default `/*
   background-color: var(--sys-color-surface5);
 }
 
+.diff-listing-no-diff {
+  user-select: auto;
+  font-family: var(--source-code-font-family);
+  font-size: var(--source-code-font-size);
+  margin: 0;
+  padding: var(--sys-size-5) 9px;
+}
+
 /*# sourceURL=${import.meta.resolve('./diffView.css')} */`;

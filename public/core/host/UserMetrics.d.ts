@@ -649,7 +649,6 @@ export declare enum DevtoolsExperiments {
     'just-my-code' = 65,
     'highlight-errors-elements-panel' = 73,
     'use-source-map-scopes' = 76,
-    'network-panel-filter-bar-redesign' = 79,
     'timeline-show-postmessage-events' = 86,
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,

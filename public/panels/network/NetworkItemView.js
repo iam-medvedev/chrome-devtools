@@ -45,6 +45,7 @@ import { RequestPayloadView } from './RequestPayloadView.js';
 import { RequestPreviewView } from './RequestPreviewView.js';
 import { RequestResponseView } from './RequestResponseView.js';
 import { RequestTimingView } from './RequestTimingView.js';
+import { ResourceDirectSocketChunkView } from './ResourceDirectSocketChunkView.js';
 import { ResourceWebSocketFrameView } from './ResourceWebSocketFrameView.js';
 const UIStrings = {
     /**
@@ -67,6 +68,10 @@ const UIStrings = {
      *@description Text in Network Item View of the Network panel
      */
     websocketMessages: 'WebSocket messages',
+    /**
+     *@description Text in Network Item View of the Network panel
+     */
+    directsocketMessages: 'DirectSocket messages',
     /**
      *@description Text in Network Item View of the Network panel
      */
@@ -182,7 +187,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             this.appendTab("web-socket-frames" /* NetworkForward.UIRequestLocation.UIRequestTabs.WS_FRAMES */, i18nString(UIStrings.messages), frameView, i18nString(UIStrings.websocketMessages));
         }
         else if (request.resourceType() === Common.ResourceType.resourceTypes.DirectSocket) {
-            // TODO(@vkrot): add direct socket messages tab
+            this.appendTab("direct-socket-chunks" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CHUNKS */, i18nString(UIStrings.messages), new ResourceDirectSocketChunkView(request), i18nString(UIStrings.directsocketMessages));
         }
         else if (request.mimeType === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */) {
             this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EVENT_SOURCE */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));

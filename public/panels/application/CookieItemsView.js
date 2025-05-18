@@ -38,16 +38,12 @@ import * as CookieTable from '../../ui/legacy/components/cookie_table/cookie_tab
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import cookieItemsViewStyles from './cookieItemsView.css.js';
-import { StorageItemsView } from './StorageItemsView.js';
+import { StorageItemsToolbar } from './StorageItemsToolbar.js';
 const UIStrings = {
     /**
      *@description Label for checkbox to show URL-decoded cookie values
      */
     showUrlDecoded: 'Show URL-decoded',
-    /**
-     *@description Text for web cookies
-     */
-    cookies: 'Cookies',
     /**
      *@description Text in Cookie Items View of the Application panel to indicate that no cookie has been selected for preview
      */
@@ -148,7 +144,7 @@ class CookiePreviewWidget extends UI.Widget.VBox {
         selection.addRange(range);
     }
 }
-export class CookieItemsView extends StorageItemsView {
+export class CookieItemsView extends StorageItemsToolbar {
     model;
     cookieDomain;
     cookiesTable;
@@ -161,7 +157,7 @@ export class CookieItemsView extends StorageItemsView {
     shownCookies;
     selectedCookie;
     constructor(model, cookieDomain) {
-        super(i18nString(UIStrings.cookies), 'cookiesPanel');
+        super();
         this.registerRequiredCSS(cookieItemsViewStyles);
         this.element.classList.add('storage-view');
         this.element.setAttribute('jslog', `${VisualLogging.pane('cookies-data')}`);
@@ -190,6 +186,9 @@ export class CookieItemsView extends StorageItemsView {
         this.shownCookies = [];
         this.selectedCookie = null;
         this.setCookiesDomain(model, cookieDomain);
+        this.addEventListener("DeleteSelected" /* StorageItemsToolbar.Events.DELETE_SELECTED */, this.deleteSelectedItem, this);
+        this.addEventListener("DeleteAll" /* StorageItemsToolbar.Events.DELETE_ALL */, this.deleteAllItems, this);
+        this.addEventListener("Refresh" /* StorageItemsToolbar.Events.REFRESH */, this.refreshItems, this);
     }
     setCookiesDomain(model, domain) {
         this.model.removeEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, this.onCookieListUpdate, this);
@@ -197,6 +196,9 @@ export class CookieItemsView extends StorageItemsView {
         this.cookieDomain = domain;
         this.refreshItems();
         this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, this.onCookieListUpdate, this);
+    }
+    wasShown() {
+        this.refreshItems();
     }
     showPreview(cookie) {
         if (cookie === this.selectedCookie) {
@@ -260,7 +262,7 @@ export class CookieItemsView extends StorageItemsView {
             }
             return false;
         };
-        return super.filter(items, keyFunction).filter(predicate);
+        return items.filter(item => this.filterRegex?.test(keyFunction(item)) ?? true).filter(predicate);
     }
     /**
      * This will only delete the currently visible cookies.

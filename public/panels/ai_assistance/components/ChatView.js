@@ -819,7 +819,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
       @keydown=${handleKeyDown}
       aria-description=${i18nString(UIStrings.revealContextDescription)}
     >
-      ${selectedContext?.getIcon() ? html `<span class="icon">${selectedContext?.getIcon()}</span>` : Lit.nothing}
+      ${selectedContext?.getIcon() ? html `${selectedContext?.getIcon()}` : Lit.nothing}
       <span class="title">${selectedContext?.getTitle({ disabled: isTextInputDisabled }) ?? lockedString(UIStringsNotTranslate.noElementSelected)}</span>
     </div>
   </div>`;

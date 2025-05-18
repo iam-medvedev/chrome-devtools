@@ -142,6 +142,7 @@ export class StylePropertiesSection {
     selectorRefElement;
     hoverableSelectorsMode;
     isHiddenInternal;
+    customPopulateCallback;
     nestingLevel = 0;
     #ancestorRuleListElement;
     #ancestorClosingBracesElement;
@@ -163,6 +164,7 @@ export class StylePropertiesSection {
         this.parentsComputedStyles = parentsComputedStyles;
         this.editable = Boolean(style.styleSheetId && style.range);
         this.originalPropertiesCount = style.leadingProperties().length;
+        this.customPopulateCallback = () => this.populateStyle(this.styleInternal, this.propertiesTreeOutline);
         const rule = style.parentRule;
         const headerText = this.headerText();
         this.element = document.createElement('div');
@@ -938,7 +940,7 @@ export class StylePropertiesSection {
         this.parentPane.setActiveProperty(null);
         this.nextEditorTriggerButtonIdx = 1;
         this.propertiesTreeOutline.removeChildren();
-        this.populateStyle(this.styleInternal, this.propertiesTreeOutline);
+        this.customPopulateCallback();
     }
     populateStyle(style, parent) {
         let count = 0;
@@ -1509,13 +1511,14 @@ export class RegisteredPropertiesSection extends StylePropertiesSection {
     }
 }
 export class FunctionRuleSection extends StylePropertiesSection {
-    constructor(stylesPane, matchedStyles, style, children, sectionIdx, functionName, parameters, expandedByDefault) {
-        super(stylesPane, matchedStyles, style, sectionIdx, null, null, `${functionName}(${parameters.join(', ')})`);
+    constructor(stylesPane, matchedStyles, style, children, sectionIdx, functionName, expandedByDefault) {
+        super(stylesPane, matchedStyles, style, sectionIdx, null, null, functionName);
         if (!expandedByDefault) {
             this.element.classList.add('hidden');
         }
         this.selectorElement.className = 'function-key';
-        this.addChildren(children, this.propertiesTreeOutline);
+        this.customPopulateCallback = () => this.addChildren(children, this.propertiesTreeOutline);
+        this.onpopulate();
     }
     createConditionElement(condition) {
         if ('media' in condition) {

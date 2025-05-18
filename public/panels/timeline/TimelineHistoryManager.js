@@ -352,6 +352,7 @@ export class DropDown {
     focusRestorer;
     selectionDone;
     #landingPageTitle;
+    contentElement;
     constructor(availableparsedTraceIndexes, landingPageTitle) {
         this.#landingPageTitle = landingPageTitle;
         this.glassPane = new UI.GlassPane.GlassPane();
@@ -361,16 +362,16 @@ export class DropDown {
         this.glassPane.setAnchorBehavior("PreferBottom" /* UI.GlassPane.AnchorBehavior.PREFER_BOTTOM */);
         this.glassPane.element.addEventListener('blur', () => this.close(null));
         const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: timelineHistoryManagerStyles });
-        const contentElement = shadowRoot.createChild('div', 'drop-down');
+        this.contentElement = shadowRoot.createChild('div', 'drop-down');
         const listModel = new UI.ListModel.ListModel();
         this.listControl = new UI.ListControl.ListControl(listModel, this, UI.ListControl.ListMode.NonViewport);
         this.listControl.element.addEventListener('mousemove', this.onMouseMove.bind(this), false);
         listModel.replaceAll(availableparsedTraceIndexes);
         UI.ARIAUtils.markAsMenu(this.listControl.element);
         UI.ARIAUtils.setLabel(this.listControl.element, i18nString(UIStrings.selectTimelineSession));
-        contentElement.appendChild(this.listControl.element);
-        contentElement.addEventListener('keydown', this.onKeyDown.bind(this), false);
-        contentElement.addEventListener('click', this.onClick.bind(this), false);
+        this.contentElement.appendChild(this.listControl.element);
+        this.contentElement.addEventListener('keydown', this.onKeyDown.bind(this), false);
+        this.contentElement.addEventListener('click', this.onClick.bind(this), false);
         this.focusRestorer = new UI.UIUtils.ElementFocusRestorer(this.listControl.element);
         this.selectionDone = null;
     }

@@ -708,7 +708,7 @@ export class ToolbarFilter extends ToolbarInput {
         this.element.classList.add('toolbar-filter');
     }
 }
-class ToolbarInputElement extends HTMLElement {
+export class ToolbarInputElement extends HTMLElement {
     static observedAttributes = ['value'];
     item;
     datalist = null;

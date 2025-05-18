@@ -36,7 +36,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
@@ -559,43 +558,14 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             title: category.title(),
             jslogContext: Platform.StringUtilities.toKebabCase(key),
         }));
-        if (Root.Runtime.experiments.isEnabled("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */)) {
-            this.moreFiltersDropDownUI = new MoreFiltersDropDownUI();
-            this.moreFiltersDropDownUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged, this);
-            filterBar.addFilter(this.moreFiltersDropDownUI);
-            this.resourceCategoryFilterUI =
-                new UI.FilterBar.NamedBitSetFilterUI(filterItems, this.networkResourceTypeFiltersSetting);
-            UI.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString(UIStrings.requestTypesToInclude));
-            this.resourceCategoryFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            filterBar.addFilter(this.resourceCategoryFilterUI);
-        }
-        else {
-            this.dataURLFilterUI = new UI.FilterBar.CheckboxFilterUI(i18nString(UIStrings.hideDataUrls), true, this.networkHideDataURLSetting, 'hide-data-urls');
-            this.dataURLFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            UI.Tooltip.Tooltip.install(this.dataURLFilterUI.element(), i18nString(UIStrings.hidesDataAndBlobUrls));
-            filterBar.addFilter(this.dataURLFilterUI);
-            this.hideChromeExtensionsUI = new UI.FilterBar.CheckboxFilterUI(i18nString(UIStrings.chromeExtensions), true, this.networkHideChromeExtensions, 'hide-extension-urls');
-            this.hideChromeExtensionsUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            UI.Tooltip.Tooltip.install(this.hideChromeExtensionsUI.element(), i18nString(UIStrings.hideChromeExtension));
-            filterBar.addFilter(this.hideChromeExtensionsUI);
-            this.resourceCategoryFilterUI =
-                new UI.FilterBar.NamedBitSetFilterUI(filterItems, this.networkResourceTypeFiltersSetting);
-            UI.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString(UIStrings.requestTypesToInclude));
-            this.resourceCategoryFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            filterBar.addFilter(this.resourceCategoryFilterUI);
-            this.onlyBlockedResponseCookiesFilterUI = new UI.FilterBar.CheckboxFilterUI(i18nString(UIStrings.hasBlockedCookies), true, this.networkShowBlockedCookiesOnlySetting, 'only-show-blocked-cookies');
-            this.onlyBlockedResponseCookiesFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            UI.Tooltip.Tooltip.install(this.onlyBlockedResponseCookiesFilterUI.element(), i18nString(UIStrings.onlyShowRequestsWithBlockedCookies));
-            filterBar.addFilter(this.onlyBlockedResponseCookiesFilterUI);
-            this.onlyBlockedRequestsUI = new UI.FilterBar.CheckboxFilterUI(i18nString(UIStrings.blockedRequests), true, this.networkOnlyBlockedRequestsSetting, 'only-show-blocked-requests');
-            this.onlyBlockedRequestsUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            UI.Tooltip.Tooltip.install(this.onlyBlockedRequestsUI.element(), i18nString(UIStrings.onlyShowBlockedRequests));
-            filterBar.addFilter(this.onlyBlockedRequestsUI);
-            this.onlyThirdPartyFilterUI = new UI.FilterBar.CheckboxFilterUI(i18nString(UIStrings.thirdParty), true, this.networkOnlyThirdPartySetting, 'only-show-third-party');
-            this.onlyThirdPartyFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
-            UI.Tooltip.Tooltip.install(this.onlyThirdPartyFilterUI.element(), i18nString(UIStrings.onlyShowThirdPartyRequests));
-            filterBar.addFilter(this.onlyThirdPartyFilterUI);
-        }
+        this.moreFiltersDropDownUI = new MoreFiltersDropDownUI();
+        this.moreFiltersDropDownUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged, this);
+        filterBar.addFilter(this.moreFiltersDropDownUI);
+        this.resourceCategoryFilterUI =
+            new UI.FilterBar.NamedBitSetFilterUI(filterItems, this.networkResourceTypeFiltersSetting);
+        UI.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString(UIStrings.requestTypesToInclude));
+        this.resourceCategoryFilterUI.addEventListener("FilterChanged" /* UI.FilterBar.FilterUIEvents.FILTER_CHANGED */, this.filterChanged.bind(this), this);
+        filterBar.addFilter(this.resourceCategoryFilterUI);
         this.filterParser = new TextUtils.TextUtils.FilterParser(searchKeys);
         this.suggestionBuilder =
             new UI.FilterSuggestionBuilder.FilterSuggestionBuilder(searchKeys, NetworkLogView.sortSearchValues);
@@ -934,6 +904,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.textFilterSetting.set(this.textFilterUI.value());
         this.moreFiltersDropDownUI?.updateActiveFiltersCount();
         this.moreFiltersDropDownUI?.updateTooltip();
+        this.columnsInternal.filterChanged();
     }
     async resetFilter() {
         this.textFilterUI.clear();
@@ -1376,20 +1347,11 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     // TODO(crbug.com/1477668)
     setTextFilterValue(filterString) {
         this.textFilterUI.setValue(filterString);
-        if (Root.Runtime.experiments.isEnabled("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */)) {
-            this.networkHideDataURLSetting.set(false);
-            this.networkShowBlockedCookiesOnlySetting.set(false);
-            this.networkOnlyBlockedRequestsSetting.set(false);
-            this.networkOnlyThirdPartySetting.set(false);
-            this.networkHideChromeExtensions.set(false);
-        }
-        else {
-            this.dataURLFilterUI?.setChecked(false);
-            this.onlyBlockedResponseCookiesFilterUI?.setChecked(false);
-            this.onlyBlockedRequestsUI?.setChecked(false);
-            this.onlyThirdPartyFilterUI?.setChecked(false);
-            this.hideChromeExtensionsUI?.setChecked(false);
-        }
+        this.networkHideDataURLSetting.set(false);
+        this.networkShowBlockedCookiesOnlySetting.set(false);
+        this.networkOnlyBlockedRequestsSetting.set(false);
+        this.networkOnlyThirdPartySetting.set(false);
+        this.networkHideChromeExtensions.set(false);
         this.resourceCategoryFilterUI.reset();
     }
     createNodeForRequest(request) {
@@ -1670,21 +1632,13 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         if (!this.resourceCategoryFilterUI.accept(categoryName)) {
             return false;
         }
-        const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL] = Root.Runtime.experiments.isEnabled("network-panel-filter-bar-redesign" /* Root.Runtime.ExperimentName.NETWORK_PANEL_FILTER_BAR_REDESIGN */) ?
-            [
-                this.networkHideDataURLSetting.get(),
-                this.networkShowBlockedCookiesOnlySetting.get(),
-                this.networkOnlyBlockedRequestsSetting.get(),
-                this.networkOnlyThirdPartySetting.get(),
-                this.networkHideChromeExtensions.get(),
-            ] :
-            [
-                this.dataURLFilterUI?.checked(),
-                this.onlyBlockedResponseCookiesFilterUI?.checked(),
-                this.onlyBlockedRequestsUI?.checked(),
-                this.onlyThirdPartyFilterUI?.checked(),
-                this.hideChromeExtensionsUI?.checked(),
-            ];
+        const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL] = [
+            this.networkHideDataURLSetting.get(),
+            this.networkShowBlockedCookiesOnlySetting.get(),
+            this.networkOnlyBlockedRequestsSetting.get(),
+            this.networkOnlyThirdPartySetting.get(),
+            this.networkHideChromeExtensions.get(),
+        ];
         if (hideDataURL && (request.parsedURL.isDataURL() || request.parsedURL.isBlobURL())) {
             return false;
         }
@@ -1930,12 +1884,10 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             'omit';
         const referrerHeader = requestHeaders.find(({ name }) => name.toLowerCase() === 'referer');
         const referrer = referrerHeader ? referrerHeader.value : void 0;
-        const referrerPolicy = request.referrerPolicy() || void 0;
         const requestBody = await request.requestFormData();
         const fetchOptions = {
             headers: Object.keys(headers).length ? headers : void 0,
             referrer,
-            referrerPolicy,
             body: requestBody,
             method: request.requestMethod,
             mode: 'cors',
@@ -1952,10 +1904,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             if (referrer) {
                 delete fetchOptions.referrer;
                 extraHeaders['Referer'] = referrer;
-            }
-            if (referrer) {
-                delete fetchOptions.referrerPolicy;
-                extraHeaders['Referrer-Policy'] = referrerPolicy;
             }
             if (Object.keys(extraHeaders).length) {
                 fetchOptions.headers = {

@@ -70,7 +70,6 @@ export declare class MenuItem extends HTMLElement {
 }
 export declare class MenuGroup extends HTMLElement {
     #private;
-    connectedCallback(): void;
     get name(): string | null;
     set name(name: string | null);
 }

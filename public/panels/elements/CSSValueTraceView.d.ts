@@ -6,13 +6,11 @@ export interface ViewInput {
     evaluations: Node[][];
     onToggle: () => void;
 }
-export interface ViewOutput {
-    defaultFocusedElement?: Element;
-}
-export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare class CSSValueTraceView extends UI.Widget.VBox {
     #private;
     constructor(element?: HTMLElement, view?: View);
-    showTrace(property: SDK.CSSProperty.CSSProperty, subexpression: string | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, expandPercentagesInShorthands: boolean, shorthandPositionOffset: number): Promise<void>;
+    showTrace(property: SDK.CSSProperty.CSSProperty, subexpression: string | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string> | null, renderers: Array<MatchRenderer<SDK.CSSPropertyParser.Match>>, expandPercentagesInShorthands: boolean, shorthandPositionOffset: number, focus: boolean): Promise<void>;
     performUpdate(): void;
+    resetPendingFocus(): void;
 }

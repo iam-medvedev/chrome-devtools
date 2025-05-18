@@ -64,7 +64,7 @@
     "../../../../../../front_end/panels/application/SharedStorageModel.ts",
     "../../../../../../front_end/panels/application/SharedStorageTreeElement.ts",
     "../../../../../../front_end/panels/application/StorageBucketsTreeElement.ts",
-    "../../../../../../front_end/panels/application/StorageItemsView.ts",
+    "../../../../../../front_end/panels/application/StorageItemsToolbar.ts",
     "../../../../../../front_end/panels/application/StorageView.ts",
     "../../../../../../front_end/panels/application/TrustTokensTreeElement.ts",
     "../../../../../../front_end/panels/application/preloading/PreloadingView.ts",

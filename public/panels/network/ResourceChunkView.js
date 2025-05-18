@@ -43,7 +43,7 @@ const UIStrings = {
     /**
      *@description Text in Messages View of the Network panel
      */
-    copyMessageD: 'Copy message...',
+    copyMessageD: 'Copy message…',
     /**
      *@description A context menu item in the Messages View of the Network panel
      */
@@ -226,6 +226,21 @@ export class ResourceChunkView extends UI.Widget.VBox {
     }
     sortItems() {
         this.dataGrid.sortNodes(this.timeComparator, !this.dataGrid.isSortOrderAscending());
+    }
+    getDataGridForTest() {
+        return this.dataGrid;
+    }
+    getSplitWidgetForTest() {
+        return this.splitWidget;
+    }
+    getFilterInputForTest() {
+        return this.filterTextInput;
+    }
+    getClearAllButtonForTest() {
+        return this.clearAllButton;
+    }
+    getFilterTypeComboboxForTest() {
+        return this.filterTypeCombobox;
     }
 }
 const FILTER_TYPES = [

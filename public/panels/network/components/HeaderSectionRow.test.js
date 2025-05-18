@@ -83,11 +83,10 @@ describeWithEnvironment('HeaderSectionRow', () => {
         const headerValue = component.shadowRoot.querySelector('.header-value');
         assert.instanceOf(headerValue, HTMLDivElement);
         assert.strictEqual(headerValue.textContent?.trim(), '');
-        assert.strictEqual(getCleanTextContentFromElements(component.shadowRoot, '.call-to-action')[0], 'To use this resource from a different origin, the server needs to specify a cross-origin ' +
-            'resource policy in the response headers: Cross-Origin-Resource-Policy: same-site Choose ' +
-            'this option if the resource and the document are served from the same site. ' +
-            'Cross-Origin-Resource-Policy: cross-origin Only choose this option if an arbitrary website ' +
-            'including this resource does not impose a security risk. Learn more');
+        assert.strictEqual(getCleanTextContentFromElements(component.shadowRoot, '.call-to-action')[0], `To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:
+Cross-Origin-Resource-Policy: same-site Choose this option if the resource and the document are served from the same site.
+Cross-Origin-Resource-Policy: cross-origin Only choose this option if an arbitrary website including this resource does not impose a security risk.
+Learn more`);
     });
     it('displays decoded "x-client-data"-header', async () => {
         const headerData = {

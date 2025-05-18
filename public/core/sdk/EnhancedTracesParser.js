@@ -88,9 +88,9 @@ export class EnhancedTracesParser {
                 this.#scriptRundownEvents.push(event);
                 const data = event.args.data;
                 // Add script
-                if (!this.#scripts.find(script => script.scriptId === data.scriptId && script.isolate === data.isolate)) {
+                if (!this.#scripts.find(script => script.scriptId === String(data.scriptId) && script.isolate === data.isolate)) {
                     this.#scripts.push({
-                        scriptId: data.scriptId,
+                        scriptId: String(data.scriptId),
                         isolate: data.isolate,
                         executionContextId: data.executionContextId,
                         startLine: data.startLine ?? 0,

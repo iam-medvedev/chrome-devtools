@@ -40,18 +40,11 @@ export class LegacyJavaScript extends BaseInsightComponent {
         if (!debuggerModel) {
             return;
         }
-        const createUiLocation = async (scriptId) => {
-            const location = new SDK.DebuggerModel.Location(debuggerModel, scriptId, match.line, match.column);
-            if (!location) {
-                return null;
-            }
-            return await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
-        };
-        // TODO(cjamcl): type confusion ... When loaded as an enhanced trace, the
-        // debugger model's script map is somehow using numbers for keys. Must cast to
-        // number so it actually works.
-        const uiLocation = await createUiLocation(script.scriptId) ??
-            await createUiLocation(Number(script.scriptId));
+        const location = new SDK.DebuggerModel.Location(debuggerModel, script.scriptId, match.line, match.column);
+        if (!location) {
+            return;
+        }
+        const uiLocation = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(location);
         await Common.Revealer.reveal(uiLocation);
     }
     renderContent() {

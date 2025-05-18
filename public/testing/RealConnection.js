@@ -7,6 +7,7 @@ import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Main from '../entrypoints/main/main.js';
+import * as RenderCoordinator from '../ui/components/render_coordinator/render_coordinator.js';
 import { deinitializeGlobalVars } from './EnvironmentHelpers.js';
 let initialized = false;
 function describeBody(fn) {
@@ -41,9 +42,10 @@ function describeBody(fn) {
         await main.readyForTest();
         initialized = true;
     });
-    beforeEach('describeWithRealConnection', () => {
+    beforeEach('describeWithRealConnection', async () => {
         resetHostBindingStubState();
         Common.Settings.Settings.instance().clearAll();
+        await RenderCoordinator.done();
     });
     fn();
     afterEach('describeWithRealConnection', async () => {
@@ -52,6 +54,7 @@ function describeBody(fn) {
             throw new Error('Missing deprecatedRunAfterPendingDispatches');
         }
         await new Promise(resolve => runAfterPendingDispatches(resolve));
+        await RenderCoordinator.done();
     });
 }
 const realConnectionSuites = [];

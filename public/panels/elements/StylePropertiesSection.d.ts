@@ -34,6 +34,7 @@ export declare class StylePropertiesSection {
     protected readonly selectorRefElement: HTMLElement;
     private hoverableSelectorsMode;
     private isHiddenInternal;
+    protected customPopulateCallback: () => void;
     nestingLevel: number;
     nextEditorTriggerButtonIdx: number;
     private sectionIdx;
@@ -149,7 +150,7 @@ export declare class RegisteredPropertiesSection extends StylePropertiesSection 
     createRuleOriginNode(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, linkifier: Components.Linkifier.Linkifier, rule: SDK.CSSRule.CSSRule | null): Node;
 }
 export declare class FunctionRuleSection extends StylePropertiesSection {
-    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, children: SDK.CSSRule.CSSNestedStyle[], sectionIdx: number, functionName: string, parameters: string[], expandedByDefault: boolean);
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, style: SDK.CSSStyleDeclaration.CSSStyleDeclaration, children: SDK.CSSRule.CSSNestedStyle[], sectionIdx: number, functionName: string, expandedByDefault: boolean);
     createConditionElement(condition: SDK.CSSRule.CSSNestedStyleCondition): HTMLElement | undefined;
     positionNestingElement(element: HTMLElement): HTMLElement;
     addChildren(children: SDK.CSSRule.CSSNestedStyle[], parent: TreeElementParent): void;

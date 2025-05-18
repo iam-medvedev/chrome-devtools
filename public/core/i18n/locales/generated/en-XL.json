@@ -1395,10 +1395,10 @@
     "message": "[{PH1}] L̂óâd́êd́ d̂éb̂úĝ śŷḿb̂ól̂ś f̂ór̂ {PH2}, f́ôún̂d́ {PH3} ŝóûŕĉé f̂íl̂é(ŝ)"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsFor": {
-    "message": "[{PH1}] L̂óâd́îńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ {PH2}..."
+    "message": "[{PH1}] L̂óâd́îńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ {PH2}…"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsForVia": {
-    "message": "[{PH1}] L̂óâd́îńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ {PH2} (v̂íâ {PH3})..."
+    "message": "[{PH1}] L̂óâd́îńĝ d́êb́ûǵ ŝým̂b́ôĺŝ f́ôŕ {PH2} (v̂íâ {PH3})…"
   },
   "models/bindings/IgnoreListManager.ts | addAllAnonymousScriptsToIgnoreList": {
     "message": "Âd́d̂ ál̂ĺ âńôńŷḿôúŝ śĉŕîṕt̂ś t̂ó îǵn̂ór̂é l̂íŝt́"
@@ -1637,9 +1637,6 @@
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<âńôńŷḿôúŝ>"
   },
-  "models/persistence/EditFileSystemView.ts | add": {
-    "message": "Âd́d̂ f́ôĺd̂ér̂"
-  },
   "models/persistence/EditFileSystemView.ts | enterAPath": {
     "message": "Êńt̂ér̂ á p̂át̂h́"
   },
@@ -1648,15 +1645,6 @@
   },
   "models/persistence/EditFileSystemView.ts | excludedFolders": {
     "message": "Êx́ĉĺûd́êd́ ŝúb̂-f́ôĺd̂ér̂ś"
-  },
-  "models/persistence/EditFileSystemView.ts | folderPath": {
-    "message": "F̂ól̂d́êŕ p̂át̂h́"
-  },
-  "models/persistence/EditFileSystemView.ts | none": {
-    "message": "N̂ón̂é"
-  },
-  "models/persistence/EditFileSystemView.ts | sViaDevtools": {
-    "message": "{PH1} (v̂íâ .d́êv́t̂óôĺŝ)"
   },
   "models/persistence/EditFileSystemView.ts | url": {
     "message": "ÛŔL̂"
@@ -1719,7 +1707,7 @@
     "message": "Ôv́êŕr̂íd̂é ‘{PH1}’ îńŝt́êád̂?"
   },
   "models/persistence/PersistenceActions.ts | saveAs": {
-    "message": "Ŝáv̂é âś..."
+    "message": "Ŝáv̂é âś…"
   },
   "models/persistence/PersistenceActions.ts | saveImage": {
     "message": "Ŝáv̂é îḿâǵê"
@@ -2001,7 +1989,7 @@
     "message": "Êĺêḿêńt̂ ŕêńd̂ér̂ d́êĺâý"
   },
   "models/trace/insights/LCPPhases.ts | fieldDuration": {
-    "message": "F̂íêĺd̂ 75t́ĥ ṕêŕĉén̂t́îĺê"
+    "message": "F̂íêĺd̂ ṕ75"
   },
   "models/trace/insights/LCPPhases.ts | noLcp": {
     "message": "N̂ó L̂ĆP̂ d́êt́êćt̂éd̂"
@@ -2028,7 +2016,7 @@
     "message": "Ŵáŝt́êd́ b̂ýt̂éŝ"
   },
   "models/trace/insights/LegacyJavaScript.ts | description": {
-    "message": "P̂ól̂ýf̂íl̂ĺŝ án̂d́ t̂ŕâńŝf́ôŕm̂ś êńâb́l̂é l̂éĝáĉý b̂ŕôẃŝér̂ś t̂ó ûśê ńêẃ Ĵáv̂áŜćr̂íp̂t́ f̂éât́ûŕêś. Ĥóŵév̂ér̂, ḿâńŷ ár̂én̂'t́ n̂éĉéŝśâŕŷ f́ôŕ m̂ód̂ér̂ń b̂ŕôẃŝér̂ś. Ĉón̂śîd́êŕ m̂ód̂íf̂ýîńĝ ýôúr̂ J́âv́âŚĉŕîṕt̂ b́ûíl̂d́ p̂ŕôćêśŝ t́ô ńôt́ t̂ŕâńŝṕîĺê [B́âśêĺîńê](https://web.dev/articles/baseline-and-polyfills) f́êát̂úr̂éŝ, ún̂ĺêśŝ ýôú k̂ńôẃ ŷóû ḿûśt̂ śûṕp̂ór̂t́ l̂éĝáĉý b̂ŕôẃŝér̂ś. [L̂éâŕn̂ ẃĥý m̂óŝt́ ŝít̂éŝ ćâń d̂ép̂ĺôý ÊŚ6+ ĉód̂é ŵít̂h́ôút̂ t́r̂án̂śp̂íl̂ín̂ǵ](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)"
+    "message": "P̂ól̂ýf̂íl̂ĺŝ án̂d́ t̂ŕâńŝf́ôŕm̂ś êńâb́l̂é ôĺd̂ér̂ b́r̂óŵśêŕŝ t́ô úŝé n̂éŵ J́âv́âŚĉŕîṕt̂ f́êát̂úr̂éŝ. H́ôẃêv́êŕ, m̂án̂ý âŕêń't̂ ńêćêśŝár̂ý f̂ór̂ ḿôd́êŕn̂ b́r̂óŵśêŕŝ. Ćôńŝíd̂ér̂ ḿôd́îf́ŷín̂ǵ ŷóûŕ Ĵáv̂áŜćr̂íp̂t́ b̂úîĺd̂ ṕr̂óĉéŝś t̂ó n̂ót̂ t́r̂án̂śp̂íl̂é [B̂áŝél̂ín̂é](https://web.dev/articles/baseline-and-polyfills) f̂éât́ûŕêś, ûńl̂éŝś ŷóû ḱn̂óŵ ýôú m̂úŝt́ ŝúp̂ṕôŕt̂ ól̂d́êŕ b̂ŕôẃŝér̂ś. [L̂éâŕn̂ ẃĥý m̂óŝt́ ŝít̂éŝ ćâń d̂ép̂ĺôý ÊŚ6+ ĉód̂é ŵít̂h́ôút̂ t́r̂án̂śp̂íl̂ín̂ǵ](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)"
   },
   "models/trace/insights/LegacyJavaScript.ts | title": {
     "message": "L̂éĝáĉý Ĵáv̂áŜćr̂íp̂t́"
@@ -2067,7 +2055,7 @@
     "message": "[Âv́ôíd̂ ćĥáîńîńĝ ćr̂ít̂íĉál̂ ŕêq́ûéŝt́ŝ](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) b́ŷ ŕêd́ûćîńĝ t́ĥé l̂én̂ǵt̂h́ ôf́ ĉh́âín̂ś, r̂éd̂úĉín̂ǵ t̂h́ê d́ôẃn̂ĺôád̂ śîźê óf̂ ŕêśôúr̂ćêś, ôŕ d̂éf̂ér̂ŕîńĝ t́ĥé d̂óŵńl̂óâd́ ôf́ ûńn̂éĉéŝśâŕŷ ŕêśôúr̂ćêś t̂ó îḿp̂ŕôv́ê ṕâǵê ĺôád̂."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
-    "message": "Âd́d̂ [ṕr̂éĉón̂ńêćt̂](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) h́îńt̂ś t̂ó ŷóûŕ m̂óŝt́ îḿp̂ór̂t́âńt̂ ór̂íĝín̂ś, b̂út̂ t́r̂ý t̂ó ûśê f́êẃêŕ t̂h́âń 4."
+    "message": "Âd́d̂ [ṕr̂éĉón̂ńêćt̂](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) h́îńt̂ś t̂ó ŷóûŕ m̂óŝt́ îḿp̂ór̂t́âńt̂ ór̂íĝín̂ś, b̂út̂ t́r̂ý t̂ó ûśê f́êẃêŕ t̂h́âń 4."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
     "message": "P̂ŕêćôńn̂éĉt́ ĉán̂d́îd́ât́êś"
@@ -2085,7 +2073,7 @@
     "message": "n̂ó ôŕîǵîńŝ ẃêŕê ṕr̂éĉón̂ńêćt̂éd̂"
   },
   "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableDescription": {
-    "message": "[p̂ŕêćôńn̂éĉt́](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) ĥín̂t́ŝ h́êĺp̂ t́ĥé b̂ŕôẃŝér̂ éŝt́âb́l̂íŝh́ â ćôńn̂éĉt́îón̂ éâŕl̂íêŕ îń t̂h́ê ṕâǵê ĺôád̂, śâv́îńĝ t́îḿê ẃĥén̂ t́ĥé f̂ír̂śt̂ ŕêq́ûéŝt́ f̂ór̂ t́ĥát̂ ór̂íĝín̂ íŝ ḿâd́ê. T́ĥé f̂ól̂ĺôẃîńĝ ár̂é t̂h́ê ór̂íĝín̂ś t̂h́ât́ t̂h́ê ṕâǵê ṕr̂éĉón̂ńêćt̂éd̂ t́ô."
+    "message": "[p̂ŕêćôńn̂éĉt́](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) ĥín̂t́ŝ h́êĺp̂ t́ĥé b̂ŕôẃŝér̂ éŝt́âb́l̂íŝh́ â ćôńn̂éĉt́îón̂ éâŕl̂íêŕ îń t̂h́ê ṕâǵê ĺôád̂, śâv́îńĝ t́îḿê ẃĥén̂ t́ĥé f̂ír̂śt̂ ŕêq́ûéŝt́ f̂ór̂ t́ĥát̂ ór̂íĝín̂ íŝ ḿâd́ê. T́ĥé f̂ól̂ĺôẃîńĝ ár̂é t̂h́ê ór̂íĝín̂ś t̂h́ât́ t̂h́ê ṕâǵê ṕr̂éĉón̂ńêćt̂éd̂ t́ô."
   },
   "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableTitle": {
     "message": "P̂ŕêćôńn̂éĉt́ ôŕîǵîńŝ"
@@ -2093,11 +2081,14 @@
   "models/trace/insights/NetworkDependencyTree.ts | title": {
     "message": "N̂ét̂ẃôŕk̂ d́êṕêńd̂én̂ćŷ t́r̂éê"
   },
+  "models/trace/insights/NetworkDependencyTree.ts | unusedWarning": {
+    "message": "Ûńûśêd́ p̂ŕêćôńn̂éĉt́. Ôńl̂ý ûśê preconnect f́ôŕ ôŕîǵîńŝ t́ĥát̂ t́ĥé p̂áĝé îś l̂ík̂él̂ý t̂ó r̂éq̂úêśt̂."
+  },
   "models/trace/insights/NetworkDependencyTree.ts | warningDescription": {
     "message": "Âv́ôíd̂ ćĥáîńîńĝ ćr̂ít̂íĉál̂ ŕêq́ûéŝt́ŝ b́ŷ ŕêd́ûćîńĝ t́ĥé l̂én̂ǵt̂h́ ôf́ ĉh́âín̂ś, r̂éd̂úĉín̂ǵ t̂h́ê d́ôẃn̂ĺôád̂ śîźê óf̂ ŕêśôúr̂ćêś, ôŕ d̂éf̂ér̂ŕîńĝ t́ĥé d̂óŵńl̂óâd́ ôf́ ûńn̂éĉéŝśâŕŷ ŕêśôúr̂ćêś t̂ó îḿp̂ŕôv́ê ṕâǵê ĺôád̂."
   },
   "models/trace/insights/RenderBlocking.ts | description": {
-    "message": "R̂éq̂úêśt̂ś âŕê b́l̂óĉḱîńĝ t́ĥé p̂áĝé'ŝ ín̂ít̂íâĺ r̂én̂d́êŕ, ŵh́îćĥ ḿâý d̂él̂áŷ ĹĈṔ. [D̂éf̂ér̂ŕîńĝ ór̂ ín̂ĺîńîńĝ](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) ćâń m̂óv̂é t̂h́êśê ńêt́ŵór̂ḱ r̂éq̂úêśt̂ś ôút̂ óf̂ t́ĥé ĉŕît́îćâĺ p̂át̂h́."
+    "message": "R̂éq̂úêśt̂ś âŕê b́l̂óĉḱîńĝ t́ĥé p̂áĝé'ŝ ín̂ít̂íâĺ r̂én̂d́êŕ, ŵh́îćĥ ḿâý d̂él̂áŷ ĹĈṔ. [D̂éf̂ér̂ŕîńĝ ór̂ ín̂ĺîńîńĝ](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources) ćâń m̂óv̂é t̂h́êśê ńêt́ŵór̂ḱ r̂éq̂úêśt̂ś ôút̂ óf̂ t́ĥé ĉŕît́îćâĺ p̂át̂h́."
   },
   "models/trace/insights/RenderBlocking.ts | duration": {
     "message": "D̂úr̂át̂íôń"
@@ -2145,7 +2136,7 @@
     "message": "T̂ŕâńŝf́êŕ ŝíẑé"
   },
   "models/trace/insights/ThirdParties.ts | description": {
-    "message": "3r̂d́ p̂ár̂t́ŷ ćôd́ê ćâń ŝíĝńîf́îćâńt̂ĺŷ ím̂ṕâćt̂ ĺôád̂ ṕêŕf̂ór̂ḿâńĉé. [R̂éd̂úĉé âńd̂ d́êf́êŕ l̂óâd́îńĝ óf̂ 3ŕd̂ ṕâŕt̂ý ĉód̂é](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) t̂ó p̂ŕîór̂ít̂íẑé ŷóûŕ p̂áĝé'ŝ ćôńt̂én̂t́."
+    "message": "3r̂d́ p̂ár̂t́ŷ ćôd́ê ćâń ŝíĝńîf́îćâńt̂ĺŷ ím̂ṕâćt̂ ĺôád̂ ṕêŕf̂ór̂ḿâńĉé. [R̂éd̂úĉé âńd̂ d́êf́êŕ l̂óâd́îńĝ óf̂ 3ŕd̂ ṕâŕt̂ý ĉód̂é](https://web.dev/articles/optimizing-content-efficiency-loading-third-party-javascript/) t̂ó p̂ŕîór̂ít̂íẑé ŷóûŕ p̂áĝé'ŝ ćôńt̂én̂t́."
   },
   "models/trace/insights/ThirdParties.ts | noThirdParties": {
     "message": "N̂ó t̂h́îŕd̂ ṕâŕt̂íêś f̂óûńd̂"
@@ -2623,6 +2614,9 @@
   },
   "panels/ai_assistance/AiAssistancePanel.ts | inputDisclaimerForEmptyState": {
     "message": "T̂h́îś îś âń êx́p̂ér̂ím̂én̂t́âĺ ÂÍ f̂éât́ûŕê án̂d́ ŵón̂'t́ âĺŵáŷś ĝét̂ ít̂ ŕîǵĥt́."
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | mcpRequestReceived": {
+    "message": "DevTools r̂éĉéîv́êd́ âń MCP r̂éq̂úêśt̂"
   },
   "panels/ai_assistance/AiAssistancePanel.ts | newChat": {
     "message": "N̂éŵ ćĥát̂"
@@ -3207,7 +3201,7 @@
     "message": "P̂úŝh́ m̂éŝśâǵîńĝ"
   },
   "panels/application/BackgroundServiceView.ts | recordingSActivity": {
-    "message": "R̂éĉór̂d́îńĝ {PH1} áĉt́îv́ît́ŷ..."
+    "message": "R̂éĉór̂d́îńĝ {PH1} áĉt́îv́ît́ŷ…"
   },
   "panels/application/BackgroundServiceView.ts | saveEvents": {
     "message": "Ŝáv̂é êv́êńt̂ś"
@@ -4147,9 +4141,6 @@
   },
   "panels/application/CookieItemsView.ts | clearFilteredCookies": {
     "message": "Ĉĺêár̂ f́îĺt̂ér̂éd̂ ćôók̂íêś"
-  },
-  "panels/application/CookieItemsView.ts | cookies": {
-    "message": "Ĉóôḱîéŝ"
   },
   "panels/application/CookieItemsView.ts | noCookieSelected": {
     "message": "N̂ó ĉóôḱîé ŝél̂éĉt́êd́"
@@ -5132,16 +5123,16 @@
   "panels/application/StorageBucketsTreeElement.ts | storageBucketsDescription": {
     "message": "Ôń t̂h́îś p̂áĝé ŷóû ćâń v̂íêẃ âńd̂ d́êĺêt́ê śt̂ór̂áĝé b̂úĉḱêt́ŝ, án̂d́ t̂h́êír̂ áŝśôćîát̂éd̂ Storage APIs."
   },
-  "panels/application/StorageItemsView.ts | clearAll": {
+  "panels/application/StorageItemsToolbar.ts | clearAll": {
     "message": "Ĉĺêár̂ Ál̂ĺ"
   },
-  "panels/application/StorageItemsView.ts | deleteSelected": {
+  "panels/application/StorageItemsToolbar.ts | deleteSelected": {
     "message": "D̂él̂ét̂é Ŝél̂éĉt́êd́"
   },
-  "panels/application/StorageItemsView.ts | refresh": {
+  "panels/application/StorageItemsToolbar.ts | refresh": {
     "message": "R̂éf̂ŕêśĥ"
   },
-  "panels/application/StorageItemsView.ts | refreshedStatus": {
+  "panels/application/StorageItemsToolbar.ts | refreshedStatus": {
     "message": "T̂áb̂ĺê ŕêf́r̂éŝh́êd́"
   },
   "panels/application/StorageView.ts | application": {
@@ -5151,7 +5142,7 @@
     "message": "Ĉáĉh́ê śt̂ór̂áĝé"
   },
   "panels/application/StorageView.ts | clearing": {
-    "message": "Ĉĺêár̂ín̂ǵ..."
+    "message": "Ĉĺêár̂ín̂ǵ…"
   },
   "panels/application/StorageView.ts | clearSiteData": {
     "message": "Ĉĺêár̂ śît́ê d́ât́â"
@@ -5829,7 +5820,7 @@
     "message": "R̂ép̂ĺâý X̂H́R̂"
   },
   "panels/console/ConsoleView.ts | saveAs": {
-    "message": "Ŝáv̂é âś..."
+    "message": "Ŝáv̂é âś…"
   },
   "panels/console/ConsoleView.ts | searching": {
     "message": "Ŝéâŕĉh́îńĝ…"
@@ -9099,7 +9090,7 @@
     "message": "Ûśêŕ âǵêńt̂ úp̂d́ât́êd́."
   },
   "panels/network/NetworkConfigView.ts | custom": {
-    "message": "Ĉúŝt́ôḿ..."
+    "message": "Ĉúŝt́ôḿ…"
   },
   "panels/network/NetworkConfigView.ts | customUserAgentFieldIsRequired": {
     "message": "Ĉúŝt́ôḿ ûśêŕ âǵêńt̂ f́îél̂d́ îś r̂éq̂úîŕêd́"
@@ -9298,6 +9289,9 @@
   },
   "panels/network/NetworkItemView.ts | cookies": {
     "message": "Ĉóôḱîéŝ"
+  },
+  "panels/network/NetworkItemView.ts | directsocketMessages": {
+    "message": "D̂ír̂éĉt́Ŝóĉḱêt́ m̂éŝśâǵêś"
   },
   "panels/network/NetworkItemView.ts | eventstream": {
     "message": "Êv́êńt̂Śt̂ŕêám̂"
@@ -9708,13 +9702,13 @@
     "message": "Êx́p̂ór̂t́ HAR (êít̂h́êŕ ŝán̂ít̂íẑéd̂ ór̂ ẃît́ĥ śêńŝít̂ív̂é d̂át̂á)"
   },
   "panels/network/NetworkPanel.ts | exportHarSanitized": {
-    "message": "Êx́p̂ór̂t́ HAR (ŝán̂ít̂íẑéd̂)..."
+    "message": "Êx́p̂ór̂t́ HAR (ŝán̂ít̂íẑéd̂)…"
   },
   "panels/network/NetworkPanel.ts | exportHarWithSensitiveData": {
-    "message": "Êx́p̂ór̂t́ HAR (ŵít̂h́ ŝén̂śît́îv́ê d́ât́â)..."
+    "message": "Êx́p̂ór̂t́ HAR (ŵít̂h́ ŝén̂śît́îv́ê d́ât́â)…"
   },
   "panels/network/NetworkPanel.ts | fetchingFrames": {
-    "message": "F̂ét̂ćĥín̂ǵ f̂ŕâḿêś..."
+    "message": "F̂ét̂ćĥín̂ǵ f̂ŕâḿêś…"
   },
   "panels/network/NetworkPanel.ts | groupByFrame": {
     "message": "Ĝŕôúp̂ b́ŷ f́r̂ám̂é"
@@ -9726,7 +9720,7 @@
     "message": "P̂ŕêśŝ {PH1} t́ô ŕêĺôád̂ án̂d́ ĉáp̂t́ûŕê f́îĺm̂śt̂ŕîṕ."
   },
   "panels/network/NetworkPanel.ts | importHarFile": {
-    "message": "Îḿp̂ór̂t́ HAR f̂íl̂é..."
+    "message": "Îḿp̂ór̂t́ HAR f̂íl̂é…"
   },
   "panels/network/NetworkPanel.ts | moreNetworkConditions": {
     "message": "M̂ór̂é n̂ét̂ẃôŕk̂ ćôńd̂ít̂íôńŝ…"
@@ -9744,7 +9738,7 @@
     "message": "P̂ŕêśêŕv̂é l̂óĝ"
   },
   "panels/network/NetworkPanel.ts | recordingFrames": {
-    "message": "R̂éĉór̂d́îńĝ f́r̂ám̂éŝ..."
+    "message": "R̂éĉór̂d́îńĝ f́r̂ám̂éŝ…"
   },
   "panels/network/NetworkPanel.ts | search": {
     "message": "Ŝéâŕĉh́"
@@ -10026,7 +10020,7 @@
     "message": "Ĉóp̂ý m̂éŝśâǵê"
   },
   "panels/network/ResourceChunkView.ts | copyMessageD": {
-    "message": "Ĉóp̂ý m̂éŝśâǵê..."
+    "message": "Ĉóp̂ý m̂éŝśâǵê…"
   },
   "panels/network/ResourceChunkView.ts | data": {
     "message": "D̂át̂á"
@@ -10050,6 +10044,27 @@
     "message": "Ŝén̂d́"
   },
   "panels/network/ResourceChunkView.ts | time": {
+    "message": "T̂ím̂é"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | address": {
+    "message": "Âd́d̂ŕêśŝ"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | data": {
+    "message": "D̂át̂á"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | directSocketChunk": {
+    "message": "D̂ír̂éĉt́ Ŝóĉḱêt́ Ĉh́ûńk̂"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | filterUsingRegex": {
+    "message": "F̂íl̂t́êŕ ûśîńĝ ŕêǵêx́ (êx́âḿp̂ĺê: (d́îŕêćt̂)?śôćk̂ét̂)"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | length": {
+    "message": "L̂én̂ǵt̂h́"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | port": {
+    "message": "P̂ór̂t́"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | time": {
     "message": "T̂ím̂é"
   },
   "panels/network/ResourceWebSocketFrameView.ts | binaryMessage": {
@@ -13122,7 +13137,7 @@
     "message": "Ĉĺôśûŕê ({PH1})"
   },
   "panels/sources/ScopeChainSidebarPane.ts | loading": {
-    "message": "L̂óâd́îńĝ..."
+    "message": "L̂óâd́îńĝ…"
   },
   "panels/sources/ScopeChainSidebarPane.ts | notPaused": {
     "message": "N̂ót̂ ṕâúŝéd̂"
@@ -13506,7 +13521,7 @@
     "message": "R̂ún̂"
   },
   "panels/sources/SourcesNavigator.ts | saveAs": {
-    "message": "Ŝáv̂é âś..."
+    "message": "Ŝáv̂é âś…"
   },
   "panels/sources/SourcesNavigator.ts | selectFolderForOverrides": {
     "message": "Ŝél̂éĉt́ f̂ól̂d́êŕ f̂ór̂ óv̂ér̂ŕîd́êś"
@@ -15971,6 +15986,9 @@
   "ui/components/diff_view/DiffView.ts | deletions": {
     "message": "D̂él̂ét̂íôń:"
   },
+  "ui/components/diff_view/DiffView.ts | noDiff": {
+    "message": "F̂íl̂é îś îd́êńt̂íĉál̂ t́ô ít̂ś ûńm̂ód̂íf̂íêd́ ŝt́ât́ê"
+  },
   "ui/components/diff_view/DiffView.ts | SkippingDMatchingLines": {
     "message": "( … Ŝḱîṕp̂ín̂ǵ {PH1} m̂át̂ćĥín̂ǵ l̂ín̂éŝ … )"
   },
@@ -16626,7 +16644,7 @@
     "message": "Ôṕêń îḿâǵê ín̂ ńêẃ t̂áb̂"
   },
   "ui/legacy/components/source_frame/ImageView.ts | saveImageAs": {
-    "message": "Ŝáv̂é îḿâǵê áŝ..."
+    "message": "Ŝáv̂é îḿâǵê áŝ…"
   },
   "ui/legacy/components/source_frame/JSONView.ts | find": {
     "message": "F̂ín̂d́"

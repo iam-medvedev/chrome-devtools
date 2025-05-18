@@ -865,7 +865,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["just-my-code"] = 65] = "just-my-code";
     DevtoolsExperiments[DevtoolsExperiments["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
-    DevtoolsExperiments[DevtoolsExperiments["network-panel-filter-bar-redesign"] = 79] = "network-panel-filter-bar-redesign";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";

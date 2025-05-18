@@ -8,22 +8,14 @@ interface DiffResponse {
 }
 export declare class WorkspaceDiffImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
+    /** used in web tests */
     private readonly loadingUISourceCodes;
     constructor(workspace: Workspace.Workspace.WorkspaceImpl);
     requestDiff(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<DiffResponse | null>;
     subscribeToDiffChange(uiSourceCode: Workspace.UISourceCode.UISourceCode, callback: () => void, thisObj?: Object): void;
     unsubscribeFromDiffChange(uiSourceCode: Workspace.UISourceCode.UISourceCode, callback: () => void, thisObj?: Object): void;
     modifiedUISourceCodes(): Workspace.UISourceCode.UISourceCode[];
-    private uiSourceCodeDiff;
-    private uiSourceCodeChanged;
-    private uiSourceCodeAdded;
-    private uiSourceCodeRemoved;
-    private projectRemoved;
-    private removeUISourceCode;
-    private markAsUnmodified;
-    private markAsModified;
     private uiSourceCodeProcessedForTest;
-    private updateModifiedState;
     requestOriginalContentForUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<string | null>;
     revertToOriginal(uiSourceCode: Workspace.UISourceCode.UISourceCode): Promise<void>;
 }
@@ -38,15 +30,11 @@ export interface EventTypes {
     [Events.MODIFIED_STATUS_CHANGED]: ModifiedStatusChangedEvent;
 }
 export declare class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper<UISourceCodeDiffEventTypes> {
-    private uiSourceCode;
-    private requestDiffPromise;
-    private pendingChanges;
+    #private;
     dispose: boolean;
     constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode);
-    private uiSourceCodeChanged;
     requestDiff(): Promise<DiffResponse | null>;
     originalContent(): Promise<string | null>;
-    private innerRequestDiff;
 }
 export declare const enum UISourceCodeDiffEvents {
     DIFF_CHANGED = "DiffChanged"

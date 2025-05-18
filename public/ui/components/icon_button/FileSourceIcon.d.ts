@@ -1,12 +1,13 @@
 import './IconButton.js';
 export interface FileSourceIconData {
+    iconType?: string;
     contentType?: string;
     hasDotBadge?: boolean;
     isDotPurple?: boolean;
 }
 export declare class FileSourceIcon extends HTMLElement {
     #private;
-    constructor(iconType: string);
+    constructor();
     set data(data: FileSourceIconData);
     get data(): FileSourceIconData;
     connectedCallback(): void;

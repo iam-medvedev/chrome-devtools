@@ -206,7 +206,7 @@ class RecordingClient {
         });
     };
     #onBeforeUnload = (event) => {
-        this.#logger.log('Unloading...');
+        this.#logger.log('Unloading…');
         if (!this.#isTrustedEvent(event)) {
             return;
         }

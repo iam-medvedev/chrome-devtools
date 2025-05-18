@@ -52,6 +52,7 @@ export class Table extends HTMLElement {
     #rows;
     /** All rows/subRows, in the order that they appear visually. This is the result of traversing `#rows` and any subRows found. */
     #flattenedRows;
+    #rowToParentRow = new Map();
     #interactive = false;
     #currentHoverIndex = null;
     set data(data) {
@@ -60,13 +61,16 @@ export class Table extends HTMLElement {
         this.#headers = data.headers;
         this.#rows = data.rows;
         // If this table isn't interactive, don't attach mouse listeners or use CSS :hover.
-        this.#interactive = this.#rows.some(row => row.overlays || row.subRows);
+        this.#interactive = this.#rows.some(row => row.overlays || row.subRows?.length);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onHoverRow(e) {
+        if (!this.#flattenedRows) {
+            return;
+        }
         if (!(e.target instanceof HTMLElement)) {
             return;
         }
@@ -74,9 +78,21 @@ export class Table extends HTMLElement {
         if (!rowEl?.parentElement) {
             return;
         }
-        const index = [...rowEl.parentElement.children].indexOf(rowEl);
-        if (index === -1 || index === this.#currentHoverIndex) {
+        const rowEls = [...rowEl.parentElement.children];
+        const index = rowEl.sectionRowIndex;
+        if (index === this.#currentHoverIndex) {
             return;
+        }
+        for (const el of rowEl.parentElement.querySelectorAll('.hover')) {
+            el.classList.remove('hover');
+        }
+        // Add 'hover' class to all parent rows.
+        let row = this.#rowToParentRow.get(this.#flattenedRows[index]);
+        while (row) {
+            const index = this.#flattenedRows.indexOf(row);
+            const rowEl = rowEls[index];
+            rowEl.classList.add('hover');
+            row = this.#rowToParentRow.get(row);
         }
         this.#currentHoverIndex = index;
         // Temporarily selects the row, but only if there is not already a sticky selection.
@@ -105,6 +121,9 @@ export class Table extends HTMLElement {
         this.#onSelectedRowChanged(rowEl, index, { sticky: true });
     }
     #onMouseLeave() {
+        for (const el of this.shadowRoot?.querySelectorAll('.hover') ?? []) {
+            el.classList.remove('hover');
+        }
         this.#currentHoverIndex = null;
         // Unselect the row, unless it's sticky.
         this.#onSelectedRowChanged(null, null);
@@ -139,10 +158,15 @@ export class Table extends HTMLElement {
         if (!this.#headers || !this.#rows) {
             return;
         }
+        const rowToParentRow = this.#rowToParentRow;
+        rowToParentRow.clear();
         const numColumns = this.#headers.length;
         const flattenedRows = [];
         const rowEls = [];
-        function traverse(row, depth = 0) {
+        function traverse(parent, row, depth = 0) {
+            if (parent) {
+                rowToParentRow.set(row, parent);
+            }
             const thStyles = Lit.Directives.styleMap({
                 paddingLeft: `calc(${depth} * var(--sys-size-5))`,
                 backgroundImage: `repeating-linear-gradient(
@@ -166,11 +190,11 @@ export class Table extends HTMLElement {
             rowEls.push(html `<tr style=${trStyles}>${columnEls}</tr>`);
             flattenedRows.push(row);
             for (const subRow of row.subRows ?? []) {
-                traverse(subRow, depth + 1);
+                traverse(row, subRow, depth + 1);
             }
         }
         for (const row of this.#rows) {
-            traverse(row);
+            traverse(null, row);
         }
         this.#flattenedRows = flattenedRows;
         Lit.render(html `<style>${tableStyles}</style>

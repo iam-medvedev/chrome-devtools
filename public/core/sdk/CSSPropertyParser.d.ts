@@ -74,11 +74,11 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
     hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
     hasUnresolvedVarsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;
-    getComputedText(node: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
+    getComputedText(node: CodeMirror.SyntaxNode, substitutionHook?: (match: Match) => string | null): string;
     getLonghandValuesCount(): number;
     getComputedLonghandName(to: CodeMirror.SyntaxNode): number;
     getComputedPropertyValueText(): string;
-    getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode, substitutions?: Map<Match, string>): string;
+    getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode, substitutionHook?: (match: Match) => string | null): string;
 }
 export declare class ComputedText {
     #private;
@@ -88,7 +88,7 @@ export declare class ComputedText {
     get chunkCount(): number;
     push(match: Match, offset: number): void;
     hasUnresolvedVars(begin: number, end: number): boolean;
-    get(begin: number, end: number, substitutions?: Map<Match, string>): string;
+    get(begin: number, end: number, substitutionHook?: (match: Match) => string | null): string;
     countTopLevelValues(begin: number, end: number): number;
 }
 export declare function requiresSpace(a: string, b: string): boolean;
@@ -111,7 +111,7 @@ export declare namespace ASTUtils {
     function declValue(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode | null;
     function stripComments(nodes: CodeMirror.SyntaxNode[]): Generator<CodeMirror.SyntaxNode>;
     function split(nodes: CodeMirror.SyntaxNode[]): CodeMirror.SyntaxNode[][];
-    function callArgs(node: CodeMirror.SyntaxNode): CodeMirror.SyntaxNode[][];
+    function callArgs(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[][];
     function equals(a: CodeMirror.SyntaxNode, b: CodeMirror.SyntaxNode): boolean;
 }
 export declare function tokenizeDeclaration(propertyName: string, propertyValue: string): SyntaxTree | null;
