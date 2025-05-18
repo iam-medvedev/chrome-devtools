@@ -40,11 +40,15 @@ export const UIStrings = {
     /**
      * @description Description of the table of the detected preconnect origins.
      */
-    preconnectOriginsTableDescription: '[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to.',
+    preconnectOriginsTableDescription: '[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to.',
     /**
      * @description Text status indicating that there isn't any preconnected origins.
      */
     noPreconnectOrigins: 'no origins were preconnected',
+    /**
+     * @description A warning message that is shown when the user added preconnect for some unnecessary origins.
+     */
+    unusedWarning: 'Unused preconnect. Only use `preconnect` for origins that the page is likely to request.',
     /**
      * @description Label for a column in a data table; entries will be the source of the origin.
      */
@@ -60,7 +64,7 @@ export const UIStrings = {
     /**
      * @description Description of the table that recommends preconnecting to the origins to save time.
      */
-    estSavingTableDescription: 'Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints to your most important origins, but try to use fewer than 4.',
+    estSavingTableDescription: 'Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints to your most important origins, but try to use fewer than 4.',
     /**
      * @description Label for a column in a data table; entries will be the origin of a web resource
      */
@@ -125,13 +129,6 @@ function isCritical(request, context) {
     return isHighPriority || isBlocking;
 }
 function generateNetworkDependencyTree(context) {
-    if (!context.navigation) {
-        return {
-            rootNodes: [],
-            maxTime: Types.Timing.Micro(0),
-            fail: false,
-        };
-    }
     const rootNodes = [];
     const relatedEvents = new Map();
     let maxTime = Types.Timing.Micro(0);
@@ -167,7 +164,8 @@ function generateNetworkDependencyTree(context) {
                 currentNodes.push(found);
             }
             path.forEach(request => found?.relatedRequests.add(request));
-            // TODO(b/372897712) Switch the UIString to markdown.
+            // TODO(b/372897712): When RelatedInsight supports markdown, remove
+            // UIStrings.warningDescription and use UIStrings.description.
             relatedEvents.set(request, depth < 2 ? [] : [i18nString(UIStrings.warningDescription)]);
             currentNodes = found.children;
         }
@@ -219,6 +217,23 @@ function generateNetworkDependencyTree(context) {
         fail,
         relatedEvents,
     };
+}
+function getSecurityOrigin(url) {
+    const parsedURL = new Common.ParsedURL.ParsedURL(url);
+    return parsedURL.securityOrigin();
+}
+// Export the function for test purpose.
+export function generatePreconnectedOrigins(linkPreconnectEvents, contextRequests) {
+    const preconnectOrigins = [];
+    for (const event of linkPreconnectEvents) {
+        preconnectOrigins.push({
+            node_id: event.args.data.node_id,
+            frame: event.args.data.frame,
+            url: event.args.data.url,
+            unused: !contextRequests.some(request => getSecurityOrigin(event.args.data.url) === getSecurityOrigin(request.args.data.url)),
+        });
+    }
+    return preconnectOrigins;
 }
 function hasValidTiming(request) {
     return !!request.args.data.timing && request.args.data.timing.connectEnd >= 0 &&
@@ -282,12 +297,11 @@ function candidateRequestsByOrigin(parsedTrace, mainResource, contextRequests, l
     });
     return origins;
 }
-export function generatePreconnectCandidates(parsedTrace, context) {
-    if (!context.navigation || !context.lantern) {
+// Export the function for test purpose.
+export function generatePreconnectCandidates(parsedTrace, context, contextRequests) {
+    if (!context.lantern) {
         return [];
     }
-    const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
-    const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
     const mainResource = contextRequests.find(request => request.args.data.requestId === context.navigationId);
     if (!mainResource) {
         return [];
@@ -347,13 +361,20 @@ export function generatePreconnectCandidates(parsedTrace, context) {
     return preconnectCandidates;
 }
 export function generateInsight(parsedTrace, context) {
+    if (!context.navigation) {
+        return finalize({
+            rootNodes: [],
+            maxTime: 0,
+            fail: false,
+            preconnectOrigins: [],
+            preconnectCandidates: [],
+        });
+    }
     const { rootNodes, maxTime, fail, relatedEvents, } = generateNetworkDependencyTree(context);
-    const preconnectOrigins = parsedTrace.NetworkRequests.linkPreconnectEvents.map(event => ({
-        node_id: event.args.data.node_id,
-        frame: event.args.data.frame,
-        url: event.args.data.url,
-    }));
-    const preconnectCandidates = generatePreconnectCandidates(parsedTrace, context);
+    const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
+    const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
+    const preconnectOrigins = generatePreconnectedOrigins(parsedTrace.NetworkRequests.linkPreconnectEvents, contextRequests);
+    const preconnectCandidates = generatePreconnectCandidates(parsedTrace, context, contextRequests);
     return finalize({
         rootNodes,
         maxTime,

@@ -10,7 +10,7 @@ export default `/*
  */
 
 .editor.interacting::before {
-  content: "";
+  content: '';
   position: fixed;
   inset: 0;
 }
@@ -48,7 +48,8 @@ export default `/*
   height: 0;
   border-style: solid;
   border-width: 0 0.9em 0.9em;
-  border-color: transparent transparent var(--sys-color-neutral-outline) transparent;
+  border-color: transparent transparent var(--sys-color-neutral-outline)
+    transparent;
 }
 
 .center,
@@ -78,7 +79,7 @@ export default `/*
 }
 
 .hand::before {
-  content: "";
+  content: '';
   display: inline-block;
   position: absolute;
   top: -0.6em;
@@ -96,15 +97,18 @@ export default `/*
 }
 
 :host-context(.theme-with-dark-background) .hand::before {
+  /* stylelint-disable-next-line plugin/use_theme_colors */
   box-shadow: 0 0 5px hsl(0deg 0% 0% / 80%);
 }
 
 :host-context(.theme-with-dark-background) .center,
 :host-context(.theme-with-dark-background) .hand {
+  /* stylelint-disable-next-line plugin/use_theme_colors */
   box-shadow: 0 0 2px hsl(0deg 0% 0% / 60%);
 }
 
 :host-context(.theme-with-dark-background) .clock {
+  /* stylelint-disable-next-line plugin/use_theme_colors */
   background-color: hsl(225deg 5% 27%);
 }
 

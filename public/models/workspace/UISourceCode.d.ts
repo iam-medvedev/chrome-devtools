@@ -121,10 +121,8 @@ export declare class UILocationRange {
  * where UISourceCode displaying is handled.
  */
 export declare class Message {
-    private readonly levelInternal;
-    private readonly textInternal;
+    #private;
     range: TextUtils.TextRange.TextRange;
-    private readonly clickHandlerInternal?;
     constructor(level: Message.Level, text: string, clickHandler?: (() => void), range?: TextUtils.TextRange.TextRange);
     level(): Message.Level;
     text(): string;

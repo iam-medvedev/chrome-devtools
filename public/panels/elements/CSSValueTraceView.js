@@ -7,7 +7,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import cssValueTraceViewStyles from './cssValueTraceView.css.js';
 import { Highlighting, Renderer, RenderingContext, TracingContext, } from './PropertyRenderer.js';
 import stylePropertiesTreeOutlineStyles from './stylePropertiesTreeOutline.css.js';
-const { html, render, Directives: { ref, classMap, ifDefined } } = Lit;
+const { html, render, Directives: { classMap, ifDefined } } = Lit;
 function defaultView(input, output, target) {
     const substitutions = [...input.substitutions];
     const evaluations = [...input.evaluations];
@@ -21,9 +21,6 @@ function defaultView(input, output, target) {
     html `
       <div
        role=dialog
-       ${ref(e => {
-        output.defaultFocusedElement = e?.querySelector('[tabindex]') ?? undefined;
-    })}
        class="css-value-trace monospace"
        @keydown=${onKeyDown}
        >
@@ -91,22 +88,23 @@ export class CSSValueTraceView extends UI.Widget.VBox {
     #view;
     #evaluations = [];
     #substitutions = [];
+    #pendingFocus = false;
     constructor(element, view = defaultView) {
         super(true, false, element);
         this.registerRequiredCSS(cssValueTraceViewStyles, stylePropertiesTreeOutlineStyles);
         this.#view = view;
         this.requestUpdate();
     }
-    async showTrace(property, subexpression, matchedStyles, computedStyles, renderers, expandPercentagesInShorthands, shorthandPositionOffset) {
+    async showTrace(property, subexpression, matchedStyles, computedStyles, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus) {
         const matchedResult = subexpression === null ?
             property.parseValue(matchedStyles, computedStyles) :
             property.parseExpression(subexpression, matchedStyles, computedStyles);
         if (!matchedResult) {
             return undefined;
         }
-        return await this.#showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset);
+        return await this.#showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus);
     }
-    async #showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset) {
+    async #showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus) {
         this.#highlighting = new Highlighting();
         const rendererMap = new Map(renderers.map(r => [r.matchType, r]));
         // Compute all trace lines
@@ -140,6 +138,7 @@ export class CSSValueTraceView extends UI.Widget.VBox {
             const context = new RenderingContext(matchedResult.ast, property, rendererMap, matchedResult);
             this.#evaluations.push(Renderer.render(matchedResult.ast.tree, context).nodes);
         }
+        this.#pendingFocus = focus;
         this.requestUpdate();
     }
     performUpdate() {
@@ -148,9 +147,16 @@ export class CSSValueTraceView extends UI.Widget.VBox {
             evaluations: this.#evaluations,
             onToggle: () => this.onResize(),
         };
-        const viewOutput = {};
-        this.#view(viewInput, viewOutput, this.contentElement);
-        this.setDefaultFocusedElement(viewOutput.defaultFocusedElement ?? null);
+        this.#view(viewInput, {}, this.contentElement);
+        const tabStop = this.contentElement.querySelector('[tabindex]');
+        this.setDefaultFocusedElement(tabStop);
+        if (tabStop && this.#pendingFocus) {
+            this.focus();
+            this.resetPendingFocus();
+        }
+    }
+    resetPendingFocus() {
+        this.#pendingFocus = false;
     }
 }
 //# sourceMappingURL=CSSValueTraceView.js.map

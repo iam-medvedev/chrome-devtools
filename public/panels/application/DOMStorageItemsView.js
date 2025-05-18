@@ -58,7 +58,7 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
         super(i18nString(UIStrings.domStorageItems), 'dom-storage', true);
         this.domStorage = domStorage;
         if (domStorage.storageKey) {
-            this.setStorageKey(domStorage.storageKey);
+            this.toolbar?.setStorageKey(domStorage.storageKey);
         }
         this.element.classList.add('storage-view', 'table');
         this.showPreview(null, null);
@@ -77,7 +77,7 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
         const storageKind = domStorage.isLocalStorage ? 'local-storage-data' : 'session-storage-data';
         this.element.setAttribute('jslog', `${VisualLogging.pane().context(storageKind)}`);
         if (domStorage.storageKey) {
-            this.setStorageKey(domStorage.storageKey);
+            this.toolbar?.setStorageKey(domStorage.storageKey);
         }
         this.eventListeners = [
             this.domStorage.addEventListener("DOMStorageItemsCleared" /* DOMStorage.Events.DOM_STORAGE_ITEMS_CLEARED */, this.domStorageItemsCleared, this),
@@ -124,10 +124,12 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
     }
     async #refreshItems() {
         const items = await this.domStorage.getItems();
-        if (!items) {
+        if (!items || !this.toolbar) {
             return;
         }
-        const filteredItems = this.filter(items.map(item => ({ key: item[0], value: item[1] })), item => `${item.key} ${item.value}`);
+        const { filterRegex } = this.toolbar;
+        const filteredItems = items.map(item => ({ key: item[0], value: item[1] }))
+            .filter(item => filterRegex?.test(`${item.key} ${item.value}`) ?? true);
         this.showItems(filteredItems);
     }
     deleteAllItems() {

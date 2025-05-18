@@ -150,6 +150,16 @@ export declare class ToolbarInput extends ToolbarItem<ToolbarInput.EventTypes> {
 export declare class ToolbarFilter extends ToolbarInput {
     constructor(filterBy?: Common.UIString.LocalizedString, growFactor?: number, shrinkFactor?: number, tooltip?: string, completions?: ((arg0: string, arg1: string, arg2?: boolean | undefined) => Promise<Suggestion[]>), dynamicCompletions?: boolean, jslogContext?: string, element?: HTMLElement);
 }
+export declare class ToolbarInputElement extends HTMLElement {
+    #private;
+    static observedAttributes: string[];
+    item: ToolbarInput;
+    datalist: HTMLDataListElement | null;
+    value: string | undefined;
+    connectedCallback(): void;
+    focus(): void;
+    attributeChangedCallback(name: string, _oldValue: string, newValue: string): void;
+}
 export declare namespace ToolbarInput {
     const enum Event {
         TEXT_CHANGED = "TextChanged",

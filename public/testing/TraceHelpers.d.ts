@@ -47,7 +47,8 @@ export interface RenderFlameChartOptions {
     customEndTime?: Trace.Types.Timing.Milli;
 }
 /**
- * Renders a flame chart into the unit test DOM.
+ * Renders a flame chart into the unit test DOM that renders a real provided
+ * trace file.
  * It will take care of all the setup and configuration for you.
  */
 export declare function renderFlameChartIntoDOM(context: Mocha.Context | null, options: RenderFlameChartOptions): Promise<{
@@ -151,6 +152,16 @@ export declare class FakeFlameChartProvider implements PerfUI.FlameChart.FlameCh
     textColor(_entryIndex: number): string;
     timelineData(): PerfUI.FlameChart.FlameChartTimelineData | null;
 }
+export interface FlameChartWithFakeProviderOptions {
+    windowTimes?: [number, number];
+}
+/**
+ * Renders a flame chart using a fake provider and mock delegate.
+ * @param provider - The fake flame chart provider.
+ * @param options - Optional parameters.  Includes windowTimes, an array specifying the minimum and maximum window times. Defaults to [0, 100].
+ * @returns A promise that resolves when the flame chart is rendered.
+ */
+export declare function renderFlameChartWithFakeProvider(provider: FakeFlameChartProvider, options?: FlameChartWithFakeProviderOptions): Promise<void>;
 export declare function getMainThread(data: Trace.Handlers.ModelHandlers.Renderer.RendererHandlerData): Trace.Handlers.ModelHandlers.Renderer.RendererThread;
 type ParsedTrace = Trace.Handlers.Types.ParsedTrace;
 export declare function getBaseTraceParseModelData(overrides?: Partial<ParsedTrace>): ParsedTrace;

@@ -427,7 +427,7 @@ footer.chat-view-footer {
       outline: 2px solid var(--sys-color-state-focus-ring);
     }
 
-    .icon,
+    devtools-icon,
     devtools-file-source-icon {
       display: inline-flex;
       vertical-align: middle;
@@ -463,6 +463,7 @@ footer.chat-view-footer {
       display: inline-flex;
       justify-content: center;
       align-items: center;
+      vertical-align: middle;
       margin-right: var(--sys-size-3);
 
       img {
@@ -858,7 +859,7 @@ main {
   }
 
   /* TODO(b/412621009): Remove this once the bug is fixed on the VE logging side */
-  &:not(&[open]) > *:not(summary) {
+  &:not(.saved-to-disk, &[open]) > *:not(summary) {
     display: none;
   }
 

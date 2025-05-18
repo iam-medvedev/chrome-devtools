@@ -83,14 +83,13 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
         setValue(folderExcludeSetting.get());
         return excludePatternElement;
         function regexValidator(value) {
-            let regex;
             try {
-                regex = new RegExp(value);
+                new RegExp(value);
+                return true;
             }
             catch {
+                return false;
             }
-            const valid = Boolean(regex);
-            return { valid, errorMessage: undefined };
         }
     }
     addItem(fileSystem) {
@@ -139,7 +138,6 @@ export class WorkspaceSettingsTab extends UI.Widget.VBox {
     fileSystemRemoved(fileSystem) {
         const mappingView = this.mappingViewByPath.get(fileSystem.path());
         if (mappingView) {
-            mappingView.dispose();
             this.mappingViewByPath.delete(fileSystem.path());
         }
         const element = this.elementByPath.get(fileSystem.path());

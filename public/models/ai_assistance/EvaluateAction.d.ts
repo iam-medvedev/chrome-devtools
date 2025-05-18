@@ -2,6 +2,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 export declare function formatError(message: string): string;
 export declare class SideEffectError extends Error {
 }
+export declare function stringifyObjectOnThePage(this: unknown): string;
+export declare function stringifyRemoteObject(object: SDK.RemoteObject.RemoteObject): Promise<string>;
 export interface Options {
     throwOnSideEffect: boolean;
 }

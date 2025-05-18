@@ -50,10 +50,6 @@ export declare enum projectTypes {
 }
 export declare abstract class ProjectStore implements Project {
     #private;
-    private readonly workspaceInternal;
-    private readonly idInternal;
-    private readonly typeInternal;
-    private readonly displayNameInternal;
     constructor(workspace: WorkspaceImpl, id: string, type: projectTypes, displayName: string);
     id(): string;
     type(): projectTypes;
@@ -87,8 +83,7 @@ export declare abstract class ProjectStore implements Project {
     abstract findFilesMatchingSearchRequest(searchConfig: SearchConfig, filesMatchingFileQuery: UISourceCode[], progress: Common.Progress.Progress): Promise<Map<UISourceCode, TextUtils.ContentProvider.SearchMatch[] | null>>;
 }
 export declare class WorkspaceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    private projectsInternal;
-    private hasResourceContentTrackingExtensionsInternal;
+    #private;
     private constructor();
     static instance(opts?: {
         forceNew: boolean | null;
@@ -125,7 +120,7 @@ export interface UISourceCodeRenamedEvent {
 export interface WorkingCopyChangedEvent {
     uiSourceCode: UISourceCode;
 }
-export interface WorkingCopyCommitedEvent {
+export interface WorkingCopyCommittedEvent {
     uiSourceCode: UISourceCode;
     content: string;
     encoded?: boolean;
@@ -135,8 +130,8 @@ export interface EventTypes {
     [Events.UISourceCodeRemoved]: UISourceCode;
     [Events.UISourceCodeRenamed]: UISourceCodeRenamedEvent;
     [Events.WorkingCopyChanged]: WorkingCopyChangedEvent;
-    [Events.WorkingCopyCommitted]: WorkingCopyCommitedEvent;
-    [Events.WorkingCopyCommittedByUser]: WorkingCopyCommitedEvent;
+    [Events.WorkingCopyCommitted]: WorkingCopyCommittedEvent;
+    [Events.WorkingCopyCommittedByUser]: WorkingCopyCommittedEvent;
     [Events.ProjectAdded]: Project;
     [Events.ProjectRemoved]: Project;
 }

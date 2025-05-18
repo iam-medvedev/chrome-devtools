@@ -70,6 +70,7 @@ export declare class CSSMatchedStyles {
     transitionsStyle(): CSSStyleDeclaration | null;
     registeredProperties(): CSSRegisteredProperty[];
     getRegisteredProperty(name: string): CSSRegisteredProperty | undefined;
+    getRegisteredFunction(name: string): string | undefined;
     functionRules(): CSSFunctionRule[];
     fontPaletteValuesRule(): CSSFontPaletteValuesRule | undefined;
     keyframes(): CSSKeyframesRule[];

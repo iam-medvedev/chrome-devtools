@@ -45,9 +45,8 @@ export declare class UserActionRow extends UI.Widget.Widget implements UserActio
     suggestions: [string, ...string[]] | undefined;
     onSuggestionClick: (suggestion: string) => void;
     canShowFeedbackForm: boolean;
-    view: View;
     constructor(element?: HTMLElement, view?: View);
     wasShown(): void;
     performUpdate(): Promise<void> | void;
-    disconnectedCallback(): void;
+    willHide(): void;
 }

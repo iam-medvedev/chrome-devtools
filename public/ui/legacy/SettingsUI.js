@@ -38,7 +38,7 @@ import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import { InspectorView } from './InspectorView.js';
 import { Tooltip } from './Tooltip.js';
-import { CheckboxLabel, createOption } from './UIUtils.js';
+import { bindInput, CheckboxLabel, createOption } from './UIUtils.js';
 const UIStrings = {
     /**
      *@description Note when a setting change will require the user to reload DevTools
@@ -112,43 +112,68 @@ const createSettingSelect = function (name, options, requiresReload, setting, su
         }
     }
 };
-export const bindToSetting = (setting) => {
+export const bindToSetting = (setting, stringValidator) => {
     if (typeof setting === 'string') {
         setting = Common.Settings.Settings.instance().moduleSetting(setting);
     }
-    return Directives.ref(e => bindCheckbox(e, setting));
+    // We can't use `setValue` as the change listener directly, otherwise we won't
+    // be able to remove it again.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let setValue;
+    function settingChanged(event) {
+        setValue(event.data);
+    }
+    if (setting.type() === "boolean" /* Common.Settings.SettingType.BOOLEAN */ || typeof setting.defaultValue === 'boolean') {
+        return Directives.ref(e => {
+            if (e === undefined) {
+                setting.removeChangeListener(settingChanged);
+                return;
+            }
+            setting.addChangeListener(settingChanged);
+            setValue = bindCheckboxImpl(e, setting.set.bind(setting));
+            setValue(setting.get());
+        });
+    }
+    if (typeof setting.defaultValue === 'string') {
+        return Directives.ref(e => {
+            if (e === undefined) {
+                setting.removeChangeListener(settingChanged);
+                return;
+            }
+            setting.addChangeListener(settingChanged);
+            setValue = bindInput(e, setting.set.bind(setting), stringValidator ?? (() => true), /* numeric */ false);
+            setValue(setting.get());
+        });
+    }
+    throw new Error(`Cannot infer type for setting  '${setting.name}'`);
 };
-export const bindCheckbox = function (inputElement, setting, metric) {
-    function settingChanged() {
-        const input = inputElement;
-        if (input.checked !== setting.get()) {
-            input.checked = setting.get();
-        }
-    }
-    if (inputElement) {
-        setting.addChangeListener(settingChanged);
-    }
-    else {
-        setting.removeChangeListener(settingChanged);
-        return;
-    }
-    const input = inputElement;
-    settingChanged();
-    function inputChanged() {
-        if (setting.get() !== input.checked) {
-            setting.set(input.checked);
-        }
-        if (setting.get() && metric?.enable) {
+/**
+ * @deprecated Prefer {@link bindToSetting} as this function leaks the checkbox via the setting listener.
+ */
+export const bindCheckbox = function (input, setting, metric) {
+    const setValue = bindCheckboxImpl(input, setting.set.bind(setting), metric);
+    setting.addChangeListener(event => setValue(event.data));
+    setValue(setting.get());
+};
+const bindCheckboxImpl = function (input, apply, metric) {
+    input.addEventListener('change', onInputChanged, false);
+    function onInputChanged() {
+        apply(input.checked);
+        if (input.checked && metric?.enable) {
             Host.userMetrics.actionTaken(metric.enable);
         }
-        if (!setting.get() && metric?.disable) {
+        if (!input.checked && metric?.disable) {
             Host.userMetrics.actionTaken(metric.disable);
         }
         if (metric?.toggle) {
             Host.userMetrics.actionTaken(metric.toggle);
         }
     }
-    input.addEventListener('change', inputChanged, false);
+    return function setValue(value) {
+        if (value !== input.checked) {
+            input.checked = value;
+        }
+    };
 };
 export const createCustomSetting = function (name, element) {
     const p = document.createElement('p');

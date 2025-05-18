@@ -59,6 +59,14 @@ export class DOMNodeLink extends UI.Widget.Widget {
         this.#view = view;
         this.performUpdate();
     }
+    set node(node) {
+        this.#node = node;
+        this.performUpdate();
+    }
+    set options(options) {
+        this.#options = options;
+        this.performUpdate();
+    }
     performUpdate() {
         const options = this.#options ?? {
             tooltip: undefined,

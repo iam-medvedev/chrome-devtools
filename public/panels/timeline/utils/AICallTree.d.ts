@@ -30,6 +30,40 @@ export declare class AICallTree {
     static fromEvent(selectedEvent: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
     /** Define precisely how the call tree is serialized. Typically called from within `PerformanceAgent` */
     serialize(): string;
+    /**
+     * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
+     * BFS is important here because the serialization process assumes that direct child nodes
+     * will have consecutive IDs (horizontally across each depth).
+     *
+     * Example tree with IDs:
+     *
+     *             1
+     *            / \
+     *           2   3
+     *        / / /   \
+     *      4  5 6     7
+     *
+     * Here, node with an ID 2 has consecutive children in the 4-6 range.
+     *
+     * To optimize for space, the provided `callback` function is called to serialize
+     * each node as it's visited during the BFS traversal.
+     *
+     * When serializing a node, the callback receives:
+     * 1. The current node being visited.
+     * 2. The ID assigned to this current node (a simple incrementing index based on visit order).
+     * 3. The predicted starting ID for the children of this current node.
+     *
+     * A serialized node needs to know the ID range of its children. However,
+     * child node IDs are only assigned when those children are themselves visited.
+     * To handle this, we predict the starting ID for a node's children. This prediction
+     * is based on a running count of all nodes that have ever been added to the BFS queue.
+     * Since IDs are assigned consecutively as nodes are processed from the queue, and a
+     * node's children are added to the end of the queue when the parent is visited,
+     * their eventual IDs will follow this running count.
+     */
+    breadthFirstWalk(nodes: MapIterator<Trace.Extras.TraceTree.Node>, serializeNodeCallback: (currentNode: Trace.Extras.TraceTree.Node, nodeId: number, childrenStartingId?: number) => void): void;
+    serializeIntoCompressedFormat(): string;
+    stringifyNodeCompressed(node: Trace.Extras.TraceTree.Node, nodeId: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, allUrls: string[], childStartingNodeIndex?: number): string;
     static stringifyNode(node: Trace.Extras.TraceTree.Node, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, nodeToIdMap: Map<Trace.Extras.TraceTree.Node, number>, allUrls: string[]): string;
     logDebug(): void;
 }

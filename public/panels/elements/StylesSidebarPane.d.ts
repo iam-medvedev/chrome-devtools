@@ -72,6 +72,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     jumpToDeclaration(valueSource: SDK.CSSMatchedStyles.CSSValueSource): void;
     jumpToSection(sectionName: string, blockName: string): void;
     jumpToSectionBlock(section: string): void;
+    jumpToFunctionDefinition(functionName: string): void;
     forceUpdate(): void;
     private sectionsContainerKeyDown;
     private sectionsContainerFocusChanged;

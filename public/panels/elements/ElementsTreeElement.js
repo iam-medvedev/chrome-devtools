@@ -418,11 +418,13 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.#updateNodeElementToIssue(tagElement, issue);
     }
     #updateNodeElementToIssue(nodeElement, issue) {
-        if (!this.#nodeElementToIssue.has(nodeElement)) {
-            this.#nodeElementToIssue.set(nodeElement, [issue]);
-            return;
+        let issues = this.#nodeElementToIssue.get(nodeElement);
+        if (!issues) {
+            issues = [];
+            this.#nodeElementToIssue.set(nodeElement, issues);
         }
-        this.#nodeElementToIssue.get(nodeElement)?.push(issue);
+        issues.push(issue);
+        this.treeOutline?.updateNodeElementToIssue(nodeElement, issues);
     }
     expandedChildrenLimit() {
         return this.expandedChildrenLimitInternal;

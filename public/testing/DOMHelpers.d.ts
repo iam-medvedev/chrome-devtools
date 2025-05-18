@@ -6,13 +6,14 @@
  **/
 import type * as Platform from '../core/platform/platform.js';
 import type * as NodeText from '../ui/components/node_text/node_text.js';
+import * as UI from '../ui/legacy/legacy.js';
 interface RenderOptions {
     allowMultipleChildren?: boolean;
 }
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.
  **/
-export declare function renderElementIntoDOM<E extends Element>(element: E, renderOptions?: RenderOptions): E;
+export declare function renderElementIntoDOM<E extends Node | UI.Widget.Widget>(element: E, renderOptions?: RenderOptions): E;
 /**
  * Sets up the DOM for testing,
  * If not clean logs an error and cleans itself

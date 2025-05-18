@@ -70,6 +70,7 @@ export declare class DropDown implements UI.ListControl.ListDelegate<number> {
     private readonly listControl;
     private readonly focusRestorer;
     private selectionDone;
+    contentElement: HTMLElement;
     constructor(availableparsedTraceIndexes: number[], landingPageTitle: Common.UIString.LocalizedString);
     static show(availableparsedTraceIndexes: number[], activeparsedTraceIndex: number, anchor: Element, landingPageTitle?: Common.UIString.LocalizedString): Promise<number | null>;
     static cancelIfShowing(): void;
@@ -83,7 +84,7 @@ export declare class DropDown implements UI.ListControl.ListDelegate<number> {
     isItemSelectable(_parsedTraceIndex: number): boolean;
     selectedItemChanged(_from: number | null, _to: number | null, fromElement: Element | null, toElement: Element | null): void;
     updateSelectedItemARIA(_fromElement: Element | null, _toElement: Element | null): boolean;
-    private static instance;
+    static instance: DropDown | null;
 }
 export declare class ToolbarButton extends UI.Toolbar.ToolbarItem {
     private contentElement;

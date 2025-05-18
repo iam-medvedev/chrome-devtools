@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -37,6 +38,33 @@ describeWithEnvironment('TimelineHistoryManager', function () {
         assert.deepEqual(menuItemText, ['Live metrics', 'web.dev1× slowdown, No throttling']);
         // Cancel the dropdown, which also resolves the show() promise, meaning we
         // don't leak it into other tests.
+        historyManager.cancelIfShowing();
+        await showPromise;
+    });
+    it('shows a minimap for each trace in the dropdown', async function () {
+        const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        historyManager.addRecording({
+            data: {
+                parsedTraceIndex: 1,
+                type: 'TRACE_INDEX',
+            },
+            filmStripForPreview: null,
+            parsedTrace,
+            metadata,
+        });
+        assert.strictEqual(historyManager.button().element.innerText, 'web.dev #1');
+        const showPromise = historyManager.showHistoryDropDown();
+        // Getting a screenshot is a bit more involved, as we need to put the
+        // element into the test container div.
+        // To do that we grab the contentElement's shadow parent (which is the
+        // GlassPane with all the styles) and then copy it into the right place.
+        const instance = Timeline.TimelineHistoryManager.DropDown.instance;
+        const host = instance?.contentElement.parentNodeOrShadowHost();
+        assert.isOk(host);
+        renderElementIntoDOM(host);
+        await raf();
+        await assertScreenshot('timeline/timeline_history_manager.png');
+        // Ensure we get rid of the dropdown & glass pane.
         historyManager.cancelIfShowing();
         await showPromise;
     });

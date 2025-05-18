@@ -21,6 +21,8 @@ export type View = (input: ViewInput, output: object, target: HTMLElement) => vo
 export declare class DOMNodeLink extends UI.Widget.Widget {
     #private;
     constructor(element?: HTMLElement, node?: SDK.DOMModel.DOMNode, options?: Options, view?: View);
+    set node(node: SDK.DOMModel.DOMNode | undefined);
+    set options(options: Options | undefined);
     performUpdate(): void;
 }
 interface DeferredViewInput {

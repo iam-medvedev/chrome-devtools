@@ -3,7 +3,7 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Protocol from '../../../generated/protocol.js';
 import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModel, type InsightSetContext } from './types.js';
+import { type InsightModel, type InsightSetContext, type InsightSetContextWithNavigation } from './types.js';
 export declare const UIStrings: {
     /**
      * @description Title of an insight that recommends avoiding chaining critical requests.
@@ -37,11 +37,15 @@ export declare const UIStrings: {
     /**
      * @description Description of the table of the detected preconnect origins.
      */
-    readonly preconnectOriginsTableDescription: "[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to.";
+    readonly preconnectOriginsTableDescription: "[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to.";
     /**
      * @description Text status indicating that there isn't any preconnected origins.
      */
     readonly noPreconnectOrigins: "no origins were preconnected";
+    /**
+     * @description A warning message that is shown when the user added preconnect for some unnecessary origins.
+     */
+    readonly unusedWarning: "Unused preconnect. Only use `preconnect` for origins that the page is likely to request.";
     /**
      * @description Label for a column in a data table; entries will be the source of the origin.
      */
@@ -57,7 +61,7 @@ export declare const UIStrings: {
     /**
      * @description Description of the table that recommends preconnecting to the origins to save time.
      */
-    readonly estSavingTableDescription: "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints to your most important origins, but try to use fewer than 4.";
+    readonly estSavingTableDescription: "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints to your most important origins, but try to use fewer than 4.";
     /**
      * @description Label for a column in a data table; entries will be the origin of a web resource
      */
@@ -79,6 +83,7 @@ export interface PreconnectOrigin {
     node_id: Protocol.DOM.BackendNodeId;
     frame?: string;
     url: string;
+    unused: boolean;
 }
 export interface PreconnectCandidate {
     origin: Platform.DevToolsPath.UrlString;
@@ -91,5 +96,6 @@ export type NetworkDependencyTreeInsightModel = InsightModel<typeof UIStrings, {
     preconnectOrigins: PreconnectOrigin[];
     preconnectCandidates: PreconnectCandidate[];
 }>;
-export declare function generatePreconnectCandidates(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): PreconnectCandidate[];
+export declare function generatePreconnectedOrigins(linkPreconnectEvents: Types.Events.LinkPreconnect[], contextRequests: Types.Events.SyntheticNetworkRequest[]): PreconnectOrigin[];
+export declare function generatePreconnectCandidates(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[]): PreconnectCandidate[];
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): NetworkDependencyTreeInsightModel;

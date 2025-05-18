@@ -142,12 +142,12 @@ export class InsightContext extends ConversationContext {
                 ];
             case 'InteractionToNextPaint':
                 return [
-                    { title: 'Help me optimize my INP score' }, { title: 'Help me understand why a large INP score is problematic' },
-                    { title: 'What was the biggest contributor to my INP score?' }
+                    { title: 'Suggest fixes for my longest interaction' }, { title: 'Why is a large INP score problematic?' },
+                    { title: 'What\'s the biggest contributor to my longest interaction?' }
                 ];
             case 'LCPDiscovery':
                 return [
-                    { title: 'Help me optimize my LCP score' }, { title: 'What can I do to reduce my LCP discovery time?' },
+                    { title: 'Suggest fixes to reduce my LCP' }, { title: 'What can I do to reduce my LCP discovery time?' },
                     { title: 'Why is LCP discovery time important?' }
                 ];
             case 'LCPPhases':
@@ -179,6 +179,8 @@ export class InsightContext extends ConversationContext {
         }
     }
 }
+// 16k Tokens * ~4 char per token.
+const MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
 export class PerformanceInsightsAgent extends AiAgent {
     #insight;
     #lastContextForEnhancedQuery;
@@ -252,6 +254,11 @@ export class PerformanceInsightsAgent extends AiAgent {
                 const activeInsight = this.#insight.getItem();
                 const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
                 const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
+                if (this.#isFunctionResponseTooLarge(formatted.join('\n'))) {
+                    return {
+                        error: 'getNetworkActivitySummary response is too large. Try investigating using other functions',
+                    };
+                }
                 const summaryFact = {
                     text: `This is the network summary for this insight. You can use this and not call getNetworkActivitySummary again:\n${formatted.join('\n')}`,
                     metadata: { source: 'getNetworkActivitySummary()' }
@@ -293,6 +300,11 @@ export class PerformanceInsightsAgent extends AiAgent {
                     return { error: 'Request not found' };
                 }
                 const formatted = TraceEventFormatter.networkRequest(request, activeInsight.parsedTrace, { verbose: true });
+                if (this.#isFunctionResponseTooLarge(formatted)) {
+                    return {
+                        error: 'getNetworkRequestDetail response is too large. Try investigating using other functions',
+                    };
+                }
                 return { result: { request: formatted } };
             },
         });
@@ -339,6 +351,11 @@ The fields are:
                     return { error: 'No main thread activity found' };
                 }
                 const activity = tree.serialize();
+                if (this.#isFunctionResponseTooLarge(activity)) {
+                    return {
+                        error: 'getMainThreadActivity response is too large. Try investigating using other functions',
+                    };
+                }
                 const activityFact = {
                     text: `This is the main thread activity for this insight. You can use this and not call getMainThreadActivity again:\n${activity}`,
                     metadata: { source: 'getMainThreadActivity()' },
@@ -349,6 +366,9 @@ The fields are:
                 return { result: { activity } };
             },
         });
+    }
+    #isFunctionResponseTooLarge(response) {
+        return response.length > MAX_FUNCTION_RESULT_BYTE_LENGTH;
     }
     parseTextResponse(response) {
         /**

@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ElementsTreeElement } from './ElementsTreeElement.js';
 import type { MarkerDecoratorRegistration } from './MarkerDecorator.js';
@@ -38,6 +39,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private updateModifiedNodesTimeout?;
     constructor(omitRootDOMNode?: boolean, selectEnabled?: boolean, hideGutter?: boolean);
     static forDOMModel(domModel: SDK.DOMModel.DOMModel): ElementsTreeOutline | null;
+    updateNodeElementToIssue(element: Element, issues: IssuesManager.Issue.Issue[]): void;
     private onShowHTMLCommentsChange;
     setWordWrap(wrap: boolean): void;
     setMultilineEditing(multilineEditing: MultilineEditorController | null): void;

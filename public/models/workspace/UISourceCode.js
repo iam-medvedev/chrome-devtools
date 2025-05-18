@@ -540,24 +540,24 @@ export class UILocationRange {
  * where UISourceCode displaying is handled.
  */
 export class Message {
-    levelInternal;
-    textInternal;
+    #level;
+    #text;
     range;
-    clickHandlerInternal;
+    #clickHandler;
     constructor(level, text, clickHandler, range) {
-        this.levelInternal = level;
-        this.textInternal = text;
+        this.#level = level;
+        this.#text = text;
         this.range = range ?? new TextUtils.TextRange.TextRange(0, 0, 0, 0);
-        this.clickHandlerInternal = clickHandler;
+        this.#clickHandler = clickHandler;
     }
     level() {
-        return this.levelInternal;
+        return this.#level;
     }
     text() {
-        return this.textInternal;
+        return this.#text;
     }
     clickHandler() {
-        return this.clickHandlerInternal;
+        return this.#clickHandler;
     }
     lineNumber() {
         return this.range.startLine;

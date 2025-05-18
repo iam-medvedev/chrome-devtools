@@ -30,6 +30,11 @@ export declare abstract class ResourceChunkView<Chunk> extends UI.Widget.VBox {
     private onChunkDeselected;
     refresh(): void;
     private sortItems;
+    getDataGridForTest(): DataGrid.SortableDataGrid.SortableDataGrid<unknown>;
+    getSplitWidgetForTest(): UI.SplitWidget.SplitWidget;
+    getFilterInputForTest(): UI.Toolbar.ToolbarInput;
+    getClearAllButtonForTest(): UI.Toolbar.ToolbarButton;
+    getFilterTypeComboboxForTest(): UI.Toolbar.ToolbarComboBox;
 }
 export declare abstract class DataGridItem extends DataGrid.SortableDataGrid.SortableDataGridNode<unknown> {
     abstract binaryView(): BinaryResourceView | null;

@@ -81,7 +81,8 @@ describeWithMockConnection('SharedStorageTreeElement', function () {
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         panel.markAsRoot();
         panel.show(container);
-        const viewFunction = createViewFunctionStub(Application.SharedStorageItemsView.SharedStorageItemsView);
+        const toolbar = new Application.StorageItemsToolbar.StorageItemsToolbar();
+        const viewFunction = createViewFunctionStub(Application.SharedStorageItemsView.SharedStorageItemsView, { toolbar });
         const treeElement = new Application.SharedStorageTreeElement.SharedStorageTreeElement(panel, sharedStorage);
         treeElement.view =
             await Application.SharedStorageItemsView.SharedStorageItemsView.createView(sharedStorage, viewFunction);

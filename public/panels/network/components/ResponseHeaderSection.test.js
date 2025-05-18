@@ -153,11 +153,10 @@ describeWithEnvironment('ResponseHeaderSection', () => {
         const regex = /^\s*not-set\s*cross-origin-resource-policy\s*$/;
         assert.isTrue(regex.test(row.shadowRoot.querySelector('.header-name')?.textContent || ''));
         assert.strictEqual(row.shadowRoot.querySelector('.header-value')?.textContent?.trim(), '');
-        assert.strictEqual(getCleanTextContentFromElements(row.shadowRoot, '.call-to-action')[0], 'To use this resource from a different origin, the server needs to specify a cross-origin ' +
-            'resource policy in the response headers: Cross-Origin-Resource-Policy: same-site Choose ' +
-            'this option if the resource and the document are served from the same site. ' +
-            'Cross-Origin-Resource-Policy: cross-origin Only choose this option if an arbitrary website ' +
-            'including this resource does not impose a security risk. Learn more');
+        assert.strictEqual(getCleanTextContentFromElements(row.shadowRoot, '.call-to-action')[0], `To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:
+Cross-Origin-Resource-Policy: same-site Choose this option if the resource and the document are served from the same site.
+Cross-Origin-Resource-Policy: cross-origin Only choose this option if an arbitrary website including this resource does not impose a security risk.
+Learn more`);
     });
     it('displays info about blocked "Set-Cookie"-headers', async () => {
         const request = {
@@ -1148,9 +1147,9 @@ describeWithEnvironment('ResponseHeaderSection', () => {
             assert.strictEqual(shadowRoot.querySelector('.row')?.classList.contains('header-overridden'), isOverride);
         };
         assert.isNotNull(rows[0].shadowRoot);
-        checkRow(rows[0].shadowRoot, 'abc', 'def', false);
+        checkRow(rows[0].shadowRoot, 'Abc', 'def', false);
         assert.isNotNull(rows[1].shadowRoot);
-        checkRow(rows[1].shadowRoot, 'not-set cross-origin-embedder-policy', '', false);
+        checkRow(rows[1].shadowRoot, 'not-set Cross-Origin-Embedder-Policy', '', false);
     });
 });
 //# sourceMappingURL=ResponseHeaderSection.test.js.map

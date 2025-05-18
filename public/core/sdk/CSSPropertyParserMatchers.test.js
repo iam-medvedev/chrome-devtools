@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { Printer } from '../../testing/PropertyParser.js';
 function matchSingleValue(name, value, matcher) {
@@ -521,6 +522,53 @@ describe('Matchers for SDK.CSSPropertyParser.BottomUpTreeMatching', () => {
             const { match, text } = matchSingleValue('display', value, new SDK.CSSPropertyParserMatchers.FlexGridMatcher());
             assert.notExists(match, text);
         }
+    });
+    it('match color channels for relative colors', () => {
+        function expectedColor(channel) {
+            switch (channel) {
+                case "l" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.L */:
+                    return new Common.Color.Lab(0.5, 0, 0.0, null, 'lab(0.5 0 0)');
+                case "a" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.A */:
+                    return new Common.Color.Lab(1, 0.5, 0, null);
+                case "c" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.C */:
+                    return new Common.Color.LCH(1, 0.5, 0, null);
+                case "h" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.H */:
+                    return new Common.Color.LCH(1, 1, 0.5, null);
+                case "r" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.R */:
+                    return new Common.Color.Legacy([0.5, 0, 0], "rgb" /* Common.Color.Format.RGB */);
+                case "g" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.G */:
+                    return new Common.Color.Legacy([0, 0.5, 0], "rgb" /* Common.Color.Format.RGB */);
+                case "b" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.B */:
+                    return new Common.Color.Legacy([0, 0, 0.5], "rgb" /* Common.Color.Format.RGB */);
+                case "alpha" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.ALPHA */:
+                    return new Common.Color.Legacy([0, 0, 0, 0.5], "rgba" /* Common.Color.Format.RGBA */);
+                case "s" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.S */:
+                    return new Common.Color.HSL(0.8, 0.5, 0.9, null);
+                case "w" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.W */:
+                    return new Common.Color.HWB(0, 0.5, 0, null);
+                case "x" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.X */:
+                    return new Common.Color.ColorFunction("xyz-d50" /* Common.Color.Format.XYZ_D50 */, 0.5, 0, 0, null);
+                case "y" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.Y */:
+                    return new Common.Color.ColorFunction("xyz-d50" /* Common.Color.Format.XYZ_D50 */, 0, 0.5, 0, null);
+                case "z" /* SDK.CSSPropertyParserMatchers.RelativeColorChannel.Z */:
+                    return new Common.Color.ColorFunction("xyz-d50" /* Common.Color.Format.XYZ_D50 */, 0, 0, 0.5, null);
+                default:
+                    throw new Error('Unexpected channel');
+            }
+        }
+        for (const good of ['r', 'g', 'b', 'alpha', 'x', 'y', 'z', 'l', 'c', 'h', 'a', 'b', 's', 'w']) {
+            const { match, text } = matchSingleValue('color', `calc(1 * ${good})`, new SDK.CSSPropertyParserMatchers.RelativeColorChannelMatcher());
+            assert.exists(match, text);
+            assert.strictEqual(match.text, good);
+            const expected = expectedColor(good);
+            const baseColor = new SDK.CSSPropertyParserMatchers.ColorMatch(expected.getAuthoredText() ?? expected.asString(), match.node);
+            assert.strictEqual(match.getColorChannelValue({ baseColor, colorSpace: expected.format() })?.toFixed(1), '0.5', good);
+        }
+        const { match, text } = matchSingleValue('color', 'calc(1 * r)', new SDK.CSSPropertyParserMatchers.RelativeColorChannelMatcher());
+        assert.exists(match, text);
+        const expected = expectedColor('y');
+        const baseColor = new SDK.CSSPropertyParserMatchers.ColorMatch(expected.getAuthoredText() ?? expected.asString(), match.node);
+        assert.isNull(match.getColorChannelValue({ baseColor, colorSpace: expected.format() }));
     });
 });
 //# sourceMappingURL=CSSPropertyParserMatchers.test.js.map

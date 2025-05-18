@@ -1,8 +1,7 @@
+import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type OverviewController, type PopulateNodesEventNodes, type PopulateNodesEventNodeTypes } from './CSSOverviewController.js';
@@ -51,34 +50,20 @@ export declare class CSSOverviewCompletedView extends UI.Widget.VBox {
     setOverviewData(data: OverviewData): void;
     static readonly pushedNodes: Set<Protocol.DOM.BackendNodeId>;
 }
-declare const DetailsView_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.TAB_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.TAB_CLOSED>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.TAB_CLOSED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.TAB_CLOSED): boolean;
-    dispatchEventToListeners<T extends Events.TAB_CLOSED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
-}) & typeof UI.Widget.VBox;
-export declare class DetailsView extends DetailsView_base {
-    #private;
-    constructor();
-    appendTab(id: string, tabTitle: string, view: UI.Widget.Widget, jslogContext?: string): void;
-    closeTabs(): void;
+interface ViewInput {
+    items: Array<{
+        data: PopulateNodesEventNodeTypes;
+        link?: HTMLElement;
+        showNode?: () => void;
+    }>;
+    visibility: Set<string>;
 }
-export declare const enum Events {
-    TAB_CLOSED = "TabClosed"
-}
-export interface EventTypes {
-    [Events.TAB_CLOSED]: number;
-}
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class ElementDetailsView extends UI.Widget.Widget {
     #private;
-    constructor(domModel: SDK.DOMModel.DOMModel, cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier);
-    populateNodes(data: PopulateNodesEventNodes): Promise<void>;
-}
-export declare class ElementNode extends DataGrid.SortableDataGrid.SortableDataGridNode<ElementNode> {
-    #private;
-    constructor(data: PopulateNodesEventNodeTypes, link?: HTMLElement, show?: () => Promise<void>);
-    createCell(columnId: string): HTMLElement;
+    constructor(domModel: SDK.DOMModel.DOMModel, cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier, view?: View);
+    set data(data: PopulateNodesEventNodes);
+    performUpdate(): Promise<void>;
 }
 export {};

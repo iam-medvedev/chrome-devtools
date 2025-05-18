@@ -56,9 +56,10 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
         extensionStorage = new Resources.ExtensionStorageModel.ExtensionStorage(extensionStorageModel, TEST_EXTENSION_ID, TEST_EXTENSION_NAME, "local" /* Protocol.Extensions.StorageArea.Local */);
     });
     function createView() {
-        const viewFunction = createViewFunctionStub(View.ExtensionStorageItemsView);
+        const toolbar = new Resources.StorageItemsToolbar.StorageItemsToolbar();
+        const viewFunction = createViewFunctionStub(View.ExtensionStorageItemsView, { toolbar });
         const view = new View.ExtensionStorageItemsView(extensionStorage, viewFunction);
-        return { view, viewFunction };
+        return { view, viewFunction, toolbar };
     }
     it('displays items', async () => {
         assert.exists(extensionStorageModel);

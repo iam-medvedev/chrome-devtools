@@ -400,8 +400,8 @@ export class Location {
         if (!latitudeString && !longitudeString) {
             return null;
         }
-        const { valid: isLatitudeValid } = Location.latitudeValidator(latitudeString);
-        const { valid: isLongitudeValid } = Location.longitudeValidator(longitudeString);
+        const isLatitudeValid = Location.latitudeValidator(latitudeString);
+        const isLongitudeValid = Location.longitudeValidator(longitudeString);
         if (!isLatitudeValid && !isLongitudeValid) {
             return null;
         }
@@ -411,13 +411,11 @@ export class Location {
     }
     static latitudeValidator(value) {
         const numValue = parseFloat(value);
-        const valid = /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= -90 && numValue <= 90;
-        return { valid, errorMessage: undefined };
+        return /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= -90 && numValue <= 90;
     }
     static longitudeValidator(value) {
         const numValue = parseFloat(value);
-        const valid = /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= -180 && numValue <= 180;
-        return { valid, errorMessage: undefined };
+        return /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= -180 && numValue <= 180;
     }
     static timezoneIdValidator(value) {
         // Chromium uses ICU's timezone implementation, which is very
@@ -426,8 +424,7 @@ export class Location {
         // weird-looking timezone IDs. There's not much point in validating
         // the input other than checking if it contains at least one alphabet.
         // The empty string resets the override, and is accepted as well.
-        const valid = value === '' || /[a-zA-Z]/.test(value);
-        return { valid, errorMessage: undefined };
+        return value === '' || /[a-zA-Z]/.test(value);
     }
     static localeValidator(value) {
         // Similarly to timezone IDs, there's not much point in validating
@@ -436,8 +433,7 @@ export class Location {
         // https://unicode.org/reports/tr35/#Unicode_language_identifier
         // The empty string resets the override, and is accepted as
         // well.
-        const valid = value === '' || /[a-zA-Z]{2}/.test(value);
-        return { valid, errorMessage: undefined };
+        return value === '' || /[a-zA-Z]{2}/.test(value);
     }
     toSetting() {
         return `${this.latitude}@${this.longitude}:${this.timezoneId}:${this.locale}:${this.unavailable || ''}`;
@@ -464,9 +460,9 @@ export class DeviceOrientation {
         if (!alphaString && !betaString && !gammaString) {
             return null;
         }
-        const { valid: isAlphaValid } = DeviceOrientation.alphaAngleValidator(alphaString);
-        const { valid: isBetaValid } = DeviceOrientation.betaAngleValidator(betaString);
-        const { valid: isGammaValid } = DeviceOrientation.gammaAngleValidator(gammaString);
+        const isAlphaValid = DeviceOrientation.alphaAngleValidator(alphaString);
+        const isBetaValid = DeviceOrientation.betaAngleValidator(betaString);
+        const isGammaValid = DeviceOrientation.gammaAngleValidator(gammaString);
         if (!isAlphaValid && !isBetaValid && !isGammaValid) {
             return null;
         }
@@ -477,8 +473,8 @@ export class DeviceOrientation {
     }
     static angleRangeValidator(value, interval) {
         const numValue = parseFloat(value);
-        const valid = /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= interval.minimum && numValue < interval.maximum;
-        return { valid, errorMessage: undefined };
+        return /^([+-]?[\d]+(\.\d+)?|[+-]?\.\d+)$/.test(value) && numValue >= interval.minimum &&
+            numValue < interval.maximum;
     }
     static alphaAngleValidator(value) {
         // https://w3c.github.io/deviceorientation/#device-orientation-model

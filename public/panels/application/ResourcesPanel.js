@@ -13,7 +13,7 @@ import { CookieItemsView } from './CookieItemsView.js';
 import { DOMStorageItemsView } from './DOMStorageItemsView.js';
 import { ExtensionStorageItemsView } from './ExtensionStorageItemsView.js';
 import resourcesPanelStyles from './resourcesPanel.css.js';
-import { StorageItemsView } from './StorageItemsView.js';
+import { StorageItemsToolbar } from './StorageItemsToolbar.js';
 let resourcesPanelInstance;
 export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
     resourcesLastSelectedItemSetting;
@@ -57,7 +57,7 @@ export class ResourcesPanel extends UI.Panel.PanelWithSidebar {
             SourceFrame.ResourceSourceFrame.ResourceSourceFrame,
             SourceFrame.ImageView.ImageView,
             SourceFrame.FontView.FontView,
-            StorageItemsView,
+            StorageItemsToolbar,
         ];
         return viewClassesToClose.some(type => view instanceof type);
     }

@@ -28,6 +28,10 @@ export class Tooltip extends HTMLElement {
     #timeout = null;
     #closing = false;
     #anchorObserver = null;
+    #openedViaHotkey = false;
+    get openedViaHotkey() {
+        return this.#openedViaHotkey;
+    }
     get open() {
         return this.matches(':popover-open');
     }
@@ -204,10 +208,12 @@ export class Tooltip extends HTMLElement {
     #resetClosing = (event) => {
         if (event.newState === 'closed') {
             this.#closing = false;
+            this.#openedViaHotkey = false;
         }
     };
     #keyDown = (event) => {
         if ((event.altKey && event.key === 'ArrowDown') || (event.key === 'Escape' && this.open)) {
+            this.#openedViaHotkey = !this.open;
             this.toggle();
             event.consume(true);
         }

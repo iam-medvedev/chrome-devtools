@@ -64,12 +64,12 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
         await this.refreshItems();
     }
     async refreshItems() {
-        await this.metadataView.render();
+        await this.metadataView?.render();
         await this.updateEntriesOnly();
         this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemsRefreshed" /* SharedStorageItemsDispatcher.Events.ITEMS_REFRESHED */);
     }
     async deleteAllItems() {
-        if (!this.hasFilter()) {
+        if (!this.toolbar?.hasFilter()) {
             await this.#sharedStorage.clear();
             await this.refreshItems();
             this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemsCleared" /* SharedStorageItemsDispatcher.Events.ITEMS_CLEARED */);
@@ -98,9 +98,10 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
         UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemEdited));
     }
     #showSharedStorageItems(items) {
-        const filteredItems = (item) => `${item.key} ${item.value}`;
-        const filteredList = this.filter(items, filteredItems);
-        this.showItems(filteredList);
+        if (this.toolbar) {
+            const filteredList = items.filter(item => this.toolbar?.filterRegex?.test(`${item.key} ${item.value}`) ?? true);
+            this.showItems(filteredList);
+        }
     }
     async removeItem(key) {
         await this.#sharedStorage.deleteEntry(key);

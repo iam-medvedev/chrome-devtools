@@ -290,6 +290,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     jumpToSectionBlock(section) {
         this.decorator.findAndHighlightSectionBlock(section);
     }
+    jumpToFunctionDefinition(functionName) {
+        this.jumpToSection(functionName, FUNCTION_SECTION_NAME);
+    }
     forceUpdate() {
         this.needsForceUpdate = true;
         this.swatchPopoverHelperInternal.hide();
@@ -961,7 +964,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             const block = SectionBlock.createFunctionBlock(expandedByDefault);
             for (const functionRule of matchedStyles.functionRules()) {
                 this.idleCallbackManager.schedule(() => {
-                    block.sections.push(new FunctionRuleSection(this, matchedStyles, functionRule.style, functionRule.children(), sectionIdx, functionRule.functionName().text, functionRule.parameters(), expandedByDefault));
+                    block.sections.push(new FunctionRuleSection(this, matchedStyles, functionRule.style, functionRule.children(), sectionIdx, functionRule.nameWithParameters(), expandedByDefault));
                     sectionIdx++;
                 });
             }

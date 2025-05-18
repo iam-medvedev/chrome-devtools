@@ -27,6 +27,11 @@ const UIStrings = {
      *@example {2} PH1
      */
     SkippingDMatchingLines: '( … Skipping {PH1} matching lines … )',
+    /**
+     *@description Text in Changes View for the case where the modified file contents are the same with its unmodified state
+     * e.g. the file contents changed from A -> B then B -> A and not saved yet.
+     */
+    noDiff: 'File is identical to its unmodified state',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/components/diff_view/DiffView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -208,20 +213,29 @@ class DiffRenderer {
         Lit.render(renderer.#render(rows), parent, { host: this });
     }
 }
+function renderNoDiffState(container) {
+    // clang-format off
+    Lit.render(html `
+    <style>${diffViewStyles}</style>
+    <p class="diff-listing-no-diff" data-testid="no-diff">${i18nString(UIStrings.noDiff)}</p>`, container, { host: container });
+    // clang-format on
+}
 export class DiffView extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     loaded;
     constructor(data) {
         super();
-        if (data) {
-            this.loaded = DiffRenderer.render(data.diff, data.mimeType, this.#shadow);
-        }
-        else {
-            this.loaded = Promise.resolve();
-        }
+        this.loaded = this.#render(data);
     }
     set data(data) {
-        this.loaded = DiffRenderer.render(data.diff, data.mimeType, this.#shadow);
+        this.loaded = this.#render(data);
+    }
+    async #render(data) {
+        if (!data || data.diff.length === 0) {
+            renderNoDiffState(this.#shadow);
+            return;
+        }
+        await DiffRenderer.render(data.diff, data.mimeType, this.#shadow);
     }
 }
 customElements.define('devtools-diff-view', DiffView);

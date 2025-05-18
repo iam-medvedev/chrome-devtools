@@ -1,21 +1,34 @@
+import '../../ui/legacy/components/data_grid/data_grid.js';
 import type * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
-export declare class EditFileSystemView extends UI.Widget.VBox implements UI.ListWidget.Delegate<string> {
-    private readonly fileSystemPath;
-    private excludedFolders;
-    private readonly eventListeners;
-    private readonly excludedFoldersList;
-    private muteUpdate?;
-    private excludedFolderEditor?;
-    constructor(fileSystemPath: Platform.DevToolsPath.UrlString);
-    dispose(): void;
-    private getFileSystem;
-    update(): void;
-    private addExcludedFolderButtonClicked;
-    renderItem(item: string, editable: boolean): Element;
-    removeItemRequested(_item: string, index: number): void;
-    commitEdit(item: Platform.DevToolsPath.EncodedPathString, editor: UI.ListWidget.Editor<string>, isNew: boolean): void;
-    beginEdit(item: string): UI.ListWidget.Editor<string>;
-    private createExcludedFolderEditor;
-    private normalizePrefix;
+export declare const enum ExcludedFolderStatus {
+    VALID = 1,
+    ERROR_NOT_A_PATH = 2,
+    ERROR_NOT_UNIQUE = 3
+}
+export interface PathWithStatus {
+    path: Platform.DevToolsPath.EncodedPathString;
+    status: ExcludedFolderStatus;
+}
+export interface EditFileSystemViewInput {
+    fileSystemPath: Platform.DevToolsPath.UrlString;
+    excludedFolderPaths: PathWithStatus[];
+    onCreate: (event: CustomEvent<{
+        url?: string;
+    }>) => void;
+    onEdit: (event: CustomEvent<{
+        node: HTMLElement;
+        columnId: string;
+        valueBeforeEditing: string;
+        newText: string;
+    }>) => void;
+    onDelete: (event: CustomEvent<HTMLElement>) => void;
+}
+export type View = (input: EditFileSystemViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
+export declare class EditFileSystemView extends UI.Widget.VBox {
+    #private;
+    constructor(fileSystemPath: Platform.DevToolsPath.UrlString, view?: View);
+    wasShown(): void;
+    performUpdate(): void;
 }

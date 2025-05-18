@@ -60,7 +60,8 @@ export async function getMainFlameChartWithTracks(context, traceFileName, trackA
     return { flameChart, dataProvider };
 }
 /**
- * Renders a flame chart into the unit test DOM.
+ * Renders a flame chart into the unit test DOM that renders a real provided
+ * trace file.
  * It will take care of all the setup and configuration for you.
  */
 export async function renderFlameChartIntoDOM(context, options) {
@@ -525,6 +526,30 @@ export class FakeFlameChartProvider {
     timelineData() {
         return PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     }
+}
+/**
+ * Renders a flame chart using a fake provider and mock delegate.
+ * @param provider - The fake flame chart provider.
+ * @param options - Optional parameters.  Includes windowTimes, an array specifying the minimum and maximum window times. Defaults to [0, 100].
+ * @returns A promise that resolves when the flame chart is rendered.
+ */
+export async function renderFlameChartWithFakeProvider(provider, options) {
+    const delegate = new MockFlameChartDelegate();
+    const flameChart = new PerfUI.FlameChart.FlameChart(provider, delegate);
+    const [minWindowTime, maxWindowTime] = options?.windowTimes ?? [0, 100];
+    flameChart.setWindowTimes(minWindowTime, maxWindowTime);
+    const lastTrackOffset = flameChart.levelToOffset(provider.maxStackDepth());
+    const target = document.createElement('div');
+    target.innerHTML = `<style>${UI.inspectorCommonStyles}</style>`;
+    // Allow an extra 10px so no scrollbar is shown.
+    target.style.height = `${lastTrackOffset + 10}px`;
+    target.style.display = 'flex';
+    target.style.width = '800px';
+    renderElementIntoDOM(target);
+    flameChart.markAsRoot();
+    flameChart.show(target);
+    flameChart.update();
+    await raf();
 }
 export function getMainThread(data) {
     let mainThread = null;

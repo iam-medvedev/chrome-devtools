@@ -52,7 +52,7 @@ describeWithMockConnection('ConsoleView', () => {
         const messagesElement = consoleView.element.querySelector('#console-messages');
         assert.exists(messagesElement);
         const contextMenu = getContextMenuForElement(messagesElement);
-        const saveAsItem = findMenuItemWithLabel(contextMenu.saveSection(), 'Save as...');
+        const saveAsItem = findMenuItemWithLabel(contextMenu.saveSection(), 'Save as…');
         assert.exists(saveAsItem);
         const TIMESTAMP = 42;
         const URL_HOST = 'example.com';

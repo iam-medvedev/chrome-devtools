@@ -116,7 +116,7 @@ function trackingSetTimeout(arg, time, ...params) {
     const activity = {
         pending: true,
     };
-    let id = 0;
+    let id;
     activity.promise = new (original((Promise)))(resolve => {
         activity.runImmediate = () => {
             if (typeof (arg) === 'function') {

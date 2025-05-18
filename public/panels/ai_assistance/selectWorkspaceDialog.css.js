@@ -67,7 +67,7 @@ li:focus {
   margin-right: var(--sys-size-4);
 }
 
-.selected .folder-icon {
+li.selected .folder-icon {
   color: var(--icon-file-authored);
 }
 
@@ -76,8 +76,16 @@ li:focus {
 }
 
 .theme-with-dark-background, :host-context(.theme-with-dark-background) {
-  li.selected, .selected .folder-icon {
+  /*
+    * List item is focused and selected: there is no valid state where the list item is focused but not selected.
+  */
+  li:focus {
     color: var(--app-color-navigation-drawer-label-selected);
+    background-color: var(--app-color-navigation-drawer-background-selected);
+
+    & .folder-icon {
+      color: var(--app-color-navigation-drawer-label-selected);
+    }
   }
 }
 

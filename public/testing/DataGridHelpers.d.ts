@@ -1,14 +1,14 @@
-export declare const getFocusableCell: (shadowRoot: ShadowRoot) => HTMLTableCellElement;
-export declare const getCellByIndexes: (shadowRoot: ShadowRoot, indexes: {
+export declare const getFocusableCell: (node: ParentNode) => HTMLTableCellElement;
+export declare const getCellByIndexes: (node: ParentNode, indexes: {
     column: number;
     row: number;
 }) => HTMLTableCellElement;
-export declare const getHeaderCells: (shadowRoot: ShadowRoot, options?: {
+export declare const getHeaderCells: (node: ParentNode, options?: {
     onlyVisible: boolean;
 }) => HTMLTableCellElement[];
-export declare const getAllRows: (shadowRoot: ShadowRoot) => HTMLTableRowElement[];
+export declare const getAllRows: (node: ParentNode) => HTMLTableRowElement[];
 export declare const assertGridContents: (gridComponent: HTMLElement, headerExpected: string[], rowsExpected: string[][]) => {
-    "__#328@#private": any;
+    "__#227@#private": any;
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
     striped: boolean;
     inline: boolean;
@@ -191,7 +191,7 @@ export declare const assertGridContents: (gridComponent: HTMLElement, headerExpe
     setTextContentTruncatedIfNeeded(text: unknown, placeholder?: string): boolean;
     traverseNextNode(stayWithin?: Node): Node | null;
     traversePreviousNode(stayWithin?: Node): Node | null;
-    deepTextContent(): string;
+    deepTextContent(normalizeWhitespace?: boolean): string;
     window(): Window;
     childTextNodes(): Node[];
     dispatchEvent(event: Event): boolean;
@@ -378,6 +378,6 @@ export declare const assertGridContents: (gridComponent: HTMLElement, headerExpe
     focus(options?: FocusOptions): void;
 };
 export declare const emulateUserKeyboardNavigation: (shadowRoot: ShadowRoot, key: "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown") => void;
-export declare const getValuesOfAllBodyRows: (shadowRoot: ShadowRoot, options?: {
+export declare const getValuesOfAllBodyRows: (node: ParentNode, options?: {
     onlyVisible: boolean;
 }) => string[][];

@@ -216,7 +216,7 @@ export class NodeContext extends ConversationContext {
         const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
         const { DOMNodeLink } = ElementsPanel.DOMLinkifier;
         const { widgetConfig } = UI.Widget;
-        return html `<devtools-widget .widgetConfig=${widgetConfig(e => new DOMNodeLink(e, this.#node, { hiddenClassList, disabled: opts.disabled }))}></devtools-widget>`;
+        return html `<devtools-widget .widgetConfig=${widgetConfig(DOMNodeLink, { node: this.#node, options: { hiddenClassList, disabled: opts.disabled } })}></devtools-widget>`;
     }
     async getSuggestions() {
         const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);

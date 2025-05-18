@@ -1395,10 +1395,10 @@
     "message": "[{PH1}] Loaded debug symbols for {PH2}, found {PH3} source file(s)"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsFor": {
-    "message": "[{PH1}] Loading debug symbols for {PH2}..."
+    "message": "[{PH1}] Loading debug symbols for {PH2}…"
   },
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsForVia": {
-    "message": "[{PH1}] Loading debug symbols for {PH2} (via {PH3})..."
+    "message": "[{PH1}] Loading debug symbols for {PH2} (via {PH3})…"
   },
   "models/bindings/IgnoreListManager.ts | addAllAnonymousScriptsToIgnoreList": {
     "message": "Add all anonymous scripts to ignore list"
@@ -1637,9 +1637,6 @@
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<anonymous>"
   },
-  "models/persistence/EditFileSystemView.ts | add": {
-    "message": "Add folder"
-  },
   "models/persistence/EditFileSystemView.ts | enterAPath": {
     "message": "Enter a path"
   },
@@ -1648,15 +1645,6 @@
   },
   "models/persistence/EditFileSystemView.ts | excludedFolders": {
     "message": "Excluded sub-folders"
-  },
-  "models/persistence/EditFileSystemView.ts | folderPath": {
-    "message": "Folder path"
-  },
-  "models/persistence/EditFileSystemView.ts | none": {
-    "message": "None"
-  },
-  "models/persistence/EditFileSystemView.ts | sViaDevtools": {
-    "message": "{PH1} (via .devtools)"
   },
   "models/persistence/EditFileSystemView.ts | url": {
     "message": "URL"
@@ -1719,7 +1707,7 @@
     "message": "Override ‘{PH1}’ instead?"
   },
   "models/persistence/PersistenceActions.ts | saveAs": {
-    "message": "Save as..."
+    "message": "Save as…"
   },
   "models/persistence/PersistenceActions.ts | saveImage": {
     "message": "Save image"
@@ -2001,7 +1989,7 @@
     "message": "Element render delay"
   },
   "models/trace/insights/LCPPhases.ts | fieldDuration": {
-    "message": "Field 75th percentile"
+    "message": "Field p75"
   },
   "models/trace/insights/LCPPhases.ts | noLcp": {
     "message": "No LCP detected"
@@ -2028,7 +2016,7 @@
     "message": "Wasted bytes"
   },
   "models/trace/insights/LegacyJavaScript.ts | description": {
-    "message": "Polyfills and transforms enable legacy browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support legacy browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)"
+    "message": "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)"
   },
   "models/trace/insights/LegacyJavaScript.ts | title": {
     "message": "Legacy JavaScript"
@@ -2067,7 +2055,7 @@
     "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
-    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints to your most important origins, but try to use fewer than 4."
+    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints to your most important origins, but try to use fewer than 4."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
     "message": "Preconnect candidates"
@@ -2085,7 +2073,7 @@
     "message": "no origins were preconnected"
   },
   "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableDescription": {
-    "message": "[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/?utm_source=devtools&utm_medium=referral) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to."
+    "message": "[preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints help the browser establish a connection earlier in the page load, saving time when the first request for that origin is made. The following are the origins that the page preconnected to."
   },
   "models/trace/insights/NetworkDependencyTree.ts | preconnectOriginsTableTitle": {
     "message": "Preconnect origins"
@@ -2093,11 +2081,14 @@
   "models/trace/insights/NetworkDependencyTree.ts | title": {
     "message": "Network dependency tree"
   },
+  "models/trace/insights/NetworkDependencyTree.ts | unusedWarning": {
+    "message": "Unused preconnect. Only use preconnect for origins that the page is likely to request."
+  },
   "models/trace/insights/NetworkDependencyTree.ts | warningDescription": {
     "message": "Avoid chaining critical requests by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
   },
   "models/trace/insights/RenderBlocking.ts | description": {
-    "message": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources/) can move these network requests out of the critical path."
+    "message": "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources) can move these network requests out of the critical path."
   },
   "models/trace/insights/RenderBlocking.ts | duration": {
     "message": "Duration"
@@ -2145,7 +2136,7 @@
     "message": "Transfer size"
   },
   "models/trace/insights/ThirdParties.ts | description": {
-    "message": "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://developers.google.com/web/fundamentals/performance/optimizing-content-efficiency/loading-third-party-javascript/) to prioritize your page's content."
+    "message": "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://web.dev/articles/optimizing-content-efficiency-loading-third-party-javascript/) to prioritize your page's content."
   },
   "models/trace/insights/ThirdParties.ts | noThirdParties": {
     "message": "No third parties found"
@@ -2623,6 +2614,9 @@
   },
   "panels/ai_assistance/AiAssistancePanel.ts | inputDisclaimerForEmptyState": {
     "message": "This is an experimental AI feature and won't always get it right."
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | mcpRequestReceived": {
+    "message": "DevTools received an MCP request"
   },
   "panels/ai_assistance/AiAssistancePanel.ts | newChat": {
     "message": "New chat"
@@ -3207,7 +3201,7 @@
     "message": "Push messaging"
   },
   "panels/application/BackgroundServiceView.ts | recordingSActivity": {
-    "message": "Recording {PH1} activity..."
+    "message": "Recording {PH1} activity…"
   },
   "panels/application/BackgroundServiceView.ts | saveEvents": {
     "message": "Save events"
@@ -4147,9 +4141,6 @@
   },
   "panels/application/CookieItemsView.ts | clearFilteredCookies": {
     "message": "Clear filtered cookies"
-  },
-  "panels/application/CookieItemsView.ts | cookies": {
-    "message": "Cookies"
   },
   "panels/application/CookieItemsView.ts | noCookieSelected": {
     "message": "No cookie selected"
@@ -5132,16 +5123,16 @@
   "panels/application/StorageBucketsTreeElement.ts | storageBucketsDescription": {
     "message": "On this page you can view and delete storage buckets, and their associated Storage APIs."
   },
-  "panels/application/StorageItemsView.ts | clearAll": {
+  "panels/application/StorageItemsToolbar.ts | clearAll": {
     "message": "Clear All"
   },
-  "panels/application/StorageItemsView.ts | deleteSelected": {
+  "panels/application/StorageItemsToolbar.ts | deleteSelected": {
     "message": "Delete Selected"
   },
-  "panels/application/StorageItemsView.ts | refresh": {
+  "panels/application/StorageItemsToolbar.ts | refresh": {
     "message": "Refresh"
   },
-  "panels/application/StorageItemsView.ts | refreshedStatus": {
+  "panels/application/StorageItemsToolbar.ts | refreshedStatus": {
     "message": "Table refreshed"
   },
   "panels/application/StorageView.ts | application": {
@@ -5151,7 +5142,7 @@
     "message": "Cache storage"
   },
   "panels/application/StorageView.ts | clearing": {
-    "message": "Clearing..."
+    "message": "Clearing…"
   },
   "panels/application/StorageView.ts | clearSiteData": {
     "message": "Clear site data"
@@ -5829,7 +5820,7 @@
     "message": "Replay XHR"
   },
   "panels/console/ConsoleView.ts | saveAs": {
-    "message": "Save as..."
+    "message": "Save as…"
   },
   "panels/console/ConsoleView.ts | searching": {
     "message": "Searching…"
@@ -9099,7 +9090,7 @@
     "message": "User agent updated."
   },
   "panels/network/NetworkConfigView.ts | custom": {
-    "message": "Custom..."
+    "message": "Custom…"
   },
   "panels/network/NetworkConfigView.ts | customUserAgentFieldIsRequired": {
     "message": "Custom user agent field is required"
@@ -9298,6 +9289,9 @@
   },
   "panels/network/NetworkItemView.ts | cookies": {
     "message": "Cookies"
+  },
+  "panels/network/NetworkItemView.ts | directsocketMessages": {
+    "message": "DirectSocket messages"
   },
   "panels/network/NetworkItemView.ts | eventstream": {
     "message": "EventStream"
@@ -9708,13 +9702,13 @@
     "message": "Export HAR (either sanitized or with sensitive data)"
   },
   "panels/network/NetworkPanel.ts | exportHarSanitized": {
-    "message": "Export HAR (sanitized)..."
+    "message": "Export HAR (sanitized)…"
   },
   "panels/network/NetworkPanel.ts | exportHarWithSensitiveData": {
-    "message": "Export HAR (with sensitive data)..."
+    "message": "Export HAR (with sensitive data)…"
   },
   "panels/network/NetworkPanel.ts | fetchingFrames": {
-    "message": "Fetching frames..."
+    "message": "Fetching frames…"
   },
   "panels/network/NetworkPanel.ts | groupByFrame": {
     "message": "Group by frame"
@@ -9726,7 +9720,7 @@
     "message": "Press {PH1} to reload and capture filmstrip."
   },
   "panels/network/NetworkPanel.ts | importHarFile": {
-    "message": "Import HAR file..."
+    "message": "Import HAR file…"
   },
   "panels/network/NetworkPanel.ts | moreNetworkConditions": {
     "message": "More network conditions…"
@@ -9744,7 +9738,7 @@
     "message": "Preserve log"
   },
   "panels/network/NetworkPanel.ts | recordingFrames": {
-    "message": "Recording frames..."
+    "message": "Recording frames…"
   },
   "panels/network/NetworkPanel.ts | search": {
     "message": "Search"
@@ -10026,7 +10020,7 @@
     "message": "Copy message"
   },
   "panels/network/ResourceChunkView.ts | copyMessageD": {
-    "message": "Copy message..."
+    "message": "Copy message…"
   },
   "panels/network/ResourceChunkView.ts | data": {
     "message": "Data"
@@ -10050,6 +10044,27 @@
     "message": "Send"
   },
   "panels/network/ResourceChunkView.ts | time": {
+    "message": "Time"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | address": {
+    "message": "Address"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | data": {
+    "message": "Data"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | directSocketChunk": {
+    "message": "Direct Socket Chunk"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | filterUsingRegex": {
+    "message": "Filter using regex (example: (direct)?socket)"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | length": {
+    "message": "Length"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | port": {
+    "message": "Port"
+  },
+  "panels/network/ResourceDirectSocketChunkView.ts | time": {
     "message": "Time"
   },
   "panels/network/ResourceWebSocketFrameView.ts | binaryMessage": {
@@ -13122,7 +13137,7 @@
     "message": "Closure ({PH1})"
   },
   "panels/sources/ScopeChainSidebarPane.ts | loading": {
-    "message": "Loading..."
+    "message": "Loading…"
   },
   "panels/sources/ScopeChainSidebarPane.ts | notPaused": {
     "message": "Not paused"
@@ -13506,7 +13521,7 @@
     "message": "Run"
   },
   "panels/sources/SourcesNavigator.ts | saveAs": {
-    "message": "Save as..."
+    "message": "Save as…"
   },
   "panels/sources/SourcesNavigator.ts | selectFolderForOverrides": {
     "message": "Select folder for overrides"
@@ -15971,6 +15986,9 @@
   "ui/components/diff_view/DiffView.ts | deletions": {
     "message": "Deletion:"
   },
+  "ui/components/diff_view/DiffView.ts | noDiff": {
+    "message": "File is identical to its unmodified state"
+  },
   "ui/components/diff_view/DiffView.ts | SkippingDMatchingLines": {
     "message": "( … Skipping {PH1} matching lines … )"
   },
@@ -16626,7 +16644,7 @@
     "message": "Open image in new tab"
   },
   "ui/legacy/components/source_frame/ImageView.ts | saveImageAs": {
-    "message": "Save image as..."
+    "message": "Save image as…"
   },
   "ui/legacy/components/source_frame/JSONView.ts | find": {
     "message": "Find"

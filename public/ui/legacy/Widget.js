@@ -113,7 +113,7 @@ export class WidgetElement extends HTMLElement {
     }
     insertBefore(child, referenceChild) {
         if (child instanceof HTMLElement && child.tagName !== 'STYLE') {
-            Widget.getOrCreateWidget(child).show(this, referenceChild);
+            Widget.getOrCreateWidget(child).show(this, referenceChild, true);
             return child;
         }
         return super.insertBefore(child, referenceChild);
@@ -134,6 +134,15 @@ export class WidgetElement extends HTMLElement {
             }
         }
         super.removeChildren();
+    }
+    cloneNode(deep) {
+        const clone = super.cloneNode(deep);
+        if (!this.#widgetClass) {
+            throw new Error('No widgetClass defined');
+        }
+        clone.#widgetClass = this.#widgetClass;
+        clone.#widgetParams = this.#widgetParams;
+        return clone;
     }
 }
 customElements.define('devtools-widget', WidgetElement);

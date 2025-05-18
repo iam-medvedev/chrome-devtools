@@ -76,7 +76,6 @@ export declare class SelectMenu extends HTMLElement {
     set showSelectedItem(showSelectedItem: boolean);
     get jslogContext(): string;
     set jslogContext(jslogContext: string);
-    connectedCallback(): void;
     click(): void;
 }
 export interface SelectMenuButtonData {

@@ -501,11 +501,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     endDragging(_event) {
         this.updateHighlight();
     }
-    timelineData(rebuid) {
+    timelineData(rebuild) {
         if (!this.dataProvider) {
             return null;
         }
-        const timelineData = this.dataProvider.timelineData(rebuid);
+        const timelineData = this.dataProvider.timelineData(rebuild);
         if (timelineData !== this.rawTimelineData ||
             (timelineData && timelineData.entryStartTimes.length !== this.rawTimelineDataLength)) {
             this.processTimelineData(timelineData);

@@ -171,6 +171,7 @@ models/logs/NetworkLog.test.js
 models/logs/RequestResolver.test.js
 models/persistence/AutomaticFileSystemManager.test.js
 models/persistence/AutomaticFileSystemWorkspaceBinding.test.js
+models/persistence/EditFileSystemView.test.js
 models/persistence/NetworkPersistenceManager.test.js
 models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
@@ -424,6 +425,7 @@ panels/network/RequestPayloadView.test.js
 panels/network/RequestPreviewView.test.js
 panels/network/RequestResponseView.test.js
 panels/network/RequestTimingView.test.js
+panels/network/ResourceDirectSocketChunkView.test.js
 panels/network/components/DirectSocketConnectionView.test.js
 panels/network/components/HeaderSectionRow.test.js
 panels/network/components/RequestHeaderSection.test.js
@@ -617,6 +619,7 @@ ui/legacy/Infobar.test.js
 ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
+ui/legacy/SettingsUI.test.js
 ui/legacy/ShortcutRegistry.test.js
 ui/legacy/SplitWidget.test.js
 ui/legacy/SuggestBox.test.js

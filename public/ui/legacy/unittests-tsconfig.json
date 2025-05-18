@@ -51,6 +51,7 @@
     "../../../../../../front_end/ui/legacy/KeyboardShortcut.test.ts",
     "../../../../../../front_end/ui/legacy/ListModel.test.ts",
     "../../../../../../front_end/ui/legacy/ListWidget.test.ts",
+    "../../../../../../front_end/ui/legacy/SettingsUI.test.ts",
     "../../../../../../front_end/ui/legacy/ShortcutRegistry.test.ts",
     "../../../../../../front_end/ui/legacy/SplitWidget.test.ts",
     "../../../../../../front_end/ui/legacy/SuggestBox.test.ts",
@@ -83,6 +84,9 @@
     },
     {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../lit/bundle-tsconfig.json"
     },
     {
       "path": "components/quick_open/bundle-tsconfig.json"

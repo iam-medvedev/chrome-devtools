@@ -50,11 +50,8 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private traceLoadStart;
     constructor(traceModel?: Trace.TraceModel.Model);
     /**
-     * This "disables" the 3P checkbox in the toolbar.
-     * Disabling here does a couple of things:
-     * 1) makes the checkbox dimmed and unclickable
-     * 2) gives the checkbox UI an indeterminate state
-     */
+     * This disables the 3P checkbox in the toolbar.
+     * If the checkbox was checked, we flip it to indeterminiate to communicate it doesn't currently apply. */
     set3PCheckboxDisabled(disabled: boolean): void;
     static instance(opts?: {
         forceNew: boolean | null;
@@ -86,6 +83,11 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     getTraceEngineRawTraceEventsForLayoutTests(): readonly Trace.Types.Events.Event[];
     private loadFromCpuProfile;
     private setState;
+    /**
+     * This indicates that `this.#setModelForActiveTrace` has been called,
+     * and so the main flame chart should have been populated.
+     */
+    hasFinishedLoadingTraceForTest(): boolean;
     private createSettingCheckbox;
     private populateToolbar;
     private createSettingsPane;

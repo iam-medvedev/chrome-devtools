@@ -31,12 +31,11 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 let fileManagerInstance;
 export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
-    saveCallbacks;
+    #saveCallbacks = new Map();
     constructor() {
         super();
-        this.saveCallbacks = new Map();
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SavedURL, this.savedURL, this);
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, this.canceledSavedURL, this);
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.CanceledSaveURL, this.#canceledSavedURL, this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.AppendedToURL, this.appendedToURL, this);
     }
     static instance(opts = { forceNew: null }) {
@@ -46,24 +45,29 @@ export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         return fileManagerInstance;
     }
-    // close() *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
+    /**
+     * {@link FileManager.close | close} *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
+     */
     save(url, content, forceSaveAs, isBase64) {
         // Remove this url from the saved URLs while it is being saved.
-        const result = new Promise(resolve => this.saveCallbacks.set(url, resolve));
+        const result = new Promise(resolve => this.#saveCallbacks.set(url, resolve));
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.save(url, content, forceSaveAs, isBase64);
         return result;
     }
+    /**
+     * Used in web tests
+     */
     savedURL(event) {
         const { url, fileSystemPath } = event.data;
-        const callback = this.saveCallbacks.get(url);
-        this.saveCallbacks.delete(url);
+        const callback = this.#saveCallbacks.get(url);
+        this.#saveCallbacks.delete(url);
         if (callback) {
             callback({ fileSystemPath });
         }
     }
-    canceledSavedURL({ data: url }) {
-        const callback = this.saveCallbacks.get(url);
-        this.saveCallbacks.delete(url);
+    #canceledSavedURL({ data: url }) {
+        const callback = this.#saveCallbacks.get(url);
+        this.#saveCallbacks.delete(url);
         if (callback) {
             callback(null);
         }
@@ -74,6 +78,9 @@ export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
     close(url) {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.close(url);
     }
+    /**
+     * Used in web tests
+     */
     appendedToURL({ data: url }) {
         this.dispatchEventToListeners("AppendedToURL" /* Events.APPENDED_TO_URL */, url);
     }

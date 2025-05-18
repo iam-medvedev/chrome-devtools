@@ -1,6 +1,6 @@
 import * as UI from '../../ui/legacy/legacy.js';
-import type * as ApplicationComponents from './components/components.js';
-import { StorageItemsView } from './StorageItemsView.js';
+import * as ApplicationComponents from './components/components.js';
+import { StorageItemsToolbar } from './StorageItemsToolbar.js';
 type Widget = UI.Widget.Widget;
 export interface ViewInput {
     items: Array<{
@@ -28,15 +28,23 @@ export interface ViewInput {
     }>) => void;
     onDelete: (event: CustomEvent<HTMLElement>) => void;
 }
-export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+interface ViewOutput {
+    toolbar: StorageItemsToolbar;
+}
+export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 /**
  * A helper typically used in the Application panel. Renders a split view
  * between a DataGrid displaying key-value pairs and a preview Widget.
  */
-export declare abstract class KeyValueStorageItemsView extends StorageItemsView {
+export declare abstract class KeyValueStorageItemsView extends UI.Widget.VBox {
     #private;
+    readonly metadataView: ApplicationComponents.StorageMetadataView.StorageMetadataView;
     constructor(title: string, id: string, editable: boolean, view?: View, metadataView?: ApplicationComponents.StorageMetadataView.StorageMetadataView);
+    wasShown(): void;
     performUpdate(): void;
+    protected get toolbar(): StorageItemsToolbar | undefined;
+    refreshItems(): void;
+    deleteAllItems(): void;
     itemsCleared(): void;
     itemRemoved(key: string): void;
     itemAdded(key: string, value: string): void;

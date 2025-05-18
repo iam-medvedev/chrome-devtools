@@ -1,6 +1,18 @@
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface ViewInput {
+    items: Array<{
+        name: string;
+        id: string;
+    }>;
+    selectedId?: string;
+    onReset: () => void;
+    onItemClick: (id: string) => void;
+    onItemKeyDown: (id: string, key: string) => void;
+}
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 declare const CSSOverviewSidebarPanel_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
@@ -11,10 +23,13 @@ declare const CSSOverviewSidebarPanel_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class CSSOverviewSidebarPanel extends CSSOverviewSidebarPanel_base {
     #private;
-    containerElement: HTMLDivElement;
-    constructor();
-    addItem(name: string, id: string): void;
-    select(id: string, focus: boolean): void;
+    constructor(view?: View);
+    performUpdate(): void;
+    set items(items: Array<{
+        name: string;
+        id: string;
+    }>);
+    set selectedId(id: string);
 }
 export declare const enum SidebarEvents {
     ITEM_SELECTED = "ItemSelected",

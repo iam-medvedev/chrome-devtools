@@ -27,6 +27,7 @@ import { SharedDictionaryIssue } from './SharedDictionaryIssue.js';
 import { SourceFrameIssuesManager } from './SourceFrameIssuesManager.js';
 import { SRIMessageSignatureIssue } from './SRIMessageSignatureIssue.js';
 import { StylesheetLoadingIssue } from './StylesheetLoadingIssue.js';
+import { UserReidentificationIssue } from './UserReidentificationIssue.js';
 let issuesManagerInstance = null;
 function createIssuesForBlockedByResponseIssue(issuesModel, inspectorIssue) {
     const blockedByResponseIssueDetails = inspectorIssue.details.blockedByResponseIssueDetails;
@@ -124,6 +125,10 @@ const issueCodeHandlers = new Map([
     [
         "SRIMessageSignatureIssue" /* Protocol.Audits.InspectorIssueCode.SRIMessageSignatureIssue */,
         SRIMessageSignatureIssue.fromInspectorIssue,
+    ],
+    [
+        "UserReidentificationIssue" /* Protocol.Audits.InspectorIssueCode.UserReidentificationIssue */,
+        UserReidentificationIssue.fromInspectorIssue,
     ],
 ]);
 /**

@@ -163,11 +163,8 @@ export class CombinedDiffView extends UI.Widget.Widget {
             // `requestDiff` caches the response from the previous `requestDiff` calls if the file did not change
             // so we can safely call it here without concerns for performance.
             const diffResponse = await this.#workspaceDiff?.requestDiff(modifiedUISourceCode);
-            if (!diffResponse || diffResponse.diff.length === 0) {
-                return;
-            }
             return {
-                diff: diffResponse.diff,
+                diff: diffResponse?.diff ?? [],
                 uiSourceCode: modifiedUISourceCode,
             };
         }))).filter(uiSourceCodeAndDiff => !!uiSourceCodeAndDiff);

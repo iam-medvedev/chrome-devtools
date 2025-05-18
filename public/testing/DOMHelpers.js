@@ -15,7 +15,13 @@ export function renderElementIntoDOM(element, renderOptions = {}) {
     if (container.childNodes.length !== 0 && !allowMultipleChildren) {
         throw new Error(`renderElementIntoDOM expects the container to be empty ${container.innerHTML}`);
     }
-    container.appendChild(element);
+    if (element instanceof Node) {
+        container.appendChild(element);
+    }
+    else {
+        element.markAsRoot();
+        element.show(container);
+    }
     return element;
 }
 function removeChildren(node) {
@@ -225,7 +231,9 @@ export function stripLitHtmlCommentNodes(text) {
 export function getCleanTextContentFromElements(el, selector) {
     const elements = Array.from(el.querySelectorAll(selector));
     return elements.map(element => {
-        return element.textContent ? element.textContent.trim().replace(/[ \n]{2,}/g, ' ') : '';
+        return ((element instanceof HTMLElement ? element.innerText : element.textContent) ?? '')
+            .trim()
+            .replace(/[ \n]{2,}/g, ' ');
     });
 }
 /**
@@ -269,6 +277,9 @@ export async function assertScreenshot(filename) {
         frame.scrollTo(0, 0);
         frame = frame.parent !== frame ? frame.parent : null;
     }
+    // For test we load the fonts though the network - front_end/testing/test_setup.ts
+    // Which means we may try to take screenshot while they are loading
+    await document.fonts.ready;
     await raf();
     // @ts-expect-error see karma config.
     const errorMessage = await window.assertScreenshot(`#${TEST_CONTAINER_ID}`, filename);

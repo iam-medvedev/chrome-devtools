@@ -8,7 +8,7 @@ export function formatError(message) {
 export class SideEffectError extends Error {
 }
 /* istanbul ignore next */
-function stringifyObjectOnThePage() {
+export function stringifyObjectOnThePage() {
     if (this instanceof Error) {
         return `Error: ${this.message}`;
     }
@@ -34,7 +34,7 @@ function stringifyObjectOnThePage() {
         return value;
     });
 }
-async function stringifyRemoteObject(object) {
+export async function stringifyRemoteObject(object) {
     switch (object.type) {
         case "string" /* Protocol.Runtime.RemoteObjectType.String */:
             return `'${object.value}'`;
@@ -66,7 +66,6 @@ export class EvaluateAction {
         }
         const response = await executionContext.callFunctionOn({
             functionDeclaration,
-            includeCommandLineAPI: false,
             returnByValue: false,
             allowUnsafeEvalBlockedByCSP: false,
             throwOnSideEffect,

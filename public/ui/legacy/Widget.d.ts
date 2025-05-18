@@ -5,12 +5,13 @@ import { Constraints, Size } from './Geometry.js';
 type WidgetConstructor<WidgetT extends Widget> = new (element: WidgetElement<WidgetT>) => WidgetT;
 type WidgetProducer<WidgetT extends Widget> = (element: WidgetElement<WidgetT>) => WidgetT;
 type WidgetFactory<WidgetT extends Widget> = WidgetConstructor<WidgetT> | WidgetProducer<WidgetT>;
+type InferWidgetTFromFactory<F> = F extends WidgetFactory<infer WidgetT> ? WidgetT : never;
 export declare class WidgetConfig<WidgetT extends Widget> {
     readonly widgetClass: WidgetFactory<WidgetT>;
     readonly widgetParams?: Partial<WidgetT> | undefined;
     constructor(widgetClass: WidgetFactory<WidgetT>, widgetParams?: Partial<WidgetT> | undefined);
 }
-export declare function widgetConfig<WidgetT extends Widget, ParamKeys extends keyof WidgetT>(widgetClass: WidgetFactory<WidgetT>, widgetParams?: Pick<WidgetT, ParamKeys> & Partial<WidgetT>): WidgetConfig<any>;
+export declare function widgetConfig<F extends WidgetFactory<Widget>, ParamKeys extends keyof InferWidgetTFromFactory<F>>(widgetClass: F, widgetParams?: Pick<InferWidgetTFromFactory<F>, ParamKeys> & Partial<InferWidgetTFromFactory<F>>): WidgetConfig<any>;
 export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     #private;
     createWidget(): WidgetT;
@@ -21,6 +22,7 @@ export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     insertBefore<T extends Node>(child: T, referenceChild: Node): T;
     removeChild<T extends Node>(child: T): T;
     removeChildren(): void;
+    cloneNode(deep: boolean): Node;
 }
 export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Platform.Constructor.Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
 export declare class Widget {

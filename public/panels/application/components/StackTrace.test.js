@@ -83,8 +83,8 @@ describeWithEnvironment('StackTrace', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText, [
-            'function1 \xA0@\xA0www.example.com/script1.js',
-            'function2 \xA0@\xA0www.example.com/script2.js',
+            'function1\n\xA0@\xA0www.example.com/script1.js',
+            'function2\n\xA0@\xA0www.example.com/script2.js',
         ]);
     });
     it('hides hidden rows behind "show all" button', async () => {
@@ -137,7 +137,7 @@ describeWithEnvironment('StackTrace', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText, [
-            'function1 \xA0@\xA0www.example.com/script.js',
+            'function1\n\xA0@\xA0www.example.com/script.js',
             'Show 1 more frame',
         ]);
         const stackTraceLinkButton = getElementWithinComponent(expandableList, 'devtools-stack-trace-link-button', ApplicationComponents.StackTrace.StackTraceLinkButton);
@@ -152,8 +152,8 @@ describeWithEnvironment('StackTrace', () => {
                 openedStackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(openedStackTraceText, [
-            'function1 \xA0@\xA0www.example.com/script.js',
-            'function2 \xA0@\xA0www.example.com/hidden.js',
+            'function1\n\xA0@\xA0www.example.com/script.js',
+            'function2\n\xA0@\xA0www.example.com/hidden.js',
             'Show less',
         ]);
         const newStackTraceLinkButton = getElementWithinComponent(expandableList, 'devtools-stack-trace-link-button', ApplicationComponents.StackTrace.StackTraceLinkButton);
@@ -167,7 +167,7 @@ describeWithEnvironment('StackTrace', () => {
             stackTraceText = stackTraceText.concat(getCleanTextContentFromElements(row.shadowRoot, '.stack-trace-row'));
         });
         assert.deepEqual(stackTraceText, [
-            'function1 \xA0@\xA0www.example.com/script.js',
+            'function1\n\xA0@\xA0www.example.com/script.js',
             'Show 1 more frame',
         ]);
     });

@@ -179,6 +179,7 @@ export declare class ColorFunction implements Color {
     getRawParameters(): Color3D;
     getAsRawString(format?: Format): string;
     isGamutClipped(): boolean;
+    isXYZ(): boolean;
     /**
      * Parses given `color()` function definition and returns the `Color` object.
      * We want to special case its parsing here because it's a bit different

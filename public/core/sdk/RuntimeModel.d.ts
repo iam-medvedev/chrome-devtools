@@ -144,7 +144,6 @@ export interface EvaluationOptions {
 }
 export interface CallFunctionOptions {
     functionDeclaration: string;
-    includeCommandLineAPI?: boolean;
     returnByValue?: boolean;
     throwOnSideEffect?: boolean;
     allowUnsafeEvalBlockedByCSP?: boolean;

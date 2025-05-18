@@ -40,22 +40,10 @@ export declare class Location {
     constructor(latitude: number, longitude: number, timezoneId: string, locale: string, unavailable: boolean);
     static parseSetting(value: string): Location;
     static parseUserInput(latitudeString: string, longitudeString: string, timezoneId: string, locale: string): Location | null;
-    static latitudeValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
-    static longitudeValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
-    static timezoneIdValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
-    static localeValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
+    static latitudeValidator(value: string): boolean;
+    static longitudeValidator(value: string): boolean;
+    static timezoneIdValidator(value: string): boolean;
+    static localeValidator(value: string): boolean;
     toSetting(): string;
     static defaultGeoMockAccuracy: number;
 }
@@ -69,21 +57,9 @@ export declare class DeviceOrientation {
     static angleRangeValidator(value: string, interval: {
         minimum: number;
         maximum: number;
-    }): {
-        valid: boolean;
-        errorMessage: undefined;
-    };
-    static alphaAngleValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
-    static betaAngleValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
-    static gammaAngleValidator(value: string): {
-        valid: boolean;
-        errorMessage: (string | undefined);
-    };
+    }): boolean;
+    static alphaAngleValidator(value: string): boolean;
+    static betaAngleValidator(value: string): boolean;
+    static gammaAngleValidator(value: string): boolean;
     toSetting(): string;
 }
