@@ -16,6 +16,7 @@ export declare class InterestGroupStorageModel extends SDK.SDKModel.SDKModel<Eve
     cacheStorageListUpdated(_event: Protocol.Storage.CacheStorageListUpdatedEvent): void;
     cacheStorageContentUpdated(_event: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
     sharedStorageAccessed(_event: Protocol.Storage.SharedStorageAccessedEvent): void;
+    sharedStorageWorkletOperationExecutionFinished(_event: Protocol.Storage.SharedStorageWorkletOperationExecutionFinishedEvent): void;
     storageBucketCreatedOrUpdated(_event: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;

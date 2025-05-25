@@ -157,6 +157,8 @@ export class StorageBucketsModel extends SDKModel {
     }
     sharedStorageAccessed(_event) {
     }
+    sharedStorageWorkletOperationExecutionFinished(_event) {
+    }
     attributionReportingSourceRegistered(_event) {
     }
     attributionReportingReportSent(_event) {

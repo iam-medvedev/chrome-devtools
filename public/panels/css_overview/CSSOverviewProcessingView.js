@@ -32,15 +32,19 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format on
 };
 export class CSSOverviewProcessingView extends UI.Widget.Widget {
-    #controller;
-    fragment;
-    constructor(controller, view = DEFAULT_VIEW) {
-        super();
-        this.#controller = controller;
-        const input = {
-            onCancel: () => this.#controller.dispatchEventToListeners("RequestOverviewCancel" /* Events.REQUEST_OVERVIEW_CANCEL */),
-        };
-        view(input, {}, this.contentElement);
+    #onCancel = () => { };
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(false, false, element);
+        this.#view = view;
+        this.requestUpdate();
+    }
+    set onCancel(onCancel) {
+        this.#onCancel = onCancel;
+        this.requestUpdate();
+    }
+    performUpdate() {
+        this.#view({ onCancel: this.#onCancel }, {}, this.element);
     }
 }
 //# sourceMappingURL=CSSOverviewProcessingView.js.map

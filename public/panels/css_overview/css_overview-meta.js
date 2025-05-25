@@ -31,7 +31,7 @@ UI.ViewManager.registerViewExtension({
     persistence: "closeable" /* UI.ViewManager.ViewPersistence.CLOSEABLE */,
     async loadView() {
         const CSSOverview = await loadCSSOverviewModule();
-        return new CSSOverview.CSSOverviewPanel.CSSOverviewPanel(new CSSOverview.CSSOverviewController.OverviewController());
+        return new CSSOverview.CSSOverviewPanel.CSSOverviewPanel();
     },
     isPreviewFeature: true,
 });

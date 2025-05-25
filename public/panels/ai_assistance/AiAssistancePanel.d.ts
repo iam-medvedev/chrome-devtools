@@ -33,8 +33,8 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     willHide(): void;
     performUpdate(): Promise<void>;
     handleAction(actionId: string): void;
-    handleMcpRequest(prompt: string, conversationType: AiAssistanceModel.ConversationType, selector?: string): Promise<string>;
-    handleMcpStylingRequest(prompt: string, selector?: string): Promise<string>;
+    handleExternalRequest(prompt: string, conversationType: AiAssistanceModel.ConversationType, selector?: string): Promise<string>;
+    handleExternalStylingRequest(prompt: string, selector?: string): Promise<string>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string): boolean;

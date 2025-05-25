@@ -30,7 +30,6 @@ export declare const enum Pages {
 }
 export declare class RecorderController extends LitElement {
     #private;
-    static readonly styles: CSSStyleSheet[];
     private currentRecordingSession?;
     private currentRecording;
     private currentStep?;

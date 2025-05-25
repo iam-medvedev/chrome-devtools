@@ -110,7 +110,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private buildPseudoElementDOM;
     private buildTagDOM;
     private nodeTitleInfo;
-    remove(): void;
+    remove(): Promise<void>;
     toggleEditAsHTML(callback?: ((arg0: boolean) => void), startEditing?: boolean): void;
     private copyCSSPath;
     private copyJSPath;

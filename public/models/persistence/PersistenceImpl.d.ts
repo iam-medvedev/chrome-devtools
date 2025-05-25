@@ -4,11 +4,6 @@ import * as BreakpointManager from '../breakpoints/breakpoints.js';
 import * as Workspace from '../workspace/workspace.js';
 export declare class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    private readonly workspace;
-    private readonly breakpointManager;
-    private readonly filePathPrefixesToBindingCount;
-    private subscribedBindingEventListeners;
-    private readonly mapping;
     constructor(workspace: Workspace.Workspace.WorkspaceImpl, breakpointManager: BreakpointManager.BreakpointManager.BreakpointManager);
     static instance(opts?: {
         forceNew: boolean | null;
@@ -53,7 +48,7 @@ export interface EventTypes {
     [Events.BindingRemoved]: PersistenceBinding;
 }
 export declare class PersistenceBinding {
-    network: Workspace.UISourceCode.UISourceCode;
-    fileSystem: Workspace.UISourceCode.UISourceCode;
+    readonly network: Workspace.UISourceCode.UISourceCode;
+    readonly fileSystem: Workspace.UISourceCode.UISourceCode;
     constructor(network: Workspace.UISourceCode.UISourceCode, fileSystem: Workspace.UISourceCode.UISourceCode);
 }

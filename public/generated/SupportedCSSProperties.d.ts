@@ -236,6 +236,9 @@ export const generatedPropertyValues: {
     "caret-color": {
         values: string[];
     };
+    "caret-shape": {
+        values: string[];
+    };
     clear: {
         values: string[];
     };

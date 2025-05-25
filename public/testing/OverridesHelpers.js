@@ -22,11 +22,11 @@ export async function createWorkspaceProject(baseUrl, files) {
     const { networkPersistenceManager } = setUpEnvironment();
     const fileSystem = {
         fileSystemPath: () => baseUrl,
-        fileSystemBaseURL: baseUrl + '/',
+        fileSystemBaseURL: urlString `${baseUrl}/`,
         type: () => Workspace.Workspace.projectTypes.FileSystem,
-        fileSystemInternal: {
+        fileSystem: () => ({
             supportsAutomapping: () => false,
-        },
+        }),
     };
     const uiSourceCodes = new Map();
     const mockProject = {
@@ -38,11 +38,11 @@ export async function createWorkspaceProject(baseUrl, files) {
         },
         type: () => Workspace.Workspace.projectTypes.FileSystem,
         initialGitFolders: () => [],
-        fileSystemInternal: {
+        fileSystem: () => ({
             type: () => 'filesystem',
-        },
-        fileSystemBaseURL: baseUrl + '/',
-        createFile: () => { },
+        }),
+        fileSystemBaseURL: urlString `${baseUrl}/`,
+        createFile: () => Promise.resolve(null),
     };
     await networkPersistenceManager.setProject(mockProject);
     for (const file of files) {

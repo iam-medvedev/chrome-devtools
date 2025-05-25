@@ -242,6 +242,7 @@ export class SettingsStorage {
     }
     dumpSizes() {
         Console.instance().log('Ten largest settings: ');
+        // @ts-expect-error __proto__ optimization
         const sizes = { __proto__: null };
         for (const key in this.object) {
             sizes[key] = this.object[key].length;
@@ -776,6 +777,7 @@ export class VersionController {
         const newList = [];
         for (let i = 0; i < list.length; ++i) {
             const value = list[i];
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const device = {};
             device['title'] = value['title'];
             device['type'] = 'unknown';

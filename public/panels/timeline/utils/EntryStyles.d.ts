@@ -35,12 +35,8 @@ export declare class TimelineCategory {
     getComputedColorValue(): string;
     set hidden(hidden: boolean);
 }
-export type CategoryPalette = {
-    [c in EventCategory]: TimelineCategory;
-};
-type EventStylesMap = {
-    [key in Trace.Types.Events.Name]?: TimelineRecordStyle;
-};
+export type CategoryPalette = Record<EventCategory, TimelineCategory>;
+type EventStylesMap = Partial<Record<Trace.Types.Events.Name, TimelineRecordStyle>>;
 export declare function getEventStyle(eventName: Trace.Types.Events.Name): TimelineRecordStyle | undefined;
 export declare function stringIsEventCategory(it: string): it is EventCategory;
 export declare function getCategoryStyles(): CategoryPalette;

@@ -4,7 +4,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Root from '../../../../core/root/root.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
-import { dispatchInputEvent, dispatchPasteEvent, } from '../../../../testing/DOMHelpers.js';
+import { dispatchInputEvent, dispatchPasteEvent, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../../testing/ExpectStubCall.js';
 import * as Buttons from '../../../components/buttons/buttons.js';
@@ -94,9 +94,8 @@ describeWithEnvironment('SourceFrame', () => {
     it('disassembles wasm', async () => {
         const contentData = new TextUtils.ContentData.ContentData('AGFzbQEAAAABBQFgAAF/AwIBAAcHAQNiYXIAAAoGAQQAQQILACQEbmFtZQAQD3Nob3ctd2FzbS0yLndhdAEGAQADYmFyAgMBAAA=', true, 'application/wasm');
         const sourceFrame = new SourceFrame.SourceFrame.SourceFrameImpl(async () => contentData);
-        sourceFrame.markAsRoot();
         const setContentStub = sinon.stub(sourceFrame, 'setContent');
-        sourceFrame.show(document.body);
+        renderElementIntoDOM(sourceFrame);
         const content = await expectCall(setContentStub);
         assert.strictEqual(content.toString(), '(module\n  (func $bar (;0;) (export \"bar\") (result i32)\n    i32.const 2\n  )\n)');
         sourceFrame.detach();

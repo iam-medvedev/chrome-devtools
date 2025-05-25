@@ -4,6 +4,7 @@
 import * as Common from '../core/common/common.js';
 import * as Network from '../panels/network/network.js';
 import * as RenderCoordinator from '../ui/components/render_coordinator/render_coordinator.js';
+import { renderElementIntoDOM } from './DOMHelpers.js';
 import { registerNoopActions, } from './EnvironmentHelpers.js';
 export async function createNetworkPanelForMockConnection() {
     registerNoopActions(['network.toggle-recording', 'network.clear', 'inspector-main.reload']);
@@ -22,8 +23,7 @@ export async function createNetworkPanelForMockConnection() {
         localStorage: dummyStorage,
     });
     const networkPanel = Network.NetworkPanel.NetworkPanel.instance({ forceNew: true, displayScreenshotDelay: 0 });
-    networkPanel.markAsRoot();
-    networkPanel.show(document.body);
+    renderElementIntoDOM(networkPanel);
     await RenderCoordinator.done();
     return networkPanel;
 }

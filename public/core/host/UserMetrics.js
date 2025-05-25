@@ -242,6 +242,9 @@ export class UserMetrics {
     freestylerEvalResponseSize(bytes) {
         InspectorFrontendHostInstance.recordCountHistogram('DevTools.Freestyler.EvalResponseSize', bytes, 0, 100_000, 100);
     }
+    performanceAINetworkSummaryResponseSize(bytes) {
+        InspectorFrontendHostInstance.recordCountHistogram('DevTools.PerformanceAI.NetworkSummaryResponseSize', bytes, 0, 100_000, 100);
+    }
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that

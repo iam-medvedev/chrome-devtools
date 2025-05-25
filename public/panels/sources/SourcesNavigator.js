@@ -185,7 +185,7 @@ export class FilesNavigatorView extends NavigatorView {
         this.registerRequiredCSS(sourcesNavigatorStyles);
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWorkspace), i18nString(UIStrings.explainWorkspace));
         this.setPlaceholder(placeholder);
-        placeholder.appendLink('https://developer.chrome.com/docs/devtools/workspaces/');
+        placeholder.link = 'https://developer.chrome.com/docs/devtools/workspaces/';
         const link = UI.XLink.XLink.create('https://goo.gle/devtools-automatic-workspace-folders', 'com.chrome.devtools.json');
         this.#automaticFileSystemNudge =
             i18n.i18n.getFormatLocalizedString(str_, UIStrings.automaticWorkspaceNudge, { PH1: link });
@@ -245,7 +245,7 @@ export class OverridesNavigatorView extends NavigatorView {
         super('navigator-overrides');
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noLocalOverrides), i18nString(UIStrings.explainLocalOverrides));
         this.setPlaceholder(placeholder);
-        placeholder.appendLink('https://developer.chrome.com/docs/devtools/overrides/');
+        placeholder.link = 'https://developer.chrome.com/docs/devtools/overrides/';
         this.toolbar = document.createElement('devtools-toolbar');
         this.toolbar.classList.add('navigator-toolbar');
         this.contentElement.insertBefore(this.toolbar, this.contentElement.firstChild);
@@ -319,7 +319,7 @@ export class ContentScriptsNavigatorView extends NavigatorView {
         super('navigator-content-scripts');
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noContentScripts), i18nString(UIStrings.explainContentScripts));
         this.setPlaceholder(placeholder);
-        placeholder.appendLink('https://developer.chrome.com/extensions/content_scripts');
+        placeholder.link = 'https://developer.chrome.com/extensions/content_scripts';
     }
     acceptProject(project) {
         return project.type() === Workspace.Workspace.projectTypes.ContentScripts;
@@ -330,7 +330,8 @@ export class SnippetsNavigatorView extends NavigatorView {
         super('navigator-snippets');
         const placeholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noSnippets), i18nString(UIStrings.explainSnippets));
         this.setPlaceholder(placeholder);
-        placeholder.appendLink('https://developer.chrome.com/docs/devtools/javascript/snippets/');
+        placeholder.link =
+            'https://developer.chrome.com/docs/devtools/javascript/snippets/';
         const toolbar = document.createElement('devtools-toolbar');
         toolbar.classList.add('navigator-toolbar');
         const newButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.newSnippet), 'plus', i18nString(UIStrings.newSnippet), 'sources.new-snippet');

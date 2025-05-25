@@ -44,6 +44,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EmptyWidget extends VBox {
     #headerElement;
     #textElement;
+    #linkElement;
     constructor(header, text) {
         super();
         this.registerRequiredCSS(emptyWidgetStyles);
@@ -55,10 +56,15 @@ export class EmptyWidget extends VBox {
         this.#textElement = this.contentElement.createChild('div', 'empty-state-description').createChild('span');
         this.#textElement.textContent = text;
     }
-    appendLink(link) {
-        const learnMoreLink = XLink.create(link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
-        this.#textElement.insertAdjacentElement('afterend', learnMoreLink);
-        return learnMoreLink;
+    set link(link) {
+        if (this.#linkElement) {
+            this.#linkElement.remove();
+        }
+        if (!link) {
+            return;
+        }
+        this.#linkElement = XLink.create(link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more');
+        this.#textElement.insertAdjacentElement('afterend', this.#linkElement);
     }
     set text(text) {
         this.#textElement.textContent = text;

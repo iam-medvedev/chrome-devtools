@@ -3,12 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Lit from '../../../ui/lit/lit.js';
-import timelineSectionStylesRaw from './timelineSection.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const timelineSectionStyles = new CSSStyleSheet();
-timelineSectionStyles.replaceSync(timelineSectionStylesRaw);
+import timelineSectionStyles from './timelineSection.css.js';
 const { html } = Lit;
 export class TimelineSection extends HTMLElement {
     #isEndOfGroup = false;
@@ -16,11 +11,7 @@ export class TimelineSection extends HTMLElement {
     #isFirstSection = false;
     #isLastSection = false;
     #isSelected = false;
-    constructor() {
-        super();
-        const shadowRoot = this.attachShadow({ mode: 'open' });
-        shadowRoot.adoptedStyleSheets = [timelineSectionStyles];
-    }
+    #shadowRoot = this.attachShadow({ mode: 'open' });
     set data(data) {
         this.#isFirstSection = data.isFirstSection;
         this.#isLastSection = data.isLastSection;
@@ -43,15 +34,15 @@ export class TimelineSection extends HTMLElement {
         };
         // clang-format off
         Lit.render(html `
+      <style>${timelineSectionStyles}</style>
       <div class=${Lit.Directives.classMap(classes)}>
-        <div class="overlay"></div>
         <div class="icon"><slot name="icon"></slot></div>
         <svg width="24" height="100%" class="bar">
           <rect class="line" x="7" y="0" width="2" height="100%" />
         </svg>
         <slot></slot>
       </div>
-    `, this.shadowRoot, { host: this });
+    `, this.#shadowRoot, { host: this });
         // clang-format on
     }
 }

@@ -79,9 +79,9 @@ const UIStrings = {
      */
     inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
     /**
-     *@description Notification shown to the user whenever DevTools receives an MCP request.
+     *@description Notification shown to the user whenever DevTools receives an external request.
      */
-    mcpRequestReceived: '`DevTools` received an `MCP` request',
+    externalRequestReceived: '`DevTools` received an external request',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -179,6 +179,10 @@ const UIStringsNotTranslate = {
      * @description Message displayed in toast in case of any failures while uploading an image file as input.
      */
     uploadImageFailureMessage: 'Failed to upload image. Please try again.',
+    /**
+     * @description Error message shown when AI assistance is not enabled in DevTools settings.
+     */
+    enableInSettings: 'For AI features to be available, you need to enable AI assistance in DevTools settings.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/AiAssistancePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -438,7 +442,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             accountFullName: syncInfo.accountFullName,
         };
         this.#historicalConversations = AiAssistanceModel.AiHistoryStorage.instance().getHistory().map(item => {
-            return new AiAssistanceModel.Conversation(item.type, item.history, item.id, true);
+            return new AiAssistanceModel.Conversation(item.type, item.history, item.id, true, item.isExternal);
         });
     }
     #getChatUiState() {
@@ -1114,7 +1118,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#blockedByCrossOrigin = false;
             return;
         }
-        this.#selectedContext = this.#getConversationContext();
+        this.#selectedContext = this.#getConversationContext(this.#conversation);
         if (!this.#selectedContext) {
             this.#blockedByCrossOrigin = false;
             // Clear out any text the user has entered into the input but never
@@ -1124,12 +1128,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         this.#blockedByCrossOrigin = !this.#selectedContext.isOriginAllowed(this.#conversationAgent.origin);
     }
-    #getConversationContext() {
-        if (!this.#conversation) {
+    #getConversationContext(conversation) {
+        if (!conversation) {
             return null;
         }
         let context;
-        switch (this.#conversation.type) {
+        switch (conversation.type) {
             case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
                 context = this.#selectedElement;
                 break;
@@ -1155,7 +1159,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // Cancel any previous in-flight conversation.
         this.#cancel();
         const signal = this.#runAbortController.signal;
-        const context = this.#getConversationContext();
+        const context = this.#getConversationContext(this.#conversation);
         // If a different context is provided, it must be from the same origin.
         if (context && !context.isOriginAllowed(this.#conversationAgent.origin)) {
             // This error should not be reached. If it happens, some
@@ -1321,34 +1325,40 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             release();
         }
     }
-    // Called by MCP server via Puppeteer
-    async handleMcpRequest(prompt, conversationType, selector) {
-        Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.mcpRequestReceived) });
+    async handleExternalRequest(prompt, conversationType, selector) {
+        Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
+        const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
         const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-        const isBlockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
-        const isAidaAvailable = this.#aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */;
-        if (!aiAssistanceSetting || isBlockedByAge || !isAidaAvailable) {
-            throw new Error('For AI features to be available, you need to log into Chrome and enable AI assistance in DevTools settings');
+        if (!aiAssistanceSetting) {
+            disabledReasons.push(lockedString(UIStringsNotTranslate.enableInSettings));
+        }
+        if (disabledReasons.length > 0) {
+            throw new Error(disabledReasons.join(' '));
         }
         switch (conversationType) {
             case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
-                return await this.handleMcpStylingRequest(prompt, selector);
+                return await this.handleExternalStylingRequest(prompt, selector);
             default:
                 throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
         }
     }
-    async handleMcpStylingRequest(prompt, selector) {
+    async handleExternalStylingRequest(prompt, selector) {
         const stylingAgent = this.#createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
-        // Cancel any previous in-flight conversation.
-        this.#cancel();
+        const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(stylingAgent), [], stylingAgent.id, 
+        /* isReadOnly */ true, 
+        /* isExternal */ true);
+        this.#historicalConversations.push(externalConversation);
         if (selector !== undefined) {
             await inspectElementBySelector(selector);
         }
         const runner = stylingAgent.run(prompt, {
-            signal: this.#runAbortController.signal,
-            selected: this.#getConversationContext(),
+            selected: this.#getConversationContext(externalConversation),
         });
         for await (const data of runner) {
+            // We don't want to save partial responses to the conversation history.
+            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
+                void externalConversation.addHistoryItem(data);
+            }
             if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
                 data.confirm(true);
             }

@@ -7,7 +7,6 @@ declare global {
 }
 export declare class ControlButton extends LitElement {
     #private;
-    static styles: CSSStyleSheet[];
     label: string;
     shape: string;
     disabled: boolean;

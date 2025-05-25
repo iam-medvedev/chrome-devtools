@@ -1,9 +1,7 @@
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Platform from '../platform/platform.js';
 export declare const DevToolsStubErrorCode = -32015;
-interface MessageParams {
-    [x: string]: any;
-}
+type MessageParams = Record<string, any>;
 type ProtocolDomainName = ProtocolProxyApi.ProtocolDomainName;
 export interface MessageError {
     code: number;
@@ -235,17 +233,13 @@ export declare class TargetBase {
  * of the invoke_enable, etc. methods that the front-end uses.
  */
 declare class AgentPrototype {
-    replyArgs: {
-        [x: string]: string[];
-    };
+    replyArgs: Record<string, string[]>;
     description: string;
-    metadata: {
-        [commandName: string]: {
-            parameters: CommandParameter[];
-            description: string;
-            replyArgs: string[];
-        };
-    };
+    metadata: Record<string, {
+        parameters: CommandParameter[];
+        description: string;
+        replyArgs: string[];
+    }>;
     readonly domain: string;
     target: TargetBase;
     constructor(domain: string);

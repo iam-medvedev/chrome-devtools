@@ -60,8 +60,6 @@ export declare class AXBreadcrumb {
     private appendRoleElement;
     private appendIgnoredNodeElement;
 }
-interface RoleStyles {
-    [type: string]: string;
-}
+type RoleStyles = Record<string, string>;
 export declare const RoleStyles: RoleStyles;
 export {};

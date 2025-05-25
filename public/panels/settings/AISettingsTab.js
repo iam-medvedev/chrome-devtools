@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Input from '../../ui/components/input/input.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
@@ -162,22 +163,6 @@ const UIStrings = {
      *@description Label for a toggle to enable the AI assistance feature
      */
     enableAiSuggestedAnnotations: 'Enable AI suggestions for performance panel annotations',
-    /**
-     * @description Message shown to the user if the age check is not successful.
-     */
-    ageRestricted: 'This feature is only available to users who are 18 years of age or older.',
-    /**
-     * @description The error message when the user is not logged in into Chrome.
-     */
-    notLoggedIn: 'This feature is only available when you sign into Chrome with your Google account.',
-    /**
-     * @description Message shown when the user is offline.
-     */
-    offline: 'This feature is only available with an active internet connection.',
-    /**
-     *@description Text informing the user that AI assistance is not available in Incognito mode or Guest mode.
-     */
-    notAvailableInIncognitoMode: 'AI assistance is not available in Incognito mode or Guest mode',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/AISettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -186,7 +171,6 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     #consoleInsightsSetting;
     #aiAnnotationsSetting;
     #aiAssistanceSetting;
-    #aiAssistanceHistorySetting;
     #aidaAvailability = "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */;
     #boundOnAidaAvailabilityChange;
     // Setting to parameters needed to display it in the UI.
@@ -205,14 +189,6 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         }
         catch {
             this.#aiAssistanceSetting = undefined;
-        }
-        try {
-            this.#aiAssistanceHistorySetting =
-                // Name needs to match the one in AiHistoryStorage
-                Common.Settings.Settings.instance().moduleSetting('ai-assistance-history-entries');
-        }
-        catch {
-            this.#aiAssistanceHistorySetting = undefined;
         }
         if (Root.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled) {
             // Get an existing setting or, if it does not exist, create a new one.
@@ -293,7 +269,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
                             i18nString(UIStrings.generatedAiAnnotationsSendData)
                     }],
                 learnMoreLink: {
-                    url: 'https://developer.chrome.com/docs/devtools/performance/reference#auto-annotations',
+                    url: 'https://developer.chrome.com/docs/devtools/performance/annotations#auto-annotations',
                     linkJSLogContext: 'learn-more.auto-annotations'
                 },
                 settingExpandState: {
@@ -376,11 +352,9 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
                     .set(true);
             }
         }
-        else if (setting.name === 'ai-assistance-enabled') {
-            // If history was create create and the value changes to `false`
-            if (this.#aiAssistanceHistorySetting && !setting.get()) {
-                this.#aiAssistanceHistorySetting.set([]);
-            }
+        else if (setting.name === 'ai-assistance-enabled' && !setting.get()) {
+            // If the "AI Assistance" is toggled off, we remove all the history entries related to the feature.
+            void AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
         }
         void this.render();
     }
@@ -450,37 +424,12 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     `;
         // clang-format on
     }
-    #getDisabledReasons() {
-        const reasons = [];
-        if (Root.Runtime.hostConfig.isOffTheRecord) {
-            reasons.push(i18nString(UIStrings.notAvailableInIncognitoMode));
-        }
-        switch (this.#aidaAvailability) {
-            case "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */:
-            case "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */:
-                reasons.push(i18nString(UIStrings.notLoggedIn));
-                break;
-            // @ts-expect-error
-            case "no-internet" /* Host.AidaClient.AidaAccessPreconditions.NO_INTERNET */: // fallthrough
-                reasons.push(i18nString(UIStrings.offline));
-            case "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */: {
-                // No age check if there is no logged in user. Age check would always fail in that case.
-                if (Root.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
-                    reasons.push(i18nString(UIStrings.ageRestricted));
-                }
-            }
-        }
-        // `consoleInsightsSetting` and `aiAssistantSetting` are both disabled for the same reasons.
-        const disabledReasons = this.#consoleInsightsSetting?.disabledReasons() || [];
-        reasons.push(...disabledReasons);
-        return reasons;
-    }
     #renderSetting(setting) {
         const settingData = this.#settingToParams.get(setting);
         if (!settingData) {
             return Lit.nothing;
         }
-        const disabledReasons = this.#getDisabledReasons();
+        const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
         const isDisabled = disabledReasons.length > 0;
         const disabledReasonsJoined = disabledReasons.join('\n') || undefined;
         const detailsClasses = {
@@ -569,7 +518,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         // clang-format on
     }
     async render() {
-        const disabledReasons = this.#getDisabledReasons();
+        const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         Lit.render(html `

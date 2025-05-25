@@ -176,6 +176,7 @@ models/persistence/NetworkPersistenceManager.test.js
 models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
 models/persistence/PlatformFileSystem.test.js
+models/persistence/WorkspaceSettingsTab.test.js
 models/project_settings/ProjectSettingsModel.test.js
 models/source_map_scopes/NamesResolver.test.js
 models/source_map_scopes/ScopeChainModel.test.js
@@ -348,7 +349,6 @@ panels/developer_resources/DeveloperResourcesView.test.js
 panels/developer_resources/developer_resources.test.js
 panels/elements/components/AccessibilityTreeNode.test.js
 panels/elements/components/AdornerManager.test.js
-panels/elements/components/AnchorFunctionLinkSwatch.test.js
 panels/elements/components/CSSHintDetailsView.test.js
 panels/elements/components/CSSPropertyDocsView.test.js
 panels/elements/components/CSSPropertyIconResolver.test.js

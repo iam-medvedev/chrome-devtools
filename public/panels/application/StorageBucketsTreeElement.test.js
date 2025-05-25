@@ -94,7 +94,7 @@ describeWithMockConnection('StorageBucketsTreeElement', function () {
         storageBucketsModel.enable();
         const panel = Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         panel.markAsRoot();
-        panel.show(document.body);
+        renderElementIntoDOM(panel);
         const parentTreeElement = new Application.StorageBucketsTreeElement.StorageBucketsTreeParentElement(panel);
         const appendChildSpy = sinon.spy(parentTreeElement, 'appendChild');
         parentTreeElement.initialize();

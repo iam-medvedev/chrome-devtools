@@ -10,59 +10,51 @@ import * as Workspace from '../workspace/workspace.js';
 import { FileSystemWorkspaceBinding } from './FileSystemWorkspaceBinding.js';
 import { PersistenceImpl } from './PersistenceImpl.js';
 export class Automapping {
-    workspace;
-    onStatusAdded;
-    onStatusRemoved;
-    statuses;
-    fileSystemUISourceCodes;
-    sweepThrottler;
-    sourceCodeToProcessingPromiseMap;
-    sourceCodeToAutoMappingStatusMap;
-    sourceCodeToMetadataMap;
-    filesIndex;
-    projectFoldersIndex;
-    activeFoldersIndex;
-    interceptors;
+    #workspace;
+    #onStatusAdded;
+    #onStatusRemoved;
+    // Used in web tests
+    statuses = new Set();
+    #fileSystemUISourceCodes = new FileSystemUISourceCodes();
+    // Used in web tests
+    sweepThrottler = new Common.Throttler.Throttler(100);
+    #sourceCodeToProcessingPromiseMap = new WeakMap();
+    #sourceCodeToAutoMappingStatusMap = new WeakMap();
+    #sourceCodeToMetadataMap = new WeakMap();
+    #filesIndex = new FilePathIndex();
+    #projectFoldersIndex = new FolderIndex();
+    #activeFoldersIndex = new FolderIndex();
+    #interceptors = [];
     constructor(workspace, onStatusAdded, onStatusRemoved) {
-        this.workspace = workspace;
-        this.onStatusAdded = onStatusAdded;
-        this.onStatusRemoved = onStatusRemoved;
-        this.statuses = new Set();
-        this.fileSystemUISourceCodes = new FileSystemUISourceCodes();
-        this.sweepThrottler = new Common.Throttler.Throttler(100);
-        this.sourceCodeToProcessingPromiseMap = new WeakMap();
-        this.sourceCodeToAutoMappingStatusMap = new WeakMap();
-        this.sourceCodeToMetadataMap = new WeakMap();
-        this.filesIndex = new FilePathIndex();
-        this.projectFoldersIndex = new FolderIndex();
-        this.activeFoldersIndex = new FolderIndex();
-        this.interceptors = [];
-        this.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, event => this.onUISourceCodeAdded(event.data));
-        this.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, event => this.onUISourceCodeRemoved(event.data));
-        this.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRenamed, this.onUISourceCodeRenamed, this);
-        this.workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, event => this.onProjectAdded(event.data), this);
-        this.workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, event => this.onProjectRemoved(event.data), this);
+        this.#workspace = workspace;
+        this.#onStatusAdded = onStatusAdded;
+        this.#onStatusRemoved = onStatusRemoved;
+        this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, event => this.#onUISourceCodeAdded(event.data));
+        this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, event => this.#onUISourceCodeRemoved(event.data));
+        this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRenamed, this.#onUISourceCodeRenamed, this);
+        this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, event => this.#onProjectAdded(event.data), this);
+        this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, event => this.#onProjectRemoved(event.data), this);
         for (const fileSystem of workspace.projects()) {
-            this.onProjectAdded(fileSystem);
+            this.#onProjectAdded(fileSystem);
         }
         for (const uiSourceCode of workspace.uiSourceCodes()) {
-            this.onUISourceCodeAdded(uiSourceCode);
+            this.#onUISourceCodeAdded(uiSourceCode);
         }
     }
     addNetworkInterceptor(interceptor) {
-        this.interceptors.push(interceptor);
+        this.#interceptors.push(interceptor);
         this.scheduleRemap();
     }
     scheduleRemap() {
         for (const status of this.statuses.values()) {
-            this.clearNetworkStatus(status.network);
+            this.#clearNetworkStatus(status.network);
         }
-        this.scheduleSweep();
+        this.#scheduleSweep();
     }
-    scheduleSweep() {
+    #scheduleSweep() {
         void this.sweepThrottler.schedule(sweepUnmapped.bind(this));
         function sweepUnmapped() {
-            const networkProjects = this.workspace.projectsForType(Workspace.Workspace.projectTypes.Network);
+            const networkProjects = this.#workspace.projectsForType(Workspace.Workspace.projectTypes.Network);
             for (const networkProject of networkProjects) {
                 for (const uiSourceCode of networkProject.uiSourceCodes()) {
                     void this.computeNetworkStatus(uiSourceCode);
@@ -74,98 +66,98 @@ export class Automapping {
     }
     onSweepHappenedForTest() {
     }
-    onProjectRemoved(project) {
+    #onProjectRemoved(project) {
         for (const uiSourceCode of project.uiSourceCodes()) {
-            this.onUISourceCodeRemoved(uiSourceCode);
+            this.#onUISourceCodeRemoved(uiSourceCode);
         }
         if (project.type() !== Workspace.Workspace.projectTypes.FileSystem) {
             return;
         }
         const fileSystem = project;
         for (const gitFolder of fileSystem.initialGitFolders()) {
-            this.projectFoldersIndex.removeFolder(gitFolder);
+            this.#projectFoldersIndex.removeFolder(gitFolder);
         }
-        this.projectFoldersIndex.removeFolder(fileSystem.fileSystemPath());
+        this.#projectFoldersIndex.removeFolder(fileSystem.fileSystemPath());
         this.scheduleRemap();
     }
-    onProjectAdded(project) {
+    #onProjectAdded(project) {
         if (project.type() !== Workspace.Workspace.projectTypes.FileSystem) {
             return;
         }
         const fileSystem = project;
         for (const gitFolder of fileSystem.initialGitFolders()) {
-            this.projectFoldersIndex.addFolder(gitFolder);
+            this.#projectFoldersIndex.addFolder(gitFolder);
         }
-        this.projectFoldersIndex.addFolder(fileSystem.fileSystemPath());
+        this.#projectFoldersIndex.addFolder(fileSystem.fileSystemPath());
         for (const uiSourceCode of project.uiSourceCodes()) {
-            this.onUISourceCodeAdded(uiSourceCode);
+            this.#onUISourceCodeAdded(uiSourceCode);
         }
         this.scheduleRemap();
     }
-    onUISourceCodeAdded(uiSourceCode) {
+    #onUISourceCodeAdded(uiSourceCode) {
         const project = uiSourceCode.project();
         if (project.type() === Workspace.Workspace.projectTypes.FileSystem) {
             if (!FileSystemWorkspaceBinding.fileSystemSupportsAutomapping(project)) {
                 return;
             }
-            this.filesIndex.addPath(uiSourceCode.url());
-            this.fileSystemUISourceCodes.add(uiSourceCode);
-            this.scheduleSweep();
+            this.#filesIndex.addPath(uiSourceCode.url());
+            this.#fileSystemUISourceCodes.add(uiSourceCode);
+            this.#scheduleSweep();
         }
         else if (project.type() === Workspace.Workspace.projectTypes.Network) {
             void this.computeNetworkStatus(uiSourceCode);
         }
     }
-    onUISourceCodeRemoved(uiSourceCode) {
+    #onUISourceCodeRemoved(uiSourceCode) {
         if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.FileSystem) {
-            this.filesIndex.removePath(uiSourceCode.url());
-            this.fileSystemUISourceCodes.delete(uiSourceCode.url());
-            const status = this.sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
+            this.#filesIndex.removePath(uiSourceCode.url());
+            this.#fileSystemUISourceCodes.delete(uiSourceCode.url());
+            const status = this.#sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
             if (status) {
-                this.clearNetworkStatus(status.network);
+                this.#clearNetworkStatus(status.network);
             }
         }
         else if (uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network) {
-            this.clearNetworkStatus(uiSourceCode);
+            this.#clearNetworkStatus(uiSourceCode);
         }
     }
-    onUISourceCodeRenamed(event) {
+    #onUISourceCodeRenamed(event) {
         const { uiSourceCode, oldURL } = event.data;
         if (uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.FileSystem) {
             return;
         }
-        this.filesIndex.removePath(oldURL);
-        this.fileSystemUISourceCodes.delete(oldURL);
-        const status = this.sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
+        this.#filesIndex.removePath(oldURL);
+        this.#fileSystemUISourceCodes.delete(oldURL);
+        const status = this.#sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
         if (status) {
-            this.clearNetworkStatus(status.network);
+            this.#clearNetworkStatus(status.network);
         }
-        this.filesIndex.addPath(uiSourceCode.url());
-        this.fileSystemUISourceCodes.add(uiSourceCode);
-        this.scheduleSweep();
+        this.#filesIndex.addPath(uiSourceCode.url());
+        this.#fileSystemUISourceCodes.add(uiSourceCode);
+        this.#scheduleSweep();
     }
     computeNetworkStatus(networkSourceCode) {
-        const processingPromise = this.sourceCodeToProcessingPromiseMap.get(networkSourceCode);
+        const processingPromise = this.#sourceCodeToProcessingPromiseMap.get(networkSourceCode);
         if (processingPromise) {
             return processingPromise;
         }
-        if (this.sourceCodeToAutoMappingStatusMap.has(networkSourceCode)) {
+        if (this.#sourceCodeToAutoMappingStatusMap.has(networkSourceCode)) {
             return Promise.resolve();
         }
-        if (this.interceptors.some(interceptor => interceptor(networkSourceCode))) {
+        if (this.#interceptors.some(interceptor => interceptor(networkSourceCode))) {
             return Promise.resolve();
         }
         if (Common.ParsedURL.schemeIs(networkSourceCode.url(), 'wasm:')) {
             return Promise.resolve();
         }
-        const createBindingPromise = this.createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
-        this.sourceCodeToProcessingPromiseMap.set(networkSourceCode, createBindingPromise);
+        const createBindingPromise = this.#createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
+        this.#sourceCodeToProcessingPromiseMap.set(networkSourceCode, createBindingPromise);
         return createBindingPromise;
         async function validateStatus(status) {
             if (!status) {
                 return null;
             }
-            if (this.sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
+            if (this.#sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
                 return null;
             }
             if (status.network.contentType().isFromSourceMap() || !status.fileSystem.contentType().isTextType()) {
@@ -198,7 +190,7 @@ export class Automapping {
             if (fileSystemContent.content === null || networkContent === null) {
                 return null;
             }
-            if (this.sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
+            if (this.#sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
                 return null;
             }
             const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(status.network);
@@ -221,62 +213,62 @@ export class Automapping {
             return status;
         }
         async function onStatus(status) {
-            if (this.sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
+            if (this.#sourceCodeToProcessingPromiseMap.get(networkSourceCode) !== createBindingPromise) {
                 return;
             }
             if (!status) {
                 this.onBindingFailedForTest();
-                this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
+                this.#sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
                 return;
             }
             // TODO(lushnikov): remove this check once there's a single uiSourceCode per url. @see crbug.com/670180
-            if (this.sourceCodeToAutoMappingStatusMap.has(status.network) ||
-                this.sourceCodeToAutoMappingStatusMap.has(status.fileSystem)) {
-                this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
+            if (this.#sourceCodeToAutoMappingStatusMap.has(status.network) ||
+                this.#sourceCodeToAutoMappingStatusMap.has(status.fileSystem)) {
+                this.#sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
                 return;
             }
             this.statuses.add(status);
-            this.sourceCodeToAutoMappingStatusMap.set(status.network, status);
-            this.sourceCodeToAutoMappingStatusMap.set(status.fileSystem, status);
+            this.#sourceCodeToAutoMappingStatusMap.set(status.network, status);
+            this.#sourceCodeToAutoMappingStatusMap.set(status.fileSystem, status);
             if (status.exactMatch) {
-                const projectFolder = this.projectFoldersIndex.closestParentFolder(status.fileSystem.url());
-                const newFolderAdded = projectFolder ? this.activeFoldersIndex.addFolder(projectFolder) : false;
+                const projectFolder = this.#projectFoldersIndex.closestParentFolder(status.fileSystem.url());
+                const newFolderAdded = projectFolder ? this.#activeFoldersIndex.addFolder(projectFolder) : false;
                 if (newFolderAdded) {
-                    this.scheduleSweep();
+                    this.#scheduleSweep();
                 }
             }
-            await this.onStatusAdded.call(null, status);
-            this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
+            await this.#onStatusAdded.call(null, status);
+            this.#sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
         }
     }
     prevalidationFailedForTest(_binding) {
     }
     onBindingFailedForTest() {
     }
-    clearNetworkStatus(networkSourceCode) {
-        if (this.sourceCodeToProcessingPromiseMap.has(networkSourceCode)) {
-            this.sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
+    #clearNetworkStatus(networkSourceCode) {
+        if (this.#sourceCodeToProcessingPromiseMap.has(networkSourceCode)) {
+            this.#sourceCodeToProcessingPromiseMap.delete(networkSourceCode);
             return;
         }
-        const status = this.sourceCodeToAutoMappingStatusMap.get(networkSourceCode);
+        const status = this.#sourceCodeToAutoMappingStatusMap.get(networkSourceCode);
         if (!status) {
             return;
         }
         this.statuses.delete(status);
-        this.sourceCodeToAutoMappingStatusMap.delete(status.network);
-        this.sourceCodeToAutoMappingStatusMap.delete(status.fileSystem);
+        this.#sourceCodeToAutoMappingStatusMap.delete(status.network);
+        this.#sourceCodeToAutoMappingStatusMap.delete(status.fileSystem);
         if (status.exactMatch) {
-            const projectFolder = this.projectFoldersIndex.closestParentFolder(status.fileSystem.url());
+            const projectFolder = this.#projectFoldersIndex.closestParentFolder(status.fileSystem.url());
             if (projectFolder) {
-                this.activeFoldersIndex.removeFolder(projectFolder);
+                this.#activeFoldersIndex.removeFolder(projectFolder);
             }
         }
-        void this.onStatusRemoved.call(null, status);
+        void this.#onStatusRemoved.call(null, status);
     }
-    async createBinding(networkSourceCode) {
+    async #createBinding(networkSourceCode) {
         const url = networkSourceCode.url();
         if (Common.ParsedURL.schemeIs(url, 'file:') || Common.ParsedURL.schemeIs(url, 'snippet:')) {
-            const fileSourceCode = this.fileSystemUISourceCodes.get(url);
+            const fileSourceCode = this.#fileSystemUISourceCodes.get(url);
             const status = fileSourceCode ? new AutomappingStatus(networkSourceCode, fileSourceCode, false) : null;
             return status;
         }
@@ -287,15 +279,15 @@ export class Automapping {
         if (networkPath.endsWith('/')) {
             networkPath = Common.ParsedURL.ParsedURL.concatenate(networkPath, 'index.html');
         }
-        const similarFiles = this.filesIndex.similarFiles(networkPath).map(path => this.fileSystemUISourceCodes.get(path));
+        const similarFiles = this.#filesIndex.similarFiles(networkPath).map(path => this.#fileSystemUISourceCodes.get(path));
         if (!similarFiles.length) {
             return null;
         }
         await Promise.all(similarFiles.concat(networkSourceCode).map(async (sourceCode) => {
-            this.sourceCodeToMetadataMap.set(sourceCode, await sourceCode.requestMetadata());
+            this.#sourceCodeToMetadataMap.set(sourceCode, await sourceCode.requestMetadata());
         }));
-        const activeFiles = similarFiles.filter(file => !!this.activeFoldersIndex.closestParentFolder(file.url()));
-        const networkMetadata = this.sourceCodeToMetadataMap.get(networkSourceCode);
+        const activeFiles = similarFiles.filter(file => !!this.#activeFoldersIndex.closestParentFolder(file.url()));
+        const networkMetadata = this.#sourceCodeToMetadataMap.get(networkSourceCode);
         if (!networkMetadata || (!networkMetadata.modificationTime && typeof networkMetadata.contentSize !== 'number')) {
             // If networkSourceCode does not have metadata, try to match against active folders.
             if (activeFiles.length !== 1) {
@@ -304,18 +296,18 @@ export class Automapping {
             return new AutomappingStatus(networkSourceCode, activeFiles[0], false);
         }
         // Try to find exact matches, prioritizing active folders.
-        let exactMatches = this.filterWithMetadata(activeFiles, networkMetadata);
+        let exactMatches = this.#filterWithMetadata(activeFiles, networkMetadata);
         if (!exactMatches.length) {
-            exactMatches = this.filterWithMetadata(similarFiles, networkMetadata);
+            exactMatches = this.#filterWithMetadata(similarFiles, networkMetadata);
         }
         if (exactMatches.length !== 1) {
             return null;
         }
         return new AutomappingStatus(networkSourceCode, exactMatches[0], true);
     }
-    filterWithMetadata(files, networkMetadata) {
+    #filterWithMetadata(files, networkMetadata) {
         return files.filter(file => {
-            const fileMetadata = this.sourceCodeToMetadataMap.get(file);
+            const fileMetadata = this.#sourceCodeToMetadataMap.get(file);
             if (!fileMetadata) {
                 return false;
             }
@@ -386,24 +378,21 @@ class FolderIndex {
     }
 }
 class FileSystemUISourceCodes {
-    sourceCodes;
-    constructor() {
-        this.sourceCodes = new Map();
-    }
+    #sourceCodes = new Map();
     getPlatformCanonicalFileUrl(path) {
         return Host.Platform.isWin() ? Common.ParsedURL.ParsedURL.toLowerCase(path) : path;
     }
     add(sourceCode) {
         const fileUrl = this.getPlatformCanonicalFileUrl(sourceCode.url());
-        this.sourceCodes.set(fileUrl, sourceCode);
+        this.#sourceCodes.set(fileUrl, sourceCode);
     }
     get(fileUrl) {
         fileUrl = this.getPlatformCanonicalFileUrl(fileUrl);
-        return this.sourceCodes.get(fileUrl);
+        return this.#sourceCodes.get(fileUrl);
     }
     delete(fileUrl) {
         fileUrl = this.getPlatformCanonicalFileUrl(fileUrl);
-        this.sourceCodes.delete(fileUrl);
+        this.#sourceCodes.delete(fileUrl);
     }
 }
 export class AutomappingStatus {

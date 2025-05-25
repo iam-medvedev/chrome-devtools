@@ -31,7 +31,6 @@ export declare enum PlatformFileSystemType {
 }
 export declare class PlatformFileSystem {
     #private;
-    private readonly pathInternal;
     /**
      * True if the filesystem was automatically discovered (see
      * https://goo.gle/devtools-json-design).

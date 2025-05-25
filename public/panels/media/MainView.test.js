@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -17,8 +18,7 @@ describeWithMockConnection('MediaMainView', () => {
         const downloadStore = new Media.MainView.PlayerDataDownloadManager();
         const expectedCall = sinon.stub(downloadStore, expectedMethod).returns();
         const mainView = new Media.MainView.MainView(downloadStore);
-        mainView.markAsRoot();
-        mainView.show(document.body);
+        renderElementIntoDOM(mainView);
         const model = target.model(Media.MediaModel.MediaModel);
         assert.exists(model);
         model.dispatchEventToListeners("PlayersCreated" /* Media.MediaModel.Events.PLAYERS_CREATED */, [PLAYER_ID]);
@@ -50,8 +50,7 @@ describeWithMockConnection('MediaMainView', () => {
         assert.exists(model);
         // Show main view, which will register event listeners on the model.
         const mainView = new Media.MainView.MainView();
-        mainView.markAsRoot();
-        mainView.show(document.body);
+        renderElementIntoDOM(mainView);
         model.dispatchEventToListeners("PlayersCreated" /* Media.MediaModel.Events.PLAYERS_CREATED */, [PLAYER_ID]);
         assert.exists(mainView.contentElement.querySelector('.empty-state'));
         assert.deepEqual(mainView.contentElement.querySelector('.empty-state-header')?.textContent, 'No media player selected');
@@ -63,8 +62,7 @@ describeWithMockConnection('MediaMainView', () => {
         assert.exists(model);
         // Show main view, which will register event listeners on the model.
         const mainView = new Media.MainView.MainView();
-        mainView.markAsRoot();
-        mainView.show(document.body);
+        renderElementIntoDOM(mainView);
         model.dispatchEventToListeners("PlayersCreated" /* Media.MediaModel.Events.PLAYERS_CREATED */, [PLAYER_ID]);
         mainView.markPlayerForDeletion(PLAYER_ID);
         assert.exists(mainView.contentElement.querySelector('.empty-state'));
@@ -77,8 +75,7 @@ describeWithMockConnection('MediaMainView', () => {
         assert.exists(model);
         // Show main view, which will register event listeners on the model.
         const mainView = new Media.MainView.MainView();
-        mainView.markAsRoot();
-        mainView.show(document.body);
+        renderElementIntoDOM(mainView);
         model.dispatchEventToListeners("PlayersCreated" /* Media.MediaModel.Events.PLAYERS_CREATED */, [PLAYER_ID]);
         mainView.renderMainPanel(PLAYER_ID);
         assert.isNull(mainView.contentElement.querySelector('.empty-state'));

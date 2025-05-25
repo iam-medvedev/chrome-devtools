@@ -1,11 +1,14 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+import '../../ui/legacy/legacy.js';
+import '../../ui/components/buttons/buttons.js';
 import '../../ui/components/cards/cards.js';
+import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { EditFileSystemView } from './EditFileSystemView.js';
 import { IsolatedFileSystem } from './IsolatedFileSystem.js';
@@ -36,115 +39,92 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/persistence/WorkspaceSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${workspaceSettingsTabStyles}</style>
+    <div class="settings-card-container-wrapper" jslog=${VisualLogging.pane('workspace')}>
+      <div class="settings-card-container">
+        <devtools-card heading=${i18nString(UIStrings.workspace)}>
+          <div class="folder-exclude-pattern">
+            <label for="workspace-setting-folder-exclude-pattern">${i18nString(UIStrings.folderExcludePattern)}</label>
+            <input
+              class="harmony-input"
+              jslog=${VisualLogging.textField().track({ keydown: 'Enter', change: true }).context(input.excludePatternSetting.name)}
+              ${UI.SettingsUI.bindToSetting(input.excludePatternSetting)}
+              id="workspace-setting-folder-exclude-pattern"></input>
+          </div>
+          <div class="mappings-info">${i18nString(UIStrings.mappingsAreInferredAutomatically)}</div>
+        </devtools-card>
+        ${input.fileSystems.map(fileSystem => html `
+          <devtools-card heading=${fileSystem.displayName}>
+            <devtools-icon name="folder" slot="heading-prefix"></devtools-icon>
+            <div class="mapping-view-container">
+              <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
+              </devtools-widget>
+            </div>
+            <devtools-button
+              slot="heading-suffix"
+              .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+              jslog=${VisualLogging.action().track({ click: true }).context('settings.remove-file-system')}
+              @click=${input.onRemoveClicked.bind(null, fileSystem.fileSystem)}>${i18nString(UIStrings.remove)}</devtools-button>
+          </devtools-card>
+        `)}
+        <div class="add-button-container">
+          <devtools-button
+            class="add-folder"
+            .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+            jslog=${VisualLogging.action().track({ click: true }).context('sources.add-folder-to-workspace')}
+            @click=${input.onAddClicked}>${i18nString(UIStrings.addFolder)}</devtools-button>
+        </div>
+      </div>
+    </div>`, target, { host: input });
+    // clang-format on
+};
 export class WorkspaceSettingsTab extends UI.Widget.VBox {
-    containerElement;
-    #addButtonContainer;
-    elementByPath;
-    mappingViewByPath;
-    constructor() {
+    #view;
+    #eventListeners = [];
+    constructor(view = DEFAULT_VIEW) {
         super();
-        this.registerRequiredCSS(workspaceSettingsTabStyles);
-        this.element.setAttribute('jslog', `${VisualLogging.pane('workspace')}`);
-        this.containerElement =
-            this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-        this.containerElement.classList.add('settings-card-container');
-        IsolatedFileSystemManager.instance().addEventListener(Events.FileSystemAdded, event => this.fileSystemAdded(event.data), this);
-        IsolatedFileSystemManager.instance().addEventListener(Events.FileSystemRemoved, event => this.fileSystemRemoved(event.data), this);
-        const folderExcludePatternInput = this.createFolderExcludePatternInput();
-        folderExcludePatternInput.classList.add('folder-exclude-pattern');
-        const mappingsAreInferredInfo = document.createElement('div');
-        mappingsAreInferredInfo.classList.add('mappings-info');
-        UI.UIUtils.createTextChild(mappingsAreInferredInfo, i18nString(UIStrings.mappingsAreInferredAutomatically));
-        const card = this.containerElement.createChild('devtools-card');
-        card.heading = i18nString(UIStrings.workspace);
-        card.append(folderExcludePatternInput, mappingsAreInferredInfo);
-        this.elementByPath = new Map();
-        this.mappingViewByPath = new Map();
-        const fileSystems = IsolatedFileSystemManager.instance().fileSystems();
-        for (let i = 0; i < fileSystems.length; ++i) {
-            this.addItem(fileSystems[i]);
-        }
-        this.#addButtonContainer = this.containerElement.createChild('div', 'add-button-container');
-        const addButton = UI.UIUtils.createTextButton(i18nString(UIStrings.addFolder), this.addFileSystemClicked.bind(this), { jslogContext: 'sources.add-folder-to-workspace' });
-        addButton.classList.add('add-folder');
-        this.#addButtonContainer.appendChild(addButton);
+        this.#view = view;
     }
-    createFolderExcludePatternInput() {
-        const excludePatternElement = document.createElement('div');
-        excludePatternElement.classList.add('folder-exclude-pattern');
-        const labelElement = excludePatternElement.createChild('label');
-        labelElement.textContent = i18nString(UIStrings.folderExcludePattern);
-        const folderExcludeSetting = IsolatedFileSystemManager.instance().workspaceFolderExcludePatternSetting();
-        const inputElement = UI.UIUtils.createInput('', 'text', folderExcludeSetting.name);
-        UI.ARIAUtils.bindLabelToControl(labelElement, inputElement);
-        excludePatternElement.appendChild(inputElement);
-        const setValue = UI.UIUtils.bindInput(inputElement, folderExcludeSetting.set.bind(folderExcludeSetting), regexValidator, false);
-        folderExcludeSetting.addChangeListener(() => setValue.call(null, folderExcludeSetting.get()));
-        setValue(folderExcludeSetting.get());
-        return excludePatternElement;
-        function regexValidator(value) {
-            try {
-                new RegExp(value);
-                return true;
-            }
-            catch {
-                return false;
-            }
-        }
+    wasShown() {
+        this.#eventListeners = [
+            IsolatedFileSystemManager.instance().addEventListener(Events.FileSystemAdded, this.requestUpdate.bind(this)),
+            IsolatedFileSystemManager.instance().addEventListener(Events.FileSystemRemoved, this.requestUpdate.bind(this)),
+        ];
+        this.requestUpdate();
     }
-    addItem(fileSystem) {
-        // Support managing only instances of IsolatedFileSystem.
-        if (!(fileSystem instanceof IsolatedFileSystem)) {
-            return;
-        }
-        const networkPersistenceProject = NetworkPersistenceManager.instance().project();
-        if (networkPersistenceProject &&
-            IsolatedFileSystemManager.instance().fileSystem(networkPersistenceProject.fileSystemPath()) ===
-                fileSystem) {
-            return;
-        }
-        const filename = this.getFilename(fileSystem);
-        const removeButton = UI.UIUtils.createTextButton(i18nString(UIStrings.remove), this.removeFileSystemClicked.bind(this, fileSystem), { jslogContext: 'settings.remove-file-system' });
-        removeButton.slot = 'heading-suffix';
-        const folderIcon = IconButton.Icon.create('folder');
-        folderIcon.slot = 'heading-prefix';
-        const mappingViewContainer = document.createElement('div');
-        mappingViewContainer.classList.add('mapping-view-container');
-        const fileSystemExcludeCard = document.createElement('devtools-card');
-        fileSystemExcludeCard.heading = filename;
-        fileSystemExcludeCard.append(folderIcon, removeButton, mappingViewContainer);
-        this.containerElement.insertBefore(fileSystemExcludeCard, this.#addButtonContainer);
-        const mappingView = new EditFileSystemView(fileSystem.path());
-        this.mappingViewByPath.set(fileSystem.path(), mappingView);
-        mappingView.element.classList.add('file-system-mapping-view');
-        mappingView.show(mappingViewContainer);
-        this.elementByPath.set(fileSystem.path(), fileSystemExcludeCard);
+    willHide() {
+        Common.EventTarget.removeEventListeners(this.#eventListeners);
+        this.#eventListeners = [];
     }
-    getFilename(fileSystem) {
+    performUpdate() {
+        const input = {
+            excludePatternSetting: IsolatedFileSystemManager.instance().workspaceFolderExcludePatternSetting(),
+            onAddClicked: () => IsolatedFileSystemManager.instance().addFileSystem(),
+            onRemoveClicked: fs => IsolatedFileSystemManager.instance().removeFileSystem(fs),
+            fileSystems: IsolatedFileSystemManager.instance()
+                .fileSystems()
+                .filter(fileSystem => {
+                const networkPersistenceProject = NetworkPersistenceManager.instance().project();
+                return fileSystem instanceof IsolatedFileSystem &&
+                    (!networkPersistenceProject ||
+                        IsolatedFileSystemManager.instance().fileSystem(networkPersistenceProject.fileSystemPath()) !== fileSystem);
+            })
+                .map(fileSystem => {
+                const displayName = WorkspaceSettingsTab.#getFilename(fileSystem);
+                return { displayName, fileSystem: fileSystem };
+            })
+                .sort((fs1, fs2) => fs1.displayName.localeCompare(fs2.displayName)),
+        };
+        this.#view(input, {}, this.contentElement);
+    }
+    static #getFilename(fileSystem) {
         const fileSystemPath = fileSystem.path();
         const lastIndexOfSlash = fileSystemPath.lastIndexOf('/');
-        const lastPathComponent = fileSystemPath.substr(lastIndexOfSlash + 1);
+        const lastPathComponent = fileSystemPath.substring(lastIndexOfSlash + 1);
         return decodeURIComponent(lastPathComponent);
-    }
-    removeFileSystemClicked(fileSystem) {
-        IsolatedFileSystemManager.instance().removeFileSystem(fileSystem);
-    }
-    addFileSystemClicked() {
-        void IsolatedFileSystemManager.instance().addFileSystem();
-    }
-    fileSystemAdded(fileSystem) {
-        this.addItem(fileSystem);
-    }
-    fileSystemRemoved(fileSystem) {
-        const mappingView = this.mappingViewByPath.get(fileSystem.path());
-        if (mappingView) {
-            this.mappingViewByPath.delete(fileSystem.path());
-        }
-        const element = this.elementByPath.get(fileSystem.path());
-        if (element) {
-            this.elementByPath.delete(fileSystem.path());
-            element.remove();
-        }
     }
 }
 //# sourceMappingURL=WorkspaceSettingsTab.js.map

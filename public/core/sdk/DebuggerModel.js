@@ -1148,11 +1148,14 @@ export class DebuggerPausedDetails {
     debuggerModel;
     callFrames;
     reason;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     auxData;
     breakpointIds;
     asyncStackTrace;
     asyncStackTraceId;
-    constructor(debuggerModel, callFrames, reason, auxData, breakpointIds, asyncStackTrace, asyncStackTraceId) {
+    constructor(debuggerModel, callFrames, reason, 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    auxData, breakpointIds, asyncStackTrace, asyncStackTraceId) {
         this.debuggerModel = debuggerModel;
         this.reason = reason;
         this.auxData = auxData;

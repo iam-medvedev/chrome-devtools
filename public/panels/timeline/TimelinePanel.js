@@ -61,6 +61,7 @@ import { IsolateSelector } from './IsolateSelector.js';
 import { AnnotationModifiedEvent, ModificationsManager } from './ModificationsManager.js';
 import * as Overlays from './overlays/overlays.js';
 import { cpuprofileJsonGenerator, traceJsonGenerator } from './SaveFileFormatter.js';
+import { StatusDialog } from './StatusDialog.js';
 import { TimelineController } from './TimelineController.js';
 import { Tab } from './TimelineDetailsView.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
@@ -69,7 +70,6 @@ import { TimelineLoader } from './TimelineLoader.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import timelinePanelStyles from './timelinePanel.css.js';
 import { rangeForSelection, selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
-import timelineStatusDialogStyles from './timelineStatusDialog.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import { UIDevtoolsController } from './UIDevtoolsController.js';
 import { UIDevtoolsUtils } from './UIDevtoolsUtils.js';
@@ -153,12 +153,6 @@ const UIStrings = {
     networkConditions: 'Network conditions',
     /**
      *@description Text in Timeline Panel of the Performance panel
-     *@example {wrong format} PH1
-     *@example {ERROR_FILE_NOT_FOUND} PH2
-     */
-    failedToSaveTimelineSS: 'Failed to save timeline: {PH1} ({PH2})',
-    /**
-     *@description Text in Timeline Panel of the Performance panel
      */
     CpuThrottlingIsEnabled: '- CPU throttling is enabled',
     /**
@@ -190,13 +184,13 @@ const UIStrings = {
      */
     close: 'Close',
     /**
-     *@description Text to download the trace file after an error
-     */
-    downloadAfterError: 'Download trace',
-    /**
      *@description Status text to indicate the recording has failed in the Performance panel
      */
     recordingFailed: 'Recording failed',
+    /**
+     *@description Status text to indicate that exporting the trace has failed
+     */
+    exportingFailed: 'Exporting the trace failed',
     /**
      * @description Text to indicate the progress of a profile. Informs the user that we are currently
      * creating a peformance profile.
@@ -218,22 +212,6 @@ const UIStrings = {
      *@description Text in Timeline Panel of the Performance panel
      */
     initializingProfiler: 'Initializing profiler…',
-    /**
-     *@description Text for the status of something
-     */
-    status: 'Status',
-    /**
-     *@description Text that refers to the time
-     */
-    time: 'Time',
-    /**
-     *@description Text for the description of something
-     */
-    description: 'Description',
-    /**
-     *@description Text of an item that stops the running task
-     */
-    stop: 'Stop',
     /**
      *
      * @description Text for exporting basic traces
@@ -362,7 +340,7 @@ export class TimelinePanel extends UI.Panel.Panel {
     loadButton;
     saveButton;
     homeButton;
-    statusPane;
+    statusDialog = null;
     landingPage;
     loader;
     showScreenshotsToolbarCheckbox;
@@ -714,10 +692,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     #removeStatusPane() {
-        if (this.statusPane) {
-            this.statusPane.remove();
+        if (this.statusDialog) {
+            this.statusDialog.remove();
         }
-        this.statusPane = null;
+        this.statusDialog = null;
     }
     #changeView(newMode) {
         if (this.#viewModesEquivalent(this.#viewMode, newMode)) {
@@ -1209,14 +1187,33 @@ export class TimelinePanel extends UI.Panel.Panel {
             await Workspace.FileManager.FileManager.instance().save(fileName, traceAsString, true /* forceSaveAs */, false /* isBase64 */);
             Workspace.FileManager.FileManager.instance().close(fileName);
         }
-        catch (error) {
+        catch (e) {
+            // We expect the error to be an Error class, but this deals with any weird case where it's not.
+            const error = e instanceof Error ? e : new Error(e);
             console.error(error.stack);
             if (error.name === 'AbortError') {
                 // The user cancelled the action, so this is not an error we need to report.
                 return;
             }
-            Common.Console.Console.instance().error(i18nString(UIStrings.failedToSaveTimelineSS, { PH1: error.message, PH2: error.name }));
+            this.#showExportTraceErrorDialog(error);
         }
+    }
+    #showExportTraceErrorDialog(error) {
+        if (this.statusDialog) {
+            this.statusDialog.remove();
+        }
+        this.statusDialog = new StatusDialog({
+            description: error.message ?? error.toString(),
+            buttonText: i18nString(UIStrings.close),
+            hideStopButton: false,
+            showProgress: false,
+            showTimer: false,
+        }, async () => {
+            this.statusDialog?.remove();
+            this.statusDialog = null;
+        });
+        this.statusDialog.showPane(this.statusPaneContainer);
+        this.statusDialog.updateStatus(i18nString(UIStrings.exportingFailed));
     }
     async showHistoryDropdown() {
         const recordingData = await this.#historyManager.showHistoryDropDown();
@@ -1515,7 +1512,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async startRecording() {
-        console.assert(!this.statusPane, 'Status pane is already opened.');
+        console.assert(!this.statusDialog, 'Status pane is already opened.');
         this.setState("StartPending" /* State.START_PENDING */);
         this.showRecordingStarted();
         if (isNode) {
@@ -1526,10 +1523,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async stopRecording() {
-        if (this.statusPane) {
-            this.statusPane.finish();
-            this.statusPane.updateStatus(i18nString(UIStrings.stoppingTimeline));
-            this.statusPane.updateProgressBar(i18nString(UIStrings.received), 0);
+        if (this.statusDialog) {
+            this.statusDialog.finish();
+            this.statusDialog.updateStatus(i18nString(UIStrings.stoppingTimeline));
+            this.statusDialog.updateProgressBar(i18nString(UIStrings.received), 0);
         }
         this.setState("StopPending" /* State.STOP_PENDING */);
         if (this.controller) {
@@ -1549,10 +1546,10 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
     }
     async recordingFailed(error, rawEvents) {
-        if (this.statusPane) {
-            this.statusPane.remove();
+        if (this.statusDialog) {
+            this.statusDialog.remove();
         }
-        this.statusPane = new StatusPane({
+        this.statusDialog = new StatusDialog({
             description: error,
             buttonText: i18nString(UIStrings.close),
             hideStopButton: true,
@@ -1561,16 +1558,16 @@ export class TimelinePanel extends UI.Panel.Panel {
         }, 
         // When recording failed, we should load null to go back to the landing page.
         async () => {
-            this.statusPane?.remove();
+            this.statusDialog?.remove();
             await this.loadingComplete(
             /* no collectedEvents */ [], 
             /* exclusiveFilter= */ null, 
             /* metadata= */ null);
         });
-        this.statusPane.showPane(this.statusPaneContainer);
-        this.statusPane.updateStatus(i18nString(UIStrings.recordingFailed));
+        this.statusDialog.showPane(this.statusPaneContainer);
+        this.statusDialog.updateStatus(i18nString(UIStrings.recordingFailed));
         if (rawEvents) {
-            this.statusPane.enableDownloadOfEvents(rawEvents);
+            this.statusDialog.enableDownloadOfEvents(rawEvents);
         }
         this.setState("RecordingFailed" /* State.RECORDING_FAILED */);
         this.traceLoadStart = null;
@@ -1709,7 +1706,7 @@ export class TimelinePanel extends UI.Panel.Panel {
         if (!currentManager) {
             console.error('ModificationsManager could not be created or activated.');
         }
-        this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 70);
+        this.statusDialog?.updateProgressBar(i18nString(UIStrings.processed), 70);
         const traceInsightsSets = this.#traceEngineModel.traceInsights(traceIndex);
         this.flameChart.setInsights(traceInsightsSets, this.#eventToRelatedInsights);
         this.flameChart.setModel(parsedTrace, traceMetadata);
@@ -1788,9 +1785,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         void this.#sourceMapsResolver.install();
         // Initialize EntityMapper
         this.#entityMapper = new Utils.EntityMapper.EntityMapper(parsedTrace);
-        this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 80);
+        this.statusDialog?.updateProgressBar(i18nString(UIStrings.processed), 80);
         this.updateMiniMap();
-        this.statusPane?.updateProgressBar(i18nString(UIStrings.processed), 90);
+        this.statusDialog?.updateProgressBar(i18nString(UIStrings.processed), 90);
         this.updateTimelineControls();
         this.#setActiveInsight(null);
         this.#sideBar.setInsights(traceInsightsSets);
@@ -1903,16 +1900,16 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.#changeView({ mode: 'STATUS_PANE_OVERLAY' });
         this.setState("Recording" /* State.RECORDING */);
         this.showRecordingStarted();
-        if (this.statusPane) {
-            this.statusPane.enableAndFocusButton();
-            this.statusPane.updateStatus(i18nString(UIStrings.profiling));
-            this.statusPane.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
-            this.statusPane.startTimer();
+        if (this.statusDialog) {
+            this.statusDialog.enableAndFocusButton();
+            this.statusDialog.updateStatus(i18nString(UIStrings.profiling));
+            this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
+            this.statusDialog.startTimer();
         }
     }
     recordingProgress(usage) {
-        if (this.statusPane) {
-            this.statusPane.updateProgressBar(i18nString(UIStrings.bufferUsage), usage * 100);
+        if (this.statusDialog) {
+            this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), usage * 100);
         }
     }
     /**
@@ -1948,32 +1945,32 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     async loadingStarted() {
         this.#changeView({ mode: 'STATUS_PANE_OVERLAY' });
-        if (this.statusPane) {
-            this.statusPane.remove();
+        if (this.statusDialog) {
+            this.statusDialog.remove();
         }
-        this.statusPane = new StatusPane({
+        this.statusDialog = new StatusDialog({
             showProgress: true,
             showTimer: undefined,
             hideStopButton: true,
             buttonText: undefined,
             description: undefined,
         }, () => this.cancelLoading());
-        this.statusPane.showPane(this.statusPaneContainer);
-        this.statusPane.updateStatus(i18nString(UIStrings.loadingProfile));
+        this.statusDialog.showPane(this.statusPaneContainer);
+        this.statusDialog.updateStatus(i18nString(UIStrings.loadingProfile));
         // FIXME: make loading from backend cancelable as well.
         if (!this.loader) {
-            this.statusPane.finish();
+            this.statusDialog.finish();
         }
         this.traceLoadStart = Trace.Types.Timing.Milli(performance.now());
         await this.loadingProgress(0);
     }
     async loadingProgress(progress) {
-        if (typeof progress === 'number' && this.statusPane) {
-            this.statusPane.updateProgressBar(i18nString(UIStrings.received), progress * 100);
+        if (typeof progress === 'number' && this.statusDialog) {
+            this.statusDialog.updateProgressBar(i18nString(UIStrings.received), progress * 100);
         }
     }
     async processingStarted() {
-        this.statusPane?.updateStatus(i18nString(UIStrings.processingProfile));
+        this.statusDialog?.updateStatus(i18nString(UIStrings.processingProfile));
     }
     #listenForProcessingProgress() {
         this.#traceEngineModel.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, e => {
@@ -1982,11 +1979,11 @@ export class TimelinePanel extends UI.Panel.Panel {
             // Trace Engine will report progress from [0...1] but we still have more work to do. So, scale them down a bit.
             const traceParseMaxProgress = 0.7;
             if (updateEvent.data.type === "COMPLETE" /* Trace.TraceModel.ModelUpdateType.COMPLETE */) {
-                this.statusPane?.updateProgressBar(str, 100 * traceParseMaxProgress);
+                this.statusDialog?.updateProgressBar(str, 100 * traceParseMaxProgress);
             }
             else if (updateEvent.data.type === "PROGRESS_UPDATE" /* Trace.TraceModel.ModelUpdateType.PROGRESS_UPDATE */) {
                 const data = updateEvent.data.data;
-                this.statusPane?.updateProgressBar(str, data.percent * 100 * traceParseMaxProgress);
+                this.statusDialog?.updateProgressBar(str, data.percent * 100 * traceParseMaxProgress);
             }
         });
     }
@@ -2236,19 +2233,19 @@ export class TimelinePanel extends UI.Panel.Panel {
     }
     showRecordingStarted() {
         this.#changeView({ mode: 'STATUS_PANE_OVERLAY' });
-        if (this.statusPane) {
-            this.statusPane.remove();
+        if (this.statusDialog) {
+            this.statusDialog.remove();
         }
-        this.statusPane = new StatusPane({
+        this.statusDialog = new StatusDialog({
             showTimer: true,
             showProgress: true,
             hideStopButton: false,
             description: undefined,
             buttonText: undefined,
         }, () => this.stopRecording());
-        this.statusPane.showPane(this.statusPaneContainer);
-        this.statusPane.updateStatus(i18nString(UIStrings.initializingProfiler));
-        this.statusPane.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
+        this.statusDialog.showPane(this.statusPaneContainer);
+        this.statusDialog.updateStatus(i18nString(UIStrings.initializingProfiler));
+        this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
     }
     cancelLoading() {
         if (this.loader) {
@@ -2425,129 +2422,7 @@ export class TimelinePanel extends UI.Panel.Panel {
 // Define row and header height, should be in sync with styles for timeline graphs.
 export const rowHeight = 18;
 export const headerHeight = 20;
-export class StatusPane extends UI.Widget.VBox {
-    status;
-    time;
-    progressLabel;
-    progressBar;
-    description;
-    button;
-    downloadTraceButton;
-    startTime;
-    timeUpdateTimer;
-    #rawEvents;
-    constructor(options, buttonCallback) {
-        super(true);
-        this.contentElement.classList.add('timeline-status-dialog');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('timeline-status').track({ resize: true })}`);
-        const statusLine = this.contentElement.createChild('div', 'status-dialog-line status');
-        statusLine.createChild('div', 'label').textContent = i18nString(UIStrings.status);
-        this.status = statusLine.createChild('div', 'content');
-        UI.ARIAUtils.markAsStatus(this.status);
-        if (options.showTimer) {
-            const timeLine = this.contentElement.createChild('div', 'status-dialog-line time');
-            timeLine.createChild('div', 'label').textContent = i18nString(UIStrings.time);
-            this.time = timeLine.createChild('div', 'content');
-        }
-        if (options.showProgress) {
-            const progressBarContainer = this.contentElement.createChild('div', 'status-dialog-line progress');
-            this.progressLabel = progressBarContainer.createChild('div', 'label');
-            this.progressBar = progressBarContainer.createChild('div', 'indicator-container').createChild('div', 'indicator');
-            UI.ARIAUtils.markAsProgressBar(this.progressBar);
-        }
-        if (typeof options.description === 'string') {
-            const descriptionLine = this.contentElement.createChild('div', 'status-dialog-line description');
-            descriptionLine.createChild('div', 'label').textContent = i18nString(UIStrings.description);
-            this.description = descriptionLine.createChild('div', 'content');
-            this.description.innerText = options.description;
-        }
-        const buttonContainer = this.contentElement.createChild('div', 'stop-button');
-        this.downloadTraceButton = UI.UIUtils.createTextButton(i18nString(UIStrings.downloadAfterError), () => {
-            void this.#downloadRawTraceAfterError();
-        }, { jslogContext: 'timeline.download-after-error' });
-        this.downloadTraceButton.disabled = true;
-        this.downloadTraceButton.classList.add('hidden');
-        const buttonText = options.buttonText || i18nString(UIStrings.stop);
-        this.button = UI.UIUtils.createTextButton(buttonText, buttonCallback, {
-            jslogContext: 'timeline.stop-recording',
-        });
-        // Profiling can't be stopped during initialization.
-        this.button.classList.toggle('hidden', options.hideStopButton);
-        buttonContainer.append(this.downloadTraceButton);
-        buttonContainer.append(this.button);
-    }
-    finish() {
-        this.stopTimer();
-        this.button.classList.add('hidden');
-    }
-    async #downloadRawTraceAfterError() {
-        if (!this.#rawEvents || this.#rawEvents.length === 0) {
-            return;
-        }
-        const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
-        const fileName = `Trace-Load-Error-${traceStart}.json`;
-        const formattedTraceIter = traceJsonGenerator(this.#rawEvents, {});
-        const traceAsString = Array.from(formattedTraceIter).join('');
-        await Workspace.FileManager.FileManager.instance().save(fileName, traceAsString, true /* forceSaveAs */, false /* isBase64 */);
-        Workspace.FileManager.FileManager.instance().close(fileName);
-    }
-    enableDownloadOfEvents(rawEvents) {
-        this.#rawEvents = rawEvents;
-        this.downloadTraceButton.disabled = false;
-        this.downloadTraceButton.classList.remove('hidden');
-    }
-    remove() {
-        this.element.parentNode?.classList.remove('tinted');
-        this.stopTimer();
-        this.element.remove();
-    }
-    showPane(parent) {
-        this.show(parent);
-        parent.classList.add('tinted');
-    }
-    enableAndFocusButton() {
-        this.button.classList.remove('hidden');
-        this.button.focus();
-    }
-    updateStatus(text) {
-        this.status.textContent = text;
-    }
-    updateProgressBar(activity, percent) {
-        if (this.progressLabel) {
-            this.progressLabel.textContent = activity;
-        }
-        if (this.progressBar) {
-            this.progressBar.style.width = percent.toFixed(1) + '%';
-            UI.ARIAUtils.setValueNow(this.progressBar, percent);
-        }
-        this.updateTimer();
-    }
-    startTimer() {
-        this.startTime = Date.now();
-        this.timeUpdateTimer = window.setInterval(this.updateTimer.bind(this), 100);
-        this.updateTimer();
-    }
-    stopTimer() {
-        if (!this.timeUpdateTimer) {
-            return;
-        }
-        clearInterval(this.timeUpdateTimer);
-        this.updateTimer();
-        delete this.timeUpdateTimer;
-    }
-    updateTimer() {
-        if (!this.timeUpdateTimer || !this.time) {
-            return;
-        }
-        const seconds = (Date.now() - this.startTime) / 1000;
-        this.time.textContent = i18n.TimeUtilities.preciseSecondsToString(seconds, 1);
-    }
-    wasShown() {
-        super.wasShown();
-        this.registerRequiredCSS(timelineStatusDialogStyles);
-    }
-}
-let loadTimelineHandlerInstance;
+export let loadTimelineHandlerInstance;
 export class LoadTimelineHandler {
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;

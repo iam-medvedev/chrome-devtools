@@ -1,3 +1,4 @@
+import '../../../ui/legacy/legacy.js';
 import { ValueType } from './ValueInterpreterDisplayUtils.js';
 export interface ValueInterpreterSettingsData {
     valueTypes: Set<ValueType>;

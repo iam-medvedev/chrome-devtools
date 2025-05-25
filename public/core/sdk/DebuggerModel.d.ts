@@ -229,15 +229,11 @@ export declare class DebuggerPausedDetails {
     debuggerModel: DebuggerModel;
     callFrames: CallFrame[];
     reason: Protocol.Debugger.PausedEventReason;
-    auxData: {
-        [x: string]: any;
-    } | undefined;
+    auxData: Record<string, any> | undefined;
     breakpointIds: string[];
     asyncStackTrace: Protocol.Runtime.StackTrace | undefined;
     asyncStackTraceId: Protocol.Runtime.StackTraceId | undefined;
-    constructor(debuggerModel: DebuggerModel, callFrames: Protocol.Debugger.CallFrame[], reason: Protocol.Debugger.PausedEventReason, auxData: {
-        [x: string]: any;
-    } | undefined, breakpointIds: string[], asyncStackTrace?: Protocol.Runtime.StackTrace, asyncStackTraceId?: Protocol.Runtime.StackTraceId);
+    constructor(debuggerModel: DebuggerModel, callFrames: Protocol.Debugger.CallFrame[], reason: Protocol.Debugger.PausedEventReason, auxData: Record<string, any> | undefined, breakpointIds: string[], asyncStackTrace?: Protocol.Runtime.StackTrace, asyncStackTraceId?: Protocol.Runtime.StackTraceId);
     private exception;
     private cleanRedundantFrames;
 }

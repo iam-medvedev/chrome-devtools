@@ -40,7 +40,7 @@ export var PlatformFileSystemType;
     PlatformFileSystemType["WORKSPACE_PROJECT"] = "workspace-project";
 })(PlatformFileSystemType || (PlatformFileSystemType = {}));
 export class PlatformFileSystem {
-    pathInternal;
+    #path;
     #type;
     /**
      * True if the filesystem was automatically discovered (see
@@ -48,7 +48,7 @@ export class PlatformFileSystem {
      */
     automatic;
     constructor(path, type, automatic) {
-        this.pathInternal = path;
+        this.#path = path;
         this.#type = type;
         this.automatic = automatic;
     }
@@ -62,7 +62,7 @@ export class PlatformFileSystem {
         return [];
     }
     path() {
-        return this.pathInternal;
+        return this.#path;
     }
     embedderPath() {
         throw new Error('Not implemented');

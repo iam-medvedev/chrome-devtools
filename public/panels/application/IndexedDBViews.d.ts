@@ -70,8 +70,6 @@ export declare class IDBDataView extends UI.View.SimpleView {
 export declare class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode<unknown> {
     selectable: boolean;
     valueObjectPresentation: ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection | null;
-    constructor(data: {
-        [x: string]: any;
-    });
+    constructor(data: Record<string, any>);
     createCell(columnIdentifier: string): HTMLElement;
 }

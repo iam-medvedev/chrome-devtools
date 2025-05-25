@@ -41,6 +41,7 @@ export declare class SharedStorageModel extends SDK.SDKModel.SDKModel<EventTypes
     numStoragesForTesting(): number;
     isChangeEvent(event: Protocol.Storage.SharedStorageAccessedEvent): boolean;
     sharedStorageAccessed(event: Protocol.Storage.SharedStorageAccessedEvent): void;
+    sharedStorageWorkletOperationExecutionFinished(_event: Protocol.Storage.SharedStorageWorkletOperationExecutionFinishedEvent): void;
     attributionReportingTriggerRegistered(_event: Protocol.Storage.AttributionReportingTriggerRegisteredEvent): void;
     indexedDBListUpdated(_event: Protocol.Storage.IndexedDBListUpdatedEvent): void;
     indexedDBContentUpdated(_event: Protocol.Storage.IndexedDBContentUpdatedEvent): void;

@@ -6,19 +6,11 @@ import '../../../ui/components/menus/menus.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
-// eslint-disable-next-line rulesdir/es-modules-import
-import inspectorCommonStylesRaw from '../../../ui/legacy/inspectorCommon.css.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import selectButtonStylesRaw from './selectButton.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const inspectorCommonStyles = new CSSStyleSheet();
-inspectorCommonStyles.replaceSync(inspectorCommonStylesRaw);
-const selectButtonStyles = new CSSStyleSheet();
-selectButtonStyles.replaceSync(selectButtonStylesRaw);
+import selectButtonStyles from './selectButton.css.js'; // Keep the import for the raw string
 const { html, Directives: { ifDefined, classMap } } = Lit;
 export class SelectButtonClickEvent extends Event {
     value;
@@ -47,7 +39,6 @@ export class SelectButton extends HTMLElement {
         variant: "primary" /* Variant.PRIMARY */,
     };
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [inspectorCommonStyles, selectButtonStyles];
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get disabled() {
@@ -139,6 +130,8 @@ export class SelectButton extends HTMLElement {
         const menuLabel = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
         // clang-format off
         Lit.render(html `
+      <style>${UI.inspectorCommonStyles}</style>
+      <style>${selectButtonStyles}</style>
       <div class="select-button" title=${ifDefined(this.#getTitle(menuLabel))}>
       <select
       class=${classMap(classes)}

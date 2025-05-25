@@ -305,6 +305,7 @@ export class ProfileDataGridTree {
         let comparator = propertyComparators[(isAscending ? 1 : 0)][property];
         if (!comparator) {
             if (isAscending) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 comparator = function (lhs, rhs) {
                     if (lhs[property] < rhs[property]) {
                         return -1;
@@ -316,7 +317,10 @@ export class ProfileDataGridTree {
                 };
             }
             else {
-                comparator = function (lhs, rhs) {
+                comparator = function (
+                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                lhs, rhs) {
                     if (lhs[property] > rhs[property]) {
                         return -1;
                     }

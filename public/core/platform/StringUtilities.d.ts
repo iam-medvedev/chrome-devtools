@@ -55,11 +55,7 @@ export declare const createPlainTextSearchRegex: (query: string, flags?: string)
 export type LowerCaseString = Brand<string, 'lowerCaseStringTag'>;
 export declare const toLowerCaseString: (input: string) => LowerCaseString;
 export declare const toKebabCase: (input: string) => Lowercase<string>;
-export declare function toKebabCaseKeys(settingValue: {
-    [x: string]: any;
-}): {
-    [x: string]: any;
-};
+export declare function toKebabCaseKeys(settingValue: Record<string, any>): Record<string, any>;
 export declare const replaceLast: (input: string, search: string, replacement: string) => string;
 export declare const stringifyWithPrecision: (s: number, precision?: number) => string;
 /**

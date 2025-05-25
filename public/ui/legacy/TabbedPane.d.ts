@@ -44,7 +44,7 @@ export declare class TabbedPane extends TabbedPane_base {
     private rightToolbarInternal?;
     allowTabReorder?: boolean;
     private automaticReorder?;
-    constructor();
+    constructor(element?: HTMLElement);
     setAccessibleName(name: string): void;
     setCurrentTabLocked(locked: boolean): void;
     setAutoSelectFirstItemOnShow(autoSelect: boolean): void;

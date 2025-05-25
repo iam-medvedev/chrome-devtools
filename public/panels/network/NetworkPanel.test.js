@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as Trace from '../../models/trace/trace.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
@@ -70,8 +71,7 @@ describeWithMockConnection('NetworkPanel', () => {
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
         networkPanel = Network.NetworkPanel.NetworkPanel.instance({ forceNew: true, displayScreenshotDelay: 0 });
-        networkPanel.markAsRoot();
-        networkPanel.show(document.body);
+        renderElementIntoDOM(networkPanel);
         await RenderCoordinator.done();
     });
     afterEach(async () => {

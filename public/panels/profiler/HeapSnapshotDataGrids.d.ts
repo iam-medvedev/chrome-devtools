@@ -125,9 +125,7 @@ export declare class HeapSnapshotConstructorsDataGrid extends HeapSnapshotViewpo
     setDataSource(snapshot: HeapSnapshotProxy, _nodeIndex: number): Promise<void>;
     setSelectionRange(minNodeId: number, maxNodeId: number): void;
     setAllocationNodeId(allocationNodeId: number): void;
-    aggregatesReceived(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter, aggregates: {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
-    }): void;
+    aggregatesReceived(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter, aggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>): void;
     populateChildren(maybeNodeFilter?: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<void>;
     filterSelectIndexChanged(profiles: HeapProfileHeader[], profileIndex: number, filterName: string | undefined): void;
 }

@@ -10,9 +10,7 @@ export declare class ExtensionStorage extends Common.ObjectWrapper.ObjectWrapper
     get name(): string;
     get key(): string;
     get storageArea(): Protocol.Extensions.StorageArea;
-    getItems(keys?: string[]): Promise<{
-        [key: string]: unknown;
-    }>;
+    getItems(keys?: string[]): Promise<Record<string, unknown>>;
     setItem(key: string, value: unknown): Promise<void>;
     removeItem(key: string): Promise<void>;
     clear(): Promise<void>;

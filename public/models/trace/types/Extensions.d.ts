@@ -44,7 +44,5 @@ export declare function isSyntheticExtensionEntry(entry: Event): entry is Synthe
 export interface ExtensionTrackData {
     name: string;
     isTrackGroup: boolean;
-    entriesByTrack: {
-        [x: string]: SyntheticExtensionTrackEntry[];
-    };
+    entriesByTrack: Record<string, SyntheticExtensionTrackEntry[]>;
 }

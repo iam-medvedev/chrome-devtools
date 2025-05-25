@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { getCleanTextContentFromElements } from '../../testing/DOMHelpers.js';
+import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -42,8 +42,7 @@ describeWithMockConnection('AppManifestView', () => {
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
         view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
-        view.markAsRoot();
-        view.show(document.body);
+        renderElementIntoDOM(view);
         await new Promise(resolve => {
             view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.MANIFEST_DETECTED */, resolve, { once: true });
         });
@@ -71,8 +70,7 @@ describeWithMockConnection('AppManifestView', () => {
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
         view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
-        view.markAsRoot();
-        view.show(document.body);
+        renderElementIntoDOM(view);
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.DOMContentLoaded, 42);
         await new Promise(resolve => {
             view.addEventListener("ManifestDetected" /* Application.AppManifestView.Events.MANIFEST_DETECTED */, resolve, { once: true });
@@ -105,8 +103,7 @@ describeWithMockConnection('AppManifestView', () => {
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
         view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
-        view.markAsRoot();
-        view.show(document.body);
+        renderElementIntoDOM(view);
         await new Promise(resolve => {
             view.addEventListener("ManifestRendered" /* Application.AppManifestView.Events.MANIFEST_RENDERED */, resolve, { once: true });
         });

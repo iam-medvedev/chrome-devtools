@@ -562,6 +562,7 @@ export class IDBDataView extends UI.View.SimpleView {
 export class IDBDataGridNode extends DataGrid.DataGrid.DataGridNode {
     selectable;
     valueObjectPresentation;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(data) {
         super(data, false);
         this.selectable = true;

@@ -48,12 +48,8 @@ export interface Modifier {
  * Constants for encoding modifier key set as a bit mask.
  * see #makeKeyFromCodeAndModifiers
  */
-export declare const Modifiers: {
-    [x: string]: Modifier;
-};
-export declare const Keys: {
-    [x: string]: Key;
-};
+export declare const Modifiers: Record<string, Modifier>;
+export declare const Keys: Record<string, Key>;
 export declare const enum Type {
     USER_SHORTCUT = "UserShortcut",
     DEFAULT_SHORTCUT = "DefaultShortcut",
@@ -61,14 +57,10 @@ export declare const enum Type {
     UNSET_SHORTCUT = "UnsetShortcut",
     KEYBIND_SET_SHORTCUT = "KeybindSetShortcut"
 }
-export declare const KeyBindings: {
-    [x: string]: Key;
-};
+export declare const KeyBindings: Record<string, Key>;
 export interface Key {
     code: number;
-    name: string | {
-        [x: string]: string;
-    };
+    name: string | Record<string, string>;
     shiftKey?: boolean;
 }
 export interface Descriptor {

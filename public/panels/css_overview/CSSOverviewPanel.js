@@ -1,20 +1,31 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as CSSOverviewComponents from './components/components.js';
-import cssOverviewStyles from './cssOverview.css.js';
+import { html, render } from '../../ui/lit/lit.js';
 import { CSSOverviewCompletedView } from './CSSOverviewCompletedView.js';
 import { CSSOverviewModel } from './CSSOverviewModel.js';
 import { CSSOverviewProcessingView } from './CSSOverviewProcessingView.js';
+import { CSSOverviewStartView } from './CSSOverviewStartView.js';
+const { widgetConfig } = UI.Widget;
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(input.state === 'start' ? html `
+      <devtools-widget .widgetConfig=${widgetConfig(CSSOverviewStartView, { onStartCapture: input.onStartCapture })}></devtools-widget>`
+        : input.state === 'processing' ? html `
+      <devtools-widget .widgetConfig=${widgetConfig(CSSOverviewProcessingView, { onCancel: input.onCancel })}></devtools-widget>`
+            : html `
+      <devtools-widget .widgetConfig=${widgetConfig(CSSOverviewCompletedView, {
+                onReset: input.onReset,
+                overviewData: input.overviewData,
+                target: input.target,
+            })}></devtools-widget>`, target, { host: input });
+    // clang-format on
+};
 export class CSSOverviewPanel extends UI.Panel.Panel {
-    #controller;
-    #startView;
-    #processingView;
-    #completedView;
+    #currentUrl;
     #model;
     #backgroundColors;
     #textColors;
@@ -26,31 +37,32 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
     #elementCount;
     #globalStyleStats;
     #textColorContrastIssues;
-    constructor(controller) {
+    #state;
+    #view;
+    constructor(view = DEFAULT_VIEW) {
         super('css-overview');
-        this.registerRequiredCSS(cssOverviewStyles);
-        this.element.classList.add('css-overview-panel');
-        this.#controller = controller;
-        this.#startView = new CSSOverviewComponents.CSSOverviewStartView.CSSOverviewStartView();
-        this.#startView.addEventListener('overviewstartrequested', () => this.#controller.dispatchEventToListeners("RequestOverviewStart" /* Events.REQUEST_OVERVIEW_START */));
-        this.#processingView = new CSSOverviewProcessingView(this.#controller);
-        this.#completedView = new CSSOverviewCompletedView(this.#controller);
+        this.#currentUrl = SDK.TargetManager.TargetManager.instance().inspectedURL();
+        SDK.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged" /* SDK.TargetManager.Events.INSPECTED_URL_CHANGED */, this.#checkUrlAndResetIfChanged, this);
+        this.#view = view;
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
-        this.#controller.addEventListener("RequestOverviewStart" /* Events.REQUEST_OVERVIEW_START */, _event => {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.CaptureCssOverviewClicked);
-            void this.#startOverview();
-        }, this);
-        this.#controller.addEventListener("OverviewCompleted" /* Events.OVERVIEW_COMPLETED */, this.#overviewCompleted, this);
-        this.#controller.addEventListener("Reset" /* Events.RESET */, this.#reset, this);
+        this.#reset();
+    }
+    #onStartCapture() {
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.CaptureCssOverviewClicked);
+        void this.#startOverview();
+    }
+    #checkUrlAndResetIfChanged() {
+        if (this.#currentUrl === SDK.TargetManager.TargetManager.instance().inspectedURL()) {
+            return;
+        }
+        this.#currentUrl = SDK.TargetManager.TargetManager.instance().inspectedURL();
         this.#reset();
     }
     targetAdded(target) {
         if (target !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
             return;
         }
-        this.#completedView.initializeModels(target);
-        const model = target.model(CSSOverviewModel);
-        this.#model = model;
+        this.#model = target.model(CSSOverviewModel) ?? undefined;
     }
     targetRemoved() {
     }
@@ -88,32 +100,38 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
         this.#renderInitialView();
     }
     #renderInitialView() {
-        this.#processingView.hideWidget();
-        this.#completedView.hideWidget();
-        this.contentElement.append(this.#startView);
-        this.#startView.show();
+        this.#state = 'start';
+        this.performUpdate();
     }
     #renderOverviewStartedView() {
-        this.#startView.hide();
-        this.#completedView.hideWidget();
-        this.#processingView.show(this.contentElement);
+        this.#state = 'processing';
+        this.performUpdate();
     }
     #renderOverviewCompletedView() {
-        this.#startView.hide();
-        this.#processingView.hideWidget();
-        this.#completedView.show(this.contentElement);
-        this.#completedView.setOverviewData({
-            backgroundColors: this.#backgroundColors,
-            textColors: this.#textColors,
-            textColorContrastIssues: this.#textColorContrastIssues,
-            fillColors: this.#fillColors,
-            borderColors: this.#borderColors,
-            globalStyleStats: this.#globalStyleStats,
-            fontInfo: this.#fontInfo,
-            elementCount: this.#elementCount,
-            mediaQueries: this.#mediaQueries,
-            unusedDeclarations: this.#unusedDeclarations,
-        });
+        this.#state = 'completed';
+        this.performUpdate();
+    }
+    performUpdate() {
+        const viewInput = {
+            state: this.#state,
+            onStartCapture: this.#onStartCapture.bind(this),
+            onCancel: this.#reset.bind(this),
+            onReset: this.#reset.bind(this),
+            target: this.#model?.target(),
+            overviewData: {
+                backgroundColors: this.#backgroundColors,
+                textColors: this.#textColors,
+                textColorContrastIssues: this.#textColorContrastIssues,
+                fillColors: this.#fillColors,
+                borderColors: this.#borderColors,
+                globalStyleStats: this.#globalStyleStats,
+                fontInfo: this.#fontInfo,
+                elementCount: this.#elementCount,
+                mediaQueries: this.#mediaQueries,
+                unusedDeclarations: this.#unusedDeclarations,
+            },
+        };
+        this.#view(viewInput, {}, this.contentElement);
     }
     async #startOverview() {
         this.#renderOverviewStartedView();
@@ -153,9 +171,6 @@ export class CSSOverviewPanel extends UI.Panel.Panel {
         if (unusedDeclarations) {
             this.#unusedDeclarations = unusedDeclarations;
         }
-        this.#controller.dispatchEventToListeners("OverviewCompleted" /* Events.OVERVIEW_COMPLETED */);
-    }
-    #overviewCompleted() {
         this.#renderOverviewCompletedView();
     }
 }

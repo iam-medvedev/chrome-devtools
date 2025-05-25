@@ -5,18 +5,6 @@ import * as Protocol from '../../generated/protocol.js';
 import * as Workspace from '../workspace/workspace.js';
 export declare class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.Observer {
     #private;
-    private bindings;
-    private readonly originalResponseContentPromises;
-    private savingForOverrides;
-    private enabledSetting;
-    private readonly workspace;
-    private readonly networkUISourceCodeForEncodedPath;
-    private readonly interceptionHandlerBound;
-    private readonly updateInterceptionThrottler;
-    private projectInternal;
-    private activeInternal;
-    private enabled;
-    private eventDescriptors;
     private constructor();
     targetAdded(): void;
     targetRemoved(): void;

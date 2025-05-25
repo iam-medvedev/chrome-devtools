@@ -15,6 +15,7 @@ import * as WorkspaceDiff from '../models/workspace_diff/workspace_diff.js';
 import * as AiAssistancePanel from '../panels/ai_assistance/ai_assistance.js';
 import * as UI from '../ui/legacy/legacy.js';
 import { findMenuItemWithLabel } from './ContextMenuHelpers.js';
+import { renderElementIntoDOM } from './DOMHelpers.js';
 import { createTarget, } from './EnvironmentHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode } from './UISourceCodeHelpers.js';
 import { createViewFunctionStub } from './ViewFunctionHelpers.js';
@@ -153,8 +154,9 @@ export async function createAiAssistancePanel(options) {
         syncInfo: options?.syncInfo ?? { isSyncActive: true },
     });
     panels.push(panel);
-    panel.markAsRoot();
-    panel.show(document.body);
+    // In many of the tests we create other panels to allow the right contexts to
+    // be set for the AI Assistance panel.
+    renderElementIntoDOM(panel, { allowMultipleChildren: true });
     await view.nextInput;
     const stubAidaCheckAccessPreconditions = (aidaAvailability) => {
         aidaAvailabilityForStub = aidaAvailability;
@@ -199,7 +201,7 @@ export async function createPatchWidget(options) {
     });
     patchWidgets.push(widget);
     widget.markAsRoot();
-    widget.show(document.body);
+    renderElementIntoDOM(widget);
     await view.nextInput;
     return {
         widget,

@@ -6,9 +6,7 @@ export declare class MainImpl {
     static time(label: string): void;
     static timeEnd(label: string): void;
     requestAndRegisterLocaleData(): Promise<void>;
-    createSettings(prefs: {
-        [x: string]: string;
-    }): void;
+    createSettings(prefs: Record<string, string>): void;
     readyForTest(): Promise<void>;
     static instanceForTest: MainImpl | null;
 }

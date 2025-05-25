@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
@@ -22,8 +23,7 @@ describeWithMockConnection('MediaQueryInspector', () => {
     });
     it('redners media queries', async () => {
         inspector = new Emulation.MediaQueryInspector.MediaQueryInspector(() => 42, (_) => { }, throttler);
-        inspector.markAsRoot();
-        inspector.show(document.body);
+        renderElementIntoDOM(inspector);
         assert.lengthOf(inspector.contentElement.querySelectorAll('.media-inspector-marker'), 0);
         const cssModel = target.model(SDK.CSSModel.CSSModel);
         assert.exists(cssModel);

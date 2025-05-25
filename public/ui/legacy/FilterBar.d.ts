@@ -67,9 +67,7 @@ export declare class TextFilterUI extends Common.ObjectWrapper.ObjectWrapper<Fil
 }
 interface NamedBitSetFilterUIOptions {
     items: Item[];
-    setting?: Common.Settings.Setting<{
-        [key: string]: boolean;
-    }>;
+    setting?: Common.Settings.Setting<Record<string, boolean>>;
 }
 export declare class NamedBitSetFilterUIElement extends HTMLElement {
     #private;
@@ -82,9 +80,7 @@ export declare class NamedBitSetFilterUI extends Common.ObjectWrapper.ObjectWrap
     private allowedTypes;
     private readonly typeFilterElements;
     private readonly setting;
-    constructor(items: Item[], setting?: Common.Settings.Setting<{
-        [key: string]: boolean;
-    }>);
+    constructor(items: Item[], setting?: Common.Settings.Setting<Record<string, boolean>>);
     reset(): void;
     isActive(): boolean;
     element(): Element;

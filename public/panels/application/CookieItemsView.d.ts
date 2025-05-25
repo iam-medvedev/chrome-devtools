@@ -1,6 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import { StorageItemsToolbar } from './StorageItemsToolbar.js';
-export declare class CookieItemsView extends StorageItemsToolbar {
+import * as UI from '../../ui/legacy/legacy.js';
+export declare class CookieItemsView extends UI.Widget.VBox {
+    #private;
     private model;
     private cookieDomain;
     private cookiesTable;

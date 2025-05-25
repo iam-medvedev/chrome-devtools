@@ -112,7 +112,7 @@ const UIStrings = {
     /**
      *@description Text describing how to navigate the dock side menu
      */
-    dockSideNaviation: 'Use left and right arrow keys to navigate the options',
+    dockSideNavigation: 'Use left and right arrow keys to navigate the options',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -443,7 +443,7 @@ export class MainImpl {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
         const value = Root.Runtime.Runtime.queryParam('loadTimelineFromURL');
         if (value !== null) {
-            // Only import Timeline if neeeded. If this was a static import, every load of devtools
+            // Only import Timeline if needed. If this was a static import, every load of devtools
             // would request and evaluate the Timeline panel dep tree, slowing down the UI's load.
             const Timeline = await import('../../panels/timeline/timeline.js');
             Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
@@ -660,12 +660,12 @@ export class MainMenuItem {
             dockItemElement.classList.add('flex-auto', 'flex-centered', 'location-menu');
             dockItemElement.setAttribute('jslog', `${VisualLogging.item('dock-side').track({ keydown: 'ArrowDown|ArrowLeft|ArrowRight' })}`);
             dockItemElement.tabIndex = -1;
-            UI.ARIAUtils.setLabel(dockItemElement, UIStrings.dockSide + UIStrings.dockSideNaviation);
-            const [toggleDockSideShorcut] = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('main.toggle-dock');
+            UI.ARIAUtils.setLabel(dockItemElement, UIStrings.dockSide + UIStrings.dockSideNavigation);
+            const [toggleDockSideShortcut] = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('main.toggle-dock');
             // clang-format off
             render(html `
         <span class="dockside-title"
-              title=${i18nString(UIStrings.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShorcut.title() })}>
+              title=${i18nString(UIStrings.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShortcut.title() })}>
           ${i18nString(UIStrings.dockSide)}
         </span>
         <devtools-toolbar @mousedown=${(event) => event.consume()}>

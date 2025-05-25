@@ -1,22 +1,22 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import '../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import cssOverviewCompletedViewStyles from './cssOverviewCompletedView.css.js';
 import { CSSOverviewSidebarPanel } from './CSSOverviewSidebarPanel.js';
-const { styleMap } = Directives;
+const { styleMap, ref } = Directives;
+const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
      *@description Label for the summary in the CSS overview report
@@ -186,64 +186,279 @@ function getBorderString(color) {
     l = Math.max(0, l - 15);
     return `1px solid hsl(${h}deg ${s}% ${l}%)`;
 }
+const formatter = new Intl.NumberFormat('en-US');
+export const DEFAULT_VIEW = (input, output, target) => {
+    function revealSection(section, setFocus) {
+        if (!section) {
+            return;
+        }
+        section.scrollIntoView();
+        // Set focus for keyboard invoked event
+        if (setFocus) {
+            const focusableElement = section.querySelector('button, [tabindex="0"]');
+            focusableElement?.focus();
+        }
+    }
+    // clang-format off
+    render(html `
+      <style>${cssOverviewCompletedViewStyles}</style>
+      <devtools-split-view direction="column" sidebar-position="first" sidebar-initial-size="200">
+        <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig(CSSOverviewSidebarPanel, {
+        minimumSize: new UI.Geometry.Size(100, 25),
+        items: [
+            { name: i18nString(UIStrings.overviewSummary), id: 'summary' },
+            { name: i18nString(UIStrings.colors), id: 'colors' },
+            { name: i18nString(UIStrings.fontInfo), id: 'font-info' },
+            { name: i18nString(UIStrings.unusedDeclarations), id: 'unused-declarations' },
+            { name: i18nString(UIStrings.mediaQueries), id: 'media-queries' }
+        ],
+        selectedId: input.selectedSection,
+        onItemSelected: input.onSectionSelected,
+        onReset: input.onReset,
+    })}>
+        </devtools-widget>
+        <devtools-split-view sidebar-position="second" slot="main" direction="row" sidebar-initial-size="minimized">
+          <div class="vbox overview-completed-view" slot="main" @click=${input.onClick}>
+            <!-- Dupe the styles into the main container because of the shadow root will prevent outer styles. -->
+            <style>${cssOverviewCompletedViewStyles}</style>
+            <div class="results-section horizontally-padded summary"
+                  ${ref(e => { output.revealSection.set('summary', revealSection.bind(null, e)); })}>
+              <h1>${i18nString(UIStrings.overviewSummary)}</h1>
+              ${renderSummary(input.elementCount, input.globalStyleStats, input.mediaQueries)}
+            </div>
+            <div class="results-section horizontally-padded colors"
+                ${ref(e => { output.revealSection.set('colors', revealSection.bind(null, e)); })}>
+                <h1>${i18nString(UIStrings.colors)}</h1>
+                ${renderColors(input.backgroundColors, input.textColors, input.textColorContrastIssues, input.fillColors, input.borderColors)}
+              </div>
+              <div class="results-section font-info"
+                    ${ref(e => { output.revealSection.set('font-info', revealSection.bind(null, e)); })}>
+                <h1>${i18nString(UIStrings.fontInfo)}</h1>
+                ${renderFontInfo(input.fontInfo)}
+              </div>
+              <div class="results-section unused-declarations"
+                    ${ref(e => { output.revealSection.set('unused-declarations', revealSection.bind(null, e)); })}>
+                <h1>${i18nString(UIStrings.unusedDeclarations)}</h1>
+                ${renderUnusedDeclarations(input.unusedDeclarations)}
+              </div>
+              <div class="results-section media-queries"
+                    ${ref(e => { output.revealSection.set('media-queries', revealSection.bind(null, e)); })}>
+              <h1>${i18nString(UIStrings.mediaQueries)}</h1>
+              ${renderMediaQueries(input.mediaQueries)}
+            </div>
+          </div>
+          <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig(e => {
+        const tabbedPane = new UI.TabbedPane.TabbedPane(e);
+        output.closeAllTabs = () => { tabbedPane.closeTabs(tabbedPane.tabIds()); };
+        output.addTab = (id, tabTitle, view, jslogContext) => {
+            if (!tabbedPane.hasTab(id)) {
+                tabbedPane.appendTab(id, tabTitle, view, undefined, undefined, 
+                /* isCloseable */ true, undefined, undefined, jslogContext);
+            }
+            tabbedPane.selectTab(id);
+            const splitView = tabbedPane.parentWidget();
+            splitView.setSidebarMinimized(false);
+        };
+        tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, _ => {
+            if (tabbedPane.tabIds().length === 0) {
+                const splitView = tabbedPane.parentWidget();
+                splitView.setSidebarMinimized(true);
+            }
+        });
+        return tabbedPane;
+    })}>
+          </devtools-widget>
+        </devtools-split-view>
+      </devtools-split-view>`, target, { host: input });
+    // clang-format on
+};
+function renderSummary(elementCount, globalStyleStats, mediaQueries) {
+    const renderSummaryItem = (label, value) => html `
+    <li>
+      <div class="label">${label}</div>
+      <div class="value">${formatter.format(value)}</div>
+    </li>`;
+    return html `<ul>
+    ${renderSummaryItem(i18nString(UIStrings.elements), elementCount)}
+    ${renderSummaryItem(i18nString(UIStrings.externalStylesheets), globalStyleStats.externalSheets)}
+    ${renderSummaryItem(i18nString(UIStrings.inlineStyleElements), globalStyleStats.inlineStyles)}
+    ${renderSummaryItem(i18nString(UIStrings.styleRules), globalStyleStats.styleRules)}
+    ${renderSummaryItem(i18nString(UIStrings.mediaQueries), mediaQueries.length)}
+    ${renderSummaryItem(i18nString(UIStrings.typeSelectors), globalStyleStats.stats.type)}
+    ${renderSummaryItem(i18nString(UIStrings.idSelectors), globalStyleStats.stats.id)}
+    ${renderSummaryItem(i18nString(UIStrings.classSelectors), globalStyleStats.stats.class)}
+    ${renderSummaryItem(i18nString(UIStrings.universalSelectors), globalStyleStats.stats.universal)}
+    ${renderSummaryItem(i18nString(UIStrings.attributeSelectors), globalStyleStats.stats.attribute)}
+    ${renderSummaryItem(i18nString(UIStrings.nonsimpleSelectors), globalStyleStats.stats.nonSimple)}
+  </ul>`;
+}
+function renderColors(backgroundColors, textColors, textColorContrastIssues, fillColors, borderColors) {
+    // clang-format off
+    return html `
+    <h2>${i18nString(UIStrings.backgroundColorsS, { PH1: backgroundColors.length })}</h2>
+    <ul>${backgroundColors.map(c => renderColor('background', c))}</ul>
+
+    <h2>${i18nString(UIStrings.textColorsS, { PH1: textColors.length })}</h2>
+    <ul>${textColors.map(c => renderColor('text', c))}</ul>
+
+    ${textColorContrastIssues.size > 0 ? renderContrastIssues(textColorContrastIssues) : ''}
+
+    <h2>${i18nString(UIStrings.fillColorsS, { PH1: fillColors.length })}</h2>
+    <ul>${fillColors.map(c => renderColor('fill', c))}</ul>
+
+    <h2>${i18nString(UIStrings.borderColorsS, { PH1: borderColors.length })}</h2>
+    <ul>${borderColors.map(c => renderColor('border', c))}</ul>`;
+    // clang-format on
+}
+function renderUnusedDeclarations(unusedDeclarations) {
+    return unusedDeclarations.length > 0 ?
+        renderGroup(unusedDeclarations, 'unused-declarations') :
+        html `<div class="horizontally-padded">${i18nString(UIStrings.thereAreNoUnusedDeclarations)}</div>`;
+}
+function renderMediaQueries(mediaQueries) {
+    return mediaQueries.length > 0 ?
+        renderGroup(mediaQueries, 'media-queries') :
+        html `<div class="horizontally-padded">${i18nString(UIStrings.thereAreNoMediaQueries)}</div>`;
+}
+function renderFontInfo(fonts) {
+    return fonts.length > 0 ? html `${fonts.map(({ font, fontMetrics }) => html `
+    <section class="font-family">
+      <h2>${font}</h2>
+      ${renderFontMetrics(font, fontMetrics)}
+    </section>`)}` :
+        html `<div>${i18nString(UIStrings.thereAreNoFonts)}</div>`;
+}
+function renderFontMetrics(font, fontMetricInfo) {
+    return html `
+    <div class="font-metric">
+      ${fontMetricInfo.map(({ label, values }) => html `
+        <div>
+          <h3>${label}</h3>
+          ${renderGroup(values, 'font-info', `${font}/${label}`)}
+        </div>`)}
+    </div>`;
+}
+function renderGroup(values, type, path = '') {
+    const total = values.reduce((prev, curr) => prev + curr.nodes.length, 0);
+    // clang-format off
+    return html `
+      <ul aria-label=${type}>
+        ${values.map(({ title, nodes }) => {
+        const width = 100 * nodes.length / total;
+        const itemLabel = i18nString(UIStrings.nOccurrences, { n: nodes.length });
+        return html `<li>
+            <div class="title">${title}</div>
+            <button data-type=${type} data-path=${path} data-label=${title}
+            jslog=${VisualLogging.action().track({ click: true }).context(`css-overview.${type}`)}
+            aria-label=${`${title}: ${itemLabel}`}>
+              <div class="details">${itemLabel}</div>
+              <div class="bar-container">
+                <div class="bar" style=${styleMap({ width })}></div>
+              </div>
+            </button>
+          </li>`;
+    })}
+  </ul>`;
+    // clang-format on
+}
+function renderContrastIssues(issues) {
+    // clang-format off
+    return html `
+    <h2>${i18nString(UIStrings.contrastIssuesS, { PH1: issues.size })}</h2>
+    <ul>
+      ${[...issues.entries()].map(([key, value]) => renderContrastIssue(key, value))}
+    </ul>`;
+    // clang-format on
+}
+function renderContrastIssue(key, issues) {
+    console.assert(issues.length > 0);
+    let minContrastIssue = issues[0];
+    for (const issue of issues) {
+        // APCA contrast can be a negative value that is to be displayed. But the
+        // absolute value is used to compare against the threshold. Therefore, the min
+        // absolute value is the worst contrast.
+        if (Math.abs(issue.contrastRatio) < Math.abs(minContrastIssue.contrastRatio)) {
+            minContrastIssue = issue;
+        }
+    }
+    const color = (minContrastIssue.textColor.asString("hexa" /* Common.Color.Format.HEXA */));
+    const backgroundColor = (minContrastIssue.backgroundColor.asString("hexa" /* Common.Color.Format.HEXA */));
+    const showAPCA = Root.Runtime.experiments.isEnabled('apca');
+    const title = i18nString(UIStrings.textColorSOverSBackgroundResults, {
+        PH1: color,
+        PH2: backgroundColor,
+        PH3: issues.length,
+    });
+    const border = getBorderString(minContrastIssue.backgroundColor.asLegacyColor());
+    // clang-format off
+    return html `<li>
+    <button
+      title=${title} aria-label=${title}
+      data-type="contrast" data-key=${key} data-section="contrast" class="block"
+      style=${styleMap({ color, backgroundColor, border })}
+      jslog=${VisualLogging.action('css-overview.contrast').track({ click: true })}>
+      Text
+    </button>
+    <div class="block-title">
+      ${showAPCA ? html `
+        <div class="contrast-warning hidden" $="apca">
+          <span class="threshold-label">${i18nString(UIStrings.apca)}</span>
+          ${minContrastIssue.thresholdsViolated.apca ? createClearIcon() : createCheckIcon()}
+        </div>` : html `
+        <div class="contrast-warning hidden">
+          <span class="threshold-label">${i18nString(UIStrings.aa)}</span>
+          ${minContrastIssue.thresholdsViolated.aa ? createClearIcon() : createCheckIcon()}
+        </div>
+        <div class="contrast-warning hidden" $="aaa">
+          <span class="threshold-label">${i18nString(UIStrings.aaa)}</span>
+          ${minContrastIssue.thresholdsViolated.aaa ? createClearIcon() : createCheckIcon()}
+        </div>`}
+    </div>
+  </li>`;
+    // clang-format on
+}
+function renderColor(section, color) {
+    const borderColor = Common.Color.parse(color)?.asLegacyColor();
+    if (!borderColor) {
+        return html ``;
+    }
+    // clang-format off
+    return html `<li>
+    <button title=${color} data-type="color" data-color=${color}
+      data-section=${section} class="block"
+      style=${styleMap({ backgroundColor: color, border: getBorderString(borderColor) })}
+      jslog=${VisualLogging.action('css-overview.color').track({ click: true })}>
+    </button>
+    <div class="block-title color-text">${color}</div>
+  </li>`;
+    // clang-format on
+}
 export class CSSOverviewCompletedView extends UI.Widget.VBox {
-    #splitWidget;
-    #controller;
-    #formatter;
-    #mainContainer;
-    #resultsContainer;
-    #tabbedPane;
-    #sideBar;
+    onReset = () => { };
+    #selectedSection = 'summary';
     #cssModel;
     #domModel;
     #linkifier;
     #viewMap;
     #data;
-    #fragment;
-    constructor(controller) {
-        super();
+    #view;
+    #viewOutput = {
+        revealSection: new Map(),
+        closeAllTabs: () => { },
+        addTab: (_id, _tabTitle, _view, _jslogContext) => { }
+    };
+    constructor(element, view = DEFAULT_VIEW) {
+        super(false, false, element);
+        this.#view = view;
         this.registerRequiredCSS(cssOverviewCompletedViewStyles);
-        this.#controller = controller;
-        this.#formatter = new Intl.NumberFormat('en-US');
-        this.#splitWidget = new UI.SplitWidget.SplitWidget(true, false, undefined, 200);
-        this.#splitWidget.show(this.element);
-        this.#mainContainer = new UI.SplitWidget.SplitWidget(true, true);
-        this.#resultsContainer = new UI.Widget.VBox();
-        this.#tabbedPane = new UI.TabbedPane.TabbedPane();
-        // If closing the last tab, collapse the sidebar.
-        this.#tabbedPane.addEventListener(UI.TabbedPane.Events.TabClosed, _ => {
-            if (this.#tabbedPane.tabIds().length === 0) {
-                this.#mainContainer.setSidebarMinimized(true);
-            }
-        });
-        // Dupe the styles into the main container because of the shadow root will prevent outer styles.
-        this.#mainContainer.setMainWidget(this.#resultsContainer);
-        this.#mainContainer.setSidebarWidget(this.#tabbedPane);
-        this.#mainContainer.setVertical(false);
-        this.#mainContainer.setSecondIsSidebar(true);
-        this.#mainContainer.setSidebarMinimized(true);
-        this.#mainContainer.registerRequiredCSS(cssOverviewCompletedViewStyles);
-        this.#sideBar = new CSSOverviewSidebarPanel();
-        this.#sideBar.setMinimumSize(100, 25);
-        this.#splitWidget.setSidebarWidget(this.#sideBar);
-        this.#splitWidget.setMainWidget(this.#mainContainer);
         this.#linkifier = new Components.Linkifier.Linkifier(/* maxLinkLength */ 20, /* useLinkDecorator */ true);
         this.#viewMap = new Map();
-        this.#sideBar.items = [
-            { name: i18nString(UIStrings.overviewSummary), id: 'summary' }, { name: i18nString(UIStrings.colors), id: 'colors' },
-            { name: i18nString(UIStrings.fontInfo), id: 'font-info' },
-            { name: i18nString(UIStrings.unusedDeclarations), id: 'unused-declarations' },
-            { name: i18nString(UIStrings.mediaQueries), id: 'media-queries' }
-        ];
-        this.#sideBar.selectedId = 'summary';
-        this.#sideBar.addEventListener("ItemSelected" /* SidebarEvents.ITEM_SELECTED */, this.#sideBarItemSelected, this);
-        this.#sideBar.addEventListener("Reset" /* SidebarEvents.RESET */, this.#sideBarReset, this);
-        this.#controller.addEventListener("Reset" /* CSSOverViewControllerEvents.RESET */, this.#reset, this);
-        this.#controller.addEventListener("PopulateNodes" /* CSSOverViewControllerEvents.POPULATE_NODES */, this.#createElementsView, this);
-        this.#resultsContainer.element.addEventListener('click', this.#onClick.bind(this));
         this.#data = null;
     }
-    initializeModels(target) {
+    set target(target) {
+        if (!target) {
+            return;
+        }
         const cssModel = target.model(SDK.CSSModel.CSSModel);
         const domModel = target.model(SDK.DOMModel.DOMModel);
         if (!cssModel || !domModel) {
@@ -252,29 +467,23 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         this.#cssModel = cssModel;
         this.#domModel = domModel;
     }
-    #sideBarItemSelected(event) {
-        const { data } = event;
-        const section = this.#fragment.$(data.id);
-        if (!section) {
+    #onSectionSelected(sectionId, withKeyboard) {
+        const revealSection = this.#viewOutput.revealSection.get(sectionId);
+        if (!revealSection) {
             return;
         }
-        section.scrollIntoView();
-        // Set focus for keyboard invoked event
-        if (!data.isMouseEvent && data.key === 'Enter') {
-            const focusableElement = section.querySelector('button, [tabindex="0"]');
-            focusableElement?.focus();
-        }
+        revealSection(withKeyboard);
     }
-    #sideBarReset() {
-        this.#controller.dispatchEventToListeners("Reset" /* CSSOverViewControllerEvents.RESET */);
+    #onReset() {
+        this.#reset();
+        this.onReset();
     }
     #reset() {
-        this.#resultsContainer.element.removeChildren();
-        this.#mainContainer.setSidebarMinimized(true);
-        this.#tabbedPane.closeTabs(this.#tabbedPane.tabIds());
+        this.#viewOutput.closeAllTabs();
         this.#viewMap = new Map();
         CSSOverviewCompletedView.pushedNodes.clear();
-        this.#sideBar.selectedId = 'summary';
+        this.#selectedSection = 'summary';
+        this.requestUpdate();
     }
     #onClick(evt) {
         if (!evt.target) {
@@ -329,7 +538,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 break;
             }
             case 'unused-declarations': {
-                const declaration = dataset.declaration;
+                const declaration = dataset.label;
                 if (!declaration) {
                     return;
                 }
@@ -341,7 +550,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 break;
             }
             case 'media-queries': {
-                const text = dataset.text;
+                const text = dataset.label;
                 if (!text) {
                     return;
                 }
@@ -353,7 +562,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 break;
             }
             case 'font-info': {
-                const value = dataset.value;
+                const value = dataset.label;
                 if (!dataset.path) {
                     return;
                 }
@@ -382,101 +591,32 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
                 return;
         }
         evt.consume();
-        this.#controller.dispatchEventToListeners("PopulateNodes" /* CSSOverViewControllerEvents.POPULATE_NODES */, { payload });
-        this.#mainContainer.setSidebarMinimized(false);
+        this.#createElementsView(payload);
+        this.requestUpdate();
     }
-    async #render(data) {
-        if (!data || !('backgroundColors' in data) || !('textColors' in data)) {
+    performUpdate() {
+        if (!this.#data || !('backgroundColors' in this.#data) || !('textColors' in this.#data)) {
             return;
         }
-        this.#data = data;
-        const { mediaQueries, unusedDeclarations, fontInfo, } = this.#data;
-        this.#fragment = UI.Fragment.Fragment.build `
-    <div class="vbox overview-completed-view">
-      <div $="summary" class="results-section horizontally-padded summary">
-        <h1>${i18nString(UIStrings.overviewSummary)}</h1>
-        ${this.#renderSummary(data)}
-      </div>
-      <div $="colors" class="results-section horizontally-padded colors">
-        <h1>${i18nString(UIStrings.colors)}</h1>
-        ${this.#renderColors(data)}
-      </div>
-      <div $="font-info" class="results-section font-info">
-        <h1>${i18nString(UIStrings.fontInfo)}</h1>
-        ${this.#renderFontInfo(fontInfo)}
-      </div>
-      <div $="unused-declarations" class="results-section unused-declarations">
-        <h1>${i18nString(UIStrings.unusedDeclarations)}</h1>
-        ${this.#renderUnusedDeclarations(unusedDeclarations)}
-      </div>
-      <div $="media-queries" class="results-section media-queries">
-        <h1>${i18nString(UIStrings.mediaQueries)}</h1>
-        ${this.#renderMediaQueries(mediaQueries)}
-      </div>
-    </div>`;
-        this.#resultsContainer.element.appendChild(this.#fragment.element());
+        const viewInput = {
+            elementCount: this.#data.elementCount,
+            backgroundColors: this.#sortColorsByLuminance(this.#data.backgroundColors),
+            textColors: this.#sortColorsByLuminance(this.#data.textColors),
+            textColorContrastIssues: this.#data.textColorContrastIssues,
+            fillColors: this.#sortColorsByLuminance(this.#data.fillColors),
+            borderColors: this.#sortColorsByLuminance(this.#data.borderColors),
+            globalStyleStats: this.#data.globalStyleStats,
+            mediaQueries: this.#sortGroupBySize(this.#data.mediaQueries),
+            unusedDeclarations: this.#sortGroupBySize(this.#data.unusedDeclarations),
+            fontInfo: this.#sortFontInfo(this.#data.fontInfo),
+            selectedSection: this.#selectedSection,
+            onClick: this.#onClick.bind(this),
+            onSectionSelected: this.#onSectionSelected.bind(this),
+            onReset: this.#onReset.bind(this),
+        };
+        this.#view(viewInput, this.#viewOutput, this.element);
     }
-    #renderSummary(data) {
-        const { elementCount, globalStyleStats, mediaQueries, } = data;
-        const renderSummaryItem = (label, value) => UI.Fragment.Fragment.build `
-      <li>
-        <div class="label">${label}</div>
-        <div class="value">${this.#formatter.format(value)}</div>
-      </li>`;
-        return UI.Fragment.Fragment.build `<ul>
-      ${renderSummaryItem(i18nString(UIStrings.elements), elementCount)}
-      ${renderSummaryItem(i18nString(UIStrings.externalStylesheets), globalStyleStats.externalSheets)}
-      ${renderSummaryItem(i18nString(UIStrings.inlineStyleElements), globalStyleStats.inlineStyles)}
-      ${renderSummaryItem(i18nString(UIStrings.styleRules), globalStyleStats.styleRules)}
-      ${renderSummaryItem(i18nString(UIStrings.mediaQueries), mediaQueries.size)}
-      ${renderSummaryItem(i18nString(UIStrings.typeSelectors), globalStyleStats.stats.type)}
-      ${renderSummaryItem(i18nString(UIStrings.idSelectors), globalStyleStats.stats.id)}
-      ${renderSummaryItem(i18nString(UIStrings.classSelectors), globalStyleStats.stats.class)}
-      ${renderSummaryItem(i18nString(UIStrings.universalSelectors), globalStyleStats.stats.universal)}
-      ${renderSummaryItem(i18nString(UIStrings.attributeSelectors), globalStyleStats.stats.attribute)}
-      ${renderSummaryItem(i18nString(UIStrings.nonsimpleSelectors), globalStyleStats.stats.nonSimple)}
-    </ul>`;
-    }
-    #renderColors(data) {
-        const { backgroundColors, textColors, textColorContrastIssues, fillColors, borderColors, } = data;
-        // Convert rgb values from the computed styles to either undefined or HEX(A) strings.
-        const sortedBackgroundColors = this.#sortColorsByLuminance(backgroundColors);
-        const sortedTextColors = this.#sortColorsByLuminance(textColors);
-        const sortedFillColors = this.#sortColorsByLuminance(fillColors);
-        const sortedBorderColors = this.#sortColorsByLuminance(borderColors);
-        return UI.Fragment.Fragment.build `
-      <h2>${i18nString(UIStrings.backgroundColorsS, {
-            PH1: sortedBackgroundColors.length
-        })}</h2>
-      <ul>${sortedBackgroundColors.map(this.#renderColor.bind(this, 'background'))}</ul>
-
-      <h2>${i18nString(UIStrings.textColorsS, {
-            PH1: sortedTextColors.length
-        })}</h2>
-      <ul>${sortedTextColors.map(this.#renderColor.bind(this, 'text'))}</ul>
-
-      ${textColorContrastIssues.size > 0 ? this.#renderContrastIssues(textColorContrastIssues) : ''}
-
-      <h2>${i18nString(UIStrings.fillColorsS, {
-            PH1: sortedFillColors.length
-        })}</h2>
-      <ul>${sortedFillColors.map(this.#renderColor.bind(this, 'fill'))}</ul>
-
-      <h2>${i18nString(UIStrings.borderColorsS, {
-            PH1: sortedBorderColors.length
-        })}</h2>
-      <ul>${sortedBorderColors.map(this.#renderColor.bind(this, 'border'))}</ul>`;
-    }
-    #renderUnusedDeclarations(unusedDeclarations) {
-        return unusedDeclarations.size > 0 ? this.#renderGroup(unusedDeclarations, 'unused-declarations', 'declaration') :
-            UI.Fragment.Fragment.build `<div class="horizontally-padded">${i18nString(UIStrings.thereAreNoUnusedDeclarations)}</div>`;
-    }
-    #renderMediaQueries(mediaQueries) {
-        return mediaQueries.size > 0 ? this.#renderGroup(mediaQueries, 'media-queries', 'text') :
-            UI.Fragment.Fragment.build `<div class="horizontally-padded">${i18nString(UIStrings.thereAreNoMediaQueries)}</div>`;
-    }
-    #createElementsView(evt) {
-        const { payload } = evt.data;
+    #createElementsView(payload) {
         let id = '';
         let tabTitle = '';
         switch (payload.type) {
@@ -520,153 +660,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
             view.data = payload.nodes;
             this.#viewMap.set(id, view);
         }
-        if (!this.#tabbedPane.hasTab(id)) {
-            this.#tabbedPane.appendTab(id, tabTitle, view, undefined, undefined, /* isCloseable */ true, undefined, undefined, payload.type);
-        }
-        this.#tabbedPane.selectTab(id);
-    }
-    #renderFontInfo(fontInfo) {
-        const fonts = Array.from(fontInfo.entries());
-        return fontInfo.size > 0 ? UI.Fragment.Fragment.build `${fonts.map(([font, fontMetrics]) => {
-            return UI.Fragment.Fragment.build `<section class="font-family"><h2>${font}</h2> ${this.#renderFontMetrics(font, fontMetrics)}</section>`;
-        })}` :
-            UI.Fragment.Fragment.build `<div>${i18nString(UIStrings.thereAreNoFonts)}</div>`;
-    }
-    #renderFontMetrics(font, fontMetrics) {
-        const fontMetricInfo = Array.from(fontMetrics.entries());
-        return UI.Fragment.Fragment.build `
-  <div class="font-metric">
-  ${fontMetricInfo.map(([label, values]) => {
-            const sanitizedPath = `${font}/${label}`;
-            return UI.Fragment.Fragment.build `
-  <div>
-  <h3>${label}</h3>
-  ${this.#renderGroup(values, 'font-info', 'value', sanitizedPath)}
-  </div>`;
-        })}
-  </div>`;
-    }
-    #renderGroup(items, type, dataLabel, path = '') {
-        // Sort by number of items descending.
-        const values = Array.from(items.entries()).sort((d1, d2) => {
-            const v1Nodes = d1[1];
-            const v2Nodes = d2[1];
-            return v2Nodes.length - v1Nodes.length;
-        });
-        const total = values.reduce((prev, curr) => prev + curr[1].length, 0);
-        return UI.Fragment.Fragment.build `<ul aria-label="${type}">
-    ${values.map(([title, nodes]) => {
-            const width = 100 * nodes.length / total;
-            const itemLabel = i18nString(UIStrings.nOccurrences, { n: nodes.length });
-            return UI.Fragment.Fragment.build `<li>
-        <div class="title">${title}</div>
-        <button data-type="${type}" data-path="${path}" data-${dataLabel}="${title}"
-        jslog="${VisualLogging.action().track({ click: true }).context(`css-overview.${type}`)}"
-        aria-label="${title}: ${itemLabel}">
-          <div class="details">${itemLabel}</div>
-          <div class="bar-container">
-            <div class="bar" style="width: ${width}%;"></div>
-          </div>
-        </button>
-      </li>`;
-        })}
-    </ul>`;
-    }
-    #renderContrastIssues(issues) {
-        return UI.Fragment.Fragment.build `
-  <h2>${i18nString(UIStrings.contrastIssuesS, {
-            PH1: issues.size,
-        })}</h2>
-  <ul>
-  ${[...issues.entries()].map(([key, value]) => this.#renderContrastIssue(key, value))}
-  </ul>
-  `;
-    }
-    #renderContrastIssue(key, issues) {
-        console.assert(issues.length > 0);
-        let minContrastIssue = issues[0];
-        for (const issue of issues) {
-            // APCA contrast can be a negative value that is to be displayed. But the
-            // absolute value is used to compare against the threshold. Therefore, the min
-            // absolute value is the worst contrast.
-            if (Math.abs(issue.contrastRatio) < Math.abs(minContrastIssue.contrastRatio)) {
-                minContrastIssue = issue;
-            }
-        }
-        const color = (minContrastIssue.textColor.asString("hexa" /* Common.Color.Format.HEXA */));
-        const backgroundColor = (minContrastIssue.backgroundColor.asString("hexa" /* Common.Color.Format.HEXA */));
-        const showAPCA = Root.Runtime.experiments.isEnabled('apca');
-        const title = i18nString(UIStrings.textColorSOverSBackgroundResults, {
-            PH1: color,
-            PH2: backgroundColor,
-            PH3: issues.length,
-        });
-        const blockFragment = UI.Fragment.Fragment.build `<li>
-      <button
-        title="${title}" aria-label="${title}"
-        data-type="contrast" data-key="${key}" data-section="contrast" class="block" $="color"
-        jslog="${VisualLogging.action('css-overview.contrast').track({
-            click: true,
-        })}">
-        Text
-      </button>
-      <div class="block-title">
-        <div class="contrast-warning hidden" $="aa"><span class="threshold-label">${i18nString(UIStrings.aa)}</span></div>
-        <div class="contrast-warning hidden" $="aaa"><span class="threshold-label">${i18nString(UIStrings.aaa)}</span></div>
-        <div class="contrast-warning hidden" $="apca"><span class="threshold-label">${i18nString(UIStrings.apca)}</span></div>
-      </div>
-    </li>`;
-        if (showAPCA) {
-            const apca = blockFragment.$('apca');
-            if (minContrastIssue.thresholdsViolated.apca) {
-                apca.appendChild(createClearIcon());
-            }
-            else {
-                apca.appendChild(createCheckIcon());
-            }
-            apca.classList.remove('hidden');
-        }
-        else {
-            const aa = blockFragment.$('aa');
-            if (minContrastIssue.thresholdsViolated.aa) {
-                aa.appendChild(createClearIcon());
-            }
-            else {
-                aa.appendChild(createCheckIcon());
-            }
-            const aaa = blockFragment.$('aaa');
-            if (minContrastIssue.thresholdsViolated.aaa) {
-                aaa.appendChild(createClearIcon());
-            }
-            else {
-                aaa.appendChild(createCheckIcon());
-            }
-            aa.classList.remove('hidden');
-            aaa.classList.remove('hidden');
-        }
-        const block = blockFragment.$('color');
-        block.style.backgroundColor = backgroundColor;
-        block.style.color = color;
-        block.style.border = getBorderString(minContrastIssue.backgroundColor.asLegacyColor());
-        return blockFragment;
-    }
-    #renderColor(section, color) {
-        const blockFragment = UI.Fragment.Fragment.build `<li>
-      <button title=${color} data-type="color" data-color="${color}"
-        data-section="${section}" class="block" $="color"
-        jslog="${VisualLogging.action('css-overview.color').track({
-            click: true,
-        })}"></button>
-      <div class="block-title color-text">${color}</div>
-    </li>`;
-        const block = blockFragment.$('color');
-        block.style.backgroundColor = color;
-        const borderColor = Common.Color.parse(color)?.asLegacyColor();
-        if (!borderColor) {
-            return;
-        }
-        block.style.border = getBorderString(borderColor);
-        return blockFragment;
+        this.#viewOutput.addTab(id, tabTitle, view, payload.type);
     }
     #sortColorsByLuminance(srcColors) {
         return Array.from(srcColors.keys()).sort((colA, colB) => {
@@ -678,12 +672,35 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
             return Common.ColorUtils.luminance(colorB.rgba()) - Common.ColorUtils.luminance(colorA.rgba());
         });
     }
-    setOverviewData(data) {
-        void this.#render(data);
+    #sortFontInfo(fontInfo) {
+        const fonts = Array.from(fontInfo.entries());
+        return fonts.map(([font, fontMetrics]) => {
+            const fontMetricInfo = Array.from(fontMetrics.entries());
+            return {
+                font,
+                fontMetrics: fontMetricInfo.map(([label, values]) => {
+                    return { label, values: this.#sortGroupBySize(values) };
+                })
+            };
+        });
+    }
+    #sortGroupBySize(items) {
+        // Sort by number of items descending.
+        return Array.from(items.entries())
+            .sort((d1, d2) => {
+            const v1Nodes = d1[1];
+            const v2Nodes = d2[1];
+            return v2Nodes.length - v1Nodes.length;
+        })
+            .map(([title, nodes]) => ({ title, nodes }));
+    }
+    set overviewData(data) {
+        this.#data = data;
+        this.requestUpdate();
     }
     static pushedNodes = new Set();
 }
-export const DEFAULT_VIEW = (input, _output, target) => {
+export const ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
     const { items, visibility } = input;
     // clang-format off
     render(html `
@@ -727,7 +744,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
     #linkifier;
     #data;
     #view;
-    constructor(domModel, cssModel, linkifier, view = DEFAULT_VIEW) {
+    constructor(domModel, cssModel, linkifier, view = ELEMENT_DETAILS_DEFAULT_VIEW) {
         super();
         this.#domModel = domModel;
         this.#cssModel = cssModel;
@@ -842,13 +859,12 @@ function renderContrastRatio(data) {
     // clang-format on
 }
 function createClearIcon() {
-    const icon = new IconButton.Icon.Icon();
-    icon.data = { iconName: 'clear', color: 'var(--icon-error)', width: '14px', height: '14px' };
-    return icon;
+    return html `
+    <devtools-icon name="clear" style="color:var(--icon-error); width:14px; height:14px"></devtools-icon>`;
 }
 function createCheckIcon() {
-    const icon = new IconButton.Icon.Icon();
-    icon.data = { iconName: 'checkmark', color: 'var(--icon-checkmark-green)', width: '14px', height: '14px' };
-    return icon;
+    return html `
+    <devtools-icon name="checkmark"
+        style="color:var(--icon-checkmark-green); width:14px; height:14px"></devtools-icon>`;
 }
 //# sourceMappingURL=CSSOverviewCompletedView.js.map

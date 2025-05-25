@@ -4560,7 +4560,8 @@ export declare namespace DOM {
     }
     const enum GetElementByRelationRequestRelation {
         PopoverTarget = "PopoverTarget",
-        InterestTarget = "InterestTarget"
+        InterestTarget = "InterestTarget",
+        CommandFor = "CommandFor"
     }
     interface GetElementByRelationRequest {
         /**
@@ -6178,6 +6179,11 @@ export declare namespace Emulation {
     interface SetPressureStateOverrideRequest {
         source: PressureSource;
         state: PressureState;
+    }
+    interface SetPressureDataOverrideRequest {
+        source: PressureSource;
+        state: PressureState;
+        ownContributionEstimate?: number;
     }
     interface SetIdleOverrideRequest {
         /**
@@ -7835,6 +7841,7 @@ export declare namespace Network {
         Ping = "Ping",
         CSPViolationReport = "CSPViolationReport",
         Preflight = "Preflight",
+        FedCM = "FedCM",
         Other = "Other"
     }
     /**
@@ -11278,7 +11285,7 @@ export declare namespace Page {
     /**
      * All Permissions Policy features. This enum should match the one defined
      * in services/network/public/cpp/permissions_policy/permissions_policy_features.json5.
-     * LINT.IfChange(PermissionsPolicyFeature)
+     * LINT_SKIP.IfChange(PermissionsPolicyFeature)
      */
     const enum PermissionsPolicyFeature {
         Accelerometer = "accelerometer",
@@ -11350,6 +11357,7 @@ export declare namespace Page {
         MediaPlaybackWhileNotVisible = "media-playback-while-not-visible",
         Microphone = "microphone",
         Midi = "midi",
+        OnDeviceSpeechRecognition = "on-device-speech-recognition",
         OtpCredentials = "otp-credentials",
         Payment = "payment",
         PictureInPicture = "picture-in-picture",
@@ -14106,6 +14114,11 @@ export declare namespace Storage {
          */
         operationName?: string;
         /**
+         * ID of the operation call.
+         * Present only for SharedStorageAccessMethods: run and selectURL.
+         */
+        operationId?: string;
+        /**
          * Whether or not to keep the worket alive for future run or selectURL
          * calls.
          * Present only for SharedStorageAccessMethods: run and selectURL.
@@ -14149,13 +14162,25 @@ export declare namespace Storage {
          */
         ignoreIfPresent?: boolean;
         /**
-         * If the method is called on a worklet, or as part of
-         * a worklet script, it will have an ID for the associated worklet.
+         * If the method is called on a shared storage worklet, or as part of
+         * a shared storage worklet script, it will have a number for the
+         * associated worklet, denoting the (0-indexed) order of the worklet's
+         * creation relative to all other shared storage worklets created by
+         * documents using the current storage partition.
          * Present only for SharedStorageAccessMethods: addModule, createWorklet,
          * run, selectURL, and any other SharedStorageAccessMethod when the
-         * SharedStorageAccessScope is worklet.
+         * SharedStorageAccessScope is sharedStorageWorklet.
+         * TODO(crbug.com/401011862): Pass this only for addModule & createWorklet.
          */
-        workletId?: string;
+        workletOrdinal?: integer;
+        /**
+         * Hex representation of the DevTools token used as the TargetID for the
+         * associated shared storage worklet.
+         * Present only for SharedStorageAccessMethods: addModule, createWorklet,
+         * run, selectURL, and any other SharedStorageAccessMethod when the
+         * SharedStorageAccessScope is sharedStorageWorklet.
+         */
+        workletTargetId?: Target.TargetID;
         /**
          * Name of the lock to be acquired, if present.
          * Optionally present only for SharedStorageAccessMethods: batchUpdate,
@@ -14233,14 +14258,6 @@ export declare namespace Storage {
          */
         ends: integer[];
     }
-    interface AttributionReportingTriggerSpec {
-        /**
-         * number instead of integer because not all uint32 can be represented by
-         * int
-         */
-        triggerData: number[];
-        eventReportWindows: AttributionReportingEventReportWindows;
-    }
     const enum AttributionReportingTriggerDataMatching {
         Exact = "exact",
         Modulus = "modulus"
@@ -14283,7 +14300,12 @@ export declare namespace Storage {
          * duration in seconds
          */
         expiry: integer;
-        triggerSpecs: AttributionReportingTriggerSpec[];
+        /**
+         * number instead of integer because not all uint32 can be represented by
+         * int
+         */
+        triggerData: number[];
+        eventReportWindows: AttributionReportingEventReportWindows;
         /**
          * duration in seconds
          */
@@ -14866,6 +14888,42 @@ export declare namespace Storage {
          * presence/absence depends on `type`.
          */
         params: SharedStorageAccessParams;
+    }
+    /**
+     * A shared storage run or selectURL operation finished its execution.
+     * The following parameters are included in all events.
+     */
+    interface SharedStorageWorkletOperationExecutionFinishedEvent {
+        /**
+         * Time that the operation finished.
+         */
+        finishedTime: Network.TimeSinceEpoch;
+        /**
+         * Time, in microseconds, from start of shared storage JS API call until
+         * end of operation execution in the worklet.
+         */
+        executionTime: integer;
+        /**
+         * Enum value indicating the Shared Storage API method invoked.
+         */
+        method: SharedStorageAccessMethod;
+        /**
+         * ID of the operation call.
+         */
+        operationId: string;
+        /**
+         * Hex representation of the DevTools token used as the TargetID for the
+         * associated shared storage worklet.
+         */
+        workletTargetId: Target.TargetID;
+        /**
+         * DevTools Frame Token for the primary frame tree's root.
+         */
+        mainFrameId: Page.FrameId;
+        /**
+         * Serialization of the origin owning the Shared Storage data.
+         */
+        ownerOrigin: string;
     }
     interface StorageBucketCreatedOrUpdatedEvent {
         bucketInfo: StorageBucketInfo;
@@ -16796,7 +16854,6 @@ export declare namespace Preload {
         InvalidSchemeRedirect = "InvalidSchemeRedirect",
         InvalidSchemeNavigation = "InvalidSchemeNavigation",
         NavigationRequestBlockedByCsp = "NavigationRequestBlockedByCsp",
-        MainFrameNavigation = "MainFrameNavigation",
         MojoBinderPolicy = "MojoBinderPolicy",
         RendererProcessCrashed = "RendererProcessCrashed",
         RendererProcessKilled = "RendererProcessKilled",
@@ -17385,7 +17442,7 @@ export declare namespace BluetoothEmulation {
      */
     interface DescriptorOperationReceivedEvent {
         descriptorId: string;
-        type: CharacteristicOperationType;
+        type: DescriptorOperationType;
         data?: binary;
     }
 }

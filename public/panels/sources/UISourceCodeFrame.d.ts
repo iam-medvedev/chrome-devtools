@@ -14,14 +14,7 @@ declare const UISourceCodeFrame_base: (new (...args: any[]) => {
 }) & typeof SourceFrame.SourceFrame.SourceFrameImpl;
 export declare class UISourceCodeFrame extends UISourceCodeFrame_base {
     #private;
-    private uiSourceCodeInternal;
-    private muteSourceCodeEvents;
-    private persistenceBinding;
-    private uiSourceCodeEventListeners;
-    private messageAndDecorationListeners;
-    private readonly boundOnBindingChanged;
     private plugins;
-    private readonly errorPopoverHelper;
     constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode);
     private workingCopy;
     protected editorConfiguration(doc: string): CodeMirror.Extension;

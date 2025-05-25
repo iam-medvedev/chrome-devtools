@@ -1,7 +1,7 @@
 import '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
-import type * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 declare class DataGridNode extends DataGrid.DataGrid.DataGridNode<DataGridNode> {

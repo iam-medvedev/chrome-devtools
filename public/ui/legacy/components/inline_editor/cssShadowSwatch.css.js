@@ -9,10 +9,6 @@ export default `/*
  * found in the LICENSE file.
  */
 
-:host {
-  white-space: nowrap;
-}
-
 devtools-icon.shadow-swatch-icon {
   color: var(--icon-css);
   transform: scale(0.7);

@@ -63,5 +63,7 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
 export declare class StylingAgentWithFunctionCalling extends StylingAgent {
     functionCallEmulationEnabled: boolean;
     preamble: string;
+    formatParsedAnswer({ answer }: ParsedAnswer): string;
+    parseTextResponse(text: string): ParsedResponse;
 }
 export {};

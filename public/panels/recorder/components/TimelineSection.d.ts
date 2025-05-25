@@ -12,7 +12,6 @@ export interface TimelineSectionData {
 }
 export declare class TimelineSection extends HTMLElement {
     #private;
-    constructor();
     set data(data: TimelineSectionData);
     connectedCallback(): void;
 }

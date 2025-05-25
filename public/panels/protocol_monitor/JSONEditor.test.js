@@ -318,7 +318,7 @@ describeWithEnvironment('JSONEditor', () => {
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
             const { inputs } = await renderEditorForCommand(command, parameters);
             const parameterRecorderInput = inputs[1];
-            const value = parameterRecorderInput.renderRoot.textContent?.replaceAll(/\s/g, '');
+            const value = parameterRecorderInput.value;
             const expectedValue = 'test';
             assert.deepEqual(value, expectedValue);
         });
@@ -332,7 +332,7 @@ describeWithEnvironment('JSONEditor', () => {
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
             const { inputs } = await renderEditorForCommand(command, parameters);
             const parameterRecorderInput = inputs[1];
-            const value = parameterRecorderInput.renderRoot.textContent?.replaceAll(/\s/g, '');
+            const value = parameterRecorderInput.value;
             const expectedValue = 'test';
             assert.deepEqual(value, expectedValue);
         });
@@ -349,7 +349,7 @@ describeWithEnvironment('JSONEditor', () => {
             const { command, parameters } = ProtocolMonitor.ProtocolMonitor.parseCommandInput(JSON.stringify(cdpCommand));
             const { inputs } = await renderEditorForCommand(command, parameters);
             const parameterRecorderInput = inputs[1];
-            const value = parameterRecorderInput.renderRoot.textContent?.replaceAll(/\s/g, '');
+            const value = parameterRecorderInput.value;
             const expectedValue = 'test1';
             assert.deepEqual(value, expectedValue);
         });

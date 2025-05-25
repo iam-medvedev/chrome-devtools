@@ -21,10 +21,9 @@ function computeStyleSheetRange(header) {
 }
 export class ResourceMapping {
     workspace;
-    #modelToInfo;
+    #modelToInfo = new Map();
     constructor(targetManager, workspace) {
         this.workspace = workspace;
-        this.#modelToInfo = new Map();
         targetManager.observeModels(SDK.ResourceTreeModel.ResourceTreeModel, this);
     }
     modelAdded(resourceTreeModel) {
@@ -223,14 +222,13 @@ export class ResourceMapping {
 }
 class ModelInfo {
     project;
-    #bindings;
+    #bindings = new Map();
     #cssModel;
     #eventListeners;
     constructor(workspace, resourceTreeModel) {
         const target = resourceTreeModel.target();
         this.project = new ContentProviderBasedProject(workspace, 'resources:' + target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
         NetworkProject.setTargetForProject(this.project, target);
-        this.#bindings = new Map();
         const cssModel = target.model(SDK.CSSModel.CSSModel);
         console.assert(Boolean(cssModel));
         this.#cssModel = cssModel;
@@ -348,7 +346,7 @@ class Binding {
     resources;
     #project;
     #uiSourceCode;
-    #edits;
+    #edits = [];
     constructor(project, resource) {
         this.resources = new Set([resource]);
         this.#project = project;
@@ -358,7 +356,6 @@ class Binding {
             NetworkProject.setInitialFrameAttribution(this.#uiSourceCode, resource.frameId);
         }
         this.#project.addUISourceCodeWithProvider(this.#uiSourceCode, this, resourceMetadata(resource), resource.mimeType);
-        this.#edits = [];
         void Promise.all([
             ...this.inlineScripts().map(script => DebuggerWorkspaceBinding.instance().updateLocations(script)),
             ...this.inlineStyles().map(style => CSSWorkspaceBinding.instance().updateLocations(style)),

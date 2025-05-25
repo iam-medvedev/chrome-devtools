@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -29,8 +30,7 @@ describeWithMockConnection('NetworkOverview', () => {
             boundarySpan: sinon.stub(),
         };
         networkOverview.setCalculator(calculator);
-        networkOverview.markAsRoot();
-        networkOverview.show(document.body);
+        renderElementIntoDOM(networkOverview);
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
         sinon.assert.notCalled(calculator.computePosition);

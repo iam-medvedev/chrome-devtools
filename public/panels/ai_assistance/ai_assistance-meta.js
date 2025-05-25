@@ -232,12 +232,11 @@ UI.ActionRegistration.registerActionExtension({
     },
     condition: config => isFileAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config),
 });
-// Called by MCP server via Puppeteer
 // @ts-expect-error
-globalThis.handleMcpRequest =
+globalThis.handleExternalRequest =
     async (prompt, conversationType, selector) => {
         const AiAssistance = await loadAiAssistanceModule();
         const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-        return await panelInstance.handleMcpRequest(prompt, conversationType, selector);
+        return await panelInstance.handleExternalRequest(prompt, conversationType, selector);
     };
 //# sourceMappingURL=ai_assistance-meta.js.map

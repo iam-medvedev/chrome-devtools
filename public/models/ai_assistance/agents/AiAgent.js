@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
-import { debugLog, isDebugMode } from '../debug.js';
+import { debugLog, isStructuredLogEnabled } from '../debug.js';
 export const MAX_STEPS = 10;
 export class ConversationContext {
     isOriginAllowed(agentOrigin) {
@@ -279,7 +279,7 @@ export class AiAgent {
                 break;
             }
         }
-        if (isDebugMode()) {
+        if (isStructuredLogEnabled()) {
             window.dispatchEvent(new CustomEvent('aiassistancedone'));
         }
     }
@@ -425,7 +425,7 @@ export class AiAgent {
             request,
             response: aidaResponse,
         });
-        if (isDebugMode() && aidaResponse) {
+        if (isStructuredLogEnabled() && aidaResponse) {
             this.#structuredLog.push({
                 request: structuredClone(request),
                 aidaResponse,

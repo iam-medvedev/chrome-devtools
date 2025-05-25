@@ -1,9 +1,11 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 import * as Trace from '../trace.js';
+const { urlString } = Platform.DevToolsPath;
 describeWithEnvironment('NetworkDependencyTree', function () {
     let insight;
     before(async function () {
@@ -93,16 +95,19 @@ describeWithEnvironment('NetworkDependencyTree', function () {
     });
 });
 describe('generatePreconnectedOrigins', () => {
-    const mockParsedTrace = {
-        NetworkRequests: {
-            linkPreconnectEvents: [],
-        },
-    };
-    beforeEach(() => {
-        mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;
-    });
-    it('should mark preconnect origins as not unused when they match context requests', () => {
-        const mockLinkPreconnectEvents = [{
+    describe('generatePreconnectedOriginsFromDom', () => {
+        const mockParsedTrace = {
+            NetworkRequests: {
+                linkPreconnectEvents: [],
+                byTime: [],
+            },
+        };
+        const mockContext = {};
+        beforeEach(() => {
+            mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;
+        });
+        it('should mark preconnect origins as not unused when they match context requests', () => {
+            mockParsedTrace.NetworkRequests.linkPreconnectEvents.push({
                 args: {
                     data: {
                         url: 'https://example.com',
@@ -110,24 +115,26 @@ describe('generatePreconnectedOrigins', () => {
                         frame: 'frame-id',
                     },
                 },
-            }];
-        const mockContextRequests = [{
-                args: {
-                    data: {
-                        url: 'https://example.com/script.js',
+            });
+            const mockContextRequests = [{
+                    args: {
+                        data: {
+                            url: 'https://example.com/script.js',
+                        },
                     },
-                },
-            }];
-        const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockLinkPreconnectEvents, mockContextRequests);
-        assert.deepEqual(preconnectOrigins, [{
-                node_id: 1,
-                frame: 'frame-id',
-                url: 'https://example.com',
-                unused: false,
-            }]);
-    });
-    it('should mark preconnect origins as unused when they do not match context requests', () => {
-        const mockLinkPreconnectEvents = [{
+                }];
+            const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockParsedTrace, mockContext, mockContextRequests, /* preconnectCandidates */ []);
+            assert.deepEqual(preconnectOrigins, [{
+                    node_id: 1,
+                    frame: 'frame-id',
+                    url: 'https://example.com',
+                    unused: false,
+                    crossorigin: false,
+                    source: 'DOM'
+                }]);
+        });
+        it('should mark preconnect origins as unused when they do not match context requests', () => {
+            mockParsedTrace.NetworkRequests.linkPreconnectEvents.push({
                 args: {
                     data: {
                         url: 'https://example.com',
@@ -135,21 +142,169 @@ describe('generatePreconnectedOrigins', () => {
                         frame: 'frame-id',
                     },
                 },
-            }];
-        const mockContextRequests = [{
+            });
+            const mockContextRequests = [{
+                    args: {
+                        data: {
+                            url: 'https://other.com/image.png',
+                        },
+                    },
+                }];
+            const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockParsedTrace, mockContext, mockContextRequests, /* preconnectCandidates */ []);
+            assert.deepEqual(preconnectOrigins, [{
+                    node_id: 1,
+                    frame: 'frame-id',
+                    url: 'https://example.com',
+                    unused: true,
+                    crossorigin: false,
+                    source: 'DOM'
+                }]);
+        });
+        it('sets crossorigin to true when a matching preconnect candidate exists', () => {
+            mockParsedTrace.NetworkRequests.linkPreconnectEvents.push({
                 args: {
                     data: {
-                        url: 'https://other.com/image.png',
+                        url: 'https://example.com',
+                        node_id: 1,
+                        frame: 'frame-id',
                     },
                 },
-            }];
-        const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockLinkPreconnectEvents, mockContextRequests);
-        assert.deepEqual(preconnectOrigins, [{
-                node_id: 1,
-                frame: 'frame-id',
-                url: 'https://example.com',
-                unused: true,
-            }]);
+            });
+            const mockPreconnectCandidates = [{ origin: urlString `https://example.com`, wastedMs: 100 }];
+            const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockParsedTrace, mockContext, /* mockContextRequests */ [], 
+            /* preconnectCandidates */ mockPreconnectCandidates);
+            assert.deepEqual(preconnectOrigins, [{
+                    node_id: 1,
+                    frame: 'frame-id',
+                    url: 'https://example.com',
+                    unused: true,
+                    crossorigin: true,
+                    source: 'DOM'
+                }]);
+        });
+        it('sets crossorigin to false when no matching preconnect candidate exists', () => {
+            mockParsedTrace.NetworkRequests.linkPreconnectEvents.push({
+                args: {
+                    data: {
+                        url: 'https://example.com',
+                        node_id: 1,
+                        frame: 'frame-id',
+                    },
+                },
+            });
+            const mockPreconnectCandidates = [{ origin: urlString `https://other.com`, wastedMs: 100 }];
+            const preconnectOrigins = Trace.Insights.Models.NetworkDependencyTree.generatePreconnectedOrigins(mockParsedTrace, mockContext, /* mockContextRequests */ [], 
+            /* preconnectCandidates */ mockPreconnectCandidates);
+            assert.deepEqual(preconnectOrigins, [{
+                    node_id: 1,
+                    frame: 'frame-id',
+                    url: 'https://example.com',
+                    unused: true,
+                    crossorigin: false,
+                    source: 'DOM'
+                }]);
+        });
+    });
+    describeWithEnvironment('PreconnectedOriginFromResponseHeader', function () {
+        let insight;
+        let documentRequest;
+        before(async function () {
+            const { data, insights } = await processTrace(this, 'preconnect-advice.json.gz');
+            const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
+            insight = getInsightOrError('NetworkDependencyTree', insights, firstNav);
+            documentRequest =
+                data.NetworkRequests.byTime.find(req => req.args.data.requestId === firstNav.args.data?.navigationId);
+        });
+        it('correctly generate the preconnected origins', () => {
+            // There are 4 preconnected origins, 3 from DOM, and 1 from response header.
+            assert.lengthOf(insight.preconnectedOrigins, 4);
+            // A sanity check to avoid TS error.
+            assert.isDefined(documentRequest);
+            const expected = [
+                {
+                    node_id: 57,
+                    frame: '3773BAB92FB5A26C6B03EAD6CF821791',
+                    url: 'https://www.youtube.com/',
+                    unused: true,
+                    crossorigin: false,
+                    source: 'DOM',
+                },
+                {
+                    node_id: 58,
+                    frame: '3773BAB92FB5A26C6B03EAD6CF821791',
+                    url: 'https://www.google.com/',
+                    unused: true,
+                    crossorigin: false,
+                    source: 'DOM',
+                },
+                {
+                    node_id: 59,
+                    frame: '3773BAB92FB5A26C6B03EAD6CF821791',
+                    url: 'http://example.com/',
+                    unused: true,
+                    crossorigin: false,
+                    source: 'DOM',
+                },
+                {
+                    url: 'https://example.com/',
+                    headerText: '<https://example.com/>; rel=preconnect',
+                    request: documentRequest,
+                    unused: true,
+                    crossorigin: false,
+                    source: 'ResponseHeader',
+                },
+            ];
+            assert.deepEqual(insight.preconnectedOrigins, expected);
+        });
+    });
+    describe('handleLinkResponseHeader', () => {
+        it('should return an empty array for null or empty input', () => {
+            assert.deepEqual(Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(''), []);
+            assert.deepEqual(Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(null), []);
+        });
+        it('should parse a valid preconnect link with quotes', () => {
+            const linkHeader = '<https://example.com>; rel="preconnect"';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, [{ url: 'https://example.com', headerText: '<https://example.com>; rel="preconnect"' }]);
+        });
+        it('should parse a valid preconnect link without quotes', () => {
+            const linkHeader = '<https://example.com>; rel=preconnect';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, [{ url: 'https://example.com', headerText: '<https://example.com>; rel=preconnect' }]);
+        });
+        it('should parse multiple preconnect links', () => {
+            const linkHeader = '<https://example.com>; rel="preconnect", <https://other.com>; rel=preconnect';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, [
+                { url: 'https://example.com', headerText: '<https://example.com>; rel="preconnect"' },
+                { url: 'https://other.com', headerText: '<https://other.com>; rel=preconnect' },
+            ]);
+        });
+        it('should parse a preconnect link with other parameters', () => {
+            const linkHeader = '<https://example.com>; rel="preconnect"; crossorigin';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, [{ url: 'https://example.com', headerText: '<https://example.com>; rel="preconnect"; crossorigin' }]);
+        });
+        it('should ignore links with other rel values', () => {
+            const linkHeader = '<https://example.com>; rel="preload"';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, []);
+        });
+        it('should ignore invalid links (missing <>)', () => {
+            const linkHeader = 'https://example.com; rel="preconnect"';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, []);
+        });
+        it('should ignore invalid links (missing rel)', () => {
+            const linkHeader = '<https://example.com>; crossorigin';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, []);
+        });
+        it('should handle mixed valid and invalid links', () => {
+            const linkHeader = '<https://example.com>; rel="preconnect", https://other.com; rel=preconnect, <https://another.com>; rel="preload"';
+            const result = Trace.Insights.Models.NetworkDependencyTree.handleLinkResponseHeader(linkHeader);
+            assert.deepEqual(result, [{ url: 'https://example.com', headerText: '<https://example.com>; rel="preconnect"' }]);
+        });
     });
 });
 describeWithEnvironment('generatePreconnectCandidates', () => {
@@ -157,6 +312,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         NetworkRequests: {
             eventToInitiator: new Map(),
             byTime: [],
+            linkPreconnectEvents: [],
         },
     };
     const mockContext = {
@@ -213,6 +369,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
     beforeEach(() => {
         mockParsedTrace.NetworkRequests.eventToInitiator.clear();
         mockParsedTrace.NetworkRequests.byTime.length = 0;
+        mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;
         mockParsedTrace.NetworkRequests.byTime.push(mainRequest);
     });
     it('generates preconnect results for valid requests', () => {

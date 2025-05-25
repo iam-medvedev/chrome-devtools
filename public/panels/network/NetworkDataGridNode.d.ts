@@ -81,9 +81,7 @@ export declare class NetworkNode extends DataGrid.SortableDataGrid.SortableDataG
     clearFlatNodes(): void;
     requestOrFirstKnownChildRequest(): SDK.NetworkRequest.NetworkRequest | null;
 }
-export declare const _backgroundColors: {
-    [x: string]: string;
-};
+export declare const _backgroundColors: Record<string, string>;
 export declare class NetworkRequestNode extends NetworkNode {
     #private;
     private initiatorCell;

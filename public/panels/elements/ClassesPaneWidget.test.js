@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -20,8 +21,7 @@ describeWithMockConnection('ClassesPaneWidget', () => {
     const updatesUiOnEvent = (inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
         view = new Elements.ClassesPaneWidget.ClassesPaneWidget();
-        view.markAsRoot();
-        view.show(document.body);
+        renderElementIntoDOM(view);
         const model = target.model(SDK.DOMModel.DOMModel);
         assert.exists(model);
         const node = new SDK.DOMModel.DOMNode(model);

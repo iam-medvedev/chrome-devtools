@@ -5,10 +5,8 @@ import * as Workspace from '../workspace/workspace.js';
 import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
 import type { PlatformFileSystem, PlatformFileSystemType } from './PlatformFileSystem.js';
 export declare class FileSystemWorkspaceBinding {
+    #private;
     readonly isolatedFileSystemManager: IsolatedFileSystemManager;
-    private readonly workspace;
-    private readonly eventListeners;
-    private readonly boundFileSystems;
     constructor(isolatedFileSystemManager: IsolatedFileSystemManager, workspace: Workspace.Workspace.WorkspaceImpl);
     static projectId(fileSystemPath: Platform.DevToolsPath.UrlString): Platform.DevToolsPath.UrlString;
     static relativePath(uiSourceCode: Workspace.UISourceCode.UISourceCode): Platform.DevToolsPath.EncodedPathString[];
@@ -25,12 +23,8 @@ export declare class FileSystemWorkspaceBinding {
     dispose(): void;
 }
 export declare class FileSystem extends Workspace.Workspace.ProjectStore {
-    readonly fileSystemInternal: PlatformFileSystem;
+    #private;
     readonly fileSystemBaseURL: Platform.DevToolsPath.UrlString;
-    private readonly fileSystemParentURL;
-    private readonly fileSystemWorkspaceBinding;
-    private readonly fileSystemPathInternal;
-    private readonly creatingFilesGuard;
     constructor(fileSystemWorkspaceBinding: FileSystemWorkspaceBinding, isolatedFileSystem: PlatformFileSystem, workspace: Workspace.Workspace.WorkspaceImpl);
     fileSystemPath(): Platform.DevToolsPath.UrlString;
     fileSystem(): PlatformFileSystem;

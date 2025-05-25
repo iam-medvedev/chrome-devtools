@@ -75,9 +75,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     registerPreference(_name: string, _options: {
         synced?: boolean;
     }): void;
-    getPreferences(callback: (arg0: {
-        [x: string]: string;
-    }) => void): void;
+    getPreferences(callback: (arg0: Record<string, string>) => void): void;
     getPreference(name: string, callback: (arg0: string) => void): void;
     setPreference(name: string, value: string): void;
     removePreference(name: string): void;
@@ -119,6 +117,4 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     recordSettingAccess(_event: SettingAccessEvent): void;
 }
 export declare let InspectorFrontendHostInstance: InspectorFrontendHostStub;
-export declare function isUnderTest(prefs?: {
-    [x: string]: string;
-}): boolean;
+export declare function isUnderTest(prefs?: Record<string, string>): boolean;

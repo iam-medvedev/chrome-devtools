@@ -241,7 +241,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
     buildLandingPage() {
         const widget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noCoverageData), '');
-        widget.appendLink('https://developer.chrome.com/docs/devtools/coverage');
+        widget.link = 'https://developer.chrome.com/docs/devtools/coverage';
         if (this.startWithReloadButton) {
             const action = UI.ActionRegistry.ActionRegistry.instance().getAction('coverage.start-with-reload');
             if (action) {

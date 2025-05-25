@@ -6,9 +6,7 @@ export interface EventDescriptor<Events = any, T extends keyof Events = any> {
     listener: EventListener<Events, T>;
 }
 export declare function removeEventListeners(eventList: EventDescriptor[]): void;
-export interface GenericEvents {
-    [eventName: string]: any;
-}
+export type GenericEvents = Record<string, any>;
 export type EventPayloadToRestParameters<Events, T extends keyof Events> = Events[T] extends void ? [] : [Events[T]];
 export type EventListener<Events, T extends keyof Events> = (arg0: EventTargetEvent<Events[T], Events>) => void;
 export interface EventTarget<Events> {

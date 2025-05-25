@@ -39,9 +39,7 @@ export declare function getLocalizedString(registeredStrings: I18n.LocalizedStri
 /**
  * Register a file's UIStrings with i18n, return function to generate the string ids.
  */
-export declare function registerUIStrings(path: string, stringStructure: {
-    [key: string]: string;
-}): I18n.LocalizedStringSet.RegisteredFileStrings;
+export declare function registerUIStrings(path: string, stringStructure: Record<string, string>): I18n.LocalizedStringSet.RegisteredFileStrings;
 /**
  * Returns a span element that may contains other DOM element as placeholders
  */

@@ -279,8 +279,9 @@ export interface SyntheticNetworkRequest extends Complete, SyntheticBased<Phase.
              */
             encodedDataLength: number;
             frame: string;
-            fromServiceWorker: boolean;
+            fromServiceWorker: boolean | undefined;
             isLinkPreload: boolean;
+            /** Empty string if no response. */
             mimeType: string;
             priority: Protocol.Network.ResourcePriority;
             initialPriority: Protocol.Network.ResourcePriority;
@@ -296,20 +297,24 @@ export interface SyntheticNetworkRequest extends Complete, SyntheticBased<Phase.
             renderBlocking: RenderBlocking;
             requestId: string;
             requestingFrameUrl: string;
+            /** 0 if no response. */
             statusCode: number;
             resourceType: Protocol.Network.ResourceType;
             responseHeaders: Array<{
                 name: string;
                 value: string;
-            }>;
+            }> | null;
             fetchPriorityHint: FetchPriorityHint;
             url: string;
             /** True only if got a 'resourceFinish' event indicating a failure. */
             failed: boolean;
-            /** True only if got a 'resourceFinish' event. */
+            /** True only if got a 'resourceFinish' event. Note even failed requests with no response may be "finished". */
             finished: boolean;
-            connectionId: number;
-            connectionReused: boolean;
+            hasResponse: boolean;
+            /** If undefined, trace was either too old or had no response. */
+            connectionId: number | undefined;
+            /** If undefined, trace was either too old or had no response. */
+            connectionReused: boolean | undefined;
             initiator?: Initiator;
             requestMethod?: string;
             timing?: ResourceReceiveResponseTimingData;

@@ -146,6 +146,16 @@ input.enabled-button.small {
   }
 }
 
+devtools-icon.icon-link {
+  color: var(--text-link);
+  width: 13px;
+  height: 13px;
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 .overloaded:not(.has-ignorable-error, .invalid-property-value),
 .inactive:not(.invalid-property-value),
 .disabled,

@@ -170,13 +170,11 @@ export interface Profile {
     trace_function_infos: Uint32Array;
     trace_tree: Object;
 }
-export interface LiveObjects {
-    [x: number]: {
-        count: number;
-        size: number;
-        ids: number[];
-    };
-}
+export type LiveObjects = Record<number, {
+    count: number;
+    size: number;
+    ids: number[];
+}>;
 interface SecondaryInitArgumentsStep1 {
     edgeToNodeOrdinals: Uint32Array;
     firstEdgeIndexes: Uint32Array;
@@ -294,21 +292,15 @@ export declare abstract class HeapSnapshot {
     get totalSize(): number;
     private createFilter;
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): number[];
-    aggregatesWithFilter(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
-    };
+    aggregatesWithFilter(nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>;
     private createNodeIdFilter;
     private createAllocationStackFilter;
     private createNamedFilter;
-    getAggregatesByClassKey(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
-    };
+    getAggregatesByClassKey(sortedIndexes: boolean, key?: string, filter?: ((arg0: HeapSnapshotNode) => boolean)): Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>;
     allocationTracesTops(): HeapSnapshotModel.HeapSnapshotModel.SerializedAllocationNode[];
     allocationNodeCallers(nodeId: number): HeapSnapshotModel.HeapSnapshotModel.AllocationNodeCallers;
     allocationStack(nodeIndex: number): HeapSnapshotModel.HeapSnapshotModel.AllocationStackFrame[] | null;
-    aggregatesForDiff(interfaceDefinitions: string): {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff;
-    };
+    aggregatesForDiff(interfaceDefinitions: string): Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>;
     isUserRoot(_node: HeapSnapshotNode): boolean;
     calculateShallowSizes(): void;
     calculateDistances(isForRetainersView: boolean, filter?: ((arg0: HeapSnapshotNode, arg1: HeapSnapshotEdge) => boolean)): void;
@@ -362,11 +354,7 @@ export declare abstract class HeapSnapshot {
         map: Uint8Array;
         flag: number;
     } | null;
-    calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff;
-    }): {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.Diff;
-    };
+    calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>): Record<string, HeapSnapshotModel.HeapSnapshotModel.Diff>;
     private calculateDiffForClass;
     private nodeForSnapshotObjectId;
     classKeyFromClassKeyInternal(key: string | number): string;
@@ -399,9 +387,7 @@ interface HeapSnapshotMetaInfo {
     trace_function_info_fields: string[];
     trace_node_fields: string[];
     sample_fields: string[];
-    type_strings: {
-        [key: string]: string;
-    };
+    type_strings: Record<string, string>;
 }
 export interface HeapSnapshotHeader {
     title: string;

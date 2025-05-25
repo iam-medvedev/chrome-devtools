@@ -1552,12 +1552,10 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
 }
 export class StorageCategoryView extends UI.Widget.VBox {
     emptyWidget;
-    linkElement;
     constructor() {
         super();
         this.element.classList.add('storage-view');
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget('', '');
-        this.linkElement = null;
         this.emptyWidget.show(this.element);
     }
     setText(text) {
@@ -1567,17 +1565,7 @@ export class StorageCategoryView extends UI.Widget.VBox {
         this.emptyWidget.header = header;
     }
     setLink(link) {
-        if (link && !this.linkElement) {
-            this.linkElement = this.emptyWidget.appendLink(link);
-        }
-        if (!link && this.linkElement) {
-            this.linkElement.classList.add('hidden');
-        }
-        if (link && this.linkElement) {
-            this.linkElement.setAttribute('href', link);
-            this.linkElement.setAttribute('title', link);
-            this.linkElement.classList.remove('hidden');
-        }
+        this.emptyWidget.link = link;
     }
 }
 export class ResourcesSection {

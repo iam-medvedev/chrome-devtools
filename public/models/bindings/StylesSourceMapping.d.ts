@@ -35,7 +35,6 @@ export declare class StyleFile implements TextUtils.ContentProvider.ContentProvi
     requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
-    static readonly updateTimeout = 200;
     getHeaders(): Set<SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>;
     getUiSourceCode(): Workspace.UISourceCode.UISourceCode;
     addSourceMap(sourceUrl: Platform.DevToolsPath.UrlString, sourceMapUrl: Platform.DevToolsPath.UrlString): void;

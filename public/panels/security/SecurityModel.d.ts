@@ -14,9 +14,7 @@ export declare enum Events {
 export interface EventTypes {
     [Events.VisibleSecurityStateChanged]: PageVisibleSecurityState;
 }
-export declare const SummaryMessages: {
-    [x: string]: () => string;
-};
+export declare const SummaryMessages: Record<string, () => string>;
 export declare class PageVisibleSecurityState {
     securityState: Protocol.Security.SecurityState;
     certificateSecurityState: CertificateSecurityState | null;

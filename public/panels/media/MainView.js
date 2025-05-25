@@ -124,7 +124,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.#placeholder =
             new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noMediaPlayer), UIStrings.mediaPlayerDescription);
         this.#placeholder.show(this.mainElement());
-        this.#placeholder.appendLink(MEDIA_PLAYER_EXPLANATION_URL);
+        this.#placeholder.link = MEDIA_PLAYER_EXPLANATION_URL;
         SDK.TargetManager.TargetManager.instance().observeModels(MediaModel, this, { scoped: true });
     }
     renderMainPanel(playerID) {
