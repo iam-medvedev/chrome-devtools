@@ -21,9 +21,7 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
         profile: ProfileHeader;
         view: UI.Widget.Widget;
     }>;
-    typeIdToSidebarSection: {
-        [x: string]: ProfileTypeSidebarSection;
-    };
+    typeIdToSidebarSection: Record<string, ProfileTypeSidebarSection>;
     fileSelectorElement: HTMLInputElement;
     selectedProfileType?: ProfileType;
     constructor(name: string, profileTypes: ProfileType[], recordingActionId: string);
@@ -57,9 +55,7 @@ export declare class ProfilesPanel extends UI.Panel.PanelWithSidebar implements 
 export declare class ProfileTypeSidebarSection extends UI.TreeOutline.TreeElement {
     dataDisplayDelegate: DataDisplayDelegate;
     readonly profileTreeElements: ProfileSidebarTreeElement[];
-    profileGroups: {
-        [x: string]: ProfileGroup;
-    };
+    profileGroups: Record<string, ProfileGroup>;
     constructor(dataDisplayDelegate: DataDisplayDelegate, profileType: ProfileType);
     addProfileHeader(profile: ProfileHeader): void;
     removeProfileHeader(profile: ProfileHeader): boolean;

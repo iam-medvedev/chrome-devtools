@@ -5,14 +5,9 @@
 import './CSSAngleEditor.js';
 import './CSSAngleSwatch.js';
 import * as Lit from '../../../lit/lit.js';
-import cssAngleStylesRaw from './cssAngle.css.js';
+import cssAngleStyles from './cssAngle.css.js';
 import { convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit, } from './CSSAngleUtils.js';
 import { ValueChangedEvent } from './InlineEditorUtils.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const cssAngleStyles = new CSSStyleSheet();
-cssAngleStyles.replaceSync(cssAngleStylesRaw);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 export class PopoverToggledEvent extends Event {
@@ -47,9 +42,6 @@ export class CSSAngle extends HTMLElement {
     popoverStyleTop = '';
     popoverStyleLeft = '';
     onMinifyingAction = this.minify.bind(this);
-    connectedCallback() {
-        this.shadow.adoptedStyleSheets = [cssAngleStyles];
-    }
     set data(data) {
         const parsedResult = parseText(data.angleText);
         if (!parsedResult) {
@@ -174,6 +166,7 @@ export class CSSAngle extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${cssAngleStyles}</style>
       <div class="css-angle" @focusout=${this.minify} @keydown=${this.onKeydown} tabindex="-1">
         <div class="preview">
           <devtools-css-angle-swatch

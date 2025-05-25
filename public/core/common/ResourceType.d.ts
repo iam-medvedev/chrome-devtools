@@ -81,6 +81,7 @@ export declare const resourceTypes: {
     readonly SourceMapScript: ResourceType;
     readonly SourceMapStyleSheet: ResourceType;
     readonly WebBundle: ResourceType;
+    readonly FedCM: ResourceType;
 };
 export declare const resourceTypeByExtension: Map<string, ResourceType>;
 export declare const mimeTypeByExtension: Map<string, string>;

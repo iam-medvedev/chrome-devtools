@@ -38,14 +38,13 @@ const uiSourceCodeToStyleMap = new WeakMap();
 export class StylesSourceMapping {
     #cssModel;
     #project;
-    #styleFiles;
+    #styleFiles = new Map();
     #eventListeners;
     constructor(cssModel, workspace) {
         this.#cssModel = cssModel;
         const target = this.#cssModel.target();
         this.#project = new ContentProviderBasedProject(workspace, 'css:' + target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
         NetworkProject.setTargetForProject(this.#project, target);
-        this.#styleFiles = new Map();
         this.#eventListeners = [
             this.#cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetAdded, this.styleSheetAdded, this),
             this.#cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetRemoved, this.styleSheetRemoved, this),
@@ -165,8 +164,8 @@ export class StyleFile {
     headers;
     uiSourceCode;
     #eventListeners;
-    #throttler;
-    #terminated;
+    #throttler = new Common.Throttler.Throttler(200);
+    #terminated = false;
     #isAddingRevision;
     #isUpdatingHeaders;
     constructor(cssModel, project, header) {
@@ -184,8 +183,6 @@ export class StyleFile {
             this.uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this),
             this.uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this),
         ];
-        this.#throttler = new Common.Throttler.Throttler(StyleFile.updateTimeout);
-        this.#terminated = false;
     }
     addHeader(header) {
         this.headers.add(header);
@@ -285,7 +282,6 @@ export class StyleFile {
         console.assert(this.headers.size > 0);
         return this.headers.values().next().value;
     }
-    static updateTimeout = 200;
     getHeaders() {
         return this.headers;
     }

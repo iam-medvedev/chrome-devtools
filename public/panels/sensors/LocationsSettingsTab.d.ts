@@ -20,4 +20,5 @@ export interface LocationDescription {
     long: number;
     timezoneId: string;
     locale: string;
+    accuracy?: number;
 }

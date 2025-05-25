@@ -62,11 +62,7 @@ export declare class ProfileDataGridTree implements UI.SearchableView.Searchable
     savedChildren?: ProfileDataGridNode[] | null;
     searchResultIndex: number;
     constructor(formatter: Formatter, searchableView: UI.SearchableView.SearchableView, total: number);
-    static propertyComparator(property: string, isAscending: boolean): (arg0: {
-        [x: string]: unknown;
-    }, arg1: {
-        [x: string]: unknown;
-    }) => number;
+    static propertyComparator(property: string, isAscending: boolean): (arg0: Record<string, unknown>, arg1: Record<string, unknown>) => number;
     get expanded(): boolean;
     appendChild(child: ProfileDataGridNode): void;
     focus(_profileDataGridNode: ProfileDataGridNode): void;

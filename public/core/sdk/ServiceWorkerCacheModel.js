@@ -222,6 +222,8 @@ export class ServiceWorkerCacheModel extends SDKModel {
     }
     sharedStorageAccessed(_event) {
     }
+    sharedStorageWorkletOperationExecutionFinished(_event) {
+    }
     storageBucketCreatedOrUpdated(_event) {
     }
     storageBucketDeleted(_event) {

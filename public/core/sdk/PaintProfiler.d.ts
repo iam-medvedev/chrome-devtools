@@ -27,9 +27,7 @@ export declare class PaintProfilerLogItem {
 export type RawPaintProfilerLogItemParamValue = string | {
     [key: string]: RawPaintProfilerLogItemParamValue;
 };
-export interface RawPaintProfilerLogItemParams {
-    [key: string]: RawPaintProfilerLogItemParamValue;
-}
+export type RawPaintProfilerLogItemParams = Record<string, RawPaintProfilerLogItemParamValue>;
 export interface SnapshotWithRect {
     rect: Protocol.DOM.Rect;
     snapshot: PaintProfilerSnapshot;

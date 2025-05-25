@@ -16,16 +16,20 @@ export declare const UIStrings: {
     readonly passingRedirects: "Avoids redirects";
     /**
      * @description Text to tell the user that the document request had redirects.
+     * @example {3} PH1
+     * @example {1000 ms} PH2
      */
-    readonly failedRedirects: "Had redirects";
+    readonly failedRedirects: "Had redirects ({PH1} redirects, +{PH2})";
     /**
      * @description Text to tell the user that the time starting the document request to when the server started responding is acceptable.
+     * @example {600 ms} PH1
      */
-    readonly passingServerResponseTime: "Server responds quickly";
+    readonly passingServerResponseTime: "Server responds quickly (observed {PH1}) ";
     /**
      * @description Text to tell the user that the time starting the document request to when the server started responding is not acceptable.
+     * @example {601 ms} PH1
      */
-    readonly failedServerResponseTime: "Server responded slowly";
+    readonly failedServerResponseTime: "Server responded slowly (observed {PH1}) ";
     /**
      * @description Text to tell the user that text compression (like gzip) was applied.
      */

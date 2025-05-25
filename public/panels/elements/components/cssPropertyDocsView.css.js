@@ -36,9 +36,4 @@ export default `/*
   justify-content: space-between;
 }
 
-.dont-show {
-  display: inline-flex;
-  align-items: center;
-}
-
 /*# sourceURL=${import.meta.resolve('./cssPropertyDocsView.css')} */`;

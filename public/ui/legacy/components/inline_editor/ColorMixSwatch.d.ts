@@ -12,7 +12,6 @@ export declare class ColorMixSwatch extends HTMLElement {
     private colorMixText;
     private firstColorText;
     private secondColorText;
-    constructor();
     mixedColor(): Common.Color.Color | null;
     setFirstColor(text: string): void;
     setSecondColor(text: string): void;

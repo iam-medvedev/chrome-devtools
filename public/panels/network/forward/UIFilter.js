@@ -6,6 +6,7 @@ export var FilterType;
     /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */
     FilterType["Domain"] = "domain";
     FilterType["HasResponseHeader"] = "has-response-header";
+    FilterType["HasRequestHeader"] = "has-request-header";
     FilterType["HasOverrides"] = "has-overrides";
     FilterType["ResponseHeaderValueSetCookie"] = "response-header-set-cookie";
     FilterType["Is"] = "is";

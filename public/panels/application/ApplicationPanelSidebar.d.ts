@@ -258,7 +258,6 @@ export declare class CookieTreeElement extends ApplicationPanelTreeElement {
 }
 export declare class StorageCategoryView extends UI.Widget.VBox {
     private emptyWidget;
-    private linkElement;
     constructor();
     setText(text: string): void;
     setHeadline(header: string): void;

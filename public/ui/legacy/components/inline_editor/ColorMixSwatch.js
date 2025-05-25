@@ -6,12 +6,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as Lit from '../../../lit/lit.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
-import colorMixSwatchStylesRaw from './colorMixSwatch.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const colorMixSwatchStyles = new CSSStyleSheet();
-colorMixSwatchStyles.replaceSync(colorMixSwatchStylesRaw);
+import colorMixSwatchStyles from './colorMixSwatch.css.js';
 const { html, render, Directives: { ref } } = Lit;
 export class ColorMixChangedEvent extends Event {
     static eventName = 'colormixchanged';
@@ -27,12 +22,6 @@ export class ColorMixSwatch extends HTMLElement {
     firstColorText = ''; // hotpink
     secondColorText = ''; // white
     #icon = null;
-    constructor() {
-        super();
-        this.shadow.adoptedStyleSheets = [
-            colorMixSwatchStyles,
-        ];
-    }
     mixedColor() {
         const colorText = this.#icon?.computedStyleMap().get('color')?.toString() ?? null;
         return colorText ? Common.Color.parse(colorText) : null;
@@ -79,7 +68,7 @@ export class ColorMixSwatch extends HTMLElement {
         // free to append any content to replace what is being shown here.
         // Note also that whitespace between nodes is removed on purpose to avoid pushing these elements apart. Do not
         // re-format the HTML code.
-        render(html `<div class="swatch-icon"
+        render(html `<style>${colorMixSwatchStyles}</style><div class="swatch-icon"
       ${ref(e => { this.#icon = e; })}
       jslog=${VisualLogging.cssColorMix()}
       style="--color: ${this.colorMixText}">

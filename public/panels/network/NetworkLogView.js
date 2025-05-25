@@ -655,6 +655,9 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     static requestResponseHeaderFilter(value, request) {
         return request.responseHeaderValue(value) !== undefined;
     }
+    static requestRequestHeaderFilter(headerName, request) {
+        return request.requestHeaders().some(header => header.name.toLowerCase() === headerName.toLowerCase());
+    }
     static requestResponseHeaderSetCookieFilter(value, request) {
         // Multiple Set-Cookie headers in the request are concatenated via space. Only
         // filter via `includes` instead of strict equality.
@@ -926,7 +929,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         });
         this.recordingHint = new UI.EmptyWidget.EmptyWidget(header, shortcutTitle ? description : '');
         this.recordingHint.element.classList.add('network-status-pane');
-        this.recordingHint.appendLink('https://developer.chrome.com/docs/devtools/network/');
+        this.recordingHint.link = 'https://developer.chrome.com/docs/devtools/network/';
         if (shortcutTitle && action) {
             const button = UI.UIUtils.createTextButton(buttonText, () => action.execute(), {
                 jslogContext: actionName,
@@ -1412,6 +1415,9 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 this.suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.ResponseHeaderValueSetCookie);
             }
         }
+        for (const header of request.requestHeaders()) {
+            this.suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.HasRequestHeader, header.name);
+        }
         for (const cookie of request.responseCookies) {
             this.suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.SetCookieDomain, cookie.domain());
             this.suggestionBuilder.addItem(NetworkForward.UIFilter.FilterType.SetCookieName, cookie.name());
@@ -1709,6 +1715,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 return NetworkLogView.requestResponseHeaderFilter.bind(null, value);
             case NetworkForward.UIFilter.FilterType.ResponseHeaderValueSetCookie:
                 return NetworkLogView.requestResponseHeaderSetCookieFilter.bind(null, value);
+            case NetworkForward.UIFilter.FilterType.HasRequestHeader:
+                return NetworkLogView.requestRequestHeaderFilter.bind(null, value);
             case NetworkForward.UIFilter.FilterType.Is:
                 if (value.toLowerCase() === "running" /* NetworkForward.UIFilter.IsFilterType.RUNNING */) {
                     return NetworkLogView.runningRequestFilter;
@@ -1961,7 +1969,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                     .replace(/"/g, '\\"')
                     .replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`]/g, '^$&')
                     .replace(/%(?=[a-zA-Z0-9_])/g, '%^')
-                    .replace(/\r?\n/g, '^\n\n') +
+                    .replace(/\r?\n|\r/g, '^\n\n') +
                 encapsChars;
         }
         function escapeStringPosix(str) {

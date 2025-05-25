@@ -118,6 +118,10 @@ const UIStrings = {
      *@example {invalidValue} PH3
      */
     invalidString: '{PH1}, property name: {PH2}, property value: {PH3}',
+    /**
+     *@description Title in the styles tab for the icon button for jumping to the anchor node.
+     */
+    jumpToAnchorNode: 'Jump to anchor node',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -139,6 +143,7 @@ export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         }
         const key = `${this.#treeElement.section().getSectionIdx()}_${this.#treeElement.section().nextEditorTriggerButtonIdx}`;
         const button = StyleEditorWidget.createTriggerButton(this.#stylesPane, this.#treeElement.section(), match.isFlex ? FlexboxEditor : GridEditor, match.isFlex ? i18nString(UIStrings.flexboxEditorButton) : i18nString(UIStrings.gridEditorButton), key);
+        button.tabIndex = -1;
         button.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context(match.isFlex ? 'flex' : 'grid')}`);
         this.#treeElement.section().nextEditorTriggerButtonIdx++;
         button.addEventListener('click', () => {
@@ -952,9 +957,8 @@ export class ShadowModel {
             this.#setLength(value, "spread" /* ShadowPropertyType.SPREAD */);
         }
     }
-    renderContents(parent) {
-        parent.removeChildren();
-        const span = parent.createChild('span');
+    renderContents(span) {
+        span.removeChildren();
         let previousSource = null;
         for (const property of this.#properties) {
             if (!property.source || property.source !== previousSource) {
@@ -1078,14 +1082,15 @@ export class ShadowRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.S
             swatch.iconElement().addEventListener('click', () => {
                 Host.userMetrics.swatchActivated(4 /* Host.UserMetrics.SwatchType.SHADOW */);
             });
-            model.renderContents(swatch);
+            const contents = document.createElement('span');
+            model.renderContents(contents);
             const popoverHelper = new ShadowSwatchPopoverHelper(this.#treeElement, this.#treeElement.parentPane().swatchPopoverHelper(), swatch);
             const treeElement = this.#treeElement;
             popoverHelper.addEventListener("shadowChanged" /* ShadowEvents.SHADOW_CHANGED */, () => {
-                model.renderContents(swatch);
+                model.renderContents(contents);
                 void treeElement.applyStyleText(treeElement.renderedPropertyText(), false);
             });
-            result.push(swatch);
+            result.push(swatch, contents);
             if (isImportant) {
                 result.push(...[document.createTextNode(' '), ...Renderer.render(isImportant, context).nodes]);
             }
@@ -1163,8 +1168,8 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
         this.#propertyName = propertyName;
     }
     render(match, context) {
-        const container = document.createElement('span');
-        const valueElement = container.createChild('span');
+        const valueElement = document.createElement('span');
+        valueElement.tabIndex = -1;
         valueElement.textContent = match.text;
         if (!context.tracing) {
             void this.#attachPopover(valueElement, match, context);
@@ -1275,51 +1280,77 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
         }
     }
 }
-async function decorateAnchorForAnchorLink(container, stylesSidebarPane, options) {
-    const anchorNode = await stylesSidebarPane.node()?.getAnchorBySpecifier(options.identifier) ?? undefined;
-    const link = new ElementsComponents.AnchorFunctionLinkSwatch.AnchorFunctionLinkSwatch({
-        identifier: options.identifier,
-        anchorNode,
-        needsSpace: options.needsSpace,
-        onLinkActivate: () => {
+// clang-format off
+export class AnchorFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.AnchorFunctionMatch) {
+    // clang-format on
+    #stylesPane;
+    static async decorateAnchorForAnchorLink(stylesPane, container, { identifier, needsSpace }) {
+        if (identifier) {
+            render(html `${identifier}`, container, { host: container });
+        }
+        const anchorNode = await stylesPane.node()?.getAnchorBySpecifier(identifier) ?? undefined;
+        if (!identifier && !anchorNode) {
+            return;
+        }
+        const onLinkActivate = () => {
             if (!anchorNode) {
                 return;
             }
             void Common.Revealer.reveal(anchorNode, false);
-        },
-        onMouseEnter: () => {
+        };
+        const handleIconClick = (ev) => {
+            ev.stopPropagation();
+            onLinkActivate();
+        };
+        const onMouseEnter = () => {
             anchorNode?.highlight();
-        },
-        onMouseLeave: () => {
+        };
+        const onMouseLeave = () => {
             SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-        },
-    });
-    container.removeChildren();
-    container.appendChild(link);
-}
-// clang-format off
-export class AnchorFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.AnchorFunctionMatch) {
-    #stylesPane;
-    // clang-format on
+        };
+        if (identifier) {
+            render(
+            // clang-format off
+            html `<devtools-link-swatch
+                @mouseenter=${onMouseEnter}
+                @mouseleave=${onMouseLeave}
+                .data=${{
+                text: identifier,
+                tooltip: anchorNode ? undefined :
+                    { title: i18nString(UIStrings.sIsNotDefined, { PH1: identifier }) },
+                isDefined: Boolean(anchorNode),
+                jslogContext: 'anchor-link',
+                onLinkActivate,
+            }}
+                ></devtools-link-swatch>${needsSpace ? ' ' : ''}`, 
+            // clang-format on
+            container, { host: container });
+        }
+        else {
+            // clang-format off
+            render(html `<devtools-icon
+                   role='button'
+                   title=${i18nString(UIStrings.jumpToAnchorNode)}
+                   class='icon-link'
+                   name='open-externally'
+                   jslog=${VisualLogging.action('jump-to-anchor-node').track({ click: true })}
+                   @mouseenter=${onMouseEnter}
+                   @mouseleave=${onMouseLeave}
+                   @mousedown=${(ev) => ev.stopPropagation()}
+                   @click=${handleIconClick}
+                  ></devtools-icon>${needsSpace ? ' ' : ''}`, container, { host: container });
+            // clang-format on
+        }
+    }
     constructor(stylesPane) {
         super();
         this.#stylesPane = stylesPane;
-    }
-    anchorDecoratedForTest() {
-    }
-    async #decorateAnchor(container, addSpace, identifier) {
-        await decorateAnchorForAnchorLink(container, this.#stylesPane, {
-            identifier,
-            needsSpace: addSpace,
-        });
-        this.anchorDecoratedForTest();
     }
     render(match, context) {
         const content = document.createElement('span');
         if (match.node.name === 'VariableName') {
             // Link an anchor double-dashed ident to its matching anchor element.
-            content.appendChild(document.createTextNode(match.text));
-            void this.#decorateAnchor(content, /* addSpace */ false, match.text);
+            void AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesPane, content, { identifier: match.text });
         }
         else {
             // The matcher passes a 'CallExpression' node with a functionName
@@ -1330,7 +1361,7 @@ export class AnchorFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMa
             content.appendChild(swatchContainer);
             const args = ASTUtils.children(match.node.getChild('ArgList'));
             const remainingArgs = args.splice(1);
-            void this.#decorateAnchor(swatchContainer, /* addSpace */ remainingArgs.length > 1);
+            void AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesPane, swatchContainer, { needsSpace: remainingArgs.length > 1 });
             Renderer.renderInto(remainingArgs, context, content);
         }
         return [content];
@@ -1344,15 +1375,9 @@ export class PositionAnchorRenderer extends rendererBase(SDK.CSSPropertyParserMa
         super();
         this.#stylesPane = stylesPane;
     }
-    anchorDecoratedForTest() {
-    }
     render(match) {
         const content = document.createElement('span');
-        content.appendChild(document.createTextNode(match.text));
-        void decorateAnchorForAnchorLink(content, this.#stylesPane, {
-            identifier: match.text,
-            needsSpace: false,
-        }).then(() => this.anchorDecoratedForTest());
+        void AnchorFunctionRenderer.decorateAnchorForAnchorLink(this.#stylesPane, content, { identifier: match.text });
         return [content];
     }
 }
@@ -1781,29 +1806,31 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.listItemElement.appendChild(tooltip);
         }
         else if (Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover').get()) {
-            const cssProperty = this.parentPaneInternal.webCustomData?.findCssProperty(this.name);
-            if (cssProperty) {
-                const tooltipId = this.getTooltipId('property-doc');
-                this.nameElement.setAttribute('aria-details', tooltipId);
-                const tooltip = new Tooltips.Tooltip.Tooltip({
-                    anchor: this.nameElement,
-                    variant: 'rich',
-                    id: tooltipId,
-                    jslogContext: 'elements.css-property-doc',
-                });
-                tooltip.onbeforetoggle = event => {
-                    if (event.newState !== 'open') {
-                        return;
-                    }
-                    if (!Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover').get()) {
-                        event.consume(true);
-                        return;
-                    }
-                    tooltip.removeChildren();
-                    tooltip.appendChild(new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty));
-                };
-                this.listItemElement.appendChild(tooltip);
-            }
+            const tooltipId = this.getTooltipId('property-doc');
+            this.nameElement.setAttribute('aria-details', tooltipId);
+            const tooltip = new Tooltips.Tooltip.Tooltip({
+                anchor: this.nameElement,
+                variant: 'rich',
+                id: tooltipId,
+                jslogContext: 'elements.css-property-doc',
+            });
+            tooltip.onbeforetoggle = event => {
+                if (event.newState !== 'open') {
+                    return;
+                }
+                if (!Common.Settings.Settings.instance().moduleSetting('show-css-property-documentation-on-hover').get()) {
+                    event.consume(true);
+                    return;
+                }
+                const cssProperty = this.parentPaneInternal.webCustomData?.findCssProperty(this.name);
+                if (!cssProperty) {
+                    event.consume(true);
+                    return;
+                }
+                tooltip.removeChildren();
+                tooltip.appendChild(new ElementsComponents.CSSPropertyDocsView.CSSPropertyDocsView(cssProperty));
+            };
+            this.listItemElement.appendChild(tooltip);
         }
         if (this.valueElement) {
             const lineBreakValue = this.valueElement.firstElementChild && this.valueElement.firstElementChild.tagName === 'BR';

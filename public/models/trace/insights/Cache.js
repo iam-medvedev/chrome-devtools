@@ -150,7 +150,7 @@ export function generateInsight(parsedTrace, context) {
     let totalWastedBytes = 0;
     const wastedBytesByRequestId = new Map();
     for (const req of contextRequests) {
-        if (!isCacheable(req)) {
+        if (!req.args.data.responseHeaders || !isCacheable(req)) {
             continue;
         }
         const headers = getCombinedHeaders(req.args.data.responseHeaders);

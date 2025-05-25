@@ -79,6 +79,7 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private static interceptedByServiceWorkerFilter;
     private static initiatedByServiceWorkerFilter;
     private static requestResponseHeaderFilter;
+    private static requestRequestHeaderFilter;
     private static requestResponseHeaderSetCookieFilter;
     private static requestMethodFilter;
     private static requestPriorityFilter;

@@ -16,12 +16,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Models from '../models/models.js';
-import stepViewStylesRaw from './stepView.css.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const stepViewStyles = new CSSStyleSheet();
-stepViewStyles.replaceSync(stepViewStylesRaw);
+import stepViewStyles from './stepView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
@@ -312,6 +307,7 @@ function viewFunction(input, _output, target) {
     const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview();
     // clang-format off
     Lit.render(html `
+    <style>${stepViewStyles}</style>
     <devtools-timeline-section .data=${{
         isFirstSection: input.isFirstSection,
         isLastSection: input.isLastSection,
@@ -454,7 +450,6 @@ export class StepView extends HTMLElement {
         return this.#viewInput.section;
     }
     connectedCallback() {
-        this.#shadow.adoptedStyleSheets = [stepViewStyles];
         this.#observer.observe(this);
         this.#render();
     }

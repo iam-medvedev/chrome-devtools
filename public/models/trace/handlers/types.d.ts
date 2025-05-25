@@ -9,16 +9,12 @@ export interface Handler {
     handleUserConfig?(config: Types.Configuration.Configuration): void;
 }
 export type HandlerName = keyof typeof ModelHandlers;
-export type EnabledHandlerDataWithMeta<T extends {
-    [key: string]: Handler;
-}> = {
+export type EnabledHandlerDataWithMeta<T extends Record<string, Handler>> = {
     Meta: Readonly<ReturnType<typeof ModelHandlers['Meta']['data']>>;
 } & {
     [K in keyof T]: Readonly<ReturnType<T[K]['data']>>;
 };
-export type HandlersWithMeta<T extends {
-    [key: string]: Handler;
-}> = {
+export type HandlersWithMeta<T extends Record<string, Handler>> = {
     Meta: typeof ModelHandlers.Meta;
 } & {
     [K in keyof T]: T[K];

@@ -40,12 +40,11 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('models/bindings/ContentProviderBasedProject.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStore {
-    #isServiceProjectInternal;
-    #uiSourceCodeToData;
+    #isServiceProject;
+    #uiSourceCodeToData = new WeakMap();
     constructor(workspace, id, type, displayName, isServiceProject) {
         super(workspace, id, type, displayName);
-        this.#isServiceProjectInternal = isServiceProject;
-        this.#uiSourceCodeToData = new WeakMap();
+        this.#isServiceProject = isServiceProject;
         workspace.addProject(this);
     }
     async requestFileContent(uiSourceCode) {
@@ -61,7 +60,7 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
         }
     }
     isServiceProject() {
-        return this.#isServiceProjectInternal;
+        return this.#isServiceProject;
     }
     async requestMetadata(uiSourceCode) {
         const { metadata } = this.#uiSourceCodeToData.get(uiSourceCode);

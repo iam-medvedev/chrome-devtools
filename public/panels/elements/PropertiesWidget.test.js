@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
@@ -31,8 +32,7 @@ describeWithMockConnection('PropertiesWidget', () => {
         });
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
         view = new Elements.PropertiesWidget.PropertiesWidget(0);
-        view.markAsRoot();
-        view.show(document.body);
+        renderElementIntoDOM(view);
         await new Promise(resolve => setTimeout(resolve, 0));
         const populateWithProperties = sinon.spy(ObjectUI.ObjectPropertiesSection.ObjectPropertyTreeElement, 'populateWithProperties');
         model.dispatchEventToListeners(event, ...[node]);

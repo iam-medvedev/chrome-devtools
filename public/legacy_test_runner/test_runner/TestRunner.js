@@ -368,7 +368,7 @@ export function textContentWithoutStyles(node) {
         if (!currentNode) {
             break;
         }
-        if (currentNode.nodeType === Node.TEXT_NODE) {
+        if (currentNode.nodeType === Node.TEXT_NODE && currentNode.parentElement?.tagName !== 'STYLE') {
             buffer += currentNode.nodeValue;
         }
         else if (currentNode.tagName === 'DEVTOOLS-TOOLTIP') {

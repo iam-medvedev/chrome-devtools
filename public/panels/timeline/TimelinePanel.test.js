@@ -6,6 +6,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -27,8 +28,7 @@ describeWithEnvironment('TimelinePanel', function () {
         });
         traceModel = Trace.TraceModel.Model.createWithAllHandlers();
         timeline = Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, isNode: false, traceModel });
-        timeline.markAsRoot();
-        timeline.show(document.body);
+        renderElementIntoDOM(timeline);
     });
     afterEach(() => {
         timeline.detach();

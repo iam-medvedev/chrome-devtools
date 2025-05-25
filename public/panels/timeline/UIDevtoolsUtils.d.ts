@@ -1,9 +1,7 @@
 import * as Utils from './utils/utils.js';
 export declare class UIDevtoolsUtils {
     static isUiDevTools(): boolean;
-    static categorizeEvents(): {
-        [x: string]: Utils.EntryStyles.TimelineRecordStyle;
-    };
+    static categorizeEvents(): Record<string, Utils.EntryStyles.TimelineRecordStyle>;
     static categories(): Utils.EntryStyles.CategoryPalette;
     static getMainCategoriesList(): string[];
 }

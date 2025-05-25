@@ -391,6 +391,8 @@ export class IndexedDBModel extends SDK.SDKModel.SDKModel {
     }
     sharedStorageAccessed(_event) {
     }
+    sharedStorageWorkletOperationExecutionFinished(_event) {
+    }
     storageBucketCreatedOrUpdated(_event) {
     }
     storageBucketDeleted(_event) {

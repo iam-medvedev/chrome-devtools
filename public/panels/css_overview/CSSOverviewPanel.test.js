@@ -4,6 +4,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as CSSOverview from './css_overview.js';
 describeWithMockConnection('CSSOverviewPanel', () => {
     let target;
@@ -13,9 +14,8 @@ describeWithMockConnection('CSSOverviewPanel', () => {
         target = createTarget({ parentTarget: tabTaget });
     });
     it('reacts to start event and sends completion event', async () => {
-        const controller = new CSSOverview.CSSOverviewController.OverviewController();
-        new CSSOverview.CSSOverviewPanel.CSSOverviewPanel(controller);
-        const overviewCompleted = controller.once("OverviewCompleted" /* CSSOverview.CSSOverviewController.Events.OVERVIEW_COMPLETED */);
+        const view = createViewFunctionStub(CSSOverview.CSSOverviewPanel.CSSOverviewPanel);
+        new CSSOverview.CSSOverviewPanel.CSSOverviewPanel(view);
         sinon.stub(target.runtimeAgent(), 'invoke_evaluate').resolves({
             result: {},
         });
@@ -25,8 +25,8 @@ describeWithMockConnection('CSSOverviewPanel', () => {
         sinon.stub(target.cssAgent(), 'invoke_getMediaQueries').resolves({
             medias: [],
         });
-        controller.dispatchEventToListeners("RequestOverviewStart" /* CSSOverview.CSSOverviewController.Events.REQUEST_OVERVIEW_START */);
-        await overviewCompleted;
+        view.input.onStartCapture();
+        assert.strictEqual((await view.nextInput).state, 'completed');
     });
 });
 //# sourceMappingURL=CSSOverviewPanel.test.js.map

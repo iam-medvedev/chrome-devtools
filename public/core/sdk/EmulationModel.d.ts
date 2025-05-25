@@ -32,20 +32,25 @@ export declare class EmulationModel extends SDKModel<void> {
     private updateCssMedia;
 }
 export declare class Location {
+    static readonly DEFAULT_ACCURACY = 150;
     latitude: number;
     longitude: number;
     timezoneId: string;
     locale: string;
+    accuracy: number;
     unavailable: boolean;
-    constructor(latitude: number, longitude: number, timezoneId: string, locale: string, unavailable: boolean);
+    constructor(latitude: number, longitude: number, timezoneId: string, locale: string, accuracy: number, unavailable: boolean);
     static parseSetting(value: string): Location;
-    static parseUserInput(latitudeString: string, longitudeString: string, timezoneId: string, locale: string): Location | null;
+    static parseUserInput(latitudeString: string, longitudeString: string, timezoneId: string, locale: string, accuracyString: string): Location | null;
     static latitudeValidator(value: string): boolean;
     static longitudeValidator(value: string): boolean;
     static timezoneIdValidator(value: string): boolean;
     static localeValidator(value: string): boolean;
+    static accuracyValidator(value: string): {
+        valid: boolean;
+        errorMessage: (string | undefined);
+    };
     toSetting(): string;
-    static defaultGeoMockAccuracy: number;
 }
 export declare class DeviceOrientation {
     alpha: number;

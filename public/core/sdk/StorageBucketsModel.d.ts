@@ -35,6 +35,7 @@ export declare class StorageBucketsModel extends SDKModel<EventTypes> implements
     cacheStorageListUpdated(_event: Protocol.Storage.CacheStorageListUpdatedEvent): void;
     cacheStorageContentUpdated(_event: Protocol.Storage.CacheStorageContentUpdatedEvent): void;
     sharedStorageAccessed(_event: Protocol.Storage.SharedStorageAccessedEvent): void;
+    sharedStorageWorkletOperationExecutionFinished(_event: Protocol.Storage.SharedStorageWorkletOperationExecutionFinishedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
     attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
 }

@@ -106,7 +106,6 @@ export declare class EditorState {
  */
 declare class RecorderSelectorPickerButton extends LitElement {
     #private;
-    static styles: CSSStyleSheet[];
     disabled: boolean;
     constructor();
     disconnectedCallback(): void;
@@ -118,7 +117,6 @@ declare class RecorderSelectorPickerButton extends LitElement {
  */
 export declare class StepEditor extends LitElement {
     #private;
-    static styles: CSSStyleSheet[];
     private state;
     private error;
     isTypeEditable: boolean;

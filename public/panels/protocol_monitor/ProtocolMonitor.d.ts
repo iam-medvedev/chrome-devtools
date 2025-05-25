@@ -12,15 +12,9 @@ export declare const buildProtocolMetadata: (domains: Iterable<ProtocolDomain>) 
 export interface Message {
     id?: number;
     method: string;
-    error?: {
-        [x: string]: unknown;
-    };
-    result?: {
-        [x: string]: unknown;
-    };
-    params?: {
-        [x: string]: unknown;
-    };
+    error?: Record<string, unknown>;
+    result?: Record<string, unknown>;
+    params?: Record<string, unknown>;
     requestTime: number;
     elapsedTime?: number;
     sessionId?: string;
@@ -35,13 +29,11 @@ export interface LogMessage {
 }
 export interface ProtocolDomain {
     readonly domain: string;
-    readonly metadata: {
-        [commandName: string]: {
-            parameters: Parameter[];
-            description: string;
-            replyArgs: string[];
-        };
-    };
+    readonly metadata: Record<string, {
+        parameters: Parameter[];
+        description: string;
+        replyArgs: string[];
+    }>;
 }
 export interface ViewInput {
     messages: Message[];
@@ -98,12 +90,8 @@ export declare class CommandAutocompleteSuggestionProvider {
 }
 export declare class InfoWidget extends UI.Widget.VBox {
     private readonly tabbedPane;
-    request: {
-        [x: string]: unknown;
-    } | undefined;
-    response: {
-        [x: string]: unknown;
-    } | undefined;
+    request: Record<string, unknown> | undefined;
+    response: Record<string, unknown> | undefined;
     type: 'sent' | 'received' | undefined;
     selectedTab: 'request' | 'response' | undefined;
     constructor(element: HTMLElement);
@@ -111,7 +99,5 @@ export declare class InfoWidget extends UI.Widget.VBox {
 }
 export declare function parseCommandInput(input: string): {
     command: string;
-    parameters: {
-        [paramName: string]: unknown;
-    };
+    parameters: Record<string, unknown>;
 };

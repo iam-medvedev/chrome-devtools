@@ -160,7 +160,7 @@ export class UISourceCodeDiff extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#requestDiffPromise = null;
         const content = this.#uiSourceCode.content();
-        const delay = (!content || content.length < 65536) ? 0 : UpdateTimeout;
+        const delay = (!content || content.length < 65536) ? 0 : 200;
         this.#pendingChanges = window.setTimeout(emitDiffChanged.bind(this), delay);
         function emitDiffChanged() {
             if (this.dispose) {
@@ -232,5 +232,4 @@ export function workspaceDiff({ forceNew } = {}) {
     }
     return workspaceDiffImplInstance;
 }
-export const UpdateTimeout = 200;
 //# sourceMappingURL=WorkspaceDiff.js.map

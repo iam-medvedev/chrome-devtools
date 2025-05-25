@@ -4,6 +4,7 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as UI from '../../legacy/legacy.js';
 import * as Lit from '../../lit/lit.js';
 import * as Buttons from '../buttons/buttons.js';
 import snackbarStyles from './snackbar.css.js';
@@ -111,7 +112,7 @@ export class Snackbar extends HTMLElement {
         return snackbar;
     }
     #show() {
-        document.body.appendChild(this);
+        UI.InspectorView.InspectorView.instance().element.appendChild(this);
         if (this.#timeout) {
             window.clearTimeout(this.#timeout);
         }

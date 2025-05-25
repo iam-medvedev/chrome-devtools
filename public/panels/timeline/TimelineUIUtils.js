@@ -1525,7 +1525,7 @@ export class TimelineUIUtils {
             if (events[categoryBreakdownCacheSymbol]) {
                 return;
             }
-            // aggeregatedStats is a map by categories. For each category there's an array
+            // aggregatedStats is a map by categories. For each category there's an array
             // containing sorted time points which records accumulated value of the category.
             const aggregatedStats = {};
             const categoryStack = [];

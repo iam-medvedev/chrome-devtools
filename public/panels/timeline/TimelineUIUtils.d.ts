@@ -15,9 +15,7 @@ interface LinkifyLocationOptions {
     columnNumber?: number;
     omitOrigin?: boolean;
 }
-interface TimeRangeCategoryStats {
-    [categoryName: string]: number;
-}
+type TimeRangeCategoryStats = Record<string, number>;
 export declare class TimelineUIUtils {
     /**
      * use getGetDebugModeEnabled() to query this variable.

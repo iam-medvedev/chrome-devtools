@@ -27,6 +27,4 @@ export declare class NetworkOverview extends PerfUI.TimelineOverviewPane.Timelin
     scheduleUpdate(): void;
     update(): void;
 }
-export declare const RequestTimeRangeNameToColor: {
-    [key: string]: string;
-};
+export declare const RequestTimeRangeNameToColor: Record<string, string>;

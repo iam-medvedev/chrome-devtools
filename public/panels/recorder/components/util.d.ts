@@ -25,12 +25,8 @@ export declare class InsertAssignment<T> {
     constructor(value: T);
 }
 export declare class ArrayAssignments<T> {
-    value: {
-        [n: number]: T;
-    };
-    constructor(value: {
-        [n: number]: T;
-    });
+    value: Record<number, T>;
+    constructor(value: Record<number, T>);
 }
 export type Assignments<T> = T extends Readonly<Array<infer R>> ? R[] | ArrayAssignments<Assignments<R> | InsertAssignment<R>> : {
     [K in keyof T]: Assignments<T[K]>;

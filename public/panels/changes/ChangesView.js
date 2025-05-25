@@ -67,7 +67,6 @@ export class ChangesView extends UI.Widget.VBox {
     changesSidebar;
     selectedUISourceCode;
     #selectedSourceCodeFormattedMapping;
-    #learnMoreLinkElement;
     diffContainer;
     toolbar;
     diffStats;
@@ -242,17 +241,7 @@ export class ChangesView extends UI.Widget.VBox {
         this.diffContainer.style.display = 'none';
         this.emptyWidget.header = header;
         this.emptyWidget.text = text;
-        if (link && !this.#learnMoreLinkElement) {
-            this.#learnMoreLinkElement = this.emptyWidget.appendLink(link);
-        }
-        else if (link && this.#learnMoreLinkElement) {
-            this.#learnMoreLinkElement.setAttribute('href', link);
-            this.#learnMoreLinkElement.setAttribute('title', link);
-        }
-        else if (!link && this.#learnMoreLinkElement) {
-            this.#learnMoreLinkElement.remove();
-            this.#learnMoreLinkElement = undefined;
-        }
+        this.emptyWidget.link = link;
         this.emptyWidget.showWidget();
     }
     showDiffContainer() {

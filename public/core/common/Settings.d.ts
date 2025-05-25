@@ -91,7 +91,7 @@ export declare class Setting<V> {
     setTitle(title: Platform.UIString.LocalizedString): void;
     setRequiresUserAction(requiresUserAction: boolean): void;
     disabled(): boolean;
-    disabledReasons(): string[];
+    disabledReasons(): Platform.UIString.LocalizedString[];
     setDisabled(disabled: boolean): void;
     get(): V;
     getIfNotDisabled(): V | undefined;

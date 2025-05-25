@@ -254,6 +254,8 @@ export class PerformanceInsightsAgent extends AiAgent {
                 const activeInsight = this.#insight.getItem();
                 const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
                 const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
+                const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted.join('\n'));
+                Host.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
                 if (this.#isFunctionResponseTooLarge(formatted.join('\n'))) {
                     return {
                         error: 'getNetworkActivitySummary response is too large. Try investigating using other functions',

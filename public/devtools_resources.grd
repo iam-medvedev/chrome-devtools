@@ -620,7 +620,6 @@
       <include file="panels/console_counters/console_counters.js" name="PANELS_CONSOLE_COUNTERS_CONSOLE_COUNTERS_JS" resource_path="panels/console_counters/console_counters.js" type="BINDATA" compress="false"/>
       <include file="panels/coverage/coverage-meta.js" name="PANELS_COVERAGE_COVERAGE_META_JS" resource_path="panels/coverage/coverage-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/coverage/coverage.js" name="PANELS_COVERAGE_COVERAGE_JS" resource_path="panels/coverage/coverage.js" type="BINDATA" compress="false"/>
-      <include file="panels/css_overview/components/components.js" name="PANELS_CSS_OVERVIEW_COMPONENTS_COMPONENTS_JS" resource_path="panels/css_overview/components/components.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/css_overview-meta.js" name="PANELS_CSS_OVERVIEW_CSS_OVERVIEW_META_JS" resource_path="panels/css_overview/css_overview-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/css_overview.js" name="PANELS_CSS_OVERVIEW_CSS_OVERVIEW_JS" resource_path="panels/css_overview/css_overview.js" type="BINDATA" compress="false"/>
       <include file="panels/developer_resources/developer_resources-meta.js" name="PANELS_DEVELOPER_RESOURCES_DEVELOPER_RESOURCES_META_JS" resource_path="panels/developer_resources/developer_resources-meta.js" type="BINDATA" compress="false"/>
@@ -984,6 +983,7 @@
       <include file="generated/protocol.js" name="GENERATED_PROTOCOL_JS" resource_path="generated/protocol.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/AgentProject.js" name="MODELS_AI_ASSISTANCE_AGENTPROJECT_JS" resource_path="models/ai_assistance/AgentProject.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/AiHistoryStorage.js" name="MODELS_AI_ASSISTANCE_AIHISTORYSTORAGE_JS" resource_path="models/ai_assistance/AiHistoryStorage.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_assistance/AiUtils.js" name="MODELS_AI_ASSISTANCE_AIUTILS_JS" resource_path="models/ai_assistance/AiUtils.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ChangeManager.js" name="MODELS_AI_ASSISTANCE_CHANGEMANAGER_JS" resource_path="models/ai_assistance/ChangeManager.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/EvaluateAction.js" name="MODELS_AI_ASSISTANCE_EVALUATEACTION_JS" resource_path="models/ai_assistance/EvaluateAction.js" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ExtensionScope.js" name="MODELS_AI_ASSISTANCE_EXTENSIONSCOPE_JS" resource_path="models/ai_assistance/ExtensionScope.js" type="BINDATA" compress="false"/>
@@ -1388,18 +1388,16 @@
       <include file="panels/coverage/coverageListView.css.js" name="PANELS_COVERAGE_COVERAGELISTVIEW_CSS_JS" resource_path="panels/coverage/coverageListView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/coverage/coverageView.css.js" name="PANELS_COVERAGE_COVERAGEVIEW_CSS_JS" resource_path="panels/coverage/coverageView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/CSSOverviewCompletedView.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWCOMPLETEDVIEW_JS" resource_path="panels/css_overview/CSSOverviewCompletedView.js" type="BINDATA" compress="false"/>
-      <include file="panels/css_overview/CSSOverviewController.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWCONTROLLER_JS" resource_path="panels/css_overview/CSSOverviewController.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/CSSOverviewModel.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWMODEL_JS" resource_path="panels/css_overview/CSSOverviewModel.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/CSSOverviewPanel.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWPANEL_JS" resource_path="panels/css_overview/CSSOverviewPanel.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/CSSOverviewProcessingView.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWPROCESSINGVIEW_JS" resource_path="panels/css_overview/CSSOverviewProcessingView.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/CSSOverviewSidebarPanel.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWSIDEBARPANEL_JS" resource_path="panels/css_overview/CSSOverviewSidebarPanel.js" type="BINDATA" compress="false"/>
+      <include file="panels/css_overview/CSSOverviewStartView.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWSTARTVIEW_JS" resource_path="panels/css_overview/CSSOverviewStartView.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/CSSOverviewUnusedDeclarations.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWUNUSEDDECLARATIONS_JS" resource_path="panels/css_overview/CSSOverviewUnusedDeclarations.js" type="BINDATA" compress="false"/>
-      <include file="panels/css_overview/components/CSSOverviewStartView.js" name="PANELS_CSS_OVERVIEW_COMPONENTS_CSSOVERVIEWSTARTVIEW_JS" resource_path="panels/css_overview/components/CSSOverviewStartView.js" type="BINDATA" compress="false"/>
-      <include file="panels/css_overview/components/cssOverviewStartView.css.js" name="PANELS_CSS_OVERVIEW_COMPONENTS_CSSOVERVIEWSTARTVIEW_CSS_JS" resource_path="panels/css_overview/components/cssOverviewStartView.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/css_overview/cssOverview.css.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEW_CSS_JS" resource_path="panels/css_overview/cssOverview.css.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/cssOverviewCompletedView.css.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWCOMPLETEDVIEW_CSS_JS" resource_path="panels/css_overview/cssOverviewCompletedView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/cssOverviewProcessingView.css.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWPROCESSINGVIEW_CSS_JS" resource_path="panels/css_overview/cssOverviewProcessingView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/css_overview/cssOverviewSidebarPanel.css.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWSIDEBARPANEL_CSS_JS" resource_path="panels/css_overview/cssOverviewSidebarPanel.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/css_overview/cssOverviewStartView.css.js" name="PANELS_CSS_OVERVIEW_CSSOVERVIEWSTARTVIEW_CSS_JS" resource_path="panels/css_overview/cssOverviewStartView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/developer_resources/DeveloperResourcesListView.js" name="PANELS_DEVELOPER_RESOURCES_DEVELOPERRESOURCESLISTVIEW_JS" resource_path="panels/developer_resources/DeveloperResourcesListView.js" type="BINDATA" compress="false"/>
       <include file="panels/developer_resources/DeveloperResourcesView.js" name="PANELS_DEVELOPER_RESOURCES_DEVELOPERRESOURCESVIEW_JS" resource_path="panels/developer_resources/DeveloperResourcesView.js" type="BINDATA" compress="false"/>
       <include file="panels/developer_resources/developerResourcesListView.css.js" name="PANELS_DEVELOPER_RESOURCES_DEVELOPERRESOURCESLISTVIEW_CSS_JS" resource_path="panels/developer_resources/developerResourcesListView.css.js" type="BINDATA" compress="false"/>
@@ -1445,7 +1443,6 @@
       <include file="panels/elements/classesPaneWidget.css.js" name="PANELS_ELEMENTS_CLASSESPANEWIDGET_CSS_JS" resource_path="panels/elements/classesPaneWidget.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/AccessibilityTreeNode.js" name="PANELS_ELEMENTS_COMPONENTS_ACCESSIBILITYTREENODE_JS" resource_path="panels/elements/components/AccessibilityTreeNode.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/AdornerManager.js" name="PANELS_ELEMENTS_COMPONENTS_ADORNERMANAGER_JS" resource_path="panels/elements/components/AdornerManager.js" type="BINDATA" compress="false"/>
-      <include file="panels/elements/components/AnchorFunctionLinkSwatch.js" name="PANELS_ELEMENTS_COMPONENTS_ANCHORFUNCTIONLINKSWATCH_JS" resource_path="panels/elements/components/AnchorFunctionLinkSwatch.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/CSSHintDetailsView.js" name="PANELS_ELEMENTS_COMPONENTS_CSSHINTDETAILSVIEW_JS" resource_path="panels/elements/components/CSSHintDetailsView.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/CSSPropertyDocsView.js" name="PANELS_ELEMENTS_COMPONENTS_CSSPROPERTYDOCSVIEW_JS" resource_path="panels/elements/components/CSSPropertyDocsView.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/CSSPropertyIconResolver.js" name="PANELS_ELEMENTS_COMPONENTS_CSSPROPERTYICONRESOLVER_JS" resource_path="panels/elements/components/CSSPropertyIconResolver.js" type="BINDATA" compress="false"/>
@@ -1462,7 +1459,6 @@
       <include file="panels/elements/components/QueryContainer.js" name="PANELS_ELEMENTS_COMPONENTS_QUERYCONTAINER_JS" resource_path="panels/elements/components/QueryContainer.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/StylePropertyEditor.js" name="PANELS_ELEMENTS_COMPONENTS_STYLEPROPERTYEDITOR_JS" resource_path="panels/elements/components/StylePropertyEditor.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/accessibilityTreeNode.css.js" name="PANELS_ELEMENTS_COMPONENTS_ACCESSIBILITYTREENODE_CSS_JS" resource_path="panels/elements/components/accessibilityTreeNode.css.js" type="BINDATA" compress="false"/>
-      <include file="panels/elements/components/anchorFunctionLinkSwatch.css.js" name="PANELS_ELEMENTS_COMPONENTS_ANCHORFUNCTIONLINKSWATCH_CSS_JS" resource_path="panels/elements/components/anchorFunctionLinkSwatch.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/computedStyleProperty.css.js" name="PANELS_ELEMENTS_COMPONENTS_COMPUTEDSTYLEPROPERTY_CSS_JS" resource_path="panels/elements/components/computedStyleProperty.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/computedStyleTrace.css.js" name="PANELS_ELEMENTS_COMPONENTS_COMPUTEDSTYLETRACE_CSS_JS" resource_path="panels/elements/components/computedStyleTrace.css.js" type="BINDATA" compress="false"/>
       <include file="panels/elements/components/cssHintDetailsView.css.js" name="PANELS_ELEMENTS_COMPONENTS_CSSHINTDETAILSVIEW_CSS_JS" resource_path="panels/elements/components/cssHintDetailsView.css.js" type="BINDATA" compress="false"/>
@@ -1875,6 +1871,7 @@
       <include file="panels/timeline/ModificationsManager.js" name="PANELS_TIMELINE_MODIFICATIONSMANAGER_JS" resource_path="panels/timeline/ModificationsManager.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/NetworkTrackAppender.js" name="PANELS_TIMELINE_NETWORKTRACKAPPENDER_JS" resource_path="panels/timeline/NetworkTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/StatusDialog.js" name="PANELS_TIMELINE_STATUSDIALOG_JS" resource_path="panels/timeline/StatusDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TargetForEvent.js" name="PANELS_TIMELINE_TARGETFOREVENT_JS" resource_path="panels/timeline/TargetForEvent.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ThirdPartyTreeView.js" name="PANELS_TIMELINE_THIRDPARTYTREEVIEW_JS" resource_path="panels/timeline/ThirdPartyTreeView.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ThreadAppender.js" name="PANELS_TIMELINE_THREADAPPENDER_JS" resource_path="panels/timeline/ThreadAppender.js" type="BINDATA" compress="false"/>

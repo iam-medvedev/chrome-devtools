@@ -32,9 +32,7 @@ export declare class PaintProfilerView extends PaintProfilerView_base {
     private profiles?;
     private updateImageTimer?;
     constructor(showImageCallback: (arg0?: string | undefined) => void);
-    static categories(): {
-        [x: string]: PaintProfilerCategory;
-    };
+    static categories(): Record<string, PaintProfilerCategory>;
     private static initLogItemCategories;
     private static categoryForLogItem;
     onResize(): void;

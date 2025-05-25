@@ -206,23 +206,16 @@ export class SettingsScreen extends UI.Widget.VBox {
         }
     }
 }
-class SettingsTab extends UI.Widget.VBox {
-    containerElement;
-    constructor(id) {
-        super();
-        this.element.classList.add('settings-tab-container');
-        if (id) {
-            this.element.id = id;
-        }
-        this.containerElement =
-            this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-    }
-}
-export class GenericSettingsTab extends SettingsTab {
+export class GenericSettingsTab extends UI.Widget.VBox {
     syncSection = new PanelComponents.SyncSection.SyncSection();
     settingToControl = new Map();
+    containerElement;
     constructor() {
-        super('preferences-tab-content');
+        super();
+        this.element.classList.add('settings-tab-container');
+        this.element.id = 'preferences-tab-content';
+        this.containerElement =
+            this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         this.element.setAttribute('jslog', `${VisualLogging.pane('preferences')}`);
         this.containerElement.classList.add('settings-multicolumn-card-container');
         // AI, GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
@@ -333,12 +326,17 @@ export class GenericSettingsTab extends SettingsTab {
         }
     }
 }
-export class ExperimentsSettingsTab extends SettingsTab {
+export class ExperimentsSettingsTab extends UI.Widget.VBox {
     #experimentsSection;
     #unstableExperimentsSection;
     experimentToControl = new Map();
+    containerElement;
     constructor() {
-        super('experiments-tab-content');
+        super();
+        this.element.classList.add('settings-tab-container');
+        this.element.id = 'experiments-tab-content';
+        this.containerElement =
+            this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         this.containerElement.classList.add('settings-card-container');
         this.element.setAttribute('jslog', `${VisualLogging.pane('experiments')}`);
         const filterSection = this.containerElement.createChild('div');
@@ -515,7 +513,7 @@ export class Revealer {
                 Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
                 await SettingsScreen.showSettingsScreen({ name: id });
                 const widget = await view.widget();
-                if (widget instanceof SettingsTab) {
+                if ('highlightObject' in widget && typeof widget.highlightObject === 'function') {
                     widget.highlightObject(object);
                 }
                 return;

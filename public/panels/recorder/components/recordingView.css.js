@@ -144,6 +144,7 @@ export default `/*
 }
 
 .header {
+  flex-shrink: 0;
   align-items: center;
   border-bottom: 1px solid var(--sys-color-divider);
   display: flex;
@@ -175,8 +176,8 @@ export default `/*
 }
 
 #title-input {
-  box-sizing: content-box;
   font-family: inherit;
+  field-sizing: content;
   font-size: 18px;
   line-height: 22px;
   letter-spacing: 0.02em;
@@ -186,7 +187,8 @@ export default `/*
   word-break: break-all;
 }
 
-#title-input:hover {
+#title-input:hover,
+#title-input:focus-visible {
   border-color: var(--input-outline);
 }
 
@@ -205,6 +207,7 @@ export default `/*
 }
 
 .title-button-bar {
+  flex-shrink: 0;
   padding-left: 2px;
   display: flex;
 }

@@ -68,6 +68,7 @@ export declare class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.Obje
     private scrollerElement?;
     private originalPropertyText?;
     constructor(treeElement: StylePropertyTreeElement, swatchPopoverHelper: InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper, shadowSwatch: InlineEditor.Swatches.CSSShadowSwatch);
+    private keyDown;
     private iconClick;
     showPopover(): void;
     private shadowChanged;

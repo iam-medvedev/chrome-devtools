@@ -222,6 +222,13 @@ export class ChatView extends HTMLElement {
      * It is set to false when the user scrolls up to view previous messages.
      */
     #pinScrollToBottom = true;
+    /**
+     * Indicates whether the scroll event originated from code
+     * or a user action. When set to `true`, `handleScroll` will ignore the event,
+     * allowing it to only handle user-driven scrolls and correctly decide
+     * whether to pin the content to the bottom.
+     */
+    #isProgrammaticScroll = false;
     constructor(props) {
         super();
         this.#props = props;
@@ -261,13 +268,13 @@ export class ChatView extends HTMLElement {
         if (!this.#mainElementRef?.value) {
             return;
         }
-        this.#mainElementRef.value.scrollTop = this.#scrollTop;
+        this.#setMainElementScrollTop(this.#scrollTop);
     }
     scrollToBottom() {
         if (!this.#mainElementRef?.value) {
             return;
         }
-        this.#mainElementRef.value.scrollTop = this.#mainElementRef.value.scrollHeight;
+        this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
     }
     #handleChatUiRef(el) {
         if (!el || this.#popoverHelper) {
@@ -330,8 +337,16 @@ export class ChatView extends HTMLElement {
             return;
         }
         if (this.#pinScrollToBottom) {
-            this.#mainElementRef.value.scrollTop = this.#mainElementRef.value.scrollHeight;
+            this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
         }
+    }
+    #setMainElementScrollTop(scrollTop) {
+        if (!this.#mainElementRef?.value) {
+            return;
+        }
+        this.#scrollTop = scrollTop;
+        this.#isProgrammaticScroll = true;
+        this.#mainElementRef.value.scrollTop = scrollTop;
     }
     #setInputText(text) {
         const textArea = this.#shadow.querySelector('.chat-input');
@@ -353,6 +368,13 @@ export class ChatView extends HTMLElement {
     }
     #handleScroll = (ev) => {
         if (!ev.target || !(ev.target instanceof HTMLElement)) {
+            return;
+        }
+        // Do not handle scroll events caused by programmatically
+        // updating the scroll position. We want to know whether user
+        // did scroll the container from the user interface.
+        if (this.#isProgrammaticScroll) {
+            this.#isProgrammaticScroll = false;
             return;
         }
         this.#scrollTop = ev.target.scrollTop;
@@ -992,8 +1014,8 @@ function renderMultimodalInputButtons({ multimodalInputEnabled, blockedByCrossOr
   ></devtools-button>`;
     // clang-format on
 }
-function renderImageInput({ multimodalInputEnabled, imageInput, onRemoveImageInput, }) {
-    if (!multimodalInputEnabled || !imageInput) {
+function renderImageInput({ multimodalInputEnabled, imageInput, isTextInputDisabled, onRemoveImageInput, }) {
+    if (!multimodalInputEnabled || !imageInput || isTextInputDisabled) {
         return Lit.nothing;
     }
     // clang-format off
@@ -1061,7 +1083,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
     return html `
   <form class="input-form" @submit=${onSubmit}>
     <div class=${chatInputContainerCls}>
-      ${renderImageInput({ multimodalInputEnabled, imageInput, onRemoveImageInput })}
+      ${renderImageInput({ multimodalInputEnabled, imageInput, isTextInputDisabled, onRemoveImageInput })}
       <textarea class="chat-input"
         .disabled=${isTextInputDisabled}
         wrap="hard"

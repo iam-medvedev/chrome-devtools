@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as Elements from './elements.js';
 async function waitForTraceElement(treeOutline) {
@@ -51,8 +52,7 @@ describeWithMockConnection('ComputedStyleWidget', () => {
                 node,
             });
             const computedStyleWidget = new Elements.ComputedStyleWidget.ComputedStyleWidget(computedStyleModel);
-            computedStyleWidget.markAsRoot();
-            computedStyleWidget.show(document.body);
+            renderElementIntoDOM(computedStyleWidget);
             return computedStyleWidget;
         }
         it('renders trace element with correct selector for declarations coming from animations', async () => {

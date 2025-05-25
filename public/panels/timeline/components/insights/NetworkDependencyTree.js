@@ -111,6 +111,27 @@ export class NetworkDependencyTree extends BaseInsightComponent {
     `;
         // clang-format on
     }
+    #renderTooManyPreconnectsWarning() {
+        if (!this.model) {
+            return Lit.nothing;
+        }
+        if (this.model.preconnectedOrigins.length <=
+            Trace.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+            return Lit.nothing;
+        }
+        const warningStyles = Lit.Directives.styleMap({
+            backgroundColor: 'var(--sys-color-surface-yellow)',
+            padding: ' var(--sys-size-5) var(--sys-size-8);',
+            display: 'flex',
+        });
+        // clang-format off
+        return html `
+      <div style=${warningStyles}>
+        ${md(i18nString(UIStrings.tooManyPreconnectLinksWarning))}
+      </div>
+    `;
+        // clang-format on
+    }
     #renderPreconnectOriginsTable() {
         if (!this.model) {
             return Lit.nothing;
@@ -120,7 +141,7 @@ export class NetworkDependencyTree extends BaseInsightComponent {
       <div class='section-title'>${i18nString(UIStrings.preconnectOriginsTableTitle)}</div>
       <div class="insight-description">${md(i18nString(UIStrings.preconnectOriginsTableDescription))}</div>
     `;
-        if (!this.model.preconnectOrigins.length) {
+        if (!this.model.preconnectedOrigins.length) {
             // clang-format off
             return html `
         <div class="insight-section">
@@ -130,7 +151,24 @@ export class NetworkDependencyTree extends BaseInsightComponent {
       `;
             // clang-format on
         }
-        const rows = this.model.preconnectOrigins.map(preconnectOrigin => {
+        const rows = this.model.preconnectedOrigins.map(preconnectOrigin => {
+            const subRows = [];
+            if (preconnectOrigin.unused) {
+                subRows.push({
+                    values: [md(i18nString(UIStrings.unusedWarning))],
+                });
+            }
+            if (preconnectOrigin.crossorigin) {
+                subRows.push({
+                    values: [md(i18nString(UIStrings.crossoriginWarning))],
+                });
+            }
+            if (preconnectOrigin.source === 'ResponseHeader') {
+                return {
+                    values: [preconnectOrigin.url, eventRef(preconnectOrigin.request, { text: preconnectOrigin.headerText })],
+                    subRows,
+                };
+            }
             // clang-format off
             const nodeEl = html `
         <devtools-performance-node-link
@@ -143,16 +181,14 @@ export class NetworkDependencyTree extends BaseInsightComponent {
             // clang-format on
             return {
                 values: [preconnectOrigin.url, nodeEl],
-                subRows: preconnectOrigin.unused ? [{
-                        values: [md(i18nString(UIStrings.unusedWarning))],
-                    }] :
-                    undefined,
+                subRows,
             };
         });
         // clang-format off
         return html `
       <div class="insight-section">
         ${preconnectOriginsTableTitle}
+        ${this.#renderTooManyPreconnectsWarning()}
         <devtools-performance-table
           .data=${{
             insight: this,

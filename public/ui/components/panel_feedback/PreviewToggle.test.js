@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Root from '../../../core/root/root.js';
-import { dispatchClickEvent, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
+import { renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as PanelFeedback from './panel_feedback.js';
@@ -24,9 +24,9 @@ describeWithLocale('Preview toggle', () => {
         renderElementIntoDOM(component);
         await RenderCoordinator.done();
         assert.isNotNull(component.shadowRoot);
-        const input = component.shadowRoot.querySelector('input');
-        assert.instanceOf(input, HTMLElement);
-        dispatchClickEvent(input);
+        const checkbox = component.shadowRoot.querySelector('devtools-checkbox');
+        assert.exists(checkbox);
+        checkbox.click();
         sinon.assert.callCount(setEnabledStub, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', true), 'experiments.setEnabled was not called with the correct experiment');
         sinon.assert.callCount(spy, 1);
@@ -48,9 +48,9 @@ describeWithLocale('Preview toggle', () => {
         };
         renderElementIntoDOM(component);
         await RenderCoordinator.done();
-        const input = component.shadowRoot.querySelector('input');
-        assert.instanceOf(input, HTMLElement);
-        dispatchClickEvent(input);
+        const checkbox = component.shadowRoot.querySelector('devtools-checkbox');
+        assert.exists(checkbox);
+        checkbox.click();
         sinon.assert.callCount(setEnabledStub, 1);
         assert.isTrue(setEnabledStub.firstCall.calledWith('testExperiment', false), 'experiments.setEnabled was not called with the correct experiment');
         sinon.assert.callCount(spy, 1);

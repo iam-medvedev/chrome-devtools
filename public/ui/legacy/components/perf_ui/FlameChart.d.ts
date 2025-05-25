@@ -55,9 +55,7 @@ export interface FlameChartDelegate {
      */
     containingElement?: () => HTMLElement;
 }
-interface GroupExpansionState {
-    [groupName: string]: boolean;
-}
+type GroupExpansionState = Record<string, boolean>;
 interface GroupTreeNode {
     index: number;
     nestingLevel: number;

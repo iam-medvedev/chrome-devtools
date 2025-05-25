@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
@@ -247,9 +248,16 @@ export class ShadowSwatchPopoverHelper extends Common.ObjectWrapper.ObjectWrappe
         this.iconElement = shadowSwatch.iconElement();
         UI.Tooltip.Tooltip.install(this.iconElement, i18nString(UIStrings.openShadowEditor));
         this.iconElement.addEventListener('click', this.iconClick.bind(this), false);
+        this.iconElement.addEventListener('keydown', this.keyDown.bind(this), false);
         this.iconElement.addEventListener('mousedown', event => event.consume(), false);
         this.boundShadowChanged = this.shadowChanged.bind(this);
         this.boundOnScroll = this.onScroll.bind(this);
+    }
+    keyDown(event) {
+        if (Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+            event.consume(true);
+            this.showPopover();
+        }
     }
     iconClick(event) {
         event.consume(true);

@@ -8,14 +8,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import * as Lit from '../../../ui/lit/lit.js';
-import controlButtonStylesRaw from './controlButton.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
-const controlButtonStyles = new CSSStyleSheet();
-controlButtonStyles.replaceSync(controlButtonStylesRaw);
+import controlButtonStyles from './controlButton.css.js';
 const { html, Decorators, LitElement } = Lit;
 const { customElement, property } = Decorators;
 let ControlButton = class ControlButton extends LitElement {
-    static styles = [controlButtonStyles];
     constructor() {
         super();
         this.label = '';
@@ -29,16 +25,18 @@ let ControlButton = class ControlButton extends LitElement {
         }
     };
     render() {
+        // clang-format off
         return html `
+            <style>${controlButtonStyles}</style>
             <button
                 @click=${this.#handleClickEvent}
                 .disabled=${this.disabled}
-                class="control"
-            >
-                <div class="icon ${this.shape}"></div>
-                <div class="label">${this.label}</div>
+                class="control">
+              <div class="icon ${this.shape}"></div>
+              <div class="label">${this.label}</div>
             </button>
         `;
+        // clang-format on
     }
 };
 __decorate([

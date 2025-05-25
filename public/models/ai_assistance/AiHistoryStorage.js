@@ -9,10 +9,12 @@ export class Conversation {
     type;
     #isReadOnly;
     history;
-    constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true) {
+    #isExternal;
+    constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, isExternal = false) {
         this.type = type;
         this.id = id;
         this.#isReadOnly = isReadOnly;
+        this.#isExternal = isExternal;
         this.history = this.#reconstructHistory(data);
     }
     get isReadOnly() {
@@ -22,6 +24,9 @@ export class Conversation {
         const query = this.history.find(response => response.type === "user-query" /* ResponseType.USER_QUERY */)?.query;
         if (!query) {
             return;
+        }
+        if (this.#isExternal) {
+            return `[External] ${query.substring(0, MAX_TITLE_LENGTH - 11)}${query.length > MAX_TITLE_LENGTH - 11 ? '…' : ''}`;
         }
         return `${query.substring(0, MAX_TITLE_LENGTH)}${query.length > MAX_TITLE_LENGTH ? '…' : ''}`;
     }
@@ -70,6 +75,7 @@ export class Conversation {
                 return item;
             }),
             type: this.type,
+            isExternal: this.#isExternal,
         };
     }
 }

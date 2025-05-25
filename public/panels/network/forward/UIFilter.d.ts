@@ -1,6 +1,7 @@
 export declare enum FilterType {
     Domain = "domain",
     HasResponseHeader = "has-response-header",
+    HasRequestHeader = "has-request-header",
     HasOverrides = "has-overrides",
     ResponseHeaderValueSetCookie = "response-header-set-cookie",
     Is = "is",

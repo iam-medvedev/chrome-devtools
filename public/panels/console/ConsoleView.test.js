@@ -8,7 +8,7 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import { findMenuItemWithLabel, getContextMenuForElement } from '../../testing/ContextMenuHelpers.js';
-import { dispatchPasteEvent } from '../../testing/DOMHelpers.js';
+import { dispatchPasteEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import { expectCall, expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
@@ -28,7 +28,6 @@ describeWithMockConnection('ConsoleView', () => {
         const consoleSettingsCheckboxes = consoleView.element.querySelector('devtools-toolbar').querySelectorAll('devtools-checkbox');
         if (!consoleSettingsCheckboxes) {
             assert.fail('No checkbox found in console settings');
-            return;
         }
         for (const checkbox of consoleSettingsCheckboxes) {
             assert.isTrue(checkbox.shadowRoot?.querySelector('.devtools-checkbox-text')?.hasAttribute('title'));
@@ -98,7 +97,7 @@ describeWithMockConnection('ConsoleView', () => {
             target = createTarget();
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
             consoleView.markAsRoot();
-            consoleView.show(document.body);
+            renderElementIntoDOM(consoleView);
         });
         it('adds messages', async () => {
             const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
@@ -131,7 +130,7 @@ describeWithMockConnection('ConsoleView', () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         const anotherTarget = createTarget();
         consoleView.markAsRoot();
-        consoleView.show(document.body);
+        renderElementIntoDOM(consoleView);
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
         assert.exists(consoleModel);
         consoleModel.addMessage(createConsoleMessage(target, 'message 1'));
@@ -152,7 +151,7 @@ describeWithMockConnection('ConsoleView', () => {
             target = createTarget();
             SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
             consoleView.markAsRoot();
-            consoleView.show(document.body);
+            renderElementIntoDOM(consoleView);
         });
         it('shows', async () => {
             const dt = new DataTransfer();
@@ -191,7 +190,7 @@ describeWithMockConnection('ConsoleView', () => {
         const target = createTarget();
         SDK.TargetManager.TargetManager.instance().setScopeTarget(target);
         consoleView.markAsRoot();
-        consoleView.show(document.body);
+        renderElementIntoDOM(consoleView);
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
         assert.exists(consoleModel);
         const consoleHistorySetting = Common.Settings.Settings.instance().createLocalSetting('console-history', []);
@@ -209,7 +208,7 @@ describeWithMockConnection('ConsoleView', () => {
         issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */);
         sinon.assert.calledOnce(spy);
         // Continues updating the issue counter
-        consoleView.show(document.body);
+        renderElementIntoDOM(consoleView);
         issuesManager.dispatchEventToListeners("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */);
         sinon.assert.calledTwice(spy);
     });

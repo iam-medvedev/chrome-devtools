@@ -52,6 +52,9 @@
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/ai_assistance/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/cards/bundle-tsconfig.json"
     },
     {

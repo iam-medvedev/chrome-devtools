@@ -38,7 +38,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private loadButton;
     private saveButton;
     private homeButton?;
-    private statusPane;
+    private statusDialog;
     private landingPage;
     private loader?;
     private showScreenshotsToolbarCheckbox?;
@@ -171,36 +171,7 @@ export interface TimelineModeViewDelegate {
     selectEntryAtTime(events: Trace.Types.Events.Event[] | null, time: number): void;
     highlightEvent(event: Trace.Types.Events.Event | null): void;
 }
-export declare class StatusPane extends UI.Widget.VBox {
-    #private;
-    private status;
-    private time;
-    private progressLabel?;
-    private progressBar?;
-    private readonly description;
-    private button;
-    private downloadTraceButton;
-    private startTime;
-    private timeUpdateTimer?;
-    constructor(options: {
-        hideStopButton: boolean;
-        showTimer?: boolean;
-        showProgress?: boolean;
-        description?: string;
-        buttonText?: string;
-    }, buttonCallback: () => (Promise<void> | void));
-    finish(): void;
-    enableDownloadOfEvents(rawEvents: Trace.Types.Events.Event[]): void;
-    remove(): void;
-    showPane(parent: Element): void;
-    enableAndFocusButton(): void;
-    updateStatus(text: string): void;
-    updateProgressBar(activity: string, percent: number): void;
-    startTimer(): void;
-    private stopTimer;
-    private updateTimer;
-    wasShown(): void;
-}
+export declare let loadTimelineHandlerInstance: LoadTimelineHandler;
 export declare class LoadTimelineHandler implements Common.QueryParamHandler.QueryParamHandler {
     static instance(opts?: {
         forceNew: boolean | null;

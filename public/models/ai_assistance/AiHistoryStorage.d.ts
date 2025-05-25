@@ -11,6 +11,7 @@ export interface SerializedConversation {
     id: string;
     type: ConversationType;
     history: ResponseData[];
+    isExternal: boolean;
 }
 export interface SerializedImage {
     id: string;
@@ -22,7 +23,7 @@ export declare class Conversation {
     readonly id: string;
     readonly type: ConversationType;
     readonly history: ResponseData[];
-    constructor(type: ConversationType, data?: ResponseData[], id?: string, isReadOnly?: boolean);
+    constructor(type: ConversationType, data?: ResponseData[], id?: string, isReadOnly?: boolean, isExternal?: boolean);
     get isReadOnly(): boolean;
     get title(): string | undefined;
     get isEmpty(): boolean;

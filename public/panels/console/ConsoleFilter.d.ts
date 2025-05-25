@@ -1,9 +1,7 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import type { ConsoleGroupViewMessage, ConsoleViewMessage } from './ConsoleViewMessage.js';
-export interface LevelsMask {
-    [x: string]: boolean;
-}
+export type LevelsMask = Record<string, boolean>;
 export declare class ConsoleFilter {
     name: string;
     parsedFilters: TextUtils.TextUtils.ParsedFilter[];

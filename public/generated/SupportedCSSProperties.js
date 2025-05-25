@@ -399,6 +399,7 @@ export const generatedProperties = [
             "caption-side",
             "caret-animation",
             "caret-color",
+            "caret-shape",
             "clear",
             "clip",
             "clip-path",
@@ -712,11 +713,13 @@ export const generatedProperties = [
             "text-emphasis-color",
             "text-emphasis-position",
             "text-emphasis-style",
+            "text-grow",
             "text-indent",
             "text-orientation",
             "text-overflow",
             "text-rendering",
             "text-shadow",
+            "text-shrink",
             "text-size-adjust",
             "text-spacing-trim",
             "text-transform",
@@ -1603,6 +1606,16 @@ export const generatedProperties = [
         "name": "caret-color"
     },
     {
+        "inherited": true,
+        "keywords": [
+            "auto",
+            "bar",
+            "block",
+            "underscore"
+        ],
+        "name": "caret-shape"
+    },
+    {
         "keywords": [
             "none",
             "left",
@@ -1838,7 +1851,8 @@ export const generatedProperties = [
             "normal",
             "inline-size",
             "size",
-            "scroll-state"
+            "scroll-state",
+            "anchored"
         ],
         "name": "container-type"
     },
@@ -2146,7 +2160,8 @@ export const generatedProperties = [
         "keywords": [
             "nowrap",
             "wrap",
-            "wrap-reverse"
+            "wrap-reverse",
+            "balance"
         ],
         "name": "flex-wrap"
     },
@@ -3578,6 +3593,14 @@ export const generatedProperties = [
         "name": "row-gap"
     },
     {
+        "longhands": [
+            "row-rule-width",
+            "row-rule-style",
+            "row-rule-color"
+        ],
+        "name": "row-rule"
+    },
+    {
         "inherited": false,
         "keywords": [
             "none",
@@ -3636,6 +3659,17 @@ export const generatedProperties = [
             "under"
         ],
         "name": "ruby-position"
+    },
+    {
+        "longhands": [
+            "column-rule-width",
+            "column-rule-style",
+            "column-rule-color",
+            "row-rule-width",
+            "row-rule-style",
+            "row-rule-color"
+        ],
+        "name": "rule"
     },
     {
         "longhands": [
@@ -4182,6 +4216,9 @@ export const generatedProperties = [
         "name": "text-emphasis-style"
     },
     {
+        "name": "text-grow"
+    },
+    {
         "inherited": true,
         "name": "text-indent"
     },
@@ -4217,6 +4254,9 @@ export const generatedProperties = [
             "none"
         ],
         "name": "text-shadow"
+    },
+    {
+        "name": "text-shrink"
     },
     {
         "inherited": true,
@@ -5076,6 +5116,14 @@ export const generatedPropertyValues = {
             "currentcolor"
         ]
     },
+    "caret-shape": {
+        "values": [
+            "auto",
+            "bar",
+            "block",
+            "underscore"
+        ]
+    },
     "clear": {
         "values": [
             "none",
@@ -5240,7 +5288,8 @@ export const generatedPropertyValues = {
             "normal",
             "inline-size",
             "size",
-            "scroll-state"
+            "scroll-state",
+            "anchored"
         ]
     },
     "content-visibility": {
@@ -5456,7 +5505,8 @@ export const generatedPropertyValues = {
         "values": [
             "nowrap",
             "wrap",
-            "wrap-reverse"
+            "wrap-reverse",
+            "balance"
         ]
     },
     "float": {

@@ -1,6 +1,7 @@
 import '../../ui/legacy/components/data_grid/data_grid.js';
-import type * as Platform from '../../core/platform/platform.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import type { PlatformFileSystem } from './PlatformFileSystem.js';
 export declare const enum ExcludedFolderStatus {
     VALID = 1,
     ERROR_NOT_A_PATH = 2,
@@ -28,7 +29,8 @@ export type View = (input: EditFileSystemViewInput, output: object, target: HTML
 export declare const DEFAULT_VIEW: View;
 export declare class EditFileSystemView extends UI.Widget.VBox {
     #private;
-    constructor(fileSystemPath: Platform.DevToolsPath.UrlString, view?: View);
+    constructor(element: HTMLElement | undefined, view?: View);
+    set fileSystem(fileSystem: PlatformFileSystem);
     wasShown(): void;
     performUpdate(): void;
 }

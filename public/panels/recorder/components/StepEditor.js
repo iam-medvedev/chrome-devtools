@@ -17,11 +17,8 @@ import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Controllers from '../controllers/controllers.js';
 import * as Models from '../models/models.js';
 import * as Util from '../util/util.js';
-import stepEditorStylesRaw from './stepEditor.css.js';
+import stepEditorStyles from './stepEditor.css.js';
 import { ArrayAssignments, assert, deepFreeze, immutableDeepAssign, InsertAssignment, } from './util.js';
-// TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
-const stepEditorStyles = new CSSStyleSheet();
-stepEditorStyles.replaceSync(stepEditorStylesRaw);
 const { html, Decorators, Directives, LitElement } = Lit;
 const { customElement, property, state } = Decorators;
 const { live } = Directives;
@@ -380,7 +377,6 @@ export class EditorState {
  * @fires SelectorPickedEvent#selectorpicked
  */
 let RecorderSelectorPickerButton = class RecorderSelectorPickerButton extends LitElement {
-    static styles = [stepEditorStyles];
     #picker = new Controllers.SelectorPicker.SelectorPicker(this);
     constructor() {
         super();
@@ -399,7 +395,8 @@ let RecorderSelectorPickerButton = class RecorderSelectorPickerButton extends Li
         if (this.disabled) {
             return;
         }
-        return html `<devtools-button
+        // clang-format off
+        return html `<style>${stepEditorStyles}</style><devtools-button
       @click=${this.#handleClickEvent}
       .title=${i18nString(UIStrings.selectorPicker)}
       class="selector-picker"
@@ -411,6 +408,7 @@ let RecorderSelectorPickerButton = class RecorderSelectorPickerButton extends Li
             click: true,
         })}
     ></devtools-button>`;
+        // clang-format on
     }
 };
 __decorate([
@@ -424,7 +422,6 @@ RecorderSelectorPickerButton = __decorate([
  * @fires StepEditedEvent#stepedited
  */
 let StepEditor = class StepEditor extends LitElement {
-    static styles = [stepEditorStyles];
     #renderedAttributes = new Set();
     constructor() {
         super();
@@ -961,7 +958,8 @@ let StepEditor = class StepEditor extends LitElement {
         this.#renderedAttributes = new Set();
         // clang-format off
         const result = html `
-      <div class="wrapper" jslog=${VisualLogging.tree('step-editor')}>
+      <style>${stepEditorStyles}</style>
+      <div class="wrapper" jslog=${VisualLogging.tree('step-editor')} >
         ${this.#renderTypeRow(this.isTypeEditable)} ${this.#renderRow('target')}
         ${this.#renderFrameRow()} ${this.#renderSelectorsRow()}
         ${this.#renderRow('deviceType')} ${this.#renderRow('button')}

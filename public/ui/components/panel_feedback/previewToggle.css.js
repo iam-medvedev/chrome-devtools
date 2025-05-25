@@ -19,7 +19,6 @@ export default `/*
   padding: 4px;
 }
 
-.experiment-preview,
 .feedback,
 .learn-more {
   display: flex;

@@ -7,6 +7,9 @@
 export function isDebugMode() {
     return Boolean(localStorage.getItem('debugAiAssistancePanelEnabled'));
 }
+export function isStructuredLogEnabled() {
+    return Boolean(localStorage.getItem('aiAssistanceStructuredLogEnabled'));
+}
 export function debugLog(...log) {
     if (!isDebugMode()) {
         return;
@@ -21,7 +24,18 @@ function setDebugAiAssistanceEnabled(enabled) {
     else {
         localStorage.removeItem('debugAiAssistancePanelEnabled');
     }
+    setAiAssistanceStructuredLogEnabled(enabled);
 }
 // @ts-expect-error
 globalThis.setDebugAiAssistanceEnabled = setDebugAiAssistanceEnabled;
+function setAiAssistanceStructuredLogEnabled(enabled) {
+    if (enabled) {
+        localStorage.setItem('aiAssistanceStructuredLogEnabled', 'true');
+    }
+    else {
+        localStorage.removeItem('aiAssistanceStructuredLogEnabled');
+    }
+}
+// @ts-expect-error
+globalThis.setAiAssistanceStructuredLogEnabled = setAiAssistanceStructuredLogEnabled;
 //# sourceMappingURL=debug.js.map

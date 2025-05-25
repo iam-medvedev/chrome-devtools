@@ -148,6 +148,8 @@ export class SharedStorageModel extends SDK.SDKModel.SDKModel {
         }
         this.dispatchEventToListeners("SharedStorageAccess" /* Events.SHARED_STORAGE_ACCESS */, event);
     }
+    sharedStorageWorkletOperationExecutionFinished(_event) {
+    }
     attributionReportingTriggerRegistered(_event) {
     }
     indexedDBListUpdated(_event) {

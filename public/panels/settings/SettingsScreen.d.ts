@@ -18,14 +18,13 @@ export declare class SettingsScreen extends UI.Widget.VBox implements UI.View.Vi
     private reportSettingsPanelShown;
     private onEscapeKeyPressed;
 }
-declare abstract class SettingsTab extends UI.Widget.VBox {
-    containerElement: HTMLElement;
-    constructor(id?: string);
-    abstract highlightObject(_object: Object): void;
+interface SettingsTab {
+    highlightObject(object: Object): void;
 }
-export declare class GenericSettingsTab extends SettingsTab {
+export declare class GenericSettingsTab extends UI.Widget.VBox implements SettingsTab {
     private readonly syncSection;
     private readonly settingToControl;
+    private readonly containerElement;
     constructor();
     static isSettingVisible(setting: Common.Settings.SettingRegistration): boolean;
     wasShown(): void;
@@ -36,9 +35,10 @@ export declare class GenericSettingsTab extends SettingsTab {
     private createStandardSectionElement;
     highlightObject(setting: Object): void;
 }
-export declare class ExperimentsSettingsTab extends SettingsTab {
+export declare class ExperimentsSettingsTab extends UI.Widget.VBox implements SettingsTab {
     #private;
     private readonly experimentToControl;
+    private readonly containerElement;
     constructor();
     private renderExperiments;
     private createExperimentsWarningSubsection;

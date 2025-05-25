@@ -4,6 +4,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
 import * as TextUtils from '../../../../models/text_utils/text_utils.js';
+import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as SourceFrame from './source_frame.js';
 const { urlString } = Platform.DevToolsPath;
@@ -42,8 +43,7 @@ describeWithEnvironment('ResourceSourceFrame', () => {
     it('updates the editor when a StreamingContentProvider changes', async () => {
         const contentProvider = new MockStreamingContentProvider(urlString `https://example.com/sse`, Common.ResourceType.resourceTypes.Fetch, new TextUtils.ContentData.ContentData('', true, 'text/event-stream'));
         const resourceSourceFrame = new SourceFrame.ResourceSourceFrame.ResourceSourceFrame(contentProvider, 'text/event-stream');
-        resourceSourceFrame.markAsRoot();
-        resourceSourceFrame.show(document.body);
+        renderElementIntoDOM(resourceSourceFrame);
         const initialState = await new Promise(resolve => sinon.stub(resourceSourceFrame.textEditor, 'state').set(resolve));
         assert.strictEqual(initialState.doc.toString(), '');
         contentProvider.addChunk('Zm9v');

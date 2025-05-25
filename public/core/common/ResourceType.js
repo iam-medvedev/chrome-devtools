@@ -144,6 +144,10 @@ const UIStrings = {
      *@description Name of a network initiator type
      */
     webbundle: 'WebBundle',
+    /**
+     *@description Name of a network initiator type for FedCM requests
+     */
+    fedcm: 'FedCM',
 };
 const str_ = i18n.i18n.registerUIStrings('core/common/ResourceType.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -368,6 +372,7 @@ export const resourceTypes = {
     SourceMapScript: new ResourceType('sm-script', i18nLazyString(UIStrings.script), resourceCategories.Script, true),
     SourceMapStyleSheet: new ResourceType('sm-stylesheet', i18nLazyString(UIStrings.stylesheet), resourceCategories.Stylesheet, true),
     WebBundle: new ResourceType('webbundle', i18nLazyString(UIStrings.webbundle), resourceCategories.Other, false),
+    FedCM: new ResourceType('fedcm', i18nLazyString(UIStrings.fedcm), resourceCategories.Other, false),
 };
 const mimeTypeByName = new Map([
     // CoffeeScript

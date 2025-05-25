@@ -4,9 +4,7 @@ export declare const enum PhysicalDirection {
     BOTTOM_TO_TOP = "bottom-to-top",
     TOP_TO_BOTTOM = "top-to-bottom"
 }
-interface DirectionsDict {
-    [key: string]: PhysicalDirection;
-}
+type DirectionsDict = Record<string, PhysicalDirection>;
 export interface IconInfo {
     iconName: string;
     rotate: number;

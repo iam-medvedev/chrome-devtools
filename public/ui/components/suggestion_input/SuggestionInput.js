@@ -8,15 +8,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 import * as CodeHighlighter from '../../../ui/components/code_highlighter/code_highlighter.js';
-import codeHighlighterStylesRaw from '../../../ui/components/code_highlighter/codeHighlighter.css.js';
+import codeHighlighterStyles from '../../../ui/components/code_highlighter/codeHighlighter.css.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import contentEditableStylesRaw from './suggestionInput.css.js';
-// TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
-const codeHighlighterStyles = new CSSStyleSheet();
-codeHighlighterStyles.replaceSync(codeHighlighterStylesRaw);
-const contentEditableStyles = new CSSStyleSheet();
-contentEditableStyles.replaceSync(contentEditableStylesRaw);
+import contentEditableStyles from './suggestionInput.css.js';
 const mod = (a, n) => {
     return ((a % n) + n) % n;
 };
@@ -112,7 +107,6 @@ const defaultSuggestionFilter = (option, query) => option.toLowerCase().startsWi
  * @fires SuggestEvent#suggest
  */
 let SuggestionBox = class SuggestionBox extends LitElement {
-    static styles = [contentEditableStyles];
     #suggestions = [];
     constructor() {
         super();
@@ -168,7 +162,7 @@ let SuggestionBox = class SuggestionBox extends LitElement {
         if (this.#suggestions.length === 0) {
             return;
         }
-        return html `<ul class="suggestions">
+        return html `<style>${contentEditableStyles}</style><ul class="suggestions">
       ${this.#suggestions.map((suggestion, index) => {
             return html `<li
           class=${classMap({
@@ -205,7 +199,6 @@ let SuggestionInput = class SuggestionInput extends LitElement {
         ...LitElement.shadowRootOptions,
         delegatesFocus: true,
     };
-    static styles = [contentEditableStyles, codeHighlighterStyles];
     constructor() {
         super();
         this.options = [];
@@ -274,7 +267,9 @@ let SuggestionInput = class SuggestionInput extends LitElement {
     }
     render() {
         // clang-format off
-        return html `<devtools-editable-content
+        return html `<style>${contentEditableStyles}</style>
+      <style>${codeHighlighterStyles}</style>
+      <devtools-editable-content
         ?disabled=${this.disabled}
         class=${classMap({
             strikethrough: !this.strikethrough,

@@ -186,7 +186,7 @@ export class IssuesPane extends UI.Widget.VBox {
         this.#hiddenIssuesRow = new HiddenIssuesRow();
         this.#issuesTree.appendChild(this.#hiddenIssuesRow);
         this.#noIssuesMessageDiv = new UI.EmptyWidget.EmptyWidget('', i18nString(UIStrings.issuesPanelDescription));
-        this.#noIssuesMessageDiv.appendLink(ISSUES_PANEL_EXPLANATION_URL);
+        this.#noIssuesMessageDiv.link = ISSUES_PANEL_EXPLANATION_URL;
         this.#noIssuesMessageDiv.show(this.contentElement);
         this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         this.#aggregator = new IssueAggregator(this.#issuesManager);

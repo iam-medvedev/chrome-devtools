@@ -41,9 +41,7 @@ interface ObjectParameter extends BaseParameter {
 export type Parameter = ArrayParameter | NumberParameter | StringParameter | BooleanParameter | ObjectParameter;
 export interface Command {
     command: string;
-    parameters: {
-        [x: string]: unknown;
-    };
+    parameters: Record<string, unknown>;
     targetId?: string;
 }
 interface ViewInput {
@@ -114,9 +112,7 @@ export declare class JSONEditor extends JSONEditor_base {
     set targetId(targetId: string | undefined);
     wasShown(): void;
     willHide(): void;
-    getParameters(): {
-        [key: string]: unknown;
-    };
+    getParameters(): Record<string, unknown>;
     displayCommand(command: string, parameters: Record<string, unknown>, targetId?: string): void;
     getCommandJson(): string;
     populateParametersForCommandWithDefaultValues(): void;

@@ -45,5 +45,4 @@ export interface UISourceCodeDiffEventTypes {
 export declare function workspaceDiff({ forceNew }?: {
     forceNew?: boolean;
 }): WorkspaceDiffImpl;
-export declare const UpdateTimeout = 200;
 export {};

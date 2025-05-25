@@ -3,13 +3,8 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Lit from '../../../lit/lit.js';
-import cssAngleSwatchStylesRaw from './cssAngleSwatch.css.js';
+import cssAngleSwatchStyles from './cssAngleSwatch.css.js';
 import { get2DTranslationsForAngle } from './CSSAngleUtils.js';
-/* eslint-disable rulesdir/no-adopted-style-sheets --
- * TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
- **/
-const cssAngleSwatchStyles = new CSSStyleSheet();
-cssAngleSwatchStyles.replaceSync(cssAngleSwatchStylesRaw);
 const { render, html } = Lit;
 const styleMap = Lit.Directives.styleMap;
 const swatchWidth = 11;
@@ -19,9 +14,6 @@ export class CSSAngleSwatch extends HTMLElement {
         value: 0,
         unit: "rad" /* AngleUnit.RAD */,
     };
-    connectedCallback() {
-        this.shadow.adoptedStyleSheets = [cssAngleSwatchStyles];
-    }
     set data(data) {
         this.angle = data.angle;
         this.render();
@@ -34,6 +26,7 @@ export class CSSAngleSwatch extends HTMLElement {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
+      <style>${cssAngleSwatchStyles}</style>
       <div class="swatch">
         <span class="mini-hand" style=${styleMap(miniHandStyle)}></span>
       </div>

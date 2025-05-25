@@ -31,19 +31,11 @@ export declare class ShortcutRegistry {
         modifier: Modifier;
     } | undefined;
     devToolsToChromeModifier(devToolsModifier: Modifier): number;
-    handleShortcut(event: KeyboardEvent, handlers?: {
-        [x: string]: () => Promise<boolean>;
-    }): void;
+    handleShortcut(event: KeyboardEvent, handlers?: Record<string, () => Promise<boolean>>): void;
     actionHasDefaultShortcut(actionId: string): boolean;
-    getShortcutListener(handlers: {
-        [x: string]: () => Promise<boolean>;
-    }): (event: KeyboardEvent) => void;
-    addShortcutListener(element: Element, handlers: {
-        [x: string]: () => Promise<boolean>;
-    }): (arg0: Event) => void;
-    handleKey(key: number, domKey: string, event?: KeyboardEvent, handlers?: {
-        [x: string]: () => Promise<boolean>;
-    }): Promise<void>;
+    getShortcutListener(handlers: Record<string, () => Promise<boolean>>): (event: KeyboardEvent) => void;
+    addShortcutListener(element: Element, handlers: Record<string, () => Promise<boolean>>): (arg0: Event) => void;
+    handleKey(key: number, domKey: string, event?: KeyboardEvent, handlers?: Record<string, () => Promise<boolean>>): Promise<void>;
     registerUserShortcut(shortcut: KeyboardShortcut): void;
     removeShortcut(shortcut: KeyboardShortcut): void;
     disabledDefaultsForAction(actionId: string): Set<KeyboardShortcut>;

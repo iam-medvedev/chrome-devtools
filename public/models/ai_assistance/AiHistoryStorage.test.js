@@ -8,16 +8,19 @@ describe('AiHistoryStorage', () => {
         id: 'id1',
         type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
         history: [],
+        isExternal: false,
     };
     const agent2 = {
         id: 'id2',
         type: "drjones-file" /* AiAssistance.ConversationType.FILE */,
         history: [],
+        isExternal: false,
     };
     const agent3 = {
         id: 'id3',
         type: "drjones-network-request" /* AiAssistance.ConversationType.NETWORK */,
         history: [],
+        isExternal: false,
     };
     const agent4 = {
         id: 'id4',
@@ -41,6 +44,7 @@ describe('AiHistoryStorage', () => {
                 imageInput: undefined,
             },
         ],
+        isExternal: false,
     };
     const serializedImage1 = {
         id: 'image-id1',
@@ -86,6 +90,7 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
+                isExternal: false,
             }]);
         await storage.upsertHistoryEntry(agent2);
         assert.deepEqual(storage.getHistory(), [
@@ -93,11 +98,13 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
+                isExternal: false,
             },
         ]);
     });
@@ -124,11 +131,13 @@ describe('AiHistoryStorage', () => {
                         query: 'text',
                     },
                 ],
+                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
+                isExternal: false,
             },
         ]);
         await storage.upsertHistoryEntry(agent3);
@@ -142,16 +151,19 @@ describe('AiHistoryStorage', () => {
                         query: 'text',
                     },
                 ],
+                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
+                isExternal: false,
             },
         ]);
         assert.deepEqual(storage.getImageHistory(), []);
@@ -168,16 +180,19 @@ describe('AiHistoryStorage', () => {
                         query: 'text',
                     },
                 ],
+                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id4',
@@ -201,6 +216,7 @@ describe('AiHistoryStorage', () => {
                         imageInput: undefined,
                     },
                 ],
+                isExternal: false,
             },
         ]);
         assert.deepEqual(storage.getImageHistory(), [
@@ -227,11 +243,13 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
+                isExternal: false,
             },
         ]);
     });
@@ -249,16 +267,19 @@ describe('AiHistoryStorage', () => {
                 id: 'id1',
                 type: 'freestyler',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id2',
                 type: 'drjones-file',
                 history: [],
+                isExternal: false,
             },
             {
                 id: 'id3',
                 type: 'drjones-network-request',
                 history: [],
+                isExternal: false,
             },
         ]);
         assert.deepEqual(storage.getImageHistory(), []);
@@ -393,7 +414,8 @@ describe('AiHistoryStorage', () => {
                             type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
                             query: 'text',
                             imageId: 'image-id1',
-                        }]
+                        }],
+                    isExternal: false,
                 });
                 assert.deepEqual(historyWithoutImages[1], {
                     id: 'id2',
@@ -403,7 +425,8 @@ describe('AiHistoryStorage', () => {
                             query: 'text',
                             imageInput: undefined,
                             imageId: 'image-id2',
-                        }]
+                        }],
+                    isExternal: false,
                 });
             });
             it('should have empty image data for image not present in history', async () => {

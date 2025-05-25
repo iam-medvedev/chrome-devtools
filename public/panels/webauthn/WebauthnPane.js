@@ -7,10 +7,13 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import webauthnPaneStyles from './webauthnPane.css.js';
+const { render, html } = Lit;
 const UIStrings = {
     /**
      *@description Label for button that allows user to download the private key related to a credential.
@@ -145,6 +148,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/webauthn/WebauthnPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const i18nTemplate = Lit.i18nTemplate.bind(undefined, str_);
 const WEB_AUTHN_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/webauthn';
 class DataGridNode extends DataGrid.DataGrid.DataGridNode {
     credential;
@@ -161,38 +165,45 @@ class DataGridNode extends DataGrid.DataGrid.DataGridNode {
         if (columnId !== 'actions') {
             return cell;
         }
-        const exportButton = UI.UIUtils.createTextButton(i18nString(UIStrings.export), () => {
+        const onExportCredential = () => {
             if (this.dataGrid) {
-                this.dataGrid.dispatchEventToListeners("ExportCredential" /* Events.EXPORT_CREDENTIAL */, this.credential);
+                this.dataGrid.onExportCredential(this.credential);
             }
-        }, { jslogContext: 'webauthn.export-credential' });
-        cell.appendChild(exportButton);
-        const removeButton = UI.UIUtils.createTextButton(i18nString(UIStrings.remove), () => {
+        };
+        const onRemoveCredential = () => {
             if (this.dataGrid) {
-                this.dataGrid.dispatchEventToListeners("RemoveCredential" /* Events.REMOVE_CREDENTIAL */, this.credential);
+                this.dataGrid.onRemoveCredential(this.credential);
             }
-        }, { jslogContext: 'webauthn.remove-credential' });
-        cell.appendChild(removeButton);
+        };
+        // clang-format off
+        // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+        render(html `
+       <devtools-button .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+           @click=${onExportCredential} .jslogContext=${'webauthn.export-credential'}>
+        ${i18nString(UIStrings.export)}
+      </devtools-button>
+      <devtools-button .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
+          @click=${onRemoveCredential} .jslogContext=${'webauthn.remove-credential'}>
+        ${i18nString(UIStrings.remove)}
+      </devtools-button>`, cell);
+        // clang-format on
         return cell;
     }
 }
-class WebauthnDataGridBase extends DataGrid.DataGrid.DataGridImpl {
-}
-class WebauthnDataGrid extends Common.ObjectWrapper.eventMixin(WebauthnDataGridBase) {
+class WebauthnDataGrid extends DataGrid.DataGrid.DataGridImpl {
+    onExportCredential = (_) => { };
+    onRemoveCredential = (_) => { };
 }
 class EmptyDataGridNode extends DataGrid.DataGrid.DataGridNode {
     createCells(element) {
         element.removeChildren();
-        const td = this.createTDWithClass("center" /* DataGrid.DataGrid.Align.CENTER */);
-        if (this.dataGrid) {
-            td.colSpan = this.dataGrid.visibleColumnsArray.length;
-        }
-        const code = document.createElement('span', { is: 'source-code' });
-        code.textContent = 'navigator.credentials.create()';
-        code.classList.add('code');
-        const message = i18n.i18n.getFormatLocalizedString(str_, UIStrings.noCredentialsTryCallingSFromYour, { PH1: code });
-        td.appendChild(message);
-        element.appendChild(td);
+        // clang-format off
+        // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+        render(html `
+      <td class=${"center" /* DataGrid.DataGrid.Align.CENTER */} colspan=${this.dataGrid?.visibleColumnsArray.length ?? 1}>
+        ${i18nTemplate(UIStrings.noCredentialsTryCallingSFromYour, { PH1: html `<span class="code">navigator.credentials.create()</span>` })}
+      </td>`, element);
+        // clang-format on
     }
 }
 // We extrapolate this variable as otherwise git detects a private key, even though we
@@ -324,17 +335,11 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         const dataGrid = new WebauthnDataGrid(dataGridConfig);
         dataGrid.renderInline();
         dataGrid.setStriped(true);
-        dataGrid.addEventListener("ExportCredential" /* Events.EXPORT_CREDENTIAL */, this.#handleExportCredential, this);
-        dataGrid.addEventListener("RemoveCredential" /* Events.REMOVE_CREDENTIAL */, this.#handleRemoveCredential.bind(this, authenticatorId));
+        dataGrid.onExportCredential = this.#exportCredential.bind(this);
+        dataGrid.onRemoveCredential = ({ credentialId }) => this.#removeCredential(authenticatorId, credentialId);
         dataGrid.rootNode().appendChild(new EmptyDataGridNode());
         this.dataGrids.set(authenticatorId, dataGrid);
         return dataGrid;
-    }
-    #handleExportCredential({ data: credential }) {
-        this.#exportCredential(credential);
-    }
-    #handleRemoveCredential(authenticatorId, { data: credential, }) {
-        void this.#removeCredential(authenticatorId, credential.credentialId);
     }
     #addCredential(authenticatorId, { data: event, }) {
         const dataGrid = this.dataGrids.get(authenticatorId);
@@ -476,7 +481,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
     #createNewAuthenticatorSection() {
         this.#learnMoreView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noAuthenticator), i18nString(UIStrings.useWebauthnForPhishingresistant));
         this.#learnMoreView.element.classList.add('learn-more');
-        this.#learnMoreView.appendLink(WEB_AUTHN_EXPLANATION_URL);
+        this.#learnMoreView.link = WEB_AUTHN_EXPLANATION_URL;
         this.#learnMoreView.show(this.contentElement);
         this.#newAuthenticatorSection = this.contentElement.createChild('div', 'new-authenticator-container');
         const newAuthenticatorTitle = UI.UIUtils.createLabel(i18nString(UIStrings.newAuthenticator), 'new-authenticator-title');
@@ -624,7 +629,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
         link.href = 'data:application/x-pem-file,' + encodeURIComponent(pem);
         link.click();
     }
-    async #removeCredential(authenticatorId, credentialId) {
+    #removeCredential(authenticatorId, credentialId) {
         const dataGrid = this.dataGrids.get(authenticatorId);
         if (!dataGrid) {
             return;
@@ -637,7 +642,7 @@ export class WebauthnPaneImpl extends UI.Widget.VBox {
             dataGrid.rootNode().appendChild(new EmptyDataGridNode());
         }
         if (this.#model) {
-            await this.#model.removeCredential(authenticatorId, credentialId);
+            void this.#model.removeCredential(authenticatorId, credentialId);
         }
     }
     /**

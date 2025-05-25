@@ -79,6 +79,7 @@ export class FormatterWorkerPool {
             callback(isLastChunk, chunk);
         }
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     runTask(methodName, params) {
         return new Promise(resolve => {
             const task = new Task(methodName, params, resolve, false);

@@ -208,6 +208,9 @@ export function metricSavingsForWastedBytes(wastedBytesByRequestId, context) {
  * Returns whether the network request was sent encoded.
  */
 export function isRequestCompressed(request) {
+    if (!request.args.data.responseHeaders) {
+        return false;
+    }
     // FYI: In Lighthouse, older devtools logs (like our test fixtures) seems to be
     // lower case, while modern logs are Cased-Like-This.
     const patterns = [

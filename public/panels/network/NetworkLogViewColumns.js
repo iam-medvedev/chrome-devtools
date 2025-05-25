@@ -510,6 +510,7 @@ export class NetworkLogViewColumns {
         }
     }
     saveColumnsSettings() {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const saveableSettings = {};
         for (const columnConfig of this.columns) {
             saveableSettings[columnConfig.id] = { visible: columnConfig.visible, title: columnConfig.title };

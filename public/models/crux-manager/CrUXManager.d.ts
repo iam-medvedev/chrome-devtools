@@ -41,9 +41,7 @@ interface CollectionDate {
 }
 interface CrUXRecord {
     key: Omit<CrUXRequest, 'metrics'>;
-    metrics: {
-        [K in StandardMetricNames]?: MetricResponse;
-    } & {
+    metrics: Partial<Record<StandardMetricNames, MetricResponse>> & {
         form_factors?: FormFactorsResponse;
     };
     collectionPeriod: {
@@ -58,9 +56,7 @@ export interface CrUXResponse {
         normalizedUrl: string;
     };
 }
-export type PageResult = {
-    [K in `${PageScope}-${DeviceScope}`]: CrUXResponse | null;
-} & {
+export type PageResult = Record<`${PageScope}-${DeviceScope}`, CrUXResponse | null> & {
     warnings: string[];
 };
 export interface OriginMapping {

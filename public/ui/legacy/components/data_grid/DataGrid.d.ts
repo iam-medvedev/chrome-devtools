@@ -13,9 +13,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     private readonly dataTable;
     protected inline: boolean;
     private columnsArray;
-    columns: {
-        [x: string]: ColumnDescriptor;
-    };
+    columns: Record<string, ColumnDescriptor>;
     visibleColumnsArray: ColumnDescriptor[];
     cellClass: string | null;
     private dataTableHeadInternal;
@@ -175,9 +173,7 @@ export declare const enum ResizeMethod {
     FIRST = "first",
     LAST = "last"
 }
-export interface DataGridData {
-    [key: string]: any;
-}
+export type DataGridData = Record<string, any>;
 export declare class DataGridNode<T> {
     #private;
     elementInternal: HTMLElement | null;
@@ -261,9 +257,7 @@ export declare class DataGridNode<T> {
 }
 export declare class CreationDataGridNode<T> extends DataGridNode<T> {
     isCreationNode: boolean;
-    constructor(data?: {
-        [x: string]: any;
-    } | null, hasChildren?: boolean);
+    constructor(data?: Record<string, any> | null, hasChildren?: boolean);
 }
 export declare class DataGridWidget<T> extends UI.Widget.VBox {
     readonly dataGrid: DataGridImpl<T>;

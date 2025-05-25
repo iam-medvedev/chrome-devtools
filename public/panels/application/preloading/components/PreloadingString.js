@@ -123,10 +123,6 @@ const UIStrings = {
      */
     prerenderFinalStatusNavigationRequestBlockedByCsp: 'The prerendering navigation was blocked by a Content Security Policy.',
     /**
-     *  Description text for PrerenderFinalStatus::kMainFrameNavigation.
-     */
-    prerenderFinalStatusMainFrameNavigation: 'The prerendered page navigated itself to another URL, which is currently not supported.',
-    /**
      *@description Description text for PrerenderFinalStatus::kMojoBinderPolicy.
      *@example {device.mojom.GamepadMonitor} PH1
      */
@@ -487,8 +483,6 @@ export function prerenderFailureReason(attempt) {
             return i18nString(UIStrings.prerenderFinalStatusInvalidSchemeNavigation);
         case "NavigationRequestBlockedByCsp" /* Protocol.Preload.PrerenderFinalStatus.NavigationRequestBlockedByCsp */:
             return i18nString(UIStrings.prerenderFinalStatusNavigationRequestBlockedByCsp);
-        case "MainFrameNavigation" /* Protocol.Preload.PrerenderFinalStatus.MainFrameNavigation */:
-            return i18nString(UIStrings.prerenderFinalStatusMainFrameNavigation);
         case "MojoBinderPolicy" /* Protocol.Preload.PrerenderFinalStatus.MojoBinderPolicy */:
             assertNotNullOrUndefined(attempt.disallowedMojoInterface);
             return i18nString(UIStrings.prerenderFinalStatusMojoBinderPolicy, { PH1: attempt.disallowedMojoInterface });

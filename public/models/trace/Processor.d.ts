@@ -36,6 +36,4 @@ export declare class TraceProcessor extends EventTarget {
  * @returns A map from trace event handler name to trace event handler whose entries
  * iterate in such a way that each handler is visited after its dependencies.
  */
-export declare function sortHandlers(traceHandlers: Partial<{
-    [key in Handlers.Types.HandlerName]: Handlers.Types.Handler;
-}>): Map<Handlers.Types.HandlerName, Handlers.Types.Handler>;
+export declare function sortHandlers(traceHandlers: Partial<Record<Handlers.Types.HandlerName, Handlers.Types.Handler>>): Map<Handlers.Types.HandlerName, Handlers.Types.Handler>;

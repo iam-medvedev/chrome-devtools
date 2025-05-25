@@ -120,8 +120,8 @@ export const bindToSetting = (setting, stringValidator) => {
     // be able to remove it again.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let setValue;
-    function settingChanged(event) {
-        setValue(event.data);
+    function settingChanged() {
+        setValue(setting.get());
     }
     if (setting.type() === "boolean" /* Common.Settings.SettingType.BOOLEAN */ || typeof setting.defaultValue === 'boolean') {
         return Directives.ref(e => {
@@ -130,7 +130,27 @@ export const bindToSetting = (setting, stringValidator) => {
                 return;
             }
             setting.addChangeListener(settingChanged);
-            setValue = bindCheckboxImpl(e, setting.set.bind(setting));
+            setValue =
+                bindCheckboxImpl(e, setting.set.bind(setting));
+            setValue(setting.get());
+        });
+    }
+    if (setting.type() === "regex" /* Common.Settings.SettingType.REGEX */ || setting instanceof Common.Settings.RegExpSetting) {
+        return Directives.ref(e => {
+            if (e === undefined) {
+                setting.removeChangeListener(settingChanged);
+                return;
+            }
+            setting.addChangeListener(settingChanged);
+            setValue = bindInput(e, setting.set.bind(setting), (value) => {
+                try {
+                    new RegExp(value);
+                    return true;
+                }
+                catch {
+                    return false;
+                }
+            }, /* numeric */ false);
             setValue(setting.get());
         });
     }

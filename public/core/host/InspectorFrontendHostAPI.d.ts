@@ -88,9 +88,7 @@ export interface SearchCompletedEvent {
 }
 export interface DoAidaConversationResult {
     statusCode?: number;
-    headers?: {
-        [x: string]: string;
-    };
+    headers?: Record<string, string>;
     netError?: number;
     netErrorName?: string;
     error?: string;
@@ -141,9 +139,9 @@ export interface KeyDownEvent {
     context?: number;
 }
 export interface SettingAccessEvent {
-    name: string;
-    numericValue?: number;
-    stringValue?: string;
+    name: number;
+    numeric_value?: number;
+    string_value?: number;
 }
 export interface EventTypes {
     [Events.AppendedToURL]: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
@@ -220,9 +218,7 @@ export interface InspectorFrontendHostAPI {
     registerPreference(name: string, options: {
         synced?: boolean;
     }): void;
-    getPreferences(callback: (arg0: {
-        [x: string]: string;
-    }) => void): void;
+    getPreferences(callback: (arg0: Record<string, string>) => void): void;
     getPreference(name: string, callback: (arg0: string) => void): void;
     setPreference(name: string, value: string): void;
     removePreference(name: string): void;
@@ -285,9 +281,7 @@ export interface ContextMenuDescriptor {
 }
 export interface LoadNetworkResourceResult {
     statusCode: number;
-    headers?: {
-        [x: string]: string;
-    };
+    headers?: Record<string, string>;
     netError?: number;
     netErrorName?: string;
     urlValid?: boolean;

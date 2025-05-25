@@ -54,17 +54,9 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     search(searchConfig: HeapSnapshotModel.HeapSnapshotModel.SearchConfig, filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<number[]>;
     interfaceDefinitions(): Promise<string>;
-    aggregatesWithFilter(filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<{
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.Aggregate;
-    }>;
-    aggregatesForDiff(interfaceDefinitions: string): Promise<{
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff;
-    }>;
-    calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: {
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff;
-    }): Promise<{
-        [x: string]: HeapSnapshotModel.HeapSnapshotModel.Diff;
-    }>;
+    aggregatesWithFilter(filter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.Aggregate>>;
+    aggregatesForDiff(interfaceDefinitions: string): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>>;
+    calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>): Promise<Record<string, HeapSnapshotModel.HeapSnapshotModel.Diff>>;
     nodeClassKey(snapshotObjectId: number): Promise<string | null>;
     createEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;
     createRetainingEdgesProvider(nodeIndex: number): HeapSnapshotProviderProxy;

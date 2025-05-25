@@ -155,7 +155,7 @@ export declare class ShadowModel implements InlineEditor.CSSShadowEditor.CSSShad
     setOffsetY(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     setBlurRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
     setSpreadRadius(value: InlineEditor.CSSShadowEditor.CSSLength): void;
-    renderContents(parent: HTMLElement): void;
+    renderContents(span: HTMLSpanElement): void;
 }
 declare const ShadowRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.ShadowMatch, any[]>;
@@ -211,8 +211,11 @@ declare const AnchorFunctionRenderer_base: abstract new () => {
 };
 export declare class AnchorFunctionRenderer extends AnchorFunctionRenderer_base {
     #private;
+    static decorateAnchorForAnchorLink(stylesPane: StylesSidebarPane, container: HTMLElement, { identifier, needsSpace }: {
+        identifier?: string;
+        needsSpace?: boolean;
+    }): Promise<void>;
     constructor(stylesPane: StylesSidebarPane);
-    anchorDecoratedForTest(): void;
     render(match: SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, context: RenderingContext): Node[];
 }
 declare const PositionAnchorRenderer_base: abstract new () => {
@@ -222,7 +225,6 @@ declare const PositionAnchorRenderer_base: abstract new () => {
 export declare class PositionAnchorRenderer extends PositionAnchorRenderer_base {
     #private;
     constructor(stylesPane: StylesSidebarPane);
-    anchorDecoratedForTest(): void;
     render(match: SDK.CSSPropertyParserMatchers.PositionAnchorMatch): Node[];
 }
 declare const PositionTryRenderer_base: abstract new () => {

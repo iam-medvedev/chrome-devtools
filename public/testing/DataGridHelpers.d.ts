@@ -8,7 +8,7 @@ export declare const getHeaderCells: (node: ParentNode, options?: {
 }) => HTMLTableCellElement[];
 export declare const getAllRows: (node: ParentNode) => HTMLTableRowElement[];
 export declare const assertGridContents: (gridComponent: HTMLElement, headerExpected: string[], rowsExpected: string[][]) => {
-    "__#227@#private": any;
+    "__#230@#private": any;
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
     striped: boolean;
     inline: boolean;
@@ -192,6 +192,7 @@ export declare const assertGridContents: (gridComponent: HTMLElement, headerExpe
     traverseNextNode(stayWithin?: Node): Node | null;
     traversePreviousNode(stayWithin?: Node): Node | null;
     deepTextContent(normalizeWhitespace?: boolean): string;
+    deepInnerText(): string;
     window(): Window;
     childTextNodes(): Node[];
     dispatchEvent(event: Event): boolean;

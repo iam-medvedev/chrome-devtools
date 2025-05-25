@@ -39,6 +39,7 @@ export declare class ServiceWorkerCacheModel extends SDKModel<EventTypes> implem
     interestGroupAccessed(_event: Protocol.Storage.InterestGroupAccessedEvent): void;
     interestGroupAuctionNetworkRequestCreated(_event: Protocol.Storage.InterestGroupAuctionNetworkRequestCreatedEvent): void;
     sharedStorageAccessed(_event: Protocol.Storage.SharedStorageAccessedEvent): void;
+    sharedStorageWorkletOperationExecutionFinished(_event: Protocol.Storage.SharedStorageWorkletOperationExecutionFinishedEvent): void;
     storageBucketCreatedOrUpdated(_event: Protocol.Storage.StorageBucketCreatedOrUpdatedEvent): void;
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     setThrottlerSchedulesAsSoonAsPossibleForTest(): void;

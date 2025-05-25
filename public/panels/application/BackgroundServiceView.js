@@ -424,7 +424,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
             const recordShortcuts = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction('background-service.toggle-recording')[0];
             emptyWidget.header = i18nString(UIStrings.noRecording);
             emptyWidget.text = i18nString(UIStrings.startRecordingToDebug, { PH1: i18nString(UIStrings.startRecordingEvents), PH2: recordShortcuts.title() });
-            emptyWidget.appendLink(this.createLearnMoreLink());
+            emptyWidget.link = this.createLearnMoreLink();
             const button = UI.UIUtils.createTextButton(i18nString(UIStrings.startRecordingEvents), () => this.toggleRecording(), { jslogContext: 'start-recording', variant: "tonal" /* Buttons.Button.Variant.TONAL */ });
             emptyWidget.contentElement.appendChild(button);
         }

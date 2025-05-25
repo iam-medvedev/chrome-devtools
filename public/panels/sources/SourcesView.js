@@ -515,7 +515,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         if (!(sourceFrame instanceof UISourceCodeFrame)) {
             return;
         }
-        const uiSourceCodeFrame = (sourceFrame);
+        const uiSourceCodeFrame = sourceFrame;
         uiSourceCodeFrame.commitEditing();
     }
     toggleBreakpointsActiveState(active) {

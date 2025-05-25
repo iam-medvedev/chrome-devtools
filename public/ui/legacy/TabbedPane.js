@@ -114,8 +114,8 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     rightToolbarInternal;
     allowTabReorder;
     automaticReorder;
-    constructor() {
-        super(true);
+    constructor(element) {
+        super(true, undefined, element);
         this.registerRequiredCSS(tabbedPaneStyles);
         this.element.classList.add('tabbed-pane');
         this.contentElement.classList.add('tabbed-pane-shadow');

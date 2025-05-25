@@ -130,9 +130,7 @@ export declare namespace PrivateAPI {
     interface AddRequestHeadersRequest {
         command: Commands.AddRequestHeaders;
         extensionId: string;
-        headers: {
-            [key: string]: string;
-        };
+        headers: Record<string, string>;
     }
     interface CreatePanelRequest {
         command: Commands.CreatePanel;
@@ -415,14 +413,10 @@ declare namespace APIImpl {
         inspectedWindow: PublicAPI.Chrome.DevTools.InspectedWindow;
     }
     interface ExtensionServerClient {
-        _callbacks: {
-            [key: string]: (response: unknown) => unknown;
-        };
-        _handlers: {
-            [key: string]: (request: {
-                arguments: unknown[];
-            }) => unknown;
-        };
+        _callbacks: Record<string, (response: unknown) => unknown>;
+        _handlers: Record<string, (request: {
+            arguments: unknown[];
+        }) => unknown>;
         _lastRequestId: number;
         _lastObjectId: number;
         _port: MessagePort;
@@ -454,17 +448,13 @@ declare namespace APIImpl {
         }): void;
     }
     interface Network extends PublicAPI.Chrome.DevTools.Network {
-        addRequestHeaders(headers: {
-            [key: string]: string;
-        }): void;
+        addRequestHeaders(headers: Record<string, string>): void;
     }
     interface Request extends PublicAPI.Chrome.DevTools.Request, HAR.Log.EntryDTO {
         _id: number;
     }
     interface Panels extends PublicAPI.Chrome.DevTools.Panels {
-        get SearchAction(): {
-            [key: string]: string;
-        };
+        get SearchAction(): Record<string, string>;
         setOpenResourceHandler(callback?: (resource: PublicAPI.Chrome.DevTools.Resource, lineNumber: number) => unknown): void;
         setThemeChangeHandler(callback?: (themeName: string) => unknown): void;
     }

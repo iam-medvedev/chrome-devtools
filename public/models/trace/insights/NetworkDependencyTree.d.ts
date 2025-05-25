@@ -33,7 +33,7 @@ export declare const UIStrings: {
     /**
      * @description Title of the table of the detected preconnect origins.
      */
-    readonly preconnectOriginsTableTitle: "Preconnect origins";
+    readonly preconnectOriginsTableTitle: "Preconnected origins";
     /**
      * @description Description of the table of the detected preconnect origins.
      */
@@ -43,9 +43,17 @@ export declare const UIStrings: {
      */
     readonly noPreconnectOrigins: "no origins were preconnected";
     /**
+     * @description A warning message that is shown when found more than 4 preconnected links
+     */
+    readonly tooManyPreconnectLinksWarning: "More than 4 `preconnect` connections were found. These should be used sparingly and only to the most important origins.";
+    /**
      * @description A warning message that is shown when the user added preconnect for some unnecessary origins.
      */
     readonly unusedWarning: "Unused preconnect. Only use `preconnect` for origins that the page is likely to request.";
+    /**
+     * @description A warning message that is shown when the user forget to set the `crossorigin` HTML attribute, or setting it to an incorrect value, on the link is a common mistake when adding preconnect links.
+     * */
+    readonly crossoriginWarning: "Unused preconnect. Check that the `crossorigin` attribute is used properly.";
     /**
      * @description Label for a column in a data table; entries will be the source of the origin.
      */
@@ -72,6 +80,7 @@ export declare const UIStrings: {
     readonly columnWastedMs: "Est LCP savings";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Common.UIString.LocalizedString;
+export declare const TOO_MANY_PRECONNECTS_THRESHOLD = 4;
 export interface CriticalRequestNode {
     request: Types.Events.SyntheticNetworkRequest;
     timeFromInitialRequest: Types.Timing.Micro;
@@ -79,11 +88,22 @@ export interface CriticalRequestNode {
     isLongest?: boolean;
     relatedRequests: Set<Types.Events.SyntheticNetworkRequest>;
 }
-export interface PreconnectOrigin {
+export type PreconnectedOrigin = PreconnectedOriginFromDom | PreconnectedOriginFromResponseHeader;
+export interface PreconnectedOriginFromDom {
     node_id: Protocol.DOM.BackendNodeId;
     frame?: string;
     url: string;
     unused: boolean;
+    crossorigin: boolean;
+    source: 'DOM';
+}
+export interface PreconnectedOriginFromResponseHeader {
+    url: string;
+    headerText: string;
+    request: Types.Events.SyntheticNetworkRequest;
+    unused: boolean;
+    crossorigin: boolean;
+    source: 'ResponseHeader';
 }
 export interface PreconnectCandidate {
     origin: Platform.DevToolsPath.UrlString;
@@ -93,9 +113,20 @@ export type NetworkDependencyTreeInsightModel = InsightModel<typeof UIStrings, {
     rootNodes: CriticalRequestNode[];
     maxTime: Types.Timing.Micro;
     fail: boolean;
-    preconnectOrigins: PreconnectOrigin[];
+    preconnectedOrigins: PreconnectedOrigin[];
     preconnectCandidates: PreconnectCandidate[];
 }>;
-export declare function generatePreconnectedOrigins(linkPreconnectEvents: Types.Events.LinkPreconnect[], contextRequests: Types.Events.SyntheticNetworkRequest[]): PreconnectOrigin[];
+/**
+ * Parses an HTTP Link header string into an array of url and related header text.
+ *
+ * Export the function for test purpose.
+ * @param linkHeaderValue The value of the HTTP Link header (e.g., '</style.css>; rel=preload; as=style, <https://example.com>; rel="preconnect"').
+ * @returns An array of url and header text objects if it contains `rel=preconnect`.
+ */
+export declare function handleLinkResponseHeader(linkHeaderValue: string): Array<{
+    url: string;
+    headerText: string;
+}>;
+export declare function generatePreconnectedOrigins(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[], preconnectCandidates: PreconnectCandidate[]): PreconnectedOrigin[];
 export declare function generatePreconnectCandidates(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[]): PreconnectCandidate[];
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): NetworkDependencyTreeInsightModel;

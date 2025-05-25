@@ -23,9 +23,7 @@ export declare class AXNodePropertyTreeElement extends UI.TreeOutline.TreeElemen
     appendRelatedNodeInline(relatedNode: Protocol.Accessibility.AXRelatedNode): void;
     appendRelatedNodeListValueElement(value: Protocol.Accessibility.AXValue): void;
 }
-export declare const TypeStyles: {
-    [x: string]: string;
-};
+export declare const TypeStyles: Record<string, string>;
 export declare const StringProperties: Set<Protocol.Accessibility.AXValueType>;
 export declare class AXNodePropertyTreePropertyElement extends AXNodePropertyTreeElement {
     private readonly property;

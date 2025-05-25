@@ -49,38 +49,37 @@ import { MemoryProfilePlugin, PerformanceProfilePlugin } from './ProfilePlugin.j
 import { ResourceOriginPlugin } from './ResourceOriginPlugin.js';
 import { SnippetsPlugin } from './SnippetsPlugin.js';
 import { SourcesPanel } from './SourcesPanel.js';
-export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFrame.SourceFrame.SourceFrameImpl) {
-    uiSourceCodeInternal;
-    muteSourceCodeEvents;
-    persistenceBinding;
-    uiSourceCodeEventListeners;
-    messageAndDecorationListeners;
-    boundOnBindingChanged;
+export class UISourceCodeFrame extends Common.ObjectWrapper
+    .eventMixin(SourceFrame.SourceFrame.SourceFrameImpl) {
+    #uiSourceCode;
+    #muteSourceCodeEvents = false;
+    #persistenceBinding;
+    #uiSourceCodeEventListeners = [];
+    #messageAndDecorationListeners = [];
+    #boundOnBindingChanged;
     // The active plugins. These are created in setContent, and
     // recreated when the binding changes
+    // Used in web tests
     plugins = [];
-    errorPopoverHelper;
+    #errorPopoverHelper;
     #sourcesPanelOpenedMetricsRecorded = false;
     constructor(uiSourceCode) {
         super(() => this.workingCopy());
-        this.uiSourceCodeInternal = uiSourceCode;
-        this.muteSourceCodeEvents = false;
-        this.persistenceBinding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
-        this.uiSourceCodeEventListeners = [];
-        this.messageAndDecorationListeners = [];
-        this.boundOnBindingChanged = this.onBindingChanged.bind(this);
+        this.#uiSourceCode = uiSourceCode;
+        this.#persistenceBinding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
+        this.#boundOnBindingChanged = this.onBindingChanged.bind(this);
         Common.Settings.Settings.instance()
             .moduleSetting('persistence-network-overrides-enabled')
             .addChangeListener(this.onNetworkPersistenceChanged, this);
-        this.errorPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this), 'sources.error');
-        this.errorPopoverHelper.setTimeout(100, 100);
+        this.#errorPopoverHelper = new UI.PopoverHelper.PopoverHelper(this.textEditor.editor.contentDOM, this.getErrorPopoverContent.bind(this), 'sources.error');
+        this.#errorPopoverHelper.setTimeout(100, 100);
         this.initializeUISourceCode();
     }
     async workingCopy() {
-        if (this.uiSourceCodeInternal.isDirty()) {
-            return this.uiSourceCodeInternal.workingCopyContentData();
+        if (this.#uiSourceCode.isDirty()) {
+            return this.#uiSourceCode.workingCopyContentData();
         }
-        return await this.uiSourceCodeInternal.requestContentData();
+        return await this.#uiSourceCode.requestContentData();
     }
     editorConfiguration(doc) {
         return [
@@ -100,10 +99,10 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         UI.Context.Context.instance().setFlavor(UISourceCodeFrame, null);
     }
     installMessageAndDecorationListeners() {
-        if (this.persistenceBinding) {
-            const networkSourceCode = this.persistenceBinding.network;
-            const fileSystemSourceCode = this.persistenceBinding.fileSystem;
-            this.messageAndDecorationListeners = [
+        if (this.#persistenceBinding) {
+            const networkSourceCode = this.#persistenceBinding.network;
+            const fileSystemSourceCode = this.#persistenceBinding.fileSystem;
+            this.#messageAndDecorationListeners = [
                 networkSourceCode.addEventListener(Workspace.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
                 networkSourceCode.addEventListener(Workspace.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
                 networkSourceCode.addEventListener(Workspace.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this),
@@ -112,25 +111,25 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             ];
         }
         else {
-            this.messageAndDecorationListeners = [
-                this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
-                this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
-                this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this),
+            this.#messageAndDecorationListeners = [
+                this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
+                this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
+                this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this),
             ];
         }
     }
     uiSourceCode() {
-        return this.uiSourceCodeInternal;
+        return this.#uiSourceCode;
     }
     setUISourceCode(uiSourceCode) {
         const loaded = uiSourceCode.contentLoaded() ? Promise.resolve() : uiSourceCode.requestContent();
-        const startUISourceCode = this.uiSourceCodeInternal;
+        const startUISourceCode = this.#uiSourceCode;
         loaded.then(async () => {
-            if (this.uiSourceCodeInternal !== startUISourceCode) {
+            if (this.#uiSourceCode !== startUISourceCode) {
                 return;
             }
             this.unloadUISourceCode();
-            this.uiSourceCodeInternal = uiSourceCode;
+            this.#uiSourceCode = uiSourceCode;
             if (uiSourceCode.workingCopy() !== this.textEditor.state.doc.toString()) {
                 await this.setContentDataOrError(Promise.resolve(uiSourceCode.workingCopyContentData()));
             }
@@ -141,24 +140,24 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         }, console.error);
     }
     unloadUISourceCode() {
-        Common.EventTarget.removeEventListeners(this.messageAndDecorationListeners);
-        Common.EventTarget.removeEventListeners(this.uiSourceCodeEventListeners);
-        this.uiSourceCodeInternal.removeWorkingCopyGetter();
-        Persistence.Persistence.PersistenceImpl.instance().unsubscribeFromBindingEvent(this.uiSourceCodeInternal, this.boundOnBindingChanged);
+        Common.EventTarget.removeEventListeners(this.#messageAndDecorationListeners);
+        Common.EventTarget.removeEventListeners(this.#uiSourceCodeEventListeners);
+        this.#uiSourceCode.removeWorkingCopyGetter();
+        Persistence.Persistence.PersistenceImpl.instance().unsubscribeFromBindingEvent(this.#uiSourceCode, this.#boundOnBindingChanged);
     }
     initializeUISourceCode() {
-        this.uiSourceCodeEventListeners = [
-            this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this),
-            this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this),
-            this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.onTitleChanged, this),
+        this.#uiSourceCodeEventListeners = [
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this),
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this),
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.onTitleChanged, this),
         ];
-        Persistence.Persistence.PersistenceImpl.instance().subscribeForBindingEvent(this.uiSourceCodeInternal, this.boundOnBindingChanged);
+        Persistence.Persistence.PersistenceImpl.instance().subscribeForBindingEvent(this.#uiSourceCode, this.#boundOnBindingChanged);
         this.installMessageAndDecorationListeners();
         this.updateStyle();
         const canPrettyPrint = FormatterActions.FORMATTABLE_MEDIA_TYPES.includes(this.contentType) &&
-            !this.uiSourceCodeInternal.project().canSetFileContent() &&
-            Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal) === null;
-        const autoPrettyPrint = !this.uiSourceCodeInternal.contentType().isFromSourceMap();
+            !this.#uiSourceCode.project().canSetFileContent() &&
+            Persistence.Persistence.PersistenceImpl.instance().binding(this.#uiSourceCode) === null;
+        const autoPrettyPrint = !this.#uiSourceCode.contentType().isFromSourceMap();
         this.setCanPrettyPrint(canPrettyPrint, autoPrettyPrint);
     }
     wasShown() {
@@ -171,52 +170,52 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         }
         super.willHide();
         UI.Context.Context.instance().setFlavor(UISourceCodeFrame, null);
-        this.uiSourceCodeInternal.removeWorkingCopyGetter();
+        this.#uiSourceCode.removeWorkingCopyGetter();
     }
     getContentType() {
-        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal);
-        const mimeType = binding ? binding.network.mimeType() : this.uiSourceCodeInternal.mimeType();
+        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.#uiSourceCode);
+        const mimeType = binding ? binding.network.mimeType() : this.#uiSourceCode.mimeType();
         return Common.ResourceType.ResourceType.simplifyContentType(mimeType);
     }
     canEditSourceInternal() {
         if (this.hasLoadError()) {
             return false;
         }
-        if (this.uiSourceCodeInternal.editDisabled()) {
+        if (this.#uiSourceCode.editDisabled()) {
             return false;
         }
-        if (this.uiSourceCodeInternal.mimeType() === 'application/wasm') {
+        if (this.#uiSourceCode.mimeType() === 'application/wasm') {
             return false;
         }
-        if (Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal)) {
+        if (Persistence.Persistence.PersistenceImpl.instance().binding(this.#uiSourceCode)) {
             return true;
         }
-        if (this.uiSourceCodeInternal.project().canSetFileContent()) {
+        if (this.#uiSourceCode.project().canSetFileContent()) {
             return true;
         }
-        if (this.uiSourceCodeInternal.project().isServiceProject()) {
+        if (this.#uiSourceCode.project().isServiceProject()) {
             return false;
         }
-        if (this.uiSourceCodeInternal.project().type() === Workspace.Workspace.projectTypes.Network &&
+        if (this.#uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network &&
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().active()) {
             return true;
         }
         // Because live edit fails on large whitespace changes, pretty printed scripts are not editable.
-        if (this.pretty && this.uiSourceCodeInternal.contentType().hasScripts()) {
+        if (this.pretty && this.#uiSourceCode.contentType().hasScripts()) {
             return false;
         }
-        return this.uiSourceCodeInternal.contentType() !== Common.ResourceType.resourceTypes.Document;
+        return this.#uiSourceCode.contentType() !== Common.ResourceType.resourceTypes.Document;
     }
     onNetworkPersistenceChanged() {
         this.setEditable(this.canEditSourceInternal());
     }
     commitEditing() {
-        if (!this.uiSourceCodeInternal.isDirty()) {
+        if (!this.#uiSourceCode.isDirty()) {
             return;
         }
-        this.muteSourceCodeEvents = true;
-        this.uiSourceCodeInternal.commitWorkingCopy();
-        this.muteSourceCodeEvents = false;
+        this.#muteSourceCodeEvents = true;
+        this.#uiSourceCode.commitWorkingCopy();
+        this.#muteSourceCodeEvents = false;
     }
     async setContent(content) {
         this.disposePlugins();
@@ -226,43 +225,43 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             plugin.editorInitialized(this.textEditor);
         }
         this.#recordSourcesPanelOpenedMetrics();
-        Common.EventTarget.fireEvent('source-file-loaded', this.uiSourceCodeInternal.displayName(true));
+        Common.EventTarget.fireEvent('source-file-loaded', this.#uiSourceCode.displayName(true));
     }
     createMessage(origin) {
         const { lineNumber, columnNumber } = this.uiLocationToEditorLocation(origin.lineNumber(), origin.columnNumber());
         return new RowMessage(origin, lineNumber, columnNumber);
     }
     allMessages() {
-        const origins = this.persistenceBinding !== null ?
-            [...this.persistenceBinding.network.messages(), ...this.persistenceBinding.fileSystem.messages()] :
-            [...this.uiSourceCodeInternal.messages()];
+        const origins = this.#persistenceBinding !== null ?
+            [...this.#persistenceBinding.network.messages(), ...this.#persistenceBinding.fileSystem.messages()] :
+            [...this.#uiSourceCode.messages()];
         return origins.map(origin => this.createMessage(origin));
     }
     onTextChanged() {
         const wasPretty = this.pretty;
         super.onTextChanged();
-        this.errorPopoverHelper.hidePopover();
+        this.#errorPopoverHelper.hidePopover();
         SourcesPanel.instance().updateLastModificationTime();
-        this.muteSourceCodeEvents = true;
+        this.#muteSourceCodeEvents = true;
         // TODO: Bring back `isClean()` check and
         // resetting working copy after making sure that
         // `isClean()` correctly reports true only when
         // the original code and the working copy is the same.
-        this.uiSourceCodeInternal.setWorkingCopyGetter(() => this.textEditor.state.sliceDoc());
-        this.muteSourceCodeEvents = false;
+        this.#uiSourceCode.setWorkingCopyGetter(() => this.textEditor.state.sliceDoc());
+        this.#muteSourceCodeEvents = false;
         if (wasPretty !== this.pretty) {
             this.updateStyle();
             this.reloadPlugins();
         }
     }
     onWorkingCopyChanged() {
-        if (this.muteSourceCodeEvents) {
+        if (this.#muteSourceCodeEvents) {
             return;
         }
-        this.maybeSetContent(this.uiSourceCodeInternal.workingCopyContentData());
+        this.maybeSetContent(this.#uiSourceCode.workingCopyContentData());
     }
     onWorkingCopyCommitted() {
-        if (!this.muteSourceCodeEvents) {
+        if (!this.#muteSourceCodeEvents) {
             this.maybeSetContent(this.uiSourceCode().workingCopyContentData());
         }
         this.contentCommitted();
@@ -295,8 +294,8 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         ];
     }
     loadPlugins() {
-        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal);
-        const pluginUISourceCode = binding ? binding.network : this.uiSourceCodeInternal;
+        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.#uiSourceCode);
+        const pluginUISourceCode = binding ? binding.network : this.#uiSourceCode;
         for (const pluginType of UISourceCodeFrame.sourceFramePlugins()) {
             if (pluginType.accepts(pluginUISourceCode)) {
                 this.plugins.push(new pluginType(pluginUISourceCode, this));
@@ -311,12 +310,12 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         this.plugins = [];
     }
     onBindingChanged() {
-        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.uiSourceCodeInternal);
-        if (binding === this.persistenceBinding) {
+        const binding = Persistence.Persistence.PersistenceImpl.instance().binding(this.#uiSourceCode);
+        if (binding === this.#persistenceBinding) {
             return;
         }
         this.unloadUISourceCode();
-        this.persistenceBinding = binding;
+        this.#persistenceBinding = binding;
         this.initializeUISourceCode();
         this.reloadMessages();
         this.reloadPlugins();
@@ -336,9 +335,9 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
     }
     populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
         super.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
-        contextMenu.appendApplicableItems(this.uiSourceCodeInternal);
+        contextMenu.appendApplicableItems(this.#uiSourceCode);
         const location = this.editorLocationToUILocation(lineNumber, columnNumber);
-        contextMenu.appendApplicableItems(new Workspace.UISourceCode.UILocation(this.uiSourceCodeInternal, location.lineNumber, location.columnNumber));
+        contextMenu.appendApplicableItems(new Workspace.UISourceCode.UILocation(this.#uiSourceCode, location.lineNumber, location.columnNumber));
         for (const plugin of this.plugins) {
             plugin.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
         }
@@ -350,7 +349,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
         }
     }
     dispose() {
-        this.errorPopoverHelper.dispose();
+        this.#errorPopoverHelper.dispose();
         this.disposePlugins();
         this.unloadUISourceCode();
         this.textEditor.editor.destroy();
@@ -447,8 +446,8 @@ export class UISourceCodeFrame extends Common.ObjectWrapper.eventMixin(SourceFra
             return;
         }
         this.#sourcesPanelOpenedMetricsRecorded = true;
-        const mimeType = Common.ResourceType.ResourceType.mimeFromURL(this.uiSourceCodeInternal.url());
-        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? '', this.uiSourceCodeInternal.contentType().isFromSourceMap(), TextUtils.TextUtils.isMinified(this.uiSourceCodeInternal.content()), this.uiSourceCodeInternal.url().startsWith('snippet://'), this.uiSourceCodeInternal.url().startsWith('debugger://'));
+        const mimeType = Common.ResourceType.ResourceType.mimeFromURL(this.#uiSourceCode.url());
+        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? '', this.#uiSourceCode.contentType().isFromSourceMap(), TextUtils.TextUtils.isMinified(this.#uiSourceCode.content()), this.#uiSourceCode.url().startsWith('snippet://'), this.#uiSourceCode.url().startsWith('debugger://'));
         Host.userMetrics.sourcesPanelFileOpened(mediaType);
     }
 }

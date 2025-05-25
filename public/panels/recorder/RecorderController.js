@@ -27,11 +27,9 @@ import * as Components from './components/components.js';
 import * as Converters from './converters/converters.js';
 import * as Extensions from './extensions/extensions.js';
 import * as Models from './models/models.js';
-import recorderControllerStylesRaw from './recorderController.css.js';
+import recorderControllerStyles from './recorderController.css.js';
 import * as Events from './RecorderEvents.js';
 // TODO(crbug.com/391381439): Fully migrate off of Constructable Stylesheets.
-const recorderControllerStyles = new CSSStyleSheet();
-recorderControllerStyles.replaceSync(recorderControllerStylesRaw);
 const { html, Decorators, LitElement } = Lit;
 const { customElement, state } = Decorators;
 const UIStrings = {
@@ -150,7 +148,6 @@ const CONVERTER_ID_TO_METRIC = {
     ["lighthouse" /* Models.ConverterIds.ConverterIds.LIGHTHOUSE */]: 5 /* Host.UserMetrics.RecordingExported.TO_LIGHTHOUSE */,
 };
 let RecorderController = class RecorderController extends LitElement {
-    static styles = [recorderControllerStyles];
     #storage = Models.RecordingStorage.RecordingStorage.instance();
     #screenshotStorage = Models.ScreenshotStorage.ScreenshotStorage.instance();
     // TODO: we keep the functionality to allow/disallow replay but right now it's not used.
@@ -1079,6 +1076,7 @@ let RecorderController = class RecorderController extends LitElement {
             })),
         ];
         return html `
+        <style>${recorderControllerStyles}</style>
         <div class="wrapper">
           <div class="header" jslog=${VisualLogging.toolbar()}>
             <devtools-button
