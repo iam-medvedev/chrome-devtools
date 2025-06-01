@@ -1,7 +1,7 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { type AidaClientResult, type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type SettingAccessEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
+import { type AidaClientResult, type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type FunctionCallEvent, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type SettingAccessEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
 /**
  * The InspectorFrontendHostStub is a stub interface used the frontend is loaded like a webpage. Examples:
  *   - devtools://devtools/bundled/devtools_app.html
@@ -115,6 +115,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     recordChange(_event: ChangeEvent): void;
     recordKeyDown(_event: KeyDownEvent): void;
     recordSettingAccess(_event: SettingAccessEvent): void;
+    recordFunctionCall(_event: FunctionCallEvent): void;
 }
 export declare let InspectorFrontendHostInstance: InspectorFrontendHostStub;
 export declare function isUnderTest(prefs?: Record<string, string>): boolean;

@@ -143,6 +143,10 @@ export interface SettingAccessEvent {
     numeric_value?: number;
     string_value?: number;
 }
+export interface FunctionCallEvent {
+    name: number;
+    context?: number;
+}
 export interface EventTypes {
     [Events.AppendedToURL]: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
     [Events.CanceledSaveURL]: Platform.DevToolsPath.UrlString;
@@ -261,6 +265,7 @@ export interface InspectorFrontendHostAPI {
     recordChange(event: ChangeEvent): void;
     recordKeyDown(event: KeyDownEvent): void;
     recordSettingAccess(event: SettingAccessEvent): void;
+    recordFunctionCall(event: FunctionCallEvent): void;
 }
 export interface AcceleratorDescriptor {
     keyCode: number;
@@ -327,7 +332,6 @@ export interface SyncInformation {
 export declare const enum EnumeratedHistogram {
     ActionTaken = "DevTools.ActionTaken",
     PanelShown = "DevTools.PanelShown",
-    SidebarPaneShown = "DevTools.SidebarPaneShown",
     KeyboardShortcutFired = "DevTools.KeyboardShortcutFired",
     IssueCreated = "DevTools.IssueCreated",
     IssuesPanelIssueExpanded = "DevTools.IssuesPanelIssueExpanded",

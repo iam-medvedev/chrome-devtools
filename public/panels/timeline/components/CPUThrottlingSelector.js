@@ -130,6 +130,7 @@ export class CPUThrottlingSelector extends HTMLElement {
         const hasCalibratedOnce = setting.low || setting.mid;
         const calibrationLabel = hasCalibratedOnce ? i18nString(UIStrings.recalibrate) : i18nString(UIStrings.calibrate);
         // clang-format off
+        /* eslint-disable rulesdir/no-deprecated-component-usages */
         const output = html `
       <style>${cpuThrottlingSelectorStyles}</style>
       <devtools-select-menu
@@ -173,6 +174,7 @@ export class CPUThrottlingSelector extends HTMLElement {
       </devtools-select-menu>
       ${recommendedInfoEl}
     `;
+        /* eslint-enable rulesdir/no-deprecated-component-usages */
         // clang-format on
         Lit.render(output, this.#shadow, { host: this });
     };

@@ -128,8 +128,6 @@ export class Aggregate {
     maxRet;
     name;
     idxs;
-    constructor() {
-    }
 }
 export class AggregateForDiff {
     name;
@@ -173,8 +171,6 @@ export class DiffForClass {
     addedIndexes;
     countDelta;
     sizeDelta;
-    constructor() {
-    }
 }
 export class ComparatorConfig {
     fieldName1;
@@ -198,8 +194,6 @@ export class WorkerCommand {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     methodArguments;
     source;
-    constructor() {
-    }
 }
 export class ItemsRange {
     startPosition;

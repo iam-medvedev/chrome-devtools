@@ -653,20 +653,6 @@ export var PanelWithLocation;
     /* eslint-enable @typescript-eslint/naming-convention */
     PanelWithLocation[PanelWithLocation["MAX_VALUE"] = 133] = "MAX_VALUE";
 })(PanelWithLocation || (PanelWithLocation = {}));
-export var ElementsSidebarTabCodes;
-(function (ElementsSidebarTabCodes) {
-    /* eslint-disable @typescript-eslint/naming-convention */
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["OtherSidebarPane"] = 0] = "OtherSidebarPane";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["styles"] = 1] = "styles";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["computed"] = 2] = "computed";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["elements.layout"] = 3] = "elements.layout";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["elements.event-listeners"] = 4] = "elements.event-listeners";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["elements.dom-breakpoints"] = 5] = "elements.dom-breakpoints";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["elements.dom-properties"] = 6] = "elements.dom-properties";
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["accessibility.view"] = 7] = "accessibility.view";
-    /* eslint-enable @typescript-eslint/naming-convention */
-    ElementsSidebarTabCodes[ElementsSidebarTabCodes["MAX_VALUE"] = 8] = "MAX_VALUE";
-})(ElementsSidebarTabCodes || (ElementsSidebarTabCodes = {}));
 export var MediaTypes;
 (function (MediaTypes) {
     /* eslint-disable @typescript-eslint/naming-convention */

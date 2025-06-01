@@ -2,6 +2,7 @@ import * as Bindings from '../models/bindings/bindings.js';
 import * as Trace from '../models/trace/trace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
+import * as UI from '../ui/legacy/legacy.js';
 export declare class MockFlameChartDelegate implements PerfUI.FlameChart.FlameChartDelegate {
     windowChanged(_startTime: number, _endTime: number, _animate: boolean): void;
     updateRangeSelection(_startTime: number, _endTime: number): void;
@@ -31,8 +32,12 @@ export declare function getMainFlameChartWithTracks(context: Mocha.Context | nul
 export interface RenderFlameChartOptions {
     /**
      * The trace file to import. You must include `.json.gz` at the end of the file name.
+     * Alternatively, you can provide the actual file. This is useful only if you
+     * are providing a mocked file; generally you should prefer to pass the file
+     * name so that the TraceLoader can take care of loading and caching the
+     * trace.
      */
-    traceFile: string;
+    traceFile: string | Trace.Handlers.Types.ParsedTrace;
     /**
      * Filter the tracks that will be rendered by their name. The name here is
      * the user visible name that is drawn onto the flame chart.
@@ -45,6 +50,20 @@ export interface RenderFlameChartOptions {
     expandTracks?: (trackName: string, trackIndex: number) => boolean;
     customStartTime?: Trace.Types.Timing.Milli;
     customEndTime?: Trace.Types.Timing.Milli;
+    /**
+     * A custom height in pixels. By default a height is chosen that will
+     * vertically fit the entire FlameChart.
+     * (calculated based on the pixel offset of the last visible track.)
+     */
+    customHeight?: number;
+    /**
+     * When the frames track renders screenshots, we do so async, as we have to
+     * fetch screenshots first to draw them. If this flag is `true`, we block and
+     * preload all the screenshots before rendering, thus making it faster in a
+     * test to expand the frames track as it can be done with no async calls to
+     * fetch images.
+     */
+    preloadScreenshots?: boolean;
 }
 /**
  * Renders a flame chart into the unit test DOM that renders a real provided
@@ -55,6 +74,7 @@ export declare function renderFlameChartIntoDOM(context: Mocha.Context | null, o
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
     target: HTMLElement;
+    parsedTrace: Trace.Handlers.Types.ParsedTrace;
 }>;
 /**
  * Draws the network track in the flame chart using the legacy system.
@@ -162,6 +182,16 @@ export interface FlameChartWithFakeProviderOptions {
  * @returns A promise that resolves when the flame chart is rendered.
  */
 export declare function renderFlameChartWithFakeProvider(provider: FakeFlameChartProvider, options?: FlameChartWithFakeProviderOptions): Promise<void>;
+/**
+ * Renders a widget into an element that has the right styling to be a VBox.
+ * Useful as many of the Performance Panel elements are rendered like this and
+ * need a parent that is flex + has a height & width in order to render
+ * correctly for screenshot tests.
+ */
+export declare function renderWidgetInVbox(widget: UI.Widget.Widget, opts?: {
+    width?: number;
+    height?: number;
+}): void;
 export declare function getMainThread(data: Trace.Handlers.ModelHandlers.Renderer.RendererHandlerData): Trace.Handlers.ModelHandlers.Renderer.RendererThread;
 type ParsedTrace = Trace.Handlers.Types.ParsedTrace;
 export declare function getBaseTraceParseModelData(overrides?: Partial<ParsedTrace>): ParsedTrace;

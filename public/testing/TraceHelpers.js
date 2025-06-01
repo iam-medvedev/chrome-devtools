@@ -77,7 +77,16 @@ export async function renderFlameChartIntoDOM(context, options) {
         forceNew: true,
         debuggerWorkspaceBinding,
     });
-    const { parsedTrace } = await TraceLoader.traceEngine(context, options.traceFile);
+    let parsedTrace = null;
+    if (typeof options.traceFile === 'string') {
+        parsedTrace = (await TraceLoader.traceEngine(context, options.traceFile)).parsedTrace;
+    }
+    else {
+        parsedTrace = options.traceFile;
+    }
+    if (options.preloadScreenshots) {
+        await Timeline.Utils.ImageCache.preload(parsedTrace.Screenshots.screenshots ?? []);
+    }
     const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
     const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
     dataProvider.setModel(parsedTrace, entityMapper);
@@ -94,19 +103,17 @@ export async function renderFlameChartIntoDOM(context, options) {
     const target = document.createElement('div');
     target.innerHTML = `<style>${UI.inspectorCommonStyles}</style>`;
     const timingsTrackOffset = flameChart.levelToOffset(dataProvider.maxStackDepth());
-    // Allow an extra 10px so no scrollbar is shown.
-    target.style.height = `${timingsTrackOffset + 10}px`;
+    // Allow an extra 10px so no scrollbar is shown if using the default height
+    // that fits everything inside.
+    const heightPixels = options.customHeight ?? timingsTrackOffset + 10;
+    target.style.height = `${heightPixels}px`;
     target.style.display = 'flex';
     target.style.width = '800px';
     renderElementIntoDOM(target);
     flameChart.show(target);
     flameChart.update();
     await raf();
-    return {
-        flameChart,
-        dataProvider,
-        target,
-    };
+    return { flameChart, dataProvider, target, parsedTrace };
 }
 /**
  * Draws the network track in the flame chart using the legacy system.
@@ -550,6 +557,22 @@ export async function renderFlameChartWithFakeProvider(provider, options) {
     flameChart.show(target);
     flameChart.update();
     await raf();
+}
+/**
+ * Renders a widget into an element that has the right styling to be a VBox.
+ * Useful as many of the Performance Panel elements are rendered like this and
+ * need a parent that is flex + has a height & width in order to render
+ * correctly for screenshot tests.
+ */
+export function renderWidgetInVbox(widget, opts = {}) {
+    const target = document.createElement('div');
+    target.innerHTML = `<style>${UI.inspectorCommonStyles}</style>`;
+    target.classList.add('flex-auto', 'vbox');
+    target.style.width = (opts.width ?? 800) + 'px';
+    target.style.height = (opts.height ?? 600) + 'px';
+    widget.markAsRoot();
+    widget.show(target);
+    renderElementIntoDOM(target);
 }
 export function getMainThread(data) {
     let mainThread = null;

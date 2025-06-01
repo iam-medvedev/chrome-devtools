@@ -162,14 +162,19 @@ export class NetworkRequestDetails extends HTMLElement {
         if (!value) {
             return null;
         }
+        // clang-format off
         return html `
-      <div class="network-request-details-row"><div class="title">${title}</div><div class="value">${value}</div></div>
-    `;
+      <div class="network-request-details-row">
+        <div class="title">${title}</div>
+        <div class="value">${value}</div>
+      </div>`;
+        // clang-format on
     }
     #renderServerTimings() {
         if (!this.#serverTimings) {
             return Lit.nothing;
         }
+        // clang-format off
         return html `
       <div class="column-divider"></div>
       <div class="network-request-details-col server-timings">
@@ -184,8 +189,8 @@ export class NetworkRequestDetails extends HTMLElement {
               <div class=${classes}>${timing.value || '-'}</div>
           `;
         })}
-      </div>
-    `;
+      </div>`;
+        // clang-format on
     }
     #renderURL() {
         if (!this.#networkRequest) {
@@ -282,9 +287,13 @@ export class NetworkRequestDetails extends HTMLElement {
         if (!link) {
             return null;
         }
+        // clang-format off
         return html `
-      <div class="network-request-details-item"><div class="title">${i18nString(UIStrings.initiatedBy)}</div><div class="value">${link}</div></div>
-    `;
+      <div class="network-request-details-item">
+        <div class="title">${i18nString(UIStrings.initiatedBy)}</div>
+        <div class="value">${link}</div>
+      </div>`;
+        // clang-format on
     }
     #renderBlockingRow() {
         if (!this.#networkRequest || !Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#networkRequest)) {
@@ -320,10 +329,11 @@ export class NetworkRequestDetails extends HTMLElement {
         }
         const requestPreviewElement = this.#requestPreviewElements.get(this.#networkRequest);
         if (requestPreviewElement) {
+            // clang-format off
             return html `
         <div class="network-request-details-col">${requestPreviewElement}</div>
-        <div class="column-divider"></div>
-      `;
+        <div class="column-divider"></div>`;
+            // clang-format on
         }
         return null;
     }

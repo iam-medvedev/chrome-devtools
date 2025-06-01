@@ -147,6 +147,8 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/NetworkItemView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const requestToResponseView = new WeakMap();
+const requestToPreviewView = new WeakMap();
 export class NetworkItemView extends UI.TabbedPane.TabbedPane {
     requestInternal;
     resourceViewTabSetting;
@@ -191,12 +193,15 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         }
         else if (request.mimeType === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */) {
             this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EVENT_SOURCE */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
-            this.responseView = new RequestResponseView(request);
+            this.responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
+            requestToResponseView.set(request, this.responseView);
             this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
         }
         else {
-            this.responseView = new RequestResponseView(request);
-            const previewView = new RequestPreviewView(request);
+            this.responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
+            requestToResponseView.set(request, this.responseView);
+            const previewView = requestToPreviewView.get(request) ?? new RequestPreviewView(request);
+            requestToPreviewView.set(request, previewView);
             this.appendTab("preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.PREVIEW */, i18nString(UIStrings.preview), previewView, i18nString(UIStrings.responsePreview));
             const signedExchangeInfo = request.signedExchangeInfo();
             if (signedExchangeInfo?.errors?.length) {

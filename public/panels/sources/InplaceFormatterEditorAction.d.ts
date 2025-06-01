@@ -4,7 +4,6 @@ export declare class InplaceFormatterEditorAction implements EditorAction {
     private button;
     private sourcesView;
     private uiSourceCodeTitleChangedEvent;
-    constructor();
     static instance(opts?: {
         forceNew: boolean | null;
     }): InplaceFormatterEditorAction;

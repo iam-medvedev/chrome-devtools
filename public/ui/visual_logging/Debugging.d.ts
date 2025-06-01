@@ -3,7 +3,7 @@ import { type LoggingConfig } from './LoggingConfig.js';
 import { type LoggingState } from './LoggingState.js';
 export declare function setVeDebuggingEnabled(enabled: boolean, inspect?: (query: string) => void): void;
 export declare function processForDebugging(loggable: Loggable): void;
-type EventType = 'Click' | 'Drag' | 'Hover' | 'Change' | 'KeyDown' | 'Resize' | 'SettingAccess';
+type EventType = 'Click' | 'Drag' | 'Hover' | 'Change' | 'KeyDown' | 'Resize' | 'SettingAccess' | 'FunctionCall';
 export declare function processEventForDebugging(event: EventType, state: LoggingState | null, extraInfo?: EventAttributes): void;
 export declare function processEventForIntuitiveDebugging(event: EventType, state: LoggingState | null, extraInfo?: EventAttributes): void;
 export declare function processEventForTestDebugging(event: EventType, state: LoggingState | null, _extraInfo?: EventAttributes): void;

@@ -54,7 +54,12 @@ export async function format(contentType, mimeType, content, indent = Common.Set
 export async function formatScriptContent(mimeType, content, indent = Common.Settings.Settings.instance().moduleSetting('text-editor-indent').get()) {
     const originalContent = content.replace(/\r\n?|[\n\u2028\u2029]/g, '\n').replace(/^\uFEFF/, '');
     const pool = formatterWorkerPool();
-    const formatResult = await pool.format(mimeType, originalContent, indent);
+    let formatResult = { content: originalContent, mapping: { original: [], formatted: [] } };
+    try {
+        formatResult = await pool.format(mimeType, originalContent, indent);
+    }
+    catch {
+    }
     const originalContentLineEndings = Platform.StringUtilities.findLineEndingIndexes(originalContent);
     const formattedContentLineEndings = Platform.StringUtilities.findLineEndingIndexes(formatResult.content);
     const sourceMapping = new FormatterSourceMappingImpl(originalContentLineEndings, formattedContentLineEndings, formatResult.mapping);

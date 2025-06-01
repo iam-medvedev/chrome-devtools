@@ -11,6 +11,7 @@
         "timelinePaintProfiler.css.js",
         "timelinePanel.css.js",
         "timelineSelectorStatsView.css.js",
-        "timelineStatusDialog.css.js"
+        "timelineStatusDialog.css.js",
+        "timelineTreeView.css.js"
     ]
 }

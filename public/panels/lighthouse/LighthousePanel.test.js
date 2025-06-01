@@ -26,6 +26,7 @@ describeWithMockConnection('LighthousePanel', () => {
         },
     };
     beforeEach(async () => {
+        stubNoopSettings();
         Lighthouse = await import('./lighthouse.js');
         const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
@@ -48,10 +49,10 @@ describeWithMockConnection('LighthousePanel', () => {
         sinon.stub(protocolService, 'detach').resolves();
         sinon.stub(protocolService, 'collectLighthouseResults').resolves(LH_REPORT);
         controller = new Lighthouse.LighthouseController.LighthouseController(protocolService);
-        stubNoopSettings();
+        sinon.stub(controller, 'getFlags').returns({ formFactor: 'desktop', mode: 'navigation' });
     });
     // Failing due to StartView not finding settings title.
-    it.skip('[crbug.com/326214132] restores the original URL when done', async () => {
+    it('restores the original URL when done', async () => {
         const instance = Lighthouse.LighthousePanel.LighthousePanel.instance({ forceNew: true, protocolService, controller });
         void instance.handleCompleteRun();
         await new Promise(resolve => resourceTreeModelNavigate.withArgs(URL).callsFake(() => {
@@ -60,7 +61,7 @@ describeWithMockConnection('LighthousePanel', () => {
         }));
     });
     // Failing due to StartView not finding settings title.
-    it.skip('[crbug.com/326214132] waits for main taget to load before linkifying', async () => {
+    it('waits for main target to load before linkifying', async () => {
         const instance = Lighthouse.LighthousePanel.LighthousePanel.instance({ forceNew: true, protocolService, controller });
         void instance.handleCompleteRun();
         await new Promise(resolve => sinon.stub(Lighthouse.LighthouseReportRenderer.LighthouseReportRenderer, 'linkifyNodeDetails')

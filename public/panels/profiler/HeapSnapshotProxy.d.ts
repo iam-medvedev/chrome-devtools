@@ -84,7 +84,6 @@ export declare class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     maxJSObjectId(): number;
 }
 export declare class HeapSnapshotProviderProxy extends HeapSnapshotProxyObject implements ChildrenProvider {
-    constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     nodePosition(snapshotObjectId: number): Promise<number>;
     isEmpty(): Promise<boolean>;
     serializeItemsRange(startPosition: number, endPosition: number): Promise<HeapSnapshotModel.HeapSnapshotModel.ItemsRange>;

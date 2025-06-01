@@ -5,9 +5,6 @@ import * as Trace from '../../models/trace/trace.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 export class IsLong extends Trace.Extras.TraceFilter.TraceFilter {
     #minimumRecordDurationMilli = Trace.Types.Timing.Milli(0);
-    constructor() {
-        super();
-    }
     setMinimumRecordDuration(value) {
         this.#minimumRecordDurationMilli = value;
     }
@@ -17,9 +14,6 @@ export class IsLong extends Trace.Extras.TraceFilter.TraceFilter {
     }
 }
 export class Category extends Trace.Extras.TraceFilter.TraceFilter {
-    constructor() {
-        super();
-    }
     accept(event) {
         return !TimelineUIUtils.eventStyle(event).category.hidden;
     }

@@ -25,6 +25,7 @@ export declare const DEFAULT_AUTO_DISMISS_MS = 5000;
  */
 export declare class Snackbar extends HTMLElement {
     #private;
+    static snackbarQueue: Snackbar[];
     /**
      * Reflects the `dismiss-timeout` attribute. Sets the message to be displayed on the snackbar.
      */

@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { dispatchClickEvent, doubleRaf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import * as RenderCoordinator from '../components/render_coordinator/render_coordinator.js';
 import * as UI from './legacy.js';
 describeWithLocale('Toolbar', () => {
@@ -141,15 +142,14 @@ describeWithLocale('Toolbar', () => {
                 buttons: 1,
             });
             element.dispatchEvent(mouseDownEvent);
-            await doubleRaf(); // give the timer time to resolve + initiate the context menu
         }
-        // Flaky
-        it.skip('[crbug.com/404486704] creates the context menu if it is enabled', async () => {
+        it('creates the context menu if it is enabled', async () => {
             const contextHandler = sinon.stub();
             const menuButton = createToolbarWithButton(contextHandler);
             menuButton.setEnabled(true);
+            const contextHandlerCalled = expectCall(contextHandler);
             await dispatchMouseDownEvent(menuButton.element);
-            sinon.assert.called(contextHandler);
+            await contextHandlerCalled;
         });
         it('does not create a context menu if it is not enabled', async () => {
             const contextHandler = sinon.stub();

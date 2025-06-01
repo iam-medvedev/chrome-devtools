@@ -47,8 +47,11 @@ export class CSSShadowSwatch extends HTMLElement {
     constructor(model) {
         super();
         this.#model = model;
-        render(html `<style>${cssShadowSwatchStyles}</style
-               ><devtools-icon tabindex=-1 name="shadow" class="shadow-swatch-icon"></devtools-icon>`, this, { host: this });
+        // clang-format off
+        render(html `
+        <style>${cssShadowSwatchStyles}</style>
+        <devtools-icon tabindex=-1 name="shadow" class="shadow-swatch-icon"></devtools-icon>`, this, { host: this });
+        // clang-format on
         this.#icon = this.querySelector('devtools-icon');
     }
     model() {

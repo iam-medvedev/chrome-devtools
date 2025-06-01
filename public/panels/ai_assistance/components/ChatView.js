@@ -62,7 +62,7 @@ const UIStrings = {
     /**
      *@description Label added to the text input to describe the context for screen readers. Not shown visibly on screen.
      */
-    inputTextAriraDescription: 'You can also use one of the suggested prompts above to start your conversation',
+    inputTextAriaDescription: 'You can also use one of the suggested prompts above to start your conversation',
     /**
      *@description Label added to the button that reveals the selected context item in DevTools
      */
@@ -96,10 +96,6 @@ const UIStringsNotTranslate = {
      *@description Text for the empty state of the AI assistance panel.
      */
     emptyStateText: 'How can I help you?',
-    /**
-     *@description Text for the empty state of the AI assistance panel when there is no agent selected.
-     */
-    noAgentStateText: 'Explore AI assistance',
     /**
      * @description The error message when the request to the LLM failed for some reason.
      */
@@ -322,7 +318,7 @@ export class ChatView extends HTMLElement {
                     }}
               >${i18nString(UIStrings.learnAbout)}</button>
             </div>`, popover.contentElement, { host: this });
-                    // clang-forat on
+                    // clang-format on
                     return true;
                 },
             };
@@ -439,6 +435,7 @@ export class ChatView extends HTMLElement {
                 'has-conversation': !!this.#props.conversationType,
                 'is-read-only': this.#props.isReadOnly,
             });
+            // clang-format off
             const footerContents = this.#props.conversationType
                 ? renderRelevantDataDisclaimer({
                     isLoading: this.#props.isLoading,
@@ -1092,7 +1089,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
         @input=${(event) => onTextInputChange(event.target.value)}
         placeholder=${inputPlaceholder}
         jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}
-        aria-description=${i18nString(UIStrings.inputTextAriraDescription)}
+        aria-description=${i18nString(UIStrings.inputTextAriaDescription)}
       ></textarea>
       <div class="chat-input-actions">
         <div class="chat-input-actions-left">
@@ -1169,12 +1166,9 @@ function renderDisabledState(contents) {
     <div class="empty-state-container">
       <div class="disabled-view">
         <div class="disabled-view-icon-container">
-          <devtools-icon .data=${{
-        iconName: 'smart-assistant',
-        width: 'var(--sys-size-8)',
-        height: 'var(--sys-size-8)',
-    }}>
-          </devtools-icon>
+          <devtools-icon
+            .name=${'smart-assistant'}
+          ></devtools-icon>
         </div>
         <div>
           ${contents}
@@ -1182,70 +1176,6 @@ function renderDisabledState(contents) {
       </div>
     </div>
   `;
-    // clang-format on
-}
-function renderNoAgentState() {
-    const config = Root.Runtime.hostConfig;
-    const featureCards = [
-        ...(config.devToolsFreestyler?.enabled ? [{
-                icon: 'brush-2',
-                heading: 'CSS styles',
-                content: html `Open <button class="link" role="link" jslog=${VisualLogging.link('open-elements-panel').track({ click: true })} @click=${() => {
-                    void UI.ViewManager.ViewManager.instance().showView('elements');
-                }}>Elements</button> to ask about CSS styles`,
-            }] :
-            []),
-        ...(config.devToolsAiAssistanceNetworkAgent?.enabled) ? [{
-                icon: 'arrow-up-down',
-                heading: 'Network',
-                content: html `Open <button class="link" role="link" jslog=${VisualLogging.link('open-network-panel').track({ click: true })} @click=${() => {
-                    void UI.ViewManager.ViewManager.instance().showView('network');
-                }}>Network</button> to ask about a request's details`,
-            }] :
-            [],
-        ...(config.devToolsAiAssistanceFileAgent?.enabled) ? [{
-                icon: 'document',
-                heading: 'Files',
-                content: html `Open <button class="link" role="link" jslog=${VisualLogging.link('open-sources-panel').track({ click: true })} @click=${() => {
-                    void UI.ViewManager.ViewManager.instance().showView('sources');
-                }}>Sources</button> to ask about a file's content`,
-            }] :
-            [],
-        ...(config.devToolsAiAssistancePerformanceAgent?.enabled ? [{
-                icon: 'performance',
-                heading: 'Performance',
-                content: html `Open <button class="link" role="link" jslog=${VisualLogging.link('open-performance-panel').track({ click: true })} @click=${() => {
-                    void UI.ViewManager.ViewManager.instance().showView('timeline');
-                }}>Performance</button> to ask about a trace item`,
-            }] :
-            []),
-    ];
-    // clang-format off
-    return html `
-    <div class="empty-state-container">
-      <div class="header">
-        <div class="icon">
-          <devtools-icon
-            name="smart-assistant"
-          ></devtools-icon>
-        </div>
-        <h1>${lockedString(UIStringsNotTranslate.noAgentStateText)}</h1>
-        <p>To chat about an item, right-click and select <strong>Ask AI</strong></p>
-      </div>
-      <div class="empty-state-content">
-        ${featureCards.map(featureCard => html `
-          <div class="feature-card">
-            <div class="feature-card-icon">
-              <devtools-icon name=${featureCard.icon}></devtools-icon>
-            </div>
-            <div class="feature-card-content">
-              <h3>${featureCard.heading}</h3>
-              <p>${featureCard.content}</p>
-            </div>
-          </div>
-        `)}
-      </div>
-    </div>`;
     // clang-format on
 }
 function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
@@ -1256,7 +1186,7 @@ function renderMainContents({ state, aidaAvailability, messages, isLoading, isRe
         return renderDisabledState(renderAidaUnavailableContents(aidaAvailability));
     }
     if (!conversationType) {
-        return renderNoAgentState();
+        return Lit.nothing;
     }
     if (messages.length > 0) {
         return renderMessages({

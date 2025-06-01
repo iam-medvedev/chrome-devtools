@@ -228,28 +228,25 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         const tooltipContents = this.#stylesPane.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null);
         const tooltipId = this.#treeElement?.getTooltipId('custom-property-var');
         const tooltip = tooltipId ? { tooltipId } : undefined;
-        render(
         // clang-format off
-        html `<span
-          data-title=${computedValue || ''}
-          jslog=${VisualLogging.link('css-variable').track({ click: true, hover: true })}
-          >${varCall ?? 'var'}(<devtools-link-swatch
-            class=css-var-link
-            .data=${{
+        render(html `
+        <span data-title=${computedValue || ''}
+              jslog=${VisualLogging.link('css-variable').track({ click: true, hover: true })}>
+          ${varCall ?? 'var'}(
+          <devtools-link-swatch class=css-var-link .data=${{
             tooltip,
             text: match.name,
             isDefined: computedValue !== null && !fromFallback,
             onLinkActivate,
-        }}
-            ></devtools-link-swatch>${renderedFallback?.nodes.length ? html `, ${renderedFallback.nodes}` : nothing})</span>${tooltipId ?
-            html `<devtools-tooltip
-                    variant=rich
-                    id=${tooltipId}
-                    jslogContext=elements.css-var
-                    >${tooltipContents}</devtools-tooltip>`
-            : ''}`, 
+        }}>
+           </devtools-link-swatch>
+           ${renderedFallback?.nodes.length ? html `, ${renderedFallback.nodes}` : nothing})
+        </span>
+          ${tooltipId ? html `
+            <devtools-tooltip variant=rich id=${tooltipId} jslogContext=elements.css-var>
+              ${tooltipContents}
+            </devtools-tooltip>` : ''}`, varSwatch);
         // clang-format on
-        varSwatch);
         const color = computedValue && Common.Color.parse(computedValue);
         if (!color) {
             return [varSwatch];
@@ -1941,27 +1938,29 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const stylesPane = this.parentPane();
         const tooltipId = this.getTooltipId(`${functionName}-trace`);
         // clang-format off
-        return html `<span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName}</span><devtools-tooltip
-        id=${tooltipId}
-        use-hotkey
-        variant=rich
-        jslogContext=elements.css-value-trace
-        @beforetoggle=${function (e) {
+        return html `
+        <span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName}</span>
+        <devtools-tooltip
+            id=${tooltipId}
+            use-hotkey
+            variant=rich
+            jslogContext=elements.css-value-trace
+            @beforetoggle=${function (e) {
             if (e.newState === 'open') {
                 void this.querySelector('devtools-widget')
                     ?.getWidget()
                     ?.showTrace(property, text, matchedStyles, computedStyles, getPropertyRenderers(property.name, property.ownerStyle, stylesPane, matchedStyles, null, computedStyles), expandPercentagesInShorthands, shorthandPositionOffset, this.openedViaHotkey);
             }
         }}
-        @toggle=${function (e) {
+            @toggle=${function (e) {
             if (e.newState !== 'open') {
                 this.querySelector('devtools-widget')
                     ?.getWidget()
                     ?.resetPendingFocus();
             }
-        }}
-        ><devtools-widget
-          @keydown=${(e) => {
+        }}>
+          <devtools-widget
+            @keydown=${(e) => {
             const maybeTooltip = e.target.parentElement;
             if (!(maybeTooltip instanceof Tooltips.Tooltip.Tooltip)) {
                 return;
@@ -1972,8 +1971,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 e.consume(true);
             }
         }}
-          .widgetConfig=${UI.Widget.widgetConfig(CSSValueTraceView)}
-          ></devtools-widget></devtools-tooltip>`;
+            .widgetConfig=${UI.Widget.widgetConfig(CSSValueTraceView)}>
+          </devtools-widget>
+        </devtools-tooltip>`;
         // clang-format on
     }
     // Returns an id for <devtools-tooltips> that's stable across re-rendering of property values but unique across

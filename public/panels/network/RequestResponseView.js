@@ -27,15 +27,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as Lit from '../../third_party/lit/lit.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { BinaryResourceView } from './BinaryResourceView.js';
+const { html, render } = Lit;
 const UIStrings = {
     /**
      *@description Text in Request Response View of the Network panel if no preview can be shown
@@ -52,75 +52,81 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/RequestResponseView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const widgetConfig = UI.Widget.widgetConfig;
+const widgetRef = UI.Widget.widgetRef;
+export const DEFAULT_VIEW = (input, output, target) => {
+    let widget;
+    if (TextUtils.StreamingContentData.isError(input.contentData)) {
+        // clang-format off
+        widget = html `<devtools-widget
+                    .widgetConfig=${widgetConfig(element => new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData), input.contentData.error, element))}></devtools-widget>`;
+        // clang-format on
+    }
+    else if (input.request.statusCode === 204) {
+        // clang-format off
+        widget = html `<devtools-widget
+                     .widgetConfig=${widgetConfig(element => new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noPreview), i18nString(UIStrings.thisRequestHasNoResponseData), element))}></devtools-widget>`;
+        // clang-format on
+    }
+    else if (input.renderAsText) {
+        // clang-format off
+        widget = html `<devtools-widget
+                    .widgetConfig=${widgetConfig(element => new SourceFrame.ResourceSourceFrame.SearchableContainer(input.request, input.mimeType, element))}
+                    ${widgetRef(SourceFrame.ResourceSourceFrame.SearchableContainer, widget => { output.revealPosition = widget.revealPosition.bind(this); })}></devtools-widget>`;
+        // clang-format on
+    }
+    else {
+        // clang-format off
+        widget = html `<devtools-widget
+                    .widgetConfig=${widgetConfig(element => new BinaryResourceView(input.contentData, input.request.url(), input.request.resourceType(), element))}></devtools-widget>`;
+        // clang-format on
+    }
+    render(widget, target, { host: input });
+};
 export class RequestResponseView extends UI.Widget.VBox {
     request;
-    contentViewPromise;
-    constructor(request) {
+    #view;
+    #revealPosition;
+    constructor(request, view = DEFAULT_VIEW) {
         super();
-        this.element.classList.add('request-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('response').track({ resize: true })}`);
         this.request = request;
-        this.contentViewPromise = null;
-    }
-    static #sourceViewForRequest(request, contentData) {
-        let sourceView = requestToSourceView.get(request);
-        if (sourceView !== undefined) {
-            return sourceView;
-        }
-        let mimeType;
-        // If the main document is of type JSON (or any JSON subtype), do not use the more generic canonical MIME type,
-        // which would prevent the JSON from being pretty-printed. See https://crbug.com/406900
-        if (Common.ResourceType.ResourceType.simplifyContentType(request.mimeType) === 'application/json') {
-            mimeType = request.mimeType;
-        }
-        else {
-            mimeType = request.resourceType().canonicalMimeType() || request.mimeType;
-        }
-        const isWasm = contentData.mimeType === 'application/wasm';
-        const isMinified = isWasm || !contentData.isTextContent ? false : TextUtils.TextUtils.isMinified(contentData.content().text);
-        const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType, request.resourceType().isFromSourceMap(), isMinified, false, false);
-        Host.userMetrics.networkPanelResponsePreviewOpened(mediaType);
-        if (contentData.isTextContent || isWasm) {
-            // Note: Even though WASM is binary data, the source view will disassemble it and show a text representation.
-            sourceView = SourceFrame.ResourceSourceFrame.ResourceSourceFrame.createSearchableView(request, mimeType);
-        }
-        else {
-            sourceView = new BinaryResourceView(contentData, request.url(), request.resourceType());
-        }
-        requestToSourceView.set(request, sourceView);
-        return sourceView;
+        this.#view = view;
     }
     wasShown() {
-        void this.doShowPreview();
+        this.requestUpdate();
     }
-    doShowPreview() {
-        if (!this.contentViewPromise) {
-            this.contentViewPromise = this.showPreview();
-        }
-        return this.contentViewPromise;
-    }
-    async showPreview() {
-        const responseView = await this.createPreview();
-        responseView.show(this.element);
-        return responseView;
-    }
-    async createPreview() {
+    async performUpdate() {
         const contentData = await this.request.requestStreamingContent();
-        if (TextUtils.StreamingContentData.isError(contentData)) {
-            return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData), contentData.error);
+        let renderAsText = false;
+        const mimeType = this.getMimeTypeForDisplay();
+        if (!TextUtils.StreamingContentData.isError(contentData)) {
+            const isWasm = contentData.mimeType === 'application/wasm';
+            renderAsText = contentData.isTextContent || isWasm;
+            const isMinified = isWasm || !contentData.isTextContent ? false : TextUtils.TextUtils.isMinified(contentData.content().text);
+            const mediaType = Common.ResourceType.ResourceType.mediaTypeForMetrics(mimeType, this.request.resourceType().isFromSourceMap(), isMinified, false, false);
+            Host.userMetrics.networkPanelResponsePreviewOpened(mediaType);
         }
-        const sourceView = RequestResponseView.#sourceViewForRequest(this.request, contentData);
-        if (!sourceView || this.request.statusCode === 204) {
-            return new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noPreview), i18nString(UIStrings.thisRequestHasNoResponseData));
+        const viewInput = { request: this.request, contentData, mimeType, renderAsText };
+        const that = this;
+        const viewOutput = {
+            set revealPosition(reveal) {
+                that.#revealPosition = reveal;
+            },
+        };
+        this.#view(viewInput, viewOutput, this.contentElement);
+    }
+    getMimeTypeForDisplay() {
+        // If the main document is of type JSON (or any JSON subtype), do not use the more generic canonical MIME type,
+        // which would prevent the JSON from being pretty-printed. See https://crbug.com/406900
+        if (Common.ResourceType.ResourceType.simplifyContentType(this.request.mimeType) === 'application/json') {
+            return this.request.mimeType;
         }
-        return sourceView;
+        return this.request.resourceType().canonicalMimeType() || this.request.mimeType;
     }
     async revealPosition(position) {
-        const view = await this.doShowPreview();
-        if (view instanceof SourceFrame.ResourceSourceFrame.SearchableContainer) {
-            void view.revealPosition(position);
-        }
+        this.requestUpdate();
+        await this.updateComplete;
+        await this.#revealPosition?.(position);
     }
 }
-const requestToSourceView = new WeakMap();
 //# sourceMappingURL=RequestResponseView.js.map

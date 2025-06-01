@@ -22,6 +22,7 @@ import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
 import { ChatView } from './components/ChatView.js';
+import { ExploreWidget } from './components/ExploreWidget.js';
 import { isAiAssistancePatchingEnabled } from './PatchWidget.js';
 const { html } = Lit;
 const AI_ASSISTANCE_SEND_FEEDBACK = 'https://crbug.com/364805393';
@@ -295,16 +296,24 @@ function toolbarView(input) {
 function defaultView(input, output, target) {
     // clang-format off
     Lit.render(html `
-    ${toolbarView(input)}
-    <div class="chat-container">
-      <devtools-ai-chat-view .props=${input} ${Lit.Directives.ref((el) => {
-        if (!el || !(el instanceof ChatView)) {
-            return;
-        }
-        output.chatView = el;
-    })}></devtools-ai-chat-view>
-    </div>
-  `, target, { host: input });
+      ${toolbarView(input)}
+      <div class="ai-assistance-view-container">
+        ${input.state !== "explore-view" /* ChatViewState.EXPLORE_VIEW */
+        ? html ` <devtools-ai-chat-view
+              .props=${input}
+              ${Lit.Directives.ref((el) => {
+            if (!el || !(el instanceof ChatView)) {
+                return;
+            }
+            output.chatView = el;
+        })}
+            ></devtools-ai-chat-view>`
+        : html `<devtools-widget
+              class="explore"
+              .widgetConfig=${UI.Widget.widgetConfig(ExploreWidget)}
+            ></devtools-widget>`}
+      </div>
+    `, target, { host: input });
     // clang-format on
 }
 function createNodeContext(node) {
@@ -447,8 +456,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #getChatUiState() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
-        return (this.#aiAssistanceEnabledSetting?.getIfNotDisabled() && !blockedByAge) ? "chat-view" /* ChatViewState.CHAT_VIEW */ :
-            "consent-view" /* ChatViewState.CONSENT_VIEW */;
+        // Special case due to the way its handled downstream quirks
+        if (this.#aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
+            return "chat-view" /* ChatViewState.CHAT_VIEW */;
+        }
+        if (!this.#aiAssistanceEnabledSetting?.getIfNotDisabled() || blockedByAge) {
+            return "consent-view" /* ChatViewState.CONSENT_VIEW */;
+        }
+        if (this.#conversation?.type) {
+            return "chat-view" /* ChatViewState.CHAT_VIEW */;
+        }
+        return "explore-view" /* ChatViewState.EXPLORE_VIEW */;
     }
     #getAiAssistanceEnabledSetting() {
         try {
@@ -1174,6 +1192,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             type: multimodalInputType,
         } :
             undefined;
+        if (this.#conversation) {
+            void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
+        }
         const runner = this.#conversationAgent.run(text, {
             signal,
             selected: context,
@@ -1335,6 +1356,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (disabledReasons.length > 0) {
             throw new Error(disabledReasons.join(' '));
         }
+        void VisualLogging.logFunctionCall(`start-conversation-${conversationType}`, 'external');
         switch (conversationType) {
             case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
                 return await this.handleExternalStylingRequest(prompt, selector);
@@ -1363,13 +1385,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 data.confirm(true);
             }
             if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                await this.#changeManager.stashChanges();
-                this.#changeManager.dropStashedChanges();
                 return data.text;
             }
         }
-        await this.#changeManager.stashChanges();
-        this.#changeManager.dropStashedChanges();
         throw new Error('Something went wrong. No answer was generated.');
     }
 }

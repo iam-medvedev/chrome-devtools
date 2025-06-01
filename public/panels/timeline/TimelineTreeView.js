@@ -19,6 +19,7 @@ import { targetForEvent } from './TargetForEvent.js';
 import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { rangeForSelection } from './TimelineSelection.js';
+import timelineTreeViewStyles from './timelineTreeView.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
@@ -198,6 +199,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         super();
         this.#selectedEvents = null;
         this.element.classList.add('timeline-tree-view');
+        this.registerRequiredCSS(timelineTreeViewStyles);
         this.searchResults = [];
     }
     #eventNameForSorting(event) {

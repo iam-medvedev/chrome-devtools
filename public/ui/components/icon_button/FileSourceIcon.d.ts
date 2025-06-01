@@ -7,7 +7,6 @@ export interface FileSourceIconData {
 }
 export declare class FileSourceIcon extends HTMLElement {
     #private;
-    constructor();
     set data(data: FileSourceIconData);
     get data(): FileSourceIconData;
     connectedCallback(): void;

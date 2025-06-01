@@ -290,7 +290,7 @@ function createAlertElement(container) {
 }
 export function getOrCreateAlertElement(container = document.body, opts) {
     const existingAlertElement = alertElements.get(container);
-    if (existingAlertElement && !opts?.force) {
+    if (existingAlertElement && existingAlertElement.isConnected && !opts?.force) {
         return existingAlertElement;
     }
     const newAlertElement = createAlertElement(container);

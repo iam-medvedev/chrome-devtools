@@ -8,9 +8,6 @@ import * as LinearMemoryInspector from './linear_memory_inspector.js';
 const { LinearMemoryInspectorController } = LinearMemoryInspector;
 const { ValueInterpreterDisplayUtils } = LinearMemoryInspectorComponents;
 class MockRemoteObject extends SDK.RemoteObject.LocalJSONObject {
-    constructor(array) {
-        super(array);
-    }
     arrayBufferByteLength() {
         return this.value.byteLength;
     }

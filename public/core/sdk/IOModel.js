@@ -5,9 +5,6 @@ import * as Common from '../common/common.js';
 import { RemoteObject } from './RemoteObject.js';
 import { SDKModel } from './SDKModel.js';
 export class IOModel extends SDKModel {
-    constructor(target) {
-        super(target);
-    }
     async read(handle, size, offset) {
         const result = await this.target().ioAgent().invoke_read({ handle, offset, size });
         if (result.getError()) {

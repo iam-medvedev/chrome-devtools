@@ -63,7 +63,6 @@ export declare class InspectorBackend {
 }
 export declare class Connection {
     onMessage: ((arg0: Object) => void) | null;
-    constructor();
     setOnMessage(_onMessage: (arg0: (Object | string)) => void): void;
     setOnDisconnect(_onDisconnect: (arg0: string) => void): void;
     sendRawMessage(_message: string): void;

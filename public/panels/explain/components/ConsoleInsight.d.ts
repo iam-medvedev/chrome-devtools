@@ -17,7 +17,6 @@ export declare class ConsoleInsight extends HTMLElement {
 }
 declare class ConsoleInsightSourcesList extends HTMLElement {
     #private;
-    constructor();
     set sources(values: Source[]);
     set isPageReloadRecommended(isPageReloadRecommended: boolean);
 }

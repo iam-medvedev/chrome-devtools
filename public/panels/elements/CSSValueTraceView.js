@@ -16,46 +16,35 @@ function defaultView(input, output, target) {
     const hiddenSummary = !firstEvaluation || intermediateEvaluations.length === 0;
     const summaryTabIndex = hiddenSummary ? undefined : 0;
     const singleResult = evaluations.length === 0 && substitutions.length === 0;
-    render(
     // clang-format off
-    html `
-      <div
-       role=dialog
-       class="css-value-trace monospace"
-       @keydown=${onKeyDown}
-       >
-        ${substitutions.map(line => html `<span class="trace-line-icon" aria-label="is equal to">↳</span
-              ><span class="trace-line">${line}</span>`)}
-        ${firstEvaluation && intermediateEvaluations.length === 0
-        ? html `<span class="trace-line-icon" aria-label="is equal to">↳</span
-              ><span class="trace-line">${firstEvaluation}</span>`
-        : html `<details
-              @toggle=${input.onToggle}
-              ?hidden=${hiddenSummary}
-            >
-              <summary tabindex=${ifDefined(summaryTabIndex)}>
-                <span class="trace-line-icon" aria-label="is equal to">↳</span
-                ><devtools-icon class="marker"></devtools-icon
-                ><span class="trace-line">${firstEvaluation}</span>
-              </summary>
-              <div>
-                ${intermediateEvaluations.map(evaluation => html `<span class="trace-line-icon" aria-label="is equal to"
-                        >↳</span
-                      ><span class="trace-line">${evaluation}</span>`)}
-              </div>
-            </details>`}
-        ${!finalResult
-        ? ''
-        : html `<span
-                class="trace-line-icon"
-                aria-label="is equal to"
-                ?hidden=${singleResult}
-              >↳</span
-              ><span class=${classMap({ 'trace-line': true, 'full-row': singleResult })}>${finalResult}</span>`}
-      </div>
-    `, 
+    render(html `
+      <div role=dialog class="css-value-trace monospace" @keydown=${onKeyDown}>
+        ${substitutions.map(line => html `
+          <span class="trace-line-icon" aria-label="is equal to">↳</span>
+          <span class="trace-line">${line}</span>`)}
+        ${firstEvaluation && intermediateEvaluations.length === 0 ? html `
+          <span class="trace-line-icon" aria-label="is equal to">↳</span>
+          <span class="trace-line">${firstEvaluation}</span>`
+        : html `
+          <details @toggle=${input.onToggle} ?hidden=${hiddenSummary}>
+            <summary tabindex=${ifDefined(summaryTabIndex)}>
+              <span class="trace-line-icon" aria-label="is equal to">↳</span>
+              <devtools-icon class="marker"></devtools-icon>
+              <span class="trace-line">${firstEvaluation}</span>
+            </summary>
+            <div>
+              ${intermediateEvaluations.map(evaluation => html `
+                  <span class="trace-line-icon" aria-label="is equal to" >↳</span>
+                  <span class="trace-line">${evaluation}</span>`)}
+            </div>
+          </details>`}
+        ${finalResult ? html `
+          <span class="trace-line-icon" aria-label="is equal to" ?hidden=${singleResult}>↳</span>
+          <span class=${classMap({ 'trace-line': true, 'full-row': singleResult })}>
+            ${finalResult}
+          </span>` : ''}
+      </div>`, target);
     // clang-format on
-    target);
     function onKeyDown(e) {
         // prevent styles-tab keyboard navigation
         if (!e.altKey) {

@@ -11,3 +11,4 @@ export declare function logChange(loggable: Loggable): Promise<void>;
 export declare const logKeyDown: (throttler: Common.Throttler.Throttler) => (loggable: Loggable | null, event: Event | null, context?: string) => Promise<void>;
 export declare function contextAsNumber(context: string | undefined): Promise<number | undefined>;
 export declare function logSettingAccess(name: string, value: number | string | boolean): Promise<void>;
+export declare function logFunctionCall(name: string, context?: string): Promise<void>;

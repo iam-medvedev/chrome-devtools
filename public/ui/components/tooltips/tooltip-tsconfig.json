@@ -37,6 +37,9 @@
   ],
   "references": [
     {
+      "path": "../../../services/window_bounds/bundle-tsconfig.json"
+    },
+    {
       "path": "../../visual_logging/bundle-tsconfig.json"
     },
     {

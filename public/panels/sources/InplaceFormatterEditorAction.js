@@ -27,8 +27,6 @@ export class InplaceFormatterEditorAction {
     button;
     sourcesView;
     uiSourceCodeTitleChangedEvent = null;
-    constructor() {
-    }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
         if (!inplaceFormatterEditorActionInstance || forceNew) {

@@ -17,13 +17,22 @@ export default `/*
   justify-content: space-between;
 }
 
-.chat-container {
+.ai-assistance-view-container {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   align-items: center;
   overflow: hidden;
+
+  & .explore {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 .toolbar-feedback-link {

@@ -43,7 +43,8 @@ export interface ModelChatMessage {
 export type ChatMessage = UserChatMessage | ModelChatMessage;
 export declare const enum State {
     CONSENT_VIEW = "consent-view",
-    CHAT_VIEW = "chat-view"
+    CHAT_VIEW = "chat-view",
+    EXPLORE_VIEW = "explore-view"
 }
 export interface Props {
     onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part, multimodalInputType?: AiAssistanceModel.MultimodalInputType) => void;

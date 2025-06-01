@@ -1118,7 +1118,7 @@ export function setTitle(element, title) {
     Tooltip.install(element, title);
 }
 export class CheckboxLabel extends HTMLElement {
-    static observedAttributes = ['checked', 'disabled', 'indeterminate', 'name', 'title'];
+    static observedAttributes = ['checked', 'disabled', 'indeterminate', 'name', 'title', 'aria-label'];
     #shadowRoot;
     #checkboxElement;
     #textElement;
@@ -1173,6 +1173,15 @@ export class CheckboxLabel extends HTMLElement {
             this.#checkboxElement.title = newValue ?? '';
             this.#textElement.title = newValue ?? '';
         }
+        else if (name === 'aria-label') {
+            this.#checkboxElement.ariaLabel = newValue;
+        }
+    }
+    get ariaLabel() {
+        return this.#checkboxElement.ariaLabel;
+    }
+    set ariaLabel(ariaLabel) {
+        this.setAttribute('aria-label', ariaLabel);
     }
     get checked() {
         return this.#checkboxElement.checked;

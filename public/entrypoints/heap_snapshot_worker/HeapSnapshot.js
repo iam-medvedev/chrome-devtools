@@ -3025,9 +3025,6 @@ export async function createJSHeapSnapshotForTesting(profile) {
     return result;
 }
 export class JSHeapSnapshotNode extends HeapSnapshotNode {
-    constructor(snapshot, nodeIndex) {
-        super(snapshot, nodeIndex);
-    }
     canBeQueried() {
         const snapshot = this.snapshot;
         const flags = snapshot.flagsOfNode(this);
@@ -3191,9 +3188,6 @@ export class JSHeapSnapshotNode extends HeapSnapshotNode {
     }
 }
 export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
-    constructor(snapshot, edgeIndex) {
-        super(snapshot, edgeIndex);
-    }
     clone() {
         const snapshot = this.snapshot;
         return new JSHeapSnapshotEdge(snapshot, this.edgeIndex);
@@ -3277,9 +3271,6 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
     }
 }
 export class JSHeapSnapshotRetainerEdge extends HeapSnapshotRetainerEdge {
-    constructor(snapshot, retainerIndex) {
-        super(snapshot, retainerIndex);
-    }
     clone() {
         const snapshot = this.snapshot;
         return new JSHeapSnapshotRetainerEdge(snapshot, this.retainerIndex());

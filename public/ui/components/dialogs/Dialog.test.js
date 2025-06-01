@@ -162,10 +162,9 @@ describe('Dialog', () => {
             // Test the capped dimensions
             assert.strictEqual(dialog.bestVerticalPosition, "bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */);
         });
-        // Fails on bots https://crbug.com/40266659.
-        it.skip('[crbug.com/40266659]: sets the max width and height correctly when the dialog\'s content dimensions exceed the viewport and the dialog is displayed as a modal', async () => {
+        it('sets the max width and height correctly when the dialog\'s content dimensions exceed the viewport and the dialog is displayed as a modal', async () => {
             const devtoolsDialog = new Dialogs.Dialog.Dialog();
-            const WINDOW_WIDTH = 500;
+            const WINDOW_WIDTH = 300;
             // This container will be set as the dialog's "window", or the representation
             // of DevTools bounding element.
             container.style.width = `${WINDOW_WIDTH}px`;
@@ -175,8 +174,8 @@ describe('Dialog', () => {
             host.style.width = '100px';
             const content = document.createElement('div');
             content.classList.add('dialog-content');
-            content.style.width = '600px';
-            content.style.height = '600px';
+            content.style.width = '400px';
+            content.style.height = '400px';
             content.innerHTML = 'Hello, World<br/> I am <br/> a Dialog!';
             devtoolsDialog.origin = Dialogs.Dialog.MODAL;
             // Set the dialog's "window" to be the container element we just created.
@@ -345,7 +344,8 @@ describe('Dialog', () => {
                 assert.isAtLeast(dialogLeft, containerLeft);
             });
         });
-        it('updates the dialog client rect automatically when its dimensions change', async function () {
+        // Fails on Windows only after the window-size was increased.
+        it.skip('[crbug.com/420924642]: updates the dialog client rect automatically when its dimensions change', async function () {
             host.addEventListener('click', () => dialog.setDialogVisible(true));
             const dialogContent = document.createElement('div');
             dialogContent.style.display = 'block';
@@ -363,7 +363,7 @@ describe('Dialog', () => {
             const initialWidth = dialog.getDialogBounds().width;
             const initialHeight = dialog.getDialogBounds().height;
             // Increase the font size to increase the dialog's dimensions
-            dialogContent.style.fontSize = '200px';
+            dialogContent.style.fontSize = '1000px';
             // Wait for the resize handling to take effect.
             await new Promise(res => setTimeout(res, 200));
             const finalWidth = dialog.getDialogBounds().width;

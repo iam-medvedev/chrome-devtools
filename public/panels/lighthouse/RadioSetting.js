@@ -41,7 +41,9 @@ export class RadioSetting {
     }
     updateUI() {
         this.ignoreChangeEvents = true;
-        this.radioElements[this.selectedIndex].checked = true;
+        if (this.radioElements[this.selectedIndex]) {
+            this.radioElements[this.selectedIndex].checked = true;
+        }
         this.ignoreChangeEvents = false;
     }
     settingChanged() {

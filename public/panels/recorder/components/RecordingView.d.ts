@@ -86,7 +86,6 @@ export declare class TimeoutChanged extends Event {
 }
 export declare class RecordingView extends HTMLElement {
     #private;
-    constructor();
     set data(data: RecordingViewData);
     connectedCallback(): void;
     disconnectedCallback(): void;

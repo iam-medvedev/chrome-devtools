@@ -56,6 +56,9 @@ export interface SelectMenuData {
     jslogContext: string;
 }
 type TitleCallback = () => Lit.TemplateResult;
+/**
+ * @deprecated use `<select>` instead.
+ */
 export declare class SelectMenu extends HTMLElement {
     #private;
     get buttonTitle(): string | TitleCallback;

@@ -602,6 +602,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const accessibleTitle = i18nString(UIStrings.showFieldDataForPage, { PH1: buttonTitle });
         // If there is no data at all we should force users to switch pages or reconfigure CrUX.
         const shouldDisable = !this.#cruxManager.pageResult?.['url-ALL'] && !this.#cruxManager.pageResult?.['origin-ALL'];
+        /* eslint-disable rulesdir/no-deprecated-component-usages */
         return html `
       <devtools-select-menu
         id="page-scope-select"
@@ -629,6 +630,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         </devtools-menu-item>
       </devtools-select-menu>
     `;
+        /* eslint-enable rulesdir/no-deprecated-component-usages */
     }
     #getDeviceScopeDisplayName(deviceScope) {
         switch (deviceScope) {
@@ -674,6 +676,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         const shouldDisable = !this.#cruxManager.getFieldResponse(this.#cruxManager.fieldPageScope, 'ALL');
         const currentDeviceLabel = this.#getLabelForDeviceOption(this.#cruxManager.fieldDeviceOption);
         // clang-format off
+        /* eslint-disable rulesdir/no-deprecated-component-usages */
         return html `
       <devtools-select-menu
         id="device-scope-select"
@@ -699,6 +702,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         })}
       </devtools-select-menu>
     `;
+        /* eslint-enable rulesdir/no-deprecated-component-usages */
         // clang-format on
     }
     #getCollectionPeriodRange() {
@@ -811,8 +815,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
               <details>
                 <summary>
                   <span class="interaction-type">
-                    ${interaction.interactionType}
-                    ${isInp ?
+                    ${interaction.interactionType} ${isInp ?
                 html `<span class="interaction-inp-chip" title=${i18nString(UIStrings.inpInteraction)}>INP</span>`
                 : nothing}
                   </span>

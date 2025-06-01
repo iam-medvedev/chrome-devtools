@@ -1238,9 +1238,6 @@
   "generated/Deprecation.ts | DataUrlInSvgUse": {
     "message": "Support for data: URLs in SVGUseElement is deprecated and it will be removed in the future."
   },
-  "generated/Deprecation.ts | DOMMutationEvents": {
-    "message": "DOM Mutation Events, including DOMSubtreeModified, DOMNodeInserted, DOMNodeRemoved, DOMNodeRemovedFromDocument, DOMNodeInsertedIntoDocument, and DOMCharacterDataModified are deprecated (https://w3c.github.io/uievents/#legacy-event-types) and will be removed. Please use MutationObserver instead."
-  },
   "generated/Deprecation.ts | GeolocationInsecureOrigin": {
     "message": "getCurrentPosition() and watchPosition() no longer work on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
   },
@@ -1818,7 +1815,7 @@
     "message": "Had redirects ({PH1} redirects, +{PH2})"
   },
   "models/trace/insights/DocumentLatency.ts | failedServerResponseTime": {
-    "message": "Server responded slowly (observed {PH1}) "
+    "message": "Server responded slowly (observed {PH1})"
   },
   "models/trace/insights/DocumentLatency.ts | failedTextCompression": {
     "message": "No compression applied"
@@ -1827,7 +1824,7 @@
     "message": "Avoids redirects"
   },
   "models/trace/insights/DocumentLatency.ts | passingServerResponseTime": {
-    "message": "Server responds quickly (observed {PH1}) "
+    "message": "Server responds quickly (observed {PH1})"
   },
   "models/trace/insights/DocumentLatency.ts | passingTextCompression": {
     "message": "Applies text compression"
@@ -2073,7 +2070,7 @@
     "message": "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
-    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints to your most important origins, but try to use fewer than 4."
+    "message": "Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints to your most important origins, but try to use no more than 4."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
     "message": "Preconnect candidates"
@@ -2654,7 +2651,7 @@
   "panels/ai_assistance/AiAssistancePanel.ts | settings": {
     "message": "Settings"
   },
-  "panels/ai_assistance/components/ChatView.ts | inputTextAriraDescription": {
+  "panels/ai_assistance/components/ChatView.ts | inputTextAriaDescription": {
     "message": "You can also use one of the suggested prompts above to start your conversation"
   },
   "panels/ai_assistance/components/ChatView.ts | learnAbout": {
@@ -9117,7 +9114,7 @@
     "message": "Enter a custom user agent"
   },
   "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
-    "message": "Network conditions shown"
+    "message": "Network conditions shown."
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "Network throttling"

@@ -440,17 +440,6 @@ export declare enum PanelWithLocation {
     'autofill-view-drawer' = 132,
     MAX_VALUE = 133
 }
-export declare enum ElementsSidebarTabCodes {
-    OtherSidebarPane = 0,
-    styles = 1,
-    computed = 2,
-    'elements.layout' = 3,
-    'elements.event-listeners' = 4,
-    'elements.dom-breakpoints' = 5,
-    'elements.dom-properties' = 6,
-    'accessibility.view' = 7,
-    MAX_VALUE = 8
-}
 export declare enum MediaTypes {
     Unknown = 0,
     'text/css' = 2,

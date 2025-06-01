@@ -68,14 +68,19 @@ export class PanelUtils {
                 iconName = 'cross-circle-filled';
                 color = 'var(--icon-error)';
             }
+            // clang-format off
             return html `<devtools-icon
-          class="icon" name=${iconName} title=${type.title()}
-          style=${styleMap({ color })}></devtools-icon>`;
+          class="icon" name=${iconName} title=${type.title()} style=${styleMap({ color })}>
+        </devtools-icon>`;
+            // clang-format on
         }
         if (request.hasThirdPartyCookiePhaseoutIssue()) {
+            // clang-format off
             return html `<devtools-icon
           class="icon" name="warning-filled" title=${i18nString(UIStrings.thirdPartyPhaseout)}
-          style="color:var(--icon-warning)"></devtools-icon>`;
+          style="color:var(--icon-warning)">
+        </devtools-icon>`;
+            // clang-format on
         }
         const isHeaderOverridden = request.hasOverriddenHeaders();
         const isContentOverridden = request.hasOverriddenContent;
@@ -90,9 +95,11 @@ export class PanelUtils {
             else {
                 title = i18nString(UIStrings.requestHeadersOverridden);
             }
-            return html `<div class="network-override-marker"
-        ><devtools-icon class="icon" name="document" title=${title}></devtools-icon
-      ></div>`;
+            // clang-format off
+            return html `<div class="network-override-marker">
+          <devtools-icon class="icon" name="document" title=${title}></devtools-icon>
+        </div>`;
+            // clang-format on
         }
         // Pick icon based on MIME type in the following cases:
         // - If the MIME type is 'image': some images have request type of 'fetch' or etc.
@@ -112,22 +119,29 @@ export class PanelUtils {
             }
         }
         if (type === Common.ResourceType.resourceTypes.Image) {
-            return html `<div class="image icon"
-        ><img class="image-network-icon-preview" alt=${request.resourceType().title()}
-            ${ref(e => request.populateImageSource(e))}
-      ></div>`;
+            return html `<div class="image icon">
+          <img class="image-network-icon-preview" alt=${request.resourceType().title()}
+              ${ref(e => request.populateImageSource(e))}>
+        </div>`;
         }
         // Exclude Manifest here because it has mimeType:application/json but it has its own icon
         if (type !== Common.ResourceType.resourceTypes.Manifest &&
             Common.ResourceType.ResourceType.simplifyContentType(request.mimeType) === 'application/json') {
+            // clang-format off
             return html `<devtools-icon
           class="icon" name="file-json" title=${request.resourceType().title()}
-          style="color:var(--icon-file-script)"></devtools-icon>`;
+          style="color:var(--icon-file-script)">
+        </devtools-icon>`;
+            // clang-format on
         }
         // Others
         const { iconName, color } = PanelUtils.iconDataForResourceType(type);
-        return html `<devtools-icon class="icon" name=${iconName} title=${request.resourceType().title()}
-        style=${styleMap({ color })}></devtools-icon>`;
+        // clang-format off
+        return html `<devtools-icon
+        class="icon" name=${iconName} title=${request.resourceType().title()}
+        style=${styleMap({ color })}>
+      </devtools-icon>`;
+        // clang-format on
     }
     static iconDataForResourceType(resourceType) {
         if (resourceType.isDocument()) {
@@ -189,8 +203,11 @@ export class PanelUtils {
         }
         const title = binding ? Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode) : undefined;
         // clang-format off
-        return html `<devtools-file-source-icon name=${iconType} title=${ifDefined(title)}
-      .data=${{ contentType: uiSourceCode.contentType().name(), hasDotBadge, isDotPurple, iconType }}></devtools-file-source-icon>`;
+        return html `<devtools-file-source-icon
+        name=${iconType} title=${ifDefined(title)} .data=${{
+            contentType: uiSourceCode.contentType().name(), hasDotBadge, isDotPurple, iconType
+        }}>
+      </devtools-file-source-icon>`;
         // clang-format on
     }
     static async formatCSSChangesFromDiff(diff) {

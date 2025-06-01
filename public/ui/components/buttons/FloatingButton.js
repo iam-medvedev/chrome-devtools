@@ -68,7 +68,9 @@ export class FloatingButton extends HTMLElement {
     }
     #render() {
         // clang-format off
-        Lit.render(html `<style>${floatingButtonStyles}</style><button><devtools-icon .name=${this.iconName}></devtools-icon></button>`, this.#shadow, { host: this });
+        Lit.render(html `
+        <style>${floatingButtonStyles}</style>
+        <button><devtools-icon .name=${this.iconName}></devtools-icon></button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }
