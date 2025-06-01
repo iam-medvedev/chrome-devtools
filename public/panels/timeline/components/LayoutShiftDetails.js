@@ -130,7 +130,10 @@ export class LayoutShiftDetails extends HTMLElement {
         const el = LegacyComponents.Linkifier.Linkifier.linkifyRevealable(domLoadingFrame, domLoadingFrame.displayName());
         // clang-format off
         return html `
-    <span class="culprit"><span class="culprit-type">${i18nString(UIStrings.injectedIframe)}: </span><span class="culprit-value">${el}</span></span>`;
+      <span class="culprit">
+        <span class="culprit-type"> ${i18nString(UIStrings.injectedIframe)}: </span>
+        <span class="culprit-value">${el}</span>
+      </span>`;
         // clang-format on
     }
     #renderFontRequest(request) {
@@ -143,7 +146,10 @@ export class LayoutShiftDetails extends HTMLElement {
         const linkifiedURL = LegacyComponents.Linkifier.Linkifier.linkifyURL(request.args.data.url, options);
         // clang-format off
         return html `
-    <span class="culprit"><span class="culprit-type">${i18nString(UIStrings.fontRequest)}: </span><span class="culprit-value">${linkifiedURL}</span></span>`;
+      <span class="culprit">
+        <span class="culprit-type">${i18nString(UIStrings.fontRequest)}: </span>
+        <span class="culprit-value">${linkifiedURL}</span>
+      </span>`;
         // clang-format on
     }
     // TODO(crbug.com/368170718): use eventRef instead
@@ -175,7 +181,10 @@ export class LayoutShiftDetails extends HTMLElement {
         }}>
       </devtools-performance-node-link>`;
         return html `
-    <span class="culprit"><span class="culprit-type">${i18nString(UIStrings.unsizedImage)}: </span><span class="culprit-value">${el}</span></span>`;
+      <span class="culprit">
+        <span class="culprit-type">${i18nString(UIStrings.unsizedImage)}: </span>
+        <span class="culprit-value">${el}</span>
+      </span>`;
         // clang-format on
     }
     #renderRootCauseValues(frame, rootCauses) {

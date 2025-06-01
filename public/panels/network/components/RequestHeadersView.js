@@ -285,8 +285,8 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
             width: '16px',
             height: '16px',
         }}>
-        </devtools-icon
-      ></x-link>
+        </devtools-icon>
+      </x-link>
       <x-link
           @click=${revealHeadersFile}
           class="link devtools-link"
@@ -512,13 +512,11 @@ export class Category extends HTMLElement {
             </div>
             <div class="hide-when-closed">
               ${this.#checked !== undefined ? html `
-                <label><input
-                    type="checkbox"
-                    .checked=${this.#checked}
-                    @change=${this.#onCheckboxToggle}
-                    jslog=${VisualLogging.toggle('raw-headers').track({ change: true })}
-                />${i18nString(UIStrings.raw)}</label>
-              ` : Lit.nothing}
+                <label>
+                  <input type="checkbox" .checked=${this.#checked} @change=${this.#onCheckboxToggle}
+                         jslog=${VisualLogging.toggle('raw-headers').track({ change: true })}>
+                  ${i18nString(UIStrings.raw)}
+                </label>` : Lit.nothing}
             </div>
             <div class="hide-when-closed">${this.#additionalContent}</div>
           </div>

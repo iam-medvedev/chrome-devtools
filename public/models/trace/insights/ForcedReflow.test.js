@@ -4,16 +4,15 @@
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-export async function processTrace(context, traceFile) {
-    const { parsedTrace, insights } = await TraceLoader.traceEngine(context, traceFile);
-    if (!insights) {
-        throw new Error('No insights');
-    }
-    return { data: parsedTrace, insights };
-}
 describeWithEnvironment('ForcedReflow', function () {
-    // Skip to re-open the tree
-    it.skip('[crbug.com/392557418]: generates call stacks', async function () {
+    async function processTrace(context, traceFile) {
+        const { parsedTrace, insights } = await TraceLoader.traceEngine(context, traceFile);
+        if (!insights) {
+            throw new Error('No insights');
+        }
+        return { data: parsedTrace, insights };
+    }
+    it('generates call stacks', async function () {
         const { data, insights } = await processTrace(this, 'forced-reflow.json.gz');
         assert.strictEqual(insights.size, 1);
         const insight = getInsightOrError('ForcedReflow', insights, data.Meta.navigationsByNavigationId.values().next().value);
@@ -23,7 +22,7 @@ describeWithEnvironment('ForcedReflow', function () {
         const callStack = insight.aggregatedBottomUpData[1];
         assert.strictEqual(callStack.bottomUpData.columnNumber, 197203);
         assert.strictEqual(callStack.bottomUpData.lineNumber, 32);
-        assert.lengthOf(callStack.relatedEvents, 2);
+        assert.lengthOf(callStack.relatedEvents, 16);
     });
 });
 //# sourceMappingURL=ForcedReflow.test.js.map

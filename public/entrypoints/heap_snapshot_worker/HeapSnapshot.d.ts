@@ -455,7 +455,6 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
 export declare function createJSHeapSnapshotForTesting(profile: Profile): Promise<JSHeapSnapshot>;
 export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     #private;
-    constructor(snapshot: JSHeapSnapshot, nodeIndex?: number);
     canBeQueried(): boolean;
     name(): string;
     private consStringName;
@@ -470,7 +469,6 @@ export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     serialize(): HeapSnapshotModel.HeapSnapshotModel.Node;
 }
 export declare class JSHeapSnapshotEdge extends HeapSnapshotEdge {
-    constructor(snapshot: JSHeapSnapshot, edgeIndex?: number);
     clone(): JSHeapSnapshotEdge;
     hasStringName(): boolean;
     isElement(): boolean;
@@ -488,7 +486,6 @@ export declare class JSHeapSnapshotEdge extends HeapSnapshotEdge {
     nameIndex(): number;
 }
 export declare class JSHeapSnapshotRetainerEdge extends HeapSnapshotRetainerEdge {
-    constructor(snapshot: JSHeapSnapshot, retainerIndex: number);
     clone(): JSHeapSnapshotRetainerEdge;
     isHidden(): boolean;
     isInvisible(): boolean;

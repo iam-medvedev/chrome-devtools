@@ -148,6 +148,7 @@ export class NetworkThrottlingSelector extends HTMLElement {
       ></devtools-button>`;
         }
         // clang-format off
+        /* eslint-disable rulesdir/no-deprecated-component-usages */
         const output = html `
       <style>${networkThrottlingSelectorStyles}</style>
       <devtools-select-menu
@@ -197,6 +198,7 @@ export class NetworkThrottlingSelector extends HTMLElement {
       </devtools-select-menu>
       ${recommendedInfoEl}
     `;
+        /* eslint-enable rulesdir/no-deprecated-component-usages */
         // clang-format on
         Lit.render(output, this.#shadow, { host: this });
     };

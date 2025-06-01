@@ -55,9 +55,6 @@
     },
     {
       "path": "../text_utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../workspace/bundle-tsconfig.json"
     }
   ]
 }

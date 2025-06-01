@@ -281,6 +281,7 @@ panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/PatchWidget.test.js
 panels/ai_assistance/SelectWorkspaceDialog.test.js
 panels/ai_assistance/components/ChatView.test.js
+panels/ai_assistance/components/ExploreWidget.test.js
 panels/ai_assistance/components/MarkdownRendererWithCodeBlock.test.js
 panels/ai_assistance/components/UserActionRow.test.js
 panels/animation/AnimationTimeline.test.js
@@ -646,6 +647,7 @@ ui/legacy/components/inline_editor/FontEditorUtils.test.js
 ui/legacy/components/inline_editor/LinkSwatch.test.js
 ui/legacy/components/object_ui/JavaScriptREPL.test.js
 ui/legacy/components/object_ui/ObjectPropertiesSection.test.js
+ui/legacy/components/perf_ui/ChartViewport.test.js
 ui/legacy/components/perf_ui/FilmStripView.test.js
 ui/legacy/components/perf_ui/FlameChart.test.js
 ui/legacy/components/perf_ui/PieChart.test.js
@@ -661,6 +663,7 @@ ui/legacy/components/utils/JSPresentationUtils.test.js
 ui/legacy/components/utils/Linkifier.test.js
 ui/legacy/theme_support/ThemeSupport.test.js
 ui/lit/i18n-template.test.js
+ui/lit/strip-whitespace.test.js
 ui/visual_logging/Debugging.test.js
 ui/visual_logging/DomState.test.js
 ui/visual_logging/LoggingConfig.test.js

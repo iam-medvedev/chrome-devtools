@@ -108,8 +108,6 @@ export class InspectorBackend {
 let connectionFactory;
 export class Connection {
     onMessage;
-    constructor() {
-    }
     setOnMessage(_onMessage) {
     }
     setOnDisconnect(_onDisconnect) {

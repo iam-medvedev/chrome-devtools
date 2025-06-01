@@ -2,7 +2,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as TextUtils from '../text_utils/text_utils.js';
-import type * as Workspace from '../workspace/workspace.js';
 export declare function getTextFor(contentProvider: TextUtils.ContentProvider.ContentProvider): Promise<TextUtils.Text.Text | null>;
 export declare class IdentifierPositions {
     name: string;
@@ -32,7 +31,6 @@ export declare const allVariablesInCallFrame: (callFrame: SDK.DebuggerModel.Call
  * shadowed) we set it to `null`.
  */
 export declare const allVariablesAtPosition: (location: SDK.DebuggerModel.Location) => Promise<Map<string, string | null>>;
-export declare const resolveExpression: (callFrame: SDK.DebuggerModel.CallFrame, originalText: string, uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, startColumnNumber: number, endColumnNumber: number) => Promise<string>;
 export declare const resolveThisObject: (callFrame: SDK.DebuggerModel.CallFrame) => Promise<SDK.RemoteObject.RemoteObject | null>;
 export declare const resolveScopeInObject: (scope: SDK.DebuggerModel.ScopeChainEntry) => SDK.RemoteObject.RemoteObject;
 export declare class RemoteObject extends SDK.RemoteObject.RemoteObject {

@@ -62,11 +62,11 @@ export class FormatterWorkerPool {
         this.workerTasks.set(newWorker, null);
         this.processNextTask();
         if (task) {
-            task.callback(null);
+            task.errorCallback(event);
         }
     }
     runChunkedTask(methodName, params, callback) {
-        const task = new Task(methodName, params, onData, true);
+        const task = new Task(methodName, params, onData, () => onData(null), true);
         this.taskQueue.push(task);
         this.processNextTask();
         function onData(data) {
@@ -81,8 +81,8 @@ export class FormatterWorkerPool {
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     runTask(methodName, params) {
-        return new Promise(resolve => {
-            const task = new Task(methodName, params, resolve, false);
+        return new Promise((resolve, reject) => {
+            const task = new Task(methodName, params, resolve, reject, false);
             this.taskQueue.push(task);
             this.processNextTask();
         });
@@ -92,16 +92,15 @@ export class FormatterWorkerPool {
         return this.runTask("format" /* FormatterActions.FormatterActions.FORMAT */, parameters);
     }
     javaScriptSubstitute(expression, mapping) {
+        if (mapping.size === 0) {
+            return Promise.resolve(expression);
+        }
         return this.runTask("javaScriptSubstitute" /* FormatterActions.FormatterActions.JAVASCRIPT_SUBSTITUTE */, { content: expression, mapping })
             .then(result => result || '');
     }
     javaScriptScopeTree(expression, sourceType = 'script') {
         return this.runTask("javaScriptScopeTree" /* FormatterActions.FormatterActions.JAVASCRIPT_SCOPE_TREE */, { content: expression, sourceType })
             .then(result => result || null);
-    }
-    evaluatableJavaScriptSubstring(content) {
-        return this.runTask("evaluatableJavaScriptSubstring" /* FormatterActions.FormatterActions.EVALUATE_JAVASCRIPT_SUBSTRING */, { content })
-            .then(text => text || '');
     }
     parseCSS(content, callback) {
         this.runChunkedTask("parseCSS" /* FormatterActions.FormatterActions.PARSE_CSS */, { content }, onDataChunk);
@@ -117,11 +116,13 @@ class Task {
     method;
     params;
     callback;
+    errorCallback;
     isChunked;
-    constructor(method, params, callback, isChunked) {
+    constructor(method, params, callback, errorCallback, isChunked) {
         this.method = method;
         this.params = params;
         this.callback = callback;
+        this.errorCallback = errorCallback;
         this.isChunked = isChunked;
     }
 }

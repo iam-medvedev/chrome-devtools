@@ -702,13 +702,13 @@ export class MenuButton extends HTMLElement {
         }
         // clang-format off
         render(html `
-              <devtools-button
-                .disabled=${this.disabled}
-                .iconName=${this.iconName}
-                .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-                .title=${this.title}
-                aria-haspopup='menu'
-                @click=${this.#triggerContextMenu}></devtools-button>`, this.#shadow, { host: this });
+        <devtools-button .disabled=${this.disabled}
+                         .iconName=${this.iconName}
+                         .variant=${"icon" /* Buttons.Button.Variant.ICON */}
+                         .title=${this.title}
+                         aria-haspopup='menu'
+                         @click=${this.#triggerContextMenu}>
+        </devtools-button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

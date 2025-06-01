@@ -21,30 +21,30 @@ const str_ = i18n.i18n.registerUIStrings('panels/elements/DOMLinkifier.ts', UISt
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
-    render(html `${(input.tagName || input.pseudo) ?
-        html `<style>${domLinkifierStyles}</style
-    ><span class="monospace"
-     ><button class="node-link text-button link-style ${classMap({
-            'dynamic-link': Boolean(input.dynamic),
-            disabled: Boolean(input.disabled)
-        })}"
+    render(html `${(input.tagName || input.pseudo) ? html `
+    <style>${domLinkifierStyles}</style>
+    <span class="monospace">
+      <button class="node-link text-button link-style ${classMap({
+        'dynamic-link': Boolean(input.dynamic),
+        disabled: Boolean(input.disabled)
+    })}"
           jslog=${VisualLogging.link('node').track({ click: true, keydown: 'Enter' })}
           tabindex=${input.preventKeyboardFocus ? -1 : 0}
           @click=${input.onClick}
           @mouseover=${input.onMouseOver}
           @mouseleave=${input.onMouseLeave}
           title=${[
-            input.tagName ?? '',
-            input.id ? `#${input.id}` : '',
-            ...input.classes.map(c => `.${c}`),
-            input.pseudo ? `::${input.pseudo}` : '',
-        ].join(' ')}>${[
-            input.tagName ? html `<span class="node-label-name">${input.tagName}</span>` : nothing,
-            input.id ? html `<span class="node-label-id">#${input.id}</span>` : nothing,
-            ...input.classes.map(className => html `<span class="extra node-label-class">.${className}</span>`),
-            input.pseudo ? html `<span class="extra node-label-pseudo">${input.pseudo}</span>` : nothing,
-        ]}</button
-    ></span>` : i18nString(UIStrings.node)}`, target, { host: input });
+        input.tagName ?? '',
+        input.id ? `#${input.id}` : '',
+        ...input.classes.map(c => `.${c}`),
+        input.pseudo ? `::${input.pseudo}` : '',
+    ].join(' ')}>${[
+        input.tagName ? html `<span class="node-label-name">${input.tagName}</span>` : nothing,
+        input.id ? html `<span class="node-label-id">#${input.id}</span>` : nothing,
+        ...input.classes.map(className => html `<span class="extra node-label-class">.${className}</span>`),
+        input.pseudo ? html `<span class="extra node-label-pseudo">${input.pseudo}</span>` : nothing,
+    ]}</button>
+    </span>` : i18nString(UIStrings.node)}`, target, { host: input });
     // clang-format on
 };
 export class DOMNodeLink extends UI.Widget.Widget {

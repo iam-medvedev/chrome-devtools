@@ -37,7 +37,8 @@ function createSettingValue(category, settingName, defaultValue, settingType = "
 }
 export function stubNoopSettings() {
     sinon.stub(Common.Settings.Settings, 'instance').returns({
-        createSetting: () => ({
+        createSetting: (name) => ({
+            name,
             get: () => [],
             set: () => { },
             addChangeListener: () => { },
@@ -49,7 +50,8 @@ export function stubNoopSettings() {
             type: () => "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             getAsArray: () => [],
         }),
-        moduleSetting: () => ({
+        moduleSetting: (name) => ({
+            name,
             get: () => [],
             set: () => { },
             addChangeListener: () => { },
@@ -61,7 +63,8 @@ export function stubNoopSettings() {
             type: () => "boolean" /* Common.Settings.SettingType.BOOLEAN */,
             getAsArray: () => [],
         }),
-        createLocalSetting: () => ({
+        createLocalSetting: (name) => ({
+            name,
             get: () => [],
             set: () => { },
             addChangeListener: () => { },

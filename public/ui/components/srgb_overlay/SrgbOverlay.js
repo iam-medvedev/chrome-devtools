@@ -19,9 +19,6 @@ function isColorInSrgbGamut(hsv) {
 }
 export class SrgbOverlay extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
-    constructor() {
-        super();
-    }
     #getLinePoints({ hue, width, height }) {
         if (width === 0 || height === 0) {
             return null;

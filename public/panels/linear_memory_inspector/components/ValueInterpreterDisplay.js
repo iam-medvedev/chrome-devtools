@@ -63,9 +63,6 @@ export class ValueInterpreterDisplay extends HTMLElement {
     #valueTypes = new Set();
     #valueTypeModeConfig = getDefaultValueTypeMapping();
     #memoryLength = 0;
-    constructor() {
-        super();
-    }
     set data(data) {
         this.#buffer = data.buffer;
         this.#endianness = data.endianness;

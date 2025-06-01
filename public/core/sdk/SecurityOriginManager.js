@@ -10,9 +10,6 @@ export class SecurityOriginManager extends SDKModel {
     #mainSecurityOriginInternal = '';
     #unreachableMainSecurityOriginInternal = '';
     #securityOriginsInternal = new Set();
-    constructor(target) {
-        super(target);
-    }
     updateSecurityOrigins(securityOrigins) {
         const oldOrigins = this.#securityOriginsInternal;
         this.#securityOriginsInternal = securityOrigins;

@@ -1238,9 +1238,6 @@
   "generated/Deprecation.ts | DataUrlInSvgUse": {
     "message": "Ŝúp̂ṕôŕt̂ f́ôŕ d̂át̂á: ÛŔL̂ś îń ŜV́ĜÚŝéÊĺêḿêńt̂ íŝ d́êṕr̂éĉát̂éd̂ án̂d́ ît́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂ ín̂ t́ĥé f̂út̂úr̂é."
   },
-  "generated/Deprecation.ts | DOMMutationEvents": {
-    "message": "D̂ÓM̂ Ḿût́ât́îón̂ Év̂én̂t́ŝ, ín̂ćl̂úd̂ín̂ǵ DOMSubtreeModified, DOMNodeInserted, DOMNodeRemoved, DOMNodeRemovedFromDocument, DOMNodeInsertedIntoDocument, âńd̂ DOMCharacterDataModified ár̂é d̂ép̂ŕêćât́êd́ (ĥt́t̂ṕŝ://ẃ3ĉ.ǵît́ĥúb̂.íô/úîév̂én̂t́ŝ/#ĺêǵâćŷ-év̂én̂t́-t̂ýp̂éŝ) án̂d́ ŵíl̂ĺ b̂é r̂ém̂óv̂éd̂. Ṕl̂éâśê úŝé MutationObserver îńŝt́êád̂."
-  },
   "generated/Deprecation.ts | GeolocationInsecureOrigin": {
     "message": "getCurrentPosition() âńd̂ watchPosition() ńô ĺôńĝér̂ ẃôŕk̂ ón̂ ín̂śêćûŕê ór̂íĝín̂ś. T̂ó ûśê t́ĥíŝ f́êát̂úr̂é, ŷóû śĥóûĺd̂ ćôńŝíd̂ér̂ śŵít̂ćĥín̂ǵ ŷóûŕ âṕp̂ĺîćât́îón̂ t́ô á ŝéĉúr̂é ôŕîǵîń, ŝúĉh́ âś ĤT́T̂ṔŜ. Śêé ĥt́t̂ṕŝ://ǵôó.ĝĺê/ćĥŕôḿê-ín̂śêćûŕê-ór̂íĝín̂ś f̂ór̂ ḿôŕê d́êt́âíl̂ś."
   },
@@ -1818,7 +1815,7 @@
     "message": "Ĥád̂ ŕêd́îŕêćt̂ś ({PH1} r̂éd̂ír̂éĉt́ŝ, +{PH2})"
   },
   "models/trace/insights/DocumentLatency.ts | failedServerResponseTime": {
-    "message": "Ŝér̂v́êŕ r̂éŝṕôńd̂éd̂ śl̂óŵĺŷ (ób̂śêŕv̂éd̂ {PH1}) "
+    "message": "Ŝér̂v́êŕ r̂éŝṕôńd̂éd̂ śl̂óŵĺŷ (ób̂śêŕv̂éd̂ {PH1})"
   },
   "models/trace/insights/DocumentLatency.ts | failedTextCompression": {
     "message": "N̂ó ĉóm̂ṕr̂éŝśîón̂ áp̂ṕl̂íêd́"
@@ -1827,7 +1824,7 @@
     "message": "Âv́ôíd̂ś r̂éd̂ír̂éĉt́ŝ"
   },
   "models/trace/insights/DocumentLatency.ts | passingServerResponseTime": {
-    "message": "Ŝér̂v́êŕ r̂éŝṕôńd̂ś q̂úîćk̂ĺŷ (ób̂śêŕv̂éd̂ {PH1}) "
+    "message": "Ŝér̂v́êŕ r̂éŝṕôńd̂ś q̂úîćk̂ĺŷ (ób̂śêŕv̂éd̂ {PH1})"
   },
   "models/trace/insights/DocumentLatency.ts | passingTextCompression": {
     "message": "Âṕp̂ĺîéŝ t́êx́t̂ ćôḿp̂ŕêśŝíôń"
@@ -2073,7 +2070,7 @@
     "message": "[Âv́ôíd̂ ćĥáîńîńĝ ćr̂ít̂íĉál̂ ŕêq́ûéŝt́ŝ](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) b́ŷ ŕêd́ûćîńĝ t́ĥé l̂én̂ǵt̂h́ ôf́ ĉh́âín̂ś, r̂éd̂úĉín̂ǵ t̂h́ê d́ôẃn̂ĺôád̂ śîźê óf̂ ŕêśôúr̂ćêś, ôŕ d̂éf̂ér̂ŕîńĝ t́ĥé d̂óŵńl̂óâd́ ôf́ ûńn̂éĉéŝśâŕŷ ŕêśôúr̂ćêś t̂ó îḿp̂ŕôv́ê ṕâǵê ĺôád̂."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableDescription": {
-    "message": "Âd́d̂ [ṕr̂éĉón̂ńêćt̂](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) h́îńt̂ś t̂ó ŷóûŕ m̂óŝt́ îḿp̂ór̂t́âńt̂ ór̂íĝín̂ś, b̂út̂ t́r̂ý t̂ó ûśê f́êẃêŕ t̂h́âń 4."
+    "message": "Âd́d̂ [ṕr̂éĉón̂ńêćt̂](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) h́îńt̂ś t̂ó ŷóûŕ m̂óŝt́ îḿp̂ór̂t́âńt̂ ór̂íĝín̂ś, b̂út̂ t́r̂ý t̂ó ûśê ńô ḿôŕê t́ĥán̂ 4."
   },
   "models/trace/insights/NetworkDependencyTree.ts | estSavingTableTitle": {
     "message": "P̂ŕêćôńn̂éĉt́ ĉán̂d́îd́ât́êś"
@@ -2654,7 +2651,7 @@
   "panels/ai_assistance/AiAssistancePanel.ts | settings": {
     "message": "Ŝét̂t́îńĝś"
   },
-  "panels/ai_assistance/components/ChatView.ts | inputTextAriraDescription": {
+  "panels/ai_assistance/components/ChatView.ts | inputTextAriaDescription": {
     "message": "Ŷóû ćâń âĺŝó ûśê ón̂é ôf́ t̂h́ê śûǵĝéŝt́êd́ p̂ŕôḿp̂t́ŝ áb̂óv̂é t̂ó ŝt́âŕt̂ ýôúr̂ ćôńv̂ér̂śât́îón̂"
   },
   "panels/ai_assistance/components/ChatView.ts | learnAbout": {
@@ -9117,7 +9114,7 @@
     "message": "Êńt̂ér̂ á ĉúŝt́ôḿ ûśêŕ âǵêńt̂"
   },
   "panels/network/NetworkConfigView.ts | networkConditionsPanelShown": {
-    "message": "N̂ét̂ẃôŕk̂ ćôńd̂ít̂íôńŝ śĥóŵń"
+    "message": "N̂ét̂ẃôŕk̂ ćôńd̂ít̂íôńŝ śĥóŵń."
   },
   "panels/network/NetworkConfigView.ts | networkThrottling": {
     "message": "N̂ét̂ẃôŕk̂ t́ĥŕôt́t̂ĺîńĝ"
@@ -10071,7 +10068,7 @@
     "message": "D̂ír̂éĉt́ Ŝóĉḱêt́ Ĉh́ûńk̂"
   },
   "panels/network/ResourceDirectSocketChunkView.ts | filterUsingRegex": {
-    "message": "F̂íl̂t́êŕ ûśîńĝ ŕêǵêx́ (êx́âḿp̂ĺê: (d́îŕêćt̂)?śôćk̂ét̂)"
+    "message": "F̂íl̂t́êŕ ûśîńĝ ŕêǵêx́ (êx́âḿp̂ĺê: (direct)?socket)"
   },
   "panels/network/ResourceDirectSocketChunkView.ts | length": {
     "message": "L̂én̂ǵt̂h́"

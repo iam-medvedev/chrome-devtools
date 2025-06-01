@@ -102,9 +102,6 @@ export class SortableDataGrid extends ViewportDataGrid {
     }
 }
 export class SortableDataGridNode extends ViewportDataGridNode {
-    constructor(data, hasChildren) {
-        super(data, hasChildren);
-    }
     insertChildOrdered(node) {
         const dataGrid = this.dataGrid;
         if (dataGrid) {

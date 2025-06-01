@@ -56,7 +56,7 @@ export class Infobar {
         let defaultActionButtonVariant = "outlined" /* Buttons.Button.Variant.OUTLINED */;
         this.disableSetting = disableSetting || null;
         if (disableSetting) {
-            const disableButton = createTextButton(i18nString(UIStrings.dontShowAgain), this.onDisable.bind(this), { className: 'infobar-button' });
+            const disableButton = createTextButton(i18nString(UIStrings.dontShowAgain), this.onDisable.bind(this), { className: 'infobar-button', jslogContext: 'dont-show-again' });
             this.actionContainer.appendChild(disableButton);
             // If we have a disable button, make the other buttons tonal (if not otherwise specified).
             defaultActionButtonVariant = "tonal" /* Buttons.Button.Variant.TONAL */;

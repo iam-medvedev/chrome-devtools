@@ -168,4 +168,13 @@ export async function logSettingAccess(name, value) {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordSettingAccess(settingAccessEvent);
     processEventForDebugging('SettingAccess', null, { name, numericValue, stringValue });
 }
+export async function logFunctionCall(name, context) {
+    const nameHash = await contextAsNumber(name);
+    if (typeof nameHash === 'undefined') {
+        return;
+    }
+    const functionCallEvent = { name: nameHash, context: await contextAsNumber(context) };
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordFunctionCall(functionCallEvent);
+    processEventForDebugging('FunctionCall', null, { name, context });
+}
 //# sourceMappingURL=LoggingEvents.js.map

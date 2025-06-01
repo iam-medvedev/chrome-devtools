@@ -15,10 +15,13 @@ export default `/*
 
 .css-value-trace {
   --cell-width: 1.5em;
+  --padding: var(--sys-size-3);
+  --padding-left: var(--sys-size-4);
 
   display: grid;
   grid-template-columns: var(--cell-width) 1fr;
-  margin: 0;
+  margin: calc(-1 * var(--padding));
+  margin-left: calc(-1 * var(--padding-left));
 
   & .trace-line-icon {
     grid-column-start: 1;
@@ -76,10 +79,10 @@ export default `/*
 
   & .trace-line {
     place-self: center start;
-    padding: var(--sys-size-3);
+    padding: var(--padding);
     grid-column: 2 / 3;
     margin: 0;
-    padding-left: var(--sys-size-4);
+    padding-left: var(--padding-left);
   }
 
   .full-row {

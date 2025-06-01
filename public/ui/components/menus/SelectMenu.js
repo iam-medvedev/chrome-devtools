@@ -13,6 +13,9 @@ import selectMenuStyles from './selectMenu.css.js';
 import selectMenuButtonStyles from './selectMenuButton.css.js';
 const { html } = Lit;
 const deployMenuArrow = new URL('../../../Images/triangle-down.svg', import.meta.url).toString();
+/**
+ * @deprecated use `<select>` instead.
+ */
 export class SelectMenu extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #button = null;
@@ -118,6 +121,7 @@ export class SelectMenu extends HTMLElement {
         const buttonLabel = this.#getButtonText();
         if (!this.sideButton) {
             // clang-format off
+            /* eslint-disable rulesdir/no-deprecated-component-usages */
             return html `
           <devtools-select-menu-button
             @selectmenubuttontrigger=${this.#showMenu}
@@ -128,9 +132,11 @@ export class SelectMenu extends HTMLElement {
               ${buttonLabel}
             </devtools-select-menu-button>
         `;
+            /* eslint-enable rulesdir/no-deprecated-component-usages */
             // clang-format on
         }
         // clang-format off
+        /* eslint-disable rulesdir/no-deprecated-component-usages */
         return html `
       <button id="side-button" @click=${this.#sideButtonClicked} ?disabled=${this.disabled}>
         ${buttonLabel}
@@ -145,6 +151,7 @@ export class SelectMenu extends HTMLElement {
         .disabled=${this.disabled}>
       </devtools-select-menu-button>
     `;
+        /* eslint-enable rulesdir/no-deprecated-component-usages */
         // clang-format on
     }
     #onMenuClose(evt) {
@@ -164,23 +171,21 @@ export class SelectMenu extends HTMLElement {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('SelectMenu render was not scheduled');
         }
+        // clang-format off
         Lit.render(html `
-      <style>${selectMenuStyles}</style>
-      <devtools-menu
-        @menucloserequest=${this.#onMenuClose}
-        @menuitemselected=${this.#onItemSelected}
-        .position=${this.position}
-        .origin=${this}
-        .showDivider=${this.showDivider}
-        .showSelectedItem=${this.showSelectedItem}
-        .open=${this.#open}
-        .getConnectorCustomXPosition=${null}
-      >
-      <slot>
-      </slot>
-      </devtools-menu>
-      ${this.#renderButton()}
-    `, this.#shadow, { host: this });
+        <style>${selectMenuStyles}</style>
+        <devtools-menu
+            @menucloserequest=${this.#onMenuClose}
+            @menuitemselected=${this.#onItemSelected}
+            .position=${this.position}
+            .origin=${this}
+            .showDivider=${this.showDivider}
+            .showSelectedItem=${this.showSelectedItem}
+            .open=${this.#open}
+            .getConnectorCustomXPosition=${null}>
+          <slot></slot>
+        </devtools-menu>
+        ${this.#renderButton()}`, this.#shadow, { host: this });
         // clang-format on
     }
 }
@@ -283,15 +288,21 @@ export class SelectMenuButton extends HTMLElement {
         // clang-format off
         const buttonTitle = html `
       <span id="button-label-wrapper">
-        <span id="label" ?witharrow=${this.showArrow} class=${Lit.Directives.classMap(classMap)}><slot></slot></span>
+        <span id="label" ?witharrow=${this.showArrow} class=${Lit.Directives.classMap(classMap)}>
+          <slot></slot>
+        </span>
         ${arrow}
-      </span>
-      `;
+      </span>`;
         // clang-format off
         Lit.render(html `
-      <style>${selectMenuButtonStyles}</style>
-      <button aria-haspopup="true" aria-expanded="false" class="show" @keydown=${this.#handleButtonKeyDown} @click=${this.#handleClick} ?disabled=${this.disabled} jslog=${VisualLogging.dropDown(this.jslogContext)}>${buttonTitle}</button>
-    `, this.#shadow, { host: this });
+        <style>${selectMenuButtonStyles}</style>
+        <button
+            aria-haspopup="true" aria-expanded="false" class="show"
+            @keydown=${this.#handleButtonKeyDown} @click=${this.#handleClick}
+            ?disabled=${this.disabled}
+            jslog=${VisualLogging.dropDown(this.jslogContext)}>
+          ${buttonTitle}
+        </button>`, this.#shadow, { host: this });
         // clang-format on
     }
 }

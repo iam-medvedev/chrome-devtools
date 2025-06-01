@@ -45,8 +45,6 @@ export class ProfileTreeModel {
     root;
     total;
     maxDepth;
-    constructor() {
-    }
     initialize(root) {
         this.root = root;
         this.assignDepthsAndParents();

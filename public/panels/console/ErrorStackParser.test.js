@@ -27,13 +27,12 @@ describe('ErrorStackParser', () => {
         assert.isNull(parseErrorStack(''));
         assert.isNull(parseErrorStack('foobar'));
     });
-    it('returns null if the first word does not end in "Error"', () => {
-        assert.isNull(parseErrorStack('CustomFoo: bar'));
+    it('returns null if there are no stack frames', () => {
+        assert.isNull(parseErrorStack('Error: bar'));
     });
-    it('accepts stacks with any "*Error" as its first word', () => {
-        assert.isNotNull(parseErrorStack('Error: standard error'));
-        assert.isNotNull(parseErrorStack('ReferenceError: unknown variable'));
-        assert.isNotNull(parseErrorStack('CustomError: foobar'));
+    it('accepts stacks if the first word of any line after the first line is "at"', () => {
+        assert.isNotNull(parseErrorStack('!\nat foo'));
+        assert.isNotNull(parseErrorStack('ReferenceError:\n    at foo'));
     });
     it('omits position information for frames it cannot parse', () => {
         const frames = parseErrorStack(`Error: standard error

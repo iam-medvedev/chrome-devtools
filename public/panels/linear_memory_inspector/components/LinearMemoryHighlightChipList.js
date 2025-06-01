@@ -80,7 +80,9 @@ export class LinearMemoryHighlightChipList extends HTMLElement {
             jslog=${VisualLogging.action('linear-memory-inspector.jump-to-highlight').track({ click: true })}
             @click=${() => this.#onJumpToHighlightClick(highlightInfo.startAddress)}>
           <span class="source-code">
-            <span class="value">${expressionName}</span><span class="separator">: </span><span>${expressionType}</span>
+            <span class="value">${expressionName}</span>
+            <span class="separator">: </span>
+            <span>${expressionType}</span>
           </span>
         </button>
         <div class="delete-highlight-container">

@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/components/markdown_view/markdown_view.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Marked from '../../third_party/marked/marked.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -79,7 +80,11 @@ export class ReleaseNoteView extends UI.Panel.Panel {
         })}
             </div>
             ${markdownContent.map((markdown) => {
-            return html `<div class="feature"><devtools-markdown-view slot="content" .data=${{ tokens: markdown }}></devtools-markdown-view></div>`;
+            return html `
+                  <div class="feature">
+                    <devtools-markdown-view slot="content" .data=${{ tokens: markdown }}>
+                    </devtools-markdown-view>
+                  </div>`;
         })}
           </div>
         </div>

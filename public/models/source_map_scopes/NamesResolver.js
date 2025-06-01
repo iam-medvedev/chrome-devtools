@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Formatter from '../formatter/formatter.js';
@@ -389,69 +388,6 @@ export const allVariablesAtPosition = async (location) => {
         scopeChain.pop();
     }
     return reverseMapping;
-};
-export const resolveExpression = async (callFrame, originalText, uiSourceCode, lineNumber, startColumnNumber, endColumnNumber) => {
-    if (uiSourceCode.mimeType() === 'application/wasm') {
-        // For WebAssembly disassembly, lookup the different possiblities.
-        return `memories["${originalText}"] ?? locals["${originalText}"] ?? tables["${originalText}"] ?? functions["${originalText}"] ?? globals["${originalText}"]`;
-    }
-    if (!uiSourceCode.contentType().isFromSourceMap()) {
-        return '';
-    }
-    const reverseMapping = await allVariablesInCallFrame(callFrame);
-    if (reverseMapping.has(originalText)) {
-        return reverseMapping.get(originalText);
-    }
-    const rawLocations = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().uiLocationToRawLocations(uiSourceCode, lineNumber, startColumnNumber);
-    const rawLocation = rawLocations.find(location => location.debuggerModel === callFrame.debuggerModel);
-    if (!rawLocation) {
-        return '';
-    }
-    const script = rawLocation.script();
-    if (!script) {
-        return '';
-    }
-    const sourceMap = script.sourceMap();
-    if (!sourceMap) {
-        return '';
-    }
-    const text = await getTextFor(script);
-    if (!text) {
-        return '';
-    }
-    const textRanges = sourceMap.reverseMapTextRanges(uiSourceCode.url(), new TextUtils.TextRange.TextRange(lineNumber, startColumnNumber, lineNumber, endColumnNumber));
-    if (textRanges.length !== 1) {
-        return '';
-    }
-    const [compiledRange] = textRanges;
-    const subjectText = text.extract(compiledRange);
-    if (!subjectText) {
-        return '';
-    }
-    // Map `subjectText` back to the authored code and check that the source map spits out
-    // `originalText` again modulo some whitespace/punctuation.
-    const authoredText = await getTextFor(uiSourceCode);
-    if (!authoredText) {
-        return '';
-    }
-    // Take the "start point" and the "end point - 1" of the compiled range and map them
-    // with the source map. Note that for "end point - 1" we need the line endings array to potentially
-    // move to the end of the previous line.
-    const startRange = sourceMap.findEntryRanges(compiledRange.startLine, compiledRange.startColumn);
-    const endLine = compiledRange.endColumn === 0 ? compiledRange.endLine - 1 : compiledRange.endLine;
-    const endColumn = compiledRange.endColumn === 0 ? text.lineEndings()[endLine] : compiledRange.endColumn - 1;
-    const endRange = sourceMap.findEntryRanges(endLine, endColumn);
-    if (!startRange || !endRange) {
-        return '';
-    }
-    // Merge `startRange` with `endRange`. This might not be 100% correct if there are interleaved ranges inbetween.
-    const mappedAuthoredText = authoredText.extract(new TextUtils.TextRange.TextRange(startRange.sourceRange.startLine, startRange.sourceRange.startColumn, endRange.sourceRange.endLine, endRange.sourceRange.endColumn));
-    // Check that what we found after applying the source map roughly matches `originalText`.
-    const originalTextRegex = new RegExp(`^[\\s,;]*${Platform.StringUtilities.escapeForRegExp(originalText)}`, 'g');
-    if (!originalTextRegex.test(mappedAuthoredText)) {
-        return '';
-    }
-    return await Formatter.FormatterWorkerPool.formatterWorkerPool().evaluatableJavaScriptSubstring(subjectText);
 };
 export const resolveThisObject = async (callFrame) => {
     const scopeChain = callFrame.scopeChain();

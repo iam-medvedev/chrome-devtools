@@ -69,8 +69,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         assert.isOk(duration);
         assert.strictEqual(duration.innerText, 'Duration37.85 ms (at 109.82 ms)');
     });
-    // Semi-regularly flaking on CQ bots.
-    it.skip('[crbug.com/406981939]: renders the layout shift component for a single layout shift', async function () {
+    it('renders the layout shift component for a single layout shift', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         await detailsView.setModel({
@@ -90,8 +89,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const layoutShiftDetails = detailsContentElement.querySelector('devtools-performance-layout-shift-details');
         assert.isNotNull(layoutShiftDetails);
     });
-    // Semi-regularly flaking on CQ bots.
-    it.skip('[crbug.com/406981939]: renders the layout shift component for a selected cluster', async function () {
+    it('renders the layout shift component for a selected cluster', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         await detailsView.setModel({

@@ -22,7 +22,6 @@ export declare class ProfileTreeModel {
     root: ProfileNode;
     total: number;
     maxDepth: number;
-    constructor();
     initialize(root: ProfileNode): void;
     private assignDepthsAndParents;
     private calculateTotals;

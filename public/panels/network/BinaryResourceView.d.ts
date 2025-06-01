@@ -12,7 +12,7 @@ export declare class BinaryResourceView extends UI.Widget.VBox {
     private readonly copiedText;
     private addFadeoutSettimeoutId;
     private lastView;
-    constructor(content: TextUtils.StreamingContentData.StreamingContentData, contentUrl: Platform.DevToolsPath.UrlString, resourceType: Common.ResourceType.ResourceType);
+    constructor(content: TextUtils.StreamingContentData.StreamingContentData, contentUrl: Platform.DevToolsPath.UrlString, resourceType: Common.ResourceType.ResourceType, element?: HTMLElement);
     private getCurrentViewObject;
     private copySelectedViewToClipboard;
     private updateView;

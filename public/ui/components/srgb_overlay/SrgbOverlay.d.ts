@@ -5,7 +5,6 @@ interface SrgbOverlayProps {
 }
 export declare class SrgbOverlay extends HTMLElement {
     #private;
-    constructor();
     render({ hue, width, height }: SrgbOverlayProps): Promise<void>;
 }
 declare global {

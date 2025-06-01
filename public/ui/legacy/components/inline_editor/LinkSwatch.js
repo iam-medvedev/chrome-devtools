@@ -41,25 +41,19 @@ export class LinkSwatch extends HTMLElement {
         const onActivate = isDefined ? this.onLinkActivate.bind(this, text.trim()) : null;
         const title = tooltip && 'title' in tooltip && tooltip.title || undefined;
         const tooltipId = tooltip && 'tooltipId' in tooltip && tooltip.tooltipId || undefined;
-        render(
         // clang-format off
-        html `<style>${Buttons.textButtonStyles}</style><style>${linkSwatchStyles}</style><button
-          .disabled=${!isDefined}
-          jslog=${jslogContext ? VisualLogging.link().track({ click: true }).context(jslogContext) : nothing}
-          class=${classes}
-          type="button"
-          title=${ifDefined(title)}
-          aria-details=${ifDefined(tooltipId)}
-          @click=${onActivate}
-          @keydown=${onActivate}
-          role="link"
-          tabindex=${ifDefined(isDefined ? -1 : undefined)}
-          ${ref(e => {
-            this.#linkElement = e;
-        })}
-          >${text}</button>`, 
+        render(html `
+        <style>${Buttons.textButtonStyles}</style>
+        <style>${linkSwatchStyles}</style>
+        <button .disabled=${!isDefined} class=${classes} type="button" title=${ifDefined(title)}
+                aria-details=${ifDefined(tooltipId)} @click=${onActivate} @keydown=${onActivate}
+                role="link"
+                jslog=${jslogContext ? VisualLogging.link().track({ click: true }).context(jslogContext) : nothing}
+                tabindex=${ifDefined(isDefined ? -1 : undefined)}
+                ${ref(e => { this.#linkElement = e; })}>
+           ${text}
+        </button>`, this);
         // clang-format on
-        this);
     }
 }
 customElements.define('devtools-link-swatch', LinkSwatch);

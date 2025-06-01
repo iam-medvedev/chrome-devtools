@@ -1234,9 +1234,11 @@
       <include file="panels/ai_assistance/SelectWorkspaceDialog.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_JS" resource_path="panels/ai_assistance/SelectWorkspaceDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/aiAssistancePanel.css.js" name="PANELS_AI_ASSISTANCE_AIASSISTANCEPANEL_CSS_JS" resource_path="panels/ai_assistance/aiAssistancePanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/ChatView.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_CHATVIEW_JS" resource_path="panels/ai_assistance/components/ChatView.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/components/ExploreWidget.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_EXPLOREWIDGET_JS" resource_path="panels/ai_assistance/components/ExploreWidget.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_MARKDOWNRENDERERWITHCODEBLOCK_JS" resource_path="panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/UserActionRow.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_USERACTIONROW_JS" resource_path="panels/ai_assistance/components/UserActionRow.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/chatView.css.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_CHATVIEW_CSS_JS" resource_path="panels/ai_assistance/components/chatView.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/ai_assistance/components/exploreWidget.css.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_EXPLOREWIDGET_CSS_JS" resource_path="panels/ai_assistance/components/exploreWidget.css.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/components/userActionRow.css.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_USERACTIONROW_CSS_JS" resource_path="panels/ai_assistance/components/userActionRow.css.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/selectWorkspaceDialog.css.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_CSS_JS" resource_path="panels/ai_assistance/selectWorkspaceDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
@@ -1985,6 +1987,7 @@
       <include file="panels/timeline/timelinePanel.css.js" name="PANELS_TIMELINE_TIMELINEPANEL_CSS_JS" resource_path="panels/timeline/timelinePanel.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineSelectorStatsView.css.js" name="PANELS_TIMELINE_TIMELINESELECTORSTATSVIEW_CSS_JS" resource_path="panels/timeline/timelineSelectorStatsView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineStatusDialog.css.js" name="PANELS_TIMELINE_TIMELINESTATUSDIALOG_CSS_JS" resource_path="panels/timeline/timelineStatusDialog.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/timelineTreeView.css.js" name="PANELS_TIMELINE_TIMELINETREEVIEW_CSS_JS" resource_path="panels/timeline/timelineTreeView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/AICallTree.js" name="PANELS_TIMELINE_UTILS_AICALLTREE_JS" resource_path="panels/timeline/utils/AICallTree.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntityMapper.js" name="PANELS_TIMELINE_UTILS_ENTITYMAPPER_JS" resource_path="panels/timeline/utils/EntityMapper.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntryName.js" name="PANELS_TIMELINE_UTILS_ENTRYNAME_JS" resource_path="panels/timeline/utils/EntryName.js" type="BINDATA" compress="false"/>
@@ -2571,6 +2574,7 @@
       <include file="ui/legacy/treeoutline.css.js" name="UI_LEGACY_TREEOUTLINE_CSS_JS" resource_path="ui/legacy/treeoutline.css.js" type="BINDATA" compress="false"/>
       <include file="ui/legacy/viewContainers.css.js" name="UI_LEGACY_VIEWCONTAINERS_CSS_JS" resource_path="ui/legacy/viewContainers.css.js" type="BINDATA" compress="false"/>
       <include file="ui/lit/i18n-template.js" name="UI_LIT_I18N_TEMPLATE_JS" resource_path="ui/lit/i18n-template.js" type="BINDATA" compress="false"/>
+      <include file="ui/lit/strip-whitespace.js" name="UI_LIT_STRIP_WHITESPACE_JS" resource_path="ui/lit/strip-whitespace.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/Debugging.js" name="UI_VISUAL_LOGGING_DEBUGGING_JS" resource_path="ui/visual_logging/Debugging.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/DomState.js" name="UI_VISUAL_LOGGING_DOMSTATE_JS" resource_path="ui/visual_logging/DomState.js" type="BINDATA" compress="false"/>
       <include file="ui/visual_logging/KnownContextValues.js" name="UI_VISUAL_LOGGING_KNOWNCONTEXTVALUES_JS" resource_path="ui/visual_logging/KnownContextValues.js" type="BINDATA" compress="false"/>

@@ -37,7 +37,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkComponents from './components/components.js';
 import { RequestHTMLView } from './RequestHTMLView.js';
-import { RequestResponseView } from './RequestResponseView.js';
 import { SignedExchangeInfoView } from './SignedExchangeInfoView.js';
 const UIStrings = {
     /**
@@ -51,13 +50,19 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/network/RequestPreviewView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class RequestPreviewView extends RequestResponseView {
+export class RequestPreviewView extends UI.Widget.VBox {
+    request;
+    contentViewPromise;
     constructor(request) {
-        super(request);
+        super();
+        this.element.classList.add('request-view');
+        this.request = request;
+        this.contentViewPromise = null;
         this.element.setAttribute('jslog', `${VisualLogging.pane('preview').track({ resize: true })}`);
     }
     async showPreview() {
-        const view = await super.showPreview();
+        const view = await this.createPreview();
+        view.show(this.element);
         await view.updateComplete;
         if (!(view instanceof UI.View.SimpleView)) {
             return view;
@@ -67,6 +72,15 @@ export class RequestPreviewView extends RequestResponseView {
             items.map(item => toolbar.appendToolbarItem(item));
         });
         return view;
+    }
+    wasShown() {
+        void this.doShowPreview();
+    }
+    doShowPreview() {
+        if (!this.contentViewPromise) {
+            this.contentViewPromise = this.showPreview();
+        }
+        return this.contentViewPromise;
     }
     async htmlPreview() {
         const contentData = await this.request.requestContentData();

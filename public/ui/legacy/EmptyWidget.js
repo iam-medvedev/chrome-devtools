@@ -45,8 +45,8 @@ export class EmptyWidget extends VBox {
     #headerElement;
     #textElement;
     #linkElement;
-    constructor(header, text) {
-        super();
+    constructor(header, text, element) {
+        super(undefined, undefined, element);
         this.registerRequiredCSS(emptyWidgetStyles);
         this.element.classList.add('empty-view-scroller');
         this.contentElement = this.element.createChild('div', 'empty-state');

@@ -33,7 +33,6 @@ interface Recording {
 }
 export declare class RecordingListView extends HTMLElement {
     #private;
-    constructor();
     connectedCallback(): void;
     set recordings(recordings: Recording[]);
     set replayAllowed(value: boolean);

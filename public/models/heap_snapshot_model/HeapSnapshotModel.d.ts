@@ -60,7 +60,6 @@ export declare class Aggregate {
     maxRet: number;
     name: string;
     idxs: number[];
-    constructor();
 }
 export declare class AggregateForDiff {
     name: string;
@@ -91,7 +90,6 @@ export declare class DiffForClass {
     addedIndexes: number[];
     countDelta: number;
     sizeDelta: number;
-    constructor();
 }
 export declare class ComparatorConfig {
     fieldName1: string;
@@ -108,7 +106,6 @@ export declare class WorkerCommand {
     methodName: string;
     methodArguments: any[];
     source: string;
-    constructor();
 }
 export declare class ItemsRange {
     startPosition: number;

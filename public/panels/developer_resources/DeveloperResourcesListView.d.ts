@@ -5,7 +5,8 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
     items: SDK.PageResourceLoader.PageResource[];
-    highlight: (element: Element, textContent: string, columnId: string) => void;
+    selectedItem: SDK.PageResourceLoader.PageResource | null;
+    highlight: (element: Element | undefined, textContent: string | undefined, columnId: string) => void;
     filters: TextUtils.TextUtils.ParsedFilter[];
     onContextMenu: (e: CustomEvent<{
         menu: UI.ContextMenu.ContextMenu;

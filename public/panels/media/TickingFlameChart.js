@@ -280,8 +280,6 @@ export class TickingFlameChart extends UI.Widget.VBox {
  * Doesn't do much right now, but can be used in the future for selecting events.
  */
 class TickingFlameChartDelegate {
-    constructor() {
-    }
     windowChanged(_windowStartTime, _windowEndTime, _animate) {
     }
     updateRangeSelection(_startTime, _endTime) {

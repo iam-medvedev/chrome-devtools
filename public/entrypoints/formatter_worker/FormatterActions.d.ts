@@ -2,8 +2,7 @@ export declare const enum FormatterActions {
     FORMAT = "format",
     PARSE_CSS = "parseCSS",
     JAVASCRIPT_SUBSTITUTE = "javaScriptSubstitute",
-    JAVASCRIPT_SCOPE_TREE = "javaScriptScopeTree",
-    EVALUATE_JAVASCRIPT_SUBSTRING = "evaluatableJavaScriptSubstring"
+    JAVASCRIPT_SCOPE_TREE = "javaScriptScopeTree"
 }
 export declare const enum FormattableMediaTypes {
     APPLICATION_JAVASCRIPT = "application/javascript",

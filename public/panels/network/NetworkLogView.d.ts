@@ -52,12 +52,7 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private activeGroupLookup;
     private readonly textFilterUI;
     private readonly invertFilterUI;
-    private readonly dataURLFilterUI;
     private readonly moreFiltersDropDownUI;
-    private readonly onlyBlockedResponseCookiesFilterUI;
-    private readonly onlyBlockedRequestsUI;
-    private readonly onlyThirdPartyFilterUI;
-    private readonly hideChromeExtensionsUI;
     private readonly resourceCategoryFilterUI;
     private readonly filterParser;
     private readonly suggestionBuilder;

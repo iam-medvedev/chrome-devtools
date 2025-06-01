@@ -142,6 +142,7 @@ export class InspectorView extends VBox {
     ownerSplitWidget;
     reloadRequiredInfobar;
     #selectOverrideFolderInfobar;
+    #resizeObserver;
     constructor() {
         super();
         GlassPane.setContainer(this.element);
@@ -223,6 +224,7 @@ export class InspectorView extends VBox {
             infobar.setParentView(this);
             this.attachInfobar(infobar);
         }
+        this.#resizeObserver = new ResizeObserver(this.#observedResize.bind(this));
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -237,10 +239,22 @@ export class InspectorView extends VBox {
     static removeInstance() {
         inspectorViewInstance = null;
     }
+    #observedResize() {
+        const rect = this.element.getBoundingClientRect();
+        this.element.style.setProperty('--devtools-window-left', `${rect.left}px`);
+        this.element.style.setProperty('--devtools-window-right', `${window.innerWidth - rect.right}px`);
+        this.element.style.setProperty('--devtools-window-width', `${rect.width}px`);
+        this.element.style.setProperty('--devtools-window-top', `${rect.top}px`);
+        this.element.style.setProperty('--devtools-window-bottom', `${window.innerHeight - rect.bottom}px`);
+        this.element.style.setProperty('--devtools-window-height', `${rect.height}px`);
+    }
     wasShown() {
+        this.#resizeObserver.observe(this.element);
+        this.#observedResize();
         this.element.ownerDocument.addEventListener('keydown', this.keyDownBound, false);
     }
     willHide() {
+        this.#resizeObserver.unobserve(this.element);
         this.element.ownerDocument.removeEventListener('keydown', this.keyDownBound, false);
     }
     resolveLocation(locationName) {

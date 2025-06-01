@@ -348,9 +348,6 @@ export class HeapSnapshotProxy extends HeapSnapshotProxyObject {
     }
 }
 export class HeapSnapshotProviderProxy extends HeapSnapshotProxyObject {
-    constructor(worker, objectId) {
-        super(worker, objectId);
-    }
     nodePosition(snapshotObjectId) {
         return this.callMethodPromise('nodePosition', snapshotObjectId);
     }

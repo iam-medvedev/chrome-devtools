@@ -481,12 +481,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     activeGroupLookup;
     textFilterUI;
     invertFilterUI;
-    dataURLFilterUI;
     moreFiltersDropDownUI;
-    onlyBlockedResponseCookiesFilterUI;
-    onlyBlockedRequestsUI;
-    onlyThirdPartyFilterUI;
-    hideChromeExtensionsUI;
     resourceCategoryFilterUI;
     filterParser;
     suggestionBuilder;
