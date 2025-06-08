@@ -661,17 +661,19 @@ export class NetworkRequestNode extends NetworkNode {
         }
         return aURL > bURL ? 1 : -1;
     }
-    static ResponseHeaderStringComparator(propertyName, a, b) {
-        // TODO(allada) Handle this properly for group nodes.
+    static HeaderStringComparator(getHeaderValue, propertyName, a, b) {
         const aRequest = a.requestOrFirstKnownChildRequest();
         const bRequest = b.requestOrFirstKnownChildRequest();
         if (!aRequest || !bRequest) {
             return !aRequest ? -1 : 1;
         }
-        const aValue = String(aRequest.responseHeaderValue(propertyName) || '');
-        const bValue = String(bRequest.responseHeaderValue(propertyName) || '');
+        // Use the provided callback to get the header value
+        const aValue = String(getHeaderValue(aRequest, propertyName) || '');
+        const bValue = String(getHeaderValue(bRequest, propertyName) || '');
         return aValue.localeCompare(bValue) || aRequest.identityCompare(bRequest);
     }
+    static ResponseHeaderStringComparator = NetworkRequestNode.HeaderStringComparator.bind(null, (req, name) => req.responseHeaderValue(name));
+    static RequestHeaderStringComparator = NetworkRequestNode.HeaderStringComparator.bind(null, (req, name) => req.requestHeaderValue(name));
     static ResponseHeaderNumberComparator(propertyName, a, b) {
         // TODO(allada) Handle this properly for group nodes.
         const aRequest = a.requestOrFirstKnownChildRequest();
@@ -914,7 +916,23 @@ export class NetworkRequestNode extends NetworkNode {
                 break;
             }
             default: {
-                this.setTextAndTitle(cell, this.requestInternal.responseHeaderValue(columnId) || '');
+                const columnConfig = this.dataGrid?.columns[columnId];
+                if (columnConfig) {
+                    let headerName = '';
+                    let headerValue = '';
+                    if (columnConfig.id.startsWith('request-header-')) {
+                        headerName = columnId.substring('request-header-'.length);
+                        headerValue = this.requestInternal.requestHeaderValue(headerName) || '';
+                    }
+                    else {
+                        headerName = columnId.substring('response-header-'.length);
+                        headerValue = this.requestInternal.responseHeaderValue(headerName) || '';
+                    }
+                    this.setTextAndTitle(cell, headerValue);
+                }
+                else {
+                    this.setTextAndTitle(cell, '');
+                }
                 break;
             }
         }

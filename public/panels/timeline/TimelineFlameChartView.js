@@ -885,9 +885,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }, 100);
         debouncedUpdate();
     }
-    isNetworkTrackShownForTests() {
-        return this.networkSplitWidget.showMode() !== "OnlyMain" /* UI.SplitWidget.ShowMode.ONLY_MAIN */;
-    }
     getLinkSelectionAnnotation() {
         return this.#linkSelectionAnnotation;
     }

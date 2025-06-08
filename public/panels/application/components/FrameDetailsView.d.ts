@@ -7,7 +7,7 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 export interface FrameDetailsReportViewData {
     frame: SDK.ResourceTreeModel.ResourceTreeFrame;
     target?: SDK.Target.Target;
-    adScriptAncestryIds: Protocol.Page.AdScriptId[] | null;
+    adScriptAncestry: Protocol.Page.AdScriptAncestry | null;
 }
 export declare class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;

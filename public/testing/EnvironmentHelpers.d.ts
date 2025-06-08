@@ -23,6 +23,9 @@ export declare namespace describeWithEnvironment {
     var only: (title: string, fn: (this: Mocha.Suite) => void, opts?: {
         reset: boolean;
     }) => Mocha.Suite;
+    var skip: (title: string, fn: (this: Mocha.Suite) => void, _opts?: {
+        reset: boolean;
+    }) => void | Mocha.Suite;
 }
 export declare function initializeGlobalLocaleVars(): Promise<void>;
 export declare function deinitializeGlobalLocaleVars(): void;

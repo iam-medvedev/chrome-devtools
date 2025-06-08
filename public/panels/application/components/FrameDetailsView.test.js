@@ -19,7 +19,7 @@ const makeFrame = (target) => {
         unreachableUrl: () => '',
         adFrameType: () => "none" /* Protocol.Page.AdFrameType.None */,
         adFrameStatus: () => undefined,
-        getAdScriptAncestryIds: () => null,
+        getAdScriptAncestry: () => null,
         resourceForURL: () => null,
         isSecureContext: () => true,
         isCrossOriginIsolated: () => true,
@@ -117,16 +117,19 @@ describeWithMockConnection('FrameDetailsView', () => {
         const frame = makeFrame(target);
         frame.adFrameType = () => "root" /* Protocol.Page.AdFrameType.Root */;
         frame.parentFrame = () => ({
-            getAdScriptAncestryIds: () => ([
-                {
-                    scriptId: '123',
-                    debuggerId: '42',
-                },
-                {
-                    scriptId: '456',
-                    debuggerId: '42',
-                }
-            ]),
+            getAdScriptAncestry: () => ({
+                ancestryChain: [
+                    {
+                        scriptId: '123',
+                        debuggerId: '42',
+                    },
+                    {
+                        scriptId: '456',
+                        debuggerId: '42',
+                    }
+                ],
+                rootScriptFilterlistRule: '/ad-script2.$script',
+            }),
         });
         const networkManager = target.model(SDK.NetworkManager.NetworkManager);
         assert.exists(networkManager);
@@ -158,6 +161,7 @@ describeWithMockConnection('FrameDetailsView', () => {
             'Frame Creation Stack Trace',
             'Ad Status',
             'Creator Ad Script Ancestry',
+            'Root Script Filterlist Rule',
             'Secure Context',
             'Cross-Origin Isolated',
             'Cross-Origin Embedder Policy (COEP)',
@@ -174,6 +178,7 @@ describeWithMockConnection('FrameDetailsView', () => {
             '',
             '',
             '',
+            '/ad-script2.$script',
             'Yes\xA0Localhost is always a secure context',
             'Yes',
             'None',

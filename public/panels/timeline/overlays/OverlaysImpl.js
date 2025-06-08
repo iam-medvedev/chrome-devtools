@@ -424,6 +424,13 @@ export class Overlays extends EventTarget {
         return matches;
     }
     /**
+     * Used for debugging and testing. Do not mutate the element directly using
+     * this method.
+     */
+    elementForOverlay(overlay) {
+        return this.#overlaysToElements.get(overlay) ?? null;
+    }
+    /**
      * Removes any active overlays that match the provided type.
      * @returns the number of overlays that were removed.
      */

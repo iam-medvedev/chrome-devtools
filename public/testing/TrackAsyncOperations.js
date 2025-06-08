@@ -64,8 +64,8 @@ export async function checkForPendingActivity() {
         }
     }
     if (stillPending.length) {
-        throw new Error('The test has completed, but there are still pending promises, created at: \n' +
-            stillPending.map(a => a.stack).join('\n\n'));
+        throw new Error('The test has completed, but there are still pending async operations\n' +
+            stillPending.map(a => `Pending '${a.type}' created at: \n${a.stack}`).join('\n\n'));
     }
 }
 export function stopTrackingAsyncActivity() {
@@ -73,7 +73,7 @@ export function stopTrackingAsyncActivity() {
     restoreAll();
 }
 function trackingRequestAnimationFrame(fn) {
-    const activity = { pending: true };
+    const activity = { type: 'requestAnimationFrame', pending: true, stack: getStack(new Error()) };
     let id = 0;
     activity.promise = new (original((Promise)))(resolve => {
         activity.runImmediate = () => {
@@ -93,7 +93,7 @@ function trackingRequestAnimationFrame(fn) {
     return id;
 }
 function trackingRequestIdleCallback(fn, opts) {
-    const activity = { pending: true };
+    const activity = { type: 'requestIdleCallback', pending: true, stack: getStack(new Error()) };
     let id = 0;
     activity.promise = new (original((Promise)))(resolve => {
         activity.runImmediate = (idleDeadline) => {
@@ -113,9 +113,7 @@ function trackingRequestIdleCallback(fn, opts) {
     return id;
 }
 function trackingSetTimeout(arg, time, ...params) {
-    const activity = {
-        pending: true,
-    };
+    const activity = { type: 'setTimeout', pending: true, stack: getStack(new Error()) };
     let id;
     activity.promise = new (original((Promise)))(resolve => {
         activity.runImmediate = () => {
@@ -141,7 +139,9 @@ function trackingSetTimeout(arg, time, ...params) {
 }
 function trackingSetInterval(arg, time, ...params) {
     const activity = {
+        type: 'setInterval',
         pending: true,
+        stack: getStack(new Error()),
     };
     let id = 0;
     activity.promise = new (original((Promise)))(resolve => {
@@ -184,6 +184,7 @@ const TrackingPromise = Object.assign(function (arg) {
     const originalPromiseType = original(Promise);
     const promise = new (originalPromiseType)(arg);
     const activity = {
+        type: 'promise',
         promise,
         stack: getStack(new Error()),
         pending: false,

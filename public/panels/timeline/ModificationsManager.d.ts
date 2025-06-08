@@ -28,7 +28,11 @@ export declare class ModificationsManager extends EventTarget {
     getEntriesFilter(): EntriesFilter;
     getTimelineBreadcrumbs(): TimelineComponents.Breadcrumbs.Breadcrumbs;
     deleteEmptyRangeAnnotations(): void;
-    createAnnotation(newAnnotation: Trace.Types.File.Annotation, loadedFromFile?: boolean): void;
+    /**
+     * Stores the annotation and creates its overlay.
+     * @returns the Overlay that gets created and associated with this annotation.
+     */
+    createAnnotation(newAnnotation: Trace.Types.File.Annotation, loadedFromFile?: boolean): Overlays.Overlays.TimelineOverlay;
     annotationsForEntry(entry: Trace.Types.Events.Event): Trace.Types.File.Annotation[];
     deleteEntryAnnotations(entry: Trace.Types.Events.Event): void;
     linkAnnotationBetweenEntriesExists(entryFrom: Trace.Types.Events.Event, entryTo: Trace.Types.Events.Event): boolean;

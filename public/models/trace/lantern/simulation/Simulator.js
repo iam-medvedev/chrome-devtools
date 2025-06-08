@@ -364,7 +364,7 @@ class Simulator {
      * connection).
      */
     simulate(graph, options) {
-        if (Graph.BaseNode.hasCycle(graph)) {
+        if (Graph.BaseNode.findCycle(graph)) {
             throw new Core.LanternError('Cannot simulate graph with cycle');
         }
         options = Object.assign({

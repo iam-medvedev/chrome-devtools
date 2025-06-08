@@ -223,6 +223,11 @@ export declare class Overlays extends EventTarget {
      */
     overlaysForEntry(entry: OverlayEntry): TimelineOverlay[];
     /**
+     * Used for debugging and testing. Do not mutate the element directly using
+     * this method.
+     */
+    elementForOverlay(overlay: TimelineOverlay): HTMLElement | null;
+    /**
      * Removes any active overlays that match the provided type.
      * @returns the number of overlays that were removed.
      */

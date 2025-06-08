@@ -737,9 +737,6 @@ export const generatedPropertyValues: {
     "scroll-initial-target": {
         values: string[];
     };
-    "scroll-marker-contain": {
-        values: string[];
-    };
     "scroll-marker-group": {
         values: string[];
     };
@@ -774,6 +771,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "scroll-snap-type": {
+        values: string[];
+    };
+    "scroll-target-group": {
         values: string[];
     };
     "scrollbar-color": {

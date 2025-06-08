@@ -1208,7 +1208,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             });
             const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
             const response = await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
-            assert.strictEqual(response, explanation);
+            assert.strictEqual(response.response, explanation);
             sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
         });
         it('handles styling assistance requests which contain a selector', async () => {
@@ -1231,7 +1231,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
             const response = await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */, 'h1');
-            assert.strictEqual(response, explanation);
+            assert.strictEqual(response.response, explanation);
             sinon.assert.calledOnce(evaluateStub);
             sinon.assert.calledOnce(callFunctionOnStub);
             assert.strictEqual(callFunctionOnStub.getCall(0).args[0].arguments[1].value, 'h1');
@@ -1334,7 +1334,7 @@ STOP`,
                 },
             ]);
             const response = await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
-            assert.strictEqual(response, 'test2');
+            assert.strictEqual(response.response, 'test2');
             view.input.onTextSubmit('Follow-up question to DrJones?');
             assert.deepEqual((await view.nextInput).messages, [
                 {

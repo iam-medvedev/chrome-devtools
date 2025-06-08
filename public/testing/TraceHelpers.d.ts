@@ -30,6 +30,7 @@ export declare function getMainFlameChartWithTracks(context: Mocha.Context | nul
     dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
 }>;
 export interface RenderFlameChartOptions {
+    dataProvider: 'MAIN' | 'NETWORK';
     /**
      * The trace file to import. You must include `.json.gz` at the end of the file name.
      * Alternatively, you can provide the actual file. This is useful only if you
@@ -72,7 +73,7 @@ export interface RenderFlameChartOptions {
  */
 export declare function renderFlameChartIntoDOM(context: Mocha.Context | null, options: RenderFlameChartOptions): Promise<{
     flameChart: PerfUI.FlameChart.FlameChart;
-    dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
+    dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider | Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider;
     target: HTMLElement;
     parsedTrace: Trace.Handlers.Types.ParsedTrace;
 }>;
@@ -191,6 +192,7 @@ export declare function renderFlameChartWithFakeProvider(provider: FakeFlameChar
 export declare function renderWidgetInVbox(widget: UI.Widget.Widget, opts?: {
     width?: number;
     height?: number;
+    flexAuto?: boolean;
 }): void;
 export declare function getMainThread(data: Trace.Handlers.ModelHandlers.Renderer.RendererHandlerData): Trace.Handlers.ModelHandlers.Renderer.RendererThread;
 type ParsedTrace = Trace.Handlers.Types.ParsedTrace;

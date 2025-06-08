@@ -518,6 +518,60 @@ describe('updateVersionFrom37To38', () => {
         assert.isFalse(onboardingFinished.get());
     });
 });
+describe('updateVersionFrom38To39', () => {
+    let settings;
+    let setting;
+    beforeEach(() => {
+        const mockStore = new MockStore();
+        const syncedStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const globalStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        const localStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        settings = Common.Settings.Settings.instance({
+            forceNew: true,
+            syncedStorage,
+            globalStorage,
+            localStorage,
+        });
+        setting = settings.createSetting('preferred-network-condition', { title: 'Offline', i18nTitleKey: 'Offline' });
+    });
+    afterEach(() => {
+        Common.Settings.Settings.removeInstance();
+        Common.Settings.resetSettings(); // Clear SettingsRegistrations.
+    });
+    it('renames the preferred-network-condition for "Slow 3G"', async () => {
+        setting.set({ title: 'Slow 3G', i18nTitleKey: 'Slow 3G' });
+        const versionController = new VersionController();
+        versionController.updateVersionFrom38To39();
+        const newSetting = await setting.forceGet();
+        assert.strictEqual(newSetting.title, '3G');
+        assert.strictEqual(newSetting.i18nTitleKey, '3G');
+    });
+    it('renames the preferred-network-condition for "Fast 3G"', async () => {
+        setting.set({ title: 'Fast 3G', i18nTitleKey: 'Fast 3G' });
+        const versionController = new VersionController();
+        versionController.updateVersionFrom38To39();
+        const newSetting = await setting.forceGet();
+        assert.strictEqual(newSetting.title, 'Slow 4G');
+        assert.strictEqual(newSetting.i18nTitleKey, 'Slow 4G');
+    });
+    it('does not rename any other setting', async () => {
+        setting.set({ title: 'Slow 4G', i18nTitleKey: 'Slow 4G' });
+        const versionController = new VersionController();
+        versionController.updateVersionFrom38To39();
+        const newSetting = await setting.forceGet();
+        assert.strictEqual(newSetting.title, 'Slow 4G');
+        assert.strictEqual(newSetting.i18nTitleKey, 'Slow 4G');
+    });
+    it('deletes the setting if it does not parse as valid JSON', async () => {
+        setting.set({ title: 'Slow 4G', i18nTitleKey: 'Slow 4G' });
+        sinon.stub(JSON, 'parse').callsFake(() => {
+            throw new Error('Invalid JSON');
+        });
+        const versionController = new VersionController();
+        versionController.updateVersionFrom38To39();
+        assert.isFalse(settings.globalStorage.has('preferred-network-condition'));
+    });
+});
 describe('access logging', () => {
     let settings;
     let logSettingAccess;

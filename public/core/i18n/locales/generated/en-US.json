@@ -3824,6 +3824,9 @@
   "panels/application/components/FrameDetailsView.ts | rootDescription": {
     "message": "This frame has been identified as the root frame of an ad"
   },
+  "panels/application/components/FrameDetailsView.ts | rootScriptFilterlistRule": {
+    "message": "Root Script Filterlist Rule"
+  },
   "panels/application/components/FrameDetailsView.ts | secureContext": {
     "message": "Secure Context"
   },
@@ -6783,16 +6786,16 @@
     "message": "Scroll into view"
   },
   "panels/elements/ElementsTreeElement.ts | showCommandForTarget": {
-    "message": "Show commandfor target"
+    "message": "Show element associated with the commandfor attribute"
   },
   "panels/elements/ElementsTreeElement.ts | showFrameDetails": {
     "message": "Show iframe details"
   },
   "panels/elements/ElementsTreeElement.ts | showInterestTarget": {
-    "message": "Show interest target"
+    "message": "Show element associated with the interesttarget attribute"
   },
   "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
-    "message": "Show popover target"
+    "message": "Show element associated with the popovertarget attribute"
   },
   "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
     "message": "This frame was identified as an ad frame"
@@ -9640,6 +9643,9 @@
   },
   "panels/network/NetworkLogViewColumns.ts | remoteAddressSpace": {
     "message": "Remote Address Space"
+  },
+  "panels/network/NetworkLogViewColumns.ts | requestHeaders": {
+    "message": "Request Headers"
   },
   "panels/network/NetworkLogViewColumns.ts | responseHeaders": {
     "message": "Response Headers"

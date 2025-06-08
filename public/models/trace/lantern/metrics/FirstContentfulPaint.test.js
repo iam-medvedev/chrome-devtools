@@ -12,7 +12,7 @@ describe('Metrics: Lantern FCP', function () {
         trace = toLanternTrace(await TraceLoader.rawEvents(this, 'lantern/progressive-app/trace.json.gz'));
     });
     it('should compute predicted value', async () => {
-        const data = await getComputationDataFromFixture({ trace });
+        const data = await getComputationDataFromFixture(this, { trace });
         const result = FirstContentfulPaint.compute(data);
         assert.deepEqual({
             timing: Math.round(result.timing),
@@ -31,7 +31,7 @@ describe('Metrics: Lantern FCP', function () {
         assert.isOk(result.pessimisticGraph, 'should have created pessimistic graph');
     });
     it('should handle negative request networkEndTime', async () => {
-        const data = await getComputationDataFromFixture({ trace });
+        const data = await getComputationDataFromFixture(this, { trace });
         // eslint-disable-next-line rulesdir/prefer-assert-strict-equal
         assert(data.graph.type === 'network');
         data.graph.request.networkEndTime = -1;

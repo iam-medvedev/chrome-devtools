@@ -6,6 +6,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
+import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 async function contentData() {
@@ -58,6 +60,15 @@ describeWithLocale('RequestPreviewView', () => {
         assert.exists(frame);
         assert.include(frame.src, 'charset=utf-16');
         assert.include(frame.src, 'base64');
+    });
+    it('creates a searchable view for json', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test/content`, urlString ``, null, null, null);
+        request.setContentDataProvider(async () => new TextUtils.ContentData.ContentData('{"foo": 42}', false, 'application/json'));
+        request.mimeType = 'application/json';
+        const component = renderPreviewView(request);
+        const widget = await component.showPreview();
+        assert.instanceOf(widget, UI.SearchableView.SearchableView);
+        assert.instanceOf(widget.children()[0], SourceFrame.JSONView.JSONView);
     });
 });
 //# sourceMappingURL=RequestPreviewView.test.js.map

@@ -340,6 +340,7 @@ panels/console/ConsoleFormat.test.js
 panels/console/ConsolePrompt.test.js
 panels/console/ConsoleView.test.js
 panels/console/ConsoleViewMessage.test.js
+panels/console/ConsoleViewport.test.js
 panels/console/ErrorStackParser.test.js
 panels/console_counters/console_counters.test.js
 panels/coverage/CoverageDecorationManager.test.js

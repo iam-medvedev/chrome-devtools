@@ -281,6 +281,14 @@ describeWithEnvironment.only = function (title, fn, opts = {
         after(async () => await deinitializeGlobalVars());
     });
 };
+describeWithEnvironment.skip = function (title, fn, _opts = {
+    reset: true,
+}) {
+    // eslint-disable-next-line rulesdir/check-test-definitions
+    return describe.skip(title, function () {
+        fn.call(this);
+    });
+};
 export async function initializeGlobalLocaleVars() {
     // Expose the locale.
     i18n.DevToolsLocale.DevToolsLocale.instance({

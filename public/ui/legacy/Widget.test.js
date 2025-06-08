@@ -11,7 +11,7 @@ describe('Widget', () => {
         renderElementIntoDOM(div);
         const widget = new Widget();
         widget.markAsRoot();
-        assert.throws(() => div.appendChild(widget.element));
+        assert.throws(() => div.appendChild(widget.element), /Attempt to modify widget with native DOM method `appendChild`/);
     });
     it('monkey-patches `Element#insertBefore()` to sanity-check that widgets are properly attached', () => {
         const div = document.createElement('div');
@@ -20,7 +20,7 @@ describe('Widget', () => {
         div.appendChild(child);
         const widget = new Widget();
         widget.markAsRoot();
-        assert.throws(() => div.insertBefore(widget.element, child));
+        assert.throws(() => div.insertBefore(widget.element, child), /Attempt to modify widget with native DOM method `insertBefore`/);
     });
     it('monkey-patches `Element#removeChild()` to sanity-check that widgets are properly detached', () => {
         const div = document.createElement('div');
@@ -28,7 +28,7 @@ describe('Widget', () => {
         const widget = new Widget();
         widget.markAsRoot();
         widget.show(div);
-        assert.throws(() => div.removeChild(widget.element));
+        assert.throws(() => div.removeChild(widget.element), /Attempt to modify widget with native DOM method `removeChild`/);
     });
     it('monkey-patches `Element#removeChildren()` to sanity-check that widgets are properly detached', () => {
         const div = document.createElement('div');
@@ -36,7 +36,7 @@ describe('Widget', () => {
         const widget = new Widget();
         widget.markAsRoot();
         widget.show(div);
-        assert.throws(() => div.removeChildren());
+        assert.throws(() => div.removeChildren(), /Attempt to modify widget with native DOM method `removeChildren`/);
     });
     describe('detach', () => {
         it('cancels pending updates', async () => {

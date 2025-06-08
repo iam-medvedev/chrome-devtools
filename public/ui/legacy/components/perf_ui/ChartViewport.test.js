@@ -22,6 +22,7 @@ describeWithEnvironment('ChartViewport', () => {
         renderWidgetInVbox(viewport, {
             width: 600,
             height: 400,
+            flexAuto: true,
         });
         viewport.setContentHeight(300);
         await assertScreenshot('timeline/chart_viewport_content_fits_no_scroll.png');
@@ -30,10 +31,7 @@ describeWithEnvironment('ChartViewport', () => {
         const delegate = new FakeChartViewportDelegate();
         const viewport = new PerfUI.ChartViewport.ChartViewport(delegate, { enableCursorElement: false });
         viewport.alwaysShowVerticalScroll();
-        renderWidgetInVbox(viewport, {
-            width: 600,
-            height: 400,
-        });
+        renderWidgetInVbox(viewport, { width: 600, height: 400, flexAuto: true });
         viewport.setContentHeight(300);
         await assertScreenshot('timeline/chart_viewport_always_show_vertical_scroll.png');
     });
@@ -43,6 +41,7 @@ describeWithEnvironment('ChartViewport', () => {
         renderWidgetInVbox(viewport, {
             width: 600,
             height: 400,
+            flexAuto: true,
         });
         viewport.setContentHeight(1000);
         await assertScreenshot('timeline/chart_viewport_scroll_when_overflow.png');

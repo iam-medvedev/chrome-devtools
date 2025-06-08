@@ -87,9 +87,12 @@ declare class BaseNode<T = Lantern.AnyNetworkObject> {
         traversalPath: Node[];
     }, void, unknown>;
     /**
-     * Returns whether the given node has a cycle in its dependent graph by performing a DFS.
+     * If the given node has a cycle, returns a path representing that cycle.
+     * Else returns null.
+     *
+     * Does a DFS on in its dependent graph.
      */
-    static hasCycle(node: Node, direction?: 'dependents' | 'dependencies' | 'both'): boolean;
+    static findCycle(node: Node, direction?: 'dependents' | 'dependencies' | 'both'): BaseNode[] | null;
     canDependOn(node: Node): boolean;
 }
 export { BaseNode };

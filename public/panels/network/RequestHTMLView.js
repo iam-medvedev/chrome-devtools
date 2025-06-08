@@ -35,7 +35,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
     <style>${requestHTMLViewStyles}</style>
-    <div class="html request-view">
+    <div class="html request-view widget vbox">
       ${input.dataURL ? html `
         <!-- @ts-ignore -->
         <iframe class="html-preview-frame" sandbox

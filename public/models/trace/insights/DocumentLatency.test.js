@@ -72,8 +72,7 @@ describeWithEnvironment('DocumentLatency', function () {
         assert.strictEqual(insight.data?.uncompressedResponseBytes, 39799);
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
     });
-    // Flaky
-    it.skip('[crbug.com/404184366] reports savings for main document with many issues, many redirects', async () => {
+    it('reports savings for main document with many issues, many redirects', async () => {
         const { data, insights } = await processTrace(this, 'many-redirects.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.redirectDuration, 6059);

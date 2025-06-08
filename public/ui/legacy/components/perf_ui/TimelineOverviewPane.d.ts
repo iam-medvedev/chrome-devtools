@@ -46,7 +46,7 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     private onClick;
     private onBreadcrumbAdded;
     private onWindowChanged;
-    setWindowTimes(startTime: number, endTime: number): void;
+    setWindowTimes(startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): void;
     private updateWindow;
     highlightBounds(bounds: Trace.Types.Timing.TraceWindowMicro, withBracket: boolean): void;
     clearBoundsHighlight(): void;
