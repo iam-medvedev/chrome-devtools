@@ -48,8 +48,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     cursorEnabled = false;
     cursorPosition = 0;
     lastWidth = 0;
-    windowStartTime = 0;
-    windowEndTime = Infinity;
+    windowStartTime = Trace.Types.Timing.Milli(0);
+    windowEndTime = Trace.Types.Timing.Milli(Infinity);
     muteOnWindowChanged = false;
     #dimHighlightSVG;
     constructor(prefix) {
@@ -208,8 +208,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.overviewGrid.addEventDividers([...filteredMarkers.values()]);
     }
     reset() {
-        this.windowStartTime = 0;
-        this.windowEndTime = Infinity;
+        this.windowStartTime = Trace.Types.Timing.Milli(0);
+        this.windowEndTime = Trace.Types.Timing.Milli(Infinity);
         this.overviewCalculator.reset();
         this.overviewGrid.reset();
         this.overviewGrid.setResizeEnabled(false);
@@ -239,10 +239,8 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         if (!this.overviewControls.length) {
             return;
         }
-        this.windowStartTime =
-            event.data.rawStartValue === this.overviewCalculator.minimumBoundary() ? 0 : event.data.rawStartValue;
-        this.windowEndTime =
-            event.data.rawEndValue === this.overviewCalculator.maximumBoundary() ? Infinity : event.data.rawEndValue;
+        this.windowStartTime = Trace.Types.Timing.Milli(event.data.rawStartValue === this.overviewCalculator.minimumBoundary() ? 0 : event.data.rawStartValue);
+        this.windowEndTime = Trace.Types.Timing.Milli(event.data.rawEndValue === this.overviewCalculator.maximumBoundary() ? Infinity : event.data.rawEndValue);
         const windowTimes = {
             startTime: Trace.Types.Timing.Milli(this.windowStartTime),
             endTime: Trace.Types.Timing.Milli(this.windowEndTime),

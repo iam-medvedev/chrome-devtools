@@ -110,13 +110,17 @@ export class ModificationsManager extends EventTarget {
             }
         }
     }
+    /**
+     * Stores the annotation and creates its overlay.
+     * @returns the Overlay that gets created and associated with this annotation.
+     */
     createAnnotation(newAnnotation, loadedFromFile = false) {
         // If a label already exists on an entry and a user is trying to create a new one, start editing an existing label instead.
         if (newAnnotation.type === 'ENTRY_LABEL') {
             const overlay = this.#findLabelOverlayForEntry(newAnnotation.entry);
             if (overlay) {
                 this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'EnterLabelEditState'));
-                return;
+                return overlay;
             }
         }
         // If the new annotation created was not loaded from the file, set the annotations visibility setting to true. That way we make sure
@@ -131,6 +135,7 @@ export class ModificationsManager extends EventTarget {
         const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
+        return newOverlay;
     }
     annotationsForEntry(entry) {
         const annotationsForEntry = [];

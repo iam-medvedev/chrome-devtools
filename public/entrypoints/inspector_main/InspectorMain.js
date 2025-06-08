@@ -178,6 +178,11 @@ export class NodeIndicator {
         return nodeIndicatorInstance;
     }
     #update(targetInfos) {
+        // Disable when we are testing, as debugging e2e
+        // attaches a debug process and this changes some view sizes
+        if (Host.InspectorFrontendHost.isUnderTest()) {
+            return;
+        }
         const hasNode = Boolean(targetInfos.find(target => target.type === 'node' && !target.attached));
         this.#element.classList.toggle('inactive', !hasNode);
         if (hasNode) {

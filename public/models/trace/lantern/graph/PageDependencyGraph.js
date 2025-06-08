@@ -477,19 +477,34 @@ class PageDependencyGraph {
         PageDependencyGraph.linkNetworkNodes(rootNode, networkNodeOutput);
         PageDependencyGraph.linkCPUNodes(rootNode, networkNodeOutput, cpuNodes);
         mainDocumentNode.setIsMainDocument(true);
-        if (NetworkNode.hasCycle(rootNode)) {
+        if (NetworkNode.findCycle(rootNode)) {
+            // Uncomment the following if you are debugging cycles.
+            // this.printGraph(rootNode);
             throw new Core.LanternError('Invalid dependency graph created, cycle detected');
         }
         return rootNode;
     }
     // Unused, but useful for debugging.
-    static printGraph(rootNode, widthInCharacters = 100) {
+    static printGraph(rootNode, widthInCharacters = 80) {
         function padRight(str, target, padChar = ' ') {
             return str + padChar.repeat(Math.max(target - str.length, 0));
         }
         const nodes = [];
         rootNode.traverse(node => nodes.push(node));
         nodes.sort((a, b) => a.startTime - b.startTime);
+        // Assign labels (A, B, C, ..., Z, Z1, Z2, ...) for each node.
+        const nodeToLabel = new Map();
+        rootNode.traverse(node => {
+            const ascii = 65 + nodeToLabel.size;
+            let label;
+            if (ascii > 90) {
+                label = `Z${ascii - 90}`;
+            }
+            else {
+                label = String.fromCharCode(ascii);
+            }
+            nodeToLabel.set(node, label);
+        });
         const min = nodes[0].startTime;
         const max = nodes.reduce((max, node) => Math.max(max, node.endTime), 0);
         const totalTime = max - min;
@@ -501,8 +516,36 @@ class PageDependencyGraph {
             // @ts-expect-error -- disambiguate displayName from across possible Node types.
             const displayName = node.request ? node.request.url : node.type;
             // eslint-disable-next-line
-            console.log(padRight(bar, widthInCharacters), `| ${displayName.slice(0, 30)}`);
+            console.log(padRight(bar, widthInCharacters), `| ${displayName.slice(0, 50)}`);
         });
+        // Print labels for each node.
+        // eslint-disable-next-line
+        console.log();
+        // Print dependencies.
+        nodes.forEach(node => {
+            // @ts-expect-error -- disambiguate displayName from across possible Node types.
+            const displayName = node.request ? node.request.url : node.type;
+            // eslint-disable-next-line
+            console.log(nodeToLabel.get(node), displayName.slice(0, widthInCharacters - 5));
+            for (const child of node.dependents) {
+                // @ts-expect-error -- disambiguate displayName from across possible Node types.
+                const displayName = child.request ? child.request.url : child.type;
+                // eslint-disable-next-line
+                console.log('  ->', nodeToLabel.get(child), displayName.slice(0, widthInCharacters - 10));
+            }
+            // eslint-disable-next-line
+            console.log();
+        });
+        // Show cycle.
+        const cyclePath = NetworkNode.findCycle(rootNode);
+        // eslint-disable-next-line
+        console.log('Cycle?', cyclePath ? 'yes' : 'no');
+        if (cyclePath) {
+            const path = [...cyclePath];
+            path.push(path[0]);
+            // eslint-disable-next-line
+            console.log(path.map(node => nodeToLabel.get(node)).join(' -> '));
+        }
     }
 }
 export { PageDependencyGraph };

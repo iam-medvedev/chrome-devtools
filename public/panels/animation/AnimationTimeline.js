@@ -608,6 +608,8 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     previewsCreatedForTest() {
     }
+    scrubberOnFinishForTest() {
+    }
     createPreviewForCollectedGroups() {
         this.#collectedGroups.sort((a, b) => {
             // Scroll driven animations are rendered first.
@@ -912,7 +914,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
         }
         this.#scrubberPlayer = this.#timelineScrubber.animate([{ transform: 'translateX(0px)' }, { transform: 'translateX(' + this.width() + 'px)' }], { duration: this.duration(), fill: 'forwards' });
         this.#scrubberPlayer.playbackRate = this.effectivePlaybackRate();
-        this.#scrubberPlayer.onfinish = this.updateControlButton.bind(this);
+        this.#scrubberPlayer.onfinish = () => {
+            this.updateControlButton();
+            this.scrubberOnFinishForTest();
+        };
         this.#scrubberPlayer.currentTime = currentTime;
         this.element.window().requestAnimationFrame(this.updateScrubber.bind(this));
     }

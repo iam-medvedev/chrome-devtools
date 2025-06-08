@@ -47,6 +47,10 @@ export declare class ClickOutsideDialogEvent extends Event {
     static readonly eventName = "clickoutsidedialog";
     constructor();
 }
+export declare class AnimationEndedEvent extends Event {
+    static readonly eventName = "animationended";
+    constructor();
+}
 export declare class ForcedDialogClose extends Event {
     static readonly eventName = "forceddialogclose";
     constructor();

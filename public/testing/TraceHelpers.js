@@ -88,12 +88,20 @@ export async function renderFlameChartIntoDOM(context, options) {
         await Timeline.Utils.ImageCache.preload(parsedTrace.Screenshots.screenshots ?? []);
     }
     const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
-    const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
+    const dataProvider = options.dataProvider === 'MAIN' ?
+        new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider() :
+        new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
     dataProvider.setModel(parsedTrace, entityMapper);
-    dataProvider.buildWithCustomTracksForTest({
-        filterTracks: options.filterTracks,
-        expandTracks: options.expandTracks,
-    });
+    if (dataProvider instanceof Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider) {
+        dataProvider.buildWithCustomTracksForTest({
+            filterTracks: options.filterTracks,
+            expandTracks: options.expandTracks,
+        });
+    }
+    else {
+        // Calling this method triggers the data being generated & the Network appender being created + drawn.
+        dataProvider.timelineData();
+    }
     const delegate = new MockFlameChartDelegate();
     const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
     const minTime = options.customStartTime ?? Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
@@ -567,7 +575,8 @@ export async function renderFlameChartWithFakeProvider(provider, options) {
 export function renderWidgetInVbox(widget, opts = {}) {
     const target = document.createElement('div');
     target.innerHTML = `<style>${UI.inspectorCommonStyles}</style>`;
-    target.classList.add('flex-auto', 'vbox');
+    target.classList.add('vbox');
+    target.classList.toggle('flex-auto', Boolean(opts.flexAuto));
     target.style.width = (opts.width ?? 800) + 'px';
     target.style.height = (opts.height ?? 600) + 'px';
     widget.markAsRoot();

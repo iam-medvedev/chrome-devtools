@@ -68,7 +68,6 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     removeTimestampMarkerOverlay(): Promise<void>;
     forceAnimationsForTest(): void;
     runBrickBreakerGame(): void;
-    isNetworkTrackShownForTests(): boolean;
     getLinkSelectionAnnotation(): Trace.Types.File.EntriesLinkAnnotation | null;
     getMainDataProvider(): TimelineFlameChartDataProvider;
     getNetworkDataProvider(): TimelineFlameChartNetworkDataProvider;

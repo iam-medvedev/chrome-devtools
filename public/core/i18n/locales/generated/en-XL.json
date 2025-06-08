@@ -3824,6 +3824,9 @@
   "panels/application/components/FrameDetailsView.ts | rootDescription": {
     "message": "T̂h́îś f̂ŕâḿê h́âś b̂éêń îd́êńt̂íf̂íêd́ âś t̂h́ê ŕôót̂ f́r̂ám̂é ôf́ âń âd́"
   },
+  "panels/application/components/FrameDetailsView.ts | rootScriptFilterlistRule": {
+    "message": "R̂óôt́ Ŝćr̂íp̂t́ F̂íl̂t́êŕl̂íŝt́ R̂úl̂é"
+  },
   "panels/application/components/FrameDetailsView.ts | secureContext": {
     "message": "Ŝéĉúr̂é Ĉón̂t́êx́t̂"
   },
@@ -6783,16 +6786,16 @@
     "message": "Ŝćr̂ól̂ĺ îńt̂ó v̂íêẃ"
   },
   "panels/elements/ElementsTreeElement.ts | showCommandForTarget": {
-    "message": "Ŝh́ôẃ ĉóm̂ḿâńd̂f́ôŕ t̂ár̂ǵêt́"
+    "message": "Ŝh́ôẃ êĺêḿêńt̂ áŝśôćîát̂éd̂ ẃît́ĥ t́ĥé commandfor ât́t̂ŕîb́ût́ê"
   },
   "panels/elements/ElementsTreeElement.ts | showFrameDetails": {
     "message": "Ŝh́ôẃ iframe d̂ét̂áîĺŝ"
   },
   "panels/elements/ElementsTreeElement.ts | showInterestTarget": {
-    "message": "Ŝh́ôẃ îńt̂ér̂éŝt́ t̂ár̂ǵêt́"
+    "message": "Ŝh́ôẃ êĺêḿêńt̂ áŝśôćîát̂éd̂ ẃît́ĥ t́ĥé interesttarget ât́t̂ŕîb́ût́ê"
   },
   "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
-    "message": "Ŝh́ôẃ p̂óp̂óv̂ér̂ t́âŕĝét̂"
+    "message": "Ŝh́ôẃ êĺêḿêńt̂ áŝśôćîát̂éd̂ ẃît́ĥ t́ĥé popovertarget ât́t̂ŕîb́ût́ê"
   },
   "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
     "message": "T̂h́îś f̂ŕâḿê ẃâś îd́êńt̂íf̂íêd́ âś âń âd́ f̂ŕâḿê"
@@ -9640,6 +9643,9 @@
   },
   "panels/network/NetworkLogViewColumns.ts | remoteAddressSpace": {
     "message": "R̂ém̂ót̂é Âd́d̂ŕêśŝ Śp̂áĉé"
+  },
+  "panels/network/NetworkLogViewColumns.ts | requestHeaders": {
+    "message": "R̂éq̂úêśt̂ H́êád̂ér̂ś"
   },
   "panels/network/NetworkLogViewColumns.ts | responseHeaders": {
     "message": "R̂éŝṕôńŝé Ĥéâd́êŕŝ"

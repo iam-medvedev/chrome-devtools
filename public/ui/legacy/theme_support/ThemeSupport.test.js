@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
+import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { createFakeSetting, describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import * as ThemeSupport from './theme_support.js';
 describeWithEnvironment('ThemeSupport', () => {
@@ -45,15 +46,12 @@ describeWithEnvironment('ThemeSupport', () => {
         before(() => {
             customElements.define('test-styled-component', StyledComponent);
         });
-        afterEach(() => {
-            document.body.removeChildren();
-        });
         it('obtains computed values correctly (document)', () => {
             assert.isNotEmpty(themeSupport.getComputedValue('--color-primary-old'));
         });
         it('obtains computed values correctly (element)', () => {
             const element = new StyledComponent();
-            document.body.appendChild(element);
+            renderElementIntoDOM(element);
             const documentValue = themeSupport.getComputedValue('--color-primary-old');
             const elementValue = themeSupport.getComputedValue('--color-primary-old', element);
             assert.isNotEmpty(elementValue);
@@ -72,7 +70,7 @@ describeWithEnvironment('ThemeSupport', () => {
         });
         it('caches computed values (element)', () => {
             const element = new StyledComponent();
-            document.body.appendChild(element);
+            renderElementIntoDOM(element);
             const elementValue = themeSupport.getComputedValue('--color-primary-old', element);
             assert.isNotEmpty(elementValue);
             // Update the styles by adding a new style tag, and confirm that the old

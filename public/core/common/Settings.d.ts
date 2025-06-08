@@ -122,7 +122,7 @@ export declare class VersionController {
     static readonly GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
     static readonly SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
     static readonly LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-    static readonly CURRENT_VERSION = 38;
+    static readonly CURRENT_VERSION = 39;
     constructor();
     /**
      * Force re-sets all version number settings to the current version without
@@ -176,6 +176,7 @@ export declare class VersionController {
     updateVersionFrom35To36(): void;
     updateVersionFrom36To37(): void;
     updateVersionFrom37To38(): void;
+    updateVersionFrom38To39(): void;
     private migrateSettingsFromLocalStorage;
     private clearBreakpointsWhenTooMany;
 }

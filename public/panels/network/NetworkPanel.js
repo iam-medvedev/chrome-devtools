@@ -676,7 +676,7 @@ export class NetworkPanel extends UI.Panel.Panel {
     }
     onFilmFrameSelected(event) {
         const timestamp = event.data;
-        this.overviewPane.setWindowTimes(0, timestamp);
+        this.overviewPane.setWindowTimes(Trace.Types.Timing.Milli(0), Trace.Types.Timing.Milli(timestamp));
     }
     onFilmFrameEnter(event) {
         const timestamp = event.data;

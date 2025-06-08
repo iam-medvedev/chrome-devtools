@@ -38,7 +38,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
     const TEST_ORIGIN_C = 'http://www.example.net/';
     const TEST_SITE_C = 'http://example.net';
     const TEST_EXTENSION_NAME = 'Test Extension';
-    const ID = 'AA';
+    const ID = 'main';
     const EVENTS = [
         {
             accessTime: 0,
@@ -132,8 +132,7 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         assert.strictEqual(sidebar.cookieListTreeElement.childCount(), 2);
         assert.deepEqual(sidebar.cookieListTreeElement.children().map(e => e.title), ['http://www.example.com', 'http://www.example.org']);
     });
-    // Flaking on windows + subsequence test failing
-    it.skip('[crbug.com/40278680] shows shared storages and events for origins using shared storage', async () => {
+    it('shows shared storages and events for origins using shared storage', async () => {
         const securityOriginManager = target.model(SDK.SecurityOriginManager.SecurityOriginManager);
         assert.exists(securityOriginManager);
         sinon.stub(securityOriginManager, 'securityOrigins').returns([
@@ -149,14 +148,15 @@ describeWithMockConnection('ApplicationPanelSidebar', () => {
         Application.ResourcesPanel.ResourcesPanel.instance({ forceNew: true });
         const sidebar = await Application.ResourcesPanel.ResourcesPanel.showAndGetSidebar();
         const listener = new SharedStorageTreeElementListener(sidebar);
-        const addedPromise = listener.waitForElementsAdded(3);
+        const addedPromise = listener.waitForElementsAdded(4);
         const resourceTreeModel = target.model(SDK.ResourceTreeModel.ResourceTreeModel);
         assert.exists(resourceTreeModel);
         resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.CachedResourcesLoaded, resourceTreeModel);
         await addedPromise;
         sinon.assert.calledOnceWithExactly(setTrackingSpy, { enable: true });
-        assert.strictEqual(sidebar.sharedStorageListTreeElement.childCount(), 3);
+        assert.strictEqual(sidebar.sharedStorageListTreeElement.childCount(), 4);
         assert.deepEqual(sidebar.sharedStorageListTreeElement.children().map(e => e.title), [
+            'https://example.com', // frame origin
             TEST_ORIGIN_A,
             TEST_ORIGIN_B,
             TEST_ORIGIN_C,

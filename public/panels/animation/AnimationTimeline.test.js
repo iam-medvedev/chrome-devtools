@@ -91,6 +91,24 @@ const stubAnimationDOMNode = () => {
         removeScrollEventListener,
     };
 };
+const waitFor = async (selector, root) => {
+    let element = null;
+    while (!element) {
+        element = root ? root.querySelector(selector) : document.querySelector(selector);
+        await new Promise(resolve => setTimeout(resolve, 10));
+    }
+    return element;
+};
+const waitForAll = async (selector, root) => {
+    let elements = root ? root.querySelectorAll(selector) : document.querySelectorAll(selector);
+    let tryCount = 0;
+    while (!elements || tryCount < 50) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+        elements = root ? root.querySelectorAll(selector) : document.querySelectorAll(selector);
+        tryCount++;
+    }
+    return elements || null;
+};
 describeWithMockConnection('AnimationTimeline', () => {
     let target;
     let view;
@@ -151,14 +169,12 @@ describeWithMockConnection('AnimationTimeline', () => {
         if (inScope) {
             await expectCall(sinon.stub(view, 'previewsCreatedForTest'));
         }
-        assert.strictEqual(previewContainer.querySelectorAll('.animation-buffer-preview').length, inScope ? 1 : 0);
+        const preview = await waitForAll('.animation-buffer-preview', previewContainer);
+        assert.strictEqual(preview.length || 0, inScope ? 1 : 0);
     };
-    // Failing on the toolbar button CL together with some ApplicationSidebarPanel tests
-    it.skip('[crbug.com/354673294] updates UI on in scope animation group start', updatesUiOnEvent(true));
-    // Failing on the toolbar button CL together with some ApplicationSidebarPanel tests
-    it.skip('[crbug.com/354673294] does not update UI on out of scope animation group start', updatesUiOnEvent(false));
-    // Flaking on multiple bots on CQ.
-    describe.skip('[crbug.com/334003901] resizing time controls', () => {
+    it('updates UI on in scope animation group start', updatesUiOnEvent(true));
+    it('does not update UI on out of scope animation group start', updatesUiOnEvent(false));
+    describe('resizing time controls', () => {
         it('updates --timeline-controls-width and calls onResize', async () => {
             view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
             view.markAsRoot();
@@ -185,8 +201,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             sinon.assert.calledOnce(onResizeStub);
         });
     });
-    // Flaking on multiple bots on CQ.
-    describe.skip('[crbug.com/334003901] Animation group nodes are removed', () => {
+    describe('Animation group nodes are removed', () => {
         const waitForPreviewsManualPromise = new ManualPromise();
         const waitForAnimationGroupSelectedPromise = new ManualPromise();
         let domModel;
@@ -219,8 +234,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             void animationModel.animationStarted(TIME_ANIMATION_PAYLOAD);
             await waitForPreviewsManualPromise.wait();
         });
-        // Failing on the toolbar button CL together with some ApplicationSidebarPanel tests
-        describe.skip('[crbug.com/354673294] when the animation group is already selected', () => {
+        describe('when the animation group is already selected', () => {
             it('should hide scrubber, disable control button and make current time empty', async () => {
                 const domNode = SDK.DOMModel.DOMNode.create(domModel, contentDocument, false, {
                     nodeId: 1,
@@ -231,7 +245,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                     nodeValue: '',
                 });
                 sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(domNode);
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 const gridHeader = view.element.shadowRoot.querySelector('.animation-grid-header');
@@ -240,8 +254,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 const scrubber = view.element.shadowRoot.querySelector('.animation-scrubber');
                 assert.exists(scrubber);
                 assert.isFalse(scrubber.classList.contains('hidden'));
-                const controlButton = view.element.shadowRoot.querySelector('.animation-controls-toolbar')
-                    ?.shadowRoot.querySelector('.toolbar-button');
+                const controlButton = view.element.shadowRoot.querySelector('.animation-controls-toolbar')?.querySelector('.toolbar-button');
                 assert.exists(controlButton);
                 assert.isFalse(controlButton.disabled);
                 const currentTime = view.element.shadowRoot.querySelector('.animation-timeline-current-time');
@@ -262,7 +275,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                     nodeValue: '',
                 });
                 sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(domNode);
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 // Wait for the animation group to be fully selected and scrubber enabled.
@@ -276,8 +289,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 assert.isTrue(animationNodeRow.classList.contains('animation-node-removed'));
             });
         });
-        // Failing on the toolbar button CL together with some ApplicationSidebarPanel tests
-        describe.skip('[crbug.com/354673294] when the animation group is not selected and the nodes are removed', () => {
+        describe('when the animation group is not selected and the nodes are removed', () => {
             it('should scrubber be hidden, control button be disabled and current time be empty', async () => {
                 // Owner document is null for the resolved deferred nodes that are already removed from the DOM.
                 const domNode = SDK.DOMModel.DOMNode.create(domModel, null, false, {
@@ -289,7 +301,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                     nodeValue: '',
                 });
                 sinon.stub(SDK.DOMModel.DeferredDOMNode.prototype, 'resolvePromise').resolves(domNode);
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 const gridHeader = view.element.shadowRoot.querySelector('.animation-grid-header');
@@ -298,8 +310,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 const scrubber = view.element.shadowRoot.querySelector('.animation-scrubber');
                 assert.exists(scrubber);
                 assert.isTrue(scrubber.classList.contains('hidden'));
-                const controlButton = view.element.shadowRoot.querySelector('.animation-controls-toolbar')
-                    ?.shadowRoot.querySelector('.toolbar-button');
+                const controlButton = view.element.shadowRoot.querySelector('.animation-controls-toolbar')?.querySelector('.toolbar-button');
                 assert.exists(controlButton);
                 assert.isTrue(controlButton.disabled);
                 const currentTime = view.element.shadowRoot.querySelector('.animation-timeline-current-time');
@@ -308,11 +319,11 @@ describeWithMockConnection('AnimationTimeline', () => {
             });
         });
     });
-    // Flaking on multiple bots on CQ.
-    describe.skip('[crbug.com/334003901] time animations', () => {
+    describe('time animations', () => {
         const waitForPreviewsManualPromise = new ManualPromise();
         const waitForAnimationGroupSelectedPromise = new ManualPromise();
         const waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
+        const waitForScrubberOnFinish = new ManualPromise();
         let domModel;
         let animationModel;
         let contentDocument;
@@ -328,6 +339,9 @@ describeWithMockConnection('AnimationTimeline', () => {
             });
             sinon.stub(view, 'scheduledRedrawAfterAnimationGroupUpdatedForTest').callsFake(() => {
                 waitForScheduleRedrawAfterAnimationGroupUpdated.resolve();
+            });
+            sinon.stub(view, 'scrubberOnFinishForTest').callsFake(() => {
+                waitForScrubberOnFinish.resolve();
             });
             const model = target.model(SDK.AnimationModel.AnimationModel);
             assert.isNotNull(model);
@@ -355,10 +369,9 @@ describeWithMockConnection('AnimationTimeline', () => {
             void animationModel.animationStarted(TIME_ANIMATION_PAYLOAD);
             await waitForPreviewsManualPromise.wait();
         });
-        // Failing on the toolbar button CL together with some ApplicationSidebarPanel tests
-        describe.skip('[crbug.com/354673294] animationGroupUpdated', () => {
+        describe('animationGroupUpdated', () => {
             it('should update duration on animationGroupUpdated', async () => {
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 assert.isNotNull(preview);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
@@ -373,19 +386,20 @@ describeWithMockConnection('AnimationTimeline', () => {
                 await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
                 // 3 (iterations) * 10 (iteration duration)
                 assert.strictEqual(view.duration(), 30);
+                await waitForScrubberOnFinish.wait();
             });
             it('should schedule re-draw on animationGroupUpdated', async () => {
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 assert.isNotNull(preview);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 void animationModel.animationUpdated(TIME_ANIMATION_PAYLOAD);
                 await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
+                await waitForScrubberOnFinish.wait();
             });
         });
     });
-    // Flaking on multiple bots on CQ.
-    describe.skip('[crbug.com/334003901] scroll driven animations', () => {
+    describe('scroll driven animations', () => {
         let stubbedAnimationDOMNode;
         const waitForPreviewsManualPromise = new ManualPromise();
         const waitForAnimationGroupSelectedPromise = new ManualPromise();
@@ -456,39 +470,41 @@ describeWithMockConnection('AnimationTimeline', () => {
             await waitForPreviewsManualPromise.wait();
         });
         it('should disable global controls after a scroll driven animation is selected', async () => {
-            const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+            const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
             preview.click();
             await waitForAnimationGroupSelectedPromise.wait();
             const playbackRateButtons = [...view.element.shadowRoot.querySelectorAll('.animation-playback-rate-button')];
             assert.isTrue(playbackRateButtons.every(button => button.getAttribute('disabled')), 'All the playback rate buttons are disabled');
             const timelineToolbar = view.element.shadowRoot.querySelector('.animation-timeline-toolbar');
-            const pauseAllButton = timelineToolbar.shadowRoot.querySelector('[aria-label=\'Pause all\']');
-            assert.exists(pauseAllButton?.getAttribute('disabled'), 'Pause all button is disabled');
+            const pauseAllButton = await waitFor('[aria-label=\'Pause all\']', timelineToolbar);
+            assert.isTrue(pauseAllButton.disabled, 'Pause all button is disabled');
             const controlsToolbar = view.element.shadowRoot.querySelector('.animation-controls-toolbar');
-            const replayButton = controlsToolbar.shadowRoot.querySelector('[aria-label=\'Replay timeline\']');
-            assert.exists(replayButton?.getAttribute('disabled'), 'Replay button is disabled');
+            const replayButton = await waitFor('[aria-label=\'Replay timeline\']', controlsToolbar);
+            assert.isTrue(replayButton.disabled, 'Replay button is disabled');
+            cancelAllPendingRaf();
         });
         it('should show current time text in pixels', async () => {
-            const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+            const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
             preview.click();
             await waitForAnimationGroupSelectedPromise.wait();
             const currentTimeElement = view.element.shadowRoot.querySelector('.animation-timeline-current-time');
             assert.isTrue(currentTimeElement.textContent?.includes('px'));
         });
         it('should show timeline grid values in pixels', async () => {
-            const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+            const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
             preview.click();
             await waitForAnimationGroupSelectedPromise.wait();
             const labelElements = [...view.element.shadowRoot.querySelectorAll('.animation-timeline-grid-label')];
             assert.isTrue(labelElements.every(el => el.textContent?.includes('px')), 'Label is expected to be a pixel value but it is not');
         });
-        // Failing on the toolbar button CL together with some ApplicationSidebarPanel tests
-        describe.skip('[crbug.com/354673294] animationGroupUpdated', () => {
+        describe('animationGroupUpdated', () => {
             it('should re-draw preview after receiving animationGroupUpdated', async () => {
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 const initialPreviewLine = preview.querySelector('line');
+                const s = new XMLSerializer();
+                const initialLine = s.serializeToString(initialPreviewLine);
                 assert.isNotNull(initialPreviewLine);
                 const initialPreviewLineLength = Number.parseInt(initialPreviewLine.getAttribute('x2'), 10) -
                     Number.parseInt(initialPreviewLine.getAttribute('x1'), 10);
@@ -500,7 +516,11 @@ describeWithMockConnection('AnimationTimeline', () => {
                     },
                 });
                 await waitForScheduleRedrawAfterAnimationGroupUpdated.wait();
-                const currentPreviewLine = preview.querySelector('line');
+                let currentPreviewLine = preview.querySelector('line');
+                while (initialLine === s.serializeToString(currentPreviewLine)) {
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    currentPreviewLine = preview.querySelector('line');
+                }
                 assert.isNotNull(currentPreviewLine);
                 const currentPreviewLineLength = Number.parseInt(currentPreviewLine.getAttribute('x2'), 10) -
                     Number.parseInt(currentPreviewLine.getAttribute('x1'), 10);
@@ -508,7 +528,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             });
             it('should update duration if the scroll range is changed on animationGroupUpdated', async () => {
                 const SCROLL_RANGE = 20;
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 stubbedAnimationDOMNode.verticalScrollRange.resolves(SCROLL_RANGE);
@@ -519,7 +539,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             it('should update current time text if the scroll top is changed on animationGroupUpdated', async () => {
                 const SCROLL_TOP = 5;
                 stubbedAnimationDOMNode.scrollTop.resolves(SCROLL_TOP);
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 const currentTimeElement = view.element.shadowRoot.querySelector('.animation-timeline-current-time');
                 assert.isNotNull(currentTimeElement);
                 assert.isNotNull(preview);
@@ -532,7 +552,7 @@ describeWithMockConnection('AnimationTimeline', () => {
             it('should update scrubber position if the scroll top is changed on animationGroupUpdated', async () => {
                 const SCROLL_TOP = 5;
                 stubbedAnimationDOMNode.scrollTop.resolves(SCROLL_TOP);
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 const timelineScrubberElement = view.element.shadowRoot.querySelector('.animation-scrubber');
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
@@ -542,7 +562,7 @@ describeWithMockConnection('AnimationTimeline', () => {
                 assert.closeTo(translateX, SCROLL_TOP * view.pixelTimeRatio(), 0.5);
             });
             it('should schedule re-draw selected group after receiving animationGroupUpdated', async () => {
-                const preview = view.element.shadowRoot.querySelector('.animation-buffer-preview');
+                const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
                 preview.click();
                 await waitForAnimationGroupSelectedPromise.wait();
                 void animationModel.animationUpdated(SDA_ANIMATION_PAYLOAD);
@@ -552,9 +572,9 @@ describeWithMockConnection('AnimationTimeline', () => {
     });
 });
 describeWithMockConnection('AnimationTimeline', () => {
-    it('shows placeholder showing that the panel is waiting for animations', () => {
-        const view = Animation.AnimationTimeline.AnimationTimeline.instance();
-        const placeholder = view.contentElement.querySelector('.animation-timeline-buffer-hint');
+    it('shows placeholder showing that the panel is waiting for animations', async () => {
+        const view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
+        const placeholder = await waitFor('.animation-timeline-buffer-hint', view.element.shadowRoot);
         assert.exists(placeholder);
         // Render into document in order to see the computed styles.
         view.markAsRoot();
@@ -572,7 +592,7 @@ describeWithMockConnection('AnimationTimeline', () => {
         sinon.stub(model, 'animationGroups').value(dummyGroups);
         dummyGroups.set('dummy', new SDK.AnimationModel.AnimationGroup(model, 'dummy', []));
         // Render into document in order to update the shown empty state.
-        const view = Animation.AnimationTimeline.AnimationTimeline.instance();
+        const view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
         view.markAsRoot();
         renderElementIntoDOM(view);
         const previewUpdatePromise = new ManualPromise();

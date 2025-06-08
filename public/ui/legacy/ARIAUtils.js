@@ -298,6 +298,16 @@ export function getOrCreateAlertElement(container = document.body, opts) {
     return newAlertElement;
 }
 /**
+ * Used only in tests to clear any left over alerts between test runs.
+ */
+export function removeAlertElement(container) {
+    const alertElement = alertElements.get(container);
+    if (alertElement) {
+        alertElement.remove();
+        alertElements.delete(container);
+    }
+}
+/**
  * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
  * Ensures messages are announced even if identical to the previous message by appending
  * a non-breaking space ('\u00A0') when necessary. This works around screen reader

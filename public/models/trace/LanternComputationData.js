@@ -239,23 +239,25 @@ function linkInitiators(lanternRequests) {
 }
 function createNetworkRequests(trace, parsedTrace, startTime = 0, endTime = Number.POSITIVE_INFINITY) {
     const workerThreads = findWorkerThreads(trace);
-    const lanternRequests = [];
+    const lanternRequestsNoRedirects = [];
     for (const request of parsedTrace.NetworkRequests.byTime) {
         if (request.ts >= startTime && request.ts < endTime) {
             const lanternRequest = createLanternRequest(parsedTrace, workerThreads, request);
             if (lanternRequest) {
-                lanternRequests.push(lanternRequest);
+                lanternRequestsNoRedirects.push(lanternRequest);
             }
         }
     }
+    const lanternRequests = [];
     // Trace Engine consolidates all redirects into a single request object, but lantern needs
     // an entry for each redirected request.
-    for (const request of [...lanternRequests]) {
+    for (const request of [...lanternRequestsNoRedirects]) {
         if (!request.rawRequest) {
             continue;
         }
         const redirects = request.rawRequest.args.data.redirects;
         if (!redirects.length) {
+            lanternRequests.push(request);
             continue;
         }
         const requestChain = [];
@@ -297,6 +299,7 @@ function createNetworkRequests(trace, parsedTrace, startTime = 0, endTime = Numb
             lanternRequests.push(redirectedRequest);
         }
         requestChain.push(request);
+        lanternRequests.push(request);
         for (let i = 0; i < requestChain.length; i++) {
             const request = requestChain[i];
             if (i > 0) {
@@ -314,9 +317,7 @@ function createNetworkRequests(trace, parsedTrace, startTime = 0, endTime = Numb
         }
     }
     linkInitiators(lanternRequests);
-    // This would already be sorted by rendererStartTime, if not for the redirect unwrapping done
-    // above.
-    return lanternRequests.sort((a, b) => a.rendererStartTime - b.rendererStartTime);
+    return lanternRequests;
 }
 function collectMainThreadEvents(trace, parsedTrace) {
     const Meta = parsedTrace.Meta;

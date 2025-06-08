@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../../../testing/DOMHelpers.js'; // eslint-disable-line rulesdir/es-modules-import
+import { assertScreenshot } from '../../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
 import * as Dialogs from './dialogs.js';
@@ -532,6 +533,217 @@ describe('closing the dialog with click', () => {
             assert.fail('Dialog did not close');
             return;
         }
+    });
+});
+describeWithLocale('visual appearance', () => {
+    // FIXME: clean up and modularize these test helpers.
+    async function renderDialogs() {
+        const verticalPositions = ["top" /* Dialogs.Dialog.DialogVerticalPosition.TOP */, "bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */];
+        const horizontalAlignments = [
+            "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */,
+            "left" /* Dialogs.Dialog.DialogHorizontalAlignment.LEFT */,
+            "center" /* Dialogs.Dialog.DialogHorizontalAlignment.CENTER */,
+            "right" /* Dialogs.Dialog.DialogHorizontalAlignment.RIGHT */,
+            "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */,
+        ];
+        const root = document.createElement('div');
+        root.id = 'root';
+        const style = document.createElement('style');
+        style.innerHTML = `#root {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.dialog-host {
+  border: 1px solid black;
+  padding: 5px;
+  border-radius: 3px;
+  width: 70px;
+}
+
+.dialog-host-narrow {
+  border: 1px solid black;
+  width: 10px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin: 2em 0;
+}
+.container {
+  width: 150px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}`;
+        root.append(style);
+        let i = 0;
+        for (const verticalPosition of verticalPositions) {
+            const row = document.createElement('div');
+            row.classList.add('row');
+            root.appendChild(row);
+            for (const horizontalAlignment of horizontalAlignments) {
+                const dialog = new Dialogs.Dialog.Dialog();
+                const container = document.createElement('div');
+                container.classList.add('container');
+                container.id = `container-${i}`;
+                const host = document.createElement('div');
+                host.classList.add('dialog-host');
+                host.id = `host-${i}`;
+                host.textContent = 'Hover me';
+                container.appendChild(host);
+                row.appendChild(container);
+                dialog.position = verticalPosition;
+                dialog.horizontalAlignment = horizontalAlignment;
+                dialog.origin = host;
+                dialog.id = `dialog-${i}`;
+                host.addEventListener('mouseover', () => {
+                    void dialog.setDialogVisible(true);
+                });
+                dialog.addEventListener('clickoutsidedialog', () => {
+                    void dialog.setDialogVisible(false);
+                });
+                const div = document.createElement('div');
+                div.classList.add('dialog-content');
+                div.style.padding = '0 1em';
+                div.innerHTML =
+                    `Hello, World<br/>Vertical position: ${verticalPosition}<br/>Horizontal alignment: ${horizontalAlignment}`;
+                dialog.appendChild(div);
+                root.appendChild(dialog);
+                i++;
+            }
+        }
+        for (const verticalPosition of verticalPositions) {
+            const row = document.createElement('div');
+            row.classList.add('row');
+            root.appendChild(row);
+            for (const horizontalAlignment of horizontalAlignments) {
+                const dialog = new Dialogs.Dialog.Dialog();
+                const container = document.createElement('div');
+                container.classList.add('container');
+                container.id = `container-${i}`;
+                const host = document.createElement('div');
+                host.classList.add('dialog-host-narrow');
+                host.id = `host-${i}`;
+                host.textContent = 'H';
+                container.appendChild(host);
+                row.appendChild(container);
+                dialog.position = verticalPosition;
+                dialog.horizontalAlignment = horizontalAlignment;
+                dialog.origin = host;
+                dialog.id = `dialog-${i}`;
+                host.addEventListener('mouseover', () => {
+                    void dialog.setDialogVisible(true);
+                });
+                dialog.addEventListener('clickoutsidedialog', () => {
+                    void dialog.setDialogVisible(false);
+                });
+                const div = document.createElement('div');
+                div.classList.add('dialog-content');
+                div.style.padding = '0 1em';
+                div.innerHTML = `Hello, World<br/>Show connector: true<br/>Vertical position: ${verticalPosition}<br/>Horizontal alignment: ${horizontalAlignment}`;
+                dialog.appendChild(div);
+                root.appendChild(dialog);
+                i++;
+            }
+        }
+        renderDifferentModeExample();
+        function renderDifferentModeExample() {
+            const row = document.createElement('div');
+            row.classList.add('row');
+            root.appendChild(row);
+            renderDialogWithTitle();
+            renderDialogWithTitleAndCloseButton();
+            renderDialogWithoutTitleOrCloseButton();
+            function renderDialog() {
+                const dialog = new Dialogs.Dialog.Dialog();
+                const container = document.createElement('div');
+                container.classList.add('container');
+                container.id = `container-${i}`;
+                const host = document.createElement('div');
+                host.classList.add('dialog-host-narrow');
+                host.id = `host-${i}`;
+                host.textContent = 'H';
+                container.appendChild(host);
+                row.appendChild(container);
+                dialog.position = "bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */;
+                dialog.horizontalAlignment = "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */;
+                dialog.origin = host;
+                dialog.id = `dialog-${i}`;
+                host.addEventListener('mouseover', () => {
+                    void dialog.setDialogVisible(true);
+                });
+                dialog.addEventListener('clickoutsidedialog', () => {
+                    void dialog.setDialogVisible(false);
+                });
+                const div = document.createElement('div');
+                div.classList.add('dialog-content');
+                div.style.padding = '0 var(--sys-size-8)';
+                div.innerHTML = 'Hello, World';
+                dialog.appendChild(div);
+                root.appendChild(dialog);
+                i++;
+                return dialog;
+            }
+            function renderDialogWithTitle() {
+                const dialog = renderDialog();
+                dialog.dialogTitle = 'title';
+            }
+            function renderDialogWithTitleAndCloseButton() {
+                const dialog = renderDialog();
+                dialog.dialogTitle = 'title';
+                dialog.closeButton = true;
+            }
+            function renderDialogWithoutTitleOrCloseButton() {
+                renderDialog();
+            }
+        }
+        Helpers.renderElementIntoDOM(root);
+        return root;
+    }
+    async function openDialog(dialogNumber) {
+        const dialog = document.querySelector(`#dialog-${dialogNumber}`);
+        await dialog.setDialogVisible(true);
+        await Helpers.raf();
+        return dialog;
+    }
+    it('renders the dialog at the top left properly', async () => {
+        await renderDialogs();
+        await openDialog(1);
+        await assertScreenshot('dialog/top-left-open.png');
+    });
+    it('renders a dialog at the bottom with automatic horizontal alignment properly', async () => {
+        await renderDialogs();
+        await openDialog(5);
+        await assertScreenshot('dialog/bottom-auto-open.png');
+    });
+    it('renders the dialog at the bottom center properly', async () => {
+        await renderDialogs();
+        await openDialog(7);
+        await assertScreenshot('dialog/bottom-center-open.png');
+    });
+    it('renders a dialog for super narrow origin at the top with automatic horizontal alignment properly', async () => {
+        await renderDialogs();
+        await openDialog(20);
+        await assertScreenshot('dialog/narrow-top-auto-open.png');
+    });
+    it('sets open attribute when the dialog is opened', async () => {
+        await renderDialogs();
+        const dialog = await openDialog(2);
+        assert.isTrue(dialog.hasAttribute('open'));
+    });
+    it('removed open attribute when the dialog is hidden', async () => {
+        await renderDialogs();
+        const dialog = await openDialog(2);
+        assert.isTrue(dialog.hasAttribute('open'));
+        await dialog.setDialogVisible(false);
+        await RenderCoordinator.done();
+        assert.isFalse(dialog.hasAttribute('open'));
     });
 });
 //# sourceMappingURL=Dialog.test.js.map

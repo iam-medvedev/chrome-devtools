@@ -40,8 +40,7 @@ describeWithEnvironment('CLSCulprits', function () {
             ];
             assert.deepEqual(animationFailures, expected);
         });
-        // Flaky test.
-        it.skip('[crbug.com/370382177]: gets the correct non composited animations for shift', async function () {
+        it('gets the correct non composited animations for shift', async function () {
             const { data, insights } = await processTrace(this, 'non-composited-animation-shift.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('CLSCulprits', insights, firstNav);
@@ -59,7 +58,10 @@ describeWithEnvironment('CLSCulprits', function () {
             const expectedWithShift = [
                 {
                     name: 'simple-animation',
-                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    failureReasons: [
+                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
+                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */,
+                    ],
                     unsupportedProperties: ['height', 'color', 'top'],
                     animation: simpleAnimation,
                 },
@@ -68,13 +70,19 @@ describeWithEnvironment('CLSCulprits', function () {
             const expectedAll = [
                 {
                     name: 'simple-animation',
-                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    failureReasons: [
+                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
+                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */
+                    ],
                     unsupportedProperties: ['height', 'color', 'top'],
                     animation: simpleAnimation,
                 },
                 {
                     name: 'top',
-                    failureReasons: ["UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */],
+                    failureReasons: [
+                        "TARGET_HAS_INVALID_COMPOSITING_STATE" /* Models.CLSCulprits.AnimationFailureReasons.TARGET_HAS_INVALID_COMPOSITING_STATE */,
+                        "UNSUPPORTED_CSS_PROPERTY" /* Models.CLSCulprits.AnimationFailureReasons.UNSUPPORTED_CSS_PROPERTY */
+                    ],
                     unsupportedProperties: ['top'],
                     animation: top,
                 },

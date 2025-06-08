@@ -1376,16 +1376,18 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const runner = stylingAgent.run(prompt, {
             selected: this.#getConversationContext(externalConversation),
         });
+        const devToolsLogs = [];
         for await (const data of runner) {
             // We don't want to save partial responses to the conversation history.
             if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
                 void externalConversation.addHistoryItem(data);
+                devToolsLogs.push(data);
             }
             if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
                 data.confirm(true);
             }
             if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return data.text;
+                return { response: data.text, devToolsLogs };
             }
         }
         throw new Error('Something went wrong. No answer was generated.');

@@ -358,11 +358,15 @@ export class Setting {
         this.eventSupport.dispatchEventToListeners(this.name);
     }
     #maybeLogAccess(value) {
-        const valueToLog = typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ?
-            value :
-            this.#serializer?.stringify(value);
-        if (valueToLog !== undefined && this.#logSettingAccess) {
-            void this.#logSettingAccess(this.name, valueToLog);
+        try {
+            const valueToLog = typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' ?
+                value :
+                this.#serializer?.stringify(value);
+            if (valueToLog !== undefined && this.#logSettingAccess) {
+                void this.#logSettingAccess(this.name, valueToLog);
+            }
+        }
+        catch {
         }
     }
     #maybeLogInitialAccess(value) {
@@ -565,7 +569,7 @@ export class VersionController {
     static GLOBAL_VERSION_SETTING_NAME = 'inspectorVersion';
     static SYNCED_VERSION_SETTING_NAME = 'syncedInspectorVersion';
     static LOCAL_VERSION_SETTING_NAME = 'localInspectorVersion';
-    static CURRENT_VERSION = 38;
+    static CURRENT_VERSION = 39;
     #globalVersionSetting;
     #syncedVersionSetting;
     #localVersionSetting;
@@ -1138,6 +1142,35 @@ export class VersionController {
         }
         if (consoleInsightsEnabled && consoleInsightsEnabled.get() === false) {
             onboardingFinished.set(false);
+        }
+    }
+    updateVersionFrom38To39() {
+        const PREFERRED_NETWORK_COND = 'preferred-network-condition';
+        // crrev.com/c/5582013 renamed "Slow 3G" to "3G" and "Fast 3G" => "Slow 4G".
+        // Any users with the old values need to have them moved to avoid breaking DevTools.
+        // Note: we load the raw value via the globalStorage here because
+        // `createSetting` creates if it is not present, and we do not want that;
+        // we only want to update existing, old values.
+        const setting = Settings.instance().globalStorage.get(PREFERRED_NETWORK_COND);
+        if (!setting) {
+            return;
+        }
+        try {
+            const networkSetting = JSON.parse(setting);
+            if (networkSetting.title === 'Slow 3G') {
+                networkSetting.title = '3G';
+                networkSetting.i18nTitleKey = '3G';
+                Settings.instance().globalStorage.set(PREFERRED_NETWORK_COND, JSON.stringify(networkSetting));
+            }
+            else if (networkSetting.title === 'Fast 3G') {
+                networkSetting.title = 'Slow 4G';
+                networkSetting.i18nTitleKey = 'Slow 4G';
+                Settings.instance().globalStorage.set(PREFERRED_NETWORK_COND, JSON.stringify(networkSetting));
+            }
+        }
+        catch {
+            // If parsing the setting threw, it's in some invalid state, so remove it.
+            Settings.instance().globalStorage.remove(PREFERRED_NETWORK_COND);
         }
     }
     /*

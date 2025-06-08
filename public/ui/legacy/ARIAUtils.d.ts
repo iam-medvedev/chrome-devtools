@@ -89,6 +89,10 @@ export declare function getOrCreateAlertElement(container?: HTMLElement, opts?: 
     force: boolean;
 }): HTMLElement;
 /**
+ * Used only in tests to clear any left over alerts between test runs.
+ */
+export declare function removeAlertElement(container: HTMLElement): void;
+/**
  * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
  * Ensures messages are announced even if identical to the previous message by appending
  * a non-breaking space ('\u00A0') when necessary. This works around screen reader

@@ -104,7 +104,9 @@ export declare class NetworkRequestNode extends NetworkNode {
     static PriorityComparator(a: NetworkNode, b: NetworkNode): number;
     static RequestPropertyComparator(propertyName: string, a: NetworkNode, b: NetworkNode): number;
     static RequestURLComparator(a: NetworkNode, b: NetworkNode): number;
-    static ResponseHeaderStringComparator(propertyName: string, a: NetworkNode, b: NetworkNode): number;
+    static HeaderStringComparator(getHeaderValue: (request: SDK.NetworkRequest.NetworkRequest, propertyName: string) => string | undefined, propertyName: string, a: NetworkNode, b: NetworkNode): number;
+    static readonly ResponseHeaderStringComparator: (propertyName: string, a: NetworkNode, b: NetworkNode) => number;
+    static readonly RequestHeaderStringComparator: (propertyName: string, a: NetworkNode, b: NetworkNode) => number;
     static ResponseHeaderNumberComparator(propertyName: string, a: NetworkNode, b: NetworkNode): number;
     static ResponseHeaderDateComparator(propertyName: string, a: NetworkNode, b: NetworkNode): number;
     showingInitiatorChainChanged(): void;

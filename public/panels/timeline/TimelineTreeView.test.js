@@ -102,7 +102,7 @@ describeWithEnvironment('TimelineTreeView', function () {
             // has no parent element (because in the UI it is one of many components
             // in tabs, so we only update it if its visible), so it must be put into
             // the DOM before we set the model.
-            renderWidgetInVbox(bottomUpTreeView);
+            renderWidgetInVbox(bottomUpTreeView, { flexAuto: true });
             bottomUpTreeView.setRange(startTime, endTime);
             bottomUpTreeView.setModelWithEvents(consoleTimings, parsedTrace, mapper);
             await RenderCoordinator.done();
@@ -126,7 +126,7 @@ describeWithEnvironment('TimelineTreeView', function () {
             const consoleTimings = [...parsedTrace.UserTimings.consoleTimings];
             const startTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
             const endTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
-            renderWidgetInVbox(callTreeView);
+            renderWidgetInVbox(callTreeView, { flexAuto: true });
             callTreeView.setRange(startTime, endTime);
             callTreeView.setModelWithEvents(consoleTimings, parsedTrace);
             await RenderCoordinator.done();

@@ -9,8 +9,8 @@ const { NetworkNode, CPUNode } = Lantern.Graph;
 const { Simulator, DNSCache } = Lantern.Simulation;
 let nextRequestId = 1;
 let nextTid = 1;
-async function createGraph(trace) {
-    const parsedTrace = await runTrace(trace);
+async function createGraph(context, trace) {
+    const parsedTrace = await runTrace(context, trace);
     const requests = Trace.LanternComputationData.createNetworkRequests(trace, parsedTrace);
     return Trace.LanternComputationData.createGraph(requests, trace, parsedTrace);
 }
@@ -323,13 +323,13 @@ describe('DependencyGraph/Simulator', () => {
         describe('on a real trace', function () {
             TraceLoader.setTestTimeout(this);
             it('should compute a timeInMs', async function () {
-                const graph = await createGraph(trace);
+                const graph = await createGraph(this, trace);
                 const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });
                 const result = simulator.simulate(graph);
                 expect(result.timeInMs).to.be.greaterThan(100);
             });
             it('should sort the task event times', async () => {
-                const graph = await createGraph(trace);
+                const graph = await createGraph(this, trace);
                 const simulator = new Simulator({ serverResponseTimeByOrigin, observedThroughput });
                 const result = simulator.simulate(graph);
                 const nodeTimings = Array.from(result.nodeTimings.entries());

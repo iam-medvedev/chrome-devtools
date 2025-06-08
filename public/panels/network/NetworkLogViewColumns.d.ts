@@ -62,7 +62,8 @@ export declare class NetworkLogViewColumns {
     private loadCustomColumnsAndSettings;
     private makeHeaderFragment;
     private innerHeaderContextMenu;
-    private manageCustomHeaderDialog;
+    private manageRequestCustomHeaderDialog;
+    private manageResponseCustomHeaderDialog;
     private removeCustomHeader;
     private addCustomHeader;
     private changeCustomHeader;
@@ -86,6 +87,7 @@ export interface Descriptor {
     sortable: boolean;
     align?: string | null;
     isResponseHeader: boolean;
+    isRequestHeader: boolean;
     sortingFunction: (arg0: NetworkNode, arg1: NetworkNode) => number | undefined;
     isCustomHeader: boolean;
     allowInSortByEvenWhenHidden: boolean;
