@@ -144,6 +144,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'emulated-css-media-feature-prefers-reduced-transparency', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'emulated-css-media-feature-color-gamut', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'emulated-vision-deficiency', '', "enum" /* Common.Settings.SettingType.ENUM */),
+        createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'emulated-os-text-scale', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'emulate-auto-dark-mode', '', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'local-fonts-disabled', false),
         createSettingValue("RENDERING" /* Common.Settings.SettingCategory.RENDERING */, 'show-paint-rects', false),

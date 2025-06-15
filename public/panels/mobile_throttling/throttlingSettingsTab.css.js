@@ -32,9 +32,10 @@ export default `/*
 }
 
 .conditions-list-text {
+  white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  flex: 0 0 60px;
+  flex-basis: var( --sys-size-24);
   user-select: none;
   color: var(--sys-color-on-surface);
   text-align: center;

@@ -174,6 +174,7 @@ export declare class DevToolsCloseButton extends HTMLElement {
     setAccessibleName(name: string): void;
     setSize(size: Buttons.Button.Size): void;
     setTabbable(tabbable: boolean): void;
+    focus(): void;
 }
 export declare function bindInput(input: HTMLInputElement, apply: (arg0: string) => void, validate: (arg0: string) => boolean, numeric: boolean, modifierMultiplier?: number): (arg0: string) => void;
 export declare function trimText(context: CanvasRenderingContext2D, text: string, maxWidth: number, trimFunction: (arg0: string, arg1: number) => string): string;

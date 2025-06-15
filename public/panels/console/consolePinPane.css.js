@@ -11,8 +11,8 @@ export default `/*
 
 .close-button {
   position: absolute;
-  top: 1px;
-  left: 0;
+  top: var(--sys-size-4);
+  left: var(--sys-size-2);
 }
 
 .console-pins {

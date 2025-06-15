@@ -7,6 +7,7 @@ export declare class HideIssuesMenu extends HTMLElement {
     #private;
     set data(data: HiddenIssuesMenuData);
     onMenuOpen(event: Event): void;
+    onKeydown(event: KeyboardEvent): void;
 }
 declare global {
     interface HTMLElementTagNameMap {

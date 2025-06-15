@@ -292,7 +292,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIS
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let timelinePanelInstance;
 let isNode;
-export class TimelinePanel extends UI.Panel.Panel {
+export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Panel) {
     dropTarget;
     recordingOptionUIControls;
     state;
@@ -697,6 +697,9 @@ export class TimelinePanel extends UI.Panel.Panel {
         }
         this.statusDialog = null;
     }
+    hasActiveTrace() {
+        return this.#viewMode.mode === 'VIEWING_TRACE';
+    }
     #changeView(newMode) {
         if (this.#viewModesEquivalent(this.#viewMode, newMode)) {
             return;
@@ -737,6 +740,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             case 'LANDING_PAGE': {
                 this.#removeStatusPane();
                 this.#showLandingPage();
+                this.dispatchEventToListeners("IsViewingTrace" /* Events.IS_VIEWING_TRACE */, false);
                 // Whilst we don't reset this, we hide it, mainly so the user cannot
                 // hit Ctrl/Cmd-F and try to search when it isn't visible.
                 this.searchableViewInternal.hideWidget();
@@ -748,6 +752,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 this.#removeStatusPane();
                 this.#showSidebarIfRequired();
                 this.flameChart.dimThirdPartiesIfRequired();
+                this.dispatchEventToListeners("IsViewingTrace" /* Events.IS_VIEWING_TRACE */, true);
                 return;
             }
             case 'STATUS_PANE_OVERLAY': {
@@ -755,6 +760,7 @@ export class TimelinePanel extends UI.Panel.Panel {
                 // recordingStarted/recordingProgress callbacks, but we do make sure we
                 // hide the landing page.
                 this.#hideLandingPage();
+                this.dispatchEventToListeners("IsViewingTrace" /* Events.IS_VIEWING_TRACE */, false);
                 // We also hide the sidebar - else if the user is viewing a trace and
                 // then load/record another, the sidebar remains visible.
                 this.#hideSidebar();
@@ -854,18 +860,27 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.panelToolbar.removeToolbarItem(this.#sidebarToggleButton);
     }
     #populateDownloadMenu(contextMenu) {
+        // If the current trace is annotated, add an option to save it without annotations.
+        const currModificationManager = ModificationsManager.activeManager();
+        const annotationsExist = currModificationManager && currModificationManager.getAnnotations()?.length > 0;
         contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithAnnotationsMenuOption), () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-            void this.saveToFile(/* isEnhancedTrace */ false, /* addModifications */ true);
+            void this.saveToFile({ savingEnhancedTrace: false, addModifications: true });
         }, {
-            jslogContext: 'timeline.save-to-file-with-annotations',
+            jslogContext: annotationsExist ? 'timeline.save-to-file-with-annotations' :
+                'timeline.save-to-file-without-annotations',
         });
-        contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithoutAnnotationsMenuOption), () => {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-            void this.saveToFile();
-        }, {
-            jslogContext: 'timeline.save-to-file-without-annotations',
-        });
+        if (annotationsExist) {
+            contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithoutAnnotationsMenuOption), () => {
+                Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
+                void this.saveToFile({
+                    savingEnhancedTrace: false,
+                    addModifications: false,
+                });
+            }, {
+                jslogContext: 'timeline.save-to-file-without-annotations',
+            });
+        }
     }
     populateToolbar() {
         // Record
@@ -890,15 +905,15 @@ export class TimelinePanel extends UI.Panel.Panel {
                 if (event.ctrlKey || event.button === 2) {
                     const contextMenu = new UI.ContextMenu.ContextMenu(event);
                     contextMenu.saveSection().appendItem(i18nString(UIStrings.exportNormalTraces), () => {
-                        void this.saveToFile();
+                        void this.saveToFile({ savingEnhancedTrace: false, addModifications: false });
                     });
                     contextMenu.saveSection().appendItem(i18nString(UIStrings.exportEnhancedTraces), () => {
-                        void this.saveToFile(/* isEnhancedTrace */ true);
+                        void this.saveToFile({ savingEnhancedTrace: true, addModifications: false });
                     });
                     void contextMenu.show();
                 }
                 else {
-                    void this.saveToFile();
+                    void this.saveToFile({ savingEnhancedTrace: false, addModifications: false });
                 }
             });
         }
@@ -1097,6 +1112,12 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.timelinePane.element.appendChild(this.fileSelectorElement);
     }
     contextMenu(event) {
+        // If we are recording (or transitioning to/from recording, don't let the user use the context menu)
+        if (this.state === "StartPending" /* State.START_PENDING */ || this.state === "Recording" /* State.RECORDING */ || this.state === "StopPending" /* State.STOP_PENDING */) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
         // Do not show this Context menu on FlameChart entries because we have a different context menu for FlameChart entries
         const mouseEvent = event;
         if (this.flameChart.getMainFlameChart().coordinatesToEntryIndex(mouseEvent.offsetX, mouseEvent.offsetY) !== -1) {
@@ -1106,19 +1127,31 @@ export class TimelinePanel extends UI.Panel.Panel {
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
-    async saveToFile(savingEnhancedTrace = false, addModifications = false) {
+    /**
+     * Saves a trace file to disk.
+     * Pass `config.savingEnhancedTrace === true` to include source maps in the resulting metadata.
+     * Pass `config.addModifications === true` to include user modifications to the trace file, which includes:
+     *      1. Annotations
+     *      2. Filtering / collapsing of the flame chart.
+     *      3. Visual track configuration (re-ordering or hiding tracks).
+     */
+    async saveToFile(config) {
         if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
             return;
         }
+        const trace = this.#traceEngineModel.parsedTrace(this.#viewMode.traceIndex);
+        if (!trace) {
+            return;
+        }
         let traceEvents = this.#traceEngineModel.rawTraceEvents(this.#viewMode.traceIndex);
-        const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex);
         if (!traceEvents) {
             return;
         }
-        const shouldRetainScriptSources = savingEnhancedTrace &&
+        const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex) ?? {};
+        const shouldRetainScriptSources = config.savingEnhancedTrace &&
             Root.Runtime.experiments.isEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */);
         if (!shouldRetainScriptSources) {
             traceEvents = traceEvents.map(event => {
@@ -1138,11 +1171,18 @@ export class TimelinePanel extends UI.Panel.Panel {
                 return event;
             });
         }
-        if (metadata) {
-            metadata.modifications = addModifications ? ModificationsManager.activeManager()?.toJSON() : undefined;
-            metadata.enhancedTraceVersion =
-                savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
+        metadata.modifications = config.addModifications ? ModificationsManager.activeManager()?.toJSON() : undefined;
+        if (config.addModifications) {
+            // Get any visual track config
+            const visualConfig = this.flameChart.getPersistedConfigMetadata(trace);
+            // If both these values are null then the user has not made any visual
+            // changes, so we don't need to store it into the saved file.
+            if (visualConfig.main !== null || visualConfig.network !== null) {
+                metadata.visualTrackConfig = visualConfig;
+            }
         }
+        metadata.enhancedTraceVersion =
+            config.savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
         const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
         let fileName;
         if (metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
@@ -1177,7 +1217,7 @@ export class TimelinePanel extends UI.Panel.Panel {
             else {
                 const formattedTraceIter = traceJsonGenerator(traceEvents, {
                     ...metadata,
-                    sourceMaps: savingEnhancedTrace ? metadata?.sourceMaps : undefined,
+                    sourceMaps: config.savingEnhancedTrace ? metadata?.sourceMaps : undefined,
                 });
                 traceAsString = Array.from(formattedTraceIter).join('');
             }
@@ -1629,6 +1669,8 @@ export class TimelinePanel extends UI.Panel.Panel {
         this.flameChart.getNetworkDataProvider().reset();
         this.flameChart.reset();
         this.#changeView({ mode: 'LANDING_PAGE' });
+        UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, null);
+        UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, null);
     }
     #hasActiveTrace() {
         return this.#viewMode.mode === 'VIEWING_TRACE';
@@ -2470,7 +2512,7 @@ export class ActionDelegate {
                 panel.recordReload();
                 return true;
             case 'timeline.save-to-file':
-                void panel.saveToFile();
+                void panel.saveToFile({ savingEnhancedTrace: false, addModifications: false });
                 return true;
             case 'timeline.load-from-file':
                 panel.selectFileToLoad();

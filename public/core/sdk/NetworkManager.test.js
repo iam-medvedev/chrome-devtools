@@ -993,6 +993,24 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
 });
 describe('NetworkDispatcher', () => {
     const requestWillBeSentEvent = { requestId: 'mockId', request: { url: 'example.com' } };
+    const responseReceivedEvent = {
+        requestId: 'mockId',
+        loaderId: 'mockLoaderId',
+        frameId: 'mockFrameId',
+        timestamp: 581734.083213,
+        type: "Document" /* Protocol.Network.ResourceType.Document */,
+        response: {
+            url: 'example.com',
+            status: 200,
+            statusText: '',
+            mimeType: 'text/html',
+            connectionReused: true,
+            connectionId: 12345,
+            encodedDataLength: 100,
+            securityState: 'secure',
+        },
+        hasExtraInfo: true,
+    };
     const loadingFinishedEvent = { requestId: 'mockId', timestamp: 42, encodedDataLength: 42 };
     describeWithEnvironment('request', () => {
         let networkDispatcher;
@@ -1027,8 +1045,70 @@ describe('NetworkDispatcher', () => {
             networkDispatcher.requestWillBeSentExtraInfo(requestWillBeSentExtraInfoEvent);
             networkDispatcher.clearRequests();
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
+            networkDispatcher.responseReceived(responseReceivedEvent);
             assert.exists(networkDispatcher.requestForId('mockId'));
             assert.deepEqual(networkDispatcher.requestForId('mockId')?.requestHeaders(), [{ name: 'Header-From-Extra-Info', value: 'foo' }]);
+        });
+        it('handles redirect chains with mixed presence of raw headers', () => {
+            const hop1RequestWillBeSent = { requestId: 'mockId', request: { url: 'http://example.com' } };
+            const hop2RequestWillBeSent = {
+                requestId: 'mockId',
+                request: { url: 'https://example.com' },
+                redirectHasExtraInfo: false,
+                redirectResponse: {
+                    url: 'http://example.com',
+                    status: 307,
+                    statusText: 'Temporary redirect',
+                    headers: {
+                        Location: 'https://example.com',
+                    },
+                },
+            };
+            const responseExtraInfo = {
+                requestId: 'mockId',
+                blockedCookies: [],
+                headers: {},
+                resourceIPAddressSpace: "Public" /* Protocol.Network.IPAddressSpace.Public */,
+                statusCode: 200,
+                headersText: 'HTTP/1.1 200 OK\r\n'
+            };
+            networkDispatcher.requestWillBeSent(hop1RequestWillBeSent);
+            networkDispatcher.requestWillBeSent(hop2RequestWillBeSent);
+            networkDispatcher.responseReceived(responseReceivedEvent);
+            networkDispatcher.responseReceivedExtraInfo(responseExtraInfo);
+            const originalResqest = networkDispatcher.requestForURL(urlString `http://example.com`);
+            assert.exists(originalResqest);
+            assert.strictEqual(originalResqest.statusCode, 307);
+            assert.strictEqual(originalResqest.statusText, 'Temporary redirect');
+            const redirectedRequest = networkDispatcher.requestForURL(urlString `https://example.com`);
+            assert.exists(redirectedRequest);
+            assert.strictEqual(redirectedRequest.statusCode, 200);
+            assert.strictEqual(redirectedRequest.statusText, 'OK');
+        });
+        it('raw headers are processed when response fails', () => {
+            networkDispatcher.requestWillBeSent({ requestId: 'mockId', request: { url: 'http://example.com' } });
+            const responseExtraInfo = {
+                requestId: 'mockId',
+                blockedCookies: [],
+                headers: {},
+                resourceIPAddressSpace: "Public" /* Protocol.Network.IPAddressSpace.Public */,
+                statusCode: 200,
+                headersText: 'HTTP/1.1 200 OK\r\n'
+            };
+            networkDispatcher.responseReceivedExtraInfo(responseExtraInfo);
+            const request = networkDispatcher.requestForId('mockId');
+            assert.exists(request);
+            assert.strictEqual(request.statusCode, 0);
+            networkDispatcher.loadingFailed({
+                requestId: 'mockId',
+                timestamp: 2345,
+                type: "Document" /* Protocol.Network.ResourceType.Document */,
+                errorText: 'net::ERR_FAILED',
+                canceled: false,
+                corsErrorStatus: { corsError: "MissingAllowOriginHeader" /* Protocol.Network.CorsError.MissingAllowOriginHeader */, failedParameter: '' },
+            });
+            assert.strictEqual(request.statusCode, 200);
+            assert.strictEqual(request.statusText, 'OK');
         });
         it('response headers are overwritten by request interception', () => {
             const responseReceivedExtraInfoEvent = {
@@ -1041,24 +1121,9 @@ describe('NetworkDispatcher', () => {
                 statusCode: 200,
             };
             const mockResponseReceivedEventWithHeaders = (headers) => {
-                return {
-                    requestId: 'mockId',
-                    loaderId: 'mockLoaderId',
-                    frameId: 'mockFrameId',
-                    timestamp: 581734.083213,
-                    type: "Document" /* Protocol.Network.ResourceType.Document */,
-                    response: {
-                        url: 'example.com',
-                        status: 200,
-                        statusText: '',
-                        headers,
-                        mimeType: 'text/html',
-                        connectionReused: true,
-                        connectionId: 12345,
-                        encodedDataLength: 100,
-                        securityState: 'secure',
-                    },
-                };
+                const event = structuredClone(responseReceivedEvent);
+                event.response.headers = headers;
+                return event;
             };
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
             networkDispatcher.responseReceivedExtraInfo(responseReceivedExtraInfoEvent);
@@ -1083,6 +1148,7 @@ describe('NetworkDispatcher', () => {
             };
             networkDispatcher.requestWillBeSent(requestWillBeSentEvent);
             networkDispatcher.responseReceivedExtraInfo(responseReceivedExtraInfoEvent);
+            networkDispatcher.responseReceived(responseReceivedEvent);
             assert.deepEqual(networkDispatcher.requestForId('mockId')?.responseHeaders, [
                 { name: 'test-header', value: 'first' },
                 { name: 'set-cookie', value: 'foo=bar' },

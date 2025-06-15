@@ -18,8 +18,6 @@ export declare class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKMo
         targetManager: SDK.TargetManager.TargetManager | null;
     }): DebuggerWorkspaceBinding;
     static removeInstance(): void;
-    addSourceMapping(sourceMapping: DebuggerSourceMapping): void;
-    removeSourceMapping(sourceMapping: DebuggerSourceMapping): void;
     private computeAutoStepRanges;
     modelAdded(debuggerModel: SDK.DebuggerModel.DebuggerModel): void;
     modelRemoved(debuggerModel: SDK.DebuggerModel.DebuggerModel): void;

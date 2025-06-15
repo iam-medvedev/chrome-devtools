@@ -16,6 +16,12 @@ export default `/*
   height: 20px;
 }
 
+devtools-icon[name="info"] {
+  margin-left: var(--sys-size-3);
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
+}
+
 devtools-select-menu {
   min-width: 160px;
   max-width: 100%;

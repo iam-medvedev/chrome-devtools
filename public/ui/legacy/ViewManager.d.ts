@@ -56,6 +56,7 @@ export declare class ViewManager {
     showViewInLocation(viewId: string, locationName: string, shouldSelectTab?: boolean | undefined): void;
     view(viewId: string): View;
     materializedWidget(viewId: string): Widget | null;
+    hasView(viewId: string): boolean;
     showView(viewId: string, userGesture?: boolean, omitFocus?: boolean): Promise<void>;
     resolveLocation(location?: string): Promise<Location | null>;
     createTabbedLocation(revealCallback?: (() => void), location?: string, restoreSelection?: boolean, allowReorder?: boolean, defaultTab?: string | null): TabbedViewLocation;

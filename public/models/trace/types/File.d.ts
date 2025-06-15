@@ -129,6 +129,20 @@ export interface Modifications {
     initialBreadcrumb: Breadcrumb;
     annotations: SerializedAnnotations;
 }
+export interface TrackVisualConfig {
+    hidden: boolean;
+    expanded: boolean;
+    originalIndex: number;
+    visualIndex: number;
+}
+/**
+ * Stores the visual config if the user has modified it. Split into "main" and
+ * "network" so we can pass the relevant config into the right data provider.
+ */
+export interface PersistedTraceVisualConfig {
+    main: TrackVisualConfig[] | null;
+    network: TrackVisualConfig[] | null;
+}
 /**
  * Trace metadata that we persist to the file. This will allow us to
  * store specifics for the trace, e.g., which tracks should be visible
@@ -148,6 +162,7 @@ export interface MetaData {
     cruxFieldData?: CrUXManager.PageResult[];
     /** Currently only stores JS maps, not CSS. This never stores data url source maps. */
     sourceMaps?: MetadataSourceMap[];
+    visualTrackConfig?: PersistedTraceVisualConfig;
 }
 interface MetadataSourceMap {
     url: string;

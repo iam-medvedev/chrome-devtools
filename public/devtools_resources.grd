@@ -1896,6 +1896,7 @@
       <include file="panels/timeline/TimelineUIUtils.js" name="PANELS_TIMELINE_TIMELINEUIUTILS_JS" resource_path="panels/timeline/TimelineUIUtils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TimingsTrackAppender.js" name="PANELS_TIMELINE_TIMINGSTRACKAPPENDER_JS" resource_path="panels/timeline/TimingsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TracingLayerTree.js" name="PANELS_TIMELINE_TRACINGLAYERTREE_JS" resource_path="panels/timeline/TracingLayerTree.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/TrackConfiguration.js" name="PANELS_TIMELINE_TRACKCONFIGURATION_JS" resource_path="panels/timeline/TrackConfiguration.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/UIDevtoolsController.js" name="PANELS_TIMELINE_UIDEVTOOLSCONTROLLER_JS" resource_path="panels/timeline/UIDevtoolsController.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/UIDevtoolsUtils.js" name="PANELS_TIMELINE_UIDEVTOOLSUTILS_JS" resource_path="panels/timeline/UIDevtoolsUtils.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/components/Breadcrumbs.js" name="PANELS_TIMELINE_COMPONENTS_BREADCRUMBS_JS" resource_path="panels/timeline/components/Breadcrumbs.js" type="BINDATA" compress="false"/>
@@ -1979,6 +1980,7 @@
       <include file="panels/timeline/overlays/components/entryLabelOverlay.css.js" name="PANELS_TIMELINE_OVERLAYS_COMPONENTS_ENTRYLABELOVERLAY_CSS_JS" resource_path="panels/timeline/overlays/components/entryLabelOverlay.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/overlays/components/timeRangeOverlay.css.js" name="PANELS_TIMELINE_OVERLAYS_COMPONENTS_TIMERANGEOVERLAY_CSS_JS" resource_path="panels/timeline/overlays/components/timeRangeOverlay.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/overlays/components/timespanBreakdownOverlay.css.js" name="PANELS_TIMELINE_OVERLAYS_COMPONENTS_TIMESPANBREAKDOWNOVERLAY_CSS_JS" resource_path="panels/timeline/overlays/components/timespanBreakdownOverlay.css.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/thirdPartyTreeView.css.js" name="PANELS_TIMELINE_THIRDPARTYTREEVIEW_CSS_JS" resource_path="panels/timeline/thirdPartyTreeView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineFlameChartView.css.js" name="PANELS_TIMELINE_TIMELINEFLAMECHARTVIEW_CSS_JS" resource_path="panels/timeline/timelineFlameChartView.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineFlamechartPopover.css.js" name="PANELS_TIMELINE_TIMELINEFLAMECHARTPOPOVER_CSS_JS" resource_path="panels/timeline/timelineFlamechartPopover.css.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/timelineHistoryManager.css.js" name="PANELS_TIMELINE_TIMELINEHISTORYMANAGER_CSS_JS" resource_path="panels/timeline/timelineHistoryManager.css.js" type="BINDATA" compress="false"/>

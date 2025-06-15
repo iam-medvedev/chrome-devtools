@@ -210,6 +210,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
     syncSection = new PanelComponents.SyncSection.SyncSection();
     settingToControl = new Map();
     containerElement;
+    #updateSyncSectionTimerId = -1;
     constructor() {
         super();
         this.element.classList.add('settings-tab-container');
@@ -268,15 +269,26 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         this.updateSyncSection();
     }
     willHide() {
+        if (this.#updateSyncSectionTimerId > 0) {
+            window.clearTimeout(this.#updateSyncSectionTimerId);
+            this.#updateSyncSectionTimerId = -1;
+        }
         super.willHide();
         UI.Context.Context.instance().setFlavor(GenericSettingsTab, null);
     }
     updateSyncSection() {
+        if (this.#updateSyncSectionTimerId > 0) {
+            window.clearTimeout(this.#updateSyncSectionTimerId);
+            this.#updateSyncSectionTimerId = -1;
+        }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
             this.syncSection.data = {
                 syncInfo,
                 syncSetting: Common.Settings.moduleSetting('sync-preferences'),
             };
+            if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
+                this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
+            }
         });
     }
     createExtensionSection(settings) {

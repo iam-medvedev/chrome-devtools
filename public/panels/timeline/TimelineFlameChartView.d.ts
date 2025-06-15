@@ -38,7 +38,6 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     private readonly networkSplitWidget;
     private mainDataProvider;
     private readonly mainFlameChart;
-    private readonly networkFlameChartGroupExpansionSetting;
     private networkDataProvider;
     private readonly networkFlameChart;
     private readonly networkPane;
@@ -88,6 +87,11 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
      * current parsed trace.
      */
     rebuildDataForTrace(): void;
+    /**
+     * Gets the persisted config (if the user has made any visual changes) in
+     * order to save it to disk as part of the trace.
+     */
+    getPersistedConfigMetadata(trace: Trace.Handlers.Types.ParsedTrace): Trace.Types.File.PersistedTraceVisualConfig;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
     reset(): void;
     setupWindowTimes(): void;

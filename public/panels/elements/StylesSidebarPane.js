@@ -40,8 +40,6 @@ import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
-import { PanelUtils } from '../../panels/utils/utils.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -171,7 +169,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     imagePreviewPopover;
     #webCustomData;
     activeCSSAngle = null;
-    #urlToChangeTracker = new Map();
     #updateAbortController;
     #updateComputedStylesAbortController;
     constructor(computedStyleModel) {
@@ -1076,21 +1073,6 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             sections = sections.concat(block.sections);
         }
         return sections;
-    }
-    async getFormattedChanges() {
-        let allChanges = '';
-        for (const [url, { uiSourceCode }] of this.#urlToChangeTracker) {
-            const diffResponse = await WorkspaceDiff.WorkspaceDiff.workspaceDiff().requestDiff(uiSourceCode);
-            // Diff array with real diff will contain at least 2 lines.
-            if (!diffResponse || diffResponse?.diff.length < 2) {
-                continue;
-            }
-            const changes = await PanelUtils.formatCSSChangesFromDiff(diffResponse.diff);
-            if (changes.length > 0) {
-                allChanges += `/* ${escapeUrlAsCssComment(url)} */\n\n${changes}\n\n`;
-            }
-        }
-        return allChanges;
     }
     clipboardCopy(_event) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.StyleRuleCopied);

@@ -22,6 +22,7 @@ export declare class EmulationModel extends SDKModel<void> {
     private emulateCSSMedia;
     private emulateAutoDarkMode;
     private emulateVisionDeficiency;
+    private emulateOSTextScale;
     private setLocalFontsDisabled;
     private setDisabledImageTypes;
     setCPUThrottlingRate(rate: number): Promise<void>;

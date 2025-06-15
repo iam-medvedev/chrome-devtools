@@ -238,6 +238,9 @@ export class ViewManager {
         }
         return widgetForView.get(view) || null;
     }
+    hasView(viewId) {
+        return this.views.has(viewId);
+    }
     async showView(viewId, userGesture, omitFocus) {
         const view = this.views.get(viewId);
         if (!view) {

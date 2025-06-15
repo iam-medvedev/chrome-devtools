@@ -43,6 +43,7 @@ import { ThreadAppender } from './ThreadAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
 import { selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
+import { buildPersistedConfig, keyForTraceConfig } from './TrackConfiguration.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
@@ -130,6 +131,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
      * have to recalculate. This is reset when the trace changes.
      */
     #initiatorsCache = new Map();
+    #persistedGroupConfigSetting = null;
     constructor() {
         super();
         this.reset();
@@ -164,6 +166,22 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         Common.Settings.Settings.instance()
             .moduleSetting('skip-anonymous-scripts')
             .addChangeListener(this.#onIgnoreListChanged.bind(this));
+    }
+    handleTrackConfigurationChange(groups, indexesInVisualOrder) {
+        if (!this.#persistedGroupConfigSetting) {
+            return;
+        }
+        if (!this.parsedTrace) {
+            return;
+        }
+        const persistedDataForTrace = buildPersistedConfig(groups, indexesInVisualOrder);
+        const traceKey = keyForTraceConfig(this.parsedTrace);
+        const setting = this.#persistedGroupConfigSetting.get();
+        setting[traceKey] = persistedDataForTrace;
+        this.#persistedGroupConfigSetting.set(setting);
+    }
+    setPersistedGroupConfigSetting(setting) {
+        this.#persistedGroupConfigSetting = setting;
     }
     hasTrackConfigurationMode() {
         return true;

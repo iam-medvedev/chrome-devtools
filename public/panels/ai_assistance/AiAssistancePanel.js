@@ -117,6 +117,10 @@ const UIStringsNotTranslate = {
      */
     inputPlaceholderForPerformance: 'Ask a question about the selected item and its call tree',
     /**
+     *@description Placeholder text for the chat UI input.
+     */
+    inputPlaceholderForPerformanceWithNoRecording: 'Record a performance trace and select an item to ask a question',
+    /**
      *@description Placeholder text for the chat UI input when there is no context selected.
      */
     inputPlaceholderForStylingNoContext: 'Select an element to ask a question',
@@ -401,6 +405,7 @@ let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
     view;
     static panelName = 'freestyler';
+    // NodeJS debugging does not have Elements panel, thus this action might not exist.
     #toggleSearchElementAction;
     #aidaClient;
     #viewOutput = {};
@@ -437,13 +442,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #imageInput;
     // Used to disable send button when there is not text input.
     #isTextInputEmpty = true;
+    #timelinePanelInstance = null;
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
         this.registerRequiredCSS(aiAssistancePanelStyles);
         this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
-        this.#toggleSearchElementAction =
-            UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         this.#aidaClient = aidaClient;
         this.#aidaAvailability = aidaAvailability;
         this.#userInfo = {
@@ -453,6 +457,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#historicalConversations = AiAssistanceModel.AiHistoryStorage.instance().getHistory().map(item => {
             return new AiAssistanceModel.Conversation(item.type, item.history, item.id, true, item.isExternal);
         });
+        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
+            this.#toggleSearchElementAction =
+                UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
+        }
     }
     #getChatUiState() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -524,6 +532,26 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             panelInstance = new AiAssistancePanel(defaultView, { aidaClient, aidaAvailability, syncInfo });
         }
         return panelInstance;
+    }
+    /**
+     * Called when the TimelinePanel instance changes. We use this to listen to
+     * the status of if the user is viewing a trace or not, and update the
+     * placeholder text in the panel accordingly. We do this because if the user
+     * has an active trace, we show different text than if they are viewing
+     * the performance panel but have no trace imported.
+     */
+    #bindTimelineTraceListener() {
+        const timelinePanel = UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
+        // Avoid binding multiple times.
+        if (timelinePanel === this.#timelinePanelInstance) {
+            return;
+        }
+        // Ensure we clear up any listener from the old TimelinePanel instance.
+        this.#timelinePanelInstance?.removeEventListener("IsViewingTrace" /* TimelinePanel.TimelinePanel.Events.IS_VIEWING_TRACE */, this.requestUpdate, this);
+        this.#timelinePanelInstance = timelinePanel;
+        if (this.#timelinePanelInstance) {
+            this.#timelinePanelInstance.addEventListener("IsViewingTrace" /* TimelinePanel.TimelinePanel.Events.IS_VIEWING_TRACE */, this.requestUpdate, this);
+        }
     }
     // We select the default agent based on the open panels if
     // there isn't any active conversation.
@@ -623,7 +651,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#updateConversationState(this.#conversationAgent);
         this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
-        this.#toggleSearchElementAction.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
+        this.#toggleSearchElementAction?.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
@@ -636,12 +664,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+        // Listen to changes in the Timeline Panel state. We also call the
+        // function immediately in case the Performance panel is already shown
+        // when AI Assistance is loaded.
+        UI.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
+        this.#bindTimelineTraceListener();
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
     }
     willHide() {
         this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
         Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
-        this.#toggleSearchElementAction.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
+        this.#toggleSearchElementAction?.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
@@ -651,9 +684,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().removeFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().removeFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#selectDefaultAgentIfNeeded, this);
+        UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+        if (this.#timelinePanelInstance) {
+            this.#timelinePanelInstance.removeEventListener("IsViewingTrace" /* TimelinePanel.TimelinePanel.Events.IS_VIEWING_TRACE */, this.requestUpdate, this);
+            this.#timelinePanelInstance = null;
+        }
     }
     #handleAidaAvailabilityChange = async () => {
         const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
@@ -738,7 +776,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             conversationType: this.#conversation?.type,
             isReadOnly: this.#conversation?.isReadOnly ?? false,
             changeSummary: this.#getChangeSummary(),
-            inspectElementToggled: this.#toggleSearchElementAction.toggled(),
+            inspectElementToggled: this.#toggleSearchElementAction?.toggled() ?? false,
             userInfo: this.#userInfo,
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
             multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() &&
@@ -782,7 +820,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }, this.#viewOutput, this.contentElement);
     }
     #handleSelectElementClick() {
-        void this.#toggleSearchElementAction.execute();
+        void this.#toggleSearchElementAction?.execute();
     }
     #isTextInputDisabled() {
         // If the `aiAssistanceSetting` is not enabled
@@ -839,9 +877,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
                 return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForNetwork) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkNoContext);
-            case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
-                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForPerformance) :
-                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceNoContext);
+            case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
+                const perfPanel = UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
+                if (perfPanel?.hasActiveTrace()) {
+                    return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForPerformance) :
+                        lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceNoContext);
+                }
+                return lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceWithNoRecording);
+            }
             case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
                 return this.#selectedContext ?
                     lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceInsights) :

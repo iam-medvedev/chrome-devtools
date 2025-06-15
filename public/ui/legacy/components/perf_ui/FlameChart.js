@@ -146,9 +146,6 @@ const hideIconPath = 'M13.2708 11.1459L11.9792 9.85419C12.0347 9.32641 11.875 8.
 // eye.svg
 const showIconPath = 'M10 13.5C10.972 13.5 11.7983 13.1597 12.479 12.479C13.1597 11.7983 13.5 10.972 13.5 10C13.5 9.028 13.1597 8.20167 12.479 7.521C11.7983 6.84033 10.972 6.5 10 6.5C9.028 6.5 8.20167 6.84033 7.521 7.521C6.84033 8.20167 6.5 9.028 6.5 10C6.5 10.972 6.84033 11.7983 7.521 12.479C8.20167 13.1597 9.028 13.5 10 13.5ZM10 12C9.44467 12 8.97233 11.8057 8.583 11.417C8.19433 11.0277 8 10.5553 8 10C8 9.44467 8.19433 8.97233 8.583 8.583C8.97233 8.19433 9.44467 8 10 8C10.5553 8 11.0277 8.19433 11.417 8.583C11.8057 8.97233 12 9.44467 12 10C12 10.5553 11.8057 11.0277 11.417 11.417C11.0277 11.8057 10.5553 12 10 12ZM10 16C8.014 16 6.20833 15.455 4.583 14.365C2.95833 13.2743 1.764 11.8193 1 10C1.764 8.18067 2.95833 6.72567 4.583 5.635C6.20833 4.545 8.014 4 10 4C11.986 4 13.7917 4.545 15.417 5.635C17.0417 6.72567 18.236 8.18067 19 10C18.236 11.8193 17.0417 13.2743 15.417 14.365C13.7917 15.455 11.986 16 10 16ZM10 14.5C11.5553 14.5 12.9927 14.0973 14.312 13.292C15.632 12.486 16.646 11.3887 17.354 10C16.646 8.61133 15.632 7.514 14.312 6.708C12.9927 5.90267 11.5553 5.5 10 5.5C8.44467 5.5 7.00733 5.90267 5.688 6.708C4.368 7.514 3.354 8.61133 2.646 10C3.354 11.3887 4.368 12.486 5.688 13.292C7.00733 14.0973 8.44467 14.5 10 14.5Z';
 export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    groupExpansionSetting;
-    groupExpansionState;
-    groupHiddenState;
     flameChartDelegate;
     chartViewport;
     dataProvider;
@@ -218,6 +215,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #canvasBoundingClientRect = null;
     #selectedElementOutlineEnabled = true;
     #indexToDrawOverride = new Map();
+    #persistedGroupConfig = null;
     constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
         super(true);
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
@@ -227,9 +225,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         if (typeof optionalConfig.selectedElementOutline === 'boolean') {
             this.#selectedElementOutlineEnabled = optionalConfig.selectedElementOutline;
         }
-        this.groupExpansionSetting = optionalConfig.groupExpansionSetting;
-        this.groupExpansionState = optionalConfig.groupExpansionSetting?.get() || {};
-        this.groupHiddenState = {};
         this.flameChartDelegate = flameChartDelegate;
         // The ChartViewport has its own built-in ruler for when the user holds
         // shift and moves the mouse. We want to disable that if we are within the
@@ -971,10 +966,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         const group = groups[groupIndex];
         group.expanded = setExpanded;
-        this.groupExpansionState[group.name] = group.expanded;
-        if (this.groupExpansionSetting) {
-            this.groupExpansionSetting.set(this.groupExpansionState);
-        }
         this.updateLevelPositions();
         this.updateHighlight();
         if (!group.expanded) {
@@ -991,6 +982,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.updateHeight();
         this.draw();
+        this.#notifyProviderOfConfigurationChange();
         this.scrollGroupIntoView(groupIndex);
         // We only want to read expanded/collapsed state on user inputted expand/collapse
         if (!propagatedExpand) {
@@ -1025,6 +1017,39 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateHighlight();
         this.updateHeight();
         this.draw();
+        this.#notifyProviderOfConfigurationChange();
+    }
+    #notifyProviderOfConfigurationChange() {
+        if (!this.#groupTreeRoot) {
+            return;
+        }
+        if (!this.dataProvider.handleTrackConfigurationChange) {
+            return;
+        }
+        const groups = this.rawTimelineData?.groups;
+        if (!groups) {
+            return;
+        }
+        const sortedGroupIndexes = this.#getVisualOrderOfGroupIndexes(this.#groupTreeRoot);
+        this.dataProvider.handleTrackConfigurationChange(groups, sortedGroupIndexes);
+    }
+    /**
+     * Walks the tree in DFS to generate the visual order of the groups.
+     */
+    #getVisualOrderOfGroupIndexes(root) {
+        const sortedGroupIndexes = [];
+        function traverse(node) {
+            if (node.index !== -1) {
+                // The first root is a fake parent node that we do not render, we don't
+                // want to include this in the sorted list.
+                sortedGroupIndexes.push(node.index);
+            }
+            for (const child of node.children) {
+                traverse(child);
+            }
+        }
+        traverse(root);
+        return sortedGroupIndexes;
     }
     moveGroupDown(groupIndex) {
         if (groupIndex < 0) {
@@ -1051,6 +1076,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.updateHighlight();
         this.updateHeight();
         this.draw();
+        this.#notifyProviderOfConfigurationChange();
     }
     hideGroup(groupIndex) {
         this.#toggleGroupHiddenState(groupIndex, /* hidden= */ true);
@@ -1071,15 +1097,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         const group = groups[groupIndex];
         group.hidden = hidden;
-        // We need to store this state again because somehow timelineData() is
-        // called multiple times when rendering the flame chart, and timelineData()
-        // will overwrite the groups with the data from |dataProvider|.
-        // So we need this groupHiddenState to reapply hidden state in the processTimelineData()
-        this.groupHiddenState[group.name] = group.hidden;
         this.updateLevelPositions();
         this.updateHighlight();
         this.updateHeight();
         this.draw();
+        this.#notifyProviderOfConfigurationChange();
     }
     modifyTree(treeAction, index) {
         const data = this.timelineData();
@@ -1697,17 +1719,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         // So we first do a preorder traversal to get an array of GroupIndex. And then based on the visual index we got
         // before, we can get the real group index.
         if (this.#groupTreeRoot) {
-            const sortedGroupIndexes = [];
-            function traverse(root) {
-                sortedGroupIndexes.push(root.index);
-                for (const child of root.children) {
-                    traverse(child);
-                }
-            }
-            traverse(this.#groupTreeRoot);
-            // Skip the one whose index is -1, because we added to represent the top
-            // level to be the parent of all groups.
-            sortedGroupIndexes.shift();
+            const sortedGroupIndexes = this.#getVisualOrderOfGroupIndexes(this.#groupTreeRoot);
             // This shouldn't happen, because the tree should have the fake root and all groups. Add a sanity check to avoid
             // error.
             if (sortedGroupIndexes.length !== groups.length) {
@@ -2899,14 +2911,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.timelineLevels = levelIndexes;
         const groups = this.rawTimelineData.groups || [];
         for (let i = 0; i < groups.length; ++i) {
-            const expanded = this.groupExpansionState[groups[i].name];
-            const hidden = this.groupHiddenState[groups[i].name];
-            if (expanded !== undefined) {
-                groups[i].expanded = expanded;
-            }
-            if (hidden !== undefined) {
-                groups[i].hidden = hidden;
-            }
+            const expanded = groups[i].expanded ?? this.#persistedGroupConfig?.[i].expanded ?? false;
+            const hidden = groups[i].hidden ?? this.#persistedGroupConfig?.[i].hidden ?? false;
+            groups[i].expanded = expanded;
+            groups[i].hidden = hidden;
         }
         if (!this.#groupTreeRoot) {
             this.#groupTreeRoot = this.buildGroupTree(groups);
@@ -2934,6 +2942,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             // timeline data is a real new one, then please call |reset()| before rendering.
             this.updateGroupTree(groups, this.#groupTreeRoot);
         }
+        // If we have persisted track config, apply it. This method can get called when there is no timeline data, so we check for that.
+        // It shouldn't happen, but if the length of the persisted config does not match, we bail, rather than apply some invalid state.
+        if (this.#persistedGroupConfig && groups.length > 0 && this.#groupTreeRoot &&
+            this.#persistedGroupConfig.length === groups.length) {
+            this.#reOrderGroupsBasedOnPersistedConfig(this.#persistedGroupConfig, this.#groupTreeRoot);
+        }
         this.updateLevelPositions();
         this.updateHeight();
         // If this is a new trace, we will call the reset()(See TimelineFlameChartView > setModel()), which will set the
@@ -2945,6 +2959,26 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         this.keyboardFocusedGroup = this.selectedGroupIndex;
         this.flameChartDelegate.updateSelectedGroup(this, timelineData.selectedGroup);
+    }
+    /**
+     * If we find persisted configuration, we need to update the tree so the
+     * children in the tree are ordered in the way they were ordered the last time
+     * the user viewed this trace.
+     */
+    #reOrderGroupsBasedOnPersistedConfig(persistedConfig, root) {
+        function traverseAndOrderChildren(node) {
+            if (node.children.length) {
+                // Sort the children based on their visual index, meaning that the tree
+                // structure is updated to reflect what the stored configuration shows.
+                node.children.sort((a, b) => {
+                    const aIndex = persistedConfig[a.index].visualIndex;
+                    const bIndex = persistedConfig[b.index].visualIndex;
+                    return aIndex - bIndex;
+                });
+            }
+            node.children.forEach(traverseAndOrderChildren);
+        }
+        traverseAndOrderChildren(root);
     }
     /**
      * Builds a tree node for a group. For each group the start level is inclusive and the end level is exclusive.
@@ -3397,6 +3431,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.#canvasBoundingClientRect = null;
         this.scheduleUpdate();
     }
+    setPersistedConfig(config) {
+        this.#persistedGroupConfig = config;
+    }
     update() {
         if (!this.timelineData()) {
             return;
@@ -3429,6 +3466,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.highlightedEntryIndex = -1;
         this.selectedEntryIndex = -1;
         this.selectedGroupIndex = -1;
+        this.#persistedGroupConfig = null;
     }
     scheduleUpdate() {
         this.chartViewport.scheduleUpdate();

@@ -55,7 +55,6 @@ export interface FlameChartDelegate {
      */
     containingElement?: () => HTMLElement;
 }
-type GroupExpansionState = Record<string, boolean>;
 interface GroupTreeNode {
     index: number;
     nestingLevel: number;
@@ -70,7 +69,6 @@ export interface OptionalFlameChartConfig {
      * system, so we disable the built in one.
      */
     selectedElementOutline?: boolean;
-    groupExpansionSetting?: Common.Settings.Setting<GroupExpansionState>;
     /**
      * The element to use when populating and positioning the mouse tooltip.
      */
@@ -115,9 +113,6 @@ declare const FlameChart_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class FlameChart extends FlameChart_base implements Calculator, ChartViewportDelegate {
     #private;
-    private readonly groupExpansionSetting?;
-    private groupExpansionState;
-    private groupHiddenState;
     private readonly flameChartDelegate;
     private chartViewport;
     private dataProvider;
@@ -475,6 +470,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private updateBoundaries;
     private updateHeight;
     onResize(): void;
+    setPersistedConfig(config: PersistedGroupConfig[]): void;
     update(): void;
     reset(): void;
     scheduleUpdate(): void;
@@ -566,10 +562,16 @@ export interface DataProviderSearchResult {
     provider: 'main' | 'network' | 'other';
 }
 export interface FlameChartDataProvider {
+    setPersistedGroupConfigSetting?(setting: Common.Settings.Setting<PersistedConfigPerTrace>): void;
     minimumBoundary(): number;
     totalTime(): number;
     formatValue(value: number, precision?: number): string;
     maxStackDepth(): number;
+    /**
+     * Construct the data for the FlameChart. Note that this method is called
+     * multiple times. It is expected that the implementor cache the data
+     * aggressively and only rebuild if the flag is passed.
+     */
     timelineData(rebuild?: boolean): FlameChartTimelineData | null;
     preparePopoverElement(entryIndex: number): Element | null;
     preparePopoverForCollapsedArrow?(entryIndex: number): Element | null;
@@ -595,6 +597,12 @@ export interface FlameChartDataProvider {
     handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     groupForEvent?(entryIndex: number): Group | null;
     getDrawOverride?(entryIndex: number): DrawOverride | undefined;
+    /**
+     * Used when the user re-orders / hides / shows tracks to notify the data
+     * provider. The data provider can choose to store this data in order to have
+     * the user's view persisted in memory and/or to disk when the trace is saved.
+     */
+    handleTrackConfigurationChange?(groups: readonly Group[], indexesInVisualOrder: number[]): void;
 }
 export interface FlameChartMarker {
     startTime(): number;
@@ -701,4 +709,22 @@ export interface GroupStyle {
     useFirstLineForOverview?: boolean;
     useDecoratorsForOverview?: boolean;
 }
+export interface PersistedGroupConfig {
+    hidden: boolean;
+    expanded: boolean;
+    originalIndex: number;
+    visualIndex: number;
+}
+/**
+ * Used to persist into memory the configuration, so that if the user imports a
+ * new trace and then navigates back to the old one, the configuration is
+ * restored.
+ * The key here is the `traceBounds.min` time from the trace. Given this is
+ * monotonic, the chances of it clashing within traces the user records are very
+ * low. It could happen, but we accept that this is best effort.
+ * Note: the value type includes `undefined` to make sure that anyone can't do
+ * value[traceMin] and not check that it exists. If the user has not manually
+ * edited the track config, it will not be stored.
+ */
+export type PersistedConfigPerTrace = Record<Trace.Types.Timing.Micro, PersistedGroupConfig[] | undefined>;
 export {};

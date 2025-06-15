@@ -5892,6 +5892,18 @@ export declare namespace Emulation {
         PauseIfNetworkFetchesPending = "pauseIfNetworkFetchesPending"
     }
     /**
+     * Used to specify User Agent form-factor values. See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors
+     */
+    const enum UserAgentFormFactor {
+        Desktop = "Desktop",
+        Automotive = "Automotive",
+        Mobile = "Mobile",
+        Tablet = "Tablet",
+        XR = "XR",
+        EInk = "EInk",
+        Watch = "Watch"
+    }
+    /**
      * Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
      */
     interface UserAgentBrandVersion {
@@ -5919,6 +5931,7 @@ export declare namespace Emulation {
         mobile: boolean;
         bitness?: string;
         wow64?: boolean;
+        formFactors?: UserAgentFormFactor[];
     }
     /**
      * Used to specify sensor types to emulate.
@@ -9063,6 +9076,11 @@ export declare namespace Network {
          */
         outerResponse: Response;
         /**
+         * Whether network response for the signed exchange was accompanied by
+         * extra headers.
+         */
+        hasExtraInfo: boolean;
+        /**
          * Information about the signed exchange header.
          */
         header?: SignedExchangeHeader;
@@ -11382,6 +11400,7 @@ export declare namespace Page {
         JoinAdInterestGroup = "join-ad-interest-group",
         KeyboardMap = "keyboard-map",
         LanguageDetector = "language-detector",
+        LanguageModel = "language-model",
         LocalFonts = "local-fonts",
         LocalNetworkAccess = "local-network-access",
         Magnetometer = "magnetometer",

@@ -7,6 +7,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import thirdPartyTreeViewStyles from './thirdPartyTreeView.css.js';
 import * as TimelineTreeView from './TimelineTreeView.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
@@ -45,6 +46,15 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
          * For 3P table, we don't use this feature.
          */
         this.dataGrid.expandNodesWhenArrowing = false;
+    }
+    wasShown() {
+        super.wasShown();
+        this.registerRequiredCSS(thirdPartyTreeViewStyles);
+    }
+    setModelWithEvents(selectedEvents, parsedTrace, entityMappings) {
+        super.setModelWithEvents(selectedEvents, parsedTrace, entityMappings);
+        const hasEvents = Boolean(selectedEvents && selectedEvents.length > 0);
+        this.element.classList.toggle('empty-table', !hasEvents);
     }
     buildTree() {
         const parsedTrace = this.parsedTrace();

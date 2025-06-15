@@ -12,8 +12,9 @@ export declare const enum MimeType {
 }
 /**
  * @returns true iff `mimeType` has textual content. Concretely we return true if:
- *   - `mimeType` starts with "text/"
- *   - `mimeType` ends with "+json" or "+xml"
+ *   - `mimeType` starts with "text/" or "multipart/"
+ *   - `mimeType` ends with "+xml"
+ *   - `mimeType` contains "json"
  *   - if `mimeType` is one of a predefined list textual mime types.
  */
 export declare function isTextType(mimeType: string): boolean;

@@ -15,6 +15,7 @@ import { NetworkTrackAppender } from './NetworkTrackAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
 import { selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
+import { buildPersistedConfig, keyForTraceConfig } from './TrackConfiguration.js';
 import * as TimelineUtils from './utils/utils.js';
 export class TimelineFlameChartNetworkDataProvider {
     #minimumBoundary = 0;
@@ -30,6 +31,7 @@ export class TimelineFlameChartNetworkDataProvider {
     #lastInitiatorEntry = -1;
     #lastInitiatorsData = [];
     #entityMapper = null;
+    #persistedGroupConfigSetting = null;
     constructor() {
         this.reset();
     }
@@ -389,6 +391,28 @@ export class TimelineFlameChartNetworkDataProvider {
             initiatorsData: this.#timelineDataInternal.initiatorsData,
             entryDecorations: this.#timelineDataInternal.entryDecorations,
         });
+    }
+    /**
+     * Note that although we use the same mechanism to track configuration
+     * changes in the Network part of the timeline, we only really use it to track
+     * the expanded state because the user cannot re-order or hide/show tracks in
+     * here.
+     */
+    handleTrackConfigurationChange(groups, indexesInVisualOrder) {
+        if (!this.#persistedGroupConfigSetting) {
+            return;
+        }
+        if (!this.#parsedTrace) {
+            return;
+        }
+        const persistedDataForTrace = buildPersistedConfig(groups, indexesInVisualOrder);
+        const traceKey = keyForTraceConfig(this.#parsedTrace);
+        const setting = this.#persistedGroupConfigSetting.get();
+        setting[traceKey] = persistedDataForTrace;
+        this.#persistedGroupConfigSetting.set(setting);
+    }
+    setPersistedGroupConfigSetting(setting) {
+        this.#persistedGroupConfigSetting = setting;
     }
     preferredHeight() {
         if (!this.#networkTrackAppender || this.#maxLevel === 0) {

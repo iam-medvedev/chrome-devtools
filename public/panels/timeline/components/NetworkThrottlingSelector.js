@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
+import '../../../ui/components/icon_button/icon_button.js';
 import '../../../ui/components/menus/menus.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -141,11 +141,9 @@ export class NetworkThrottlingSelector extends HTMLElement {
         const selectedConditionsKey = this.#keyForNetworkConditions(this.#currentConditions);
         let recommendedInfoEl;
         if (this.#recommendedConditions && this.#currentConditions === SDK.NetworkManager.NoThrottlingConditions) {
-            recommendedInfoEl = html `<devtools-button
+            recommendedInfoEl = html `<devtools-icon
         title=${i18nString(UIStrings.recommendedThrottlingReason)}
-        .iconName=${'info'}
-        .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-      ></devtools-button>`;
+        name=info></devtools-icon>`;
         }
         // clang-format off
         /* eslint-disable rulesdir/no-deprecated-component-usages */

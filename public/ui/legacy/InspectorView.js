@@ -214,6 +214,7 @@ export class InspectorView extends VBox {
             this.tabbedPane.setAutoSelectFirstItemOnShow(false);
         }
         this.drawerSplitWidget.setMainWidget(this.tabbedPane);
+        this.drawerSplitWidget.setDefaultFocusedChild(this.tabbedPane);
         this.keyDownBound = this.keyDown.bind(this);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.ShowPanel, showPanel.bind(this));
         function showPanel({ data: panelName }) {

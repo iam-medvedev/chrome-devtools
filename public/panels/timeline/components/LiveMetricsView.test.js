@@ -725,7 +725,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.match(envRecs[1].textContent, /Slow 4G/);
                 const recNotice = view.shadowRoot.querySelector('.environment-option devtools-network-throttling-selector')
-                    ?.shadowRoot.querySelector('devtools-button');
+                    ?.shadowRoot.querySelector('devtools-icon[name="info"]');
                 assert.exists(recNotice);
             });
             it('should hide if no RTT data', async () => {
@@ -737,7 +737,7 @@ describeWithMockConnection('LiveMetricsView', () => {
                 assert.strictEqual(envRecs[0].textContent, '30% mobile, 60% desktop');
                 assert.strictEqual(envRecs[1].textContent, 'Not enough data');
                 const recNotice = view.shadowRoot.querySelector('.environment-option devtools-network-throttling-selector')
-                    ?.shadowRoot.querySelector('devtools-button');
+                    ?.shadowRoot.querySelector('devtools-icon[name="info"]');
                 assert.notExists(recNotice);
             });
             it('should suggest no throttling for very low latency', async () => {

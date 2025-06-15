@@ -55,7 +55,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           </div>
           <h1>${lockedString(UIStringsNotTranslate.Explore)}</h1>
           <p>
-            To chat about an item, right-click and select
+            To chat about an item, right-click and select${' '}
             <strong>Ask AI</strong>.
           </p>
         </div>
@@ -106,7 +106,7 @@ export class ExploreWidget extends UI.Widget.Widget {
     performUpdate() {
         const config = Root.Runtime.hostConfig;
         const featureCards = [];
-        if (config.devToolsFreestyler?.enabled) {
+        if (config.devToolsFreestyler?.enabled && UI.ViewManager.ViewManager.instance().hasView('elements')) {
             featureCards.push({
                 icon: 'brush-2',
                 heading: 'CSS styles',
@@ -118,7 +118,7 @@ export class ExploreWidget extends UI.Widget.Widget {
                 text: 'to ask about CSS styles'
             });
         }
-        if (config.devToolsAiAssistanceNetworkAgent?.enabled) {
+        if (config.devToolsAiAssistanceNetworkAgent?.enabled && UI.ViewManager.ViewManager.instance().hasView('network')) {
             featureCards.push({
                 icon: 'arrow-up-down',
                 heading: 'Network',
@@ -130,7 +130,7 @@ export class ExploreWidget extends UI.Widget.Widget {
                 text: 'to ask about a request\'s details'
             });
         }
-        if (config.devToolsAiAssistanceFileAgent?.enabled) {
+        if (config.devToolsAiAssistanceFileAgent?.enabled && UI.ViewManager.ViewManager.instance().hasView('sources')) {
             featureCards.push({
                 icon: 'document',
                 heading: 'Files',
@@ -142,7 +142,8 @@ export class ExploreWidget extends UI.Widget.Widget {
                 text: 'to ask about a file\'s content'
             });
         }
-        if (config.devToolsAiAssistancePerformanceAgent?.enabled) {
+        if (config.devToolsAiAssistancePerformanceAgent?.enabled &&
+            UI.ViewManager.ViewManager.instance().hasView('timeline')) {
             featureCards.push({
                 icon: 'performance',
                 heading: 'Performance',

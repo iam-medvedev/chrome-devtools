@@ -18,6 +18,7 @@ export default `/*
   color: var(--sys-color-on-surface);
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 }
 
 .object-properties-section li {
@@ -65,7 +66,6 @@ export default `/*
 }
 
 .name-and-value {
-  overflow: hidden;
   line-height: 16px;
   display: flex;
   white-space: nowrap;

@@ -41,13 +41,13 @@ export function displayNameForURL(url) {
     if (!url) {
         return '';
     }
-    const resource = resourceForURL(url);
-    if (resource) {
-        return resource.displayName;
-    }
     const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
     if (uiSourceCode) {
         return uiSourceCode.displayName();
+    }
+    const resource = resourceForURL(url);
+    if (resource) {
+        return resource.displayName;
     }
     const inspectedURL = SDK.TargetManager.TargetManager.instance().inspectedURL();
     if (!inspectedURL) {

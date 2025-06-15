@@ -345,7 +345,8 @@ export class EntryLabelOverlay extends HTMLElement {
         connector.setAttribute('stroke-width', '2');
         // Draw the circle at the bottom of the connector
         circle.setAttribute('cx', EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
-        circle.setAttribute('cy', EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
+        // Add one to the offset of the circle which positions it perfectly centered on the border of the overlay.
+        circle.setAttribute('cy', (EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT + 1).toString());
         circle.setAttribute('r', '3');
         circle.setAttribute('fill', connectorColor);
     }
@@ -560,10 +561,11 @@ export class EntryLabelOverlay extends HTMLElement {
             this.#currAIButtonState = "hidden" /* AIButtonState.HIDDEN */;
         }
         else {
-            // To verify whether AI can be used, check if the user is logged in, over 18, in a supported
-            // location and offline. If the user is not logged in, `blockedByAge` will return true.
-            const aiAvailable = !Root.Runtime.hostConfig.aidaAvailability?.blockedByAge &&
-                !Root.Runtime.hostConfig.aidaAvailability?.blockedByGeo && !navigator.onLine === false;
+            // To verify whether AI can be used, check if aida is available, the user is logged in, over 18, in a supported
+            // location and offline.
+            const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enabled &&
+                !Root.Runtime.hostConfig.aidaAvailability?.blockedByAge &&
+                !Root.Runtime.hostConfig.aidaAvailability?.blockedByGeo && navigator.onLine;
             if (aiAvailable) {
                 this.#currAIButtonState = "enabled" /* AIButtonState.ENABLED */;
             }
