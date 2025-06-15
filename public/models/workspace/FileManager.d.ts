@@ -1,6 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
-interface SaveCallbackParam {
+export interface SaveCallbackParam {
     fileSystemPath?: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
 }
 export declare class FileManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
@@ -30,4 +30,3 @@ export declare const enum Events {
 export interface EventTypes {
     [Events.APPENDED_TO_URL]: string;
 }
-export {};

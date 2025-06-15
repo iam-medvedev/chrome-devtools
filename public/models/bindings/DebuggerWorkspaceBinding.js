@@ -15,13 +15,11 @@ import { ResourceScriptMapping } from './ResourceScriptMapping.js';
 let debuggerWorkspaceBindingInstance;
 export class DebuggerWorkspaceBinding {
     resourceMapping;
-    #sourceMappings;
     #debuggerModelToData;
     #liveLocationPromises;
     pluginManager;
     constructor(resourceMapping, targetManager) {
         this.resourceMapping = resourceMapping;
-        this.#sourceMappings = [];
         this.#debuggerModelToData = new Map();
         targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
         targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
@@ -46,15 +44,6 @@ export class DebuggerWorkspaceBinding {
     }
     static removeInstance() {
         debuggerWorkspaceBindingInstance = undefined;
-    }
-    addSourceMapping(sourceMapping) {
-        this.#sourceMappings.push(sourceMapping);
-    }
-    removeSourceMapping(sourceMapping) {
-        const index = this.#sourceMappings.indexOf(sourceMapping);
-        if (index !== -1) {
-            this.#sourceMappings.splice(index, 1);
-        }
     }
     async computeAutoStepRanges(mode, callFrame) {
         function contained(location, range) {
@@ -168,12 +157,6 @@ export class DebuggerWorkspaceBinding {
         return liveLocation;
     }
     async rawLocationToUILocation(rawLocation) {
-        for (const sourceMapping of this.#sourceMappings) {
-            const uiLocation = sourceMapping.rawLocationToUILocation(rawLocation);
-            if (uiLocation) {
-                return uiLocation;
-            }
-        }
         const uiLocation = await this.pluginManager.rawLocationToUILocation(rawLocation);
         if (uiLocation) {
             return uiLocation;
@@ -216,12 +199,6 @@ export class DebuggerWorkspaceBinding {
         });
     }
     async uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber) {
-        for (const sourceMapping of this.#sourceMappings) {
-            const locations = sourceMapping.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
-            if (locations.length) {
-                return locations;
-            }
-        }
         const locations = await this.pluginManager.uiLocationToRawLocations(uiSourceCode, lineNumber, columnNumber);
         if (locations) {
             return locations;
@@ -255,12 +232,6 @@ export class DebuggerWorkspaceBinding {
      *          the {@link uiSourceCode} does not belong to this instance.
      */
     async uiLocationRangeToRawLocationRanges(uiSourceCode, textRange) {
-        for (const sourceMapping of this.#sourceMappings) {
-            const ranges = sourceMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
-            if (ranges) {
-                return ranges;
-            }
-        }
         const ranges = await this.pluginManager.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
         if (ranges) {
             return ranges;

@@ -207,29 +207,30 @@ describeWithEnvironment('FlameChart', () => {
     });
     describe('updateLevelPositions', () => {
         class UpdateLevelPositionsTestProvider extends FakeFlameChartProvider {
+            static data = PerfUI.FlameChart.FlameChartTimelineData.create({
+                entryLevels: [0, 1, 2],
+                entryStartTimes: [5, 60, 80],
+                entryTotalTimes: [50, 10, 10],
+                groups: [
+                    {
+                        name: 'Test Group 0',
+                        startLevel: 0,
+                        style: defaultGroupStyle,
+                    },
+                    {
+                        name: 'Test Group 1',
+                        startLevel: 1,
+                        style: defaultGroupStyle,
+                    },
+                    {
+                        name: 'Test Group 2',
+                        startLevel: 2,
+                        style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
+                    },
+                ],
+            });
             timelineData() {
-                return PerfUI.FlameChart.FlameChartTimelineData.create({
-                    entryLevels: [0, 1, 2],
-                    entryStartTimes: [5, 60, 80],
-                    entryTotalTimes: [50, 10, 10],
-                    groups: [
-                        {
-                            name: 'Test Group 0',
-                            startLevel: 0,
-                            style: defaultGroupStyle,
-                        },
-                        {
-                            name: 'Test Group 1',
-                            startLevel: 1,
-                            style: defaultGroupStyle,
-                        },
-                        {
-                            name: 'Test Group 2',
-                            startLevel: 2,
-                            style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
-                        },
-                    ],
-                });
+                return UpdateLevelPositionsTestProvider.data;
             }
         }
         it('Calculate the level position correctly', () => {
@@ -309,30 +310,36 @@ describeWithEnvironment('FlameChart', () => {
         });
         describe('hide/unhide nested group', () => {
             class UpdateLevelPositionsWithNestedGroupTestProvider extends FakeFlameChartProvider {
+                // Define this data statically; otherwise on each call to
+                // timelineData() it is recreated and we lose any state such as the
+                // group hidden / expanded state. This reproduces what we do in
+                // production too; calculating timelineData() is expensive so we want
+                // to do it as infrequently as possible.
+                static data = PerfUI.FlameChart.FlameChartTimelineData.create({
+                    entryLevels: [0, 1, 2],
+                    entryStartTimes: [5, 60, 80],
+                    entryTotalTimes: [50, 10, 10],
+                    groups: [
+                        {
+                            name: 'Test Group 0',
+                            startLevel: 0,
+                            style: defaultGroupStyle,
+                        },
+                        {
+                            name: 'Test Group 1',
+                            startLevel: 1,
+                            style: defaultGroupStyle,
+                        },
+                        // Make the nested group always expanded for better testing the nested case
+                        {
+                            name: 'Test Group 2',
+                            startLevel: 2,
+                            style: { ...defaultGroupStyle, nestingLevel: 1 },
+                        },
+                    ],
+                });
                 timelineData() {
-                    return PerfUI.FlameChart.FlameChartTimelineData.create({
-                        entryLevels: [0, 1, 2],
-                        entryStartTimes: [5, 60, 80],
-                        entryTotalTimes: [50, 10, 10],
-                        groups: [
-                            {
-                                name: 'Test Group 0',
-                                startLevel: 0,
-                                style: defaultGroupStyle,
-                            },
-                            {
-                                name: 'Test Group 1',
-                                startLevel: 1,
-                                style: defaultGroupStyle,
-                            },
-                            // Make the nested group always expanded for better testing the nested case
-                            {
-                                name: 'Test Group 2',
-                                startLevel: 2,
-                                style: { ...defaultGroupStyle, nestingLevel: 1 },
-                            },
-                        ],
-                    });
+                    return UpdateLevelPositionsWithNestedGroupTestProvider.data;
                 }
             }
             it('Calculate the level position correctly after hide and unhide a group with nested group', () => {

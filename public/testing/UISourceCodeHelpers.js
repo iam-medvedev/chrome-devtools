@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../core/common/common.js';
 import * as Platform from '../core/platform/platform.js';
-import * as SDK from '../core/sdk/sdk.js';
 import * as Bindings from '../models/bindings/bindings.js';
 import * as Persistence from '../models/persistence/persistence.js';
 import * as TextUtils from '../models/text_utils/text_utils.js';
@@ -86,17 +85,5 @@ export function setupMockedUISourceCode(url = 'https://example.com/') {
     const contentTypeStub = sinon.createStubInstance(Common.ResourceType.ResourceType);
     const uiSourceCode = new Workspace.UISourceCode.UISourceCode(projectStub, urlStringTagExample, contentTypeStub);
     return { sut: uiSourceCode, projectStub, contentTypeStub };
-}
-export function createFakeScriptMapping(debuggerModel, uiSourceCode, uiLineNumber, scriptId) {
-    const sdkLocation = new SDK.DebuggerModel.Location(debuggerModel, scriptId, 13);
-    const uiLocation = new Workspace.UISourceCode.UILocation(uiSourceCode, uiLineNumber);
-    const mapping = {
-        rawLocationToUILocation: (_) => uiLocation,
-        uiLocationToRawLocations: (_uiSourceCode, _lineNumber, _columnNumber) => [sdkLocation],
-        uiLocationRangeToRawLocationRanges: (_uiSourceCode, _textRange) => {
-            throw new Error('Not implemented');
-        },
-    };
-    return mapping;
 }
 //# sourceMappingURL=UISourceCodeHelpers.js.map

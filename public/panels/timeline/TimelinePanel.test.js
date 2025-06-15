@@ -6,7 +6,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -123,6 +123,96 @@ describeWithEnvironment('TimelinePanel', function () {
         const annotationsAfterToggle = timeline.getFlameChart().overlays().allOverlays().filter(e => e.type === 'TIME_RANGE');
         assert.exists(annotationsAfterToggle);
         assert.isAbove(annotationsAfterToggle.length, 0);
+    });
+    it('clears out AI related contexts when the user presses "Clear"', async () => {
+        const context = UI.Context.Context.instance();
+        const { AICallTree, InsightAIContext } = Timeline.Utils;
+        const callTree = sinon.createStubInstance(AICallTree.AICallTree);
+        const insight = sinon.createStubInstance(InsightAIContext.ActiveInsight);
+        context.setFlavor(AICallTree.AICallTree, callTree);
+        context.setFlavor(InsightAIContext.ActiveInsight, insight);
+        const clearButton = timeline.element.querySelector('[aria-label="Clear"]');
+        assert.isOk(clearButton);
+        dispatchClickEvent(clearButton);
+        assert.isNull(context.flavor(AICallTree.AICallTree));
+        assert.isNull(context.flavor(InsightAIContext.ActiveInsight));
+    });
+    it('saves visual track config metadata to disk if the user has modified it', async function () {
+        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+        await timeline.loadingComplete(events, null, null);
+        const flameChartView = timeline.getFlameChart();
+        const FAKE_METADATA = {
+            main: [{ hidden: true, expanded: false, originalIndex: 0, visualIndex: 0 }],
+            network: [{ hidden: false, expanded: false, originalIndex: 0, visualIndex: 0 }],
+        };
+        sinon.stub(flameChartView, 'getPersistedConfigMetadata').callsFake(() => {
+            return FAKE_METADATA;
+        });
+        const fileManager = Workspace.FileManager.FileManager.instance();
+        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
+            return Promise.resolve({});
+        });
+        const closeSpy = sinon.stub(fileManager, 'close');
+        await timeline.saveToFile({
+            savingEnhancedTrace: false,
+            addModifications: true,
+        });
+        sinon.assert.calledOnce(saveSpy);
+        sinon.assert.calledOnce(closeSpy);
+        const [fileName, traceAsString] = saveSpy.getCall(0).args;
+        // Matches Trace-20250613T132120.json
+        assert.match(fileName, /Trace-[\d|T]+\.json$/);
+        // easier to assert on the data if we parse it back
+        const parsedData = JSON.parse(traceAsString);
+        assert.deepEqual(parsedData.metadata.visualTrackConfig, FAKE_METADATA);
+    });
+    it('does not save visual track config if the user does not save with modifications', async function () {
+        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+        await timeline.loadingComplete(events, null, null);
+        const flameChartView = timeline.getFlameChart();
+        const FAKE_METADATA = {
+            main: [{ hidden: true, expanded: false, originalIndex: 0, visualIndex: 0 }],
+            network: [{ hidden: false, expanded: false, originalIndex: 0, visualIndex: 0 }],
+        };
+        sinon.stub(flameChartView, 'getPersistedConfigMetadata').callsFake(() => {
+            return FAKE_METADATA;
+        });
+        const fileManager = Workspace.FileManager.FileManager.instance();
+        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
+            return Promise.resolve({});
+        });
+        sinon.stub(fileManager, 'close');
+        await timeline.saveToFile({
+            savingEnhancedTrace: false,
+            addModifications: false,
+        });
+        sinon.assert.calledOnce(saveSpy);
+        const [, traceAsString] = saveSpy.getCall(0).args;
+        // easier to assert on the data if we parse it back
+        const parsedData = JSON.parse(traceAsString);
+        assert.isUndefined(parsedData.metadata.visualTrackConfig);
+    });
+    it('does not save visual track config if the user has not made any', async function () {
+        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
+        await timeline.loadingComplete(events, null, null);
+        const flameChartView = timeline.getFlameChart();
+        sinon.stub(flameChartView, 'getPersistedConfigMetadata').callsFake(() => {
+            return { main: null, network: null };
+        });
+        const fileManager = Workspace.FileManager.FileManager.instance();
+        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
+            return Promise.resolve({});
+        });
+        sinon.stub(fileManager, 'close');
+        await timeline.saveToFile({
+            savingEnhancedTrace: false,
+            addModifications: true,
+        });
+        sinon.assert.calledOnce(saveSpy);
+        const [, traceAsString] = saveSpy.getCall(0).args;
+        // easier to assert on the data if we parse it back
+        const parsedData = JSON.parse(traceAsString);
+        assert.isUndefined(parsedData.metadata.visualTrackConfig);
     });
 });
 //# sourceMappingURL=TimelinePanel.test.js.map

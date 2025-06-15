@@ -4,6 +4,7 @@
         "outDir": "."
     },
     "files": [
+        "thirdPartyTreeView.css.js",
         "timelineFlameChartView.css.js",
         "timelineFlamechartPopover.css.js",
         "timelineHistoryManager.css.js",

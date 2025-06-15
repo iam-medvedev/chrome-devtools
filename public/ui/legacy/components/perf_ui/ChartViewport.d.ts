@@ -6,6 +6,13 @@ export interface ChartViewportDelegate {
     update(): void;
 }
 export interface Config {
+    /**
+     * Configures if the Chart should show a vertical line at the position of the
+     * mouse cursor when the user holds the `Shift` key.
+     * The reason this is configurable is because within the Performance Panel
+     * we use our own overlays system for UI like this, so we do not need the
+     * ChartViewport to manage it.
+     */
     enableCursorElement: boolean;
 }
 export declare class ChartViewport extends UI.Widget.VBox {

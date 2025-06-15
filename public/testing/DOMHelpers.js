@@ -55,6 +55,8 @@ export const setupTestDOM = async () => {
         console.error('Non clean test state found!');
         await cleanTestDOM();
     }
+    // Tests are run in light mode by default.
+    setColorScheme('light');
     const newContainer = document.createElement('div');
     newContainer.id = TEST_CONTAINER_ID;
     // eslint-disable-next-line rulesdir/no-document-body-mutation
@@ -70,6 +72,8 @@ export const cleanTestDOM = async () => {
         removeChildren(previousContainer);
         previousContainer.remove();
     }
+    // Tests are run in light mode by default.
+    setColorScheme('light');
     await raf();
 };
 /**
@@ -287,5 +291,8 @@ export async function assertScreenshot(filename) {
     if (errorMessage) {
         throw new Error(errorMessage);
     }
+}
+export function setColorScheme(scheme) {
+    document.documentElement.classList.toggle('theme-with-dark-background', scheme === 'dark');
 }
 //# sourceMappingURL=DOMHelpers.js.map

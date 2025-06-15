@@ -24,8 +24,8 @@ export default `/*
 }
 
 .devtools-text-input:focus-visible {
-  outline: none;
-  border-color: var(--sys-color-state-focus-ring);
+  outline-offset: calc(-1 * var(--sys-size-1));
+  outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
 }
 
 .devtools-text-input::placeholder {

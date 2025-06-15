@@ -82,10 +82,6 @@ export default `/*
   text-align: inherit;
 }
 
-.ignore-listing-disabled .ignore-list-options {
-  opacity: 30%;
-}
-
 .list:has(.ignore-list-empty),
 .list:has(.ignore-list-edit-row),
 .list:has(.ignore-list-item) {

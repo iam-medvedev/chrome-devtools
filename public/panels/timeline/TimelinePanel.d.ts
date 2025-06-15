@@ -10,7 +10,15 @@ import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { TimelineMiniMap } from './TimelineMiniMap.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
-export declare class TimelinePanel extends UI.Panel.Panel implements Client, TimelineModeViewDelegate {
+declare const TimelinePanel_base: (new (...args: any[]) => {
+    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
+    addEventListener<T extends Events.IS_VIEWING_TRACE>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends Events.IS_VIEWING_TRACE>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends Events.IS_VIEWING_TRACE>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: Events.IS_VIEWING_TRACE): boolean;
+    dispatchEventToListeners<T extends Events.IS_VIEWING_TRACE>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+}) & typeof UI.Panel.Panel;
+export declare class TimelinePanel extends TimelinePanel_base implements Client, TimelineModeViewDelegate {
     #private;
     private readonly dropTarget;
     private readonly recordingOptionUIControls;
@@ -67,6 +75,7 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     loadFromTraceFile(traceFile: Trace.Types.File.TraceFile): void;
     getFlameChart(): TimelineFlameChartView;
     getMinimap(): TimelineMiniMap;
+    hasActiveTrace(): boolean;
     /**
      * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
      * DO NOT use this method within DevTools. It is marked as deprecated so
@@ -95,7 +104,18 @@ export declare class TimelinePanel extends UI.Panel.Panel implements Client, Tim
     private prepareToLoadTimeline;
     private createFileSelector;
     private contextMenu;
-    saveToFile(savingEnhancedTrace?: boolean, addModifications?: boolean): Promise<void>;
+    /**
+     * Saves a trace file to disk.
+     * Pass `config.savingEnhancedTrace === true` to include source maps in the resulting metadata.
+     * Pass `config.addModifications === true` to include user modifications to the trace file, which includes:
+     *      1. Annotations
+     *      2. Filtering / collapsing of the flame chart.
+     *      3. Visual track configuration (re-ordering or hiding tracks).
+     */
+    saveToFile(config: {
+        savingEnhancedTrace: boolean;
+        addModifications: boolean;
+    }): Promise<void>;
     showHistoryDropdown(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;
@@ -199,3 +219,10 @@ export declare class SelectedInsight {
     insight: TimelineComponents.Sidebar.ActiveInsight;
     constructor(insight: TimelineComponents.Sidebar.ActiveInsight);
 }
+export declare const enum Events {
+    IS_VIEWING_TRACE = "IsViewingTrace"
+}
+export interface EventTypes {
+    [Events.IS_VIEWING_TRACE]: boolean;
+}
+export {};

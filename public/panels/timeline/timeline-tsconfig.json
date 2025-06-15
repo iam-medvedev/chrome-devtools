@@ -74,6 +74,7 @@
     "../../../../../../front_end/panels/timeline/TimelineUIUtils.ts",
     "../../../../../../front_end/panels/timeline/TimingsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/TracingLayerTree.ts",
+    "../../../../../../front_end/panels/timeline/TrackConfiguration.ts",
     "../../../../../../front_end/panels/timeline/UIDevtoolsController.ts",
     "../../../../../../front_end/panels/timeline/UIDevtoolsUtils.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

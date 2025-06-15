@@ -186,6 +186,7 @@ export declare class TabbedPaneTab {
     private createCloseIconButton;
     private createPreviewIcon;
     private isCloseIconClicked;
+    private tabKeyDown;
     private tabClicked;
     private tabMouseDown;
     private tabMouseUp;

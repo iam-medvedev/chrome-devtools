@@ -2000,7 +2000,7 @@ export const NativeFunctions = [
     },
     {
         name: "read",
-        signatures: [["view"]],
+        signatures: [["view", "?options"]],
         receivers: ["ReadableStreamBYOBReader"]
     },
     {
@@ -2760,7 +2760,7 @@ export const NativeFunctions = [
     },
     {
         name: "getAll",
-        signatures: [["?query", "?count"]],
+        signatures: [["?query", "?count"], ["?query_or_options", "?count"]],
         receivers: ["IDBIndex", "IDBObjectStore"]
     },
     {
@@ -3011,7 +3011,7 @@ export const NativeFunctions = [
     },
     {
         name: "getAllKeys",
-        signatures: [["?query", "?count"]]
+        signatures: [["?query", "?count"], ["?query_or_options", "?count"]]
     },
     {
         name: "getKey",

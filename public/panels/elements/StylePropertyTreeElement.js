@@ -70,10 +70,6 @@ const UIStrings = {
      */
     copyAllDeclarations: 'Copy all declarations',
     /**
-     *@description  A context menu item in Styles panel to copy all the CSS changes
-     */
-    copyAllCSSChanges: 'Copy all CSS changes',
-    /**
      *@description A context menu item in Styles panel to view the computed CSS property value.
      */
     viewComputedValue: 'View computed value',
@@ -2119,11 +2115,6 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allDeclarationText);
         }, { jslogContext: 'copy-all-declarations' });
         contextMenu.clipboardSection().appendItem(i18nString(UIStrings.copyAllCssDeclarationsAsJs), this.copyAllCssDeclarationAsJs.bind(this), { jslogContext: 'copy-all-css-declarations-as-js' });
-        // TODO(changhaohan): conditionally add this item only when there are changes to copy
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.copyAllCSSChanges), async () => {
-            const allChanges = await this.parentPane().getFormattedChanges();
-            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(allChanges);
-        }, { jslogContext: 'copy-all-css-changes' });
         contextMenu.footerSection().appendItem(i18nString(UIStrings.viewComputedValue), () => {
             void this.viewComputedValue();
         }, { jslogContext: 'view-computed-value' });

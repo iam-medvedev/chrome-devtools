@@ -513,6 +513,7 @@ panels/timeline/TimelinePanel.test.js
 panels/timeline/TimelineSelection.test.js
 panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
+panels/timeline/TrackConfiguration.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/CPUThrottlingSelector.test.js
 panels/timeline/components/FieldSettingsDialog.test.js
@@ -672,10 +673,3 @@ ui/visual_logging/LoggingDriver.test.js
 ui/visual_logging/LoggingEvents.test.js
 ui/visual_logging/LoggingState.test.js
 ui/visual_logging/NonDomState.test.js
-../inspector_overlay/common.test.js
-../inspector_overlay/css_grid_label_helpers.test.js
-../inspector_overlay/highlight_common.test.js
-../inspector_overlay/highlight_flex_common.test.js
-../inspector_overlay/tool_highlight.test.js
-../inspector_overlay/tool_source_order.test.js
-../inspector_overlay/tool_window_controls.test.js

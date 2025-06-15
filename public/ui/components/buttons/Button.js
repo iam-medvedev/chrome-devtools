@@ -170,27 +170,6 @@ export class Button extends HTMLElement {
             this.toggled = !this.#props.toggled;
         }
     }
-    /**
-     * Handles "keydown" events on the internal `<button>` element.
-     *
-     * This callback stops propagation of "keydown" events for Enter and Space
-     * originating from the `<button>` element, to ensure that this custom element
-     * can safely be used within parent elements (such as the `TreeOutline`) that
-     * do have "keydown" handlers as well.
-     *
-     * Without this special logic, the Enter and Space events would be
-     * consumed by parent elements, and no "click" event would be generated from
-     * this button.
-     *
-     * @param event the "keydown" event.
-     * @see https://crbug.com/373168872
-     */
-    #onKeydown(event) {
-        if (event.key !== 'Enter' && event.key !== ' ') {
-            return;
-        }
-        event.stopPropagation();
-    }
     #isToolbarVariant() {
         return this.#props.variant === "toolbar" /* Variant.TOOLBAR */ || this.#props.variant === "primary_toolbar" /* Variant.PRIMARY_TOOLBAR */;
     }
@@ -252,8 +231,7 @@ export class Button extends HTMLElement {
                 .disabled=${this.#props.disabled}
                 class=${classMap(classes)}
                 aria-pressed=${ifDefined(this.#props.toggled)}
-                jslog=${ifDefined(jslog)}
-                @keydown=${this.#onKeydown}>
+                jslog=${ifDefined(jslog)}>
           ${hasIcon ? html `
             <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName)}>
             </devtools-icon>`

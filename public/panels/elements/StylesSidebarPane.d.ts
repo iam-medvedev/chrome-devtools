@@ -112,7 +112,6 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     hideAllPopovers(): void;
     getSectionBlockByName(name: string): SectionBlock | undefined;
     allSections(): StylePropertiesSection[];
-    getFormattedChanges(): Promise<string>;
     private clipboardCopy;
     private createStylesSidebarToolbar;
     showToolbarPane(widget: UI.Widget.Widget | null, toggle: UI.Toolbar.ToolbarToggle | null): void;

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
@@ -359,14 +358,6 @@ export class AnimationUI {
         else {
             this.#animationInternal.setTiming(this.duration(), this.delayOrStartTime());
         }
-        Host.userMetrics.animationPointDragged(this.#mouseEventType === "AnimationDrag" /* Events.ANIMATION_DRAG */ ? 0 /* Host.UserMetrics.AnimationPointDragType.ANIMATION_DRAG */ :
-            this.#mouseEventType === "KeyframeMove" /* Events.KEYFRAME_MOVE */ ?
-                1 /* Host.UserMetrics.AnimationPointDragType.KEYFRAME_MOVE */ :
-                this.#mouseEventType === "StartEndpointMove" /* Events.START_ENDPOINT_MOVE */ ?
-                    2 /* Host.UserMetrics.AnimationPointDragType.START_ENDPOINT_MOVE */ :
-                    this.#mouseEventType === "FinishEndpointMove" /* Events.FINISH_ENDPOINT_MOVE */ ?
-                        3 /* Host.UserMetrics.AnimationPointDragType.FINISH_ENDPOINT_MOVE */ :
-                        4 /* Host.UserMetrics.AnimationPointDragType.OTHER */);
         this.#movementInMs = 0;
         this.redraw();
         this.#mouseEventType = undefined;

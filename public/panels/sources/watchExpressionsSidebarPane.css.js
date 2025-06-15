@@ -13,6 +13,8 @@ export default `/*
   position: absolute;
   opacity: 0%;
   right: 0;
+  background-color: var(--watch-expression-delete-button-background-color); /* stylelint-disable-line plugin/use_theme_colors */
+  border-radius: var(--sys-shape-corner-full);
 
   .watch-expression-title:hover & {
     opacity: 100%;
@@ -20,6 +22,12 @@ export default `/*
 
   .watch-expression-title:focus-within & {
     opacity: 100%;
+  }
+}
+
+@container watch-expression (max-width: 31px) {
+  .watch-expression-delete-button {
+    visibility: hidden;
   }
 }
 
@@ -103,23 +111,29 @@ export default `/*
 }
 
 li.watch-expression-tree-item {
+  container-type: inline-size;
+  container-name: watch-expression;
   padding-left: 4px;
+
+  --watch-expression-delete-button-background-color: var(--sys-color-cdt-base);
+}
+
+.theme-with-dark-background li.watch-expression-tree-item {
+  --watch-expression-delete-button-background-color: var(--sys-color-cdt-base-container);
 }
 
 li.watch-expression-tree-item.selected {
   background: var(--sys-color-neutral-container);
+
+  --watch-expression-delete-button-background-color: var(--sys-color-neutral-container);
 }
 
-li.watch-expression-tree-item.selected:focus {
-  background: var(--sys-color-tonal-container);
-}
-
-li.watch-expression-tree-item.selected:focus-within:focus-visible {
-  background: var(--sys-color-tonal-container);
-}
-
+li.watch-expression-tree-item.selected:focus,
+li.watch-expression-tree-item.selected:focus-within:focus-visible,
 .watch-expression-header:focus-visible {
   background: var(--sys-color-tonal-container);
+
+  --watch-expression-delete-button-background-color: var(--sys-color-tonal-container);
 }
 
 li.watch-expression-editing::before {

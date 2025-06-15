@@ -1,3 +1,4 @@
+import type * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -73,6 +74,14 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * */
     forceDrawableLevel(levelIndex: number): boolean;
     preparePopoverElement(index: number): Element | null;
+    /**
+     * Note that although we use the same mechanism to track configuration
+     * changes in the Network part of the timeline, we only really use it to track
+     * the expanded state because the user cannot re-order or hide/show tracks in
+     * here.
+     */
+    handleTrackConfigurationChange(groups: readonly PerfUI.FlameChart.Group[], indexesInVisualOrder: number[]): void;
+    setPersistedGroupConfigSetting(setting: Common.Settings.Setting<PerfUI.FlameChart.PersistedConfigPerTrace>): void;
     preferredHeight(): number;
     isExpanded(): boolean;
     formatValue(value: number, precision?: number): string;

@@ -105,4 +105,5 @@ export declare function querySelectorErrorOnMissing<T extends HTMLElement = HTML
  * The function relies on the bindings exposed via the karma config.
  */
 export declare function assertScreenshot(filename: string): Promise<void>;
+export declare function setColorScheme(scheme: 'dark' | 'light'): void;
 export {};

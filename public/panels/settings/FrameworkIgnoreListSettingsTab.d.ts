@@ -10,7 +10,7 @@ export declare class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox imple
     private settingUpdated;
     private addButtonClicked;
     private createSettingGroup;
-    renderItem(item: Common.Settings.RegExpSettingItem, _editable: boolean): Element;
+    renderItem(item: Common.Settings.RegExpSettingItem, editable: boolean): Element;
     removeItemRequested(_item: Common.Settings.RegExpSettingItem, index: number): void;
     commitEdit(item: Common.Settings.RegExpSettingItem, editor: UI.ListWidget.Editor<Common.Settings.RegExpSettingItem>, isNew: boolean): void;
     beginEdit(item: Common.Settings.RegExpSettingItem): UI.ListWidget.Editor<Common.Settings.RegExpSettingItem>;

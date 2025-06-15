@@ -154,6 +154,10 @@ const UIStrings = {
      */
     forcesVisionDeficiencyEmulation: 'Forces vision deficiency emulation',
     /**
+     * @description Explanation text for the 'Emulate OS text scale' setting in the Rendering tool.
+     */
+    forcesOsTextScaleEmulation: 'Forces OS text scale emulation',
+    /**
      * @description The name of a checkbox setting in the Rendering tool. This setting disables the
      * page from loading images with the AVIF format.
      */
@@ -225,6 +229,8 @@ export class RenderingOptionsView extends UI.Widget.VBox {
         this.#appendSelect(i18nString(UIStrings.forcesCssColorgamutMediaFeature), Common.Settings.Settings.instance().moduleSetting('emulated-css-media-feature-color-gamut'));
         this.contentElement.createChild('div').classList.add('panel-section-separator');
         this.#appendSelect(i18nString(UIStrings.forcesVisionDeficiencyEmulation), Common.Settings.Settings.instance().moduleSetting('emulated-vision-deficiency'));
+        this.contentElement.createChild('div').classList.add('panel-section-separator');
+        this.#appendSelect(i18nString(UIStrings.forcesOsTextScaleEmulation), Common.Settings.Settings.instance().moduleSetting('emulated-os-text-scale'));
         this.contentElement.createChild('div').classList.add('panel-section-separator');
         this.#appendCheckbox(i18nString(UIStrings.disableAvifImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), Common.Settings.Settings.instance().moduleSetting('avif-format-disabled'));
         this.#appendCheckbox(i18nString(UIStrings.disableWebpImageFormat), i18nString(UIStrings.requiresAPageReloadToApplyAnd), Common.Settings.Settings.instance().moduleSetting('webp-format-disabled'));

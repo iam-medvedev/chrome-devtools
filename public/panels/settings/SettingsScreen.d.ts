@@ -22,6 +22,7 @@ interface SettingsTab {
     highlightObject(object: Object): void;
 }
 export declare class GenericSettingsTab extends UI.Widget.VBox implements SettingsTab {
+    #private;
     private readonly syncSection;
     private readonly settingToControl;
     private readonly containerElement;

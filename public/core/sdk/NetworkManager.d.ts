@@ -106,9 +106,9 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     requestForLoaderId(loaderId: Protocol.Network.LoaderId): NetworkRequest | null;
     resourceChangedPriority({ requestId, newPriority }: Protocol.Network.ResourceChangedPriorityEvent): void;
     signedExchangeReceived({ requestId, info }: Protocol.Network.SignedExchangeReceivedEvent): void;
-    requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectResponse, type, frameId, hasUserGesture, }: Protocol.Network.RequestWillBeSentEvent): void;
+    requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectHasExtraInfo, redirectResponse, type, frameId, hasUserGesture, }: Protocol.Network.RequestWillBeSentEvent): void;
     requestServedFromCache({ requestId }: Protocol.Network.RequestServedFromCacheEvent): void;
-    responseReceived({ requestId, loaderId, timestamp, type, response, frameId }: Protocol.Network.ResponseReceivedEvent): void;
+    responseReceived({ requestId, loaderId, timestamp, type, response, hasExtraInfo, frameId }: Protocol.Network.ResponseReceivedEvent): void;
     dataReceived(event: Protocol.Network.DataReceivedEvent): void;
     loadingFinished({ requestId, timestamp: finishTime, encodedDataLength }: Protocol.Network.LoadingFinishedEvent): void;
     loadingFailed({ requestId, timestamp: time, type: resourceType, errorText: localizedDescription, canceled, blockedReason, corsErrorStatus, }: Protocol.Network.LoadingFailedEvent): void;

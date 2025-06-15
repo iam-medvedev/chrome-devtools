@@ -137,6 +137,31 @@ function isCritical(request, context) {
     const isHighPriority = Helpers.Network.isSyntheticNetworkRequestHighPriority(request);
     return isHighPriority || isBlocking;
 }
+function findMaxLeafNode(node) {
+    if (node.children.length === 0) {
+        return node;
+    }
+    let maxLeaf = node.children[0];
+    for (const child of node.children) {
+        const leaf = findMaxLeafNode(child);
+        if (leaf.timeFromInitialRequest > maxLeaf.timeFromInitialRequest) {
+            maxLeaf = leaf;
+        }
+    }
+    return maxLeaf;
+}
+function sortRecursively(nodes) {
+    for (const node of nodes) {
+        if (node.children.length > 0) {
+            node.children.sort((nodeA, nodeB) => {
+                const leafA = findMaxLeafNode(nodeA);
+                const leafB = findMaxLeafNode(nodeB);
+                return leafB.timeFromInitialRequest - leafA.timeFromInitialRequest;
+            });
+            sortRecursively(node.children);
+        }
+    }
+}
 function generateNetworkDependencyTree(context) {
     const rootNodes = [];
     const relatedEvents = new Map();
@@ -220,6 +245,7 @@ function generateNetworkDependencyTree(context) {
             }
         }
     }
+    sortRecursively(rootNodes);
     return {
         rootNodes,
         maxTime,
@@ -230,6 +256,51 @@ function generateNetworkDependencyTree(context) {
 function getSecurityOrigin(url) {
     const parsedURL = new Common.ParsedURL.ParsedURL(url);
     return parsedURL.securityOrigin();
+}
+function handleLinkResponseHeaderPart(trimmedPart) {
+    if (!trimmedPart) {
+        // Skip empty string
+        return null;
+    }
+    // Extract URL
+    const urlStart = trimmedPart.indexOf('<');
+    const urlEnd = trimmedPart.indexOf('>');
+    if (urlStart !== 0 || urlEnd === -1 || urlEnd <= urlStart) {
+        // Skip parts without a valid URI (must start with '<' and have a closing '>')
+        return null;
+    }
+    const url = trimmedPart.substring(urlStart + 1, urlEnd).trim();
+    if (!url) {
+        // Skip empty url
+        return null;
+    }
+    // Extract parameters string (everything after '>')
+    const paramsString = trimmedPart.substring(urlEnd + 1).trim();
+    if (paramsString) {
+        const params = paramsString.split(';');
+        for (const param of params) {
+            const trimmedParam = param.trim();
+            if (!trimmedParam) {
+                continue;
+            }
+            const eqIndex = trimmedParam.indexOf('=');
+            if (eqIndex === -1) {
+                // Skip malformed parameters without an '='
+                continue;
+            }
+            const paramName = trimmedParam.substring(0, eqIndex).trim().toLowerCase();
+            let paramValue = trimmedParam.substring(eqIndex + 1).trim();
+            // Remove quotes from value if present
+            if (paramValue.startsWith('"') && paramValue.endsWith('"')) {
+                paramValue = paramValue.substring(1, paramValue.length - 1);
+            }
+            if (paramName === 'rel' && paramValue === 'preconnect') {
+                // Found 'rel=preconnect', no need to process other parameters for this link
+                return { url, headerText: trimmedPart };
+            }
+        }
+    }
+    return null;
 }
 /**
  * Parses an HTTP Link header string into an array of url and related header text.
@@ -243,51 +314,16 @@ export function handleLinkResponseHeader(linkHeaderValue) {
         return [];
     }
     const preconnectedOrigins = [];
-    const headerTextParts = linkHeaderValue.split(',');
-    for (const part of headerTextParts) {
-        const trimmedPart = part.trim();
-        if (!trimmedPart) {
-            // Skip empty string
-            continue;
-        }
-        // Extract URL
-        const urlStart = trimmedPart.indexOf('<');
-        const urlEnd = trimmedPart.indexOf('>');
-        if (urlStart !== 0 || urlEnd === -1 || urlEnd <= urlStart) {
-            // Skip parts without a valid URI (must start with '<' and have a closing '>')
-            continue;
-        }
-        const url = trimmedPart.substring(urlStart + 1, urlEnd).trim();
-        if (!url) {
-            // Skip empty url
-            continue;
-        }
-        // Extract parameters string (everything after '>')
-        const paramsString = trimmedPart.substring(urlEnd + 1).trim();
-        if (paramsString) {
-            const params = paramsString.split(';');
-            for (const param of params) {
-                const trimmedParam = param.trim();
-                if (!trimmedParam) {
-                    continue;
-                }
-                const eqIndex = trimmedParam.indexOf('=');
-                if (eqIndex === -1) {
-                    // Skip malformed parameters without an '='
-                    continue;
-                }
-                const paramName = trimmedParam.substring(0, eqIndex).trim().toLowerCase();
-                let paramValue = trimmedParam.substring(eqIndex + 1).trim();
-                // Remove quotes from value if present
-                if (paramValue.startsWith('"') && paramValue.endsWith('"')) {
-                    paramValue = paramValue.substring(1, paramValue.length - 1);
-                }
-                if (paramName === 'rel' && paramValue === 'preconnect') {
-                    preconnectedOrigins.push({ url, headerText: trimmedPart });
-                    // Found 'rel=preconnect', no need to process other parameters for this link
-                    break;
-                }
-            }
+    // const headerTextParts = linkHeaderValue.split(',');
+    for (let i = 0; i < linkHeaderValue.length;) {
+        const firstUrlEnd = linkHeaderValue.indexOf('>', i);
+        const commaIndex = linkHeaderValue.indexOf(',', firstUrlEnd);
+        const partEnd = commaIndex !== -1 ? commaIndex : linkHeaderValue.length;
+        const part = linkHeaderValue.substring(i, partEnd);
+        i = partEnd + 1;
+        const preconnectedOrigin = handleLinkResponseHeaderPart(part.trim());
+        if (preconnectedOrigin) {
+            preconnectedOrigins.push(preconnectedOrigin);
         }
     }
     return preconnectedOrigins;

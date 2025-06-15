@@ -28,6 +28,7 @@ import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetwo
 import timelineFlameChartViewStyles from './timelineFlameChartView.css.js';
 import { rangeForSelection, selectionFromEvent, selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, selectionsEqual } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
+import { keyForTraceConfig } from './TrackConfiguration.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
@@ -67,9 +68,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     networkSplitWidget;
     mainDataProvider;
     mainFlameChart;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    networkFlameChartGroupExpansionSetting;
     networkDataProvider;
     networkFlameChart;
     networkPane;
@@ -140,6 +138,11 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
      * It is not expected that this flag is ever disabled in non-test environments.
      */
     #checkReducedMotion = true;
+    /**
+     * Persist the visual configuration of the tracks/groups into memory.
+     */
+    #networkPersistedGroupConfigSetting;
+    #mainPersistedGroupConfigSetting;
     constructor(delegate) {
         super();
         this.registerRequiredCSS(timelineFlameChartViewStyles);
@@ -159,12 +162,15 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         flameChartsContainer.element.appendChild(this.#tooltipElement);
         // Ensure that the network panel & resizer appears above the main thread.
         this.networkSplitWidget.sidebarElement().style.zIndex = '120';
-        const mainViewGroupExpansionSetting = Common.Settings.Settings.instance().createSetting('timeline-flamechart-main-view-group-expansion', {});
+        this.#mainPersistedGroupConfigSetting =
+            Common.Settings.Settings.instance().createSetting('timeline-main-flame-group-config', {});
+        this.#networkPersistedGroupConfigSetting =
+            Common.Settings.Settings.instance().createSetting('timeline-network-flame-group-config', {});
         this.mainDataProvider = new TimelineFlameChartDataProvider();
+        this.mainDataProvider.setPersistedGroupConfigSetting(this.#mainPersistedGroupConfigSetting);
         this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DATA_CHANGED */, () => this.mainFlameChart.scheduleUpdate());
         this.mainDataProvider.addEventListener("FlameChartItemHovered" /* TimelineFlameChartDataProviderEvents.FLAME_CHART_ITEM_HOVERED */, e => this.detailsView.revealEventInTreeView(e.data));
         this.mainFlameChart = new PerfUI.FlameChart.FlameChart(this.mainDataProvider, this, {
-            groupExpansionSetting: mainViewGroupExpansionSetting,
             // The TimelineOverlays are used for selected elements
             selectedElementOutline: false,
             tooltipElement: this.#tooltipElement,
@@ -177,11 +183,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             this.#overlays.updateVisibleWindow(dimensions.data.traceWindow);
             void this.#overlays.update();
         });
-        this.networkFlameChartGroupExpansionSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-flamechart-network-view-group-expansion', {});
         this.networkDataProvider = new TimelineFlameChartNetworkDataProvider();
+        this.networkDataProvider.setPersistedGroupConfigSetting(this.#networkPersistedGroupConfigSetting);
         this.networkFlameChart = new PerfUI.FlameChart.FlameChart(this.networkDataProvider, this, {
-            groupExpansionSetting: this.networkFlameChartGroupExpansionSetting,
             // The TimelineOverlays are used for selected elements
             selectedElementOutline: false,
             tooltipElement: this.#tooltipElement,
@@ -951,12 +955,33 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         this.#parsedTrace = newParsedTrace;
         this.#traceMetadata = traceMetadata;
+        if (traceMetadata?.visualTrackConfig) {
+            this.#addPersistedConfigToSettings(newParsedTrace, traceMetadata.visualTrackConfig);
+        }
         for (const dimmer of this.#flameChartDimmers) {
             dimmer.active = false;
             dimmer.mainChartIndices = [];
             dimmer.networkChartIndices = [];
         }
         this.rebuildDataForTrace();
+    }
+    /**
+     * When the user imports a new trace and it has the visual config metadata, we add that data into the DevTools setting.
+     * NOTE: if the user has modifications for this trace already in memory,
+     * those are preferred over the modifications stored in the trace file itself.
+     */
+    #addPersistedConfigToSettings(trace, visualConfigForTrace) {
+        const key = keyForTraceConfig(trace);
+        if (visualConfigForTrace.main) {
+            const mainSetting = this.#mainPersistedGroupConfigSetting.get();
+            mainSetting[key] = mainSetting[key] ?? visualConfigForTrace.main;
+            this.#mainPersistedGroupConfigSetting.set(mainSetting);
+        }
+        if (visualConfigForTrace.network) {
+            const networkSetting = this.#networkPersistedGroupConfigSetting.get();
+            networkSetting[key] = networkSetting[key] ?? visualConfigForTrace.network;
+            this.#networkPersistedGroupConfigSetting.set(networkSetting);
+        }
     }
     /**
      * Resets the state of the UI data and initializes it again with the
@@ -975,14 +1000,43 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.mainDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
         this.networkDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
         this.reset();
+        // The order here is quite subtle; but the reset() call above clears out
+        // any state in the flame charts. We then need to provide it with any
+        // persisted group settings here, before it recalculates the timeline data
+        // and draws the UI.
+        const mainChartConfig = this.#getPersistedConfigForTrace(this.#parsedTrace, this.#mainPersistedGroupConfigSetting);
+        if (mainChartConfig) {
+            this.mainFlameChart.setPersistedConfig(mainChartConfig);
+        }
+        const networkChartConfig = this.#getPersistedConfigForTrace(this.#parsedTrace, this.#networkPersistedGroupConfigSetting);
+        if (networkChartConfig) {
+            this.networkFlameChart.setPersistedConfig(networkChartConfig);
+        }
+        // setupWindowTimes() will trigger timelineData to be regenerated.
         this.setupWindowTimes();
         this.updateSearchResults(false, false);
-        this.refreshMainFlameChart();
         this.#updateFlameCharts();
         this.resizeToPreferredHeights();
         this.setMarkers(this.#parsedTrace);
         this.dimThirdPartiesIfRequired();
         ModificationsManager.activeManager()?.applyAnnotationsFromCache();
+    }
+    /**
+     * Gets the persisted config (if the user has made any visual changes) in
+     * order to save it to disk as part of the trace.
+     */
+    getPersistedConfigMetadata(trace) {
+        const main = this.#getPersistedConfigForTrace(trace, this.#mainPersistedGroupConfigSetting);
+        const network = this.#getPersistedConfigForTrace(trace, this.#networkPersistedGroupConfigSetting);
+        return { main, network };
+    }
+    #getPersistedConfigForTrace(trace, setting) {
+        const value = setting.get();
+        const key = trace.Meta.traceBounds.min;
+        if (value[key]) {
+            return value[key];
+        }
+        return null;
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {
@@ -1112,12 +1166,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
     }
     willHide() {
-        this.networkFlameChartGroupExpansionSetting.removeChangeListener(this.resizeToPreferredHeights, this);
+        this.#networkPersistedGroupConfigSetting.removeChangeListener(this.resizeToPreferredHeights, this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.#boundRefreshAfterIgnoreList);
     }
     wasShown() {
         super.wasShown();
-        this.networkFlameChartGroupExpansionSetting.addChangeListener(this.resizeToPreferredHeights, this);
+        this.#networkPersistedGroupConfigSetting.addChangeListener(this.resizeToPreferredHeights, this);
         Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.#boundRefreshAfterIgnoreList);
         if (this.needsResizeToPreferredHeights) {
             this.resizeToPreferredHeights();

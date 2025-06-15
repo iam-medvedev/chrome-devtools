@@ -13,62 +13,63 @@ describeWithMockConnection('ResourceUtils', () => {
     const INSPECTED_URL_DOMAIN = 'example.com';
     const OTHER_DOMAIN = 'example.org';
     const INSPECTED_URL_PATH_COMPONENTS = ['', 'foo', 'bar'];
-    const INSPECTED_URL_PATH = urlString `${INSPECTED_URL_PATH_COMPONENTS.join('/')}`;
-    const INSPECTED_URL = urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + INSPECTED_URL_PATH}`;
-    const RESOURCE_URL = urlString `${INSPECTED_URL + '?RESOURCE_URL'}`;
-    const RESOURCE = { displayName: 'RESOURCE_DISPLAY_NAME' };
-    const UI_SOURCE_CODE_URL = urlString `${INSPECTED_URL + '?UI_SOURCE_CODE_URL'}`;
-    const UI_SOURCE_CODE = { displayName: () => 'UI_SOURCE_CODE_DISPLAY_NAME' };
+    const INSPECTED_URL_PATH = INSPECTED_URL_PATH_COMPONENTS.join('/');
+    const INSPECTED_URL = urlString `${INSPECTED_URL_SCHEME}${INSPECTED_URL_DOMAIN}${INSPECTED_URL_PATH}`;
     const QUERY_STRING = '?QUERY_STRING';
     const OTHER_PATH = '/OTHER/PATH';
     const INVALID_URL = urlString `:~INVALID_URL~:`;
     let target;
-    beforeEach(() => {
-        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
-        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
-        target = createTarget({ parentTarget: tabTarget });
-        target.setInspectedURL(INSPECTED_URL);
-        sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL')
-            .returns(null)
-            .withArgs(RESOURCE_URL)
-            .returns(RESOURCE);
-        const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        sinon.stub(workspace, 'uiSourceCodeForURL')
-            .returns(null)
-            .withArgs(RESOURCE_URL)
-            .returns(UI_SOURCE_CODE)
-            .withArgs(UI_SOURCE_CODE_URL)
-            .returns(UI_SOURCE_CODE);
-    });
-    it('returns a resource name if available', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(RESOURCE_URL), RESOURCE.displayName);
-    });
-    it('returns a resource name if available', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(UI_SOURCE_CODE_URL), UI_SOURCE_CODE.displayName());
-    });
-    it('returns path relative to the last main URL component if it matches and does not have query string', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL + QUERY_STRING}`), urlString `${INSPECTED_URL_PATH_COMPONENTS.slice(-1)[0] + QUERY_STRING}`);
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL + OTHER_PATH}`), urlString `${INSPECTED_URL_PATH_COMPONENTS.slice(-1)[0] + OTHER_PATH}`);
-    });
-    it('returns path relative to the main URL domain if it matches and does have query string', async () => {
-        target.setInspectedURL(urlString `${INSPECTED_URL + QUERY_STRING}`);
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL + QUERY_STRING}`), urlString `${INSPECTED_URL_PATH + QUERY_STRING}`);
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL + OTHER_PATH}`), urlString `${INSPECTED_URL_PATH + OTHER_PATH}`);
-    });
-    it('returns path relative to the main URL domain if only domain matches', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + OTHER_PATH}`), urlString `${OTHER_PATH}`);
-    });
-    it('returns path relative to the main URL domain if path partially matches', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + '/' + INSPECTED_URL_PATH_COMPONENTS[1] + '/'}`), urlString `${'/' + INSPECTED_URL_PATH_COMPONENTS[1] + '/'}`);
-    });
-    it('returns main URL domain if it matches and the path is empty', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + '/'}`), urlString `${INSPECTED_URL_DOMAIN + '/'}`);
-    });
-    it('strips scheme if domain does not match main URL', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(urlString `${INSPECTED_URL_SCHEME + OTHER_DOMAIN + OTHER_PATH}`), urlString `${OTHER_DOMAIN + OTHER_PATH}`);
-    });
-    it('returns URL as is if it cannot be parsed', async () => {
-        assert.strictEqual(Bindings.ResourceUtils.displayNameForURL(INVALID_URL), INVALID_URL);
+    let resourceForURLStub;
+    let uiSourceCodeForURLStub;
+    describe('displayNameForURL', () => {
+        const { displayNameForURL } = Bindings.ResourceUtils;
+        beforeEach(() => {
+            const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+            createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+            target = createTarget({ parentTarget: tabTarget });
+            target.setInspectedURL(INSPECTED_URL);
+            resourceForURLStub = sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').returns(null);
+            uiSourceCodeForURLStub =
+                sinon.stub(Workspace.Workspace.WorkspaceImpl.instance(), 'uiSourceCodeForURL').returns(null);
+        });
+        it('favors displayName from UISourceCode', () => {
+            const resource = sinon.createStubInstance(SDK.Resource.Resource);
+            resourceForURLStub.returns(resource);
+            const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
+            uiSourceCode.displayName.returns('UI_SOURCE_CODE_DISPLAY_NAME');
+            uiSourceCodeForURLStub.returns(uiSourceCode);
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL}${QUERY_STRING}`), 'UI_SOURCE_CODE_DISPLAY_NAME');
+        });
+        it('falls back to displayName from Resource', () => {
+            const resource = sinon.createStubInstance(SDK.Resource.Resource);
+            sinon.stub(resource, 'displayName').value('RESOURCE_DISPLAY_NAME');
+            resourceForURLStub.returns(resource);
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL}${QUERY_STRING}`), 'RESOURCE_DISPLAY_NAME');
+        });
+        it('returns path relative to the last main URL component if it matches and does not have query string', () => {
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL}${QUERY_STRING}`), `${INSPECTED_URL_PATH_COMPONENTS.slice(-1)[0]}${QUERY_STRING}`);
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL}${OTHER_PATH}`), `${INSPECTED_URL_PATH_COMPONENTS.slice(-1)[0] + OTHER_PATH}`);
+        });
+        it('returns path relative to the main URL domain if it matches and does have query string', () => {
+            target.setInspectedURL(urlString `${INSPECTED_URL}${QUERY_STRING}`);
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL}${QUERY_STRING}`), `${INSPECTED_URL_PATH}${QUERY_STRING}`);
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL}${OTHER_PATH}`), `${INSPECTED_URL_PATH}${OTHER_PATH}`);
+        });
+        it('returns path relative to the main URL domain if only domain matches', () => {
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + OTHER_PATH}`), `${OTHER_PATH}`);
+        });
+        it('returns path relative to the main URL domain if path partially matches', () => {
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + '/' + INSPECTED_URL_PATH_COMPONENTS[1] + '/'}`), `${'/' + INSPECTED_URL_PATH_COMPONENTS[1] + '/'}`);
+        });
+        it('returns main URL domain if it matches and the path is empty', () => {
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL_SCHEME + INSPECTED_URL_DOMAIN + '/'}`), `${INSPECTED_URL_DOMAIN + '/'}`);
+        });
+        it('strips scheme if domain does not match main URL', () => {
+            assert.strictEqual(displayNameForURL(urlString `${INSPECTED_URL_SCHEME + OTHER_DOMAIN + OTHER_PATH}`), `${OTHER_DOMAIN + OTHER_PATH}`);
+        });
+        it('returns URL as is if it cannot be parsed', () => {
+            assert.strictEqual(displayNameForURL(INVALID_URL), INVALID_URL);
+        });
     });
 });
 //# sourceMappingURL=ResourceUtils.test.js.map

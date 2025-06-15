@@ -135,6 +135,13 @@ export class EmulationModel extends SDKModel {
         if (visionDeficiencySetting.get()) {
             void this.emulateVisionDeficiency(visionDeficiencySetting.get());
         }
+        const osTextScaleSetting = Common.Settings.Settings.instance().moduleSetting('emulated-os-text-scale');
+        osTextScaleSetting.addChangeListener(() => {
+            void this.emulateOSTextScale(parseFloat(osTextScaleSetting.get()) || undefined);
+        });
+        if (osTextScaleSetting.get()) {
+            void this.emulateOSTextScale(parseFloat(osTextScaleSetting.get()) || undefined);
+        }
         const localFontsDisabledSetting = Common.Settings.Settings.instance().moduleSetting('local-fonts-disabled');
         localFontsDisabledSetting.addChangeListener(() => this.setLocalFontsDisabled(localFontsDisabledSetting.get()));
         if (localFontsDisabledSetting.get()) {
@@ -282,6 +289,9 @@ export class EmulationModel extends SDKModel {
     }
     async emulateVisionDeficiency(type) {
         await this.#emulationAgent.invoke_setEmulatedVisionDeficiency({ type });
+    }
+    async emulateOSTextScale(scale) {
+        await this.#emulationAgent.invoke_setEmulatedOSTextScale({ scale: scale || undefined });
     }
     setLocalFontsDisabled(disabled) {
         if (!this.#cssModel) {

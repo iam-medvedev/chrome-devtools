@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
@@ -227,6 +228,31 @@ describeWithEnvironment('TimelineFlameChartNetworkDataProvider', function () {
         dataProvider.deleteAnnotationsForEntry(eventIndex);
         // Made sure the event does not have annotations
         assert.isFalse(dataProvider.entryHasAnnotations(eventIndex));
+    });
+    it('persists track configurations to the setting if it is provided with one', async function () {
+        const { Settings } = Common.Settings;
+        const setting = Settings.instance().createSetting('persist-flame-config', {});
+        const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
+        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+        dataProvider.setModel(parsedTrace, entityMapper);
+        dataProvider.setPersistedGroupConfigSetting(setting);
+        const groups = dataProvider.timelineData().groups;
+        assert.lengthOf(groups, 1);
+        assert.isUndefined(groups[0].expanded);
+        // Pretend the user has expanded the group
+        groups[0].expanded = true;
+        dataProvider.handleTrackConfigurationChange(groups, [0]);
+        const newSetting = setting.get();
+        const traceKey = Timeline.TrackConfiguration.keyForTraceConfig(parsedTrace);
+        assert.deepEqual(newSetting[traceKey], [
+            {
+                expanded: true,
+                hidden: false,
+                originalIndex: 0,
+                visualIndex: 0,
+            },
+        ]);
     });
 });
 function assertTimestampEqual(actual, expected) {
