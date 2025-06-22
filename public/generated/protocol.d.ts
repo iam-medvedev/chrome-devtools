@@ -5892,18 +5892,6 @@ export declare namespace Emulation {
         PauseIfNetworkFetchesPending = "pauseIfNetworkFetchesPending"
     }
     /**
-     * Used to specify User Agent form-factor values. See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors
-     */
-    const enum UserAgentFormFactor {
-        Desktop = "Desktop",
-        Automotive = "Automotive",
-        Mobile = "Mobile",
-        Tablet = "Tablet",
-        XR = "XR",
-        EInk = "EInk",
-        Watch = "Watch"
-    }
-    /**
      * Used to specify User Agent Client Hints to emulate. See https://wicg.github.io/ua-client-hints
      */
     interface UserAgentBrandVersion {
@@ -5931,7 +5919,11 @@ export declare namespace Emulation {
         mobile: boolean;
         bitness?: string;
         wow64?: boolean;
-        formFactors?: UserAgentFormFactor[];
+        /**
+         * Used to specify User Agent form-factor values.
+         * See https://wicg.github.io/ua-client-hints/#sec-ch-ua-form-factors
+         */
+        formFactors?: string[];
     }
     /**
      * Used to specify sensor types to emulate.
@@ -14993,6 +14985,13 @@ export declare namespace Storage {
         /**
          * If result is `sent`, populated with net/HTTP status.
          */
+        netError?: integer;
+        netErrorName?: string;
+        httpStatusCode?: integer;
+    }
+    interface AttributionReportingVerboseDebugReportSentEvent {
+        url: string;
+        body?: any[];
         netError?: integer;
         netErrorName?: string;
         httpStatusCode?: integer;

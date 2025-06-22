@@ -37,7 +37,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
@@ -98,25 +97,6 @@ const UIStrings = {
      *@example {div#id1} PH2
      */
     sS: '{PH1}: {PH2}',
-    /**
-     *@description Details text used to show the amount of data collected.
-     *@example {30 MB} PH1
-     */
-    sCollected: '{PH1} collected',
-    /**
-     *@description Text used to show a URL to a script and the relevant line numbers.
-     *@example {https://example.com/foo.js} PH1
-     *@example {2} PH2
-     *@example {4} PH3
-     */
-    sSs: '{PH1} [{PH2}…{PH3}]',
-    /**
-     *@description Text used to show a URL to a script and the starting line
-     *             number - used when there is no end line number available.
-     *@example {https://example.com/foo.js} PH1
-     *@example {2} PH2
-     */
-    sSSquareBrackets: '{PH1} [{PH2}…]',
     /**
      *@description Text that is usually a hyperlink to more documentation
      */
@@ -203,26 +183,6 @@ const UIStrings = {
      *@description Text to indicate to the user the amount of the cache (as a filesize - e.g. 5mb) that has been used.
      */
     consumedCacheSize: 'Consumed cache size',
-    /**
-     *@description Title for a group of cities
-     */
-    location: 'Location',
-    /**
-     *@description Text used to show a coordinate pair (e.g. (3, 2)).
-     *@example {2} PH1
-     *@example {2} PH2
-     */
-    sSCurlyBrackets: '({PH1}, {PH2})',
-    /**
-     *@description Text used to indicate to the user they are looking at the physical dimensions of a shape that was drawn by the browser.
-     */
-    dimensions: 'Dimensions',
-    /**
-     *@description Text used to show the user the dimensions of a shape and indicate its area (e.g. 3x2).
-     *@example {2} PH1
-     *@example {2} PH2
-     */
-    sSDimensions: '{PH1} × {PH2}',
     /**
      *@description Related node label in Timeline UIUtils of the Performance panel
      */
@@ -648,130 +608,6 @@ export class TimelineUIUtils {
     static isUserFrame(frame) {
         return frame.scriptId !== '0' && !(frame.url?.startsWith('native '));
     }
-    static async buildDetailsTextForTraceEvent(event, parsedTrace) {
-        let detailsText;
-        // TODO(40287735): update this code with type-safe data checks.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const unsafeEventArgs = event.args;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const unsafeEventData = event.args?.data;
-        switch (event.name) {
-            case "GCEvent" /* Trace.Types.Events.Name.GC */:
-            case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
-            case "MinorGC" /* Trace.Types.Events.Name.MINOR_GC */: {
-                const delta = unsafeEventArgs['usedHeapSizeBefore'] - unsafeEventArgs['usedHeapSizeAfter'];
-                detailsText = i18nString(UIStrings.sCollected, { PH1: i18n.ByteUtilities.bytesToString(delta) });
-                break;
-            }
-            case "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */: {
-                const { lineNumber, columnNumber } = Trace.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
-                if (lineNumber !== undefined && columnNumber !== undefined) {
-                    detailsText = unsafeEventData.url + ':' + (lineNumber + 1) + ':' + (columnNumber + 1);
-                }
-                break;
-            }
-            case "EventDispatch" /* Trace.Types.Events.Name.EVENT_DISPATCH */:
-                detailsText = unsafeEventData ? unsafeEventData['type'] : null;
-                break;
-            case "Paint" /* Trace.Types.Events.Name.PAINT */: {
-                const width = TimelineUIUtils.quadWidth(unsafeEventData.clip);
-                const height = TimelineUIUtils.quadHeight(unsafeEventData.clip);
-                if (width && height) {
-                    detailsText = i18nString(UIStrings.sSDimensions, { PH1: width, PH2: height });
-                }
-                break;
-            }
-            case "ParseHTML" /* Trace.Types.Events.Name.PARSE_HTML */: {
-                const startLine = unsafeEventArgs['beginData']['startLine'];
-                const endLine = unsafeEventArgs['endData']?.['endLine'];
-                const url = Bindings.ResourceUtils.displayNameForURL(unsafeEventArgs['beginData']['url']);
-                if (endLine >= 0) {
-                    detailsText = i18nString(UIStrings.sSs, { PH1: url, PH2: startLine + 1, PH3: endLine + 1 });
-                }
-                else {
-                    detailsText = i18nString(UIStrings.sSSquareBrackets, { PH1: url, PH2: startLine + 1 });
-                }
-                break;
-            }
-            case "V8.CompileModule" /* Trace.Types.Events.Name.COMPILE_MODULE */:
-            case "v8.produceModuleCache" /* Trace.Types.Events.Name.CACHE_MODULE */:
-                detailsText = Bindings.ResourceUtils.displayNameForURL(unsafeEventArgs['fileName']);
-                break;
-            case "V8.CompileScript" /* Trace.Types.Events.Name.COMPILE_SCRIPT */:
-            case "v8.produceCache" /* Trace.Types.Events.Name.CACHE_SCRIPT */:
-            case "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */: {
-                const { lineNumber } = Trace.Helpers.Trace.getZeroIndexedLineAndColumnForEvent(event);
-                const url = unsafeEventData?.['url'];
-                if (url) {
-                    detailsText = Bindings.ResourceUtils.displayNameForURL(url) + ':' + ((lineNumber || 0) + 1);
-                }
-                break;
-            }
-            case "v8.wasm.compiledModule" /* Trace.Types.Events.Name.WASM_COMPILED_MODULE */:
-            case "v8.wasm.moduleCacheHit" /* Trace.Types.Events.Name.WASM_MODULE_CACHE_HIT */: {
-                const url = unsafeEventArgs['url'];
-                if (url) {
-                    detailsText = Bindings.ResourceUtils.displayNameForURL(url);
-                }
-                break;
-            }
-            case "v8.parseOnBackground" /* Trace.Types.Events.Name.STREAMING_COMPILE_SCRIPT */:
-            case "v8.deserializeOnBackground" /* Trace.Types.Events.Name.BACKGROUND_DESERIALIZE */:
-            case "XHRReadyStateChange" /* Trace.Types.Events.Name.XHR_READY_STATE_CHANGED */:
-            case "XHRLoad" /* Trace.Types.Events.Name.XHR_LOAD */: {
-                const url = unsafeEventData['url'];
-                if (url) {
-                    detailsText = Bindings.ResourceUtils.displayNameForURL(url);
-                }
-                break;
-            }
-            case "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */:
-                detailsText = unsafeEventData['message'];
-                break;
-            case "WebSocketCreate" /* Trace.Types.Events.Name.WEB_SOCKET_CREATE */:
-            case "WebSocketSendHandshakeRequest" /* Trace.Types.Events.Name.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */:
-            case "WebSocketReceiveHandshakeResponse" /* Trace.Types.Events.Name.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST */:
-            case "WebSocketSend" /* Trace.Types.Events.Name.WEB_SOCKET_SEND */:
-            case "WebSocketReceive" /* Trace.Types.Events.Name.WEB_SOCKET_RECEIVE */:
-            case "WebSocketDestroy" /* Trace.Types.Events.Name.WEB_SOCKET_DESTROY */:
-            case "ResourceWillSendRequest" /* Trace.Types.Events.Name.RESOURCE_WILL_SEND_REQUEST */:
-            case "ResourceSendRequest" /* Trace.Types.Events.Name.RESOURCE_SEND_REQUEST */:
-            case "ResourceReceivedData" /* Trace.Types.Events.Name.RESOURCE_RECEIVE_DATA */:
-            case "ResourceReceiveResponse" /* Trace.Types.Events.Name.RESOURCE_RECEIVE_RESPONSE */:
-            case "ResourceFinish" /* Trace.Types.Events.Name.RESOURCE_FINISH */:
-            case "PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */:
-            case "Decode Image" /* Trace.Types.Events.Name.DECODE_IMAGE */:
-            case "Decode LazyPixelRef" /* Trace.Types.Events.Name.DECODE_LAZY_PIXEL_REF */: {
-                const url = Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace);
-                if (url) {
-                    detailsText = Bindings.ResourceUtils.displayNameForURL(url);
-                }
-                break;
-            }
-            case "EmbedderCallback" /* Trace.Types.Events.Name.EMBEDDER_CALLBACK */:
-                detailsText = unsafeEventData['callbackName'];
-                break;
-            case "AsyncTask" /* Trace.Types.Events.Name.ASYNC_TASK */:
-                detailsText = unsafeEventData ? unsafeEventData['name'] : null;
-                break;
-            default:
-                if (Trace.Helpers.Trace.eventHasCategory(event, Trace.Types.Events.Categories.Console)) {
-                    detailsText = null;
-                }
-                else {
-                    detailsText = linkifyTopCallFrameAsText();
-                }
-                break;
-        }
-        return detailsText;
-        function linkifyTopCallFrameAsText() {
-            const frame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.at(0) ?? null;
-            if (!frame) {
-                return null;
-            }
-            return frame.url + ':' + (frame.lineNumber + 1) + ':' + (frame.columnNumber + 1);
-        }
-    }
     static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshRecording = false, parsedTrace) {
         let details = null;
         let detailsText;
@@ -782,28 +618,6 @@ export class TimelineUIUtils {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const unsafeEventData = event.args?.data;
         switch (event.name) {
-            case "GCEvent" /* Trace.Types.Events.Name.GC */:
-            case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
-            case "MinorGC" /* Trace.Types.Events.Name.MINOR_GC */:
-            case "EventDispatch" /* Trace.Types.Events.Name.EVENT_DISPATCH */:
-            case "Paint" /* Trace.Types.Events.Name.PAINT */:
-            case "Animation" /* Trace.Types.Events.Name.ANIMATION */:
-            case "EmbedderCallback" /* Trace.Types.Events.Name.EMBEDDER_CALLBACK */:
-            case "ParseHTML" /* Trace.Types.Events.Name.PARSE_HTML */:
-            case "v8.wasm.streamFromResponseCallback" /* Trace.Types.Events.Name.WASM_STREAM_FROM_RESPONSE_CALLBACK */:
-            case "v8.wasm.compiledModule" /* Trace.Types.Events.Name.WASM_COMPILED_MODULE */:
-            case "v8.wasm.moduleCacheHit" /* Trace.Types.Events.Name.WASM_MODULE_CACHE_HIT */:
-            case "v8.wasm.cachedModule" /* Trace.Types.Events.Name.WASM_CACHED_MODULE */:
-            case "v8.wasm.moduleCacheInvalid" /* Trace.Types.Events.Name.WASM_MODULE_CACHE_INVALID */:
-            case "WebSocketCreate" /* Trace.Types.Events.Name.WEB_SOCKET_CREATE */:
-            case "WebSocketSendHandshakeRequest" /* Trace.Types.Events.Name.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */:
-            case "WebSocketReceiveHandshakeResponse" /* Trace.Types.Events.Name.WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST */:
-            case "WebSocketSend" /* Trace.Types.Events.Name.WEB_SOCKET_SEND */:
-            case "WebSocketReceive" /* Trace.Types.Events.Name.WEB_SOCKET_RECEIVE */:
-            case "WebSocketDestroy" /* Trace.Types.Events.Name.WEB_SOCKET_DESTROY */: {
-                detailsText = await TimelineUIUtils.buildDetailsTextForTraceEvent(event, parsedTrace);
-                break;
-            }
             case "PaintImage" /* Trace.Types.Events.Name.PAINT_IMAGE */:
             case "Decode Image" /* Trace.Types.Events.Name.DECODE_IMAGE */:
             case "Decode LazyPixelRef" /* Trace.Types.Events.Name.DECODE_LAZY_PIXEL_REF */:
@@ -994,7 +808,7 @@ export class TimelineUIUtils {
         const maybeTarget = targetForEvent(parsedTrace, event);
         const { duration } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
         const selfTime = getEventSelfTime(event, parsedTrace);
-        const relatedNodesMap = await Trace.Extras.FetchNodes.extractRelatedDOMNodesFromEvent(parsedTrace, event);
+        const relatedNodesMap = await Utils.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
         let entityAppended = false;
         if (maybeTarget) {
             // @ts-expect-error TODO(crbug.com/1011811): Remove symbol usage.
@@ -1203,14 +1017,7 @@ export class TimelineUIUtils {
                 }
                 break;
             }
-            // @ts-expect-error Fall-through intended.
-            case "Paint" /* Trace.Types.Events.Name.PAINT */: {
-                const clip = unsafeEventData['clip'];
-                contentHelper.appendTextRow(i18nString(UIStrings.location), i18nString(UIStrings.sSCurlyBrackets, { PH1: clip[0], PH2: clip[1] }));
-                const clipWidth = TimelineUIUtils.quadWidth(clip);
-                const clipHeight = TimelineUIUtils.quadHeight(clip);
-                contentHelper.appendTextRow(i18nString(UIStrings.dimensions), i18nString(UIStrings.sSDimensions, { PH1: clipWidth, PH2: clipHeight }));
-            }
+            case "Paint" /* Trace.Types.Events.Name.PAINT */:
             case "PaintSetup" /* Trace.Types.Events.Name.PAINT_SETUP */:
             case "Rasterize" /* Trace.Types.Events.Name.RASTERIZE */:
             case "ScrollLayer" /* Trace.Types.Events.Name.SCROLL_LAYER */: {

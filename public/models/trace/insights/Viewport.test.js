@@ -10,7 +10,7 @@ describeWithEnvironment('Viewport', function () {
         const insight = getInsightOrError('Viewport', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.isTrue(insight.mobileOptimized);
     });
-    it('detects mobile unoptimized viewport', async () => {
+    it('detects mobile unoptimized viewport (w/ no pointer interactions)', async () => {
         const { data } = await processTrace(this, 'lcp-images.json.gz');
         const navigation = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const context = createContextForNavigation(data, navigation, data.Meta.mainFrameId);
@@ -21,6 +21,19 @@ describeWithEnvironment('Viewport', function () {
         }
         const insight = Trace.Insights.Models.Viewport.generateInsight(data, context);
         assert.isFalse(insight.mobileOptimized);
+        assert.strictEqual(insight.metricSavings?.INP, 0);
+        assert.isEmpty(insight.longPointerInteractions);
+    });
+    it('detects mobile unoptimized viewport (w/ pointer interactions)', async () => {
+        const { data } = await processTrace(this, 'nytimes-bad-mobile-viewport.json.gz');
+        const context = {
+            bounds: data.Meta.traceBounds,
+            frameId: data.Meta.mainFrameId,
+        };
+        const insight = Trace.Insights.Models.Viewport.generateInsight(data, context);
+        assert.isFalse(insight.mobileOptimized);
+        assert.strictEqual(insight.metricSavings?.INP, 248);
+        assert.lengthOf(insight.longPointerInteractions ?? [], 1);
     });
 });
 //# sourceMappingURL=Viewport.test.js.map

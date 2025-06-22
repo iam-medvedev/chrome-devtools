@@ -457,7 +457,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     networkOnlyThirdPartySetting;
     networkResourceTypeFiltersSetting;
     networkShowOptionsToGenerateHarWithSensitiveData;
-    rawRowHeight;
     progressBarContainer;
     networkLogLargeRowsSetting;
     rowHeightInternal;
@@ -508,15 +507,12 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.networkResourceTypeFiltersSetting =
             Common.Settings.Settings.instance().createSetting('network-resource-type-filters', {});
         this.networkShowOptionsToGenerateHarWithSensitiveData = Common.Settings.Settings.instance().createSetting('network.show-options-to-generate-har-with-sensitive-data', false);
-        this.rawRowHeight = 0;
         this.progressBarContainer = progressBarContainer;
         this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
         this.networkLogLargeRowsSetting.addChangeListener(updateRowHeight.bind(this), this);
         function updateRowHeight() {
-            this.rawRowHeight = Boolean(this.networkLogLargeRowsSetting.get()) ? 41 : 21;
-            this.rowHeightInternal = this.computeRowHeight();
+            this.rowHeightInternal = Boolean(this.networkLogLargeRowsSetting.get()) ? 41 : 21;
         }
-        this.rawRowHeight = 0;
         this.rowHeightInternal = 0;
         updateRowHeight.call(this);
         this.timeCalculatorInternal = new NetworkTransferTimeCalculator();
@@ -811,9 +807,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         const groupLookup = groupKey ? this.groupLookups.get(groupKey) || null : null;
         this.activeGroupLookup = groupLookup;
         this.invalidateAllItems();
-    }
-    computeRowHeight() {
-        return this.rawRowHeight;
     }
     nodeForRequest(request) {
         return networkRequestToNode.get(request) || null;
@@ -1193,9 +1186,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     willHide() {
         this.columnsInternal.willHide();
-    }
-    onResize() {
-        this.rowHeightInternal = this.computeRowHeight();
     }
     flatNodesList() {
         const rootNode = this.dataGrid.rootNode();

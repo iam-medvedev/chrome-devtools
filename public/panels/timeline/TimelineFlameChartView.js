@@ -606,7 +606,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             }
             const overlaysBounds = Overlays.Overlays.traceWindowContainingOverlays(this.#currentInsightOverlays);
             if (overlaysBounds) {
-                // Trace window covering all overlays expanded by 50% so that the overlays cover 2/3 (100/150) of the visible window.
+                // Trace window covering all overlays expanded by 50% so that the overlays cover 2/3 (100/150) of the visible window. (Or use provided override)
                 const percentage = options.updateTraceWindowPercentage ?? 50;
                 const expandedBounds = Trace.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(overlaysBounds, traceBounds, percentage);
                 // Set the timeline visible window and ignore the minimap bounds. This
@@ -1151,7 +1151,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (!target) {
             return;
         }
-        const nodeIds = Trace.Extras.FetchNodes.nodeIdsForEvent(this.#parsedTrace, event);
+        const nodeIds = Utils.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
         for (const nodeId of nodeIds) {
             new SDK.DOMModel.DeferredDOMNode(target, nodeId).highlight();
         }
@@ -1316,6 +1316,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     enterLabelEditMode(overlay) {
         this.#overlays.enterLabelEditMode(overlay);
     }
+    bringLabelForward(overlay) {
+        this.#overlays.bringLabelForward(overlay);
+    }
     onAddEntryLabelAnnotation(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data.entryIndex);
         if (selectionIsEvent(selection)) {
@@ -1376,8 +1379,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 VisualLogging.logClick(loggable, new MouseEvent('click'));
             }
         }
-        dataProvider.buildFlowForInitiator(entryIndex);
         this.delegate.select(dataProvider.createSelection(entryIndex));
+        // If the selected entry has a label, bring it forward.
+        const traceEventForSelection = dataProvider.eventByIndex(entryIndex);
+        if (traceEventForSelection) {
+            ModificationsManager.activeManager()?.bringEntryLabelForwardIfExists(traceEventForSelection);
+        }
     }
     /**
      * This is invoked when the user uses their KEYBOARD ONLY to navigate between

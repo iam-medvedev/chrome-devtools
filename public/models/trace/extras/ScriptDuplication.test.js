@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
 import { fetchFixture } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function loadScriptFixture(name, modify) {
@@ -140,6 +140,9 @@ describeWithEnvironment('ScriptDuplication', function () {
                 totalBytes: 718,
                 unmappedBytes: 36,
             });
+        });
+        expectConsoleLogs({
+            error: ['Failed to parse source map Error: Unexpected char \' \' encountered while decoding'],
         });
         it('fault tolerance (bogus mappings)', async function () {
             const script = await loadScriptFixture('foo.min', fixture => {

@@ -12,7 +12,6 @@ interface ViewInput {
     onPreviewAnimationEnd: () => void;
     onRemoveAnimationGroup: () => void;
     onSelectAnimationGroup: () => void;
-    onCreateScreenshotPopover: () => void;
     onFocusNextGroup: () => void;
     onFocusPreviousGroup: () => void;
 }
@@ -26,7 +25,6 @@ interface AnimationGroupPreviewConfig {
     label: string;
     onRemoveAnimationGroup: () => void;
     onSelectAnimationGroup: () => void;
-    onCreateScreenshotPopover: () => void;
     onFocusNextGroup: () => void;
     onFocusPreviousGroup: () => void;
 }

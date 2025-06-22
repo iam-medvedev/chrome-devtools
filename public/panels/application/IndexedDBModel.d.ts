@@ -51,6 +51,7 @@ export declare class IndexedDBModel extends SDK.SDKModel.SDKModel<EventTypes> im
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
     attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
+    attributionReportingVerboseDebugReportSent(_event: Protocol.Storage.AttributionReportingVerboseDebugReportSentEvent): void;
 }
 export declare enum Events {
     DatabaseAdded = "DatabaseAdded",

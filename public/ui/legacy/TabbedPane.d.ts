@@ -38,7 +38,6 @@ export declare class TabbedPane extends TabbedPane_base {
     private focusedPlaceholderElement?;
     private placeholderContainerElement?;
     private lastSelectedOverflowTab?;
-    private overflowDisabled?;
     private measuredDropDownButtonWidth?;
     private leftToolbarInternal?;
     private rightToolbarInternal?;
@@ -107,7 +106,6 @@ export declare class TabbedPane extends TabbedPane_base {
     private dropDownMenuItemSelected;
     private totalWidth;
     private numberOfTabsShown;
-    disableOverflowMenu(): void;
     private updateTabsDropDown;
     private maybeShowDropDown;
     private measureDropDownButton;

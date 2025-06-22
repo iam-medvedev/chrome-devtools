@@ -553,7 +553,29 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.command = event.target.value;
         }
         this.populateParametersForCommandWithDefaultValues();
+        const target = event.target;
+        await this.updateComplete;
+        this.#focusNextElement(target);
     };
+    /**
+     * When devtools-suggestion-input closes, it blurs itself resulting in
+     * the focus shifting to the overall DevTools window.
+     *
+     * This method focuses on the next focusable element (button or input)
+     * so that the focus remains in the Editor and Ctrl + Shift works.
+     */
+    #focusNextElement(target) {
+        // FIXME: can we do this via view output?
+        const elements = this.contentElement.querySelectorAll('devtools-suggestion-input,.add-button');
+        const element = [...elements].findIndex(value => value === target.shadowRoot?.host);
+        if (element >= 0 && element + 1 < elements.length) {
+            elements[element + 1].focus();
+        }
+        else {
+            this.contentElement.querySelector('devtools-button[jslogcontext="protocol-monitor.send-command"]')
+                ?.focus();
+        }
+    }
     #createNestedParameter(type, name) {
         if (type.type === "object" /* ParameterType.OBJECT */) {
             let typeRef = type.typeRef;
@@ -1021,8 +1043,8 @@ function renderParameters(input, parameters, id, parentParameter, parentParamete
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <div class="wrapper" jslog=${VisualLogging.pane('command-editor').track({ resize: true })}>
-      <div class="editor-wrapper" @keydown=${input.onKeydown}>
+    <div class="wrapper" @keydown=${input.onKeydown} jslog=${VisualLogging.pane('command-editor').track({ resize: true })}>
+      <div class="editor-wrapper">
         ${renderTargetSelectorRow(input)}
         <div class="row attribute padded">
           <div class="command">command<span class="separator">:</span></div>

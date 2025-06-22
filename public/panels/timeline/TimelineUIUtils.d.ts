@@ -28,7 +28,6 @@ export declare class TimelineUIUtils {
     static eventColor(event: Trace.Types.Events.Event): string;
     static eventTitle(event: Trace.Types.Events.Event): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
-    static buildDetailsTextForTraceEvent(event: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace): Promise<string | null>;
     static buildDetailsNodeForTraceEvent(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording: boolean | undefined, parsedTrace: Trace.Handlers.Types.ParsedTrace): Promise<Node | null>;
     static linkifyLocation(linkifyOptions: LinkifyLocationOptions): Element | null;
     static linkifyTopCallFrame(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;

@@ -1127,6 +1127,9 @@
   "entrypoints/main/main-meta.ts | toggleDrawer": {
     "message": "Toggle drawer"
   },
+  "entrypoints/main/main-meta.ts | toggleDrawerOrientation": {
+    "message": "Toggle drawer orientation"
+  },
   "entrypoints/main/main-meta.ts | undocked": {
     "message": "Undocked"
   },
@@ -1237,9 +1240,6 @@
   },
   "generated/Deprecation.ts | CanRequestURLHTTPContainingNewline": {
     "message": "Resource requests whose URLs contained both removed whitespace \\(n|r|t) characters and less-than characters (<) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources."
-  },
-  "generated/Deprecation.ts | CharsetAutoDetectionISO2022JP": {
-    "message": "Auto-detection of ISO-2022-JP character set is deprecated and it will be disabled in the near future. Please specify character set in the Content Type header or by using a meta tag (https://developer.mozilla.org/en-US/docs/Glossary/Character_encoding)."
   },
   "generated/Deprecation.ts | ChromeLoadTimesConnectionInfo": {
     "message": "chrome.loadTimes() is deprecated, instead use standardized API: Navigation Timing 2."
@@ -1754,6 +1754,9 @@
   "models/persistence/PersistenceActions.ts | saveAs": {
     "message": "Save as…"
   },
+  "models/persistence/PersistenceActions.ts | saveFailed": {
+    "message": "Failed to save file to disk."
+  },
   "models/persistence/PersistenceActions.ts | saveImage": {
     "message": "Save image"
   },
@@ -1832,8 +1835,8 @@
   "models/trace/insights/CLSCulprits.ts | topCulprits": {
     "message": "Top layout shift culprits"
   },
-  "models/trace/insights/CLSCulprits.ts | unsizedImages": {
-    "message": "Unsized Images"
+  "models/trace/insights/CLSCulprits.ts | unsizedImage": {
+    "message": "Unsized image element"
   },
   "models/trace/insights/CLSCulprits.ts | worstCluster": {
     "message": "Worst cluster"
@@ -2197,6 +2200,9 @@
   },
   "models/trace/insights/Viewport.ts | description": {
     "message": "Tap interactions may be [delayed by up to 300 ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile."
+  },
+  "models/trace/insights/Viewport.ts | mobileTapDelayLabel": {
+    "message": "Mobile tap delay"
   },
   "models/trace/insights/Viewport.ts | title": {
     "message": "Optimize viewport for mobile"
@@ -5844,7 +5850,7 @@
     "message": "Only show messages from the current context (top, iframe, worker, extension)"
   },
   "panels/console/ConsoleView.ts | overriddenByFilterSidebar": {
-    "message": "Overridden by filter sidebar"
+    "message": "Log levels are controlled by the console sidebar."
   },
   "panels/console/ConsoleView.ts | preserveLog": {
     "message": "Preserve log"
@@ -13556,6 +13562,9 @@
   "panels/sources/SourcesNavigator.ts | saveAs": {
     "message": "Save as…"
   },
+  "panels/sources/SourcesNavigator.ts | saveAsFailed": {
+    "message": "Failed to save file to disk."
+  },
   "panels/sources/SourcesNavigator.ts | selectFolderForOverrides": {
     "message": "Select folder for overrides"
   },
@@ -13687,6 +13696,9 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "Refresh watch expressions"
+  },
+  "panels/sources/WatchExpressionsSidebarPane.ts | watchExpressionDeleted": {
+    "message": "Watch expression deleted"
   },
   "panels/timeline/AnimationsTrackAppender.ts | animations": {
     "message": "Animations"
@@ -15161,9 +15173,6 @@
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "Details"
   },
-  "panels/timeline/TimelineUIUtils.ts | dimensions": {
-    "message": "Dimensions"
-  },
   "panels/timeline/TimelineUIUtils.ts | duration": {
     "message": "Duration"
   },
@@ -15236,9 +15245,6 @@
   "panels/timeline/TimelineUIUtils.ts | learnMore": {
     "message": "Learn more"
   },
-  "panels/timeline/TimelineUIUtils.ts | location": {
-    "message": "Location"
-  },
   "panels/timeline/TimelineUIUtils.ts | message": {
     "message": "Message"
   },
@@ -15302,9 +15308,6 @@
   "panels/timeline/TimelineUIUtils.ts | sChildren": {
     "message": "{PH1} (children)"
   },
-  "panels/timeline/TimelineUIUtils.ts | sCollected": {
-    "message": "{PH1} collected"
-  },
   "panels/timeline/TimelineUIUtils.ts | script": {
     "message": "Script"
   },
@@ -15329,23 +15332,11 @@
   "panels/timeline/TimelineUIUtils.ts | sS": {
     "message": "{PH1}: {PH2}"
   },
-  "panels/timeline/TimelineUIUtils.ts | sSCurlyBrackets": {
-    "message": "({PH1}, {PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSDimensions": {
-    "message": "{PH1} × {PH2}"
-  },
   "panels/timeline/TimelineUIUtils.ts | sSelectorStatsInfo": {
     "message": "Select \"{PH1}\" to collect detailed CSS selector matching statistics."
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (self)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSs": {
-    "message": "{PH1} [{PH2}…{PH3}]"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSSquareBrackets": {
-    "message": "{PH1} [{PH2}…]"
   },
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Stack trace"
@@ -16526,9 +16517,6 @@
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Screenshot for {PH1} - select to view preceding requests."
   },
-  "ui/legacy/components/perf_ui/FlameChart.ts | deleteAnnotations": {
-    "message": "Delete annotations"
-  },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
     "message": "Configure tracks"
   },
@@ -16894,6 +16882,9 @@
   },
   "ui/legacy/InspectorView.ts | setToSpecificLanguage": {
     "message": "Switch DevTools to {PH1}"
+  },
+  "ui/legacy/InspectorView.ts | toggleDrawerOrientation": {
+    "message": "Toggle drawer orientation"
   },
   "ui/legacy/ListWidget.ts | addString": {
     "message": "Add"

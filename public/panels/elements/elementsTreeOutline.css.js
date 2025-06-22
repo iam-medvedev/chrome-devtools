@@ -33,6 +33,7 @@ export default `/*
 }
 
 .adorner-reveal {
+  vertical-align: middle;
   margin: 0 3px;
 }
 

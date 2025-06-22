@@ -313,16 +313,15 @@ export class SidebarSingleInsightSet extends HTMLElement {
       ${fieldIsDifferentEl}
     `;
     }
-    #renderInsights(insightSets, insightSetKey) {
+    static categorizeInsights(insightSets, insightSetKey, activeCategory) {
         const includeExperimental = Root.Runtime.experiments.isEnabled("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */);
         const insightSet = insightSets?.get(insightSetKey);
         if (!insightSet) {
-            return Lit.nothing;
+            return { shownInsights: [], passedInsights: [] };
         }
-        const models = insightSet.model;
         const shownInsights = [];
         const passedInsights = [];
-        for (const [name, model] of Object.entries(models)) {
+        for (const [name, model] of Object.entries(insightSet.model)) {
             const componentClass = INSIGHT_NAME_TO_COMPONENT[name];
             if (!componentClass) {
                 continue;
@@ -330,16 +329,32 @@ export class SidebarSingleInsightSet extends HTMLElement {
             if (!includeExperimental && EXPERIMENTAL_INSIGHTS.has(name)) {
                 continue;
             }
-            if (!model ||
-                !shouldRenderForCategory({ activeCategory: this.#data.activeCategory, insightCategory: model.category })) {
+            if (!model || !shouldRenderForCategory({ activeCategory, insightCategory: model.category })) {
                 continue;
             }
             if (model instanceof Error) {
                 continue;
             }
-            const fieldMetrics = this.#getFieldMetrics(insightSetKey);
+            if (model.state === 'pass') {
+                passedInsights.push({ componentClass, model });
+            }
+            else {
+                shownInsights.push({ componentClass, model });
+            }
+        }
+        return { shownInsights, passedInsights };
+    }
+    #renderInsights(insightSets, insightSetKey) {
+        const insightSet = insightSets?.get(insightSetKey);
+        if (!insightSet) {
+            return Lit.nothing;
+        }
+        const fieldMetrics = this.#getFieldMetrics(insightSetKey);
+        const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = SidebarSingleInsightSet.categorizeInsights(insightSets, insightSetKey, this.#data.activeCategory);
+        const renderInsightComponent = (insightData) => {
+            const { componentClass, model } = insightData;
             // clang-format off
-            const component = html `<div>
+            return html `<div>
         <${componentClass.litTagName}
           .selected=${this.#data.activeInsight?.model === model}
           ${Lit.Directives.ref(elem => {
@@ -355,13 +370,9 @@ export class SidebarSingleInsightSet extends HTMLElement {
         </${componentClass.litTagName}>
       </div>`;
             // clang-format on
-            if (model.state === 'pass') {
-                passedInsights.push(component);
-            }
-            else {
-                shownInsights.push(component);
-            }
-        }
+        };
+        const shownInsights = shownInsightsData.map(renderInsightComponent);
+        const passedInsights = passedInsightsData.map(renderInsightComponent);
         // clang-format off
         return html `
       ${shownInsights}

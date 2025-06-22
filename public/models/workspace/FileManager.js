@@ -48,10 +48,12 @@ export class FileManager extends Common.ObjectWrapper.ObjectWrapper {
     /**
      * {@link FileManager.close | close} *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
      */
-    save(url, content, forceSaveAs, isBase64) {
+    save(url, contentData, forceSaveAs) {
         // Remove this url from the saved URLs while it is being saved.
         const result = new Promise(resolve => this.#saveCallbacks.set(url, resolve));
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.save(url, content, forceSaveAs, isBase64);
+        const { isTextContent } = contentData;
+        const content = isTextContent ? contentData.text : contentData.base64;
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.save(url, content, forceSaveAs, !isTextContent);
         return result;
     }
     /**

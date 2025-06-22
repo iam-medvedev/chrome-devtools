@@ -1059,6 +1059,9 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
      * 1. When the setting is changed via a different method.
      * 2. When the value of the select is changed, triggering a change to the setting.
      */
+    /**
+     * Runs when the DevTools setting is changed
+     */
     onDevToolsSettingChanged() {
         if (this.muteSettingListener) {
             return;
@@ -1079,6 +1082,9 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
         this.muteSettingListener = true;
         this.setting.set(option.value);
         this.muteSettingListener = false;
+        // Because we mute the DevTools setting change listener, we need to
+        // manually update the title here.
+        this.setTitle(option.label);
     }
 }
 export class ToolbarCheckbox extends ToolbarItem {

@@ -1,2 +1,3 @@
 import * as PerformanceTracing from './PerformanceTracing.js';
-export { PerformanceTracing, };
+import * as TracingManager from './TracingManager.js';
+export { PerformanceTracing, TracingManager, };

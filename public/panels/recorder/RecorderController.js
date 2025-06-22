@@ -1200,7 +1200,7 @@ let RecorderController = class RecorderController extends LitElement {
         }}
             ></devtools-button>
             <div class="feedback">
-              <x-link class="x-link" href=${FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+              <x-link class="x-link" title=${i18nString(UIStrings.sendFeedback)} href=${FEEDBACK_URL} jslog=${VisualLogging.link('feedback').track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
             </div>
             <div class="separator"></div>
             <devtools-shortcut-dialog

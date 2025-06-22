@@ -309,13 +309,13 @@ export function isGPUTask(event) {
     return event.name === 'GPUTask';
 }
 export function isProfile(event) {
-    return event.name === 'Profile';
+    return event.name === "Profile" /* Name.PROFILE */;
 }
 export function isSyntheticCpuProfile(event) {
-    return event.name === 'CpuProfile';
+    return event.name === "CpuProfile" /* Name.CPU_PROFILE */;
 }
 export function isProfileChunk(event) {
-    return event.name === 'ProfileChunk';
+    return event.name === "ProfileChunk" /* Name.PROFILE_CHUNK */;
 }
 export function isResourceChangePriority(event) {
     return event.name === 'ResourceChangePriority';

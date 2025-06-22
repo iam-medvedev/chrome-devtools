@@ -46,6 +46,7 @@
     "../../../../../../front_end/panels/timeline/FreshRecording.test.ts",
     "../../../../../../front_end/panels/timeline/Initiators.test.ts",
     "../../../../../../front_end/panels/timeline/ModificationsManager.test.ts",
+    "../../../../../../front_end/panels/timeline/RecordingMetadata.test.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.test.ts",
     "../../../../../../front_end/panels/timeline/ThirdPartyTreeView.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineController.test.ts",

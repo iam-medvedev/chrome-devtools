@@ -46,10 +46,10 @@
       "path": "../../models/bindings/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/trace/bundle-tsconfig.json"
+      "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/workspace/bundle-tsconfig.json"
+      "path": "../../services/tracing/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/code_highlighter/bundle-tsconfig.json"

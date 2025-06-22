@@ -155,7 +155,6 @@ export interface MetaData {
     networkThrottling?: string;
     networkThrottlingConditions?: Omit<SDK.NetworkManager.Conditions, 'title'>;
     cpuThrottling?: number;
-    hardwareConcurrency?: number;
     dataOrigin?: DataOrigin;
     enhancedTraceVersion?: number;
     modifications?: Modifications;

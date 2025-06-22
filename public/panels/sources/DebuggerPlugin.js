@@ -42,6 +42,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as Tooltips from '../../ui/components/tooltips/tooltips.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as SourceFrame from '../../ui/legacy/components/source_frame/source_frame.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -1106,7 +1107,7 @@ export class DebuggerPlugin extends Plugin {
             else if (main.condition()) {
                 gutterClass += ' cm-breakpoint-conditional';
             }
-            gutterMarkers.push((new BreakpointGutterMarker(gutterClass, lineStart)).range(lineStart));
+            gutterMarkers.push((new BreakpointGutterMarker(gutterClass, lineStart, main.condition())).range(lineStart));
         }
         const addPossibleBreakpoints = (line, locations) => {
             for (const location of locations) {
@@ -1571,7 +1572,8 @@ function muteGutterMarkers(markers, doc) {
         if (!/cm-breakpoint-disabled/.test(className)) {
             className += ' cm-breakpoint-disabled';
         }
-        newMarkers.push(new BreakpointGutterMarker(className, from).range(from));
+        newMarkers.push(new BreakpointGutterMarker(className, from, marker instanceof BreakpointGutterMarker ? marker.condition : undefined)
+            .range(from));
     });
     return CodeMirror.RangeSet.of(newMarkers, false);
 }
@@ -1646,11 +1648,14 @@ class BreakpointInlineMarker extends CodeMirror.WidgetType {
 }
 class BreakpointGutterMarker extends CodeMirror.GutterMarker {
     elementClass;
+    static nextTooltipId = 0;
     #position;
-    constructor(elementClass, position) {
+    condition;
+    constructor(elementClass, position, condition) {
         super();
         this.elementClass = elementClass;
         this.#position = position;
+        this.condition = condition;
     }
     eq(other) {
         return other.elementClass === this.elementClass;
@@ -1661,7 +1666,21 @@ class BreakpointGutterMarker extends CodeMirror.GutterMarker {
         const line = view.state.doc.lineAt(this.#position).number;
         const formatNumber = view.state.facet(SourceFrame.SourceFrame.LINE_NUMBER_FORMATTER);
         div.textContent = formatNumber(line, view.state);
-        return div;
+        if (!this.condition) {
+            return div;
+        }
+        const container = document.createElement('div');
+        const id = `cm-breakpoint-tooltip-${BreakpointGutterMarker.nextTooltipId++}`;
+        div.setAttribute('aria-details', id);
+        container.appendChild(div);
+        const tooltip = new Tooltips.Tooltip.Tooltip({
+            id,
+            anchor: div,
+            jslogContext: 'breakpoint-tooltip',
+        });
+        tooltip.append(this.condition);
+        container.appendChild(tooltip);
+        return container;
     }
 }
 function mostSpecificBreakpoint(a, b) {

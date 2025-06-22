@@ -108,7 +108,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     focusedPlaceholderElement;
     placeholderContainerElement;
     lastSelectedOverflowTab;
-    overflowDisabled;
     measuredDropDownButtonWidth;
     leftToolbarInternal;
     rightToolbarInternal;
@@ -637,9 +636,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
         return numTabsShown;
     }
-    disableOverflowMenu() {
-        this.overflowDisabled = true;
-    }
     updateTabsDropDown() {
         const tabsToShowIndexes = this.tabsToShowIndexes(this.tabs, this.tabsHistory, this.totalWidth(), this.measuredDropDownButtonWidth || 0);
         if (this.lastSelectedOverflowTab && this.numberOfTabsShown() !== tabsToShowIndexes.length) {
@@ -658,9 +654,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
                 this.showTabElement(i, tab);
             }
         }
-        if (!this.overflowDisabled) {
-            this.maybeShowDropDown(tabsToShowIndexes.length !== this.tabs.length);
-        }
+        this.maybeShowDropDown(tabsToShowIndexes.length !== this.tabs.length);
     }
     maybeShowDropDown(hasMoreTabs) {
         if (hasMoreTabs && !this.dropDownButton.parentElement) {
@@ -671,7 +665,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
     }
     measureDropDownButton() {
-        if (this.overflowDisabled || this.measuredDropDownButtonWidth) {
+        if (this.measuredDropDownButtonWidth) {
             return;
         }
         this.dropDownButton.classList.add('measuring');

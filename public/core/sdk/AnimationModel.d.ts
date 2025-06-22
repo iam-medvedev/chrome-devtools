@@ -3,7 +3,6 @@ import * as Protocol from '../../generated/protocol.js';
 import { DeferredDOMNode, type DOMNode } from './DOMModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';
-import { ScreenCaptureModel } from './ScreenCaptureModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 /**
@@ -130,7 +129,6 @@ export declare class KeyframeStyle {
 }
 export declare class AnimationGroup {
     #private;
-    screenshotsInternal: string[];
     constructor(animationModel: AnimationModel, id: string, animations: AnimationImpl[]);
     isScrollDriven(): boolean;
     id(): string;
@@ -150,7 +148,6 @@ export declare class AnimationGroup {
     shouldInclude(group: AnimationGroup): boolean;
     appendAnimations(animations: AnimationImpl[]): void;
     rebaseTo(group: AnimationGroup): void;
-    screenshots(): HTMLImageElement[];
 }
 export declare class AnimationDispatcher implements ProtocolProxyApi.AnimationDispatcher {
     #private;
@@ -160,14 +157,6 @@ export declare class AnimationDispatcher implements ProtocolProxyApi.AnimationDi
     animationStarted({ animation }: Protocol.Animation.AnimationStartedEvent): void;
     animationUpdated({ animation }: Protocol.Animation.AnimationUpdatedEvent): void;
 }
-export declare class ScreenshotCapture {
-    #private;
-    constructor(animationModel: AnimationModel, screenCaptureModel: ScreenCaptureModel);
-    captureScreenshots(duration: number, screenshots: string[]): Promise<void>;
-    private screencastFrame;
-    private stopScreencast;
-}
 export interface Request {
     endTime: number;
-    screenshots: string[];
 }

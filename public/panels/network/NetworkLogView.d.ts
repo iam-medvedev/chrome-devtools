@@ -28,7 +28,6 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private readonly networkOnlyThirdPartySetting;
     private readonly networkResourceTypeFiltersSetting;
     private readonly networkShowOptionsToGenerateHarWithSensitiveData;
-    private rawRowHeight;
     private readonly progressBarContainer;
     private readonly networkLogLargeRowsSetting;
     private rowHeightInternal;
@@ -102,7 +101,6 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     onLoadFromFile(file: File): Promise<void>;
     private harLoadFailed;
     private setGrouping;
-    private computeRowHeight;
     nodeForRequest(request: SDK.NetworkRequest.NetworkRequest): NetworkRequestNode | null;
     headerHeight(): number;
     setRecording(recording: boolean): void;
@@ -140,7 +138,6 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private domContentLoadedEventFired;
     wasShown(): void;
     willHide(): void;
-    onResize(): void;
     flatNodesList(): NetworkNode[];
     private onDataGridFocus;
     private onDataGridBlur;

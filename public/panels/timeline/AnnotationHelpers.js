@@ -190,6 +190,9 @@ export function ariaAnnouncementForModifiedEvent(event) {
         case 'EnterLabelEditState': {
             return (i18nString(UIStrings.srEnterLabelEditMode));
         }
+        case 'LabelBringForward': {
+            break;
+        }
         default:
             Platform.assertNever(action, 'Unsupported action for AnnotationModifiedEvent');
     }

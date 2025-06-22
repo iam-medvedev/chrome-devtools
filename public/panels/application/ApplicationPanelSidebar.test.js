@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, expectConsoleLogs, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { createResource, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -295,6 +295,9 @@ describeWithMockConnection('IDBDatabaseTreeElement', () => {
     beforeEach(() => {
         stubNoopSettings();
     });
+    expectConsoleLogs({
+        error: ['Error: No LanguageSelector instance exists yet.'],
+    });
     it('only becomes selectable after database is updated', () => {
         const target = createTarget();
         const model = target.model(Application.IndexedDBModel.IndexedDBModel);
@@ -314,6 +317,9 @@ describeWithMockConnection('ResourcesSection', () => {
             stubNoopSettings();
             SDK.FrameManager.FrameManager.instance({ forceNew: true });
             target = createTarget();
+        });
+        expectConsoleLogs({
+            error: ['Error: No LanguageSelector instance exists yet.'],
         });
         it('adds tree elements for a frame and resource', () => {
             SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);

@@ -1,12 +1,15 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
 describeWithEnvironment('DOMSize', function () {
     // Processing traces in this file can take a while due to a performance bottleneck
     // b/38254550
     this.timeout(30_000);
+    expectConsoleLogs({
+        error: ['Error: missing metric scores for specified navigation'],
+    });
     it('finds layout reflows and style recalcs affected by DOM size', async () => {
         const { data, insights } = await processTrace(this, 'dom-size.json.gz');
         // 1 large DOM update was triggered before the first navigation

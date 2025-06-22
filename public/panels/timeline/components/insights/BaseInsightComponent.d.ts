@@ -1,7 +1,6 @@
 import '../../../../ui/components/markdown_view/markdown_view.js';
-import type * as Protocol from '../../../../generated/protocol.js';
 import type { InsightModel } from '../../../../models/trace/insights/types.js';
-import * as Trace from '../../../../models/trace/trace.js';
+import type * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import type { TableState } from './Table.js';
@@ -46,5 +45,4 @@ export declare abstract class BaseInsightComponent<T extends InsightModel> exten
     protected abstract renderContent(): Lit.LitTemplate;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     getEstimatedSavingsBytes(): number | null;
-    protected renderNode(backendNodeId: Protocol.DOM.BackendNodeId, fallbackText?: string): Lit.LitTemplate;
 }

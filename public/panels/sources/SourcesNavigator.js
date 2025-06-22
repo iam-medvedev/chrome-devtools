@@ -36,6 +36,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Snippets from '../snippets/snippets.js';
@@ -106,6 +107,12 @@ const UIStrings = {
      *@description Text to save content as a specific file type
      */
     saveAs: 'Save as…',
+    /**
+     * @description An error message logged to the Console panel when the user uses
+     *              the "Save as…" context menu in the Sources panel and the operation
+     *              failes.
+     */
+    saveAsFailed: 'Failed to save file to disk.',
     /**
      * @description Message shown in the Workspace tab of the Sources panel to nudge
      *              developers into utilizing the Automatic Workspace Folders feature
@@ -360,8 +367,13 @@ export class SnippetsNavigatorView extends NavigatorView {
     }
     async handleSaveAs(uiSourceCode) {
         uiSourceCode.commitWorkingCopy();
-        const { content } = await uiSourceCode.requestContent();
-        await Workspace.FileManager.FileManager.instance().save(this.addJSExtension(uiSourceCode.url()), content || '', true, false /* isBase64 */);
+        const contentData = await uiSourceCode.requestContentData();
+        if (TextUtils.ContentData.ContentData.isError(contentData)) {
+            console.error(`Failed to retrieve content for ${uiSourceCode.url()}: ${contentData}`);
+            Common.Console.Console.instance().error(i18nString(UIStrings.saveAsFailed), /* show=*/ false);
+            return;
+        }
+        await Workspace.FileManager.FileManager.instance().save(this.addJSExtension(uiSourceCode.url()), contentData, /* forceSaveAs=*/ true);
         Workspace.FileManager.FileManager.instance().close(uiSourceCode.url());
     }
     addJSExtension(url) {

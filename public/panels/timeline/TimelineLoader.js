@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as RecordingMetadata from './RecordingMetadata.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Loader of the Performance panel
@@ -228,7 +229,7 @@ export class TimelineLoader {
     }
     async finalizeTrace() {
         if (!this.#metadata && this.#traceIsCPUProfile) {
-            this.#metadata = { dataOrigin: "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */ };
+            this.#metadata = RecordingMetadata.forCPUProfile();
         }
         await this.client.loadingComplete(this.#collectedEvents, this.filter, this.#metadata);
         this.#traceFinalizedCallbackForTest?.();

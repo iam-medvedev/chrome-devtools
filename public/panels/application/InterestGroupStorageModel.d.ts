@@ -21,6 +21,7 @@ export declare class InterestGroupStorageModel extends SDK.SDKModel.SDKModel<Eve
     storageBucketDeleted(_event: Protocol.Storage.StorageBucketDeletedEvent): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
     attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
+    attributionReportingVerboseDebugReportSent(_event: Protocol.Storage.AttributionReportingVerboseDebugReportSentEvent): void;
 }
 export declare const enum Events {
     INTEREST_GROUP_ACCESS = "InterestGroupAccess"

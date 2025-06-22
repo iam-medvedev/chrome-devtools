@@ -49,6 +49,12 @@ export default `/*
   flex: 1 1 auto;
 }
 
+.console-sidebar-levels-info {
+  margin-left: var(--sys-size-3);
+  width: var(--sys-size-8);
+  height: var(--sys-size-8);
+}
+
 #console-issues-counter {
   margin-top: 0;
 }

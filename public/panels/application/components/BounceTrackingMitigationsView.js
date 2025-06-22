@@ -58,6 +58,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
     #seenButtonClick = false;
     connectedCallback() {
         void this.#render();
+        this.parentElement?.classList.add('overflow-auto');
     }
     async #render() {
         // clang-format off

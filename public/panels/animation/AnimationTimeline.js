@@ -11,7 +11,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AnimationGroupPreviewUI } from './AnimationGroupPreviewUI.js';
-import { AnimationScreenshotPopover } from './AnimationScreenshotPopover.js';
 import animationTimelineStyles from './animationTimeline.css.js';
 import { AnimationUI } from './AnimationUI.js';
 const UIStrings = {
@@ -101,7 +100,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #grid;
     #playbackRate;
     #allPaused;
-    #screenshotPopovers = [];
     #animationsContainer;
     #playbackRateButtons;
     #previewContainer;
@@ -533,24 +531,9 @@ export class AnimationTimeline extends UI.Widget.VBox {
     }
     clearPreviews() {
         this.#previewMap.clear();
-        this.#screenshotPopovers.forEach(popover => {
-            popover.detach();
-        });
         this.#previewContainer.removeChildren();
-        this.#screenshotPopovers = [];
     }
     createPreview(group) {
-        const screenshotsContainer = document.createElement('div');
-        screenshotsContainer.classList.add('screenshots-container', 'no-screenshots');
-        screenshotsContainer.createChild('span', 'screenshot-arrow');
-        // After the view is shown on hover, position it if it is out of bounds.
-        screenshotsContainer.addEventListener('animationend', () => {
-            const { right, left, width } = screenshotsContainer.getBoundingClientRect();
-            // Render to the left if it is not getting out of bounds when rendered on the left.
-            if (right > window.innerWidth && (left - width) >= 0) {
-                screenshotsContainer.classList.add('to-the-left');
-            }
-        });
         const preview = new AnimationGroupPreviewUI({
             animationGroup: group,
             label: i18nString(UIStrings.animationPreviewS, { PH1: this.#groupBuffer.length + 1 }),
@@ -559,27 +542,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
             },
             onSelectAnimationGroup: () => {
                 void this.selectAnimationGroup(group);
-            },
-            // Screenshot popover is created only once.
-            // Then, its visibility is controlled via CSS `:hover`.
-            onCreateScreenshotPopover: () => {
-                const screenshots = group.screenshots();
-                if (!screenshots.length) {
-                    return;
-                }
-                screenshotsContainer.classList.remove('no-screenshots');
-                const createAndShowScreenshotPopover = () => {
-                    const screenshotPopover = new AnimationScreenshotPopover(screenshots);
-                    // This is needed for clearing out the widgets
-                    this.#screenshotPopovers.push(screenshotPopover);
-                    screenshotPopover.show(screenshotsContainer);
-                };
-                if (!screenshots[0].complete) {
-                    screenshots[0].onload = createAndShowScreenshotPopover;
-                }
-                else {
-                    createAndShowScreenshotPopover();
-                }
             },
             onFocusNextGroup: () => {
                 this.focusNextGroup(group);
@@ -592,7 +554,6 @@ export class AnimationTimeline extends UI.Widget.VBox {
         previewUiContainer.classList.add('preview-ui-container');
         preview.markAsRoot();
         preview.show(previewUiContainer);
-        previewUiContainer.appendChild(screenshotsContainer);
         this.#groupBuffer.push(group);
         this.#previewMap.set(group, preview);
         this.#previewContainer.appendChild(previewUiContainer);

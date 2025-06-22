@@ -330,7 +330,7 @@ export class TraceEventFormatter {
         const baseTime = parsedTrace.Meta.traceBounds.min;
         const potentialRootCauses = [];
         if (rootCauses) {
-            rootCauses.iframeIds.forEach(id => potentialRootCauses.push(`An iframe (id: ${id} was injected into the page)`));
+            rootCauses.iframes.forEach(iframe => potentialRootCauses.push(`An iframe (id: ${iframe.frame}, url: ${iframe.url ?? 'unknown'} was injected into the page)`));
             rootCauses.fontRequests.forEach(req => {
                 potentialRootCauses.push(`A font that was loaded over the network (${req.args.data.url}).`);
             });

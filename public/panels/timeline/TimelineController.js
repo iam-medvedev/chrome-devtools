@@ -5,10 +5,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
-import * as EmulationModel from '../../models/emulation/emulation.js';
 import * as Extensions from '../../models/extensions/extensions.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as Tracing from '../../services/tracing/tracing.js';
+import * as RecordingMetadata from './RecordingMetadata.js';
 const UIStrings = {
     /**
      *@description Text in Timeline Controller of the Performance panel indicating that the Performance Panel cannot
@@ -60,7 +61,7 @@ export class TimelineController {
         this.rootTarget = rootTarget;
         // Ensure the tracing manager is the one for the Root Target, NOT the
         // primaryPageTarget, as that is the one we have to invoke tracing against.
-        this.tracingManager = rootTarget.model(Trace.TracingManager.TracingManager);
+        this.tracingManager = rootTarget.model(Tracing.TracingManager.TracingManager);
         this.client = client;
     }
     async dispose() {
@@ -92,6 +93,7 @@ export class TimelineController {
             disabledByDefault('devtools.timeline'),
             disabledByDefault('devtools.v8-source-rundown-sources'),
             disabledByDefault('devtools.v8-source-rundown'),
+            disabledByDefault('layout_shift.debug'),
             // Looking for disabled-by-default-v8.compile? We disabled it: crbug.com/414330508.
             disabledByDefault('v8.inspector'),
             disabledByDefault('v8.cpu_profiler.hires'),
@@ -178,17 +180,6 @@ export class TimelineController {
         const urls = [...new Set(this.#navigationUrls)];
         return await Promise.all(urls.map(url => cruxManager.getFieldDataForPage(url)));
     }
-    async createMetadata() {
-        const deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
-        let emulatedDeviceTitle;
-        if (deviceModeModel?.type() === EmulationModel.DeviceModeModel.Type.Device) {
-            emulatedDeviceTitle = deviceModeModel.device()?.title ?? undefined;
-        }
-        else if (deviceModeModel?.type() === EmulationModel.DeviceModeModel.Type.Responsive) {
-            emulatedDeviceTitle = 'Responsive';
-        }
-        return await Trace.Extras.Metadata.forNewRecording(false, this.#recordingStartTime ?? undefined, emulatedDeviceTitle, this.#fieldData ?? undefined);
-    }
     async waitForTracingToStop() {
         if (this.tracingManager) {
             await this.tracingCompletePromise?.promise;
@@ -236,7 +227,10 @@ export class TimelineController {
     async allSourcesFinished() {
         Extensions.ExtensionServer.ExtensionServer.instance().profilingStopped();
         this.client.processingStarted();
-        const metadata = await this.createMetadata();
+        const metadata = await RecordingMetadata.forTrace({
+            recordingStartTime: this.#recordingStartTime ?? undefined,
+            cruxFieldData: this.#fieldData ?? undefined,
+        });
         await this.client.loadingComplete(this.#collectedEvents, /* exclusiveFilter= */ null, metadata);
         this.client.loadingCompleteForTest();
         SDK.SourceMap.SourceMap.retainRawSourceMaps = false;

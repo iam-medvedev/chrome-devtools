@@ -126,7 +126,10 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.failBanner = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noLayerInformation), i18nString(UIStrings.layerExplanation));
         this.layerViewHost = layerViewHost;
         this.layerViewHost.registerView(this);
-        this.transformController = new TransformController(this.contentElement);
+        // Install transform controller, but still allow drag events to set focus on the element, which is needed
+        // to correctly listen for keyboard shortcuts.
+        this.transformController =
+            new TransformController(this.contentElement, false, false /* preventDefaultOnMouseDown */);
         this.transformController.addEventListener("TransformChanged" /* TransformControllerEvents.TRANSFORM_CHANGED */, this.update, this);
         this.initToolbar();
         this.canvasElement = this.contentElement.createChild('canvas');

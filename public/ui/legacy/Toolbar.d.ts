@@ -252,6 +252,9 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
      * 1. When the setting is changed via a different method.
      * 2. When the value of the select is changed, triggering a change to the setting.
      */
+    /**
+     * Runs when the DevTools setting is changed
+     */
     private onDevToolsSettingChanged;
     /**
      * Run when the user interacts with the <select> element.

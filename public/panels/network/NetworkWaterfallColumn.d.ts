@@ -10,7 +10,6 @@ export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     private scrollTop;
     private headerHeight;
     private calculator;
-    private rawRowHeight;
     private rowHeight;
     private offsetWidth;
     private offsetHeight;
@@ -39,7 +38,6 @@ export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     private setHoveredNode;
     private setSelectedNode;
     setRowHeight(height: number): void;
-    private updateRowHeight;
     setHeaderHeight(height: number): void;
     setRightPadding(padding: number): void;
     setCalculator(calculator: NetworkTimeCalculator): void;

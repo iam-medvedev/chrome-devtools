@@ -191,11 +191,8 @@ models/text_utils/TextUtils.test.js
 models/text_utils/WasmDisassembly.test.js
 models/trace/ModelImpl.test.js
 models/trace/Processor.test.js
-models/trace/TracingManager.test.js
-models/trace/extras/FetchNodes.test.js
 models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
-models/trace/extras/Metadata.test.js
 models/trace/extras/ScriptDuplication.test.js
 models/trace/extras/StackTraceForEvent.test.js
 models/trace/extras/ThirdParties.test.js
@@ -488,6 +485,7 @@ panels/sources/ResourceOriginPlugin.test.js
 panels/sources/SourcesNavigator.test.js
 panels/sources/SourcesView.test.js
 panels/sources/TabbedEditorContainer.test.js
+panels/sources/UISourceCodeFrame.test.js
 panels/sources/components/BreakpointsView.test.js
 panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
@@ -498,6 +496,7 @@ panels/timeline/EventsSerializer.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/ModificationsManager.test.js
+panels/timeline/RecordingMetadata.test.js
 panels/timeline/SaveFileFormatter.test.js
 panels/timeline/ThirdPartyTreeView.test.js
 panels/timeline/TimelineController.test.js
@@ -536,6 +535,8 @@ panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/BaseInsightComponent.test.js
 panels/timeline/components/insights/CLSCulprits.test.js
 panels/timeline/components/insights/InteractionToNextPaint.test.js
+panels/timeline/components/insights/NetworkDependencyTree.test.js
+panels/timeline/components/insights/NodeLink.test.js
 panels/timeline/components/insights/Table.test.js
 panels/timeline/overlays/OverlaysImpl.test.js
 panels/timeline/overlays/components/TimespanBreakdownOverlay.test.js
@@ -552,6 +553,7 @@ panels/timeline/track_appenders/TimingsTrackAppender.test.js
 panels/timeline/utils/AICallTree.test.js
 panels/timeline/utils/EntityMapper.test.js
 panels/timeline/utils/EntryName.test.js
+panels/timeline/utils/EntryNodes.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js

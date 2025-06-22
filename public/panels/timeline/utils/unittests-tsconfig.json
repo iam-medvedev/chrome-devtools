@@ -42,6 +42,7 @@
     "../../../../../../../front_end/panels/timeline/utils/AICallTree.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntityMapper.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryName.test.ts",
+    "../../../../../../../front_end/panels/timeline/utils/EntryNodes.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.test.ts",
     "../../../../../../../front_end/panels/timeline/utils/ImageCache.test.ts",

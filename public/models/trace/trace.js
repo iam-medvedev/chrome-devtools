@@ -9,7 +9,6 @@ import * as Lantern from './lantern/lantern.js';
 import * as LanternComputationData from './LanternComputationData.js';
 import * as TraceModel from './ModelImpl.js';
 import * as Processor from './Processor.js';
-import * as TracingManager from './TracingManager.js';
 import * as Types from './types/types.js';
-export { Extras, Handlers, Helpers, Insights, Lantern, LanternComputationData, Processor, TraceModel, TracingManager, Types, };
+export { Extras, Handlers, Helpers, Insights, Lantern, LanternComputationData, Processor, TraceModel, Types, };
 //# sourceMappingURL=trace.js.map

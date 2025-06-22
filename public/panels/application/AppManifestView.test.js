@@ -102,6 +102,12 @@ describeWithMockConnection('AppManifestView', () => {
         fetchAppManifest.resolves({ url: URL, data: manifest, errors: [] });
         sinon.stub(resourceTreeModel, 'getInstallabilityErrors').resolves([]);
         sinon.stub(resourceTreeModel, 'getAppId').resolves({});
+        async function loadResource(url, initiator, isBinary = false) {
+            assert(isBinary);
+            const res = await fetch(url);
+            return { content: await res.bytes() };
+        }
+        sinon.stub(SDK.PageResourceLoader.PageResourceLoader.instance(), 'loadResource').callsFake(loadResource);
         view = new Application.AppManifestView.AppManifestView(emptyView, reportView, throttler);
         renderElementIntoDOM(view);
         await new Promise(resolve => {

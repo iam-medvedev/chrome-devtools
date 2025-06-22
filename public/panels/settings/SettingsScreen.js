@@ -159,6 +159,7 @@ export class SettingsScreen extends UI.Widget.VBox {
         dialog.setEscapeKeyCallback(settingsScreen.onEscapeKeyPressed.bind(settingsScreen));
         dialog.setMarginBehavior("NoMargin" /* UI.GlassPane.MarginBehavior.NO_MARGIN */);
         dialog.show();
+        dialog.contentElement.focus();
         return settingsScreen;
     }
     static async showSettingsScreen(options = { name: undefined, focusTabHeader: undefined }) {

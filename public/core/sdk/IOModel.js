@@ -44,7 +44,7 @@ export class IOModel extends SDKModel {
                 strings.push(decoder.decode());
                 break;
             }
-            if (data instanceof ArrayBuffer) {
+            if (data instanceof Uint8Array) {
                 strings.push(decoder.decode(data, { stream: true }));
             }
             else {
@@ -52,6 +52,32 @@ export class IOModel extends SDKModel {
             }
         }
         return strings.join('');
+    }
+    async readToBuffer(handle) {
+        const items = [];
+        for (;;) {
+            const data = await this.read(handle, 1024 * 1024);
+            if (data === null) {
+                break;
+            }
+            if (data instanceof Uint8Array) {
+                items.push(data);
+            }
+            else {
+                throw new Error('Unexpected stream data type: expected binary, got a string');
+            }
+        }
+        let length = 0;
+        for (const item of items) {
+            length += item.length;
+        }
+        const result = new Uint8Array(length);
+        let offset = 0;
+        for (const item of items) {
+            result.set(item, offset);
+            offset += item.length;
+        }
+        return result;
     }
 }
 SDKModel.register(IOModel, { capabilities: 131072 /* Capability.IO */, autostart: true });

@@ -78,6 +78,8 @@ export class InterestGroupStorageModel extends SDK.SDKModel.SDKModel {
     }
     attributionReportingReportSent(_event) {
     }
+    attributionReportingVerboseDebugReportSent(_event) {
+    }
 }
 SDK.SDKModel.SDKModel.register(InterestGroupStorageModel, { capabilities: 8192 /* SDK.Target.Capability.STORAGE */, autostart: false });
 //# sourceMappingURL=InterestGroupStorageModel.js.map

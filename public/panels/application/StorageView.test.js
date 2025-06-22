@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchFocusOutEvent } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { SECURITY_ORIGIN } from '../../testing/ResourceTreeHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
@@ -20,6 +20,9 @@ describeWithMockConnection('StorageView', () => {
         domStorageModel = target.model(Resources.DOMStorageModel.DOMStorageModel);
         domStorageModel?.enable();
         storageKeyManager = target.model(SDK.StorageKeyManager.StorageKeyManager);
+    });
+    expectConsoleLogs({
+        error: ['Error: No LanguageSelector instance exists yet.'],
     });
     it('emits correct events on clear', () => {
         const testId = { storageKey: testKey, isLocalStorage: true };

@@ -50,6 +50,7 @@
     "../../../../../../front_end/panels/timeline/LayoutShiftsTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/ModificationsManager.ts",
     "../../../../../../front_end/panels/timeline/NetworkTrackAppender.ts",
+    "../../../../../../front_end/panels/timeline/RecordingMetadata.ts",
     "../../../../../../front_end/panels/timeline/SaveFileFormatter.ts",
     "../../../../../../front_end/panels/timeline/StatusDialog.ts",
     "../../../../../../front_end/panels/timeline/TargetForEvent.ts",
@@ -104,6 +105,9 @@
       "path": "../../models/source_map_scopes/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/text_utils/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
@@ -123,6 +127,9 @@
     },
     {
       "path": "../../services/trace_bounds/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../services/tracing/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"

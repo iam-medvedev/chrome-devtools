@@ -6,7 +6,7 @@ import { getFirstOrError, getInsightOrError, processTrace } from '../../../testi
 describeWithEnvironment('ThirdParties', function () {
     it('categorizes third party web requests (simple)', async () => {
         const { data, insights } = await processTrace(this, 'load-simple.json.gz');
-        assert.strictEqual(insights.size, 2);
+        assert.strictEqual(insights.size, 1);
         const insight = getInsightOrError('ThirdParties', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         const entityNames = insight.entitySummaries.map(s => s.entity.name);
         assert.deepEqual([...new Set(entityNames)], [

@@ -5,6 +5,7 @@ import type * as Extensions from '../../models/extensions/extensions.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from '../search/search.js';
@@ -98,7 +99,7 @@ export declare class NetworkLogWithFilterRevealer implements Common.Revealer
     .Revealer<Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter> {
     reveal(request: Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
 }
-export declare class FilmStripRecorder implements Trace.TracingManager.TracingManagerClient {
+export declare class FilmStripRecorder implements Tracing.TracingManager.TracingManagerClient {
     #private;
     private tracingManager;
     private resourceTreeModel;

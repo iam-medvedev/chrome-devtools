@@ -107,6 +107,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */,
+    "vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();
@@ -361,6 +362,7 @@ export function setupActionRegistry() {
         }
     });
 }
+// This needs to be invoked within a describe block, rather than within an it() block.
 export function expectConsoleLogs(expectedLogs) {
     const { error, warn, log } = console;
     before(() => {

@@ -45,6 +45,7 @@ export declare class ServiceWorkerCacheModel extends SDKModel<EventTypes> implem
     setThrottlerSchedulesAsSoonAsPossibleForTest(): void;
     attributionReportingSourceRegistered(_event: Protocol.Storage.AttributionReportingSourceRegisteredEvent): void;
     attributionReportingReportSent(_event: Protocol.Storage.AttributionReportingReportSentEvent): void;
+    attributionReportingVerboseDebugReportSent(_event: Protocol.Storage.AttributionReportingVerboseDebugReportSentEvent): void;
 }
 export declare const enum Events {
     CACHE_ADDED = "CacheAdded",

@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as LighthouseReport from '../../third_party/lighthouse/report/report.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -28,8 +29,9 @@ export class LighthouseReportRenderer {
             const timestamp = Platform.DateUtilities.toISO8601Compact(new Date(lhr.fetchTime));
             const ext = blob.type.match('json') ? '.json' : '.html';
             const basename = `${sanitizedDomain}-${timestamp}${ext}`;
-            const text = await blob.text();
-            await Workspace.FileManager.FileManager.instance().save(basename, text, true /* forceSaveAs */, false /* isBase64 */);
+            const base64 = await blob.arrayBuffer().then(Common.Base64.encode);
+            await Workspace.FileManager.FileManager.instance().save(basename, new TextUtils.ContentData.ContentData(base64, /* isBase64= */ true, blob.type), 
+            /* forceSaveAs=*/ true);
             Workspace.FileManager.FileManager.instance().close(basename);
         }
         async function onPrintOverride(rootEl) {

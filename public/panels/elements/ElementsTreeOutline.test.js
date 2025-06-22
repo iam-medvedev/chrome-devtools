@@ -4,7 +4,7 @@
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../testing/MockConnection.js';
 import { MockIssuesModel } from '../../testing/MockIssuesModel.js';
 import * as Elements from './elements.js';
@@ -50,6 +50,9 @@ describeWithMockConnection('ElementsTreeOutline', () => {
         assert.isNotNull(checkmarkNode);
         treeOutline.rootDOMNode = optionNode;
         assert.isNotNull(treeOutline.findTreeElement(checkmarkNode));
+    });
+    expectConsoleLogs({
+        warn: ['Content security policy issue without details received.'],
     });
     it('should include the ::picker-icon pseudo element', () => {
         const selectNode = SDK.DOMModel.DOMNode.create(model, null, false, {

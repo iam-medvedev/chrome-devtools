@@ -497,7 +497,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         if (selectedNode && this.showDetailsForNode(selectedNode)) {
             return;
         }
-        const banner = this.detailsView.element.createChild('div', 'full-widget-dimmed-banner');
+        const banner = this.detailsView.element.createChild('div', 'empty-state');
         UI.UIUtils.createTextChild(banner, i18nString(UIStrings.selectItemForDetails));
     }
     showDetailsForNode(_node) {

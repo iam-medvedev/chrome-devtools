@@ -103,10 +103,10 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/UIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const highlightedSearchResultClassName = 'highlighted-search-result';
 export const highlightedCurrentSearchResultClassName = 'current-search-result';
-export function installDragHandle(element, elementDragStart, elementDrag, elementDragEnd, cursor, hoverCursor, startDelay) {
+export function installDragHandle(element, elementDragStart, elementDrag, elementDragEnd, cursor, hoverCursor, startDelay, mouseDownPreventDefault = true) {
     function onMouseDown(event) {
         const dragHandler = new DragHandler();
-        const dragStart = () => dragHandler.elementDragStart(element, elementDragStart, elementDrag, elementDragEnd, cursor, event);
+        const dragStart = () => dragHandler.elementDragStart(element, elementDragStart, elementDrag, elementDragEnd, cursor, event, mouseDownPreventDefault);
         if (startDelay) {
             startTimer = window.setTimeout(dragStart, startDelay);
         }
@@ -170,7 +170,7 @@ class DragHandler {
         DragHandler.documentForMouseOut = null;
         DragHandler.rootForMouseOut = null;
     }
-    elementDragStart(targetElement, elementDragStart, elementDrag, elementDragEnd, cursor, ev) {
+    elementDragStart(targetElement, elementDragStart, elementDrag, elementDragEnd, cursor, ev, preventDefault = true) {
         const event = ev;
         // Only drag upon left button. Right will likely cause a context menu. So will ctrl-click on mac.
         if (event.button || (Host.Platform.isMac() && event.ctrlKey)) {
@@ -215,7 +215,9 @@ class DragHandler {
             targetHtmlElement.style.cursor = oldCursor;
             this.restoreCursorAfterDrag = undefined;
         }
-        event.preventDefault();
+        if (preventDefault) {
+            event.preventDefault();
+        }
     }
     mouseOutWhileDragging() {
         this.unregisterMouseOutWhileDragging();

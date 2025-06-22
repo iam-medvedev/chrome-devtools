@@ -27,6 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 export class ChunkedFileReader {
     #file;
@@ -179,7 +180,7 @@ export class FileOutputStream {
         this.#closed = false;
         this.#writeCallbacks = [];
         this.#fileName = fileName;
-        const saveResponse = await Workspace.FileManager.FileManager.instance().save(this.#fileName, '', true, false /* isBase64 */);
+        const saveResponse = await Workspace.FileManager.FileManager.instance().save(this.#fileName, TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA, /* forceSaveAs=*/ true);
         if (saveResponse) {
             Workspace.FileManager.FileManager.instance().addEventListener("AppendedToURL" /* Workspace.FileManager.Events.APPENDED_TO_URL */, this.onAppendDone, this);
         }

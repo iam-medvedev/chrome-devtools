@@ -78,7 +78,10 @@ export declare class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapp
     static makeExtensionKey(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): string;
     static makeKey(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): string;
     resourceLoadedThroughExtension(pageResource: PageResource): void;
-    loadResource(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator): Promise<{
+    loadResource(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator, isBinary: true): Promise<{
+        content: Uint8Array;
+    }>;
+    loadResource(url: Platform.DevToolsPath.UrlString, initiator: PageResourceLoadInitiator, isBinary?: false): Promise<{
         content: string;
     }>;
     private dispatchLoad;

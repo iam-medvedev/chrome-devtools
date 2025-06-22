@@ -33,8 +33,8 @@ export default `/*
  */
 
 :root {
-  --network-overview-total: var(--sys-color-surface-variant);
-  --network-overview-blocking: var(--sys-color-neutral-bright);
+  --network-overview-total: var(--sys-color-neutral-bright);
+  --network-overview-blocking: var(--ref-palette-neutral0);
   --network-overview-connecting: var(--ref-palette-yellow60);
   --network-overview-service-worker: var(--sys-color-orange-bright);
   --network-overview-service-worker-respond-with: var(--sys-color-cyan-bright);
@@ -57,6 +57,7 @@ export default `/*
 }
 
 .theme-with-dark-background {
+  --network-overview-blocking: var(--ref-palette-neutral100);
   --network-grid-initiator-path-color: var(--ref-palette-green40);
   --network-grid-initiated-path-color: var(--ref-palette-error20);
   --network-grid-from-frame-color: var(--ref-palette-neutral50);

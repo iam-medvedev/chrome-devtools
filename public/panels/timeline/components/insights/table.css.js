@@ -51,4 +51,22 @@ table th[scope='row'] {
   overflow-wrap: anywhere;
 }
 
+.devtools-link {
+  color: var(--sys-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+  outline-offset: 2px;
+  padding: 0;
+  margin-left: var(--sys-size-3);
+  white-space: nowrap;;
+}
+
+button.devtools-link {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: inherit;
+  height: 16px;
+}
+
 /*# sourceURL=${import.meta.resolve('./table.css')} */`;

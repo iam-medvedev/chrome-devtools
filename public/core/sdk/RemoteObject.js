@@ -476,9 +476,6 @@ export class ScopeRemoteObject extends RemoteObjectImpl {
         const allProperties = await super.doGetProperties(ownProperties, accessorPropertiesOnly, false /* nonIndexedPropertiesOnly */, true /* generatePreview */);
         if (Array.isArray(allProperties.properties)) {
             this.#savedScopeProperties = allProperties.properties.slice();
-            for (const property of this.#savedScopeProperties) {
-                property.writable = false;
-            }
         }
         return allProperties;
     }

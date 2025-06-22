@@ -530,7 +530,6 @@ class TabbedLocation extends Location {
     enableMoreTabsButton() {
         const moreTabsButton = new ToolbarMenuButton(this.appendTabsToMenu.bind(this), /* isIconDropdown */ true, undefined, 'more-tabs', 'dots-vertical');
         this.tabbedPaneInternal.leftToolbar().appendToolbarItem(moreTabsButton);
-        this.tabbedPaneInternal.disableOverflowMenu();
         return moreTabsButton;
     }
     appendApplicableItems(locationName) {

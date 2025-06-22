@@ -5,6 +5,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -119,7 +120,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
         const FILENAME = 'ProtocolMonitor-' + Platform.DateUtilities.toISO8601Compact(new Date(TIMESTAMP)) + '.json';
         (await view.nextInput).onSave();
         sinon.assert.calledOnce(fileManager.save);
-        assert.isTrue(fileManager.save.calledOnceWith(FILENAME, '', true, false));
+        assert.isTrue(fileManager.save.calledOnceWith(FILENAME, TextUtils.ContentData.EMPTY_TEXT_CONTENT_DATA, /* forceSaveAs=*/ true));
         await fileManagerCloseCall;
         assert.isTrue(fileManager.append.calledOnceWith(FILENAME, sinon.match('"method": "Test.test"')));
         clock.restore();

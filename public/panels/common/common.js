@@ -74,8 +74,10 @@ export class FreDialog {
           <div class="right-buttons">
             <devtools-button
               @click=${() => {
-            dialog.hide();
+            // The order of operations are important here as hiding the dialog by
+            // itself causes the promise to be resolved with `false` in `onHideCallback`.
             result.resolve(false);
+            dialog.hide();
         }}
               .jslogContext=${'fre-disclaimer.cancel'}
               .variant=${"tonal" /* Buttons.Button.Variant.TONAL */}>
@@ -83,8 +85,10 @@ export class FreDialog {
             </devtools-button>
             <devtools-button
               @click=${() => {
-            dialog.hide();
+            // The order of operations are important here as hiding the dialog by
+            // itself causes the promise to be resolved with `false` in `onHideCallback`.
             result.resolve(true);
+            dialog.hide();
         }}
               .jslogContext=${'fre-disclaimer.continue'}
               .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}>
@@ -97,6 +101,12 @@ export class FreDialog {
         dialog.setOutsideClickCallback(ev => {
             ev.consume(true); // true = preventDefault()
             dialog.hide();
+            result.resolve(false);
+        });
+        // This ensures that if the dialog gets hidden for any unexpected reason,
+        // or if the user goes to another panel and comes back, that we resolve
+        // rather than leave the promise dangling.
+        dialog.setOnHideCallback(() => {
             result.resolve(false);
         });
         dialog.setSizeBehavior("MeasureContent" /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */);

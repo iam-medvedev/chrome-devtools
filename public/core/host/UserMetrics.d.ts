@@ -470,7 +470,8 @@ export declare enum KeyboardShortcutAction {
     'coverage.clear' = 116,
     'coverage.export' = 117,
     'timeline.dim-third-parties' = 118,
-    MAX_VALUE = 119
+    'main.toggle-drawer-orientation' = 119,
+    MAX_VALUE = 120
 }
 export declare const enum IssueOpener {
     CONSOLE_INFO_BAR = 0,
@@ -509,7 +510,8 @@ export declare enum DevtoolsExperiments {
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
     'timeline-experimental-insights' = 102,
-    MAX_VALUE = 106
+    'vertical-drawer' = 107,
+    MAX_VALUE = 108
 }
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,

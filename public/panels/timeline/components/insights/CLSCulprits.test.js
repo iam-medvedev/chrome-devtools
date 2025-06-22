@@ -1,7 +1,7 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { getCleanTextContentFromElements, getCleanTextContentFromSingleElement, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
+import { getCleanTextContentFromSingleElement, renderElementIntoDOM, } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
@@ -26,9 +26,8 @@ describeWithEnvironment('CLSCulprits component', () => {
         assert.strictEqual(worstClusterText, 'Worst cluster: Layout shift cluster @ 1.37 s');
         const culpritsList = component.shadowRoot.querySelector('.worst-culprits');
         assert.isOk(culpritsList);
-        const culpritsText = getCleanTextContentFromElements(culpritsList, 'li');
-        // There are two shifts hence the two culprits.
-        assert.deepEqual(culpritsText, ['Unsized Images', 'Unsized Images']);
+        assert.strictEqual(culpritsList.deepInnerText(), 'Unsized image element\ncuzillion.…wfQ%3D%3D\n' +
+            'Unsized image element\ncuzillion.…wfQ%3D%3D');
     });
 });
 //# sourceMappingURL=CLSCulprits.test.js.map

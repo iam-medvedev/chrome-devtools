@@ -163,7 +163,7 @@ describeWithEnvironment('TimelinePanel', function () {
         // Matches Trace-20250613T132120.json
         assert.match(fileName, /Trace-[\d|T]+\.json$/);
         // easier to assert on the data if we parse it back
-        const parsedData = JSON.parse(traceAsString);
+        const parsedData = JSON.parse(traceAsString.text);
         assert.deepEqual(parsedData.metadata.visualTrackConfig, FAKE_METADATA);
     });
     it('does not save visual track config if the user does not save with modifications', async function () {
@@ -189,7 +189,7 @@ describeWithEnvironment('TimelinePanel', function () {
         sinon.assert.calledOnce(saveSpy);
         const [, traceAsString] = saveSpy.getCall(0).args;
         // easier to assert on the data if we parse it back
-        const parsedData = JSON.parse(traceAsString);
+        const parsedData = JSON.parse(traceAsString.text);
         assert.isUndefined(parsedData.metadata.visualTrackConfig);
     });
     it('does not save visual track config if the user has not made any', async function () {
@@ -211,8 +211,33 @@ describeWithEnvironment('TimelinePanel', function () {
         sinon.assert.calledOnce(saveSpy);
         const [, traceAsString] = saveSpy.getCall(0).args;
         // easier to assert on the data if we parse it back
-        const parsedData = JSON.parse(traceAsString);
+        const parsedData = JSON.parse(traceAsString.text);
         assert.isUndefined(parsedData.metadata.visualTrackConfig);
+    });
+    it('includes the trace metadata when saving to a file', async function () {
+        const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
+        const metadata = await TraceLoader.metadata(this, 'web-dev-with-commit.json.gz');
+        await timeline.loadingComplete(events, null, metadata);
+        const fileManager = Workspace.FileManager.FileManager.instance();
+        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
+            return Promise.resolve({});
+        });
+        sinon.stub(fileManager, 'close');
+        await timeline.saveToFile({
+            savingEnhancedTrace: false,
+            addModifications: false,
+        });
+        sinon.assert.calledOnce(saveSpy);
+        const [, traceAsContentData] = saveSpy.getCall(0).args;
+        // Assert that each value in the metadata of the JSON matches the metadata in memory.
+        // We can't do a simple deepEqual() on the two objects as the in-memory
+        // contains values that are `undefined` which do not exist in the JSON
+        // version.
+        const parsedData = JSON.parse(traceAsContentData.text);
+        for (const k in parsedData) {
+            const key = k;
+            assert.deepEqual(parsedData.metadata[key], metadata[key]);
+        }
     });
 });
 //# sourceMappingURL=TimelinePanel.test.js.map

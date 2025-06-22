@@ -27,7 +27,7 @@ export function decode(input) {
         bytes[offset++] = ((b & 0x0f) << 4) | (c >> 2);
         bytes[offset++] = ((c & 0x03) << 6) | (d & 0x3f);
     }
-    return bytes.buffer;
+    return bytes;
 }
 export function encode(input) {
     return new Promise((resolve, reject) => {

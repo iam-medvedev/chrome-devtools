@@ -14,7 +14,6 @@ export declare class EventsTimelineTreeView extends TimelineTreeView {
     updateContents(selection: TimelineSelection): void;
     buildTree(): Trace.Extras.TraceTree.Node;
     private onFilterChanged;
-    private findNodeWithEvent;
     private selectEvent;
     populateColumns(columns: DataGrid.DataGrid.ColumnDescriptor[]): void;
     populateToolbar(toolbar: UI.Toolbar.Toolbar): void;

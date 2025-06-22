@@ -17,7 +17,12 @@ export declare class TransformController extends Common.ObjectWrapper.ObjectWrap
     private maxScale;
     private readonly controlPanelToolbar;
     private readonly modeButtons;
-    constructor(element: HTMLElement, disableRotate?: boolean);
+    /**
+     * @param element The HTML element to apply transformations to.
+     * @param disableRotate Optional. If true, pan and rotate will be disabled. Defaults to false.
+     * @param preventDefaultOnMousedown Optional. If true, mousedown events will be prevented from their default behavior (including focus). Defaults to true.
+     */
+    constructor(element: HTMLElement, disableRotate?: boolean, preventDefaultOnMouseDown?: boolean);
     toolbar(): UI.Toolbar.Toolbar;
     private registerShortcuts;
     private postChangeEvent;

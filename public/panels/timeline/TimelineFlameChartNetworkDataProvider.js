@@ -10,7 +10,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as TimelineComponents from './components/components.js';
 import { initiatorsDataToDrawForNetwork } from './Initiators.js';
-import { ModificationsManager } from './ModificationsManager.js';
 import { NetworkTrackAppender } from './NetworkTrackAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
@@ -139,21 +138,6 @@ export class TimelineFlameChartNetworkDataProvider {
     }
     eventByIndex(entryIndex) {
         return this.#events.at(entryIndex) ?? null;
-    }
-    entryHasAnnotations(entryIndex) {
-        const event = this.eventByIndex(entryIndex);
-        if (!event) {
-            return false;
-        }
-        const entryAnnotations = ModificationsManager.activeManager()?.annotationsForEntry(event);
-        return entryAnnotations !== undefined && entryAnnotations.length > 0;
-    }
-    deleteAnnotationsForEntry(entryIndex) {
-        const event = this.eventByIndex(entryIndex);
-        if (!event) {
-            return;
-        }
-        ModificationsManager.activeManager()?.deleteEntryAnnotations(event);
     }
     entryIndexForSelection(selection) {
         if (!selection || selectionIsRange(selection)) {
@@ -473,7 +457,7 @@ export class TimelineFlameChartNetworkDataProvider {
         if (!this.#timelineDataInternal) {
             return false;
         }
-        if (this.#lastInitiatorEntry === entryIndex) {
+        if (entryIndex > -1 && this.#lastInitiatorEntry === entryIndex) {
             if (this.#lastInitiatorsData) {
                 this.#timelineDataInternal.initiatorsData = this.#lastInitiatorsData;
             }

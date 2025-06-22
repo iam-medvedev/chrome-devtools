@@ -42,6 +42,7 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 // eslint-disable-next-line rulesdir/es-modules-import
 import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.css.js';
@@ -205,9 +206,10 @@ const UIStrings = {
      */
     errors: 'Errors',
     /**
-     *@description Title text of a setting in Console View of the Console panel
+     * @description Tooltip text of the info icon shown next to the filter drop down
+     *              in the Console panels main toolbar when the sidebar is active.
      */
-    overriddenByFilterSidebar: 'Overridden by filter sidebar',
+    overriddenByFilterSidebar: 'Log levels are controlled by the console sidebar.',
     /**
      *@description Text in Console View of the Console panel
      */
@@ -385,6 +387,7 @@ export class ConsoleView extends UI.Widget.VBox {
         toolbar.appendSeparator();
         toolbar.appendToolbarItem(this.filter.textFilterUI);
         toolbar.appendToolbarItem(this.filter.levelMenuButton);
+        toolbar.appendToolbarItem(this.filter.levelMenuButtonInfo);
         toolbar.appendToolbarItem(this.progressToolbarItem);
         toolbar.appendSeparator();
         this.issueCounter = new IssueCounter.IssueCounter.IssueCounter();
@@ -1362,6 +1365,7 @@ export class ConsoleViewFilter {
     currentFilter;
     levelLabels;
     levelMenuButton;
+    levelMenuButtonInfo;
     constructor(filterChangedCallback) {
         this.filterChanged = filterChangedCallback;
         this.messageLevelFiltersSetting = ConsoleViewFilter.levelFilterSetting();
@@ -1394,6 +1398,10 @@ export class ConsoleViewFilter {
         ]));
         this.levelMenuButton =
             new UI.Toolbar.ToolbarMenuButton(this.appendLevelMenuItems.bind(this), undefined, undefined, 'log-level');
+        const levelMenuButtonInfoIcon = IconButton.Icon.create('info', 'console-sidebar-levels-info');
+        levelMenuButtonInfoIcon.title = i18nString(UIStrings.overriddenByFilterSidebar);
+        this.levelMenuButtonInfo = new UI.Toolbar.ToolbarItem(levelMenuButtonInfoIcon);
+        this.levelMenuButtonInfo.setVisible(false);
         this.updateLevelMenuButtonText();
         this.messageLevelFiltersSetting.addChangeListener(this.updateLevelMenuButtonText.bind(this));
     }
@@ -1414,8 +1422,9 @@ export class ConsoleViewFilter {
     }
     setLevelMenuOverridden(overridden) {
         this.levelMenuButton.setEnabled(!overridden);
+        this.levelMenuButtonInfo.setVisible(overridden);
         if (overridden) {
-            this.levelMenuButton.setTitle(i18nString(UIStrings.overriddenByFilterSidebar));
+            this.levelMenuButton.setText(i18nString(UIStrings.customLevels));
         }
         else {
             this.updateLevelMenuButtonText();

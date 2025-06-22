@@ -114,6 +114,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     removeOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
     updateExistingOverlay<T extends Overlays.Overlays.TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
     enterLabelEditMode(overlay: Overlays.Overlays.EntryLabel): void;
+    bringLabelForward(overlay: Overlays.Overlays.EntryLabel): void;
     private onAddEntryLabelAnnotation;
     onEntriesLinkAnnotationCreate(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryFromIndex: number, linkCreateButton?: boolean): void;
     /**

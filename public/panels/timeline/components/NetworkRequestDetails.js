@@ -271,18 +271,24 @@ export class NetworkRequestDetails extends HTMLElement {
         }
         const hasStackTrace = Trace.Helpers.Trace.stackTraceInEvent(this.#networkRequest) !== null;
         let link = null;
+        const options = {
+            tabStop: true,
+            showColumnNumber: true,
+            inlineFrameIndex: 0,
+        };
         // If we have a stack trace, that is the most reliable way to get the initiator data and display a link to the source.
         if (hasStackTrace) {
             const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(this.#networkRequest)?.at(0) ?? null;
             if (topFrame) {
-                link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, { tabStop: true, inlineFrameIndex: 0, showColumnNumber: true });
+                link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, options);
             }
         }
         // If we do not, we can see if the network handler found an initiator and try to link by URL
         const initiator = this.#parsedTrace?.NetworkRequests.eventToInitiator.get(this.#networkRequest);
         if (initiator) {
             link = this.#linkifier.maybeLinkifyScriptLocation(this.#maybeTarget, null, // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
-            initiator.args.data.url, undefined);
+            initiator.args.data.url, undefined, // line number
+            options);
         }
         if (!link) {
             return null;
@@ -291,7 +297,7 @@ export class NetworkRequestDetails extends HTMLElement {
         return html `
       <div class="network-request-details-item">
         <div class="title">${i18nString(UIStrings.initiatedBy)}</div>
-        <div class="value">${link}</div>
+        <div class="value focusable-outline">${link}</div>
       </div>`;
         // clang-format on
     }

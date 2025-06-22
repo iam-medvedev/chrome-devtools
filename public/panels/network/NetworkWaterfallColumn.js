@@ -21,7 +21,6 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     scrollTop;
     headerHeight;
     calculator;
-    rawRowHeight;
     rowHeight;
     offsetWidth;
     offsetHeight;
@@ -52,9 +51,6 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         this.scrollTop = 0;
         this.headerHeight = 0;
         this.calculator = calculator;
-        // this.rawRowHeight captures model height (41 or 21px),
-        // this.rowHeight is computed height of the row in CSS pixels, can be 20.8 for zoomed-in content.
-        this.rawRowHeight = 0;
         this.rowHeight = 0;
         this.offsetWidth = 0;
         this.offsetHeight = 0;
@@ -258,11 +254,7 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         return false;
     }
     setRowHeight(height) {
-        this.rawRowHeight = height;
-        this.updateRowHeight();
-    }
-    updateRowHeight() {
-        this.rowHeight = Math.round(this.rawRowHeight * window.devicePixelRatio) / window.devicePixelRatio;
+        this.rowHeight = height;
     }
     setHeaderHeight(height) {
         this.headerHeight = height;
@@ -311,7 +303,6 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     onResize() {
         super.onResize();
-        this.updateRowHeight();
         this.calculateCanvasSize();
         this.scheduleDraw();
     }

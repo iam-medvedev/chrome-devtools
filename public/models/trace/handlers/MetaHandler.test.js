@@ -464,6 +464,15 @@ describe('MetaHandler', function () {
         await Trace.Handlers.ModelHandlers.Meta.finalize();
         assert.isFalse(Trace.Handlers.ModelHandlers.Meta.data().traceIsGeneric);
     });
+    it('marks a cpu profile as being not generic', async function () {
+        const profile = await TraceLoader.rawCPUProfile(this, 'basic.cpuprofile.gz');
+        const contents = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
+        for (const event of contents.traceEvents) {
+            Trace.Handlers.ModelHandlers.Meta.handleEvent(event);
+        }
+        await Trace.Handlers.ModelHandlers.Meta.finalize();
+        assert.isFalse(Trace.Handlers.ModelHandlers.Meta.data().traceIsGeneric);
+    });
     it('sets the main frame URL from the TracingStartedInBrowser event', async function () {
         // This trace has the right URL in TracingStartedInBrowser
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');

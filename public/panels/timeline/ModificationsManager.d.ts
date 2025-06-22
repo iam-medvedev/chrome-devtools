@@ -2,7 +2,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
 import type * as Overlays from './overlays/overlays.js';
-export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' | 'UpdateLinkToEntry' | 'EnterLabelEditState';
+export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' | 'UpdateLinkToEntry' | 'EnterLabelEditState' | 'LabelBringForward';
 export declare class AnnotationModifiedEvent extends Event {
     overlay: Overlays.Overlays.TimelineOverlay;
     action: UpdateAction;
@@ -33,9 +33,8 @@ export declare class ModificationsManager extends EventTarget {
      * @returns the Overlay that gets created and associated with this annotation.
      */
     createAnnotation(newAnnotation: Trace.Types.File.Annotation, loadedFromFile?: boolean): Overlays.Overlays.TimelineOverlay;
-    annotationsForEntry(entry: Trace.Types.Events.Event): Trace.Types.File.Annotation[];
-    deleteEntryAnnotations(entry: Trace.Types.Events.Event): void;
     linkAnnotationBetweenEntriesExists(entryFrom: Trace.Types.Events.Event, entryTo: Trace.Types.Events.Event): boolean;
+    bringEntryLabelForwardIfExists(entry: Trace.Types.Events.Event): void;
     removeAnnotation(removedAnnotation: Trace.Types.File.Annotation): void;
     removeAnnotationOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
     updateAnnotation(updatedAnnotation: Trace.Types.File.Annotation): void;

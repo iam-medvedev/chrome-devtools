@@ -46,7 +46,7 @@ export class LCPDiscovery extends BaseInsightComponent {
     #renderDiscoveryDelay(delay) {
         const timeWrapper = document.createElement('span');
         timeWrapper.classList.add('discovery-time-ms');
-        timeWrapper.innerText = i18n.TimeUtilities.formatMicroSecondsTime(delay);
+        timeWrapper.innerText = i18n.TimeUtilities.formatMicroSecondsAsMillisFixed(delay);
         return i18n.i18n.getFormatLocalizedString(str_, UIStrings.lcpLoadDelay, { PH1: timeWrapper });
     }
     createOverlays() {
@@ -58,7 +58,7 @@ export class LCPDiscovery extends BaseInsightComponent {
             return [];
         }
         const delay = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.Micro(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
-        const label = html `<div class="discovery-delay"> ${this.#renderDiscoveryDelay(delay.range)}</div>`;
+        const label = html `<div class="discovery-delay"> ${this.#renderDiscoveryDelay(imageResults.discoveryDelay)}</div>`;
         return [
             {
                 type: 'ENTRY_OUTLINE',
@@ -99,11 +99,15 @@ export class LCPDiscovery extends BaseInsightComponent {
             }
             return html `<div class="insight-section">${i18nString(UIStrings.noLcpResource)}</div>`;
         }
+        let delayEl;
+        if (imageData.discoveryDelay) {
+            delayEl = html `<div>${this.#renderDiscoveryDelay(imageData.discoveryDelay)}</div>`;
+        }
         // clang-format off
         return html `
       <div class="insight-section">
         <devtools-performance-checklist class="insight-section" .checklist=${imageData.checklist}></devtools-performance-checklist>
-        <div class="insight-section">${imageRef(imageData.request)}</div>
+        <div class="insight-section">${imageRef(imageData.request)}${delayEl}</div>
       </div>`;
         // clang-format on
     }
