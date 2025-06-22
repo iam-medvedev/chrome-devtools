@@ -8,7 +8,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
-import { createTarget, deinitializeGlobalVars, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, deinitializeGlobalVars, expectConsoleLogs, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from '../../testing/SourceMapHelpers.js';
 import { getBaseTraceParseModelData, getEventOfType, getMainThread, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
@@ -44,18 +44,6 @@ describeWithMockConnection('TimelineUIUtils', function () {
     });
     afterEach(() => {
         clearMockConnectionResponseHandler('DOM.pushNodesByBackendIdsToFrontend');
-    });
-    it('creates top frame location text for function calls', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
-        const functionCallEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isFunctionCall);
-        assert.isOk(functionCallEvent);
-        assert.strictEqual('chrome-extension://blijaeebfebmkmekmdnehcmmcjnblkeo/lib/utils.js:11:43', await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsTextForTraceEvent(functionCallEvent, parsedTrace));
-    });
-    it('creates top frame location text as a fallback', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-        const timerInstallEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isTimerInstall);
-        assert.isOk(timerInstallEvent);
-        assert.strictEqual('https://web.dev/js/index-7b6f3de4.js:96:533', await Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsTextForTraceEvent(timerInstallEvent, parsedTrace));
     });
     describe('script location as an URL', function () {
         it('makes the script location of a call frame a full URL when the inspected target is not the same the call frame was taken from (e.g. a loaded file)', async function () {
@@ -187,6 +175,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
     });
     describe('mapping to authored function name when recording is fresh', function () {
+        expectConsoleLogs({
+            error: ['Error: No LanguageSelector instance exists yet.'],
+        });
         it('maps to the authored name and script of a profile call', async function () {
             const { script } = await loadBasicSourceMapExample(target);
             // Ideally we would get a column number we can use from the source
@@ -264,6 +255,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
     });
     describe('adjusting timestamps for events and navigations', function () {
+        expectConsoleLogs({
+            error: ['Error: No LanguageSelector instance exists yet.'],
+        });
         it('adjusts the time for a DCL event after a navigation', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const mainFrameID = parsedTrace.Meta.mainFrameId;

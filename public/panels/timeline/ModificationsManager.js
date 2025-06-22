@@ -137,25 +137,6 @@ export class ModificationsManager extends EventTarget {
         this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
         return newOverlay;
     }
-    annotationsForEntry(entry) {
-        const annotationsForEntry = [];
-        for (const [annotation] of this.#overlayForAnnotation.entries()) {
-            if (annotation.type === 'ENTRY_LABEL' && annotation.entry === entry) {
-                annotationsForEntry.push(annotation);
-            }
-            else if (annotation.type === 'ENTRIES_LINK' && (annotation.entryFrom === entry || annotation.entryTo === entry)) {
-                annotationsForEntry.push(annotation);
-            }
-        }
-        return annotationsForEntry;
-    }
-    // Deletes all annotations associated with an entry
-    deleteEntryAnnotations(entry) {
-        const annotationsForEntry = this.annotationsForEntry(entry);
-        annotationsForEntry.forEach(annotation => {
-            this.removeAnnotation(annotation);
-        });
-    }
     linkAnnotationBetweenEntriesExists(entryFrom, entryTo) {
         for (const annotation of this.#overlayForAnnotation.keys()) {
             if (annotation.type === 'ENTRIES_LINK' &&
@@ -173,6 +154,12 @@ export class ModificationsManager extends EventTarget {
             }
         }
         return null;
+    }
+    bringEntryLabelForwardIfExists(entry) {
+        const overlay = this.#findLabelOverlayForEntry(entry);
+        if (overlay?.type === 'ENTRY_LABEL') {
+            this.dispatchEvent(new AnnotationModifiedEvent(overlay, 'LabelBringForward'));
+        }
     }
     #createOverlayFromAnnotation(annotation) {
         switch (annotation.type) {

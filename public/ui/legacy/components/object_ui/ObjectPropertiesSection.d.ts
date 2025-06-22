@@ -27,8 +27,12 @@ export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineI
     private contextMenuEventFired;
     titleLessMode(): void;
 }
+export interface TreeOutlineOptions {
+    readOnly?: boolean;
+}
 export declare class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
-    constructor();
+    readonly editable: boolean;
+    constructor(options?: TreeOutlineOptions | null);
 }
 export declare const enum ObjectPropertiesMode {
     ALL = 0,// All properties, including prototype properties

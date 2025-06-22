@@ -25,6 +25,7 @@ export default `/*
   user-select: text;
 
   &::before {
+    flex-shrink: 0;
     margin-right: 2px;
   }
 }

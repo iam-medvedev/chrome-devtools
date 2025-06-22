@@ -39,6 +39,7 @@ export default `/*
   color: var(--sys-color-primary);
   margin: 0 var(--sys-size-3);
   height: auto;
+  font-size: var(--sys-typescale-body4-size);
 }
 
 /*# sourceURL=${import.meta.resolve('././aiAssistancePanel.css')} */`;

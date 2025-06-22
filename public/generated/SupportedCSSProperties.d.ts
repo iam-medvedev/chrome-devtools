@@ -326,6 +326,9 @@ export const generatedPropertyValues: {
     "corner-top-right-shape": {
         values: string[];
     };
+    corners: {
+        values: string[];
+    };
     "counter-increment": {
         values: string[];
     };
@@ -566,22 +569,19 @@ export const generatedPropertyValues: {
     "marker-start": {
         values: string[];
     };
-    "mask-type": {
+    "mask-composite": {
         values: string[];
     };
-    "masonry-auto-tracks": {
+    "mask-mode": {
+        values: string[];
+    };
+    "mask-type": {
         values: string[];
     };
     "masonry-direction": {
         values: string[];
     };
     "masonry-fill": {
-        values: string[];
-    };
-    "masonry-track-end": {
-        values: string[];
-    };
-    "masonry-track-start": {
         values: string[];
     };
     "math-shift": {

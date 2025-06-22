@@ -31,7 +31,6 @@
   },
   "files": [
     "../../../../../../front_end/panels/animation/AnimationGroupPreviewUI.ts",
-    "../../../../../../front_end/panels/animation/AnimationScreenshotPopover.ts",
     "../../../../../../front_end/panels/animation/AnimationTimeline.ts",
     "../../../../../../front_end/panels/animation/AnimationUI.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

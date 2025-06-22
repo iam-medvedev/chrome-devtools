@@ -88,10 +88,6 @@ const UIStrings = {
      */
     linkEntries: 'Link entries',
     /**
-     *@description Text for an action that removes all annotations associated with an entry
-     */
-    deleteAnnotations: 'Delete annotations',
-    /**
      *@description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
      */
     enterTrackConfigurationMode: 'Configure tracks',
@@ -216,6 +212,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #selectedElementOutlineEnabled = true;
     #indexToDrawOverride = new Map();
     #persistedGroupConfig = null;
+    #boundOnThemeChanged = this.#onThemeChanged.bind(this);
     constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
         super(true);
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
@@ -288,12 +285,18 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         };
         // Keyboard focused group is used to navigate groups irrespective of whether they are selectable or not
         this.keyboardFocusedGroup = -1;
-        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
-            this.scheduleUpdate();
-        });
+    }
+    #onThemeChanged() {
+        this.scheduleUpdate();
+    }
+    wasShown() {
+        super.wasShown();
+        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#boundOnThemeChanged);
     }
     willHide() {
+        ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#boundOnThemeChanged);
         this.hideHighlight();
+        super.willHide();
     }
     canvasBoundingClientRect() {
         // If we have a rect already, and it has width & height, use it by default.
@@ -1209,12 +1212,6 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.dispatchEventToListeners("EntriesLinkAnnotationCreated" /* Events.ENTRIES_LINK_ANNOTATION_CREATED */, { entryFromIndex: this.selectedEntryIndex });
         }, {
             jslogContext: 'timeline.annotations.create-entries-link',
-        });
-        annotationSection.appendItem(i18nString(UIStrings.deleteAnnotations), () => {
-            this.dataProvider.deleteAnnotationsForEntry?.(this.selectedEntryIndex);
-        }, {
-            disabled: !this.dataProvider.entryHasAnnotations?.(this.selectedEntryIndex),
-            jslogContext: 'timeline.annotations.delete-entry-annotations',
         });
         void this.contextMenu.show();
     }

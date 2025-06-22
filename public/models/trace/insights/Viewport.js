@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Platform from '../../../core/platform/platform.js';
+import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory, InsightWarning, } from './types.js';
 export const UIStrings = {
@@ -11,6 +13,10 @@ export const UIStrings = {
      * @description Text to tell the user how a viewport meta element can improve performance. \xa0 is a non-breaking space
      */
     description: 'Tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile.',
+    /**
+     * @description Text for a label describing the portion of an interaction event that was delayed due to a bad mobile viewport.
+     */
+    mobileTapDelayLabel: 'Mobile tap delay',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/Viewport.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -53,10 +59,19 @@ export function generateInsight(parsedTrace, context) {
     // Returns true only if all events are mobile optimized.
     for (const event of compositorEvents) {
         if (!event.args.is_mobile_optimized) {
+            // Grab all the pointer events with at least 50ms of input delay.
+            const longPointerInteractions = [...parsedTrace.UserInteractions.interactionsOverThreshold.values()].filter(interaction => Handlers.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === 'POINTER' &&
+                interaction.inputDelay >= 50_000);
+            // The actual impact varies between 0 and 300.
+            // Using inputDelay as the closest thing we have for measuring this, though inputDelay may be high for other reasons.
+            // b/371566378#comment8
+            const inputDelay = Math.max(0, ...longPointerInteractions.map(interaction => interaction.inputDelay)) / 1000;
+            const inpMetricSavings = Platform.NumberUtilities.clamp(inputDelay, 0, 300);
             return finalize({
                 mobileOptimized: false,
                 viewportEvent,
-                metricSavings: { INP: 300 },
+                longPointerInteractions,
+                metricSavings: { INP: inpMetricSavings },
             });
         }
     }

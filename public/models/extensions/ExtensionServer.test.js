@@ -70,6 +70,12 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
         });
         describe('setFunctionRangesForScript', () => {
+            expectConsoleLogs({
+                error: [
+                    'Extension server error: Invalid argument command: expected a source map script resource for url: https://example.com/',
+                    'Extension server error: Invalid argument command: expected valid scriptUrl and non-empty NamedFunctionRanges'
+                ],
+            });
             const validFunctionRanges = [{ start: { line: 0, column: 0 }, end: { line: 10, column: 1 }, name: 'foo' }];
             it('correctly calls DebuggerWorkspaceBindings.setFunctionRanges via Resource.setFunctionRangesForScript API', async () => {
                 // create a mock uiSourceCode for the sourceMap script
@@ -125,7 +131,10 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
 describeWithDevtoolsExtension('Extensions', {}, context => {
     expectConsoleLogs({
         warn: ['evaluate: the main frame is not yet available'],
-        error: ['Extension server error: Object not found: <top>'],
+        error: [
+            'Extension server error: Object not found: <top>',
+            'Extension server error: Operation failed: https://example.com/ has no execution context'
+        ],
     });
     beforeEach(() => {
         createTarget().setInspectedURL(urlString `http://example.com`);

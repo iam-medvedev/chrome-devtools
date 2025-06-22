@@ -2,15 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './NodeLink.js';
+import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
+const { UIStrings, i18nString } = Trace.Insights.Models.Viewport;
 const { html } = Lit;
 export class Viewport extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-viewport`;
     internalName = 'viewport';
     createOverlays() {
-        // TODO(b/351757418): create overlay for synthetic input delay events
-        return [];
+        if (!this.model || !this.model.longPointerInteractions) {
+            return [];
+        }
+        return this.model.longPointerInteractions.map(interaction => {
+            const delay = Math.min(interaction.inputDelay, 300 * 1000);
+            const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.Micro(interaction.ts), Trace.Types.Timing.Micro(interaction.ts + delay));
+            return {
+                type: 'TIMESPAN_BREAKDOWN',
+                entry: interaction,
+                sections: [{ bounds, label: i18nString(UIStrings.mobileTapDelayLabel), showDuration: true }],
+                renderLocation: 'ABOVE_EVENT',
+            };
+        });
     }
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.INP ?? null;

@@ -5,6 +5,7 @@
 import '../../ui/legacy/legacy.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -100,7 +101,8 @@ export class StatusDialog extends UI.Widget.VBox {
         const fileName = `Trace-Load-Error-${traceStart}.json`;
         const formattedTraceIter = traceJsonGenerator(this.#rawEvents, {});
         const traceAsString = Array.from(formattedTraceIter).join('');
-        await Workspace.FileManager.FileManager.instance().save(fileName, traceAsString, true /* forceSaveAs */, false /* isBase64 */);
+        await Workspace.FileManager.FileManager.instance().save(fileName, new TextUtils.ContentData.ContentData(traceAsString, /* isBase64=*/ false, 'application/json'), 
+        /* forceSaveAs=*/ true);
         Workspace.FileManager.FileManager.instance().close(fileName);
     }
     enableDownloadOfEvents(rawEvents) {

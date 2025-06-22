@@ -109,10 +109,10 @@ const lockedString = i18n.i18n.lockedString;
 function isAiAssistanceServerSideLoggingEnabled() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
-export class EmptyEntryLabelRemoveEvent extends Event {
-    static eventName = 'emptyentrylabelremoveevent';
+export class EntryLabelRemoveEvent extends Event {
+    static eventName = 'entrylabelremoveevent';
     constructor() {
-        super(EmptyEntryLabelRemoveEvent.eventName);
+        super(EntryLabelRemoveEvent.eventName);
     }
 }
 export class EntryLabelChangeEvent extends Event {
@@ -137,9 +137,6 @@ export class EntryLabelOverlay extends HTMLElement {
     static LABEL_AND_CONNECTOR_SHIFT_LENGTH = 8;
     // Length of the line that connects the label to the entry.
     static LABEL_CONNECTOR_HEIGHT = 7;
-    static LABEL_HEIGHT = 17;
-    static LABEL_PADDING = 4;
-    static LABEL_AND_CONNECTOR_HEIGHT = EntryLabelOverlay.LABEL_HEIGHT + EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
     // Set the max label length to avoid labels that could signicantly increase the file size.
     static MAX_LABEL_LENGTH = 100;
     #shadow = this.attachShadow({ mode: 'open' });
@@ -236,6 +233,10 @@ export class EntryLabelOverlay extends HTMLElement {
             // But we want to listen to the change event in the VE logs, so we dispatch it here.
             this.#inputField?.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
         }
+        this.#setAIButtonRenderState();
+        // Rerender the label component when the label text changes because we need to
+        // make sure the 'auto annotation' button is only shown when the label is empty.
+        this.#render();
         this.#inputField?.setAttribute('aria-label', labelBoxTextContent);
     }
     #handleLabelInputKeyDown(event) {
@@ -289,18 +290,14 @@ export class EntryLabelOverlay extends HTMLElement {
         if (!clipboardData || !this.#inputField) {
             return;
         }
-        const pastedText = clipboardData.getData('text');
+        // Remove newline characters to ensure single-line paste.
+        const pastedText = clipboardData.getData('text').replace(/(\r\n|\n|\r)/gm, '');
         const newText = this.#inputField.textContent + pastedText;
         const trimmedText = newText.slice(0, EntryLabelOverlay.MAX_LABEL_LENGTH + 1);
         this.#inputField.textContent = trimmedText;
         this.#placeCursorAtInputEnd();
     }
     set entryLabelVisibleHeight(entryLabelVisibleHeight) {
-        if (entryLabelVisibleHeight === this.#entryLabelVisibleHeight) {
-            // Even the position is not changed, the theme color might change, so we need to redraw the connector here.
-            this.#drawConnector();
-            return;
-        }
         this.#entryLabelVisibleHeight = entryLabelVisibleHeight;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
         // If the label is editable, focus cursor on it.
@@ -374,8 +371,8 @@ export class EntryLabelOverlay extends HTMLElement {
             // Move the label down from above the entry to below it. The label is positioned by default quite far above the entry, hence why we add:
             // 1. the height of the entry + of the label (inc its padding)
             // 2. the height of the connector (*2), so we have room to draw it
-            const verticalTransform = this.#entryLabelVisibleHeight + EntryLabelOverlay.LABEL_HEIGHT +
-                EntryLabelOverlay.LABEL_PADDING * 2 + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2;
+            const verticalTransform = this.#entryLabelVisibleHeight + (EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2) +
+                this.#inputField?.offsetHeight;
             yTranslation = verticalTransform;
         }
         let transformString = '';
@@ -422,7 +419,7 @@ export class EntryLabelOverlay extends HTMLElement {
         // If the label is empty when it is being navigated away from, dispatch an event to remove this entry overlay
         if (!editable && newLabelText.length === 0 && !this.#isPendingRemoval) {
             this.#isPendingRemoval = true;
-            this.dispatchEvent(new EmptyEntryLabelRemoveEvent());
+            this.dispatchEvent(new EntryLabelRemoveEvent());
         }
     }
     /**
@@ -752,17 +749,26 @@ export class EntryLabelOverlay extends HTMLElement {
         }}
               @keydown=${this.#handleLabelInputKeyDown}
               @paste=${this.#handleLabelInputPaste}
-              @keyup=${() => {
-            this.#handleLabelInputKeyUp();
-            this.#setAIButtonRenderState();
-            // Rerender the label component when the label text changes because we need to
-            // make sure the 'auto annotation' button is only shown when the label is empty.
-            this.#render();
-        }}
+              @input=${this.#handleLabelInputKeyUp}
               contenteditable=${this.#isLabelEditable ? 'plaintext-only' : false}
               jslog=${VisualLogging.textField('timeline.annotations.entry-label-input').track({ keydown: true, click: true, change: true })}
               tabindex="0"
             ></span>
+            ${this.#isLabelEditable && this.#inputField?.innerText !== '' ? html `
+              <button
+                class="delete-button"
+                @click=${() => this.dispatchEvent(new EntryLabelRemoveEvent())}
+                jslog=${VisualLogging.action('timeline.annotations.delete-entry-label').track({ click: true })}>
+              <devtools-icon
+                .data=${{
+            iconName: 'cross',
+            color: 'var(--color-background)',
+            width: '14px',
+            height: '14px'
+        }}
+              ></devtools-icon>
+              </button>
+            ` : Lit.nothing}
             ${(() => {
             switch (this.#currAIButtonState) {
                 case "hidden" /* AIButtonState.HIDDEN */:

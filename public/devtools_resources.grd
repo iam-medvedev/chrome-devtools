@@ -1114,11 +1114,8 @@
       <include file="models/trace/LanternComputationData.js" name="MODELS_TRACE_LANTERNCOMPUTATIONDATA_JS" resource_path="models/trace/LanternComputationData.js" type="BINDATA" compress="false"/>
       <include file="models/trace/ModelImpl.js" name="MODELS_TRACE_MODELIMPL_JS" resource_path="models/trace/ModelImpl.js" type="BINDATA" compress="false"/>
       <include file="models/trace/Processor.js" name="MODELS_TRACE_PROCESSOR_JS" resource_path="models/trace/Processor.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/TracingManager.js" name="MODELS_TRACE_TRACINGMANAGER_JS" resource_path="models/trace/TracingManager.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/extras/FetchNodes.js" name="MODELS_TRACE_EXTRAS_FETCHNODES_JS" resource_path="models/trace/extras/FetchNodes.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/FilmStrip.js" name="MODELS_TRACE_EXTRAS_FILMSTRIP_JS" resource_path="models/trace/extras/FilmStrip.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/MainThreadActivity.js" name="MODELS_TRACE_EXTRAS_MAINTHREADACTIVITY_JS" resource_path="models/trace/extras/MainThreadActivity.js" type="BINDATA" compress="false"/>
-      <include file="models/trace/extras/Metadata.js" name="MODELS_TRACE_EXTRAS_METADATA_JS" resource_path="models/trace/extras/Metadata.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/ScriptDuplication.js" name="MODELS_TRACE_EXTRAS_SCRIPTDUPLICATION_JS" resource_path="models/trace/extras/ScriptDuplication.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/StackTraceForEvent.js" name="MODELS_TRACE_EXTRAS_STACKTRACEFOREVENT_JS" resource_path="models/trace/extras/StackTraceForEvent.js" type="BINDATA" compress="false"/>
       <include file="models/trace/extras/ThirdParties.js" name="MODELS_TRACE_EXTRAS_THIRDPARTIES_JS" resource_path="models/trace/extras/ThirdParties.js" type="BINDATA" compress="false"/>
@@ -1242,10 +1239,8 @@
       <include file="panels/ai_assistance/components/userActionRow.css.js" name="PANELS_AI_ASSISTANCE_COMPONENTS_USERACTIONROW_CSS_JS" resource_path="panels/ai_assistance/components/userActionRow.css.js" type="BINDATA" compress="false"/>
       <include file="panels/ai_assistance/selectWorkspaceDialog.css.js" name="PANELS_AI_ASSISTANCE_SELECTWORKSPACEDIALOG_CSS_JS" resource_path="panels/ai_assistance/selectWorkspaceDialog.css.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationGroupPreviewUI.js" name="PANELS_ANIMATION_ANIMATIONGROUPPREVIEWUI_JS" resource_path="panels/animation/AnimationGroupPreviewUI.js" type="BINDATA" compress="false"/>
-      <include file="panels/animation/AnimationScreenshotPopover.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_JS" resource_path="panels/animation/AnimationScreenshotPopover.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationTimeline.js" name="PANELS_ANIMATION_ANIMATIONTIMELINE_JS" resource_path="panels/animation/AnimationTimeline.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/AnimationUI.js" name="PANELS_ANIMATION_ANIMATIONUI_JS" resource_path="panels/animation/AnimationUI.js" type="BINDATA" compress="false"/>
-      <include file="panels/animation/animationScreenshotPopover.css.js" name="PANELS_ANIMATION_ANIMATIONSCREENSHOTPOPOVER_CSS_JS" resource_path="panels/animation/animationScreenshotPopover.css.js" type="BINDATA" compress="false"/>
       <include file="panels/animation/animationTimeline.css.js" name="PANELS_ANIMATION_ANIMATIONTIMELINE_CSS_JS" resource_path="panels/animation/animationTimeline.css.js" type="BINDATA" compress="false"/>
       <include file="panels/application/AppManifestView.js" name="PANELS_APPLICATION_APPMANIFESTVIEW_JS" resource_path="panels/application/AppManifestView.js" type="BINDATA" compress="false"/>
       <include file="panels/application/ApplicationPanelSidebar.js" name="PANELS_APPLICATION_APPLICATIONPANELSIDEBAR_JS" resource_path="panels/application/ApplicationPanelSidebar.js" type="BINDATA" compress="false"/>
@@ -1872,6 +1867,7 @@
       <include file="panels/timeline/LayoutShiftsTrackAppender.js" name="PANELS_TIMELINE_LAYOUTSHIFTSTRACKAPPENDER_JS" resource_path="panels/timeline/LayoutShiftsTrackAppender.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/ModificationsManager.js" name="PANELS_TIMELINE_MODIFICATIONSMANAGER_JS" resource_path="panels/timeline/ModificationsManager.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/NetworkTrackAppender.js" name="PANELS_TIMELINE_NETWORKTRACKAPPENDER_JS" resource_path="panels/timeline/NetworkTrackAppender.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/RecordingMetadata.js" name="PANELS_TIMELINE_RECORDINGMETADATA_JS" resource_path="panels/timeline/RecordingMetadata.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/SaveFileFormatter.js" name="PANELS_TIMELINE_SAVEFILEFORMATTER_JS" resource_path="panels/timeline/SaveFileFormatter.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/StatusDialog.js" name="PANELS_TIMELINE_STATUSDIALOG_JS" resource_path="panels/timeline/StatusDialog.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/TargetForEvent.js" name="PANELS_TIMELINE_TARGETFOREVENT_JS" resource_path="panels/timeline/TargetForEvent.js" type="BINDATA" compress="false"/>
@@ -1993,6 +1989,7 @@
       <include file="panels/timeline/utils/AICallTree.js" name="PANELS_TIMELINE_UTILS_AICALLTREE_JS" resource_path="panels/timeline/utils/AICallTree.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntityMapper.js" name="PANELS_TIMELINE_UTILS_ENTITYMAPPER_JS" resource_path="panels/timeline/utils/EntityMapper.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntryName.js" name="PANELS_TIMELINE_UTILS_ENTRYNAME_JS" resource_path="panels/timeline/utils/EntryName.js" type="BINDATA" compress="false"/>
+      <include file="panels/timeline/utils/EntryNodes.js" name="PANELS_TIMELINE_UTILS_ENTRYNODES_JS" resource_path="panels/timeline/utils/EntryNodes.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/EntryStyles.js" name="PANELS_TIMELINE_UTILS_ENTRYSTYLES_JS" resource_path="panels/timeline/utils/EntryStyles.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/Helpers.js" name="PANELS_TIMELINE_UTILS_HELPERS_JS" resource_path="panels/timeline/utils/Helpers.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/IgnoreList.js" name="PANELS_TIMELINE_UTILS_IGNORELIST_JS" resource_path="panels/timeline/utils/IgnoreList.js" type="BINDATA" compress="false"/>
@@ -2021,6 +2018,7 @@
       <include file="services/puppeteer/PuppeteerConnection.js" name="SERVICES_PUPPETEER_PUPPETEERCONNECTION_JS" resource_path="services/puppeteer/PuppeteerConnection.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/TraceBounds.js" name="SERVICES_TRACE_BOUNDS_TRACEBOUNDS_JS" resource_path="services/trace_bounds/TraceBounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/PerformanceTracing.js" name="SERVICES_TRACING_PERFORMANCETRACING_JS" resource_path="services/tracing/PerformanceTracing.js" type="BINDATA" compress="false"/>
+      <include file="services/tracing/TracingManager.js" name="SERVICES_TRACING_TRACINGMANAGER_JS" resource_path="services/tracing/TracingManager.js" type="BINDATA" compress="false"/>
       <include file="services/window_bounds/WindowBoundsService.js" name="SERVICES_WINDOW_BOUNDS_WINDOWBOUNDSSERVICE_JS" resource_path="services/window_bounds/WindowBoundsService.js" type="BINDATA" compress="false"/>
       <include file="third_party/acorn/package/dist/acorn.mjs" name="THIRD_PARTY_ACORN_PACKAGE_DIST_ACORN_MJS" resource_path="third_party/acorn/package/dist/acorn.mjs" type="BINDATA" compress="false"/>
       <include file="third_party/chromium/client-variations/ClientVariations.js" name="THIRD_PARTY_CHROMIUM_CLIENT_VARIATIONS_CLIENTVARIATIONS_JS" resource_path="third_party/chromium/client-variations/ClientVariations.js" type="BINDATA" compress="false"/>

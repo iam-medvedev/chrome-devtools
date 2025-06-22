@@ -1,7 +1,8 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as Trace from '../../models/trace/trace.js';
-export declare class TimelineController implements Trace.TracingManager.TracingManagerClient {
+import * as Tracing from '../../services/tracing/tracing.js';
+export declare class TimelineController implements Tracing.TracingManager.TracingManagerClient {
     #private;
     readonly primaryPageTarget: SDK.Target.Target;
     readonly rootTarget: SDK.Target.Target;
@@ -39,7 +40,6 @@ export declare class TimelineController implements Trace.TracingManager.TracingM
     startRecording(options: RecordingOptions): Promise<Protocol.ProtocolResponseWithError>;
     stopRecording(): Promise<void>;
     private fetchFieldData;
-    private createMetadata;
     private waitForTracingToStop;
     private startRecordingWithCategories;
     warmupJsProfiler(): Promise<void>;

@@ -308,21 +308,6 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         this.timelineData(/* rebuild= */ true);
         this.dispatchEventToListeners("DataChanged" /* Events.DATA_CHANGED */);
     }
-    entryHasAnnotations(entryIndex) {
-        const event = this.eventByIndex(entryIndex);
-        if (!event) {
-            return false;
-        }
-        const annotations = ModificationsManager.activeManager()?.annotationsForEntry(event);
-        return annotations ? annotations.length > 0 : false;
-    }
-    deleteAnnotationsForEntry(entryIndex) {
-        const event = this.eventByIndex(entryIndex);
-        if (!event) {
-            return;
-        }
-        ModificationsManager.activeManager()?.deleteEntryAnnotations(event);
-    }
     modifyTree(action, entryIndex) {
         const entry = this.entryData[entryIndex];
         ModificationsManager.activeManager()?.getEntriesFilter().applyFilterAction({ type: action, entry });
@@ -1061,7 +1046,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         // If the index is -1 and the selection is a TraceEvent, it might be
         // the case that this Entry is hidden by the Context Menu action.
         // Try revealing the entry and getting the index again.
-        if (index > -1) {
+        if (index === -1) {
             if (this.timelineDataInternal?.selectedGroup) {
                 ModificationsManager.activeManager()?.getEntriesFilter().revealEntry(selection.event);
                 this.timelineData(true);

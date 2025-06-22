@@ -85,7 +85,7 @@ export interface Sample extends Event {
  * trace engine.
  */
 export interface SyntheticCpuProfile extends Instant, SyntheticBased<Phase.INSTANT> {
-    name: 'CpuProfile';
+    name: Name.CPU_PROFILE;
     args: Args & {
         data: ArgsData & {
             cpuProfile: Protocol.Profiler.Profile;
@@ -93,7 +93,7 @@ export interface SyntheticCpuProfile extends Instant, SyntheticBased<Phase.INSTA
     };
 }
 export interface Profile extends Sample {
-    name: 'Profile';
+    name: Name.PROFILE;
     id: ProfileID;
     args: Args & {
         data: ArgsData & {
@@ -102,7 +102,7 @@ export interface Profile extends Sample {
     };
 }
 export interface ProfileChunk extends Sample {
-    name: 'ProfileChunk';
+    name: Name.PROFILE_CHUNK;
     id: ProfileID;
     args: Args & {
         data?: ArgsData & {
@@ -705,6 +705,7 @@ export interface TraceImpactedNode {
     new_rect: TraceRect;
     node_id: Protocol.DOM.BackendNodeId;
     old_rect: TraceRect;
+    debug_name?: string;
 }
 type LayoutShiftData = ArgsData & {
     cumulative_score: number;
@@ -1627,11 +1628,12 @@ export interface Paint extends Complete {
     name: Name.PAINT;
     args: Args & {
         data: ArgsData & {
-            clip: number[];
             frame: string;
             layerId: number;
             nodeId?: Protocol.DOM.BackendNodeId;
             nodeName?: string;
+            /** This rect is unreliable and often wrong. We'll remove it. crbug.com/41402938#comment10 */
+            clip?: number[];
         };
     };
 }
@@ -2146,6 +2148,7 @@ export declare const enum Name {
     RESOURCE_MARK_AS_CACHED = "ResourceMarkAsCached",
     WEB_SOCKET_SEND_HANDSHAKE_REQUEST = "WebSocketSendHandshakeRequest",
     WEB_SOCKET_RECEIVE_HANDSHAKE_REQUEST = "WebSocketReceiveHandshakeResponse",
+    CPU_PROFILE = "CpuProfile",
     PROFILE = "Profile",
     START_PROFILING = "CpuProfiler::StartProfiling",
     PROFILE_CHUNK = "ProfileChunk",

@@ -218,6 +218,7 @@ export declare class Overlays extends EventTarget {
      */
     updateExisting<T extends TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
     enterLabelEditMode(overlay: EntryLabel): void;
+    bringLabelForward(overlay: EntryLabel): void;
     /**
      * @returns the list of overlays associated with a given entry.
      */

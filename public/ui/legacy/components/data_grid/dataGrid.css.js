@@ -135,8 +135,8 @@ export default `/*
   border-left-width: 0;
 }
 
-.data-grid tr.selected td,
-.data-grid tr.selected th {
+.data-grid:focus-within tr.selected td,
+.data-grid:focus-within tr.selected th {
   border-left-color: var(--sys-color-divider-on-tonal-container);
 }
 

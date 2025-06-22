@@ -7,6 +7,7 @@ export class GlassPane {
     contentElement;
     onMouseDownBound;
     onClickOutsideCallback = null;
+    #onHideCallback = null;
     maxSize = null;
     positionX = null;
     positionY = null;
@@ -47,6 +48,9 @@ export class GlassPane {
     }
     setOutsideClickCallback(callback) {
         this.onClickOutsideCallback = callback;
+    }
+    setOnHideCallback(cb) {
+        this.#onHideCallback = cb;
     }
     setMaxContentSize(size) {
         this.maxSize = size;
@@ -96,6 +100,9 @@ export class GlassPane {
         this.element.ownerDocument.body.removeEventListener('mousedown', this.onMouseDownBound, true);
         this.element.ownerDocument.body.removeEventListener('pointerdown', this.onMouseDownBound, true);
         this.widgetInternal.detach();
+        if (this.#onHideCallback) {
+            this.#onHideCallback();
+        }
     }
     onMouseDown(event) {
         if (!this.onClickOutsideCallback) {

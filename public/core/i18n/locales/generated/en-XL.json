@@ -1127,6 +1127,9 @@
   "entrypoints/main/main-meta.ts | toggleDrawer": {
     "message": "T̂óĝǵl̂é d̂ŕâẃêŕ"
   },
+  "entrypoints/main/main-meta.ts | toggleDrawerOrientation": {
+    "message": "T̂óĝǵl̂é d̂ŕâẃêŕ ôŕîén̂t́ât́îón̂"
+  },
   "entrypoints/main/main-meta.ts | undocked": {
     "message": "Ûńd̂óĉḱêd́"
   },
@@ -1237,9 +1240,6 @@
   },
   "generated/Deprecation.ts | CanRequestURLHTTPContainingNewline": {
     "message": "R̂éŝóûŕĉé r̂éq̂úêśt̂ś ŵh́ôśê ÚR̂Ĺŝ ćôńt̂áîńêd́ b̂ót̂h́ r̂ém̂óv̂éd̂ ẃĥít̂éŝṕâćê \\(n|r|t) ćĥár̂áĉt́êŕŝ án̂d́ l̂éŝś-t̂h́âń ĉh́âŕâćt̂ér̂ś (<) âŕê b́l̂óĉḱêd́. P̂ĺêáŝé r̂ém̂óv̂é n̂éŵĺîńêś âńd̂ én̂ćôd́ê ĺêśŝ-t́ĥán̂ ćĥár̂áĉt́êŕŝ f́r̂óm̂ ṕl̂áĉéŝ ĺîḱê él̂ém̂én̂t́ ât́t̂ŕîb́ût́ê v́âĺûéŝ ín̂ ór̂d́êŕ t̂ó l̂óâd́ t̂h́êśê ŕêśôúr̂ćêś."
-  },
-  "generated/Deprecation.ts | CharsetAutoDetectionISO2022JP": {
-    "message": "Âút̂ó-d̂ét̂éĉt́îón̂ óf̂ ÍŜÓ-2022-ĴṔ ĉh́âŕâćt̂ér̂ śêt́ îś d̂ép̂ŕêćât́êd́ âńd̂ ít̂ ẃîĺl̂ b́ê d́îśâb́l̂éd̂ ín̂ t́ĥé n̂éâŕ f̂út̂úr̂é. P̂ĺêáŝé ŝṕêćîf́ŷ ćĥár̂áĉt́êŕ ŝét̂ ín̂ t́ĥé Ĉón̂t́êńt̂ T́ŷṕê h́êád̂ér̂ ór̂ b́ŷ úŝín̂ǵ â ḿêt́â t́âǵ (ĥt́t̂ṕŝ://d́êv́êĺôṕêŕ.m̂óẑíl̂ĺâ.ór̂ǵ/êń-ÛŚ/d̂óĉś/Ĝĺôśŝár̂ý/Ĉh́âŕâćt̂ér̂_én̂ćôd́îńĝ)."
   },
   "generated/Deprecation.ts | ChromeLoadTimesConnectionInfo": {
     "message": "chrome.loadTimes() îś d̂ép̂ŕêćât́êd́, îńŝt́êád̂ úŝé ŝt́âńd̂ár̂d́îźêd́ ÂṔÎ: Ńâv́îǵât́îón̂ T́îḿîńĝ 2."
@@ -1754,6 +1754,9 @@
   "models/persistence/PersistenceActions.ts | saveAs": {
     "message": "Ŝáv̂é âś…"
   },
+  "models/persistence/PersistenceActions.ts | saveFailed": {
+    "message": "F̂áîĺêd́ t̂ó ŝáv̂é f̂íl̂é t̂ó d̂íŝḱ."
+  },
   "models/persistence/PersistenceActions.ts | saveImage": {
     "message": "Ŝáv̂é îḿâǵê"
   },
@@ -1832,8 +1835,8 @@
   "models/trace/insights/CLSCulprits.ts | topCulprits": {
     "message": "T̂óp̂ ĺâýôút̂ śĥíf̂t́ ĉúl̂ṕr̂ít̂ś"
   },
-  "models/trace/insights/CLSCulprits.ts | unsizedImages": {
-    "message": "Ûńŝíẑéd̂ Ím̂áĝéŝ"
+  "models/trace/insights/CLSCulprits.ts | unsizedImage": {
+    "message": "Ûńŝíẑéd̂ ím̂áĝé êĺêḿêńt̂"
   },
   "models/trace/insights/CLSCulprits.ts | worstCluster": {
     "message": "Ŵór̂śt̂ ćl̂úŝt́êŕ"
@@ -2197,6 +2200,9 @@
   },
   "models/trace/insights/Viewport.ts | description": {
     "message": "T̂áp̂ ín̂t́êŕâćt̂íôńŝ ḿâý b̂é [d̂él̂áŷéd̂ b́ŷ úp̂ t́ô 300 ḿŝ](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) íf̂ t́ĥé v̂íêẃp̂ór̂t́ îś n̂ót̂ óp̂t́îḿîźêd́ f̂ór̂ ḿôb́îĺê."
+  },
+  "models/trace/insights/Viewport.ts | mobileTapDelayLabel": {
+    "message": "M̂ób̂íl̂é t̂áp̂ d́êĺâý"
   },
   "models/trace/insights/Viewport.ts | title": {
     "message": "Ôṕt̂ím̂íẑé v̂íêẃp̂ór̂t́ f̂ór̂ ḿôb́îĺê"
@@ -5844,7 +5850,7 @@
     "message": "Ôńl̂ý ŝh́ôẃ m̂éŝśâǵêś f̂ŕôḿ t̂h́ê ćûŕr̂én̂t́ ĉón̂t́êx́t̂ (top, iframe, worker, éx̂t́êńŝíôń)"
   },
   "panels/console/ConsoleView.ts | overriddenByFilterSidebar": {
-    "message": "Ôv́êŕr̂íd̂d́êń b̂ý f̂íl̂t́êŕ ŝíd̂éb̂ár̂"
+    "message": "L̂óĝ ĺêv́êĺŝ ár̂é ĉón̂t́r̂ól̂ĺêd́ b̂ý t̂h́ê ćôńŝól̂é ŝíd̂éb̂ár̂."
   },
   "panels/console/ConsoleView.ts | preserveLog": {
     "message": "P̂ŕêśêŕv̂é l̂óĝ"
@@ -13556,6 +13562,9 @@
   "panels/sources/SourcesNavigator.ts | saveAs": {
     "message": "Ŝáv̂é âś…"
   },
+  "panels/sources/SourcesNavigator.ts | saveAsFailed": {
+    "message": "F̂áîĺêd́ t̂ó ŝáv̂é f̂íl̂é t̂ó d̂íŝḱ."
+  },
   "panels/sources/SourcesNavigator.ts | selectFolderForOverrides": {
     "message": "Ŝél̂éĉt́ f̂ól̂d́êŕ f̂ór̂ óv̂ér̂ŕîd́êś"
   },
@@ -13687,6 +13696,9 @@
   },
   "panels/sources/WatchExpressionsSidebarPane.ts | refreshWatchExpressions": {
     "message": "R̂éf̂ŕêśĥ ẃât́ĉh́ êx́p̂ŕêśŝíôńŝ"
+  },
+  "panels/sources/WatchExpressionsSidebarPane.ts | watchExpressionDeleted": {
+    "message": "Ŵát̂ćĥ éx̂ṕr̂éŝśîón̂ d́êĺêt́êd́"
   },
   "panels/timeline/AnimationsTrackAppender.ts | animations": {
     "message": "Âńîḿât́îón̂ś"
@@ -15161,9 +15173,6 @@
   "panels/timeline/TimelineUIUtils.ts | details": {
     "message": "D̂ét̂áîĺŝ"
   },
-  "panels/timeline/TimelineUIUtils.ts | dimensions": {
-    "message": "D̂ím̂én̂śîón̂ś"
-  },
   "panels/timeline/TimelineUIUtils.ts | duration": {
     "message": "D̂úr̂át̂íôń"
   },
@@ -15236,9 +15245,6 @@
   "panels/timeline/TimelineUIUtils.ts | learnMore": {
     "message": "L̂éâŕn̂ ḿôŕê"
   },
-  "panels/timeline/TimelineUIUtils.ts | location": {
-    "message": "L̂óĉát̂íôń"
-  },
   "panels/timeline/TimelineUIUtils.ts | message": {
     "message": "M̂éŝśâǵê"
   },
@@ -15302,9 +15308,6 @@
   "panels/timeline/TimelineUIUtils.ts | sChildren": {
     "message": "{PH1} (ĉh́îĺd̂ŕêń)"
   },
-  "panels/timeline/TimelineUIUtils.ts | sCollected": {
-    "message": "{PH1} ĉól̂ĺêćt̂éd̂"
-  },
   "panels/timeline/TimelineUIUtils.ts | script": {
     "message": "Ŝćr̂íp̂t́"
   },
@@ -15329,23 +15332,11 @@
   "panels/timeline/TimelineUIUtils.ts | sS": {
     "message": "{PH1}: {PH2}"
   },
-  "panels/timeline/TimelineUIUtils.ts | sSCurlyBrackets": {
-    "message": "({PH1}, {PH2})"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSDimensions": {
-    "message": "{PH1} × {PH2}"
-  },
   "panels/timeline/TimelineUIUtils.ts | sSelectorStatsInfo": {
     "message": "Ŝél̂éĉt́ \"{PH1}\" t̂ó ĉól̂ĺêćt̂ d́êt́âíl̂éd̂ ĆŜŚ ŝél̂éĉt́ôŕ m̂át̂ćĥín̂ǵ ŝt́ât́îśt̂íĉś."
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (ŝél̂f́)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSs": {
-    "message": "{PH1} [{PH2}…{PH3}]"
-  },
-  "panels/timeline/TimelineUIUtils.ts | sSSquareBrackets": {
-    "message": "{PH1} [{PH2}…]"
   },
   "panels/timeline/TimelineUIUtils.ts | stackTrace": {
     "message": "Ŝt́âćk̂ t́r̂áĉé"
@@ -16526,9 +16517,6 @@
   "ui/legacy/components/perf_ui/FilmStripView.ts | screenshotForSSelectToView": {
     "message": "Ŝćr̂éêńŝh́ôt́ f̂ór̂ {PH1} - śêĺêćt̂ t́ô v́îéŵ ṕr̂éĉéd̂ín̂ǵ r̂éq̂úêśt̂ś."
   },
-  "ui/legacy/components/perf_ui/FlameChart.ts | deleteAnnotations": {
-    "message": "D̂él̂ét̂é âńn̂ót̂át̂íôńŝ"
-  },
   "ui/legacy/components/perf_ui/FlameChart.ts | enterTrackConfigurationMode": {
     "message": "Ĉón̂f́îǵûŕê t́r̂áĉḱŝ"
   },
@@ -16894,6 +16882,9 @@
   },
   "ui/legacy/InspectorView.ts | setToSpecificLanguage": {
     "message": "Ŝẃît́ĉh́ D̂év̂T́ôól̂ś t̂ó {PH1}"
+  },
+  "ui/legacy/InspectorView.ts | toggleDrawerOrientation": {
+    "message": "T̂óĝǵl̂é d̂ŕâẃêŕ ôŕîén̂t́ât́îón̂"
   },
   "ui/legacy/ListWidget.ts | addString": {
     "message": "Âd́d̂"

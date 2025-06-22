@@ -88,6 +88,10 @@ export default `/*
   }
 }
 
+.focusable-outline {
+  overflow: visible;
+}
+
 .devtools-link,
 .timeline-link {
   color: var(--text-link);

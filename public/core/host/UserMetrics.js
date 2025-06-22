@@ -686,8 +686,9 @@ export var KeyboardShortcutAction;
     KeyboardShortcutAction[KeyboardShortcutAction["coverage.clear"] = 116] = "coverage.clear";
     KeyboardShortcutAction[KeyboardShortcutAction["coverage.export"] = 117] = "coverage.export";
     KeyboardShortcutAction[KeyboardShortcutAction["timeline.dim-third-parties"] = 118] = "timeline.dim-third-parties";
+    KeyboardShortcutAction[KeyboardShortcutAction["main.toggle-drawer-orientation"] = 119] = "main.toggle-drawer-orientation";
     /* eslint-enable @typescript-eslint/naming-convention */
-    KeyboardShortcutAction[KeyboardShortcutAction["MAX_VALUE"] = 119] = "MAX_VALUE";
+    KeyboardShortcutAction[KeyboardShortcutAction["MAX_VALUE"] = 120] = "MAX_VALUE";
 })(KeyboardShortcutAction || (KeyboardShortcutAction = {}));
 /**
  * This list should contain the currently active Devtools Experiments,
@@ -719,11 +720,10 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
-    // 106 was historically used [https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/6230097]
-    // next experiment should be 107
+    DevtoolsExperiments[DevtoolsExperiments["vertical-drawer"] = 107] = "vertical-drawer";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 106] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 108] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

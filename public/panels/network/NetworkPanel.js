@@ -41,6 +41,7 @@ import * as Logs from '../../models/logs/logs.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -776,7 +777,7 @@ export class FilmStripRecorder {
         this.#collectedTraceEvents = [];
         this.filmStripView.reset();
         this.filmStripView.setStatusText(i18nString(UIStrings.recordingFrames));
-        const tracingManager = SDK.TargetManager.TargetManager.instance().scopeTarget()?.model(Trace.TracingManager.TracingManager);
+        const tracingManager = SDK.TargetManager.TargetManager.instance().scopeTarget()?.model(Tracing.TracingManager.TracingManager);
         if (this.tracingManager || !tracingManager) {
             return;
         }

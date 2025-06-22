@@ -39,4 +39,9 @@ span.ax-internal-role {
   margin: 2px 2px 2px 5px;
 }
 
+.info-message-overflow {
+  overflow-x: hidden;
+  white-space: normal;
+}
+
 /*# sourceURL=${import.meta.resolve('./accessibilityProperties.css')} */`;

@@ -151,7 +151,7 @@ export default `/*
   color: inherit;
   background-color: transparent;
   outline-offset: 0;
-  height: 16px;
+  max-height: 16px;
 }
 
 .network-error-row,

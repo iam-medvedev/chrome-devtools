@@ -117,22 +117,24 @@ describeWithEnvironment('CLSCulprits', function () {
                 assert.exists(shifts);
                 assert.strictEqual(shifts.size, 3);
                 const shift1 = Array.from(shifts)[0][0];
-                const shiftIframes = shifts.get(shift1)?.iframeIds;
+                const shiftIframes = shifts.get(shift1)?.iframes;
                 assert.exists(shiftIframes);
                 assert.lengthOf(shiftIframes, 1);
                 const iframe = shiftIframes[0];
+                assert.strictEqual(iframe.frame, '36E9367B04D158F1DC34D4E46B5A124C');
+                assert.strictEqual(iframe.url, 'http://localhost:10200/simple-page.html');
                 // Find the event with the matching frame id to make sure we got the right id.
                 const dlEvent = data.LayoutShifts.domLoadingEvents.find(e => {
-                    return e.args.frame === iframe;
+                    return e.args.frame === iframe.frame;
                 });
                 assert.exists(dlEvent);
                 // Ensure the iframe happens within the invalidation window.
                 assert.isTrue(dlEvent.ts < shift1.ts && dlEvent.ts >= shift1.ts - INVALIDATION_WINDOW);
                 // Other shifts should not have iframe root causes.
                 const shift2 = Array.from(shifts)[1][0];
-                assert.isEmpty(shifts.get(shift2)?.iframeIds);
+                assert.isEmpty(shifts.get(shift2)?.iframes);
                 const shift3 = Array.from(shifts)[2][0];
-                assert.isEmpty(shifts.get(shift3)?.iframeIds);
+                assert.isEmpty(shifts.get(shift3)?.iframes);
             });
             it('handles potential font root cause correctly', async function () {
                 // Trace has font load before the second layout shift.

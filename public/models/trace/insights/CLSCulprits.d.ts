@@ -41,9 +41,9 @@ export declare const UIStrings: {
      */
     readonly animation: "Animation";
     /**
-     * @description Text for a culprit type of Unsized images.
+     * @description Text for a culprit type of Unsized image.
      */
-    readonly unsizedImages: "Unsized Images";
+    readonly unsizedImage: "Unsized image element";
     /**
      * @description Text status when there were no layout shifts detected.
      */
@@ -60,7 +60,7 @@ export type CLSCulpritsInsightModel = InsightModel<typeof UIStrings, {
     clusters: Types.Events.SyntheticLayoutShiftCluster[];
     worstCluster: Types.Events.SyntheticLayoutShiftCluster | undefined;
     /** The top 3 shift root causes for each cluster. */
-    topCulpritsByCluster: Map<Types.Events.SyntheticLayoutShiftCluster, Platform.UIString.LocalizedString[]>;
+    topCulpritsByCluster: Map<Types.Events.SyntheticLayoutShiftCluster, LayoutShiftItem[]>;
 }>;
 export declare const enum AnimationFailureReasons {
     ACCELERATED_ANIMATIONS_DISABLED = "ACCELERATED_ANIMATIONS_DISABLED",
@@ -82,6 +82,22 @@ export declare const enum AnimationFailureReasons {
     AFFECTS_IMPORTANT_PROPERTY = "AFFECTS_IMPORTANT_PROPERTY",
     SVG_TARGET_HAS_INDEPENDENT_TRANSFORM_PROPERTY = "SVG_TARGET_HAS_INDEPENDENT_TRANSFORM_PROPERTY"
 }
+export declare const enum LayoutShiftType {
+    FONT_REQUESTS = 0,
+    IFRAMES = 1,
+    ANIMATIONS = 2,
+    UNSIZED_IMAGE = 3
+}
+export type LayoutShiftItem = {
+    type: LayoutShiftType.UNSIZED_IMAGE;
+    description: Platform.UIString.LocalizedString;
+    url: string;
+    backendNodeId: Protocol.DOM.BackendNodeId;
+    frame: string;
+} | {
+    type: Exclude<LayoutShiftType, LayoutShiftType.UNSIZED_IMAGE>;
+    description: Platform.UIString.LocalizedString;
+};
 export interface NoncompositedAnimationFailure {
     /**
      * Animation name.
@@ -105,8 +121,12 @@ export interface UnsizedImage {
     backendNodeId: Protocol.DOM.BackendNodeId;
     paintImageEvent: Types.Events.PaintImage;
 }
+export interface IframeRootCause {
+    frame: string;
+    url?: string;
+}
 export interface LayoutShiftRootCausesData {
-    iframeIds: string[];
+    iframes: IframeRootCause[];
     fontRequests: Types.Events.SyntheticNetworkRequest[];
     nonCompositedAnimations: NoncompositedAnimationFailure[];
     unsizedImages: UnsizedImage[];

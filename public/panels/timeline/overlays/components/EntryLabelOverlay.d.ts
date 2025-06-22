@@ -3,8 +3,8 @@ import '../../../../ui/components/tooltips/tooltips.js';
 import '../../../../ui/components/spinners/spinners.js';
 import * as AiAssistanceModels from '../../../../models/ai_assistance/ai_assistance.js';
 import type * as Utils from '../../utils/utils.js';
-export declare class EmptyEntryLabelRemoveEvent extends Event {
-    static readonly eventName = "emptyentrylabelremoveevent";
+export declare class EntryLabelRemoveEvent extends Event {
+    static readonly eventName = "entrylabelremoveevent";
     constructor();
 }
 export declare class EntryLabelChangeEvent extends Event {
@@ -21,9 +21,6 @@ export declare class EntryLabelOverlay extends HTMLElement {
     #private;
     static readonly LABEL_AND_CONNECTOR_SHIFT_LENGTH = 8;
     static readonly LABEL_CONNECTOR_HEIGHT = 7;
-    static readonly LABEL_HEIGHT = 17;
-    static readonly LABEL_PADDING = 4;
-    static readonly LABEL_AND_CONNECTOR_HEIGHT: number;
     static readonly MAX_LABEL_LENGTH = 100;
     /**
      * The entry label overlay consists of 3 parts - the label part with the label string inside,

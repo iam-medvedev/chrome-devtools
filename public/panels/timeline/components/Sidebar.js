@@ -75,7 +75,7 @@ export class SidebarWidget extends UI.Widget.VBox {
     }
     setInsights(insights) {
         this.#insightsView.setInsights(insights);
-        this.#tabbedPane.setTabEnabled("insights" /* SidebarTabs.INSIGHTS */, insights !== null);
+        this.#tabbedPane.setTabEnabled("insights" /* SidebarTabs.INSIGHTS */, insights !== null && insights.size > 0);
     }
     setActiveInsight(activeInsight, opts) {
         this.#insightsView.setActiveInsight(activeInsight, opts);

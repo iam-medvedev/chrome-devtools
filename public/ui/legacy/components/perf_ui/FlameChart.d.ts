@@ -171,6 +171,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     /** When true, all undimmed entries are outlined. When an array, only those indices are outlined (if not dimmed). */
     private dimShouldOutlineUndimmedEntries;
     constructor(dataProvider: FlameChartDataProvider, flameChartDelegate: FlameChartDelegate, optionalConfig?: OptionalFlameChartConfig);
+    wasShown(): void;
     willHide(): void;
     canvasBoundingClientRect(): DOMRect | null;
     /**
@@ -591,8 +592,6 @@ export interface FlameChartDataProvider {
     customizedContextMenu?(event: MouseEvent, eventIndex: number, groupIndex: number): UI.ContextMenu.ContextMenu | undefined;
     search?(visibleWindow: Trace.Types.Timing.TraceWindowMicro, filter?: Trace.Extras.TraceFilter.TraceFilter): DataProviderSearchResult[];
     modifyTree?(action: FilterAction, entryIndex: number): void;
-    entryHasAnnotations?(entryIndex: number): boolean;
-    deleteAnnotationsForEntry?(entryIndex: number): void;
     findPossibleContextMenuActions?(node: number): PossibleFilterActions | void;
     handleFlameChartTransformKeyboardEvent?(event: KeyboardEvent, entryIndex: number, groupIndex: number): void;
     groupForEvent?(entryIndex: number): Group | null;

@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../../ui/components/markdown_view/markdown_view.js';
-import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Root from '../../../../core/root/root.js';
-import * as Trace from '../../../../models/trace/trace.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
@@ -273,19 +271,6 @@ export class BaseInsightComponent extends HTMLElement {
             });
         }
         return null;
-    }
-    renderNode(backendNodeId, fallbackText) {
-        const fallback = fallbackText ?? Lit.nothing;
-        if (!this.#parsedTrace) {
-            return html `${fallback}`;
-        }
-        const domNodePromise = Trace.Extras.FetchNodes.domNodeForBackendNodeID(this.#parsedTrace, backendNodeId).then((node) => {
-            if (!node) {
-                return fallback;
-            }
-            return Common.Linkifier.Linkifier.linkify(node);
-        });
-        return html `${Lit.Directives.until(domNodePromise, fallback)}`;
     }
     #askAIButtonClick() {
         if (!this.#model || !this.#parsedTrace) {

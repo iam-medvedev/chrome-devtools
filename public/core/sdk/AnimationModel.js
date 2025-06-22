@@ -6,7 +6,6 @@ import { DeferredDOMNode } from './DOMModel.js';
 import { RemoteObject } from './RemoteObject.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './ResourceTreeModel.js';
 import { Events as RuntimeModelEvents, RuntimeModel } from './RuntimeModel.js';
-import { ScreenCaptureModel } from './ScreenCaptureModel.js';
 import { SDKModel } from './SDKModel.js';
 const DEVTOOLS_ANIMATIONS_WORLD_NAME = 'devtools_animations';
 const REPORT_SCROLL_POSITION_BINDING_NAME = '__devtools_report_scroll_position__';
@@ -233,7 +232,6 @@ export class AnimationModel extends SDKModel {
     animationGroups = new Map();
     #pendingAnimations = new Set();
     playbackRate = 1;
-    #screenshotCapture;
     #flushPendingAnimations;
     constructor(target) {
         super(target);
@@ -245,10 +243,6 @@ export class AnimationModel extends SDKModel {
         }
         const resourceTreeModel = target.model(ResourceTreeModel);
         resourceTreeModel.addEventListener(ResourceTreeModelEvents.PrimaryPageChanged, this.reset, this);
-        const screenCaptureModel = target.model(ScreenCaptureModel);
-        if (screenCaptureModel) {
-            this.#screenshotCapture = new ScreenshotCapture(this, screenCaptureModel);
-        }
         this.#flushPendingAnimations = Common.Debouncer.debounce(() => {
             while (this.#pendingAnimations.size) {
                 this.matchExistingGroups(this.createGroupFromPendingAnimations());
@@ -333,9 +327,6 @@ export class AnimationModel extends SDKModel {
         }
         if (!matchedGroup) {
             this.animationGroups.set(incomingGroup.id(), incomingGroup);
-            if (this.#screenshotCapture) {
-                void this.#screenshotCapture.captureScreenshots(incomingGroup.finiteDuration(), incomingGroup.screenshotsInternal);
-            }
             this.dispatchEventToListeners(Events.AnimationGroupStarted, incomingGroup);
         }
         else {
@@ -688,15 +679,11 @@ export class AnimationGroup {
     #scrollNodeInternal;
     #animationsInternal;
     #pausedInternal;
-    screenshotsInternal;
-    #screenshotImages;
     constructor(animationModel, id, animations) {
         this.#animationModel = animationModel;
         this.#idInternal = id;
         this.#animationsInternal = animations;
         this.#pausedInternal = false;
-        this.screenshotsInternal = [];
-        this.#screenshotImages = [];
     }
     isScrollDriven() {
         return Boolean(this.#animationsInternal[0]?.viewOrScrollTimeline());
@@ -823,15 +810,6 @@ export class AnimationGroup {
         this.#animationsInternal = group.#animationsInternal;
         this.#scrollNodeInternal = undefined;
     }
-    screenshots() {
-        for (let i = 0; i < this.screenshotsInternal.length; ++i) {
-            const image = new Image();
-            image.src = 'data:image/jpeg;base64,' + this.screenshotsInternal[i];
-            this.#screenshotImages.push(image);
-        }
-        this.screenshotsInternal = [];
-        return this.#screenshotImages;
-    }
 }
 export class AnimationDispatcher {
     #animationModel;
@@ -863,62 +841,6 @@ export class AnimationDispatcher {
     }
     animationUpdated({ animation }) {
         void this.#animationModel.animationUpdated(animation);
-    }
-}
-export class ScreenshotCapture {
-    #requests;
-    #screenCaptureModel;
-    #animationModel;
-    // This prevents multiple synchronous calls to captureScreenshots to result in one startScreencast call in model.
-    #isCapturing = false;
-    // Holds the id for capturing & cancelling the screencast operation.
-    #screencastOperationId;
-    #stopTimer;
-    #endTime;
-    constructor(animationModel, screenCaptureModel) {
-        this.#requests = [];
-        this.#screenCaptureModel = screenCaptureModel;
-        this.#animationModel = animationModel;
-        this.#animationModel.addEventListener(Events.ModelReset, this.stopScreencast, this);
-    }
-    async captureScreenshots(duration, screenshots) {
-        const screencastDuration = Math.min(duration / this.#animationModel.playbackRate, 3000);
-        const endTime = screencastDuration + window.performance.now();
-        this.#requests.push({ endTime, screenshots });
-        if (!this.#endTime || endTime > this.#endTime) {
-            clearTimeout(this.#stopTimer);
-            this.#stopTimer = window.setTimeout(this.stopScreencast.bind(this), screencastDuration);
-            this.#endTime = endTime;
-        }
-        if (this.#isCapturing) {
-            return;
-        }
-        this.#isCapturing = true;
-        this.#screencastOperationId = await this.#screenCaptureModel.startScreencast("jpeg" /* Protocol.Page.StartScreencastRequestFormat.Jpeg */, 80, undefined, 300, 2, this.screencastFrame.bind(this), _visible => { });
-    }
-    screencastFrame(base64Data, _metadata) {
-        function isAnimating(request) {
-            return request.endTime >= now;
-        }
-        if (!this.#isCapturing) {
-            return;
-        }
-        const now = window.performance.now();
-        this.#requests = this.#requests.filter(isAnimating);
-        for (const request of this.#requests) {
-            request.screenshots.push(base64Data);
-        }
-    }
-    stopScreencast() {
-        if (!this.#screencastOperationId) {
-            return;
-        }
-        this.#screenCaptureModel.stopScreencast(this.#screencastOperationId);
-        this.#stopTimer = undefined;
-        this.#endTime = undefined;
-        this.#requests = [];
-        this.#isCapturing = false;
-        this.#screencastOperationId = undefined;
     }
 }
 SDKModel.register(AnimationModel, { capabilities: 2 /* Capability.DOM */, autostart: true });

@@ -30,6 +30,7 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../../../core/common/common.js';
 import * as Trace from '../../../../models/trace/trace.js';
+import * as TraceBounds from '../../../../services/trace_bounds/trace_bounds.js';
 import * as VisualLoggging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import * as ThemeSupport from '../../theme_support/theme_support.js';
@@ -52,6 +53,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     windowEndTime = Trace.Types.Timing.Milli(Infinity);
     muteOnWindowChanged = false;
     #dimHighlightSVG;
+    #boundOnThemeChanged = this.#onThemeChanged.bind(this);
     constructor(prefix) {
         super();
         this.element.id = prefix + '-overview-pane';
@@ -114,11 +116,20 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.dispatchEventToListeners("OverviewPaneMouseLeave" /* Events.OVERVIEW_PANE_MOUSE_LEAVE */);
         this.overviewInfo.hide();
     }
+    #onThemeChanged() {
+        this.scheduleUpdate();
+    }
     wasShown() {
-        this.update();
+        super.wasShown();
+        const start = TraceBounds.TraceBounds.BoundsManager.instance().state()?.milli.minimapTraceBounds.min;
+        const end = TraceBounds.TraceBounds.BoundsManager.instance().state()?.milli.minimapTraceBounds.max;
+        this.update(start, end);
+        ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#boundOnThemeChanged);
     }
     willHide() {
+        ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#boundOnThemeChanged);
         this.overviewInfo.hide();
+        super.willHide();
     }
     onResize() {
         const width = this.element.offsetWidth;

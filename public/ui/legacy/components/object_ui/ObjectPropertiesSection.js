@@ -527,9 +527,11 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
 const ARRAY_LOAD_THRESHOLD = 100;
 const maxRenderableStringLength = 10000;
 export class ObjectPropertiesSectionsTreeOutline extends UI.TreeOutline.TreeOutlineInShadow {
-    constructor() {
+    editable;
+    constructor(options) {
         super();
         this.registerRequiredCSS(objectValueStyles, objectPropertiesSectionStyles);
+        this.editable = !(options?.readOnly);
         this.contentElement.classList.add('source-code');
         this.contentElement.classList.add('object-properties-section');
     }

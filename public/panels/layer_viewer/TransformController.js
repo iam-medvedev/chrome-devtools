@@ -40,7 +40,12 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
     maxScale;
     controlPanelToolbar;
     modeButtons;
-    constructor(element, disableRotate) {
+    /**
+     * @param element The HTML element to apply transformations to.
+     * @param disableRotate Optional. If true, pan and rotate will be disabled. Defaults to false.
+     * @param preventDefaultOnMousedown Optional. If true, mousedown events will be prevented from their default behavior (including focus). Defaults to true.
+     */
+    constructor(element, disableRotate, preventDefaultOnMouseDown = true) {
         super();
         this.scaleInternal = 1;
         this.offsetXInternal = 0;
@@ -53,7 +58,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         this.originY = 0;
         this.element = element;
         this.registerShortcuts();
-        UI.UIUtils.installDragHandle(element, this.onDragStart.bind(this), this.onDrag.bind(this), this.onDragEnd.bind(this), 'move', null);
+        UI.UIUtils.installDragHandle(element, this.onDragStart.bind(this), this.onDrag.bind(this), this.onDragEnd.bind(this), 'move', null, 0, preventDefaultOnMouseDown);
         element.addEventListener('wheel', this.onMouseWheel.bind(this), false);
         this.minScale = 0;
         this.maxScale = Infinity;

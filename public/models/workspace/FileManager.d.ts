@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
+import type * as TextUtils from '../text_utils/text_utils.js';
 export interface SaveCallbackParam {
     fileSystemPath?: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString;
 }
@@ -12,7 +13,7 @@ export declare class FileManager extends Common.ObjectWrapper.ObjectWrapper<Even
     /**
      * {@link FileManager.close | close} *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
      */
-    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, forceSaveAs: boolean, isBase64: boolean): Promise<SaveCallbackParam | null>;
+    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, contentData: TextUtils.ContentData.ContentData, forceSaveAs: boolean): Promise<SaveCallbackParam | null>;
     /**
      * Used in web tests
      */

@@ -152,7 +152,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         this.#pageResources.set(key, pageResource);
         this.dispatchEventToListeners("Update" /* Events.UPDATE */);
     }
-    async loadResource(url, initiator) {
+    async loadResource(url, initiator, isBinary = false) {
         if (isExtensionInitiator(initiator)) {
             throw new Error('Invalid initiator');
         }
@@ -163,7 +163,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         const startTime = performance.now();
         try {
             await this.acquireLoadSlot(initiator.target);
-            const resultPromise = this.dispatchLoad(url, initiator);
+            const resultPromise = this.dispatchLoad(url, initiator, isBinary);
             const result = await resultPromise;
             pageResource.errorMessage = result.errorDescription.message;
             pageResource.success = result.success;
@@ -188,7 +188,7 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             this.dispatchEventToListeners("Update" /* Events.UPDATE */);
         }
     }
-    async dispatchLoad(url, initiator) {
+    async dispatchLoad(url, initiator, isBinary) {
         if (isExtensionInitiator(initiator)) {
             throw new Error('Invalid initiator');
         }
@@ -204,13 +204,13 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
             try {
                 if (initiator.target) {
                     Host.userMetrics.developerResourceLoaded(0 /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_TARGET */);
-                    const result = await this.loadFromTarget(initiator.target, initiator.frameId, url);
+                    const result = await this.loadFromTarget(initiator.target, initiator.frameId, url, isBinary);
                     return result;
                 }
                 const frame = FrameManager.instance().getFrame(initiator.frameId);
                 if (frame) {
                     Host.userMetrics.developerResourceLoaded(1 /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_FRAME */);
-                    const result = await this.loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url);
+                    const result = await this.loadFromTarget(frame.resourceTreeModel().target(), initiator.frameId, url, isBinary);
                     return result;
                 }
             }
@@ -260,13 +260,15 @@ export class PageResourceLoader extends Common.ObjectWrapper.ObjectWrapper {
         }
         return 0 /* Host.UserMetrics.DeveloperResourceScheme.OTHER */;
     }
-    async loadFromTarget(target, frameId, url) {
+    async loadFromTarget(target, frameId, url, isBinary) {
         const networkManager = target.model(NetworkManager);
         const ioModel = target.model(IOModel);
         const disableCache = Common.Settings.Settings.instance().moduleSetting('cache-disabled').get();
         const resource = await networkManager.loadNetworkResource(frameId, url, { disableCache, includeCredentials: true });
         try {
-            const content = resource.stream ? await ioModel.readToString(resource.stream) : '';
+            const content = resource.stream ?
+                (isBinary ? await ioModel.readToBuffer(resource.stream) : await ioModel.readToString(resource.stream)) :
+                '';
             return {
                 success: resource.success,
                 content,

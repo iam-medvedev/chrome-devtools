@@ -94,10 +94,8 @@ describeWithEnvironment('TimelineLoader', () => {
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
         const [collectedEvents, /* exclusiveFilter */ , metadata] = loadingCompleteSpy.args[0];
-        // We create fake trace event for CPU profile, includes one for
-        // TracingStartedInPage, one for metadata, one for root, and one for CPU
-        // profile
-        assert.lengthOf(collectedEvents, 4);
+        // We create one synthetic trace event for CPU profile
+        assert.lengthOf(collectedEvents, 1);
         assert.strictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
     });
     it('can load recorded trace events correctly', async () => {
@@ -138,9 +136,8 @@ describeWithEnvironment('TimelineLoader', () => {
         // default), so we tell it that they align with the types of the
         // loadingComplete parameters.
         const [collectedEvents, /* exclusiveFilter */ , metadata] = loadingCompleteSpy.args[0];
-        // We create fake trace event for CPU profile, includes one for TracingStartedInPage,
-        // one for metadata, one for root, and one for CPU profile
-        assert.lengthOf(collectedEvents, 4);
+        // We create one synthetic trace event for CPU profile
+        assert.lengthOf(collectedEvents, 1);
         assert.strictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
     });
 });

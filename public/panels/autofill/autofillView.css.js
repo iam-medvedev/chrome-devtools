@@ -91,6 +91,7 @@ devtools-data-grid {
 
 .feedback {
   margin: auto 5px auto auto;
+  font-size: var(--sys-typescale-body4-size);
 }
 
 /*# sourceURL=${import.meta.resolve('./autofillView.css')} */`;

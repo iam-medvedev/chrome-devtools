@@ -1,3 +1,4 @@
+import './NodeLink.js';
 import type { CLSCulpritsInsightModel } from '../../../../models/trace/insights/CLSCulprits.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';

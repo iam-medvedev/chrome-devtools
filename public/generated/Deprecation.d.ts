@@ -8,10 +8,6 @@ export declare const UIStrings: {
      */
     readonly CanRequestURLHTTPContainingNewline: "Resource requests whose URLs contained both removed whitespace `\\(n|r|t)` characters and less-than characters (`<`) are blocked. Please remove newlines and encode less-than characters from places like element attribute values in order to load these resources.";
     /**
-     * @description Warning displayed to developers that they did not specify character encoding for HTML document, and that auto-detection of specific character set (i.e. ISO-2022-JP) used by the webiste won't be supported in the near futre.
-     */
-    readonly CharsetAutoDetectionISO2022JP: "Auto-detection of ISO-2022-JP character set is deprecated and it will be disabled in the near future. Please specify character set in the Content Type header or by using a meta tag (https://developer.mozilla.org/en-US/docs/Glossary/Character_encoding).";
-    /**
      * @description This warning occurs when the website attempts to invoke the deprecated `chrome.loadTimes().connectionInfo` API.
      */
     readonly ChromeLoadTimesConnectionInfo: "`chrome.loadTimes()` is deprecated, instead use standardized API: Navigation Timing 2.";

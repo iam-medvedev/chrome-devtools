@@ -40,6 +40,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
@@ -358,19 +359,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     // These are used to announce to screen-readers and not shown visibly.
     i18nString(UIStrings.sidebarShown), i18nString(UIStrings.sidebarHidden), 'timeline.sidebar');
     #sideBar = new TimelineComponents.Sidebar.SidebarWidget();
-    /**
-     * Rather than auto-pop the sidebar every time the user records a trace,
-     * which could get annoying, we instead persist the state of the sidebar
-     * visibility to a setting so it's restored across sessions.
-     * However, sometimes we have to automatically hide the sidebar, like when a
-     * trace recording is happening, or the user is on the landing page. In those
-     * times, we toggle this flag to true. Then, when we enter the VIEWING_TRACE
-     * mode, we check this flag and pop the sidebar open if it's set to true.
-     * Longer term a better fix here would be to divide the 3 UI screens
-     * (status pane, landing page, trace view) into distinct components /
-     * widgets, to avoid this complexity.
-     */
-    #restoreSidebarVisibilityOnTraceLoad = false;
     /**
      * Used to track an aria announcement that we need to alert for
      * screen-readers. We track these because we debounce announcements to not
@@ -750,7 +738,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 this.#hideLandingPage();
                 this.#setModelForActiveTrace();
                 this.#removeStatusPane();
-                this.#showSidebarIfRequired();
+                if (newMode.forceOpenSidebar) {
+                    this.#showSidebar();
+                }
                 this.flameChart.dimThirdPartiesIfRequired();
                 this.dispatchEventToListeners("IsViewingTrace" /* Events.IS_VIEWING_TRACE */, true);
                 return;
@@ -1198,19 +1188,15 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             // TODO(crbug.com/1456818): Extract this logic and add more tests.
             let traceAsString;
             if (metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
-                const profileEvent = traceEvents.find(e => e.name === 'CpuProfile');
-                if (!profileEvent?.args?.data) {
-                    return;
-                }
-                const profileEventData = profileEvent.args?.data;
-                if (profileEventData.hasOwnProperty('cpuProfile')) {
+                const profileEvent = traceEvents.find(e => Trace.Types.Events.isSyntheticCpuProfile(e));
+                const profile = profileEvent?.args.data.cpuProfile;
+                if (profile) {
                     // TODO(crbug.com/1456799): Currently use a hack way because we can't differentiate
                     // cpuprofile from trace events when loading a file.
                     // The loader will directly add the fake trace created from CpuProfile to the tracingModel.
                     // And there is where the old saving logic saves the cpuprofile.
                     // This will be solved when the CPUProfileHandler is done. Then we can directly get it
                     // from the new traceEngine
-                    const profile = profileEventData.cpuProfile;
                     traceAsString = cpuprofileJsonGenerator(profile);
                 }
             }
@@ -1224,7 +1210,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             if (!traceAsString) {
                 throw new Error('Trace content empty');
             }
-            await Workspace.FileManager.FileManager.instance().save(fileName, traceAsString, true /* forceSaveAs */, false /* isBase64 */);
+            await Workspace.FileManager.FileManager.instance().save(fileName, new TextUtils.ContentData.ContentData(traceAsString, /* isBase64=*/ false, 'application/json'), 
+            /* forceSaveAs=*/ true);
             Workspace.FileManager.FileManager.instance().close(fileName);
         }
         catch (e) {
@@ -1265,6 +1252,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 this.#changeView({
                     mode: 'VIEWING_TRACE',
                     traceIndex: recordingData.parsedTraceIndex,
+                    forceOpenSidebar: false,
                 });
             }
         }
@@ -1277,6 +1265,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.#changeView({
                 mode: 'VIEWING_TRACE',
                 traceIndex: recordingData.parsedTraceIndex,
+                forceOpenSidebar: false,
             });
         }
         return true;
@@ -1786,6 +1775,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             else if (action === 'EnterLabelEditState' && AnnotationHelpers.isEntryLabel(overlay)) {
                 this.flameChart.enterLabelEditMode(overlay);
             }
+            else if (action === 'LabelBringForward' && AnnotationHelpers.isEntryLabel(overlay)) {
+                this.flameChart.bringLabelForward(overlay);
+            }
             const annotations = currentManager.getAnnotations();
             const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
             this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
@@ -1858,7 +1850,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 }
             }
         }
-        this.#showSidebarIfRequired();
         // When the timeline is loaded for the first time, setup the shortcuts dialog and log what navigation setting is selected.
         // Logging the setting on the first timeline load will allow us to get an estimate number of people using each option.
         if (this.#traceEngineModel.size() === 1) {
@@ -1872,22 +1863,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         }
     }
     /**
-     * We automatically show the sidebar in only 2 scenarios:
-     * 1. The user has never seen it before, so we show it once to aid discovery
-     * 2. The user had it open, and we hid it (for example, during recording), so now we need to bring it back.
+     * After the user imports / records a trace, we auto-show the sidebar.
      */
-    #showSidebarIfRequired() {
-        const disabledByLocalStorage = window.localStorage.getItem('disable-auto-show-rpp-sidebar-for-test') === 'true';
-        if (Root.Runtime.Runtime.queryParam('disable-auto-performance-sidebar-reveal') !== null || disabledByLocalStorage) {
-            // Used in interaction tests & screenshot tests.
+    #showSidebar() {
+        const disabledByLocalStorageForTests = window.localStorage.getItem('disable-auto-show-rpp-sidebar-for-test') === 'true';
+        if (disabledByLocalStorageForTests) {
             return;
         }
-        const needToRestore = this.#restoreSidebarVisibilityOnTraceLoad;
-        const userHasSeenSidebar = this.#sideBar.userHasOpenedSidebarOnce();
-        if (!userHasSeenSidebar || needToRestore) {
+        if (!this.#splitWidget.sidebarIsShowing()) {
             this.#splitWidget.showBoth();
         }
-        this.#restoreSidebarVisibilityOnTraceLoad = false;
     }
     // Build a map mapping annotated entries to the colours that are used to display them in the FlameChart.
     // We need this map to display the entries in the sidebar with the same colours.
@@ -1961,7 +1946,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
      */
     #hideSidebar() {
         if (this.#splitWidget.sidebarIsShowing()) {
-            this.#restoreSidebarVisibilityOnTraceLoad = true;
             this.#splitWidget.hideSidebar();
         }
     }
@@ -2065,6 +2049,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 this.#changeView({
                     mode: 'VIEWING_TRACE',
                     traceIndex: this.#traceEngineModel.lastTraceIndex(),
+                    forceOpenSidebar: false,
                 });
             }
             else {
@@ -2081,6 +2066,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.#changeView({
                 mode: 'VIEWING_TRACE',
                 traceIndex,
+                // This is a new trace, so we want to open the insights sidebar automatically.
+                forceOpenSidebar: true,
             });
             const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
             if (!parsedTrace) {

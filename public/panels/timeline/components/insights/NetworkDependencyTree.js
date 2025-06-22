@@ -11,12 +11,15 @@ import { md } from '../../utils/Helpers.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
 import networkDependencyTreeInsightStyles from './networkDependencyTreeInsight.css.js';
+import { renderOthersLabel } from './Table.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.NetworkDependencyTree;
 const { html } = Lit;
+export const MAX_CHAINS_TO_SHOW = 5;
 export class NetworkDependencyTree extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-long-critical-network-tree`;
     internalName = 'long-critical-network-tree';
     #relatedRequests = null;
+    #countOfChains = 0;
     createOverlays() {
         if (!this.model) {
             return [];
@@ -55,11 +58,27 @@ export class NetworkDependencyTree extends BaseInsightComponent {
     `;
         // clang-format on
     }
-    #mapNetworkDependencyToRow(node) {
+    mapNetworkDependencyToRow(node) {
+        // Check early if we've exceeded the maximum number of chains to show.
+        // If so, and this is a leaf node, increment count and then skip rendering.
+        // Otherwise, simply skip rendering.
+        if (this.#countOfChains >= MAX_CHAINS_TO_SHOW) {
+            if (node.children.length === 0) {
+                // This still counts the chain even if not rendered, so we can count how many chains are collapsed.
+                this.#countOfChains++;
+            }
+            return null;
+        }
+        // If this is a leaf node and we haven't exceeded the max chains, increment the count.
+        // This ensures we only count chains that will actually be rendered (or at least considered for rendering).
+        if (node.children.length === 0) {
+            this.#countOfChains++;
+        }
         return {
             values: [this.#renderNetworkTreeRow(node)],
             overlays: this.#createOverlayForChain(node.relatedRequests),
-            subRows: node.children.map(child => this.#mapNetworkDependencyToRow(child)),
+            // Filter out the empty rows otherwise the `Table`component will render a super short row
+            subRows: node.children.map(child => this.mapNetworkDependencyToRow(child)).filter(row => row !== null),
         };
     }
     #renderNetworkDependencyTree(nodes) {
@@ -69,8 +88,14 @@ export class NetworkDependencyTree extends BaseInsightComponent {
         const rows = [{
                 // Add one empty row so the main document request can also has a left border
                 values: [],
-                subRows: nodes.map(node => this.#mapNetworkDependencyToRow(node))
+                // Filter out the empty rows otherwise the `Table` component will render a super short row
+                subRows: nodes.map(node => this.mapNetworkDependencyToRow(node)).filter(row => row !== null),
             }];
+        if (this.#countOfChains > MAX_CHAINS_TO_SHOW) {
+            rows.push({
+                values: [renderOthersLabel(this.#countOfChains - MAX_CHAINS_TO_SHOW)],
+            });
+        }
         // clang-format off
         return html `
       <devtools-performance-table

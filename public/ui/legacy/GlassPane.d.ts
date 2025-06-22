@@ -24,6 +24,7 @@ export declare class GlassPane {
     setDimmed(dimmed: boolean): void;
     setPointerEventsBehavior(pointerEventsBehavior: PointerEventsBehavior): void;
     setOutsideClickCallback(callback: ((arg0: Event) => void) | null): void;
+    setOnHideCallback(cb: () => void): void;
     setMaxContentSize(size: Size | null): void;
     setSizeBehavior(sizeBehavior: SizeBehavior): void;
     setContentPosition(x: number | null, y: number | null): void;
