@@ -50,7 +50,6 @@
     "../../../../../../../front_end/panels/elements/components/ComputedStyleTrace.test.ts",
     "../../../../../../../front_end/panels/elements/components/ElementsBreadcrumbs.test.ts",
     "../../../../../../../front_end/panels/elements/components/ElementsTreeExpandButton.test.ts",
-    "../../../../../../../front_end/panels/elements/components/LayoutPane.test.ts",
     "../../../../../../../front_end/panels/elements/components/QueryContainer.test.ts",
     "../../../../../../../front_end/panels/elements/components/StylePropertyEditor.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",

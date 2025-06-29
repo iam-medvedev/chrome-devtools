@@ -187,12 +187,6 @@ export declare class CompatibilityTracksAppender {
      */
     allVisibleTrackAppenders(): TrackAppender[];
     allThreadAppendersByProcess(): Map<Trace.Types.Events.ProcessID, ThreadAppender[]>;
-    /**
-     * Sets the visible tracks internally
-     * @param visibleTracks set with the names of the visible track
-     * appenders. If undefined, all tracks are set to be visible.
-     */
-    setVisibleTracks(visibleTracks?: Set<TrackAppenderName>): void;
     getDrawOverride(event: Trace.Types.Events.Event, level: number): DrawOverride | undefined;
     /**
      * Returns the color an event is shown with in the timeline.

@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { getAllNetworkRequestsByHost } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describe('NetworkRequestsHandler', function () {
@@ -16,10 +17,8 @@ describe('NetworkRequestsHandler', function () {
             }
             await Trace.Handlers.ModelHandlers.Meta.finalize();
             await Trace.Handlers.ModelHandlers.NetworkRequests.finalize();
-            const requestsByOrigin = Trace.Handlers.ModelHandlers.NetworkRequests.data().byOrigin;
-            assert.strictEqual(requestsByOrigin.size, 3, 'Too many origins detected');
-            const topLevelRequests = requestsByOrigin.get('localhost:8080') || { all: [] };
-            assert.lengthOf(topLevelRequests.all, 4, 'Incorrect number of requests');
+            const topLevelRequests = getAllNetworkRequestsByHost(Trace.Handlers.ModelHandlers.NetworkRequests.data().byTime, 'localhost:8080');
+            assert.lengthOf(topLevelRequests, 4, 'Incorrect number of requests');
             // Page Request.
             const pageRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.Micro(25085)],
@@ -32,7 +31,7 @@ describe('NetworkRequestsHandler', function () {
                 ['download', Trace.Types.Timing.Micro(4827)],
                 ['networkDuration', Trace.Types.Timing.Micro(38503)],
             ]);
-            assertDataArgsProcessedDataStats(topLevelRequests.all, 'http://localhost:8080/', pageRequestExpected);
+            assertDataArgsProcessedDataStats(topLevelRequests, 'http://localhost:8080/', pageRequestExpected);
             // CSS Request (cached event (with resourceMarkAsCached event)),
             const cssRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.Micro(0)],
@@ -48,8 +47,8 @@ describe('NetworkRequestsHandler', function () {
             const cssRequestBlockingStatusExpected = new Map([
                 ['renderBlocking', 'blocking'],
             ]);
-            assertDataArgsProcessedDataStats(topLevelRequests.all, 'http://localhost:8080/styles.css', cssRequestExpected);
-            assertDataArgsStats(topLevelRequests.all, 'http://localhost:8080/styles.css', cssRequestBlockingStatusExpected);
+            assertDataArgsProcessedDataStats(topLevelRequests, 'http://localhost:8080/styles.css', cssRequestExpected);
+            assertDataArgsStats(topLevelRequests, 'http://localhost:8080/styles.css', cssRequestBlockingStatusExpected);
             // Blocking JS Request.
             const blockingJSRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.Micro(0)],
@@ -65,8 +64,8 @@ describe('NetworkRequestsHandler', function () {
             const blockingJSBlockingStatusExpected = new Map([
                 ['renderBlocking', 'in_body_parser_blocking'],
             ]);
-            assertDataArgsProcessedDataStats(topLevelRequests.all, 'http://localhost:8080/blocking.js', blockingJSRequestExpected);
-            assertDataArgsStats(topLevelRequests.all, 'http://localhost:8080/blocking.js', blockingJSBlockingStatusExpected);
+            assertDataArgsProcessedDataStats(topLevelRequests, 'http://localhost:8080/blocking.js', blockingJSRequestExpected);
+            assertDataArgsStats(topLevelRequests, 'http://localhost:8080/blocking.js', blockingJSBlockingStatusExpected);
             // Module JS Request (cached).
             const moduleRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.Micro(7681)],
@@ -82,11 +81,11 @@ describe('NetworkRequestsHandler', function () {
             const moduleRequestBlockingStatusExpected = new Map([
                 ['renderBlocking', 'non_blocking'],
             ]);
-            assertDataArgsProcessedDataStats(topLevelRequests.all, 'http://localhost:8080/module.js', moduleRequestExpected);
-            assertDataArgsStats(topLevelRequests.all, 'http://localhost:8080/module.js', moduleRequestBlockingStatusExpected);
+            assertDataArgsProcessedDataStats(topLevelRequests, 'http://localhost:8080/module.js', moduleRequestExpected);
+            assertDataArgsStats(topLevelRequests, 'http://localhost:8080/module.js', moduleRequestBlockingStatusExpected);
             // Google Fonts CSS Request (cached).
-            const fontCSSRequests = requestsByOrigin.get('fonts.googleapis.com') || { all: [] };
-            assert.lengthOf(fontCSSRequests.all, 1, 'Incorrect number of requests');
+            const fontCSSRequests = getAllNetworkRequestsByHost(Trace.Handlers.ModelHandlers.NetworkRequests.data().byTime, 'fonts.googleapis.com');
+            assert.lengthOf(fontCSSRequests, 1, 'Incorrect number of requests');
             const fontCSSRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.Micro(0)],
                 ['stalled', Trace.Types.Timing.Micro(3178)],
@@ -101,11 +100,11 @@ describe('NetworkRequestsHandler', function () {
             const fontCSSBlockingStatusExpected = new Map([
                 ['renderBlocking', 'blocking'],
             ]);
-            assertDataArgsProcessedDataStats(fontCSSRequests.all, 'https://fonts.googleapis.com/css2?family=Orelega+One&display=swap', fontCSSRequestExpected);
-            assertDataArgsStats(fontCSSRequests.all, 'https://fonts.googleapis.com/css2?family=Orelega+One&display=swap', fontCSSBlockingStatusExpected);
+            assertDataArgsProcessedDataStats(fontCSSRequests, 'https://fonts.googleapis.com/css2?family=Orelega+One&display=swap', fontCSSRequestExpected);
+            assertDataArgsStats(fontCSSRequests, 'https://fonts.googleapis.com/css2?family=Orelega+One&display=swap', fontCSSBlockingStatusExpected);
             // Google Fonts Data Request (cached).
-            const fontDataRequests = requestsByOrigin.get('fonts.gstatic.com') || { all: [] };
-            assert.lengthOf(fontDataRequests.all, 1, 'Incorrect number of requests');
+            const fontDataRequests = getAllNetworkRequestsByHost(Trace.Handlers.ModelHandlers.NetworkRequests.data().byTime, 'fonts.gstatic.com');
+            assert.lengthOf(fontDataRequests, 1, 'Incorrect number of requests');
             const fontDataRequestExpected = new Map([
                 ['queueing', Trace.Types.Timing.Micro(0)],
                 ['stalled', Trace.Types.Timing.Micro(1929)],
@@ -120,8 +119,8 @@ describe('NetworkRequestsHandler', function () {
             const fontDataRequestBlockingStatusExpected = new Map([
                 ['renderBlocking', 'non_blocking'],
             ]);
-            assertDataArgsProcessedDataStats(fontDataRequests.all, 'https://fonts.gstatic.com/s/orelegaone/v1/3qTpojOggD2XtAdFb-QXZFt93kY.woff2', fontDataRequestExpected);
-            assertDataArgsStats(fontDataRequests.all, 'https://fonts.gstatic.com/s/orelegaone/v1/3qTpojOggD2XtAdFb-QXZFt93kY.woff2', fontDataRequestBlockingStatusExpected);
+            assertDataArgsProcessedDataStats(fontDataRequests, 'https://fonts.gstatic.com/s/orelegaone/v1/3qTpojOggD2XtAdFb-QXZFt93kY.woff2', fontDataRequestExpected);
+            assertDataArgsStats(fontDataRequests, 'https://fonts.gstatic.com/s/orelegaone/v1/3qTpojOggD2XtAdFb-QXZFt93kY.woff2', fontDataRequestBlockingStatusExpected);
         });
         it('calculates Websocket events correctly', async function () {
             const traceEvents = await TraceLoader.rawEvents(this, 'network-websocket-messages.json.gz');

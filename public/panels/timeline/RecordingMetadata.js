@@ -61,6 +61,7 @@ async function innerForTraceCalculate({ recordingStartTime, cruxFieldData } = {}
         networkThrottlingConditions,
         dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
         cruxFieldData: cruxFieldData ?? undefined,
+        hostDPR: window.devicePixelRatio,
     };
 }
 //# sourceMappingURL=RecordingMetadata.js.map

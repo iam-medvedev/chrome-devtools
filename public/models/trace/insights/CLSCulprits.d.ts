@@ -33,9 +33,9 @@ export declare const UIStrings: {
      */
     readonly injectedIframe: "Injected iframe";
     /**
-     * @description Text for a culprit type of Font request.
+     * @description Text for a culprit type of web font request.
      */
-    readonly fontRequest: "Font request";
+    readonly webFont: "Web font";
     /**
      * @description Text for a culprit type of Animation.
      */
@@ -83,7 +83,7 @@ export declare const enum AnimationFailureReasons {
     SVG_TARGET_HAS_INDEPENDENT_TRANSFORM_PROPERTY = "SVG_TARGET_HAS_INDEPENDENT_TRANSFORM_PROPERTY"
 }
 export declare const enum LayoutShiftType {
-    FONT_REQUESTS = 0,
+    WEB_FONT = 0,
     IFRAMES = 1,
     ANIMATIONS = 2,
     UNSIZED_IMAGE = 3
@@ -127,7 +127,7 @@ export interface IframeRootCause {
 }
 export interface LayoutShiftRootCausesData {
     iframes: IframeRootCause[];
-    fontRequests: Types.Events.SyntheticNetworkRequest[];
+    webFonts: Types.Events.SyntheticNetworkRequest[];
     nonCompositedAnimations: NoncompositedAnimationFailure[];
     unsizedImages: UnsizedImage[];
 }

@@ -1,356 +1,352 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
-import * as i18n from '../../core/i18n/i18n.js';
-import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
-const UIStrings = {
-    /**
-     *@description Text for the performance of something
-     */
-    performance: 'Performance',
-    /**
-     *@description Command for showing the 'Performance' tool
-     */
-    showPerformance: 'Show Performance',
-    /**
-     *@description Text to record a series of actions for analysis
-     */
-    record: 'Record',
-    /**
-     *@description Text of an item that stops the running task
-     */
-    stop: 'Stop',
-    /**
-     *@description Title of an action in the timeline tool to record reload
-     */
-    recordAndReload: 'Record and reload',
-    /**
-     *@description Tooltip text that appears when hovering over the largeicon download button
-     */
-    saveProfile: 'Save profile…',
-    /**
-     *@description Tooltip text that appears when hovering over the largeicon load button
-     */
-    loadProfile: 'Load profile…',
-    /**
-     *@description Prev button title in Film Strip View of the Performance panel
-     */
-    previousFrame: 'Previous frame',
-    /**
-     *@description Next button title in Film Strip View of the Performance panel
-     */
-    nextFrame: 'Next frame',
-    /**
-     *@description Title of an action in the timeline tool to show history
-     */
-    showRecentTimelineSessions: 'Show recent timeline sessions',
-    /**
-     *@description Title of an action that opens the previous recording in the performance panel
-     */
-    previousRecording: 'Previous recording',
-    /**
-     *@description Title of an action that opens the next recording in the performance panel
-     */
-    nextRecording: 'Next recording',
-    /**
-     *@description Title of a setting under the Performance category in Settings
-     */
-    hideChromeFrameInLayersView: 'Hide `chrome` frame in Layers view',
+// gen/front_end/panels/timeline/timeline-meta.prebundle.js
+import * as Common from "./../../core/common/common.js";
+import * as i18n from "./../../core/i18n/i18n.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+import * as UI from "./../../ui/legacy/legacy.js";
+var UIStrings = {
+  /**
+   *@description Text for the performance of something
+   */
+  performance: "Performance",
+  /**
+   *@description Command for showing the 'Performance' tool
+   */
+  showPerformance: "Show Performance",
+  /**
+   *@description Text to record a series of actions for analysis
+   */
+  record: "Record",
+  /**
+   *@description Text of an item that stops the running task
+   */
+  stop: "Stop",
+  /**
+   *@description Title of an action in the timeline tool to record reload
+   */
+  recordAndReload: "Record and reload",
+  /**
+   *@description Tooltip text that appears when hovering over the largeicon download button
+   */
+  saveProfile: "Save profile\u2026",
+  /**
+   *@description Tooltip text that appears when hovering over the largeicon load button
+   */
+  loadProfile: "Load profile\u2026",
+  /**
+   *@description Prev button title in Film Strip View of the Performance panel
+   */
+  previousFrame: "Previous frame",
+  /**
+   *@description Next button title in Film Strip View of the Performance panel
+   */
+  nextFrame: "Next frame",
+  /**
+   *@description Title of an action in the timeline tool to show history
+   */
+  showRecentTimelineSessions: "Show recent timeline sessions",
+  /**
+   *@description Title of an action that opens the previous recording in the performance panel
+   */
+  previousRecording: "Previous recording",
+  /**
+   *@description Title of an action that opens the next recording in the performance panel
+   */
+  nextRecording: "Next recording",
+  /**
+   *@description Title of a setting under the Performance category in Settings
+   */
+  hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
 };
-const str_ = i18n.i18n.registerUIStrings('panels/timeline/timeline-meta.ts', UIStrings);
-const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-let loadedTimelineModule;
+var str_ = i18n.i18n.registerUIStrings("panels/timeline/timeline-meta.ts", UIStrings);
+var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
+var loadedTimelineModule;
 async function loadTimelineModule() {
-    if (!loadedTimelineModule) {
-        loadedTimelineModule = await import('./timeline.js');
-    }
-    return loadedTimelineModule;
+  if (!loadedTimelineModule) {
+    loadedTimelineModule = await import("./timeline.js");
+  }
+  return loadedTimelineModule;
 }
 function maybeRetrieveContextTypes(getClassCallBack) {
-    if (loadedTimelineModule === undefined) {
-        return [];
-    }
-    return getClassCallBack(loadedTimelineModule);
+  if (loadedTimelineModule === void 0) {
+    return [];
+  }
+  return getClassCallBack(loadedTimelineModule);
 }
 UI.ViewManager.registerViewExtension({
-    location: "panel" /* UI.ViewManager.ViewLocationValues.PANEL */,
-    id: 'timeline',
-    title: i18nLazyString(UIStrings.performance),
-    commandPrompt: i18nLazyString(UIStrings.showPerformance),
-    order: 50,
-    async loadView() {
-        const Timeline = await loadTimelineModule();
-        return Timeline.TimelinePanel.TimelinePanel.instance();
-    },
+  location: "panel",
+  id: "timeline",
+  title: i18nLazyString(UIStrings.performance),
+  commandPrompt: i18nLazyString(UIStrings.showPerformance),
+  order: 50,
+  async loadView() {
+    const Timeline = await loadTimelineModule();
+    return Timeline.TimelinePanel.TimelinePanel.instance();
+  }
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.toggle-recording',
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    iconClass: "record-start" /* UI.ActionRegistration.IconClass.START_RECORDING */,
-    toggleable: true,
-    toggledIconClass: "record-stop" /* UI.ActionRegistration.IconClass.STOP_RECORDING */,
-    toggleWithRedColor: true,
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
+  actionId: "timeline.toggle-recording",
+  category: "PERFORMANCE",
+  iconClass: "record-start",
+  toggleable: true,
+  toggledIconClass: "record-stop",
+  toggleWithRedColor: true,
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  options: [
+    {
+      value: true,
+      title: i18nLazyString(UIStrings.record)
     },
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
+    {
+      value: false,
+      title: i18nLazyString(UIStrings.stop)
+    }
+  ],
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+E"
     },
-    options: [
-        {
-            value: true,
-            title: i18nLazyString(UIStrings.record),
-        },
-        {
-            value: false,
-            title: i18nLazyString(UIStrings.stop),
-        },
-    ],
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+E',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+E',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+E"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.record-reload',
-    iconClass: "refresh" /* UI.ActionRegistration.IconClass.REFRESH */,
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
+  actionId: "timeline.record-reload",
+  iconClass: "refresh",
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  category: "PERFORMANCE",
+  title: i18nLazyString(UIStrings.recordAndReload),
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+Shift+E"
     },
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    title: i18nLazyString(UIStrings.recordAndReload),
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
-    },
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+Shift+E',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+Shift+E',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+Shift+E"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    actionId: 'timeline.save-to-file',
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
+  category: "PERFORMANCE",
+  actionId: "timeline.save-to-file",
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  title: i18nLazyString(UIStrings.saveProfile),
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+S"
     },
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
-    },
-    title: i18nLazyString(UIStrings.saveProfile),
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+S',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+S',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+S"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    actionId: 'timeline.load-from-file',
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
+  category: "PERFORMANCE",
+  actionId: "timeline.load-from-file",
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  title: i18nLazyString(UIStrings.loadProfile),
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+O"
     },
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
-    },
-    title: i18nLazyString(UIStrings.loadProfile),
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+O',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+O',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+O"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.jump-to-previous-frame',
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    title: i18nLazyString(UIStrings.previousFrame),
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
-    },
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
-    },
-    bindings: [
-        {
-            shortcut: '[',
-        },
-    ],
+  actionId: "timeline.jump-to-previous-frame",
+  category: "PERFORMANCE",
+  title: i18nLazyString(UIStrings.previousFrame),
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  bindings: [
+    {
+      shortcut: "["
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.jump-to-next-frame',
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    title: i18nLazyString(UIStrings.nextFrame),
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
-    },
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
-    },
-    bindings: [
-        {
-            shortcut: ']',
-        },
-    ],
+  actionId: "timeline.jump-to-next-frame",
+  category: "PERFORMANCE",
+  title: i18nLazyString(UIStrings.nextFrame),
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  bindings: [
+    {
+      shortcut: "]"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.show-history',
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
+  actionId: "timeline.show-history",
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  category: "PERFORMANCE",
+  title: i18nLazyString(UIStrings.showRecentTimelineSessions),
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+H"
     },
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    title: i18nLazyString(UIStrings.showRecentTimelineSessions),
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
-    },
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+H',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+Y',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+Y"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.previous-recording',
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
+  actionId: "timeline.previous-recording",
+  category: "PERFORMANCE",
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  title: i18nLazyString(UIStrings.previousRecording),
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Alt+Left"
     },
-    title: i18nLazyString(UIStrings.previousRecording),
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
-    },
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Alt+Left',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+Left',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+Left"
+    }
+  ]
 });
 UI.ActionRegistration.registerActionExtension({
-    actionId: 'timeline.next-recording',
-    category: "PERFORMANCE" /* UI.ActionRegistration.ActionCategory.PERFORMANCE */,
-    async loadActionDelegate() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.ActionDelegate();
+  actionId: "timeline.next-recording",
+  category: "PERFORMANCE",
+  async loadActionDelegate() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.ActionDelegate();
+  },
+  title: i18nLazyString(UIStrings.nextRecording),
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.TimelinePanel.TimelinePanel]);
+  },
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Alt+Right"
     },
-    title: i18nLazyString(UIStrings.nextRecording),
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.TimelinePanel.TimelinePanel]);
-    },
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Alt+Right',
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+Right',
-        },
-    ],
+    {
+      platform: "mac",
+      shortcut: "Meta+Right"
+    }
+  ]
 });
 Common.Settings.registerSettingExtension({
-    category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-    title: i18nLazyString(UIStrings.hideChromeFrameInLayersView),
-    settingName: 'frame-viewer-hide-chrome-window',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: false,
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  title: i18nLazyString(UIStrings.hideChromeFrameInLayersView),
+  settingName: "frame-viewer-hide-chrome-window",
+  settingType: "boolean",
+  defaultValue: false
 });
-// IMPORTANT: if you are updating this, you should also update the setting in
-// js_timeline-meta.
 Common.Settings.registerSettingExtension({
-    category: "PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */,
-    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
-    settingName: 'annotations-hidden',
-    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
-    defaultValue: false,
+  category: "PERFORMANCE",
+  storageType: "Synced",
+  settingName: "annotations-hidden",
+  settingType: "boolean",
+  defaultValue: false
 });
 Common.Linkifier.registerLinkifier({
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.CLSLinkifier.CLSRect]);
-    },
-    async loadLinkifier() {
-        const Timeline = await loadTimelineModule();
-        return Timeline.CLSLinkifier.Linkifier.instance();
-    },
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.CLSLinkifier.CLSRect]);
+  },
+  async loadLinkifier() {
+    const Timeline = await loadTimelineModule();
+    return Timeline.CLSLinkifier.Linkifier.instance();
+  }
 });
 UI.ContextMenu.registerItem({
-    location: "timelineMenu/open" /* UI.ContextMenu.ItemLocation.TIMELINE_MENU_OPEN */,
-    actionId: 'timeline.load-from-file',
-    order: 10,
+  location: "timelineMenu/open",
+  actionId: "timeline.load-from-file",
+  order: 10
 });
 UI.ContextMenu.registerItem({
-    location: "timelineMenu/open" /* UI.ContextMenu.ItemLocation.TIMELINE_MENU_OPEN */,
-    actionId: 'timeline.save-to-file',
-    order: 15,
+  location: "timelineMenu/open",
+  actionId: "timeline.save-to-file",
+  order: 15
 });
 Common.Revealer.registerRevealer({
-    contextTypes() {
-        return [SDK.TraceObject.TraceObject];
-    },
-    destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
-    async loadRevealer() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.TraceRevealer();
-    },
+  contextTypes() {
+    return [SDK.TraceObject.TraceObject];
+  },
+  destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.TraceRevealer();
+  }
 });
 Common.Revealer.registerRevealer({
-    contextTypes() {
-        return [SDK.TraceObject.RevealableEvent];
-    },
-    destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
-    async loadRevealer() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.EventRevealer();
-    },
+  contextTypes() {
+    return [SDK.TraceObject.RevealableEvent];
+  },
+  destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.EventRevealer();
+  }
 });
 Common.Revealer.registerRevealer({
-    contextTypes() {
-        return maybeRetrieveContextTypes(Timeline => [Timeline.Utils.InsightAIContext.ActiveInsight]);
-    },
-    destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
-    async loadRevealer() {
-        const Timeline = await loadTimelineModule();
-        return new Timeline.TimelinePanel.InsightRevealer();
-    },
+  contextTypes() {
+    return maybeRetrieveContextTypes((Timeline) => [Timeline.Utils.InsightAIContext.ActiveInsight]);
+  },
+  destination: Common.Revealer.RevealerDestination.TIMELINE_PANEL,
+  async loadRevealer() {
+    const Timeline = await loadTimelineModule();
+    return new Timeline.TimelinePanel.InsightRevealer();
+  }
 });
 //# sourceMappingURL=timeline-meta.js.map

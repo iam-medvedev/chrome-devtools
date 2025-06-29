@@ -53,6 +53,7 @@
     "../../../../../../front_end/panels/elements/ElementsTreeElementHighlighter.test.ts",
     "../../../../../../front_end/panels/elements/ElementsTreeOutline.test.ts",
     "../../../../../../front_end/panels/elements/InspectElementModeController.test.ts",
+    "../../../../../../front_end/panels/elements/LayoutPane.test.ts",
     "../../../../../../front_end/panels/elements/PlatformFontsWidget.test.ts",
     "../../../../../../front_end/panels/elements/PropertiesWidget.test.ts",
     "../../../../../../front_end/panels/elements/PropertyRenderer.test.ts",

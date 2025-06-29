@@ -41,7 +41,7 @@
   "files": [
     "../../../../../../../../front_end/panels/timeline/components/insights/BaseInsightComponent.test.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/CLSCulprits.test.ts",
-    "../../../../../../../../front_end/panels/timeline/components/insights/InteractionToNextPaint.test.ts",
+    "../../../../../../../../front_end/panels/timeline/components/insights/INPBreakdown.test.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/NetworkDependencyTree.test.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/NodeLink.test.ts",
     "../../../../../../../../front_end/panels/timeline/components/insights/Table.test.ts",

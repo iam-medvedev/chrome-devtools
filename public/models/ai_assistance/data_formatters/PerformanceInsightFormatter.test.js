@@ -13,11 +13,11 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insight = getInsightOrError('LCPPhases', insights, firstNav);
+            const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
             const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
             const output = formatter.formatInsight();
             assert.isOk(insight.lcpRequest);
-            const expected = `## Insight Title: LCP by phase
+            const expected = `## Insight Title: LCP breakdown
 
 ## Insight Summary:
 This insight is used to analyze the time spent that contributed to the final LCP time and identify which of the 4 phases (or 2 if there was no LCP resource) are contributing most to the delay in rendering the LCP element.
@@ -42,10 +42,10 @@ We can break this time down into the 4 phases that combine to make the LCP time:
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insight = getInsightOrError('LCPPhases', insights, firstNav);
+            const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
             const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
             const output = formatter.formatInsight();
-            const expected = `## Insight Title: LCP by phase
+            const expected = `## Insight Title: LCP breakdown
 
 ## Insight Summary:
 This insight is used to analyze the time spent that contributed to the final LCP time and identify which of the 4 phases (or 2 if there was no LCP resource) are contributing most to the delay in rendering the LCP element.
@@ -248,14 +248,14 @@ Layout shifts in this cluster:
             assert.strictEqual(output, expected);
         });
     });
-    describe('INP by phase', () => {
+    describe('INP breakdown', () => {
         it('serializes the correct details', async function () {
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
             assert.isOk(insights);
-            const insight = getInsightOrError('InteractionToNextPaint', insights);
+            const insight = getInsightOrError('INPBreakdown', insights);
             const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
             const output = formatter.formatInsight();
-            const expected = `## Insight Title: INP by phase
+            const expected = `## Insight Title: INP breakdown
 
 ## Insight Summary:
 Interaction to Next Paint (INP) is a metric that tracks the responsiveness of the page when the user interacts with it. INP is a Core Web Vital and the thresholds for how we categorize a score are:

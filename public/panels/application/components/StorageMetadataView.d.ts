@@ -5,7 +5,6 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 import * as Lit from '../../../ui/lit/lit.js';
 export declare class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
-    getShadow(): ShadowRoot;
     setStorageKey(storageKey: string): void;
     setStorageBucket(storageBucket: Protocol.Storage.StorageBucketInfo): void;
     enableStorageBucketControls(model: SDK.StorageBucketsModel.StorageBucketsModel): void;

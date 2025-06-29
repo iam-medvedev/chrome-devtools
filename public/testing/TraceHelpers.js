@@ -24,42 +24,6 @@ export class MockFlameChartDelegate {
     }
 }
 /**
- * @deprecated this will be removed once we have migrated from interaction tests for screenshots. Please use `renderFlameChartIntoDOM`.
- *
- * Draws a set of tracks track in the flame chart using the new system.
- * For this to work, every track that will be rendered must have a
- * corresponding track appender registered in the
- * CompatibilityTracksAppender.
- *
- * @param context The unit test context.
- * @param traceFileName The name of the trace file to be loaded into the
- * flame chart.
- * @param trackAppenderNames A Set with the names of the tracks to be
- * rendered. For example, Set("Timings").
- * @param expanded whether the track should be expanded
- * @param trackName optional param to filter tracks by their name.
- * @returns a flame chart element and its corresponding data provider.
- */
-export async function getMainFlameChartWithTracks(context, traceFileName, trackAppenderNames, expanded, trackName) {
-    await initializeGlobalVars();
-    // This function is used to load a component example.
-    const { parsedTrace } = await TraceLoader.traceEngine(context, traceFileName);
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
-    const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
-    dataProvider.setModel(parsedTrace, entityMapper);
-    const tracksAppender = dataProvider.compatibilityTracksAppenderInstance();
-    tracksAppender.setVisibleTracks(trackAppenderNames);
-    dataProvider.buildWithCustomTracksForTest({ filterTracks: name => trackName ? name.includes(trackName) : true, expandTracks: _ => expanded });
-    const delegate = new MockFlameChartDelegate();
-    const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
-    const minTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
-    const maxTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
-    flameChart.setWindowTimes(minTime, maxTime);
-    flameChart.markAsRoot();
-    flameChart.update();
-    return { flameChart, dataProvider };
-}
-/**
  * Renders a flame chart into the unit test DOM that renders a real provided
  * trace file.
  * It will take care of all the setup and configuration for you.
@@ -197,28 +161,6 @@ export function getAllNodes(roots) {
         }
     }
     return allNodes;
-}
-/**
- * Gets the node with an id from a tree in a thread.
- * @see RendererHandler.ts
- */
-export function getNodeFor(thread, nodeId) {
-    const tree = getTree(thread);
-    function findNode(nodes, nodeId) {
-        for (const node of nodes) {
-            const event = node.entry;
-            if (Trace.Types.Events.isProfileCall(event) && event.nodeId === nodeId) {
-                return node;
-            }
-            return findNode(node.children, nodeId);
-        }
-        return undefined;
-    }
-    const node = findNode(tree.roots, nodeId);
-    if (!node) {
-        assert(false, `Couldn't get the node with id ${nodeId} in thread ${thread.name}`);
-    }
-    return node;
 }
 /**
  * Gets all the `events` for the `nodes`.
@@ -469,26 +411,6 @@ export function makeMockSamplesHandlerData(profileCalls) {
         entryToNode,
     };
 }
-export function makeMockEntityData(events) {
-    const eventsByEntity = new Map();
-    const entityByEvent = new Map();
-    const createdEntityCache = new Map();
-    events.forEach(event => {
-        const entity = Trace.Handlers.Helpers.getEntityForEvent(event, createdEntityCache);
-        if (!entity) {
-            return;
-        }
-        if (eventsByEntity.has(entity)) {
-            const events = eventsByEntity.get(entity) ?? [];
-            events?.push(event);
-        }
-        else {
-            eventsByEntity.set(entity, [event]);
-        }
-        entityByEvent.set(event, entity);
-    });
-    return { eventsByEntity, entityByEvent, createdEntityCache };
-}
 export class FakeFlameChartProvider {
     minimumBoundary() {
         return 0;
@@ -680,7 +602,6 @@ export function getBaseTraceParseModelData(overrides = {}) {
         NetworkRequests: {
             byId: new Map(),
             eventToInitiator: new Map(),
-            byOrigin: new Map(),
             byTime: [],
             webSocket: [],
             entityMappings: {
@@ -719,6 +640,8 @@ export function getBaseTraceParseModelData(overrides = {}) {
             paintImageByDrawLazyPixelRef: new Map(),
             paintImageForEvent: new Map(),
             paintImageEventForUrl: new Map(),
+            paintEventToCorrectedDisplaySize: new Map(),
+            didCorrectForHostDpr: false,
         },
         Initiators: {
             eventToInitiator: new Map(),
@@ -805,5 +728,12 @@ export function microseconds(x) {
 }
 export function milliseconds(x) {
     return Trace.Types.Timing.Milli(x);
+}
+export function getAllNetworkRequestsByHost(networkRequests, host) {
+    const reqs = networkRequests.filter(r => {
+        const parsedUrl = new URL(r.args.data.url);
+        return parsedUrl.host === host;
+    });
+    return reqs;
 }
 //# sourceMappingURL=TraceHelpers.js.map

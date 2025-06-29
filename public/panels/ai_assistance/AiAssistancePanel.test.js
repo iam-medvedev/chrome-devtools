@@ -1195,6 +1195,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
     });
     describe('handleExternalRequest', () => {
         const explanation = 'I need more information';
+        let evaluateStub;
+        let callFunctionOnStub;
         beforeEach(() => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             updateHostConfig({
@@ -1202,6 +1204,21 @@ describeWithMockConnection('AI Assistance Panel', () => {
                     enabled: true,
                 },
             });
+            const target = createTarget();
+            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
+            assert.exists(runtimeModel);
+            runtimeModel.executionContextCreated({
+                id: 1,
+                origin: urlString `http://www.example.com`,
+                name: 'name',
+                uniqueId: 'uniqueId',
+            });
+            const executionContext = runtimeModel.defaultExecutionContext();
+            assert.isNotNull(executionContext);
+            evaluateStub = sinon.stub().returns({ object: { objectId: 'some-id' } });
+            executionContext.evaluate = evaluateStub;
+            callFunctionOnStub = sinon.stub().returns({ object: {} });
+            executionContext.callFunctionOn = callFunctionOnStub;
         });
         it('can be blocked by a setting', async () => {
             Common.Settings.moduleSetting('ai-assistance-enabled').set(false);
@@ -1259,21 +1276,6 @@ describeWithMockConnection('AI Assistance Panel', () => {
             sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
         });
         it('handles styling assistance requests which contain a selector', async () => {
-            const target = createTarget();
-            const runtimeModel = target.model(SDK.RuntimeModel.RuntimeModel);
-            assert.exists(runtimeModel);
-            runtimeModel.executionContextCreated({
-                id: 1,
-                origin: urlString `http://www.example.com`,
-                name: 'name',
-                uniqueId: 'uniqueId',
-            });
-            const executionContext = runtimeModel.defaultExecutionContext();
-            assert.isNotNull(executionContext);
-            const evaluateStub = sinon.stub().returns({ object: { objectId: 'some-id' } });
-            executionContext.evaluate = evaluateStub;
-            const callFunctionOnStub = sinon.stub().returns({ object: {} });
-            executionContext.callFunctionOn = callFunctionOnStub;
             const { panel } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
@@ -1351,7 +1353,6 @@ STOP`,
                     title: 'Analyzing network data',
                 },
             ];
-            createTarget();
             await createNetworkPanelForMockConnection();
             updateHostConfig({
                 devToolsFreestyler: {

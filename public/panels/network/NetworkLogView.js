@@ -586,9 +586,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             this.textFilterUI.setValue(this.textFilterSetting.get());
         }
     }
-    getMoreFiltersDropdown() {
-        return this.moreFiltersDropDownUI;
-    }
     updateGroupByFrame() {
         const value = Common.Settings.Settings.instance().moduleSetting('network.group-by-frame').get();
         this.setGrouping(value ? 'Frame' : null);

@@ -82,13 +82,11 @@ export const LOCALES = [
   'zu',
   'en-US',
   'zh',
-  'en-XL',
 ];
 
 export const BUNDLED_LOCALES = [
   'en-US',
   'zh',
-  'en-XL',
 ];
 
 export const DEFAULT_LOCALE = 'en-US';

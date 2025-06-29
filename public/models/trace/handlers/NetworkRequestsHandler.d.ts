@@ -25,11 +25,6 @@ export interface WebSocketTraceDataForWorker {
 export type WebSocketTraceData = WebSocketTraceDataForFrame | WebSocketTraceDataForWorker;
 interface NetworkRequestData {
     byId: Map<string, Types.Events.SyntheticNetworkRequest>;
-    byOrigin: Map<string, {
-        renderBlocking: Types.Events.SyntheticNetworkRequest[];
-        nonRenderBlocking: Types.Events.SyntheticNetworkRequest[];
-        all: Types.Events.SyntheticNetworkRequest[];
-    }>;
     byTime: Types.Events.SyntheticNetworkRequest[];
     eventToInitiator: Map<Types.Events.SyntheticNetworkRequest, Types.Events.SyntheticNetworkRequest>;
     webSocket: WebSocketTraceData[];

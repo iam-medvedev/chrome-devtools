@@ -13,11 +13,14 @@ export default `/*
   display: inline-block;
   position: relative;
   outline: none;
+
+  .preview {
+    display: inline-block;
+  }
 }
 
 devtools-css-angle-swatch {
   display: inline-block;
-  margin-right: 2px;
   user-select: none;
 }
 
@@ -26,10 +29,6 @@ devtools-css-angle-editor {
 
   position: fixed;
   z-index: 2;
-}
-
-.preview {
-  display: inline-block;
 }
 
 /*# sourceURL=${import.meta.resolve('./cssAngle.css')} */`;

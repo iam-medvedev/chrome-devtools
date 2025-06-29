@@ -1088,14 +1088,17 @@ export class ToolbarSettingComboBox extends ToolbarComboBox {
     }
 }
 export class ToolbarCheckbox extends ToolbarItem {
+    #checkboxLabel;
     constructor(text, tooltip, listener, jslogContext) {
-        super(CheckboxLabel.create(text, undefined, undefined, jslogContext));
+        const checkboxLabel = CheckboxLabel.create(text, undefined, undefined, jslogContext);
+        super(checkboxLabel);
         if (tooltip) {
             Tooltip.install(this.element, tooltip);
         }
         if (listener) {
             this.element.addEventListener('click', listener, false);
         }
+        this.#checkboxLabel = checkboxLabel;
     }
     checked() {
         return this.element.checked;
@@ -1109,6 +1112,13 @@ export class ToolbarCheckbox extends ToolbarItem {
     }
     setIndeterminate(indeterminate) {
         this.element.indeterminate = indeterminate;
+    }
+    /**
+     * Sets the user visible text shown alongside the checkbox.
+     * If you want to update the title/aria-label, use setTitle.
+     */
+    setLabelText(content) {
+        this.#checkboxLabel.setLabelText(content);
     }
 }
 export class ToolbarSettingCheckbox extends ToolbarCheckbox {

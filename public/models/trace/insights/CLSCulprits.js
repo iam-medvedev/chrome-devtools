@@ -37,9 +37,9 @@ export const UIStrings = {
      */
     injectedIframe: 'Injected iframe',
     /**
-     * @description Text for a culprit type of Font request.
+     * @description Text for a culprit type of web font request.
      */
-    fontRequest: 'Font request',
+    webFont: 'Web font',
     /**
      * @description Text for a culprit type of Animation.
      */
@@ -356,7 +356,7 @@ function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, ro
             if (!rootCausesForShift) {
                 throw new Error('Unaccounted shift');
             }
-            rootCausesForShift.fontRequests.push(req);
+            rootCausesForShift.webFonts.push(req);
         }
     }
     return rootCausesByShift;
@@ -373,12 +373,12 @@ function getTopCulprits(cluster, culpritsByShift) {
         if (!culprits) {
             continue;
         }
-        const fontReq = culprits.fontRequests;
+        const fontReq = culprits.webFonts;
         const iframes = culprits.iframes;
         const animations = culprits.nonCompositedAnimations;
         const unsizedImages = culprits.unsizedImages;
         for (let i = 0; i < fontReq.length && causes.length < MAX_TOP_CULPRITS; i++) {
-            causes.push({ type: 0 /* LayoutShiftType.FONT_REQUESTS */, description: i18nString(UIStrings.fontRequest) });
+            causes.push({ type: 0 /* LayoutShiftType.WEB_FONT */, description: i18nString(UIStrings.webFont) });
         }
         for (let i = 0; i < iframes.length && causes.length < MAX_TOP_CULPRITS; i++) {
             causes.push({ type: 1 /* LayoutShiftType.IFRAMES */, description: i18nString(UIStrings.injectedIframe) });
@@ -440,7 +440,7 @@ export function generateInsight(parsedTrace, context) {
     const rootCausesByShift = new Map();
     const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
     for (const shift of layoutShifts) {
-        rootCausesByShift.set(shift, { iframes: [], fontRequests: [], nonCompositedAnimations: [], unsizedImages: [] });
+        rootCausesByShift.set(shift, { iframes: [], webFonts: [], nonCompositedAnimations: [], unsizedImages: [] });
     }
     // Populate root causes for rootCausesByShift.
     getIframeRootCauses(parsedTrace, iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);

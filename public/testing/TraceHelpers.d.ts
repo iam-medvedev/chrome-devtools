@@ -8,27 +8,6 @@ export declare class MockFlameChartDelegate implements PerfUI.FlameChart.FlameCh
     updateRangeSelection(_startTime: number, _endTime: number): void;
     updateSelectedGroup(_flameChart: PerfUI.FlameChart.FlameChart, _group: PerfUI.FlameChart.Group | null): void;
 }
-/**
- * @deprecated this will be removed once we have migrated from interaction tests for screenshots. Please use `renderFlameChartIntoDOM`.
- *
- * Draws a set of tracks track in the flame chart using the new system.
- * For this to work, every track that will be rendered must have a
- * corresponding track appender registered in the
- * CompatibilityTracksAppender.
- *
- * @param context The unit test context.
- * @param traceFileName The name of the trace file to be loaded into the
- * flame chart.
- * @param trackAppenderNames A Set with the names of the tracks to be
- * rendered. For example, Set("Timings").
- * @param expanded whether the track should be expanded
- * @param trackName optional param to filter tracks by their name.
- * @returns a flame chart element and its corresponding data provider.
- */
-export declare function getMainFlameChartWithTracks(context: Mocha.Context | null, traceFileName: string, trackAppenderNames: Set<Timeline.CompatibilityTracksAppender.TrackAppenderName>, expanded: boolean, trackName?: string): Promise<{
-    flameChart: PerfUI.FlameChart.FlameChart;
-    dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider;
-}>;
 export interface RenderFlameChartOptions {
     dataProvider: 'MAIN' | 'NETWORK';
     /**
@@ -105,11 +84,6 @@ export declare function getRootAt(thread: Trace.Handlers.ModelHandlers.Renderer.
  */
 export declare function getAllNodes(roots: Set<Trace.Helpers.TreeHelpers.TraceEntryNode>): Trace.Helpers.TreeHelpers.TraceEntryNode[];
 /**
- * Gets the node with an id from a tree in a thread.
- * @see RendererHandler.ts
- */
-export declare function getNodeFor(thread: Trace.Handlers.ModelHandlers.Renderer.RendererThread, nodeId: Trace.Helpers.TreeHelpers.TraceEntryNodeId): Trace.Helpers.TreeHelpers.TraceEntryNode;
-/**
  * Gets all the `events` for the `nodes`.
  */
 export declare function getEventsIn(nodes: IterableIterator<Trace.Helpers.TreeHelpers.TraceEntryNode>): Trace.Types.Events.Event[];
@@ -156,7 +130,6 @@ export declare function makeMockRendererHandlerData(entries: Trace.Types.Events.
  * SamplesHandler using only an array of ordered profile calls.
  */
 export declare function makeMockSamplesHandlerData(profileCalls: Trace.Types.Events.SyntheticProfileCall[]): Trace.Handlers.ModelHandlers.Samples.SamplesHandlerData;
-export declare function makeMockEntityData(events: Trace.Types.Events.Event[]): Trace.Handlers.Helpers.EntityMappings;
 export declare class FakeFlameChartProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     minimumBoundary(): number;
     hasTrackConfigurationMode(): boolean;
@@ -214,4 +187,5 @@ export declare function setupIgnoreListManagerEnvironment(): {
 export declare function microsecondsTraceWindow(min: number, max: number): Trace.Types.Timing.TraceWindowMicro;
 export declare function microseconds(x: number): Trace.Types.Timing.Micro;
 export declare function milliseconds(x: number): Trace.Types.Timing.Milli;
+export declare function getAllNetworkRequestsByHost(networkRequests: Trace.Types.Events.SyntheticNetworkRequest[], host: string): Trace.Types.Events.SyntheticNetworkRequest[];
 export {};

@@ -110,5 +110,6 @@ const untypedEmitter = new UntypedEventEmitter();
     untypedEmitter.addEventListener('foo', genericListener());
     untypedEmitter.addEventListener(Symbol('foo'), genericListener());
     untypedEmitter.addEventListener("VoidEvent" /* Events.VOID_EVENT */, genericListener());
+    untypedEmitter.testDispatch();
 })();
 //# sourceMappingURL=EventTarget.test.js.map

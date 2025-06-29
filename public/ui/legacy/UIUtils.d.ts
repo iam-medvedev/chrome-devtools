@@ -143,6 +143,8 @@ export declare class CheckboxLabel extends HTMLElement {
     constructor();
     static create(title?: Platform.UIString.LocalizedString, checked?: boolean, subtitle?: Platform.UIString.LocalizedString, jslogContext?: string, small?: boolean): CheckboxLabel;
     attributeChangedCallback(name: string, _oldValue: string | null, newValue: string | null): void;
+    getLabelText(): string | null;
+    setLabelText(content: string): void;
     get ariaLabel(): string | null;
     set ariaLabel(ariaLabel: string);
     get checked(): boolean;
@@ -151,6 +153,8 @@ export declare class CheckboxLabel extends HTMLElement {
     get disabled(): boolean;
     set indeterminate(indeterminate: boolean);
     get indeterminate(): boolean;
+    set title(title: string);
+    get title(): string;
     set name(name: string);
     get name(): string;
     click(): void;

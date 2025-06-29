@@ -198,9 +198,6 @@ export class TimelineGrid {
         }
         return true;
     }
-    addEventDivider(divider) {
-        this.eventDividersElement.appendChild(divider);
-    }
     addEventDividers(dividers) {
         this.gridHeaderElement.removeChild(this.eventDividersElement);
         for (const divider of dividers) {

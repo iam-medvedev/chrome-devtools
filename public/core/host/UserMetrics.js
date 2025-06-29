@@ -242,6 +242,12 @@ export class UserMetrics {
     performanceAINetworkSummaryResponseSize(bytes) {
         InspectorFrontendHostInstance.recordCountHistogram('DevTools.PerformanceAI.NetworkSummaryResponseSize', bytes, 0, 100_000, 100);
     }
+    performanceAINetworkRequestDetailResponseSize(bytes) {
+        InspectorFrontendHostInstance.recordCountHistogram('DevTools.PerformanceAI.NetworkRequestDetailResponseSize', bytes, 0, 100_000, 100);
+    }
+    performanceAIMainThreadActivityResponseSize(bytes) {
+        InspectorFrontendHostInstance.recordCountHistogram('DevTools.PerformanceAI.MainThreadActivityResponseSize', bytes, 0, 100_000, 100);
+    }
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that

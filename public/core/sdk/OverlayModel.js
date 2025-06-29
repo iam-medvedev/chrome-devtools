@@ -345,9 +345,6 @@ export class OverlayModel extends SDKModel {
     setSourceOrderActive(isActive) {
         this.#sourceOrderModeActiveInternal = isActive;
     }
-    sourceOrderModeActive() {
-        return this.#sourceOrderModeActiveInternal;
-    }
     delayedHideHighlight(delay) {
         if (this.#hideHighlightTimeout === null) {
             this.#hideHighlightTimeout = window.setTimeout(() => this.highlightInOverlay({ clear: true }), delay);

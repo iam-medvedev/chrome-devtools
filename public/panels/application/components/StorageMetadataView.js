@@ -111,9 +111,6 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
     #storageBucketsModel;
     #storageKey = null;
     #storageBucket = null;
-    getShadow() {
-        return this.#shadow;
-    }
     setStorageKey(storageKey) {
         this.#storageKey = SDK.StorageKeyManager.parseStorageKey(storageKey);
         void this.render();

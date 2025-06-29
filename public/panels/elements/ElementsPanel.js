@@ -50,6 +50,7 @@ import { ComputedStyleWidget } from './ComputedStyleWidget.js';
 import elementsPanelStyles from './elementsPanel.css.js';
 import { ElementsTreeElementHighlighter } from './ElementsTreeElementHighlighter.js';
 import { ElementsTreeOutline } from './ElementsTreeOutline.js';
+import { LayoutPane } from './LayoutPane.js';
 import { MetricsSidebarPane } from './MetricsSidebarPane.js';
 import { StylesSidebarPane, } from './StylesSidebarPane.js';
 const UIStrings = {
@@ -998,8 +999,8 @@ export class ElementsPanel extends UI.Panel.Panel {
             if (treeElement) {
                 void treeElement.updateStyleAdorners();
             }
-            void ElementsComponents.LayoutPane.LayoutPane.instance().render();
         }
+        LayoutPane.instance().requestUpdate();
     }
     populateAdornerSettingsContextMenu(contextMenu) {
         const adornerSubMenu = contextMenu.viewSection().appendSubMenuItem(i18nString(UIStrings.adornerSettings), false, 'show-adorner-settings');

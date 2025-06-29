@@ -413,6 +413,18 @@ class DataGridElementNode extends SortableDataGridNode {
             targetInConfigRow?.dispatchEvent(new MouseEvent(event.type, { bubbles: true, composed: true }));
         }
     }
+    createCells(element) {
+        const configCells = [...this.#configElement.querySelectorAll('td')];
+        const hasCollspan = configCells.some(cell => cell.hasAttribute('colspan'));
+        if (!hasCollspan) {
+            super.createCells(element);
+        }
+        else {
+            for (const cell of configCells) {
+                element.appendChild(cell.cloneNode(true));
+            }
+        }
+    }
     createCell(columnId) {
         const index = this.#dataGridElement.columns.findIndex(({ id }) => id === columnId);
         if (this.#dataGridElement.columns[index].dataType === "Boolean" /* DataType.BOOLEAN */) {

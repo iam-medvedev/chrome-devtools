@@ -61,7 +61,6 @@ export declare class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper<
     private readonly issuesManager;
     constructor(issuesManager: IssuesManager.IssuesManager.IssuesManager);
     aggregatedIssues(): Iterable<AggregatedIssue>;
-    hiddenAggregatedIssues(): Iterable<AggregatedIssue>;
     aggregatedIssueCodes(): Set<AggregationKey>;
     aggregatedIssueCategories(): Set<IssuesManager.Issue.IssueCategory>;
     aggregatedIssueKinds(): Set<IssuesManager.Issue.IssueKind>;

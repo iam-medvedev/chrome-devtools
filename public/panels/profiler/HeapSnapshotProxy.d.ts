@@ -36,7 +36,6 @@ export declare class HeapSnapshotProxyObject {
     readonly objectId: number;
     constructor(worker: HeapSnapshotWorkerProxy, objectId: number);
     dispose(): void;
-    disposeWorker(): void;
     callFactoryMethod<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, ...args: any[]): T;
     callFactoryMethodPromise<T extends Object>(methodName: string, proxyConstructor: new (...arg1: any[]) => T, transfer: Transferable[], ...args: any[]): Promise<T>;
     callMethodPromise<T>(methodName: string, ...args: any[]): Promise<T>;

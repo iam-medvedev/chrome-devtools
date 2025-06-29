@@ -200,9 +200,6 @@ export class TracingContext {
         this.#asyncEvalCallbacks = [];
         return true;
     }
-    didApplyEvaluations() {
-        return this.#appliedEvaluations > 0;
-    }
     #setHasMoreEvaluations(value) {
         if (this.#parent) {
             this.#parent.#setHasMoreEvaluations(value);

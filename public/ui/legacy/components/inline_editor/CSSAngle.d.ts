@@ -26,7 +26,6 @@ export interface CSSAngleData {
     containingPane: HTMLElement;
 }
 export declare class CSSAngle extends HTMLElement {
-    private readonly shadow;
     private angle;
     private displayedAngle;
     private propertyValue;

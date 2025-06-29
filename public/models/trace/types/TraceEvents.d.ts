@@ -1764,7 +1764,6 @@ export interface FireAnimationFrame extends Complete {
         };
     };
 }
-export declare function isFireAnimationFrame(event: Event): event is FireAnimationFrame;
 export interface RequestAnimationFrame extends Instant {
     name: Name.REQUEST_ANIMATION_FRAME;
     args: Args & {
@@ -1775,7 +1774,6 @@ export interface RequestAnimationFrame extends Instant {
         };
     };
 }
-export declare function isRequestAnimationFrame(event: Event): event is RequestAnimationFrame;
 export interface TimerInstall extends Instant {
     name: Name.TIMER_INSTALL;
     args: Args & {
@@ -1810,7 +1808,6 @@ export interface RequestIdleCallback extends Instant {
         };
     };
 }
-export declare function isRequestIdleCallback(event: Event): event is RequestIdleCallback;
 export interface WebSocketCreate extends Instant {
     name: Name.WEB_SOCKET_CREATE;
     args: Args & {
@@ -1862,7 +1859,6 @@ export interface WebSocketSend extends Instant {
         };
     };
 }
-export declare function isWebSocketSend(event: Event): event is WebSocketSend;
 export interface WebSocketReceive extends Instant {
     name: Name.WEB_SOCKET_RECEIVE;
     args: Args & {
@@ -1875,7 +1871,6 @@ export interface WebSocketReceive extends Instant {
         };
     };
 }
-export declare function isWebSocketReceive(event: Event): event is WebSocketReceive;
 export interface WebSocketSendHandshakeRequest extends Instant {
     name: Name.WEB_SOCKET_SEND_HANDSHAKE_REQUEST;
     args: Args & {
@@ -2302,6 +2297,5 @@ export interface V8SourceRundownSourcesStubScriptCatchupEvent extends Event {
         };
     };
 }
-export declare function isV8SourceRundownSourcesStubScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesStubScriptCatchupEvent;
 export declare function isAnyScriptCatchupEvent(event: Event): event is V8SourceRundownSourcesScriptCatchupEvent | V8SourceRundownSourcesLargeScriptCatchupEvent | V8SourceRundownSourcesStubScriptCatchupEvent;
 export {};

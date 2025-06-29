@@ -10,8 +10,7 @@ declare class EventRef extends HTMLElement {
     set text(text: string);
     set event(event: Trace.Types.Events.Event);
 }
-type EventRefSupportedEvents = Trace.Types.Events.SyntheticNetworkRequest;
-export declare function eventRef(event: EventRefSupportedEvents, options?: {
+export declare function eventRef(event: Trace.Types.Events.Event, options?: {
     text?: string;
     title?: string;
 }): Lit.TemplateResult;

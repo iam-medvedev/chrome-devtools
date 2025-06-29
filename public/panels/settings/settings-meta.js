@@ -1,236 +1,270 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-import './emulation/emulation-meta.js';
-import * as Common from '../../core/common/common.js';
-import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
-import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
-import * as UI from '../../ui/legacy/legacy.js';
-const UIStrings = {
-    /**
-     *@description Text for keyboard shortcuts
-     */
-    shortcuts: 'Shortcuts',
-    /**
-     *@description Text in Settings Screen of the Settings
-     */
-    preferences: 'Preferences',
-    /**
-     *@description Text in Settings Screen of the Settings
-     */
-    experiments: 'Experiments',
-    /**
-     *@description Title of Ignore list settings
-     */
-    ignoreList: 'Ignore list',
-    /**
-     *@description Command for showing the keyboard shortcuts in Settings
-     */
-    showShortcuts: 'Show Shortcuts',
-    /**
-     *@description Command for showing the preference tab in the Settings Screen
-     */
-    showPreferences: 'Show Preferences',
-    /**
-     *@description Command for showing the experiments tab in the Settings Screen
-     */
-    showExperiments: 'Show Experiments',
-    /**
-     *@description Command for showing the Ignore list settings
-     */
-    showIgnoreList: 'Show Ignore list',
-    /**
-     *@description Name of the Settings view
-     */
-    settings: 'Settings',
-    /**
-     *@description Text for the documentation of something
-     */
-    documentation: 'Documentation',
-    /**
-     *@description Text for AI innovation settings
-     */
-    aiInnovations: 'AI innovations',
-    /**
-     *@description Command for showing the AI innovation settings
-     */
-    showAiInnovations: 'Show AI innovations',
+// gen/front_end/panels/settings/emulation/emulation-meta.js
+import * as i18n from "./../../core/i18n/i18n.js";
+import * as UI from "./../../ui/legacy/legacy.js";
+var UIStrings = {
+  /**
+   *@description Title of the Devices tab/tool. Devices refers to e.g. phones/tablets.
+   */
+  devices: "Devices",
+  /**
+   *@description Command that opens the device emulation view.
+   */
+  showDevices: "Show Devices"
 };
-const str_ = i18n.i18n.registerUIStrings('panels/settings/settings-meta.ts', UIStrings);
-const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
-let loadedSettingsModule;
-async function loadSettingsModule() {
-    if (!loadedSettingsModule) {
-        loadedSettingsModule = await import('./settings.js');
-    }
-    return loadedSettingsModule;
+var str_ = i18n.i18n.registerUIStrings("panels/settings/emulation/emulation-meta.ts", UIStrings);
+var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
+var loadedEmulationModule;
+async function loadEmulationModule() {
+  if (!loadedEmulationModule) {
+    loadedEmulationModule = await import("./emulation/emulation.js");
+  }
+  return loadedEmulationModule;
 }
 UI.ViewManager.registerViewExtension({
-    location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    id: 'preferences',
-    title: i18nLazyString(UIStrings.preferences),
-    commandPrompt: i18nLazyString(UIStrings.showPreferences),
-    order: 0,
-    async loadView() {
-        const Settings = await loadSettingsModule();
-        return new Settings.SettingsScreen.GenericSettingsTab();
-    },
-    iconName: 'gear',
+  location: "settings-view",
+  commandPrompt: i18nLazyString(UIStrings.showDevices),
+  title: i18nLazyString(UIStrings.devices),
+  order: 30,
+  async loadView() {
+    const Emulation = await loadEmulationModule();
+    return new Emulation.DevicesSettingsTab.DevicesSettingsTab();
+  },
+  id: "devices",
+  settings: [
+    "standard-emulated-device-list",
+    "custom-emulated-device-list"
+  ],
+  iconName: "devices"
 });
-UI.ViewManager.registerViewExtension({
-    location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    id: 'chrome-ai',
-    title: i18nLazyString(UIStrings.aiInnovations),
-    commandPrompt: i18nLazyString(UIStrings.showAiInnovations),
-    order: 2,
-    async loadView() {
-        const Settings = await loadSettingsModule();
-        return LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new Settings.AISettingsTab.AISettingsTab());
-    },
-    iconName: 'button-magic',
-    settings: ['console-insights-enabled'],
-    condition: config => {
-        return (config?.aidaAvailability?.enabled &&
-            (config?.devToolsConsoleInsights?.enabled || config?.devToolsFreestyler?.enabled)) ??
-            false;
-    },
+
+// gen/front_end/panels/settings/settings-meta.prebundle.js
+import * as Common from "./../../core/common/common.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
+import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
+var UIStrings2 = {
+  /**
+   *@description Text for keyboard shortcuts
+   */
+  shortcuts: "Shortcuts",
+  /**
+   *@description Text in Settings Screen of the Settings
+   */
+  preferences: "Preferences",
+  /**
+   *@description Text in Settings Screen of the Settings
+   */
+  experiments: "Experiments",
+  /**
+   *@description Title of Ignore list settings
+   */
+  ignoreList: "Ignore list",
+  /**
+   *@description Command for showing the keyboard shortcuts in Settings
+   */
+  showShortcuts: "Show Shortcuts",
+  /**
+   *@description Command for showing the preference tab in the Settings Screen
+   */
+  showPreferences: "Show Preferences",
+  /**
+   *@description Command for showing the experiments tab in the Settings Screen
+   */
+  showExperiments: "Show Experiments",
+  /**
+   *@description Command for showing the Ignore list settings
+   */
+  showIgnoreList: "Show Ignore list",
+  /**
+   *@description Name of the Settings view
+   */
+  settings: "Settings",
+  /**
+   *@description Text for the documentation of something
+   */
+  documentation: "Documentation",
+  /**
+   *@description Text for AI innovation settings
+   */
+  aiInnovations: "AI innovations",
+  /**
+   *@description Command for showing the AI innovation settings
+   */
+  showAiInnovations: "Show AI innovations"
+};
+var str_2 = i18n3.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings2);
+var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
+var loadedSettingsModule;
+async function loadSettingsModule() {
+  if (!loadedSettingsModule) {
+    loadedSettingsModule = await import("./settings.js");
+  }
+  return loadedSettingsModule;
+}
+UI2.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "preferences",
+  title: i18nLazyString2(UIStrings2.preferences),
+  commandPrompt: i18nLazyString2(UIStrings2.showPreferences),
+  order: 0,
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.SettingsScreen.GenericSettingsTab();
+  },
+  iconName: "gear"
 });
-UI.ViewManager.registerViewExtension({
-    location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    id: 'experiments',
-    title: i18nLazyString(UIStrings.experiments),
-    commandPrompt: i18nLazyString(UIStrings.showExperiments),
-    order: 3,
-    experiment: "*" /* Root.Runtime.ExperimentName.ALL */,
-    async loadView() {
-        const Settings = await loadSettingsModule();
-        return new Settings.SettingsScreen.ExperimentsSettingsTab();
-    },
-    iconName: 'experiment',
+UI2.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "chrome-ai",
+  title: i18nLazyString2(UIStrings2.aiInnovations),
+  commandPrompt: i18nLazyString2(UIStrings2.showAiInnovations),
+  order: 2,
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return LegacyWrapper.LegacyWrapper.legacyWrapper(UI2.Widget.VBox, new Settings2.AISettingsTab.AISettingsTab());
+  },
+  iconName: "button-magic",
+  settings: ["console-insights-enabled"],
+  condition: (config) => {
+    return (config?.aidaAvailability?.enabled && (config?.devToolsConsoleInsights?.enabled || config?.devToolsFreestyler?.enabled)) ?? false;
+  }
 });
-UI.ViewManager.registerViewExtension({
-    location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    id: 'blackbox',
-    title: i18nLazyString(UIStrings.ignoreList),
-    commandPrompt: i18nLazyString(UIStrings.showIgnoreList),
-    order: 4,
-    async loadView() {
-        const Settings = await loadSettingsModule();
-        return new Settings.FrameworkIgnoreListSettingsTab.FrameworkIgnoreListSettingsTab();
-    },
-    iconName: 'clear-list',
+UI2.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "experiments",
+  title: i18nLazyString2(UIStrings2.experiments),
+  commandPrompt: i18nLazyString2(UIStrings2.showExperiments),
+  order: 3,
+  experiment: "*",
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.SettingsScreen.ExperimentsSettingsTab();
+  },
+  iconName: "experiment"
 });
-UI.ViewManager.registerViewExtension({
-    location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    id: 'keybinds',
-    title: i18nLazyString(UIStrings.shortcuts),
-    commandPrompt: i18nLazyString(UIStrings.showShortcuts),
-    order: 100,
-    async loadView() {
-        const Settings = await loadSettingsModule();
-        return new Settings.KeybindsSettingsTab.KeybindsSettingsTab();
-    },
-    iconName: 'keyboard',
+UI2.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "blackbox",
+  title: i18nLazyString2(UIStrings2.ignoreList),
+  commandPrompt: i18nLazyString2(UIStrings2.showIgnoreList),
+  order: 4,
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.FrameworkIgnoreListSettingsTab.FrameworkIgnoreListSettingsTab();
+  },
+  iconName: "clear-list"
 });
-UI.ActionRegistration.registerActionExtension({
-    category: "SETTINGS" /* UI.ActionRegistration.ActionCategory.SETTINGS */,
-    actionId: 'settings.show',
-    title: i18nLazyString(UIStrings.settings),
-    async loadActionDelegate() {
-        const Settings = await loadSettingsModule();
-        return new Settings.SettingsScreen.ActionDelegate();
-    },
-    iconClass: "gear" /* UI.ActionRegistration.IconClass.LARGEICON_SETTINGS_GEAR */,
-    bindings: [
-        {
-            shortcut: 'F1',
-            keybindSets: [
-                "devToolsDefault" /* UI.ActionRegistration.KeybindSet.DEVTOOLS_DEFAULT */,
-            ],
-        },
-        {
-            shortcut: 'Shift+?',
-        },
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+,',
-            keybindSets: [
-                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
-            ],
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+,',
-            keybindSets: [
-                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
-            ],
-        },
-    ],
+UI2.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "keybinds",
+  title: i18nLazyString2(UIStrings2.shortcuts),
+  commandPrompt: i18nLazyString2(UIStrings2.showShortcuts),
+  order: 100,
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.KeybindsSettingsTab.KeybindsSettingsTab();
+  },
+  iconName: "keyboard"
 });
-UI.ActionRegistration.registerActionExtension({
-    category: "SETTINGS" /* UI.ActionRegistration.ActionCategory.SETTINGS */,
-    actionId: 'settings.documentation',
-    title: i18nLazyString(UIStrings.documentation),
-    async loadActionDelegate() {
-        const Settings = await loadSettingsModule();
-        return new Settings.SettingsScreen.ActionDelegate();
+UI2.ActionRegistration.registerActionExtension({
+  category: "SETTINGS",
+  actionId: "settings.show",
+  title: i18nLazyString2(UIStrings2.settings),
+  async loadActionDelegate() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.SettingsScreen.ActionDelegate();
+  },
+  iconClass: "gear",
+  bindings: [
+    {
+      shortcut: "F1",
+      keybindSets: [
+        "devToolsDefault"
+      ]
     },
+    {
+      shortcut: "Shift+?"
+    },
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+,",
+      keybindSets: [
+        "vsCode"
+      ]
+    },
+    {
+      platform: "mac",
+      shortcut: "Meta+,",
+      keybindSets: [
+        "vsCode"
+      ]
+    }
+  ]
 });
-UI.ActionRegistration.registerActionExtension({
-    category: "SETTINGS" /* UI.ActionRegistration.ActionCategory.SETTINGS */,
-    actionId: 'settings.shortcuts',
-    title: i18nLazyString(UIStrings.showShortcuts),
-    async loadActionDelegate() {
-        const Settings = await loadSettingsModule();
-        return new Settings.SettingsScreen.ActionDelegate();
-    },
-    bindings: [
-        {
-            platform: "windows,linux" /* UI.ActionRegistration.Platforms.WINDOWS_LINUX */,
-            shortcut: 'Ctrl+K Ctrl+S',
-            keybindSets: [
-                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
-            ],
-        },
-        {
-            platform: "mac" /* UI.ActionRegistration.Platforms.MAC */,
-            shortcut: 'Meta+K Meta+S',
-            keybindSets: [
-                "vsCode" /* UI.ActionRegistration.KeybindSet.VS_CODE */,
-            ],
-        },
-    ],
+UI2.ActionRegistration.registerActionExtension({
+  category: "SETTINGS",
+  actionId: "settings.documentation",
+  title: i18nLazyString2(UIStrings2.documentation),
+  async loadActionDelegate() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.SettingsScreen.ActionDelegate();
+  }
 });
-UI.ViewManager.registerLocationResolver({
-    name: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
-    category: "SETTINGS" /* UI.ViewManager.ViewLocationCategory.SETTINGS */,
-    async loadResolver() {
-        const Settings = await loadSettingsModule();
-        return Settings.SettingsScreen.SettingsScreen.instance();
+UI2.ActionRegistration.registerActionExtension({
+  category: "SETTINGS",
+  actionId: "settings.shortcuts",
+  title: i18nLazyString2(UIStrings2.showShortcuts),
+  async loadActionDelegate() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.SettingsScreen.ActionDelegate();
+  },
+  bindings: [
+    {
+      platform: "windows,linux",
+      shortcut: "Ctrl+K Ctrl+S",
+      keybindSets: [
+        "vsCode"
+      ]
     },
+    {
+      platform: "mac",
+      shortcut: "Meta+K Meta+S",
+      keybindSets: [
+        "vsCode"
+      ]
+    }
+  ]
+});
+UI2.ViewManager.registerLocationResolver({
+  name: "settings-view",
+  category: "SETTINGS",
+  async loadResolver() {
+    const Settings2 = await loadSettingsModule();
+    return Settings2.SettingsScreen.SettingsScreen.instance();
+  }
 });
 Common.Revealer.registerRevealer({
-    contextTypes() {
-        return [
-            Common.Settings.Setting,
-            Root.Runtime.Experiment,
-        ];
-    },
-    destination: undefined,
-    async loadRevealer() {
-        const Settings = await loadSettingsModule();
-        return new Settings.SettingsScreen.Revealer();
-    },
+  contextTypes() {
+    return [
+      Common.Settings.Setting,
+      Root.Runtime.Experiment
+    ];
+  },
+  destination: void 0,
+  async loadRevealer() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.SettingsScreen.Revealer();
+  }
 });
-UI.ContextMenu.registerItem({
-    location: "mainMenu/footer" /* UI.ContextMenu.ItemLocation.MAIN_MENU_FOOTER */,
-    actionId: 'settings.shortcuts',
-    order: undefined,
+UI2.ContextMenu.registerItem({
+  location: "mainMenu/footer",
+  actionId: "settings.shortcuts",
+  order: void 0
 });
-UI.ContextMenu.registerItem({
-    location: "mainMenuHelp/default" /* UI.ContextMenu.ItemLocation.MAIN_MENU_HELP_DEFAULT */,
-    actionId: 'settings.documentation',
-    order: undefined,
+UI2.ContextMenu.registerItem({
+  location: "mainMenuHelp/default",
+  actionId: "settings.documentation",
+  order: void 0
 });
 //# sourceMappingURL=settings-meta.js.map

@@ -60,6 +60,9 @@
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
+      "path": "../../models/ai_assistance/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/autofill_manager/bundle-tsconfig.json"
     },
     {
@@ -82,6 +85,9 @@
     },
     {
       "path": "../../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../panels/ai_assistance/bundle-tsconfig.json"
     },
     {
       "path": "../../panels/snippets/bundle-tsconfig.json"

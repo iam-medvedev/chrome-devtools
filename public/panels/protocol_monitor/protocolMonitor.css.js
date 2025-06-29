@@ -20,4 +20,10 @@ export default `/*
 .target-selector {
   max-width: 120px;
 }
+
+.protocol-monitor-main {
+  /* allows the main area to grow automatically */
+  flex-grow: 1;
+}
+
 /*# sourceURL=${import.meta.resolve('./protocolMonitor.css')} */`;

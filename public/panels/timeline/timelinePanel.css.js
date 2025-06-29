@@ -433,10 +433,6 @@ devtools-performance-third-party-tree-view {
  }
 }
 
-devtools-feedback-button {
-  float: right;
-}
-
 devtools-toolbar {
   .history-dropdown-button {
     width: var(--sys-size-23);

@@ -6,7 +6,7 @@ export declare class StylePropertyHighlighter {
     /**
      * Expand all shorthands, find the given property, scroll to it and highlight it.
      */
-    highlightProperty(cssProperty: SDK.CSSProperty.CSSProperty): void;
+    highlightProperty(cssProperty: SDK.CSSProperty.CSSProperty): Promise<void>;
     findAndHighlightSectionBlock(sectionBlockName: string): void;
     findAndHighlightSection(sectionName: string, blockName: string): void;
     /**
