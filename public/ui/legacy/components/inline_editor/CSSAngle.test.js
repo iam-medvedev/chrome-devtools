@@ -41,12 +41,12 @@ describe('CSSAngle', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
         renderElementIntoDOM(component);
         component.data = initialData;
-        assert.isNotNull(component.shadowRoot);
-        assertPopoverClosed(component.shadowRoot);
-        togglePopover(component.shadowRoot);
-        assertPopoverOpen(component.shadowRoot);
-        togglePopover(component.shadowRoot);
-        assertPopoverClosed(component.shadowRoot);
+        assert.isNotNull(component);
+        assertPopoverClosed(component);
+        togglePopover(component);
+        assertPopoverOpen(component);
+        togglePopover(component);
+        assertPopoverClosed(component);
     });
     it('can fire events when toggling the popover', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
@@ -57,26 +57,26 @@ describe('CSSAngle', () => {
             const popoverToggledEvent = event;
             isPopoverOpen = popoverToggledEvent.data.open;
         });
-        assert.isNotNull(component.shadowRoot);
-        assertPopoverClosed(component.shadowRoot);
-        togglePopover(component.shadowRoot);
-        assertPopoverOpen(component.shadowRoot);
+        assert.isNotNull(component);
+        assertPopoverClosed(component);
+        togglePopover(component);
+        assertPopoverOpen(component);
         assert.isTrue(isPopoverOpen, 'external isPopoverOpen flag not synced');
-        togglePopover(component.shadowRoot);
-        assertPopoverClosed(component.shadowRoot);
+        togglePopover(component);
+        assertPopoverClosed(component);
         assert.isFalse(isPopoverOpen, 'external isPopoverOpen flag not synced');
     });
     it('can change unit when the swatch is shift-clicked upon', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
         renderElementIntoDOM(component);
         component.data = initialData;
-        assert.isNotNull(component.shadowRoot);
+        assert.isNotNull(component);
         let cssAngleText = initialData.angleText;
         component.addEventListener('unitchanged', (event) => {
             const { data } = event;
             cssAngleText = data.value;
         });
-        const swatch = assertAndGetSwatch(component.shadowRoot);
+        const swatch = assertAndGetSwatch(component);
         if (!swatch) {
             return;
         }
@@ -88,14 +88,14 @@ describe('CSSAngle', () => {
         const component = new InlineEditor.CSSAngle.CSSAngle();
         renderElementIntoDOM(component);
         component.data = initialData;
-        assert.isNotNull(component.shadowRoot);
+        assert.isNotNull(component);
         let cssAngleText = initialData.angleText;
         component.addEventListener('valuechanged', (event) => {
             const { data } = event;
             cssAngleText = data.value;
         });
-        togglePopover(component.shadowRoot);
-        const angleContainer = component.shadowRoot.querySelector('.css-angle');
+        togglePopover(component);
+        const angleContainer = component.querySelector('.css-angle');
         if (!angleContainer) {
             assert.fail('angle container was not rendered');
             return;
@@ -117,12 +117,12 @@ describe('CSSAngle', () => {
                 const popoverEvent = event;
                 assert.strictEqual(popoverEvent.data.open, shouldPopoverEventBeOpen);
             });
-            assert.isNotNull(component.shadowRoot);
-            assertPopoverClosed(component.shadowRoot);
+            assert.isNotNull(component);
+            assertPopoverClosed(component);
             shouldPopoverEventBeOpen = true;
-            togglePopover(component.shadowRoot);
+            togglePopover(component);
             shouldPopoverEventBeOpen = false;
-            togglePopover(component.shadowRoot);
+            togglePopover(component);
         });
         it('parses CSS properties with angles correctly', () => {
             assert.deepEqual(InlineEditor.CSSAngleUtils.parseText('rotate(45deg)'), { value: 45, unit: "deg" /* InlineEditor.CSSAngleUtils.AngleUnit.DEG */ });

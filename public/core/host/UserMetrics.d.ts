@@ -43,6 +43,8 @@ export declare class UserMetrics {
     freestylerQueryLength(numberOfCharacters: number): void;
     freestylerEvalResponseSize(bytes: number): void;
     performanceAINetworkSummaryResponseSize(bytes: number): void;
+    performanceAINetworkRequestDetailResponseSize(bytes: number): void;
+    performanceAIMainThreadActivityResponseSize(bytes: number): void;
 }
 /**
  * The numeric enum values are not necessarily continuous! It is possible that

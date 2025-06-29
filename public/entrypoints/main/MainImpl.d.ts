@@ -40,3 +40,18 @@ export declare function sendOverProtocol(method: ProtocolClient.InspectorBackend
 export declare class ReloadActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string): boolean;
 }
+type ExternalRequestInput = {
+    kind: 'LIVE_STYLE_DEBUGGER';
+    args: {
+        prompt: string;
+        selector: string;
+    };
+} | {
+    kind: 'PERFORMANCE_RELOAD_GATHER_INSIGHTS';
+};
+interface ExternalRequestResponse {
+    response: string;
+    devToolsLogs: object[];
+}
+export declare function handleExternalRequest(input: ExternalRequestInput): Promise<ExternalRequestResponse>;
+export {};

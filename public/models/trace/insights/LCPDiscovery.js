@@ -88,7 +88,7 @@ export function generateInsight(parsedTrace, context) {
     if (!lcpEvent || !Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
         return finalize({ warnings: [InsightWarning.NO_LCP] });
     }
-    const docRequest = networkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
+    const docRequest = networkRequests.byId.get(context.navigationId);
     if (!docRequest) {
         return finalize({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
     }

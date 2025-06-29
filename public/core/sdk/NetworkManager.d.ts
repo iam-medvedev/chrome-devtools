@@ -183,7 +183,6 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
     currentUserAgent(): string;
     private updateUserAgentOverride;
     setUserAgentOverride(userAgent: string, userAgentMetadataOverride: Protocol.Emulation.UserAgentMetadata | null): void;
-    userAgentOverride(): string;
     setCustomUserAgentOverride(userAgent: string, userAgentMetadataOverride?: Protocol.Emulation.UserAgentMetadata | null): void;
     setCustomAcceptedEncodingsOverride(acceptedEncodings: Protocol.Network.ContentEncoding[]): void;
     clearCustomAcceptedEncodingsOverride(): void;
@@ -242,7 +241,6 @@ export declare class InterceptedRequest {
     static mergeSetCookieHeaders(originalSetCookieHeaders: Protocol.Fetch.HeaderEntry[], setCookieHeadersFromOverrides: Protocol.Fetch.HeaderEntry[]): Protocol.Fetch.HeaderEntry[];
     continueRequestWithContent(contentBlob: Blob, encoded: boolean, responseHeaders: Protocol.Fetch.HeaderEntry[], isBodyOverridden: boolean): Promise<void>;
     continueRequestWithoutChange(): void;
-    continueRequestWithError(errorReason: Protocol.Network.ErrorReason): void;
     responseBody(): Promise<TextUtils.ContentData.ContentDataOrError>;
     isRedirect(): boolean;
     /**

@@ -46,15 +46,15 @@ export const UIStrings = {
      */
     noPreconnectOrigins: 'no origins were preconnected',
     /**
-     * @description A warning message that is shown when found more than 4 preconnected links
+     * @description A warning message that is shown when found more than 4 preconnected links. "preconnect" should not be translated.
      */
     tooManyPreconnectLinksWarning: 'More than 4 `preconnect` connections were found. These should be used sparingly and only to the most important origins.',
     /**
-     * @description A warning message that is shown when the user added preconnect for some unnecessary origins.
+     * @description A warning message that is shown when the user added preconnect for some unnecessary origins. "preconnect" should not be translated.
      */
     unusedWarning: 'Unused preconnect. Only use `preconnect` for origins that the page is likely to request.',
     /**
-     * @description A warning message that is shown when the user forget to set the `crossorigin` HTML attribute, or setting it to an incorrect value, on the link is a common mistake when adding preconnect links.
+     * @description A warning message that is shown when the user forget to set the `crossorigin` HTML attribute, or setting it to an incorrect value, on the link is a common mistake when adding preconnect links. "preconnect" should not be translated.
      * */
     crossoriginWarning: 'Unused preconnect. Check that the `crossorigin` attribute is used properly.',
     /**
@@ -70,7 +70,7 @@ export const UIStrings = {
      */
     estSavingTableTitle: 'Preconnect candidates',
     /**
-     * @description Description of the table that recommends preconnecting to the origins to save time.
+     * @description Description of the table that recommends preconnecting to the origins to save time. "preconnect" should not be translated.
      */
     estSavingTableDescription: 'Add [preconnect](https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/) hints to your most important origins, but try to use no more than 4.',
     /**
@@ -345,7 +345,7 @@ export function generatePreconnectedOrigins(parsedTrace, context, contextRequest
             source: 'DOM',
         });
     }
-    const documentRequest = parsedTrace.NetworkRequests.byTime.find(req => req.args.data.requestId === context.navigationId);
+    const documentRequest = parsedTrace.NetworkRequests.byId.get(context.navigationId);
     documentRequest?.args.data.responseHeaders?.forEach(header => {
         if (header.name.toLowerCase() === 'link') {
             const preconnectedOriginsFromResponseHeader = handleLinkResponseHeader(header.value); // , documentRequest);
@@ -432,8 +432,8 @@ export function generatePreconnectCandidates(parsedTrace, context, contextReques
     if (!context.lantern) {
         return [];
     }
-    const mainResource = contextRequests.find(request => request.args.data.requestId === context.navigationId);
-    if (!mainResource) {
+    const documentRequest = parsedTrace.NetworkRequests.byId.get(context.navigationId);
+    if (!documentRequest) {
         return [];
     }
     const { rtt, additionalRttByOrigin } = context.lantern.simulator.getOptions();
@@ -451,11 +451,11 @@ export function generatePreconnectCandidates(parsedTrace, context, contextReques
             fcpGraphURLs.add(node.request.url);
         }
     });
-    const origins = candidateRequestsByOrigin(parsedTrace, mainResource, contextRequests, lcpGraphURLs);
+    const groupedOrigins = candidateRequestsByOrigin(parsedTrace, documentRequest, contextRequests, lcpGraphURLs);
     let maxWastedLcp = Types.Timing.Milli(0);
     let maxWastedFcp = Types.Timing.Milli(0);
     let preconnectCandidates = [];
-    origins.forEach(requests => {
+    groupedOrigins.forEach(requests => {
         const firstRequestOfOrigin = requests[0];
         // Skip the origin if we don't have timing information
         if (!firstRequestOfOrigin.args.data.timing) {
@@ -472,7 +472,8 @@ export function generatePreconnectCandidates(parsedTrace, context, contextReques
         if (firstRequestOfOriginParsedURL.scheme === 'https') {
             connectionTime = Types.Timing.Milli(connectionTime * 2);
         }
-        const timeBetweenMainResourceAndDnsStart = Types.Timing.Micro(firstRequestOfOrigin.args.data.syntheticData.sendStartTime - mainResource.args.data.syntheticData.finishTime +
+        const timeBetweenMainResourceAndDnsStart = Types.Timing.Micro(firstRequestOfOrigin.args.data.syntheticData.sendStartTime -
+            documentRequest.args.data.syntheticData.finishTime +
             Helpers.Timing.milliToMicro(firstRequestOfOrigin.args.data.timing.dnsStart));
         const wastedMs = Math.min(connectionTime, Helpers.Timing.microToMilli(timeBetweenMainResourceAndDnsStart));
         if (wastedMs < IGNORE_THRESHOLD_IN_MILLISECONDS) {

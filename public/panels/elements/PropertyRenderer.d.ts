@@ -29,7 +29,6 @@ export declare class TracingContext {
     renderingContext(context: RenderingContext): RenderingContext;
     nextSubstitution(): boolean;
     nextEvaluation(): boolean;
-    didApplyEvaluations(): boolean;
     evaluation(args: unknown[], root?: {
         match: SDK.CSSPropertyParser.Match;
         context: RenderingContext;

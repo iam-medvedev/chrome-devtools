@@ -126,7 +126,6 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     handleToEntryOfLinkBetweenEntriesSelection(toIndex: number): void;
     resizeToPreferredHeights(): void;
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
-    searchResultIndexForEntryIndex(index: number): number;
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;

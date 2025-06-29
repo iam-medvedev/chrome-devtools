@@ -846,4 +846,20 @@ export class ReloadActionDelegate {
         return false;
     }
 }
+export async function handleExternalRequest(input) {
+    switch (input.kind) {
+        case 'PERFORMANCE_RELOAD_GATHER_INSIGHTS': {
+            const TimelinePanel = await import('../../panels/timeline/timeline.js');
+            return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
+        }
+        case 'LIVE_STYLE_DEBUGGER': {
+            const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
+            const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
+            const panelInstance = await AiAssistance.AiAssistancePanel.instance();
+            return await panelInstance.handleExternalRequest(input.args.prompt, "freestyler" /* AiAssistanceModel.ConversationType.STYLING */, input.args.selector);
+        }
+    }
+}
+// @ts-expect-error
+globalThis.handleExternalRequest = handleExternalRequest;
 //# sourceMappingURL=MainImpl.js.map

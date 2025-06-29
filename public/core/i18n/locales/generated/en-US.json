@@ -1814,9 +1814,6 @@
   "models/trace/insights/CLSCulprits.ts | description": {
     "message": "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads."
   },
-  "models/trace/insights/CLSCulprits.ts | fontRequest": {
-    "message": "Font request"
-  },
   "models/trace/insights/CLSCulprits.ts | injectedIframe": {
     "message": "Injected iframe"
   },
@@ -1837,6 +1834,9 @@
   },
   "models/trace/insights/CLSCulprits.ts | unsizedImage": {
     "message": "Unsized image element"
+  },
+  "models/trace/insights/CLSCulprits.ts | webFont": {
+    "message": "Web font"
   },
   "models/trace/insights/CLSCulprits.ts | worstCluster": {
     "message": "Worst cluster"
@@ -1880,8 +1880,17 @@
   "models/trace/insights/DOMSize.ts | description": {
     "message": "A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/)."
   },
+  "models/trace/insights/DOMSize.ts | duration": {
+    "message": "Duration"
+  },
   "models/trace/insights/DOMSize.ts | element": {
     "message": "Element"
+  },
+  "models/trace/insights/DOMSize.ts | largeLayout": {
+    "message": "Layout ({PH1} objects)"
+  },
+  "models/trace/insights/DOMSize.ts | largeStyleRecalc": {
+    "message": "Style recalculation ({PH1} elements)"
   },
   "models/trace/insights/DOMSize.ts | maxChildren": {
     "message": "Most children"
@@ -1894,6 +1903,9 @@
   },
   "models/trace/insights/DOMSize.ts | title": {
     "message": "Optimize DOM size"
+  },
+  "models/trace/insights/DOMSize.ts | topUpdatesDescription": {
+    "message": "These are the largest layout and style recalculation events. Their performance impact may be reduced by making the DOM simpler."
   },
   "models/trace/insights/DOMSize.ts | totalElements": {
     "message": "Total elements"
@@ -1929,7 +1941,7 @@
     "message": "(anonymous)"
   },
   "models/trace/insights/ForcedReflow.ts | description": {
-    "message": "Many APIs, typically reading layout geometry, force the rendering engine to pause script execution in order to calculate the style and layout. Learn more about [forced reflow](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and its mitigations."
+    "message": "A forced reflow occurs when JavaScript queries geometric properties (such as offsetWidth) after styles have been invalidated by a change to the DOM state. This can result in poor performance. Learn more about [forced reflows](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and possible mitigations."
   },
   "models/trace/insights/ForcedReflow.ts | relatedStackTrace": {
     "message": "Stack trace"
@@ -1976,29 +1988,59 @@
   "models/trace/insights/ImageDelivery.ts | useVideoFormat": {
     "message": "Using video formats instead of GIFs can improve the download size of animated content."
   },
-  "models/trace/insights/InteractionToNextPaint.ts | description": {
-    "message": "Start investigating with the longest phase. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
+  "models/trace/insights/INPBreakdown.ts | description": {
+    "message": "Start investigating with the longest subpart. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS."
   },
-  "models/trace/insights/InteractionToNextPaint.ts | duration": {
+  "models/trace/insights/INPBreakdown.ts | duration": {
     "message": "Duration"
   },
-  "models/trace/insights/InteractionToNextPaint.ts | inputDelay": {
+  "models/trace/insights/INPBreakdown.ts | inputDelay": {
     "message": "Input delay"
   },
-  "models/trace/insights/InteractionToNextPaint.ts | noInteractions": {
+  "models/trace/insights/INPBreakdown.ts | noInteractions": {
     "message": "No interactions detected"
   },
-  "models/trace/insights/InteractionToNextPaint.ts | phase": {
-    "message": "Phase"
-  },
-  "models/trace/insights/InteractionToNextPaint.ts | presentationDelay": {
+  "models/trace/insights/INPBreakdown.ts | presentationDelay": {
     "message": "Presentation delay"
   },
-  "models/trace/insights/InteractionToNextPaint.ts | processingDuration": {
+  "models/trace/insights/INPBreakdown.ts | processingDuration": {
     "message": "Processing duration"
   },
-  "models/trace/insights/InteractionToNextPaint.ts | title": {
-    "message": "INP by phase"
+  "models/trace/insights/INPBreakdown.ts | subpart": {
+    "message": "Subpart"
+  },
+  "models/trace/insights/INPBreakdown.ts | title": {
+    "message": "INP breakdown"
+  },
+  "models/trace/insights/LCPBreakdown.ts | description": {
+    "message": "Each [subpart has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays."
+  },
+  "models/trace/insights/LCPBreakdown.ts | duration": {
+    "message": "Duration"
+  },
+  "models/trace/insights/LCPBreakdown.ts | elementRenderDelay": {
+    "message": "Element render delay"
+  },
+  "models/trace/insights/LCPBreakdown.ts | fieldDuration": {
+    "message": "Field p75"
+  },
+  "models/trace/insights/LCPBreakdown.ts | noLcp": {
+    "message": "No LCP detected"
+  },
+  "models/trace/insights/LCPBreakdown.ts | resourceLoadDelay": {
+    "message": "Resource load delay"
+  },
+  "models/trace/insights/LCPBreakdown.ts | resourceLoadDuration": {
+    "message": "Resource load duration"
+  },
+  "models/trace/insights/LCPBreakdown.ts | subpart": {
+    "message": "Subpart"
+  },
+  "models/trace/insights/LCPBreakdown.ts | timeToFirstByte": {
+    "message": "Time to first byte"
+  },
+  "models/trace/insights/LCPBreakdown.ts | title": {
+    "message": "LCP breakdown"
   },
   "models/trace/insights/LCPDiscovery.ts | description": {
     "message": "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)"
@@ -2026,36 +2068,6 @@
   },
   "models/trace/insights/LCPDiscovery.ts | title": {
     "message": "LCP request discovery"
-  },
-  "models/trace/insights/LCPPhases.ts | description": {
-    "message": "Each [phase has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays."
-  },
-  "models/trace/insights/LCPPhases.ts | duration": {
-    "message": "Duration"
-  },
-  "models/trace/insights/LCPPhases.ts | elementRenderDelay": {
-    "message": "Element render delay"
-  },
-  "models/trace/insights/LCPPhases.ts | fieldDuration": {
-    "message": "Field p75"
-  },
-  "models/trace/insights/LCPPhases.ts | noLcp": {
-    "message": "No LCP detected"
-  },
-  "models/trace/insights/LCPPhases.ts | phase": {
-    "message": "Phase"
-  },
-  "models/trace/insights/LCPPhases.ts | resourceLoadDelay": {
-    "message": "Resource load delay"
-  },
-  "models/trace/insights/LCPPhases.ts | resourceLoadDuration": {
-    "message": "Resource load duration"
-  },
-  "models/trace/insights/LCPPhases.ts | timeToFirstByte": {
-    "message": "Time to first byte"
-  },
-  "models/trace/insights/LCPPhases.ts | title": {
-    "message": "LCP by phase"
   },
   "models/trace/insights/LegacyJavaScript.ts | columnScript": {
     "message": "Script"
@@ -6416,36 +6428,6 @@
   "panels/elements/components/ElementsTreeExpandButton.ts | expand": {
     "message": "Expand"
   },
-  "panels/elements/components/LayoutPane.ts | chooseElementOverlayColor": {
-    "message": "Choose the overlay color for this element"
-  },
-  "panels/elements/components/LayoutPane.ts | colorPickerOpened": {
-    "message": "Color picker opened."
-  },
-  "panels/elements/components/LayoutPane.ts | flexbox": {
-    "message": "Flexbox"
-  },
-  "panels/elements/components/LayoutPane.ts | flexboxOverlays": {
-    "message": "Flexbox overlays"
-  },
-  "panels/elements/components/LayoutPane.ts | grid": {
-    "message": "Grid"
-  },
-  "panels/elements/components/LayoutPane.ts | gridOverlays": {
-    "message": "Grid overlays"
-  },
-  "panels/elements/components/LayoutPane.ts | noFlexboxLayoutsFoundOnThisPage": {
-    "message": "No flexbox layouts found on this page"
-  },
-  "panels/elements/components/LayoutPane.ts | noGridLayoutsFoundOnThisPage": {
-    "message": "No grid layouts found on this page"
-  },
-  "panels/elements/components/LayoutPane.ts | overlayDisplaySettings": {
-    "message": "Overlay display settings"
-  },
-  "panels/elements/components/LayoutPane.ts | showElementInTheElementsPanel": {
-    "message": "Show element in the Elements panel"
-  },
   "panels/elements/components/StylePropertyEditor.ts | deselectButton": {
     "message": "Remove {propertyName}: {propertyValue}"
   },
@@ -6874,6 +6856,36 @@
   },
   "panels/elements/LayersWidget.ts | toggleCSSLayers": {
     "message": "Toggle CSS Layers view"
+  },
+  "panels/elements/LayoutPane.ts | chooseElementOverlayColor": {
+    "message": "Choose the overlay color for this element"
+  },
+  "panels/elements/LayoutPane.ts | colorPickerOpened": {
+    "message": "Color picker opened."
+  },
+  "panels/elements/LayoutPane.ts | flexbox": {
+    "message": "Flexbox"
+  },
+  "panels/elements/LayoutPane.ts | flexboxOverlays": {
+    "message": "Flexbox overlays"
+  },
+  "panels/elements/LayoutPane.ts | grid": {
+    "message": "Grid"
+  },
+  "panels/elements/LayoutPane.ts | gridOverlays": {
+    "message": "Grid overlays"
+  },
+  "panels/elements/LayoutPane.ts | noFlexboxLayoutsFoundOnThisPage": {
+    "message": "No flexbox layouts found on this page"
+  },
+  "panels/elements/LayoutPane.ts | noGridLayoutsFoundOnThisPage": {
+    "message": "No grid layouts found on this page"
+  },
+  "panels/elements/LayoutPane.ts | overlayDisplaySettings": {
+    "message": "Overlay display settings"
+  },
+  "panels/elements/LayoutPane.ts | showElementInTheElementsPanel": {
+    "message": "Show element in the Elements panel"
   },
   "panels/elements/MarkerDecorator.ts | domBreakpoint": {
     "message": "DOM Breakpoint"
@@ -8704,9 +8716,6 @@
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | packetReordering": {
     "message": "Packet Reordering"
-  },
-  "panels/mobile_throttling/ThrottlingSettingsTab.ts | percent": {
-    "message": "percent"
   },
   "panels/mobile_throttling/ThrottlingSettingsTab.ts | profileName": {
     "message": "Profile Name"
@@ -11546,23 +11555,14 @@
   "panels/security/CookieReportView.ts | gitHubResource": {
     "message": "Review {PH1} from third-party site"
   },
-  "panels/security/CookieReportView.ts | gitHubResourceInsightTypeString": {
-    "message": "Github"
-  },
   "panels/security/CookieReportView.ts | gracePeriod": {
     "message": "Review {PH1}. Grace period exception is active."
-  },
-  "panels/security/CookieReportView.ts | gracePeriodInsightTypeString": {
-    "message": "Grace Period"
   },
   "panels/security/CookieReportView.ts | guidance": {
     "message": "guidance"
   },
   "panels/security/CookieReportView.ts | heuristics": {
     "message": "Action needed later. Heuristics based exception is active."
-  },
-  "panels/security/CookieReportView.ts | heuristicsInisightTypeString": {
-    "message": "Heuristics"
   },
   "panels/security/CookieReportView.ts | hostingCookieTypeString": {
     "message": "Hosting"
@@ -11580,9 +11580,6 @@
     "message": "Contact third-party site for more info"
   },
   "panels/security/CookieReportView.ts | otherCookieTypeString": {
-    "message": "Other"
-  },
-  "panels/security/CookieReportView.ts | otherInsightTypeString": {
     "message": "Other"
   },
   "panels/security/CookieReportView.ts | platform": {
@@ -12704,6 +12701,63 @@
   "panels/sources/BreakpointEditDialog.ts | pauseOnlyWhenTheConditionIsTrue": {
     "message": "Pause only when the condition is true"
   },
+  "panels/sources/BreakpointsView.ts | breakpointHit": {
+    "message": "{PH1} breakpoint hit"
+  },
+  "panels/sources/BreakpointsView.ts | checked": {
+    "message": "checked"
+  },
+  "panels/sources/BreakpointsView.ts | conditionCode": {
+    "message": "Condition: {PH1}"
+  },
+  "panels/sources/BreakpointsView.ts | disableAllBreakpoints": {
+    "message": "Disable all breakpoints"
+  },
+  "panels/sources/BreakpointsView.ts | disableAllBreakpointsInFile": {
+    "message": "Disable all breakpoints in file"
+  },
+  "panels/sources/BreakpointsView.ts | editCondition": {
+    "message": "Edit condition"
+  },
+  "panels/sources/BreakpointsView.ts | editLogpoint": {
+    "message": "Edit logpoint"
+  },
+  "panels/sources/BreakpointsView.ts | enableAllBreakpoints": {
+    "message": "Enable all breakpoints"
+  },
+  "panels/sources/BreakpointsView.ts | enableAllBreakpointsInFile": {
+    "message": "Enable all breakpoints in file"
+  },
+  "panels/sources/BreakpointsView.ts | indeterminate": {
+    "message": "mixed"
+  },
+  "panels/sources/BreakpointsView.ts | logpointCode": {
+    "message": "Logpoint: {PH1}"
+  },
+  "panels/sources/BreakpointsView.ts | pauseOnCaughtExceptions": {
+    "message": "Pause on caught exceptions"
+  },
+  "panels/sources/BreakpointsView.ts | pauseOnUncaughtExceptions": {
+    "message": "Pause on uncaught exceptions"
+  },
+  "panels/sources/BreakpointsView.ts | removeAllBreakpoints": {
+    "message": "Remove all breakpoints"
+  },
+  "panels/sources/BreakpointsView.ts | removeAllBreakpointsInFile": {
+    "message": "Remove all breakpoints in file"
+  },
+  "panels/sources/BreakpointsView.ts | removeBreakpoint": {
+    "message": "Remove breakpoint"
+  },
+  "panels/sources/BreakpointsView.ts | removeOtherBreakpoints": {
+    "message": "Remove other breakpoints"
+  },
+  "panels/sources/BreakpointsView.ts | revealLocation": {
+    "message": "Reveal location"
+  },
+  "panels/sources/BreakpointsView.ts | unchecked": {
+    "message": "unchecked"
+  },
   "panels/sources/CallStackSidebarPane.ts | callFrameWarnings": {
     "message": "Some call frames have warnings"
   },
@@ -12790,63 +12844,6 @@
   },
   "panels/sources/CategorizedBreakpointL10n.ts | webglWarningFired": {
     "message": "WebGL Warning Fired"
-  },
-  "panels/sources/components/BreakpointsView.ts | breakpointHit": {
-    "message": "{PH1} breakpoint hit"
-  },
-  "panels/sources/components/BreakpointsView.ts | checked": {
-    "message": "checked"
-  },
-  "panels/sources/components/BreakpointsView.ts | conditionCode": {
-    "message": "Condition: {PH1}"
-  },
-  "panels/sources/components/BreakpointsView.ts | disableAllBreakpoints": {
-    "message": "Disable all breakpoints"
-  },
-  "panels/sources/components/BreakpointsView.ts | disableAllBreakpointsInFile": {
-    "message": "Disable all breakpoints in file"
-  },
-  "panels/sources/components/BreakpointsView.ts | editCondition": {
-    "message": "Edit condition"
-  },
-  "panels/sources/components/BreakpointsView.ts | editLogpoint": {
-    "message": "Edit logpoint"
-  },
-  "panels/sources/components/BreakpointsView.ts | enableAllBreakpoints": {
-    "message": "Enable all breakpoints"
-  },
-  "panels/sources/components/BreakpointsView.ts | enableAllBreakpointsInFile": {
-    "message": "Enable all breakpoints in file"
-  },
-  "panels/sources/components/BreakpointsView.ts | indeterminate": {
-    "message": "mixed"
-  },
-  "panels/sources/components/BreakpointsView.ts | logpointCode": {
-    "message": "Logpoint: {PH1}"
-  },
-  "panels/sources/components/BreakpointsView.ts | pauseOnCaughtExceptions": {
-    "message": "Pause on caught exceptions"
-  },
-  "panels/sources/components/BreakpointsView.ts | pauseOnUncaughtExceptions": {
-    "message": "Pause on uncaught exceptions"
-  },
-  "panels/sources/components/BreakpointsView.ts | removeAllBreakpoints": {
-    "message": "Remove all breakpoints"
-  },
-  "panels/sources/components/BreakpointsView.ts | removeAllBreakpointsInFile": {
-    "message": "Remove all breakpoints in file"
-  },
-  "panels/sources/components/BreakpointsView.ts | removeBreakpoint": {
-    "message": "Remove breakpoint"
-  },
-  "panels/sources/components/BreakpointsView.ts | removeOtherBreakpoints": {
-    "message": "Remove other breakpoints"
-  },
-  "panels/sources/components/BreakpointsView.ts | revealLocation": {
-    "message": "Reveal location"
-  },
-  "panels/sources/components/BreakpointsView.ts | unchecked": {
-    "message": "unchecked"
   },
   "panels/sources/components/HeadersView.ts | addHeader": {
     "message": "Add a header"
@@ -14411,12 +14408,6 @@
   "panels/timeline/components/SidebarAnnotationsTab.ts | timeRangeTutorialTitle": {
     "message": "Define a time range"
   },
-  "panels/timeline/components/SidebarInsightsTab.ts | feedbackButton": {
-    "message": "Feedback"
-  },
-  "panels/timeline/components/SidebarInsightsTab.ts | feedbackTooltip": {
-    "message": "Insights is an experimental feature. Your feedback will help us improve it."
-  },
   "panels/timeline/components/SidebarSingleInsightSet.ts | dismissTitle": {
     "message": "Dismiss"
   },
@@ -14830,6 +14821,9 @@
   },
   "panels/timeline/TimelinePanel.ts | exportNormalTraces": {
     "message": "Basic performance traces"
+  },
+  "panels/timeline/TimelinePanel.ts | externalRequestReceived": {
+    "message": "DevTools received an external request"
   },
   "panels/timeline/TimelinePanel.ts | fixMe": {
     "message": "Fix me"
@@ -15883,9 +15877,6 @@
   },
   "panels/webauthn/WebauthnPane.ts | add": {
     "message": "Add"
-  },
-  "panels/webauthn/WebauthnPane.ts | addAuthenticator": {
-    "message": "Add authenticator"
   },
   "panels/webauthn/WebauthnPane.ts | authenticatorS": {
     "message": "Authenticator {PH1}"

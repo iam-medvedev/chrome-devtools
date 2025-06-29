@@ -11,18 +11,17 @@ export class StylePropertyHighlighter {
     /**
      * Expand all shorthands, find the given property, scroll to it and highlight it.
      */
-    highlightProperty(cssProperty) {
-        // Expand all shorthands.
-        for (const section of this.styleSidebarPane.allSections()) {
-            for (let treeElement = section.propertiesTreeOutline.firstChild(); treeElement; treeElement = treeElement.nextSibling) {
-                void treeElement.onpopulate();
-            }
-        }
-        const section = this.styleSidebarPane.allSections().find(section => section.style().leadingProperties().includes(cssProperty));
+    async highlightProperty(cssProperty) {
+        const section = this.styleSidebarPane.allSections().find(section => section.style().allProperties().includes(cssProperty));
         if (!section) {
             return;
         }
         section.showAllItems();
+        const populatePromises = [];
+        for (let treeElement = section.propertiesTreeOutline.firstChild(); treeElement; treeElement = treeElement.nextSibling) {
+            populatePromises.push(treeElement.onpopulate());
+        }
+        await Promise.all(populatePromises);
         const treeElement = this.findTreeElementFromSection(treeElement => treeElement.property === cssProperty, section);
         if (treeElement) {
             treeElement.parent && treeElement.parent.expand();

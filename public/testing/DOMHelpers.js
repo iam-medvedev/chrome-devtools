@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as UI from '../ui/legacy/legacy.js';
+import { checkForPendingActivity } from './TrackAsyncOperations.js';
 const TEST_CONTAINER_ID = '__devtools-test-container-id';
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.
@@ -286,6 +287,8 @@ export async function assertScreenshot(filename) {
     // Which means we may try to take screenshot while they are loading
     await document.fonts.ready;
     await raf();
+    // Pending activity before taking screenshots results in flakiness.
+    await checkForPendingActivity();
     // @ts-expect-error see karma config.
     const errorMessage = await window.assertScreenshot(`#${TEST_CONTAINER_ID}`, filename);
     if (errorMessage) {

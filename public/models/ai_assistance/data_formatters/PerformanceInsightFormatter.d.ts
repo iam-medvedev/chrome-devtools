@@ -3,6 +3,7 @@ import * as Trace from '../../trace/trace.js';
 export declare class PerformanceInsightFormatter {
     #private;
     constructor(activeInsight: TimelineUtils.InsightAIContext.ActiveInsight);
+    insightIsSupported(): boolean;
     formatInsight(): string;
 }
 export interface NetworkRequestFormatOptions {

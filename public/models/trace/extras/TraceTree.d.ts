@@ -37,7 +37,6 @@ export declare class TopDownNode extends Node {
     setHasChildren(value: boolean): void;
     children(): ChildrenCache;
     private buildChildren;
-    getRoot(): TopDownRootNode | null;
 }
 export declare class TopDownRootNode extends TopDownNode {
     readonly filter: (e: Types.Events.Event) => boolean;

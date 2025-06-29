@@ -48,8 +48,4 @@ declare global {
     interface HTMLElementTagNameMap {
         'devtools-tooltip': Tooltip;
     }
-    interface CSSStyleDeclaration {
-        anchorName: string;
-        positionAnchor: string;
-    }
 }

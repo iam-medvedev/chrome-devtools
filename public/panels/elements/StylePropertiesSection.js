@@ -448,7 +448,8 @@ export class StylePropertiesSection {
         }
         const focused = this.getFocused();
         let focusNext = null;
-        const focusable = Array.from(this.propertiesTreeOutline.shadowRoot.querySelectorAll('[tabindex]'));
+        const focusable = Array.from(this.propertiesTreeOutline.shadowRoot.querySelectorAll('[tabindex]'))
+            .filter(e => e.checkVisibility());
         if (focusable.length === 0) {
             return;
         }

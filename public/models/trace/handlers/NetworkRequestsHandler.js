@@ -12,7 +12,6 @@ const webSocketData = new Map();
 const linkPreconnectEvents = [];
 const requestMap = new Map();
 const requestsById = new Map();
-const requestsByOrigin = new Map();
 const requestsByTime = [];
 const networkRequestEventByInitiatorUrl = new Map();
 const eventToInitiatorMap = new Map();
@@ -56,7 +55,6 @@ function firstPositiveValueInList(entries) {
 }
 export function reset() {
     requestsById.clear();
-    requestsByOrigin.clear();
     requestMap.clear();
     requestsByTime.length = 0;
     networkRequestEventByInitiatorUrl.clear();
@@ -171,6 +169,26 @@ export async function finalize() {
         if (finalSendRequest.args.data.url.startsWith('data:')) {
             continue;
         }
+        /**
+         * LR loses transfer size information, but passes it in the 'X-TotalFetchedSize' header.
+         * 'X-TotalFetchedSize' is the canonical transfer size in LR.
+         *
+         * In Lightrider, due to instrumentation limitations, our values for encodedDataLength are bogus
+         * and not valid. However the resource's true encodedDataLength/transferSize is shared via a
+         * special response header, X-TotalFetchedSize. In this situation, we read this value from
+         * responseReceived, use it for the transferSize and ignore the original encodedDataLength values.
+         */
+        // @ts-expect-error
+        const isLightrider = globalThis.isLightrider;
+        if (isLightrider && request.resourceFinish && request.receiveResponse?.args.data.headers) {
+            const lrSizeHeader = request.receiveResponse.args.data.headers.find(h => h.name === 'X-TotalFetchedSize');
+            if (lrSizeHeader) {
+                const size = parseFloat(lrSizeHeader.value);
+                if (!isNaN(size)) {
+                    request.resourceFinish.args.data.encodedDataLength = size;
+                }
+            }
+        }
         // If a ResourceFinish event with an encoded data length is received,
         // then the resource was not cached; it was fetched before it was
         // requested, e.g. because it was pushed in this navigation.
@@ -192,7 +210,47 @@ export async function finalize() {
         const isMemoryCached = request.resourceMarkAsCached !== undefined;
         // If a request has `resourceMarkAsCached` field, the `timing` field is not correct.
         // So let's discard it and override to 0 (which will be handled in later logic if timing field is undefined).
-        const timing = isMemoryCached ? undefined : request.receiveResponse?.args.data.timing;
+        let timing = isMemoryCached ? undefined : request.receiveResponse?.args.data.timing;
+        /**
+         * LR gets additional, accurate timing information from its underlying fetch infrastructure.  This
+         * is passed in via X-Headers similar to 'X-TotalFetchedSize'.
+         *
+         * See `_updateTimingsForLightrider` in Lighthouse for more detail.
+         */
+        if (isLightrider && request.receiveResponse?.args.data.headers) {
+            timing = {
+                requestTime: Helpers.Timing.microToSeconds(request.sendRequests.at(0)?.ts ?? 0),
+                connectEnd: 0,
+                connectStart: 0,
+                dnsEnd: 0,
+                dnsStart: 0,
+                proxyEnd: 0,
+                proxyStart: 0,
+                pushEnd: 0,
+                pushStart: 0,
+                receiveHeadersEnd: 0,
+                receiveHeadersStart: 0,
+                sendEnd: 0,
+                sendStart: 0,
+                sslEnd: 0,
+                sslStart: 0,
+                workerReady: 0,
+                workerStart: 0,
+                ...timing,
+            };
+            const TCPMsHeader = request.receiveResponse.args.data.headers.find(h => h.name === 'X-TCPMs');
+            const TCPMs = TCPMsHeader ? Math.max(0, parseInt(TCPMsHeader.value, 10)) : 0;
+            if (request.receiveResponse.args.data.protocol.startsWith('h3')) {
+                timing.connectStart = 0;
+                timing.connectEnd = TCPMs;
+            }
+            else {
+                timing.connectStart = 0;
+                timing.sslStart = TCPMs / 2;
+                timing.connectEnd = TCPMs;
+                timing.sslEnd = TCPMs;
+            }
+        }
         // If a non-cached response has no |timing|, we ignore it. An example of this is chrome://new-page / about:blank.
         if (request.receiveResponse && !timing && !isMemoryCached) {
             continue;
@@ -377,24 +435,8 @@ export async function finalize() {
             pid: finalSendRequest.pid,
             tid: finalSendRequest.tid,
         });
-        const requests = Platform.MapUtilities.getWithDefault(requestsByOrigin, parsedUrl.host, () => {
-            return {
-                renderBlocking: [],
-                nonRenderBlocking: [],
-                all: [],
-            };
-        });
-        // For ease of rendering we sometimes want to differentiate between
-        // render-blocking and non-render-blocking, so we divide the data here.
-        if (!Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(networkEvent)) {
-            requests.nonRenderBlocking.push(networkEvent);
-        }
-        else {
-            requests.renderBlocking.push(networkEvent);
-        }
         // However, there are also times where we just want to loop through all
         // the captured requests, so here we store all of them together.
-        requests.all.push(networkEvent);
         requestsByTime.push(networkEvent);
         requestsById.set(networkEvent.args.data.requestId, networkEvent);
         // Update entity relationships for network events
@@ -421,7 +463,6 @@ export async function finalize() {
 export function data() {
     return {
         byId: requestsById,
-        byOrigin: requestsByOrigin,
         byTime: requestsByTime,
         eventToInitiator: eventToInitiatorMap,
         webSocket: [...webSocketData.values()],

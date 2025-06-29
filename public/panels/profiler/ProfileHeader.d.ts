@@ -62,7 +62,6 @@ export declare class ProfileType extends Common.ObjectWrapper.ObjectWrapper<Prof
     getProfiles(): ProfileHeader[];
     customContent(): Element | null;
     setCustomContentEnabled(_enable: boolean): void;
-    getProfile(uid: number): ProfileHeader | null;
     loadFromFile(file: File): Promise<Error | DOMError | null>;
     createProfileLoadedFromFile(_title: string): ProfileHeader;
     addProfile(profile: ProfileHeader): void;

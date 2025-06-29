@@ -166,7 +166,7 @@ export declare const enum DataType {
     STRING = "String",
     BOOLEAN = "Boolean"
 }
-export declare const ColumnResizePadding = 34;
+export declare const ColumnResizePadding = 30;
 export declare const CenterResizerOverBorderAdjustment = 3;
 export declare const enum ResizeMethod {
     NEAREST = "nearest",

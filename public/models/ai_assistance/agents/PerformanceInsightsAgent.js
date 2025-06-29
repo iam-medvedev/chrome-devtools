@@ -140,7 +140,7 @@ export class InsightContext extends ConversationContext {
                 return [
                     { title: 'What should I do to improve and optimize the time taken to fetch and display images on the page?' }
                 ];
-            case 'InteractionToNextPaint':
+            case 'INPBreakdown':
                 return [
                     { title: 'Suggest fixes for my longest interaction' }, { title: 'Why is a large INP score problematic?' },
                     { title: 'What\'s the biggest contributor to my longest interaction?' }
@@ -150,7 +150,7 @@ export class InsightContext extends ConversationContext {
                     { title: 'Suggest fixes to reduce my LCP' }, { title: 'What can I do to reduce my LCP discovery time?' },
                     { title: 'Why is LCP discovery time important?' }
                 ];
-            case 'LCPPhases':
+            case 'LCPBreakdown':
                 return [
                     { title: 'Help me optimize my LCP score' }, { title: 'Which LCP phase was most problematic?' },
                     { title: 'What can I do to reduce the LCP time for this page load?' }
@@ -302,6 +302,8 @@ export class PerformanceInsightsAgent extends AiAgent {
                     return { error: 'Request not found' };
                 }
                 const formatted = TraceEventFormatter.networkRequest(request, activeInsight.parsedTrace, { verbose: true });
+                const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted);
+                Host.userMetrics.performanceAINetworkRequestDetailResponseSize(byteCount);
                 if (this.#isFunctionResponseTooLarge(formatted)) {
                     return {
                         error: 'getNetworkRequestDetail response is too large. Try investigating using other functions',
@@ -353,6 +355,8 @@ The fields are:
                     return { error: 'No main thread activity found' };
                 }
                 const activity = tree.serialize();
+                const byteCount = Platform.StringUtilities.countWtf8Bytes(activity);
+                Host.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
                 if (this.#isFunctionResponseTooLarge(activity)) {
                     return {
                         error: 'getMainThreadActivity response is too large. Try investigating using other functions',

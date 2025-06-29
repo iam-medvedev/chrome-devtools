@@ -1,1 +1,7 @@
-{"version":3,"file":"copy_to_clipboard.js","sourceRoot":"","sources":["../../../../../../../front_end/ui/components/copy_to_clipboard/copy_to_clipboard.ts"],"names":[],"mappings":"AAAA,4DAA4D;AAC5D,yEAAyE;AACzE,6BAA6B;AAE7B,OAAO,EAAC,mBAAmB,EAAC,MAAM,sBAAsB,CAAC","sourcesContent":["// Copyright 2025 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nexport {copyTextToClipboard} from './copyToClipboard.js';\n"]}
+{
+  "version": 3,
+  "sources": ["../../../../../../../front_end/ui/components/copy_to_clipboard/copyToClipboard.ts"],
+  "sourcesContent": ["\n// Copyright 2025 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport * as Host from '../../../core/host/host.js';\nimport * as UI from '../../legacy/legacy.js';\n\n/**\n * @param text Text to copy to clipboard\n * @param alert Message to send for a11y\n */\nexport function copyTextToClipboard(text: string, alert?: string): void {\n  Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);\n  // TODO: make alert required.\n  if (alert) {\n    UI.ARIAUtils.alert(alert);\n  }\n}\n"],
+  "mappings": ";AAKA,YAAY,UAAU;AACtB,YAAY,QAAQ;AAMd,SAAU,oBAAoB,MAAc,OAAc;AAC9D,EAAK,2BAAsB,8BAA8B,SAAS,IAAI;AAEtE,MAAI,OAAO;AACT,IAAG,aAAU,MAAM,KAAK;EAC1B;AACF;",
+  "names": []
+}

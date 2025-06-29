@@ -52,6 +52,7 @@
     "../../../../../../front_end/panels/elements/ImagePreviewPopover.ts",
     "../../../../../../front_end/panels/elements/InspectElementModeController.ts",
     "../../../../../../front_end/panels/elements/LayersWidget.ts",
+    "../../../../../../front_end/panels/elements/LayoutPane.ts",
     "../../../../../../front_end/panels/elements/MarkerDecorator.ts",
     "../../../../../../front_end/panels/elements/MetricsSidebarPane.ts",
     "../../../../../../front_end/panels/elements/NodeStackTraceWidget.ts",

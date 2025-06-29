@@ -75,7 +75,6 @@ export declare class OverlayModel extends SDKModel<EventTypes> implements Protoc
     setColorOfFlexInPersistentOverlay(nodeId: Protocol.DOM.NodeId, colorStr: string): void;
     hideSourceOrderInOverlay(): void;
     setSourceOrderActive(isActive: boolean): void;
-    sourceOrderModeActive(): boolean;
     private delayedHideHighlight;
     highlightFrame(frameId: Protocol.Page.FrameId): void;
     showHingeForDualScreen(hinge: Hinge | null): void;

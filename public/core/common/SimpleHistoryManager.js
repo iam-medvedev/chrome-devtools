@@ -73,23 +73,6 @@ export class SimpleHistoryManager {
     readOnly() {
         return Boolean(this.#coalescingReadonly);
     }
-    filterOut(filterOutCallback) {
-        if (this.readOnly()) {
-            return;
-        }
-        const filteredEntries = [];
-        let removedBeforeActiveEntry = 0;
-        for (let i = 0; i < this.#entries.length; ++i) {
-            if (!filterOutCallback(this.#entries[i])) {
-                filteredEntries.push(this.#entries[i]);
-            }
-            else if (i <= this.#activeEntryIndex) {
-                ++removedBeforeActiveEntry;
-            }
-        }
-        this.#entries = filteredEntries;
-        this.#activeEntryIndex = Math.max(0, this.#activeEntryIndex - removedBeforeActiveEntry);
-    }
     empty() {
         return !this.#entries.length;
     }

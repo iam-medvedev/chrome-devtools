@@ -62,7 +62,18 @@ export class Dialog extends HTMLElement {
     #dialogClientRect = new DOMRect(0, 0, 0, 0);
     #bestVerticalPositionInternal = null;
     #bestHorizontalAlignment = null;
-    #devtoolsMutationObserver = new MutationObserver(this.#forceDialogCloseInDevToolsBound);
+    #devtoolsMutationObserver = new MutationObserver(mutations => {
+        if (this.#props.expectedMutationsSelector) {
+            const allExcluded = mutations.every(mutation => {
+                return mutation.target instanceof Element &&
+                    mutation.target.matches(this.#props.expectedMutationsSelector ?? '');
+            });
+            if (allExcluded) {
+                return;
+            }
+        }
+        this.#forceDialogCloseInDevToolsBound();
+    });
     #dialogResizeObserver = new ResizeObserver(this.#updateDialogBounds.bind(this));
     #devToolsBoundingElement = this.windowBoundsService.getDevToolsBoundingElement();
     // We bind here because we have to listen to keydowns on the entire window,
@@ -76,6 +87,12 @@ export class Dialog extends HTMLElement {
     set origin(origin) {
         this.#props.origin = origin;
         this.#onStateChange();
+    }
+    set expectedMutationsSelector(mutationSelector) {
+        this.#props.expectedMutationsSelector = mutationSelector;
+    }
+    get expectedMutationsSelector() {
+        return this.#props.expectedMutationsSelector;
     }
     get position() {
         return this.#props.position;

@@ -5,9 +5,7 @@
 import * as Platform from '../platform/platform.js';
 export declare function formatMicroSecondsTime(time: Platform.Timing.MicroSeconds): string;
 export declare function formatMicroSecondsAsSeconds(time: Platform.Timing.MicroSeconds): string;
-export declare function formatPartsMicroSecondsAsSeconds(time: Platform.Timing.MicroSeconds): Intl.NumberFormatPart[];
 export declare function formatMicroSecondsAsMillisFixed(time: Platform.Timing.MicroSeconds): string;
-export declare function formatPartsMicroSecondsAsMillisFixed(time: Platform.Timing.MicroSeconds): Intl.NumberFormatPart[];
 export declare function formatMicroSecondsAsMillisFixedExpanded(time: Platform.Timing.MicroSeconds): string;
 /**
  * @param higherResolution if true, the output may show as microsends or as milliseconds with a fractional component

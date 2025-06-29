@@ -262,11 +262,17 @@ export declare class ToolbarSettingComboBox extends ToolbarComboBox {
     private onSelectValueChange;
 }
 export declare class ToolbarCheckbox extends ToolbarItem<void> {
+    #private;
     constructor(text: Common.UIString.LocalizedString, tooltip?: Common.UIString.LocalizedString, listener?: ((arg0: MouseEvent) => void), jslogContext?: string);
     checked(): boolean;
     setChecked(value: boolean): void;
     applyEnabledState(enabled: boolean): void;
     setIndeterminate(indeterminate: boolean): void;
+    /**
+     * Sets the user visible text shown alongside the checkbox.
+     * If you want to update the title/aria-label, use setTitle.
+     */
+    setLabelText(content: Common.UIString.LocalizedString): void;
 }
 export declare class ToolbarSettingCheckbox extends ToolbarCheckbox {
     constructor(setting: Common.Settings.Setting<boolean>, tooltip?: Common.UIString.LocalizedString, alternateTitle?: Common.UIString.LocalizedString);
@@ -292,6 +298,7 @@ export declare const enum ToolbarItemLocation {
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-toolbar': Toolbar;
+        'devtools-toolbar-input': ToolbarInputElement;
     }
 }
 export {};

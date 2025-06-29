@@ -162,6 +162,7 @@ export interface MetaData {
     /** Currently only stores JS maps, not CSS. This never stores data url source maps. */
     sourceMaps?: MetadataSourceMap[];
     visualTrackConfig?: PersistedTraceVisualConfig;
+    hostDPR?: number;
 }
 interface MetadataSourceMap {
     url: string;

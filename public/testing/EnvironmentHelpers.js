@@ -344,9 +344,6 @@ export function createFakeRegExpSetting(name, defaultValue) {
     const storage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, 'test');
     return new Common.Settings.RegExpSetting(name, defaultValue, new Common.ObjectWrapper.ObjectWrapper(), storage);
 }
-export function enableFeatureForTest(feature) {
-    Root.Runtime.experiments.enableForTest(feature);
-}
 export function setupActionRegistry() {
     before(function () {
         const actionRegistry = UI.ActionRegistry.ActionRegistry.instance();

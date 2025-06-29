@@ -10,7 +10,6 @@ export declare class SimpleHistoryManager {
     private getPreviousValidIndex;
     private getNextValidIndex;
     private readOnly;
-    filterOut(filterOutCallback: (arg0: HistoryEntry) => boolean): void;
     empty(): boolean;
     active(): HistoryEntry | null;
     push(entry: HistoryEntry): void;

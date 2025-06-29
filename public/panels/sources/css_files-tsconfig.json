@@ -5,6 +5,7 @@
     },
     "files": [
         "breakpointEditDialog.css.js",
+        "breakpointsView.css.js",
         "callStackSidebarPane.css.js",
         "debuggerPausedMessage.css.js",
         "dialog.css.js",

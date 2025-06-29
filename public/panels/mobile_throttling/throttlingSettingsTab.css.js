@@ -22,6 +22,26 @@ export default `/*
   }
 }
 
+.settings-container {
+  display: flex;
+  overflow-x: auto;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var( --sys-size-3);
+  padding: var( --sys-size-4);
+  flex-shrink: 0;
+  width: 74px;
+}
+
+.input {
+  width: 100%;
+}
+
 .conditions-list-item {
   padding: 3px 5px;
   height: 30px;
@@ -75,42 +95,6 @@ export default `/*
 .conditions-list-separator-invisible {
   visibility: hidden;
   height: 100% !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.conditions-edit-row {
-  flex: none;
-  display: flex;
-  flex-direction: row;
-  margin: 6px 5px;
-
-  .conditions-list-title-text {
-    white-space: unset;
-  }
-}
-
-.conditions-edit-row input {
-  &[type="checkbox"] {
-    margin: auto;
-    top: 6px;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  &:not([type="checkbox"]) {
-    width: 100%;
-    text-align: inherit;
-  }
-}
-
-.conditions-edit-optional {
-  margin-top: var(--sys-size-5);
-  color: var(--sys-color-on-surface-subtle);
-}
-
-.editor-buttons {
-  margin-top: 10px;
 }
 
 .settings-card-container-wrapper {

@@ -39,6 +39,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
@@ -47,6 +48,7 @@ import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
+import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -287,7 +289,11 @@ const UIStrings = {
     /**
      * @description Title of the shortcuts dialog shown to the user that lists keyboard shortcuts.
      */
-    shortcutsDialogTitle: 'Keyboard shortcuts for flamechart'
+    shortcutsDialogTitle: 'Keyboard shortcuts for flamechart',
+    /**
+     * @description Notification shown to the user whenever DevTools receives an external request.
+     */
+    externalRequestReceived: '`DevTools` received an external request',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -647,9 +653,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     getFlameChart() {
         return this.flameChart;
     }
-    getMinimap() {
-        return this.#minimapComponent;
-    }
     /**
      * Determine if two view modes are equivalent. Useful because if {@see
      * #changeView} gets called and the new mode is identical to the current,
@@ -767,6 +770,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         return null;
     }
     /**
+     * Exposed for handling external requests.
+     */
+    get model() {
+        return this.#traceEngineModel;
+    }
+    /**
      * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
      * DO NOT use this method within DevTools. It is marked as deprecated so
      * within DevTools you are warned when using the method.
@@ -823,13 +832,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     setState(state) {
         this.state = state;
         this.updateTimelineControls();
-    }
-    /**
-     * This indicates that `this.#setModelForActiveTrace` has been called,
-     * and so the main flame chart should have been populated.
-     */
-    hasFinishedLoadingTraceForTest() {
-        return this.#viewMode.mode === 'VIEWING_TRACE';
     }
     createSettingCheckbox(setting, tooltip) {
         const checkboxItem = new UI.Toolbar.ToolbarSettingCheckbox(setting, tooltip);
@@ -2089,6 +2091,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 parsedTrace,
                 metadata,
             });
+            this.dispatchEventToListeners("RecordingCompleted" /* Events.RECORDING_COMPLETED */, {
+                traceIndex,
+            });
         }
         catch (error) {
             // If we errored during the parsing stage, it
@@ -2096,6 +2101,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             // allows us to debug crashes!
             void this.recordingFailed(error.message, collectedEvents);
             console.error(error);
+            this.dispatchEventToListeners("RecordingCompleted" /* Events.RECORDING_COMPLETED */, { errorText: error.message });
         }
         finally {
             this.recordTraceLoadMetric();
@@ -2447,6 +2453,72 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     revealInsight(insightModel) {
         const insightSetKey = insightModel.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
         this.#setActiveInsight({ model: insightModel, insightSetKey }, { highlightInsight: true });
+    }
+    static async handleExternalRecordRequest() {
+        Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
+        const panelInstance = TimelinePanel.instance();
+        // Given how the current UX works, it's nice to show the user the Perf
+        // Panel so they see what's happening
+        await UI.ViewManager.ViewManager.instance().showView('timeline');
+        function onRecordingCompleted(eventData) {
+            if ('errorText' in eventData) {
+                return {
+                    response: `Error running the trace: ${eventData.errorText}`,
+                    devToolsLogs: [],
+                };
+            }
+            const parsedTrace = panelInstance.model.parsedTrace(eventData.traceIndex);
+            const insights = panelInstance.model.traceInsights(eventData.traceIndex);
+            if (!parsedTrace || !insights || insights.size === 0) {
+                return {
+                    response: 'The trace was loaded successfully but no Insights were detected.',
+                    devToolsLogs: [],
+                };
+            }
+            const navigationId = Array.from(insights.keys()).find(k => k !== 'NO_NAVIGATION');
+            if (!navigationId) {
+                return {
+                    response: 'The trace was loaded successfully but no navigation was detected.',
+                    devToolsLogs: [],
+                };
+            }
+            const insightsForNav = insights.get(navigationId);
+            if (!insightsForNav) {
+                return {
+                    response: 'The trace was loaded successfully but no Insights were detected.',
+                    devToolsLogs: [],
+                };
+            }
+            let responseText = '';
+            for (const modelName in insightsForNav.model) {
+                const model = modelName;
+                const data = insightsForNav.model[model];
+                if (data.state === 'pass') {
+                    continue;
+                }
+                const activeInsight = new Utils.InsightAIContext.ActiveInsight(data, parsedTrace);
+                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(activeInsight);
+                if (!formatter.insightIsSupported()) {
+                    // Not all Insights are integrated with "Ask AI" yet, let's avoid
+                    // filling up the response with those ones because there will be no
+                    // useful information.
+                    continue;
+                }
+                responseText += `${formatter.formatInsight()}\n\n`;
+            }
+            return {
+                response: `Insights from this recording:\n${responseText}`,
+                devToolsLogs: [],
+            };
+        }
+        return await new Promise(resolve => {
+            function listener(e) {
+                resolve(onRecordingCompleted(e.data));
+                panelInstance.removeEventListener("RecordingCompleted" /* Events.RECORDING_COMPLETED */, listener);
+            }
+            panelInstance.addEventListener("RecordingCompleted" /* Events.RECORDING_COMPLETED */, listener);
+            panelInstance.recordReload();
+        });
     }
 }
 // Define row and header height, should be in sync with styles for timeline graphs.

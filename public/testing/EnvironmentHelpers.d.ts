@@ -36,7 +36,6 @@ export declare namespace describeWithLocale {
 }
 export declare function createFakeSetting<T>(name: string, defaultValue: T): Common.Settings.Setting<T>;
 export declare function createFakeRegExpSetting(name: string, defaultValue: string): Common.Settings.RegExpSetting;
-export declare function enableFeatureForTest(feature: string): void;
 export declare function setupActionRegistry(): void;
 export declare function expectConsoleLogs(expectedLogs: {
     warn?: string[];

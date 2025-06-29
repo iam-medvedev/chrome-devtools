@@ -13,7 +13,6 @@
         "cssVariableValueView.css.js",
         "elementsBreadcrumbs.css.js",
         "elementsTreeExpandButton.css.js",
-        "layoutPane.css.js",
         "queryContainer.css.js",
         "stylePropertyEditor.css.js"
     ]

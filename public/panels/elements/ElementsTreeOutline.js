@@ -867,8 +867,19 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
      * ancestors.
      */
     async toggleHideElement(node) {
-        const pseudoType = node.pseudoType();
-        const effectiveNode = pseudoType ? node.parentNode : node;
+        let pseudoElementName = node.pseudoType() ? node.nodeName() : null;
+        if (pseudoElementName && node.pseudoIdentifier()) {
+            pseudoElementName += `(${node.pseudoIdentifier()})`;
+        }
+        let effectiveNode = node;
+        while (effectiveNode?.pseudoType()) {
+            if (effectiveNode !== node && effectiveNode.pseudoType() === 'column') {
+                // Ideally we would select the specific column pseudo element, but
+                // we don't have a way to do that at the moment.
+                pseudoElementName = '::column' + pseudoElementName;
+            }
+            effectiveNode = effectiveNode.parentNode;
+        }
         if (!effectiveNode) {
             return;
         }
@@ -877,22 +888,15 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         if (!object) {
             return;
         }
-        await object.callFunction(toggleClassAndInjectStyleRule, [{ value: pseudoType }, { value: !hidden }]);
+        await object.callFunction(toggleClassAndInjectStyleRule, [{ value: pseudoElementName }, { value: !hidden }]);
         object.release();
         node.setMarker('hidden-marker', hidden ? null : true);
-        function toggleClassAndInjectStyleRule(pseudoType, hidden) {
+        function toggleClassAndInjectStyleRule(pseudoElementName, hidden) {
             const classNamePrefix = '__web-inspector-hide';
             const classNameSuffix = '-shortcut__';
             const styleTagId = '__web-inspector-hide-shortcut-style__';
-            const selectors = [];
-            selectors.push('.__web-inspector-hide-shortcut__');
-            selectors.push('.__web-inspector-hide-shortcut__ *');
-            selectors.push('.__web-inspector-hidebefore-shortcut__::before');
-            selectors.push('.__web-inspector-hideafter-shortcut__::after');
-            const selector = selectors.join(', ');
-            const ruleBody = '    visibility: hidden !important;';
-            const rule = '\n' + selector + '\n{\n' + ruleBody + '\n}\n';
-            const className = classNamePrefix + (pseudoType || '') + classNameSuffix;
+            const pseudoElementNameEscaped = pseudoElementName ? pseudoElementName.replace(/[\(\)\:]/g, '_') : '';
+            const className = classNamePrefix + pseudoElementNameEscaped + classNameSuffix;
             this.classList.toggle(className, hidden);
             let localRoot = this;
             while (localRoot.parentNode) {
@@ -902,13 +906,25 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                 localRoot = document.head;
             }
             let style = localRoot.querySelector('style#' + styleTagId);
-            if (style) {
-                return;
+            if (!style) {
+                const selectors = [];
+                selectors.push('.__web-inspector-hide-shortcut__');
+                selectors.push('.__web-inspector-hide-shortcut__ *');
+                const selector = selectors.join(', ');
+                const ruleBody = '    visibility: hidden !important;';
+                const rule = '\n' + selector + '\n{\n' + ruleBody + '\n}\n';
+                style = document.createElement('style');
+                style.id = styleTagId;
+                style.textContent = rule;
+                localRoot.appendChild(style);
             }
-            style = document.createElement('style');
-            style.id = styleTagId;
-            style.textContent = rule;
-            localRoot.appendChild(style);
+            // In addition to putting them on the element we want to hide, we will
+            // also add pseudo element classes to the style element to keep track of
+            // which pseudo elements we have style rules for.
+            if (pseudoElementName && !style.classList.contains(className)) {
+                style.classList.add(className);
+                style.textContent = `.${className}${pseudoElementName}, ${style.textContent}`;
+            }
         }
     }
     isToggledToHidden(node) {

@@ -1,3 +1,4 @@
+import type * as Common from '../../../core/common/common.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
@@ -34,11 +35,35 @@ export declare const UIStrings: {
      * @description Label for a value representing the maximum number of child elements of any parent element on the page.
      */
     readonly maxChildren: "Most children";
+    /**
+     * @description Text for a section.
+     */
+    readonly topUpdatesDescription: "These are the largest layout and style recalculation events. Their performance impact may be reduced by making the DOM simpler.";
+    /**
+     *@description Label used for a time duration.
+     */
+    readonly duration: "Duration";
+    /**
+     * @description Message displayed in a table detailing how big a layout (rendering) is.
+     * @example {134} PH1
+     */
+    readonly largeLayout: "Layout ({PH1} objects)";
+    /**
+     * @description Message displayed in a table detailing how big a style recalculation (rendering) is.
+     * @example {134} PH1
+     */
+    readonly largeStyleRecalc: "Style recalculation ({PH1} elements)";
 };
-export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
+export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Common.UIString.LocalizedString;
 export type DOMSizeInsightModel = InsightModel<typeof UIStrings, {
     largeLayoutUpdates: Types.Events.Layout[];
     largeStyleRecalcs: Types.Events.UpdateLayoutTree[];
+    largeUpdates: Array<{
+        label: Common.UIString.LocalizedString;
+        duration: Types.Timing.Milli;
+        size: number;
+        event: Types.Events.Event;
+    }>;
     maxDOMStats?: Types.Events.DOMStats;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DOMSizeInsightModel;

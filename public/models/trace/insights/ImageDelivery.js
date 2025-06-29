@@ -124,10 +124,20 @@ function finalize(partialModel) {
 function estimateGIFPercentSavings(request) {
     return Math.round((29.1 * Math.log10(request.args.data.decodedBodyLength) - 100.7)) / 100;
 }
-function getPixelCounts(paintImage) {
+function getDisplayedSize(parsedTrace, paintImage) {
+    // Note: for traces made prior to metadata.hostDPR (which means no data in
+    // paintEventToCorrectedDisplaySize), the displayed size unexpectedly ignores any
+    // emulated DPR and so the results may be very misleading.
+    return parsedTrace.ImagePainting.paintEventToCorrectedDisplaySize.get(paintImage) ?? {
+        width: paintImage.args.data.width,
+        height: paintImage.args.data.height,
+    };
+}
+function getPixelCounts(parsedTrace, paintImage) {
+    const { width, height } = getDisplayedSize(parsedTrace, paintImage);
     return {
         filePixels: paintImage.args.data.srcWidth * paintImage.args.data.srcHeight,
-        displayedPixels: paintImage.args.data.width * paintImage.args.data.height,
+        displayedPixels: width * height,
     };
 }
 export function generateInsight(parsedTrace, context) {
@@ -150,11 +160,11 @@ export function generateInsight(parsedTrace, context) {
             continue;
         }
         const largestImagePaint = imagePaints.reduce((prev, curr) => {
-            const prevPixels = getPixelCounts(prev).displayedPixels;
-            const currPixels = getPixelCounts(curr).displayedPixels;
+            const prevPixels = getPixelCounts(parsedTrace, prev).displayedPixels;
+            const currPixels = getPixelCounts(parsedTrace, curr).displayedPixels;
             return prevPixels > currPixels ? prev : curr;
         });
-        const { filePixels: imageFilePixels, displayedPixels: largestImageDisplayPixels, } = getPixelCounts(largestImagePaint);
+        const { filePixels: imageFilePixels, displayedPixels: largestImageDisplayPixels, } = getPixelCounts(parsedTrace, largestImagePaint);
         // Decoded body length is almost always the right one to be using because of the below:
         //     `encodedDataLength = decodedBodyLength + headers`.
         // HOWEVER, there are some cases where an image is compressed again over the network and transfer size
@@ -195,6 +205,7 @@ export function generateInsight(parsedTrace, context) {
                 // This will compound the byte savings from any potential format changes with the image size
                 // optimization added here.
                 imageByteSavings += Math.round(wastedPixelRatio * (imageBytes - imageByteSavingsFromFormat));
+                const { width, height } = getDisplayedSize(parsedTrace, largestImagePaint);
                 optimizations.push({
                     type: ImageOptimizationType.RESPONSIVE_SIZE,
                     byteSavings,
@@ -203,8 +214,8 @@ export function generateInsight(parsedTrace, context) {
                         height: Math.round(largestImagePaint.args.data.srcHeight),
                     },
                     displayDimensions: {
-                        width: Math.round(largestImagePaint.args.data.width),
-                        height: Math.round(largestImagePaint.args.data.height),
+                        width: Math.round(width),
+                        height: Math.round(height),
                     },
                 });
             }

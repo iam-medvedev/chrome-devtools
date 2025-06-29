@@ -7,16 +7,15 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import { type Client } from './TimelineController.js';
 import { TimelineFlameChartView } from './TimelineFlameChartView.js';
-import { TimelineMiniMap } from './TimelineMiniMap.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 declare const TimelinePanel_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
-    addEventListener<T extends Events.IS_VIEWING_TRACE>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
-    once<T extends Events.IS_VIEWING_TRACE>(eventType: T): Promise<EventTypes[T]>;
-    removeEventListener<T extends Events.IS_VIEWING_TRACE>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
-    hasEventListeners(eventType: Events.IS_VIEWING_TRACE): boolean;
-    dispatchEventToListeners<T extends Events.IS_VIEWING_TRACE>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
+    addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
+    once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
+    removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
+    hasEventListeners(eventType: keyof EventTypes): boolean;
+    dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Panel.Panel;
 export declare class TimelinePanel extends TimelinePanel_base implements Client, TimelineModeViewDelegate {
     #private;
@@ -74,8 +73,11 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     loadFromEvents(events: Trace.Types.Events.Event[]): void;
     loadFromTraceFile(traceFile: Trace.Types.File.TraceFile): void;
     getFlameChart(): TimelineFlameChartView;
-    getMinimap(): TimelineMiniMap;
     hasActiveTrace(): boolean;
+    /**
+     * Exposed for handling external requests.
+     */
+    get model(): Trace.TraceModel.Model;
     /**
      * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
      * DO NOT use this method within DevTools. It is marked as deprecated so
@@ -92,11 +94,6 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     getTraceEngineRawTraceEventsForLayoutTests(): readonly Trace.Types.Events.Event[];
     private loadFromCpuProfile;
     private setState;
-    /**
-     * This indicates that `this.#setModelForActiveTrace` has been called,
-     * and so the main flame chart should have been populated.
-     */
-    hasFinishedLoadingTraceForTest(): boolean;
     private createSettingCheckbox;
     private populateToolbar;
     private createSettingsPane;
@@ -173,6 +170,10 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * 3. Flash the Insight with the highlight colour we use in other panels.
      */
     revealInsight(insightModel: Trace.Insights.Types.InsightModel): void;
+    static handleExternalRecordRequest(): Promise<{
+        response: string;
+        devToolsLogs: object[];
+    }>;
 }
 export declare const enum State {
     IDLE = "Idle",
@@ -220,9 +221,15 @@ export declare class SelectedInsight {
     constructor(insight: TimelineComponents.Sidebar.ActiveInsight);
 }
 export declare const enum Events {
-    IS_VIEWING_TRACE = "IsViewingTrace"
+    IS_VIEWING_TRACE = "IsViewingTrace",
+    RECORDING_COMPLETED = "RecordingCompleted"
 }
 export interface EventTypes {
     [Events.IS_VIEWING_TRACE]: boolean;
+    [Events.RECORDING_COMPLETED]: {
+        traceIndex: number;
+    } | {
+        errorText: string;
+    };
 }
 export {};

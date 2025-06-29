@@ -243,10 +243,10 @@ models/trace/insights/DocumentLatency.test.js
 models/trace/insights/DuplicatedJavaScript.test.js
 models/trace/insights/FontDisplay.test.js
 models/trace/insights/ForcedReflow.test.js
+models/trace/insights/INPBreakdown.test.js
 models/trace/insights/ImageDelivery.test.js
-models/trace/insights/InteractionToNextPaint.test.js
+models/trace/insights/LCPBreakdown.test.js
 models/trace/insights/LCPDiscovery.test.js
-models/trace/insights/LCPPhases.test.js
 models/trace/insights/LegacyJavaScript.test.js
 models/trace/insights/ModernHTTP.test.js
 models/trace/insights/NetworkDependencyTree.test.js
@@ -328,6 +328,7 @@ panels/application/preloading/components/RuleSetDetailsView.test.js
 panels/application/preloading/components/RuleSetGrid.test.js
 panels/application/preloading/components/UsedPreloadingView.test.js
 panels/autofill/AutofillView.test.js
+panels/browser_debugger/CategorizedBreakpointsSidebarPane.test.js
 panels/browser_debugger/DOMBreakpointsSidebarPane.test.js
 panels/browser_debugger/browser_debugger.test.js
 panels/changes/CombinedDiffView.test.js
@@ -357,7 +358,6 @@ panels/elements/components/ComputedStyleProperty.test.js
 panels/elements/components/ComputedStyleTrace.test.js
 panels/elements/components/ElementsBreadcrumbs.test.js
 panels/elements/components/ElementsTreeExpandButton.test.js
-panels/elements/components/LayoutPane.test.js
 panels/elements/components/QueryContainer.test.js
 panels/elements/components/StylePropertyEditor.test.js
 panels/elements/AccessibilityTreeView.test.js
@@ -374,6 +374,7 @@ panels/elements/ElementsTreeElement.test.js
 panels/elements/ElementsTreeElementHighlighter.test.js
 panels/elements/ElementsTreeOutline.test.js
 panels/elements/InspectElementModeController.test.js
+panels/elements/LayoutPane.test.js
 panels/elements/PlatformFontsWidget.test.js
 panels/elements/PropertiesWidget.test.js
 panels/elements/PropertyRenderer.test.js
@@ -473,6 +474,8 @@ panels/settings/emulation/utils/StructuredHeaders.test.js
 panels/settings/emulation/utils/UserAgentMetadata.test.js
 panels/snippets/ScriptSnippetFileSystem.test.js
 panels/sources/BreakpointEditDialog.test.js
+panels/sources/BreakpointsView.test.js
+panels/sources/BreakpointsViewUtils.test.js
 panels/sources/CSSPlugin.test.js
 panels/sources/CoveragePlugin.test.js
 panels/sources/DebuggerPausedMessage.test.js
@@ -486,11 +489,10 @@ panels/sources/SourcesNavigator.test.js
 panels/sources/SourcesView.test.js
 panels/sources/TabbedEditorContainer.test.js
 panels/sources/UISourceCodeFrame.test.js
-panels/sources/components/BreakpointsView.test.js
-panels/sources/components/BreakpointsViewUtils.test.js
 panels/sources/components/HeadersView.test.js
 panels/timeline/AnnotationHelpers.test.js
 panels/timeline/Breadcrumbs.test.js
+panels/timeline/CountersGraph.test.js
 panels/timeline/EntriesFilter.test.js
 panels/timeline/EventsSerializer.test.js
 panels/timeline/FreshRecording.test.js
@@ -534,7 +536,7 @@ panels/timeline/components/TimelineSummary.test.js
 panels/timeline/components/Utils.test.js
 panels/timeline/components/insights/BaseInsightComponent.test.js
 panels/timeline/components/insights/CLSCulprits.test.js
-panels/timeline/components/insights/InteractionToNextPaint.test.js
+panels/timeline/components/insights/INPBreakdown.test.js
 panels/timeline/components/insights/NetworkDependencyTree.test.js
 panels/timeline/components/insights/NodeLink.test.js
 panels/timeline/components/insights/Table.test.js

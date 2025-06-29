@@ -1,11 +1,16 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-export const EVENT_BINDING_NAME = '__chromium_devtools_metrics_reporter';
-export const INTERNAL_KILL_SWITCH = '__chromium_devtools_kill_live_metrics';
-export const SCRIPTS_PER_LOAF_LIMIT = 10;
-export const LOAF_LIMIT = 5;
-export function getUniqueLayoutShiftId(entry) {
-    return `layout-shift-${entry.value}-${entry.startTime}`;
+// gen/front_end/models/live-metrics/web-vitals-injected/spec/spec.prebundle.js
+var EVENT_BINDING_NAME = "__chromium_devtools_metrics_reporter";
+var INTERNAL_KILL_SWITCH = "__chromium_devtools_kill_live_metrics";
+var SCRIPTS_PER_LOAF_LIMIT = 10;
+var LOAF_LIMIT = 5;
+function getUniqueLayoutShiftId(entry) {
+  return `layout-shift-${entry.value}-${entry.startTime}`;
 }
+export {
+  EVENT_BINDING_NAME,
+  INTERNAL_KILL_SWITCH,
+  LOAF_LIMIT,
+  SCRIPTS_PER_LOAF_LIMIT,
+  getUniqueLayoutShiftId
+};
 //# sourceMappingURL=spec.js.map

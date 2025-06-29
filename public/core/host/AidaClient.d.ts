@@ -223,7 +223,7 @@ export declare class HostConfigTracker extends Common.ObjectWrapper.ObjectWrappe
     static instance(): HostConfigTracker;
     addEventListener(eventType: Events, listener: Common.EventTarget.EventListener<EventTypes, Events>): Common.EventTarget.EventDescriptor<EventTypes>;
     removeEventListener(eventType: Events, listener: Common.EventTarget.EventListener<EventTypes, Events>): void;
-    private pollAidaAvailability;
+    pollAidaAvailability(): Promise<void>;
 }
 export declare const enum Events {
     AIDA_AVAILABILITY_CHANGED = "aidaAvailabilityChanged"

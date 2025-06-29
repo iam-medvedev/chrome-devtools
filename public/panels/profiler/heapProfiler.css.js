@@ -41,6 +41,14 @@ export default `/*
 .heap-snapshot-view .data-grid {
   border: none;
   flex: auto;
+
+  .data-container {
+    overflow-x: scroll;
+  }
+
+  .corner {
+    width: 100%;
+  }
 }
 
 .heap-snapshot-view .data-grid tr:empty {

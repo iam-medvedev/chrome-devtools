@@ -40,6 +40,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
             emulatedDeviceTitle: undefined,
+            hostDPR: 1,
         });
     });
     it('does not store network conditions if the user has not throttled them', async () => {
@@ -58,6 +59,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
             emulatedDeviceTitle: undefined,
+            hostDPR: 1,
         });
     });
     it('does not store cpu throttling if there is no throttling', async () => {
@@ -91,6 +93,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
             emulatedDeviceTitle: undefined,
+            hostDPR: 1,
         });
     });
     it('calls the title function if the network condition title is a function', async () => {
@@ -122,6 +125,7 @@ describeWithEnvironment('RecordingMetadata', () => {
                 targetLatency: undefined,
             },
             emulatedDeviceTitle: undefined,
+            hostDPR: 1,
             cruxFieldData: undefined,
             dataOrigin: "TraceEvents" /* Trace.Types.File.DataOrigin.TRACE_EVENTS */,
         });

@@ -351,13 +351,12 @@ export class CounterUI {
     formatter;
     setting;
     filter;
-    range;
     value;
     graphColor;
     limitColor;
     graphYValues;
     verticalPadding;
-    currentValueLabel;
+    counterName;
     marker;
     constructor(countersPane, title, settingsKey, graphColor, counter, formatter) {
         this.countersPane = countersPane;
@@ -377,7 +376,6 @@ export class CounterUI {
         }
         this.filter.element.addEventListener('click', this.toggleCounterGraph.bind(this));
         countersPane.toolbar.appendToolbarItem(this.filter);
-        this.range = this.filter.element.createChild('span', 'range');
         this.value = countersPane.currentValuesBar.createChild('span', 'memory-counter-value');
         this.value.style.color = graphColor;
         this.graphColor = graphColor;
@@ -386,18 +384,28 @@ export class CounterUI {
         }
         this.graphYValues = [];
         this.verticalPadding = 10;
-        this.currentValueLabel = title;
+        this.counterName = title;
         this.marker = countersPane.canvasContainer.createChild('div', 'memory-counter-marker');
         this.marker.style.backgroundColor = graphColor;
         this.clearCurrentValueAndMarker();
     }
+    /**
+     * Updates both the user visible text and the title & aria-label for the
+     * checkbox label shown in the toolbar
+     */
+    #updateFilterLabel(text) {
+        this.filter.setLabelText(text);
+        this.filter.setTitle(text);
+    }
     reset() {
-        this.range.textContent = '';
+        this.#updateFilterLabel(this.counterName);
     }
     setRange(minValue, maxValue) {
         const min = this.formatter(minValue);
         const max = this.formatter(maxValue);
-        this.range.textContent = i18nString(UIStrings.ss, { PH1: min, PH2: max });
+        const rangeText = i18nString(UIStrings.ss, { PH1: min, PH2: max });
+        const newLabelText = `${this.counterName} ${rangeText}`;
+        this.#updateFilterLabel(newLabelText);
     }
     toggleCounterGraph() {
         this.value.classList.toggle('hidden', !this.filter.checked());
@@ -413,7 +421,7 @@ export class CounterUI {
         }
         const index = this.recordIndexAt(x);
         const value = Platform.NumberUtilities.withThousandsSeparator(this.counter.values[index]);
-        this.value.textContent = `${this.currentValueLabel}: ${value}`;
+        this.value.textContent = `${this.counterName}: ${value}`;
         const y = this.graphYValues[index] / window.devicePixelRatio;
         this.marker.style.left = x + 'px';
         this.marker.style.top = y + 'px';

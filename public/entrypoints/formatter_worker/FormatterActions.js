@@ -1,12 +1,13 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-export const FORMATTABLE_MEDIA_TYPES = [
-    "application/javascript" /* FormattableMediaTypes.APPLICATION_JAVASCRIPT */,
-    "application/json" /* FormattableMediaTypes.APPLICATION_JSON */,
-    "application/manifest+json" /* FormattableMediaTypes.APPLICATION_MANIFEST_JSON */,
-    "text/css" /* FormattableMediaTypes.TEXT_CSS */,
-    "text/html" /* FormattableMediaTypes.TEXT_HTML */,
-    "text/javascript" /* FormattableMediaTypes.TEXT_JAVASCRIPT */,
+// gen/front_end/entrypoints/formatter_worker/FormatterActions.prebundle.js
+var FORMATTABLE_MEDIA_TYPES = [
+  "application/javascript",
+  "application/json",
+  "application/manifest+json",
+  "text/css",
+  "text/html",
+  "text/javascript"
 ];
+export {
+  FORMATTABLE_MEDIA_TYPES
+};
 //# sourceMappingURL=FormatterActions.js.map

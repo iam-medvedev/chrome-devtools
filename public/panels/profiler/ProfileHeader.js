@@ -135,14 +135,6 @@ export class ProfileType extends Common.ObjectWrapper.ObjectWrapper {
     }
     setCustomContentEnabled(_enable) {
     }
-    getProfile(uid) {
-        for (let i = 0; i < this.profiles.length; ++i) {
-            if (this.profiles[i].uid === uid) {
-                return this.profiles[i];
-            }
-        }
-        return null;
-    }
     loadFromFile(file) {
         let name = file.name;
         const fileExtension = this.fileExtension();

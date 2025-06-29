@@ -60,7 +60,6 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private readonly filterBar;
     private readonly textFilterSetting;
     constructor(filterBar: UI.FilterBar.FilterBar, progressBarContainer: Element, networkLogLargeRowsSetting: Common.Settings.Setting<boolean>);
-    getMoreFiltersDropdown(): MoreFiltersDropDownUI | undefined;
     private updateGroupByFrame;
     private static sortSearchValues;
     private static negativeFilter;

@@ -1437,12 +1437,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.searchableView = searchableView;
     }
     // UI.SearchableView.Searchable implementation
-    searchResultIndexForEntryIndex(index) {
-        if (!this.searchResults) {
-            return -1;
-        }
-        return this.searchResults.findIndex(result => result.index === index);
-    }
     jumpToNextSearchResult() {
         if (!this.searchResults?.length) {
             return;

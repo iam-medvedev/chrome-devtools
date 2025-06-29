@@ -266,9 +266,6 @@ export class IssueAggregator extends Common.ObjectWrapper.ObjectWrapper {
     aggregatedIssues() {
         return [...this.#aggregatedIssuesByKey.values(), ...this.#hiddenAggregatedIssuesByKey.values()];
     }
-    hiddenAggregatedIssues() {
-        return this.#hiddenAggregatedIssuesByKey.values();
-    }
     aggregatedIssueCodes() {
         return new Set([...this.#aggregatedIssuesByKey.keys(), ...this.#hiddenAggregatedIssuesByKey.keys()]);
     }

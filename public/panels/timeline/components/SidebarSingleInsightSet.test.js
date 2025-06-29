@@ -45,7 +45,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component);
         assert.deepEqual(userVisibleTitles, [
-            'LCP by phase',
+            'LCP breakdown',
             'LCP request discovery',
             'Render blocking requests',
             'Document request latency',
@@ -53,7 +53,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         ]);
         const passedInsightTitles = getPassedInsights(component);
         assert.deepEqual(passedInsightTitles, [
-            'INP by phase',
+            'INP breakdown',
             'Layout shift culprits',
             'Network dependency tree',
             'Improve image delivery',
@@ -86,7 +86,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const userVisibleTitles = getUserVisibleInsights(component);
         // Does not include "font display", which is experimental.
         assert.deepEqual(userVisibleTitles, [
-            'LCP by phase',
+            'LCP breakdown',
             'Layout shift culprits',
             'Network dependency tree',
             'Improve image delivery',
@@ -97,7 +97,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         const passedInsightTitles = getPassedInsights(component);
         // Does not include "font display", which is experimental.
         assert.deepEqual(passedInsightTitles, [
-            'INP by phase',
+            'INP breakdown',
             'LCP request discovery',
             'Render blocking requests',
             'Document request latency',
@@ -128,7 +128,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component);
         assert.deepEqual(userVisibleTitles, [
-            'LCP by phase',
+            'LCP breakdown',
             'Layout shift culprits',
             'Network dependency tree',
             'Improve image delivery',
@@ -138,7 +138,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         ]);
         const passedInsightTitles = getPassedInsights(component);
         assert.deepEqual(passedInsightTitles, [
-            'INP by phase',
+            'INP breakdown',
             'LCP request discovery',
             'Render blocking requests',
             'Document request latency',
@@ -159,9 +159,9 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         // This is the navigationID from this trace.
         const navigationId = '8463DF94CD61B265B664E7F768183DE3';
         assert.isTrue(insights.has(navigationId));
-        const model = insights.get(navigationId)?.model.LCPPhases;
+        const model = insights.get(navigationId)?.model.LCPBreakdown;
         if (!model) {
-            throw new Error('missing LCPPhases model');
+            throw new Error('missing LCPBreakdown model');
         }
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
@@ -181,7 +181,7 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
             return insight.selected;
         });
         assert.isOk(expandedInsight);
-        assert.strictEqual(expandedInsight.model?.title, 'LCP by phase');
+        assert.strictEqual(expandedInsight.model?.title, 'LCP breakdown');
     });
 });
 //# sourceMappingURL=SidebarSingleInsightSet.test.js.map

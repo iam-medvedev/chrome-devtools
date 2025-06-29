@@ -1194,7 +1194,7 @@ export class NetworkRequestNode extends NetworkNode {
             case "script" /* SDK.NetworkRequest.InitiatorType.SCRIPT */: {
                 const target = SDK.NetworkManager.NetworkManager.forRequest(request)?.target() || null;
                 const linkifier = this.parentView().linkifier();
-                if (initiator.stack) {
+                if (initiator.stack?.callFrames.length) {
                     this.linkifiedInitiatorAnchor = linkifier.linkifyStackTraceTopFrame(target, initiator.stack);
                 }
                 else {

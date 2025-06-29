@@ -398,7 +398,7 @@ async function inspectElementBySelector(selector) {
     });
     if ('error' in inspectResult || inspectResult.exceptionDetails ||
         SDK.RemoteObject.RemoteObject.isNullOrUndefined(inspectResult.object)) {
-        throw new Error(`'document.querySelector()' could not find matching element for '${selector}' selector`);
+        throw new Error(`Could not find an element matching the '${selector}' selector. Please try a different selector.`);
     }
 }
 let panelInstance;
@@ -1390,32 +1390,39 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     async handleExternalRequest(prompt, conversationType, selector) {
-        Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
-        const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
-        const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-        if (!aiAssistanceSetting) {
-            disabledReasons.push(lockedString(UIStringsNotTranslate.enableInSettings));
+        try {
+            Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
+            const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
+            const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
+            if (!aiAssistanceSetting) {
+                disabledReasons.push(lockedString(UIStringsNotTranslate.enableInSettings));
+            }
+            if (disabledReasons.length > 0) {
+                throw new Error(disabledReasons.join(' '));
+            }
+            void VisualLogging.logFunctionCall(`start-conversation-${conversationType}`, 'external');
+            switch (conversationType) {
+                case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
+                    return await this.handleExternalStylingRequest(prompt, selector);
+                default:
+                    throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
+            }
         }
-        if (disabledReasons.length > 0) {
-            throw new Error(disabledReasons.join(' '));
-        }
-        void VisualLogging.logFunctionCall(`start-conversation-${conversationType}`, 'external');
-        switch (conversationType) {
-            case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
-                return await this.handleExternalStylingRequest(prompt, selector);
-            default:
-                throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
+        catch (error) {
+            // Puppeteer would append the stack trace to the error message. Callers of
+            // `handleExternalRequest` have no use for the stack trace.
+            console.error(error);
+            error.stack = '';
+            throw error;
         }
     }
-    async handleExternalStylingRequest(prompt, selector) {
+    async handleExternalStylingRequest(prompt, selector = 'body') {
         const stylingAgent = this.#createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(stylingAgent), [], stylingAgent.id, 
         /* isReadOnly */ true, 
         /* isExternal */ true);
         this.#historicalConversations.push(externalConversation);
-        if (selector !== undefined) {
-            await inspectElementBySelector(selector);
-        }
+        await inspectElementBySelector(selector);
         const runner = stylingAgent.run(prompt, {
             selected: this.#getConversationContext(externalConversation),
         });

@@ -448,20 +448,11 @@ export function isDisplayListItemListSnapshot(event) {
 export function isLayerTreeHostImplSnapshot(event) {
     return event.name === "cc::LayerTreeHostImpl" /* Name.LAYER_TREE_HOST_IMPL_SNAPSHOT */;
 }
-export function isFireAnimationFrame(event) {
-    return event.name === "FireAnimationFrame" /* Name.FIRE_ANIMATION_FRAME */;
-}
-export function isRequestAnimationFrame(event) {
-    return event.name === "RequestAnimationFrame" /* Name.REQUEST_ANIMATION_FRAME */;
-}
 export function isTimerInstall(event) {
     return event.name === "TimerInstall" /* Name.TIMER_INSTALL */;
 }
 export function isTimerFire(event) {
     return event.name === "TimerFire" /* Name.TIMER_FIRE */;
-}
-export function isRequestIdleCallback(event) {
-    return event.name === "RequestIdleCallback" /* Name.REQUEST_IDLE_CALLBACK */;
 }
 export function isWebSocketCreate(event) {
     return event.name === "WebSocketCreate" /* Name.WEB_SOCKET_CREATE */;
@@ -472,12 +463,6 @@ export function isWebSocketInfo(event) {
 }
 export function isWebSocketTransfer(event) {
     return event.name === "WebSocketSend" /* Name.WEB_SOCKET_SEND */ || event.name === "WebSocketReceive" /* Name.WEB_SOCKET_RECEIVE */;
-}
-export function isWebSocketSend(event) {
-    return event.name === "WebSocketSend" /* Name.WEB_SOCKET_SEND */;
-}
-export function isWebSocketReceive(event) {
-    return event.name === "WebSocketReceive" /* Name.WEB_SOCKET_RECEIVE */;
 }
 export function isWebSocketSendHandshakeRequest(event) {
     return event.name === "WebSocketSendHandshakeRequest" /* Name.WEB_SOCKET_SEND_HANDSHAKE_REQUEST */;
@@ -566,9 +551,6 @@ export function isV8SourceRundownSourcesScriptCatchupEvent(event) {
 }
 export function isV8SourceRundownSourcesLargeScriptCatchupEvent(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'LargeScriptCatchup';
-}
-export function isV8SourceRundownSourcesStubScriptCatchupEvent(event) {
-    return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'StubScriptCatchup';
 }
 export function isAnyScriptCatchupEvent(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';

@@ -10,6 +10,8 @@ export declare class Dialog extends HTMLElement {
     #private;
     get origin(): DialogOrigin;
     set origin(origin: DialogOrigin);
+    set expectedMutationsSelector(mutationSelector: string);
+    get expectedMutationsSelector(): string | undefined;
     get position(): DialogVerticalPosition;
     set position(position: DialogVerticalPosition);
     get horizontalAlignment(): DialogHorizontalAlignment;

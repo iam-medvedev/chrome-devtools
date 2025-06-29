@@ -1186,6 +1186,12 @@ export class CheckboxLabel extends HTMLElement {
             this.#checkboxElement.ariaLabel = newValue;
         }
     }
+    getLabelText() {
+        return this.#textElement.textContent;
+    }
+    setLabelText(content) {
+        this.#textElement.textContent = content;
+    }
     get ariaLabel() {
         return this.#checkboxElement.ariaLabel;
     }
@@ -1209,6 +1215,12 @@ export class CheckboxLabel extends HTMLElement {
     }
     get indeterminate() {
         return this.#checkboxElement.indeterminate;
+    }
+    set title(title) {
+        this.setAttribute('title', title);
+    }
+    get title() {
+        return this.#checkboxElement.title;
     }
     set name(name) {
         this.setAttribute('name', name);

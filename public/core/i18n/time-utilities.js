@@ -71,18 +71,9 @@ export function formatMicroSecondsAsSeconds(time) {
     const seconds = Platform.Timing.milliSecondsToSeconds(milliseconds);
     return narrowSecondsDecimal.format(seconds);
 }
-export function formatPartsMicroSecondsAsSeconds(time) {
-    const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
-    const seconds = Platform.Timing.milliSecondsToSeconds(milliseconds);
-    return narrowSecondsDecimal.formatToParts(seconds);
-}
 export function formatMicroSecondsAsMillisFixed(time) {
     const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
     return narrowMillisecondsInteger.format(milliseconds);
-}
-export function formatPartsMicroSecondsAsMillisFixed(time) {
-    const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);
-    return narrowMillisecondsInteger.formatToParts(milliseconds);
 }
 export function formatMicroSecondsAsMillisFixedExpanded(time) {
     const milliseconds = Platform.Timing.microSecondsToMilliSeconds(time);

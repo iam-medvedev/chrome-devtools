@@ -107,8 +107,8 @@ export type InsightModels = {
  */
 export type TraceInsightSets = Map<Types.Events.NavigationId, InsightSet>;
 export declare const enum InsightKeys {
-    LCP_PHASES = "LCPPhases",
-    INTERACTION_TO_NEXT_PAINT = "InteractionToNextPaint",
+    LCP_BREAKDOWN = "LCPBreakdown",
+    INP_BREAKDOWN = "INPBreakdown",
     CLS_CULPRITS = "CLSCulprits",
     THIRD_PARTIES = "ThirdParties",
     DOCUMENT_LATENCY = "DocumentLatency",

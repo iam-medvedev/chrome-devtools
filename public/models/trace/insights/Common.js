@@ -21,7 +21,7 @@ export function getInsight(insightName, insights, key) {
     return insight;
 }
 export function getLCP(insights, key) {
-    const insight = getInsight("LCPPhases" /* InsightKeys.LCP_PHASES */, insights, key);
+    const insight = getInsight("LCPBreakdown" /* InsightKeys.LCP_BREAKDOWN */, insights, key);
     if (!insight || !insight.lcpMs || !insight.lcpEvent) {
         return null;
     }
@@ -29,7 +29,7 @@ export function getLCP(insights, key) {
     return { value, event: insight.lcpEvent };
 }
 export function getINP(insights, key) {
-    const insight = getInsight("InteractionToNextPaint" /* InsightKeys.INTERACTION_TO_NEXT_PAINT */, insights, key);
+    const insight = getInsight("INPBreakdown" /* InsightKeys.INP_BREAKDOWN */, insights, key);
     if (!insight?.longestInteractionEvent?.dur) {
         return null;
     }
@@ -112,7 +112,7 @@ export function getFieldMetricsForInsightSet(insightSet, metadata, scope = null)
         lcp: getMetricTimingResult(pageResult, 'largest_contentful_paint', scope),
         inp: getMetricTimingResult(pageResult, 'interaction_to_next_paint', scope),
         cls: getMetricResult(pageResult, 'cumulative_layout_shift', scope),
-        lcpPhases: {
+        lcpBreakdown: {
             ttfb: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_time_to_first_byte', scope),
             loadDelay: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_resource_load_delay', scope),
             loadDuration: getMetricTimingResult(pageResult, 'largest_contentful_paint_image_resource_load_duration', scope),

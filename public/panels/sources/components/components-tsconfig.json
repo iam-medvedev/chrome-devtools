@@ -30,8 +30,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../../front_end/panels/sources/components/BreakpointsView.ts",
-    "../../../../../../../front_end/panels/sources/components/BreakpointsViewUtils.ts",
     "../../../../../../../front_end/panels/sources/components/HeadersView.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",

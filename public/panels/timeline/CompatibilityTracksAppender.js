@@ -408,18 +408,6 @@ export class CompatibilityTracksAppender {
         }
         return result;
     }
-    /**
-     * Sets the visible tracks internally
-     * @param visibleTracks set with the names of the visible track
-     * appenders. If undefined, all tracks are set to be visible.
-     */
-    setVisibleTracks(visibleTracks) {
-        if (!visibleTracks) {
-            this.#visibleTrackNames = new Set([...TrackNames]);
-            return;
-        }
-        this.#visibleTrackNames = visibleTracks;
-    }
     getDrawOverride(event, level) {
         const track = this.#trackForLevel.get(level);
         if (!track) {

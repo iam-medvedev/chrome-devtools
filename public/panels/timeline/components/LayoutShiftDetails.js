@@ -190,7 +190,7 @@ export class LayoutShiftDetails extends HTMLElement {
     }
     #renderRootCauseValues(frame, rootCauses) {
         return html `
-      ${rootCauses?.fontRequests.map(fontReq => this.#renderFontRequest(fontReq))}
+      ${rootCauses?.webFonts.map(fontReq => this.#renderFontRequest(fontReq))}
       ${rootCauses?.iframes.map(iframe => this.#renderIframe(iframe))}
       ${rootCauses?.nonCompositedAnimations.map(failure => this.#renderAnimation(failure))}
       ${rootCauses?.unsizedImages.map(unsizedImage => this.#renderUnsizedImage(frame, unsizedImage))}
@@ -213,7 +213,7 @@ export class LayoutShiftDetails extends HTMLElement {
             return null;
         }
         const hasCulprits = Boolean(rootCauses &&
-            (rootCauses.fontRequests.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
+            (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
                 rootCauses.unsizedImages.length));
         // clang-format off
         return html `
@@ -268,7 +268,7 @@ export class LayoutShiftDetails extends HTMLElement {
             elementsShifted = elementsShifted?.filter(el => el.debug_name);
         }
         const hasCulprits = rootCauses &&
-            (rootCauses.fontRequests.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
+            (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
                 rootCauses.unsizedImages.length);
         const hasShiftedElements = elementsShifted?.length;
         const parentCluster = clsInsight.clusters.find(cluster => {

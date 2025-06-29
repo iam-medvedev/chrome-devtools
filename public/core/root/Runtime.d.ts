@@ -162,9 +162,6 @@ export interface HostConfigThirdPartyCookieControls {
     thirdPartyCookieHeuristicsEnabled: boolean;
     managedBlockThirdPartyCookies: string | boolean;
 }
-interface CSSValueTracing {
-    enabled: boolean;
-}
 interface AiGeneratedTimelineLabels {
     enabled: boolean;
 }
@@ -201,7 +198,6 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsEnableOriginBoundCookies: HostConfigEnableOriginBoundCookies;
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
     thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
-    devToolsCssValueTracing: CSSValueTracing;
     devToolsAiGeneratedTimelineLabels: AiGeneratedTimelineLabels;
 }>;
 /**

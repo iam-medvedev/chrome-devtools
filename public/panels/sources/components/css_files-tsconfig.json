@@ -4,7 +4,6 @@
         "outDir": "."
     },
     "files": [
-        "HeadersView.css.js",
-        "breakpointsView.css.js"
+        "HeadersView.css.js"
     ]
 }

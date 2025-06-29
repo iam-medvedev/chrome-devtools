@@ -32,7 +32,7 @@ export interface CrUXFieldMetricResults {
     lcp: CrUXFieldMetricTimingResult | null;
     inp: CrUXFieldMetricTimingResult | null;
     cls: CrUXFieldMetricNumberResult | null;
-    lcpPhases: {
+    lcpBreakdown: {
         ttfb: CrUXFieldMetricTimingResult | null;
         loadDelay: CrUXFieldMetricTimingResult | null;
         loadDuration: CrUXFieldMetricTimingResult | null;

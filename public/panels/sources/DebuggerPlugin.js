@@ -49,7 +49,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AddDebugInfoURLDialog } from './AddSourceMapURLDialog.js';
 import { BreakpointEditDialog } from './BreakpointEditDialog.js';
-import * as SourceComponents from './components/components.js';
+import { BreakpointsSidebarController } from './BreakpointsView.js';
 import { Plugin } from './Plugin.js';
 import { SourcesPanel } from './SourcesPanel.js';
 const { EMPTY_BREAKPOINT_CONDITION, NEVER_PAUSE_HERE_CONDITION } = Breakpoints.BreakpointManager;
@@ -770,10 +770,10 @@ export class DebuggerPlugin extends Plugin {
             dialog.detach();
             editor.dispatch({ effects: compartment.reconfigure([]) });
             if (!result.committed) {
-                SourceComponents.BreakpointsView.BreakpointsSidebarController.instance().breakpointEditFinished(breakpoint, false);
+                BreakpointsSidebarController.instance().breakpointEditFinished(breakpoint, false);
                 return;
             }
-            SourceComponents.BreakpointsView.BreakpointsSidebarController.instance().breakpointEditFinished(breakpoint, oldCondition !== result.condition);
+            BreakpointsSidebarController.instance().breakpointEditFinished(breakpoint, oldCondition !== result.condition);
             if (breakpoint) {
                 breakpoint.setCondition(result.condition, result.isLogpoint);
             }
@@ -1542,7 +1542,7 @@ export class BreakpointLocationRevealer {
             debuggerPlugin.editBreakpointLocation(breakpointLocation);
         }
         else {
-            SourceComponents.BreakpointsView.BreakpointsSidebarController.instance().breakpointEditFinished(breakpointLocation.breakpoint, false);
+            BreakpointsSidebarController.instance().breakpointEditFinished(breakpointLocation.breakpoint, false);
         }
     }
 }

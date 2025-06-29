@@ -4,6 +4,7 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import './CSSAngleEditor.js';
 import './CSSAngleSwatch.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import * as Lit from '../../../lit/lit.js';
 import cssAngleStyles from './cssAngle.css.js';
 import { convertAngleUnit, getNewAngleFromEvent, getNextUnit, parseText, roundAngleByUnit, } from './CSSAngleUtils.js';
@@ -31,7 +32,6 @@ const DefaultAngle = {
     unit: "rad" /* AngleUnit.RAD */,
 };
 export class CSSAngle extends HTMLElement {
-    shadow = this.attachShadow({ mode: 'open' });
     angle = DefaultAngle;
     displayedAngle = DefaultAngle;
     propertyValue = '';
@@ -63,10 +63,10 @@ export class CSSAngle extends HTMLElement {
             return;
         }
         if (!this.angleElement) {
-            this.angleElement = this.shadow.querySelector('.css-angle');
+            this.angleElement = this.querySelector('.css-angle');
         }
         if (!this.swatchElement) {
-            this.swatchElement = this.shadow.querySelector('devtools-css-angle-swatch');
+            this.swatchElement = this.querySelector('devtools-css-angle-swatch');
         }
         if (!this.angleElement || !this.swatchElement) {
             return;
@@ -143,6 +143,10 @@ export class CSSAngle extends HTMLElement {
     }
     onKeydown(event) {
         if (!this.popoverOpen) {
+            if (Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+                this.onMiniIconClick(event);
+                event.preventDefault();
+            }
             return;
         }
         switch (event.key) {
@@ -181,7 +185,9 @@ export class CSSAngle extends HTMLElement {
         </div>
         ${this.popoverOpen ? this.renderPopover() : null}
       </div>
-    `, this.shadow, { host: this });
+    `, this, {
+            host: this,
+        });
         // clang-format on
     }
     renderPopover() {

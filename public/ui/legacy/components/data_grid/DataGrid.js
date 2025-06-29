@@ -895,7 +895,8 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             this.dataTableHeadInternal.rows[0].cells[columnIndex].offsetWidth;
     }
     applyColumnWeights() {
-        let tableWidth = this.element.offsetWidth - this.cornerWidth;
+        // Subtract 1 to prevent unnecessary overflow in x-axis
+        let tableWidth = this.element.offsetWidth - this.cornerWidth - 1;
         if (tableWidth <= 0) {
             return;
         }
@@ -914,7 +915,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         let sum = 0;
         let lastOffset = 0;
-        const minColumnWidth = 14; // px
+        const minColumnWidth = ColumnResizePadding; // px
         for (let i = 0; i < this.visibleColumnsArray.length; ++i) {
             const column = this.visibleColumnsArray[i];
             let width;
@@ -1485,7 +1486,7 @@ export var Order;
     Order["Descending"] = "sort-descending";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Order || (Order = {}));
-export const ColumnResizePadding = 34;
+export const ColumnResizePadding = 30;
 export const CenterResizerOverBorderAdjustment = 3;
 export class DataGridNode {
     elementInternal = null;

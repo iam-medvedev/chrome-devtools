@@ -100,7 +100,7 @@ describe('generatePreconnectedOrigins', () => {
         const mockParsedTrace = {
             NetworkRequests: {
                 linkPreconnectEvents: [],
-                byTime: [],
+                byId: new Map(),
             },
         };
         const mockContext = {};
@@ -321,6 +321,7 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
         NetworkRequests: {
             eventToInitiator: new Map(),
             byTime: [],
+            byId: new Map(),
             linkPreconnectEvents: [],
         },
     };
@@ -378,8 +379,10 @@ describeWithEnvironment('generatePreconnectCandidates', () => {
     beforeEach(() => {
         mockParsedTrace.NetworkRequests.eventToInitiator.clear();
         mockParsedTrace.NetworkRequests.byTime.length = 0;
+        mockParsedTrace.NetworkRequests.byId.clear();
         mockParsedTrace.NetworkRequests.linkPreconnectEvents.length = 0;
         mockParsedTrace.NetworkRequests.byTime.push(mainRequest);
+        mockParsedTrace.NetworkRequests.byId.set(mainRequest.args.data.requestId, mainRequest);
     });
     it('generates preconnect results for valid requests', () => {
         mockParsedTrace.NetworkRequests.byTime.push(validRequest);

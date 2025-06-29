@@ -11,7 +11,6 @@ export declare class TimelineGrid {
     get dividersElement(): HTMLElement;
     get dividersLabelBarElement(): HTMLElement;
     updateDividers(calculator: Calculator, freeZoneAtLeft?: number): boolean;
-    addEventDivider(divider: Element): void;
     addEventDividers(dividers: Element[]): void;
     removeEventDividers(): void;
     hideEventDividers(): void;

@@ -56,19 +56,19 @@ export declare class Counter {
     calculateXValues(width: number): void;
 }
 export declare class CounterUI {
+    #private;
     private readonly countersPane;
     counter: Counter;
     private readonly formatter;
     private readonly setting;
-    private filter;
-    private range;
-    private value;
+    private readonly filter;
+    private readonly value;
     graphColor: string;
     limitColor: string | null | undefined;
     graphYValues: number[];
     private readonly verticalPadding;
-    private currentValueLabel;
-    private marker;
+    private readonly counterName;
+    private readonly marker;
     constructor(countersPane: CountersGraph, title: Common.UIString.LocalizedString, settingsKey: string, graphColor: string, counter: Counter, formatter?: (arg0: number) => string);
     reset(): void;
     setRange(minValue: number, maxValue: number): void;

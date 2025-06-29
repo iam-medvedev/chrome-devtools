@@ -1428,9 +1428,6 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             this.dispatchEventToListeners("UserAgentChanged" /* MultitargetNetworkManager.Events.USER_AGENT_CHANGED */);
         }
     }
-    userAgentOverride() {
-        return this.#userAgentOverrideInternal;
-    }
     setCustomUserAgentOverride(userAgent, userAgentMetadataOverride = null) {
         this.#customUserAgent = userAgent;
         this.#userAgentMetadataOverride = userAgentMetadataOverride;
@@ -1673,11 +1670,6 @@ export class InterceptedRequest {
         console.assert(!this.#hasRespondedInternal);
         this.#hasRespondedInternal = true;
         void this.#fetchAgent.invoke_continueRequest({ requestId: this.requestId });
-    }
-    continueRequestWithError(errorReason) {
-        console.assert(!this.#hasRespondedInternal);
-        this.#hasRespondedInternal = true;
-        void this.#fetchAgent.invoke_failRequest({ requestId: this.requestId, errorReason });
     }
     async responseBody() {
         const response = await this.#fetchAgent.invoke_getResponseBody({ requestId: this.requestId });

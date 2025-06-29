@@ -375,6 +375,7 @@ export class PreloadPipeline {
         return this.inner.get("Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) || null;
     }
     // Returns attempts in the order: prefetch < prerender.
+    // Currently unused.
     getAttempts() {
         const ret = [];
         const prefetch = this.getPrefetch();
