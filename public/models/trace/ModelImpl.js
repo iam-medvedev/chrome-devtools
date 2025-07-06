@@ -16,7 +16,6 @@ import * as Types from './types/types.js';
  **/
 export class Model extends EventTarget {
     #traces = [];
-    #syntheticEventsManagerByTrace = [];
     #nextNumberByDomain = new Map();
     #recordingsAvailable = [];
     #lastRecordingIndex = 0;
@@ -86,11 +85,11 @@ export class Model extends EventTarget {
             metadata,
             parsedTrace: null,
             traceInsights: null,
+            syntheticEventsManager: Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents),
         };
         try {
             // Wait for all outstanding promises before finishing the async execution,
             // but perform all tasks in parallel.
-            const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents);
             await this.#processor.parse(traceEvents, {
                 isFreshRecording,
                 isCPUProfile,
@@ -101,7 +100,6 @@ export class Model extends EventTarget {
             // We only push the file onto this.#traces here once we know it's valid
             // and there's been no errors in the parsing.
             this.#traces.push(file);
-            this.#syntheticEventsManagerByTrace.push(syntheticEventsManager);
         }
         catch (e) {
             throw e;
@@ -154,7 +152,7 @@ export class Model extends EventTarget {
         return this.#traces.at(index)?.traceEvents ?? null;
     }
     syntheticTraceEventsManager(index = this.#traces.length - 1) {
-        return this.#syntheticEventsManagerByTrace.at(index) ?? null;
+        return this.#traces.at(index)?.syntheticEventsManager ?? null;
     }
     size() {
         return this.#traces.length;

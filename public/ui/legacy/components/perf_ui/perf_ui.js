@@ -2800,8 +2800,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             context.save();
             context.beginPath();
             const barXStart = this.timeToPositionClipped(entryStartTime + candyStripeStartTime);
-            const stripingEndTime = decoration.endAtTime ? Trace.Helpers.Timing.microToMilli(decoration.endAtTime) : entryStartTime + duration;
-            const barXEnd = this.timeToPositionClipped(stripingEndTime);
+            const barXEnd = this.timeToPositionClipped(entryStartTime + duration);
             this.#drawEventRect(context, timelineData, entryIndex, {
               startX: barXStart,
               width: barXEnd - barXStart

@@ -2310,23 +2310,11 @@ var NativeFunctions = [
   },
   {
     name: "createElement",
-    signatures: [["localName", "?options"], ["tagName", "?options"]],
-    receivers: ["Document"]
-  },
-  {
-    name: "createElement",
-    signatures: [["localName", "?options"]],
-    receivers: ["ShadowRoot"]
+    signatures: [["localName", "?options"], ["tagName", "?options"]]
   },
   {
     name: "createElementNS",
-    signatures: [["namespaceURI", "qualifiedName", "?options"], ["namespace", "qualifiedName", "?options"]],
-    receivers: ["Document"]
-  },
-  {
-    name: "createElementNS",
-    signatures: [["namespaceURI", "qualifiedName", "?options"]],
-    receivers: ["ShadowRoot"]
+    signatures: [["namespaceURI", "qualifiedName", "?options"], ["namespace", "qualifiedName", "?options"]]
   },
   {
     name: "createEvent",
@@ -8536,10 +8524,6 @@ var NativeFunctions = [
   {
     name: "addFromString",
     signatures: [["string", "?weight"]]
-  },
-  {
-    name: "SpeechRecognitionContext",
-    signatures: [["phrases"]]
   },
   {
     name: "SpeechRecognitionErrorEvent",

@@ -11,7 +11,12 @@ export default `/*
 
 .timeline-minimap {
   position: relative;
+
+  &.no-trace-active {
+    display: none;
+  }
 }
+
 
 .timeline-minimap .overview-strip {
   margin-top: 2px;

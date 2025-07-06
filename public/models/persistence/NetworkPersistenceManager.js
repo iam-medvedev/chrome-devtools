@@ -432,7 +432,8 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         }
     }
     async #getHeaderOverridesFromUiSourceCode(uiSourceCode) {
-        const content = (await uiSourceCode.requestContent()).content || '[]';
+        const contentData = await uiSourceCode.requestContentData().then(TextUtils.ContentData.ContentData.contentDataOrEmpty);
+        const content = contentData.text || '[]';
         let headerOverrides = [];
         try {
             headerOverrides = JSON.parse(content);

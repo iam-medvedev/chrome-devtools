@@ -1133,6 +1133,7 @@ var ColorSwatch_exports = {};
 __export(ColorSwatch_exports, {
   ClickEvent: () => ClickEvent,
   ColorChangedEvent: () => ColorChangedEvent,
+  ColorFormatChangedEvent: () => ColorFormatChangedEvent,
   ColorSwatch: () => ColorSwatch
 });
 import * as i18n from "./../../../../core/i18n/i18n.js";
@@ -1200,6 +1201,14 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/inline_editor/ColorSwatch.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var ColorFormatChangedEvent = class _ColorFormatChangedEvent extends Event {
+  static eventName = "colorformatchanged";
+  data;
+  constructor(color) {
+    super(_ColorFormatChangedEvent.eventName, {});
+    this.data = { color };
+  }
+};
 var ColorChangedEvent = class _ColorChangedEvent extends Event {
   static eventName = "colorchanged";
   data;
@@ -1224,6 +1233,8 @@ var ColorSwatch = class extends HTMLElement {
     if (tooltip) {
       this.tooltip = tooltip;
     }
+    this.tabIndex = -1;
+    this.addEventListener("keydown", (e) => this.onActivate(e));
   }
   static isColorSwatch(element) {
     return element.localName === "devtools-color-swatch";
@@ -1257,18 +1268,21 @@ var ColorSwatch = class extends HTMLElement {
       "color-swatch": true,
       readonly: this.readonly
     });
-    Lit2.render(html2`
-      <style>${colorSwatch_css_default}</style>
-      <span class=${colorSwatchClasses} title=${this.tooltip}>
-        <span class="color-swatch-inner" style="background-color: ${color.asString()};"
-              jslog=${VisualLogging5.showStyleEditor("color").track({ click: true })}
-              @click=${this.onClick} @mousedown=${this.consume} @dblclick=${this.consume}>
-        </span>
-      </span>
-      <slot><span>${this.getText()}</span></slot>`, this.shadow, { host: this });
+    Lit2.render(html2`<style>${colorSwatch_css_default}</style><span
+          class=${colorSwatchClasses}
+          title=${this.tooltip}><span
+            class="color-swatch-inner"
+            style="background-color: ${color.asString()};"
+            jslog=${VisualLogging5.showStyleEditor("color").track({ click: true })}
+            @click=${this.onActivate}
+            @mousedown=${this.consume}
+            @dblclick=${this.consume}></span></span>`, this.shadow, { host: this });
   }
-  onClick(e) {
+  onActivate(e) {
     if (this.readonly) {
+      return;
+    }
+    if (e instanceof KeyboardEvent && e.key !== "Enter" && e.key !== " " || e instanceof MouseEvent && e.button > 1) {
       return;
     }
     if (e.shiftKey) {
@@ -1277,6 +1291,7 @@ var ColorSwatch = class extends HTMLElement {
       return;
     }
     this.dispatchEvent(new ClickEvent());
+    this.consume(e);
   }
   consume(e) {
     e.stopPropagation();
@@ -1285,20 +1300,13 @@ var ColorSwatch = class extends HTMLElement {
     this.renderColor(color);
     this.dispatchEvent(new ColorChangedEvent(color));
   }
-  setColorText(color) {
-    this.firstElementChild?.remove();
-    this.renderColor(color);
-    const span = this.appendChild(document.createElement("span"));
-    span.appendChild(document.createTextNode(color.getAuthoredText() ?? color.asString()));
-    this.dispatchEvent(new ColorChangedEvent(color));
-  }
   showFormatPicker(e) {
     if (!this.color) {
       return;
     }
     const contextMenu = new ColorPicker.FormatPickerContextMenu.FormatPickerContextMenu(this.color);
     void contextMenu.show(e, (color) => {
-      this.setColorText(color);
+      this.dispatchEvent(new ColorFormatChangedEvent(color));
     });
   }
 };
@@ -3931,39 +3939,10 @@ customElements.define("devtools-link-swatch", LinkSwatch);
 // gen/front_end/ui/legacy/components/inline_editor/Swatches.js
 var Swatches_exports = {};
 __export(Swatches_exports, {
-  BezierSwatch: () => BezierSwatch,
   CSSShadowSwatch: () => CSSShadowSwatch
 });
-import * as IconButton2 from "./../../../components/icon_button/icon_button.js";
+import "./../../../components/icon_button/icon_button.js";
 import { html as html7, render as render7 } from "./../../../lit/lit.js";
-import * as VisualLogging10 from "./../../../visual_logging/visual_logging.js";
-import * as UI9 from "./../../legacy.js";
-
-// gen/front_end/ui/legacy/components/inline_editor/bezierSwatch.css.js
-var bezierSwatch_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-:host {
-  white-space: nowrap;
-}
-
-devtools-icon {
-  position: relative;
-  transform: scale(0.7);
-  margin: -5px -2px -3px -4px;
-  user-select: none;
-  color: var(--icon-css);
-  cursor: default;
-
-  &:hover {
-    color: var(--icon-css-hover);
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./bezierSwatch.css")} */`;
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowSwatch.css.js
 var cssShadowSwatch_css_default = `/*
@@ -3989,38 +3968,6 @@ devtools-icon.shadow-swatch-icon {
 /*# sourceURL=${import.meta.resolve("./cssShadowSwatch.css")} */`;
 
 // gen/front_end/ui/legacy/components/inline_editor/Swatches.js
-var BezierSwatch = class extends HTMLElement {
-  #icon;
-  #text;
-  constructor() {
-    super();
-    const root = UI9.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: bezierSwatch_css_default });
-    this.#icon = IconButton2.Icon.create("bezier-curve-filled", "bezier-swatch-icon");
-    this.#icon.setAttribute("jslog", `${VisualLogging10.showStyleEditor("bezier")}`);
-    root.appendChild(this.#icon);
-    this.#text = document.createElement("span");
-    root.createChild("slot");
-  }
-  static create() {
-    return document.createElement("devtools-bezier-swatch");
-  }
-  bezierText() {
-    return this.#text.textContent || "";
-  }
-  setBezierText(text) {
-    if (!this.#text.parentElement) {
-      this.append(this.#text);
-    }
-    this.#text.textContent = text;
-  }
-  hideText(hide) {
-    this.#text.hidden = hide;
-  }
-  iconElement() {
-    return this.#icon;
-  }
-};
-customElements.define("devtools-bezier-swatch", BezierSwatch);
 var CSSShadowSwatch = class extends HTMLElement {
   #icon;
   #model;
@@ -4048,8 +3995,8 @@ __export(SwatchPopoverHelper_exports, {
 });
 import * as Common6 from "./../../../../core/common/common.js";
 import * as Platform8 from "./../../../../core/platform/platform.js";
-import * as VisualLogging11 from "./../../../visual_logging/visual_logging.js";
-import * as UI10 from "./../../legacy.js";
+import * as VisualLogging10 from "./../../../visual_logging/visual_logging.js";
+import * as UI9 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/swatchPopover.css.js
 var swatchPopover_css_default = `/*
@@ -4089,7 +4036,7 @@ var SwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrapper {
   focusRestorer;
   constructor() {
     super();
-    this.popover = new UI10.GlassPane.GlassPane();
+    this.popover = new UI9.GlassPane.GlassPane();
     this.popover.setSizeBehavior(
       "MeasureContent"
       /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
@@ -4125,7 +4072,7 @@ var SwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrapper {
       }
       this.hide(true);
     }
-    VisualLogging11.setMappedParent(view.contentElement, anchorElement);
+    VisualLogging10.setMappedParent(view.contentElement, anchorElement);
     this.popover.registerRequiredCSS(swatchPopover_css_default);
     this.dispatchEventToListeners(
       "WillShowPopover"
@@ -4164,7 +4111,7 @@ var SwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrapper {
     }
     this.view.contentElement.addEventListener("focusout", this.boundFocusOut, false);
     if (!this.focusRestorer) {
-      this.focusRestorer = new UI10.Widget.WidgetFocusRestorer(this.view);
+      this.focusRestorer = new UI9.Widget.WidgetFocusRestorer(this.view);
     }
   }
   hide(commitEdit) {

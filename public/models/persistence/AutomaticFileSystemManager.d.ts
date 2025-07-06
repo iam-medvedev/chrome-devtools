@@ -1,7 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import type * as Platform from '../../core/platform/platform.js';
-import type * as Root from '../../core/root/root.js';
 import * as ProjectSettings from '../project_settings/project_settings.js';
 /**
  * Description and state of the automatic file system.
@@ -54,9 +53,8 @@ export declare class AutomaticFileSystemManager extends Common.ObjectWrapper.Obj
      *
      * @returns the singleton.
      */
-    static instance({ forceNew, hostConfig, inspectorFrontendHost, projectSettingsModel }?: {
+    static instance({ forceNew, inspectorFrontendHost, projectSettingsModel }?: {
         forceNew: boolean | null;
-        hostConfig: Root.Runtime.HostConfig | null;
         inspectorFrontendHost: Host.InspectorFrontendHostAPI.InspectorFrontendHostAPI | null;
         projectSettingsModel: ProjectSettings.ProjectSettingsModel.ProjectSettingsModel | null;
     }): AutomaticFileSystemManager;

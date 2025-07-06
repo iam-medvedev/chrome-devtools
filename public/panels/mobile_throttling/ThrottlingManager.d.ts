@@ -14,7 +14,7 @@ export declare class ThrottlingManager {
     private readonly cpuThrottlingControls;
     private readonly cpuThrottlingOptions;
     private readonly customNetworkConditionsSetting;
-    private readonly currentNetworkThrottlingConditionsSetting;
+    private readonly currentNetworkThrottlingConditionKeySetting;
     private readonly calibratedCpuThrottlingSetting;
     private lastNetworkThrottlingConditions;
     private readonly cpuThrottlingManager;

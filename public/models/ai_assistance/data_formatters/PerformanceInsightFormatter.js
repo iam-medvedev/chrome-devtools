@@ -10,7 +10,7 @@ function formatMilli(x) {
     }
     return i18n.TimeUtilities.preciseMillisToString(x, 2);
 }
-function formatMicro(x) {
+function formatMicroToMilli(x) {
     if (x === undefined) {
         return '';
     }
@@ -62,10 +62,12 @@ export class PerformanceInsightFormatter {
         }
         const { metricScore, lcpRequest } = data;
         const parts = [
-            `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicro(metricScore.timing)}.`,
+            `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicroToMilli(metricScore.timing)}.`,
         ];
         if (lcpRequest) {
             parts.push(`The LCP resource was fetched from \`${lcpRequest.args.data.url}\`.`);
+            const request = TraceEventFormatter.networkRequest(lcpRequest, this.#parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
+            parts.push(request);
         }
         else {
             parts.push('The LCP is text based and was not fetched from the network.');
@@ -180,11 +182,11 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             if (!event) {
                 return '';
             }
-            const inpInfoForEvent = `The longest interaction on the page was a \`${event.type}\` which had a total duration of \`${formatMicro(event.dur)}\`. The timings of each of the three phases were:
+            const inpInfoForEvent = `The longest interaction on the page was a \`${event.type}\` which had a total duration of \`${formatMicroToMilli(event.dur)}\`. The timings of each of the three phases were:
 
-1. Input delay: ${formatMicro(event.inputDelay)}
-2. Processing duration: ${formatMicro(event.mainThreadHandling)}
-3. Presentation delay: ${formatMicro(event.presentationDelay)}.`;
+1. Input delay: ${formatMicroToMilli(event.inputDelay)}
+2. Processing duration: ${formatMicroToMilli(event.mainThreadHandling)}
+3. Presentation delay: ${formatMicroToMilli(event.presentationDelay)}.`;
             return inpInfoForEvent;
         }
         if (Trace.Insights.Models.CLSCulprits.isCLSCulprits(this.#insight)) {
@@ -200,11 +202,19 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             const shiftsFormatted = worstCluster.events.map((layoutShift, index) => {
                 return TraceEventFormatter.layoutShift(layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
             });
-            return `The worst layout shift cluster was the cluster that started at ${formatMicro(clusterTimes.start)} and ended at ${formatMicro(clusterTimes.end)}, with a duration of ${formatMicro(worstCluster.dur)}.
+            return `The worst layout shift cluster was the cluster that started at ${formatMicroToMilli(clusterTimes.start)} and ended at ${formatMicroToMilli(clusterTimes.end)}, with a duration of ${formatMicroToMilli(worstCluster.dur)}.
 The score for this cluster is ${worstCluster.clusterCumulativeScore.toFixed(4)}.
 
 Layout shifts in this cluster:
 ${shiftsFormatted.join('\n')}`;
+        }
+        if (Trace.Insights.Models.ModernHTTP.isModernHTTP(this.#insight)) {
+            const requestSummary = this.#insight.http1Requests.map(request => TraceEventFormatter.networkRequest(request, this.#parsedTrace, { verbose: true }));
+            if (requestSummary.length === 0) {
+                return 'There are no requests that were served over a legacy HTTP protocol.';
+            }
+            return `Here is a list of the network requests that were served over a legacy HTTP protocol:
+${requestSummary.join('\n')}`;
         }
         return '';
     }
@@ -250,7 +260,7 @@ ${shiftsFormatted.join('\n')}`;
             case 'Cache':
                 return '';
             case 'ModernHTTP':
-                return '';
+                return '- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2';
             case 'LegacyJavaScript':
                 return '';
         }
@@ -311,7 +321,14 @@ It is important that all of these checks pass to minimize the delay between the 
             case 'Cache':
                 return '';
             case 'ModernHTTP':
-                return '';
+                return `Modern HTTP protocols, such as HTTP/2, are more efficient than older versions like HTTP/1.1 because they allow for multiple requests and responses to be sent over a single network connection, significantly improving page load performance by reducing latency and overhead. This insight identifies requests that can be upgraded to a modern HTTP protocol.
+
+We apply a conservative approach when flagging HTTP/1.1 usage. This insight will only flag requests that meet all of the following criteria:
+1.  Were served over HTTP/1.1 or an earlier protocol.
+2.  Originate from an origin that serves at least 6 static asset requests, as the benefits of multiplexing are less significant with fewer requests.
+3.  Are not served from 'localhost' or coming from a third-party source, where developers have no control over the server's protocol.
+
+To pass this insight, ensure your server supports and prioritizes a modern HTTP protocol (like HTTP/2) for static assets, especially when serving a substantial number of them.`;
             case 'LegacyJavaScript':
                 return '';
         }
@@ -346,7 +363,7 @@ export class TraceEventFormatter {
             `- Potential root causes:\n  - ${potentialRootCauses.join('\n  - ')}` :
             '- No potential root causes identified';
         return `### Layout shift ${index + 1}:
-- Start time: ${formatMicro(shift.ts - baseTime)}
+- Start time: ${formatMicroToMilli(shift.ts - baseTime)}
 - Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
 ${rootCauseText}`;
     }
@@ -359,7 +376,7 @@ ${rootCauseText}`;
      * talk to jacktfranklin@.
      */
     static networkRequest(request, parsedTrace, options) {
-        const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData } = request.args.data;
+        const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
         const titlePrefix = `## ${options.customTitle ?? 'Network request'}`;
         // Note: unlike other agents, we do have the ability to include
         // cross-origins, hence why we do not sanitize the URLs here.
@@ -389,32 +406,139 @@ ${rootCauseText}`;
         const redirects = request.args.data.redirects.map((redirect, index) => {
             const startTime = redirect.ts - baseTime;
             return `#### Redirect ${index + 1}: ${redirect.url}
-- Start time: ${formatMicro(startTime)}
-- Duration: ${formatMicro(redirect.dur)}`;
+- Start time: ${formatMicroToMilli(startTime)}
+- Duration: ${formatMicroToMilli(redirect.dur)}`;
         });
         if (!options.verbose) {
             return `${titlePrefix}: ${url}
-- Start time: ${formatMicro(startTimesForLifecycle.queuedAt)}
-- Duration: ${formatMicro(request.dur)}
+- Start time: ${formatMicroToMilli(startTimesForLifecycle.queuedAt)}
+- Duration: ${formatMicroToMilli(request.dur)}
 - MIME type: ${mimeType}${renderBlocking ? '\n- This request was render blocking' : ''}`;
         }
         return `${titlePrefix}: ${url}
 Timings:
-- Queued at: ${formatMicro(startTimesForLifecycle.queuedAt)}
-- Request sent at: ${formatMicro(startTimesForLifecycle.requestSentAt)}
-- Download complete at: ${formatMicro(startTimesForLifecycle.downloadCompletedAt)}
-- Main thread processing completed at: ${formatMicro(startTimesForLifecycle.processingCompletedAt)}
+- Queued at: ${formatMicroToMilli(startTimesForLifecycle.queuedAt)}
+- Request sent at: ${formatMicroToMilli(startTimesForLifecycle.requestSentAt)}
+- Download complete at: ${formatMicroToMilli(startTimesForLifecycle.downloadCompletedAt)}
+- Main thread processing completed at: ${formatMicroToMilli(startTimesForLifecycle.processingCompletedAt)}
 Durations:
-- Download time: ${formatMicro(downloadTime)}
-- Main thread processing time: ${formatMicro(mainThreadProcessingDuration)}
-- Total duration: ${formatMicro(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
+- Download time: ${formatMicroToMilli(downloadTime)}
+- Main thread processing time: ${formatMicroToMilli(mainThreadProcessingDuration)}
+- Total duration: ${formatMicroToMilli(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
 Redirects:${redirects.length ? '\n' + redirects.join('\n') : ' no redirects'}
 Status code: ${statusCode}
 MIME Type: ${mimeType}
+Protocol: ${protocol}
 ${priorityLines.join('\n')}
 Render blocking: ${renderBlocking ? 'Yes' : 'No'}
 From a service worker: ${fromServiceWorker ? 'Yes' : 'No'}
 ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [], true)}`;
+    }
+    static #getOrAssignUrlIndex(urlIdToIndex, url) {
+        let index = urlIdToIndex.get(url);
+        if (index) {
+            return index;
+        }
+        index = urlIdToIndex.size;
+        urlIdToIndex.set(url, index);
+        return index;
+    }
+    // This is the data passed to a network request when the Performance Insights agent is asking for information on multiple requests.
+    static getNetworkRequestsNewFormat(requests, parsedTrace) {
+        const urlIdToIndex = new Map();
+        let allRequestsText = '';
+        requests.map(request => {
+            const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
+            allRequestsText += this.networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex);
+        });
+        const urlsMapString = 'allUrls = ' +
+            `[${Array.from(urlIdToIndex.keys())
+                .map(url => {
+                return `${urlIdToIndex.get(url)}: ${url}`; // Removed the trailing comma here
+            })
+                .join(', ')}]`; // Explicitly join with a comma
+        return urlsMapString + '\n\n' + allRequestsText;
+    }
+    /**
+     *
+     * This is the network request data passed to a the Performance Insights agent.
+     *
+     * The `urlIdToIndex` Map is used to map URLs to numerical indices in order to not need to pass whole url every time it's mentioned.
+     * The map content is passed in the response together will all the requests data.
+     *
+     * The format is as follows:
+     * `urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value,header2Value,...]`
+     *
+     * - `urlIndex`: Numerical index for the request's URL, referencing the 'All URLs' list.
+     * Timings (all in milliseconds, relative to navigation start):
+     * - `queuedTime`: When the request was queued.
+     * - `requestSentTime`: When the request was sent.
+     * - `downloadCompleteTime`: When the download completed.
+     * - `processingCompleteTime`: When main thread processing finished.
+     * Durations (all in milliseconds):
+     * - `totalDuration`: Total time from the request being queued until its main thread processing completed.
+     * - `downloadDuration`: Time spent actively downloading the resource.
+     * - `mainThreadProcessingDuration`: Time spent on the main thread after the download completed.
+     * - `statusCode`: The HTTP status code of the response (e.g., 200, 404).
+     * - `mimeType`: The MIME type of the resource (e.g., "text/html", "application/javascript").
+     * - `priority`: The final network request priority (e.g., "VeryHigh", "Low").
+     * - `initialPriority`: The initial network request priority.
+     * - `finalPriority`: The final network request priority (redundant if `priority` is always final, but kept for clarity if `initialPriority` and `priority` differ).
+     * - `renderBlocking`: 't' if the request was render-blocking, 'f' otherwise.
+     * - `protocol`: The network protocol used (e.g., "h2", "http/1.1").
+     * - `fromServiceWorker`: 't' if the request was served from a service worker, 'f' otherwise.
+     * - `initiatorUrlIndex`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
+     * - `redirects`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
+     * `[redirectUrlIndex|startTime|duration]`, where: `redirectUrlIndex`: Numerical index for the redirect's URL. `startTime`: The start time of the redirect in milliseconds, relative to navigation start. `duration`: The duration of the redirect in milliseconds.
+     * - `responseHeaders`: A comma-separated list of values for specific, pre-defined response headers, enclosed in square brackets.
+     * The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+     */
+    static networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
+        const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol, } = request.args.data;
+        const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
+        const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
+        const queuedTime = formatMicroToMilli(request.ts - baseTime);
+        const requestSentTime = formatMicroToMilli(syntheticData.sendStartTime - baseTime);
+        const downloadCompleteTime = formatMicroToMilli(syntheticData.finishTime - baseTime);
+        const processingCompleteTime = formatMicroToMilli(request.ts + request.dur - baseTime);
+        const totalDuration = formatMicroToMilli(request.dur);
+        const downloadDuration = formatMicroToMilli(syntheticData.finishTime - syntheticData.downloadStart);
+        const mainThreadProcessingDuration = formatMicroToMilli(request.ts + request.dur - syntheticData.finishTime);
+        const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? 't' : 'f';
+        const finalPriority = priority;
+        const headerValues = responseHeaders?.map(header => header.value).join(',');
+        const redirects = request.args.data.redirects
+            .map(redirect => {
+            const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
+            const redirectStartTime = formatMicroToMilli(redirect.ts - baseTime);
+            const redirectDuration = formatMicroToMilli(redirect.dur);
+            return `[${urlIndex}|${redirectStartTime}|${redirectDuration}]`;
+        })
+            .join(',');
+        const initiator = parsedTrace.NetworkRequests.eventToInitiator.get(request);
+        const initiatorUrlIndex = initiator ? TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, initiator.args.data.url) : '';
+        const parts = [
+            urlIndex,
+            queuedTime,
+            requestSentTime,
+            downloadCompleteTime,
+            processingCompleteTime,
+            totalDuration,
+            downloadDuration,
+            mainThreadProcessingDuration,
+            statusCode,
+            mimeType,
+            priority,
+            initialPriority,
+            finalPriority,
+            renderBlocking,
+            protocol,
+            fromServiceWorker,
+            initiatorUrlIndex,
+            `[${redirects}]`,
+            `[${headerValues}]`,
+        ];
+        return parts.join(';');
     }
 }
 //# sourceMappingURL=PerformanceInsightFormatter.js.map

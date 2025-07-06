@@ -1397,9 +1397,6 @@
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
   },
-  "generated/Deprecation.ts | WebGPUAdapterIsFallbackAdapter": {
-    "message": "The GPUAdapter isFallbackAdapter attribute is deprecated, instead use the GPUAdapterInfo isFallbackAdapter attribute."
-  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "UTF-16 is not supported by response json in XMLHttpRequest"
   },
@@ -2085,7 +2082,7 @@
     "message": "HTTP/2 and HTTP/3 offer many benefits over HTTP/1.1, such as multiplexing. [Learn more about using modern HTTP](https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2/)."
   },
   "models/trace/insights/ModernHTTP.ts | noOldProtocolRequests": {
-    "message": "No requests used HTTP/1.1"
+    "message": "No requests used HTTP/1.1, or its current use of HTTP/1.1 does not present a significant optimization opportunity. HTTP/1.1 requests are only flagged if six or more static assets originate from the same origin, and they are not served from a local development environment or a third-party source."
   },
   "models/trace/insights/ModernHTTP.ts | protocol": {
     "message": "Protocol"
@@ -3593,6 +3590,9 @@
   "panels/application/components/BackForwardCacheStrings.ts | sharedWorker": {
     "message": "Pages that use SharedWorker are not currently eligible for back/forward cache."
   },
+  "panels/application/components/BackForwardCacheStrings.ts | sharedWorkerMessage": {
+    "message": "The page was evicted from the cache because it received a message from a SharedWorker"
+  },
   "panels/application/components/BackForwardCacheStrings.ts | speechRecognizer": {
     "message": "Pages that use SpeechRecognizer are not currently eligible for back/forward cache."
   },
@@ -5050,9 +5050,6 @@
   },
   "panels/application/ServiceWorkersView.ts | focus": {
     "message": "focus"
-  },
-  "panels/application/ServiceWorkersView.ts | inspect": {
-    "message": "Inspect"
   },
   "panels/application/ServiceWorkersView.ts | networkRequests": {
     "message": "Network requests"
@@ -6523,6 +6520,9 @@
   },
   "panels/elements/ElementIssueUtils.ts | interactiveContentOptionChild": {
     "message": "Interactive element inside of an <option> element"
+  },
+  "panels/elements/ElementIssueUtils.ts | interactiveContentSummaryDescendant": {
+    "message": "Interactive element inside of a <summary> element"
   },
   "panels/elements/ElementIssueUtils.ts | nonPhrasingContentOptionChild": {
     "message": "Non-phrasing content used within an <option> element"

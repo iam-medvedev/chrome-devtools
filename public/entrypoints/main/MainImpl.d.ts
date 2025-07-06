@@ -48,6 +48,12 @@ type ExternalRequestInput = {
     };
 } | {
     kind: 'PERFORMANCE_RELOAD_GATHER_INSIGHTS';
+} | {
+    kind: 'PERFORMANCE_ANALYZE_INSIGHT';
+    args: {
+        insightTitle: string;
+        prompt: string;
+    };
 };
 interface ExternalRequestResponse {
     response: string;

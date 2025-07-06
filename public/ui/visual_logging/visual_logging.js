@@ -277,6 +277,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "activation-value",
   "active",
   "active-keybind-set",
+  "active-network-condition-key",
   "activity",
   "ad",
   "ad-script",
@@ -427,6 +428,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "animation-timeline",
   "animation-timing-function",
   "animation-trigger",
+  "animation-trigger-behavior",
   "animation-trigger-exit-range",
   "animation-trigger-exit-range-end",
   "animation-trigger-exit-range-start",
@@ -622,6 +624,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "border-right-color",
   "border-right-style",
   "border-right-width",
+  "border-shape",
   "border-spacing",
   "border-start-end-radius",
   "border-start-start-radius",
@@ -947,9 +950,15 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "copy-selector",
   "copy-stack-trace",
   "copy-stacktrace",
+  "copy-step-as-extension-0",
+  "copy-step-as-extension-1",
+  "copy-step-as-extension-2",
+  "copy-step-as-extension-3",
+  "copy-step-as-extension-4",
   "copy-step-as-json",
   "copy-step-as-lighthouse",
   "copy-step-as-puppeteer",
+  "copy-step-as-puppeteer-firefox",
   "copy-step-as-puppeteer-replay",
   "copy-string-as-js-literal",
   "copy-string-as-json-literal",
@@ -1468,6 +1477,11 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "extend-grid-lines",
   "extend-grid-lines-false",
   "extend-grid-lines-true",
+  "extension-0",
+  "extension-1",
+  "extension-2",
+  "extension-3",
+  "extension-4",
   "extension-storage",
   "extension-storage-data",
   "extension-storage-for-domain",
@@ -1828,7 +1842,10 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "integer-8-bit",
   "interactions",
   "interactivity",
+  "interest-delay",
   "interest-groups",
+  "interest-hide-delay",
+  "interest-show-delay",
   "interest-target-delay",
   "interest-target-hide-delay",
   "interest-target-show-delay",
@@ -3575,6 +3592,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "text-wrap",
   "text-wrap-mode",
   "text-wrap-style",
+  "texttrack",
   "th",
   "third",
   "third-parties",
@@ -3675,6 +3693,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline.insight-ask-ai.lcp-by-phase",
   "timeline.insight-ask-ai.lcp-discovery",
   "timeline.insight-ask-ai.long-critical-network-tree",
+  "timeline.insight-ask-ai.modern-http",
   "timeline.insight-ask-ai.render-blocking-requests",
   "timeline.insight-ask-ai.slow-css-selector",
   "timeline.insight-ask-ai.third-parties",
@@ -3870,10 +3889,12 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "use-custom-accepted-encodings",
   "use-source-map-scopes",
   "user-agent",
+  "user-defined-network-conditions",
   "user-flow-name",
   "user-handle",
   "user-invalid",
   "user-select",
+  "user-selected-network-condition-key",
   "user-shortcuts",
   "user-valid",
   "user-verification",
@@ -4174,10 +4195,10 @@ function registerParentProvider(name, provider) {
   }
   parentProviders.set(name, provider);
 }
-var parentMap = /* @__PURE__ */ new WeakMap();
-registerParentProvider("mapped", (e) => parentMap.get(e));
+var PARENT = Symbol("veParent");
+registerParentProvider("mapped", (e) => e[PARENT]);
 function setMappedParent(element, parent2) {
-  parentMap.set(element, parent2);
+  element[PARENT] = parent2;
 }
 
 // gen/front_end/ui/visual_logging/Debugging.js

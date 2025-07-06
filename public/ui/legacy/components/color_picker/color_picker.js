@@ -1073,6 +1073,7 @@ import * as Host2 from "./../../../../core/host/host.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK from "./../../../../core/sdk/sdk.js";
+import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
 import * as IconButton3 from "./../../../components/icon_button/icon_button.js";
 import * as SrgbOverlay from "./../../../components/srgb_overlay/srgb_overlay.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
@@ -2351,9 +2352,8 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       UI4.ARIAUtils.markAsButton(colorElement);
       UI4.ARIAUtils.setLabel(colorElement, i18nString3(UIStrings3.colorS, { PH1: palette.colors[i] }));
       colorElement.tabIndex = -1;
-      colorElement.addEventListener("mousedown", this.paletteColorSelected.bind(this, palette.colors[i], palette.colorNames[i], Boolean(palette.matchUserFormat)));
-      colorElement.addEventListener("focus", this.paletteColorSelected.bind(this, palette.colors[i], palette.colorNames[i], Boolean(palette.matchUserFormat)));
-      colorElement.addEventListener("keydown", this.onPaletteColorKeydown.bind(this, i));
+      colorElement.addEventListener("mousedown", this.onPaletteColorKeydown.bind(this, palette, i));
+      colorElement.addEventListener("keydown", this.onPaletteColorKeydown.bind(this, palette, i));
       if (palette.mutable) {
         colorElementToMutable.set(colorElement, true);
         colorElementToColor.set(colorElement, palette.colors[i]);
@@ -2414,9 +2414,8 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
         UI4.ARIAUtils.markAsButton(shadeElement);
         UI4.ARIAUtils.setLabel(shadeElement, i18nString3(UIStrings3.colorS, { PH1: shades[i] }));
         shadeElement.tabIndex = -1;
-        shadeElement.addEventListener("mousedown", this.paletteColorSelected.bind(this, shades[i], shades[i], false));
-        shadeElement.addEventListener("focus", this.paletteColorSelected.bind(this, shades[i], shades[i], false));
-        shadeElement.addEventListener("keydown", this.onShadeColorKeydown.bind(this, colorElement));
+        shadeElement.addEventListener("mousedown", this.onShadeColorKeydown.bind(this, shades[i], colorElement));
+        shadeElement.addEventListener("keydown", this.onShadeColorKeydown.bind(this, shades[i], colorElement));
         this.shadesContainer.appendChild(shadeElement);
       }
     }
@@ -2588,17 +2587,18 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       /* Events.SIZE_CHANGED */
     );
   }
-  paletteColorSelected(colorText, colorName, matchUserFormat) {
-    const color = Common6.Color.parse(colorText);
-    if (!color) {
+  onPaletteColorKeydown(palette, colorIndex, event) {
+    if (event instanceof MouseEvent || Platform3.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+      const colorText = palette.colors[colorIndex];
+      const colorName = palette.colorNames[colorIndex];
+      const color = Common6.Color.parse(colorText);
+      if (color) {
+        this.innerSetColor(color, colorText, colorName, palette.matchUserFormat ? this.colorFormat : color.format(), ChangeSource.Other);
+      }
       return;
     }
-    this.innerSetColor(color, colorText, colorName, matchUserFormat ? this.colorFormat : color.format(), ChangeSource.Other);
-  }
-  onPaletteColorKeydown(colorIndex, event) {
-    const keyboardEvent = event;
     let nextColorIndex;
-    switch (keyboardEvent.key) {
+    switch (event.key) {
       case "ArrowLeft":
         nextColorIndex = colorIndex - 1;
         break;
@@ -2616,7 +2616,14 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       this.paletteContainer.childNodes[nextColorIndex].focus();
     }
   }
-  onShadeColorKeydown(colorElement, event) {
+  onShadeColorKeydown(shade, colorElement, event) {
+    if (event instanceof MouseEvent || Platform3.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+      const color = Common6.Color.parse(shade);
+      if (color) {
+        this.innerSetColor(color, shade, shade, color.format(), ChangeSource.Other);
+      }
+      return;
+    }
     const target = event.target;
     if (Platform3.KeyboardUtilities.isEscKey(event) || event.key === "Tab") {
       colorElement.focus();
@@ -2868,9 +2875,25 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     this.innerSetColor(color, text, void 0, void 0, ChangeSource.Other);
     event.preventDefault();
   }
+  #getValueSteppingForInput(element) {
+    const channel = this.color.channels[this.textValues.indexOf(element)];
+    switch (channel) {
+      case "r":
+      case "g":
+      case "b":
+        return this.color instanceof Common6.Color.ColorFunction ? { step: 0.01, range: { min: 0, max: 1 } } : { step: 1, range: { min: 0, max: 255 } };
+      case "alpha":
+      case "x":
+      case "y":
+      case "z":
+        return { step: 0.01, range: { min: 0, max: 1 } };
+      default:
+        return void 0;
+    }
+  }
   inputChanged(event) {
     const inputElement = event.currentTarget;
-    const newValue = UI4.UIUtils.createReplacementString(inputElement.value, event);
+    const newValue = UI4.UIUtils.createReplacementString(inputElement.value, event, void 0, this.#getValueSteppingForInput(inputElement));
     if (newValue) {
       inputElement.value = newValue;
       inputElement.selectionStart = 0;
@@ -3026,8 +3049,8 @@ var PaletteGenerator = class {
     });
   }
   async processStylesheet(stylesheet) {
-    let text = (await stylesheet.requestContent()).content || "";
-    text = text.toLowerCase();
+    const contentDataOrError = await stylesheet.requestContentData();
+    const text = TextUtils.ContentData.ContentData.textOr(contentDataOrError, "").toLowerCase();
     const regexResult = text.matchAll(/((?:rgb|hsl|hwb)a?\([^)]+\)|#[0-9a-f]{6}|#[0-9a-f]{3})/g);
     for (const { 0: c, index } of regexResult) {
       if (text.indexOf(";", index) < 0 || text.indexOf(":", index) > -1 && text.indexOf(":", index) < text.indexOf(";", index)) {

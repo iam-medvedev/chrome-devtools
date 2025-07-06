@@ -4,8 +4,9 @@ import * as SDK from '../../../core/sdk/sdk.js';
 import { type TemplateResult } from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
 import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type FunctionCallHandlerResult, MultimodalInputType, type ParsedAnswer, type ParsedResponse, type RequestOptions } from './AiAgent.js';
-declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect }: {
+declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect, contextNode }: {
     throwOnSideEffect: boolean;
+    contextNode: SDK.DOMModel.DOMNode | null;
 }): Promise<string>;
 type CreateExtensionScopeFunction = (changes: ChangeManager) => {
     install(): Promise<void>;

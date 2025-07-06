@@ -12,6 +12,9 @@ const { html } = Lit;
 export class ModernHTTP extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-modern-http`;
     internalName = 'modern-http';
+    hasAskAiSupport() {
+        return true;
+    }
     mapToRow(req) {
         return { values: [eventRef(req), req.args.data.protocol], overlays: [this.#createOverlayForRequest(req)] };
     }
@@ -25,13 +28,13 @@ export class ModernHTTP extends BaseInsightComponent {
         return this.model?.metricSavings?.LCP ?? null;
     }
     createOverlays() {
-        return this.model?.requests.map(req => this.#createOverlayForRequest(req)) ?? [];
+        return this.model?.http1Requests.map(req => this.#createOverlayForRequest(req)) ?? [];
     }
     renderContent() {
         if (!this.model) {
             return Lit.nothing;
         }
-        const rows = createLimitedRows(this.model.requests, this);
+        const rows = createLimitedRows(this.model.http1Requests, this);
         if (!rows.length) {
             return html `<div class="insight-section">${i18nString(UIStrings.noOldProtocolRequests)}</div>`;
         }

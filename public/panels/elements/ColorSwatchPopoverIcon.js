@@ -26,32 +26,38 @@ export class BezierPopoverIcon {
     treeElement;
     swatchPopoverHelper;
     swatch;
+    bezierText;
     boundBezierChanged;
     boundOnScroll;
     bezierEditor;
     scrollerElement;
     originalPropertyText;
-    constructor({ treeElement, swatchPopoverHelper, swatch, }) {
+    constructor({ treeElement, swatchPopoverHelper, swatch, bezierText, }) {
         this.treeElement = treeElement;
         this.swatchPopoverHelper = swatchPopoverHelper;
         this.swatch = swatch;
-        UI.Tooltip.Tooltip.install(this.swatch.iconElement(), i18nString(UIStrings.openCubicBezierEditor));
-        this.swatch.iconElement().addEventListener('click', this.iconClick.bind(this), false);
-        this.swatch.iconElement().addEventListener('mousedown', (event) => event.consume(), false);
+        this.bezierText = bezierText;
+        UI.Tooltip.Tooltip.install(this.swatch, i18nString(UIStrings.openCubicBezierEditor));
+        this.swatch.addEventListener('click', this.iconClick.bind(this), false);
+        this.swatch.addEventListener('keydown', this.iconClick.bind(this), false);
+        this.swatch.addEventListener('mousedown', (event) => event.consume(), false);
         this.boundBezierChanged = this.bezierChanged.bind(this);
         this.boundOnScroll = this.onScroll.bind(this);
     }
     iconClick(event) {
+        if (event instanceof KeyboardEvent && !Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+            return;
+        }
         event.consume(true);
         if (this.swatchPopoverHelper.isShowing()) {
             this.swatchPopoverHelper.hide(true);
             return;
         }
-        const model = InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(this.swatch.bezierText()) ||
+        const model = InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(this.bezierText.innerText) ||
             InlineEditor.AnimationTimingModel.LINEAR_BEZIER;
         this.bezierEditor = new InlineEditor.BezierEditor.BezierEditor(model);
         this.bezierEditor.addEventListener("BezierChanged" /* InlineEditor.BezierEditor.Events.BEZIER_CHANGED */, this.boundBezierChanged);
-        this.swatchPopoverHelper.show(this.bezierEditor, this.swatch.iconElement(), this.onPopoverHidden.bind(this));
+        this.swatchPopoverHelper.show(this.bezierEditor, this.swatch, this.onPopoverHidden.bind(this));
         this.scrollerElement = this.swatch.enclosingNodeOrSelfWithClass('style-panes-wrapper');
         if (this.scrollerElement) {
             this.scrollerElement.addEventListener('scroll', this.boundOnScroll, false);
@@ -64,7 +70,7 @@ export class BezierPopoverIcon {
         }
     }
     bezierChanged(event) {
-        this.swatch.setBezierText(event.data);
+        this.bezierText.textContent = event.data;
         void this.treeElement.applyStyleText(this.treeElement.renderedPropertyText(), false);
     }
     onScroll(_event) {

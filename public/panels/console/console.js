@@ -5597,12 +5597,13 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     if (!preventCollapse && this.tryToCollapseMessages(viewMessage, this.visibleViewMessages[this.visibleViewMessages.length - 1])) {
       return;
     }
+    const originatingMessage = viewMessage.consoleMessage().originatingMessage();
+    const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
+    viewMessage.setAdjacentUserCommandResult(adjacent);
     const currentGroup = viewMessage.consoleGroup();
-    if (!currentGroup?.messagesHidden()) {
-      const originatingMessage = viewMessage.consoleMessage().originatingMessage();
-      const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
-      viewMessage.setAdjacentUserCommandResult(adjacent);
-      showGroup(currentGroup, this.visibleViewMessages);
+    showGroup(currentGroup, this.visibleViewMessages);
+    const shouldShowMessage = !currentGroup?.messagesHidden();
+    if (shouldShowMessage) {
       this.visibleViewMessages.push(viewMessage);
       this.searchMessage(this.visibleViewMessages.length - 1);
     }

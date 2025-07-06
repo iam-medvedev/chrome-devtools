@@ -22,12 +22,13 @@ export declare const UIStrings: {
     /**
      * @description Text explaining that there were not requests that were slowed down by using HTTP/1.1. "HTTP/1.1" should not be translated.
      */
-    readonly noOldProtocolRequests: "No requests used HTTP/1.1";
+    readonly noOldProtocolRequests: "No requests used HTTP/1.1, or its current use of HTTP/1.1 does not present a significant optimization opportunity. HTTP/1.1 requests are only flagged if six or more static assets originate from the same origin, and they are not served from a local development environment or a third-party source.";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
 export type UseModernHTTPInsightModel = InsightModel<typeof UIStrings, {
-    requests: Types.Events.SyntheticNetworkRequest[];
+    http1Requests: Types.Events.SyntheticNetworkRequest[];
 }>;
+export declare function isModernHTTP(model: InsightModel): model is UseModernHTTPInsightModel;
 /**
  * Determine the set of resources that aren't HTTP/2 but should be.
  * We're a little conservative about what we surface for a few reasons:
@@ -47,5 +48,5 @@ export type UseModernHTTPInsightModel = InsightModel<typeof UIStrings, {
  * [2] https://www.twilio.com/blog/2017/10/http2-issues.html
  * [3] https://www.cachefly.com/http-2-is-not-a-magic-bullet/
  */
-export declare function determineNonHttp2Resources(requests: Types.Events.SyntheticNetworkRequest[], entityMappings: Handlers.Helpers.EntityMappings, firstPartyEntity: Handlers.Helpers.Entity | null): Types.Events.SyntheticNetworkRequest[];
+export declare function determineHttp1Requests(requests: Types.Events.SyntheticNetworkRequest[], entityMappings: Handlers.Helpers.EntityMappings, firstPartyEntity: Handlers.Helpers.Entity | null): Types.Events.SyntheticNetworkRequest[];
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): UseModernHTTPInsightModel;

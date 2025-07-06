@@ -122,5 +122,6 @@ export declare const enum InsightKeys {
     NETWORK_DEPENDENCY_TREE = "NetworkDependencyTree",
     RENDER_BLOCKING = "RenderBlocking",
     SLOW_CSS_SELECTOR = "SlowCSSSelector",
-    VIEWPORT = "Viewport"
+    VIEWPORT = "Viewport",
+    MODERN_HTTP = "ModernHTTP"
 }

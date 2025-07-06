@@ -17,6 +17,7 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
             const output = formatter.formatInsight();
             assert.isOk(insight.lcpRequest);
+            const lcpRequestFormatted = TraceEventFormatter.networkRequest(insight.lcpRequest, parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
             const expected = `## Insight Title: LCP breakdown
 
 ## Insight Summary:
@@ -25,6 +26,7 @@ This insight is used to analyze the time spent that contributed to the final LCP
 ## Detailed analysis:
 The Largest Contentful Paint (LCP) time for this navigation was 129.21 ms.
 The LCP resource was fetched from \`${insight.lcpRequest.args.data.url}\`.
+${lcpRequestFormatted}
 
 We can break this time down into the 4 phases that combine to make the LCP time:
 
@@ -134,6 +136,7 @@ Here is a list of the network requests that were render blocking on this page an
             const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
             const output = formatter.formatInsight();
             assert.isOk(insight.lcpRequest);
+            const lcpRequestFormatted = TraceEventFormatter.networkRequest(insight.lcpRequest, parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
             const expected = `## Insight Title: LCP request discovery
 
 ## Insight Summary:
@@ -147,6 +150,7 @@ It is important that all of these checks pass to minimize the delay between the 
 ## Detailed analysis:
 The Largest Contentful Paint (LCP) time for this navigation was 1,077.06 ms.
 The LCP resource was fetched from \`${insight.lcpRequest.args.data.url}\`.
+${lcpRequestFormatted}
 
 The result of the checks for this insight are:
 - fetchpriority=high should be applied: FAILED
@@ -285,6 +289,64 @@ The longest interaction on the page was a \`click\` which had a total duration o
             assert.strictEqual(output, expected);
         });
     });
+    describe('ModernHTTP', () => {
+        it('serializes the correct details when no requests are using legacy http', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('ModernHTTP', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Modern HTTP
+
+## Insight Summary:
+Modern HTTP protocols, such as HTTP/2, are more efficient than older versions like HTTP/1.1 because they allow for multiple requests and responses to be sent over a single network connection, significantly improving page load performance by reducing latency and overhead. This insight identifies requests that can be upgraded to a modern HTTP protocol.
+
+We apply a conservative approach when flagging HTTP/1.1 usage. This insight will only flag requests that meet all of the following criteria:
+1.  Were served over HTTP/1.1 or an earlier protocol.
+2.  Originate from an origin that serves at least 6 static asset requests, as the benefits of multiplexing are less significant with fewer requests.
+3.  Are not served from 'localhost' or coming from a third-party source, where developers have no control over the server's protocol.
+
+To pass this insight, ensure your server supports and prioritizes a modern HTTP protocol (like HTTP/2) for static assets, especially when serving a substantial number of them.
+
+## Detailed analysis:
+There are no requests that were served over a legacy HTTP protocol.
+
+## External resources:
+- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2`;
+            assert.strictEqual(output.trim(), expected.trim());
+        });
+        it('serializes the correct details when requests are using legacy http', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'http1.1.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('ModernHTTP', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, parsedTrace));
+            const output = formatter.formatInsight();
+            const requestDetails = insight.http1Requests
+                .map(request => TraceEventFormatter.networkRequest(request, parsedTrace, { verbose: true }))
+                .join('\n');
+            const expected = `## Insight Title: Modern HTTP
+
+## Insight Summary:
+Modern HTTP protocols, such as HTTP/2, are more efficient than older versions like HTTP/1.1 because they allow for multiple requests and responses to be sent over a single network connection, significantly improving page load performance by reducing latency and overhead. This insight identifies requests that can be upgraded to a modern HTTP protocol.
+
+We apply a conservative approach when flagging HTTP/1.1 usage. This insight will only flag requests that meet all of the following criteria:
+1.  Were served over HTTP/1.1 or an earlier protocol.
+2.  Originate from an origin that serves at least 6 static asset requests, as the benefits of multiplexing are less significant with fewer requests.
+3.  Are not served from 'localhost' or coming from a third-party source, where developers have no control over the server's protocol.
+
+To pass this insight, ensure your server supports and prioritizes a modern HTTP protocol (like HTTP/2) for static assets, especially when serving a substantial number of them.
+
+## Detailed analysis:
+Here is a list of the network requests that were served over a legacy HTTP protocol:
+${requestDetails}
+
+## External resources:
+- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2`;
+            assert.strictEqual(output.trim(), expected.trim());
+        });
+    });
     describe('Formatting TraceEvents', () => {
         it('formats network requests that have redirects', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz');
@@ -324,6 +386,7 @@ Initiator: https://chromedevtools.github.io/performance-stories/lcp-large-image/
 Redirects: no redirects
 Status code: 200
 MIME Type: text/css
+Protocol: unknown
 Priority: VeryHigh
 Render blocking: Yes
 From a service worker: No
@@ -356,6 +419,15 @@ Response headers
 - Duration: 13.93 ms
 - MIME type: text/css
 - This request was render blocking`;
+            assert.strictEqual(output, expected);
+        });
+        it('getNetworkRequestsNewFormat correctly formats network requests', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz');
+            const requests = parsedTrace.NetworkRequests.byTime;
+            const output = TraceEventFormatter.getNetworkRequestsNewFormat(requests, parsedTrace);
+            const expected = `allUrls = [0: http://localhost:3000/redirect3, 1: http://localhost:3000/, 2: http://localhost:3000/redirect1, 3: http://localhost:3000/redirect2]
+
+0;3.04\xA0ms;1,529.47\xA0ms;3,532.63\xA0ms;3,537.75\xA0ms;3,534.71\xA0ms;0.13\xA0ms;5.12\xA0ms;200;text/html;VeryHigh;VeryHigh;VeryHigh;f;http/1.1;false;;[[1|3.04\xA0ms|512.02\xA0ms],[2|515.06\xA0ms|505.67\xA0ms],[3|1,020.73\xA0ms|507.09\xA0ms]];[chunked,timeout=5,Tue, 11 Mar 2025 10:19:12 GMT,text/html,keep-alive]`;
             assert.strictEqual(output, expected);
         });
     });

@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import { dispatchClickEvent, dispatchMouseOverEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../../testing/ExpectStubCall.js';
+import { createViewFunctionStub } from '../../../testing/ViewFunctionHelpers.js';
 import * as Menus from '../../../ui/components/menus/menus.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Converters from '../converters/converters.js';
 import * as Models from '../models/models.js';
 import * as Components from './components.js';
@@ -18,11 +17,18 @@ describeWithEnvironment('RecordingView', () => {
     const recorderSettingsMock = {
         preferredCopyFormat: "json" /* Models.ConverterIds.ConverterIds.JSON */,
     };
-    async function renderView() {
-        const view = new Components.RecordingView.RecordingView();
-        recorderSettingsMock.preferredCopyFormat = "json" /* Models.ConverterIds.ConverterIds.JSON */;
-        renderElementIntoDOM(view);
-        view.data = {
+    const views = [];
+    afterEach(() => {
+        // Unregister global listeners in willHide to prevent leaks.
+        for (const view of views) {
+            view.willHide();
+        }
+    });
+    async function createView(output) {
+        const view = createViewFunctionStub(Components.RecordingView.RecordingView, output);
+        // recorderSettingsMock.preferredCopyFormat = Models.ConverterIds.ConverterIds.JSON;
+        const component = new Components.RecordingView.RecordingView(undefined, view);
+        Object.assign(component, {
             replayState: { isPlaying: false, isPausedOnBreakpoint: false },
             isRecording: false,
             recordingTogglingInProgress: false,
@@ -41,78 +47,49 @@ describeWithEnvironment('RecordingView', () => {
             ],
             extensionConverters: [],
             replayExtensions: [],
-        };
-        await RenderCoordinator.done();
-        return view;
-    }
-    async function waitForTextEditor(view) {
-        await getEventPromise(view, 'code-generated');
-        const textEditor = view.shadowRoot?.querySelector('devtools-text-editor');
-        assert.isNotNull(textEditor);
-        return textEditor;
-    }
-    function hoverOverScrollStep(view) {
-        const steps = view.shadowRoot?.querySelectorAll('devtools-step-view') || [];
-        assert.lengthOf(steps, 2);
-        dispatchMouseOverEvent(steps[1]);
-    }
-    function clickStep(view) {
-        const steps = view.shadowRoot?.querySelectorAll('devtools-step-view') || [];
-        assert.lengthOf(steps, 2);
-        dispatchClickEvent(steps[1]);
-    }
-    function dispatchOnStep(view, customEvent) {
-        const steps = view.shadowRoot?.querySelectorAll('devtools-step-view') || [];
-        assert.lengthOf(steps, 2);
-        steps[1].dispatchEvent(customEvent);
-    }
-    function clickShowCode(view) {
-        const button = view.shadowRoot?.querySelector('.show-code');
-        assert.isOk(button);
-        dispatchClickEvent(button);
-    }
-    function clickHideCode(view) {
-        const button = view.shadowRoot?.querySelector('[title="Hide code"]');
-        assert.isOk(button);
-        dispatchClickEvent(button);
-    }
-    async function waitForSplitViewSidebarToBeHidden(view) {
-        await getEventPromise(view, 'code-generated');
-        const splitView = view.shadowRoot?.querySelector('devtools-split-view');
-        assert.strictEqual(splitView?.getAttribute('sidebar-visibility'), 'hidden');
-    }
-    async function changeCodeView(view) {
-        const menu = view.shadowRoot?.querySelector('devtools-select-menu');
-        assert.isOk(menu);
-        const event = new Menus.SelectMenu.SelectMenuItemSelectedEvent("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
-        menu.dispatchEvent(event);
+        });
+        component.wasShown();
+        views.push(component);
+        await view.nextInput;
+        return [view, component];
     }
     it('should show code and highlight on hover', async () => {
-        const view = await renderView();
-        clickShowCode(view);
-        // Click is handled async, therefore, waiting for the text editor.
-        const textEditor = await waitForTextEditor(view);
-        assert.deepEqual(textEditor.editor.state.selection.toJSON(), {
+        const output = {
+            highlightLinesInEditor: sinon.stub(),
+        };
+        const [view] = await createView(output);
+        view.input.showCodeToggle();
+        const input = await view.nextInput;
+        assert.deepEqual(input.editorState?.selection.toJSON(), {
             ranges: [{ anchor: 0, head: 0 }],
             main: 0,
         });
-        hoverOverScrollStep(view);
-        assert.deepEqual(textEditor.editor.state.selection.toJSON(), {
-            ranges: [{ anchor: 34, head: 68 }],
-            main: 0,
+        const highlightCalled = expectCall(output.highlightLinesInEditor);
+        view.input.onStepHover({
+            target: {
+                step,
+            },
         });
+        const [line, length, scroll] = await highlightCalled;
+        assert.strictEqual(line, 3);
+        assert.strictEqual(length, 3);
+        assert.isFalse(scroll);
     });
-    it('should close code', async () => {
-        const view = await renderView();
-        clickShowCode(view);
-        // Click is handled async, therefore, waiting for the text editor.
-        await waitForTextEditor(view);
-        clickHideCode(view);
-        // Click is handled async, therefore, waiting for split view to be removed.
-        await waitForSplitViewSidebarToBeHidden(view);
+    it('should close code view', async () => {
+        const [view] = await createView();
+        view.input.showCodeToggle();
+        {
+            const input = await view.nextInput;
+            assert.isOk(input.showCodeView);
+        }
+        view.input.showCodeToggle();
+        {
+            const input = await view.nextInput;
+            assert.isNotOk(input.showCodeView);
+        }
     });
     it('should copy the recording to clipboard via copy event', async () => {
-        await renderView();
+        await createView();
         const clipboardData = new DataTransfer();
         const copyText = expectCall(sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText'));
         const event = new ClipboardEvent('copy', { clipboardData, bubbles: true });
@@ -121,8 +98,13 @@ describeWithEnvironment('RecordingView', () => {
         assert.strictEqual(JSON.stringify(userFlow, null, 2) + '\n', text);
     });
     it('should copy a step to clipboard via copy event', async () => {
-        const view = await renderView();
-        clickStep(view);
+        const [view] = await createView();
+        view.input.onStepClick({
+            target: {
+                step,
+            },
+            stopPropagation: sinon.stub(),
+        });
         const clipboardData = new DataTransfer();
         const isCalled = sinon.promise();
         const copyText = sinon
@@ -136,7 +118,7 @@ describeWithEnvironment('RecordingView', () => {
         sinon.assert.calledWith(copyText, JSON.stringify(step, null, 2) + '\n');
     });
     it('should copy a step to clipboard via custom event', async () => {
-        const view = await renderView();
+        const [view] = await createView();
         const isCalled = sinon.promise();
         const copyText = sinon
             .stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'copyText')
@@ -144,17 +126,23 @@ describeWithEnvironment('RecordingView', () => {
             void isCalled.resolve(true);
         });
         const event = new Components.StepView.CopyStepEvent(step);
-        dispatchOnStep(view, event);
+        view.input.onCopyStep(event);
         await isCalled;
         sinon.assert.calledWith(copyText, JSON.stringify(step, null, 2) + '\n');
     });
     it('should show code and change preferred copy method', async () => {
-        const view = await renderView();
-        clickShowCode(view);
-        await waitForTextEditor(view);
-        await changeCodeView(view);
-        await waitForTextEditor(view);
-        assert.notEqual(recorderSettingsMock.preferredCopyFormat, "json" /* Models.ConverterIds.ConverterIds.JSON */);
+        const [view] = await createView();
+        view.input.showCodeToggle();
+        {
+            const input = await view.nextInput;
+            assert.isOk(input.showCodeView);
+        }
+        view.input.onCodeFormatChange(new Menus.SelectMenu.SelectMenuItemSelectedEvent("@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */));
+        {
+            const input = await view.nextInput;
+            assert.strictEqual(input.recorderSettings?.preferredCopyFormat, "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
+            assert.strictEqual(recorderSettingsMock.preferredCopyFormat, "@puppeteer/replay" /* Models.ConverterIds.ConverterIds.REPLAY */);
+        }
     });
 });
 //# sourceMappingURL=RecordingView.test.js.map

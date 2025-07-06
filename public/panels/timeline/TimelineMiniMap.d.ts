@@ -38,6 +38,6 @@ export declare class TimelineMiniMap extends TimelineMiniMap_base {
     clearBoundsHighlight(): void;
     reset(): void;
     getControls(): TimelineEventOverview[];
-    setData(data: OverviewData): void;
+    setData(data: OverviewData | null): void;
 }
 export {};

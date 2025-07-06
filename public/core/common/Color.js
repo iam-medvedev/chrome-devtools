@@ -535,6 +535,7 @@ export class Lab {
     alpha;
     #authoredText;
     #rawParams;
+    channels = ["l" /* ColorChannel.L */, "a" /* ColorChannel.A */, "b" /* ColorChannel.B */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -650,6 +651,7 @@ export class LCH {
     h;
     alpha;
     #authoredText;
+    channels = ["l" /* ColorChannel.L */, "c" /* ColorChannel.C */, "h" /* ColorChannel.H */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -769,6 +771,7 @@ export class Oklab {
     b;
     alpha;
     #authoredText;
+    channels = ["l" /* ColorChannel.L */, "a" /* ColorChannel.A */, "b" /* ColorChannel.B */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -884,6 +887,7 @@ export class Oklch {
     h;
     alpha;
     #authoredText;
+    channels = ["l" /* ColorChannel.L */, "c" /* ColorChannel.C */, "h" /* ColorChannel.H */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -999,6 +1003,10 @@ export class ColorFunction {
     alpha;
     colorSpace;
     #authoredText;
+    get channels() {
+        return this.isXYZ() ? ["x" /* ColorChannel.X */, "y" /* ColorChannel.Y */, "z" /* ColorChannel.Z */, "alpha" /* ColorChannel.ALPHA */] :
+            ["r" /* ColorChannel.R */, "g" /* ColorChannel.G */, "b" /* ColorChannel.B */, "alpha" /* ColorChannel.ALPHA */];
+    }
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -1195,6 +1203,7 @@ export class HSL {
     alpha;
     #rawParams;
     #authoredText;
+    channels = ["h" /* ColorChannel.H */, "s" /* ColorChannel.S */, "l" /* ColorChannel.L */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -1321,6 +1330,7 @@ export class HWB {
     alpha;
     #rawParams;
     #authoredText;
+    channels = ["h" /* ColorChannel.H */, "w" /* ColorChannel.W */, "b" /* ColorChannel.B */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ false), "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#getRGBArray(/* withAlpha= */ true), "hexa" /* Format.HEXA */),
@@ -1452,6 +1462,7 @@ function toRgbValue(value) {
 }
 class ShortFormatColorBase {
     color;
+    channels = ["r" /* ColorChannel.R */, "g" /* ColorChannel.G */, "b" /* ColorChannel.B */, "alpha" /* ColorChannel.ALPHA */];
     constructor(color) {
         this.color = color;
     }
@@ -1549,6 +1560,7 @@ export class Legacy {
     #rgbaInternal;
     #authoredText;
     #formatInternal;
+    channels = ["r" /* ColorChannel.R */, "g" /* ColorChannel.G */, "b" /* ColorChannel.B */, "alpha" /* ColorChannel.ALPHA */];
     static #conversions = {
         ["hex" /* Format.HEX */]: (self) => new Legacy(self.#rgbaInternal, "hex" /* Format.HEX */),
         ["hexa" /* Format.HEXA */]: (self) => new Legacy(self.#rgbaInternal, "hexa" /* Format.HEXA */),

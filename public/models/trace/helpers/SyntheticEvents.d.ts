@@ -7,12 +7,6 @@ export declare class SyntheticEventsManager {
     static reset(): void;
     static registerSyntheticEvent<T extends Types.Events.SyntheticBased>(syntheticEvent: Omit<T, '_tag'>): T;
     private constructor();
-    /**
-     * Registers and returns a branded synthetic event. Synthetic events need to
-     * be created with this method to ensure they are registered and made
-     * available to load events using serialized keys.
-     */
-    registerSyntheticEvent<T extends Types.Events.SyntheticBased>(syntheticEvent: Omit<T, '_tag'>): T;
     syntheticEventForRawEventIndex(rawEventIndex: number): Types.Events.SyntheticBased;
     getSyntheticTraces(): Types.Events.SyntheticBased[];
     getRawTraceEvents(): readonly Types.Events.Event[];

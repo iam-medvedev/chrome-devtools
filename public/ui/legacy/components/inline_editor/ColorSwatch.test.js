@@ -11,13 +11,8 @@ function assertSwatch(swatch, expected) {
     assert.instanceOf(swatchEl, HTMLElement);
     const swatchInnerEl = swatch.shadowRoot.querySelector('.color-swatch-inner');
     assert.instanceOf(swatchInnerEl, HTMLElement);
-    const slotEl = swatch.shadowRoot.querySelector('slot');
-    assert.instanceOf(slotEl, HTMLElement);
     if (expected.backgroundColor) {
         assert.strictEqual(swatchInnerEl.style.backgroundColor, expected.backgroundColor, 'The swatch has the correct color');
-    }
-    if (expected.colorTextInSlot) {
-        assert.strictEqual(slotEl.textContent, expected.colorTextInSlot, 'The slot shows the correct default color');
     }
     if (expected.tooltip) {
         assert.strictEqual(swatchEl.getAttribute('title'), expected.tooltip, 'The tooltip is correct');
@@ -39,12 +34,10 @@ describeWithLocale('ColorSwatch', () => {
         const swatch = createSwatch(Common.Color.parse('red'));
         assertSwatch(swatch, {
             backgroundColor: 'red',
-            colorTextInSlot: 'red',
         });
         swatch.renderColor(new Common.Color.Legacy([1, .5, .2, .5], "rgba" /* Common.Color.Format.RGBA */));
         assertSwatch(swatch, {
             backgroundColor: 'rgba(255, 128, 51, 0.5)',
-            colorTextInSlot: 'rgb(255 128 51 / 50%)',
         });
     });
     it('displays a default tooltip', () => {

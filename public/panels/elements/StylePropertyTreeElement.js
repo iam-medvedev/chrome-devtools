@@ -179,7 +179,7 @@ export class CSSWideKeywordRenderer extends rendererBase(SDK.CSSPropertyParserMa
             SDK.CSSMetadata.cssMetadata().isCustomProperty(resolvedProperty.name)) {
             const color = Common.Color.parse(context.matchedResult.getComputedText(match.node));
             if (color) {
-                return [new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(color, swatch)];
+                return [new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(color, swatch), swatch];
             }
         }
         return [swatch];
@@ -254,7 +254,7 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
                 colorSwatch.setColor(ev.data.color);
             }));
         }
-        return [colorSwatch];
+        return [colorSwatch, varSwatch];
     }
     #handleVarDefinitionActivate(variable) {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.CustomPropertyLinkClicked);
@@ -376,10 +376,15 @@ export class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.Co
         if (match.node.name === 'CallExpression' && childTracingContexts) {
             const evaluation = context.tracing?.applyEvaluation(childTracingContexts, () => {
                 const displayColor = color.as(((color.alpha ?? 1) !== 1) ? "hexa" /* Common.Color.Format.HEXA */ : "hex" /* Common.Color.Format.HEX */);
+                const colorText = document.createElement('span');
+                colorText.textContent = displayColor.asString();
                 const swatch = new ColorRenderer(this.#stylesPane, null)
-                    .renderColorSwatch(displayColor.isGamutClipped() ? color : (displayColor.nickname() ?? displayColor));
+                    .renderColorSwatch(displayColor.isGamutClipped() ? color : (displayColor.nickname() ?? displayColor), colorText);
+                swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => {
+                    colorText.textContent = ev.data.color.asString();
+                });
                 context.addControl('color', swatch);
-                return { placeholder: [swatch] };
+                return { placeholder: [swatch, colorText] };
             });
             if (evaluation) {
                 return evaluation;
@@ -409,7 +414,7 @@ export class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.Co
                 });
             }
         }
-        return [swatch];
+        return [swatch, valueChild];
     }
     renderColorSwatch(color, valueChild) {
         const editable = this.#treeElement?.editable();
@@ -420,25 +425,24 @@ export class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.Co
         if (color) {
             swatch.renderColor(color);
         }
-        if (!valueChild) {
-            valueChild = swatch.createChild('span');
-            if (color) {
-                valueChild.textContent = color.getAuthoredText() ?? color.asString();
-            }
-        }
-        swatch.appendChild(valueChild);
         if (this.#treeElement?.editable()) {
             const treeElement = this.#treeElement;
             const onColorChanged = () => {
+                void treeElement.applyStyleText(treeElement.renderedPropertyText(), false);
+            };
+            const onColorFormatChanged = (e) => {
+                valueChild.textContent = e.data.color.getAuthoredText() ?? e.data.color.asString();
                 void treeElement.applyStyleText(treeElement.renderedPropertyText(), false);
             };
             swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, () => {
                 Host.userMetrics.swatchActivated(2 /* Host.UserMetrics.SwatchType.COLOR */);
             });
             swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, onColorChanged);
+            swatch.addEventListener(InlineEditor.ColorSwatch.ColorFormatChangedEvent.eventName, onColorFormatChanged);
             const swatchIcon = new ColorSwatchPopoverIcon(treeElement, treeElement.parentPane().swatchPopoverHelper(), swatch);
             swatchIcon.addEventListener("colorchanged" /* ColorSwatchPopoverIconEvents.COLOR_CHANGED */, ev => {
-                swatch.setColorText(ev.data);
+                valueChild.textContent = ev.data.getAuthoredText() ?? ev.data.asString();
+                swatch.setColor(ev.data);
             });
             if (treeElement.property.name === 'color') {
                 void this.#addColorContrastInfo(swatchIcon);
@@ -489,7 +493,7 @@ export class LightDarkColorRenderer extends rendererBase(SDK.CSSPropertyParserMa
         const colorSwatch = new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(undefined, content);
         context.addControl('color', colorSwatch);
         void this.applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls);
-        return [colorSwatch];
+        return [colorSwatch, content];
     }
     async applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls) {
         const activeColor = await this.#activeColor(match);
@@ -589,20 +593,25 @@ export class ColorMixRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         if (nodeId !== undefined && childTracingContexts) {
             const evaluation = context.tracing?.applyEvaluation(childTracingContexts, () => {
                 const initialColor = Common.Color.parse('#000');
-                const swatch = new ColorRenderer(this.#pane, null).renderColorSwatch(initialColor);
+                const colorText = document.createElement('span');
+                colorText.textContent = initialColor.asString();
+                const swatch = new ColorRenderer(this.#pane, null).renderColorSwatch(initialColor, colorText);
+                swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, ev => {
+                    colorText.textContent = ev.data.color.asString();
+                });
                 context.addControl('color', swatch);
                 const asyncEvalCallback = async () => {
                     const results = await this.#pane.cssModel()?.resolveValues(undefined, nodeId, colorMixText);
                     if (results) {
                         const color = Common.Color.parse(results[0]);
                         if (color) {
-                            swatch.setColorText(color.as("hexa" /* Common.Color.Format.HEXA */));
+                            swatch.setColor(color.as("hexa" /* Common.Color.Format.HEXA */));
                             return true;
                         }
                     }
                     return false;
                 };
-                return { placeholder: [swatch], asyncEvalCallback };
+                return { placeholder: [swatch, colorText], asyncEvalCallback };
             });
             if (evaluation) {
                 return evaluation;
@@ -798,21 +807,24 @@ export class BezierRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.B
         super();
         this.#treeElement = treeElement;
     }
-    render(match) {
-        return [this.renderSwatch(match)];
-    }
-    renderSwatch(match) {
-        if (!this.#treeElement?.editable() || !InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(match.text)) {
-            return document.createTextNode(match.text);
+    render(match, context) {
+        const nodes = match.node.name === 'CallExpression' ? Renderer.render(ASTUtils.children(match.node), context).nodes :
+            [document.createTextNode(match.text)];
+        if (!this.#treeElement?.editable() ||
+            !InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(context.matchedResult.getComputedText(match.node))) {
+            return nodes;
         }
         const swatchPopoverHelper = this.#treeElement.parentPane().swatchPopoverHelper();
-        const swatch = InlineEditor.Swatches.BezierSwatch.create();
-        swatch.iconElement().addEventListener('click', () => {
+        const icon = IconButton.Icon.create('bezier-curve-filled', 'bezier-swatch-icon');
+        icon.setAttribute('jslog', `${VisualLogging.showStyleEditor('bezier')}`);
+        icon.tabIndex = -1;
+        icon.addEventListener('click', () => {
             Host.userMetrics.swatchActivated(3 /* Host.UserMetrics.SwatchType.ANIMATION_TIMING */);
         });
-        swatch.setBezierText(match.text);
-        new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch });
-        return swatch;
+        const bezierText = document.createElement('span');
+        bezierText.append(...nodes);
+        new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch: icon, bezierText });
+        return [icon, bezierText];
     }
 }
 // clang-format off

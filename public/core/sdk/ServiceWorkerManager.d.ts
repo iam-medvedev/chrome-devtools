@@ -24,7 +24,6 @@ export declare class ServiceWorkerManager extends SDKModel<EventTypes> {
     startWorker(scopeURL: string): Promise<void>;
     skipWaiting(scopeURL: string): Promise<void>;
     stopWorker(versionId: string): Promise<void>;
-    inspectWorker(versionId: string): Promise<void>;
     workerRegistrationUpdated(registrations: Protocol.ServiceWorker.ServiceWorkerRegistration[]): void;
     workerVersionUpdated(versions: Protocol.ServiceWorker.ServiceWorkerVersion[]): void;
     workerErrorReported(payload: Protocol.ServiceWorker.ServiceWorkerErrorMessage): void;

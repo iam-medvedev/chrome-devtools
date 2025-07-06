@@ -28,8 +28,6 @@ export declare class AICallTree {
      * If the event is not valid, or there is an unexpected error building the tree, `null` is returned.
      */
     static fromEvent(selectedEvent: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
-    /** Define precisely how the call tree is serialized. Typically called from within `PerformanceAgent` */
-    serialize(): string;
     /**
      * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
      * BFS is important here because the serialization process assumes that direct child nodes
@@ -62,9 +60,8 @@ export declare class AICallTree {
      * their eventual IDs will follow this running count.
      */
     breadthFirstWalk(nodes: MapIterator<Trace.Extras.TraceTree.Node>, serializeNodeCallback: (currentNode: Trace.Extras.TraceTree.Node, nodeId: number, childrenStartingId?: number) => void): void;
-    serializeIntoCompressedFormat(): string;
-    stringifyNodeCompressed(node: Trace.Extras.TraceTree.Node, nodeId: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, allUrls: string[], childStartingNodeIndex?: number): string;
-    static stringifyNode(node: Trace.Extras.TraceTree.Node, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, nodeToIdMap: Map<Trace.Extras.TraceTree.Node, number>, allUrls: string[]): string;
+    serialize(): string;
+    stringifyNode(node: Trace.Extras.TraceTree.Node, nodeId: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, allUrls: string[], childStartingNodeIndex?: number): string;
     logDebug(): void;
 }
 /**

@@ -12,6 +12,7 @@ import * as EntriesFilter from './EntriesFilter.js';
 import * as EventsSerializer from './EventsSerializer.js';
 import * as EventsTimelineTreeView from './EventsTimelineTreeView.js';
 import * as ExtensionTrackAppender from './ExtensionTrackAppender.js';
+import * as ExternalRequests from './ExternalRequests.js';
 import * as FreshRecording from './FreshRecording.js';
 import * as GPUTrackAppender from './GPUTrackAppender.js';
 import * as Initiators from './Initiators.js';
@@ -45,5 +46,5 @@ import * as TrackConfiguration from './TrackConfiguration.js';
 import * as UIDevtoolsController from './UIDevtoolsController.js';
 import * as UIDevtoolsUtils from './UIDevtoolsUtils.js';
 import * as Utils from './utils/utils.js';
-export { AnimationsTrackAppender, AnnotationHelpers, AppenderUtils, BenchmarkEvents, CLSLinkifier, CompatibilityTracksAppender, CountersGraph, EntriesFilter, EventsSerializer, EventsTimelineTreeView, ExtensionTrackAppender, FreshRecording, GPUTrackAppender, Initiators, InteractionsTrackAppender, LayoutShiftsTrackAppender, ModificationsManager, NetworkTrackAppender, RecordingMetadata, SaveFileFormatter, TargetForEvent, ThirdPartyTreeView, ThreadAppender, TimelineController, TimelineDetailsView, TimelineEventOverview, TimelineFilters, TimelineFlameChartDataProvider, TimelineFlameChartNetworkDataProvider, TimelineFlameChartView, TimelineHistoryManager, TimelineLayersView, TimelineLoader, TimelineMiniMap, TimelinePaintProfilerView, TimelinePanel, TimelineSelection, TimelineTreeView, TimelineUIUtils, TimingsTrackAppender, TrackConfiguration, UIDevtoolsController, UIDevtoolsUtils, Utils, };
+export { AnimationsTrackAppender, AnnotationHelpers, AppenderUtils, BenchmarkEvents, CLSLinkifier, CompatibilityTracksAppender, CountersGraph, EntriesFilter, EventsSerializer, EventsTimelineTreeView, ExtensionTrackAppender, ExternalRequests, FreshRecording, GPUTrackAppender, Initiators, InteractionsTrackAppender, LayoutShiftsTrackAppender, ModificationsManager, NetworkTrackAppender, RecordingMetadata, SaveFileFormatter, TargetForEvent, ThirdPartyTreeView, ThreadAppender, TimelineController, TimelineDetailsView, TimelineEventOverview, TimelineFilters, TimelineFlameChartDataProvider, TimelineFlameChartNetworkDataProvider, TimelineFlameChartView, TimelineHistoryManager, TimelineLayersView, TimelineLoader, TimelineMiniMap, TimelinePaintProfilerView, TimelinePanel, TimelineSelection, TimelineTreeView, TimelineUIUtils, TimingsTrackAppender, TrackConfiguration, UIDevtoolsController, UIDevtoolsUtils, Utils, };
 //# sourceMappingURL=timeline.prebundle.js.map

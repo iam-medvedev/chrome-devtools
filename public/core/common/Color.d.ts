@@ -1,6 +1,21 @@
 import { type Color3D, type Color4D, type Color4DOr3D } from './ColorUtils.js';
 export declare function getFormat(formatText: string): Format | null;
 type ColorSpace = Format.SRGB | Format.SRGB_LINEAR | Format.DISPLAY_P3 | Format.A98_RGB | Format.PROPHOTO_RGB | Format.REC_2020 | Format.XYZ | Format.XYZ_D50 | Format.XYZ_D65;
+export declare const enum ColorChannel {
+    A = "a",
+    ALPHA = "alpha",
+    B = "b",
+    C = "c",
+    G = "g",
+    H = "h",
+    L = "l",
+    R = "r",
+    S = "s",
+    W = "w",
+    X = "x",
+    Y = "y",
+    Z = "z"
+}
 export declare function parse(text: string): Color | null;
 export declare function parseHueNumeric(value: string): number | null;
 export declare function hsl2rgb(hsl: Color4D): Color4D;
@@ -44,6 +59,7 @@ interface ColorConversions<T = void> {
 }
 export interface Color {
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     equal(color: Color): boolean;
     asString(format?: Format): string;
     setAlpha(alpha: number): Color;
@@ -85,6 +101,7 @@ export declare class Lab implements Color {
     readonly a: number;
     readonly b: number;
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(l: number, a: number, b: number, alpha: number | null, authoredText?: string | undefined);
     is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
     as<T extends Format>(format: T): ReturnType<ColorConversions[T]>;
@@ -105,6 +122,7 @@ export declare class LCH implements Color {
     readonly c: number;
     readonly h: number;
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(l: number, c: number, h: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
     is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
@@ -126,6 +144,7 @@ export declare class Oklab implements Color {
     readonly a: number;
     readonly b: number;
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(l: number, a: number, b: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
     is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
@@ -146,6 +165,7 @@ export declare class Oklch implements Color {
     readonly c: number;
     readonly h: number;
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(l: number, c: number, h: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
     is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
@@ -167,6 +187,7 @@ export declare class ColorFunction implements Color {
     readonly p2: number;
     readonly alpha: number | null;
     readonly colorSpace: ColorSpace;
+    get channels(): [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(colorSpace: ColorSpace, p0: number, p1: number, p2: number, alpha: number | null, authoredText?: string | undefined);
     asLegacyColor(): Legacy;
     is<T extends Format>(format: T): this is ReturnType<ColorConversions[T]>;
@@ -200,6 +221,7 @@ export declare class HSL implements Color {
     readonly s: number;
     readonly l: number;
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(h: number, s: number, l: number, alpha: number | null | undefined, authoredText?: string);
     equal(color: Color): boolean;
     asString(format?: Format | undefined): string;
@@ -222,6 +244,7 @@ export declare class HWB implements Color {
     readonly w: number;
     readonly b: number;
     readonly alpha: number | null;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(h: number, w: number, b: number, alpha: number | null, authoredText?: string);
     equal(color: Color): boolean;
     asString(format?: Format | undefined): string;
@@ -240,6 +263,7 @@ export declare class HWB implements Color {
 type LegacyColor = Format.HEX | Format.HEXA | Format.RGB | Format.RGBA;
 declare abstract class ShortFormatColorBase implements Color {
     protected readonly color: Legacy;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     constructor(color: Legacy);
     get alpha(): number | null;
     rgba(): Color4D;
@@ -270,6 +294,7 @@ export declare class Nickname extends ShortFormatColorBase {
 }
 export declare class Legacy implements Color {
     #private;
+    readonly channels: [ColorChannel, ColorChannel, ColorChannel, ColorChannel];
     get alpha(): number | null;
     asLegacyColor(): Legacy;
     nickname(): Nickname | null;

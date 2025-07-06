@@ -400,7 +400,6 @@ export class MainImpl {
         });
         const automaticFileSystemManager = Persistence.AutomaticFileSystemManager.AutomaticFileSystemManager.instance({
             forceNew: true,
-            hostConfig: Root.Runtime.hostConfig,
             inspectorFrontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance,
             projectSettingsModel,
         });
@@ -851,6 +850,12 @@ export async function handleExternalRequest(input) {
         case 'PERFORMANCE_RELOAD_GATHER_INSIGHTS': {
             const TimelinePanel = await import('../../panels/timeline/timeline.js');
             return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
+        }
+        case 'PERFORMANCE_ANALYZE_INSIGHT': {
+            const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
+            const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
+            const panelInstance = await AiAssistance.AiAssistancePanel.instance();
+            return await panelInstance.handleExternalRequest(input.args.prompt, "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */, input.args.insightTitle);
         }
         case 'LIVE_STYLE_DEBUGGER': {
             const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');

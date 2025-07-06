@@ -12,6 +12,7 @@ declare const Spectrum_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class Spectrum extends Spectrum_base {
+    #private;
     private colorInternal?;
     private gamut;
     private colorElement;
@@ -91,7 +92,6 @@ export declare class Spectrum extends Spectrum_base {
     private createPreviewPaletteElement;
     private paletteSelected;
     private resizeForSelectedPalette;
-    private paletteColorSelected;
     private onPaletteColorKeydown;
     private onShadeColorKeydown;
     private onAddColorMousedown;
@@ -101,7 +101,7 @@ export declare class Spectrum extends Spectrum_base {
     private deletePaletteColors;
     setColor(color: Common.Color.Color): void;
     private colorSelected;
-    private get color();
+    get color(): Common.Color.Color;
     private innerSetColor;
     colorName(): string | undefined;
     private colorString;

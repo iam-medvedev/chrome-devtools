@@ -122,7 +122,7 @@ export declare class VersionController {
     static readonly GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
     static readonly SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
     static readonly LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-    static readonly CURRENT_VERSION = 39;
+    static readonly CURRENT_VERSION = 40;
     constructor();
     /**
      * Force re-sets all version number settings to the current version without
@@ -177,6 +177,15 @@ export declare class VersionController {
     updateVersionFrom36To37(): void;
     updateVersionFrom37To38(): void;
     updateVersionFrom38To39(): void;
+    /**
+     * There are two related migrations here for handling network throttling persistence:
+     * 1. Go through all user custom throttling conditions and add a `key` property.
+     * 2. If the user has a 'preferred-network-condition' setting, take the value
+     *    of that and set the right key for the new 'active-network-condition-key'
+     *    setting. Then, remove the now-obsolete 'preferred-network-condition'
+     *    setting.
+     */
+    updateVersionFrom39To40(): void;
     private migrateSettingsFromLocalStorage;
     private clearBreakpointsWhenTooMany;
 }

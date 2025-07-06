@@ -28,7 +28,7 @@ export class AffectedDescendantsWithinSelectElementView extends AffectedElements
     }
     async #doUpdate() {
         this.clear();
-        await this.#appendDisallowedSelectDescendants(this.issue.getSelectElementAccessibilityIssues());
+        await this.#appendDisallowedSelectDescendants(this.issue.getElementAccessibilityIssues());
     }
     async #appendDisallowedSelectDescendant(issue) {
         const row = document.createElement('tr');

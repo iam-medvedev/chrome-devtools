@@ -199,7 +199,7 @@ summary label {
   gap: var(--sys-size-3);
 }
 
-summary label input[type="checkbox"] {
+summary devtools-checkbox {
   margin-top: 1px;
 }
 
@@ -1372,6 +1372,7 @@ import * as i18n7 from "./../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../core/platform/platform.js";
 import * as IssuesManager from "./../../../models/issues_manager/issues_manager.js";
 import * as Persistence from "./../../../models/persistence/persistence.js";
+import * as TextUtils from "./../../../models/text_utils/text_utils.js";
 import * as NetworkForward2 from "./../forward/forward.js";
 import * as Sources from "./../../sources/sources.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
@@ -1599,8 +1600,8 @@ var ResponseHeaderSection = class extends ResponseHeaderSectionBase {
       return;
     }
     try {
-      const deferredContent = await this.#uiSourceCode.requestContent();
-      this.#overrides = JSON.parse(deferredContent.content || "[]");
+      const contentData = await this.#uiSourceCode.requestContentData().then(TextUtils.ContentData.ContentData.contentDataOrEmpty);
+      this.#overrides = JSON.parse(contentData.text || "[]");
       if (!this.#overrides.every(Persistence.NetworkPersistenceManager.isHeaderOverride)) {
         throw new Error("Type mismatch after parsing");
       }
@@ -2370,11 +2371,10 @@ var Category = class extends HTMLElement {
             </div>
             <div class="hide-when-closed">
               ${this.#checked !== void 0 ? html6`
-                <label>
-                  <input type="checkbox" .checked=${this.#checked} @change=${this.#onCheckboxToggle}
+                <devtools-checkbox .checked=${this.#checked} @change=${this.#onCheckboxToggle}
                          jslog=${VisualLogging6.toggle("raw-headers").track({ change: true })}>
                   ${i18nString5(UIStrings5.raw)}
-                </label>` : Lit4.nothing}
+              </devtools-checkbox>` : Lit4.nothing}
             </div>
             <div class="hide-when-closed">${this.#additionalContent}</div>
           </div>

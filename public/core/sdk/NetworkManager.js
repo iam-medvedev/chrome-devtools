@@ -98,11 +98,26 @@ const CONNECTION_TYPES = new Map([
     ['wifi', "wifi" /* Protocol.Network.ConnectionType.Wifi */],
     ['wimax', "wimax" /* Protocol.Network.ConnectionType.Wimax */],
 ]);
+/**
+ * We store two settings to disk to persist network throttling.
+ * 1. The custom conditions that the user has defined.
+ * 2. The active `key` that applies the correct current preset.
+ * The reason the setting creation functions are defined here is because they are referred
+ * to in multiple places, and this ensures we don't have accidental typos which
+ * mean extra settings get mistakenly created.
+ */
+export function customUserNetworkConditionsSetting() {
+    return Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
+}
+export function activeNetworkThrottlingKeySetting() {
+    return Common.Settings.Settings.instance().createSetting('active-network-condition-key', "NO_THROTTLING" /* PredefinedThrottlingConditionKey.NO_THROTTLING */);
+}
 export class NetworkManager extends SDKModel {
     dispatcher;
     fetchDispatcher;
     #networkAgent;
     #bypassServiceWorkerSetting;
+    activeNetworkThrottlingKey = activeNetworkThrottlingKeySetting();
     constructor(target) {
         super(target);
         this.dispatcher = new NetworkDispatcher(this);
@@ -120,7 +135,10 @@ export class NetworkManager extends SDKModel {
                 Common.Settings.Settings.instance().createSetting('heuristic-mitigation-disabled', undefined).get())) {
             this.cookieControlFlagsSettingChanged();
         }
-        void this.#networkAgent.invoke_enable({ maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH, reportDirectSocketTraffic: true });
+        void this.#networkAgent.invoke_enable({
+            maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH,
+            reportDirectSocketTraffic: true,
+        });
         void this.#networkAgent.invoke_setAttachDebugStack({ enabled: true });
         this.#bypassServiceWorkerSetting =
             Common.Settings.Settings.instance().createSetting('bypass-service-worker', false);
@@ -340,6 +358,7 @@ export var Events;
  * @see https://crbug.com/342406608#comment10 for context around the addition of 4G presets in June 2024.
  */
 export const NoThrottlingConditions = {
+    key: "NO_THROTTLING" /* PredefinedThrottlingConditionKey.NO_THROTTLING */,
     title: i18nLazyString(UIStrings.noThrottling),
     i18nTitleKey: UIStrings.noThrottling,
     download: -1,
@@ -347,6 +366,7 @@ export const NoThrottlingConditions = {
     latency: 0,
 };
 export const OfflineConditions = {
+    key: "OFFLINE" /* PredefinedThrottlingConditionKey.OFFLINE */,
     title: i18nLazyString(UIStrings.offline),
     i18nTitleKey: UIStrings.offline,
     download: 0,
@@ -355,6 +375,7 @@ export const OfflineConditions = {
 };
 const slow3GTargetLatency = 400;
 export const Slow3GConditions = {
+    key: "SPEED_3G" /* PredefinedThrottlingConditionKey.SPEED_3G */,
     title: i18nLazyString(UIStrings.slowG),
     i18nTitleKey: UIStrings.slowG,
     // ~500Kbps down
@@ -369,6 +390,7 @@ export const Slow3GConditions = {
 // 2024 to align with LH (crbug.com/342406608).
 const slow4GTargetLatency = 150;
 export const Slow4GConditions = {
+    key: "SPEED_SLOW_4G" /* PredefinedThrottlingConditionKey.SPEED_SLOW_4G */,
     title: i18nLazyString(UIStrings.fastG),
     i18nTitleKey: UIStrings.fastG,
     // ~1.6 Mbps down
@@ -381,6 +403,7 @@ export const Slow4GConditions = {
 };
 const fast4GTargetLatency = 60;
 export const Fast4GConditions = {
+    key: "SPEED_FAST_4G" /* PredefinedThrottlingConditionKey.SPEED_FAST_4G */,
     title: i18nLazyString(UIStrings.fast4G),
     i18nTitleKey: UIStrings.fast4G,
     // 9 Mbps down
@@ -1252,13 +1275,13 @@ export class NetworkDispatcher {
 }
 let multiTargetNetworkManagerInstance;
 export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper {
-    #userAgentOverrideInternal = '';
+    #userAgentOverride = '';
     #userAgentMetadataOverride = null;
     #customAcceptedEncodings = null;
     #networkAgents = new Set();
     #fetchAgents = new Set();
     inflightMainResourceRequests = new Map();
-    #networkConditionsInternal = NoThrottlingConditions;
+    #networkConditions = NoThrottlingConditions;
     #updatingInterceptionPatternsPromise = null;
     #blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
     #blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
@@ -1360,24 +1383,24 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         this.#fetchAgents.delete(networkManager.target().fetchAgent());
     }
     isThrottling() {
-        return this.#networkConditionsInternal.download >= 0 || this.#networkConditionsInternal.upload >= 0 ||
-            this.#networkConditionsInternal.latency > 0;
+        return this.#networkConditions.download >= 0 || this.#networkConditions.upload >= 0 ||
+            this.#networkConditions.latency > 0;
     }
     isOffline() {
-        return !this.#networkConditionsInternal.download && !this.#networkConditionsInternal.upload;
+        return !this.#networkConditions.download && !this.#networkConditions.upload;
     }
     setNetworkConditions(conditions) {
-        this.#networkConditionsInternal = conditions;
+        this.#networkConditions = conditions;
         for (const agent of this.#networkAgents) {
             this.updateNetworkConditions(agent);
         }
         this.dispatchEventToListeners("ConditionsChanged" /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */);
     }
     networkConditions() {
-        return this.#networkConditionsInternal;
+        return this.#networkConditions;
     }
     updateNetworkConditions(networkAgent) {
-        const conditions = this.#networkConditionsInternal;
+        const conditions = this.#networkConditions;
         if (!this.isThrottling()) {
             void networkAgent.invoke_emulateNetworkConditions({
                 offline: false,
@@ -1406,7 +1429,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }
     }
     currentUserAgent() {
-        return this.#customUserAgent ? this.#customUserAgent : this.#userAgentOverrideInternal;
+        return this.#customUserAgent ? this.#customUserAgent : this.#userAgentOverride;
     }
     updateUserAgentOverride() {
         const userAgent = this.currentUserAgent();
@@ -1415,8 +1438,8 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }
     }
     setUserAgentOverride(userAgent, userAgentMetadataOverride) {
-        const uaChanged = (this.#userAgentOverrideInternal !== userAgent);
-        this.#userAgentOverrideInternal = userAgent;
+        const uaChanged = (this.#userAgentOverride !== userAgent);
+        this.#userAgentOverride = userAgent;
         if (!this.#customUserAgent) {
             this.#userAgentMetadataOverride = userAgentMetadataOverride;
             this.updateUserAgentOverride();
@@ -1573,7 +1596,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
 }
 export class InterceptedRequest {
     #fetchAgent;
-    #hasRespondedInternal;
+    #hasResponded = false;
     request;
     resourceType;
     responseStatusCode;
@@ -1582,7 +1605,6 @@ export class InterceptedRequest {
     networkRequest;
     constructor(fetchAgent, request, resourceType, requestId, networkRequest, responseStatusCode, responseHeaders) {
         this.#fetchAgent = fetchAgent;
-        this.#hasRespondedInternal = false;
         this.request = request;
         this.resourceType = resourceType;
         this.responseStatusCode = responseStatusCode;
@@ -1591,7 +1613,7 @@ export class InterceptedRequest {
         this.networkRequest = networkRequest;
     }
     hasResponded() {
-        return this.#hasRespondedInternal;
+        return this.#hasResponded;
     }
     static mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides) {
         // Generates a map containing the `set-cookie` headers. Valid `set-cookie`
@@ -1650,7 +1672,7 @@ export class InterceptedRequest {
         return mergedHeaders;
     }
     async continueRequestWithContent(contentBlob, encoded, responseHeaders, isBodyOverridden) {
-        this.#hasRespondedInternal = true;
+        this.#hasResponded = true;
         const body = encoded ? await contentBlob.text() : await Common.Base64.encode(contentBlob).catch(err => {
             console.error(err);
             return '';
@@ -1667,8 +1689,8 @@ export class InterceptedRequest {
         MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled" /* MultitargetNetworkManager.Events.REQUEST_FULFILLED */, this.request.url);
     }
     continueRequestWithoutChange() {
-        console.assert(!this.#hasRespondedInternal);
-        this.#hasRespondedInternal = true;
+        console.assert(!this.#hasResponded);
+        this.#hasResponded = true;
         void this.#fetchAgent.invoke_continueRequest({ requestId: this.requestId });
     }
     async responseBody() {
@@ -1685,7 +1707,7 @@ export class InterceptedRequest {
     }
     /**
      * Tries to determine the MIME type and charset for this intercepted request.
-     * Looks at the interecepted response headers first (for Content-Type header), then
+     * Looks at the intercepted response headers first (for Content-Type header), then
      * checks the `NetworkRequest` if we have one.
      */
     getMimeTypeAndCharset() {
@@ -1705,24 +1727,14 @@ export class InterceptedRequest {
  * same requestId due to redirects.
  */
 class ExtraInfoBuilder {
-    #requests;
-    #responseExtraInfoFlag;
-    #requestExtraInfos;
-    #responseExtraInfos;
-    #responseEarlyHintsHeaders;
-    #finishedInternal;
-    #webBundleInfo;
-    #webBundleInnerRequestInfo;
-    constructor() {
-        this.#requests = [];
-        this.#responseExtraInfoFlag = [];
-        this.#requestExtraInfos = [];
-        this.#responseEarlyHintsHeaders = [];
-        this.#responseExtraInfos = [];
-        this.#finishedInternal = false;
-        this.#webBundleInfo = null;
-        this.#webBundleInnerRequestInfo = null;
-    }
+    #requests = [];
+    #responseExtraInfoFlag = [];
+    #requestExtraInfos = [];
+    #responseExtraInfos = [];
+    #responseEarlyHintsHeaders = [];
+    #finished = false;
+    #webBundleInfo = null;
+    #webBundleInnerRequestInfo = null;
     addRequest(req) {
         this.#requests.push(req);
         this.sync(this.#requests.length - 1);
@@ -1762,7 +1774,7 @@ class ExtraInfoBuilder {
         this.updateFinalRequest();
     }
     finished() {
-        this.#finishedInternal = true;
+        this.#finished = true;
         // We may have missed responseReceived event in case of failure.
         // That said, the ExtraInfo events still may be here, so mark them
         // as present. Event if they are not, this is harmless.
@@ -1776,7 +1788,7 @@ class ExtraInfoBuilder {
         this.updateFinalRequest();
     }
     isFinished() {
-        return this.#finishedInternal;
+        return this.#finished;
     }
     sync(index) {
         const req = this.#requests[index];
@@ -1803,13 +1815,13 @@ class ExtraInfoBuilder {
         }
     }
     finalRequest() {
-        if (!this.#finishedInternal) {
+        if (!this.#finished) {
             return null;
         }
         return this.#requests[this.#requests.length - 1] || null;
     }
     updateFinalRequest() {
-        if (!this.#finishedInternal) {
+        if (!this.#finished) {
             return;
         }
         const finalRequest = this.finalRequest();
@@ -1819,33 +1831,6 @@ class ExtraInfoBuilder {
     }
 }
 SDKModel.register(NetworkManager, { capabilities: 16 /* Capability.NETWORK */, autostart: true });
-export class ConditionsSerializer {
-    stringify(value) {
-        const conditions = value;
-        try {
-            return JSON.stringify({
-                ...conditions,
-                title: typeof conditions.title === 'function' ? conditions.title() : conditions.title,
-            });
-        }
-        catch {
-            // See: crbug.com/420384038
-            // A rename of the i18n strings means that if a user has an old version and we try to parse it, it errors.
-            // In this case, we catch that and just fall back to the default, no
-            // throttling condition. It's not ideal, but it means we don't break the
-            // user's DevTools. We have also landed a migration (see common/Settings.ts) to upgrade users.
-            return new ConditionsSerializer().stringify(NoThrottlingConditions);
-        }
-    }
-    parse(serialized) {
-        const parsed = JSON.parse(serialized);
-        return {
-            ...parsed,
-            // eslint-disable-next-line rulesdir/l10n-i18nString-call-only-with-uistrings
-            title: parsed.i18nTitleKey ? i18nLazyString(parsed.i18nTitleKey) : parsed.title,
-        };
-    }
-}
 export function networkConditionsEqual(first, second) {
     // Caution: titles might be different function instances, which produce
     // the same value.
@@ -1857,5 +1842,24 @@ export function networkConditionsEqual(first, second) {
     return second.download === first.download && second.upload === first.upload && second.latency === first.latency &&
         first.packetLoss === second.packetLoss && first.packetQueueLength === second.packetQueueLength &&
         first.packetReordering === second.packetReordering && secondTitle === firstTitle;
+}
+export const THROTTLING_CONDITIONS_LOOKUP = new Map([
+    ["NO_THROTTLING" /* PredefinedThrottlingConditionKey.NO_THROTTLING */, NoThrottlingConditions],
+    ["OFFLINE" /* PredefinedThrottlingConditionKey.OFFLINE */, OfflineConditions],
+    ["SPEED_3G" /* PredefinedThrottlingConditionKey.SPEED_3G */, Slow3GConditions],
+    ["SPEED_SLOW_4G" /* PredefinedThrottlingConditionKey.SPEED_SLOW_4G */, Slow4GConditions],
+    ["SPEED_FAST_4G" /* PredefinedThrottlingConditionKey.SPEED_FAST_4G */, Fast4GConditions]
+]);
+function keyIsPredefined(key) {
+    return !key.startsWith('USER_CUSTOM_SETTING_');
+}
+export function keyIsCustomUser(key) {
+    return key.startsWith('USER_CUSTOM_SETTING_');
+}
+export function getPredefinedCondition(key) {
+    if (!keyIsPredefined(key)) {
+        return null;
+    }
+    return THROTTLING_CONDITIONS_LOOKUP.get(key) ?? null;
 }
 //# sourceMappingURL=NetworkManager.js.map

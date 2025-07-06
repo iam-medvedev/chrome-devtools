@@ -49,6 +49,7 @@ async function innerForTraceCalculate({ recordingStartTime, cruxFieldData } = {}
             packetQueueLength: networkConditions.packetQueueLength,
             packetReordering: networkConditions.packetReordering,
             targetLatency: networkConditions.targetLatency,
+            key: networkConditions.key,
         };
         networkTitle = typeof networkConditions.title === 'function' ? networkConditions.title() : networkConditions.title;
     }

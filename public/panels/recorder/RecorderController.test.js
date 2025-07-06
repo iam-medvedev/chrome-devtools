@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { describeWithEnvironment, setupActionRegistry, } from '../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
+import * as UI from '../../ui/legacy/legacy.js';
 import * as Components from './components/components.js';
 import * as Models from './models/models.js';
 import { RecorderController } from './recorder.js';
@@ -43,7 +44,13 @@ describeWithEnvironment('RecorderController', () => {
     });
     describe('StepView', () => {
         async function dispatchRecordingViewEvent(controller, event) {
-            const recordingView = controller.shadowRoot?.querySelector('devtools-recording-view');
+            const recordingViewWidgetElement = controller.shadowRoot?.querySelector('.recording-view');
+            if (!recordingViewWidgetElement) {
+                throw new Error('Could not find RecordingView widget element');
+            }
+            const widget = UI.Widget.Widget.getOrCreateWidget(recordingViewWidgetElement);
+            await widget.updateComplete;
+            const recordingView = widget.contentElement?.querySelector('.recording-view');
             assert.isOk(recordingView);
             recordingView?.dispatchEvent(event);
             await RenderCoordinator.done();

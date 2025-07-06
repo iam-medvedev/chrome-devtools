@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
-import { raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
+import { getEventPromise, raf, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components.js';
+import * as Insights from './insights/insights.js';
 describeWithEnvironment('Sidebar', () => {
     async function renderSidebar(parsedTrace, metadata, insights) {
         const container = document.createElement('div');
@@ -37,6 +39,35 @@ describeWithEnvironment('Sidebar', () => {
         const tabs = Array.from(tabbedPane.querySelectorAll('[role="tab"]'));
         const selectedTabLabels = tabs.filter(tab => tab.classList.contains('selected')).map(elem => elem.getAttribute('aria-label'));
         assert.deepEqual(selectedTabLabels, ['Insights']);
+    });
+    it('collapses the active insight when the sidebar is closed', async function () {
+        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        assert.isOk(insights);
+        const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+        assert.isOk(firstNav.args.data?.navigationId);
+        const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
+        const sidebar = await renderSidebar(parsedTrace, metadata, insights);
+        sidebar.setActiveInsight({ model: insight, insightSetKey: firstNav.args.data.navigationId }, { highlight: false });
+        const deactivateEvent = getEventPromise(sidebar.element, Insights.SidebarInsight.InsightDeactivated.eventName);
+        sidebar.hideWidget();
+        await deactivateEvent;
+    });
+    it('restores the active insight when it is opened again', async function () {
+        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        assert.isOk(insights);
+        const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+        assert.isOk(firstNav.args.data?.navigationId);
+        const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
+        const sidebar = await renderSidebar(parsedTrace, metadata, insights);
+        sidebar.setActiveInsight({ model: insight, insightSetKey: firstNav.args.data.navigationId }, { highlight: false });
+        const deactivateEvent = getEventPromise(sidebar.element, Insights.SidebarInsight.InsightDeactivated.eventName);
+        sidebar.hideWidget();
+        await deactivateEvent;
+        const activateEvent = getEventPromise(sidebar.element, Insights.SidebarInsight.InsightActivated.eventName);
+        sidebar.showWidget();
+        const event = await activateEvent;
+        assert.strictEqual(event.model, insight);
+        assert.strictEqual(event.insightSetKey, firstNav.args.data.navigationId);
     });
     it('disables the insights tab if there are no insights', async function () {
         const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');

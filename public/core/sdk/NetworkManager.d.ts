@@ -2,17 +2,27 @@ import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
-import type { Serializer } from '../common/Settings.js';
 import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import { NetworkRequest } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
 import { type SDKModelObserver } from './TargetManager.js';
+/**
+ * We store two settings to disk to persist network throttling.
+ * 1. The custom conditions that the user has defined.
+ * 2. The active `key` that applies the correct current preset.
+ * The reason the setting creation functions are defined here is because they are referred
+ * to in multiple places, and this ensures we don't have accidental typos which
+ * mean extra settings get mistakenly created.
+ */
+export declare function customUserNetworkConditionsSetting(): Common.Settings.Setting<Conditions[]>;
+export declare function activeNetworkThrottlingKeySetting(): Common.Settings.Setting<ThrottlingConditionKey>;
 export declare class NetworkManager extends SDKModel<EventTypes> {
     #private;
     readonly dispatcher: NetworkDispatcher;
     readonly fetchDispatcher: FetchDispatcher;
+    readonly activeNetworkThrottlingKey: Common.Settings.Setting<ThrottlingConditionKey>;
     constructor(target: Target);
     static forRequest(request: NetworkRequest): NetworkManager | null;
     static canReplayRequest(request: NetworkRequest): boolean;
@@ -245,7 +255,7 @@ export declare class InterceptedRequest {
     isRedirect(): boolean;
     /**
      * Tries to determine the MIME type and charset for this intercepted request.
-     * Looks at the interecepted response headers first (for Content-Type header), then
+     * Looks at the intercepted response headers first (for Content-Type header), then
      * checks the `NetworkRequest` if we have one.
      */
     getMimeTypeAndCharset(): {
@@ -253,12 +263,33 @@ export declare class InterceptedRequest {
         charset: string | null;
     };
 }
-export declare class ConditionsSerializer implements Serializer<Conditions, Conditions> {
-    stringify(value: unknown): string;
-    parse(serialized: string): Conditions;
-}
 export declare function networkConditionsEqual(first: Conditions, second: Conditions): boolean;
+/**
+ * IMPORTANT: this key is used as the value that is persisted so we remember
+ * the user's throttling settings
+ *
+ * This means that it is very important that;
+ * 1. Each Conditions that is defined must have a unique key.
+ * 2. The keys & values DO NOT CHANGE for a particular condition, else we might break
+ *    DevTools when restoring a user's persisted setting.
+ *
+ * If you do want to change them, you need to handle that in a migration, but
+ * please talk to jacktfranklin@ first.
+ */
+export declare const enum PredefinedThrottlingConditionKey {
+    NO_THROTTLING = "NO_THROTTLING",
+    OFFLINE = "OFFLINE",
+    SPEED_3G = "SPEED_3G",
+    SPEED_SLOW_4G = "SPEED_SLOW_4G",
+    SPEED_FAST_4G = "SPEED_FAST_4G"
+}
+export type UserDefinedThrottlingConditionKey = `USER_CUSTOM_SETTING_${number}`;
+export type ThrottlingConditionKey = PredefinedThrottlingConditionKey | UserDefinedThrottlingConditionKey;
+export declare const THROTTLING_CONDITIONS_LOOKUP: ReadonlyMap<PredefinedThrottlingConditionKey, Conditions>;
+export declare function keyIsCustomUser(key: ThrottlingConditionKey): key is UserDefinedThrottlingConditionKey;
+export declare function getPredefinedCondition(key: ThrottlingConditionKey): Conditions | null;
 export interface Conditions {
+    readonly key: ThrottlingConditionKey;
     download: number;
     upload: number;
     latency: number;

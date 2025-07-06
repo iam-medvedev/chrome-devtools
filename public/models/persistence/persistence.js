@@ -1737,7 +1737,8 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     }
   }
   async #getHeaderOverridesFromUiSourceCode(uiSourceCode) {
-    const content = (await uiSourceCode.requestContent()).content || "[]";
+    const contentData = await uiSourceCode.requestContentData().then(TextUtils4.ContentData.ContentData.contentDataOrEmpty);
+    const content = contentData.text || "[]";
     let headerOverrides = [];
     try {
       headerOverrides = JSON.parse(content);
@@ -2921,30 +2922,28 @@ var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Commo
   /**
    * @internal
    */
-  constructor(hostConfig, inspectorFrontendHost, projectSettingsModel) {
+  constructor(inspectorFrontendHost, projectSettingsModel) {
     super();
     this.#automaticFileSystem = null;
     this.#inspectorFrontendHost = inspectorFrontendHost;
     this.#projectSettingsModel = projectSettingsModel;
-    if (hostConfig.devToolsAutomaticFileSystems?.enabled) {
-      this.#inspectorFrontendHost.events.addEventListener(Host7.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
-      this.#projectSettingsModel.addEventListener("AvailabilityChanged", this.#availabilityChanged, this);
-      this.#availabilityChanged({ data: this.#projectSettingsModel.availability });
-      this.#projectSettingsModel.addEventListener("ProjectSettingsChanged", this.#projectSettingsChanged, this);
-      this.#projectSettingsChanged({ data: this.#projectSettingsModel.projectSettings });
-    }
+    this.#inspectorFrontendHost.events.addEventListener(Host7.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
+    this.#projectSettingsModel.addEventListener("AvailabilityChanged", this.#availabilityChanged, this);
+    this.#availabilityChanged({ data: this.#projectSettingsModel.availability });
+    this.#projectSettingsModel.addEventListener("ProjectSettingsChanged", this.#projectSettingsChanged, this);
+    this.#projectSettingsChanged({ data: this.#projectSettingsModel.projectSettings });
   }
   /**
    * Yields the `AutomaticFileSystemManager` singleton.
    *
    * @returns the singleton.
    */
-  static instance({ forceNew, hostConfig, inspectorFrontendHost, projectSettingsModel } = { forceNew: false, hostConfig: null, inspectorFrontendHost: null, projectSettingsModel: null }) {
+  static instance({ forceNew, inspectorFrontendHost, projectSettingsModel } = { forceNew: false, inspectorFrontendHost: null, projectSettingsModel: null }) {
     if (!automaticFileSystemManagerInstance || forceNew) {
-      if (!hostConfig || !inspectorFrontendHost || !projectSettingsModel) {
-        throw new Error("Unable to create AutomaticFileSystemManager: hostConfig, inspectorFrontendHost, and projectSettingsModel must be provided");
+      if (!inspectorFrontendHost || !projectSettingsModel) {
+        throw new Error("Unable to create AutomaticFileSystemManager: inspectorFrontendHost, and projectSettingsModel must be provided");
       }
-      automaticFileSystemManagerInstance = new _AutomaticFileSystemManager(hostConfig, inspectorFrontendHost, projectSettingsModel);
+      automaticFileSystemManagerInstance = new _AutomaticFileSystemManager(inspectorFrontendHost, projectSettingsModel);
     }
     return automaticFileSystemManagerInstance;
   }

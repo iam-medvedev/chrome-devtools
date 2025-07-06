@@ -130,11 +130,11 @@ export interface HostConfigAiAssistanceFileAgent {
     enabled: boolean;
     userTier: string;
 }
-/**
- * @see http://go/chrome-devtools:automatic-workspace-folders-design
- */
-export interface HostConfigAutomaticFileSystems {
+export interface HostConfigAiCodeCompletion {
+    modelId: string;
+    temperature: number;
     enabled: boolean;
+    userTier: string;
 }
 export interface HostConfigVeLogging {
     enabled: boolean;
@@ -186,7 +186,6 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
-    devToolsAutomaticFileSystems: HostConfigAutomaticFileSystems;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsWellKnown: HostConfigWellKnown;
     devToolsPrivacyUI: HostConfigPrivacyUI;

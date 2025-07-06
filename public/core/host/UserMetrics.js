@@ -849,11 +849,11 @@ export var IssueCreated;
     IssueCreated[IssueCreated["CookieIssue::WarnThirdPartyPhaseout::SetCookie"] = 83] = "CookieIssue::WarnThirdPartyPhaseout::SetCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie"] = 84] = "CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie";
     IssueCreated[IssueCreated["CookieIssue::ExcludeThirdPartyPhaseout::SetCookie"] = 85] = "CookieIssue::ExcludeThirdPartyPhaseout::SetCookie";
-    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::DisallowedSelectChild"] = 86] = "SelectElementAccessibilityIssue::DisallowedSelectChild";
-    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::DisallowedOptGroupChild"] = 87] = "SelectElementAccessibilityIssue::DisallowedOptGroupChild";
-    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::NonPhrasingContentOptionChild"] = 88] = "SelectElementAccessibilityIssue::NonPhrasingContentOptionChild";
-    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::InteractiveContentOptionChild"] = 89] = "SelectElementAccessibilityIssue::InteractiveContentOptionChild";
-    IssueCreated[IssueCreated["SelectElementAccessibilityIssue::InteractiveContentLegendChild"] = 90] = "SelectElementAccessibilityIssue::InteractiveContentLegendChild";
+    IssueCreated[IssueCreated["ElementAccessibilityIssue::DisallowedSelectChild"] = 86] = "ElementAccessibilityIssue::DisallowedSelectChild";
+    IssueCreated[IssueCreated["ElementAccessibilityIssue::DisallowedOptGroupChild"] = 87] = "ElementAccessibilityIssue::DisallowedOptGroupChild";
+    IssueCreated[IssueCreated["ElementAccessibilityIssue::NonPhrasingContentOptionChild"] = 88] = "ElementAccessibilityIssue::NonPhrasingContentOptionChild";
+    IssueCreated[IssueCreated["ElementAccessibilityIssue::InteractiveContentOptionChild"] = 89] = "ElementAccessibilityIssue::InteractiveContentOptionChild";
+    IssueCreated[IssueCreated["ElementAccessibilityIssue::InteractiveContentLegendChild"] = 90] = "ElementAccessibilityIssue::InteractiveContentLegendChild";
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::MissingSignatureHeader"] = 91] = "SRIMessageSignatureIssue::MissingSignatureHeader";
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::MissingSignatureInputHeader"] = 92] = "SRIMessageSignatureIssue::MissingSignatureInputHeader";
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::InvalidSignatureHeader"] = 93] = "SRIMessageSignatureIssue::InvalidSignatureHeader";
@@ -876,8 +876,9 @@ export var IssueCreated;
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::ValidationFailedSignatureMismatch"] = 110] = "SRIMessageSignatureIssue::ValidationFailedSignatureMismatch";
     IssueCreated[IssueCreated["CorsIssue::LocalNetworkAccessPermissionDenied"] = 111] = "CorsIssue::LocalNetworkAccessPermissionDenied";
     IssueCreated[IssueCreated["SRIMessageSignatureIssue::ValidationFailedIntegrityMismatch"] = 112] = "SRIMessageSignatureIssue::ValidationFailedIntegrityMismatch";
+    IssueCreated[IssueCreated["ElementAccessibilityIssue::InteractiveContentSummaryDescendant"] = 113] = "ElementAccessibilityIssue::InteractiveContentSummaryDescendant";
     /* eslint-enable @typescript-eslint/naming-convention */
-    IssueCreated[IssueCreated["MAX_VALUE"] = 113] = "MAX_VALUE";
+    IssueCreated[IssueCreated["MAX_VALUE"] = 114] = "MAX_VALUE";
 })(IssueCreated || (IssueCreated = {}));
 export var Language;
 (function (Language) {

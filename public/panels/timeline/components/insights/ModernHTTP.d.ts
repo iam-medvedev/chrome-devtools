@@ -9,6 +9,7 @@ export declare class ModernHTTP extends BaseInsightComponent<UseModernHTTPInsigh
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     mapToRow(req: Trace.Types.Events.SyntheticNetworkRequest): TableDataRow;
     createAggregatedTableRow(remaining: Trace.Types.Events.SyntheticNetworkRequest[]): TableDataRow;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;

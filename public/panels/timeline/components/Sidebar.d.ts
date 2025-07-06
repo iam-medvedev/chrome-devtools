@@ -27,9 +27,9 @@ export declare const DEFAULT_SIDEBAR_TAB = SidebarTabs.INSIGHTS;
 export declare const DEFAULT_SIDEBAR_WIDTH_PX = 240;
 export declare class SidebarWidget extends UI.Widget.VBox {
     #private;
-    userHasOpenedSidebarOnce(): boolean;
     constructor();
     wasShown(): void;
+    willHide(): void;
     setAnnotations(updatedAnnotations: Trace.Types.File.Annotation[], annotationEntryToColorMap: Map<Trace.Types.Events.Event, string>): void;
     setParsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, metadata: Trace.Types.File.MetaData | null): void;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null): void;

@@ -403,7 +403,7 @@ function modifiedHexValue(hexString, event) {
     }
     return resultString;
 }
-export function modifiedFloatNumber(number, event, modifierMultiplier) {
+export function modifiedFloatNumber(number, event, modifierMultiplier, range) {
     const direction = getValueModificationDirection(event);
     if (!direction) {
         return null;
@@ -432,13 +432,19 @@ export function modifiedFloatNumber(number, event, modifierMultiplier) {
     }
     // Make the new number and constrain it to a precision of 6, this matches numbers the engine returns.
     // Use the Number constructor to forget the fixed precision, so 1.100000 will print as 1.1.
-    const result = Number((number + delta).toFixed(6));
+    let result = Number((number + delta).toFixed(6));
+    if (range?.min !== undefined) {
+        result = Math.max(result, range.min);
+    }
+    if (range?.max !== undefined) {
+        result = Math.min(result, range.max);
+    }
     if (!String(result).match(numberRegex)) {
         return null;
     }
     return result;
 }
-export function createReplacementString(wordString, event, customNumberHandler) {
+export function createReplacementString(wordString, event, customNumberHandler, stepping) {
     let prefix;
     let suffix;
     let number;
@@ -457,7 +463,7 @@ export function createReplacementString(wordString, event, customNumberHandler) 
         if (matches?.length) {
             prefix = matches[1];
             suffix = matches[3];
-            number = modifiedFloatNumber(parseFloat(matches[2]), event);
+            number = modifiedFloatNumber(parseFloat(matches[2]), event, stepping?.step, stepping?.range);
             if (number !== null) {
                 replacementString =
                     customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;

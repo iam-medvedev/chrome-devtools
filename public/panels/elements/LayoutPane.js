@@ -1,14 +1,12 @@
 // Copyright (c) 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/inject-checkbox-styles */
 import '../../ui/components/node_text/node_text.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as Input from '../../ui/components/input/input.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -160,15 +158,14 @@ const DEFAULT_VIEW = (input, output, target) => {
     const renderElement = (element) => html `<div
           class="element"
           jslog=${VisualLogging.item()}>
-        <label data-element="true" class="checkbox-label">
-          <input
-            data-input="true"
-            type="checkbox"
-            .checked=${element.enabled}
-            @change=${(e) => input.onElementToggle(element, e)}
-            jslog=${VisualLogging.toggle().track({
+        <devtools-checkbox
+          data-element="true"
+          class="checkbox-label"
+          .checked=${element.enabled}
+          @change=${(e) => input.onElementToggle(element, e)}
+          jslog=${VisualLogging.toggle().track({
         click: true
-    })} />
+    })}>
           <span
               class="node-text-container"
               data-label="true"
@@ -178,7 +175,7 @@ const DEFAULT_VIEW = (input, output, target) => {
         nodeId: element.domId, nodeTitle: element.name, nodeClasses: element.domClasses,
     }}></devtools-node-text>
           </span>
-        </label>
+        </devtools-checkbox>
         <label
             @keyup=${onColorLabelKeyUp}
             @keydown=${onColorLabelKeyDown}
@@ -210,7 +207,6 @@ const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
       <div style="min-width: min-content;" jslog=${VisualLogging.pane('layout').track({ resize: true })}>
-        <style>${Input.checkboxStyles}</style>
         <style>${layoutPaneStyles}</style>
         <style>${UI.inspectorCommonStyles}</style>
         <details open>
@@ -237,18 +233,15 @@ const DEFAULT_VIEW = (input, output, target) => {
                     </label>`)}
             </div>
             <div class="checkbox-settings">
-              ${input.booleanSettings.map(setting => html `<label
-                          data-boolean-setting="true"
-                          class="checkbox-label"
-                          title=${setting.title}
-                          jslog=${VisualLogging.toggle().track({ click: true }).context(setting.name)}>
-                      <input
-                          data-input="true"
-                          type="checkbox"
-                          .checked=${setting.value}
-                          @change=${(e) => input.onBooleanSettingChange(setting, e)} />
-                      <span data-label="true">${setting.title}</span>
-                    </label>`)}
+              ${input.booleanSettings.map(setting => html `<devtools-checkbox
+                      data-boolean-setting="true"
+                      class="checkbox-label"
+                      title=${setting.title}
+                      .checked=${setting.value}
+                      @change=${(e) => input.onBooleanSettingChange(setting, e)}
+                      jslog=${VisualLogging.toggle().track({ click: true }).context(setting.name)}>
+                    ${setting.title}
+                  </devtools-checkbox>`)}
             </div>
           </div>
           ${input.gridElements ?

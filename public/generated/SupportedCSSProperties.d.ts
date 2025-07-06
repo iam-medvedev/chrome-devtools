@@ -104,10 +104,10 @@ export const generatedPropertyValues: {
     "animation-timing-function": {
         values: string[];
     };
-    "animation-trigger-timeline": {
+    "animation-trigger-behavior": {
         values: string[];
     };
-    "animation-trigger-type": {
+    "animation-trigger-timeline": {
         values: string[];
     };
     "app-region": {
@@ -189,6 +189,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "border-right-width": {
+        values: string[];
+    };
+    "border-shape": {
         values: string[];
     };
     "border-style": {

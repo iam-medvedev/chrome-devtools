@@ -1996,10 +1996,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
                         // Draw a rectangle over the event, starting at the X value of the
                         // event's start time + the startDuration of the candy striping.
                         const barXStart = this.timeToPositionClipped(entryStartTime + candyStripeStartTime);
-                        // If a custom end time was passed in, that is when we stop striping, else we stripe until the very end of the entry.
-                        const stripingEndTime = decoration.endAtTime ? Trace.Helpers.Timing.microToMilli(decoration.endAtTime) :
-                            entryStartTime + duration;
-                        const barXEnd = this.timeToPositionClipped(stripingEndTime);
+                        // We stripe until the very end of the entry.
+                        const barXEnd = this.timeToPositionClipped(entryStartTime + duration);
                         this.#drawEventRect(context, timelineData, entryIndex, {
                             startX: barXStart,
                             width: barXEnd - barXStart,

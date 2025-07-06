@@ -168,9 +168,6 @@ export class ServiceWorkerManager extends SDKModel {
     async stopWorker(versionId) {
         await this.#agent.invoke_stopWorker({ versionId });
     }
-    async inspectWorker(versionId) {
-        await this.#agent.invoke_inspectWorker({ versionId });
-    }
     workerRegistrationUpdated(registrations) {
         for (const payload of registrations) {
             let registration = this.#registrationsInternal.get(payload.registrationId);

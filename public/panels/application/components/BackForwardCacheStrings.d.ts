@@ -224,6 +224,9 @@ export declare const NotRestoredReasonDescription: {
     SharedWorker: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
+    SharedWorkerMessage: {
+        name: () => import("../../../core/platform/UIString.js").LocalizedString;
+    };
     WebLocks: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };

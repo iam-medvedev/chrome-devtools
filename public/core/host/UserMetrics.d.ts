@@ -624,11 +624,11 @@ export declare enum IssueCreated {
     'CookieIssue::WarnThirdPartyPhaseout::SetCookie' = 83,
     'CookieIssue::ExcludeThirdPartyPhaseout::ReadCookie' = 84,
     'CookieIssue::ExcludeThirdPartyPhaseout::SetCookie' = 85,
-    'SelectElementAccessibilityIssue::DisallowedSelectChild' = 86,
-    'SelectElementAccessibilityIssue::DisallowedOptGroupChild' = 87,
-    'SelectElementAccessibilityIssue::NonPhrasingContentOptionChild' = 88,
-    'SelectElementAccessibilityIssue::InteractiveContentOptionChild' = 89,
-    'SelectElementAccessibilityIssue::InteractiveContentLegendChild' = 90,
+    'ElementAccessibilityIssue::DisallowedSelectChild' = 86,
+    'ElementAccessibilityIssue::DisallowedOptGroupChild' = 87,
+    'ElementAccessibilityIssue::NonPhrasingContentOptionChild' = 88,
+    'ElementAccessibilityIssue::InteractiveContentOptionChild' = 89,
+    'ElementAccessibilityIssue::InteractiveContentLegendChild' = 90,
     'SRIMessageSignatureIssue::MissingSignatureHeader' = 91,
     'SRIMessageSignatureIssue::MissingSignatureInputHeader' = 92,
     'SRIMessageSignatureIssue::InvalidSignatureHeader' = 93,
@@ -651,7 +651,8 @@ export declare enum IssueCreated {
     'SRIMessageSignatureIssue::ValidationFailedSignatureMismatch' = 110,
     'CorsIssue::LocalNetworkAccessPermissionDenied' = 111,
     'SRIMessageSignatureIssue::ValidationFailedIntegrityMismatch' = 112,
-    MAX_VALUE = 113
+    'ElementAccessibilityIssue::InteractiveContentSummaryDescendant' = 113,
+    MAX_VALUE = 114
 }
 export declare const enum DeveloperResourceLoaded {
     LOAD_THROUGH_PAGE_VIA_TARGET = 0,

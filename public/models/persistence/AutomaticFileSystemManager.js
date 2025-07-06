@@ -40,31 +40,29 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
     /**
      * @internal
      */
-    constructor(hostConfig, inspectorFrontendHost, projectSettingsModel) {
+    constructor(inspectorFrontendHost, projectSettingsModel) {
         super();
         this.#automaticFileSystem = null;
         this.#inspectorFrontendHost = inspectorFrontendHost;
         this.#projectSettingsModel = projectSettingsModel;
-        if (hostConfig.devToolsAutomaticFileSystems?.enabled) {
-            this.#inspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
-            this.#projectSettingsModel.addEventListener("AvailabilityChanged" /* ProjectSettings.ProjectSettingsModel.Events.AVAILABILITY_CHANGED */, this.#availabilityChanged, this);
-            this.#availabilityChanged({ data: this.#projectSettingsModel.availability });
-            this.#projectSettingsModel.addEventListener("ProjectSettingsChanged" /* ProjectSettings.ProjectSettingsModel.Events.PROJECT_SETTINGS_CHANGED */, this.#projectSettingsChanged, this);
-            this.#projectSettingsChanged({ data: this.#projectSettingsModel.projectSettings });
-        }
+        this.#inspectorFrontendHost.events.addEventListener(Host.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
+        this.#projectSettingsModel.addEventListener("AvailabilityChanged" /* ProjectSettings.ProjectSettingsModel.Events.AVAILABILITY_CHANGED */, this.#availabilityChanged, this);
+        this.#availabilityChanged({ data: this.#projectSettingsModel.availability });
+        this.#projectSettingsModel.addEventListener("ProjectSettingsChanged" /* ProjectSettings.ProjectSettingsModel.Events.PROJECT_SETTINGS_CHANGED */, this.#projectSettingsChanged, this);
+        this.#projectSettingsChanged({ data: this.#projectSettingsModel.projectSettings });
     }
     /**
      * Yields the `AutomaticFileSystemManager` singleton.
      *
      * @returns the singleton.
      */
-    static instance({ forceNew, hostConfig, inspectorFrontendHost, projectSettingsModel } = { forceNew: false, hostConfig: null, inspectorFrontendHost: null, projectSettingsModel: null }) {
+    static instance({ forceNew, inspectorFrontendHost, projectSettingsModel } = { forceNew: false, inspectorFrontendHost: null, projectSettingsModel: null }) {
         if (!automaticFileSystemManagerInstance || forceNew) {
-            if (!hostConfig || !inspectorFrontendHost || !projectSettingsModel) {
+            if (!inspectorFrontendHost || !projectSettingsModel) {
                 throw new Error('Unable to create AutomaticFileSystemManager: ' +
-                    'hostConfig, inspectorFrontendHost, and projectSettingsModel must be provided');
+                    'inspectorFrontendHost, and projectSettingsModel must be provided');
             }
-            automaticFileSystemManagerInstance = new AutomaticFileSystemManager(hostConfig, inspectorFrontendHost, projectSettingsModel);
+            automaticFileSystemManagerInstance = new AutomaticFileSystemManager(inspectorFrontendHost, projectSettingsModel);
         }
         return automaticFileSystemManagerInstance;
     }

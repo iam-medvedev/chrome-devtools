@@ -454,8 +454,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             this.addLoadErrorIcon(tabId);
         }
         else if (!uiSourceCode.contentLoaded()) {
-            void uiSourceCode.requestContent().then(_content => {
-                if (uiSourceCode.loadError()) {
+            void uiSourceCode.requestContentData().then(contentDataOrError => {
+                if (TextUtils.ContentData.ContentData.isError(contentDataOrError)) {
                     this.addLoadErrorIcon(tabId);
                 }
             });

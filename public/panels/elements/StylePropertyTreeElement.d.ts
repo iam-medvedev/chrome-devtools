@@ -69,7 +69,7 @@ export declare class ColorRenderer extends ColorRenderer_base {
     #private;
     constructor(stylesPane: StylesSidebarPane, treeElement: StylePropertyTreeElement | null);
     render(match: SDK.CSSPropertyParserMatchers.ColorMatch, context: RenderingContext): Node[];
-    renderColorSwatch(color: Common.Color.Color | undefined, valueChild?: Node): InlineEditor.ColorSwatch.ColorSwatch;
+    renderColorSwatch(color: Common.Color.Color | undefined, valueChild: Node): InlineEditor.ColorSwatch.ColorSwatch;
 }
 declare const LightDarkColorRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.LightDarkColorMatch, any[]>;
@@ -115,8 +115,7 @@ declare const BezierRenderer_base: abstract new () => {
 export declare class BezierRenderer extends BezierRenderer_base {
     #private;
     constructor(treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.BezierMatch): Node[];
-    renderSwatch(match: SDK.CSSPropertyParserMatchers.BezierMatch): Node;
+    render(match: SDK.CSSPropertyParserMatchers.BezierMatch, context: RenderingContext): Node[];
 }
 declare const AutoBaseRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.AutoBaseMatch, any[]>;

@@ -1,4 +1,11 @@
 import type * as Common from '../../../../core/common/common.js';
+export declare class ColorFormatChangedEvent extends Event {
+    static readonly eventName = "colorformatchanged";
+    data: {
+        color: Common.Color.Color;
+    };
+    constructor(color: Common.Color.Color);
+}
 export declare class ColorChangedEvent extends Event {
     static readonly eventName = "colorchanged";
     data: {
@@ -26,10 +33,9 @@ export declare class ColorSwatch extends HTMLElement {
      * @param color The color object or string to use for this swatch.
      */
     renderColor(color: Common.Color.Color): void;
-    private onClick;
+    private onActivate;
     private consume;
     setColor(color: Common.Color.Color): void;
-    setColorText(color: Common.Color.Color): void;
     private showFormatPicker;
 }
 declare global {
@@ -38,6 +44,7 @@ declare global {
     }
     interface HTMLElementEventMap {
         [ColorChangedEvent.eventName]: ColorChangedEvent;
+        [ColorFormatChangedEvent.eventName]: ColorFormatChangedEvent;
         [ClickEvent.eventName]: Event;
     }
 }
