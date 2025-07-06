@@ -84,11 +84,11 @@ export class InteractionsTrackAppender {
         const decorationsForEvent = this.#compatibilityBuilder.getFlameChartTimelineData().entryDecorations[eventIndex] || [];
         decorationsForEvent.push({
             type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
+            // Where the striping starts is hard. The problem is the whole interaction, isolating the part of it *responsible* for
+            // making the interaction 200ms is hard and our decoration won't do it perfectly. To simplify we just flag all the overage.
+            // AKA the first 200ms of the interaction aren't flagged. A downside is we often flag a lot of render delay.
+            // It'd be fair to shift the candystriping segment earlier in the interaction... Let's see what the feedback is like.
             startAtTime: Trace.Handlers.ModelHandlers.UserInteractions.LONG_INTERACTION_THRESHOLD,
-            // Interaction events have whiskers, so we do not want to candy stripe
-            // the entire duration. The box represents processing duration, so we only
-            // candystripe up to the end of processing.
-            endAtTime: entry.processingEnd,
         }, {
             type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,
             customEndTime: entry.processingEnd,

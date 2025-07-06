@@ -1240,19 +1240,20 @@ export declare namespace Audits {
          */
         partitioningBlobURLInfo: PartitioningBlobURLInfo;
     }
-    const enum SelectElementAccessibilityIssueReason {
+    const enum ElementAccessibilityIssueReason {
         DisallowedSelectChild = "DisallowedSelectChild",
         DisallowedOptGroupChild = "DisallowedOptGroupChild",
         NonPhrasingContentOptionChild = "NonPhrasingContentOptionChild",
         InteractiveContentOptionChild = "InteractiveContentOptionChild",
-        InteractiveContentLegendChild = "InteractiveContentLegendChild"
+        InteractiveContentLegendChild = "InteractiveContentLegendChild",
+        InteractiveContentSummaryDescendant = "InteractiveContentSummaryDescendant"
     }
     /**
-     * This issue warns about errors in the select element content model.
+     * This issue warns about errors in the select or summary element content model.
      */
-    interface SelectElementAccessibilityIssueDetails {
+    interface ElementAccessibilityIssueDetails {
         nodeId: DOM.BackendNodeId;
-        selectElementAccessibilityIssueReason: SelectElementAccessibilityIssueReason;
+        elementAccessibilityIssueReason: ElementAccessibilityIssueReason;
         hasDisallowedAttributes: boolean;
     }
     const enum StyleSheetLoadingIssueReason {
@@ -1343,7 +1344,7 @@ export declare namespace Audits {
         FederatedAuthUserInfoRequestIssue = "FederatedAuthUserInfoRequestIssue",
         PropertyRuleIssue = "PropertyRuleIssue",
         SharedDictionaryIssue = "SharedDictionaryIssue",
-        SelectElementAccessibilityIssue = "SelectElementAccessibilityIssue",
+        ElementAccessibilityIssue = "ElementAccessibilityIssue",
         SRIMessageSignatureIssue = "SRIMessageSignatureIssue",
         UserReidentificationIssue = "UserReidentificationIssue"
     }
@@ -1375,7 +1376,7 @@ export declare namespace Audits {
         propertyRuleIssueDetails?: PropertyRuleIssueDetails;
         federatedAuthUserInfoRequestIssueDetails?: FederatedAuthUserInfoRequestIssueDetails;
         sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails;
-        selectElementAccessibilityIssueDetails?: SelectElementAccessibilityIssueDetails;
+        elementAccessibilityIssueDetails?: ElementAccessibilityIssueDetails;
         sriMessageSignatureIssueDetails?: SRIMessageSignatureIssueDetails;
         userReidentificationIssueDetails?: UserReidentificationIssueDetails;
     }
@@ -9160,7 +9161,7 @@ export declare namespace Network {
         PermissionWarn = "PermissionWarn"
     }
     const enum IPAddressSpace {
-        Local = "Local",
+        Loopback = "Loopback",
         Private = "Private",
         Public = "Public",
         Unknown = "Unknown"
@@ -10952,7 +10953,6 @@ export declare namespace Overlay {
         SearchForNode = "searchForNode",
         SearchForUAShadowDOM = "searchForUAShadowDOM",
         CaptureAreaScreenshot = "captureAreaScreenshot",
-        ShowDistances = "showDistances",
         None = "none"
     }
     interface GetHighlightObjectForTestRequest {
@@ -12097,15 +12097,6 @@ export declare namespace Page {
         themeColor?: string;
     }
     /**
-     * Enum of possible auto-response for permission / prompt dialogs.
-     */
-    const enum AutoResponseMode {
-        None = "none",
-        AutoAccept = "autoAccept",
-        AutoReject = "autoReject",
-        AutoOptOut = "autoOptOut"
-    }
-    /**
      * The type of a frameNavigated event.
      */
     const enum NavigationType {
@@ -12196,6 +12187,7 @@ export declare namespace Page {
         BroadcastChannel = "BroadcastChannel",
         WebXR = "WebXR",
         SharedWorker = "SharedWorker",
+        SharedWorkerMessage = "SharedWorkerMessage",
         WebLocks = "WebLocks",
         WebHID = "WebHID",
         WebShare = "WebShare",
@@ -12978,11 +12970,23 @@ export declare namespace Page {
          */
         data: binary;
     }
+    const enum SetSPCTransactionModeRequestMode {
+        None = "none",
+        AutoAccept = "autoAccept",
+        AutoChooseToAuthAnotherWay = "autoChooseToAuthAnotherWay",
+        AutoReject = "autoReject",
+        AutoOptOut = "autoOptOut"
+    }
     interface SetSPCTransactionModeRequest {
-        mode: AutoResponseMode;
+        mode: SetSPCTransactionModeRequestMode;
+    }
+    const enum SetRPHRegistrationModeRequestMode {
+        None = "none",
+        AutoAccept = "autoAccept",
+        AutoReject = "autoReject"
     }
     interface SetRPHRegistrationModeRequest {
-        mode: AutoResponseMode;
+        mode: SetRPHRegistrationModeRequestMode;
     }
     interface GenerateTestReportRequest {
         /**
@@ -13924,9 +13928,6 @@ export declare namespace ServiceWorker {
         origin: string;
         registrationId: RegistrationID;
         tag: string;
-    }
-    interface InspectWorkerRequest {
-        versionId: string;
     }
     interface SetForceUpdateOnPageLoadRequest {
         forceUpdateOnPageLoad: boolean;

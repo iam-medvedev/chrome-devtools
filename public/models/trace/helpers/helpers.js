@@ -81,7 +81,7 @@ var SyntheticEventsManager = class _SyntheticEventsManager {
   }
   static registerSyntheticEvent(syntheticEvent) {
     try {
-      return _SyntheticEventsManager.getActiveManager().registerSyntheticEvent(syntheticEvent);
+      return _SyntheticEventsManager.getActiveManager().#registerSyntheticEvent(syntheticEvent);
     } catch {
       return syntheticEvent;
     }
@@ -94,7 +94,7 @@ var SyntheticEventsManager = class _SyntheticEventsManager {
    * be created with this method to ensure they are registered and made
    * available to load events using serialized keys.
    */
-  registerSyntheticEvent(syntheticEvent) {
+  #registerSyntheticEvent(syntheticEvent) {
     const rawIndex = this.#rawTraceEvents.indexOf(syntheticEvent.rawSourceEvent);
     if (rawIndex < 0) {
       throw new Error("Attempted to register a synthetic event paired to an unknown raw event.");

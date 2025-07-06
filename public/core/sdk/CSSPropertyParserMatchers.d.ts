@@ -175,25 +175,10 @@ export declare class ColorMatcher extends ColorMatcher_base {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): ColorMatch | null;
 }
-export declare const enum RelativeColorChannel {
-    A = "a",
-    ALPHA = "alpha",
-    B = "b",
-    C = "c",
-    G = "g",
-    H = "h",
-    L = "l",
-    R = "r",
-    S = "s",
-    W = "w",
-    X = "x",
-    Y = "y",
-    Z = "z"
-}
 export declare class RelativeColorChannelMatch implements Match {
-    readonly text: RelativeColorChannel;
+    readonly text: Common.Color.ColorChannel;
     readonly node: CodeMirror.SyntaxNode;
-    constructor(text: RelativeColorChannel, node: CodeMirror.SyntaxNode);
+    constructor(text: Common.Color.ColorChannel, node: CodeMirror.SyntaxNode);
     getColorChannelValue(relativeColor: RelativeColor): number | null;
     computedText(): string;
 }

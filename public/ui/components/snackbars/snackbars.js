@@ -28,7 +28,7 @@ var snackbar_css_default = `/*
     bottom: var(--sys-size-5);
     left: var(--sys-size-5);
     z-index: 9999;
-    /* left var(--sys-size-5) * 2 so that there is equal space on the left and on the right in small screens */
+    /* subtract var(--sys-size-5) * 2 so that there is equal space on the left and on the right in small screens */
     max-width: calc(100% - 2 * var(--sys-size-5));
 
     .container {
@@ -115,48 +115,63 @@ var Snackbar = class _Snackbar extends HTMLElement {
   #actionButtonClickHandler;
   static snackbarQueue = [];
   /**
-   * Reflects the `dismiss-timeout` attribute. Sets the message to be displayed on the snackbar.
+   * Returns the timeout (in ms) after which the snackbar is dismissed.
    */
   get dismissTimeout() {
     return this.hasAttribute("dismiss-timeout") ? Number(this.getAttribute("dismiss-timeout")) : DEFAULT_AUTO_DISMISS_MS;
   }
+  /**
+   * Sets the value of the `"dismiss-timeout"` attribute for the snackbar.
+   */
   set dismissTimeout(dismissMs) {
     this.setAttribute("dismiss-timeout", dismissMs.toString());
   }
   /**
-   * Reflects the `message` attribute. Sets the message to be displayed on the snackbar.
+   * Returns the message displayed in the snackbar.
    */
   get message() {
     return this.getAttribute("message");
   }
+  /**
+   * Sets the `"message"` attribute for the snackbar.
+   */
   set message(message) {
     this.setAttribute("message", message);
   }
   /**
-   * Reflects the `closable` attribute. If true, the snackbar will have a button to close the toast.
+   * Returns whether the snackbar is closable. If true, the snackbar will have a dismiss button.
    * @default false
    */
   get closable() {
     return this.hasAttribute("closable");
   }
+  /**
+   * Sets the `"closable"` attribute for the snackbar.
+   */
   set closable(closable) {
     this.toggleAttribute("closable", closable);
   }
   /**
-   * Reflects the `action-button-label` attribute. Sets the title of the action button.
+   * Returns the text for the action button.
    */
   get actionButtonLabel() {
     return this.getAttribute("action-button-label");
   }
+  /**
+   * Sets the `"action-button-label"` attribute for the snackbar.
+   */
   set actionButtonLabel(actionButtonLabel) {
     this.setAttribute("action-button-label", actionButtonLabel);
   }
   /**
-   * Reflects the `action-button-title` attribute. Sets the aria label of the action button.
+   * Returns the title for the action button.
    */
   get actionButtonTitle() {
     return this.getAttribute("action-button-title");
   }
+  /**
+   * Sets the `"action-button-title"` attribute for the snackbar.
+   */
   set actionButtonTitle(actionButtonTitle) {
     this.setAttribute("action-button-title", actionButtonTitle);
   }

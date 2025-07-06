@@ -1,14 +1,21 @@
+import * as Common from '../../../core/common/common.js';
 import * as Trace from '../../../models/trace/trace.js';
-export declare class SidebarAnnotationsTab extends HTMLElement {
+import * as UI from '../../../ui/legacy/legacy.js';
+export interface SidebarAnnotationsTabViewInput {
+    annotations: readonly Trace.Types.File.Annotation[];
+    annotationsHiddenSetting: Common.Settings.Setting<boolean>;
+    annotationEntryToColorMap: ReadonlyMap<Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame, string>;
+    onAnnotationClick: (annotation: Trace.Types.File.Annotation) => void;
+    onAnnotationDelete: (annotation: Trace.Types.File.Annotation) => void;
+}
+export declare class SidebarAnnotationsTab extends UI.Widget.Widget {
     #private;
-    constructor();
+    constructor(view?: (input: SidebarAnnotationsTabViewInput, output: object, target: HTMLElement) => void);
     deduplicatedAnnotations(): readonly Trace.Types.File.Annotation[];
-    set annotations(annotations: Trace.Types.File.Annotation[]);
-    set annotationEntryToColorMap(annotationEntryToColorMap: Map<Trace.Types.Events.Event, string>);
-    connectedCallback(): void;
+    setData(data: {
+        annotations: Trace.Types.File.Annotation[];
+        annotationEntryToColorMap: Map<Trace.Types.Events.Event, string>;
+    }): void;
+    performUpdate(): void;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-performance-sidebar-annotations': SidebarAnnotationsTab;
-    }
-}
+export declare const DEFAULT_VIEW: (input: SidebarAnnotationsTabViewInput, output: object, target: HTMLElement) => void;

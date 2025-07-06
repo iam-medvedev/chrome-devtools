@@ -3063,9 +3063,11 @@ import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as Workspace4 from "./../../models/workspace/workspace.js";
 import * as CodeMirror3 from "./../../third_party/codemirror.next/codemirror.next.js";
+import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as ColorPicker from "./../../ui/legacy/components/color_picker/color_picker.js";
 import * as InlineEditor from "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings8 = {
   /**
    *@description Swatch icon element title in CSSPlugin of the Sources panel
@@ -3187,6 +3189,12 @@ var ColorSwatchWidget = class extends CodeMirror3.WidgetType {
       this.#text = insert;
       this.#color = swatch.getColor();
     });
+    swatch.addEventListener(InlineEditor.ColorSwatch.ColorFormatChangedEvent.eventName, (event) => {
+      const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
+      view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
+      this.#text = insert;
+      this.#color = swatch.getColor();
+    });
     swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, (event) => {
       event.consume(true);
       view.dispatch({
@@ -3217,23 +3225,25 @@ var CurveSwatchWidget = class extends CodeMirror3.WidgetType {
     return this.curve.asCSSText() === other.curve.asCSSText() && this.text === other.text;
   }
   toDOM(view) {
-    const swatch = InlineEditor.Swatches.BezierSwatch.create();
-    swatch.setBezierText(this.text);
-    UI7.Tooltip.Tooltip.install(swatch.iconElement(), i18nString7(UIStrings8.openCubicBezierEditor));
-    swatch.iconElement().addEventListener("click", (event) => {
+    const container = document.createElement("span");
+    const bezierText = container.createChild("span");
+    const icon = IconButton3.Icon.create("bezier-curve-filled", "bezier-swatch-icon");
+    icon.setAttribute("jslog", `${VisualLogging5.showStyleEditor("bezier")}`);
+    bezierText.append(this.text);
+    UI7.Tooltip.Tooltip.install(icon, i18nString7(UIStrings8.openCubicBezierEditor));
+    icon.addEventListener("click", (event) => {
       event.consume(true);
       view.dispatch({
         effects: setTooltip.of({
           type: 1,
-          pos: view.posAtDOM(swatch),
+          pos: view.posAtDOM(icon),
           text: this.text,
-          swatch,
+          swatch: icon,
           curve: this.curve
         })
       });
     }, false);
-    swatch.hideText(true);
-    return swatch;
+    return icon;
   }
   ignoreEvent() {
     return true;
@@ -3458,9 +3468,9 @@ __export(DebuggerPausedMessage_exports, {
 import * as Common6 from "./../../core/common/common.js";
 import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
-import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/debuggerPausedMessage.css.js
 var debuggerPausedMessage_css_default = `/*
@@ -3615,7 +3625,7 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
     this.elementInternal = document.createElement("div");
     this.elementInternal.classList.add("paused-message");
     this.elementInternal.classList.add("flex-none");
-    this.elementInternal.setAttribute("jslog", `${VisualLogging5.dialog("debugger-paused")}`);
+    this.elementInternal.setAttribute("jslog", `${VisualLogging6.dialog("debugger-paused")}`);
     const root = UI8.UIUtils.createShadowRootWithCoreStyles(this.elementInternal, { cssFile: debuggerPausedMessage_css_default });
     this.contentElement = root.createChild("div");
     UI8.ARIAUtils.markAsPoliteLiveRegion(this.elementInternal, false);
@@ -3638,7 +3648,7 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
       return messageWrapper;
     }
     const mainElement = messageWrapper.createChild("div", "status-main");
-    const mainIcon = new IconButton3.Icon.Icon();
+    const mainIcon = new IconButton4.Icon.Icon();
     mainIcon.data = {
       iconName: "info",
       color: "var(--sys-color-on-yellow-container)",
@@ -3745,7 +3755,7 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
     function buildWrapper(mainText, subText, title) {
       const messageWrapper2 = document.createElement("span");
       const mainElement = messageWrapper2.createChild("div", "status-main");
-      const mainIcon = new IconButton3.Icon.Icon();
+      const mainIcon = new IconButton4.Icon.Icon();
       mainIcon.data = {
         iconName: errorLike ? "cross-circle-filled" : "info",
         color: errorLike ? "var(--icon-error)" : "var(--sys-color-on-yellow-container)",
@@ -3788,7 +3798,7 @@ import * as Bindings9 from "./../../models/bindings/bindings.js";
 import * as Breakpoints3 from "./../../models/breakpoints/breakpoints.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes2 from "./../../models/source_map_scopes/source_map_scopes.js";
-import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
 import * as Workspace20 from "./../../models/workspace/workspace.js";
 import * as CodeMirror6 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
@@ -3797,7 +3807,7 @@ import * as Tooltips2 from "./../../ui/components/tooltips/tooltips.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as SourceFrame11 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/SourcesPanel.js
 var SourcesPanel_exports = {};
@@ -3827,7 +3837,7 @@ import * as Extensions2 from "./../../models/extensions/extensions.js";
 import * as Workspace18 from "./../../models/workspace/workspace.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 import * as Snippets4 from "./../snippets/snippets.js";
 
 // gen/front_end/panels/sources/NavigatorView.js
@@ -3851,12 +3861,13 @@ import * as Root from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Bindings5 from "./../../models/bindings/bindings.js";
 import * as Persistence5 from "./../../models/persistence/persistence.js";
+import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as Workspace8 from "./../../models/workspace/workspace.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton5 from "./../../ui/components/icon_button/icon_button.js";
 import * as Spinners from "./../../ui/components/spinners/spinners.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as Snippets from "./../snippets/snippets.js";
 import { PanelUtils } from "./../utils/utils.js";
 
@@ -4500,7 +4511,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     this.scriptsTree.hideOverflow();
     this.scriptsTree.setComparator(_NavigatorView.treeElementsCompare);
     this.scriptsTree.setFocusable(false);
-    this.contentElement.setAttribute("jslog", `${VisualLogging6.pane(jslogContext).track({ resize: true })}`);
+    this.contentElement.setAttribute("jslog", `${VisualLogging7.pane(jslogContext).track({ resize: true })}`);
     this.contentElement.appendChild(this.scriptsTree.element);
     this.setDefaultFocusedElement(this.scriptsTree.element);
     this.uiSourceCodeNodes = new Platform6.MapUtilities.Multimap();
@@ -5241,7 +5252,8 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   async create(project, path, uiSourceCodeToCopy) {
     let content = "";
     if (uiSourceCodeToCopy) {
-      content = (await uiSourceCodeToCopy.requestContent()).content || "";
+      const contentDataOrError = await uiSourceCodeToCopy.requestContentData();
+      content = TextUtils5.ContentData.ContentData.textOr(contentDataOrError, "");
     }
     const uiSourceCode = await project.createFile(path, null, content);
     if (!uiSourceCode) {
@@ -5347,7 +5359,7 @@ var NavigatorFolderTreeElement = class _NavigatorFolderTreeElement extends UI10.
     } else if (type === Types.AutomaticFileSystem) {
       iconType = "folder-asterisk";
     }
-    const icon = IconButton4.Icon.create(iconType);
+    const icon = IconButton5.Icon.create(iconType);
     this.setLeadingIcons([icon]);
   }
   async onpopulate() {
@@ -5448,7 +5460,7 @@ var NavigatorSourceTreeElement = class extends UI10.TreeOutline.TreeElement {
     this.navigatorView = navigatorView;
     this.uiSourceCodeInternal = uiSourceCode;
     this.updateIcon();
-    this.titleElement.setAttribute("jslog", `${VisualLogging6.value("title").track({ change: true })}`);
+    this.titleElement.setAttribute("jslog", `${VisualLogging7.value("title").track({ change: true })}`);
   }
   updateIcon() {
     const icon = PanelUtils.getIconForSourceFile(this.uiSourceCodeInternal);
@@ -6139,11 +6151,11 @@ import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as Bindings7 from "./../../models/bindings/bindings.js";
 import * as Persistence11 from "./../../models/persistence/persistence.js";
 import * as Workspace16 from "./../../models/workspace/workspace.js";
-import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton8 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as Components2 from "./components/components.js";
 
 // gen/front_end/panels/sources/EditingLocationHistoryManager.js
@@ -6321,13 +6333,13 @@ import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Persistence9 from "./../../models/persistence/persistence.js";
-import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 import * as Workspace14 from "./../../models/workspace/workspace.js";
-import * as IconButton6 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
 import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
 import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 import * as Snippets3 from "./../snippets/snippets.js";
 
 // gen/front_end/panels/sources/UISourceCodeFrame.js
@@ -6351,10 +6363,10 @@ var FORMATTABLE_MEDIA_TYPES = [
 // gen/front_end/panels/sources/UISourceCodeFrame.js
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as Persistence7 from "./../../models/persistence/persistence.js";
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 import * as Workspace12 from "./../../models/workspace/workspace.js";
 import * as CodeMirror5 from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as IconButton5 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton6 from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as TextEditor4 from "./../../ui/components/text_editor/text_editor.js";
 import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
@@ -7021,7 +7033,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common10.ObjectWrapper.
     }
     this.#sourcesPanelOpenedMetricsRecorded = true;
     const mimeType = Common10.ResourceType.ResourceType.mimeFromURL(this.#uiSourceCode.url());
-    const mediaType = Common10.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? "", this.#uiSourceCode.contentType().isFromSourceMap(), TextUtils5.TextUtils.isMinified(this.#uiSourceCode.content()), this.#uiSourceCode.url().startsWith("snippet://"), this.#uiSourceCode.url().startsWith("debugger://"));
+    const mediaType = Common10.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? "", this.#uiSourceCode.contentType().isFromSourceMap(), TextUtils6.TextUtils.isMinified(this.#uiSourceCode.content()), this.#uiSourceCode.url().startsWith("snippet://"), this.#uiSourceCode.url().startsWith("debugger://"));
     Host5.userMetrics.sourcesPanelFileOpened(mediaType);
   }
 };
@@ -7173,7 +7185,7 @@ var MessageWidget = class extends CodeMirror5.WidgetType {
     );
     if (nonIssues.length) {
       const maxIssue = nonIssues.sort(messageLevelComparator)[nonIssues.length - 1];
-      const errorIcon = wrap.appendChild(new IconButton5.Icon.Icon());
+      const errorIcon = wrap.appendChild(new IconButton6.Icon.Icon());
       errorIcon.data = getIconDataForLevel(maxIssue.level());
       errorIcon.classList.add("cm-messageIcon-error");
     }
@@ -7182,7 +7194,7 @@ var MessageWidget = class extends CodeMirror5.WidgetType {
       /* Workspace.UISourceCode.Message.Level.ISSUE */
     );
     if (issue) {
-      const issueIcon = wrap.appendChild(new IconButton5.Icon.Icon());
+      const issueIcon = wrap.appendChild(new IconButton6.Icon.Icon());
       issueIcon.data = getIconDataForMessage(issue);
       issueIcon.classList.add("cm-messageIcon-issue");
       issueIcon.addEventListener("click", () => (issue.clickHandler() || Math.min)());
@@ -7251,7 +7263,7 @@ function renderMessage(message, count) {
   element.style.alignItems = "center";
   element.style.gap = "4px";
   if (count === 1) {
-    const icon = element.appendChild(new IconButton5.Icon.Icon());
+    const icon = element.appendChild(new IconButton6.Icon.Icon());
     icon.data = getIconDataForMessage(message);
     icon.classList.add("text-editor-row-message-icon");
     icon.addEventListener("click", () => (message.clickHandler() || Math.min)());
@@ -7353,7 +7365,7 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     this.tabbedPane.setAllowTabReorder(true, true);
     this.tabbedPane.addEventListener(UI14.TabbedPane.Events.TabClosed, this.tabClosed, this);
     this.tabbedPane.addEventListener(UI14.TabbedPane.Events.TabSelected, this.tabSelected, this);
-    this.tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging7.toolbar("top").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
+    this.tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging8.toolbar("top").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
     Persistence9.Persistence.PersistenceImpl.instance().addEventListener(Persistence9.Persistence.Events.BindingCreated, this.onBindingCreated, this);
     Persistence9.Persistence.PersistenceImpl.instance().addEventListener(Persistence9.Persistence.Events.BindingRemoved, this.onBindingRemoved, this);
     Persistence9.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged", this.#onRequestsForHeaderOverridesFileChanged, this);
@@ -7489,7 +7501,7 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     if (update.docChanged || update.selectionSet) {
       const { main } = update.state.selection;
       const lineFrom = update.state.doc.lineAt(main.from), lineTo = update.state.doc.lineAt(main.to);
-      const range = new TextUtils7.TextRange.TextRange(lineFrom.number - 1, main.from - lineFrom.from, lineTo.number - 1, main.to - lineTo.from);
+      const range = new TextUtils8.TextRange.TextRange(lineFrom.number - 1, main.from - lineFrom.from, lineTo.number - 1, main.to - lineTo.from);
       if (this.currentFileInternal) {
         this.history.updateSelectionRange(historyItemKey(this.currentFileInternal), range);
       }
@@ -7692,8 +7704,8 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     if (uiSourceCode.loadError()) {
       this.addLoadErrorIcon(tabId2);
     } else if (!uiSourceCode.contentLoaded()) {
-      void uiSourceCode.requestContent().then((_content) => {
-        if (uiSourceCode.loadError()) {
+      void uiSourceCode.requestContentData().then((contentDataOrError) => {
+        if (TextUtils8.ContentData.ContentData.isError(contentDataOrError)) {
           this.addLoadErrorIcon(tabId2);
         }
       });
@@ -7701,7 +7713,7 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     return tabId2;
   }
   addLoadErrorIcon(tabId2) {
-    const icon = new IconButton6.Icon.Icon();
+    const icon = new IconButton7.Icon.Icon();
     icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
     UI14.Tooltip.Tooltip.install(icon, i18nString13(UIStrings14.unableToLoadThisContent));
     if (this.tabbedPane.tabView(tabId2)) {
@@ -7764,13 +7776,13 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
       const tooltip = this.tooltipForFile(uiSourceCode);
       this.tabbedPane.changeTabTitle(tabId2, title, tooltip);
       if (uiSourceCode.loadError()) {
-        const icon = new IconButton6.Icon.Icon();
+        const icon = new IconButton7.Icon.Icon();
         icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
         UI14.Tooltip.Tooltip.install(icon, i18nString13(UIStrings14.unableToLoadThisContent));
         this.tabbedPane.setTrailingTabIcon(tabId2, icon);
       } else if (Persistence9.Persistence.PersistenceImpl.instance().hasUnsavedCommittedChanges(uiSourceCode)) {
         const suffixElement = document.createElement("div");
-        const icon = new IconButton6.Icon.Icon();
+        const icon = new IconButton7.Icon.Icon();
         icon.data = { iconName: "warning-filled", color: "var(--icon-warning)", width: "14px", height: "14px" };
         const id = `tab-tooltip-${nextTooltipId++}`;
         icon.setAttribute("aria-describedby", id);
@@ -7855,7 +7867,7 @@ var HistoryItem = class _HistoryItem {
     if (resourceType === null) {
       throw new TypeError(`Invalid resource type name "${serializedHistoryItem.resourceTypeName}"`);
     }
-    const selectionRange = serializedHistoryItem.selectionRange ? TextUtils7.TextRange.TextRange.fromObject(serializedHistoryItem.selectionRange) : void 0;
+    const selectionRange = serializedHistoryItem.selectionRange ? TextUtils8.TextRange.TextRange.fromObject(serializedHistoryItem.selectionRange) : void 0;
     return new _HistoryItem(serializedHistoryItem.url, resourceType, selectionRange, serializedHistoryItem.scrollLineNumber);
   }
   toObject() {
@@ -8009,7 +8021,7 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     super();
     this.registerRequiredCSS(sourcesView_css_default);
     this.element.id = "sources-panel-sources-view";
-    this.element.setAttribute("jslog", `${VisualLogging8.pane("editor").track({ keydown: "Escape" })}`);
+    this.element.setAttribute("jslog", `${VisualLogging9.pane("editor").track({ keydown: "Escape" })}`);
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
     const workspace = Workspace16.Workspace.WorkspaceImpl.instance();
     this.searchableViewInternal = new UI15.SearchableView.SearchableView(this, this, "sources-view-search-config");
@@ -8022,7 +8034,7 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     this.editorContainer.addEventListener("EditorClosed", this.editorClosed, this);
     this.historyManager = new EditingLocationHistoryManager(this);
     const toolbarContainerElementInternal = this.element.createChild("div", "sources-toolbar");
-    toolbarContainerElementInternal.setAttribute("jslog", `${VisualLogging8.toolbar("bottom")}`);
+    toolbarContainerElementInternal.setAttribute("jslog", `${VisualLogging9.toolbar("bottom")}`);
     this.#scriptViewToolbar = toolbarContainerElementInternal.createChild("devtools-toolbar");
     this.#scriptViewToolbar.style.flex = "auto";
     this.bottomToolbarInternal = toolbarContainerElementInternal.createChild("devtools-toolbar");
@@ -8065,7 +8077,7 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     placeholder2.classList.add("sources-placeholder");
     const workspaceElement = placeholder2.createChild("div", "tabbed-pane-placeholder-row");
     workspaceElement.classList.add("workspace");
-    const icon = IconButton7.Icon.create("sync", "sync-icon");
+    const icon = IconButton8.Icon.create("sync", "sync-icon");
     workspaceElement.createChild("span", "icon-container").appendChild(icon);
     const text = workspaceElement.createChild("span");
     text.textContent = UIStrings15.workspaceDropInAFolderToSyncSources;
@@ -8561,9 +8573,9 @@ __export(ThreadsSidebarPane_exports, {
 });
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
-import * as IconButton8 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton9 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/threadsSidebarPane.css.js
 var threadsSidebarPane_css_default = `/*
@@ -8648,7 +8660,7 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
   constructor() {
     super(true);
     this.registerRequiredCSS(threadsSidebarPane_css_default);
-    this.contentElement.setAttribute("jslog", `${VisualLogging9.section("sources.threads")}`);
+    this.contentElement.setAttribute("jslog", `${VisualLogging10.section("sources.threads")}`);
     this.items = new UI16.ListModel.ListModel();
     this.list = new UI16.ListControl.ListControl(this.items, this, UI16.ListControl.ListMode.NonViewport);
     const currentTarget = UI16.Context.Context.instance().flavor(SDK10.Target.Target);
@@ -8665,7 +8677,7 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
     element.classList.add("thread-item");
     const title = element.createChild("div", "thread-item-title");
     const pausedState = element.createChild("div", "thread-item-paused-state");
-    const icon = new IconButton8.Icon.Icon();
+    const icon = new IconButton9.Icon.Icon();
     icon.data = {
       iconName: "large-arrow-right-filled",
       color: "var(--icon-arrow-main-thread)",
@@ -8928,7 +8940,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     const tabbedPane = this.navigatorTabbedLocation.tabbedPane();
     tabbedPane.setMinimumSize(100, 25);
     tabbedPane.element.classList.add("navigator-tabbed-pane");
-    tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging10.toolbar("navigator").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
+    tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging11.toolbar("navigator").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
     const navigatorMenuButton = new UI17.ContextMenu.MenuButton();
     navigatorMenuButton.populateMenuCall = this.populateNavigatorMenu.bind(this);
     navigatorMenuButton.jslogContext = "more-options";
@@ -9117,9 +9129,9 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     const withOverlay = UI17.Context.Context.instance().flavor(SDK11.Target.Target)?.model(SDK11.OverlayModel.OverlayModel) && !Common13.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").get();
     if (withOverlay && !this.overlayLoggables) {
       this.overlayLoggables = { debuggerPausedMessage: {}, resumeButton: {}, stepOverButton: {} };
-      VisualLogging10.registerLoggable(this.overlayLoggables.debuggerPausedMessage, `${VisualLogging10.dialog("debugger-paused")}`, null, new DOMRect(0, 0, 200, 20));
-      VisualLogging10.registerLoggable(this.overlayLoggables.resumeButton, `${VisualLogging10.action("debugger.toggle-pause")}`, this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 20, 20));
-      VisualLogging10.registerLoggable(this.overlayLoggables.stepOverButton, `${VisualLogging10.action("debugger.step-over")}`, this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 20, 20));
+      VisualLogging11.registerLoggable(this.overlayLoggables.debuggerPausedMessage, `${VisualLogging11.dialog("debugger-paused")}`, null, new DOMRect(0, 0, 200, 20));
+      VisualLogging11.registerLoggable(this.overlayLoggables.resumeButton, `${VisualLogging11.action("debugger.toggle-pause")}`, this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 20, 20));
+      VisualLogging11.registerLoggable(this.overlayLoggables.stepOverButton, `${VisualLogging11.action("debugger.step-over")}`, this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 20, 20));
     }
     this.#lastPausedTarget = new WeakRef(details.debuggerModel.target());
   }
@@ -9134,10 +9146,10 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
       }
       if (byOverlayButton) {
         const details = UI17.Context.Context.instance().flavor(SDK11.DebuggerModel.DebuggerPausedDetails);
-        VisualLogging10.logClick(this.pausedInternal && details?.reason === "step" ? this.overlayLoggables.stepOverButton : this.overlayLoggables.resumeButton, new MouseEvent("click"));
+        VisualLogging11.logClick(this.pausedInternal && details?.reason === "step" ? this.overlayLoggables.stepOverButton : this.overlayLoggables.resumeButton, new MouseEvent("click"));
       }
       if (!this.pausedInternal) {
-        VisualLogging10.logResize(this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 0, 0));
+        VisualLogging11.logResize(this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 0, 0));
         this.overlayLoggables = void 0;
       }
     }, 500);
@@ -9404,7 +9416,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   createDebugToolbar() {
     const debugToolbar = document.createElement("devtools-toolbar");
     debugToolbar.classList.add("scripts-debug-toolbar");
-    debugToolbar.setAttribute("jslog", `${VisualLogging10.toolbar("debug").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
+    debugToolbar.setAttribute("jslog", `${VisualLogging11.toolbar("debug").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
     const longResumeButton = new UI17.Toolbar.ToolbarButton(i18nString16(UIStrings17.resumeWithAllPausesBlockedForMs), "play");
     longResumeButton.addEventListener("Click", this.longResume, this);
     const terminateExecutionButton = new UI17.Toolbar.ToolbarButton(i18nString16(UIStrings17.terminateCurrentJavascriptCall), "stop");
@@ -9836,7 +9848,7 @@ var QuickSourceView = class _QuickSourceView extends UI17.Widget.VBox {
   constructor() {
     super();
     this.element.classList.add("sources-view-wrapper");
-    this.element.setAttribute("jslog", `${VisualLogging10.panel("sources.quick").track({ resize: true })}`);
+    this.element.setAttribute("jslog", `${VisualLogging11.panel("sources.quick").track({ resize: true })}`);
     this.view = SourcesPanel.instance().sourcesView();
   }
   wasShown() {
@@ -10828,7 +10840,7 @@ var DebuggerPlugin = class extends Plugin {
   async linePossibleBreakpoints(line) {
     const start = this.transformer.editorLocationToUILocation(line.number - 1, 0);
     const end = this.transformer.editorLocationToUILocation(line.number - 1, Math.min(line.length, MAX_POSSIBLE_BREAKPOINT_LINE));
-    const range = new TextUtils8.TextRange.TextRange(start.lineNumber, start.columnNumber || 0, end.lineNumber, end.columnNumber || 0);
+    const range = new TextUtils9.TextRange.TextRange(start.lineNumber, start.columnNumber || 0, end.lineNumber, end.columnNumber || 0);
     return await this.breakpointManager.possibleBreakpoints(this.uiSourceCode, range);
   }
   // Compute the decorations for existing breakpoints (both on the
@@ -11311,7 +11323,7 @@ var DebuggerPlugin = class extends Plugin {
     }
     this.#sourcesPanelDebuggedMetricsRecorded = true;
     const mimeType = Common14.ResourceType.ResourceType.mimeFromURL(this.uiSourceCode.url());
-    const mediaType = Common14.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? "", this.uiSourceCode.contentType().isFromSourceMap(), TextUtils8.TextUtils.isMinified(this.uiSourceCode.content()), this.uiSourceCode.url().startsWith("snippet://"), this.uiSourceCode.url().startsWith("debugger://"));
+    const mediaType = Common14.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? "", this.uiSourceCode.contentType().isFromSourceMap(), TextUtils9.TextUtils.isMinified(this.uiSourceCode.content()), this.uiSourceCode.url().startsWith("snippet://"), this.uiSourceCode.url().startsWith("debugger://"));
     Host8.userMetrics.sourcesPanelFileDebugged(mediaType);
   }
 };
@@ -11401,7 +11413,7 @@ var BreakpointInlineMarker = class extends CodeMirror6.WidgetType {
   toDOM() {
     const span = document.createElement("span");
     span.className = this.class;
-    span.setAttribute("jslog", `${VisualLogging11.breakpointMarker().track({ click: true })}`);
+    span.setAttribute("jslog", `${VisualLogging12.breakpointMarker().track({ click: true })}`);
     span.addEventListener("click", (event) => {
       this.parent.onInlineBreakpointMarkerClick(event, this.breakpoint);
       event.consume();
@@ -11432,7 +11444,7 @@ var BreakpointGutterMarker = class _BreakpointGutterMarker extends CodeMirror6.G
   }
   toDOM(view) {
     const div = document.createElement("div");
-    div.setAttribute("jslog", `${VisualLogging11.breakpointMarker().track({ click: true })}`);
+    div.setAttribute("jslog", `${VisualLogging12.breakpointMarker().track({ click: true })}`);
     const line = view.state.doc.lineAt(this.#position).number;
     const formatNumber = view.state.facet(SourceFrame11.SourceFrame.LINE_NUMBER_FORMATTER);
     div.textContent = formatNumber(line, view.state);
@@ -12289,7 +12301,7 @@ __export(GoToLineQuickOpen_exports, {
   GoToLineQuickOpen: () => GoToLineQuickOpen
 });
 import * as i18n39 from "./../../core/i18n/i18n.js";
-import * as IconButton9 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton10 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen4 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
 var UIStrings20 = {
@@ -12355,7 +12367,7 @@ var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
     return this.#goToLineStrings.length;
   }
   renderItem(itemIndex, _query, titleElement, _subtitleElement) {
-    const icon = IconButton9.Icon.create("colon");
+    const icon = IconButton10.Icon.create("colon");
     titleElement.parentElement?.parentElement?.insertBefore(icon, titleElement.parentElement);
     UI20.UIUtils.createTextChild(titleElement, this.#goToLineStrings[itemIndex]);
   }
@@ -12554,7 +12566,7 @@ __export(OpenFileQuickOpen_exports, {
 import * as Common16 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import { PanelUtils as PanelUtils2 } from "./../utils/utils.js";
-import * as IconButton10 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton11 from "./../../ui/components/icon_button/icon_button.js";
 var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   constructor() {
     super("source-file");
@@ -12579,7 +12591,7 @@ var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   }
   renderItem(itemIndex, query, titleElement, subtitleElement) {
     super.renderItem(itemIndex, query, titleElement, subtitleElement);
-    const iconElement = new IconButton10.Icon.Icon();
+    const iconElement = new IconButton11.Icon.Icon();
     const iconData = PanelUtils2.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
     iconElement.data = {
       ...iconData,
@@ -12601,7 +12613,7 @@ __export(OutlineQuickOpen_exports, {
 });
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as CodeMirror7 from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as IconButton11 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton12 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen5 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings22 = {
@@ -12888,7 +12900,7 @@ var OutlineQuickOpen = class extends QuickOpen5.FilteredListWidget.Provider {
   }
   renderItem(itemIndex, query, titleElement, _subtitleElement) {
     const item = this.items[itemIndex];
-    const icon = IconButton11.Icon.create("deployed");
+    const icon = IconButton12.Icon.create("deployed");
     titleElement.parentElement?.parentElement?.insertBefore(icon, titleElement.parentElement);
     titleElement.textContent = item.title + (item.subtitle ? item.subtitle : "");
     QuickOpen5.FilteredListWidget.FilteredListWidget.highlightRanges(titleElement, query);
@@ -12946,7 +12958,7 @@ import * as SourceMapScopes3 from "./../../models/source_map_scopes/source_map_s
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/scopeChainSidebarPane.css.js
 var scopeChainSidebarPane_css_default = `/*
@@ -13021,7 +13033,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI23.Widget.VBo
   constructor() {
     super(true);
     this.registerRequiredCSS(scopeChainSidebarPane_css_default);
-    this.contentElement.setAttribute("jslog", `${VisualLogging12.section("sources.scope-chain")}`);
+    this.contentElement.setAttribute("jslog", `${VisualLogging13.section("sources.scope-chain")}`);
     this.treeOutline = new ObjectUI3.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
     this.treeOutline.registerRequiredCSS(scopeChainSidebarPane_css_default);
     this.treeOutline.hideOverflow();
@@ -13149,7 +13161,7 @@ import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings11 from "./../../models/bindings/bindings.js";
 import * as Persistence16 from "./../../models/persistence/persistence.js";
-import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
 import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as Snippets5 from "./../snippets/snippets.js";
@@ -13500,7 +13512,7 @@ var SnippetsNavigatorView = class extends NavigatorView {
   async handleSaveAs(uiSourceCode) {
     uiSourceCode.commitWorkingCopy();
     const contentData = await uiSourceCode.requestContentData();
-    if (TextUtils10.ContentData.ContentData.isError(contentData)) {
+    if (TextUtils11.ContentData.ContentData.isError(contentData)) {
       console.error(`Failed to retrieve content for ${uiSourceCode.url()}: ${contentData}`);
       Common17.Console.Console.instance().error(
         i18nString23(UIStrings24.saveAsFailed),
@@ -13662,7 +13674,7 @@ var objectValue_css_default = `/*
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
 var watchExpressionsSidebarPane_css_default = `/*
@@ -13900,7 +13912,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     );
     this.refreshButton.addEventListener("Click", this.update, this);
     this.contentElement.classList.add("watch-expressions");
-    this.contentElement.setAttribute("jslog", `${VisualLogging13.section("sources.watch")}`);
+    this.contentElement.setAttribute("jslog", `${VisualLogging14.section("sources.watch")}`);
     this.contentElement.addEventListener("contextmenu", this.contextMenu.bind(this), false);
     this.treeOutline = new ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
     this.treeOutline.registerRequiredCSS(watchExpressionsSidebarPane_css_default);

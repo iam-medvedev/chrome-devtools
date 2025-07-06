@@ -68,12 +68,14 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
         await RenderCoordinator.done();
         customNetworkSetting.set([
             {
+                key: 'USER_CUSTOM_SETTING_1',
                 title: 'Custom item one',
                 download: 0,
                 upload: 0,
                 latency: 0,
             },
             {
+                key: 'USER_CUSTOM_SETTING_2',
                 title: 'Custom item two',
                 download: 0,
                 upload: 0,
@@ -119,6 +121,7 @@ describeWithEnvironment('NetworkThrottlingSelector', () => {
         let items = view.shadowRoot.querySelectorAll('devtools-menu-item');
         assert.lengthOf(items, 6);
         customNetworkSetting.set([{
+                key: 'USER_CUSTOM_SETTING_1',
                 title: 'Custom item',
                 download: 0,
                 upload: 0,

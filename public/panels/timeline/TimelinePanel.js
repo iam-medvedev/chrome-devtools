@@ -731,6 +731,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             case 'LANDING_PAGE': {
                 this.#removeStatusPane();
                 this.#showLandingPage();
+                this.updateMiniMap();
                 this.dispatchEventToListeners("IsViewingTrace" /* Events.IS_VIEWING_TRACE */, false);
                 // Whilst we don't reset this, we hide it, mainly so the user cannot
                 // hit Ctrl/Cmd-F and try to search when it isn't visible.
@@ -1335,6 +1336,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     updateMiniMap() {
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
+            this.#minimapComponent.setData(null);
             return;
         }
         const parsedTrace = this.#traceEngineModel.parsedTrace(this.#viewMode.traceIndex);
@@ -2455,6 +2457,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.#setActiveInsight({ model: insightModel, insightSetKey }, { highlightInsight: true });
     }
     static async handleExternalRecordRequest() {
+        void VisualLogging.logFunctionCall('timeline.record-reload', 'external');
         Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
         const panelInstance = TimelinePanel.instance();
         // Given how the current UX works, it's nice to show the user the Perf

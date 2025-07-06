@@ -4299,36 +4299,19 @@ function agentToConversationType(agent) {
   throw new Error("Provided agent does not have a corresponding conversation type");
 }
 async function inspectElementBySelector(selector) {
-  const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-  const runtimeModel = primaryPageTarget?.model(SDK.RuntimeModel.RuntimeModel);
-  const executionContext = runtimeModel?.defaultExecutionContext();
-  if (!executionContext) {
-    throw new Error("Could not find execution context for executing code");
+  const whitespaceTrimmedQuery = selector.trim();
+  if (!whitespaceTrimmedQuery.length) {
+    return null;
   }
-  const inspectReference = await executionContext.evaluate(
-    {
-      expression: "window.inspect",
-      includeCommandLineAPI: true,
-      returnByValue: false
-    },
-    /* userGesture */
-    false,
-    /* awaitPromise */
-    false
-  );
-  if ("error" in inspectReference || inspectReference.exceptionDetails) {
-    throw new Error("Cannot find 'window.inspect'");
+  const showUAShadowDOM = Common4.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
+  const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
+  const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
+  const resultCounts = await Promise.all(performSearchPromises);
+  const index = resultCounts.findIndex((value) => value > 0);
+  if (index >= 0) {
+    return await domModels[index].searchResult(0);
   }
-  const inspectResult = await executionContext.callFunctionOn({
-    functionDeclaration: "async function (inspect, selector) { return inspect(document.querySelector(selector)); }",
-    arguments: [{ objectId: inspectReference.object.objectId }, { value: selector }],
-    userGesture: false,
-    awaitPromise: true,
-    returnByValue: false
-  });
-  if ("error" in inspectResult || inspectResult.exceptionDetails || SDK.RemoteObject.RemoteObject.isNullOrUndefined(inspectResult.object)) {
-    throw new Error(`Could not find an element matching the '${selector}' selector. Please try a different selector.`);
-  }
+  return null;
 }
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
@@ -5250,6 +5233,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       release();
     }
   }
+  /**
+   * Handles an external request using the given prompt and uses the
+   * conversation type to use the correct agent. Note that the `selector` param
+   * is contextual; for styling it is a literal CSS selector, but for
+   * Performance Insights it is the name of the Insight that forms the
+   * context of the conversation.
+   */
   async handleExternalRequest(prompt, conversationType, selector) {
     try {
       Snackbars.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) });
@@ -5265,6 +5255,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       switch (conversationType) {
         case "freestyler":
           return await this.handleExternalStylingRequest(prompt, selector);
+        case "performance-insight":
+          if (!selector) {
+            throw new Error("The insightTitle parameter is required for debugging a Performance Insight.");
+          }
+          return await this.handleExternalPerformanceInsightsRequest(prompt, selector);
         default:
           throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
       }
@@ -5273,6 +5268,43 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       error.stack = "";
       throw error;
     }
+  }
+  async handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
+    const insightsAgent = this.#createAgent(
+      "performance-insight"
+      /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */
+    );
+    const externalConversation = new AiAssistanceModel3.Conversation(
+      agentToConversationType(insightsAgent),
+      [],
+      insightsAgent.id,
+      /* isReadOnly */
+      true,
+      /* isExternal */
+      true
+    );
+    this.#historicalConversations.push(externalConversation);
+    const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
+    const insightOrError = await TimelinePanel.ExternalRequests.getInsightToDebug(timelinePanel.model, insightTitle);
+    if ("error" in insightOrError) {
+      return {
+        response: insightOrError.error,
+        devToolsLogs: []
+      };
+    }
+    const selectedContext = createPerfInsightContext(insightOrError.insight);
+    const runner = insightsAgent.run(prompt, { selected: selectedContext });
+    const devToolsLogs = [];
+    for await (const data of runner) {
+      if (data.type !== "answer" || data.complete) {
+        void externalConversation.addHistoryItem(data);
+        devToolsLogs.push(data);
+      }
+      if (data.type === "answer" && data.complete) {
+        return { response: data.text, devToolsLogs };
+      }
+    }
+    throw new Error("Something went wrong. No answer was generated.");
   }
   async handleExternalStylingRequest(prompt, selector = "body") {
     const stylingAgent = this.#createAgent(
@@ -5289,9 +5321,12 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       true
     );
     this.#historicalConversations.push(externalConversation);
-    await inspectElementBySelector(selector);
+    const node = await inspectElementBySelector(selector);
+    if (node) {
+      await node.setAsInspectedNode();
+    }
     const runner = stylingAgent.run(prompt, {
-      selected: this.#getConversationContext(externalConversation)
+      selected: createNodeContext(node)
     });
     const devToolsLogs = [];
     for await (const data of runner) {

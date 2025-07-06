@@ -554,6 +554,7 @@ export interface LargestContentfulPaintCandidate extends Mark {
             nodeId: Protocol.DOM.BackendNodeId;
             loadingAttr: string;
             type?: string;
+            nodeName?: string;
         };
     };
 }

@@ -145,9 +145,9 @@ export default `/*
   line-height: 18px;
 }
 
-td .text-button {
+::part(action-button) {
   min-width: 20px;
-  margin: auto;
+  margin: 4px;
 }
 
 .active-button-container {
@@ -166,11 +166,12 @@ td .text-button {
 }
 /* Credentials Table */
 
-.data-grid-data-grid-node.centered {
-  text-align: center;
-}
-
-.data-grid td {
+::part(credentialId-column),
+::part(isResidentCredential-column),
+::part(rpId-column),
+::part(userHandle-column),
+::part(signCount-column),
+::part(actions-column) {
   vertical-align: middle;
 }
 

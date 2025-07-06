@@ -82,7 +82,6 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
             {
                 type: "CANDY" /* PerfUI.FlameChart.FlameChartDecorationType.CANDY */,
                 startAtTime: Trace.Types.Timing.Micro(200_000),
-                endAtTime: longInteraction.processingEnd,
             },
             {
                 type: "WARNING_TRIANGLE" /* PerfUI.FlameChart.FlameChartDecorationType.WARNING_TRIANGLE */,

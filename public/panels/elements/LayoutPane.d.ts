@@ -50,7 +50,7 @@ interface ViewInput {
     onColorChange(element: LayoutElement, e: Event): unknown;
     onMouseLeave(element: LayoutElement, e: MouseEvent): unknown;
     onMouseEnter(element: LayoutElement, e: MouseEvent): unknown;
-    onElementToggle(element: LayoutElement, e: InputEvent): unknown;
+    onElementToggle(element: LayoutElement, e: Event): unknown;
     onBooleanSettingChange(setting: BooleanSetting, e: Event): unknown;
     enumSettings: EnumSetting[];
     booleanSettings: BooleanSetting[];

@@ -1959,7 +1959,7 @@ function extractConsoleAPIExtensionEntries() {
         ts: entryStartTime,
         ph: "X"
       };
-      const extensionEntry = Helpers9.SyntheticEvents.SyntheticEventsManager.getActiveManager().registerSyntheticEvent(unregisteredExtensionEntry);
+      const extensionEntry = Helpers9.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(unregisteredExtensionEntry);
       extensionTrackEntries.push(extensionEntry);
       continue;
     }
@@ -1972,7 +1972,7 @@ function extractConsoleAPIExtensionEntries() {
       dur: Types13.Timing.Micro(entryEndTime - entryStartTime),
       rawSourceEvent: currentTimeStamp
     };
-    const syntheticTimeStamp = Helpers9.SyntheticEvents.SyntheticEventsManager.getActiveManager().registerSyntheticEvent(unregisteredSyntheticTimeStamp);
+    const syntheticTimeStamp = Helpers9.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(unregisteredSyntheticTimeStamp);
     syntheticConsoleEntriesForTimingsTrack.push(syntheticTimeStamp);
   }
 }
@@ -1994,12 +1994,12 @@ function extractPerformanceAPIExtensionEntries(timings) {
       rawSourceEvent: Types13.Events.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing
     };
     if (Types13.Extensions.isExtensionPayloadMarker(extensionPayload)) {
-      const extensionMarker = Helpers9.SyntheticEvents.SyntheticEventsManager.getActiveManager().registerSyntheticEvent(extensionSyntheticEntry);
+      const extensionMarker = Helpers9.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(extensionSyntheticEntry);
       extensionMarkers.push(extensionMarker);
       continue;
     }
     if (Types13.Extensions.isExtensionPayloadTrackEntry(extensionSyntheticEntry.args)) {
-      const extensionTrackEntry = Helpers9.SyntheticEvents.SyntheticEventsManager.getActiveManager().registerSyntheticEvent(extensionSyntheticEntry);
+      const extensionTrackEntry = Helpers9.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(extensionSyntheticEntry);
       extensionTrackEntries.push(extensionTrackEntry);
       continue;
     }

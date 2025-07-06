@@ -15,5 +15,10 @@ export declare function getOrCreateLoggingState(loggable: Loggable, config: Logg
 export declare function getLoggingState(loggable: Loggable): LoggingState | null;
 type ParentProvider = (e: Element) => Element | undefined;
 export declare function registerParentProvider(name: string, provider: ParentProvider): void;
-export declare function setMappedParent(element: Element, parent: Element): void;
+/** MUST NOT BE EXPORTED */
+declare const PARENT: unique symbol;
+type ElementWithParent = Element & {
+    [PARENT]?: Element;
+};
+export declare function setMappedParent(element: ElementWithParent, parent: Element): void;
 export {};

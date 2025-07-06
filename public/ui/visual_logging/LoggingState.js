@@ -40,9 +40,10 @@ export function registerParentProvider(name, provider) {
     }
     parentProviders.set(name, provider);
 }
-const parentMap = new WeakMap();
-registerParentProvider('mapped', (e) => parentMap.get(e));
+/** MUST NOT BE EXPORTED */
+const PARENT = Symbol('veParent');
+registerParentProvider('mapped', (e) => e[PARENT]);
 export function setMappedParent(element, parent) {
-    parentMap.set(element, parent);
+    element[PARENT] = parent;
 }
 //# sourceMappingURL=LoggingState.js.map

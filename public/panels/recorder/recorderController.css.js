@@ -26,7 +26,6 @@ export default `/*
 }
 
 :host,
-devtools-recording-view,
 devtools-create-recording-view {
   display: flex;
   flex-direction: column;

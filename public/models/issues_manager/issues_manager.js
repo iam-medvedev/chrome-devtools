@@ -1923,10 +1923,6 @@ var UIStrings8 = {
    */
   V8SharedArrayBufferConstructedInExtensionWithoutIsolation: "Extensions should opt into cross-origin isolation to continue using `SharedArrayBuffer`. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/.",
   /**
-   * @description This warning occurs when the website attempts to use the deprecated GPUAdapter `isFallbackAdapter` attribute.
-   */
-  WebGPUAdapterIsFallbackAdapter: "The GPUAdapter `isFallbackAdapter` attribute is deprecated, instead use the GPUAdapterInfo `isFallbackAdapter` attribute.",
-  /**
    * @description Warning displayed to developers that they are using `XMLHttpRequest` API in a way that they expect an unsupported character encoding `UTF-16` could be used in the server reply.
    */
   XHRJSONEncodingDetection: "UTF-16 is not supported by response json in `XMLHttpRequest`",
@@ -2047,9 +2043,6 @@ var DEPRECATIONS_METADATA = {
   "V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "milestone": 96
   },
-  "WebGPUAdapterIsFallbackAdapter": {
-    "chromeStatusFeature": 4870179714236416
-  },
   "XHRJSONEncodingDetection": {
     "milestone": 93
   }
@@ -2144,6 +2137,103 @@ var DeprecationIssue = class _DeprecationIssue extends Issue {
   }
 };
 
+// gen/front_end/models/issues_manager/ElementAccessibilityIssue.js
+var ElementAccessibilityIssue_exports = {};
+__export(ElementAccessibilityIssue_exports, {
+  ElementAccessibilityIssue: () => ElementAccessibilityIssue
+});
+var ElementAccessibilityIssue = class _ElementAccessibilityIssue extends Issue {
+  issueDetails;
+  constructor(issueDetails, issuesModel, issueId) {
+    const issueCode = [
+      "ElementAccessibilityIssue",
+      issueDetails.elementAccessibilityIssueReason
+    ].join("::");
+    super(issueCode, issuesModel, issueId);
+    this.issueDetails = issueDetails;
+  }
+  primaryKey() {
+    return JSON.stringify(this.issueDetails);
+  }
+  getDescription() {
+    if (this.isInteractiveContentAttributesSelectDescendantIssue()) {
+      return {
+        file: "selectElementAccessibilityInteractiveContentAttributesSelectDescendant.md",
+        links: []
+      };
+    }
+    const description = issueDescriptions5.get(this.issueDetails.elementAccessibilityIssueReason);
+    if (!description) {
+      return null;
+    }
+    return resolveLazyDescription(description);
+  }
+  getKind() {
+    return "PageError";
+  }
+  getCategory() {
+    return "Other";
+  }
+  details() {
+    return this.issueDetails;
+  }
+  isInteractiveContentAttributesSelectDescendantIssue() {
+    return this.issueDetails.hasDisallowedAttributes && (this.issueDetails.elementAccessibilityIssueReason !== "InteractiveContentOptionChild" && this.issueDetails.elementAccessibilityIssueReason !== "InteractiveContentSummaryDescendant");
+  }
+  static fromInspectorIssue(issuesModel, inspectorIssue) {
+    const elementAccessibilityIssueDetails = inspectorIssue.details.elementAccessibilityIssueDetails;
+    if (!elementAccessibilityIssueDetails) {
+      console.warn("Element Accessibility issue without details received.");
+      return [];
+    }
+    return [new _ElementAccessibilityIssue(elementAccessibilityIssueDetails, issuesModel, inspectorIssue.issueId)];
+  }
+};
+var issueDescriptions5 = /* @__PURE__ */ new Map([
+  [
+    "DisallowedSelectChild",
+    {
+      file: "selectElementAccessibilityDisallowedSelectChild.md",
+      links: []
+    }
+  ],
+  [
+    "DisallowedOptGroupChild",
+    {
+      file: "selectElementAccessibilityDisallowedOptGroupChild.md",
+      links: []
+    }
+  ],
+  [
+    "NonPhrasingContentOptionChild",
+    {
+      file: "selectElementAccessibilityNonPhrasingContentOptionChild.md",
+      links: []
+    }
+  ],
+  [
+    "InteractiveContentOptionChild",
+    {
+      file: "selectElementAccessibilityInteractiveContentOptionChild.md",
+      links: []
+    }
+  ],
+  [
+    "InteractiveContentLegendChild",
+    {
+      file: "selectElementAccessibilityInteractiveContentLegendChild.md",
+      links: []
+    }
+  ],
+  [
+    "InteractiveContentSummaryDescendant",
+    {
+      file: "summaryElementAccessibilityInteractiveContentSummaryDescendant.md",
+      links: []
+    }
+  ]
+]);
+
 // gen/front_end/models/issues_manager/FederatedAuthUserInfoRequestIssue.js
 var FederatedAuthUserInfoRequestIssue_exports = {};
 __export(FederatedAuthUserInfoRequestIssue_exports, {
@@ -2177,7 +2267,7 @@ var FederatedAuthUserInfoRequestIssue = class _FederatedAuthUserInfoRequestIssue
     return this.#issueDetails;
   }
   getDescription() {
-    const description = issueDescriptions5.get(this.#issueDetails.federatedAuthUserInfoRequestIssueReason);
+    const description = issueDescriptions6.get(this.#issueDetails.federatedAuthUserInfoRequestIssueReason);
     if (!description) {
       return null;
     }
@@ -2198,7 +2288,7 @@ var FederatedAuthUserInfoRequestIssue = class _FederatedAuthUserInfoRequestIssue
     return [new _FederatedAuthUserInfoRequestIssue(details, issuesModel)];
   }
 };
-var issueDescriptions5 = /* @__PURE__ */ new Map([
+var issueDescriptions6 = /* @__PURE__ */ new Map([
   [
     "NotSameOrigin",
     {
@@ -2356,7 +2446,7 @@ var GenericIssue = class _GenericIssue extends Issue {
     return `${this.code()}-(${this.#issueDetails.frameId})-(${this.#issueDetails.violatingNodeId})-(${this.#issueDetails.violatingNodeAttribute})-(${requestId})`;
   }
   getDescription() {
-    const description = issueDescriptions6.get(this.#issueDetails.errorType);
+    const description = issueDescriptions7.get(this.#issueDetails.errorType);
     if (!description) {
       return null;
     }
@@ -2450,7 +2540,7 @@ var genericResponseWasBlockedbyORB = {
     linkTitle: i18nLazyString7(UIStrings11.corbExplainerPageTitle)
   }]
 };
-var issueDescriptions6 = /* @__PURE__ */ new Map([
+var issueDescriptions7 = /* @__PURE__ */ new Map([
   ["FormLabelForNameError", genericFormLabelForNameError],
   ["FormInputWithNoLabelError", genericFormInputWithNoLabelError],
   [
@@ -2698,7 +2788,7 @@ var FederatedAuthRequestIssue = class _FederatedAuthRequestIssue extends Issue {
     return this.#issueDetails;
   }
   getDescription() {
-    const description = issueDescriptions7.get(this.#issueDetails.federatedAuthRequestIssueReason);
+    const description = issueDescriptions8.get(this.#issueDetails.federatedAuthRequestIssueReason);
     if (!description) {
       return null;
     }
@@ -2719,7 +2809,7 @@ var FederatedAuthRequestIssue = class _FederatedAuthRequestIssue extends Issue {
     return [new _FederatedAuthRequestIssue(details, issuesModel)];
   }
 };
-var issueDescriptions7 = /* @__PURE__ */ new Map([
+var issueDescriptions8 = /* @__PURE__ */ new Map([
   [
     "TooManyRequests",
     {
@@ -3197,96 +3287,6 @@ var QuirksModeIssue = class _QuirksModeIssue extends Issue {
     return [new _QuirksModeIssue(quirksModeIssueDetails, issuesModel)];
   }
 };
-
-// gen/front_end/models/issues_manager/SelectElementAccessibilityIssue.js
-var SelectElementAccessibilityIssue_exports = {};
-__export(SelectElementAccessibilityIssue_exports, {
-  SelectElementAccessibilityIssue: () => SelectElementAccessibilityIssue
-});
-var SelectElementAccessibilityIssue = class _SelectElementAccessibilityIssue extends Issue {
-  issueDetails;
-  constructor(issueDetails, issuesModel, issueId) {
-    const issueCode = [
-      "SelectElementAccessibilityIssue",
-      issueDetails.selectElementAccessibilityIssueReason
-    ].join("::");
-    super(issueCode, issuesModel, issueId);
-    this.issueDetails = issueDetails;
-  }
-  primaryKey() {
-    return JSON.stringify(this.issueDetails);
-  }
-  getDescription() {
-    if (this.isInteractiveContentAttributesSelectDescendantIssue()) {
-      return {
-        file: "selectElementAccessibilityInteractiveContentAttributesSelectDescendant.md",
-        links: []
-      };
-    }
-    const description = issueDescriptions8.get(this.issueDetails.selectElementAccessibilityIssueReason);
-    if (!description) {
-      return null;
-    }
-    return resolveLazyDescription(description);
-  }
-  getKind() {
-    return "PageError";
-  }
-  getCategory() {
-    return "Other";
-  }
-  details() {
-    return this.issueDetails;
-  }
-  isInteractiveContentAttributesSelectDescendantIssue() {
-    return this.issueDetails.hasDisallowedAttributes && this.issueDetails.selectElementAccessibilityIssueReason !== "InteractiveContentOptionChild";
-  }
-  static fromInspectorIssue(issuesModel, inspectorIssue) {
-    const selectElementAccessibilityIssueDetails = inspectorIssue.details.selectElementAccessibilityIssueDetails;
-    if (!selectElementAccessibilityIssueDetails) {
-      console.warn("Select Element Accessibility issue without details received.");
-      return [];
-    }
-    return [new _SelectElementAccessibilityIssue(selectElementAccessibilityIssueDetails, issuesModel, inspectorIssue.issueId)];
-  }
-};
-var issueDescriptions8 = /* @__PURE__ */ new Map([
-  [
-    "DisallowedSelectChild",
-    {
-      file: "selectElementAccessibilityDisallowedSelectChild.md",
-      links: []
-    }
-  ],
-  [
-    "DisallowedOptGroupChild",
-    {
-      file: "selectElementAccessibilityDisallowedOptGroupChild.md",
-      links: []
-    }
-  ],
-  [
-    "NonPhrasingContentOptionChild",
-    {
-      file: "selectElementAccessibilityNonPhrasingContentOptionChild.md",
-      links: []
-    }
-  ],
-  [
-    "InteractiveContentOptionChild",
-    {
-      file: "selectElementAccessibilityInteractiveContentOptionChild.md",
-      links: []
-    }
-  ],
-  [
-    "InteractiveContentLegendChild",
-    {
-      file: "selectElementAccessibilityInteractiveContentLegendChild.md",
-      links: []
-    }
-  ]
-]);
 
 // gen/front_end/models/issues_manager/SharedArrayBufferIssue.js
 var SharedArrayBufferIssue_exports = {};
@@ -4000,8 +4000,8 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
     CookieDeprecationMetadataIssue.fromInspectorIssue
   ],
   [
-    "SelectElementAccessibilityIssue",
-    SelectElementAccessibilityIssue.fromInspectorIssue
+    "ElementAccessibilityIssue",
+    ElementAccessibilityIssue.fromInspectorIssue
   ],
   [
     "SRIMessageSignatureIssue",
@@ -4387,6 +4387,7 @@ export {
   CorsIssue_exports as CorsIssue,
   CrossOriginEmbedderPolicyIssue_exports as CrossOriginEmbedderPolicyIssue,
   DeprecationIssue_exports as DeprecationIssue,
+  ElementAccessibilityIssue_exports as ElementAccessibilityIssue,
   FederatedAuthUserInfoRequestIssue_exports as FederatedAuthUserInfoRequestIssue,
   GenericIssue_exports as GenericIssue,
   HeavyAdIssue_exports as HeavyAdIssue,
@@ -4401,7 +4402,6 @@ export {
   QuirksModeIssue_exports as QuirksModeIssue,
   RelatedIssue_exports as RelatedIssue,
   SRIMessageSignatureIssue_exports as SRIMessageSignatureIssue,
-  SelectElementAccessibilityIssue_exports as SelectElementAccessibilityIssue,
   SharedArrayBufferIssue_exports as SharedArrayBufferIssue,
   SharedDictionaryIssue_exports as SharedDictionaryIssue,
   SourceFrameIssuesManager_exports as SourceFrameIssuesManager,

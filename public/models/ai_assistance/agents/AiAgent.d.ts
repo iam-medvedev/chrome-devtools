@@ -193,6 +193,12 @@ export declare abstract class AiAgent<T> {
     abstract readonly userTier: string | undefined;
     abstract handleContextDetails(select: ConversationContext<T> | null): AsyncGenerator<ContextResponse, void, void>;
     readonly confirmSideEffect: typeof Promise.withResolvers;
+    /**
+     * `context` does not change during `AiAgent.run()`, ensuring that calls to JS
+     * have the correct `context`. We don't want element selection by the user to
+     * change the `context` during an `AiAgent.run()`.
+     */
+    protected context?: ConversationContext<T>;
     constructor(opts: AgentOptions);
     enhanceQuery(query: string, selected: ConversationContext<T> | null, multimodalInputType?: MultimodalInputType): Promise<string>;
     currentFacts(): ReadonlySet<Host.AidaClient.RequestFact>;

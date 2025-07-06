@@ -87,7 +87,7 @@ export class ThrottlingManager {
     cpuThrottlingControls;
     cpuThrottlingOptions;
     customNetworkConditionsSetting;
-    currentNetworkThrottlingConditionsSetting;
+    currentNetworkThrottlingConditionKeySetting;
     calibratedCpuThrottlingSetting;
     lastNetworkThrottlingConditions;
     cpuThrottlingManager;
@@ -100,19 +100,28 @@ export class ThrottlingManager {
         this.cpuThrottlingManager.addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, (event) => this.onCPUThrottlingRateChangedOnSDK(event.data));
         this.cpuThrottlingControls = new Set();
         this.cpuThrottlingOptions = ThrottlingPresets.cpuThrottlingPresets;
-        this.customNetworkConditionsSetting =
-            Common.Settings.Settings.instance().moduleSetting('custom-network-conditions');
-        this.currentNetworkThrottlingConditionsSetting = Common.Settings.Settings.instance().createSetting('preferred-network-condition', SDK.NetworkManager.NoThrottlingConditions);
+        this.customNetworkConditionsSetting = SDK.NetworkManager.customUserNetworkConditionsSetting();
+        this.currentNetworkThrottlingConditionKeySetting = SDK.NetworkManager.activeNetworkThrottlingKeySetting();
         this.calibratedCpuThrottlingSetting =
             Common.Settings.Settings.instance().createSetting('calibrated-cpu-throttling', {}, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
-        this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK.NetworkManager.ConditionsSerializer());
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, () => {
-            this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
-            this.currentNetworkThrottlingConditionsSetting.set(SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions());
+            this.lastNetworkThrottlingConditions = this.#getCurrentNetworkConditions();
+            const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
+            this.currentNetworkThrottlingConditionKeySetting.set(conditions.key);
         });
         if (this.isDirty()) {
-            SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(this.currentNetworkThrottlingConditionsSetting.get());
+            SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(this.#getCurrentNetworkConditions());
         }
+    }
+    #getCurrentNetworkConditions() {
+        const activeKey = this.currentNetworkThrottlingConditionKeySetting.get();
+        const definition = SDK.NetworkManager.getPredefinedCondition(activeKey);
+        if (definition) {
+            return definition;
+        }
+        const custom = this.customNetworkConditionsSetting.get().find(conditions => conditions.key === activeKey);
+        // Fall back to NoThrottling if we failed to find a match.
+        return custom ?? SDK.NetworkManager.NoThrottlingConditions;
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -210,7 +219,7 @@ export class ThrottlingManager {
         const selector = new NetworkThrottlingSelector(populate, select, this.customNetworkConditionsSetting);
         selectElement.setAttribute('jslog', `${VisualLogging.dropDown()
             .track({ change: true })
-            .context(this.currentNetworkThrottlingConditionsSetting.name)}`);
+            .context(this.currentNetworkThrottlingConditionKeySetting.name)}`);
         selectElement.addEventListener('change', optionSelected, false);
         function populate(groups) {
             selectElement.removeChildren();
@@ -383,7 +392,7 @@ export class ThrottlingManager {
     }
     isDirty() {
         const networkConditions = SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
-        const knownCurrentConditions = this.currentNetworkThrottlingConditionsSetting.get();
+        const knownCurrentConditions = this.#getCurrentNetworkConditions();
         return !SDK.NetworkManager.networkConditionsEqual(networkConditions, knownCurrentConditions);
     }
 }

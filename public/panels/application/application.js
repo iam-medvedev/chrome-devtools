@@ -7026,10 +7026,6 @@ var UIStrings18 = {
   /**
    *@description Text in Service Workers View of the Application panel
    */
-  inspect: "Inspect",
-  /**
-   *@description Text in Service Workers View of the Application panel
-   */
   startString: "Start",
   /**
    * @description Text in Service Workers View of the Application panel. Service workers have
@@ -7390,13 +7386,6 @@ var Section = class {
     }
     void this.throttler.schedule(this.update.bind(this));
   }
-  targetForVersionId(versionId) {
-    const version = this.manager.findVersion(versionId);
-    if (!version?.targetId) {
-      return null;
-    }
-    return SDK18.TargetManager.TargetManager.instance().targetById(version.targetId);
-  }
   addVersion(versionsStack, icon, label) {
     const installingEntry = versionsStack.createChild("div", "service-worker-version");
     installingEntry.createChild("div", icon);
@@ -7478,10 +7467,6 @@ var Section = class {
       if (active.isRunning() || active.isStarting()) {
         const stopButton = UI15.UIUtils.createTextButton(i18nString18(UIStrings18.stopString), this.stopButtonClicked.bind(this, active.id), { jslogContext: "stop" });
         activeEntry.appendChild(stopButton);
-        if (!this.targetForVersionId(active.id)) {
-          const inspectButton = UI15.UIUtils.createTextButton(i18nString18(UIStrings18.inspect), this.inspectButtonClicked.bind(this, active.id), { jslogContext: "inspect" });
-          activeEntry.appendChild(inspectButton);
-        }
       } else if (active.isStartable()) {
         const startButton = UI15.UIUtils.createTextButton(i18nString18(UIStrings18.startString), this.startButtonClicked.bind(this), { jslogContext: "start" });
         activeEntry.appendChild(startButton);
@@ -7503,13 +7488,6 @@ var Section = class {
       if (waiting.scriptResponseTime !== void 0) {
         waitingEntry.createChild("div", "service-worker-subtitle").textContent = i18nString18(UIStrings18.receivedS, { PH1: new Date(waiting.scriptResponseTime * 1e3).toLocaleString() });
       }
-      if (!this.targetForVersionId(waiting.id) && (waiting.isRunning() || waiting.isStarting())) {
-        const inspectButton = UI15.UIUtils.createTextButton(i18nString18(UIStrings18.inspect), this.inspectButtonClicked.bind(this, waiting.id), {
-          title: i18nString18(UIStrings18.inspect),
-          jslogContext: "waiting-entry-inspect"
-        });
-        waitingEntry.appendChild(inspectButton);
-      }
     }
     if (installing) {
       const installingEntry = this.addVersion(versionsStack, "service-worker-installing-circle", i18nString18(UIStrings18.sTryingToInstall, { PH1: installing.id }));
@@ -7517,13 +7495,6 @@ var Section = class {
         installingEntry.createChild("div", "service-worker-subtitle").textContent = i18nString18(UIStrings18.receivedS, {
           PH1: new Date(installing.scriptResponseTime * 1e3).toLocaleString()
         });
-      }
-      if (!this.targetForVersionId(installing.id) && (installing.isRunning() || installing.isStarting())) {
-        const inspectButton = UI15.UIUtils.createTextButton(i18nString18(UIStrings18.inspect), this.inspectButtonClicked.bind(this, installing.id), {
-          title: i18nString18(UIStrings18.inspect),
-          jslogContext: "installing-entry-inspect"
-        });
-        installingEntry.appendChild(inspectButton);
       }
     }
     this.updateCycleView.refresh();
@@ -7643,9 +7614,6 @@ var Section = class {
   }
   stopButtonClicked(versionId) {
     void this.manager.stopWorker(versionId);
-  }
-  inspectButtonClicked(versionId) {
-    void this.manager.inspectWorker(versionId);
   }
   wrapWidget(container) {
     const shadowRoot = UI15.UIUtils.createShadowRootWithCoreStyles(container, {

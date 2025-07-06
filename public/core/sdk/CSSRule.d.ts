@@ -79,7 +79,8 @@ export declare class CSSKeyframesRule {
 }
 export declare class CSSKeyframeRule extends CSSRule {
     #private;
-    constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSKeyframeRule);
+    constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSKeyframeRule, parentRuleName: string);
+    parentRuleName(): string;
     key(): CSSValue;
     private reinitializeKey;
     rebase(edit: Edit): void;

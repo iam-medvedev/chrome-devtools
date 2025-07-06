@@ -46,7 +46,6 @@ export declare class Section {
     constructor(manager: SDK.ServiceWorkerManager.ServiceWorkerManager, section: UI.ReportView.Section, registration: SDK.ServiceWorkerManager.ServiceWorkerRegistration);
     private createSyncNotificationField;
     scheduleUpdate(): void;
-    private targetForVersionId;
     private addVersion;
     private updateClientsField;
     private updateSourceField;
@@ -65,6 +64,5 @@ export declare class Section {
     private startButtonClicked;
     private skipButtonClicked;
     private stopButtonClicked;
-    private inspectButtonClicked;
     private wrapWidget;
 }

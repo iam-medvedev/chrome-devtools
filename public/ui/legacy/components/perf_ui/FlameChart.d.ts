@@ -517,8 +517,9 @@ export declare const enum FlameChartDecorationType {
  **/
 export type FlameChartDecoration = {
     type: FlameChartDecorationType.CANDY;
+    /** Relative to entry's ts. We often only want to highlight problem parts of events, so this time sets the minimum
+     * time at which the candystriping will start. If you want to candystripe the entire event, set this to 0. */
     startAtTime: Trace.Types.Timing.Micro;
-    endAtTime?: Trace.Types.Timing.Micro;
 } | {
     type: FlameChartDecorationType.WARNING_TRIANGLE;
     customStartTime?: Trace.Types.Timing.Micro;

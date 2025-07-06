@@ -1552,21 +1552,6 @@ var AICallTree = class _AICallTree {
     const instance = new _AICallTree(selectedNode, rootNode, parsedTrace);
     return instance;
   }
-  /** Define precisely how the call tree is serialized. Typically called from within `PerformanceAgent` */
-  serialize() {
-    const nodeToIdMap = /* @__PURE__ */ new Map();
-    const allUrls = [];
-    let nodesStr = "";
-    depthFirstWalk(this.rootNode.children().values(), (node) => {
-      nodesStr += _AICallTree.stringifyNode(node, this.parsedTrace, this.selectedNode, nodeToIdMap, allUrls);
-    });
-    let output = "";
-    if (allUrls.length) {
-      output += "\n# All URL #s:\n\n" + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
-    }
-    output += "\n\n# Call tree:" + nodesStr;
-    return output;
-  }
   /**
    * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
    * BFS is important here because the serialization process assumes that direct child nodes
@@ -1617,11 +1602,11 @@ var AICallTree = class _AICallTree {
   }
   /* This is a new serialization format that is currently only used in tests.
    * TODO: replace the current format with this one. */
-  serializeIntoCompressedFormat() {
+  serialize() {
     const allUrls = [];
     let nodesStr = "";
     this.breadthFirstWalk(this.rootNode.children().values(), (node, nodeId, childStartingNode) => {
-      nodesStr += "\n" + this.stringifyNodeCompressed(node, nodeId, this.parsedTrace, this.selectedNode, allUrls, childStartingNode);
+      nodesStr += "\n" + this.stringifyNode(node, nodeId, this.parsedTrace, this.selectedNode, allUrls, childStartingNode);
     });
     let output = "";
     if (allUrls.length) {
@@ -1655,7 +1640,7 @@ var AICallTree = class _AICallTree {
   *     - Child range of IDs 2 to 5
   *     - This node is the selected node (S marker)
   */
-  stringifyNodeCompressed(node, nodeId, parsedTrace, selectedNode, allUrls, childStartingNodeIndex) {
+  stringifyNode(node, nodeId, parsedTrace, selectedNode, allUrls, childStartingNodeIndex) {
     const event = node.event;
     if (!event) {
       throw new Error("Event required");
@@ -1696,38 +1681,6 @@ var AICallTree = class _AICallTree {
       line += ";" + selectedMarker;
     }
     return line;
-  }
-  /* This custom YAML-like format with an adjacency list for children is 35% more token efficient than JSON */
-  static stringifyNode(node, parsedTrace, selectedNode, nodeToIdMap, allUrls) {
-    const event = node.event;
-    if (!event) {
-      throw new Error("Event required");
-    }
-    const url = SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
-    const urlIndex = !url ? -1 : allUrls.indexOf(url) === -1 ? allUrls.push(url) - 1 : allUrls.indexOf(url);
-    const children = Array.from(node.children().values());
-    const getIdentifier = (node2) => {
-      if (!nodeToIdMap.has(node2)) {
-        nodeToIdMap.set(node2, nodeToIdMap.size + 1);
-      }
-      return `${nodeToIdMap.get(node2)} \u2013 ${nameForEntry(node2.event, parsedTrace)}`;
-    };
-    const roundToTenths = (num) => Math.round(num * 10) / 10;
-    const lines = [
-      `
-
-Node: ${getIdentifier(node)}`,
-      selectedNode === node && "Selected: true",
-      node.totalTime && `dur: ${roundToTenths(node.totalTime)}`,
-      // node.functionSource && `snippet: ${node.functionSource.slice(0, 250)}`,
-      node.selfTime && `self: ${roundToTenths(node.selfTime)}`,
-      urlIndex !== -1 && `URL #: ${urlIndex}`
-    ];
-    if (children.length) {
-      lines.push("Children:");
-      lines.push(...children.map((node2) => `  * ${getIdentifier(node2)}`));
-    }
-    return lines.filter(Boolean).join("\n");
   }
   // Only used for debugging.
   logDebug() {

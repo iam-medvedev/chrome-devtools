@@ -177,6 +177,7 @@ export class DOMNode {
         return [
             "view-transition" /* Protocol.DOM.PseudoType.ViewTransition */,
             "view-transition-group" /* Protocol.DOM.PseudoType.ViewTransitionGroup */,
+            "view-transition-group-children" /* Protocol.DOM.PseudoType.ViewTransitionGroupChildren */,
             "view-transition-image-pair" /* Protocol.DOM.PseudoType.ViewTransitionImagePair */,
             "view-transition-old" /* Protocol.DOM.PseudoType.ViewTransitionOld */,
             "view-transition-new" /* Protocol.DOM.PseudoType.ViewTransitionNew */,
@@ -275,6 +276,7 @@ export class DOMNode {
         return [
             ...this.#pseudoElements.get("view-transition" /* Protocol.DOM.PseudoType.ViewTransition */) || [],
             ...this.#pseudoElements.get("view-transition-group" /* Protocol.DOM.PseudoType.ViewTransitionGroup */) || [],
+            ...this.#pseudoElements.get("view-transition-group-children" /* Protocol.DOM.PseudoType.ViewTransitionGroupChildren */) || [],
             ...this.#pseudoElements.get("view-transition-image-pair" /* Protocol.DOM.PseudoType.ViewTransitionImagePair */) || [],
             ...this.#pseudoElements.get("view-transition-old" /* Protocol.DOM.PseudoType.ViewTransitionOld */) || [],
             ...this.#pseudoElements.get("view-transition-new" /* Protocol.DOM.PseudoType.ViewTransitionNew */) || [],

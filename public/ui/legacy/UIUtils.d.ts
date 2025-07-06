@@ -23,8 +23,17 @@ export declare function isEditing(): boolean;
 export declare function markBeingEdited(element: Element, value: boolean): boolean;
 export declare const StyleValueDelimiters = " \u00A0\t\n\"':;,/()";
 export declare function getValueModificationDirection(event: Event): string | null;
-export declare function modifiedFloatNumber(number: number, event: Event, modifierMultiplier?: number): number | null;
-export declare function createReplacementString(wordString: string, event: Event, customNumberHandler?: ((arg0: string, arg1: number, arg2: string) => string)): string | null;
+export declare function modifiedFloatNumber(number: number, event: Event, modifierMultiplier?: number, range?: {
+    min?: number;
+    max?: number;
+}): number | null;
+export declare function createReplacementString(wordString: string, event: Event, customNumberHandler?: ((prefix: string, number: number, suffix: string) => string), stepping?: {
+    step?: number;
+    range?: {
+        min?: number;
+        max?: number;
+    };
+}): string | null;
 export declare function isElementValueModification(event: Event): boolean;
 export declare function handleElementValueModifications(event: Event, element: Element, finishHandler?: ((arg0: string, arg1: string) => void), suggestionHandler?: ((arg0: string) => boolean), customNumberHandler?: ((arg0: string, arg1: number, arg2: string) => string)): boolean;
 export declare function openLinkExternallyLabel(): string;

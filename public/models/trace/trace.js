@@ -853,7 +853,6 @@ function sortHandlers(traceHandlers) {
 import * as Types3 from "./types/types.js";
 var Model = class _Model extends EventTarget {
   #traces = [];
-  #syntheticEventsManagerByTrace = [];
   #nextNumberByDomain = /* @__PURE__ */ new Map();
   #recordingsAvailable = [];
   #lastRecordingIndex = 0;
@@ -919,10 +918,10 @@ var Model = class _Model extends EventTarget {
       traceEvents,
       metadata,
       parsedTrace: null,
-      traceInsights: null
+      traceInsights: null,
+      syntheticEventsManager: Helpers2.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents)
     };
     try {
-      const syntheticEventsManager = Helpers2.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents);
       await this.#processor.parse(traceEvents, {
         isFreshRecording,
         isCPUProfile,
@@ -931,7 +930,6 @@ var Model = class _Model extends EventTarget {
       });
       this.#storeParsedFileData(file, this.#processor.parsedTrace, this.#processor.insights);
       this.#traces.push(file);
-      this.#syntheticEventsManagerByTrace.push(syntheticEventsManager);
     } catch (e) {
       throw e;
     } finally {
@@ -980,7 +978,7 @@ var Model = class _Model extends EventTarget {
     return this.#traces.at(index)?.traceEvents ?? null;
   }
   syntheticTraceEventsManager(index = this.#traces.length - 1) {
-    return this.#syntheticEventsManagerByTrace.at(index) ?? null;
+    return this.#traces.at(index)?.syntheticEventsManager ?? null;
   }
   size() {
     return this.#traces.length;

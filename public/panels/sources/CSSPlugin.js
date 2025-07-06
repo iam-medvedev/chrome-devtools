@@ -9,9 +9,11 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AddDebugInfoURLDialog } from './AddSourceMapURLDialog.js';
 import { Plugin } from './Plugin.js';
 // Plugin to add CSS completion, shortcuts, and color/curve swatches
@@ -142,6 +144,12 @@ class ColorSwatchWidget extends CodeMirror.WidgetType {
             this.#text = insert;
             this.#color = swatch.getColor();
         });
+        swatch.addEventListener(InlineEditor.ColorSwatch.ColorFormatChangedEvent.eventName, event => {
+            const insert = event.data.color.getAuthoredText() ?? event.data.color.asString();
+            view.dispatch({ changes: { from: this.#from, to: this.#from + this.#text.length, insert } });
+            this.#text = insert;
+            this.#color = swatch.getColor();
+        });
         swatch.addEventListener(InlineEditor.ColorSwatch.ClickEvent.eventName, event => {
             event.consume(true);
             view.dispatch({
@@ -172,23 +180,25 @@ class CurveSwatchWidget extends CodeMirror.WidgetType {
         return this.curve.asCSSText() === other.curve.asCSSText() && this.text === other.text;
     }
     toDOM(view) {
-        const swatch = InlineEditor.Swatches.BezierSwatch.create();
-        swatch.setBezierText(this.text);
-        UI.Tooltip.Tooltip.install(swatch.iconElement(), i18nString(UIStrings.openCubicBezierEditor));
-        swatch.iconElement().addEventListener('click', (event) => {
+        const container = document.createElement('span');
+        const bezierText = container.createChild('span');
+        const icon = IconButton.Icon.create('bezier-curve-filled', 'bezier-swatch-icon');
+        icon.setAttribute('jslog', `${VisualLogging.showStyleEditor('bezier')}`);
+        bezierText.append(this.text);
+        UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.openCubicBezierEditor));
+        icon.addEventListener('click', (event) => {
             event.consume(true);
             view.dispatch({
                 effects: setTooltip.of({
                     type: 1 /* TooltipType.CURVE */,
-                    pos: view.posAtDOM(swatch),
+                    pos: view.posAtDOM(icon),
                     text: this.text,
-                    swatch,
+                    swatch: icon,
                     curve: this.curve,
                 }),
             });
         }, false);
-        swatch.hideText(true);
-        return swatch;
+        return icon;
     }
     ignoreEvent() {
         return true;

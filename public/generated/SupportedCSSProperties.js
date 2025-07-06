@@ -324,12 +324,12 @@ export const generatedProperties = [
             "animation-range-start",
             "animation-timeline",
             "animation-timing-function",
+            "animation-trigger-behavior",
             "animation-trigger-exit-range-end",
             "animation-trigger-exit-range-start",
             "animation-trigger-range-end",
             "animation-trigger-range-start",
             "animation-trigger-timeline",
-            "animation-trigger-type",
             "app-region",
             "appearance",
             "ascent-override",
@@ -381,6 +381,7 @@ export const generatedProperties = [
             "border-right-color",
             "border-right-style",
             "border-right-width",
+            "border-shape",
             "border-start-end-radius",
             "border-start-start-radius",
             "border-top-color",
@@ -512,8 +513,8 @@ export const generatedProperties = [
             "inset-block-start",
             "inset-inline-end",
             "inset-inline-start",
-            "interest-target-hide-delay",
-            "interest-target-show-delay",
+            "interest-hide-delay",
+            "interest-show-delay",
             "interpolate-size",
             "isolation",
             "item-tolerance",
@@ -881,13 +882,22 @@ export const generatedProperties = [
     {
         "longhands": [
             "animation-trigger-timeline",
-            "animation-trigger-type",
+            "animation-trigger-behavior",
             "animation-trigger-range-start",
             "animation-trigger-range-end",
             "animation-trigger-exit-range-start",
             "animation-trigger-exit-range-end"
         ],
         "name": "animation-trigger"
+    },
+    {
+        "keywords": [
+            "once",
+            "repeat",
+            "alternate",
+            "state"
+        ],
+        "name": "animation-trigger-behavior"
     },
     {
         "longhands": [
@@ -921,15 +931,6 @@ export const generatedProperties = [
             "auto"
         ],
         "name": "animation-trigger-timeline"
-    },
-    {
-        "keywords": [
-            "once",
-            "repeat",
-            "alternate",
-            "state"
-        ],
-        "name": "animation-trigger-type"
     },
     {
         "keywords": [
@@ -1425,6 +1426,12 @@ export const generatedProperties = [
             "thick"
         ],
         "name": "border-right-width"
+    },
+    {
+        "keywords": [
+            "none"
+        ],
+        "name": "border-shape"
     },
     {
         "inherited": true,
@@ -2761,16 +2768,16 @@ export const generatedProperties = [
     },
     {
         "longhands": [
-            "interest-target-show-delay",
-            "interest-target-hide-delay"
+            "interest-show-delay",
+            "interest-hide-delay"
         ],
-        "name": "interest-target-delay"
+        "name": "interest-delay"
     },
     {
-        "name": "interest-target-hide-delay"
+        "name": "interest-hide-delay"
     },
     {
-        "name": "interest-target-show-delay"
+        "name": "interest-show-delay"
     },
     {
         "inherited": true,
@@ -4834,18 +4841,18 @@ export const generatedPropertyValues = {
             "step-end"
         ]
     },
-    "animation-trigger-timeline": {
-        "values": [
-            "none",
-            "auto"
-        ]
-    },
-    "animation-trigger-type": {
+    "animation-trigger-behavior": {
         "values": [
             "once",
             "repeat",
             "alternate",
             "state"
+        ]
+    },
+    "animation-trigger-timeline": {
+        "values": [
+            "none",
+            "auto"
         ]
     },
     "app-region": {
@@ -5050,6 +5057,11 @@ export const generatedPropertyValues = {
             "thin",
             "medium",
             "thick"
+        ]
+    },
+    "border-shape": {
+        "values": [
+            "none"
         ]
     },
     "border-style": {

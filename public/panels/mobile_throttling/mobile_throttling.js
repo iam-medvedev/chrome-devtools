@@ -342,7 +342,7 @@ var ThrottlingManager = class _ThrottlingManager {
   cpuThrottlingControls;
   cpuThrottlingOptions;
   customNetworkConditionsSetting;
-  currentNetworkThrottlingConditionsSetting;
+  currentNetworkThrottlingConditionKeySetting;
   calibratedCpuThrottlingSetting;
   lastNetworkThrottlingConditions;
   cpuThrottlingManager;
@@ -355,22 +355,31 @@ var ThrottlingManager = class _ThrottlingManager {
     this.cpuThrottlingManager.addEventListener("RateChanged", (event) => this.onCPUThrottlingRateChangedOnSDK(event.data));
     this.cpuThrottlingControls = /* @__PURE__ */ new Set();
     this.cpuThrottlingOptions = ThrottlingPresets.cpuThrottlingPresets;
-    this.customNetworkConditionsSetting = Common2.Settings.Settings.instance().moduleSetting("custom-network-conditions");
-    this.currentNetworkThrottlingConditionsSetting = Common2.Settings.Settings.instance().createSetting("preferred-network-condition", SDK3.NetworkManager.NoThrottlingConditions);
+    this.customNetworkConditionsSetting = SDK3.NetworkManager.customUserNetworkConditionsSetting();
+    this.currentNetworkThrottlingConditionKeySetting = SDK3.NetworkManager.activeNetworkThrottlingKeySetting();
     this.calibratedCpuThrottlingSetting = Common2.Settings.Settings.instance().createSetting(
       "calibrated-cpu-throttling",
       {},
       "Global"
       /* Common.Settings.SettingStorageType.GLOBAL */
     );
-    this.currentNetworkThrottlingConditionsSetting.setSerializer(new SDK3.NetworkManager.ConditionsSerializer());
     SDK3.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged", () => {
-      this.lastNetworkThrottlingConditions = this.currentNetworkThrottlingConditionsSetting.get();
-      this.currentNetworkThrottlingConditionsSetting.set(SDK3.NetworkManager.MultitargetNetworkManager.instance().networkConditions());
+      this.lastNetworkThrottlingConditions = this.#getCurrentNetworkConditions();
+      const conditions = SDK3.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
+      this.currentNetworkThrottlingConditionKeySetting.set(conditions.key);
     });
     if (this.isDirty()) {
-      SDK3.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(this.currentNetworkThrottlingConditionsSetting.get());
+      SDK3.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(this.#getCurrentNetworkConditions());
     }
+  }
+  #getCurrentNetworkConditions() {
+    const activeKey = this.currentNetworkThrottlingConditionKeySetting.get();
+    const definition = SDK3.NetworkManager.getPredefinedCondition(activeKey);
+    if (definition) {
+      return definition;
+    }
+    const custom = this.customNetworkConditionsSetting.get().find((conditions) => conditions.key === activeKey);
+    return custom ?? SDK3.NetworkManager.NoThrottlingConditions;
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -461,7 +470,7 @@ var ThrottlingManager = class _ThrottlingManager {
     let titles = [];
     let optionEls = [];
     const selector = new NetworkThrottlingSelector(populate, select, this.customNetworkConditionsSetting);
-    selectElement.setAttribute("jslog", `${VisualLogging.dropDown().track({ change: true }).context(this.currentNetworkThrottlingConditionsSetting.name)}`);
+    selectElement.setAttribute("jslog", `${VisualLogging.dropDown().track({ change: true }).context(this.currentNetworkThrottlingConditionKeySetting.name)}`);
     selectElement.addEventListener("change", optionSelected, false);
     function populate(groups) {
       selectElement.removeChildren();
@@ -625,7 +634,7 @@ var ThrottlingManager = class _ThrottlingManager {
   }
   isDirty() {
     const networkConditions = SDK3.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
-    const knownCurrentConditions = this.currentNetworkThrottlingConditionsSetting.get();
+    const knownCurrentConditions = this.#getCurrentNetworkConditions();
     return !SDK3.NetworkManager.networkConditionsEqual(networkConditions, knownCurrentConditions);
   }
 };
@@ -1535,11 +1544,26 @@ var CPUThrottlingCard = class {
     this.updateState();
   }
 };
+function extractCustomSettingIndex(key) {
+  const match = key.match(/USER_CUSTOM_SETTING_(\d+)/);
+  if (match?.[1]) {
+    return parseInt(match[1], 10);
+  }
+  return 0;
+}
 var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
   list;
-  customSetting;
+  customUserConditions;
   editor;
   cpuThrottlingCard;
+  /**
+   * We store how many custom conditions the user has defined when we load up
+   * DevTools. This is because when the user creates a new one, we need to
+   * generate a unique key. We take this value, increment it, and use that as part of the unique key.
+   * This means that we are resilient to the user adding & then deleting a
+   * profile; we always use this counter which is only ever incremented.
+   */
+  #customUserConditionsCount;
   constructor() {
     super(true);
     this.registerRequiredCSS(throttlingSettingsTab_css_default);
@@ -1565,8 +1589,17 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
     this.list.registerRequiredCSS(throttlingSettingsTab_css_default);
     this.list.show(container);
     container.appendChild(addButton);
-    this.customSetting = Common4.Settings.Settings.instance().moduleSetting("custom-network-conditions");
-    this.customSetting.addChangeListener(this.conditionsUpdated, this);
+    this.customUserConditions = SDK7.NetworkManager.customUserNetworkConditionsSetting();
+    this.customUserConditions.addChangeListener(this.conditionsUpdated, this);
+    const customConditions = this.customUserConditions.get();
+    const lastCondition = customConditions.at(-1);
+    const key = lastCondition?.key;
+    if (key && SDK7.NetworkManager.keyIsCustomUser(key)) {
+      const maxIndex = extractCustomSettingIndex(key);
+      this.#customUserConditionsCount = maxIndex;
+    } else {
+      this.#customUserConditionsCount = 0;
+    }
   }
   wasShown() {
     super.wasShown();
@@ -1579,14 +1612,23 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
   }
   conditionsUpdated() {
     this.list.clear();
-    const conditions = this.customSetting.get();
+    const conditions = this.customUserConditions.get();
     for (let i = 0; i < conditions.length; ++i) {
       this.list.appendItem(conditions[i], true);
     }
     this.list.appendSeparator();
   }
   addButtonClicked() {
-    this.list.addNewItem(this.customSetting.get().length, { title: () => "", download: -1, upload: -1, latency: 0, packetLoss: 0, packetReordering: false });
+    this.#customUserConditionsCount++;
+    this.list.addNewItem(this.customUserConditions.get().length, {
+      key: `USER_CUSTOM_SETTING_${this.#customUserConditionsCount}`,
+      title: () => "",
+      download: -1,
+      upload: -1,
+      latency: 0,
+      packetLoss: 0,
+      packetReordering: false
+    });
   }
   renderItem(conditions, _editable) {
     const element = document.createElement("div");
@@ -1611,9 +1653,9 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
     return element;
   }
   removeItemRequested(_item, index) {
-    const list = this.customSetting.get();
+    const list = this.customUserConditions.get();
     list.splice(index, 1);
-    this.customSetting.set(list);
+    this.customUserConditions.set(list);
   }
   retrieveOptionsTitle(conditions) {
     const castedTitle = typeof conditions.title === "function" ? conditions.title() : conditions.title;
@@ -1633,11 +1675,11 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
     conditions.packetQueueLength = packetQueueLength ? parseFloat(packetQueueLength) : 0;
     const packetReordering = editor.control("packetReordering").checked;
     conditions.packetReordering = packetReordering;
-    const list = this.customSetting.get();
+    const list = this.customUserConditions.get();
     if (isNew) {
       list.push(conditions);
     }
-    this.customSetting.set(list);
+    this.customUserConditions.set(list);
   }
   beginEdit(conditions) {
     const editor = this.createEditor();

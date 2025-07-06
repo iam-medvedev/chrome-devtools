@@ -5,7 +5,6 @@
     },
     "files": [
         "bezierEditor.css.js",
-        "bezierSwatch.css.js",
         "colorMixSwatch.css.js",
         "colorSwatch.css.js",
         "cssAngle.css.js",

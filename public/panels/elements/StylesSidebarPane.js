@@ -179,11 +179,12 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.toolbarPaneElement = this.createStylesSidebarToolbar();
         this.noMatchesElement = this.contentElement.createChild('div', 'gray-info-message hidden');
         this.noMatchesElement.textContent = i18nString(UIStrings.noMatchingSelectorOrStyle);
-        this.sectionsContainer = this.contentElement.createChild('div');
-        UI.ARIAUtils.markAsList(this.sectionsContainer);
-        this.sectionsContainer.addEventListener('keydown', this.sectionsContainerKeyDown.bind(this), false);
-        this.sectionsContainer.addEventListener('focusin', this.sectionsContainerFocusChanged.bind(this), false);
-        this.sectionsContainer.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
+        this.sectionsContainer = new UI.Widget.VBox();
+        this.sectionsContainer.show(this.contentElement);
+        UI.ARIAUtils.markAsList(this.sectionsContainer.contentElement);
+        this.sectionsContainer.contentElement.addEventListener('keydown', this.sectionsContainerKeyDown.bind(this), false);
+        this.sectionsContainer.contentElement.addEventListener('focusin', this.sectionsContainerFocusChanged.bind(this), false);
+        this.sectionsContainer.contentElement.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
         this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
         this.decorator = new StylePropertyHighlighter(this);
         this.contentElement.classList.add('styles-pane');
@@ -300,7 +301,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.update();
     }
     sectionsContainerKeyDown(event) {
-        const activeElement = Platform.DOMUtilities.deepActiveElement(this.sectionsContainer.ownerDocument);
+        const activeElement = Platform.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
         if (!activeElement) {
             return;
         }
@@ -453,7 +454,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 }
                 if (!this.initialUpdateCompleted) {
                     // the spinner will get automatically removed when innerRebuildUpdate is called
-                    this.sectionsContainer.createChild('span', 'spinner');
+                    this.sectionsContainer.contentElement.createChild('span', 'spinner');
                 }
             }, 200 /* only spin for loading time > 200ms to avoid unpleasant render flashes */);
         }
@@ -749,7 +750,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const node = this.node();
         this.hasMatchedStyles = matchedStyles !== null && node !== null;
         if (!this.hasMatchedStyles) {
-            this.sectionsContainer.removeChildren();
+            this.sectionsContainer.contentElement.removeChildren();
+            this.sectionsContainer.detachChildWidgets();
             this.noMatchesElement.classList.remove('hidden');
             return;
         }
@@ -772,7 +774,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 }
             }
         }
-        this.sectionsContainer.removeChildren();
+        this.sectionsContainer.contentElement.removeChildren();
+        this.sectionsContainer.detachChildWidgets();
         const fragment = document.createDocumentFragment();
         let index = 0;
         let elementToFocus = null;
@@ -789,7 +792,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 index++;
             }
         }
-        this.sectionsContainer.appendChild(fragment);
+        this.sectionsContainer.contentElement.appendChild(fragment);
         if (elementToFocus) {
             elementToFocus.focus();
         }
@@ -997,8 +1000,8 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         if (!styleSheetHeader) {
             return;
         }
-        const text = (await styleSheetHeader.requestContent()).content || '';
-        const lines = text.split('\n');
+        const contentDataOrError = await styleSheetHeader.requestContentData();
+        const lines = TextUtils.ContentData.ContentData.textOr(contentDataOrError, '').split('\n');
         const range = TextUtils.TextRange.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
         if (this.sectionBlocks && this.sectionBlocks.length > 0) {
             this.addBlankSection(this.sectionBlocks[0].sections[0], styleSheetHeader.id, range);
@@ -1007,7 +1010,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     addBlankSection(insertAfterSection, styleSheetId, ruleLocation) {
         const node = this.node();
         const blankSection = new BlankStylePropertiesSection(this, insertAfterSection.matchedStyles, node ? node.simpleSelector() : '', styleSheetId, ruleLocation, insertAfterSection.style(), 0);
-        this.sectionsContainer.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
+        this.sectionsContainer.contentElement.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
         for (const block of this.sectionBlocks) {
             const index = block.sections.indexOf(insertAfterSection);
             if (index === -1) {

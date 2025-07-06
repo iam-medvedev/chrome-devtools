@@ -1,15 +1,14 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
@@ -32,56 +31,144 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/console_counters/WarningErrorCounter.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-let warningErrorCounterInstance;
-export class WarningErrorCounter {
-    toolbarItem;
-    consoleCounter;
-    issueCounter;
+const DEFAULT_VIEW = (input, _output, target) => {
+    const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+    const countToText = (c) => c === 0 ? undefined : `${c}`;
+    const { errors, warnings, issues, compact } = input;
+    /* Update consoleCounter items. */
+    const errorCountTitle = i18nString(UIStrings.sErrors, { n: errors });
+    const warningCountTitle = i18nString(UIStrings.sWarnings, { n: warnings });
+    let consoleSummary = '';
+    if (errors && warnings) {
+        consoleSummary = `${errorCountTitle}, ${warningCountTitle}`;
+    }
+    else if (errors) {
+        consoleSummary = errorCountTitle;
+    }
+    else if (warnings) {
+        consoleSummary = warningCountTitle;
+    }
+    const consoleTitle = i18nString(UIStrings.openConsoleToViewS, { PH1: consoleSummary });
+    const iconData = {
+        clickHandler: Common.Console.Console.instance().show.bind(Common.Console.Console.instance()),
+        accessibleName: consoleTitle,
+        compact,
+        groups: [
+            {
+                iconName: 'cross-circle-filled',
+                iconColor: 'var(--icon-error)',
+                iconHeight: '14px',
+                iconWidth: '14px',
+                text: countToText(errors)
+            },
+            {
+                iconName: 'warning-filled',
+                iconColor: 'var(--icon-warning)',
+                iconHeight: '14px',
+                iconWidth: '14px',
+                text: countToText(warnings)
+            },
+        ],
+    };
+    /* Update issuesCounter items. */
+    const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(issuesManager);
+    const issuesTitleLead = i18nString(UIStrings.openIssuesToView, { n: issues });
+    const issuesTitle = `${issuesTitleLead} ${issueEnumeration}`;
+    const issueCounterData = {
+        clickHandler: input.showIssuesHandler,
+        issuesManager,
+        compact,
+        accessibleName: issuesTitle,
+        displayMode: "OnlyMostImportant" /* IssueCounter.IssueCounter.DisplayMode.ONLY_MOST_IMPORTANT */,
+    };
+    render(html `<div class="status-buttons"
+         ><icon-button
+            .data=${iconData}
+            title=${consoleTitle}
+            class=${warnings || errors ? nothing : 'hidden'}
+            jslog=${VisualLogging.counter('console').track({
+        click: true
+    })}
+         ></icon-button><devtools-issue-counter
+            class=${'main-toolbar' + (issues ? '' : ' hidden')}
+            title=${issuesTitle}
+            .data=${issueCounterData}
+            jslog=${VisualLogging.counter('issue').track({
+        click: true
+    })}
+         ></devtools-issue-counter></div>`, target, { host: input });
+};
+export class WarningErrorCounterWidget extends UI.Widget.Widget {
+    setVisibility;
+    view;
     throttler;
     updatingForTest;
-    constructor() {
-        WarningErrorCounter.instanceForTest = this;
-        const countersWrapper = document.createElement('div');
-        countersWrapper.classList.add('status-buttons');
-        this.toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(countersWrapper);
-        this.toolbarItem.setVisible(false);
-        this.toolbarItem.addEventListener("CompactLayoutUpdated" /* UI.Toolbar.ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED */, this.onSetCompactLayout, this);
-        this.consoleCounter = new IconButton.IconButton.IconButton();
-        this.consoleCounter.setAttribute('jslog', `${VisualLogging.counter('console').track({ click: true })}`);
-        countersWrapper.appendChild(this.consoleCounter);
-        this.consoleCounter.data = {
-            clickHandler: Common.Console.Console.instance().show.bind(Common.Console.Console.instance()),
-            groups: [
-                { iconName: 'cross-circle-filled', iconColor: 'var(--icon-error)', iconHeight: '14px', iconWidth: '14px' },
-                { iconName: 'warning-filled', iconColor: 'var(--icon-warning)', iconHeight: '14px', iconWidth: '14px' },
-            ],
-        };
-        const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-        this.issueCounter = new IssueCounter.IssueCounter.IssueCounter();
-        this.issueCounter.classList.add('main-toolbar');
-        this.issueCounter.setAttribute('jslog', `${VisualLogging.counter('issue').track({ click: true })}`);
-        countersWrapper.appendChild(this.issueCounter);
-        this.issueCounter.data = {
-            clickHandler: () => {
-                Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.STATUS_BAR_ISSUES_COUNTER */);
-                void UI.ViewManager.ViewManager.instance().showView('issues-pane');
-            },
-            issuesManager,
-            displayMode: "OnlyMostImportant" /* IssueCounter.IssueCounter.DisplayMode.ONLY_MOST_IMPORTANT */,
-        };
+    compact;
+    static instanceForTest = null;
+    constructor(element, setVisibility, view = DEFAULT_VIEW) {
+        super(false, false, element);
+        this.setVisibility = setVisibility;
+        this.view = view;
         this.throttler = new Common.Throttler.Throttler(100);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.ConsoleCleared, this.update, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.MessageAdded, this.update, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ConsoleModel.ConsoleModel, SDK.ConsoleModel.Events.MessageUpdated, this.update, this);
+        const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
         issuesManager.addEventListener("IssuesCountUpdated" /* IssuesManager.IssuesManager.Events.ISSUES_COUNT_UPDATED */, this.update, this);
         this.update();
+        WarningErrorCounterWidget.instanceForTest = this;
     }
     onSetCompactLayout(event) {
         this.setCompactLayout(event.data);
     }
     setCompactLayout(enable) {
-        this.consoleCounter.data = { ...this.consoleCounter.data, compact: enable };
-        this.issueCounter.data = { ...this.issueCounter.data, compact: enable };
+        this.compact = enable;
+        void this.performUpdate();
+    }
+    updatedForTest() {
+        // Sniffed in tests.
+    }
+    update() {
+        this.updatingForTest = true;
+        void this.throttler.schedule(this.performUpdate.bind(this));
+    }
+    get titlesForTesting() {
+        const button = this.contentElement.querySelector('icon-button')?.shadowRoot?.querySelector('button');
+        return button ? button.getAttribute('aria-label') : null;
+    }
+    showIssues() {
+        Host.userMetrics.issuesPanelOpenedFrom(2 /* Host.UserMetrics.IssueOpener.STATUS_BAR_ISSUES_COUNTER */);
+        void UI.ViewManager.ViewManager.instance().showView('issues-pane');
+    }
+    async performUpdate() {
+        const errors = SDK.ConsoleModel.ConsoleModel.allErrors();
+        const warnings = SDK.ConsoleModel.ConsoleModel.allWarnings();
+        const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+        const issues = issuesManager.numberOfIssues();
+        this.view({ compact: this.compact, errors, warnings, issues, showIssuesHandler: this.showIssues.bind(this) }, {}, this.contentElement);
+        this.setVisibility(Boolean(errors || warnings || issues));
+        UI.InspectorView.InspectorView.instance().toolbarItemResized();
+        this.updatingForTest = false;
+        this.updatedForTest();
+        return;
+    }
+}
+let warningErrorCounterInstance;
+export class WarningErrorCounter {
+    toolbarItem;
+    constructor() {
+        const widgetElement = document.createElement('devtools-widget');
+        const toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(widgetElement);
+        toolbarItem.setVisible(false);
+        widgetElement.widgetConfig = UI.Widget.widgetConfig(e => {
+            const widget = new WarningErrorCounterWidget(e, toolbarItem.setVisible.bind(toolbarItem));
+            toolbarItem.addEventListener("CompactLayoutUpdated" /* UI.Toolbar.ToolbarItemWithCompactLayoutEvents.COMPACT_LAYOUT_UPDATED */, widget.onSetCompactLayout, widget);
+            return widget;
+        });
+        this.toolbarItem = toolbarItem;
+    }
+    item() {
+        return this.toolbarItem;
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -90,67 +177,5 @@ export class WarningErrorCounter {
         }
         return warningErrorCounterInstance;
     }
-    updatedForTest() {
-        // Sniffed in tests.
-    }
-    update() {
-        this.updatingForTest = true;
-        void this.throttler.schedule(this.updateThrottled.bind(this));
-    }
-    get titlesForTesting() {
-        const button = this.consoleCounter.shadowRoot?.querySelector('button');
-        return button ? button.getAttribute('aria-label') : null;
-    }
-    async updateThrottled() {
-        const errors = SDK.ConsoleModel.ConsoleModel.allErrors();
-        const warnings = SDK.ConsoleModel.ConsoleModel.allWarnings();
-        const issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-        const issues = issuesManager.numberOfIssues();
-        const countToText = (c) => c === 0 ? undefined : `${c}`;
-        /* Update consoleCounter items. */
-        const errorCountTitle = i18nString(UIStrings.sErrors, { n: errors });
-        const warningCountTitle = i18nString(UIStrings.sWarnings, { n: warnings });
-        const newConsoleTexts = [countToText(errors), countToText(warnings)];
-        let consoleSummary = '';
-        if (errors && warnings) {
-            consoleSummary = `${errorCountTitle}, ${warningCountTitle}`;
-        }
-        else if (errors) {
-            consoleSummary = errorCountTitle;
-        }
-        else if (warnings) {
-            consoleSummary = warningCountTitle;
-        }
-        const consoleTitle = i18nString(UIStrings.openConsoleToViewS, { PH1: consoleSummary });
-        const previousData = this.consoleCounter.data;
-        this.consoleCounter.data = {
-            ...previousData,
-            groups: previousData.groups.map((g, i) => ({ ...g, text: newConsoleTexts[i] })),
-            accessibleName: consoleTitle,
-        };
-        // TODO(chromium:1167711): Let the component handle the title and ARIA label.
-        UI.Tooltip.Tooltip.install(this.consoleCounter, consoleTitle);
-        this.consoleCounter.classList.toggle('hidden', !(errors || warnings));
-        /* Update issuesCounter items. */
-        const issueEnumeration = IssueCounter.IssueCounter.getIssueCountsEnumeration(issuesManager);
-        const issuesTitleLead = i18nString(UIStrings.openIssuesToView, { n: issues });
-        const issuesTitle = `${issuesTitleLead} ${issueEnumeration}`;
-        // TODO(chromium:1167711): Let the component handle the title and ARIA label.
-        UI.Tooltip.Tooltip.install(this.issueCounter, issuesTitle);
-        this.issueCounter.data = {
-            ...this.issueCounter.data,
-            accessibleName: issuesTitle,
-        };
-        this.issueCounter.classList.toggle('hidden', !issues);
-        this.toolbarItem.setVisible(Boolean(errors || warnings || issues));
-        UI.InspectorView.InspectorView.instance().toolbarItemResized();
-        this.updatingForTest = false;
-        this.updatedForTest();
-        return;
-    }
-    item() {
-        return this.toolbarItem;
-    }
-    static instanceForTest = null;
 }
 //# sourceMappingURL=WarningErrorCounter.js.map

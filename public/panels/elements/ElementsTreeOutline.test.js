@@ -134,16 +134,16 @@ describeWithMockConnection('ElementsTreeOutline', () => {
         // Test that <select> issue can be added to the tree element.
         {
             const inspectorIssue = {
-                code: "SelectElementAccessibilityIssue" /* Protocol.Audits.InspectorIssueCode.SelectElementAccessibilityIssue */,
+                code: "ElementAccessibilityIssue" /* Protocol.Audits.InspectorIssueCode.ElementAccessibilityIssue */,
                 details: {
-                    selectElementAccessibilityIssueDetails: {
+                    elementAccessibilityIssueDetails: {
                         nodeId: 2,
-                        selectElementAccessibilityIssueReason: "DisallowedSelectChild" /* Protocol.Audits.SelectElementAccessibilityIssueReason.DisallowedSelectChild */,
+                        elementAccessibilityIssueReason: "DisallowedSelectChild" /* Protocol.Audits.ElementAccessibilityIssueReason.DisallowedSelectChild */,
                         hasDisallowedAttributes: false,
                     },
                 },
             };
-            const issue = IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
+            const issue = IssuesManager.ElementAccessibilityIssue.ElementAccessibilityIssue.fromInspectorIssue(mockModel, inspectorIssue)[0];
             issuesManager.dispatchEventToListeners("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, { issuesModel: mockModel, issue });
             await deferredDOMNodeStub();
             const tagElement = treeElement.listItemElement.getElementsByClassName('webkit-html-tag-name')[0];

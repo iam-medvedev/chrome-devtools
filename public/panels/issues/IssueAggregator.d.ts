@@ -46,7 +46,7 @@ export declare class AggregatedIssue extends IssuesManager.Issue.Issue {
     getQuirksModeIssues(): Iterable<IssuesManager.QuirksModeIssue.QuirksModeIssue>;
     getAttributionReportingIssues(): ReadonlySet<IssuesManager.AttributionReportingIssue.AttributionReportingIssue>;
     getGenericIssues(): ReadonlySet<IssuesManager.GenericIssue.GenericIssue>;
-    getSelectElementAccessibilityIssues(): Iterable<IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue>;
+    getElementAccessibilityIssues(): Iterable<IssuesManager.ElementAccessibilityIssue.ElementAccessibilityIssue>;
     getDescription(): IssuesManager.MarkdownIssueDescription.MarkdownIssueDescription | null;
     getCategory(): IssuesManager.Issue.IssueCategory;
     getAggregatedIssuesCount(): number;

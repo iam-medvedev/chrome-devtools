@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import type * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as ColorPicker from '../../ui/legacy/components/color_picker/color_picker.js';
 import * as InlineEditor from '../../ui/legacy/components/inline_editor/inline_editor.js';
 import type { StylePropertiesSection } from './StylePropertiesSection.js';
@@ -7,18 +8,20 @@ import type { StylesSidebarPane } from './StylesSidebarPane.js';
 interface BezierPopoverIconParams {
     treeElement: StylePropertyTreeElement;
     swatchPopoverHelper: InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper;
-    swatch: InlineEditor.Swatches.BezierSwatch;
+    swatch: IconButton.Icon.Icon;
+    bezierText: HTMLElement;
 }
 export declare class BezierPopoverIcon {
     private treeElement;
     private readonly swatchPopoverHelper;
-    private swatch;
+    private readonly swatch;
+    private readonly bezierText;
     private readonly boundBezierChanged;
     private readonly boundOnScroll;
     private bezierEditor?;
     private scrollerElement?;
     private originalPropertyText?;
-    constructor({ treeElement, swatchPopoverHelper, swatch, }: BezierPopoverIconParams);
+    constructor({ treeElement, swatchPopoverHelper, swatch, bezierText, }: BezierPopoverIconParams);
     private iconClick;
     private bezierChanged;
     private onScroll;

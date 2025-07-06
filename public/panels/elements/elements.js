@@ -346,31 +346,37 @@ var BezierPopoverIcon = class {
   treeElement;
   swatchPopoverHelper;
   swatch;
+  bezierText;
   boundBezierChanged;
   boundOnScroll;
   bezierEditor;
   scrollerElement;
   originalPropertyText;
-  constructor({ treeElement, swatchPopoverHelper, swatch }) {
+  constructor({ treeElement, swatchPopoverHelper, swatch, bezierText }) {
     this.treeElement = treeElement;
     this.swatchPopoverHelper = swatchPopoverHelper;
     this.swatch = swatch;
-    UI2.Tooltip.Tooltip.install(this.swatch.iconElement(), i18nString(UIStrings.openCubicBezierEditor));
-    this.swatch.iconElement().addEventListener("click", this.iconClick.bind(this), false);
-    this.swatch.iconElement().addEventListener("mousedown", (event) => event.consume(), false);
+    this.bezierText = bezierText;
+    UI2.Tooltip.Tooltip.install(this.swatch, i18nString(UIStrings.openCubicBezierEditor));
+    this.swatch.addEventListener("click", this.iconClick.bind(this), false);
+    this.swatch.addEventListener("keydown", this.iconClick.bind(this), false);
+    this.swatch.addEventListener("mousedown", (event) => event.consume(), false);
     this.boundBezierChanged = this.bezierChanged.bind(this);
     this.boundOnScroll = this.onScroll.bind(this);
   }
   iconClick(event) {
+    if (event instanceof KeyboardEvent && !Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
+      return;
+    }
     event.consume(true);
     if (this.swatchPopoverHelper.isShowing()) {
       this.swatchPopoverHelper.hide(true);
       return;
     }
-    const model = InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(this.swatch.bezierText()) || InlineEditor.AnimationTimingModel.LINEAR_BEZIER;
+    const model = InlineEditor.AnimationTimingModel.AnimationTimingModel.parse(this.bezierText.innerText) || InlineEditor.AnimationTimingModel.LINEAR_BEZIER;
     this.bezierEditor = new InlineEditor.BezierEditor.BezierEditor(model);
     this.bezierEditor.addEventListener("BezierChanged", this.boundBezierChanged);
-    this.swatchPopoverHelper.show(this.bezierEditor, this.swatch.iconElement(), this.onPopoverHidden.bind(this));
+    this.swatchPopoverHelper.show(this.bezierEditor, this.swatch, this.onPopoverHidden.bind(this));
     this.scrollerElement = this.swatch.enclosingNodeOrSelfWithClass("style-panes-wrapper");
     if (this.scrollerElement) {
       this.scrollerElement.addEventListener("scroll", this.boundOnScroll, false);
@@ -391,7 +397,7 @@ var BezierPopoverIcon = class {
     }
   }
   bezierChanged(event) {
-    this.swatch.setBezierText(event.data);
+    this.bezierText.textContent = event.data;
     void this.treeElement.applyStyleText(this.treeElement.renderedPropertyText(), false);
   }
   onScroll(_event) {
@@ -2644,7 +2650,7 @@ devtools-icon.icon-link {
     margin-left: 16px;
   }
 
-  :focus {
+  :focus-visible {
     border-radius: var(--sys-size-2);
     outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
   }
@@ -3008,7 +3014,7 @@ var CSSWideKeywordRenderer = class extends rendererBase(SDK6.CSSPropertyParserMa
     if (SDK6.CSSMetadata.cssMetadata().isColorAwareProperty(resolvedProperty.name) || SDK6.CSSMetadata.cssMetadata().isCustomProperty(resolvedProperty.name)) {
       const color = Common3.Color.parse(context.matchedResult.getComputedText(match.node));
       if (color) {
-        return [new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(color, swatch)];
+        return [new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(color, swatch), swatch];
       }
     }
     return [swatch];
@@ -3080,7 +3086,7 @@ var VariableRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
         colorSwatch.setColor(ev.data.color);
       }));
     }
-    return [colorSwatch];
+    return [colorSwatch, varSwatch];
   }
   #handleVarDefinitionActivate(variable) {
     Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.CustomPropertyLinkClicked);
@@ -3200,9 +3206,14 @@ var ColorRenderer = class _ColorRenderer extends rendererBase(SDK6.CSSPropertyPa
           (color.alpha ?? 1) !== 1 ? "hexa" : "hex"
           /* Common.Color.Format.HEX */
         );
-        const swatch2 = new _ColorRenderer(this.#stylesPane, null).renderColorSwatch(displayColor.isGamutClipped() ? color : displayColor.nickname() ?? displayColor);
+        const colorText2 = document.createElement("span");
+        colorText2.textContent = displayColor.asString();
+        const swatch2 = new _ColorRenderer(this.#stylesPane, null).renderColorSwatch(displayColor.isGamutClipped() ? color : displayColor.nickname() ?? displayColor, colorText2);
+        swatch2.addEventListener(InlineEditor2.ColorSwatch.ColorChangedEvent.eventName, (ev) => {
+          colorText2.textContent = ev.data.color.asString();
+        });
         context.addControl("color", swatch2);
-        return { placeholder: [swatch2] };
+        return { placeholder: [swatch2, colorText2] };
       });
       if (evaluation) {
         return evaluation;
@@ -3241,7 +3252,7 @@ var ColorRenderer = class _ColorRenderer extends rendererBase(SDK6.CSSPropertyPa
         });
       }
     }
-    return [swatch];
+    return [swatch, valueChild];
   }
   renderColorSwatch(color, valueChild) {
     const editable = this.#treeElement?.editable();
@@ -3252,16 +3263,13 @@ var ColorRenderer = class _ColorRenderer extends rendererBase(SDK6.CSSPropertyPa
     if (color) {
       swatch.renderColor(color);
     }
-    if (!valueChild) {
-      valueChild = swatch.createChild("span");
-      if (color) {
-        valueChild.textContent = color.getAuthoredText() ?? color.asString();
-      }
-    }
-    swatch.appendChild(valueChild);
     if (this.#treeElement?.editable()) {
       const treeElement = this.#treeElement;
       const onColorChanged = () => {
+        void treeElement.applyStyleText(treeElement.renderedPropertyText(), false);
+      };
+      const onColorFormatChanged = (e) => {
+        valueChild.textContent = e.data.color.getAuthoredText() ?? e.data.color.asString();
         void treeElement.applyStyleText(treeElement.renderedPropertyText(), false);
       };
       swatch.addEventListener(InlineEditor2.ColorSwatch.ClickEvent.eventName, () => {
@@ -3271,9 +3279,11 @@ var ColorRenderer = class _ColorRenderer extends rendererBase(SDK6.CSSPropertyPa
         );
       });
       swatch.addEventListener(InlineEditor2.ColorSwatch.ColorChangedEvent.eventName, onColorChanged);
+      swatch.addEventListener(InlineEditor2.ColorSwatch.ColorFormatChangedEvent.eventName, onColorFormatChanged);
       const swatchIcon = new ColorSwatchPopoverIcon(treeElement, treeElement.parentPane().swatchPopoverHelper(), swatch);
       swatchIcon.addEventListener("colorchanged", (ev) => {
-        swatch.setColorText(ev.data);
+        valueChild.textContent = ev.data.getAuthoredText() ?? ev.data.asString();
+        swatch.setColor(ev.data);
       });
       if (treeElement.property.name === "color") {
         void this.#addColorContrastInfo(swatchIcon);
@@ -3321,7 +3331,7 @@ var LightDarkColorRenderer = class extends rendererBase(SDK6.CSSPropertyParserMa
     const colorSwatch = new ColorRenderer(this.#stylesPane, this.#treeElement).renderColorSwatch(void 0, content);
     context.addControl("color", colorSwatch);
     void this.applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls);
-    return [colorSwatch];
+    return [colorSwatch, content];
   }
   async applyColorScheme(match, context, colorSwatch, light, dark, lightControls, darkControls) {
     const activeColor = await this.#activeColor(match);
@@ -3418,14 +3428,19 @@ var ColorMixRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
     if (nodeId !== void 0 && childTracingContexts) {
       const evaluation = context.tracing?.applyEvaluation(childTracingContexts, () => {
         const initialColor = Common3.Color.parse("#000");
-        const swatch2 = new ColorRenderer(this.#pane, null).renderColorSwatch(initialColor);
+        const colorText = document.createElement("span");
+        colorText.textContent = initialColor.asString();
+        const swatch2 = new ColorRenderer(this.#pane, null).renderColorSwatch(initialColor, colorText);
+        swatch2.addEventListener(InlineEditor2.ColorSwatch.ColorChangedEvent.eventName, (ev) => {
+          colorText.textContent = ev.data.color.asString();
+        });
         context.addControl("color", swatch2);
         const asyncEvalCallback = async () => {
           const results = await this.#pane.cssModel()?.resolveValues(void 0, nodeId, colorMixText);
           if (results) {
             const color = Common3.Color.parse(results[0]);
             if (color) {
-              swatch2.setColorText(color.as(
+              swatch2.setColor(color.as(
                 "hexa"
                 /* Common.Color.Format.HEXA */
               ));
@@ -3434,7 +3449,7 @@ var ColorMixRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
           }
           return false;
         };
-        return { placeholder: [swatch2], asyncEvalCallback };
+        return { placeholder: [swatch2, colorText], asyncEvalCallback };
       });
       if (evaluation) {
         return evaluation;
@@ -3629,24 +3644,25 @@ var BezierRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.B
     super();
     this.#treeElement = treeElement;
   }
-  render(match) {
-    return [this.renderSwatch(match)];
-  }
-  renderSwatch(match) {
-    if (!this.#treeElement?.editable() || !InlineEditor2.AnimationTimingModel.AnimationTimingModel.parse(match.text)) {
-      return document.createTextNode(match.text);
+  render(match, context) {
+    const nodes = match.node.name === "CallExpression" ? Renderer.render(ASTUtils.children(match.node), context).nodes : [document.createTextNode(match.text)];
+    if (!this.#treeElement?.editable() || !InlineEditor2.AnimationTimingModel.AnimationTimingModel.parse(context.matchedResult.getComputedText(match.node))) {
+      return nodes;
     }
     const swatchPopoverHelper = this.#treeElement.parentPane().swatchPopoverHelper();
-    const swatch = InlineEditor2.Swatches.BezierSwatch.create();
-    swatch.iconElement().addEventListener("click", () => {
+    const icon = IconButton.Icon.create("bezier-curve-filled", "bezier-swatch-icon");
+    icon.setAttribute("jslog", `${VisualLogging3.showStyleEditor("bezier")}`);
+    icon.tabIndex = -1;
+    icon.addEventListener("click", () => {
       Host2.userMetrics.swatchActivated(
         3
         /* Host.UserMetrics.SwatchType.ANIMATION_TIMING */
       );
     });
-    swatch.setBezierText(match.text);
-    new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch });
-    return swatch;
+    const bezierText = document.createElement("span");
+    bezierText.append(...nodes);
+    new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch: icon, bezierText });
+    return [icon, bezierText];
   }
 };
 var AutoBaseRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.AutoBaseMatch) {
@@ -7915,11 +7931,12 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common6.ObjectWrapper.e
     this.toolbarPaneElement = this.createStylesSidebarToolbar();
     this.noMatchesElement = this.contentElement.createChild("div", "gray-info-message hidden");
     this.noMatchesElement.textContent = i18nString8(UIStrings8.noMatchingSelectorOrStyle);
-    this.sectionsContainer = this.contentElement.createChild("div");
-    UI12.ARIAUtils.markAsList(this.sectionsContainer);
-    this.sectionsContainer.addEventListener("keydown", this.sectionsContainerKeyDown.bind(this), false);
-    this.sectionsContainer.addEventListener("focusin", this.sectionsContainerFocusChanged.bind(this), false);
-    this.sectionsContainer.addEventListener("focusout", this.sectionsContainerFocusChanged.bind(this), false);
+    this.sectionsContainer = new UI12.Widget.VBox();
+    this.sectionsContainer.show(this.contentElement);
+    UI12.ARIAUtils.markAsList(this.sectionsContainer.contentElement);
+    this.sectionsContainer.contentElement.addEventListener("keydown", this.sectionsContainerKeyDown.bind(this), false);
+    this.sectionsContainer.contentElement.addEventListener("focusin", this.sectionsContainerFocusChanged.bind(this), false);
+    this.sectionsContainer.contentElement.addEventListener("focusout", this.sectionsContainerFocusChanged.bind(this), false);
     this.swatchPopoverHelperInternal.addEventListener("WillShowPopover", this.hideAllPopovers, this);
     this.decorator = new StylePropertyHighlighter(this);
     this.contentElement.classList.add("styles-pane");
@@ -8028,7 +8045,7 @@ ${allDeclarationText}
     this.update();
   }
   sectionsContainerKeyDown(event) {
-    const activeElement = Platform5.DOMUtilities.deepActiveElement(this.sectionsContainer.ownerDocument);
+    const activeElement = Platform5.DOMUtilities.deepActiveElement(this.sectionsContainer.contentElement.ownerDocument);
     if (!activeElement) {
       return;
     }
@@ -8180,7 +8197,7 @@ ${allDeclarationText}
             return;
           }
           if (!this.initialUpdateCompleted) {
-            this.sectionsContainer.createChild("span", "spinner");
+            this.sectionsContainer.contentElement.createChild("span", "spinner");
           }
         },
         200
@@ -8458,7 +8475,8 @@ ${allDeclarationText}
     const node = this.node();
     this.hasMatchedStyles = matchedStyles !== null && node !== null;
     if (!this.hasMatchedStyles) {
-      this.sectionsContainer.removeChildren();
+      this.sectionsContainer.contentElement.removeChildren();
+      this.sectionsContainer.detachChildWidgets();
       this.noMatchesElement.classList.remove("hidden");
       return;
     }
@@ -8478,7 +8496,8 @@ ${allDeclarationText}
         }
       }
     }
-    this.sectionsContainer.removeChildren();
+    this.sectionsContainer.contentElement.removeChildren();
+    this.sectionsContainer.detachChildWidgets();
     const fragment = document.createDocumentFragment();
     let index = 0;
     let elementToFocus = null;
@@ -8495,7 +8514,7 @@ ${allDeclarationText}
         index++;
       }
     }
-    this.sectionsContainer.appendChild(fragment);
+    this.sectionsContainer.contentElement.appendChild(fragment);
     if (elementToFocus) {
       elementToFocus.focus();
     }
@@ -8687,8 +8706,8 @@ ${allDeclarationText}
     if (!styleSheetHeader) {
       return;
     }
-    const text = (await styleSheetHeader.requestContent()).content || "";
-    const lines = text.split("\n");
+    const contentDataOrError = await styleSheetHeader.requestContentData();
+    const lines = TextUtils4.ContentData.ContentData.textOr(contentDataOrError, "").split("\n");
     const range = TextUtils4.TextRange.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
     if (this.sectionBlocks && this.sectionBlocks.length > 0) {
       this.addBlankSection(this.sectionBlocks[0].sections[0], styleSheetHeader.id, range);
@@ -8697,7 +8716,7 @@ ${allDeclarationText}
   addBlankSection(insertAfterSection, styleSheetId, ruleLocation) {
     const node = this.node();
     const blankSection = new BlankStylePropertiesSection(this, insertAfterSection.matchedStyles, node ? node.simpleSelector() : "", styleSheetId, ruleLocation, insertAfterSection.style(), 0);
-    this.sectionsContainer.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
+    this.sectionsContainer.contentElement.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
     for (const block of this.sectionBlocks) {
       const index = block.sections.indexOf(insertAfterSection);
       if (index === -1) {
@@ -10953,7 +10972,11 @@ var UIStrings11 = {
   /**
    * @description Tooltip text shown in the Elements panel when an element has an error.
    */
-  interactiveContentAttributesSelectDescendant: "Element with invalid attributes within a <select> element"
+  interactiveContentAttributesSelectDescendant: "Element with invalid attributes within a <select> element",
+  /**
+   * @description Tooltip text shown in the Elements panel when an element has an error.
+   */
+  interactiveContentSummaryDescendant: "Interactive element inside of a <summary> element"
 };
 var str_11 = i18n21.i18n.registerUIStrings("panels/elements/ElementIssueUtils.ts", UIStrings11);
 var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
@@ -10966,7 +10989,7 @@ function getElementIssueDetails(issue) {
       attribute: issueDetails.violatingNodeAttribute
     };
   }
-  if (issue instanceof IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue) {
+  if (issue instanceof IssuesManager.ElementAccessibilityIssue.ElementAccessibilityIssue) {
     const issueDetails = issue.details();
     if (issue.isInteractiveContentAttributesSelectDescendantIssue()) {
       return {
@@ -10975,7 +10998,7 @@ function getElementIssueDetails(issue) {
       };
     }
     return {
-      tooltip: getTooltipFromSelectElementAccessibilityIssue(issueDetails.selectElementAccessibilityIssueReason),
+      tooltip: getTooltipFromElementAccessibilityIssue(issueDetails.elementAccessibilityIssueReason),
       nodeId: issueDetails.nodeId
     };
   }
@@ -11007,7 +11030,7 @@ function getTooltipFromGenericIssue(errorType) {
       return "";
   }
 }
-function getTooltipFromSelectElementAccessibilityIssue(reason) {
+function getTooltipFromElementAccessibilityIssue(reason) {
   switch (reason) {
     case "DisallowedSelectChild":
       return i18nString11(UIStrings11.disallowedSelectChild);
@@ -11019,6 +11042,8 @@ function getTooltipFromSelectElementAccessibilityIssue(reason) {
       return i18nString11(UIStrings11.interactiveContentOptionChild);
     case "InteractiveContentLegendChild":
       return i18nString11(UIStrings11.interactiveContentLegendChild);
+    case "InteractiveContentSummaryDescendant":
+      return i18nString11(UIStrings11.interactiveContentSummaryDescendant);
     default:
       return "";
   }
@@ -15172,7 +15197,6 @@ import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK18 from "./../../core/sdk/sdk.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import * as Input from "./../../ui/components/input/input.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
@@ -15229,45 +15253,19 @@ var layoutPane_css_default = `/*
   gap: 5px;
 }
 
-.checkbox-label {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  min-width: 40px;
-  width: fit-content;
-}
-
-.checkbox-settings .checkbox-label {
+.checkbox-settings devtools-checkbox {
   margin-bottom: 8px;
 }
 
-.checkbox-settings .checkbox-label:last-child {
+.checkbox-settings devtools-checkbox:last-child {
   margin-bottom: 0;
 }
 
-.checkbox-label input {
+devtools-checkbox {
+  /* Allows label text to get ellipsed */
+  flex-shrink: unset;
   margin: 0 6px 0 0;
   padding: 0;
-  flex: none;
-}
-
-.checkbox-label:hover input::after {
-  content: '';
-  height: var(--sys-size-11);
-  width: var(--sys-size-11);
-  border-radius: var(--sys-shape-corner-full);
-  position: absolute;
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-.checkbox-label input:focus {
-  outline: auto 5px -webkit-focus-ring-color;
-}
-
-.checkbox-label > span {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
 }
 
 .select-settings {
@@ -15493,15 +15491,14 @@ var DEFAULT_VIEW3 = (input, output, target) => {
   const renderElement = (element) => html9`<div
           class="element"
           jslog=${VisualLogging10.item()}>
-        <label data-element="true" class="checkbox-label">
-          <input
-            data-input="true"
-            type="checkbox"
-            .checked=${element.enabled}
-            @change=${(e) => input.onElementToggle(element, e)}
-            jslog=${VisualLogging10.toggle().track({
+        <devtools-checkbox
+          data-element="true"
+          class="checkbox-label"
+          .checked=${element.enabled}
+          @change=${(e) => input.onElementToggle(element, e)}
+          jslog=${VisualLogging10.toggle().track({
     click: true
-  })} />
+  })}>
           <span
               class="node-text-container"
               data-label="true"
@@ -15513,7 +15510,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     nodeClasses: element.domClasses
   }}></devtools-node-text>
           </span>
-        </label>
+        </devtools-checkbox>
         <label
             @keyup=${onColorLabelKeyUp}
             @keydown=${onColorLabelKeyDown}
@@ -15544,7 +15541,6 @@ var DEFAULT_VIEW3 = (input, output, target) => {
   render6(
     html9`
       <div style="min-width: min-content;" jslog=${VisualLogging10.pane("layout").track({ resize: true })}>
-        <style>${Input.checkboxStyles}</style>
         <style>${layoutPane_css_default}</style>
         <style>${UI20.inspectorCommonStyles}</style>
         <details open>
@@ -15571,18 +15567,15 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                     </label>`)}
             </div>
             <div class="checkbox-settings">
-              ${input.booleanSettings.map((setting) => html9`<label
-                          data-boolean-setting="true"
-                          class="checkbox-label"
-                          title=${setting.title}
-                          jslog=${VisualLogging10.toggle().track({ click: true }).context(setting.name)}>
-                      <input
-                          data-input="true"
-                          type="checkbox"
-                          .checked=${setting.value}
-                          @change=${(e) => input.onBooleanSettingChange(setting, e)} />
-                      <span data-label="true">${setting.title}</span>
-                    </label>`)}
+              ${input.booleanSettings.map((setting) => html9`<devtools-checkbox
+                      data-boolean-setting="true"
+                      class="checkbox-label"
+                      title=${setting.title}
+                      .checked=${setting.value}
+                      @change=${(e) => input.onBooleanSettingChange(setting, e)}
+                      jslog=${VisualLogging10.toggle().track({ click: true }).context(setting.name)}>
+                    ${setting.title}
+                  </devtools-checkbox>`)}
             </div>
           </div>
           ${input.gridElements ? html9`<div class="content-section" jslog=${VisualLogging10.section("grid-overlays")}>

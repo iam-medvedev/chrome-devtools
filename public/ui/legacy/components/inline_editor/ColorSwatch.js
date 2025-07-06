@@ -16,6 +16,14 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/inline_editor/ColorSwatch.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export class ColorFormatChangedEvent extends Event {
+    static eventName = 'colorformatchanged';
+    data;
+    constructor(color) {
+        super(ColorFormatChangedEvent.eventName, {});
+        this.data = { color };
+    }
+}
 export class ColorChangedEvent extends Event {
     static eventName = 'colorchanged';
     data;
@@ -40,6 +48,8 @@ export class ColorSwatch extends HTMLElement {
         if (tooltip) {
             this.tooltip = tooltip;
         }
+        this.tabIndex = -1;
+        this.addEventListener('keydown', e => this.onActivate(e));
     }
     static isColorSwatch(element) {
         return element.localName === 'devtools-color-swatch';
@@ -77,19 +87,25 @@ export class ColorSwatch extends HTMLElement {
         // clang-format off
         // Note that we use a <slot> with a default value here to display the color text. Consumers of this component are
         // free to append any content to replace what is being shown here.
-        Lit.render(html `
-      <style>${colorSwatchStyles}</style>
-      <span class=${colorSwatchClasses} title=${this.tooltip}>
-        <span class="color-swatch-inner" style="background-color: ${color.asString()};"
-              jslog=${VisualLogging.showStyleEditor('color').track({ click: true })}
-              @click=${this.onClick} @mousedown=${this.consume} @dblclick=${this.consume}>
-        </span>
-      </span>
-      <slot><span>${this.getText()}</span></slot>`, this.shadow, { host: this });
+        // Note also that whitespace between nodes is removed on purpose to avoid pushing these elements apart. Do not
+        // re-format the HTML code.
+        Lit.render(html `<style>${colorSwatchStyles}</style><span
+          class=${colorSwatchClasses}
+          title=${this.tooltip}><span
+            class="color-swatch-inner"
+            style="background-color: ${color.asString()};"
+            jslog=${VisualLogging.showStyleEditor('color').track({ click: true })}
+            @click=${this.onActivate}
+            @mousedown=${this.consume}
+            @dblclick=${this.consume}></span></span>`, this.shadow, { host: this });
         // clang-format on
     }
-    onClick(e) {
+    onActivate(e) {
         if (this.readonly) {
+            return;
+        }
+        if ((e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') ||
+            (e instanceof MouseEvent && e.button > 1)) {
             return;
         }
         if (e.shiftKey) {
@@ -98,6 +114,7 @@ export class ColorSwatch extends HTMLElement {
             return;
         }
         this.dispatchEvent(new ClickEvent());
+        this.consume(e);
     }
     consume(e) {
         e.stopPropagation();
@@ -106,20 +123,13 @@ export class ColorSwatch extends HTMLElement {
         this.renderColor(color);
         this.dispatchEvent(new ColorChangedEvent(color));
     }
-    setColorText(color) {
-        this.firstElementChild?.remove();
-        this.renderColor(color);
-        const span = this.appendChild(document.createElement('span'));
-        span.appendChild(document.createTextNode(color.getAuthoredText() ?? color.asString()));
-        this.dispatchEvent(new ColorChangedEvent(color));
-    }
     showFormatPicker(e) {
         if (!this.color) {
             return;
         }
         const contextMenu = new ColorPicker.FormatPickerContextMenu.FormatPickerContextMenu(this.color);
         void contextMenu.show(e, color => {
-            this.setColorText(color);
+            this.dispatchEvent(new ColorFormatChangedEvent(color));
         });
     }
 }

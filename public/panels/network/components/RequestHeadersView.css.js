@@ -180,7 +180,7 @@ summary label {
   gap: var(--sys-size-3);
 }
 
-summary label input[type="checkbox"] {
+summary devtools-checkbox {
   margin-top: 1px;
 }
 

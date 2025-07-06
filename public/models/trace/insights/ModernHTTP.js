@@ -26,10 +26,13 @@ export const UIStrings = {
     /**
      * @description Text explaining that there were not requests that were slowed down by using HTTP/1.1. "HTTP/1.1" should not be translated.
      */
-    noOldProtocolRequests: 'No requests used HTTP/1.1'
+    noOldProtocolRequests: 'No requests used HTTP/1.1, or its current use of HTTP/1.1 does not present a significant optimization opportunity. HTTP/1.1 requests are only flagged if six or more static assets originate from the same origin, and they are not served from a local development environment or a third-party source.'
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/ModernHTTP.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+export function isModernHTTP(model) {
+    return model.insightKey === "ModernHTTP" /* InsightKeys.MODERN_HTTP */;
+}
 /**
  * Determines whether a network request is a "static resource" that would benefit from H2 multiplexing.
  * XHRs, tracking pixels, etc generally don't benefit as much because they aren't requested en-masse
@@ -75,8 +78,8 @@ function isMultiplexableStaticAsset(request, entityMappings, firstPartyEntity) {
  * [2] https://www.twilio.com/blog/2017/10/http2-issues.html
  * [3] https://www.cachefly.com/http-2-is-not-a-magic-bullet/
  */
-export function determineNonHttp2Resources(requests, entityMappings, firstPartyEntity) {
-    const nonHttp2Resources = [];
+export function determineHttp1Requests(requests, entityMappings, firstPartyEntity) {
+    const http1Requests = [];
     const groupedByOrigin = new Map();
     for (const record of requests) {
         const url = new URL(record.args.data.url);
@@ -112,9 +115,9 @@ export function determineNonHttp2Resources(requests, entityMappings, firstPartyE
             continue;
         }
         seenURLs.add(request.args.data.url);
-        nonHttp2Resources.push(request);
+        http1Requests.push(request);
     }
-    return nonHttp2Resources;
+    return http1Requests;
 }
 /**
  * Computes the estimated effect of all results being converted to http/2 on the provided graph.
@@ -148,11 +151,11 @@ function computeWasteWithGraph(urlsToChange, graph, simulator) {
     const savings = simulationBefore.timeInMs - simulationAfter.timeInMs;
     return Platform.NumberUtilities.floor(savings, 1 / 10);
 }
-function computeMetricSavings(nonHttp2Requests, context) {
+function computeMetricSavings(http1Requests, context) {
     if (!context.navigation || !context.lantern) {
         return;
     }
-    const urlsToChange = new Set(nonHttp2Requests.map(r => r.args.data.url));
+    const urlsToChange = new Set(http1Requests.map(r => r.args.data.url));
     const fcpGraph = context.lantern.metrics.firstContentfulPaint.optimisticGraph;
     const lcpGraph = context.lantern.metrics.largestContentfulPaint.optimisticGraph;
     return {
@@ -162,14 +165,14 @@ function computeMetricSavings(nonHttp2Requests, context) {
 }
 function finalize(partialModel) {
     return {
-        insightKey: "ImageDelivery" /* InsightKeys.IMAGE_DELIVERY */,
+        insightKey: "ModernHTTP" /* InsightKeys.MODERN_HTTP */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
-        state: partialModel.requests.length > 0 ? 'fail' : 'pass',
+        state: partialModel.http1Requests.length > 0 ? 'fail' : 'pass',
         ...partialModel,
-        relatedEvents: partialModel.requests,
+        relatedEvents: partialModel.http1Requests,
     };
 }
 export function generateInsight(parsedTrace, context) {
@@ -178,10 +181,10 @@ export function generateInsight(parsedTrace, context) {
     const entityMappings = parsedTrace.NetworkRequests.entityMappings;
     const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
     const firstPartyEntity = Handlers.Helpers.getEntityForUrl(firstPartyUrl, entityMappings.createdEntityCache);
-    const nonHttp2Requests = determineNonHttp2Resources(contextRequests, entityMappings, firstPartyEntity ?? null);
+    const http1Requests = determineHttp1Requests(contextRequests, entityMappings, firstPartyEntity ?? null);
     return finalize({
-        requests: nonHttp2Requests,
-        metricSavings: computeMetricSavings(nonHttp2Requests, context),
+        http1Requests,
+        metricSavings: computeMetricSavings(http1Requests, context),
     });
 }
 //# sourceMappingURL=ModernHTTP.js.map

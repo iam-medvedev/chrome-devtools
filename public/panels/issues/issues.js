@@ -33,7 +33,7 @@ var AggregatedIssue = class extends IssuesManager.Issue.Issue {
   #quirksModeIssues = /* @__PURE__ */ new Set();
   #attributionReportingIssues = /* @__PURE__ */ new Set();
   #genericIssues = /* @__PURE__ */ new Set();
-  #selectElementAccessibilityIssues = /* @__PURE__ */ new Set();
+  #elementAccessibilityIssues = /* @__PURE__ */ new Set();
   #representative;
   #aggregatedIssuesCount = 0;
   #key;
@@ -101,8 +101,8 @@ var AggregatedIssue = class extends IssuesManager.Issue.Issue {
   getGenericIssues() {
     return this.#genericIssues;
   }
-  getSelectElementAccessibilityIssues() {
-    return this.#selectElementAccessibilityIssues;
+  getElementAccessibilityIssues() {
+    return this.#elementAccessibilityIssues;
   }
   getDescription() {
     if (this.#representative) {
@@ -206,8 +206,8 @@ var AggregatedIssue = class extends IssuesManager.Issue.Issue {
     if (issue instanceof IssuesManager.GenericIssue.GenericIssue) {
       this.#genericIssues.add(issue);
     }
-    if (issue instanceof IssuesManager.SelectElementAccessibilityIssue.SelectElementAccessibilityIssue) {
-      this.#selectElementAccessibilityIssues.add(issue);
+    if (issue instanceof IssuesManager.ElementAccessibilityIssue.ElementAccessibilityIssue) {
+      this.#elementAccessibilityIssues.add(issue);
     }
     if (issue instanceof IssuesManager.PartitioningBlobURLIssue.PartitioningBlobURLIssue) {
       this.#partitioningBlobURLIssues.add(issue);
@@ -1527,7 +1527,7 @@ var AffectedDescendantsWithinSelectElementView = class extends AffectedElementsV
   }
   async #doUpdate() {
     this.clear();
-    await this.#appendDisallowedSelectDescendants(this.issue.getSelectElementAccessibilityIssues());
+    await this.#appendDisallowedSelectDescendants(this.issue.getElementAccessibilityIssues());
   }
   async #appendDisallowedSelectDescendant(issue) {
     const row = document.createElement("tr");

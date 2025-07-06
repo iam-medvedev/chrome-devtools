@@ -13556,6 +13556,7 @@ devtools-toolbar {
 
 .webkit-html-comment {
   color: var(--sys-color-token-comment);
+  word-break: break-all;
 }
 
 .webkit-html-tag {
@@ -14048,7 +14049,7 @@ function modifiedHexValue(hexString, event) {
   }
   return resultString;
 }
-function modifiedFloatNumber(number, event, modifierMultiplier) {
+function modifiedFloatNumber(number, event, modifierMultiplier, range) {
   const direction = getValueModificationDirection(event);
   if (!direction) {
     return null;
@@ -14068,13 +14069,19 @@ function modifiedFloatNumber(number, event, modifierMultiplier) {
   if (modifierMultiplier) {
     delta *= modifierMultiplier;
   }
-  const result = Number((number + delta).toFixed(6));
+  let result = Number((number + delta).toFixed(6));
+  if (range?.min !== void 0) {
+    result = Math.max(result, range.min);
+  }
+  if (range?.max !== void 0) {
+    result = Math.min(result, range.max);
+  }
   if (!String(result).match(numberRegex)) {
     return null;
   }
   return result;
 }
-function createReplacementString(wordString, event, customNumberHandler) {
+function createReplacementString(wordString, event, customNumberHandler, stepping) {
   let prefix;
   let suffix;
   let number;
@@ -14092,7 +14099,7 @@ function createReplacementString(wordString, event, customNumberHandler) {
     if (matches?.length) {
       prefix = matches[1];
       suffix = matches[3];
-      number = modifiedFloatNumber(parseFloat(matches[2]), event);
+      number = modifiedFloatNumber(parseFloat(matches[2]), event, stepping?.step, stepping?.range);
       if (number !== null) {
         replacementString = customNumberHandler ? customNumberHandler(prefix, number, suffix) : prefix + number + suffix;
       }

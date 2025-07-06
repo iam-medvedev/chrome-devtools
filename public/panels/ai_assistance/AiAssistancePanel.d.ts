@@ -33,7 +33,18 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     willHide(): void;
     performUpdate(): Promise<void>;
     handleAction(actionId: string): void;
+    /**
+     * Handles an external request using the given prompt and uses the
+     * conversation type to use the correct agent. Note that the `selector` param
+     * is contextual; for styling it is a literal CSS selector, but for
+     * Performance Insights it is the name of the Insight that forms the
+     * context of the conversation.
+     */
     handleExternalRequest(prompt: string, conversationType: AiAssistanceModel.ConversationType, selector?: string): Promise<{
+        response: string;
+        devToolsLogs: object[];
+    }>;
+    handleExternalPerformanceInsightsRequest(prompt: string, insightTitle: string): Promise<{
         response: string;
         devToolsLogs: object[];
     }>;

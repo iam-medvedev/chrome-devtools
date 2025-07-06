@@ -368,38 +368,21 @@ function agentToConversationType(agent) {
     }
     throw new Error('Provided agent does not have a corresponding conversation type');
 }
-// TODO(crbug.com/416134018): Add piercing of shadow roots and handling of child frames
 async function inspectElementBySelector(selector) {
-    const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-    const runtimeModel = primaryPageTarget?.model(SDK.RuntimeModel.RuntimeModel);
-    const executionContext = runtimeModel?.defaultExecutionContext();
-    if (!executionContext) {
-        throw new Error('Could not find execution context for executing code');
+    const whitespaceTrimmedQuery = selector.trim();
+    if (!whitespaceTrimmedQuery.length) {
+        return null;
     }
-    // `inspect()` is not available in `callFunctionOn()`, but it is in `evaluate()`.
-    // We therefore get a reference to `inspect()` via `evaluate()` and then pass
-    // this reference as an argument to `callFunctionOn()`.
-    const inspectReference = await executionContext.evaluate({
-        expression: 'window.inspect',
-        includeCommandLineAPI: true,
-        returnByValue: false,
-    }, 
-    /* userGesture */ false, 
-    /* awaitPromise */ false);
-    if ('error' in inspectReference || inspectReference.exceptionDetails) {
-        throw new Error('Cannot find \'window.inspect\'');
+    const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get();
+    const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
+    const performSearchPromises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
+    const resultCounts = await Promise.all(performSearchPromises);
+    // If the selector matches multiple times, this returns the first match.
+    const index = resultCounts.findIndex(value => value > 0);
+    if (index >= 0) {
+        return await domModels[index].searchResult(0);
     }
-    const inspectResult = await executionContext.callFunctionOn({
-        functionDeclaration: 'async function (inspect, selector) { return inspect(document.querySelector(selector)); }',
-        arguments: [{ objectId: inspectReference.object.objectId }, { value: selector }],
-        userGesture: false,
-        awaitPromise: true,
-        returnByValue: false,
-    });
-    if ('error' in inspectResult || inspectResult.exceptionDetails ||
-        SDK.RemoteObject.RemoteObject.isNullOrUndefined(inspectResult.object)) {
-        throw new Error(`Could not find an element matching the '${selector}' selector. Please try a different selector.`);
-    }
+    return null;
 }
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
@@ -1389,6 +1372,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             release();
         }
     }
+    /**
+     * Handles an external request using the given prompt and uses the
+     * conversation type to use the correct agent. Note that the `selector` param
+     * is contextual; for styling it is a literal CSS selector, but for
+     * Performance Insights it is the name of the Insight that forms the
+     * context of the conversation.
+     */
     async handleExternalRequest(prompt, conversationType, selector) {
         try {
             Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
@@ -1404,6 +1394,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             switch (conversationType) {
                 case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
                     return await this.handleExternalStylingRequest(prompt, selector);
+                case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
+                    if (!selector) {
+                        throw new Error('The insightTitle parameter is required for debugging a Performance Insight.');
+                    }
+                    return await this.handleExternalPerformanceInsightsRequest(prompt, selector);
                 default:
                     throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
             }
@@ -1416,15 +1411,47 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             throw error;
         }
     }
+    async handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
+        const insightsAgent = this.#createAgent("performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
+        const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(insightsAgent), [], insightsAgent.id, 
+        /* isReadOnly */ true, 
+        /* isExternal */ true);
+        this.#historicalConversations.push(externalConversation);
+        const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
+        const insightOrError = await TimelinePanel.ExternalRequests.getInsightToDebug(timelinePanel.model, insightTitle);
+        if ('error' in insightOrError) {
+            return {
+                response: insightOrError.error,
+                devToolsLogs: [],
+            };
+        }
+        const selectedContext = createPerfInsightContext(insightOrError.insight);
+        const runner = insightsAgent.run(prompt, { selected: selectedContext });
+        const devToolsLogs = [];
+        for await (const data of runner) {
+            // We don't want to save partial responses to the conversation history.
+            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
+                void externalConversation.addHistoryItem(data);
+                devToolsLogs.push(data);
+            }
+            if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
+                return { response: data.text, devToolsLogs };
+            }
+        }
+        throw new Error('Something went wrong. No answer was generated.');
+    }
     async handleExternalStylingRequest(prompt, selector = 'body') {
         const stylingAgent = this.#createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(stylingAgent), [], stylingAgent.id, 
         /* isReadOnly */ true, 
         /* isExternal */ true);
         this.#historicalConversations.push(externalConversation);
-        await inspectElementBySelector(selector);
+        const node = await inspectElementBySelector(selector);
+        if (node) {
+            await node.setAsInspectedNode();
+        }
         const runner = stylingAgent.run(prompt, {
-            selected: this.#getConversationContext(externalConversation),
+            selected: createNodeContext(node),
         });
         const devToolsLogs = [];
         for await (const data of runner) {

@@ -697,11 +697,11 @@ var InteractionsTrackAppender = class {
     const decorationsForEvent = this.#compatibilityBuilder.getFlameChartTimelineData().entryDecorations[eventIndex] || [];
     decorationsForEvent.push({
       type: "CANDY",
-      startAtTime: Trace6.Handlers.ModelHandlers.UserInteractions.LONG_INTERACTION_THRESHOLD,
-      // Interaction events have whiskers, so we do not want to candy stripe
-      // the entire duration. The box represents processing duration, so we only
-      // candystripe up to the end of processing.
-      endAtTime: entry.processingEnd
+      // Where the striping starts is hard. The problem is the whole interaction, isolating the part of it *responsible* for
+      // making the interaction 200ms is hard and our decoration won't do it perfectly. To simplify we just flag all the overage.
+      // AKA the first 200ms of the interaction aren't flagged. A downside is we often flag a lot of render delay.
+      // It'd be fair to shift the candystriping segment earlier in the interaction... Let's see what the feedback is like.
+      startAtTime: Trace6.Handlers.ModelHandlers.UserInteractions.LONG_INTERACTION_THRESHOLD
     }, {
       type: "WARNING_TRIANGLE",
       customEndTime: entry.processingEnd
@@ -5295,7 +5295,8 @@ async function innerForTraceCalculate({ recordingStartTime, cruxFieldData } = {}
       packetLoss: networkConditions.packetLoss,
       packetQueueLength: networkConditions.packetQueueLength,
       packetReordering: networkConditions.packetReordering,
-      targetLatency: networkConditions.targetLatency
+      targetLatency: networkConditions.targetLatency,
+      key: networkConditions.key
     };
     networkTitle = typeof networkConditions.title === "function" ? networkConditions.title() : networkConditions.title;
   }
@@ -6918,7 +6919,12 @@ var timelineMiniMap_css_default = `/*
 
 .timeline-minimap {
   position: relative;
+
+  &.no-trace-active {
+    display: none;
+  }
 }
+
 
 .timeline-minimap .overview-strip {
   margin-top: 2px;
@@ -7026,7 +7032,7 @@ var TimelineMiniMap = class extends Common9.ObjectWrapper.eventMixin(UI9.Widget.
   constructor() {
     super();
     this.registerRequiredCSS(timelineMiniMap_css_default);
-    this.element.classList.add("timeline-minimap");
+    this.element.classList.add("timeline-minimap", "no-trace-active");
     this.#breadcrumbsUI = new TimelineComponents2.BreadcrumbsUI.BreadcrumbsUI();
     this.element.prepend(this.#breadcrumbsUI);
     this.#overviewComponent.show(this.element);
@@ -7172,6 +7178,12 @@ var TimelineMiniMap = class extends Common9.ObjectWrapper.eventMixin(UI9.Widget.
     return this.#controls;
   }
   setData(data) {
+    this.element.classList.toggle("no-trace-active", data === null);
+    if (data === null) {
+      this.#data = null;
+      this.#controls = [];
+      return;
+    }
     if (this.#data?.parsedTrace === data.parsedTrace) {
       return;
     }
@@ -8550,6 +8562,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       case "LANDING_PAGE": {
         this.#removeStatusPane();
         this.#showLandingPage();
+        this.updateMiniMap();
         this.dispatchEventToListeners("IsViewingTrace", false);
         this.searchableViewInternal.hideWidget();
         return;
@@ -9151,6 +9164,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   updateMiniMap() {
     if (this.#viewMode.mode !== "VIEWING_TRACE") {
+      this.#minimapComponent.setData(null);
       return;
     }
     const parsedTrace = this.#traceEngineModel.parsedTrace(this.#viewMode.traceIndex);
@@ -10189,6 +10203,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.#setActiveInsight({ model: insightModel, insightSetKey }, { highlightInsight: true });
   }
   static async handleExternalRecordRequest() {
+    void VisualLogging6.logFunctionCall("timeline.record-reload", "external");
     Snackbars.Snackbar.Snackbar.show({ message: i18nString19(UIStrings19.externalRequestReceived) });
     const panelInstance = _TimelinePanel.instance();
     await UI10.ViewManager.ViewManager.instance().showView("timeline");
@@ -18109,8 +18124,45 @@ var CompatibilityTracksAppender = class {
   }
 };
 
-// gen/front_end/panels/timeline/timeline.prebundle.js
+// gen/front_end/panels/timeline/ExternalRequests.js
+var ExternalRequests_exports = {};
+__export(ExternalRequests_exports, {
+  getInsightToDebug: () => getInsightToDebug
+});
+import * as Trace35 from "./../../models/trace/trace.js";
 import * as Utils17 from "./utils/utils.js";
+async function getInsightToDebug(model, insightTitle) {
+  const parsedTrace = model.parsedTrace();
+  const latestInsights = model.traceInsights();
+  if (!latestInsights || !parsedTrace) {
+    return {
+      error: "No trace has been recorded, so we cannot analyze any insights"
+    };
+  }
+  const firstNavigation = Array.from(latestInsights.keys()).find((k) => k !== Trace35.Types.Events.NO_NAVIGATION);
+  const insights = firstNavigation ? latestInsights.get(firstNavigation) : latestInsights.get(Trace35.Types.Events.NO_NAVIGATION);
+  if (!insights) {
+    return {
+      error: "Could not find any navigation with insights."
+    };
+  }
+  const insightKeys = Object.keys(insights.model);
+  const matchingInsightKey = insightKeys.find((insightKey) => {
+    const insight2 = insights.model[insightKey];
+    return insight2.title === insightTitle;
+  });
+  if (!matchingInsightKey) {
+    return {
+      error: `Could not find matching insight for ${insightTitle}`
+    };
+  }
+  const insight = insights.model[matchingInsightKey];
+  const activeInsight = new Utils17.InsightAIContext.ActiveInsight(insight, parsedTrace);
+  return { insight: activeInsight };
+}
+
+// gen/front_end/panels/timeline/timeline.prebundle.js
+import * as Utils18 from "./utils/utils.js";
 export {
   AnimationsTrackAppender_exports as AnimationsTrackAppender,
   AnnotationHelpers_exports as AnnotationHelpers,
@@ -18123,6 +18175,7 @@ export {
   EventsSerializer_exports as EventsSerializer,
   EventsTimelineTreeView_exports as EventsTimelineTreeView,
   ExtensionTrackAppender_exports as ExtensionTrackAppender,
+  ExternalRequests_exports as ExternalRequests,
   FreshRecording_exports as FreshRecording,
   GPUTrackAppender_exports as GPUTrackAppender,
   Initiators_exports as Initiators,
@@ -18155,6 +18208,6 @@ export {
   TrackConfiguration_exports as TrackConfiguration,
   UIDevtoolsController_exports as UIDevtoolsController,
   UIDevtoolsUtils_exports as UIDevtoolsUtils,
-  Utils17 as Utils
+  Utils18 as Utils
 };
 //# sourceMappingURL=timeline.js.map

@@ -6173,13 +6173,31 @@ __export(Sidebar_exports, {
   RevealAnnotation: () => RevealAnnotation,
   SidebarWidget: () => SidebarWidget
 });
-import * as Common6 from "./../../../core/common/common.js";
 import * as RenderCoordinator3 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI9 from "./../../../ui/legacy/legacy.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
+
+// gen/front_end/panels/timeline/components/insights/SidebarInsight.js
+var InsightActivated = class _InsightActivated extends Event {
+  model;
+  insightSetKey;
+  static eventName = "insightactivated";
+  constructor(model, insightSetKey) {
+    super(_InsightActivated.eventName, { bubbles: true, composed: true });
+    this.model = model;
+    this.insightSetKey = insightSetKey;
+  }
+};
+var InsightDeactivated = class _InsightDeactivated extends Event {
+  static eventName = "insightdeactivated";
+  constructor() {
+    super(_InsightDeactivated.eventName, { bubbles: true, composed: true });
+  }
+};
 
 // gen/front_end/panels/timeline/components/SidebarAnnotationsTab.js
 var SidebarAnnotationsTab_exports = {};
 __export(SidebarAnnotationsTab_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   SidebarAnnotationsTab: () => SidebarAnnotationsTab
 });
 import * as Common5 from "./../../../core/common/common.js";
@@ -6187,7 +6205,7 @@ import * as i18n33 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
 import * as Trace7 from "./../../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../../services/trace_bounds/trace_bounds.js";
-import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "./../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit15 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
@@ -6303,7 +6321,7 @@ var sidebarAnnotationsTab_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./sidebarAnnotationsTab.css")} */`;
 
 // gen/front_end/panels/timeline/components/SidebarAnnotationsTab.js
-var { html: html15 } = Lit15;
+var { html: html15, render: render14 } = Lit15;
 var diagramImageUrl = new URL("../../../Images/performance-panel-diagram.svg", import.meta.url).toString();
 var entryLabelImageUrl = new URL("../../../Images/performance-panel-entry-label.svg", import.meta.url).toString();
 var timeRangeImageUrl = new URL("../../../Images/performance-panel-time-range.svg", import.meta.url).toString();
@@ -6371,26 +6389,25 @@ var UIStrings17 = {
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/timeline/components/SidebarAnnotationsTab.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var SidebarAnnotationsTab = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
+var SidebarAnnotationsTab = class extends UI9.Widget.Widget {
   #annotations = [];
   // A map with annotated entries and the colours that are used to display them in the FlameChart.
   // We need this map to display the entries in the sidebar with the same colours.
   #annotationEntryToColorMap = /* @__PURE__ */ new Map();
   #annotationsHiddenSetting;
-  constructor() {
+  #view;
+  constructor(view = DEFAULT_VIEW) {
     super();
+    this.#view = view;
     this.#annotationsHiddenSetting = Common5.Settings.Settings.instance().moduleSetting("annotations-hidden");
   }
   deduplicatedAnnotations() {
     return this.#annotations;
   }
-  set annotations(annotations) {
-    this.#annotations = this.#processAnnotationsList(annotations);
-    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  set annotationEntryToColorMap(annotationEntryToColorMap) {
-    this.#annotationEntryToColorMap = annotationEntryToColorMap;
+  setData(data) {
+    this.#annotations = this.#processAnnotationsList(data.annotations);
+    this.#annotationEntryToColorMap = data.annotationEntryToColorMap;
+    this.requestUpdate();
   }
   #processAnnotationsList(annotations) {
     const entriesWithNotStartedAnnotation = /* @__PURE__ */ new Set();
@@ -6439,177 +6456,21 @@ var SidebarAnnotationsTab = class extends HTMLElement {
       }
     }
   }
-  connectedCallback() {
-    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  #renderEntryToIdentifier(annotation) {
-    if (annotation.entryTo) {
-      const entryToName = Utils2.EntryName.nameForEntry(annotation.entryTo);
-      const toBackgroundColor = this.#annotationEntryToColorMap.get(annotation.entryTo) ?? "";
-      const toTextColor = findTextColorForContrast(toBackgroundColor);
-      const styleForToAnnotationIdentifier = {
-        backgroundColor: toBackgroundColor,
-        color: toTextColor
-      };
-      return html15`
-        <span class="annotation-identifier" style=${Lit15.Directives.styleMap(styleForToAnnotationIdentifier)}>
-          ${entryToName}
-        </span>`;
-    }
-    return Lit15.nothing;
-  }
-  /**
-   * Renders the Annotation 'identifier' or 'name' in the annotations list.
-   * This is the text rendered before the annotation label that we use to indentify the annotation.
-   *
-   * Annotations identifiers for different annotations:
-   * Entry label -> Entry name
-   * Labelled range -> Start to End Range of the label in ms
-   * Connected entries -> Connected entries names
-   *
-   * All identifiers have a different colour background.
-   */
-  #renderAnnotationIdentifier(annotation) {
-    switch (annotation.type) {
-      case "ENTRY_LABEL": {
-        const entryName = Utils2.EntryName.nameForEntry(annotation.entry);
-        const backgroundColor = this.#annotationEntryToColorMap.get(annotation.entry) ?? "";
-        const color = findTextColorForContrast(backgroundColor);
-        const styleForAnnotationIdentifier = {
-          backgroundColor,
-          color
-        };
-        return html15`
-              <span class="annotation-identifier" style=${Lit15.Directives.styleMap(styleForAnnotationIdentifier)}>
-                ${entryName}
-              </span>
-        `;
+  performUpdate() {
+    const input = {
+      annotations: this.#annotations,
+      annotationsHiddenSetting: this.#annotationsHiddenSetting,
+      annotationEntryToColorMap: this.#annotationEntryToColorMap,
+      onAnnotationClick: (annotation) => {
+        this.contentElement.dispatchEvent(new RevealAnnotation(annotation));
+      },
+      onAnnotationDelete: (annotation) => {
+        this.contentElement.dispatchEvent(new RemoveAnnotation(annotation));
       }
-      case "TIME_RANGE": {
-        const minTraceBoundsMilli = TraceBounds3.TraceBounds.BoundsManager.instance().state()?.milli.entireTraceBounds.min ?? 0;
-        const timeRangeStartInMs = Math.round(Trace7.Helpers.Timing.microToMilli(annotation.bounds.min) - minTraceBoundsMilli);
-        const timeRangeEndInMs = Math.round(Trace7.Helpers.Timing.microToMilli(annotation.bounds.max) - minTraceBoundsMilli);
-        return html15`
-              <span class="annotation-identifier time-range">
-                ${timeRangeStartInMs} - ${timeRangeEndInMs} ms
-              </span>
-        `;
-      }
-      case "ENTRIES_LINK": {
-        const entryFromName = Utils2.EntryName.nameForEntry(annotation.entryFrom);
-        const fromBackgroundColor = this.#annotationEntryToColorMap.get(annotation.entryFrom) ?? "";
-        const fromTextColor = findTextColorForContrast(fromBackgroundColor);
-        const styleForFromAnnotationIdentifier = {
-          backgroundColor: fromBackgroundColor,
-          color: fromTextColor
-        };
-        return html15`
-          <div class="entries-link">
-            <span class="annotation-identifier" style=${Lit15.Directives.styleMap(styleForFromAnnotationIdentifier)}>
-              ${entryFromName}
-            </span>
-            <devtools-icon class="inline-icon" .data=${{
-          iconName: "arrow-forward",
-          color: "var(--icon-default)",
-          width: "18px",
-          height: "18px"
-        }}>
-            </devtools-icon>
-            ${this.#renderEntryToIdentifier(annotation)}
-          </div>
-      `;
-      }
-      default:
-        Platform8.assertNever(annotation, "Unsupported annotation type");
-    }
-  }
-  #revealAnnotation(annotation) {
-    this.dispatchEvent(new RevealAnnotation(annotation));
-  }
-  #renderTutorialCard() {
-    return html15`
-      <div class="annotation-tutorial-container">
-      ${i18nString16(UIStrings17.annotationGetStarted)}
-        <div class="tutorial-card">
-          <div class="tutorial-image"> <img src=${entryLabelImageUrl}></img></div>
-          <div class="tutorial-title">${i18nString16(UIStrings17.entryLabelTutorialTitle)}</div>
-          <div class="tutorial-description">${i18nString16(UIStrings17.entryLabelTutorialDescription)}</div>
-        </div>
-        <div class="tutorial-card">
-          <div class="tutorial-image"> <img src=${diagramImageUrl}></img></div>
-          <div class="tutorial-title">${i18nString16(UIStrings17.entryLinkTutorialTitle)}</div>
-          <div class="tutorial-description">${i18nString16(UIStrings17.entryLinkTutorialDescription)}</div>
-        </div>
-        <div class="tutorial-card">
-          <div class="tutorial-image"> <img src=${timeRangeImageUrl}></img></div>
-          <div class="tutorial-title">${i18nString16(UIStrings17.timeRangeTutorialTitle)}</div>
-          <div class="tutorial-description">${i18nString16(UIStrings17.timeRangeTutorialDescription)}</div>
-        </div>
-        <div class="tutorial-card">
-          <div class="tutorial-image"> <img src=${deleteAnnotationImageUrl}></img></div>
-          <div class="tutorial-title">${i18nString16(UIStrings17.deleteAnnotationTutorialTitle)}</div>
-          <div class="tutorial-description">${i18nString16(UIStrings17.deleteAnnotationTutorialDescription)}</div>
-        </div>
-      </div>
-    `;
-  }
-  #jslogForAnnotation(annotation) {
-    switch (annotation.type) {
-      case "ENTRY_LABEL":
-        return "entry-label";
-      case "TIME_RANGE":
-        return "time-range";
-      case "ENTRIES_LINK":
-        return "entries-link";
-      default:
-        Platform8.assertNever(annotation, "unknown annotation type");
-    }
-  }
-  #render() {
-    Lit15.render(html15`
-        <style>${sidebarAnnotationsTab_css_default}</style>
-        <span class="annotations">
-          ${this.#annotations.length === 0 ? this.#renderTutorialCard() : html15`
-              ${this.#annotations.map((annotation) => {
-      const label = detailedAriaDescriptionForAnnotation(annotation);
-      return html15`
-                  <div class="annotation-container"
-                    @click=${() => this.#revealAnnotation(annotation)}
-                    aria-label=${label}
-                    tabindex="0"
-                    jslog=${VisualLogging7.item(`timeline.annotation-sidebar.annotation-${this.#jslogForAnnotation(annotation)}`).track({ click: true })}
-                  >
-                    <div class="annotation">
-                      ${this.#renderAnnotationIdentifier(annotation)}
-                      <span class="label">
-                        ${annotation.type === "ENTRY_LABEL" || annotation.type === "TIME_RANGE" ? annotation.label : ""}
-                      </span>
-                    </div>
-                    <button class="delete-button" aria-label=${i18nString16(UIStrings17.deleteButton, { PH1: label })} @click=${(event) => {
-        event.stopPropagation();
-        this.dispatchEvent(new RemoveAnnotation(annotation));
-      }} jslog=${VisualLogging7.action("timeline.annotation-sidebar.delete").track({ click: true })}>
-                      <devtools-icon
-                        class="bin-icon"
-                        .data=${{
-        iconName: "bin",
-        color: "var(--icon-default)",
-        width: "20px",
-        height: "20px"
-      }}
-                      ></devtools-icon>
-                    </button>
-                  </div>`;
-    })}
-              <setting-checkbox class="visibility-setting" .data=${{
-      setting: this.#annotationsHiddenSetting,
-      textOverride: "Hide annotations"
-    }}>
-              </setting-checkbox>`}
-      </span>`, this.#shadow, { host: this });
+    };
+    this.#view(input, {}, this.contentElement);
   }
 };
-customElements.define("devtools-performance-sidebar-annotations", SidebarAnnotationsTab);
 function detailedAriaDescriptionForAnnotation(annotation) {
   switch (annotation.type) {
     case "ENTRY_LABEL": {
@@ -6652,6 +6513,156 @@ function findTextColorForContrast(bgColorText) {
   const contrastRatio = Common5.ColorUtils.contrastRatio(bgColor.rgba(), darkColorText.rgba());
   return contrastRatio >= 4.5 ? `var(${darkColorToken})` : "var(--app-color-performance-sidebar-label-text-light)";
 }
+function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
+  switch (annotation.type) {
+    case "ENTRY_LABEL": {
+      const entryName = Utils2.EntryName.nameForEntry(annotation.entry);
+      const backgroundColor = annotationEntryToColorMap.get(annotation.entry) ?? "";
+      const color = findTextColorForContrast(backgroundColor);
+      const styleForAnnotationIdentifier = {
+        backgroundColor,
+        color
+      };
+      return html15`
+            <span class="annotation-identifier" style=${Lit15.Directives.styleMap(styleForAnnotationIdentifier)}>
+              ${entryName}
+            </span>
+      `;
+    }
+    case "TIME_RANGE": {
+      const minTraceBoundsMilli = TraceBounds3.TraceBounds.BoundsManager.instance().state()?.milli.entireTraceBounds.min ?? 0;
+      const timeRangeStartInMs = Math.round(Trace7.Helpers.Timing.microToMilli(annotation.bounds.min) - minTraceBoundsMilli);
+      const timeRangeEndInMs = Math.round(Trace7.Helpers.Timing.microToMilli(annotation.bounds.max) - minTraceBoundsMilli);
+      return html15`
+            <span class="annotation-identifier time-range">
+              ${timeRangeStartInMs} - ${timeRangeEndInMs} ms
+            </span>
+      `;
+    }
+    case "ENTRIES_LINK": {
+      const entryFromName = Utils2.EntryName.nameForEntry(annotation.entryFrom);
+      const fromBackgroundColor = annotationEntryToColorMap.get(annotation.entryFrom) ?? "";
+      const fromTextColor = findTextColorForContrast(fromBackgroundColor);
+      const styleForFromAnnotationIdentifier = {
+        backgroundColor: fromBackgroundColor,
+        color: fromTextColor
+      };
+      return html15`
+        <div class="entries-link">
+          <span class="annotation-identifier" style=${Lit15.Directives.styleMap(styleForFromAnnotationIdentifier)}>
+            ${entryFromName}
+          </span>
+          <devtools-icon class="inline-icon" .data=${{
+        iconName: "arrow-forward",
+        color: "var(--icon-default)",
+        width: "18px",
+        height: "18px"
+      }}>
+          </devtools-icon>
+          ${renderEntryToIdentifier(annotation, annotationEntryToColorMap)}
+        </div>
+    `;
+    }
+    default:
+      Platform8.assertNever(annotation, "Unsupported annotation type");
+  }
+}
+function renderEntryToIdentifier(annotation, annotationEntryToColorMap) {
+  if (annotation.entryTo) {
+    const entryToName = Utils2.EntryName.nameForEntry(annotation.entryTo);
+    const toBackgroundColor = annotationEntryToColorMap.get(annotation.entryTo) ?? "";
+    const toTextColor = findTextColorForContrast(toBackgroundColor);
+    const styleForToAnnotationIdentifier = {
+      backgroundColor: toBackgroundColor,
+      color: toTextColor
+    };
+    return html15`
+      <span class="annotation-identifier" style=${Lit15.Directives.styleMap(styleForToAnnotationIdentifier)}>
+        ${entryToName}
+      </span>`;
+  }
+  return Lit15.nothing;
+}
+function jslogForAnnotation(annotation) {
+  switch (annotation.type) {
+    case "ENTRY_LABEL":
+      return "entry-label";
+    case "TIME_RANGE":
+      return "time-range";
+    case "ENTRIES_LINK":
+      return "entries-link";
+    default:
+      Platform8.assertNever(annotation, "unknown annotation type");
+  }
+}
+function renderTutorial() {
+  return html15`<div class="annotation-tutorial-container">
+    ${i18nString16(UIStrings17.annotationGetStarted)}
+      <div class="tutorial-card">
+        <div class="tutorial-image"><img src=${entryLabelImageUrl}></img></div>
+        <div class="tutorial-title">${i18nString16(UIStrings17.entryLabelTutorialTitle)}</div>
+        <div class="tutorial-description">${i18nString16(UIStrings17.entryLabelTutorialDescription)}</div>
+      </div>
+      <div class="tutorial-card">
+        <div class="tutorial-image"><img src=${diagramImageUrl}></img></div>
+        <div class="tutorial-title">${i18nString16(UIStrings17.entryLinkTutorialTitle)}</div>
+        <div class="tutorial-description">${i18nString16(UIStrings17.entryLinkTutorialDescription)}</div>
+      </div>
+      <div class="tutorial-card">
+        <div class="tutorial-image"><img src=${timeRangeImageUrl}></img></div>
+        <div class="tutorial-title">${i18nString16(UIStrings17.timeRangeTutorialTitle)}</div>
+        <div class="tutorial-description">${i18nString16(UIStrings17.timeRangeTutorialDescription)}</div>
+      </div>
+      <div class="tutorial-card">
+        <div class="tutorial-image"><img src=${deleteAnnotationImageUrl}></img></div>
+        <div class="tutorial-title">${i18nString16(UIStrings17.deleteAnnotationTutorialTitle)}</div>
+        <div class="tutorial-description">${i18nString16(UIStrings17.deleteAnnotationTutorialDescription)}</div>
+      </div>
+    </div>`;
+}
+var DEFAULT_VIEW = (input, _output, target) => {
+  render14(html15`
+      <style>${sidebarAnnotationsTab_css_default}</style>
+      <span class="annotations">
+        ${input.annotations.length === 0 ? renderTutorial() : html15`
+            ${input.annotations.map((annotation) => {
+    const label = detailedAriaDescriptionForAnnotation(annotation);
+    return html15`
+                <div class="annotation-container"
+                  @click=${() => input.onAnnotationClick(annotation)}
+                  aria-label=${label}
+                  tabindex="0"
+                  jslog=${VisualLogging7.item(`timeline.annotation-sidebar.annotation-${jslogForAnnotation(annotation)}`).track({ click: true })}
+                >
+                  <div class="annotation">
+                    ${renderAnnotationIdentifier(annotation, input.annotationEntryToColorMap)}
+                    <span class="label">
+                      ${annotation.type === "ENTRY_LABEL" || annotation.type === "TIME_RANGE" ? annotation.label : ""}
+                    </span>
+                  </div>
+                  <button class="delete-button" aria-label=${i18nString16(UIStrings17.deleteButton, { PH1: label })} @click=${(event) => {
+      event.stopPropagation();
+      input.onAnnotationDelete(annotation);
+    }} jslog=${VisualLogging7.action("timeline.annotation-sidebar.delete").track({ click: true })}>
+                    <devtools-icon
+                      class="bin-icon"
+                      .data=${{
+      iconName: "bin",
+      color: "var(--icon-default)",
+      width: "20px",
+      height: "20px"
+    }}
+                    ></devtools-icon>
+                  </button>
+                </div>`;
+  })}
+            <setting-checkbox class="visibility-setting" .data=${{
+    setting: input.annotationsHiddenSetting,
+    textOverride: "Hide annotations"
+  }}>
+            </setting-checkbox>`}
+    </span>`, target, { host: target });
+};
 
 // gen/front_end/panels/timeline/components/SidebarInsightsTab.js
 var SidebarInsightsTab_exports = {};
@@ -6670,7 +6681,7 @@ import * as Root from "./../../../core/root/root.js";
 import * as CrUXManager11 from "./../../../models/crux-manager/crux-manager.js";
 import * as Trace9 from "./../../../models/trace/trace.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers11 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit16 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -6892,7 +6903,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   #activeHighlightTimeout = -1;
   set data(data) {
     this.#data = data;
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
     this.#render();
@@ -7166,7 +7177,7 @@ customElements.define("devtools-performance-sidebar-single-navigation", SidebarS
 // gen/front_end/panels/timeline/components/SidebarInsightsTab.js
 import * as Trace10 from "./../../../models/trace/trace.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers12 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers11 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
 import * as Utils3 from "./../utils/utils.js";
 import * as Insights6 from "./insights/insights.js";
@@ -7269,7 +7280,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#parsedTrace = data;
     this.#selectedInsightSetKey = null;
-    void ComponentHelpers12.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
   }
   set traceMetadata(data) {
     if (data === this.#traceMetadata) {
@@ -7277,7 +7288,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#traceMetadata = data;
     this.#selectedInsightSetKey = null;
-    void ComponentHelpers12.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
   }
   set insights(data) {
     if (data === this.#insights) {
@@ -7289,7 +7300,10 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#insights = new Map(data);
     this.#selectedInsightSetKey = [...this.#insights.keys()].at(0) ?? null;
-    void ComponentHelpers12.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+  }
+  get activeInsight() {
+    return this.#activeInsight;
   }
   set activeInsight(active) {
     if (active === this.#activeInsight) {
@@ -7299,14 +7313,14 @@ var SidebarInsightsTab = class extends HTMLElement {
     if (this.#activeInsight) {
       this.#selectedInsightSetKey = this.#activeInsight.insightSetKey;
     }
-    void ComponentHelpers12.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetToggled(id) {
     this.#selectedInsightSetKey = this.#selectedInsightSetKey === id ? null : id;
     if (this.#selectedInsightSetKey !== this.#activeInsight?.insightSetKey) {
       this.dispatchEvent(new Insights6.SidebarInsight.InsightDeactivated());
     }
-    void ComponentHelpers12.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetHovered(id) {
     const data = this.#insights?.get(id);
@@ -7436,21 +7450,17 @@ var RevealAnnotation = class _RevealAnnotation extends Event {
 var DEFAULT_SIDEBAR_TAB = "insights";
 var DEFAULT_SIDEBAR_WIDTH_PX = 240;
 var MIN_SIDEBAR_WIDTH_PX = 170;
-var SidebarWidget = class extends UI9.Widget.VBox {
-  #tabbedPane = new UI9.TabbedPane.TabbedPane();
+var SidebarWidget = class extends UI10.Widget.VBox {
+  #tabbedPane = new UI10.TabbedPane.TabbedPane();
   #insightsView = new InsightsView();
   #annotationsView = new AnnotationsView();
   /**
-   * Track if the user has opened the sidebar before. We do this so that the
-   * very first time they record/import a trace after the sidebar ships, we can
-   * automatically pop it open to aid discovery. But, after that, the sidebar
-   * visibility will be persisted based on if the user opens or closes it - the
-   * SplitWidget tracks its state in its own setting.
+   * If the user has an Insight open and then they collapse the sidebar, we
+   * deactivate that Insight to avoid it showing overlays etc - as the user has
+   * hidden the Sidebar & Insight from view. But we store it because when the
+   * user pops the sidebar open, we want to re-activate it.
    */
-  #userHasOpenedSidebarOnce = Common6.Settings.Settings.instance().createSetting("timeline-user-has-opened-sidebar-once", false);
-  userHasOpenedSidebarOnce() {
-    return this.#userHasOpenedSidebarOnce.get();
-  }
+  #insightToRestoreOnOpen = null;
   constructor() {
     super();
     this.setMinimumSize(MIN_SIDEBAR_WIDTH_PX, 0);
@@ -7462,9 +7472,12 @@ var SidebarWidget = class extends UI9.Widget.VBox {
     );
   }
   wasShown() {
-    this.#userHasOpenedSidebarOnce.set(true);
     this.#tabbedPane.show(this.element);
     this.#updateAnnotationsCountBadge();
+    if (this.#insightToRestoreOnOpen) {
+      this.element.dispatchEvent(new InsightActivated(this.#insightToRestoreOnOpen.model, this.#insightToRestoreOnOpen.insightSetKey));
+      this.#insightToRestoreOnOpen = null;
+    }
     if (this.#tabbedPane.selectedTabId === "insights" && this.#tabbedPane.tabIsDisabled(
       "insights"
       /* SidebarTabs.INSIGHTS */
@@ -7473,6 +7486,13 @@ var SidebarWidget = class extends UI9.Widget.VBox {
         "annotations"
         /* SidebarTabs.ANNOTATIONS */
       );
+    }
+  }
+  willHide() {
+    const currentlyActiveInsight = this.#insightsView.getActiveInsight();
+    this.#insightToRestoreOnOpen = currentlyActiveInsight;
+    if (currentlyActiveInsight) {
+      this.element.dispatchEvent(new InsightDeactivated());
     }
   }
   setAnnotations(updatedAnnotations, annotationEntryToColorMap) {
@@ -7500,7 +7520,7 @@ var SidebarWidget = class extends UI9.Widget.VBox {
     }
   }
 };
-var InsightsView = class extends UI9.Widget.VBox {
+var InsightsView = class extends UI10.Widget.VBox {
   #component = new SidebarInsightsTab();
   constructor() {
     super();
@@ -7514,6 +7534,9 @@ var InsightsView = class extends UI9.Widget.VBox {
   setInsights(data) {
     this.#component.insights = data;
   }
+  getActiveInsight() {
+    return this.#component.activeInsight;
+  }
   setActiveInsight(active, opts) {
     this.#component.activeInsight = active;
     if (opts.highlight && active) {
@@ -7523,16 +7546,15 @@ var InsightsView = class extends UI9.Widget.VBox {
     }
   }
 };
-var AnnotationsView = class extends UI9.Widget.VBox {
+var AnnotationsView = class extends UI10.Widget.VBox {
   #component = new SidebarAnnotationsTab();
   constructor() {
     super();
     this.element.classList.add("sidebar-annotations");
-    this.element.appendChild(this.#component);
+    this.#component.show(this.element);
   }
   setAnnotations(annotations, annotationEntryToColorMap) {
-    this.#component.annotationEntryToColorMap = annotationEntryToColorMap;
-    this.#component.annotations = annotations;
+    this.#component.setData({ annotations, annotationEntryToColorMap });
   }
   /**
    * The component "de-duplicates" annotations to ensure implementation details
@@ -7551,7 +7573,7 @@ __export(TimelineSummary_exports, {
   CategorySummary: () => CategorySummary
 });
 import * as i18n37 from "./../../../core/i18n/i18n.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
 import * as Lit18 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/timelineSummary.css.js
@@ -7646,7 +7668,7 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("panels/timeline/components/TimelineSummary.ts", UIStrings19);
 var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var CategorySummary = class extends HTMLElement {
-  #shadow = UI10.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
+  #shadow = UI11.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
   #rangeStart = 0;
   #rangeEnd = 0;
   #total = 0;

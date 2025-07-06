@@ -1179,6 +1179,7 @@ devtools-toolbar {
 
 .webkit-html-comment {
   color: var(--sys-color-token-comment);
+  word-break: break-all;
 }
 
 .webkit-html-tag {

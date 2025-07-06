@@ -79,6 +79,7 @@ export declare class Model extends EventTarget {
 export type ParsedTraceFile = Types.File.TraceFile & {
     parsedTrace: Handlers.Types.ParsedTrace | null;
     traceInsights: Insights.Types.TraceInsightSets | null;
+    syntheticEventsManager: Helpers.SyntheticEvents.SyntheticEventsManager;
 };
 export declare const enum ModelUpdateType {
     COMPLETE = "COMPLETE",

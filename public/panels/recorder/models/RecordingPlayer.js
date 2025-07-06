@@ -24,8 +24,8 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
     breakpointIndexes;
     steppingOver = false;
     aborted = false;
-    #stopPromise = Promise.withResolvers();
-    #abortPromise = Promise.withResolvers();
+    #stopResolver = Promise.withResolvers();
+    #abortResolver = Promise.withResolvers();
     #runner;
     constructor(userFlow, { speed, breakpointIndexes = new Set(), }) {
         super();
@@ -35,8 +35,8 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
         this.breakpointIndexes = breakpointIndexes;
     }
     #resolveAndRefreshStopPromise() {
-        this.#stopPromise.resolve();
-        this.#stopPromise = Promise.withResolvers();
+        this.#stopResolver.resolve();
+        this.#stopResolver = Promise.withResolvers();
     }
     static async connectPuppeteer() {
         const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
@@ -123,19 +123,19 @@ export class RecordingPlayer extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async stop() {
-        await Promise.race([this.#stopPromise, this.#abortPromise]);
+        await Promise.race([this.#stopResolver.promise, this.#abortResolver.promise]);
     }
     get abortPromise() {
-        return this.#abortPromise.promise;
+        return this.#abortResolver.promise;
     }
     abort() {
         this.aborted = true;
-        this.#abortPromise.resolve();
+        this.#abortResolver.resolve();
         this.#runner?.abort();
     }
     disposeForTesting() {
-        this.#stopPromise.resolve();
-        this.#abortPromise.resolve();
+        this.#stopResolver.resolve();
+        this.#abortResolver.resolve();
     }
     continue() {
         this.steppingOver = false;

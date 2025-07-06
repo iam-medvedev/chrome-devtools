@@ -6,7 +6,7 @@ import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
 import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
-import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
+import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframeRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
     if (!query.styleSheetId || !query.range) {
@@ -634,11 +634,24 @@ export class CSSMatchedStyles {
         return domCascade ? domCascade.findAvailableCSSVariables(style) : [];
     }
     computeCSSVariable(style, variableName) {
+        if (style.parentRule instanceof CSSKeyframeRule) {
+            // The resolution of the variables inside of a CSS keyframe rule depends on where this keyframe rule is used.
+            // So, we need to find the style with active CSS property `animation-name` that equals to the keyframe's name.
+            const keyframeName = style.parentRule.parentRuleName();
+            const activeStyle = this.#mainDOMCascade?.styles().find(searchStyle => {
+                return searchStyle.allProperties().some(property => property.name === 'animation-name' && property.value === keyframeName &&
+                    this.#mainDOMCascade?.propertyState(property) === "Active" /* PropertyState.ACTIVE */);
+            });
+            if (!activeStyle) {
+                return null;
+            }
+            style = activeStyle;
+        }
         const domCascade = this.#styleToDOMCascade.get(style);
         return domCascade ? domCascade.computeCSSVariable(style, variableName) : null;
     }
-    resolveProperty(name, startingPoint) {
-        return this.#styleToDOMCascade.get(startingPoint)?.resolveProperty(name, startingPoint) ?? null;
+    resolveProperty(name, ownerStyle) {
+        return this.#styleToDOMCascade.get(ownerStyle)?.resolveProperty(name, ownerStyle) ?? null;
     }
     resolveGlobalKeyword(property, keyword) {
         const resolved = this.#styleToDOMCascade.get(property.ownerStyle)?.resolveGlobalKeyword(property, keyword);
@@ -837,14 +850,6 @@ function* forEach(array, startAfter) {
         yield array[i];
     }
 }
-function* forEachInclusive(array, startAt) {
-    if (startAt === undefined || array.includes(startAt)) {
-        if (startAt !== undefined) {
-            yield startAt;
-        }
-        yield* forEach(array, startAt);
-    }
-}
 class DOMInheritanceCascade {
     #propertiesState = new Map();
     #availableCSSVariables = new Map();
@@ -887,18 +892,18 @@ class DOMInheritanceCascade {
         }
         return null;
     }
-    resolveProperty(name, startAt) {
-        const cascade = this.#styleToNodeCascade.get(startAt);
+    resolveProperty(name, ownerStyle) {
+        const cascade = this.#styleToNodeCascade.get(ownerStyle);
         if (!cascade) {
             return null;
         }
-        for (const style of forEachInclusive(cascade.styles, startAt)) {
+        for (const style of cascade.styles) {
             const candidate = style.allProperties().findLast(candidate => candidate.name === name);
             if (candidate) {
                 return candidate;
             }
         }
-        return this.#findPropertyInParentCascadeIfInherited({ name, ownerStyle: startAt });
+        return this.#findPropertyInParentCascadeIfInherited({ name, ownerStyle });
     }
     #findPropertyInParentCascade(property) {
         const nodeCascade = this.#styleToNodeCascade.get(property.ownerStyle);

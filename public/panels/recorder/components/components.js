@@ -829,15 +829,8 @@ customElements.define("devtools-recording-list-view", RecordingListView);
 // gen/front_end/panels/recorder/components/RecordingView.js
 var RecordingView_exports = {};
 __export(RecordingView_exports, {
-  AbortReplayEvent: () => AbortReplayEvent,
-  AddAssertionEvent: () => AddAssertionEvent,
-  NetworkConditionsChanged: () => NetworkConditionsChanged,
-  PlayRecordingEvent: () => PlayRecordingEvent2,
-  RecordingChangedEvent: () => RecordingChangedEvent,
-  RecordingFinishedEvent: () => RecordingFinishedEvent,
-  RecordingTitleChangedEvent: () => RecordingTitleChangedEvent,
-  RecordingView: () => RecordingView,
-  TimeoutChanged: () => TimeoutChanged
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  RecordingView: () => RecordingView
 });
 import "./../../../ui/components/icon_button/icon_button.js";
 
@@ -1680,70 +1673,6 @@ var UIStrings5 = {
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/recorder/components/RecordingView.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
-var RecordingFinishedEvent = class _RecordingFinishedEvent extends Event {
-  static eventName = "recordingfinished";
-  constructor() {
-    super(_RecordingFinishedEvent.eventName);
-  }
-};
-var PlayRecordingEvent2 = class _PlayRecordingEvent extends Event {
-  static eventName = "playrecording";
-  data;
-  constructor(data = {
-    targetPanel: "chrome-recorder",
-    speed: "normal"
-  }) {
-    super(_PlayRecordingEvent.eventName);
-    this.data = data;
-  }
-};
-var AbortReplayEvent = class _AbortReplayEvent extends Event {
-  static eventName = "abortreplay";
-  constructor() {
-    super(_AbortReplayEvent.eventName);
-  }
-};
-var RecordingChangedEvent = class _RecordingChangedEvent extends Event {
-  static eventName = "recordingchanged";
-  data;
-  constructor(currentStep, newStep) {
-    super(_RecordingChangedEvent.eventName);
-    this.data = { currentStep, newStep };
-  }
-};
-var AddAssertionEvent = class _AddAssertionEvent extends Event {
-  static eventName = "addassertion";
-  constructor() {
-    super(_AddAssertionEvent.eventName);
-  }
-};
-var RecordingTitleChangedEvent = class _RecordingTitleChangedEvent extends Event {
-  static eventName = "recordingtitlechanged";
-  title;
-  constructor(title) {
-    super(_RecordingTitleChangedEvent.eventName, {});
-    this.title = title;
-  }
-};
-var NetworkConditionsChanged = class _NetworkConditionsChanged extends Event {
-  static eventName = "networkconditionschanged";
-  data;
-  constructor(data) {
-    super(_NetworkConditionsChanged.eventName, {
-      composed: true,
-      bubbles: true
-    });
-    this.data = data;
-  }
-};
-var TimeoutChanged = class _TimeoutChanged extends Event {
-  static eventName = "timeoutchanged";
-  data;
-  constructor(data) {
-    super(_TimeoutChanged.eventName, { composed: true, bubbles: true });
-    this.data = data;
-  }
-};
 var networkConditionPresets = [
   SDK.NetworkManager.NoThrottlingConditions,
   SDK.NetworkManager.OfflineConditions,
@@ -1777,157 +1706,615 @@ function converterIdToStepMetric(converterId) {
       return 8;
   }
 }
-var RecordingView = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #replayState = { isPlaying: false, isPausedOnBreakpoint: false };
-  #userFlow = null;
-  #isRecording = false;
-  #recordingTogglingInProgress = false;
-  #isTitleInvalid = false;
-  #currentStep;
-  #steps = [];
-  #currentError;
-  #sections = [];
-  #settings;
+function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelClick, onNetworkConditionsChange, onTimeoutInput, isRecording, replayState, onReplaySettingsKeydown, onToggleReplaySettings }) {
+  if (!settings) {
+    return html6``;
+  }
+  const environmentFragments = [];
+  if (settings.viewportSettings) {
+    environmentFragments.push(html6`<div>${settings.viewportSettings.isMobile ? i18nString5(UIStrings5.mobile) : i18nString5(UIStrings5.desktop)}</div>`);
+    environmentFragments.push(html6`<div class="separator"></div>`);
+    environmentFragments.push(html6`<div>${settings.viewportSettings.width}×${settings.viewportSettings.height} px</div>`);
+  }
+  const replaySettingsFragments = [];
+  if (!replaySettingsExpanded) {
+    if (settings.networkConditionsSettings) {
+      if (settings.networkConditionsSettings.title) {
+        replaySettingsFragments.push(html6`<div>${settings.networkConditionsSettings.title}</div>`);
+      } else {
+        replaySettingsFragments.push(html6`<div>
+          ${i18nString5(UIStrings5.download, {
+          value: i18n9.ByteUtilities.bytesToString(settings.networkConditionsSettings.download)
+        })},
+          ${i18nString5(UIStrings5.upload, {
+          value: i18n9.ByteUtilities.bytesToString(settings.networkConditionsSettings.upload)
+        })},
+          ${i18nString5(UIStrings5.latency, {
+          value: settings.networkConditionsSettings.latency
+        })}
+        </div>`);
+      }
+    } else {
+      replaySettingsFragments.push(html6`<div>${SDK.NetworkManager.NoThrottlingConditions.title instanceof Function ? SDK.NetworkManager.NoThrottlingConditions.title() : SDK.NetworkManager.NoThrottlingConditions.title}</div>`);
+    }
+    replaySettingsFragments.push(html6`<div class="separator"></div>`);
+    replaySettingsFragments.push(html6`<div>${i18nString5(UIStrings5.timeout, {
+      value: settings.timeout || Models3.RecordingPlayer.defaultTimeout
+    })}</div>`);
+  } else {
+    const selectedOption = settings.networkConditionsSettings?.i18nTitleKey || SDK.NetworkManager.NoThrottlingConditions.i18nTitleKey;
+    const selectedOptionTitle = networkConditionPresets.find((preset) => preset.i18nTitleKey === selectedOption);
+    let menuButtonTitle = "";
+    if (selectedOptionTitle) {
+      menuButtonTitle = selectedOptionTitle.title instanceof Function ? selectedOptionTitle.title() : selectedOptionTitle.title;
+    }
+    replaySettingsFragments.push(html6`<div class="editable-setting">
+      <label class="wrapping-label" @click=${onSelectMenuLabelClick}>
+        ${i18nString5(UIStrings5.network)}
+        <select
+            title=${menuButtonTitle}
+            jslog=${VisualLogging5.dropDown("network-conditions").track({ change: true })}
+            @change=${onNetworkConditionsChange}>
+      ${networkConditionPresets.map((condition) => html6`
+        <option jslog=${VisualLogging5.item(Platform.StringUtilities.toKebabCase(condition.i18nTitleKey || ""))}
+                value=${condition.i18nTitleKey || ""} ?selected=${selectedOption === condition.i18nTitleKey}>
+                ${condition.title instanceof Function ? condition.title() : condition.title}
+        </option>`)}
+    </select>
+      </label>
+    </div>`);
+    replaySettingsFragments.push(html6`<div class="editable-setting">
+      <label class="wrapping-label" title=${i18nString5(UIStrings5.timeoutExplanation)}>
+        ${i18nString5(UIStrings5.timeoutLabel)}
+        <input
+          @input=${onTimeoutInput}
+          required
+          min=${Models3.SchemaUtils.minTimeout}
+          max=${Models3.SchemaUtils.maxTimeout}
+          value=${settings.timeout || Models3.RecordingPlayer.defaultTimeout}
+          jslog=${VisualLogging5.textField("timeout").track({ change: true })}
+          class="devtools-text-input"
+          type="number">
+      </label>
+    </div>`);
+  }
+  const isEditable = !isRecording && !replayState.isPlaying;
+  const replaySettingsButtonClassMap = {
+    "settings-title": true,
+    expanded: replaySettingsExpanded
+  };
+  const replaySettingsClassMap = {
+    expanded: replaySettingsExpanded,
+    settings: true
+  };
+  return html6`
+    <div class="settings-row">
+      <div class="settings-container">
+        <div
+          class=${Lit6.Directives.classMap(replaySettingsButtonClassMap)}
+          @keydown=${isEditable && onReplaySettingsKeydown}
+          @click=${isEditable && onToggleReplaySettings}
+          tabindex="0"
+          role="button"
+          jslog=${VisualLogging5.action("replay-settings").track({ click: true })}
+          aria-label=${i18nString5(UIStrings5.editReplaySettings)}>
+          <span>${i18nString5(UIStrings5.replaySettings)}</span>
+          ${isEditable ? html6`<devtools-icon
+                  class="chevron"
+                  name="triangle-down">
+                </devtools-icon>` : ""}
+        </div>
+        <div class=${Lit6.Directives.classMap(replaySettingsClassMap)}>
+          ${replaySettingsFragments.length ? replaySettingsFragments : html6`<div>${i18nString5(UIStrings5.default)}</div>`}
+        </div>
+      </div>
+      <div class="settings-container">
+        <div class="settings-title">${i18nString5(UIStrings5.environment)}</div>
+        <div class="settings">
+          ${environmentFragments.length ? environmentFragments : html6`<div>${i18nString5(UIStrings5.default)}</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+function renderTimelineArea(input, output) {
+  if (input.extensionDescriptor) {
+    return html6`
+        <devtools-recorder-extension-view .descriptor=${input.extensionDescriptor}>
+        </devtools-recorder-extension-view>
+      `;
+  }
+  return html6`
+        <devtools-split-view
+          direction="auto"
+          sidebar-position="second"
+          sidebar-initial-size="300"
+          sidebar-visibility=${input.showCodeView ? "" : "hidden"}
+        >
+          <div slot="main">
+            ${renderSections(input)}
+          </div>
+          <div slot="sidebar" jslog=${VisualLogging5.pane("source-code").track({ resize: true })}>
+            ${input.showCodeView ? html6`
+            <div class="section-toolbar" jslog=${VisualLogging5.toolbar()}>
+              <devtools-select-menu
+                @selectmenuselected=${input.onCodeFormatChange}
+                .showDivider=${true}
+                .showArrow=${true}
+                .sideButton=${false}
+                .showSelectedItem=${true}
+                .position=${"bottom"}
+                .buttonTitle=${input.converterName || ""}
+                .jslogContext=${"code-format"}
+              >
+                ${input.builtInConverters.map((converter) => {
+    return html6`<devtools-menu-item
+                    .value=${converter.getId()}
+                    .selected=${input.converterId === converter.getId()}
+                    jslog=${VisualLogging5.action().track({ click: true }).context(`converter-${Platform.StringUtilities.toKebabCase(converter.getId())}`)}
+                  >
+                    ${converter.getFormatName()}
+                  </devtools-menu-item>`;
+  })}
+                ${input.extensionConverters.map((converter) => {
+    return html6`<devtools-menu-item
+                    .value=${converter.getId()}
+                    .selected=${input.converterId === converter.getId()}
+                    jslog=${VisualLogging5.action().track({ click: true }).context("converter-extension")}
+                  >
+                    ${converter.getFormatName()}
+                  </devtools-menu-item>`;
+  })}
+              </devtools-select-menu>
+              <devtools-button
+                title=${Models3.Tooltip.getTooltipForActions(
+    i18nString5(UIStrings5.hideCode),
+    "chrome-recorder.toggle-code-view"
+    /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
+  )}
+                .data=${{
+    variant: "icon",
+    size: "SMALL",
+    iconName: "cross"
+  }}
+                @click=${input.showCodeToggle}
+                jslog=${VisualLogging5.close().track({ click: true })}
+              ></devtools-button>
+            </div>
+            ${renderTextEditor(input, output)}` : Lit6.nothing}
+          </div>
+        </devtools-split-view>
+      `;
+}
+function renderTextEditor(input, output) {
+  if (!input.editorState) {
+    throw new Error("Unexpected: trying to render the text editor without editorState");
+  }
+  return html6`
+    <div class="text-editor" jslog=${VisualLogging5.textField().track({ change: true })}>
+      <devtools-text-editor .state=${input.editorState} ${Lit6.Directives.ref((editor) => {
+    if (!editor || !(editor instanceof TextEditor.TextEditor.TextEditor)) {
+      return;
+    }
+    output.highlightLinesInEditor = (line, length, scroll = false) => {
+      const cm = editor.editor;
+      let selection = editor.createSelection({ lineNumber: line + length, columnNumber: 0 }, { lineNumber: line, columnNumber: 0 });
+      const lastLine = editor.state.doc.lineAt(selection.main.anchor);
+      selection = editor.createSelection({ lineNumber: line + length - 1, columnNumber: lastLine.length + 1 }, { lineNumber: line, columnNumber: 0 });
+      cm.dispatch({
+        selection,
+        effects: scroll ? [
+          CodeMirror.EditorView.scrollIntoView(selection.main, {
+            y: "nearest"
+          })
+        ] : void 0
+      });
+    };
+  })}></devtools-text-editor>
+    </div>
+  `;
+}
+function renderScreenshot(section5) {
+  if (!section5.screenshot) {
+    return null;
+  }
+  return html6`
+      <img class="screenshot" src=${section5.screenshot} alt=${i18nString5(UIStrings5.screenshotForSection)} />
+    `;
+}
+function renderReplayOrAbortButton(input) {
+  if (input.replayState.isPlaying) {
+    return html6`
+        <devtools-button .jslogContext=${"abort-replay"} @click=${input.onAbortReplay} .iconName=${"pause"} .variant=${"outlined"}>
+          ${i18nString5(UIStrings5.cancelReplay)}
+        </devtools-button>`;
+  }
+  if (!input.recorderSettings) {
+    return Lit6.nothing;
+  }
+  return html6`<devtools-replay-section
+        .data=${{
+    settings: input.recorderSettings,
+    replayExtensions: input.replayExtensions
+  }}
+        .disabled=${input.replayState.isPlaying}
+        @startreplay=${input.onTogglePlaying}
+        >
+      </devtools-replay-section>`;
+}
+function renderSections(input) {
+  return html6`
+      <div class="sections">
+      ${!input.showCodeView ? html6`<div class="section-toolbar">
+        <devtools-button
+          @click=${input.showCodeToggle}
+          class="show-code"
+          .data=${{
+    variant: "outlined",
+    title: Models3.Tooltip.getTooltipForActions(
+      i18nString5(UIStrings5.showCode),
+      "chrome-recorder.toggle-code-view"
+      /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
+    )
+  }}
+          jslog=${VisualLogging5.toggleSubpane(
+    "chrome-recorder.toggle-code-view"
+    /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
+  ).track({ click: true })}
+        >
+          ${i18nString5(UIStrings5.showCode)}
+        </devtools-button>
+      </div>` : ""}
+      ${input.sections.map((section5, i) => html6`
+            <div class="section">
+              <div class="screenshot-wrapper">
+                ${renderScreenshot(section5)}
+              </div>
+              <div class="content">
+                <div class="steps">
+                  <devtools-step-view
+                    @click=${input.onStepClick}
+                    @mouseover=${input.onStepHover}
+                    .data=${{
+    section: section5,
+    state: input.getSectionState(section5),
+    isStartOfGroup: true,
+    isEndOfGroup: section5.steps.length === 0,
+    isFirstSection: i === 0,
+    isLastSection: i === input.sections.length - 1 && section5.steps.length === 0,
+    isSelected: input.selectedStep === (section5.causingStep || null),
+    sectionIndex: i,
+    isRecording: input.isRecording,
+    isPlaying: input.replayState.isPlaying,
+    error: input.getSectionState(section5) === "error" ? input.currentError : void 0,
+    hasBreakpoint: false,
+    removable: input.recording.steps.length > 1 && section5.causingStep
+  }}
+                  >
+                  </devtools-step-view>
+                  ${section5.steps.map((step) => {
+    const stepIndex = input.recording.steps.indexOf(step);
+    return html6`
+                      <devtools-step-view
+                      @click=${input.onStepClick}
+                      @mouseover=${input.onStepHover}
+                      @copystep=${input.onCopyStep}
+                      .data=${{
+      step,
+      state: input.getStepState(step),
+      error: input.currentStep === step ? input.currentError : void 0,
+      isFirstSection: false,
+      isLastSection: i === input.sections.length - 1 && input.recording.steps[input.recording.steps.length - 1] === step,
+      isStartOfGroup: false,
+      isEndOfGroup: section5.steps[section5.steps.length - 1] === step,
+      stepIndex,
+      hasBreakpoint: input.breakpointIndexes.has(stepIndex),
+      sectionIndex: -1,
+      isRecording: input.isRecording,
+      isPlaying: input.replayState.isPlaying,
+      removable: input.recording.steps.length > 1,
+      builtInConverters: input.builtInConverters,
+      extensionConverters: input.extensionConverters,
+      isSelected: input.selectedStep === step,
+      recorderSettings: input.recorderSettings
+    }}
+                      jslog=${VisualLogging5.section("step").track({ click: true })}
+                      ></devtools-step-view>
+                    `;
+  })}
+                  ${!input.recordingTogglingInProgress && input.isRecording && i === input.sections.length - 1 ? html6`<devtools-button
+                    class="step add-assertion-button"
+                    .data=${{
+    variant: "outlined",
+    title: i18nString5(UIStrings5.addAssertion),
+    jslogContext: "add-assertion"
+  }}
+                    @click=${input.onAddAssertion}
+                  >${i18nString5(UIStrings5.addAssertion)}</devtools-button>` : void 0}
+                  ${input.isRecording && i === input.sections.length - 1 ? html6`<div class="step recording">${i18nString5(UIStrings5.recording)}</div>` : null}
+                </div>
+              </div>
+            </div>
+      `)}
+      </div>
+    `;
+}
+function renderHeader(input) {
+  if (!input.recording) {
+    return Lit6.nothing;
+  }
+  const { title } = input.recording;
+  const isTitleEditable = !input.replayState.isPlaying && !input.isRecording;
+  return html6`
+    <div class="header">
+      <div class="header-title-wrapper">
+        <div class="header-title">
+          <input @blur=${input.onTitleBlur}
+                @keydown=${input.onTitleInputKeyDown}
+                id="title-input"
+                jslog=${VisualLogging5.value("title").track({ change: true })}
+                class=${Lit6.Directives.classMap({
+    "has-error": input.isTitleInvalid,
+    disabled: !isTitleEditable
+  })}
+                .value=${Lit6.Directives.live(title)}
+                .disabled=${!isTitleEditable}
+                >
+          <div class="title-button-bar">
+            <devtools-button
+              @click=${input.onEditTitleButtonClick}
+              .data=${{
+    disabled: !isTitleEditable,
+    variant: "toolbar",
+    iconName: "edit",
+    title: i18nString5(UIStrings5.editTitle),
+    jslogContext: "edit-title"
+  }}
+            ></devtools-button>
+          </div>
+        </div>
+        ${input.isTitleInvalid ? html6`<div class="title-input-error-text">
+          ${i18nString5(UIStrings5.requiredTitleError)}
+        </div>` : Lit6.nothing}
+      </div>
+      ${!input.isRecording && input.replayAllowed ? html6`<div class="actions">
+              <devtools-button
+                @click=${input.onMeasurePerformanceClick}
+                .data=${{
+    disabled: input.replayState.isPlaying,
+    variant: "outlined",
+    iconName: "performance",
+    title: i18nString5(UIStrings5.performancePanel),
+    jslogContext: "measure-performance"
+  }}
+              >
+                ${i18nString5(UIStrings5.performancePanel)}
+              </devtools-button>
+              <div class="separator"></div>
+              ${renderReplayOrAbortButton(input)}
+            </div>` : Lit6.nothing}
+    </div>`;
+}
+var DEFAULT_VIEW = (input, output, target) => {
+  const classNames = {
+    wrapper: true,
+    "is-recording": input.isRecording,
+    "is-playing": input.replayState.isPlaying,
+    "was-successful": input.lastReplayResult === "Success",
+    "was-failure": input.lastReplayResult === "Failure"
+  };
+  const footerButtonTitle = input.recordingTogglingInProgress ? i18nString5(UIStrings5.recordingIsBeingStopped) : i18nString5(UIStrings5.endRecording);
+  Lit6.render(html6`
+    <style>${UI.inspectorCommonStyles}</style>
+    <style>${recordingView_css_default}</style>
+    <style>${Input2.textInputStyles}</style>
+    <div @click=${input.onWrapperClick} class=${Lit6.Directives.classMap(classNames)}>
+      <div class="recording-view main">
+        ${renderHeader(input)}
+        ${input.extensionDescriptor ? html6`
+            <devtools-recorder-extension-view .descriptor=${input.extensionDescriptor}></devtools-recorder-extension-view>` : html6`
+          ${renderSettings(input)}
+          ${renderTimelineArea(input, output)}
+        `}
+        ${input.isRecording ? html6`<div class="footer">
+          <div class="controls">
+            <devtools-control-button
+              jslog=${VisualLogging5.toggle("toggle-recording").track({ click: true })}
+              @click=${input.onRecordingFinished}
+              .disabled=${input.recordingTogglingInProgress}
+              .shape=${"square"}
+              .label=${footerButtonTitle}
+              title=${Models3.Tooltip.getTooltipForActions(
+    footerButtonTitle,
+    "chrome-recorder.start-recording"
+    /* Actions.RecorderActions.START_RECORDING */
+  )}
+            >
+            </devtools-control-button>
+          </div>
+        </div>` : Lit6.nothing}
+      </div>
+    </div>
+  `, target, { host: input });
+};
+var RecordingView = class extends UI.Widget.Widget {
+  replayState = { isPlaying: false, isPausedOnBreakpoint: false };
+  isRecording = false;
+  recordingTogglingInProgress = false;
+  recording = {
+    title: "",
+    steps: []
+  };
+  currentStep;
+  currentError;
+  sections = [];
+  settings;
+  lastReplayResult;
+  replayAllowed = false;
+  breakpointIndexes = /* @__PURE__ */ new Set();
+  extensionConverters = [];
+  replayExtensions;
+  extensionDescriptor;
+  addAssertion;
+  abortReplay;
+  recordingFinished;
+  playRecording;
+  networkConditionsChanged;
+  timeoutChanged;
+  titleChanged;
   #recorderSettings;
-  #lastReplayResult;
-  #breakpointIndexes = /* @__PURE__ */ new Set();
+  get recorderSettings() {
+    return this.#recorderSettings;
+  }
+  set recorderSettings(settings) {
+    this.#recorderSettings = settings;
+    this.#converterId = this.recorderSettings?.preferredCopyFormat ?? this.#builtInConverters[0]?.getId();
+    void this.#convertToCode();
+  }
+  #builtInConverters = [];
+  get builtInConverters() {
+    return this.#builtInConverters;
+  }
+  set builtInConverters(converters) {
+    this.#builtInConverters = converters;
+    this.#converterId = this.recorderSettings?.preferredCopyFormat ?? this.#builtInConverters[0]?.getId();
+    void this.#convertToCode();
+  }
+  #isTitleInvalid = false;
   #selectedStep;
   #replaySettingsExpanded = false;
-  #replayAllowed = true;
-  #builtInConverters = [];
-  #extensionConverters = [];
-  #replayExtensions;
   #showCodeView = false;
   #code = "";
   #converterId = "";
-  #editorState;
   #sourceMap;
-  #extensionDescriptor;
+  #editorState;
   #onCopyBound = this.#onCopy.bind(this);
-  set data(data) {
-    this.#isRecording = data.isRecording;
-    this.#replayState = data.replayState;
-    this.#recordingTogglingInProgress = data.recordingTogglingInProgress;
-    this.#currentStep = data.currentStep;
-    this.#userFlow = data.recording;
-    this.#steps = this.#userFlow.steps;
-    this.#sections = data.sections;
-    this.#settings = data.settings;
-    this.#recorderSettings = data.recorderSettings;
-    this.#currentError = data.currentError;
-    this.#lastReplayResult = data.lastReplayResult;
-    this.#replayAllowed = data.replayAllowed;
-    this.#isTitleInvalid = false;
-    this.#breakpointIndexes = data.breakpointIndexes;
-    this.#builtInConverters = data.builtInConverters;
-    this.#extensionConverters = data.extensionConverters;
-    this.#replayExtensions = data.replayExtensions;
-    this.#extensionDescriptor = data.extensionDescriptor;
-    this.#converterId = this.#recorderSettings?.preferredCopyFormat ?? data.builtInConverters[0]?.getId();
-    void this.#convertToCode();
-    this.#render();
+  #view;
+  #viewOutput = {};
+  constructor(element, view) {
+    super(true, false, element);
+    this.#view = view || DEFAULT_VIEW;
   }
-  connectedCallback() {
+  performUpdate() {
+    const converter = [
+      ...this.builtInConverters || [],
+      ...this.extensionConverters || []
+    ].find((converter2) => converter2.getId() === this.#converterId) ?? this.builtInConverters[0];
+    this.#view({
+      breakpointIndexes: this.breakpointIndexes,
+      builtInConverters: this.builtInConverters,
+      converterId: this.#converterId,
+      converterName: converter?.getFormatName(),
+      currentError: this.currentError ?? null,
+      currentStep: this.currentStep ?? null,
+      editorState: this.#editorState ?? null,
+      extensionConverters: this.extensionConverters,
+      extensionDescriptor: this.extensionDescriptor,
+      isRecording: this.isRecording,
+      isTitleInvalid: this.#isTitleInvalid,
+      lastReplayResult: this.lastReplayResult ?? null,
+      recorderSettings: this.#recorderSettings ?? null,
+      recording: this.recording,
+      recordingTogglingInProgress: this.recordingTogglingInProgress,
+      replayAllowed: this.replayAllowed,
+      replayExtensions: this.replayExtensions ?? [],
+      replaySettingsExpanded: this.#replaySettingsExpanded,
+      replayState: this.replayState,
+      sections: this.sections,
+      selectedStep: this.#selectedStep ?? null,
+      settings: this.settings ?? null,
+      showCodeView: this.#showCodeView,
+      onAddAssertion: () => {
+        this.addAssertion?.();
+      },
+      onRecordingFinished: () => {
+        this.recordingFinished?.();
+      },
+      getSectionState: this.#getSectionState.bind(this),
+      getStepState: this.#getStepState.bind(this),
+      onAbortReplay: () => {
+        this.abortReplay?.();
+      },
+      onMeasurePerformanceClick: this.#handleMeasurePerformanceClickEvent.bind(this),
+      onTogglePlaying: (event) => {
+        this.playRecording?.({
+          targetPanel: "chrome-recorder",
+          speed: event.speed,
+          extension: event.extension
+        });
+      },
+      onCodeFormatChange: this.#onCodeFormatChange.bind(this),
+      onCopyStep: this.#onCopyStepEvent.bind(this),
+      onEditTitleButtonClick: this.#onEditTitleButtonClick.bind(this),
+      onNetworkConditionsChange: this.#onNetworkConditionsChange.bind(this),
+      onReplaySettingsKeydown: this.#onReplaySettingsKeydown.bind(this),
+      onSelectMenuLabelClick: this.#onSelectMenuLabelClick.bind(this),
+      onStepClick: this.#onStepClick.bind(this),
+      onStepHover: this.#onStepHover.bind(this),
+      onTimeoutInput: this.#onTimeoutInput.bind(this),
+      onTitleBlur: this.#onTitleBlur.bind(this),
+      onTitleInputKeyDown: this.#onTitleInputKeyDown.bind(this),
+      onToggleReplaySettings: this.#onToggleReplaySettings.bind(this),
+      onWrapperClick: this.#onWrapperClick.bind(this),
+      showCodeToggle: this.showCodeToggle.bind(this)
+    }, this.#viewOutput, this.contentElement);
+  }
+  wasShown() {
+    super.wasShown();
     document.addEventListener("copy", this.#onCopyBound);
-    this.#render();
+    this.performUpdate();
   }
-  disconnectedCallback() {
+  willHide() {
+    super.willHide();
     document.removeEventListener("copy", this.#onCopyBound);
   }
   scrollToBottom() {
-    const wrapper = this.shadowRoot?.querySelector(".sections");
+    const wrapper = this.contentElement?.querySelector(".sections");
     if (!wrapper) {
       return;
     }
     wrapper.scrollTop = wrapper.scrollHeight;
   }
-  #dispatchAddAssertionEvent() {
-    this.dispatchEvent(new AddAssertionEvent());
-  }
-  #dispatchRecordingFinished() {
-    this.dispatchEvent(new RecordingFinishedEvent());
-  }
-  #handleAbortReplay() {
-    this.dispatchEvent(new AbortReplayEvent());
-  }
-  #handleTogglePlaying(event) {
-    this.dispatchEvent(new PlayRecordingEvent2({
-      targetPanel: "chrome-recorder",
-      speed: event.speed,
-      extension: event.extension
-    }));
-  }
   #getStepState(step) {
-    if (!this.#currentStep) {
+    if (!this.currentStep) {
       return "default";
     }
-    if (step === this.#currentStep) {
-      if (this.#currentError) {
+    if (step === this.currentStep) {
+      if (this.currentError) {
         return "error";
       }
-      if (!this.#replayState.isPlaying) {
+      if (!this.replayState?.isPlaying) {
         return "success";
       }
-      if (this.#replayState.isPausedOnBreakpoint) {
+      if (this.replayState?.isPausedOnBreakpoint) {
         return "stopped";
       }
       return "current";
     }
-    const currentIndex = this.#steps.indexOf(this.#currentStep);
+    const currentIndex = this.recording.steps.indexOf(this.currentStep);
     if (currentIndex === -1) {
       return "default";
     }
-    const index = this.#steps.indexOf(step);
+    const index = this.recording.steps.indexOf(step);
     return index < currentIndex ? "success" : "outstanding";
   }
   #getSectionState(section5) {
-    const currentStep = this.#currentStep;
+    const currentStep = this.currentStep;
     if (!currentStep) {
       return "default";
     }
-    const currentSection = this.#sections.find((section6) => section6.steps.includes(currentStep));
+    const currentSection = this.sections.find((section6) => section6.steps.includes(currentStep));
     if (!currentSection) {
-      if (this.#currentError) {
+      if (this.currentError) {
         return "error";
       }
     }
     if (section5 === currentSection) {
       return "success";
     }
-    const index = this.#sections.indexOf(currentSection);
-    const ownIndex = this.#sections.indexOf(section5);
+    const index = this.sections.indexOf(currentSection);
+    const ownIndex = this.sections.indexOf(section5);
     return index >= ownIndex ? "success" : "outstanding";
-  }
-  #renderStep(section5, step, isLastSection) {
-    const stepIndex = this.#steps.indexOf(step);
-    return html6`
-      <devtools-step-view
-      @click=${this.#onStepClick}
-      @mouseover=${this.#onStepHover}
-      @copystep=${this.#onCopyStepEvent}
-      .data=${{
-      step,
-      state: this.#getStepState(step),
-      error: this.#currentStep === step ? this.#currentError : void 0,
-      isFirstSection: false,
-      isLastSection: isLastSection && this.#steps[this.#steps.length - 1] === step,
-      isStartOfGroup: false,
-      isEndOfGroup: section5.steps[section5.steps.length - 1] === step,
-      stepIndex,
-      hasBreakpoint: this.#breakpointIndexes.has(stepIndex),
-      sectionIndex: -1,
-      isRecording: this.#isRecording,
-      isPlaying: this.#replayState.isPlaying,
-      removable: this.#steps.length > 1,
-      builtInConverters: this.#builtInConverters,
-      extensionConverters: this.#extensionConverters,
-      isSelected: this.#selectedStep === step,
-      recorderSettings: this.#recorderSettings
-    }}
-      jslog=${VisualLogging5.section("step").track({ click: true })}
-      ></devtools-step-view>
-    `;
   }
   #onStepHover = (event) => {
     const stepView = event.target;
@@ -1945,7 +2332,7 @@ var RecordingView = class extends HTMLElement {
       return;
     }
     this.#selectedStep = selectedStep;
-    this.#render();
+    this.performUpdate();
     if (selectedStep) {
       this.#highlightCodeForStep(
         selectedStep,
@@ -1959,7 +2346,7 @@ var RecordingView = class extends HTMLElement {
       return;
     }
     this.#selectedStep = void 0;
-    this.#render();
+    this.performUpdate();
   }
   #onReplaySettingsKeydown(event) {
     if (event.key !== "Enter") {
@@ -1971,13 +2358,13 @@ var RecordingView = class extends HTMLElement {
   #onToggleReplaySettings(event) {
     event.stopPropagation();
     this.#replaySettingsExpanded = !this.#replaySettingsExpanded;
-    this.#render();
+    this.performUpdate();
   }
   #onNetworkConditionsChange(event) {
     const throttlingMenu = event.target;
     if (throttlingMenu instanceof HTMLSelectElement) {
       const preset = networkConditionPresets.find((preset2) => preset2.i18nTitleKey === throttlingMenu.value);
-      this.dispatchEvent(new NetworkConditionsChanged(preset?.i18nTitleKey === SDK.NetworkManager.NoThrottlingConditions.i18nTitleKey ? void 0 : preset));
+      this.networkConditionsChanged?.(preset?.i18nTitleKey === SDK.NetworkManager.NoThrottlingConditions.i18nTitleKey ? void 0 : preset);
     }
   }
   #onTimeoutInput(event) {
@@ -1986,17 +2373,17 @@ var RecordingView = class extends HTMLElement {
       target.reportValidity();
       return;
     }
-    this.dispatchEvent(new TimeoutChanged(Number(target.value)));
+    this.timeoutChanged?.(Number(target.value));
   }
   #onTitleBlur = (event) => {
     const target = event.target;
     const title = target.value.trim();
     if (!title) {
       this.#isTitleInvalid = true;
-      this.#render();
+      this.performUpdate();
       return;
     }
-    this.dispatchEvent(new RecordingTitleChangedEvent(title));
+    this.titleChanged?.(title);
   };
   #onTitleInputKeyDown = (event) => {
     switch (event.code) {
@@ -2008,7 +2395,10 @@ var RecordingView = class extends HTMLElement {
     }
   };
   #onEditTitleButtonClick = () => {
-    const input = this.#shadow.getElementById("title-input");
+    const input = this.contentElement.querySelector("#title-input");
+    if (!input) {
+      throw new Error("Missing #title-input");
+    }
     input.focus();
   };
   #onSelectMenuLabelClick = (event) => {
@@ -2019,11 +2409,11 @@ var RecordingView = class extends HTMLElement {
   };
   async #copyCurrentSelection(step) {
     let converter = [
-      ...this.#builtInConverters,
-      ...this.#extensionConverters
-    ].find((converter2) => converter2.getId() === this.#recorderSettings?.preferredCopyFormat);
+      ...this.builtInConverters,
+      ...this.extensionConverters
+    ].find((converter2) => converter2.getId() === this.recorderSettings?.preferredCopyFormat);
     if (!converter) {
-      converter = this.#builtInConverters[0];
+      converter = this.builtInConverters[0];
     }
     if (!converter) {
       throw new Error("No default converter found");
@@ -2031,8 +2421,8 @@ var RecordingView = class extends HTMLElement {
     let text = "";
     if (step) {
       text = await converter.stringifyStep(step);
-    } else if (this.#userFlow) {
-      [text] = await converter.stringify(this.#userFlow);
+    } else if (this.recording) {
+      [text] = await converter.stringify(this.recording);
     }
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
     const metric = step ? converterIdToStepMetric(converter.getId()) : converterIdToFlowMetric(converter.getId());
@@ -2053,239 +2443,12 @@ var RecordingView = class extends HTMLElement {
       /* Actions.RecorderActions.COPY_RECORDING_OR_STEP */
     );
   }
-  #renderSettings() {
-    if (!this.#settings) {
-      return html6``;
-    }
-    const environmentFragments = [];
-    if (this.#settings.viewportSettings) {
-      environmentFragments.push(html6`<div>${this.#settings.viewportSettings.isMobile ? i18nString5(UIStrings5.mobile) : i18nString5(UIStrings5.desktop)}</div>`);
-      environmentFragments.push(html6`<div class="separator"></div>`);
-      environmentFragments.push(html6`<div>${this.#settings.viewportSettings.width}×${this.#settings.viewportSettings.height} px</div>`);
-    }
-    const replaySettingsFragments = [];
-    if (!this.#replaySettingsExpanded) {
-      if (this.#settings.networkConditionsSettings) {
-        if (this.#settings.networkConditionsSettings.title) {
-          replaySettingsFragments.push(html6`<div>${this.#settings.networkConditionsSettings.title}</div>`);
-        } else {
-          replaySettingsFragments.push(html6`<div>
-            ${i18nString5(UIStrings5.download, {
-            value: i18n9.ByteUtilities.bytesToString(this.#settings.networkConditionsSettings.download)
-          })},
-            ${i18nString5(UIStrings5.upload, {
-            value: i18n9.ByteUtilities.bytesToString(this.#settings.networkConditionsSettings.upload)
-          })},
-            ${i18nString5(UIStrings5.latency, {
-            value: this.#settings.networkConditionsSettings.latency
-          })}
-          </div>`);
-        }
-      } else {
-        replaySettingsFragments.push(html6`<div>${SDK.NetworkManager.NoThrottlingConditions.title instanceof Function ? SDK.NetworkManager.NoThrottlingConditions.title() : SDK.NetworkManager.NoThrottlingConditions.title}</div>`);
-      }
-      replaySettingsFragments.push(html6`<div class="separator"></div>`);
-      replaySettingsFragments.push(html6`<div>${i18nString5(UIStrings5.timeout, {
-        value: this.#settings.timeout || Models3.RecordingPlayer.defaultTimeout
-      })}</div>`);
-    } else {
-      const selectedOption = this.#settings.networkConditionsSettings?.i18nTitleKey || SDK.NetworkManager.NoThrottlingConditions.i18nTitleKey;
-      const selectedOptionTitle = networkConditionPresets.find((preset) => preset.i18nTitleKey === selectedOption);
-      let menuButtonTitle = "";
-      if (selectedOptionTitle) {
-        menuButtonTitle = selectedOptionTitle.title instanceof Function ? selectedOptionTitle.title() : selectedOptionTitle.title;
-      }
-      replaySettingsFragments.push(html6`<div class="editable-setting">
-        <label class="wrapping-label" @click=${this.#onSelectMenuLabelClick}>
-          ${i18nString5(UIStrings5.network)}
-          <select
-              title=${menuButtonTitle}
-              jslog=${VisualLogging5.dropDown("network-conditions").track({ change: true })}
-              @change=${this.#onNetworkConditionsChange}>
-        ${networkConditionPresets.map((condition) => html6`
-          <option jslog=${VisualLogging5.item(Platform.StringUtilities.toKebabCase(condition.i18nTitleKey || ""))}
-                  value=${condition.i18nTitleKey || ""} ?selected=${selectedOption === condition.i18nTitleKey}>
-                  ${condition.title instanceof Function ? condition.title() : condition.title}
-          </option>`)}
-      </select>
-        </label>
-      </div>`);
-      replaySettingsFragments.push(html6`<div class="editable-setting">
-        <label class="wrapping-label" title=${i18nString5(UIStrings5.timeoutExplanation)}>
-          ${i18nString5(UIStrings5.timeoutLabel)}
-          <input
-            @input=${this.#onTimeoutInput}
-            required
-            min=${Models3.SchemaUtils.minTimeout}
-            max=${Models3.SchemaUtils.maxTimeout}
-            value=${this.#settings.timeout || Models3.RecordingPlayer.defaultTimeout}
-            jslog=${VisualLogging5.textField("timeout").track({ change: true })}
-            class="devtools-text-input"
-            type="number">
-        </label>
-      </div>`);
-    }
-    const isEditable = !this.#isRecording && !this.#replayState.isPlaying;
-    const replaySettingsButtonClassMap = {
-      "settings-title": true,
-      expanded: this.#replaySettingsExpanded
-    };
-    const replaySettingsClassMap = {
-      expanded: this.#replaySettingsExpanded,
-      settings: true
-    };
-    return html6`
-      <div class="settings-row">
-        <div class="settings-container">
-          <div
-            class=${Lit6.Directives.classMap(replaySettingsButtonClassMap)}
-            @keydown=${isEditable && this.#onReplaySettingsKeydown}
-            @click=${isEditable && this.#onToggleReplaySettings}
-            tabindex="0"
-            role="button"
-            jslog=${VisualLogging5.action("replay-settings").track({ click: true })}
-            aria-label=${i18nString5(UIStrings5.editReplaySettings)}>
-            <span>${i18nString5(UIStrings5.replaySettings)}</span>
-            ${isEditable ? html6`<devtools-icon
-                    class="chevron"
-                    name="triangle-down">
-                  </devtools-icon>` : ""}
-          </div>
-          <div class=${Lit6.Directives.classMap(replaySettingsClassMap)}>
-            ${replaySettingsFragments.length ? replaySettingsFragments : html6`<div>${i18nString5(UIStrings5.default)}</div>`}
-          </div>
-        </div>
-        <div class="settings-container">
-          <div class="settings-title">${i18nString5(UIStrings5.environment)}</div>
-          <div class="settings">
-            ${environmentFragments.length ? environmentFragments : html6`<div>${i18nString5(UIStrings5.default)}</div>`}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-  #getCurrentConverter() {
-    const currentConverter = [
-      ...this.#builtInConverters || [],
-      ...this.#extensionConverters || []
-    ].find((converter) => converter.getId() === this.#converterId);
-    if (!currentConverter) {
-      return this.#builtInConverters[0];
-    }
-    return currentConverter;
-  }
-  #renderTimelineArea() {
-    if (this.#extensionDescriptor) {
-      return html6`
-        <devtools-recorder-extension-view .descriptor=${this.#extensionDescriptor}>
-        </devtools-recorder-extension-view>
-      `;
-    }
-    const currentConverter = this.#getCurrentConverter();
-    const converterFormatName = currentConverter?.getFormatName();
-    return html6`
-        <devtools-split-view
-          direction="auto"
-          sidebar-position="second"
-          sidebar-initial-size="300"
-          sidebar-visibility=${this.#showCodeView ? "" : "hidden"}
-        >
-          <div slot="main">
-            ${this.#renderSections()}
-          </div>
-          <div slot="sidebar" jslog=${VisualLogging5.pane("source-code").track({ resize: true })}>
-            ${this.#showCodeView ? html6`
-            <div class="section-toolbar" jslog=${VisualLogging5.toolbar()}>
-              <devtools-select-menu
-                @selectmenuselected=${this.#onCodeFormatChange}
-                .showDivider=${true}
-                .showArrow=${true}
-                .sideButton=${false}
-                .showSelectedItem=${true}
-                .position=${"bottom"}
-                .buttonTitle=${converterFormatName || ""}
-                .jslogContext=${"code-format"}
-              >
-                ${this.#builtInConverters.map((converter) => {
-      return html6`<devtools-menu-item
-                    .value=${converter.getId()}
-                    .selected=${this.#converterId === converter.getId()}
-                    jslog=${VisualLogging5.action().track({ click: true }).context(`converter-${Platform.StringUtilities.toKebabCase(converter.getId())}`)}
-                  >
-                    ${converter.getFormatName()}
-                  </devtools-menu-item>`;
-    })}
-                ${this.#extensionConverters.map((converter) => {
-      return html6`<devtools-menu-item
-                    .value=${converter.getId()}
-                    .selected=${this.#converterId === converter.getId()}
-                    jslog=${VisualLogging5.action().track({ click: true }).context("converter-extension")}
-                  >
-                    ${converter.getFormatName()}
-                  </devtools-menu-item>`;
-    })}
-              </devtools-select-menu>
-              <devtools-button
-                title=${Models3.Tooltip.getTooltipForActions(
-      i18nString5(UIStrings5.hideCode),
-      "chrome-recorder.toggle-code-view"
-      /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
-    )}
-                .data=${{
-      variant: "icon",
-      size: "SMALL",
-      iconName: "cross"
-    }}
-                @click=${this.showCodeToggle}
-                jslog=${VisualLogging5.close().track({ click: true })}
-              ></devtools-button>
-            </div>
-            ${this.#renderTextEditor()}` : Lit6.nothing}
-          </div>
-        </devtools-split-view>
-      `;
-  }
-  #renderTextEditor() {
-    if (!this.#editorState) {
-      throw new Error("Unexpected: trying to render the text editor without editorState");
-    }
-    return html6`
-      <div class="text-editor" jslog=${VisualLogging5.textField().track({ change: true })}>
-        <devtools-text-editor .state=${this.#editorState}></devtools-text-editor>
-      </div>
-    `;
-  }
-  #renderScreenshot(section5) {
-    if (!section5.screenshot) {
-      return null;
-    }
-    return html6`
-      <img class="screenshot" src=${section5.screenshot} alt=${i18nString5(UIStrings5.screenshotForSection)} />
-    `;
-  }
-  #renderReplayOrAbortButton() {
-    if (this.#replayState.isPlaying) {
-      return html6`
-        <devtools-button .jslogContext=${"abort-replay"} @click=${this.#handleAbortReplay} .iconName=${"pause"} .variant=${"outlined"}>
-          ${i18nString5(UIStrings5.cancelReplay)}
-        </devtools-button>`;
-    }
-    return html6`<devtools-replay-section
-        .data=${{
-      settings: this.#recorderSettings,
-      replayExtensions: this.#replayExtensions
-    }}
-        .disabled=${this.#replayState.isPlaying}
-        @startreplay=${this.#handleTogglePlaying}
-        >
-      </devtools-replay-section>`;
-  }
   #handleMeasurePerformanceClickEvent(event) {
     event.stopPropagation();
-    this.dispatchEvent(new PlayRecordingEvent2({
+    this.playRecording?.({
       targetPanel: "timeline",
       speed: "normal"
-    }));
+    });
   }
   showCodeToggle = () => {
     this.#showCodeView = !this.#showCodeView;
@@ -2296,14 +2459,17 @@ var RecordingView = class extends HTMLElement {
     void this.#convertToCode();
   };
   #convertToCode = async () => {
-    if (!this.#userFlow) {
+    if (!this.recording) {
       return;
     }
-    const converter = this.#getCurrentConverter();
+    const converter = [
+      ...this.builtInConverters || [],
+      ...this.extensionConverters || []
+    ].find((converter2) => converter2.getId() === this.#converterId) ?? this.builtInConverters[0];
     if (!converter) {
       return;
     }
-    const [code, sourceMap] = await converter.stringify(this.#userFlow);
+    const [code, sourceMap] = await converter.stringify(this.recording);
     this.#code = code;
     this.#sourceMap = sourceMap;
     this.#sourceMap?.shift();
@@ -2318,224 +2484,29 @@ var RecordingView = class extends HTMLElement {
         languageSupport ? languageSupport : []
       ]
     });
-    this.#render();
-    this.dispatchEvent(new Event("code-generated"));
+    this.performUpdate();
+    this.contentElement.dispatchEvent(new Event("code-generated"));
   };
   #highlightCodeForStep = (step, scroll = false) => {
     if (!this.#sourceMap) {
       return;
     }
-    const stepIndex = this.#steps.indexOf(step);
+    const stepIndex = this.recording.steps.indexOf(step);
     if (stepIndex === -1) {
-      return;
-    }
-    const editor = this.#shadow.querySelector("devtools-text-editor");
-    if (!editor) {
-      return;
-    }
-    const cm = editor.editor;
-    if (!cm) {
       return;
     }
     const line = this.#sourceMap[stepIndex * 2];
     const length = this.#sourceMap[stepIndex * 2 + 1];
-    let selection = editor.createSelection({ lineNumber: line + length, columnNumber: 0 }, { lineNumber: line, columnNumber: 0 });
-    const lastLine = editor.state.doc.lineAt(selection.main.anchor);
-    selection = editor.createSelection({ lineNumber: line + length - 1, columnNumber: lastLine.length + 1 }, { lineNumber: line, columnNumber: 0 });
-    cm.dispatch({
-      selection,
-      effects: scroll ? [
-        CodeMirror.EditorView.scrollIntoView(selection.main, {
-          y: "nearest"
-        })
-      ] : void 0
-    });
+    this.#viewOutput.highlightLinesInEditor?.(line, length, scroll);
   };
   #onCodeFormatChange = (event) => {
     this.#converterId = event.itemValue;
-    if (this.#recorderSettings) {
-      this.#recorderSettings.preferredCopyFormat = event.itemValue;
+    if (this.recorderSettings) {
+      this.recorderSettings.preferredCopyFormat = event.itemValue;
     }
     void this.#convertToCode();
   };
-  #renderSections() {
-    return html6`
-      <div class="sections">
-      ${!this.#showCodeView ? html6`<div class="section-toolbar">
-        <devtools-button
-          @click=${this.showCodeToggle}
-          class="show-code"
-          .data=${{
-      variant: "outlined",
-      title: Models3.Tooltip.getTooltipForActions(
-        i18nString5(UIStrings5.showCode),
-        "chrome-recorder.toggle-code-view"
-        /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
-      )
-    }}
-          jslog=${VisualLogging5.toggleSubpane(
-      "chrome-recorder.toggle-code-view"
-      /* Actions.RecorderActions.TOGGLE_CODE_VIEW */
-    ).track({ click: true })}
-        >
-          ${i18nString5(UIStrings5.showCode)}
-        </devtools-button>
-      </div>` : ""}
-      ${this.#sections.map((section5, i) => html6`
-            <div class="section">
-              <div class="screenshot-wrapper">
-                ${this.#renderScreenshot(section5)}
-              </div>
-              <div class="content">
-                <div class="steps">
-                  <devtools-step-view
-                    @click=${this.#onStepClick}
-                    @mouseover=${this.#onStepHover}
-                    .data=${{
-      section: section5,
-      state: this.#getSectionState(section5),
-      isStartOfGroup: true,
-      isEndOfGroup: section5.steps.length === 0,
-      isFirstSection: i === 0,
-      isLastSection: i === this.#sections.length - 1 && section5.steps.length === 0,
-      isSelected: this.#selectedStep === (section5.causingStep || null),
-      sectionIndex: i,
-      isRecording: this.#isRecording,
-      isPlaying: this.#replayState.isPlaying,
-      error: this.#getSectionState(section5) === "error" ? this.#currentError : void 0,
-      hasBreakpoint: false,
-      removable: this.#steps.length > 1 && section5.causingStep
-    }}
-                  >
-                  </devtools-step-view>
-                  ${section5.steps.map((step) => this.#renderStep(section5, step, i === this.#sections.length - 1))}
-                  ${!this.#recordingTogglingInProgress && this.#isRecording && i === this.#sections.length - 1 ? html6`<devtools-button
-                    class="step add-assertion-button"
-                    .data=${{
-      variant: "outlined",
-      title: i18nString5(UIStrings5.addAssertion),
-      jslogContext: "add-assertion"
-    }}
-                    @click=${this.#dispatchAddAssertionEvent}
-                  >${i18nString5(UIStrings5.addAssertion)}</devtools-button>` : void 0}
-                  ${this.#isRecording && i === this.#sections.length - 1 ? html6`<div class="step recording">${i18nString5(UIStrings5.recording)}</div>` : null}
-                </div>
-              </div>
-            </div>
-      `)}
-      </div>
-    `;
-  }
-  #renderHeader() {
-    if (!this.#userFlow) {
-      return "";
-    }
-    const { title } = this.#userFlow;
-    const isTitleEditable = !this.#replayState.isPlaying && !this.#isRecording;
-    return html6`
-      <div class="header">
-        <div class="header-title-wrapper">
-          <div class="header-title">
-            <input @blur=${this.#onTitleBlur}
-                  @keydown=${this.#onTitleInputKeyDown}
-                  id="title-input"
-                  jslog=${VisualLogging5.value("title").track({ change: true })}
-                  class=${Lit6.Directives.classMap({
-      "has-error": this.#isTitleInvalid,
-      disabled: !isTitleEditable
-    })}
-                  .value=${Lit6.Directives.live(title)}
-                  .disabled=${!isTitleEditable}
-                  >
-            <div class="title-button-bar">
-              <devtools-button
-                @click=${this.#onEditTitleButtonClick}
-                .data=${{
-      disabled: !isTitleEditable,
-      variant: "toolbar",
-      iconName: "edit",
-      title: i18nString5(UIStrings5.editTitle),
-      jslogContext: "edit-title"
-    }}
-              ></devtools-button>
-            </div>
-          </div>
-          ${this.#isTitleInvalid ? html6`<div class="title-input-error-text">
-            ${i18nString5(UIStrings5.requiredTitleError)}
-          </div>` : ""}
-        </div>
-        ${!this.#isRecording && this.#replayAllowed ? html6`<div class="actions">
-                <devtools-button
-                  @click=${this.#handleMeasurePerformanceClickEvent}
-                  .data=${{
-      disabled: this.#replayState.isPlaying,
-      variant: "outlined",
-      iconName: "performance",
-      title: i18nString5(UIStrings5.performancePanel),
-      jslogContext: "measure-performance"
-    }}
-                >
-                  ${i18nString5(UIStrings5.performancePanel)}
-                </devtools-button>
-                <div class="separator"></div>
-                ${this.#renderReplayOrAbortButton()}
-              </div>` : ""}
-      </div>`;
-  }
-  #renderFooter() {
-    if (!this.#isRecording) {
-      return "";
-    }
-    const translation = this.#recordingTogglingInProgress ? i18nString5(UIStrings5.recordingIsBeingStopped) : i18nString5(UIStrings5.endRecording);
-    return html6`
-      <div class="footer">
-        <div class="controls">
-          <devtools-control-button
-            jslog=${VisualLogging5.toggle("toggle-recording").track({ click: true })}
-            @click=${this.#dispatchRecordingFinished}
-            .disabled=${this.#recordingTogglingInProgress}
-            .shape=${"square"}
-            .label=${translation}
-            title=${Models3.Tooltip.getTooltipForActions(
-      translation,
-      "chrome-recorder.start-recording"
-      /* Actions.RecorderActions.START_RECORDING */
-    )}
-          >
-          </devtools-control-button>
-        </div>
-      </div>
-    `;
-  }
-  #render() {
-    const classNames = {
-      wrapper: true,
-      "is-recording": this.#isRecording,
-      "is-playing": this.#replayState.isPlaying,
-      "was-successful": this.#lastReplayResult === "Success",
-      "was-failure": this.#lastReplayResult === "Failure"
-    };
-    Lit6.render(html6`
-      <style>${UI.inspectorCommonStyles}</style>
-      <style>${recordingView_css_default}</style>
-      <style>${Input2.textInputStyles}</style>
-      <div @click=${this.#onWrapperClick} class=${Lit6.Directives.classMap(classNames)}>
-        <div class="main">
-          ${this.#renderHeader()}
-          ${this.#extensionDescriptor ? html6`
-            <devtools-recorder-extension-view .descriptor=${this.#extensionDescriptor}>
-            </devtools-recorder-extension-view>
-          ` : html6`
-            ${this.#renderSettings()}
-            ${this.#renderTimelineArea()}
-          `}
-          ${this.#renderFooter()}
-        </div>
-      </div>
-    `, this.#shadow, { host: this });
-  }
 };
-customElements.define("devtools-recording-view", RecordingView);
 
 // gen/front_end/panels/recorder/components/SelectButton.js
 var SelectButton_exports = {};

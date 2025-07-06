@@ -14,7 +14,7 @@ export default `/*
     bottom: var(--sys-size-5);
     left: var(--sys-size-5);
     z-index: 9999;
-    /* left var(--sys-size-5) * 2 so that there is equal space on the left and on the right in small screens */
+    /* subtract var(--sys-size-5) * 2 so that there is equal space on the left and on the right in small screens */
     max-width: calc(100% - 2 * var(--sys-size-5));
 
     .container {

@@ -848,12 +848,16 @@ export class ConsoleView extends UI.Widget.VBox {
             this.tryToCollapseMessages(viewMessage, this.visibleViewMessages[this.visibleViewMessages.length - 1])) {
             return;
         }
+        // Track any adjacent messages.
+        const originatingMessage = viewMessage.consoleMessage().originatingMessage();
+        const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
+        viewMessage.setAdjacentUserCommandResult(adjacent);
+        // Ensure any parent groups for this message are shown.
         const currentGroup = viewMessage.consoleGroup();
-        if (!currentGroup?.messagesHidden()) {
-            const originatingMessage = viewMessage.consoleMessage().originatingMessage();
-            const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
-            viewMessage.setAdjacentUserCommandResult(adjacent);
-            showGroup(currentGroup, this.visibleViewMessages);
+        showGroup(currentGroup, this.visibleViewMessages);
+        // Determine whether this message should actually be visible.
+        const shouldShowMessage = !currentGroup?.messagesHidden();
+        if (shouldShowMessage) {
             this.visibleViewMessages.push(viewMessage);
             this.searchMessage(this.visibleViewMessages.length - 1);
         }

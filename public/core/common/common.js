@@ -1088,6 +1088,13 @@ var Lab = class _Lab {
   alpha;
   #authoredText;
   #rawParams;
+  channels = [
+    "l",
+    "a",
+    "b",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -1309,6 +1316,13 @@ var LCH = class _LCH {
   h;
   alpha;
   #authoredText;
+  channels = [
+    "l",
+    "c",
+    "h",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -1534,6 +1548,13 @@ var Oklab = class _Oklab {
   b;
   alpha;
   #authoredText;
+  channels = [
+    "l",
+    "a",
+    "b",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -1755,6 +1776,13 @@ var Oklch = class _Oklch {
   h;
   alpha;
   #authoredText;
+  channels = [
+    "l",
+    "c",
+    "h",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -1976,6 +2004,21 @@ var ColorFunction = class _ColorFunction {
   alpha;
   colorSpace;
   #authoredText;
+  get channels() {
+    return this.isXYZ() ? [
+      "x",
+      "y",
+      "z",
+      "alpha"
+      /* ColorChannel.ALPHA */
+    ] : [
+      "r",
+      "g",
+      "b",
+      "alpha"
+      /* ColorChannel.ALPHA */
+    ];
+  }
   static #conversions = {
     [
       "hex"
@@ -2261,6 +2304,13 @@ var HSL = class _HSL {
   alpha;
   #rawParams;
   #authoredText;
+  channels = [
+    "h",
+    "s",
+    "l",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -2489,6 +2539,13 @@ var HWB = class _HWB {
   alpha;
   #rawParams;
   #authoredText;
+  channels = [
+    "h",
+    "w",
+    "b",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -2720,6 +2777,13 @@ function toRgbValue(value) {
 }
 var ShortFormatColorBase = class {
   color;
+  channels = [
+    "r",
+    "g",
+    "b",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   constructor(color) {
     this.color = color;
   }
@@ -2814,6 +2878,13 @@ var Legacy = class _Legacy {
   #rgbaInternal;
   #authoredText;
   #formatInternal;
+  channels = [
+    "r",
+    "g",
+    "b",
+    "alpha"
+    /* ColorChannel.ALPHA */
+  ];
   static #conversions = {
     [
       "hex"
@@ -5803,7 +5874,7 @@ var VersionController = class _VersionController {
   static GLOBAL_VERSION_SETTING_NAME = "inspectorVersion";
   static SYNCED_VERSION_SETTING_NAME = "syncedInspectorVersion";
   static LOCAL_VERSION_SETTING_NAME = "localInspectorVersion";
-  static CURRENT_VERSION = 39;
+  static CURRENT_VERSION = 40;
   #globalVersionSetting;
   #syncedVersionSetting;
   #localVersionSetting;
@@ -6338,6 +6409,59 @@ var VersionController = class _VersionController {
       }
     } catch {
       Settings.instance().globalStorage.remove(PREFERRED_NETWORK_COND);
+    }
+  }
+  /**
+   * There are two related migrations here for handling network throttling persistence:
+   * 1. Go through all user custom throttling conditions and add a `key` property.
+   * 2. If the user has a 'preferred-network-condition' setting, take the value
+   *    of that and set the right key for the new 'active-network-condition-key'
+   *    setting. Then, remove the now-obsolete 'preferred-network-condition'
+   *    setting.
+   */
+  updateVersionFrom39To40() {
+    const hasCustomNetworkConditionsSetting = () => {
+      try {
+        moduleSetting("custom-network-conditions");
+        return true;
+      } catch {
+        return false;
+      }
+    };
+    if (hasCustomNetworkConditionsSetting()) {
+      const conditionsSetting = moduleSetting("custom-network-conditions");
+      const customConditions = conditionsSetting.get();
+      if (customConditions?.length > 0) {
+        customConditions.forEach((condition, i) => {
+          if (condition.key) {
+            return;
+          }
+          condition.key = `USER_CUSTOM_SETTING_${i + 1}`;
+        });
+        conditionsSetting.set(customConditions);
+      }
+    }
+    const PREFERRED_NETWORK_COND_SETTING = "preferred-network-condition";
+    const setting = Settings.instance().globalStorage.get(PREFERRED_NETWORK_COND_SETTING);
+    if (!setting) {
+      return;
+    }
+    const UI_STRING_TO_NEW_KEY = {
+      "Fast 4G": "SPEED_FAST_4G",
+      "Slow 4G": "SPEED_SLOW_4G",
+      "3G": "SPEED_3G",
+      "No throttling": "NO_THROTTLING",
+      Offline: "OFFLINE"
+    };
+    try {
+      const networkSetting = JSON.parse(setting);
+      if (networkSetting.i18nTitleKey && UI_STRING_TO_NEW_KEY.hasOwnProperty(networkSetting.i18nTitleKey)) {
+        const key = UI_STRING_TO_NEW_KEY[networkSetting.i18nTitleKey];
+        const newSetting = Settings.instance().createSetting("active-network-condition-key", "NO_THROTTLING");
+        newSetting.set(key);
+      }
+    } finally {
+      Settings.instance().globalStorage.remove(PREFERRED_NETWORK_COND_SETTING);
     }
   }
   /*

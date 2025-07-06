@@ -53,7 +53,12 @@ export class AiAgent {
      * historical conversations.
      */
     #origin;
-    #context;
+    /**
+     * `context` does not change during `AiAgent.run()`, ensuring that calls to JS
+     * have the correct `context`. We don't want element selection by the user to
+     * change the `context` during an `AiAgent.run()`.
+     */
+    context;
     #id = crypto.randomUUID();
     #history = [];
     #facts = new Set();
@@ -172,13 +177,14 @@ export class AiAgent {
     }
     async *run(initialQuery, options, multimodalInput) {
         await options.selected?.refresh();
-        // First context set on the agent determines its origin from now on.
-        if (options.selected && this.#origin === undefined && options.selected) {
-            this.#origin = options.selected.getOrigin();
-        }
-        // Remember if the context that is set.
-        if (options.selected && !this.#context) {
-            this.#context = options.selected;
+        if (options.selected) {
+            // First context set on the agent determines its origin from now on.
+            if (this.#origin === undefined) {
+                this.#origin = options.selected.getOrigin();
+            }
+            if (options.selected.isOriginAllowed(this.#origin)) {
+                this.context = options.selected;
+            }
         }
         const enhancedQuery = await this.enhanceQuery(initialQuery, options.selected, multimodalInput?.type);
         Host.userMetrics.freestylerQueryLength(enhancedQuery.length);

@@ -8,6 +8,7 @@ import * as ThemeSupport from '../../legacy/theme_support/theme_support.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import { baseConfiguration, dummyDarkTheme, dynamicSetting, DynamicSetting, themeSelection } from './config.js';
 import { toLineColumn, toOffset } from './position.js';
+import textEditorStyles from './textEditor.css.js';
 export class TextEditor extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #activeEditor = undefined;
@@ -31,6 +32,7 @@ export class TextEditor extends HTMLElement {
         super();
         this.#pendingState = pendingState;
         this.#shadow.createChild('style').textContent = CodeHighlighter.codeHighlighterStyles;
+        this.#shadow.createChild('style').textContent = textEditorStyles;
     }
     #createEditor() {
         this.#activeEditor = new CodeMirror.EditorView({

@@ -97,7 +97,7 @@ export function extractConsoleAPIExtensionEntries() {
                 ts: entryStartTime,
                 ph: "X" /* Types.Events.Phase.COMPLETE */,
             };
-            const extensionEntry = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+            const extensionEntry = Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent(unregisteredExtensionEntry);
             extensionTrackEntries.push(extensionEntry);
             continue;
@@ -115,8 +115,7 @@ export function extractConsoleAPIExtensionEntries() {
             dur: Types.Timing.Micro(entryEndTime - entryStartTime),
             rawSourceEvent: currentTimeStamp
         };
-        const syntheticTimeStamp = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
-            .registerSyntheticEvent(unregisteredSyntheticTimeStamp);
+        const syntheticTimeStamp = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(unregisteredSyntheticTimeStamp);
         syntheticConsoleEntriesForTimingsTrack.push(syntheticTimeStamp);
     }
 }
@@ -169,13 +168,13 @@ export function extractPerformanceAPIExtensionEntries(timings) {
             rawSourceEvent: Types.Events.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing,
         };
         if (Types.Extensions.isExtensionPayloadMarker(extensionPayload)) {
-            const extensionMarker = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+            const extensionMarker = Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent(extensionSyntheticEntry);
             extensionMarkers.push(extensionMarker);
             continue;
         }
         if (Types.Extensions.isExtensionPayloadTrackEntry(extensionSyntheticEntry.args)) {
-            const extensionTrackEntry = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager()
+            const extensionTrackEntry = Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent(extensionSyntheticEntry);
             extensionTrackEntries.push(extensionTrackEntry);
             continue;

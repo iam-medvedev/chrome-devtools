@@ -18,6 +18,7 @@ describeWithEnvironment('RecordingMetadata', () => {
         sinon.stub(networkManager, 'isThrottling').returns(true);
         sinon.stub(networkManager, 'networkConditions').returns({
             title: 'Slow 3G',
+            key: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
             download: 1,
             upload: 2,
             latency: 3,
@@ -31,6 +32,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             networkThrottlingConditions: {
                 download: 1,
                 latency: 3,
+                key: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
                 upload: 2,
                 packetLoss: undefined,
                 packetQueueLength: undefined,
@@ -74,6 +76,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             download: 1,
             upload: 2,
             latency: 3,
+            key: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
         });
         const metadata = await Timeline.RecordingMetadata.forTrace({ recordingStartTime: 1234 });
         assert.deepEqual(metadata, {
@@ -84,6 +87,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             networkThrottlingConditions: {
                 download: 1,
                 latency: 3,
+                key: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
                 upload: 2,
                 packetLoss: undefined,
                 packetQueueLength: undefined,
@@ -107,6 +111,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             title: () => 'Slow 3G',
             download: 1,
             upload: 1,
+            key: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
             latency: 1,
         });
         const metadata = await Timeline.RecordingMetadata.forTrace();
@@ -117,6 +122,7 @@ describeWithEnvironment('RecordingMetadata', () => {
             networkThrottling: 'Slow 3G',
             networkThrottlingConditions: {
                 download: 1,
+                key: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */,
                 latency: 1,
                 upload: 1,
                 packetLoss: undefined,
