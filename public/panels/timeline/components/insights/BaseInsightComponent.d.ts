@@ -5,6 +5,7 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';
 import type { TableState } from './Table.js';
 export interface BaseInsightData {
+    /** The trace bounds for the insight set that contains this insight. */
     bounds: Trace.Types.Timing.TraceWindowMicro | null;
     /** The key into `insights` that contains this particular insight. */
     insightSetKey: string | null;
@@ -39,9 +40,9 @@ export declare abstract class BaseInsightComponent<T extends InsightModel> exten
      * and later temporarily replace all of those insights with a different set.
      * This enables the hover/click table interactions.
      */
-    toggleTemporaryOverlays(overlays: Overlays.Overlays.TimelineOverlay[] | null, options: Overlays.Overlays.TimelineOverlaySetOptions): void;
-    getInitialOverlays(): Overlays.Overlays.TimelineOverlay[];
-    protected abstract createOverlays(): Overlays.Overlays.TimelineOverlay[];
+    toggleTemporaryOverlays(overlays: Trace.Types.Overlays.Overlay[] | null, options: Overlays.Overlays.TimelineOverlaySetOptions): void;
+    getInitialOverlays(): Trace.Types.Overlays.Overlay[];
+    protected createOverlays(): Trace.Types.Overlays.Overlay[];
     protected abstract renderContent(): Lit.LitTemplate;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     getEstimatedSavingsBytes(): number | null;

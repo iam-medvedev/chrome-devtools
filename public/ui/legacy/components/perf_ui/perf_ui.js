@@ -3592,8 +3592,8 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.timelineLevels = levelIndexes;
     const groups = this.rawTimelineData.groups || [];
     for (let i = 0; i < groups.length; ++i) {
-      const expanded = groups[i].expanded ?? this.#persistedGroupConfig?.[i].expanded ?? false;
-      const hidden = groups[i].hidden ?? this.#persistedGroupConfig?.[i].hidden ?? false;
+      const expanded = groups[i].expanded ?? this.#persistedGroupConfig?.[i]?.expanded ?? false;
+      const hidden = groups[i].hidden ?? this.#persistedGroupConfig?.[i]?.hidden ?? false;
       groups[i].expanded = expanded;
       groups[i].hidden = hidden;
     }

@@ -193,4 +193,14 @@ export function generateInsight(parsedTrace, context) {
         wastedBytes: totalWastedBytes,
     });
 }
+export function createOverlayForRequest(request) {
+    return {
+        type: 'ENTRY_OUTLINE',
+        entry: request,
+        outlineReason: 'ERROR',
+    };
+}
+export function createOverlays(model) {
+    return model.requests.map(req => createOverlayForRequest(req.request));
+}
 //# sourceMappingURL=Cache.js.map

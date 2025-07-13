@@ -130,3 +130,4 @@ export declare function handleLinkResponseHeader(linkHeaderValue: string): Array
 export declare function generatePreconnectedOrigins(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[], preconnectCandidates: PreconnectCandidate[]): PreconnectedOrigin[];
 export declare function generatePreconnectCandidates(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[]): PreconnectCandidate[];
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): NetworkDependencyTreeInsightModel;
+export declare function createOverlays(model: NetworkDependencyTreeInsightModel): Types.Overlays.Overlay[];

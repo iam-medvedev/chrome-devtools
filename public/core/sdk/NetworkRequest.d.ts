@@ -196,7 +196,6 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     requestStreamingContent(): Promise<TextUtils.StreamingContentData.StreamingContentDataOrError>;
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
-    requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     requestContentType(): string | undefined;
     hasErrorStatusCode(): boolean;
@@ -252,7 +251,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     setAssociatedData(key: string, data: object): void;
     deleteAssociatedData(key: string): void;
     hasThirdPartyCookiePhaseoutIssue(): boolean;
-    addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data }: Protocol.Network.DataReceivedEvent): void;
+    addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data, }: Protocol.Network.DataReceivedEvent): void;
     waitForResponseReceived(): Promise<void>;
 }
 export declare enum Events {

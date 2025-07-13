@@ -40,7 +40,7 @@ export async function getInsightToDebug(model, insightTitle) {
         };
     }
     const insight = insights.model[matchingInsightKey];
-    const activeInsight = new Utils.InsightAIContext.ActiveInsight(insight, parsedTrace);
+    const activeInsight = new Utils.InsightAIContext.ActiveInsight(insight, insights.bounds, parsedTrace);
     return { insight: activeInsight };
 }
 //# sourceMappingURL=ExternalRequests.js.map

@@ -635,6 +635,13 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
             stylePropertyTreeElement.updateTitle();
             assert.notExists(stylePropertyTreeElement.valueElement?.querySelector('devtools-link-swatch'));
         });
+        it('retains empty fallbacks', async () => {
+            const stylePropertyTreeElement = getTreeElement('color', 'var(--blue,)');
+            stylePropertyTreeElement.updateTitle();
+            assert.exists(stylePropertyTreeElement.valueElement);
+            renderElementIntoDOM(stylePropertyTreeElement.valueElement);
+            assert.strictEqual(stylePropertyTreeElement.renderedPropertyText(), 'color: var(--blue, )');
+        });
     });
     describe('ColorRenderer', () => {
         it('correctly renders children of the color swatch', () => {
@@ -1754,6 +1761,15 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
         assert.notExists(stylePropertyTreeElement.nameElement.getAttribute('aria-details'));
         assert.exists(stylePropertyTreeElement.nameElement.parentElement);
         assert.notExists(stylePropertyTreeElement.nameElement.parentElement.querySelector('devtools-tooltip'));
+    });
+    it('correctly identifies when a semicolon terminates editing a property', () => {
+        const inputText = '" " ( ) [ ] { } { ( ) } { [ ( " ) " ) ] } { [ } ] } ( " ) " )';
+        const positions = '+--++--++--++--++------++----------------++--------++--------';
+        // + identifies a position in which a semicolon should terminate editing
+        for (let i = 0; i < inputText.length; i++) {
+            const shouldCommit = Elements.StylePropertyTreeElement.StylePropertyTreeElement.shouldCommitValueSemicolon(inputText, i);
+            assert.strictEqual(shouldCommit, positions[i] === '+', `\n${inputText}\n${' '.repeat(i)}^`);
+        }
     });
 });
 //# sourceMappingURL=StylePropertyTreeElement.test.js.map

@@ -1696,10 +1696,6 @@ var StyleFile = class {
     console.assert(this.headers.size > 0);
     return this.#firstHeader().originalContentProvider().contentType();
   }
-  requestContent() {
-    console.assert(this.headers.size > 0);
-    return this.#firstHeader().originalContentProvider().requestContent();
-  }
   requestContentData() {
     console.assert(this.headers.size > 0);
     return this.#firstHeader().originalContentProvider().requestContentData();
@@ -4797,9 +4793,6 @@ var Binding2 = class {
   }
   contentType() {
     return this.firstResource().contentType();
-  }
-  requestContent() {
-    return this.firstResource().requestContent();
   }
   requestContentData() {
     return this.firstResource().requestContentData();

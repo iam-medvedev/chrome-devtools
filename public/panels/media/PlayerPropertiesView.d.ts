@@ -28,7 +28,8 @@ export declare const enum PlayerPropertyKeys {
     VIDEO_TRACKS = "kVideoTracks",
     FRAMERATE = "kFramerate",
     VIDEO_PLAYBACK_ROUGHNESS = "kVideoPlaybackRoughness",
-    VIDEO_PLAYBACK_FREEZING = "kVideoPlaybackFreezing"
+    VIDEO_PLAYBACK_FREEZING = "kVideoPlaybackFreezing",
+    HLS_BUFFERED_RANGES = "kHlsBufferedRanges"
 }
 export declare class PropertyRenderer extends UI.Widget.VBox {
     private readonly contents;
@@ -36,15 +37,15 @@ export declare class PropertyRenderer extends UI.Widget.VBox {
     private pseudoColorProtectionElement;
     constructor(title: Platform.UIString.LocalizedString);
     updateData(propvalue: string): void;
-    protected updateDataInternal(propvalue: string | null): void;
+    updateDataInternal(propvalue: string): void;
     protected unsetNestedContents(): void;
     changeNestedContents(value: object): void;
     changeContents(value: string | null): void;
 }
-export declare class FormattedPropertyRenderer extends PropertyRenderer {
+export declare class FormattedPropertyRenderer<DataType> extends PropertyRenderer {
     private readonly formatfunction;
-    constructor(title: Platform.UIString.LocalizedString, formatfunction: (arg0: string) => string);
-    updateDataInternal(propvalue: string | null): void;
+    constructor(title: Platform.UIString.LocalizedString, formatfunction: (arg0: DataType) => string);
+    updateDataInternal(propvalue: string): void;
 }
 export declare class DefaultPropertyRenderer extends PropertyRenderer {
     constructor(title: Platform.UIString.LocalizedString, defaultText: string);
@@ -103,6 +104,7 @@ export declare class PlayerPropertiesView extends UI.Widget.VBox {
     formatKbps(bitsPerSecond: string | number): string;
     formatTime(seconds: string | number): string;
     formatFileSize(bytes: string): string;
+    formatBufferedRanges(ranges: string[]): string;
     populateAttributesAndElements(): void;
 }
 export {};

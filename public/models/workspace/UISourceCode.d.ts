@@ -23,9 +23,6 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     requestContentData({ cachedWasmOnly }?: {
         cachedWasmOnly?: boolean;
     }): Promise<TextUtils.ContentData.ContentDataOrError>;
-    requestContent(options?: {
-        cachedWasmOnly?: boolean;
-    }): Promise<TextUtils.ContentProvider.DeferredContent>;
     checkContentUpdated(): Promise<void>;
     forceLoadOnCheckContent(): void;
     addRevision(content: string): void;

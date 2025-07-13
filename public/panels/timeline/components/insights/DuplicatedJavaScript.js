@@ -35,19 +35,6 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        const requests = this.model.scriptsWithDuplication.map(script => script.request).filter(e => !!e);
-        return requests.map(request => {
-            return {
-                type: 'ENTRY_OUTLINE',
-                entry: request,
-                outlineReason: 'ERROR',
-            };
-        });
-    }
     renderContent() {
         if (!this.model) {
             return Lit.nothing;

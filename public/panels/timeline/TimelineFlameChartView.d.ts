@@ -60,7 +60,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     containingElement(): HTMLElement;
     dimThirdPartiesIfRequired(): void;
     setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
-    setOverlays(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
+    setOverlays(overlays: Trace.Types.Overlays.Overlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
     addTimestampMarkerOverlay(timestamp: Trace.Types.Timing.Micro): void;
@@ -108,13 +108,13 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     /**
      * Used to create multiple overlays at once without triggering a redraw for each one.
      */
-    bulkAddOverlays(overlays: Overlays.Overlays.TimelineOverlay[]): void;
-    addOverlay<T extends Overlays.Overlays.TimelineOverlay>(newOverlay: T): T;
-    bulkRemoveOverlays(overlays: Overlays.Overlays.TimelineOverlay[]): void;
-    removeOverlay(removedOverlay: Overlays.Overlays.TimelineOverlay): void;
-    updateExistingOverlay<T extends Overlays.Overlays.TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
-    enterLabelEditMode(overlay: Overlays.Overlays.EntryLabel): void;
-    bringLabelForward(overlay: Overlays.Overlays.EntryLabel): void;
+    bulkAddOverlays(overlays: Trace.Types.Overlays.Overlay[]): void;
+    addOverlay<T extends Trace.Types.Overlays.Overlay>(newOverlay: T): T;
+    bulkRemoveOverlays(overlays: Trace.Types.Overlays.Overlay[]): void;
+    removeOverlay(removedOverlay: Trace.Types.Overlays.Overlay): void;
+    updateExistingOverlay<T extends Trace.Types.Overlays.Overlay>(existingOverlay: T, newData: Partial<T>): void;
+    enterLabelEditMode(overlay: Trace.Types.Overlays.EntryLabel): void;
+    bringLabelForward(overlay: Trace.Types.Overlays.EntryLabel): void;
     private onAddEntryLabelAnnotation;
     onEntriesLinkAnnotationCreate(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryFromIndex: number, linkCreateButton?: boolean): void;
     /**

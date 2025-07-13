@@ -1,6 +1,6 @@
-import type * as Overlays from '../../overlays/overlays.js';
+import type * as Trace from '../../../../models/trace/trace.js';
 export interface ActiveInsight {
     name: string;
     insightSetKey: string;
-    createOverlayFn: (() => Overlays.Overlays.TimelineOverlay[]);
+    createOverlayFn: (() => Trace.Types.Overlays.Overlay[]);
 }

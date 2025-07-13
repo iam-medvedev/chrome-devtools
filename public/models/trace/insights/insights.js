@@ -360,6 +360,8 @@ __export(Cache_exports, {
   UIStrings: () => UIStrings,
   cachingDisabled: () => cachingDisabled,
   computeCacheLifetimeInSeconds: () => computeCacheLifetimeInSeconds,
+  createOverlayForRequest: () => createOverlayForRequest,
+  createOverlays: () => createOverlays,
   generateInsight: () => generateInsight,
   getCombinedHeaders: () => getCombinedHeaders,
   i18nString: () => i18nString,
@@ -538,11 +540,22 @@ function generateInsight(parsedTrace, context) {
     wastedBytes: totalWastedBytes
   });
 }
+function createOverlayForRequest(request) {
+  return {
+    type: "ENTRY_OUTLINE",
+    entry: request,
+    outlineReason: "ERROR"
+  };
+}
+function createOverlays(model) {
+  return model.requests.map((req) => createOverlayForRequest(req.request));
+}
 
 // gen/front_end/models/trace/insights/CLSCulprits.js
 var CLSCulprits_exports = {};
 __export(CLSCulprits_exports, {
   UIStrings: () => UIStrings2,
+  createOverlays: () => createOverlays2,
   generateInsight: () => generateInsight2,
   getNonCompositedFailure: () => getNonCompositedFailure,
   i18nString: () => i18nString2,
@@ -942,11 +955,34 @@ function generateInsight2(parsedTrace, context) {
     topCulpritsByCluster
   });
 }
+function createOverlays2(model) {
+  const clustersByScore = model.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
+  const worstCluster = clustersByScore[0];
+  if (!worstCluster) {
+    return [];
+  }
+  const range = Types2.Timing.Micro(worstCluster.dur ?? 0);
+  const max = Types2.Timing.Micro(worstCluster.ts + range);
+  return [{
+    type: "TIMESPAN_BREAKDOWN",
+    sections: [
+      {
+        bounds: { min: worstCluster.ts, range, max },
+        label: i18nString2(UIStrings2.worstLayoutShiftCluster),
+        showDuration: false
+      }
+    ],
+    // This allows for the overlay to sit over the layout shift.
+    entry: worstCluster.events[0],
+    renderLocation: "ABOVE_EVENT"
+  }];
+}
 
 // gen/front_end/models/trace/insights/DocumentLatency.js
 var DocumentLatency_exports = {};
 __export(DocumentLatency_exports, {
   UIStrings: () => UIStrings3,
+  createOverlays: () => createOverlays3,
   generateInsight: () => generateInsight3,
   i18nString: () => i18nString3,
   isDocumentLatency: () => isDocumentLatency
@@ -1138,11 +1174,53 @@ function generateInsight3(parsedTrace, context) {
     wastedBytes: uncompressedResponseBytes
   });
 }
+function createOverlays3(model) {
+  if (!model.data?.documentRequest) {
+    return [];
+  }
+  const overlays = [];
+  const event = model.data.documentRequest;
+  const redirectDurationMicro = Helpers4.Timing.milliToMicro(model.data.redirectDuration);
+  const sections = [];
+  if (model.data.redirectDuration) {
+    const bounds = Helpers4.Timing.traceWindowFromMicroSeconds(event.ts, event.ts + redirectDurationMicro);
+    sections.push({ bounds, label: i18nString3(UIStrings3.redirectsLabel), showDuration: true });
+    overlays.push({ type: "CANDY_STRIPED_TIME_RANGE", bounds, entry: event });
+  }
+  if (!model.data.checklist.serverResponseIsFast.value) {
+    const serverResponseTimeMicro = Helpers4.Timing.milliToMicro(model.data.serverResponseTime);
+    const sendEnd = event.args.data.timing?.sendEnd ?? Types3.Timing.Milli(0);
+    const sendEndMicro = Helpers4.Timing.milliToMicro(sendEnd);
+    const bounds = Helpers4.Timing.traceWindowFromMicroSeconds(sendEndMicro, sendEndMicro + serverResponseTimeMicro);
+    sections.push({ bounds, label: i18nString3(UIStrings3.serverResponseTimeLabel), showDuration: true });
+  }
+  if (model.data.uncompressedResponseBytes) {
+    const bounds = Helpers4.Timing.traceWindowFromMicroSeconds(event.args.data.syntheticData.downloadStart, event.args.data.syntheticData.downloadStart + event.args.data.syntheticData.download);
+    sections.push({ bounds, label: i18nString3(UIStrings3.uncompressedDownload), showDuration: true });
+    overlays.push({ type: "CANDY_STRIPED_TIME_RANGE", bounds, entry: event });
+  }
+  if (sections.length) {
+    overlays.push({
+      type: "TIMESPAN_BREAKDOWN",
+      sections,
+      entry: model.data.documentRequest,
+      // Always render below because the document request is guaranteed to be
+      // the first request in the network track.
+      renderLocation: "BELOW_EVENT"
+    });
+  }
+  overlays.push({
+    type: "ENTRY_SELECTED",
+    entry: model.data.documentRequest
+  });
+  return overlays;
+}
 
 // gen/front_end/models/trace/insights/DOMSize.js
 var DOMSize_exports = {};
 __export(DOMSize_exports, {
   UIStrings: () => UIStrings4,
+  createOverlays: () => createOverlays4,
   generateInsight: () => generateInsight4,
   i18nString: () => i18nString4
 });
@@ -1302,11 +1380,20 @@ function generateInsight4(parsedTrace, context) {
     maxDOMStats
   });
 }
+function createOverlays4(model) {
+  const entries = [...model.largeStyleRecalcs, ...model.largeLayoutUpdates];
+  return entries.map((entry) => ({
+    type: "ENTRY_OUTLINE",
+    entry,
+    outlineReason: "ERROR"
+  }));
+}
 
 // gen/front_end/models/trace/insights/DuplicatedJavaScript.js
 var DuplicatedJavaScript_exports = {};
 __export(DuplicatedJavaScript_exports, {
   UIStrings: () => UIStrings5,
+  createOverlays: () => createOverlays5,
   generateInsight: () => generateInsight5,
   i18nString: () => i18nString5
 });
@@ -1385,11 +1472,21 @@ function generateInsight5(parsedTrace, context) {
     wastedBytes: wastedBytesByRequestId.values().reduce((acc, cur) => acc + cur, 0)
   });
 }
+function createOverlays5(model) {
+  return model.scriptsWithDuplication.map((script) => script.request).filter((e) => !!e).map((request) => {
+    return {
+      type: "ENTRY_OUTLINE",
+      entry: request,
+      outlineReason: "ERROR"
+    };
+  });
+}
 
 // gen/front_end/models/trace/insights/FontDisplay.js
 var FontDisplay_exports = {};
 __export(FontDisplay_exports, {
   UIStrings: () => UIStrings6,
+  createOverlays: () => createOverlays6,
   generateInsight: () => generateInsight6,
   i18nString: () => i18nString6
 });
@@ -1458,11 +1555,20 @@ function generateInsight6(parsedTrace, context) {
     metricSavings: { FCP: savings }
   });
 }
+function createOverlays6(model) {
+  return model.fonts.map((font) => ({
+    type: "ENTRY_OUTLINE",
+    entry: font.request,
+    outlineReason: font.wastedTime ? "ERROR" : "INFO"
+  }));
+}
 
 // gen/front_end/models/trace/insights/ForcedReflow.js
 var ForcedReflow_exports = {};
 __export(ForcedReflow_exports, {
   UIStrings: () => UIStrings7,
+  createOverlayForEvents: () => createOverlayForEvents,
+  createOverlays: () => createOverlays7,
   generateInsight: () => generateInsight7,
   i18nString: () => i18nString7
 });
@@ -1598,12 +1704,31 @@ function generateInsight7(traceParsedData, context) {
     aggregatedBottomUpData: [...bottomUpDataMap.values()]
   });
 }
+function createOverlays7(model) {
+  if (!model.topLevelFunctionCallData) {
+    return [];
+  }
+  const allBottomUpEvents = [...model.aggregatedBottomUpData.values().flatMap((data) => data.relatedEvents)];
+  return [
+    ...createOverlayForEvents(model.topLevelFunctionCallData.topLevelFunctionCallEvents, "INFO"),
+    ...createOverlayForEvents(allBottomUpEvents)
+  ];
+}
+function createOverlayForEvents(events, outlineReason = "ERROR") {
+  return events.map((e) => ({
+    type: "ENTRY_OUTLINE",
+    entry: e,
+    outlineReason
+  }));
+}
 
 // gen/front_end/models/trace/insights/ImageDelivery.js
 var ImageDelivery_exports = {};
 __export(ImageDelivery_exports, {
   ImageOptimizationType: () => ImageOptimizationType,
   UIStrings: () => UIStrings8,
+  createOverlayForRequest: () => createOverlayForRequest2,
+  createOverlays: () => createOverlays8,
   generateInsight: () => generateInsight8,
   getOptimizationMessage: () => getOptimizationMessage,
   getOptimizationMessageWithBytes: () => getOptimizationMessageWithBytes,
@@ -1808,11 +1933,23 @@ function generateInsight8(parsedTrace, context) {
     wastedBytes: optimizableImages.reduce((total, img) => total + img.byteSavings, 0)
   });
 }
+function createOverlayForRequest2(request) {
+  return {
+    type: "ENTRY_OUTLINE",
+    entry: request,
+    outlineReason: "ERROR"
+  };
+}
+function createOverlays8(model) {
+  return model.optimizableImages.map((image) => createOverlayForRequest2(image.request));
+}
 
 // gen/front_end/models/trace/insights/INPBreakdown.js
 var INPBreakdown_exports = {};
 __export(INPBreakdown_exports, {
   UIStrings: () => UIStrings9,
+  createOverlays: () => createOverlays9,
+  createOverlaysForSubpart: () => createOverlaysForSubpart,
   generateInsight: () => generateInsight9,
   i18nString: () => i18nString9,
   isINPBreakdown: () => isINPBreakdown
@@ -1894,11 +2031,40 @@ function generateInsight9(parsedTrace, context) {
     highPercentileInteractionEvent: normalizedInteractionEvents[highPercentileIndex]
   });
 }
+function createOverlaysForSubpart(event, subpartIndex = -1) {
+  const p1 = Helpers10.Timing.traceWindowFromMicroSeconds(event.ts, event.ts + event.inputDelay);
+  const p2 = Helpers10.Timing.traceWindowFromMicroSeconds(p1.max, p1.max + event.mainThreadHandling);
+  const p3 = Helpers10.Timing.traceWindowFromMicroSeconds(p2.max, p2.max + event.presentationDelay);
+  let sections = [
+    { bounds: p1, label: i18nString9(UIStrings9.inputDelay), showDuration: true },
+    { bounds: p2, label: i18nString9(UIStrings9.processingDuration), showDuration: true },
+    { bounds: p3, label: i18nString9(UIStrings9.presentationDelay), showDuration: true }
+  ];
+  if (subpartIndex !== -1) {
+    sections = [sections[subpartIndex]];
+  }
+  return [
+    {
+      type: "TIMESPAN_BREAKDOWN",
+      sections,
+      renderLocation: "BELOW_EVENT",
+      entry: event
+    }
+  ];
+}
+function createOverlays9(model) {
+  const event = model.longestInteractionEvent;
+  if (!event) {
+    return [];
+  }
+  return createOverlaysForSubpart(event);
+}
 
 // gen/front_end/models/trace/insights/LCPBreakdown.js
 var LCPBreakdown_exports = {};
 __export(LCPBreakdown_exports, {
   UIStrings: () => UIStrings10,
+  createOverlays: () => createOverlays10,
   generateInsight: () => generateInsight10,
   i18nString: () => i18nString10,
   isLCPBreakdown: () => isLCPBreakdown
@@ -1960,10 +2126,12 @@ function anyValuesNaN(...values) {
 }
 function determineSubparts(nav, docRequest, lcpEvent, lcpRequest) {
   const docReqTiming = docRequest.args.data.timing;
-  if (!docReqTiming) {
-    throw new Error("no timing for document request");
+  let firstDocByteTs;
+  if (docReqTiming) {
+    firstDocByteTs = Types7.Timing.Micro(Helpers11.Timing.secondsToMicro(docReqTiming.requestTime) + Helpers11.Timing.milliToMicro(docReqTiming.receiveHeadersStart));
+  } else {
+    firstDocByteTs = docRequest.ts;
   }
-  const firstDocByteTs = Types7.Timing.Micro(Helpers11.Timing.secondsToMicro(docReqTiming.requestTime) + Helpers11.Timing.milliToMicro(docReqTiming.receiveHeadersStart));
   const ttfb = Helpers11.Timing.traceWindowFromMicroSeconds(nav.ts, firstDocByteTs);
   ttfb.label = i18nString10(UIStrings10.timeToFirstByte);
   let renderDelay = Helpers11.Timing.traceWindowFromMicroSeconds(ttfb.max, lcpEvent.ts);
@@ -2047,12 +2215,29 @@ function generateInsight10(parsedTrace, context) {
     subparts: determineSubparts(context.navigation, docRequest, lcpEvent, lcpRequest) ?? void 0
   });
 }
+function createOverlays10(model) {
+  if (!model.subparts || !model.lcpTs) {
+    return [];
+  }
+  const overlays = [
+    {
+      type: "TIMESPAN_BREAKDOWN",
+      sections: Object.values(model.subparts).map((subpart) => ({ bounds: subpart, label: subpart.label, showDuration: true }))
+    }
+  ];
+  if (model.lcpRequest) {
+    overlays.push({ type: "ENTRY_OUTLINE", entry: model.lcpRequest, outlineReason: "INFO" });
+  }
+  return overlays;
+}
 
 // gen/front_end/models/trace/insights/LCPDiscovery.js
 var LCPDiscovery_exports = {};
 __export(LCPDiscovery_exports, {
   UIStrings: () => UIStrings11,
+  createOverlays: () => createOverlays11,
   generateInsight: () => generateInsight11,
+  getImageData: () => getImageData,
   i18nString: () => i18nString11,
   isLCPDiscovery: () => isLCPDiscovery
 });
@@ -2170,11 +2355,65 @@ function generateInsight11(parsedTrace, context) {
     }
   });
 }
+function getImageData(model) {
+  if (!model.lcpRequest || !model.checklist) {
+    return null;
+  }
+  const shouldIncreasePriorityHint = !model.checklist.priorityHinted.value;
+  const shouldPreloadImage = !model.checklist.requestDiscoverable.value;
+  const shouldRemoveLazyLoading = !model.checklist.eagerlyLoaded.value;
+  const imageLCP = shouldIncreasePriorityHint !== void 0 && shouldPreloadImage !== void 0 && shouldRemoveLazyLoading !== void 0;
+  if (!imageLCP) {
+    return null;
+  }
+  const data = {
+    checklist: model.checklist,
+    request: model.lcpRequest,
+    discoveryDelay: null,
+    estimatedSavings: model.metricSavings?.LCP ?? null
+  };
+  if (model.earliestDiscoveryTimeTs && model.lcpRequest) {
+    const discoveryDelay = model.lcpRequest.ts - model.earliestDiscoveryTimeTs;
+    data.discoveryDelay = Types8.Timing.Micro(discoveryDelay);
+  }
+  return data;
+}
+function createOverlays11(model) {
+  const imageResults = getImageData(model);
+  if (!imageResults || !imageResults.discoveryDelay) {
+    return [];
+  }
+  const delay = Helpers12.Timing.traceWindowFromMicroSeconds(Types8.Timing.Micro(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
+  return [
+    {
+      type: "ENTRY_OUTLINE",
+      entry: imageResults.request,
+      outlineReason: "ERROR"
+    },
+    {
+      type: "CANDY_STRIPED_TIME_RANGE",
+      bounds: delay,
+      entry: imageResults.request
+    },
+    {
+      type: "TIMESPAN_BREAKDOWN",
+      sections: [{
+        bounds: delay,
+        // This is overridden in the component.
+        label: `${imageResults.discoveryDelay} microseconds`,
+        showDuration: false
+      }],
+      entry: imageResults.request,
+      renderLocation: "ABOVE_EVENT"
+    }
+  ];
+}
 
 // gen/front_end/models/trace/insights/LegacyJavaScript.js
 var LegacyJavaScript_exports = {};
 __export(LegacyJavaScript_exports, {
   UIStrings: () => UIStrings12,
+  createOverlays: () => createOverlays12,
   generateInsight: () => generateInsight12,
   i18nString: () => i18nString12
 });
@@ -2251,11 +2490,22 @@ function generateInsight12(parsedTrace, context) {
     wastedBytes: wastedBytesByRequestId.values().reduce((acc, cur) => acc + cur, 0)
   });
 }
+function createOverlays12(model) {
+  return [...model.legacyJavaScriptResults.keys()].map((script) => script.request).filter((e) => !!e).map((request) => {
+    return {
+      type: "ENTRY_OUTLINE",
+      entry: request,
+      outlineReason: "ERROR"
+    };
+  });
+}
 
 // gen/front_end/models/trace/insights/ModernHTTP.js
 var ModernHTTP_exports = {};
 __export(ModernHTTP_exports, {
   UIStrings: () => UIStrings13,
+  createOverlayForRequest: () => createOverlayForRequest3,
+  createOverlays: () => createOverlays13,
   determineHttp1Requests: () => determineHttp1Requests,
   generateInsight: () => generateInsight13,
   i18nString: () => i18nString13,
@@ -2408,12 +2658,23 @@ function generateInsight13(parsedTrace, context) {
     metricSavings: computeMetricSavings(http1Requests, context)
   });
 }
+function createOverlayForRequest3(request) {
+  return {
+    type: "ENTRY_OUTLINE",
+    entry: request,
+    outlineReason: "ERROR"
+  };
+}
+function createOverlays13(model) {
+  return model.http1Requests.map((req) => createOverlayForRequest3(req)) ?? [];
+}
 
 // gen/front_end/models/trace/insights/NetworkDependencyTree.js
 var NetworkDependencyTree_exports = {};
 __export(NetworkDependencyTree_exports, {
   TOO_MANY_PRECONNECTS_THRESHOLD: () => TOO_MANY_PRECONNECTS_THRESHOLD,
   UIStrings: () => UIStrings14,
+  createOverlays: () => createOverlays14,
   generateInsight: () => generateInsight14,
   generatePreconnectCandidates: () => generatePreconnectCandidates,
   generatePreconnectedOrigins: () => generatePreconnectedOrigins,
@@ -2696,9 +2957,16 @@ function handleLinkResponseHeader(linkHeaderValue) {
   const preconnectedOrigins = [];
   for (let i = 0; i < linkHeaderValue.length; ) {
     const firstUrlEnd = linkHeaderValue.indexOf(">", i);
+    if (firstUrlEnd === -1) {
+      break;
+    }
     const commaIndex = linkHeaderValue.indexOf(",", firstUrlEnd);
     const partEnd = commaIndex !== -1 ? commaIndex : linkHeaderValue.length;
     const part = linkHeaderValue.substring(i, partEnd);
+    if (partEnd + 1 <= i) {
+      console.warn("unexpected infinite loop, bailing");
+      break;
+    }
     i = partEnd + 1;
     const preconnectedOrigin = handleLinkResponseHeaderPart(part.trim());
     if (preconnectedOrigin) {
@@ -2874,11 +3142,28 @@ function generateInsight14(parsedTrace, context) {
     preconnectCandidates
   });
 }
+function createOverlays14(model) {
+  function walk(nodes, overlays2) {
+    nodes.forEach((node) => {
+      overlays2.push({
+        type: "ENTRY_OUTLINE",
+        entry: node.request,
+        outlineReason: "ERROR"
+      });
+      walk(node.children, overlays2);
+    });
+  }
+  const overlays = [];
+  walk(model.rootNodes, overlays);
+  return overlays;
+}
 
 // gen/front_end/models/trace/insights/RenderBlocking.js
 var RenderBlocking_exports = {};
 __export(RenderBlocking_exports, {
   UIStrings: () => UIStrings15,
+  createOverlayForRequest: () => createOverlayForRequest4,
+  createOverlays: () => createOverlays15,
   generateInsight: () => generateInsight15,
   i18nString: () => i18nString15,
   isRenderBlocking: () => isRenderBlocking
@@ -3038,11 +3323,22 @@ function generateInsight15(parsedTrace, context) {
     ...savings
   });
 }
+function createOverlayForRequest4(request) {
+  return {
+    type: "ENTRY_OUTLINE",
+    entry: request,
+    outlineReason: "ERROR"
+  };
+}
+function createOverlays15(model) {
+  return model.renderBlockingRequests.map((request) => createOverlayForRequest4(request));
+}
 
 // gen/front_end/models/trace/insights/SlowCSSSelector.js
 var SlowCSSSelector_exports = {};
 __export(SlowCSSSelector_exports, {
   UIStrings: () => UIStrings16,
+  createOverlays: () => createOverlays16,
   generateInsight: () => generateInsight16,
   i18nString: () => i18nString16
 });
@@ -3071,6 +3367,7 @@ var SelectorTimingsKey;
   SelectorTimingsKey2["MatchCount"] = "match_count";
   SelectorTimingsKey2["Selector"] = "selector";
   SelectorTimingsKey2["StyleSheetId"] = "style_sheet_id";
+  SelectorTimingsKey2["InvalidationCount"] = "invalidation_count";
 })(SelectorTimingsKey || (SelectorTimingsKey = {}));
 function isFirstContentfulPaint(event) {
   return event.name === "firstContentfulPaint";
@@ -3128,13 +3425,22 @@ var UIStrings16 = {
   /**
    * @description Text status indicating that no CSS selector data was found.
    */
-  enableSelectorData: "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings."
+  enableSelectorData: "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings.",
+  /**
+   *@description top CSS selector when ranked by elapsed time in ms
+   */
+  topSelectorElapsedTime: "Top selector elaspsed time",
+  /**
+   *@description top CSS selector when ranked by match attempt
+   */
+  topSelectorMatchAttempt: "Top selector match attempt"
 };
 var str_16 = i18n31.i18n.registerUIStrings("models/trace/insights/SlowCSSSelector.ts", UIStrings16);
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
+var slowCSSSelectorThreshold = 500;
 function aggregateSelectorStats(data, context) {
   const selectorMap = /* @__PURE__ */ new Map();
-  for (const [event, value] of data) {
+  for (const [event, value] of data.dataForUpdateLayoutEvent) {
     if (event.args.beginData?.frame !== context.frameId) {
       continue;
     }
@@ -3163,7 +3469,7 @@ function finalize16(partialModel) {
     title: i18nString16(UIStrings16.title),
     description: i18nString16(UIStrings16.description),
     category: InsightCategory.ALL,
-    state: partialModel.topElapsedMs.length !== 0 && partialModel.topMatchAttempts.length !== 0 ? "informative" : "pass",
+    state: partialModel.topSelectorElapsedMs && partialModel.topSelectorMatchAttempts ? "informative" : "pass",
     ...partialModel
   };
 }
@@ -3172,7 +3478,7 @@ function generateInsight16(parsedTrace, context) {
   if (!selectorStatsData) {
     throw new Error("no selector stats data");
   }
-  const selectorTimings = aggregateSelectorStats(selectorStatsData.dataForUpdateLayoutEvent, context);
+  const selectorTimings = aggregateSelectorStats(selectorStatsData, context);
   let totalElapsedUs = 0;
   let totalMatchAttempts = 0;
   let totalMatchCount = 0;
@@ -3181,27 +3487,39 @@ function generateInsight16(parsedTrace, context) {
     totalMatchAttempts += timing[SelectorTimingsKey.MatchAttempts];
     totalMatchCount += timing[SelectorTimingsKey.MatchCount];
   });
-  const sortByElapsedMs = selectorTimings.toSorted((a, b) => {
-    return b[SelectorTimingsKey.Elapsed] - a[SelectorTimingsKey.Elapsed];
-  });
-  const sortByMatchAttempts = selectorTimings.toSorted((a, b) => {
-    return b[SelectorTimingsKey.MatchAttempts] - a[SelectorTimingsKey.MatchAttempts];
-  });
+  let topSelectorElapsedMs = null;
+  let topSelectorMatchAttempts = null;
+  if (selectorTimings.length > 0) {
+    topSelectorElapsedMs = selectorTimings.reduce((a, b) => {
+      return a[SelectorTimingsKey.Elapsed] > b[SelectorTimingsKey.Elapsed] ? a : b;
+    });
+    if (topSelectorElapsedMs && topSelectorElapsedMs[SelectorTimingsKey.Elapsed] < slowCSSSelectorThreshold) {
+      topSelectorElapsedMs = null;
+    }
+    topSelectorMatchAttempts = selectorTimings.reduce((a, b) => {
+      return a[SelectorTimingsKey.MatchAttempts] > b[SelectorTimingsKey.MatchAttempts] ? a : b;
+    });
+  }
   return finalize16({
     // TODO: should we identify UpdateLayout events as linked to this insight?
     relatedEvents: [],
     totalElapsedMs: Types10.Timing.Milli(totalElapsedUs / 1e3),
     totalMatchAttempts,
     totalMatchCount,
-    topElapsedMs: sortByElapsedMs.slice(0, 3),
-    topMatchAttempts: sortByMatchAttempts.slice(0, 3)
+    topSelectorElapsedMs,
+    topSelectorMatchAttempts
   });
+}
+function createOverlays16(_) {
+  return [];
 }
 
 // gen/front_end/models/trace/insights/ThirdParties.js
 var ThirdParties_exports = {};
 __export(ThirdParties_exports, {
   UIStrings: () => UIStrings17,
+  createOverlays: () => createOverlays17,
+  createOverlaysForSummary: () => createOverlaysForSummary,
   generateInsight: () => generateInsight17,
   i18nString: () => i18nString17
 });
@@ -3260,11 +3578,39 @@ function generateInsight17(parsedTrace, context) {
     entitySummaries
   });
 }
+function createOverlaysForSummary(summary) {
+  const overlays = [];
+  for (const event of summary.relatedEvents) {
+    if (event.dur === void 0 || event.dur < 1e3) {
+      continue;
+    }
+    const overlay = {
+      type: "ENTRY_OUTLINE",
+      entry: event,
+      outlineReason: "INFO"
+    };
+    overlays.push(overlay);
+  }
+  return overlays;
+}
+function createOverlays17(model) {
+  const overlays = [];
+  const summaries = model.entitySummaries ?? [];
+  for (const summary of summaries) {
+    if (summary.entity === model.firstPartyEntity) {
+      continue;
+    }
+    const summaryOverlays = createOverlaysForSummary(summary);
+    overlays.push(...summaryOverlays);
+  }
+  return overlays;
+}
 
 // gen/front_end/models/trace/insights/Viewport.js
 var Viewport_exports = {};
 __export(Viewport_exports, {
   UIStrings: () => UIStrings18,
+  createOverlays: () => createOverlays18,
   generateInsight: () => generateInsight18,
   i18nString: () => i18nString18
 });
@@ -3272,6 +3618,7 @@ import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform6 from "./../../../core/platform/platform.js";
 import * as Handlers8 from "./../handlers/handlers.js";
 import * as Helpers20 from "./../helpers/helpers.js";
+import * as Types11 from "./../types/types.js";
 var UIStrings18 = {
   /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
   title: "Optimize viewport for mobile",
@@ -3335,6 +3682,21 @@ function generateInsight18(parsedTrace, context) {
   return finalize18({
     mobileOptimized: true,
     viewportEvent
+  });
+}
+function createOverlays18(model) {
+  if (!model.longPointerInteractions) {
+    return [];
+  }
+  return model.longPointerInteractions.map((interaction) => {
+    const delay = Math.min(interaction.inputDelay, 300 * 1e3);
+    const bounds = Helpers20.Timing.traceWindowFromMicroSeconds(Types11.Timing.Micro(interaction.ts), Types11.Timing.Micro(interaction.ts + delay));
+    return {
+      type: "TIMESPAN_BREAKDOWN",
+      entry: interaction,
+      sections: [{ bounds, label: i18nString18(UIStrings18.mobileTapDelayLabel), showDuration: true }],
+      renderLocation: "ABOVE_EVENT"
+    };
   });
 }
 export {

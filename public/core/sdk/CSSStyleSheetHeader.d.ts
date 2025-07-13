@@ -44,7 +44,6 @@ export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.Co
     containsLocation(lineNumber: number, columnNumber: number): boolean;
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
-    requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     isViaInspector(): boolean;

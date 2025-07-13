@@ -2097,6 +2097,22 @@ export declare namespace Browser {
          */
         bounds: Bounds;
     }
+    interface SetContentsSizeRequest {
+        /**
+         * Browser window id.
+         */
+        windowId: WindowID;
+        /**
+         * The window contents width in DIP. Assumes current width if omitted.
+         * Must be specified if 'height' is omitted.
+         */
+        width?: integer;
+        /**
+         * The window contents height in DIP. Assumes current height if omitted.
+         * Must be specified if 'width' is omitted.
+         */
+        height?: integer;
+    }
     interface SetDockTileRequest {
         badgeLabel?: string;
         /**
@@ -4424,6 +4440,10 @@ export declare namespace DOM {
          * JavaScript object id of the node wrapper.
          */
         objectId?: Runtime.RemoteObjectId;
+        /**
+         * Include all shadow roots. Equals to false if not specified.
+         */
+        includeShadowDOM?: boolean;
     }
     interface GetOuterHTMLResponse extends ProtocolResponseWithError {
         /**
@@ -6293,6 +6313,12 @@ export declare namespace Emulation {
          * Image types to disable.
          */
         imageTypes: DisabledImageType[];
+    }
+    interface SetDataSaverOverrideRequest {
+        /**
+         * Override value. Omitting the parameter disables the override.
+         */
+        dataSaverEnabled?: boolean;
     }
     interface SetHardwareConcurrencyOverrideRequest {
         /**
@@ -11332,6 +11358,7 @@ export declare namespace Page {
         Accelerometer = "accelerometer",
         AllScreensCapture = "all-screens-capture",
         AmbientLightSensor = "ambient-light-sensor",
+        AriaNotify = "aria-notify",
         AttributionReporting = "attribution-reporting",
         Autoplay = "autoplay",
         Bluetooth = "bluetooth",

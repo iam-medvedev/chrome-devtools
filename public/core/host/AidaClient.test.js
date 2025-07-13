@@ -181,7 +181,7 @@ describeWithEnvironment('AidaClient', () => {
     });
     async function getAllResults(provider) {
         const results = [];
-        for await (const result of provider.fetch(Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo'))) {
+        for await (const result of provider.doConversation(Host.AidaClient.AidaClient.buildConsoleInsightsRequest('foo'))) {
             results.push(result);
         }
         return results;

@@ -15,9 +15,6 @@ export class SlowCSSSelector extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-slow-css-selector`;
     internalName = 'slow-css-selector';
     #selectorLocations = new Map();
-    createOverlays() {
-        return [];
-    }
     async toSourceFileLocation(cssModel, selector) {
         if (!cssModel) {
             return undefined;
@@ -73,7 +70,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         const cssModel = target?.model(SDK.CSSModel.CSSModel);
         const time = (us) => i18n.TimeUtilities.millisToString(Platform.Timing.microSecondsToMilliSeconds(us));
-        if (!this.model.topMatchAttempts.length && !this.model.topElapsedMs.length) {
+        if (!this.model.topSelectorMatchAttempts && !this.model.topSelectorElapsedMs) {
             return html `<div class="insight-section">${i18nString(UIStrings.enableSelectorData)}</div>`;
         }
         // clang-format off
@@ -84,54 +81,46 @@ export class SlowCSSSelector extends BaseInsightComponent {
                 insight: this,
                 headers: [i18nString(UIStrings.total), ''],
                 rows: [
-                    { values: [i18nString(UIStrings.elapsed), i18n.TimeUtilities.millisToString(this.model.totalElapsedMs)] },
                     { values: [i18nString(UIStrings.matchAttempts), this.model.totalMatchAttempts] },
                     { values: [i18nString(UIStrings.matchCount), this.model.totalMatchCount] },
+                    { values: [i18nString(UIStrings.elapsed), i18n.TimeUtilities.millisToString(this.model.totalElapsedMs)] },
                 ],
             }}>
         </devtools-performance-table>
       </div>
     `];
         // clang-format on
-        if (this.model.topElapsedMs.length) {
+        if (this.model.topSelectorElapsedMs) {
+            const selector = this.model.topSelectorElapsedMs;
             // clang-format off
             sections.push(html `
         <div class="insight-section">
           <devtools-performance-table
             .data=${{
                 insight: this,
-                headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.elapsed)],
-                rows: this.model.topElapsedMs.map(selector => {
-                    return {
-                        values: [
-                            html `${selector.selector} ${Lit.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-                            time(Trace.Types.Timing.Micro(selector['elapsed (us)']))
-                        ],
-                    };
-                }),
-            }}>
+                headers: [`${i18nString(UIStrings.topSelectorElapsedTime)}: ${time(Trace.Types.Timing.Micro(selector['elapsed (us)']))}`],
+                rows: [{
+                        values: [html `${selector.selector} ${Lit.Directives.until(this.getSelectorLinks(cssModel, selector))}`]
+                    }]
+            }} as TableData>
           </devtools-performance-table>
         </div>
       `);
             // clang-format on
         }
-        if (this.model.topMatchAttempts.length) {
+        if (this.model.topSelectorMatchAttempts) {
+            const selector = this.model.topSelectorMatchAttempts;
             // clang-format off
             sections.push(html `
         <div class="insight-section">
           <devtools-performance-table
             .data=${{
                 insight: this,
-                headers: [i18nString(UIStrings.topSelectors), i18nString(UIStrings.matchAttempts)],
-                rows: this.model.topMatchAttempts.map(selector => {
-                    return {
-                        values: [
-                            html `${selector.selector} ${Lit.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-                            selector['match_attempts']
-                        ],
-                    };
-                }),
-            }}>
+                headers: [`${i18nString(UIStrings.topSelectorMatchAttempt)}: ${selector['match_attempts']}`],
+                rows: [{
+                        values: [html `${selector.selector} ${Lit.Directives.until(this.getSelectorLinks(cssModel, selector))}`],
+                    }]
+            }} as TableData}>
           </devtools-performance-table>
         </div>
       `);

@@ -1,6 +1,5 @@
 import type * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-import type * as Overlays from '../../overlays/overlays.js';
 import type * as BaseInsightComponent from './BaseInsightComponent.js';
 export declare const i18nString: (id: string, values?: import("../../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../../core/platform/UIString.js").LocalizedString;
 type BaseInsightComponent = BaseInsightComponent.BaseInsightComponent<Trace.Insights.Types.InsightModel>;
@@ -30,7 +29,7 @@ export interface TableData {
 }
 export interface TableDataRow {
     values: Array<number | string | Lit.LitTemplate>;
-    overlays?: Overlays.Overlays.TimelineOverlay[];
+    overlays?: Trace.Types.Overlays.Overlay[];
     subRows?: TableDataRow[];
 }
 export declare function renderOthersLabel(numOthers: number): string;

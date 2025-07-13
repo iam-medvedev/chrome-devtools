@@ -379,25 +379,29 @@ export class TraceProcessor extends EventTarget {
             id = Types.Events.NO_NAVIGATION;
             urlString = parsedTrace.Meta.finalDisplayUrlByNavigationId.get('') ?? parsedTrace.Meta.mainFrameURL;
         }
-        const model = {};
+        const insightSetModel = {};
         for (const [name, insight] of Object.entries(TraceProcessor.getInsightRunners())) {
-            let insightResult;
+            let model;
             try {
                 options.logger?.start(`insights:${name}`);
-                insightResult = insight.generateInsight(parsedTrace, context);
-                insightResult.frameId = context.frameId;
+                model = insight.generateInsight(parsedTrace, context);
+                model.frameId = context.frameId;
                 const navId = context.navigation?.args.data?.navigationId;
                 if (navId) {
-                    insightResult.navigationId = navId;
+                    model.navigationId = navId;
                 }
+                model.createOverlays = () => {
+                    // @ts-expect-error: model is a union of all possible insight model types.
+                    return insight.createOverlays(model);
+                };
             }
             catch (err) {
-                insightResult = err;
+                model = err;
             }
             finally {
                 options.logger?.end(`insights:${name}`);
             }
-            Object.assign(model, { [name]: insightResult });
+            Object.assign(insightSetModel, { [name]: model });
         }
         // We may choose to exclude the insightSet if it's trivial. Trivial means:
         //   1. There's no navigation (it's an initial trace period)
@@ -407,10 +411,12 @@ export class TraceProcessor extends EventTarget {
         // Generally, these cases are the short time ranges before a page reload starts.
         const isNavigation = id === Types.Events.NO_NAVIGATION;
         const trivialThreshold = Helpers.Timing.milliToMicro(Types.Timing.Milli(5000));
-        const everyInsightPasses = Object.values(model).filter(model => !(model instanceof Error)).every(model => model.state === 'pass');
-        const noLcp = !model.LCPBreakdown.lcpEvent;
-        const noInp = !model.INPBreakdown.longestInteractionEvent;
-        const noLayoutShifts = model.CLSCulprits.shifts?.size === 0;
+        const everyInsightPasses = Object.values(insightSetModel)
+            .filter(model => !(model instanceof Error))
+            .every(model => model.state === 'pass');
+        const noLcp = !insightSetModel.LCPBreakdown.lcpEvent;
+        const noInp = !insightSetModel.INPBreakdown.longestInteractionEvent;
+        const noLayoutShifts = insightSetModel.CLSCulprits.shifts?.size === 0;
         const shouldExclude = isNavigation && context.bounds.range < trivialThreshold && everyInsightPasses && noLcp &&
             noInp && noLayoutShifts;
         if (shouldExclude) {
@@ -431,7 +437,7 @@ export class TraceProcessor extends EventTarget {
             navigation,
             frameId: context.frameId,
             bounds: context.bounds,
-            model,
+            model: insightSetModel,
         };
         if (!this.#insights) {
             this.#insights = new Map();

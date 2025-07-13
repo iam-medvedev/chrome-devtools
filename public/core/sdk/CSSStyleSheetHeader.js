@@ -139,9 +139,6 @@ export class CSSStyleSheetHeader {
     contentType() {
         return Common.ResourceType.resourceTypes.Stylesheet;
     }
-    requestContent() {
-        return this.requestContentData().then(TextUtils.ContentData.ContentData.asDeferredContent.bind(undefined));
-    }
     async requestContentData() {
         const cssText = await this.#cssModelInternal.getStyleSheetText(this.id);
         if (cssText === null) {

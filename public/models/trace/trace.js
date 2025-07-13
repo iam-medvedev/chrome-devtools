@@ -704,30 +704,33 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       id = Types2.Events.NO_NAVIGATION;
       urlString = parsedTrace.Meta.finalDisplayUrlByNavigationId.get("") ?? parsedTrace.Meta.mainFrameURL;
     }
-    const model = {};
+    const insightSetModel = {};
     for (const [name, insight] of Object.entries(_TraceProcessor.getInsightRunners())) {
-      let insightResult;
+      let model;
       try {
         options.logger?.start(`insights:${name}`);
-        insightResult = insight.generateInsight(parsedTrace, context);
-        insightResult.frameId = context.frameId;
+        model = insight.generateInsight(parsedTrace, context);
+        model.frameId = context.frameId;
         const navId = context.navigation?.args.data?.navigationId;
         if (navId) {
-          insightResult.navigationId = navId;
+          model.navigationId = navId;
         }
+        model.createOverlays = () => {
+          return insight.createOverlays(model);
+        };
       } catch (err) {
-        insightResult = err;
+        model = err;
       } finally {
         options.logger?.end(`insights:${name}`);
       }
-      Object.assign(model, { [name]: insightResult });
+      Object.assign(insightSetModel, { [name]: model });
     }
     const isNavigation = id === Types2.Events.NO_NAVIGATION;
     const trivialThreshold = Helpers.Timing.milliToMicro(Types2.Timing.Milli(5e3));
-    const everyInsightPasses = Object.values(model).filter((model2) => !(model2 instanceof Error)).every((model2) => model2.state === "pass");
-    const noLcp = !model.LCPBreakdown.lcpEvent;
-    const noInp = !model.INPBreakdown.longestInteractionEvent;
-    const noLayoutShifts = model.CLSCulprits.shifts?.size === 0;
+    const everyInsightPasses = Object.values(insightSetModel).filter((model) => !(model instanceof Error)).every((model) => model.state === "pass");
+    const noLcp = !insightSetModel.LCPBreakdown.lcpEvent;
+    const noInp = !insightSetModel.INPBreakdown.longestInteractionEvent;
+    const noLayoutShifts = insightSetModel.CLSCulprits.shifts?.size === 0;
     const shouldExclude = isNavigation && context.bounds.range < trivialThreshold && everyInsightPasses && noLcp && noInp && noLayoutShifts;
     if (shouldExclude) {
       return;
@@ -744,7 +747,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       navigation,
       frameId: context.frameId,
       bounds: context.bounds,
-      model
+      model: insightSetModel
     };
     if (!this.#insights) {
       this.#insights = /* @__PURE__ */ new Map();

@@ -66,3 +66,5 @@ export interface CacheableRequest {
     wastedBytes: number;
 }
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): CacheInsightModel;
+export declare function createOverlayForRequest(request: Types.Events.SyntheticNetworkRequest): Types.Overlays.EntryOutline;
+export declare function createOverlays(model: CacheInsightModel): Types.Overlays.Overlay[];

@@ -1846,6 +1846,7 @@ var EntityMapper = class {
 // gen/front_end/panels/timeline/utils/EntryNodes.js
 var EntryNodes_exports = {};
 __export(EntryNodes_exports, {
+  domNodesForBackendIds: () => domNodesForBackendIds,
   nodeIdsForEvent: () => nodeIdsForEvent,
   relatedDOMNodesForEvent: () => relatedDOMNodesForEvent
 });
@@ -2156,13 +2157,18 @@ __export(InsightAIContext_exports, {
 import * as Trace9 from "./../../../models/trace/trace.js";
 var ActiveInsight = class {
   #insight;
+  #insightSetBounds;
   #parsedTrace;
-  constructor(insight, parsedTrace) {
+  constructor(insight, insightSetBounds, parsedTrace) {
     this.#insight = insight;
+    this.#insightSetBounds = insightSetBounds;
     this.#parsedTrace = parsedTrace;
   }
   get insight() {
     return this.#insight;
+  }
+  get insightSetBounds() {
+    return this.#insightSetBounds;
   }
   get parsedTrace() {
     return this.#parsedTrace;
@@ -2175,8 +2181,8 @@ var AIQueries = class {
   /**
    * Returns the set of network requests that occurred within the timeframe of this Insight.
    */
-  static networkRequests(insight, parsedTrace) {
-    const bounds = insightBounds(insight, parsedTrace);
+  static networkRequests(insight, insightSetBounds, parsedTrace) {
+    const bounds = insightBounds(insight, insightSetBounds);
     const matchedRequests = [];
     for (const request of parsedTrace.NetworkRequests.byTime) {
       if (request.ts > bounds.max) {
@@ -2205,7 +2211,7 @@ var AIQueries = class {
    * Returns an AI Call Tree representing the activity on the main thread for
    * the relevant time range of the given insight.
    */
-  static mainThreadActivity(insight, parsedTrace) {
+  static mainThreadActivity(insight, insightSetBounds, parsedTrace) {
     let mainThreadPID = null;
     let mainThreadTID = null;
     if (insight.navigationId) {
@@ -2225,7 +2231,7 @@ var AIQueries = class {
     if (!thread) {
       return null;
     }
-    const bounds = insightBounds(insight, parsedTrace);
+    const bounds = insightBounds(insight, insightSetBounds);
     return AICallTree.fromTimeOnThread({
       thread: {
         pid: thread.pid,
@@ -2236,44 +2242,14 @@ var AIQueries = class {
     });
   }
 };
-function insightBounds(insight, parsedTrace) {
-  if (Trace9.Insights.Models.INPBreakdown.isINPBreakdown(insight) && insight.longestInteractionEvent) {
-    return Trace9.Helpers.Timing.traceWindowFromMicroSeconds(insight.longestInteractionEvent.ts, insight.longestInteractionEvent.ts + insight.longestInteractionEvent.dur);
+function insightBounds(insight, insightSetBounds) {
+  const overlays = insight.createOverlays?.() ?? [];
+  const windows = overlays.map(Trace9.Helpers.Timing.traceWindowFromOverlay).filter((bounds) => !!bounds);
+  const overlaysBounds = Trace9.Helpers.Timing.combineTraceWindowsMicro(windows);
+  if (overlaysBounds) {
+    return overlaysBounds;
   }
-  const navigationStart = insight.navigationId ? parsedTrace.Meta.navigationsByNavigationId.get(insight.navigationId) : void 0;
-  const minBound = navigationStart?.ts ?? parsedTrace.Meta.traceBounds.min;
-  let maxBound = customMaxBoundForInsight(insight);
-  if (!maxBound) {
-    maxBound = parsedTrace.Meta.traceBounds.max;
-    if (navigationStart) {
-      const nextNavigation = getNextNavigation(navigationStart, parsedTrace);
-      if (nextNavigation) {
-        maxBound = nextNavigation.ts;
-      }
-    }
-  }
-  return Trace9.Helpers.Timing.traceWindowFromMicroSeconds(minBound, maxBound);
-}
-function getNextNavigation(navigation, parsedTrace) {
-  for (let i = 0; i < parsedTrace.Meta.mainFrameNavigations.length; i++) {
-    const currentNavigationStart = parsedTrace.Meta.mainFrameNavigations[i];
-    if (currentNavigationStart.args.data?.navigationId === navigation.args.data?.navigationId) {
-      return parsedTrace.Meta.mainFrameNavigations.at(i + 1) ?? null;
-    }
-  }
-  return null;
-}
-function customMaxBoundForInsight(insight) {
-  if (Trace9.Insights.Models.LCPBreakdown.isLCPBreakdown(insight) && insight.lcpEvent) {
-    return insight.lcpEvent.ts;
-  }
-  if (Trace9.Insights.Models.LCPDiscovery.isLCPDiscovery(insight) && insight.lcpEvent) {
-    return insight.lcpEvent.ts;
-  }
-  if (Trace9.Insights.Models.DocumentLatency.isDocumentLatency(insight) && insight.data?.documentRequest) {
-    return insight.data.documentRequest.ts + insight.data.documentRequest.dur;
-  }
-  return null;
+  return insightSetBounds;
 }
 
 // gen/front_end/panels/timeline/utils/Treemap.js

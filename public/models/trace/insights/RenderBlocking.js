@@ -179,4 +179,14 @@ export function generateInsight(parsedTrace, context) {
         ...savings,
     });
 }
+export function createOverlayForRequest(request) {
+    return {
+        type: 'ENTRY_OUTLINE',
+        entry: request,
+        outlineReason: 'ERROR',
+    };
+}
+export function createOverlays(model) {
+    return model.renderBlockingRequests.map(request => createOverlayForRequest(request));
+}
 //# sourceMappingURL=RenderBlocking.js.map

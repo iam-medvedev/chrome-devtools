@@ -804,6 +804,19 @@ export class TimelineUIUtils {
             contentHelper.appendTextRow(i18nString(UIStrings.compilationCacheStatus), i18nString(UIStrings.scriptNotEligibleToBeLoadedFromCache));
         }
     }
+    static maybeCreateLinkElement(link) {
+        const protocol = URL.parse(link.url)?.protocol;
+        if (protocol && protocol.length > 0) {
+            const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(link.url);
+            if (splitResult) {
+                const { lineNumber, columnNumber } = splitResult;
+                const options = { text: link.url, lineNumber, columnNumber };
+                const linkElement = LegacyComponents.Linkifier.Linkifier.linkifyURL(link.url, (options));
+                return linkElement;
+            }
+        }
+        return null;
+    }
     static async buildTraceEventDetails(parsedTrace, event, linkifier, canShowPieChart, entityMapper) {
         const maybeTarget = targetForEvent(parsedTrace, event);
         const { duration } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
@@ -895,6 +908,15 @@ export class TimelineUIUtils {
             }
         }
         if (Trace.Types.Extensions.isSyntheticExtensionEntry(event)) {
+            const additionalContext = 'additionalContext' in event.args ? event.args.additionalContext : null;
+            if (additionalContext) {
+                if (Boolean(Root.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi?.enabled)) {
+                    const linkElement = this.maybeCreateLinkElement(additionalContext);
+                    if (linkElement) {
+                        contentHelper.appendElementRow(additionalContext.description, linkElement);
+                    }
+                }
+            }
             for (const [key, value] of event.args.properties || []) {
                 contentHelper.appendTextRow(key, String(value));
             }

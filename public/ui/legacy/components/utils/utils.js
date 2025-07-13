@@ -987,14 +987,35 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     }
     return linkHandlerSettingInstance;
   }
-  static registerLinkHandler(title, handler) {
-    linkHandlers.set(title, handler);
+  static registerLinkHandler(registration) {
+    for (const origin of linkHandlers.keys()) {
+      const existingHandler = linkHandlers.get(origin);
+      if (existingHandler?.scheme === registration.scheme) {
+        const schemeString = registration.scheme ? `scheme '${registration.scheme}'` : "all schemes";
+        Common2.Console.Console.instance().warn(`DevTools extension '${registration.title}' registered with setOpenResourceHandler for ${schemeString}, which is already registered by '${existingHandler?.title}'. This can lead to unexpected results.`);
+      }
+    }
+    linkHandlers.set(registration.origin, registration);
     LinkHandlerSettingUI.instance().update();
   }
-  static unregisterLinkHandler(title) {
-    linkHandlers.delete(title);
+  static unregisterLinkHandler(registration) {
+    const { origin } = registration;
+    linkHandlers.delete(origin);
     LinkHandlerSettingUI.instance().update();
   }
+  // The primary filter implementation for the openResourceHandlers. Returns false
+  // if the handler is NOT supposed to handle the `url`. Usually, this happens if
+  // a handler has registered for a particular `scheme` and the scheme for that url
+  // does not match. If no openResourceScheme is provided, it means the handler is
+  // interested in all urls (except those handled by scheme-specific handlers, see
+  // otherSchemeRegistrations).
+  static shouldHandleOpenResource = (openResourceScheme, url, otherSchemeRegistrations) => {
+    if (openResourceScheme) {
+      return url.startsWith(openResourceScheme);
+    }
+    const scheme = URL.parse(url)?.protocol || "";
+    return !otherSchemeRegistrations.has(scheme);
+  };
   static uiLocation(link3) {
     const info = _Linkifier.linkInfo(link3);
     return info ? info.uiLocation : null;
@@ -1026,24 +1047,33 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
         handler: () => Common2.Revealer.reveal(revealable)
       });
     }
-    if (contentProvider) {
-      const lineNumber = uiLocation ? uiLocation.lineNumber : info.lineNumber || 0;
-      for (const title of linkHandlers.keys()) {
-        const handler = linkHandlers.get(title);
-        if (!handler) {
-          continue;
-        }
-        const action = {
-          section: "reveal",
-          title: i18nString2(UIStrings2.openUsingS, { PH1: title }),
-          jslogContext: "open-using",
-          handler: handler.bind(null, contentProvider, lineNumber)
-        };
-        if (title === _Linkifier.linkHandlerSetting().get()) {
-          result.unshift(action);
-        } else {
-          result.push(action);
-        }
+    const contentProviderOrUrl = contentProvider || url;
+    const lineNumber = uiLocation ? uiLocation.lineNumber : info.lineNumber || 0;
+    const columnNumber = uiLocation ? uiLocation.columnNumber : info.columnNumber || 0;
+    const specificSchemeHandlers = /* @__PURE__ */ new Set();
+    for (const registration of linkHandlers.values()) {
+      if (registration.scheme) {
+        specificSchemeHandlers.add(registration.scheme);
+      }
+    }
+    for (const registration of linkHandlers.values()) {
+      if (!registration?.handler) {
+        continue;
+      }
+      const { title, handler, filter: shouldHandleOpenResource } = registration;
+      if (url && !shouldHandleOpenResource(url, specificSchemeHandlers)) {
+        continue;
+      }
+      const action = {
+        section: "reveal",
+        title: i18nString2(UIStrings2.openUsingS, { PH1: title }),
+        jslogContext: "open-using",
+        handler: handler.bind(null, contentProviderOrUrl, lineNumber, columnNumber)
+      };
+      if (title === _Linkifier.linkHandlerSetting().get()) {
+        result.unshift(action);
+      } else {
+        result.push(action);
       }
     }
     if (resource || info.url) {
@@ -1149,12 +1179,13 @@ var ContentProviderContextMenuProvider = class {
     if (!Common2.ParsedURL.schemeIs(contentUrl, "file:")) {
       contextMenu.revealSection().appendItem(UI.UIUtils.openLinkExternallyLabel(), () => Host2.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(contentUrl.endsWith(":formatted") ? Common2.ParsedURL.ParsedURL.slice(contentUrl, 0, contentUrl.lastIndexOf(":")) : contentUrl), { jslogContext: "open-in-new-tab" });
     }
-    for (const title of linkHandlers.keys()) {
-      const handler = linkHandlers.get(title);
-      if (!handler) {
+    for (const origin of linkHandlers.keys()) {
+      const registration = linkHandlers.get(origin);
+      if (!registration) {
         continue;
       }
-      contextMenu.revealSection().appendItem(i18nString2(UIStrings2.openUsingS, { PH1: title }), handler.bind(null, contentProvider, 0), { jslogContext: "open-using" });
+      const { title } = registration;
+      contextMenu.revealSection().appendItem(i18nString2(UIStrings2.openUsingS, { PH1: title }), registration.handler.bind(null, contentProvider, 0), { jslogContext: "open-using" });
     }
     if (contentProvider instanceof SDK2.NetworkRequest.NetworkRequest) {
       return;

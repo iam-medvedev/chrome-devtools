@@ -5415,6 +5415,7 @@ var TimelineController = class {
     }
     if (options.captureSelectorStats) {
       categoriesArray.push(disabledByDefault("blink.debug"));
+      categoriesArray.push(disabledByDefault("devtools.timeline.invalidationTracking"));
     }
     await LiveMetrics.LiveMetrics.instance().disable();
     SDK6.TargetManager.TargetManager.instance().addModelListener(SDK6.ResourceTreeModel.ResourceTreeModel, SDK6.ResourceTreeModel.Events.FrameNavigated, this.#onFrameNavigated, this);
@@ -10236,25 +10237,41 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
           devToolsLogs: []
         };
       }
-      let responseText = "";
+      let responseTextForNonPassedInsights = "";
+      let responseTextForPassedInsights = "";
       for (const modelName in insightsForNav.model) {
         const model = modelName;
         const data = insightsForNav.model[model];
-        if (data.state === "pass") {
-          continue;
-        }
-        const activeInsight = new Utils10.InsightAIContext.ActiveInsight(data, parsedTrace);
+        const activeInsight = new Utils10.InsightAIContext.ActiveInsight(data, insightsForNav.bounds, parsedTrace);
         const formatter = new AiAssistanceModel.PerformanceInsightFormatter(activeInsight);
         if (!formatter.insightIsSupported()) {
           continue;
         }
-        responseText += `${formatter.formatInsight()}
+        const formatted = formatter.formatInsight({ headingLevel: 3 });
+        if (data.state === "pass") {
+          responseTextForPassedInsights += `${formatted}
 
 `;
+          continue;
+        } else {
+          responseTextForNonPassedInsights += `${formatted}
+
+`;
+        }
       }
+      const finalText = `# Trace recording results
+
+## Non-passing insights:
+
+These insights highlight potential problems and opportunities to improve performance.
+${responseTextForNonPassedInsights}
+
+## Passing insights:
+
+These insights are passing, which means they are not considered to highlight considerable performance problems.
+${responseTextForPassedInsights}`;
       return {
-        response: `Insights from this recording:
-${responseText}`,
+        response: finalText,
         devToolsLogs: []
       };
     }
@@ -11065,6 +11082,19 @@ var TimelineUIUtils = class _TimelineUIUtils {
       contentHelper.appendTextRow(i18nString20(UIStrings20.compilationCacheStatus), i18nString20(UIStrings20.scriptNotEligibleToBeLoadedFromCache));
     }
   }
+  static maybeCreateLinkElement(link) {
+    const protocol = URL.parse(link.url)?.protocol;
+    if (protocol && protocol.length > 0) {
+      const splitResult = Common11.ParsedURL.ParsedURL.splitLineAndColumn(link.url);
+      if (splitResult) {
+        const { lineNumber, columnNumber } = splitResult;
+        const options = { text: link.url, lineNumber, columnNumber };
+        const linkElement = LegacyComponents.Linkifier.Linkifier.linkifyURL(link.url, options);
+        return linkElement;
+      }
+    }
+    return null;
+  }
   static async buildTraceEventDetails(parsedTrace, event, linkifier, canShowPieChart, entityMapper) {
     const maybeTarget = targetForEvent(parsedTrace, event);
     const { duration } = Trace23.Helpers.Timing.eventTimingsMicroSeconds(event);
@@ -11146,6 +11176,15 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
     }
     if (Trace23.Types.Extensions.isSyntheticExtensionEntry(event)) {
+      const additionalContext = "additionalContext" in event.args ? event.args.additionalContext : null;
+      if (additionalContext) {
+        if (Boolean(Root5.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi?.enabled)) {
+          const linkElement = this.maybeCreateLinkElement(additionalContext);
+          if (linkElement) {
+            contentHelper.appendElementRow(additionalContext.description, linkElement);
+          }
+        }
+      }
       for (const [key, value] of event.args.properties || []) {
         contentHelper.appendTextRow(key, String(value));
       }
@@ -13148,6 +13187,7 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./timelineSelectorStatsView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineSelectorStatsView.js
+import * as Utils13 from "./utils/utils.js";
 var UIStrings22 = {
   /**
    *@description Label for selector stats data table
@@ -13158,29 +13198,49 @@ var UIStrings22 = {
    */
   elapsed: "Elapsed (ms)",
   /**
+   *@description Tooltip description 'Elapsed (ms)'
+   */
+  elapsedExplanation: "Elapsed time spent computing a style rule in micro seconds",
+  /**
    *@description Column name and percentage of slow mach non-matches computing a style rule
    */
-  rejectPercentage: "% of slow-path non-matches",
+  slowPathNonMatches: "% of slow-path non-matches",
   /**
    *@description Tooltip description '% of slow-path non-matches'
    */
-  rejectPercentageExplanation: "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn't be quickly ruled out by the bloom filter due to high selector complexity. Lower is better.",
+  slowPathNonMatchesExplanation: "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn't be quickly ruled out by the bloom filter due to high selector complexity. Lower is better.",
   /**
    *@description Column name for count of elements that the engine attempted to match against a style rule
    */
   matchAttempts: "Match attempts",
   /**
+   *@description Tooltip description 'Match attempts'
+   */
+  matchAttemptsExplanation: "Count of elements that the engine attempted to match against a style rule",
+  /**
    *@description Column name for count of elements that matched a style rule
    */
   matchCount: "Match count",
+  /**
+   *@description Tooltip description 'Match count'
+   */
+  matchCountExplanation: "Count of elements that matched a style rule",
   /**
    *@description Column name for a style rule's CSS selector text
    */
   selector: "Selector",
   /**
+   *@description Tooltip description 'Selector'
+   */
+  selectorExplanation: "CSS selector text of a style rule",
+  /**
    *@description Column name for a style rule's CSS selector text
    */
   styleSheetId: "Style Sheet",
+  /**
+   *@description Tooltip description 'Style Sheet'
+   */
+  styleSheetIdExplanation: "Links to the selector rule defintion in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don't have a link.",
   /**
    *@description A context menu item in data grids to copy entire table to clipboard
    */
@@ -13207,7 +13267,15 @@ var UIStrings22 = {
    *@example {256} PH1
    *@example {14} PH2
    */
-  lineNumber: "Line {PH1}:{PH2}"
+  lineNumber: "Line {PH1}:{PH2}",
+  /**
+   *@description Count of invalidation for a specific selector. Note that a node can be invalidated multiple times.
+   */
+  invalidationCount: "Invalidation count",
+  /**
+   *@description Tooltip description 'Invalidation count'
+   */
+  invalidationCountExplanation: "Aggregated count of invalidations on nodes and subsequently had style recalculated, all of which are matched by this selector. Note that a node can be invalidated multiple times."
 };
 var str_22 = i18n43.i18n.registerUIStrings("panels/timeline/TimelineSelectorStatsView.ts", UIStrings22);
 var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
@@ -13233,27 +13301,35 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
         <table>
           <tr>
             <th id=${SelectorTimingsKey.Elapsed} weight="1" sortable hideable align="right">
-              ${i18nString22(UIStrings22.elapsed)}
+              <span title=${i18nString22(UIStrings22.elapsedExplanation)}>
+              ${i18nString22(UIStrings22.elapsed)}</span>
+            </th>
+            <th id=${SelectorTimingsKey.InvalidationCount} weight="1.5" sortable hideable>
+              <span title=${i18nString22(UIStrings22.invalidationCountExplanation)}>${i18nString22(UIStrings22.invalidationCount)}</span>
             </th>
             <th id=${SelectorTimingsKey.MatchAttempts} weight="1" sortable hideable align="right">
-              ${i18nString22(UIStrings22.matchAttempts)}
+              <span title=${i18nString22(UIStrings22.matchAttemptsExplanation)}>
+              ${i18nString22(UIStrings22.matchAttempts)}</span>
             </th>
             <th id=${SelectorTimingsKey.MatchCount} weight="1" sortable hideable align="right">
-              ${i18nString22(UIStrings22.matchCount)}
+              <span title=${i18nString22(UIStrings22.matchCountExplanation)}>
+              ${i18nString22(UIStrings22.matchCount)}</span>
             </th>
             <th id=${SelectorTimingsKey.RejectPercentage} weight="1" sortable hideable align="right">
-              <span title=${i18nString22(UIStrings22.rejectPercentageExplanation)}>${i18nString22(UIStrings22.rejectPercentage)}</span>
+              <span title=${i18nString22(UIStrings22.slowPathNonMatchesExplanation)}>${i18nString22(UIStrings22.slowPathNonMatches)}</span>
             </th>
             <th id=${SelectorTimingsKey.Selector} weight="3" sortable hideable>
-              ${i18nString22(UIStrings22.selector)}
+              <span title=${i18nString22(UIStrings22.selectorExplanation)}>
+              ${i18nString22(UIStrings22.selector)}</span>
             </th>
             <th id=${SelectorTimingsKey.StyleSheetId} weight="1.5" sortable hideable>
-              ${i18nString22(UIStrings22.styleSheetId)}
+              <span title=${i18nString22(UIStrings22.styleSheetIdExplanation)}>
+              ${i18nString22(UIStrings22.styleSheetId)}</span>
             </th>
           </tr>
           ${input.timings.map((timing) => {
       const nonMatches = timing[SelectorTimingsKey.MatchAttempts] - timing[SelectorTimingsKey.MatchCount];
-      const rejectPercentage = (nonMatches ? timing[SelectorTimingsKey.FastRejectCount] / nonMatches : 1) * 100;
+      const slowPathNonMatches = (nonMatches ? 1 - timing[SelectorTimingsKey.FastRejectCount] / nonMatches : 0) * 100;
       const styleSheetId = timing[SelectorTimingsKey.StyleSheetId];
       const locations = timing.locations;
       const locationMessage = locations ? null : locations === null ? "" : i18nString22(UIStrings22.unableToLinkViaStyleSheetId, { PH1: styleSheetId });
@@ -13261,10 +13337,13 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
             <td data-value=${timing[SelectorTimingsKey.Elapsed]}>
               ${(timing[SelectorTimingsKey.Elapsed] / 1e3).toFixed(3)}
             </td>
+            <td title=${timing[SelectorTimingsKey.InvalidationCount]}>
+              ${timing[SelectorTimingsKey.InvalidationCount]}
+            </td>
             <td>${timing[SelectorTimingsKey.MatchAttempts]}</td>
             <td>${timing[SelectorTimingsKey.MatchCount]}</td>
-            <td data-value=${rejectPercentage}>
-              ${rejectPercentage.toFixed(1)}
+            <td data-value=${slowPathNonMatches}>
+              ${slowPathNonMatches.toFixed(1)}
             </td>
             <td title=${timing[SelectorTimingsKey.Selector]}>
              ${timing[SelectorTimingsKey.Selector]}
@@ -13294,14 +13373,14 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
         i18nString22(UIStrings22.elapsed),
         i18nString22(UIStrings22.matchAttempts),
         i18nString22(UIStrings22.matchCount),
-        i18nString22(UIStrings22.rejectPercentage),
+        i18nString22(UIStrings22.slowPathNonMatches),
         i18nString22(UIStrings22.selector),
         i18nString22(UIStrings22.styleSheetId)
       ];
       tableData.push(columnName.join("	"));
       for (const timing of this.#timings) {
         const nonMatches = timing[SelectorTimingsKey.MatchAttempts] - timing[SelectorTimingsKey.MatchCount];
-        const rejectPercentage = (nonMatches ? timing[SelectorTimingsKey.FastRejectCount] / nonMatches : 1) * 100;
+        const slowPathNonMatches = (nonMatches ? 1 - timing[SelectorTimingsKey.FastRejectCount] / nonMatches : 0) * 100;
         const styleSheetId = timing[SelectorTimingsKey.StyleSheetId];
         let linkData = "";
         const target = SDK12.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -13319,7 +13398,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
           timing[SelectorTimingsKey.Elapsed] / 1e3,
           timing[SelectorTimingsKey.MatchAttempts],
           timing[SelectorTimingsKey.MatchCount],
-          rejectPercentage,
+          slowPathNonMatches,
           timing[SelectorTimingsKey.Selector],
           linkData
         ].join("	"));
@@ -13338,37 +13417,89 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
     const viewOutput = {};
     this.#view(viewInput, viewOutput, this.contentElement);
   }
-  setEvent(event) {
-    if (!this.#parsedTrace) {
-      return false;
+  getDescendentNodeCount(node) {
+    if (!node) {
+      return 0;
     }
-    if (this.#lastStatsSourceEventOrEvents === event) {
-      return false;
+    let numberOfDescendentNode = 1;
+    const childNodes = node.children();
+    if (childNodes) {
+      for (const childNode of childNodes) {
+        numberOfDescendentNode += this.getDescendentNodeCount(childNode);
+      }
     }
-    this.#lastStatsSourceEventOrEvents = event;
-    const selectorStats = this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event);
-    if (!selectorStats) {
-      this.#timings = [];
-      this.requestUpdate();
-      return false;
-    }
-    void this.processSelectorTimings(selectorStats.timings).then((timings) => {
-      this.#timings = timings;
-      this.requestUpdate();
-    });
-    return true;
+    return numberOfDescendentNode;
   }
-  setAggregatedEvents(events) {
-    const timings = [];
-    const selectorMap = /* @__PURE__ */ new Map();
+  async updateInvalidationCount(events) {
     if (!this.#parsedTrace) {
       return;
     }
+    const invalidatedNodes = this.#parsedTrace.SelectorStats.invalidatedNodeList;
+    const invalidatedNodeMap = /* @__PURE__ */ new Map();
+    const frameIdBackendNodeIdsMap = /* @__PURE__ */ new Map();
+    for (const { frame, backendNodeId } of invalidatedNodes) {
+      if (!frameIdBackendNodeIdsMap.has(frame)) {
+        frameIdBackendNodeIdsMap.set(frame, /* @__PURE__ */ new Set());
+      }
+      frameIdBackendNodeIdsMap.get(frame)?.add(backendNodeId);
+    }
+    const invalidatedNodeIdMap = /* @__PURE__ */ new Map();
+    for (const [frameId, backendNodeIds] of frameIdBackendNodeIdsMap) {
+      const backendNodeIdMap = await Utils13.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
+      invalidatedNodeIdMap.set(frameId, backendNodeIdMap);
+    }
+    for (const invalidatedNode of invalidatedNodes) {
+      const invalidatedNodeDomNode = invalidatedNodeIdMap.get(invalidatedNode.frame)?.get(invalidatedNode.backendNodeId) ?? null;
+      for (const selector of invalidatedNode.selectorList) {
+        const key = [
+          selector.selector,
+          selector.styleSheetId,
+          invalidatedNode.frame,
+          invalidatedNode.lastUpdateLayoutTreeEventTs
+        ].join("-");
+        if (invalidatedNodeMap.has(key)) {
+          const nodes = invalidatedNodeMap.get(key);
+          nodes?.nodeList.push(invalidatedNodeDomNode);
+        } else {
+          invalidatedNodeMap.set(key, { subtree: invalidatedNode.subtree, nodeList: [invalidatedNodeDomNode] });
+        }
+      }
+    }
+    for (const event of events) {
+      const selectorStats = event ? this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event) : void 0;
+      if (!selectorStats) {
+        continue;
+      }
+      const frameId = event.args.beginData?.frame;
+      for (const timing of selectorStats.timings) {
+        timing.invalidation_count = 0;
+        const key = [timing.selector, timing.style_sheet_id, frameId, event.ts].join("-");
+        const nodes = invalidatedNodeMap.get(key);
+        if (nodes === void 0) {
+          continue;
+        }
+        for (const node of nodes.nodeList) {
+          if (nodes.subtree) {
+            timing.invalidation_count += this.getDescendentNodeCount(node);
+          } else {
+            timing.invalidation_count += 1;
+          }
+        }
+      }
+    }
+  }
+  async aggregateEvents(events) {
+    if (!this.#parsedTrace) {
+      return;
+    }
+    const timings = [];
+    const selectorMap = /* @__PURE__ */ new Map();
     const sums = {
       [SelectorTimingsKey.Elapsed]: 0,
       [SelectorTimingsKey.MatchAttempts]: 0,
       [SelectorTimingsKey.MatchCount]: 0,
-      [SelectorTimingsKey.FastRejectCount]: 0
+      [SelectorTimingsKey.FastRejectCount]: 0,
+      [SelectorTimingsKey.InvalidationCount]: 0
     };
     if (Array.isArray(this.#lastStatsSourceEventOrEvents)) {
       if (this.#lastStatsSourceEventOrEvents.length === events.length && events.every((event, index) => {
@@ -13379,29 +13510,31 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
       }
     }
     this.#lastStatsSourceEventOrEvents = events;
+    await this.updateInvalidationCount(events);
     for (let i = 0; i < events.length; i++) {
       const event = events[i];
       const selectorStats = event ? this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event) : void 0;
       if (!selectorStats) {
         continue;
-      } else {
-        const data = selectorStats.timings;
-        for (const timing of data) {
-          const key = timing[SelectorTimingsKey.Selector] + "_" + timing[SelectorTimingsKey.StyleSheetId];
-          const findTiming = selectorMap.get(key);
-          if (findTiming !== void 0) {
-            findTiming[SelectorTimingsKey.Elapsed] += timing[SelectorTimingsKey.Elapsed];
-            findTiming[SelectorTimingsKey.FastRejectCount] += timing[SelectorTimingsKey.FastRejectCount];
-            findTiming[SelectorTimingsKey.MatchAttempts] += timing[SelectorTimingsKey.MatchAttempts];
-            findTiming[SelectorTimingsKey.MatchCount] += timing[SelectorTimingsKey.MatchCount];
-          } else {
-            selectorMap.set(key, structuredClone(timing));
-          }
-          sums[SelectorTimingsKey.Elapsed] += timing[SelectorTimingsKey.Elapsed];
-          sums[SelectorTimingsKey.MatchAttempts] += timing[SelectorTimingsKey.MatchAttempts];
-          sums[SelectorTimingsKey.MatchCount] += timing[SelectorTimingsKey.MatchCount];
-          sums[SelectorTimingsKey.FastRejectCount] += timing[SelectorTimingsKey.FastRejectCount];
+      }
+      const data = selectorStats.timings;
+      for (const timing of data) {
+        const key = timing[SelectorTimingsKey.Selector] + "_" + timing[SelectorTimingsKey.StyleSheetId];
+        const findTiming = selectorMap.get(key);
+        if (findTiming !== void 0) {
+          findTiming[SelectorTimingsKey.Elapsed] += timing[SelectorTimingsKey.Elapsed];
+          findTiming[SelectorTimingsKey.FastRejectCount] += timing[SelectorTimingsKey.FastRejectCount];
+          findTiming[SelectorTimingsKey.MatchAttempts] += timing[SelectorTimingsKey.MatchAttempts];
+          findTiming[SelectorTimingsKey.MatchCount] += timing[SelectorTimingsKey.MatchCount];
+          findTiming[SelectorTimingsKey.InvalidationCount] += timing[SelectorTimingsKey.InvalidationCount];
+        } else {
+          selectorMap.set(key, structuredClone(timing));
         }
+        sums[SelectorTimingsKey.Elapsed] += timing[SelectorTimingsKey.Elapsed];
+        sums[SelectorTimingsKey.MatchAttempts] += timing[SelectorTimingsKey.MatchAttempts];
+        sums[SelectorTimingsKey.MatchCount] += timing[SelectorTimingsKey.MatchCount];
+        sums[SelectorTimingsKey.FastRejectCount] += timing[SelectorTimingsKey.FastRejectCount];
+        sums[SelectorTimingsKey.InvalidationCount] += timing[SelectorTimingsKey.InvalidationCount];
       }
     }
     if (selectorMap.size > 0) {
@@ -13411,7 +13544,6 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
       selectorMap.clear();
     } else {
       this.#timings = [];
-      this.requestUpdate();
       return;
     }
     timings.unshift({
@@ -13420,10 +13552,16 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
       [SelectorTimingsKey.MatchAttempts]: sums[SelectorTimingsKey.MatchAttempts],
       [SelectorTimingsKey.MatchCount]: sums[SelectorTimingsKey.MatchCount],
       [SelectorTimingsKey.Selector]: i18nString22(UIStrings22.totalForAllSelectors),
-      [SelectorTimingsKey.StyleSheetId]: "n/a"
+      [SelectorTimingsKey.StyleSheetId]: "n/a",
+      [SelectorTimingsKey.InvalidationCount]: sums[SelectorTimingsKey.InvalidationCount]
     });
-    void this.processSelectorTimings(timings).then((timings2) => {
-      this.#timings = timings2;
+    this.#timings = await this.processSelectorTimings(timings);
+  }
+  setAggregatedEvents(events) {
+    if (!this.#parsedTrace) {
+      return;
+    }
+    void this.aggregateEvents(events).then(() => {
       this.requestUpdate();
     });
   }
@@ -13472,7 +13610,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
 };
 
 // gen/front_end/panels/timeline/TimelineDetailsView.js
-import * as Utils13 from "./utils/utils.js";
+import * as Utils14 from "./utils/utils.js";
 var UIStrings23 = {
   /**
    *@description Text for the summary view
@@ -13664,7 +13802,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     }
     if (data.parsedTrace) {
       this.#filmStrip = Trace28.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
-      this.#entityMapper = new Utils13.EntityMapper.EntityMapper(data.parsedTrace);
+      this.#entityMapper = new Utils14.EntityMapper.EntityMapper(data.parsedTrace);
     }
     this.#selectedEvents = data.selectedEvents;
     this.#traceInsightsSets = data.traceInsightsSets;
@@ -14983,7 +15121,7 @@ var timelineFlameChartView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineFlameChartView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineFlameChartView.js
-import * as Utils15 from "./utils/utils.js";
+import * as Utils16 from "./utils/utils.js";
 var UIStrings25 = {
   /**
    *@description Text in Timeline Flame Chart View of the Performance panel
@@ -15843,7 +15981,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.#selectedGroupName = null;
     Common15.EventTarget.removeEventListeners(this.eventListeners);
     this.#selectedEvents = null;
-    this.#entityMapper = new Utils15.EntityMapper.EntityMapper(this.#parsedTrace);
+    this.#entityMapper = new Utils16.EntityMapper.EntityMapper(this.#parsedTrace);
     this.mainDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
     this.networkDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
     this.reset();
@@ -15984,7 +16122,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     if (!target) {
       return;
     }
-    const nodeIds = Utils15.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
+    const nodeIds = Utils16.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
     for (const nodeId of nodeIds) {
       new SDK15.DOMModel.DeferredDOMNode(target, nodeId).highlight();
     }
@@ -16072,9 +16210,9 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         if (!this.#parsedTrace) {
           return;
         }
-        const aiCallTree = Utils15.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
+        const aiCallTree = Utils16.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
         if (aiCallTree) {
-          UI18.Context.Context.instance().setFlavor(Utils15.AICallTree.AICallTree, aiCallTree);
+          UI18.Context.Context.instance().setFlavor(Utils16.AICallTree.AICallTree, aiCallTree);
         }
       });
     }
@@ -16409,7 +16547,7 @@ function groupForLevel(groups, level) {
 }
 
 // gen/front_end/panels/timeline/TimelineFlameChartDataProvider.js
-import * as Utils16 from "./utils/utils.js";
+import * as Utils17 from "./utils/utils.js";
 var UIStrings26 = {
   /**
    *@description Text for rendering frames
@@ -16513,7 +16651,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
         header.backgroundColor = ThemeSupport17.ThemeSupport.instance().getComputedValue("--sys-color-cdt-base-container");
       }
     });
-    Utils16.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
+    Utils17.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
       "DataChanged"
       /* Events.DATA_CHANGED */
     ));
@@ -16566,7 +16704,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     }
     const contextMenu = new UI19.ContextMenu.ContextMenu(mouseEvent);
     if (perfAIEntryPointEnabled && this.parsedTrace) {
-      const aiCallTree = Utils16.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
+      const aiCallTree = Utils17.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
       if (aiCallTree) {
         const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
         contextMenu.footerSection().appendItem(action2.title(), () => {
@@ -16574,7 +16712,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
           if (!event || !this.parsedTrace) {
             return;
           }
-          UI19.Context.Context.instance().setFlavor(Utils16.AICallTree.AICallTree, aiCallTree);
+          UI19.Context.Context.instance().setFlavor(Utils17.AICallTree.AICallTree, aiCallTree);
           return action2.execute();
         }, { jslogContext: PERF_AI_ACTION_ID });
       }
@@ -16638,11 +16776,11 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (!this.parsedTrace || Trace32.Types.Events.isLegacyTimelineFrame(entry)) {
       return contextMenu;
     }
-    const url = Utils16.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
+    const url = Utils17.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
     if (!url) {
       return contextMenu;
     }
-    if (Utils16.IgnoreList.isIgnoreListedEntry(entry)) {
+    if (Utils17.IgnoreList.isIgnoreListedEntry(entry)) {
       contextMenu.defaultSection().appendItem(i18nString26(UIStrings26.removeScriptFromIgnoreList), () => {
         Bindings4.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
         this.#onIgnoreListChanged();
@@ -16813,7 +16951,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   textColor(index) {
     const event = this.entryData[index];
-    return Utils16.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
+    return Utils17.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
   }
   entryFont(_index) {
     return this.#font;
@@ -17190,7 +17328,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   async drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight) {
     const screenshot = this.entryData[entryIndex];
-    const image = Utils16.ImageCache.getOrQueue(screenshot);
+    const image = Utils17.ImageCache.getOrQueue(screenshot);
     if (!image) {
       return;
     }
@@ -18130,7 +18268,7 @@ __export(ExternalRequests_exports, {
   getInsightToDebug: () => getInsightToDebug
 });
 import * as Trace35 from "./../../models/trace/trace.js";
-import * as Utils17 from "./utils/utils.js";
+import * as Utils18 from "./utils/utils.js";
 async function getInsightToDebug(model, insightTitle) {
   const parsedTrace = model.parsedTrace();
   const latestInsights = model.traceInsights();
@@ -18157,12 +18295,12 @@ async function getInsightToDebug(model, insightTitle) {
     };
   }
   const insight = insights.model[matchingInsightKey];
-  const activeInsight = new Utils17.InsightAIContext.ActiveInsight(insight, parsedTrace);
+  const activeInsight = new Utils18.InsightAIContext.ActiveInsight(insight, insights.bounds, parsedTrace);
   return { insight: activeInsight };
 }
 
 // gen/front_end/panels/timeline/timeline.prebundle.js
-import * as Utils18 from "./utils/utils.js";
+import * as Utils19 from "./utils/utils.js";
 export {
   AnimationsTrackAppender_exports as AnimationsTrackAppender,
   AnnotationHelpers_exports as AnnotationHelpers,
@@ -18208,6 +18346,6 @@ export {
   TrackConfiguration_exports as TrackConfiguration,
   UIDevtoolsController_exports as UIDevtoolsController,
   UIDevtoolsUtils_exports as UIDevtoolsUtils,
-  Utils18 as Utils
+  Utils19 as Utils
 };
 //# sourceMappingURL=timeline.js.map

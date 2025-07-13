@@ -87,6 +87,9 @@ export class SyntaxTree {
         return nodeText(node ?? this.tree, this.rule);
     }
     textRange(from, to) {
+        if (!from || !to) {
+            return '';
+        }
         return nodeTextRange(from, to, this.rule);
     }
     subtree(node) {
@@ -217,6 +220,9 @@ export class BottomUpTreeMatching extends TreeWalker {
         return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
     }
     getComputedTextRange(from, to, substitutionHook) {
+        if (!from || !to) {
+            return '';
+        }
         return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from, substitutionHook);
     }
 }

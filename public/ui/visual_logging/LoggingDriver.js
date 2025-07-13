@@ -112,7 +112,7 @@ const viewportRectFor = (element) => {
     viewportRects.set(ownerDocument, viewportRect);
     return viewportRect;
 };
-async function process() {
+export async function process() {
     if (document.hidden) {
         return;
     }

@@ -14,7 +14,7 @@ import * as Common7 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../bindings/bindings.js";
-import * as TextUtils5 from "./../text_utils/text_utils.js";
+import * as TextUtils6 from "./../text_utils/text_utils.js";
 import * as Workspace9 from "./../workspace/workspace.js";
 
 // gen/front_end/models/persistence/FileSystemWorkspaceBinding.js
@@ -1297,6 +1297,7 @@ import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as Bindings from "./../bindings/bindings.js";
 import * as BreakpointManager2 from "./../breakpoints/breakpoints.js";
+import * as TextUtils5 from "./../text_utils/text_utils.js";
 import * as Workspace7 from "./../workspace/workspace.js";
 
 // gen/front_end/models/persistence/PersistenceUtils.js
@@ -1602,7 +1603,8 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     this.#bindings.set(fileSystemUISourceCode, binding);
     await PersistenceImpl.instance().addBinding(binding);
     const uiSourceCodeOfTruth = this.#savingForOverrides.has(networkUISourceCode) ? networkUISourceCode : fileSystemUISourceCode;
-    const { content, isEncoded } = await uiSourceCodeOfTruth.requestContent();
+    const contentDataOrError = await uiSourceCodeOfTruth.requestContentData();
+    const { content, isEncoded } = TextUtils4.ContentData.ContentData.asDeferredContent(contentDataOrError);
     PersistenceImpl.instance().syncContent(uiSourceCodeOfTruth, content || "", isEncoded);
   }
   onUISourceCodeWorkingCopyCommitted(uiSourceCode) {
@@ -1660,7 +1662,8 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     }
     this.#savingForOverrides.add(uiSourceCode);
     let encodedPath = this.encodedPathFromUrl(uiSourceCode.url());
-    const { content, isEncoded } = await uiSourceCode.requestContent();
+    const contentDataOrError = await uiSourceCode.requestContentData();
+    const { content, isEncoded } = TextUtils4.ContentData.ContentData.asDeferredContent(contentDataOrError);
     const lastIndexOfSlash = encodedPath.lastIndexOf("/");
     const encodedFileName = Common4.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
     const rawFileName = Common4.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
@@ -2354,8 +2357,8 @@ var PersistenceImpl = class _PersistenceImpl extends Common6.ObjectWrapper.Objec
     const other = binding.network === uiSourceCode ? binding.fileSystem : binding.network;
     const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
     if (target && target.type() === SDK2.Target.Type.NODE) {
-      void other.requestContent().then((currentContent) => {
-        const nodeJSContent = _PersistenceImpl.rewrapNodeJSContent(other, currentContent.content || "", newContent);
+      void other.requestContentData().then((contentDataOrError) => TextUtils5.ContentData.ContentData.textOr(contentDataOrError, "")).then((currentContent) => {
+        const nodeJSContent = _PersistenceImpl.rewrapNodeJSContent(other, currentContent, newContent);
         setContent.call(this, nodeJSContent);
       });
       return;
@@ -2668,7 +2671,7 @@ var Automapping = class {
       const [fileSystemContent, networkContent] = (await Promise.all([
         status.fileSystem.requestContentData(),
         status.network.project().requestFileContent(status.network)
-      ])).map(TextUtils5.ContentData.ContentData.asDeferredContent);
+      ])).map(TextUtils6.ContentData.ContentData.asDeferredContent);
       if (fileSystemContent.content === null || networkContent === null) {
         return null;
       }
@@ -3435,7 +3438,7 @@ import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as Bindings3 from "./../bindings/bindings.js";
-import * as TextUtils6 from "./../text_utils/text_utils.js";
+import * as TextUtils7 from "./../text_utils/text_utils.js";
 import * as Workspace13 from "./../workspace/workspace.js";
 var UIStrings6 = {
   /**
@@ -3493,7 +3496,7 @@ var ContextMenuProvider = class {
       if (maybeScript?.isWasm()) {
         try {
           const base64 = await maybeScript.getWasmBytecode().then(Common10.Base64.encode);
-          contentData = new TextUtils6.ContentData.ContentData(
+          contentData = new TextUtils7.ContentData.ContentData(
             base64,
             /* isBase64=*/
             true,
@@ -3510,7 +3513,7 @@ var ContextMenuProvider = class {
         }
       } else {
         const contentDataOrError = await contentProvider.requestContentData();
-        if (TextUtils6.ContentData.ContentData.isError(contentDataOrError)) {
+        if (TextUtils7.ContentData.ContentData.isError(contentDataOrError)) {
           console.error(`Failed to retrieve content for ${url}: ${contentDataOrError}`);
           Common10.Console.Console.instance().error(
             i18nString6(UIStrings6.saveFailed),
@@ -3531,7 +3534,8 @@ var ContextMenuProvider = class {
     }
     async function saveImage() {
       const targetObject = contentProvider;
-      const content = (await targetObject.requestContent()).content || "";
+      const contentDataOrError = await targetObject.requestContentData();
+      const content = TextUtils7.ContentData.ContentData.textOr(contentDataOrError, "");
       const link = document.createElement("a");
       link.download = targetObject.displayName;
       link.href = "data:" + targetObject.mimeType + ";base64," + content;

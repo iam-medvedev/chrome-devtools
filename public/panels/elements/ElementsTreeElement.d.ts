@@ -1,12 +1,13 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import type * as Elements from '../../models/elements/elements.js';
 import type * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ElementsComponents from './components/components.js';
-import { type ElementsTreeOutline, type UpdateRecord } from './ElementsTreeOutline.js';
+import { type ElementsTreeOutline } from './ElementsTreeOutline.js';
 declare const enum TagType {
     OPENING = "OPENING_TAG",
     CLOSING = "CLOSING_TAG"
@@ -101,7 +102,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private textNodeEditingCommitted;
     private editingCancelled;
     private distinctClosingTagElement;
-    updateTitle(updateRecord?: UpdateRecord | null): void;
+    updateTitle(updateRecord?: Elements.ElementUpdateRecord.ElementUpdateRecord | null): void;
     private computeLeftIndent;
     updateDecorations(): void;
     private updateDecorationsInternal;

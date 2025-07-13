@@ -333,12 +333,36 @@ var UIStrings3 = {
   /**
    * @description Text to prompt the user to re-run the CPU calibration process.
    */
-  recalibrate: "Recalibrate\u2026"
+  recalibrate: "Recalibrate\u2026",
+  /**
+   *@description Text to indicate Save-Data override is not set.
+   */
+  noSaveDataOverride: "'Save-Data': default",
+  /**
+   *@description Text to indicate Save-Data override is set to Enabled.
+   */
+  saveDataOn: "'Save-Data': force on",
+  /**
+   *@description Text to indicate Save-Data override is set to Disabled.
+   */
+  saveDataOff: "'Save-Data': force off",
+  /**
+   *@description Tooltip text for an select element that overrides navigator.connection.saveData on the page
+   */
+  saveDataSettingTooltip: "Override the value reported by navigator.connection.saveData on the page"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/mobile_throttling/ThrottlingManager.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var throttlingManagerInstance;
-var ThrottlingManager = class _ThrottlingManager {
+var PromiseQueue = class {
+  #promise = Promise.resolve();
+  push(promise) {
+    return new Promise((r) => {
+      this.#promise = this.#promise.then(async () => r(await promise));
+    });
+  }
+};
+var ThrottlingManager = class _ThrottlingManager extends Common2.ObjectWrapper.ObjectWrapper {
   cpuThrottlingControls;
   cpuThrottlingOptions;
   customNetworkConditionsSetting;
@@ -347,10 +371,12 @@ var ThrottlingManager = class _ThrottlingManager {
   lastNetworkThrottlingConditions;
   cpuThrottlingManager;
   #hardwareConcurrencyOverrideEnabled = false;
+  #emulationQueue = new PromiseQueue();
   get hardwareConcurrencyOverrideEnabled() {
     return this.#hardwareConcurrencyOverrideEnabled;
   }
   constructor() {
+    super();
     this.cpuThrottlingManager = SDK3.CPUThrottlingManager.CPUThrottlingManager.instance();
     this.cpuThrottlingManager.addEventListener("RateChanged", (event) => this.onCPUThrottlingRateChangedOnSDK(event.data));
     this.cpuThrottlingControls = /* @__PURE__ */ new Set();
@@ -577,6 +603,47 @@ var ThrottlingManager = class _ThrottlingManager {
         optionEls[optionEls.length - 1].textContent = getCalibrationString();
       }
     };
+  }
+  createSaveDataOverrideSelector(className) {
+    const reset = new Option(i18nString3(UIStrings3.noSaveDataOverride), void 0, true, true);
+    const enable = new Option(i18nString3(UIStrings3.saveDataOn));
+    const disable = new Option(i18nString3(UIStrings3.saveDataOff));
+    const handler = (e) => {
+      const select2 = e.target;
+      switch (select2.selectedOptions.item(0)) {
+        case reset:
+          for (const emulationModel of SDK3.TargetManager.TargetManager.instance().models(SDK3.EmulationModel.EmulationModel)) {
+            void this.#emulationQueue.push(emulationModel.setDataSaverOverride(
+              "unset"
+              /* SDK.EmulationModel.DataSaverOverride.UNSET */
+            ));
+          }
+          break;
+        case enable:
+          for (const emulationModel of SDK3.TargetManager.TargetManager.instance().models(SDK3.EmulationModel.EmulationModel)) {
+            void this.#emulationQueue.push(emulationModel.setDataSaverOverride(
+              "enabled"
+              /* SDK.EmulationModel.DataSaverOverride.ENABLED */
+            ));
+          }
+          break;
+        case disable:
+          for (const emulationModel of SDK3.TargetManager.TargetManager.instance().models(SDK3.EmulationModel.EmulationModel)) {
+            void this.#emulationQueue.push(emulationModel.setDataSaverOverride(
+              "disabled"
+              /* SDK.EmulationModel.DataSaverOverride.DISABLED */
+            ));
+          }
+          break;
+      }
+      this.dispatchEventToListeners("SaveDataOverrideChanged", select2.selectedIndex);
+    };
+    const select = new UI.Toolbar.ToolbarComboBox(handler, i18nString3(UIStrings3.saveDataSettingTooltip), className);
+    select.addOption(reset);
+    select.addOption(enable);
+    select.addOption(disable);
+    this.addEventListener("SaveDataOverrideChanged", ({ data }) => select.setSelectedIndex(data));
+    return select;
   }
   /** Hardware Concurrency doesn't store state in a setting. */
   createHardwareConcurrencySelector() {
@@ -1064,6 +1131,15 @@ var throttlingSettingsTab_css_default = `/*
 .settings-container {
   display: flex;
   overflow-x: auto;
+}
+
+.settings-container::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
+
+.settings-container::-webkit-scrollbar-thumb {
+  border-radius: var( --sys-size-3);
+  background-color: var(--sys-color-primary);
 }
 
 .setting {

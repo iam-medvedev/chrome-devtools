@@ -84,6 +84,7 @@ export default `/*
   text-align: right;
   overflow: visible;
   align-self: center;
+  margin-left: auto;
 }
 
 .perfmon-indicator:not(.active) .perfmon-indicator-value {

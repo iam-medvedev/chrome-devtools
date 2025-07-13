@@ -1028,7 +1028,14 @@ async function finalize6() {
         timing.sslEnd = TCPMs;
       }
     }
-    if (request.receiveResponse && !timing && !isMemoryCached) {
+    const allowedProtocols = [
+      "blob:",
+      "file:",
+      "filesystem:",
+      "http:",
+      "https:"
+    ];
+    if (!allowedProtocols.some((p) => firstSendRequest.args.data.url.startsWith(p))) {
       continue;
     }
     const initialPriority = finalSendRequest.args.data.priority;
@@ -1307,12 +1314,9 @@ function reset7() {
 }
 function handleEvent7(event) {
   if (Types8.Events.isSyntheticCpuProfile(event)) {
-    const pid = event.pid;
-    const tid = event.tid;
-    const profileId = "0x1";
-    const profileData = getOrCreatePreProcessedData(pid, profileId);
+    const profileData = getOrCreatePreProcessedData(event.pid, event.id);
     profileData.rawProfile = event.args.data.cpuProfile;
-    profileData.threadId = tid;
+    profileData.threadId = event.tid;
     return;
   }
   if (Types8.Events.isProfile(event)) {
@@ -2005,23 +2009,32 @@ function extractPerformanceAPIExtensionEntries(timings) {
     }
   }
 }
+function parseDetail(timingDetail, key) {
+  try {
+    const detailObj = JSON.parse(timingDetail);
+    if (!(key in detailObj)) {
+      return null;
+    }
+    if (!Types13.Extensions.isValidExtensionPayload(detailObj[key])) {
+      return null;
+    }
+    return detailObj[key];
+  } catch {
+    return null;
+  }
+}
+function extensionPayloadForConsoleApi(timing) {
+  if (!timing.args.data || !("devtools" in timing.args.data)) {
+    return null;
+  }
+  return parseDetail(`{"additionalContext": ${timing.args.data.devtools} }`, "additionalContext");
+}
 function extensionDataInPerformanceTiming(timing) {
   const timingDetail = Types13.Events.isPerformanceMark(timing) ? timing.args.data?.detail : timing.args.data.beginEvent.args.detail;
   if (!timingDetail) {
     return null;
   }
-  try {
-    const detailObj = JSON.parse(timingDetail);
-    if (!("devtools" in detailObj)) {
-      return null;
-    }
-    if (!Types13.Extensions.isValidExtensionPayload(detailObj.devtools)) {
-      return null;
-    }
-    return detailObj.devtools;
-  } catch {
-    return null;
-  }
+  return parseDetail(timingDetail, "devtools");
 }
 function extensionDataInConsoleTimeStamp(timeStamp) {
   if (!timeStamp.args.data) {
@@ -2031,6 +2044,11 @@ function extensionDataInConsoleTimeStamp(timeStamp) {
   if (trackName === "" || trackName === void 0) {
     return null;
   }
+  let additionalContext;
+  const payload = extensionPayloadForConsoleApi(timeStamp);
+  if (payload) {
+    additionalContext = payload;
+  }
   return {
     // the color is defaulted to primary if it's value isn't one from
     // the defined palette (see ExtensionUI::extensionEntryColor) so
@@ -2038,7 +2056,8 @@ function extensionDataInConsoleTimeStamp(timeStamp) {
     color: String(timeStamp.args.data.color),
     track: String(trackName),
     dataType: "track-entry",
-    trackGroup: timeStamp.args.data.trackGroup !== void 0 ? String(timeStamp.args.data.trackGroup) : void 0
+    trackGroup: timeStamp.args.data.trackGroup !== void 0 ? String(timeStamp.args.data.trackGroup) : void 0,
+    additionalContext
   };
 }
 function data12() {
@@ -4130,17 +4149,49 @@ __export(SelectorStatsHandler_exports, {
 });
 import * as Types28 from "./../types/types.js";
 var lastUpdateLayoutTreeEvent = null;
+var lastInvalidatedNode = null;
 var selectorDataForUpdateLayoutTree = /* @__PURE__ */ new Map();
+var invalidatedNodeList = new Array();
 function reset27() {
   lastUpdateLayoutTreeEvent = null;
+  lastInvalidatedNode = null;
   selectorDataForUpdateLayoutTree.clear();
+  invalidatedNodeList.length = 0;
 }
 function handleEvent27(event) {
+  if (Types28.Events.isStyleRecalcInvalidationTracking(event)) {
+    if (event.args.data.subtree && event.args.data.reason === "Related style rule" && lastInvalidatedNode && event.args.data.nodeId === lastInvalidatedNode.backendNodeId) {
+      lastInvalidatedNode.subtree = true;
+      return;
+    }
+  }
   if (Types28.Events.isSelectorStats(event) && lastUpdateLayoutTreeEvent && event.args.selector_stats) {
     selectorDataForUpdateLayoutTree.set(lastUpdateLayoutTreeEvent, {
       timings: event.args.selector_stats.selector_timings
     });
     return;
+  }
+  if (Types28.Events.isStyleInvalidatorInvalidationTracking(event)) {
+    const selectorList = new Array();
+    event.args.data.selectors?.forEach((selector) => {
+      selectorList.push({
+        selector: selector.selector,
+        styleSheetId: selector.style_sheet_id
+      });
+    });
+    if (selectorList.length > 0) {
+      lastInvalidatedNode = {
+        frame: event.args.data.frame,
+        backendNodeId: event.args.data.nodeId,
+        type: "StyleInvalidatorInvalidationTracking",
+        selectorList,
+        ts: event.ts,
+        tts: event.tts,
+        subtree: false,
+        lastUpdateLayoutTreeEventTs: lastUpdateLayoutTreeEvent ? lastUpdateLayoutTreeEvent.ts : Types28.Timing.Micro(0)
+      };
+      invalidatedNodeList.push(lastInvalidatedNode);
+    }
   }
   if (Types28.Events.isUpdateLayoutTree(event)) {
     lastUpdateLayoutTreeEvent = event;
@@ -4151,7 +4202,8 @@ async function finalize27() {
 }
 function data27() {
   return {
-    dataForUpdateLayoutEvent: selectorDataForUpdateLayoutTree
+    dataForUpdateLayoutEvent: selectorDataForUpdateLayoutTree,
+    invalidatedNodeList
   };
 }
 

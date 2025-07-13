@@ -464,9 +464,6 @@ class Binding {
     contentType() {
         return this.firstResource().contentType();
     }
-    requestContent() {
-        return this.firstResource().requestContent();
-    }
     requestContentData() {
         return this.firstResource().requestContentData();
     }

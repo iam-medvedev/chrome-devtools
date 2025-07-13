@@ -8,7 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ElementsComponents from './components/components.js';
-import * as ElementsTreeOutline from './ElementsTreeOutline.js';
+import { ShortcutTreeElement } from './ShortcutTreeElement.js';
 const UIStrings = {
     /**
      *@description Link text content in Elements Tree Outline of the Elements panel. When clicked, it "reveals" the true location of an element.
@@ -48,14 +48,14 @@ export class TopLayerContainer extends UI.TreeOutline.TreeElement {
             }
             if (topLayerDOMNode.nodeName() !== '::backdrop') {
                 const topLayerElementShortcut = new SDK.DOMModel.DOMNodeShortcut(domModel.target(), topLayerDOMNode.backendNodeId(), 0, topLayerDOMNode.nodeName());
-                const topLayerElementRepresentation = new ElementsTreeOutline.ShortcutTreeElement(topLayerElementShortcut);
+                const topLayerElementRepresentation = new ShortcutTreeElement(topLayerElementShortcut);
                 this.appendChild(topLayerElementRepresentation);
                 this.currentTopLayerDOMNodes.add(topLayerDOMNode);
                 // Add the element's backdrop if previous top layer element is a backdrop.
                 const previousTopLayerDOMNode = (i > 0) ? domModel.idToDOMNode.get(newTopLayerElementsIDs[i - 1]) : undefined;
                 if (previousTopLayerDOMNode && previousTopLayerDOMNode.nodeName() === '::backdrop') {
                     const backdropElementShortcut = new SDK.DOMModel.DOMNodeShortcut(domModel.target(), previousTopLayerDOMNode.backendNodeId(), 0, previousTopLayerDOMNode.nodeName());
-                    const backdropElementRepresentation = new ElementsTreeOutline.ShortcutTreeElement(backdropElementShortcut);
+                    const backdropElementRepresentation = new ShortcutTreeElement(backdropElementShortcut);
                     topLayerElementRepresentation.appendChild(backdropElementRepresentation);
                 }
                 // TODO(changhaohan): store not-yet-inserted DOMNodes and adorn them when inserted.

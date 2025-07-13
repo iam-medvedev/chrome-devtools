@@ -55,8 +55,9 @@ export declare class Linkifier extends Common.ObjectWrapper.ObjectWrapper<EventT
     static handleClickFromNewComponentLand(linkInfo: LinkInfo): void;
     static invokeFirstAction(linkInfo: LinkInfo): boolean;
     static linkHandlerSetting(): Common.Settings.Setting<string>;
-    static registerLinkHandler(title: string, handler: LinkHandler): void;
-    static unregisterLinkHandler(title: string): void;
+    static registerLinkHandler(registration: LinkHandlerRegistration): void;
+    static unregisterLinkHandler(registration: LinkHandlerRegistration): void;
+    static shouldHandleOpenResource: (openResourceScheme: string | null, url: Platform.DevToolsPath.UrlString, otherSchemeRegistrations: Set<string>) => boolean;
     static uiLocation(link: Element): Workspace.UISourceCode.UILocation | null;
     static linkActions(info: LinkInfo): Array<{
         section: string;
@@ -136,7 +137,15 @@ export interface LinkifyOptions {
      */
     revealBreakpoint?: boolean;
 }
-export type LinkHandler = (arg0: TextUtils.ContentProvider.ContentProvider, arg1: number) => void;
+export type LinkHandlerPredicate = (url: Platform.DevToolsPath.UrlString, specificSchemeHandlers: Set<string>) => boolean;
+export type LinkHandler = (arg0: TextUtils.ContentProvider.ContentProvider | Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber?: number) => void;
+export interface LinkHandlerRegistration {
+    title: string;
+    origin: Platform.DevToolsPath.UrlString;
+    scheme?: string;
+    handler: LinkHandler;
+    filter: LinkHandlerPredicate;
+}
 export declare const enum Events {
     LIVE_LOCATION_UPDATED = "liveLocationUpdated"
 }

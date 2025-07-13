@@ -1487,7 +1487,11 @@ var UIStrings4 = {
   /**
    *@description Media property signaling whether the encoder is hardware accelerated.
    */
-  hardwareEncoder: "Hardware encoder"
+  hardwareEncoder: "Hardware encoder",
+  /**
+   *@description Property for adaptive (HLS) playback which shows the start/end time of the loaded content buffer
+   */
+  hlsBufferedRanges: "Buffered media ranges"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/media/PlayerPropertiesView.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -1508,21 +1512,19 @@ var PropertyRenderer = class extends UI4.Widget.VBox {
   }
   updateData(propvalue) {
     if (propvalue === "" || propvalue === null) {
-      return this.updateDataInternal(null);
-    }
-    try {
-      propvalue = JSON.parse(propvalue);
-    } catch {
-    }
-    return this.updateDataInternal(propvalue);
-  }
-  updateDataInternal(propvalue) {
-    if (propvalue === null) {
       this.changeContents(null);
     } else if (this.value === propvalue) {
       return;
     } else {
       this.value = propvalue;
+      this.updateDataInternal(propvalue);
+    }
+  }
+  updateDataInternal(propvalue) {
+    try {
+      const parsed = JSON.parse(propvalue);
+      this.changeContents(parsed);
+    } catch {
       this.changeContents(propvalue);
     }
   }
@@ -1572,10 +1574,12 @@ var FormattedPropertyRenderer = class extends PropertyRenderer {
     this.formatfunction = formatfunction;
   }
   updateDataInternal(propvalue) {
-    if (propvalue === null) {
-      this.changeContents(null);
-    } else {
-      this.changeContents(this.formatfunction(propvalue));
+    try {
+      const parsed = JSON.parse(propvalue);
+      this.changeContents(this.formatfunction(parsed));
+    } catch {
+      const unparsed = propvalue;
+      this.changeContents(this.formatfunction(unparsed));
     }
   }
 };
@@ -1807,6 +1811,11 @@ var PlayerPropertiesView = class extends UI4.Widget.VBox {
     const bytesDecimal = (actualBytes / Math.pow(1e3, power)).toFixed(2);
     return `${bytesDecimal} ${suffix}`;
   }
+  formatBufferedRanges(ranges) {
+    return ranges.map((range) => {
+      return "[" + range[0] + " \u2192 " + range[1] + "]";
+    }).join(", ");
+  }
   populateAttributesAndElements() {
     const resolution = new PropertyRenderer(i18nString4(UIStrings4.resolution));
     this.mediaElements.push(resolution);
@@ -1850,6 +1859,9 @@ var PlayerPropertiesView = class extends UI4.Widget.VBox {
     const rendererName = new PropertyRenderer(i18nString4(UIStrings4.rendererName));
     this.mediaElements.push(rendererName);
     this.attributeMap.set("kRendererName", rendererName);
+    const hlsBufferedRanges = new FormattedPropertyRenderer(i18nString4(UIStrings4.hlsBufferedRanges), this.formatBufferedRanges);
+    this.mediaElements.push(hlsBufferedRanges);
+    this.attributeMap.set("kHlsBufferedRanges", hlsBufferedRanges);
     const decoderName = new DefaultPropertyRenderer(i18nString4(UIStrings4.decoderName), i18nString4(UIStrings4.noDecoder));
     this.videoDecoderElements.push(decoderName);
     this.attributeMap.set("kVideoDecoderName", decoderName);

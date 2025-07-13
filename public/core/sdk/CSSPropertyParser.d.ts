@@ -26,7 +26,7 @@ export declare class SyntaxTree {
     readonly propertyName: string | undefined;
     constructor(propertyValue: string, rule: string, tree: CodeMirror.SyntaxNode, propertyName?: string, trailingNodes?: CodeMirror.SyntaxNode[]);
     text(node?: CodeMirror.SyntaxNode | null): string;
-    textRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): string;
+    textRange(from: CodeMirror.SyntaxNode | undefined, to: CodeMirror.SyntaxNode | undefined): string;
     subtree(node: CodeMirror.SyntaxNode): SyntaxTree;
 }
 export interface SyntaxNodeRef {
@@ -78,7 +78,7 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     getLonghandValuesCount(): number;
     getComputedLonghandName(to: CodeMirror.SyntaxNode): number;
     getComputedPropertyValueText(): string;
-    getComputedTextRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode, substitutionHook?: (match: Match) => string | null): string;
+    getComputedTextRange(from: CodeMirror.SyntaxNode | undefined, to: CodeMirror.SyntaxNode | undefined, substitutionHook?: (match: Match) => string | null): string;
 }
 export declare class ComputedText {
     #private;
@@ -105,9 +105,9 @@ export declare namespace ASTUtils {
     function siblings(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[];
     function children(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode[];
     function range(node: CodeMirror.SyntaxNode[]): [
-        CodeMirror.SyntaxNode,
-        CodeMirror.SyntaxNode
-    ] | [undefined, undefined];
+        CodeMirror.SyntaxNode | undefined,
+        CodeMirror.SyntaxNode | undefined
+    ];
     function declValue(node: CodeMirror.SyntaxNode | null): CodeMirror.SyntaxNode | null;
     function stripComments(nodes: CodeMirror.SyntaxNode[]): Generator<CodeMirror.SyntaxNode>;
     function split(nodes: CodeMirror.SyntaxNode[]): CodeMirror.SyntaxNode[][];

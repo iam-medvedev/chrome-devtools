@@ -22,6 +22,7 @@ var tooltip_css_default = `/*
 
 :host {
   --tooltip-viewport-distance: var(--sys-size-5);
+
   /* Reset the browser's default styles for [popover] elements. */
   margin: 0;
   background: none;
@@ -34,8 +35,11 @@ var tooltip_css_default = `/*
   visibility: hidden;
 
   & .container {
-    max-width: 100%;
     width: max-content;
+    max-width: calc(var(--devtools-window-width) - 2 * (
+      /* host margin */ var(--tooltip-viewport-distance) +
+      /* container horizontal padding */ var(--sys-size-8) +
+      /* container margin */ var(--sys-size-3)));
     margin: var(--sys-size-2);
     font: var(--sys-typescale-body4-regular);
     color: var(--sys-color-inverse-on-surface);
@@ -52,17 +56,16 @@ var tooltip_css_default = `/*
   position: absolute;
 
   & .container {
-    max-width: calc(var(--devtools-window-width) - 2 * (
-                                 /* host margin */ var(--tooltip-viewport-distance) +
-                                 /* container horizontal padding */ var(--sys-size-8) +
-                                 /* container margin */ var(--sys-size-3)));
     margin-inline: 0;
     margin-block: var(--sys-size-3);
     color: var(--sys-color-on-surface);
     background-color: var(--sys-color-base-container-elevated);
     border-radius: var(--sys-shape-corner-small);
-    padding: var(--sys-size-6) var(--sys-size-8);
     overflow: auto;
+
+    &.large-padding {
+      padding: var(--sys-size-6) var(--sys-size-8);
+    }
   }
 }
 
@@ -200,7 +203,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     }
   }
   get hoverDelay() {
-    return this.hasAttribute("hover-delay") ? Number(this.getAttribute("hover-delay")) : 200;
+    return this.hasAttribute("hover-delay") ? Number(this.getAttribute("hover-delay")) : 300;
   }
   set hoverDelay(delay) {
     this.setAttribute("hover-delay", delay.toString());
@@ -210,6 +213,12 @@ var Tooltip = class _Tooltip extends HTMLElement {
   }
   set variant(variant) {
     this.setAttribute("variant", variant);
+  }
+  get padding() {
+    return this.getAttribute("padding") === "large" ? "large" : "small";
+  }
+  set padding(padding) {
+    this.setAttribute("padding", padding);
   }
   get jslogContext() {
     return this.getAttribute("jslogcontext");
@@ -223,21 +232,25 @@ var Tooltip = class _Tooltip extends HTMLElement {
   }
   constructor(properties) {
     super();
-    if (properties) {
-      this.id = properties.id;
+    const { id, variant, padding, jslogContext, anchor } = properties ?? {};
+    if (id) {
+      this.id = id;
     }
-    if (properties?.variant) {
-      this.variant = properties.variant;
+    if (variant) {
+      this.variant = variant;
     }
-    if (properties?.jslogContext) {
-      this.jslogContext = properties.jslogContext;
+    if (padding) {
+      this.padding = padding;
     }
-    if (properties?.anchor) {
-      const ref = properties.anchor.getAttribute("aria-details") ?? properties.anchor.getAttribute("aria-describedby");
-      if (ref !== properties.id) {
+    if (jslogContext) {
+      this.jslogContext = jslogContext;
+    }
+    if (anchor) {
+      const ref = anchor.getAttribute("aria-details") ?? anchor.getAttribute("aria-describedby");
+      if (ref !== id) {
         throw new Error("aria-details or aria-describedby must be set on the anchor");
       }
-      this.#anchor = properties.anchor;
+      this.#anchor = anchor;
     }
   }
   attributeChangedCallback(name, oldValue, newValue) {
@@ -261,7 +274,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     Lit.render(html`
       <style>${tooltip_css_default}</style>
       <!-- Wrapping it into a container, so that the tooltip doesn't disappear when the mouse moves from the anchor to the tooltip. -->
-      <div class="container">
+      <div class="container ${this.padding === "large" ? "large-padding" : ""}">
         <slot></slot>
       </div>
     `, this.#shadow, { host: this });

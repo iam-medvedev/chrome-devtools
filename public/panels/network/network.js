@@ -843,13 +843,20 @@ var networkConfigView_css_default = `/*
 }
 /* Network throttling */
 
-.network-config-throttling select {
-  width: 100%;
-  max-width: 250px;
-}
+.network-config-throttling {
+  select {
+    width: 100%;
+    max-width: 250px;
+  }
 
-.network-config-throttling > .network-config-title {
-  line-height: 24px;
+  .network-config-fields {
+    display: flex;
+    column-gap: var(--sys-size-5);
+  }
+
+  & > .network-config-title {
+    line-height: 24px;
+  }
 }
 /* User agent */
 
@@ -924,9 +931,9 @@ var UIStrings4 = {
    */
   disableCache: "Disable cache",
   /**
-   *@description Header in Network conditions panel for the network throttling settings.
+   *@description Header in Network conditions panel for the network throttling and emulation settings.
    */
-  networkThrottling: "Network throttling",
+  networkThrottling: "Network",
   /**
    *@description Header in the network conditions panel for the user agent settings.
    */
@@ -1070,6 +1077,8 @@ var NetworkConfigView = class _NetworkConfigView extends UI4.Widget.VBox {
     const networkThrottlingSelect = section4.createChild("select");
     MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(networkThrottlingSelect);
     UI4.ARIAUtils.setLabel(networkThrottlingSelect, title);
+    const saveDataSelect = MobileThrottling.ThrottlingManager.throttlingManager().createSaveDataOverrideSelector("chrome-select").element;
+    section4.appendChild(saveDataSelect);
   }
   createUserAgentSection() {
     const userAgentMetadataSetting = Common3.Settings.Settings.instance().createSetting("custom-user-agent-metadata", null);
@@ -1700,6 +1709,26 @@ var UIStrings5 = {
    *@description Reason in Network Data Grid Node of the Network panel
    */
   origin: "origin",
+  /**
+   * @description Reason why a request was blocked shown in the Network panel
+   */
+  coepFrameResourceNeedsCoepHeader: "COEP-framed resource needs COEP header",
+  /**
+   * @description Reason why a request was blocked shown in the Network panel
+   */
+  coopSandboxedIframeCannotNavigateToCoopPage: "Sandboxed iframe's popup cannot navigate to COOP page",
+  /**
+   * @description Reason why a request was blocked shown in the Network panel
+   */
+  corpNotSameOrigin: 'CORP not "same-origin"',
+  /**
+   * @description Reason why a request was blocked shown in the Network panel
+   */
+  corpNotSameSite: 'CORP not "same-site"',
+  /**
+   * @description Reason why a request was blocked shown in the Network panel
+   */
+  corpNotSameOriginAfterDefaultedToSameOriginByCoep: 'CORP not "same-origin" after defaulted to "same-origin" by COEP',
   /**
    *@description Noun. Shown in a table cell as the reason why a network request failed. "integrity" here refers to the integrity of the network request itself in a cryptographic sense: signature verification might have failed, for instance.
    */
@@ -2636,23 +2665,23 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
           break;
         case "coep-frame-resource-needs-coep-header":
           displayShowHeadersLink = true;
-          reason = i18n9.i18n.lockedString("CoepFrameResourceNeedsCoepHeader");
+          reason = i18nString5(UIStrings5.coepFrameResourceNeedsCoepHeader);
           break;
         case "coop-sandboxed-iframe-cannot-navigate-to-coop-page":
           displayShowHeadersLink = true;
-          reason = i18n9.i18n.lockedString("CoopSandboxedIframeCannotNavigateToCoopPage");
+          reason = i18nString5(UIStrings5.coopSandboxedIframeCannotNavigateToCoopPage);
           break;
         case "corp-not-same-origin":
           displayShowHeadersLink = true;
-          reason = i18n9.i18n.lockedString("NotSameOrigin");
+          reason = i18nString5(UIStrings5.corpNotSameOrigin);
           break;
         case "corp-not-same-site":
           displayShowHeadersLink = true;
-          reason = i18n9.i18n.lockedString("NotSameSite");
+          reason = i18nString5(UIStrings5.corpNotSameSite);
           break;
         case "corp-not-same-origin-after-defaulted-to-same-origin-by-coep":
           displayShowHeadersLink = true;
-          reason = i18n9.i18n.lockedString("NotSameOriginAfterDefaultedToSameOriginByCoep");
+          reason = i18nString5(UIStrings5.corpNotSameOriginAfterDefaultedToSameOriginByCoep);
           break;
         case "sri-message-signature-mismatch":
           displayShowHeadersLink = true;
@@ -6554,37 +6583,36 @@ var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var requestToResponseView = /* @__PURE__ */ new WeakMap();
 var requestToPreviewView = /* @__PURE__ */ new WeakMap();
 var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
-  requestInternal;
-  resourceViewTabSetting;
-  headersViewComponent;
-  payloadView;
-  responseView;
-  cookiesView;
-  initialTab;
-  firstTab;
+  #request;
+  #resourceViewTabSetting;
+  #headersViewComponent;
+  #payloadView = null;
+  #responseView;
+  #cookiesView = null;
+  #initialTab;
+  #firstTab;
   constructor(request, calculator, initialTab) {
     super();
-    this.requestInternal = request;
+    this.#request = request;
     this.element.classList.add("network-item-view");
     this.headerElement().setAttribute("jslog", `${VisualLogging11.toolbar("request-details").track({
       keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space"
     })}`);
     if (request.resourceType() === Common12.ResourceType.resourceTypes.DirectSocket) {
-      this.firstTab = "direct-socket-connection";
+      this.#firstTab = "direct-socket-connection";
       this.appendTab("direct-socket-connection", i18nString16(UIStrings16.connectionInfo), new NetworkComponents2.DirectSocketConnectionView.DirectSocketConnectionView(request), i18nString16(UIStrings16.headers));
     } else {
-      this.firstTab = "headers-component";
-      this.headersViewComponent = new NetworkComponents2.RequestHeadersView.RequestHeadersView(request);
-      this.appendTab("headers-component", i18nString16(UIStrings16.headers), LegacyWrapper3.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, this.headersViewComponent), i18nString16(UIStrings16.headers));
+      this.#firstTab = "headers-component";
+      this.#headersViewComponent = new NetworkComponents2.RequestHeadersView.RequestHeadersView(request);
+      this.appendTab("headers-component", i18nString16(UIStrings16.headers), LegacyWrapper3.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, this.#headersViewComponent), i18nString16(UIStrings16.headers));
     }
-    this.resourceViewTabSetting = Common12.Settings.Settings.instance().createSetting("resource-view-tab", this.firstTab);
-    if (this.requestInternal.hasOverriddenHeaders()) {
+    this.#resourceViewTabSetting = Common12.Settings.Settings.instance().createSetting("resource-view-tab", this.#firstTab);
+    if (this.#request.hasOverriddenHeaders()) {
       const statusDot = document.createElement("div");
       statusDot.className = "status-dot";
       statusDot.title = i18nString16(UIStrings16.containsOverriddenHeaders);
       this.setSuffixElement("headers-component", statusDot);
     }
-    this.payloadView = null;
     void this.maybeAppendPayloadPanel();
     this.addEventListener(UI17.TabbedPane.Events.TabSelected, this.tabSelected, this);
     if (request.resourceType() === Common12.ResourceType.resourceTypes.WebSocket) {
@@ -6594,12 +6622,12 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
       this.appendTab("direct-socket-chunks", i18nString16(UIStrings16.messages), new ResourceDirectSocketChunkView(request), i18nString16(UIStrings16.directsocketMessages));
     } else if (request.mimeType === "text/event-stream") {
       this.appendTab("eventSource", i18nString16(UIStrings16.eventstream), new EventSourceMessagesView(request));
-      this.responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
-      requestToResponseView.set(request, this.responseView);
-      this.appendTab("response", i18nString16(UIStrings16.response), this.responseView, i18nString16(UIStrings16.rawResponseData));
+      this.#responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
+      requestToResponseView.set(request, this.#responseView);
+      this.appendTab("response", i18nString16(UIStrings16.response), this.#responseView, i18nString16(UIStrings16.rawResponseData));
     } else {
-      this.responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
-      requestToResponseView.set(request, this.responseView);
+      this.#responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
+      requestToResponseView.set(request, this.#responseView);
       const previewView = requestToPreviewView.get(request) ?? new RequestPreviewView(request);
       requestToPreviewView.set(request, previewView);
       this.appendTab("preview", i18nString16(UIStrings16.preview), previewView, i18nString16(UIStrings16.responsePreview));
@@ -6610,8 +6638,8 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
         UI17.Tooltip.Tooltip.install(icon, i18nString16(UIStrings16.signedexchangeError));
         this.setTabIcon("preview", icon);
       }
-      this.appendTab("response", i18nString16(UIStrings16.response), this.responseView, i18nString16(UIStrings16.rawResponseData));
-      if (this.requestInternal.hasOverriddenContent) {
+      this.appendTab("response", i18nString16(UIStrings16.response), this.#responseView, i18nString16(UIStrings16.rawResponseData));
+      if (this.#request.hasOverriddenContent) {
         const statusDot = document.createElement("div");
         statusDot.className = "status-dot";
         statusDot.title = i18nString16(UIStrings16.responseIsOverridden);
@@ -6623,39 +6651,38 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     if (request.trustTokenParams()) {
       this.appendTab("trust-tokens", i18nString16(UIStrings16.trustTokens), LegacyWrapper3.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, new NetworkComponents2.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString16(UIStrings16.trustTokenOperationDetails));
     }
-    this.cookiesView = null;
-    this.initialTab = initialTab || this.resourceViewTabSetting.get();
+    this.#initialTab = initialTab || this.#resourceViewTabSetting.get();
     this.setAutoSelectFirstItemOnShow(false);
   }
   wasShown() {
     super.wasShown();
-    this.requestInternal.addEventListener(SDK11.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
-    this.requestInternal.addEventListener(SDK11.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
-    this.requestInternal.addEventListener(SDK11.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+    this.#request.addEventListener(SDK11.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
+    this.#request.addEventListener(SDK11.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
+    this.#request.addEventListener(SDK11.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
     this.maybeAppendCookiesPanel();
     this.maybeShowErrorIconInTrustTokenTabHeader();
-    if (this.initialTab) {
-      this.selectTabInternal(this.initialTab);
-      this.initialTab = void 0;
+    if (this.#initialTab) {
+      this.selectTabInternal(this.#initialTab);
+      this.#initialTab = void 0;
     }
   }
   willHide() {
-    this.requestInternal.removeEventListener(SDK11.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
-    this.requestInternal.removeEventListener(SDK11.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
-    this.requestInternal.removeEventListener(SDK11.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+    this.#request.removeEventListener(SDK11.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
+    this.#request.removeEventListener(SDK11.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
+    this.#request.removeEventListener(SDK11.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
   }
   async requestHeadersChanged() {
     this.maybeAppendCookiesPanel();
     void this.maybeAppendPayloadPanel();
   }
   maybeAppendCookiesPanel() {
-    const cookiesPresent = this.requestInternal.hasRequestCookies() || this.requestInternal.responseCookies.length > 0;
-    console.assert(cookiesPresent || !this.cookiesView, "Cookies were introduced in headers and then removed!");
-    if (cookiesPresent && !this.cookiesView) {
-      this.cookiesView = new RequestCookiesView(this.requestInternal);
-      this.appendTab("cookies", i18nString16(UIStrings16.cookies), this.cookiesView, i18nString16(UIStrings16.requestAndResponseCookies));
+    const cookiesPresent = this.#request.hasRequestCookies() || this.#request.responseCookies.length > 0;
+    console.assert(cookiesPresent || !this.#cookiesView, "Cookies were introduced in headers and then removed!");
+    if (cookiesPresent && !this.#cookiesView) {
+      this.#cookiesView = new RequestCookiesView(this.#request);
+      this.appendTab("cookies", i18nString16(UIStrings16.cookies), this.#cookiesView, i18nString16(UIStrings16.requestAndResponseCookies));
     }
-    if (this.requestInternal.hasThirdPartyCookiePhaseoutIssue()) {
+    if (this.#request.hasThirdPartyCookiePhaseoutIssue()) {
       const icon = new IconButton4.Icon.Icon();
       icon.data = { iconName: "warning-filled", color: "var(--icon-warning)", width: "14px", height: "14px" };
       icon.title = i18nString16(UIStrings16.thirdPartyPhaseout);
@@ -6666,12 +6693,12 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     if (this.hasTab("payload")) {
       return;
     }
-    if (this.requestInternal.queryParameters || await this.requestInternal.requestFormData()) {
-      this.payloadView = new RequestPayloadView(this.requestInternal);
+    if (this.#request.queryParameters || await this.#request.requestFormData()) {
+      this.#payloadView = new RequestPayloadView(this.#request);
       this.appendTab(
         "payload",
         i18nString16(UIStrings16.payload),
-        this.payloadView,
+        this.#payloadView,
         i18nString16(UIStrings16.payload),
         /* userGesture=*/
         void 0,
@@ -6685,7 +6712,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     }
   }
   maybeShowErrorIconInTrustTokenTabHeader() {
-    const trustTokenResult = this.requestInternal.trustTokenOperationDoneEvent();
+    const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
     if (trustTokenResult && !NetworkComponents2.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
       const icon = new IconButton4.Icon.Icon();
       icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
@@ -6696,7 +6723,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     if (!this.selectTab(tabId)) {
       window.setTimeout(() => {
         if (!this.selectTab(tabId)) {
-          this.selectTab(this.firstTab);
+          this.selectTab(this.#firstTab);
         }
       }, 0);
     }
@@ -6705,27 +6732,27 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     if (!event.data.isUserGesture) {
       return;
     }
-    this.resourceViewTabSetting.set(event.data.tabId);
+    this.#resourceViewTabSetting.set(event.data.tabId);
   }
   request() {
-    return this.requestInternal;
+    return this.#request;
   }
   async revealResponseBody(position) {
     this.selectTabInternal(
       "response"
       /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */
     );
-    await this.responseView?.revealPosition(position);
+    await this.#responseView?.revealPosition(position);
   }
   revealHeader(section4, header) {
     this.selectTabInternal(
       "headers-component"
       /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */
     );
-    this.headersViewComponent?.revealHeader(section4, header);
+    this.#headersViewComponent?.revealHeader(section4, header);
   }
   getHeadersViewComponent() {
-    return this.headersViewComponent;
+    return this.#headersViewComponent;
   }
 };
 
@@ -12837,48 +12864,44 @@ var NetworkLogWithFilterRevealer = class {
   }
 };
 var FilmStripRecorder = class {
-  tracingManager;
-  resourceTreeModel;
-  timeCalculator;
-  filmStripView;
-  callback;
+  #tracingManager = null;
+  #resourceTreeModel = null;
+  #timeCalculator;
+  #filmStripView;
+  #callback = null;
   // Used to fetch screenshots of the page load and show them in the panel.
-  #traceEngine;
+  #traceEngine = Trace2.TraceModel.Model.createWithSubsetOfHandlers({
+    Screenshots: Trace2.Handlers.ModelHandlers.Screenshots
+  });
   #collectedTraceEvents = [];
   constructor(timeCalculator, filmStripView) {
-    this.#traceEngine = Trace2.TraceModel.Model.createWithSubsetOfHandlers({
-      Screenshots: Trace2.Handlers.ModelHandlers.Screenshots
-    });
-    this.tracingManager = null;
-    this.resourceTreeModel = null;
-    this.timeCalculator = timeCalculator;
-    this.filmStripView = filmStripView;
-    this.callback = null;
+    this.#timeCalculator = timeCalculator;
+    this.#filmStripView = filmStripView;
   }
   traceEventsCollected(events) {
     this.#collectedTraceEvents.push(...events);
   }
   async tracingComplete() {
-    if (!this.tracingManager) {
+    if (!this.#tracingManager) {
       return;
     }
-    this.tracingManager = null;
+    this.#tracingManager = null;
     await this.#traceEngine.parse(this.#collectedTraceEvents);
     const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1);
     if (!data) {
       return;
     }
-    const zeroTimeInSeconds = Trace2.Types.Timing.Seconds(this.timeCalculator.minimumBoundary());
+    const zeroTimeInSeconds = Trace2.Types.Timing.Seconds(this.#timeCalculator.minimumBoundary());
     const filmStrip = Trace2.Extras.FilmStrip.fromParsedTrace(data, Trace2.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
-    if (this.callback) {
-      this.callback(filmStrip);
+    if (this.#callback) {
+      this.#callback(filmStrip);
     }
-    this.callback = null;
+    this.#callback = null;
     this.#traceEngine.resetProcessor();
-    if (this.resourceTreeModel) {
-      this.resourceTreeModel.resumeReload();
+    if (this.#resourceTreeModel) {
+      this.#resourceTreeModel.resumeReload();
     }
-    this.resourceTreeModel = null;
+    this.#resourceTreeModel = null;
   }
   tracingBufferUsage() {
   }
@@ -12886,30 +12909,30 @@ var FilmStripRecorder = class {
   }
   startRecording() {
     this.#collectedTraceEvents = [];
-    this.filmStripView.reset();
-    this.filmStripView.setStatusText(i18nString22(UIStrings22.recordingFrames));
+    this.#filmStripView.reset();
+    this.#filmStripView.setStatusText(i18nString22(UIStrings22.recordingFrames));
     const tracingManager = SDK15.TargetManager.TargetManager.instance().scopeTarget()?.model(Tracing.TracingManager.TracingManager);
-    if (this.tracingManager || !tracingManager) {
+    if (this.#tracingManager || !tracingManager) {
       return;
     }
-    this.tracingManager = tracingManager;
-    this.resourceTreeModel = this.tracingManager.target().model(SDK15.ResourceTreeModel.ResourceTreeModel);
-    void this.tracingManager.start(this, "-*,disabled-by-default-devtools.screenshot");
+    this.#tracingManager = tracingManager;
+    this.#resourceTreeModel = this.#tracingManager.target().model(SDK15.ResourceTreeModel.ResourceTreeModel);
+    void this.#tracingManager.start(this, "-*,disabled-by-default-devtools.screenshot");
     Host10.userMetrics.actionTaken(Host10.UserMetrics.Action.FilmStripStartedRecording);
   }
   isRecording() {
-    return Boolean(this.tracingManager);
+    return Boolean(this.#tracingManager);
   }
   stopRecording(callback) {
-    if (!this.tracingManager) {
+    if (!this.#tracingManager) {
       return;
     }
-    this.tracingManager.stop();
-    if (this.resourceTreeModel) {
-      this.resourceTreeModel.suspendReload();
+    this.#tracingManager.stop();
+    if (this.#resourceTreeModel) {
+      this.#resourceTreeModel.suspendReload();
     }
-    this.callback = callback;
-    this.filmStripView.setStatusText(i18nString22(UIStrings22.fetchingFrames));
+    this.#callback = callback;
+    this.#filmStripView.setStatusText(i18nString22(UIStrings22.fetchingFrames));
   }
 };
 var ActionDelegate2 = class {

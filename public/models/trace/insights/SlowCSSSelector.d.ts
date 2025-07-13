@@ -34,13 +34,22 @@ export declare const UIStrings: {
      * @description Text status indicating that no CSS selector data was found.
      */
     readonly enableSelectorData: "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings.";
+    /**
+     *@description top CSS selector when ranked by elapsed time in ms
+     */
+    readonly topSelectorElapsedTime: "Top selector elaspsed time";
+    /**
+     *@description top CSS selector when ranked by match attempt
+     */
+    readonly topSelectorMatchAttempt: "Top selector match attempt";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export type SlowCSSSelectorInsightModel = InsightModel<typeof UIStrings, {
     totalElapsedMs: Types.Timing.Milli;
     totalMatchAttempts: number;
     totalMatchCount: number;
-    topElapsedMs: Types.Events.SelectorTiming[];
-    topMatchAttempts: Types.Events.SelectorTiming[];
+    topSelectorElapsedMs: Types.Events.SelectorTiming | null;
+    topSelectorMatchAttempts: Types.Events.SelectorTiming | null;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): SlowCSSSelectorInsightModel;
+export declare function createOverlays(_: SlowCSSSelectorInsightModel): Types.Overlays.Overlay[];

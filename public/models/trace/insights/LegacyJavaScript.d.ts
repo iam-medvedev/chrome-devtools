@@ -1,4 +1,5 @@
 import type * as Handlers from '../handlers/handlers.js';
+import type * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
@@ -29,4 +30,5 @@ export type LegacyJavaScriptInsightModel = InsightModel<typeof UIStrings, {
     legacyJavaScriptResults: LegacyJavaScriptResults;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LegacyJavaScriptInsightModel;
+export declare function createOverlays(model: LegacyJavaScriptInsightModel): Types.Overlays.Overlay[];
 export {};

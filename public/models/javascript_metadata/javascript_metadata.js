@@ -1481,7 +1481,7 @@ var NativeFunctions = [
   {
     name: "item",
     signatures: [["index"]],
-    receivers: ["CSSRuleList", "CSSStyleDeclaration", "DOMRectList", "DOMStringList", "DOMTokenList", "FileList", "HTMLCollectionBase", "HTMLCollectionOf", "HTMLSelectElement", "MediaList", "MimeTypeArray", "NamedNodeMap", "NodeList", "NodeListOf", "Plugin", "PluginArray", "SpeechRecognitionResult", "SpeechRecognitionResultList", "StyleSheetList", "TouchList", "HTMLCollection", "SpeechGrammarList", "SpeechRecognitionPhraseList"]
+    receivers: ["CSSRuleList", "CSSStyleDeclaration", "DOMRectList", "DOMStringList", "DOMTokenList", "FileList", "HTMLCollectionBase", "HTMLCollectionOf", "HTMLSelectElement", "MediaList", "MimeTypeArray", "NamedNodeMap", "NodeList", "NodeListOf", "Plugin", "PluginArray", "SpeechRecognitionResult", "SpeechRecognitionResultList", "StyleSheetList", "TouchList", "HTMLCollection", "SpeechGrammarList"]
   },
   {
     name: "item",
@@ -3828,7 +3828,7 @@ var NativeFunctions = [
   {
     name: "removeItem",
     signatures: [["index"]],
-    receivers: ["SVGLengthList", "SVGNumberList", "SVGPointList", "SVGStringList", "SVGTransformList", "SpeechRecognitionPhraseList"]
+    receivers: ["SVGLengthList", "SVGNumberList", "SVGPointList", "SVGStringList", "SVGTransformList"]
   },
   {
     name: "removeItem",
@@ -6492,6 +6492,10 @@ var NativeFunctions = [
     signatures: [["?data"]]
   },
   {
+    name: "pseudo",
+    signatures: [["type"]]
+  },
+  {
     name: "parseHTMLUnsafe",
     signatures: [["html", "?options"]]
   },
@@ -7487,7 +7491,7 @@ var NativeFunctions = [
   },
   {
     name: "drawElement",
-    signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
+    signatures: [["element", "x", "y", "?options"], ["element", "x", "y", "dwidth", "dheight", "?options"]]
   },
   {
     name: "setHitTestRegions",
@@ -8532,14 +8536,6 @@ var NativeFunctions = [
   {
     name: "SpeechRecognitionEvent",
     signatures: [["type", "?initDict"]]
-  },
-  {
-    name: "SpeechRecognitionPhraseList",
-    signatures: [["phrases"]]
-  },
-  {
-    name: "addItem",
-    signatures: [["item"]]
   },
   {
     name: "SpeechRecognitionPhrase",

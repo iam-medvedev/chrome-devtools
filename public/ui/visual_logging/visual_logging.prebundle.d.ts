@@ -12,6 +12,7 @@ export declare const logKeyDown: (l: Loggable | null, e: Event, context?: string
 export { registerParentProvider, setMappedParent } from './LoggingState.js';
 export declare function registerLoggable(loggable: Loggable, config: string, parent: Loggable | null, size: DOMRect): void;
 export declare function isUnderInspection(origin?: string): Promise<boolean>;
+export declare function setHighlightedVe(veKey: string | null): void;
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the
  * context to differentiate between different actions, and make sure that buttons and menu items

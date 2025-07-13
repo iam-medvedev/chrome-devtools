@@ -101,11 +101,6 @@ export declare class NetworkLogWithFilterRevealer implements Common.Revealer
 }
 export declare class FilmStripRecorder implements Tracing.TracingManager.TracingManagerClient {
     #private;
-    private tracingManager;
-    private resourceTreeModel;
-    private readonly timeCalculator;
-    private readonly filmStripView;
-    private callback;
     constructor(timeCalculator: NetworkTimeCalculator, filmStripView: PerfUI.FilmStripView.FilmStripView);
     traceEventsCollected(events: Trace.Types.Events.Event[]): void;
     tracingComplete(): Promise<void>;

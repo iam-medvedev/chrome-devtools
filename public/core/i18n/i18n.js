@@ -70,11 +70,11 @@ function localeLanguagesMatch(localeString1, localeString2) {
 function defineFormatter(options) {
   let intlNumberFormat;
   return {
-    format(value) {
+    format(value, separator) {
       if (!intlNumberFormat) {
         intlNumberFormat = new Intl.NumberFormat(DevToolsLocale.instance().locale, options);
       }
-      return formatAndEnsureSpace(intlNumberFormat, value);
+      return formatAndEnsureSpace(intlNumberFormat, value, separator);
     },
     formatToParts(value) {
       if (!intlNumberFormat) {
@@ -84,15 +84,15 @@ function defineFormatter(options) {
     }
   };
 }
-function formatAndEnsureSpace(formatter, value) {
+function formatAndEnsureSpace(formatter, value, separator = "\xA0") {
   const parts = formatter.formatToParts(value);
   let hasSpace = false;
   for (const part of parts) {
     if (part.type === "literal") {
       if (part.value === " ") {
         hasSpace = true;
-        part.value = "\xA0";
-      } else if (part.value === "\xA0") {
+        part.value = separator;
+      } else if (part.value === separator) {
         hasSpace = true;
       }
     }
@@ -105,9 +105,9 @@ function formatAndEnsureSpace(formatter, value) {
     return parts.map((part) => part.value).join("");
   }
   if (unitIndex === 0) {
-    return parts[0].value + "\xA0" + parts.slice(1).map((part) => part.value).join("");
+    return parts[0].value + separator + parts.slice(1).map((part) => part.value).join("");
   }
-  return parts.slice(0, unitIndex).map((part) => part.value).join("") + "\xA0" + parts.slice(unitIndex).map((part) => part.value).join("");
+  return parts.slice(0, unitIndex).map((part) => part.value).join("") + separator + parts.slice(unitIndex).map((part) => part.value).join("");
 }
 
 // gen/front_end/core/i18n/ByteUtilities.js
@@ -487,7 +487,7 @@ function millisToString(ms, higherResolution) {
   return longDaysDecimal.format(days);
 }
 var preciseMillisToStringFormattersCache = /* @__PURE__ */ new Map();
-function preciseMillisToString(ms, precision = 0) {
+function preciseMillisToString(ms, precision = 0, separator) {
   let formatter = preciseMillisToStringFormattersCache.get(precision);
   if (!formatter) {
     formatter = defineFormatter({
@@ -499,7 +499,7 @@ function preciseMillisToString(ms, precision = 0) {
     });
     preciseMillisToStringFormattersCache.set(precision, formatter);
   }
-  return formatter.format(ms);
+  return formatter.format(ms, separator);
 }
 var preciseSecondsToStringFormattersCache = /* @__PURE__ */ new Map();
 function preciseSecondsToString(ms, precision = 0) {

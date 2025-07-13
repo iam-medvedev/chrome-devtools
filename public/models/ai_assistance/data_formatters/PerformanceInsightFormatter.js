@@ -8,7 +8,7 @@ function formatMilli(x) {
     if (x === undefined) {
         return '';
     }
-    return i18n.TimeUtilities.preciseMillisToString(x, 2);
+    return i18n.TimeUtilities.preciseMillisToString(x, 2, /* separator */ ' ');
 }
 function formatMicroToMilli(x) {
     if (x === undefined) {
@@ -60,34 +60,41 @@ export class PerformanceInsightFormatter {
         if (!data) {
             return '';
         }
-        const { metricScore, lcpRequest } = data;
+        const { metricScore, lcpRequest, lcpEvent } = data;
+        const theLcpElement = lcpEvent.args.data?.nodeName ? `The LCP element (${lcpEvent.args.data.nodeName})` : 'The LCP element';
         const parts = [
             `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicroToMilli(metricScore.timing)}.`,
         ];
         if (lcpRequest) {
-            parts.push(`The LCP resource was fetched from \`${lcpRequest.args.data.url}\`.`);
+            parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
             const request = TraceEventFormatter.networkRequest(lcpRequest, this.#parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
             parts.push(request);
         }
         else {
-            parts.push('The LCP is text based and was not fetched from the network.');
+            parts.push(`${theLcpElement} is text and was not fetched from the network.`);
         }
         return parts.join('\n');
     }
     insightIsSupported() {
         return this.#description().length > 0;
     }
-    formatInsight() {
+    /**
+     * Formats and outputs the insight's data.
+     * Pass `{headingLevel: X}` to determine what heading level to use for the
+     * titles in the markdown output. The default is 2 (##).
+     */
+    formatInsight(opts = { headingLevel: 2 }) {
+        const header = '#'.repeat(opts.headingLevel);
         const { title } = this.#insight;
-        return `## Insight Title: ${title}
+        return `${header} Insight Title: ${title}
 
-## Insight Summary:
+${header} Insight Summary:
 ${this.#description()}
 
-## Detailed analysis:
+${header} Detailed analysis:
 ${this.#details()}
 
-## External resources:
+${header} External resources:
 ${this.#links()}`;
     }
     #details() {
@@ -300,7 +307,7 @@ For a given slow interaction, we can break it down into 3 phases:
 
 The sum of these three phases is the total latency. It is important to optimize each of these phases to ensure interactions take as little time as possible. Focusing on the phase that has the largest score is a good way to start optimizing.`;
             case 'LCPDiscovery':
-                return `This insight analyzes the time taken to discover the LCP resource and request it on the network. It only applies if LCP element was a resource like an image that has to be fetched over the network. There are 3 checks this insight makes:
+                return `This insight analyzes the time taken to discover the LCP resource and request it on the network. It only applies if the LCP element was a resource like an image that has to be fetched over the network. There are 3 checks this insight makes:
 1. Did the resource have \`fetchpriority=high\` applied?
 2. Was the resource discoverable in the initial document, rather than injected from a script or stylesheet?
 3. The resource was not lazy loaded as this can delay the browser loading the resource.
@@ -436,7 +443,7 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
     }
     static #getOrAssignUrlIndex(urlIdToIndex, url) {
         let index = urlIdToIndex.get(url);
-        if (index) {
+        if (index !== undefined) {
             return index;
         }
         index = urlIdToIndex.size;
@@ -446,17 +453,18 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
     // This is the data passed to a network request when the Performance Insights agent is asking for information on multiple requests.
     static getNetworkRequestsNewFormat(requests, parsedTrace) {
         const urlIdToIndex = new Map();
-        let allRequestsText = '';
-        requests.map(request => {
+        const allRequestsText = requests
+            .map(request => {
             const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-            allRequestsText += this.networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex);
-        });
+            return this.networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex);
+        })
+            .join('\n');
         const urlsMapString = 'allUrls = ' +
-            `[${Array.from(urlIdToIndex.keys())
-                .map(url => {
-                return `${urlIdToIndex.get(url)}: ${url}`; // Removed the trailing comma here
+            `[${Array.from(urlIdToIndex.entries())
+                .map(([url, index]) => {
+                return `${index}: ${url}`;
             })
-                .join(', ')}]`; // Explicitly join with a comma
+                .join(', ')}]`;
         return urlsMapString + '\n\n' + allRequestsText;
     }
     /**
@@ -490,7 +498,7 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
      * - `initiatorUrlIndex`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
      * - `redirects`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
      * `[redirectUrlIndex|startTime|duration]`, where: `redirectUrlIndex`: Numerical index for the redirect's URL. `startTime`: The start time of the redirect in milliseconds, relative to navigation start. `duration`: The duration of the redirect in milliseconds.
-     * - `responseHeaders`: A comma-separated list of values for specific, pre-defined response headers, enclosed in square brackets.
+     * - `responseHeaders`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
      * The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
      */
     static networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
@@ -506,7 +514,12 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
         const mainThreadProcessingDuration = formatMicroToMilli(request.ts + request.dur - syntheticData.finishTime);
         const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? 't' : 'f';
         const finalPriority = priority;
-        const headerValues = responseHeaders?.map(header => header.value).join(',');
+        const headerValues = responseHeaders
+            ?.map(header => {
+            const value = NetworkRequestFormatter.allowHeader(header.name) ? header.value : '<redacted>';
+            return `${header.name}: ${value}`;
+        })
+            .join('|');
         const redirects = request.args.data.redirects
             .map(redirect => {
             const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
@@ -533,10 +546,10 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
             finalPriority,
             renderBlocking,
             protocol,
-            fromServiceWorker,
+            fromServiceWorker ? 't' : 'f',
             initiatorUrlIndex,
             `[${redirects}]`,
-            `[${headerValues}]`,
+            `[${headerValues ?? ''}]`,
         ];
         return parts.join(';');
     }

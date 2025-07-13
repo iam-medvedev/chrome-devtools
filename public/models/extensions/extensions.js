@@ -132,7 +132,7 @@ self.injectedExtensionAPI = function(extensionInfo, inspectedTabId, themeName, k
       const id = "extension-panel-" + extensionServer.nextObjectId();
       extensionServer.sendRequest({ command: "createPanel", id, title, page }, callback && (() => callback.call(this, new (Constructor(ExtensionPanel2))(id))));
     },
-    setOpenResourceHandler: function(callback) {
+    setOpenResourceHandler: function(callback, urlScheme) {
       const hadHandler = extensionServer.hasHandler(
         "open-resource"
         /* PrivateAPI.Events.OpenResource */
@@ -140,8 +140,8 @@ self.injectedExtensionAPI = function(extensionInfo, inspectedTabId, themeName, k
       function callbackWrapper(message) {
         userAction = true;
         try {
-          const { resource, lineNumber } = message;
-          callback.call(null, new (Constructor(Resource))(resource), lineNumber);
+          const { resource, lineNumber, columnNumber } = message;
+          callback.call(null, new (Constructor(Resource))(resource), lineNumber, columnNumber);
         } finally {
           userAction = false;
         }
@@ -155,7 +155,7 @@ self.injectedExtensionAPI = function(extensionInfo, inspectedTabId, themeName, k
         extensionServer.registerHandler("open-resource", callbackWrapper);
       }
       if (hadHandler === !callback) {
-        extensionServer.sendRequest({ command: "setOpenResourceHandler", handlerPresent: Boolean(callback) });
+        extensionServer.sendRequest({ command: "setOpenResourceHandler", handlerPresent: Boolean(callback), urlScheme });
       }
     },
     setThemeChangeHandler: function(callback) {
@@ -1602,6 +1602,7 @@ var RegisteredExtension = class {
   name;
   hostsPolicy;
   allowFileAccess;
+  openResourceScheme = null;
   constructor(name, hostsPolicy, allowFileAccess) {
     this.name = name;
     this.hostsPolicy = hostsPolicy;
@@ -1613,6 +1614,9 @@ var RegisteredExtension = class {
     }
     if (!inspectedURL) {
       return false;
+    }
+    if (this.openResourceScheme && inspectedURL.startsWith(this.openResourceScheme)) {
+      return true;
     }
     if (!ExtensionServer.canInspectURL(inspectedURL)) {
       return false;
@@ -2204,11 +2208,22 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     if (!extension) {
       throw new Error("Received a message from an unregistered extension");
     }
+    if (message.urlScheme) {
+      extension.openResourceScheme = message.urlScheme;
+    }
+    const extensionOrigin = this.getExtensionOrigin(port);
     const { name } = extension;
+    const registration = {
+      title: name,
+      origin: extensionOrigin,
+      scheme: message.urlScheme,
+      handler: this.handleOpenURL.bind(this, port),
+      filter: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(extension.openResourceScheme, url, schemes)
+    };
     if (message.handlerPresent) {
-      Components.Linkifier.Linkifier.registerLinkHandler(name, this.handleOpenURL.bind(this, port));
+      Components.Linkifier.Linkifier.registerLinkHandler(registration);
     } else {
-      Components.Linkifier.Linkifier.unregisterLinkHandler(name);
+      Components.Linkifier.Linkifier.unregisterLinkHandler(registration);
     }
     return void 0;
   }
@@ -2228,9 +2243,23 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     }
     return void 0;
   }
-  handleOpenURL(port, contentProvider, lineNumber) {
-    if (this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
-      port.postMessage({ command: "open-resource", resource: this.makeResource(contentProvider), lineNumber: lineNumber + 1 });
+  handleOpenURL(port, contentProviderOrUrl, lineNumber, columnNumber) {
+    let url;
+    let resource;
+    if (typeof contentProviderOrUrl !== "string") {
+      url = contentProviderOrUrl.contentURL();
+      resource = this.makeResource(contentProviderOrUrl);
+    } else {
+      url = contentProviderOrUrl;
+      resource = { url, type: Common2.ResourceType.resourceTypes.Other.name() };
+    }
+    if (this.extensionAllowedOnURL(url, port)) {
+      port.postMessage({
+        command: "open-resource",
+        resource,
+        lineNumber: lineNumber ? lineNumber + 1 : void 0,
+        columnNumber: columnNumber ? columnNumber + 1 : void 0
+      });
     }
   }
   extensionAllowedOnURL(url, port) {

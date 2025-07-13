@@ -385,6 +385,7 @@
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/cpu_profile.js" name="MODELS_CPU_PROFILE_CPU_PROFILE_JS" resource_path="models/cpu_profile/cpu_profile.js" type="BINDATA" compress="false"/>
       <include file="models/crux-manager/crux-manager.js" name="MODELS_CRUX_MANAGER_CRUX_MANAGER_JS" resource_path="models/crux-manager/crux-manager.js" type="BINDATA" compress="false"/>
+      <include file="models/elements/elements.js" name="MODELS_ELEMENTS_ELEMENTS_JS" resource_path="models/elements/elements.js" type="BINDATA" compress="false"/>
       <include file="models/emulation/emulation.js" name="MODELS_EMULATION_EMULATION_JS" resource_path="models/emulation/emulation.js" type="BINDATA" compress="false"/>
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="models/formatter/formatter.js" name="MODELS_FORMATTER_FORMATTER_JS" resource_path="models/formatter/formatter.js" type="BINDATA" compress="false"/>
@@ -742,6 +743,7 @@
       <include file="third_party/marked/marked.js" name="THIRD_PARTY_MARKED_MARKED_JS" resource_path="third_party/marked/marked.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer-replay/puppeteer-replay.js" name="THIRD_PARTY_PUPPETEER_REPLAY_PUPPETEER_REPLAY_JS" resource_path="third_party/puppeteer-replay/puppeteer-replay.js" type="BINDATA" compress="false"/>
       <include file="third_party/puppeteer/puppeteer.js" name="THIRD_PARTY_PUPPETEER_PUPPETEER_JS" resource_path="third_party/puppeteer/puppeteer.js" type="BINDATA" compress="false"/>
+      <include file="third_party/source-map-scopes-codec/source-map-scopes-codec.js" name="THIRD_PARTY_SOURCE_MAP_SCOPES_CODEC_SOURCE_MAP_SCOPES_CODEC_JS" resource_path="third_party/source-map-scopes-codec/source-map-scopes-codec.js" type="BINDATA" compress="false"/>
       <include file="third_party/third-party-web/third-party-web.js" name="THIRD_PARTY_THIRD_PARTY_WEB_THIRD_PARTY_WEB_JS" resource_path="third_party/third-party-web/third-party-web.js" type="BINDATA" compress="false"/>
       <include file="third_party/wasmparser/wasmparser.js" name="THIRD_PARTY_WASMPARSER_WASMPARSER_JS" resource_path="third_party/wasmparser/wasmparser.js" type="BINDATA" compress="false"/>
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>

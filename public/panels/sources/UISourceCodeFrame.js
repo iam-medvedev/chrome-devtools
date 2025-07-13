@@ -122,7 +122,7 @@ export class UISourceCodeFrame extends Common.ObjectWrapper
         return this.#uiSourceCode;
     }
     setUISourceCode(uiSourceCode) {
-        const loaded = uiSourceCode.contentLoaded() ? Promise.resolve() : uiSourceCode.requestContent();
+        const loaded = uiSourceCode.contentLoaded() ? Promise.resolve() : uiSourceCode.requestContentData();
         const startUISourceCode = this.#uiSourceCode;
         loaded.then(async () => {
             if (this.#uiSourceCode !== startUISourceCode) {

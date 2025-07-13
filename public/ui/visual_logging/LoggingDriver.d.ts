@@ -14,3 +14,4 @@ export declare function startLogging(options?: {
 export declare function addDocument(document: Document): Promise<void>;
 export declare function stopLogging(): Promise<void>;
 export declare function scheduleProcessing(): void;
+export declare function process(): Promise<void>;

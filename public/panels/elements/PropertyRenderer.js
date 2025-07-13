@@ -359,7 +359,7 @@ export class Renderer extends SDK.CSSPropertyParser.TreeWalker {
         }
         const cssControls = new SDK.CSSPropertyParser.CSSControlMap();
         const renderers = nodeOrNodes.map(node => this.walkExcludingSuccessors(context.ast.subtree(node), context.property, context.renderers, context.matchedResult, cssControls, context.options, context.tracing));
-        const nodes = renderers.map(node => node.#output).reduce(mergeWithSpacing);
+        const nodes = renderers.map(node => node.#output).reduce(mergeWithSpacing, []);
         return { nodes, cssControls };
     }
     static renderInto(nodeOrNodes, context, parent) {

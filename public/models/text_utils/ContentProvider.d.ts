@@ -6,8 +6,6 @@ import type { WasmDisassembly } from './WasmDisassembly.js';
 export interface ContentProvider {
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
-    /** @deprecated Prefer {@link requestContentData} instead */
-    requestContent(): Promise<DeferredContent>;
     requestContentData(): Promise<ContentDataOrError>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<SearchMatch[]>;
 }

@@ -50,7 +50,6 @@ export async function createWorkspaceProject(baseUrl, files) {
         const url = urlString `${file.path.concat(file.name)}`;
         const fileUrl = networkPersistenceManager.fileUrlFromNetworkUrl(url, true);
         uiSourceCodes.set(fileUrl, {
-            requestContent: () => Promise.resolve({ content: file.content }),
             requestContentData: () => Promise.resolve(new TextUtils.ContentData.ContentData(file.content, /* isBase64=*/ false, 'text/plain')),
             url: () => fileUrl,
             project: () => {

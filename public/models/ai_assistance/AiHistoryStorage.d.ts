@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import { type ResponseData } from './agents/AiAgent.js';
 export declare const enum ConversationType {
     STYLING = "freestyler",
@@ -31,7 +32,13 @@ export declare class Conversation {
     addHistoryItem(item: ResponseData): Promise<void>;
     serialize(): SerializedConversation;
 }
-export declare class AiHistoryStorage {
+export declare const enum Events {
+    HISTORY_DELETED = "AiHistoryDeleted"
+}
+export interface EventTypes {
+    [Events.HISTORY_DELETED]: void;
+}
+export declare class AiHistoryStorage extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     constructor(maxStorageSize?: number);
     clearForTest(): void;

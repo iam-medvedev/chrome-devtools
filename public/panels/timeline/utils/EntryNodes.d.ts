@@ -12,3 +12,7 @@ export declare function nodeIdsForEvent(modelData: Trace.Handlers.Types.ParsedTr
  * This method is cached for the given event.
  */
 export declare function relatedDOMNodesForEvent(modelData: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null> | null>;
+/**
+ * Takes a set of Protocol.DOM.BackendNodeId ids and will return a map of NodeId=>DOMNode.
+ */
+export declare function domNodesForBackendIds(frameId: Protocol.Page.FrameId, nodeIds: Set<Protocol.DOM.BackendNodeId>): Promise<Map<Protocol.DOM.BackendNodeId, SDK.DOMModel.DOMNode | null>>;

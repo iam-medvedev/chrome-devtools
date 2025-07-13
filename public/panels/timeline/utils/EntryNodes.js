@@ -80,7 +80,7 @@ export async function relatedDOMNodesForEvent(modelData, event) {
 /**
  * Takes a set of Protocol.DOM.BackendNodeId ids and will return a map of NodeId=>DOMNode.
  */
-async function domNodesForBackendIds(frameId, nodeIds) {
+export async function domNodesForBackendIds(frameId, nodeIds) {
     const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
     const domModel = target?.model(SDK.DOMModel.DOMModel);
     const resourceTreeModel = target?.model(SDK.ResourceTreeModel.ResourceTreeModel);

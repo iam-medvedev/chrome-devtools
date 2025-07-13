@@ -537,6 +537,9 @@ var getMarkdownLink = (key) => {
   if (/^https:\/\/web\.dev\//.test(key)) {
     return key;
   }
+  if (/^https:\/\/developer\.mozilla\.org\//.test(key)) {
+    return key;
+  }
   if (key === "https://philipwalton.com/articles/the-state-of-es5-on-the-web/") {
     return key;
   }

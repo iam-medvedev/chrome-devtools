@@ -5,14 +5,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as NetworkComponents from './components/components.js';
 import type { NetworkTimeCalculator } from './NetworkTimeCalculator.js';
 export declare class NetworkItemView extends UI.TabbedPane.TabbedPane {
-    private requestInternal;
-    private readonly resourceViewTabSetting;
-    private readonly headersViewComponent;
-    private payloadView;
-    private readonly responseView;
-    private cookiesView;
-    private initialTab?;
-    private readonly firstTab;
+    #private;
     constructor(request: SDK.NetworkRequest.NetworkRequest, calculator: NetworkTimeCalculator, initialTab?: NetworkForward.UIRequestLocation.UIRequestTabs);
     wasShown(): void;
     willHide(): void;

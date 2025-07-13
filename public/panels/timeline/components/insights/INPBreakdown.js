@@ -7,45 +7,13 @@ import * as Platform from '../../../../core/platform/platform.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
-const { UIStrings, i18nString } = Trace.Insights.Models.INPBreakdown;
+const { UIStrings, i18nString, createOverlaysForSubpart } = Trace.Insights.Models.INPBreakdown;
 const { html } = Lit;
 export class INPBreakdown extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-inp-breakdown`;
     internalName = 'inp';
     hasAskAiSupport() {
         return this.model?.longestInteractionEvent !== undefined;
-    }
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        const event = this.model.longestInteractionEvent;
-        if (!event) {
-            return [];
-        }
-        return this.#createOverlaysForSbupart(event);
-    }
-    // If `subpart` is -1, then all subparts are included. Otherwise it's just that index.
-    #createOverlaysForSbupart(event, subpartIndex = -1) {
-        const p1 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, (event.ts + event.inputDelay));
-        const p2 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(p1.max, (p1.max + event.mainThreadHandling));
-        const p3 = Trace.Helpers.Timing.traceWindowFromMicroSeconds(p2.max, (p2.max + event.presentationDelay));
-        let sections = [
-            { bounds: p1, label: i18nString(UIStrings.inputDelay), showDuration: true },
-            { bounds: p2, label: i18nString(UIStrings.processingDuration), showDuration: true },
-            { bounds: p3, label: i18nString(UIStrings.presentationDelay), showDuration: true },
-        ];
-        if (subpartIndex !== -1) {
-            sections = [sections[subpartIndex]];
-        }
-        return [
-            {
-                type: 'TIMESPAN_BREAKDOWN',
-                sections,
-                renderLocation: 'BELOW_EVENT',
-                entry: event,
-            },
-        ];
     }
     renderContent() {
         const event = this.model?.longestInteractionEvent;
@@ -63,15 +31,15 @@ export class INPBreakdown extends BaseInsightComponent {
             rows: [
                 {
                     values: [i18nString(UIStrings.inputDelay), time(event.inputDelay)],
-                    overlays: this.#createOverlaysForSbupart(event, 0),
+                    overlays: createOverlaysForSubpart(event, 0),
                 },
                 {
                     values: [i18nString(UIStrings.processingDuration), time(event.mainThreadHandling)],
-                    overlays: this.#createOverlaysForSbupart(event, 1),
+                    overlays: createOverlaysForSubpart(event, 1),
                 },
                 {
                     values: [i18nString(UIStrings.presentationDelay), time(event.presentationDelay)],
-                    overlays: this.#createOverlaysForSbupart(event, 2),
+                    overlays: createOverlaysForSubpart(event, 2),
                 },
             ],
         }}>

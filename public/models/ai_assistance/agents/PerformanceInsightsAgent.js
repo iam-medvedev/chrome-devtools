@@ -255,7 +255,7 @@ export class PerformanceInsightsAgent extends AiAgent {
                     return { error: 'No insight available' };
                 }
                 const activeInsight = this.#insight.getItem();
-                const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
+                const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.insightSetBounds, activeInsight.parsedTrace);
                 const formatted = requests.map(r => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
                 const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted.join('\n'));
                 Host.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
@@ -347,7 +347,7 @@ The fields are:
                     return { error: 'No insight available' };
                 }
                 const activeInsight = this.#insight.getItem();
-                const tree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivity(activeInsight.insight, activeInsight.parsedTrace);
+                const tree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivity(activeInsight.insight, activeInsight.insightSetBounds, activeInsight.parsedTrace);
                 if (!tree) {
                     return { error: 'No main thread activity found' };
                 }

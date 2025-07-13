@@ -205,6 +205,9 @@ export class BaseInsightComponent extends HTMLElement {
         this.#initialOverlays = this.createOverlays();
         return this.#initialOverlays;
     }
+    createOverlays() {
+        return this.model?.createOverlays?.() ?? [];
+    }
     #render() {
         if (!this.model) {
             return;
@@ -273,7 +276,7 @@ export class BaseInsightComponent extends HTMLElement {
         return null;
     }
     #askAIButtonClick() {
-        if (!this.#model || !this.#parsedTrace) {
+        if (!this.#model || !this.#parsedTrace || !this.data.bounds) {
             return;
         }
         // matches the one in ai_assistance-meta.ts
@@ -281,7 +284,7 @@ export class BaseInsightComponent extends HTMLElement {
         if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
             return;
         }
-        const context = new Utils.InsightAIContext.ActiveInsight(this.#model, this.#parsedTrace);
+        const context = new Utils.InsightAIContext.ActiveInsight(this.#model, this.data.bounds, this.#parsedTrace);
         UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, context);
         // Trigger the AI Assistance panel to open.
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);

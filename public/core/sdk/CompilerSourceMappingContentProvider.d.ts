@@ -7,7 +7,6 @@ export declare class CompilerSourceMappingContentProvider implements TextUtils.C
     constructor(sourceURL: Platform.DevToolsPath.UrlString, contentType: Common.ResourceType.ResourceType, initiator: PageResourceLoadInitiator);
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
-    requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
 }

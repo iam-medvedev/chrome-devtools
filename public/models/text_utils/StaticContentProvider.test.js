@@ -12,7 +12,7 @@ describe('StaticContentProvider', () => {
         const provider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(testUrl, jsonResource, '{ "hello": "world" }');
         assert.instanceOf(provider, TextUtils.StaticContentProvider.StaticContentProvider);
     });
-    it('lazily fetches its contents when requestContent is called', async () => {
+    it('lazily fetches its contents when requestContentData is called', async () => {
         const jsonContent = '{ "hello": "world" }';
         const provider = TextUtils.StaticContentProvider.StaticContentProvider.fromString(testUrl, jsonResource, jsonContent);
         const contents = await provider.requestContentData();

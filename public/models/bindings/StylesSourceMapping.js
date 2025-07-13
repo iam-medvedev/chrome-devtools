@@ -266,10 +266,6 @@ export class StyleFile {
         console.assert(this.headers.size > 0);
         return this.#firstHeader().originalContentProvider().contentType();
     }
-    requestContent() {
-        console.assert(this.headers.size > 0);
-        return this.#firstHeader().originalContentProvider().requestContent();
-    }
     requestContentData() {
         console.assert(this.headers.size > 0);
         return this.#firstHeader().originalContentProvider().requestContentData();

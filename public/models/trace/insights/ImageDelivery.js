@@ -247,4 +247,14 @@ export function generateInsight(parsedTrace, context) {
         wastedBytes: optimizableImages.reduce((total, img) => total + img.byteSavings, 0),
     });
 }
+export function createOverlayForRequest(request) {
+    return {
+        type: 'ENTRY_OUTLINE',
+        entry: request,
+        outlineReason: 'ERROR',
+    };
+}
+export function createOverlays(model) {
+    return model.optimizableImages.map(image => createOverlayForRequest(image.request));
+}
 //# sourceMappingURL=ImageDelivery.js.map

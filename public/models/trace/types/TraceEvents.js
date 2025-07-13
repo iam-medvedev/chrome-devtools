@@ -167,6 +167,7 @@ export var SelectorTimingsKey;
     SelectorTimingsKey["MatchCount"] = "match_count";
     SelectorTimingsKey["Selector"] = "selector";
     SelectorTimingsKey["StyleSheetId"] = "style_sheet_id";
+    SelectorTimingsKey["InvalidationCount"] = "invalidation_count";
 })(SelectorTimingsKey || (SelectorTimingsKey = {}));
 export function isSelectorStats(event) {
     return event.name === "SelectorStats" /* Name.SELECTOR_STATS */;

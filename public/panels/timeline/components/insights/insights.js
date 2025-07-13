@@ -481,6 +481,9 @@ var BaseInsightComponent = class extends HTMLElement {
     this.#initialOverlays = this.createOverlays();
     return this.#initialOverlays;
   }
+  createOverlays() {
+    return this.model?.createOverlays?.() ?? [];
+  }
   #render() {
     if (!this.model) {
       return;
@@ -549,14 +552,14 @@ var BaseInsightComponent = class extends HTMLElement {
     return null;
   }
   #askAIButtonClick() {
-    if (!this.#model || !this.#parsedTrace) {
+    if (!this.#model || !this.#parsedTrace || !this.data.bounds) {
       return;
     }
     const actionId = "drjones.performance-insight-context";
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    const context = new Utils.InsightAIContext.ActiveInsight(this.#model, this.#parsedTrace);
+    const context = new Utils.InsightAIContext.ActiveInsight(this.#model, this.data.bounds, this.#parsedTrace);
     UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, context);
     const action3 = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action3.execute();
@@ -1043,28 +1046,22 @@ customElements.define("devtools-performance-table", Table);
 import * as i18n6 from "./../../../../core/i18n/i18n.js";
 import * as Trace2 from "./../../../../models/trace/trace.js";
 import * as Lit5 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings3, i18nString: i18nString3 } = Trace2.Insights.Models.Cache;
+var { UIStrings: UIStrings3, i18nString: i18nString3, createOverlayForRequest } = Trace2.Insights.Models.Cache;
 var { html: html5 } = Lit5;
 var Cache = class extends BaseInsightComponent {
   static litTagName = Lit5.StaticHtml.literal`devtools-performance-cache`;
+  internalName = "cache";
   mapToRow(req) {
     return {
       values: [eventRef(req.request), i18n6.TimeUtilities.secondsToString(req.ttl)],
-      overlays: [this.#createOverlayForRequest(req.request)]
+      overlays: [createOverlayForRequest(req.request)]
     };
   }
   createAggregatedTableRow(remaining) {
     return {
       values: [renderOthersLabel(remaining.length), ""],
-      overlays: remaining.flatMap((r) => this.#createOverlayForRequest(r.request))
+      overlays: remaining.flatMap((r) => createOverlayForRequest(r.request))
     };
-  }
-  internalName = "cache";
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    return this.model.requests.map((req) => this.#createOverlayForRequest(req.request));
   }
   renderContent() {
     if (!this.model) {
@@ -1086,13 +1083,6 @@ var Cache = class extends BaseInsightComponent {
     }}>
         </devtools-performance-table>
       </div>`;
-  }
-  #createOverlayForRequest(request) {
-    return {
-      type: "ENTRY_OUTLINE",
-      entry: request,
-      outlineReason: "ERROR"
-    };
   }
 };
 customElements.define("devtools-performance-cache", Cache);
@@ -1310,23 +1300,18 @@ var CLSCulprits = class extends BaseInsightComponent {
     return true;
   }
   createOverlays() {
-    const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
-    const worstCluster = clustersByScore[0];
-    if (!worstCluster) {
+    if (!this.model) {
       return [];
     }
-    const range = Trace3.Types.Timing.Micro(worstCluster.dur ?? 0);
-    const max = Trace3.Types.Timing.Micro(worstCluster.ts + range);
-    const label = html8`<div>${i18nString5(UIStrings5.worstLayoutShiftCluster)}</div>`;
-    return [{
-      type: "TIMESPAN_BREAKDOWN",
-      sections: [
-        { bounds: { min: worstCluster.ts, range, max }, label, showDuration: false }
-      ],
-      // This allows for the overlay to sit over the layout shift.
-      entry: worstCluster.events[0],
-      renderLocation: "ABOVE_EVENT"
-    }];
+    const overlays = this.model.createOverlays?.();
+    if (!overlays) {
+      return [];
+    }
+    const timespanOverlaySection = overlays.find((overlay) => overlay.type === "TIMESPAN_BREAKDOWN")?.sections[0];
+    if (timespanOverlaySection) {
+      timespanOverlaySection.label = html8`<div>${i18nString5(UIStrings5.worstLayoutShiftCluster)}</div>`;
+    }
+    return overlays;
   }
   #clickEvent(event) {
     this.dispatchEvent(new EventReferenceClick(event));
@@ -1384,56 +1369,13 @@ var DocumentLatency_exports = {};
 __export(DocumentLatency_exports, {
   DocumentLatency: () => DocumentLatency
 });
-import * as Trace4 from "./../../../../models/trace/trace.js";
 import * as Lit9 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings6, i18nString: i18nString6 } = Trace4.Insights.Models.DocumentLatency;
 var { html: html9 } = Lit9;
 var DocumentLatency = class extends BaseInsightComponent {
   static litTagName = Lit9.StaticHtml.literal`devtools-performance-document-latency`;
   internalName = "document-latency";
   hasAskAiSupport() {
     return true;
-  }
-  createOverlays() {
-    if (!this.model?.data?.documentRequest) {
-      return [];
-    }
-    const overlays = [];
-    const event = this.model.data.documentRequest;
-    const redirectDurationMicro = Trace4.Helpers.Timing.milliToMicro(this.model.data.redirectDuration);
-    const sections = [];
-    if (this.model.data.redirectDuration) {
-      const bounds = Trace4.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, event.ts + redirectDurationMicro);
-      sections.push({ bounds, label: i18nString6(UIStrings6.redirectsLabel), showDuration: true });
-      overlays.push({ type: "CANDY_STRIPED_TIME_RANGE", bounds, entry: event });
-    }
-    if (!this.model.data.checklist.serverResponseIsFast.value) {
-      const serverResponseTimeMicro = Trace4.Helpers.Timing.milliToMicro(this.model.data.serverResponseTime);
-      const sendEnd = event.args.data.timing?.sendEnd ?? Trace4.Types.Timing.Milli(0);
-      const sendEndMicro = Trace4.Helpers.Timing.milliToMicro(sendEnd);
-      const bounds = Trace4.Helpers.Timing.traceWindowFromMicroSeconds(sendEndMicro, sendEndMicro + serverResponseTimeMicro);
-      sections.push({ bounds, label: i18nString6(UIStrings6.serverResponseTimeLabel), showDuration: true });
-    }
-    if (this.model.data.uncompressedResponseBytes) {
-      const bounds = Trace4.Helpers.Timing.traceWindowFromMicroSeconds(event.args.data.syntheticData.downloadStart, event.args.data.syntheticData.downloadStart + event.args.data.syntheticData.download);
-      sections.push({ bounds, label: i18nString6(UIStrings6.uncompressedDownload), showDuration: true });
-      overlays.push({ type: "CANDY_STRIPED_TIME_RANGE", bounds, entry: event });
-    }
-    if (sections.length) {
-      overlays.push({
-        type: "TIMESPAN_BREAKDOWN",
-        sections,
-        entry: this.model.data.documentRequest,
-        // Always render below because the document request is guaranteed to be
-        // the first request in the network track.
-        renderLocation: "BELOW_EVENT"
-      });
-    }
-    overlays.push({
-      type: "ENTRY_SELECTED",
-      entry: this.model.data.documentRequest
-    });
-    return overlays;
   }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;
@@ -1454,24 +1396,13 @@ __export(DOMSize_exports, {
 });
 import "./../../../../ui/components/icon_button/icon_button.js";
 import * as i18n10 from "./../../../../core/i18n/i18n.js";
-import * as Trace5 from "./../../../../models/trace/trace.js";
+import * as Trace4 from "./../../../../models/trace/trace.js";
 import * as Lit10 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings7, i18nString: i18nString7 } = Trace5.Insights.Models.DOMSize;
+var { UIStrings: UIStrings6, i18nString: i18nString6 } = Trace4.Insights.Models.DOMSize;
 var { html: html10 } = Lit10;
 var DOMSize = class extends BaseInsightComponent {
   static litTagName = Lit10.StaticHtml.literal`devtools-performance-dom-size`;
   internalName = "dom-size";
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const entries = [...this.model.largeStyleRecalcs, ...this.model.largeLayoutUpdates];
-    return entries.map((entry) => ({
-      type: "ENTRY_OUTLINE",
-      entry,
-      outlineReason: "ERROR"
-    }));
-  }
   #renderNodeTable(domStatsData) {
     const rows = [];
     if (domStatsData.maxDepth) {
@@ -1485,7 +1416,7 @@ var DOMSize = class extends BaseInsightComponent {
       }}>
         </devtools-performance-node-link>
       `;
-      rows.push({ values: [i18nString7(UIStrings7.maxDOMDepth), template] });
+      rows.push({ values: [i18nString6(UIStrings6.maxDOMDepth), template] });
     }
     if (domStatsData.maxChildren) {
       const { nodeId, nodeName } = domStatsData.maxChildren;
@@ -1498,7 +1429,7 @@ var DOMSize = class extends BaseInsightComponent {
       }}>
         </devtools-performance-node-link>
       `;
-      rows.push({ values: [i18nString7(UIStrings7.maxChildren), template] });
+      rows.push({ values: [i18nString6(UIStrings6.maxChildren), template] });
     }
     if (!rows.length) {
       return Lit10.nothing;
@@ -1507,7 +1438,7 @@ var DOMSize = class extends BaseInsightComponent {
       <devtools-performance-table
         .data=${{
       insight: this,
-      headers: [i18nString7(UIStrings7.statistic), i18nString7(UIStrings7.element)],
+      headers: [i18nString6(UIStrings6.statistic), i18nString6(UIStrings6.element)],
       rows
     }}>
       </devtools-performance-table>
@@ -1528,11 +1459,11 @@ var DOMSize = class extends BaseInsightComponent {
       };
     });
     return html10`<div class="insight-section">
-      <div class="insight-description">${md(i18nString7(UIStrings7.topUpdatesDescription))}</div>
+      <div class="insight-description">${md(i18nString6(UIStrings6.topUpdatesDescription))}</div>
       <devtools-performance-table
         .data=${{
       insight: this,
-      headers: ["", i18nString7(UIStrings7.duration)],
+      headers: ["", i18nString6(UIStrings6.duration)],
       rows
     }}>
       </devtools-performance-table>
@@ -1550,11 +1481,11 @@ var DOMSize = class extends BaseInsightComponent {
       <devtools-performance-table
         .data=${{
       insight: this,
-      headers: [i18nString7(UIStrings7.statistic), i18nString7(UIStrings7.value)],
+      headers: [i18nString6(UIStrings6.statistic), i18nString6(UIStrings6.value)],
       rows: [
-        { values: [i18nString7(UIStrings7.totalElements), domStatsData.totalElements] },
-        { values: [i18nString7(UIStrings7.maxDOMDepth), domStatsData.maxDepth?.depth ?? 0] },
-        { values: [i18nString7(UIStrings7.maxChildren), domStatsData.maxChildren?.numChildren ?? 0] }
+        { values: [i18nString6(UIStrings6.totalElements), domStatsData.totalElements] },
+        { values: [i18nString6(UIStrings6.maxDOMDepth), domStatsData.maxDepth?.depth ?? 0] },
+        { values: [i18nString6(UIStrings6.maxChildren), domStatsData.maxChildren?.numChildren ?? 0] }
       ]
     }}>
       </devtools-performance-table>
@@ -1572,7 +1503,7 @@ __export(DuplicatedJavaScript_exports, {
   DuplicatedJavaScript: () => DuplicatedJavaScript
 });
 import * as i18n11 from "./../../../../core/i18n/i18n.js";
-import * as Trace6 from "./../../../../models/trace/trace.js";
+import * as Trace5 from "./../../../../models/trace/trace.js";
 import * as Buttons3 from "./../../../../ui/components/buttons/buttons.js";
 import * as Lit11 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../../ui/visual_logging/visual_logging.js";
@@ -1604,7 +1535,7 @@ function scriptRef(script) {
 }
 
 // gen/front_end/panels/timeline/components/insights/DuplicatedJavaScript.js
-var { UIStrings: UIStrings8, i18nString: i18nString8 } = Trace6.Insights.Models.DuplicatedJavaScript;
+var { UIStrings: UIStrings7, i18nString: i18nString7 } = Trace5.Insights.Models.DuplicatedJavaScript;
 var { html: html11 } = Lit11;
 var DuplicatedJavaScript = class extends BaseInsightComponent {
   static litTagName = Lit11.StaticHtml.literal`devtools-performance-duplicated-javascript`;
@@ -1628,19 +1559,6 @@ var DuplicatedJavaScript = class extends BaseInsightComponent {
   }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;
-  }
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const requests = this.model.scriptsWithDuplication.map((script) => script.request).filter((e) => !!e);
-    return requests.map((request) => {
-      return {
-        type: "ENTRY_OUTLINE",
-        entry: request,
-        outlineReason: "ERROR"
-      };
-    });
   }
   renderContent() {
     if (!this.model) {
@@ -1690,7 +1608,7 @@ var DuplicatedJavaScript = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString8(UIStrings8.columnSource), i18nString8(UIStrings8.columnDuplicatedBytes)],
+      headers: [i18nString7(UIStrings7.columnSource), i18nString7(UIStrings7.columnDuplicatedBytes)],
       rows
     }}>
         </devtools-performance-table>
@@ -1706,13 +1624,28 @@ __export(FontDisplay_exports, {
   FontDisplay: () => FontDisplay
 });
 import * as i18n12 from "./../../../../core/i18n/i18n.js";
-import * as Trace7 from "./../../../../models/trace/trace.js";
+import * as Trace6 from "./../../../../models/trace/trace.js";
 import * as Lit12 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings9, i18nString: i18nString9 } = Trace7.Insights.Models.FontDisplay;
+var { UIStrings: UIStrings8, i18nString: i18nString8 } = Trace6.Insights.Models.FontDisplay;
 var { html: html12 } = Lit12;
 var FontDisplay = class extends BaseInsightComponent {
   static litTagName = Lit12.StaticHtml.literal`devtools-performance-font-display`;
   internalName = "font-display";
+  #overlayForRequest = /* @__PURE__ */ new Map();
+  createOverlays() {
+    this.#overlayForRequest.clear();
+    if (!this.model) {
+      return [];
+    }
+    const overlays = this.model.createOverlays?.();
+    if (!overlays) {
+      return [];
+    }
+    for (const overlay of overlays.filter((overlay2) => overlay2.type === "ENTRY_OUTLINE")) {
+      this.#overlayForRequest.set(overlay.entry, overlay);
+    }
+    return overlays;
+  }
   mapToRow(font) {
     const overlay = this.#overlayForRequest.get(font.request);
     return {
@@ -1729,21 +1662,6 @@ var FontDisplay = class extends BaseInsightComponent {
       overlays: remaining.map((r) => this.#overlayForRequest.get(r.request)).filter((o) => !!o)
     };
   }
-  #overlayForRequest = /* @__PURE__ */ new Map();
-  createOverlays() {
-    this.#overlayForRequest.clear();
-    if (!this.model) {
-      return [];
-    }
-    for (const font of this.model.fonts) {
-      this.#overlayForRequest.set(font.request, {
-        type: "ENTRY_OUTLINE",
-        entry: font.request,
-        outlineReason: font.wastedTime ? "ERROR" : "INFO"
-      });
-    }
-    return [...this.#overlayForRequest.values()];
-  }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;
   }
@@ -1757,7 +1675,7 @@ var FontDisplay = class extends BaseInsightComponent {
         ${html12`<devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString9(UIStrings9.fontColumn), i18nString9(UIStrings9.wastedTimeColumn)],
+      headers: [i18nString8(UIStrings8.fontColumn), i18nString8(UIStrings8.wastedTimeColumn)],
       rows
     }}>
         </devtools-performance-table>`}
@@ -1773,30 +1691,30 @@ __export(ForcedReflow_exports, {
 });
 import * as i18n13 from "./../../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../../core/platform/platform.js";
-import * as Trace8 from "./../../../../models/trace/trace.js";
+import * as Trace7 from "./../../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../../ui/legacy/components/utils/utils.js";
 import * as Lit13 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings10, i18nString: i18nString10 } = Trace8.Insights.Models.ForcedReflow;
+var { UIStrings: UIStrings9, i18nString: i18nString9, createOverlayForEvents } = Trace7.Insights.Models.ForcedReflow;
 var { html: html13, nothing: nothing11 } = Lit13;
 var ForcedReflow = class extends BaseInsightComponent {
   static litTagName = Lit13.StaticHtml.literal`devtools-performance-forced-reflow`;
+  internalName = "forced-reflow";
   mapToRow(data) {
     return {
       values: [this.#linkifyUrl(data.bottomUpData)],
-      overlays: this.#createOverlayForEvents(data.relatedEvents)
+      overlays: createOverlayForEvents(data.relatedEvents)
     };
   }
   createAggregatedTableRow(remaining) {
     return {
       values: [renderOthersLabel(remaining.length)],
-      overlays: remaining.flatMap((r) => this.#createOverlayForEvents(r.relatedEvents))
+      overlays: remaining.flatMap((r) => createOverlayForEvents(r.relatedEvents))
     };
   }
-  internalName = "forced-reflow";
   #linkifyUrl(callFrame) {
     const style = "display: flex; gap: 4px; padding: 4px 0; overflow: hidden; white-space: nowrap";
     if (!callFrame) {
-      return html13`<div style=${style}>${i18nString10(UIStrings10.unattributed)}</div>`;
+      return html13`<div style=${style}>${i18nString9(UIStrings9.unattributed)}</div>`;
     }
     const linkifier = new LegacyComponents2.Linkifier.Linkifier();
     const location = linkifier.linkifyScriptLocation(null, callFrame.scriptId, callFrame.url, callFrame.lineNumber, {
@@ -1814,7 +1732,7 @@ var ForcedReflow = class extends BaseInsightComponent {
       location.style.textAlign = "left";
       location.style.flex = "1";
     }
-    const functionName = callFrame.functionName || i18nString10(UIStrings10.anonymous);
+    const functionName = callFrame.functionName || i18nString9(UIStrings9.anonymous);
     return html13`<div style=${style}>${functionName}<span> @ </span> ${location}</div>`;
   }
   renderContent() {
@@ -1831,13 +1749,13 @@ var ForcedReflow = class extends BaseInsightComponent {
           <devtools-performance-table
             .data=${{
       insight: this,
-      headers: [i18nString10(UIStrings10.topTimeConsumingFunctionCall), i18nString10(UIStrings10.totalReflowTime)],
+      headers: [i18nString9(UIStrings9.topTimeConsumingFunctionCall), i18nString9(UIStrings9.totalReflowTime)],
       rows: [{
         values: [
           this.#linkifyUrl(topLevelFunctionCallData.topLevelFunctionCall),
-          time(Trace8.Types.Timing.Micro(topLevelFunctionCallData.totalReflowTime))
+          time(Trace7.Types.Timing.Micro(topLevelFunctionCallData.totalReflowTime))
         ],
-        overlays: this.#createOverlayForEvents(topLevelFunctionCallData.topLevelFunctionCallEvents, "INFO")
+        overlays: createOverlayForEvents(topLevelFunctionCallData.topLevelFunctionCallEvents, "INFO")
       }]
     }}>
           </devtools-performance-table>
@@ -1847,28 +1765,11 @@ var ForcedReflow = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString10(UIStrings10.relatedStackTrace)],
+      headers: [i18nString9(UIStrings9.relatedStackTrace)],
       rows
     }}>
         </devtools-performance-table>
       </div>`;
-  }
-  createOverlays() {
-    if (!this.model || !this.model.topLevelFunctionCallData) {
-      return [];
-    }
-    const allBottomUpEvents = [...this.model.aggregatedBottomUpData.values().flatMap((data) => data.relatedEvents)];
-    return [
-      ...this.#createOverlayForEvents(this.model.topLevelFunctionCallData.topLevelFunctionCallEvents, "INFO"),
-      ...this.#createOverlayForEvents(allBottomUpEvents)
-    ];
-  }
-  #createOverlayForEvents(events, outlineReason = "ERROR") {
-    return events.map((e) => ({
-      type: "ENTRY_OUTLINE",
-      entry: e,
-      outlineReason
-    }));
   }
 };
 customElements.define("devtools-performance-forced-reflow", ForcedReflow);
@@ -1878,9 +1779,9 @@ var Helpers_exports = {};
 __export(Helpers_exports, {
   shouldRenderForCategory: () => shouldRenderForCategory
 });
-import * as Trace9 from "./../../../../models/trace/trace.js";
+import * as Trace8 from "./../../../../models/trace/trace.js";
 function shouldRenderForCategory(options) {
-  return options.activeCategory === Trace9.Insights.Types.InsightCategory.ALL || options.activeCategory === options.insightCategory;
+  return options.activeCategory === Trace8.Insights.Types.InsightCategory.ALL || options.activeCategory === options.insightCategory;
 }
 
 // gen/front_end/panels/timeline/components/insights/ImageDelivery.js
@@ -1889,37 +1790,23 @@ __export(ImageDelivery_exports, {
   ImageDelivery: () => ImageDelivery
 });
 import "./../../../../ui/components/icon_button/icon_button.js";
-import * as Trace10 from "./../../../../models/trace/trace.js";
+import * as Trace9 from "./../../../../models/trace/trace.js";
 import * as Lit14 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings11, i18nString: i18nString11 } = Trace10.Insights.Models.ImageDelivery;
+var { UIStrings: UIStrings10, i18nString: i18nString10, createOverlayForRequest: createOverlayForRequest2 } = Trace9.Insights.Models.ImageDelivery;
 var { html: html14 } = Lit14;
 var ImageDelivery = class extends BaseInsightComponent {
   static litTagName = Lit14.StaticHtml.literal`devtools-performance-image-delivery`;
   internalName = "image-delivery";
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const { optimizableImages } = this.model;
-    return optimizableImages.map((image) => this.#createOverlayForRequest(image.request));
-  }
-  #createOverlayForRequest(request) {
-    return {
-      type: "ENTRY_OUTLINE",
-      entry: request,
-      outlineReason: "ERROR"
-    };
-  }
   mapToRow(image) {
     return {
       values: [imageRef(image.request)],
-      overlays: [this.#createOverlayForRequest(image.request)]
+      overlays: [createOverlayForRequest2(image.request)]
     };
   }
   createAggregatedTableRow(remaining) {
     return {
       values: [renderOthersLabel(remaining.length)],
-      overlays: remaining.map((r) => this.#createOverlayForRequest(r.request))
+      overlays: remaining.map((r) => createOverlayForRequest2(r.request))
     };
   }
   renderContent() {
@@ -1930,14 +1817,14 @@ var ImageDelivery = class extends BaseInsightComponent {
     const topImages = optimizableImages.sort((a, b) => b.request.args.data.decodedBodyLength - a.request.args.data.decodedBodyLength);
     const rows = createLimitedRows(topImages, this);
     if (!rows.length) {
-      return html14`<div class="insight-section">${i18nString11(UIStrings11.noOptimizableImages)}</div>`;
+      return html14`<div class="insight-section">${i18nString10(UIStrings10.noOptimizableImages)}</div>`;
     }
     return html14`
       <div class="insight-section">
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString11(UIStrings11.optimizeFile)],
+      headers: [i18nString10(UIStrings10.optimizeFile)],
       rows
     }}>
         </devtools-performance-table>
@@ -1954,9 +1841,9 @@ __export(INPBreakdown_exports, {
 });
 import * as i18n14 from "./../../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../../core/platform/platform.js";
-import * as Trace11 from "./../../../../models/trace/trace.js";
+import * as Trace10 from "./../../../../models/trace/trace.js";
 import * as Lit15 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings12, i18nString: i18nString12 } = Trace11.Insights.Models.INPBreakdown;
+var { UIStrings: UIStrings11, i18nString: i18nString11, createOverlaysForSubpart } = Trace10.Insights.Models.INPBreakdown;
 var { html: html15 } = Lit15;
 var INPBreakdown = class extends BaseInsightComponent {
   static litTagName = Lit15.StaticHtml.literal`devtools-performance-inp-breakdown`;
@@ -1964,42 +1851,10 @@ var INPBreakdown = class extends BaseInsightComponent {
   hasAskAiSupport() {
     return this.model?.longestInteractionEvent !== void 0;
   }
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const event = this.model.longestInteractionEvent;
-    if (!event) {
-      return [];
-    }
-    return this.#createOverlaysForSbupart(event);
-  }
-  // If `subpart` is -1, then all subparts are included. Otherwise it's just that index.
-  #createOverlaysForSbupart(event, subpartIndex = -1) {
-    const p1 = Trace11.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, event.ts + event.inputDelay);
-    const p2 = Trace11.Helpers.Timing.traceWindowFromMicroSeconds(p1.max, p1.max + event.mainThreadHandling);
-    const p3 = Trace11.Helpers.Timing.traceWindowFromMicroSeconds(p2.max, p2.max + event.presentationDelay);
-    let sections = [
-      { bounds: p1, label: i18nString12(UIStrings12.inputDelay), showDuration: true },
-      { bounds: p2, label: i18nString12(UIStrings12.processingDuration), showDuration: true },
-      { bounds: p3, label: i18nString12(UIStrings12.presentationDelay), showDuration: true }
-    ];
-    if (subpartIndex !== -1) {
-      sections = [sections[subpartIndex]];
-    }
-    return [
-      {
-        type: "TIMESPAN_BREAKDOWN",
-        sections,
-        renderLocation: "BELOW_EVENT",
-        entry: event
-      }
-    ];
-  }
   renderContent() {
     const event = this.model?.longestInteractionEvent;
     if (!event) {
-      return html15`<div class="insight-section">${i18nString12(UIStrings12.noInteractions)}</div>`;
+      return html15`<div class="insight-section">${i18nString11(UIStrings11.noInteractions)}</div>`;
     }
     const time = (us) => i18n14.TimeUtilities.millisToString(Platform4.Timing.microSecondsToMilliSeconds(us));
     return html15`
@@ -2007,19 +1862,19 @@ var INPBreakdown = class extends BaseInsightComponent {
         ${html15`<devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString12(UIStrings12.subpart), i18nString12(UIStrings12.duration)],
+      headers: [i18nString11(UIStrings11.subpart), i18nString11(UIStrings11.duration)],
       rows: [
         {
-          values: [i18nString12(UIStrings12.inputDelay), time(event.inputDelay)],
-          overlays: this.#createOverlaysForSbupart(event, 0)
+          values: [i18nString11(UIStrings11.inputDelay), time(event.inputDelay)],
+          overlays: createOverlaysForSubpart(event, 0)
         },
         {
-          values: [i18nString12(UIStrings12.processingDuration), time(event.mainThreadHandling)],
-          overlays: this.#createOverlaysForSbupart(event, 1)
+          values: [i18nString11(UIStrings11.processingDuration), time(event.mainThreadHandling)],
+          overlays: createOverlaysForSubpart(event, 1)
         },
         {
-          values: [i18nString12(UIStrings12.presentationDelay), time(event.presentationDelay)],
-          overlays: this.#createOverlaysForSbupart(event, 2)
+          values: [i18nString11(UIStrings11.presentationDelay), time(event.presentationDelay)],
+          overlays: createOverlaysForSubpart(event, 2)
         }
       ]
     }}>
@@ -2035,9 +1890,9 @@ __export(LCPBreakdown_exports, {
   LCPBreakdown: () => LCPBreakdown
 });
 import * as i18n15 from "./../../../../core/i18n/i18n.js";
-import * as Trace12 from "./../../../../models/trace/trace.js";
+import * as Trace11 from "./../../../../models/trace/trace.js";
 import * as Lit16 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings13, i18nString: i18nString13 } = Trace12.Insights.Models.LCPBreakdown;
+var { UIStrings: UIStrings12, i18nString: i18nString12 } = Trace11.Insights.Models.LCPBreakdown;
 var { html: html16 } = Lit16;
 var LCPBreakdown = class extends BaseInsightComponent {
   static litTagName = Lit16.StaticHtml.literal`devtools-performance-lcp-breakdown`;
@@ -2051,16 +1906,11 @@ var LCPBreakdown = class extends BaseInsightComponent {
     if (!this.model || !this.model.subparts || !this.model.lcpTs) {
       return [];
     }
-    const { subparts } = this.model;
-    const overlays = [];
-    if (this.model.lcpRequest) {
-      overlays.push({ type: "ENTRY_OUTLINE", entry: this.model.lcpRequest, outlineReason: "INFO" });
+    const overlays = this.model.createOverlays?.();
+    if (!overlays) {
+      return [];
     }
-    this.#overlay = {
-      type: "TIMESPAN_BREAKDOWN",
-      sections: Object.values(subparts).map((subpart) => ({ bounds: subpart, label: subpart.label, showDuration: true }))
-    };
-    overlays.push(this.#overlay);
+    this.#overlay = overlays[0];
     return overlays;
   }
   #renderFieldSubparts() {
@@ -2071,22 +1921,22 @@ var LCPBreakdown = class extends BaseInsightComponent {
     if (!ttfb || !loadDelay || !loadDuration || !renderDelay) {
       return null;
     }
-    const ttfbMillis = i18n15.TimeUtilities.preciseMillisToString(Trace12.Helpers.Timing.microToMilli(ttfb.value));
-    const loadDelayMillis = i18n15.TimeUtilities.preciseMillisToString(Trace12.Helpers.Timing.microToMilli(loadDelay.value));
-    const loadDurationMillis = i18n15.TimeUtilities.preciseMillisToString(Trace12.Helpers.Timing.microToMilli(loadDuration.value));
-    const renderDelayMillis = i18n15.TimeUtilities.preciseMillisToString(Trace12.Helpers.Timing.microToMilli(renderDelay.value));
+    const ttfbMillis = i18n15.TimeUtilities.preciseMillisToString(Trace11.Helpers.Timing.microToMilli(ttfb.value));
+    const loadDelayMillis = i18n15.TimeUtilities.preciseMillisToString(Trace11.Helpers.Timing.microToMilli(loadDelay.value));
+    const loadDurationMillis = i18n15.TimeUtilities.preciseMillisToString(Trace11.Helpers.Timing.microToMilli(loadDuration.value));
+    const renderDelayMillis = i18n15.TimeUtilities.preciseMillisToString(Trace11.Helpers.Timing.microToMilli(renderDelay.value));
     const rows = [
-      { values: [i18nString13(UIStrings13.timeToFirstByte), ttfbMillis] },
-      { values: [i18nString13(UIStrings13.resourceLoadDelay), loadDelayMillis] },
-      { values: [i18nString13(UIStrings13.resourceLoadDuration), loadDurationMillis] },
-      { values: [i18nString13(UIStrings13.elementRenderDelay), renderDelayMillis] }
+      { values: [i18nString12(UIStrings12.timeToFirstByte), ttfbMillis] },
+      { values: [i18nString12(UIStrings12.resourceLoadDelay), loadDelayMillis] },
+      { values: [i18nString12(UIStrings12.resourceLoadDuration), loadDurationMillis] },
+      { values: [i18nString12(UIStrings12.elementRenderDelay), renderDelayMillis] }
     ];
     return html16`
       <div class="insight-section">
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString13(UIStrings13.subpart), i18nString13(UIStrings13.fieldDuration)],
+      headers: [i18nString12(UIStrings12.subpart), i18nString12(UIStrings12.fieldDuration)],
       rows
     }}>
         </devtools-performance-table>
@@ -2105,11 +1955,11 @@ var LCPBreakdown = class extends BaseInsightComponent {
     }
     const { subparts } = this.model;
     if (!subparts) {
-      return html16`<div class="insight-section">${i18nString13(UIStrings13.noLcp)}</div>`;
+      return html16`<div class="insight-section">${i18nString12(UIStrings12.noLcp)}</div>`;
     }
     const rows = Object.values(subparts).map((subpart) => {
       const section2 = this.#overlay?.sections.find((section3) => subpart.label === section3.label);
-      const timing = Trace12.Helpers.Timing.microToMilli(subpart.range);
+      const timing = Trace11.Helpers.Timing.microToMilli(subpart.range);
       return {
         values: [subpart.label, i18n15.TimeUtilities.preciseMillisToString(timing)],
         overlays: section2 && [{
@@ -2124,7 +1974,7 @@ var LCPBreakdown = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
         insight: this,
-        headers: [i18nString13(UIStrings13.subpart), i18nString13(UIStrings13.duration)],
+        headers: [i18nString12(UIStrings12.subpart), i18nString12(UIStrings12.duration)],
         rows
       }}>
         </devtools-performance-table>
@@ -2145,84 +1995,46 @@ __export(LCPDiscovery_exports, {
   LCPDiscovery: () => LCPDiscovery
 });
 import * as i18n16 from "./../../../../core/i18n/i18n.js";
-import * as Trace13 from "./../../../../models/trace/trace.js";
+import * as Trace12 from "./../../../../models/trace/trace.js";
 import * as Lit17 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings14, i18nString: i18nString14 } = Trace13.Insights.Models.LCPDiscovery;
+var { UIStrings: UIStrings13, i18nString: i18nString13, getImageData } = Trace12.Insights.Models.LCPDiscovery;
 var { html: html17 } = Lit17;
-var str_4 = i18n16.i18n.registerUIStrings("models/trace/insights/LCPDiscovery.ts", UIStrings14);
-function getImageData(model) {
-  if (!model.lcpRequest || !model.checklist) {
-    return null;
-  }
-  const shouldIncreasePriorityHint = !model.checklist.priorityHinted.value;
-  const shouldPreloadImage = !model.checklist.requestDiscoverable.value;
-  const shouldRemoveLazyLoading = !model.checklist.eagerlyLoaded.value;
-  const imageLCP = shouldIncreasePriorityHint !== void 0 && shouldPreloadImage !== void 0 && shouldRemoveLazyLoading !== void 0;
-  if (!imageLCP) {
-    return null;
-  }
-  const data = {
-    checklist: model.checklist,
-    request: model.lcpRequest,
-    discoveryDelay: null,
-    estimatedSavings: model.metricSavings?.LCP ?? null
-  };
-  if (model.earliestDiscoveryTimeTs && model.lcpRequest) {
-    const discoveryDelay = model.lcpRequest.ts - model.earliestDiscoveryTimeTs;
-    data.discoveryDelay = Trace13.Types.Timing.Micro(discoveryDelay);
-  }
-  return data;
-}
+var str_4 = i18n16.i18n.registerUIStrings("models/trace/insights/LCPDiscovery.ts", UIStrings13);
 var LCPDiscovery = class extends BaseInsightComponent {
   static litTagName = Lit17.StaticHtml.literal`devtools-performance-lcp-discovery`;
   internalName = "lcp-discovery";
   hasAskAiSupport() {
     return true;
   }
-  #renderDiscoveryDelay(delay) {
-    const timeWrapper = document.createElement("span");
-    timeWrapper.classList.add("discovery-time-ms");
-    timeWrapper.innerText = i18n16.TimeUtilities.formatMicroSecondsAsMillisFixed(delay);
-    return i18n16.i18n.getFormatLocalizedString(str_4, UIStrings14.lcpLoadDelay, { PH1: timeWrapper });
-  }
   createOverlays() {
     if (!this.model) {
+      return [];
+    }
+    const overlays = this.model.createOverlays?.();
+    if (!overlays) {
       return [];
     }
     const imageResults = getImageData(this.model);
     if (!imageResults || !imageResults.discoveryDelay) {
       return [];
     }
-    const delay = Trace13.Helpers.Timing.traceWindowFromMicroSeconds(Trace13.Types.Timing.Micro(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);
-    const label = html17`<div class="discovery-delay"> ${this.#renderDiscoveryDelay(imageResults.discoveryDelay)}</div>`;
-    return [
-      {
-        type: "ENTRY_OUTLINE",
-        entry: imageResults.request,
-        outlineReason: "ERROR"
-      },
-      {
-        type: "CANDY_STRIPED_TIME_RANGE",
-        bounds: delay,
-        entry: imageResults.request
-      },
-      {
-        type: "TIMESPAN_BREAKDOWN",
-        sections: [{
-          bounds: delay,
-          label,
-          showDuration: false
-        }],
-        entry: imageResults.request,
-        renderLocation: "ABOVE_EVENT"
-      }
-    ];
+    const timespanOverlaySection = overlays.find((overlay) => overlay.type === "TIMESPAN_BREAKDOWN")?.sections[0];
+    if (timespanOverlaySection) {
+      timespanOverlaySection.label = html17`<div class="discovery-delay"> ${this.#renderDiscoveryDelay(imageResults.discoveryDelay)}</div>`;
+    }
+    return overlays;
   }
   getEstimatedSavingsTime() {
     if (!this.model) {
       return null;
     }
     return getImageData(this.model)?.estimatedSavings ?? null;
+  }
+  #renderDiscoveryDelay(delay) {
+    const timeWrapper = document.createElement("span");
+    timeWrapper.classList.add("discovery-time-ms");
+    timeWrapper.innerText = i18n16.TimeUtilities.formatMicroSecondsAsMillisFixed(delay);
+    return i18n16.i18n.getFormatLocalizedString(str_4, UIStrings13.lcpLoadDelay, { PH1: timeWrapper });
   }
   renderContent() {
     if (!this.model) {
@@ -2231,9 +2043,9 @@ var LCPDiscovery = class extends BaseInsightComponent {
     const imageData = getImageData(this.model);
     if (!imageData) {
       if (!this.model.lcpEvent) {
-        return html17`<div class="insight-section">${i18nString14(UIStrings14.noLcp)}</div>`;
+        return html17`<div class="insight-section">${i18nString13(UIStrings13.noLcp)}</div>`;
       }
-      return html17`<div class="insight-section">${i18nString14(UIStrings14.noLcpResource)}</div>`;
+      return html17`<div class="insight-section">${i18nString13(UIStrings13.noLcpResource)}</div>`;
     }
     let delayEl;
     if (imageData.discoveryDelay) {
@@ -2257,28 +2069,15 @@ import * as Common2 from "./../../../../core/common/common.js";
 import * as i18n18 from "./../../../../core/i18n/i18n.js";
 import * as SDK4 from "./../../../../core/sdk/sdk.js";
 import * as Bindings from "./../../../../models/bindings/bindings.js";
-import * as Trace14 from "./../../../../models/trace/trace.js";
+import * as Trace13 from "./../../../../models/trace/trace.js";
 import * as Lit18 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings15, i18nString: i18nString15 } = Trace14.Insights.Models.LegacyJavaScript;
+var { UIStrings: UIStrings14, i18nString: i18nString14 } = Trace13.Insights.Models.LegacyJavaScript;
 var { html: html18 } = Lit18;
 var LegacyJavaScript = class extends BaseInsightComponent {
   static litTagName = Lit18.StaticHtml.literal`devtools-performance-legacy-javascript`;
   internalName = "legacy-javascript";
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;
-  }
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const requests = [...this.model.legacyJavaScriptResults.keys()].map((script) => script.request).filter((e) => !!e);
-    return requests.map((request) => {
-      return {
-        type: "ENTRY_OUTLINE",
-        entry: request,
-        outlineReason: "ERROR"
-      };
-    });
   }
   async #revealLocation(script, match) {
     const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -2324,7 +2123,7 @@ var LegacyJavaScript = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString15(UIStrings15.columnScript), i18nString15(UIStrings15.columnWastedBytes)],
+      headers: [i18nString14(UIStrings14.columnScript), i18nString14(UIStrings14.columnWastedBytes)],
       rows
     }}>
         </devtools-performance-table>
@@ -2339,30 +2138,27 @@ var ModernHTTP_exports = {};
 __export(ModernHTTP_exports, {
   ModernHTTP: () => ModernHTTP
 });
-import * as Trace15 from "./../../../../models/trace/trace.js";
+import * as Trace14 from "./../../../../models/trace/trace.js";
 import * as Lit19 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings16, i18nString: i18nString16 } = Trace15.Insights.Models.ModernHTTP;
+var { UIStrings: UIStrings15, i18nString: i18nString15, createOverlayForRequest: createOverlayForRequest3 } = Trace14.Insights.Models.ModernHTTP;
 var { html: html19 } = Lit19;
 var ModernHTTP = class extends BaseInsightComponent {
   static litTagName = Lit19.StaticHtml.literal`devtools-performance-modern-http`;
   internalName = "modern-http";
-  hasAskAiSupport() {
-    return true;
-  }
-  mapToRow(req) {
-    return { values: [eventRef(req), req.args.data.protocol], overlays: [this.#createOverlayForRequest(req)] };
-  }
-  createAggregatedTableRow(remaining) {
-    return {
-      values: [renderOthersLabel(remaining.length), ""],
-      overlays: remaining.map((req) => this.#createOverlayForRequest(req))
-    };
-  }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.LCP ?? null;
   }
   createOverlays() {
-    return this.model?.http1Requests.map((req) => this.#createOverlayForRequest(req)) ?? [];
+    return this.model?.http1Requests.map((req) => createOverlayForRequest3(req)) ?? [];
+  }
+  mapToRow(req) {
+    return { values: [eventRef(req), req.args.data.protocol], overlays: [createOverlayForRequest3(req)] };
+  }
+  createAggregatedTableRow(remaining) {
+    return {
+      values: [renderOthersLabel(remaining.length), ""],
+      overlays: remaining.map((req) => createOverlayForRequest3(req))
+    };
   }
   renderContent() {
     if (!this.model) {
@@ -2370,25 +2166,18 @@ var ModernHTTP = class extends BaseInsightComponent {
     }
     const rows = createLimitedRows(this.model.http1Requests, this);
     if (!rows.length) {
-      return html19`<div class="insight-section">${i18nString16(UIStrings16.noOldProtocolRequests)}</div>`;
+      return html19`<div class="insight-section">${i18nString15(UIStrings15.noOldProtocolRequests)}</div>`;
     }
     return html19`
       <div class="insight-section">
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString16(UIStrings16.request), i18nString16(UIStrings16.protocol)],
+      headers: [i18nString15(UIStrings15.request), i18nString15(UIStrings15.protocol)],
       rows
     }}>
         </devtools-performance-table>
       </div>`;
-  }
-  #createOverlayForRequest(request) {
-    return {
-      type: "ENTRY_OUTLINE",
-      entry: request,
-      outlineReason: "ERROR"
-    };
   }
 };
 customElements.define("devtools-performance-modern-http", ModernHTTP);
@@ -2401,7 +2190,7 @@ __export(NetworkDependencyTree_exports, {
 });
 import "./../../../../ui/components/icon_button/icon_button.js";
 import * as i18n19 from "./../../../../core/i18n/i18n.js";
-import * as Trace16 from "./../../../../models/trace/trace.js";
+import * as Trace15 from "./../../../../models/trace/trace.js";
 import * as Lit20 from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/insights/networkDependencyTreeInsight.css.js
@@ -2432,7 +2221,7 @@ var networkDependencyTreeInsight_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./networkDependencyTreeInsight.css")} */`;
 
 // gen/front_end/panels/timeline/components/insights/NetworkDependencyTree.js
-var { UIStrings: UIStrings17, i18nString: i18nString17 } = Trace16.Insights.Models.NetworkDependencyTree;
+var { UIStrings: UIStrings16, i18nString: i18nString16 } = Trace15.Insights.Models.NetworkDependencyTree;
 var { html: html20 } = Lit20;
 var MAX_CHAINS_TO_SHOW = 5;
 var NetworkDependencyTree = class extends BaseInsightComponent {
@@ -2440,14 +2229,6 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
   internalName = "long-critical-network-tree";
   #relatedRequests = null;
   #countOfChains = 0;
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const overlays = [];
-    getAllOverlays(this.model.rootNodes, overlays);
-    return overlays;
-  }
   #createOverlayForChain(requests) {
     const overlays = [];
     requests.forEach((entry) => overlays.push({
@@ -2471,7 +2252,7 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
       <div style=${requestStyles}>
         <span style=${urlStyles}>${eventRef(node.request)}</span>
         <span>
-          ${i18n19.TimeUtilities.formatMicroSecondsTime(Trace16.Types.Timing.Micro(node.timeFromInitialRequest))}
+          ${i18n19.TimeUtilities.formatMicroSecondsTime(Trace15.Types.Timing.Micro(node.timeFromInitialRequest))}
         </span>
       </div>
     `;
@@ -2512,7 +2293,7 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
       <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString17(UIStrings17.columnRequest), i18nString17(UIStrings17.columnTime)],
+      headers: [i18nString16(UIStrings16.columnRequest), i18nString16(UIStrings16.columnTime)],
       rows
     }}>
       </devtools-performance-table>
@@ -2525,14 +2306,14 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
     if (!this.model.rootNodes.length) {
       return html20`
         <style>${networkDependencyTreeInsight_css_default}</style>
-        <div class="insight-section">${i18nString17(UIStrings17.noNetworkDependencyTree)}</div>
+        <div class="insight-section">${i18nString16(UIStrings16.noNetworkDependencyTree)}</div>
       `;
     }
     return html20`
       <style>${networkDependencyTreeInsight_css_default}</style>
       <div class="insight-section">
         <div class="max-time">
-          ${i18nString17(UIStrings17.maxCriticalPathLatency)}
+          ${i18nString16(UIStrings16.maxCriticalPathLatency)}
           <br>
           <span class='longest'> ${i18n19.TimeUtilities.formatMicroSecondsTime(this.model.maxTime)}</span>
         </div>
@@ -2546,7 +2327,7 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
     if (!this.model) {
       return Lit20.nothing;
     }
-    if (this.model.preconnectedOrigins.length <= Trace16.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+    if (this.model.preconnectedOrigins.length <= Trace15.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
       return Lit20.nothing;
     }
     const warningStyles = Lit20.Directives.styleMap({
@@ -2556,7 +2337,7 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
     });
     return html20`
       <div style=${warningStyles}>
-        ${md(i18nString17(UIStrings17.tooManyPreconnectLinksWarning))}
+        ${md(i18nString16(UIStrings16.tooManyPreconnectLinksWarning))}
       </div>
     `;
   }
@@ -2566,14 +2347,14 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
     }
     const preconnectOriginsTableTitle = html20`
       <style>${networkDependencyTreeInsight_css_default}</style>
-      <div class='section-title'>${i18nString17(UIStrings17.preconnectOriginsTableTitle)}</div>
-      <div class="insight-description">${md(i18nString17(UIStrings17.preconnectOriginsTableDescription))}</div>
+      <div class='section-title'>${i18nString16(UIStrings16.preconnectOriginsTableTitle)}</div>
+      <div class="insight-description">${md(i18nString16(UIStrings16.preconnectOriginsTableDescription))}</div>
     `;
     if (!this.model.preconnectedOrigins.length) {
       return html20`
         <div class="insight-section">
           ${preconnectOriginsTableTitle}
-          ${i18nString17(UIStrings17.noPreconnectOrigins)}
+          ${i18nString16(UIStrings16.noPreconnectOrigins)}
         </div>
       `;
     }
@@ -2581,12 +2362,12 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
       const subRows = [];
       if (preconnectOrigin.unused) {
         subRows.push({
-          values: [md(i18nString17(UIStrings17.unusedWarning))]
+          values: [md(i18nString16(UIStrings16.unusedWarning))]
         });
       }
       if (preconnectOrigin.crossorigin) {
         subRows.push({
-          values: [md(i18nString17(UIStrings17.crossoriginWarning))]
+          values: [md(i18nString16(UIStrings16.crossoriginWarning))]
         });
       }
       if (preconnectOrigin.source === "ResponseHeader") {
@@ -2615,7 +2396,7 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString17(UIStrings17.columnOrigin), i18nString17(UIStrings17.columnSource)],
+      headers: [i18nString16(UIStrings16.columnOrigin), i18nString16(UIStrings16.columnSource)],
       rows
     }}>
         </devtools-performance-table>
@@ -2628,14 +2409,14 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
     }
     const estSavingTableTitle = html20`
       <style>${networkDependencyTreeInsight_css_default}</style>
-      <div class='section-title'>${i18nString17(UIStrings17.estSavingTableTitle)}</div>
-      <div class="insight-description">${md(i18nString17(UIStrings17.estSavingTableDescription))}</div>
+      <div class='section-title'>${i18nString16(UIStrings16.estSavingTableTitle)}</div>
+      <div class="insight-description">${md(i18nString16(UIStrings16.estSavingTableDescription))}</div>
     `;
     if (!this.model.preconnectCandidates.length) {
       return html20`
         <div class="insight-section">
           ${estSavingTableTitle}
-          ${i18nString17(UIStrings17.noPreconnectCandidates)}
+          ${i18nString16(UIStrings16.noPreconnectCandidates)}
         </div>
       `;
     }
@@ -2648,7 +2429,7 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString17(UIStrings17.columnOrigin), i18nString17(UIStrings17.columnWastedMs)],
+      headers: [i18nString16(UIStrings16.columnOrigin), i18nString16(UIStrings16.columnWastedMs)],
       rows
     }}>
         </devtools-performance-table>
@@ -2663,16 +2444,6 @@ var NetworkDependencyTree = class extends BaseInsightComponent {
     `;
   }
 };
-function getAllOverlays(nodes, overlays) {
-  nodes.forEach((node) => {
-    overlays.push({
-      type: "ENTRY_OUTLINE",
-      entry: node.request,
-      outlineReason: "ERROR"
-    });
-    getAllOverlays(node.children, overlays);
-  });
-}
 customElements.define("devtools-performance-long-critical-network-tree", NetworkDependencyTree);
 
 // gen/front_end/panels/timeline/components/insights/RenderBlocking.js
@@ -2681,43 +2452,30 @@ __export(RenderBlocking_exports, {
   RenderBlocking: () => RenderBlocking
 });
 import * as i18n20 from "./../../../../core/i18n/i18n.js";
-import * as Trace17 from "./../../../../models/trace/trace.js";
+import * as Trace16 from "./../../../../models/trace/trace.js";
 import * as Lit21 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings18, i18nString: i18nString18 } = Trace17.Insights.Models.RenderBlocking;
+var { UIStrings: UIStrings17, i18nString: i18nString17, createOverlayForRequest: createOverlayForRequest4 } = Trace16.Insights.Models.RenderBlocking;
 var { html: html21 } = Lit21;
 var RenderBlocking = class extends BaseInsightComponent {
   static litTagName = Lit21.StaticHtml.literal`devtools-performance-render-blocking-requests`;
+  internalName = "render-blocking-requests";
   mapToRow(request) {
     return {
       values: [
         eventRef(request),
         i18n20.TimeUtilities.formatMicroSecondsTime(request.dur)
       ],
-      overlays: [this.#createOverlayForRequest(request)]
+      overlays: [createOverlayForRequest4(request)]
     };
   }
   createAggregatedTableRow(remaining) {
     return {
       values: [renderOthersLabel(remaining.length), ""],
-      overlays: remaining.map((r) => this.#createOverlayForRequest(r))
+      overlays: remaining.map((r) => createOverlayForRequest4(r))
     };
   }
-  internalName = "render-blocking-requests";
   hasAskAiSupport() {
     return !!this.model;
-  }
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    return this.model.renderBlockingRequests.map((request) => this.#createOverlayForRequest(request));
-  }
-  #createOverlayForRequest(request) {
-    return {
-      type: "ENTRY_OUTLINE",
-      entry: request,
-      outlineReason: "ERROR"
-    };
   }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;
@@ -2728,7 +2486,7 @@ var RenderBlocking = class extends BaseInsightComponent {
     }
     const requests = this.model.renderBlockingRequests;
     if (!requests.length) {
-      return html21`<div class="insight-section">${i18nString18(UIStrings18.noRenderBlocking)}</div>`;
+      return html21`<div class="insight-section">${i18nString17(UIStrings17.noRenderBlocking)}</div>`;
     }
     const rows = createLimitedRows(requests, this);
     return html21`
@@ -2736,7 +2494,7 @@ var RenderBlocking = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString18(UIStrings18.renderBlockingRequest), i18nString18(UIStrings18.duration)],
+      headers: [i18nString17(UIStrings17.renderBlockingRequest), i18nString17(UIStrings17.duration)],
       rows
     }}>
         </devtools-performance-table>
@@ -2755,17 +2513,14 @@ import "./../../../../ui/components/linkifier/linkifier.js";
 import * as i18n21 from "./../../../../core/i18n/i18n.js";
 import * as Platform5 from "./../../../../core/platform/platform.js";
 import * as SDK5 from "./../../../../core/sdk/sdk.js";
-import * as Trace18 from "./../../../../models/trace/trace.js";
+import * as Trace17 from "./../../../../models/trace/trace.js";
 import * as Lit22 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings19, i18nString: i18nString19 } = Trace18.Insights.Models.SlowCSSSelector;
+var { UIStrings: UIStrings18, i18nString: i18nString18 } = Trace17.Insights.Models.SlowCSSSelector;
 var { html: html22 } = Lit22;
 var SlowCSSSelector = class extends BaseInsightComponent {
   static litTagName = Lit22.StaticHtml.literal`devtools-performance-slow-css-selector`;
   internalName = "slow-css-selector";
   #selectorLocations = /* @__PURE__ */ new Map();
-  createOverlays() {
-    return [];
-  }
   async toSourceFileLocation(cssModel, selector) {
     if (!cssModel) {
       return void 0;
@@ -2820,60 +2575,52 @@ var SlowCSSSelector = class extends BaseInsightComponent {
     const target = SDK5.TargetManager.TargetManager.instance().primaryPageTarget();
     const cssModel = target?.model(SDK5.CSSModel.CSSModel);
     const time = (us) => i18n21.TimeUtilities.millisToString(Platform5.Timing.microSecondsToMilliSeconds(us));
-    if (!this.model.topMatchAttempts.length && !this.model.topElapsedMs.length) {
-      return html22`<div class="insight-section">${i18nString19(UIStrings19.enableSelectorData)}</div>`;
+    if (!this.model.topSelectorMatchAttempts && !this.model.topSelectorElapsedMs) {
+      return html22`<div class="insight-section">${i18nString18(UIStrings18.enableSelectorData)}</div>`;
     }
     const sections = [html22`
       <div class="insight-section">
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString19(UIStrings19.total), ""],
+      headers: [i18nString18(UIStrings18.total), ""],
       rows: [
-        { values: [i18nString19(UIStrings19.elapsed), i18n21.TimeUtilities.millisToString(this.model.totalElapsedMs)] },
-        { values: [i18nString19(UIStrings19.matchAttempts), this.model.totalMatchAttempts] },
-        { values: [i18nString19(UIStrings19.matchCount), this.model.totalMatchCount] }
+        { values: [i18nString18(UIStrings18.matchAttempts), this.model.totalMatchAttempts] },
+        { values: [i18nString18(UIStrings18.matchCount), this.model.totalMatchCount] },
+        { values: [i18nString18(UIStrings18.elapsed), i18n21.TimeUtilities.millisToString(this.model.totalElapsedMs)] }
       ]
     }}>
         </devtools-performance-table>
       </div>
     `];
-    if (this.model.topElapsedMs.length) {
+    if (this.model.topSelectorElapsedMs) {
+      const selector = this.model.topSelectorElapsedMs;
       sections.push(html22`
         <div class="insight-section">
           <devtools-performance-table
             .data=${{
         insight: this,
-        headers: [i18nString19(UIStrings19.topSelectors), i18nString19(UIStrings19.elapsed)],
-        rows: this.model.topElapsedMs.map((selector) => {
-          return {
-            values: [
-              html22`${selector.selector} ${Lit22.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-              time(Trace18.Types.Timing.Micro(selector["elapsed (us)"]))
-            ]
-          };
-        })
-      }}>
+        headers: [`${i18nString18(UIStrings18.topSelectorElapsedTime)}: ${time(Trace17.Types.Timing.Micro(selector["elapsed (us)"]))}`],
+        rows: [{
+          values: [html22`${selector.selector} ${Lit22.Directives.until(this.getSelectorLinks(cssModel, selector))}`]
+        }]
+      }} as TableData>
           </devtools-performance-table>
         </div>
       `);
     }
-    if (this.model.topMatchAttempts.length) {
+    if (this.model.topSelectorMatchAttempts) {
+      const selector = this.model.topSelectorMatchAttempts;
       sections.push(html22`
         <div class="insight-section">
           <devtools-performance-table
             .data=${{
         insight: this,
-        headers: [i18nString19(UIStrings19.topSelectors), i18nString19(UIStrings19.matchAttempts)],
-        rows: this.model.topMatchAttempts.map((selector) => {
-          return {
-            values: [
-              html22`${selector.selector} ${Lit22.Directives.until(this.getSelectorLinks(cssModel, selector))}`,
-              selector["match_attempts"]
-            ]
-          };
-        })
-      }}>
+        headers: [`${i18nString18(UIStrings18.topSelectorMatchAttempt)}: ${selector["match_attempts"]}`],
+        rows: [{
+          values: [html22`${selector.selector} ${Lit22.Directives.until(this.getSelectorLinks(cssModel, selector))}`]
+        }]
+      }} as TableData}>
           </devtools-performance-table>
         </div>
       `);
@@ -2889,67 +2636,37 @@ __export(ThirdParties_exports, {
   ThirdParties: () => ThirdParties
 });
 import * as i18n22 from "./../../../../core/i18n/i18n.js";
-import * as Trace19 from "./../../../../models/trace/trace.js";
+import * as Trace18 from "./../../../../models/trace/trace.js";
 import * as Lit23 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings20, i18nString: i18nString20 } = Trace19.Insights.Models.ThirdParties;
+var { UIStrings: UIStrings19, i18nString: i18nString19, createOverlaysForSummary } = Trace18.Insights.Models.ThirdParties;
 var { html: html23 } = Lit23;
 var MAX_TO_SHOW = 5;
 var ThirdParties = class extends BaseInsightComponent {
   static litTagName = Lit23.StaticHtml.literal`devtools-performance-third-parties`;
   internalName = "third-parties";
-  createOverlays() {
-    if (!this.model) {
-      return [];
-    }
-    const overlays = [];
-    const summaries = this.model.entitySummaries ?? [];
-    for (const summary of summaries) {
-      if (summary.entity === this.model.firstPartyEntity) {
-        continue;
-      }
-      const summaryOverlays = this.#createOverlaysForSummary(summary);
-      overlays.push(...summaryOverlays);
-    }
-    return overlays;
-  }
-  #createOverlaysForSummary(summary) {
-    const overlays = [];
-    for (const event of summary.relatedEvents) {
-      if (event.dur === void 0 || event.dur < 1e3) {
-        continue;
-      }
-      const overlay = {
-        type: "ENTRY_OUTLINE",
-        entry: event,
-        outlineReason: "INFO"
-      };
-      overlays.push(overlay);
-    }
-    return overlays;
-  }
   #mainThreadTimeAggregator = {
     mapToRow: (summary) => ({
       values: [summary.entity.name, i18n22.TimeUtilities.millisToString(summary.mainThreadTime)],
-      overlays: this.#createOverlaysForSummary(summary)
+      overlays: createOverlaysForSummary(summary)
     }),
     createAggregatedTableRow: (remaining) => {
       const totalMainThreadTime = remaining.reduce((acc, summary) => acc + summary.mainThreadTime, 0);
       return {
         values: [renderOthersLabel(remaining.length), i18n22.TimeUtilities.millisToString(totalMainThreadTime)],
-        overlays: remaining.flatMap((summary) => this.#createOverlaysForSummary(summary) ?? [])
+        overlays: remaining.flatMap((summary) => createOverlaysForSummary(summary) ?? [])
       };
     }
   };
   #transferSizeAggregator = {
     mapToRow: (summary) => ({
       values: [summary.entity.name, i18n22.ByteUtilities.formatBytesToKb(summary.transferSize)],
-      overlays: this.#createOverlaysForSummary(summary)
+      overlays: createOverlaysForSummary(summary)
     }),
     createAggregatedTableRow: (remaining) => {
       const totalBytes = remaining.reduce((acc, summary) => acc + summary.transferSize, 0);
       return {
         values: [renderOthersLabel(remaining.length), i18n22.ByteUtilities.formatBytesToKb(totalBytes)],
-        overlays: remaining.flatMap((summary) => this.#createOverlaysForSummary(summary) ?? [])
+        overlays: remaining.flatMap((summary) => createOverlaysForSummary(summary) ?? [])
       };
     }
   };
@@ -2962,7 +2679,7 @@ var ThirdParties = class extends BaseInsightComponent {
       result = result.filter((s) => s.entity !== this.model?.firstPartyEntity || null);
     }
     if (!result.length) {
-      return html23`<div class="insight-section">${i18nString20(UIStrings20.noThirdParties)}</div>`;
+      return html23`<div class="insight-section">${i18nString19(UIStrings19.noThirdParties)}</div>`;
     }
     const topTransferSizeEntries = result.toSorted((a, b) => b.transferSize - a.transferSize);
     const topMainThreadTimeEntries = result.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime);
@@ -2974,7 +2691,7 @@ var ThirdParties = class extends BaseInsightComponent {
           <devtools-performance-table
             .data=${{
         insight: this,
-        headers: [i18nString20(UIStrings20.columnThirdParty), i18nString20(UIStrings20.columnTransferSize)],
+        headers: [i18nString19(UIStrings19.columnThirdParty), i18nString19(UIStrings19.columnTransferSize)],
         rows
       }}>
           </devtools-performance-table>
@@ -2988,7 +2705,7 @@ var ThirdParties = class extends BaseInsightComponent {
           <devtools-performance-table
             .data=${{
         insight: this,
-        headers: [i18nString20(UIStrings20.columnThirdParty), i18nString20(UIStrings20.columnMainThreadTime)],
+        headers: [i18nString19(UIStrings19.columnThirdParty), i18nString19(UIStrings19.columnMainThreadTime)],
         rows
       }}>
           </devtools-performance-table>
@@ -3008,28 +2725,11 @@ var Viewport_exports = {};
 __export(Viewport_exports, {
   Viewport: () => Viewport
 });
-import * as Trace20 from "./../../../../models/trace/trace.js";
 import * as Lit24 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings21, i18nString: i18nString21 } = Trace20.Insights.Models.Viewport;
 var { html: html24 } = Lit24;
 var Viewport = class extends BaseInsightComponent {
   static litTagName = Lit24.StaticHtml.literal`devtools-performance-viewport`;
   internalName = "viewport";
-  createOverlays() {
-    if (!this.model || !this.model.longPointerInteractions) {
-      return [];
-    }
-    return this.model.longPointerInteractions.map((interaction) => {
-      const delay = Math.min(interaction.inputDelay, 300 * 1e3);
-      const bounds = Trace20.Helpers.Timing.traceWindowFromMicroSeconds(Trace20.Types.Timing.Micro(interaction.ts), Trace20.Types.Timing.Micro(interaction.ts + delay));
-      return {
-        type: "TIMESPAN_BREAKDOWN",
-        entry: interaction,
-        sections: [{ bounds, label: i18nString21(UIStrings21.mobileTapDelayLabel), showDuration: true }],
-        renderLocation: "ABOVE_EVENT"
-      };
-    });
-  }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.INP ?? null;
   }

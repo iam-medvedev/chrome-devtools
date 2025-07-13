@@ -2492,14 +2492,14 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                     devToolsLogs: [],
                 };
             }
-            let responseText = '';
+            let responseTextForNonPassedInsights = '';
+            // We still return info on the passed insights, but we put it at the
+            // bottom of the response under a heading.
+            let responseTextForPassedInsights = '';
             for (const modelName in insightsForNav.model) {
                 const model = modelName;
                 const data = insightsForNav.model[model];
-                if (data.state === 'pass') {
-                    continue;
-                }
-                const activeInsight = new Utils.InsightAIContext.ActiveInsight(data, parsedTrace);
+                const activeInsight = new Utils.InsightAIContext.ActiveInsight(data, insightsForNav.bounds, parsedTrace);
                 const formatter = new AiAssistanceModel.PerformanceInsightFormatter(activeInsight);
                 if (!formatter.insightIsSupported()) {
                     // Not all Insights are integrated with "Ask AI" yet, let's avoid
@@ -2507,10 +2507,28 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                     // useful information.
                     continue;
                 }
-                responseText += `${formatter.formatInsight()}\n\n`;
+                const formatted = formatter.formatInsight({ headingLevel: 3 });
+                if (data.state === 'pass') {
+                    responseTextForPassedInsights += `${formatted}\n\n`;
+                    continue;
+                }
+                else {
+                    responseTextForNonPassedInsights += `${formatted}\n\n`;
+                }
             }
+            const finalText = `# Trace recording results
+
+## Non-passing insights:
+
+These insights highlight potential problems and opportunities to improve performance.
+${responseTextForNonPassedInsights}
+
+## Passing insights:
+
+These insights are passing, which means they are not considered to highlight considerable performance problems.
+${responseTextForPassedInsights}`;
             return {
-                response: `Insights from this recording:\n${responseText}`,
+                response: finalText,
                 devToolsLogs: [],
             };
         }

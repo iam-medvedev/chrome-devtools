@@ -19,11 +19,11 @@ import { renderElementIntoDOM } from './DOMHelpers.js';
 import { createTarget, } from './EnvironmentHelpers.js';
 import { createContentProviderUISourceCodes, createFileSystemUISourceCode } from './UISourceCodeHelpers.js';
 import { createViewFunctionStub } from './ViewFunctionHelpers.js';
-function createMockAidaClient(fetch) {
-    const fetchStub = sinon.stub();
+function createMockAidaClient(doConversation) {
+    const doConversationStub = sinon.stub();
     const registerClientEventStub = sinon.stub();
     return {
-        fetch: fetchStub.callsFake(fetch),
+        doConversation: doConversationStub.callsFake(doConversation),
         registerClientEvent: registerClientEventStub,
     };
 }

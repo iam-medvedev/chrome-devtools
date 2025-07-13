@@ -1,21 +1,26 @@
 export type TooltipVariant = 'simple' | 'rich';
+export type PaddingMode = 'small' | 'large';
 export interface TooltipProperties {
     id: string;
     variant?: TooltipVariant;
+    padding?: PaddingMode;
     anchor?: HTMLElement;
     jslogContext?: string;
 }
 /**
  * @attr id - Id of the tooltip. Used for searching an anchor element with aria-describedby.
  * @attr hover-delay - Hover length in ms before the tooltip is shown and hidden.
- * @attr variant - Variant of the tooltip, `"simple"` for strings only, inverted background, `"rich"` for interactive
- *                 content, background according to theme's surface.
+ * @attr variant - Variant of the tooltip, `"simple"` for strings only, inverted background,
+ *                 `"rich"` for interactive content, background according to theme's surface.
+ * @attr padding - Which padding to use, defaults to `"small"`. Use `"large"` for richer content.
  * @attr use-click - If present, the tooltip will be shown on click instead of on hover.
- * @attr use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus. Requires a hotkey to
- *                    open when fosed (Alt-down). When `"use-click"` is present as well, use-click takes precedence.
+ * @attr use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus.
+ *                    Requires a hotkey to open when fosed (Alt-down). When `"use-click"` is present
+ *                    as well, use-click takes precedence.
  * @prop {String} id - reflects the `"id"` attribute.
  * @prop {Number} hoverDelay - reflects the `"hover-delay"` attribute.
  * @prop {String} variant - reflects the `"variant"` attribute.
+ * @prop {Boolean} padding - reflects the `"padding"` attribute.
  * @prop {Boolean} useClick - reflects the `"click"` attribute.
  * @prop {Boolean} useHotkey - reflects the `"use-hotkey"` attribute.
  */
@@ -33,6 +38,8 @@ export declare class Tooltip extends HTMLElement {
     set hoverDelay(delay: number);
     get variant(): TooltipVariant;
     set variant(variant: TooltipVariant);
+    get padding(): PaddingMode;
+    set padding(padding: PaddingMode);
     get jslogContext(): string | null;
     set jslogContext(jslogContext: string);
     get anchor(): HTMLElement | null;

@@ -215,11 +215,11 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
                 cssControls.forEach((value, key) => value.forEach(control => context.addControl(key, control)));
                 return nodes;
             }
-            if (!declaration && match.fallback.length > 0) {
+            if (!declaration && match.fallback) {
                 return Renderer.render(match.fallback, substitution.renderingContext(context)).nodes;
             }
         }
-        const renderedFallback = match.fallback.length > 0 ? Renderer.render(match.fallback, context) : undefined;
+        const renderedFallback = match.fallback ? Renderer.render(match.fallback, context) : undefined;
         const varCall = this.#treeElement?.getTracingTooltip('var', match.node, this.#matchedStyles, this.#computedStyles, context);
         const tooltipContents = this.#stylesPane.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null);
         const tooltipId = this.#treeElement?.getTooltipId('custom-property-var');
@@ -236,12 +236,18 @@ export class VariableRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
             onLinkActivate,
         }}>
            </devtools-link-swatch>
-           ${renderedFallback?.nodes.length ? html `, ${renderedFallback.nodes}` : nothing})
+           ${renderedFallback ? html `, ${renderedFallback.nodes}` : nothing})
         </span>
-          ${tooltipId ? html `
-            <devtools-tooltip variant=rich id=${tooltipId} jslogContext=elements.css-var>
-              ${tooltipContents}
-            </devtools-tooltip>` : ''}`, varSwatch);
+        ${tooltipId ? html `
+          <devtools-tooltip
+            id=${tooltipId}
+            variant=rich
+            jslogContext=elements.css-var
+          >
+            ${tooltipContents}
+          </devtools-tooltip>
+        ` : ''}
+    `, varSwatch);
         // clang-format on
         const color = computedValue && Common.Color.parse(computedValue);
         if (!color) {
@@ -1496,7 +1502,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             if (!isGrid) {
                 continue;
             }
-            const getNames = (propertyName, astNodeName) => {
+            const getNames = (propertyName, predicate) => {
                 const propertyValue = style?.get(propertyName);
                 if (!propertyValue) {
                     return [];
@@ -1505,17 +1511,16 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 if (!ast) {
                     return [];
                 }
-                return SDK.CSSPropertyParser.TreeSearch.findAll(ast, node => node.name === astNodeName)
-                    .map(node => ast.text(node));
+                return SDK.CSSPropertyParser.TreeSearch.findAll(ast, predicate).map(node => ast.text(node));
             };
             if (SDK.CSSMetadata.cssMetadata().isGridAreaNameAwareProperty(this.name)) {
-                return new Set(getNames('grid-template-areas', 'StringLiteral')
+                return new Set(getNames('grid-template-areas', node => node.name === 'StringLiteral')
                     ?.flatMap(row => row.substring(1, row.length - 1).split(/\s+/).filter(cell => !cell.match(/^\.*$/))));
             }
             if (SDK.CSSMetadata.cssMetadata().isGridColumnNameAwareProperty(this.name)) {
-                return new Set(getNames('grid-template-columns', 'LineName'));
+                return new Set(getNames('grid-template-columns', node => node.name === 'ValueName' && node.parent?.name === 'BracketedValue'));
             }
-            return new Set(getNames('grid-template-rows', 'LineName'));
+            return new Set(getNames('grid-template-rows', node => node.name === 'ValueName' && node.parent?.name === 'BracketedValue'));
         }
         return new Set();
     }
@@ -1816,6 +1821,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             const tooltip = new Tooltips.Tooltip.Tooltip({
                 anchor: this.nameElement,
                 variant: 'rich',
+                padding: 'large',
                 id: tooltipId,
                 jslogContext: 'elements.css-property-doc',
             });
@@ -1921,10 +1927,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         else {
             const tooltipId = this.getTooltipId('property-warning');
-            exclamationElement.setAttribute('aria-details', tooltipId);
+            exclamationElement.setAttribute('aria-describedby', tooltipId);
             const tooltip = new Tooltips.Tooltip.Tooltip({
                 anchor: exclamationElement,
-                variant: 'rich',
+                variant: 'simple',
                 id: tooltipId,
                 jslogContext: 'elements.invalid-property-decl-popover'
             });
@@ -2029,7 +2035,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                 this.listItemElement.classList.add('inactive-property');
                 const tooltipId = this.getTooltipId('css-hint');
                 hintIcon.setAttribute('aria-details', tooltipId);
-                const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: hintIcon, variant: 'rich', id: tooltipId, jslogContext: 'elements.css-hint' });
+                const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: hintIcon, variant: 'rich', padding: 'large', id: tooltipId, jslogContext: 'elements.css-hint' });
                 tooltip.appendChild(new ElementsComponents.CSSHintDetailsView.CSSHintDetailsView(hint));
                 this.listItemElement.appendChild(tooltip);
                 break;
@@ -2326,31 +2332,44 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
     }
-    editingNameValueKeyPress(context, event) {
-        function shouldCommitValueSemicolon(text, cursorPosition) {
-            // FIXME: should this account for semicolons inside comments?
-            let openQuote = '';
-            for (let i = 0; i < cursorPosition; ++i) {
-                const ch = text[i];
-                if (ch === '\\' && openQuote !== '') {
-                    ++i;
-                } // skip next character inside string
-                else if (!openQuote && (ch === '"' || ch === '\'')) {
-                    openQuote = ch;
-                }
-                else if (openQuote === ch) {
-                    openQuote = '';
-                }
+    static shouldCommitValueSemicolon(text, cursorPosition) {
+        // FIXME: should this account for semicolons inside comments?
+        let openQuote = '';
+        const openParens = [];
+        for (let i = 0; i < cursorPosition; ++i) {
+            const ch = text[i];
+            if (ch === '\\' && openQuote !== '') {
+                ++i;
+            } // skip next character inside string
+            else if (!openQuote && (ch === '"' || ch === '\'')) {
+                openQuote = ch;
             }
-            return !openQuote;
+            else if (ch === '[') {
+                openParens.push(']');
+            }
+            else if (ch === '{') {
+                openParens.push('}');
+            }
+            else if (ch === '(') {
+                openParens.push(')');
+            }
+            else if (openQuote === ch) {
+                openQuote = '';
+            }
+            else if (openParens.at(-1) === ch && !openQuote) {
+                openParens.pop();
+            }
         }
+        return !openQuote && openParens.length === 0;
+    }
+    editingNameValueKeyPress(context, event) {
         const keyboardEvent = event;
         const target = keyboardEvent.target;
         const keyChar = String.fromCharCode(keyboardEvent.charCode);
         const selectionLeftOffset = this.#selectionLeftOffset(target);
         const isFieldInputTerminated = (context.isEditingName ? keyChar === ':' :
             keyChar === ';' && selectionLeftOffset !== null &&
-                shouldCommitValueSemicolon(target.textContent || '', selectionLeftOffset));
+                StylePropertyTreeElement.shouldCommitValueSemicolon(target.textContent || '', selectionLeftOffset));
         if (isFieldInputTerminated) {
             // Enter or colon (for name)/semicolon outside of string (for value).
             event.consume(true);

@@ -8,28 +8,22 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
 import { createLimitedRows, renderOthersLabel } from './Table.js';
-const { UIStrings, i18nString } = Trace.Insights.Models.Cache;
+const { UIStrings, i18nString, createOverlayForRequest } = Trace.Insights.Models.Cache;
 const { html } = Lit;
 export class Cache extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-cache`;
+    internalName = 'cache';
     mapToRow(req) {
         return {
             values: [eventRef(req.request), i18n.TimeUtilities.secondsToString(req.ttl)],
-            overlays: [this.#createOverlayForRequest(req.request)],
+            overlays: [createOverlayForRequest(req.request)],
         };
     }
     createAggregatedTableRow(remaining) {
         return {
             values: [renderOthersLabel(remaining.length), ''],
-            overlays: remaining.flatMap(r => this.#createOverlayForRequest(r.request)),
+            overlays: remaining.flatMap(r => createOverlayForRequest(r.request)),
         };
-    }
-    internalName = 'cache';
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        return this.model.requests.map(req => this.#createOverlayForRequest(req.request));
     }
     renderContent() {
         if (!this.model) {
@@ -53,13 +47,6 @@ export class Cache extends BaseInsightComponent {
         </devtools-performance-table>
       </div>`;
         // clang-format on
-    }
-    #createOverlayForRequest(request) {
-        return {
-            type: 'ENTRY_OUTLINE',
-            entry: request,
-            outlineReason: 'ERROR',
-        };
     }
 }
 customElements.define('devtools-performance-cache', Cache);

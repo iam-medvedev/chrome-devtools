@@ -24,7 +24,6 @@ export declare class Resource implements TextUtils.ContentProvider.ContentProvid
     set isGenerated(val: boolean);
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
-    requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     canonicalMimeType(): string;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;

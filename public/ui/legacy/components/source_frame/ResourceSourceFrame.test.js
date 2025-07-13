@@ -29,9 +29,6 @@ class MockStreamingContentProvider {
     contentType() {
         return this.#contentType;
     }
-    async requestContent() {
-        return this.#content.content().asDeferedContent();
-    }
     addChunk(chunk) {
         this.#content.addChunk(chunk);
     }

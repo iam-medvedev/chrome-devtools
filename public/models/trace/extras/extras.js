@@ -466,6 +466,7 @@ import * as Helpers3 from "./../helpers/helpers.js";
 import * as Types6 from "./../types/types.js";
 
 // gen/front_end/models/trace/helpers/Timing.js
+import * as Platform3 from "./../../../core/platform/platform.js";
 import * as Types5 from "./../types/types.js";
 
 // gen/front_end/models/trace/helpers/Trace.js
@@ -900,40 +901,27 @@ var SamplesIntegrator = class _SamplesIntegrator {
     stack.length = j;
   }
   static createFakeTraceFromCpuProfile(profile, tid) {
-    const traceEvents = [];
     if (!profile) {
-      return { traceEvents, metadata: {} };
+      return { traceEvents: [], metadata: {} };
     }
-    appendEvent(
-      "CpuProfile",
-      { data: { cpuProfile: profile } },
-      profile.startTime,
-      profile.endTime - profile.startTime,
-      "X"
-      /* Types.Events.Phase.COMPLETE */
-    );
+    const cpuProfileEvent = {
+      cat: "disabled-by-default-devtools.timeline",
+      name: "CpuProfile",
+      ph: "X",
+      pid: Types6.Events.ProcessID(1),
+      tid,
+      ts: Types6.Timing.Micro(profile.startTime),
+      dur: Types6.Timing.Micro(profile.endTime - profile.startTime),
+      args: { data: { cpuProfile: profile } },
+      // Create an arbitrary profile id.
+      id: "0x1"
+    };
     return {
-      traceEvents,
+      traceEvents: [cpuProfileEvent],
       metadata: {
         dataOrigin: "CPUProfile"
       }
     };
-    function appendEvent(name, args, ts, dur, ph, cat) {
-      const event = {
-        cat: cat || "disabled-by-default-devtools.timeline",
-        name,
-        ph: ph || "X",
-        pid: Types6.Events.ProcessID(1),
-        tid,
-        ts: Types6.Timing.Micro(ts),
-        args
-      };
-      if (dur) {
-        event.dur = Types6.Timing.Micro(dur);
-      }
-      traceEvents.push(event);
-      return event;
-    }
   }
 };
 

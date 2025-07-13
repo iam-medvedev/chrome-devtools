@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { spyCall } from '../../testing/ExpectStubCall.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import * as MobileThrottling from './mobile_throttling.js';
 describeWithEnvironment('ThrottlingManager', () => {
     describe('OfflineToolbarCheckbox', () => {
@@ -56,6 +58,33 @@ describeWithEnvironment('ThrottlingManager', () => {
             assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.ExtraSlowThrottlingOption);
             SDK.CPUThrottlingManager.CPUThrottlingManager.instance().setCPUThrottlingOption(SDK.CPUThrottlingManager.NoThrottlingOption);
             assert.strictEqual(cpuThrottlingPresets[selector.selectedIndex()], SDK.CPUThrottlingManager.NoThrottlingOption);
+        });
+    });
+});
+describeWithMockConnection('ThrottlingManager', () => {
+    describe('DataSaverEmulation', () => {
+        it('creates a select element which sets the data saver emulation mode', async () => {
+            setMockConnectionResponseHandler('Emulation.setDataSaverOverride', () => ({}));
+            const emulationModel = createTarget().model(SDK.EmulationModel.EmulationModel);
+            assert.exists(emulationModel);
+            assert.lengthOf(SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel), 1);
+            assert.strictEqual(SDK.TargetManager.TargetManager.instance().models(SDK.EmulationModel.EmulationModel)[0], emulationModel);
+            const select = MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true })
+                .createSaveDataOverrideSelector();
+            const options = select.options();
+            assert.deepEqual(options.map(option => option.textContent), ['\'Save-Data\': default', '\'Save-Data\': force on', '\'Save-Data\': force off']);
+            let emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
+            select.select(options[0]);
+            select.element.dispatchEvent(new Event('change'));
+            assert.strictEqual((await emulationModelSpy).args[0], "unset" /* SDK.EmulationModel.DataSaverOverride.UNSET */);
+            emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
+            select.select(options[1]);
+            select.element.dispatchEvent(new Event('change'));
+            assert.strictEqual((await emulationModelSpy).args[0], "enabled" /* SDK.EmulationModel.DataSaverOverride.ENABLED */);
+            emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
+            select.select(options[2]);
+            select.element.dispatchEvent(new Event('change'));
+            assert.strictEqual((await emulationModelSpy).args[0], "disabled" /* SDK.EmulationModel.DataSaverOverride.DISABLED */);
         });
     });
 });

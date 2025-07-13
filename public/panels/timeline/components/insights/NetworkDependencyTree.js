@@ -20,14 +20,6 @@ export class NetworkDependencyTree extends BaseInsightComponent {
     internalName = 'long-critical-network-tree';
     #relatedRequests = null;
     #countOfChains = 0;
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        const overlays = [];
-        getAllOverlays(this.model.rootNodes, overlays);
-        return overlays;
-    }
     #createOverlayForChain(requests) {
         const overlays = [];
         requests.forEach(entry => overlays.push({
@@ -269,16 +261,6 @@ export class NetworkDependencyTree extends BaseInsightComponent {
       ${this.#renderEstSavingTable()}
     `;
     }
-}
-function getAllOverlays(nodes, overlays) {
-    nodes.forEach(node => {
-        overlays.push({
-            type: 'ENTRY_OUTLINE',
-            entry: node.request,
-            outlineReason: 'ERROR',
-        });
-        getAllOverlays(node.children, overlays);
-    });
 }
 customElements.define('devtools-performance-long-critical-network-tree', NetworkDependencyTree);
 //# sourceMappingURL=NetworkDependencyTree.js.map

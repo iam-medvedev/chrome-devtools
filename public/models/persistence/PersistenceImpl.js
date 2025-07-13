@@ -8,6 +8,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as BreakpointManager from '../breakpoints/breakpoints.js';
+import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { Automapping } from './Automapping.js';
 import { LinkDecorator } from './PersistenceUtils.js';
@@ -163,8 +164,10 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
         const other = binding.network === uiSourceCode ? binding.fileSystem : binding.network;
         const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
         if (target && target.type() === SDK.Target.Type.NODE) {
-            void other.requestContent().then(currentContent => {
-                const nodeJSContent = PersistenceImpl.rewrapNodeJSContent(other, currentContent.content || '', newContent);
+            void other.requestContentData()
+                .then(contentDataOrError => TextUtils.ContentData.ContentData.textOr(contentDataOrError, ''))
+                .then(currentContent => {
+                const nodeJSContent = PersistenceImpl.rewrapNodeJSContent(other, currentContent, newContent);
                 setContent.call(this, nodeJSContent);
             });
             return;

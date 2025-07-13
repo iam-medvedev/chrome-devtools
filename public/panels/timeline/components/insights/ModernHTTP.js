@@ -7,28 +7,25 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
 import { createLimitedRows, renderOthersLabel } from './Table.js';
-const { UIStrings, i18nString } = Trace.Insights.Models.ModernHTTP;
+const { UIStrings, i18nString, createOverlayForRequest } = Trace.Insights.Models.ModernHTTP;
 const { html } = Lit;
 export class ModernHTTP extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-modern-http`;
     internalName = 'modern-http';
-    hasAskAiSupport() {
-        return true;
-    }
-    mapToRow(req) {
-        return { values: [eventRef(req), req.args.data.protocol], overlays: [this.#createOverlayForRequest(req)] };
-    }
-    createAggregatedTableRow(remaining) {
-        return {
-            values: [renderOthersLabel(remaining.length), ''],
-            overlays: remaining.map(req => this.#createOverlayForRequest(req)),
-        };
-    }
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.LCP ?? null;
     }
     createOverlays() {
-        return this.model?.http1Requests.map(req => this.#createOverlayForRequest(req)) ?? [];
+        return this.model?.http1Requests.map(req => createOverlayForRequest(req)) ?? [];
+    }
+    mapToRow(req) {
+        return { values: [eventRef(req), req.args.data.protocol], overlays: [createOverlayForRequest(req)] };
+    }
+    createAggregatedTableRow(remaining) {
+        return {
+            values: [renderOthersLabel(remaining.length), ''],
+            overlays: remaining.map(req => createOverlayForRequest(req)),
+        };
     }
     renderContent() {
         if (!this.model) {
@@ -50,13 +47,6 @@ export class ModernHTTP extends BaseInsightComponent {
         </devtools-performance-table>
       </div>`;
         // clang-format on
-    }
-    #createOverlayForRequest(request) {
-        return {
-            type: 'ENTRY_OUTLINE',
-            entry: request,
-            outlineReason: 'ERROR',
-        };
     }
 }
 customElements.define('devtools-performance-modern-http', ModernHTTP);

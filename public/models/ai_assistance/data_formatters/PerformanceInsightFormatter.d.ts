@@ -4,7 +4,14 @@ export declare class PerformanceInsightFormatter {
     #private;
     constructor(activeInsight: TimelineUtils.InsightAIContext.ActiveInsight);
     insightIsSupported(): boolean;
-    formatInsight(): string;
+    /**
+     * Formats and outputs the insight's data.
+     * Pass `{headingLevel: X}` to determine what heading level to use for the
+     * titles in the markdown output. The default is 2 (##).
+     */
+    formatInsight(opts?: {
+        headingLevel: number;
+    }): string;
 }
 export interface NetworkRequestFormatOptions {
     verbose: boolean;
@@ -54,7 +61,7 @@ export declare class TraceEventFormatter {
      * - `initiatorUrlIndex`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
      * - `redirects`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
      * `[redirectUrlIndex|startTime|duration]`, where: `redirectUrlIndex`: Numerical index for the redirect's URL. `startTime`: The start time of the redirect in milliseconds, relative to navigation start. `duration`: The duration of the redirect in milliseconds.
-     * - `responseHeaders`: A comma-separated list of values for specific, pre-defined response headers, enclosed in square brackets.
+     * - `responseHeaders`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
      * The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
      */
     static networkRequestNewFormat(urlIndex: number, request: Trace.Types.Events.SyntheticNetworkRequest, parsedTrace: Trace.Handlers.Types.ParsedTrace, urlIdToIndex: Map<string, number>): string;

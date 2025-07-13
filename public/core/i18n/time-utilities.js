@@ -111,7 +111,7 @@ export function millisToString(ms, higherResolution) {
     return longDaysDecimal.format(days);
 }
 const preciseMillisToStringFormattersCache = new Map();
-export function preciseMillisToString(ms, precision = 0) {
+export function preciseMillisToString(ms, precision = 0, separator) {
     let formatter = preciseMillisToStringFormattersCache.get(precision);
     if (!formatter) {
         formatter = defineFormatter({
@@ -123,7 +123,7 @@ export function preciseMillisToString(ms, precision = 0) {
         });
         preciseMillisToStringFormattersCache.set(precision, formatter);
     }
-    return formatter.format(ms);
+    return formatter.format(ms, separator);
 }
 const preciseSecondsToStringFormattersCache = new Map();
 export function preciseSecondsToString(ms, precision = 0) {

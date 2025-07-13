@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Debugging from './Debugging.js';
 import * as LoggingConfig from './LoggingConfig.js';
 import * as LoggingDriver from './LoggingDriver.js';
 import * as LoggingEvents from './LoggingEvents.js';
@@ -28,6 +29,12 @@ export async function isUnderInspection(origin) {
         return false;
     }
     return [431010711, -1313957874, -1093325535].includes(context);
+}
+export function setHighlightedVe(veKey) {
+    Debugging.setHighlightedVe(veKey);
+    if (veKey) {
+        void LoggingDriver.process();
+    }
 }
 /**
  * Action visual elements are either buttons or menu items that trigger a given action. Use the

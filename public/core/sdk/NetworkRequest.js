@@ -8,7 +8,7 @@ import * as Platform from '../platform/platform.js';
 import { CookieModel } from './CookieModel.js';
 import { CookieParser } from './CookieParser.js';
 import * as HttpReasonPhraseStrings from './HttpReasonPhraseStrings.js';
-import { Events as NetworkManagerEvents, NetworkManager } from './NetworkManager.js';
+import { Events as NetworkManagerEvents, NetworkManager, } from './NetworkManager.js';
 import { ServerSentEvents } from './ServerSentEvents.js';
 import { ServerTiming } from './ServerTiming.js';
 import { Type } from './Target.js';
@@ -198,181 +198,124 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('core/sdk/NetworkRequest.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
-    #requestIdInternal;
-    #backendRequestIdInternal;
-    #documentURLInternal;
-    #frameIdInternal;
-    #loaderIdInternal;
+    #requestId;
+    #backendRequestId;
+    #documentURL;
+    #frameId;
+    #loaderId;
     #hasUserGesture;
-    #initiatorInternal;
-    #redirectSourceInternal;
-    #preflightRequestInternal;
-    #preflightInitiatorRequestInternal;
-    #isRedirectInternal;
-    #redirectDestinationInternal;
-    #issueTimeInternal;
-    #startTimeInternal;
-    #endTimeInternal;
-    #blockedReasonInternal;
-    #corsErrorStatusInternal;
-    statusCode;
-    statusText;
-    requestMethod;
-    requestTime;
-    protocol;
-    alternateProtocolUsage;
-    mixedContentType;
-    #initialPriorityInternal;
-    #currentPriority;
-    #signedExchangeInfoInternal;
-    #webBundleInfoInternal;
-    #webBundleInnerRequestInfoInternal;
-    #resourceTypeInternal;
-    #contentDataInternal;
-    #streamingContentData;
-    #framesInternal;
-    #responseHeaderValues;
-    #responseHeadersTextInternal;
-    #originalResponseHeaders;
+    #initiator;
+    #redirectSource = null;
+    #preflightRequest = null;
+    #preflightInitiatorRequest = null;
+    #isRedirect = false;
+    #redirectDestination = null;
+    #issueTime = -1;
+    #startTime = -1;
+    #endTime = -1;
+    #blockedReason = undefined;
+    #corsErrorStatus = undefined;
+    statusCode = 0;
+    statusText = '';
+    requestMethod = '';
+    requestTime = 0;
+    protocol = '';
+    alternateProtocolUsage = undefined;
+    mixedContentType = "none" /* Protocol.Security.MixedContentType.None */;
+    #initialPriority = null;
+    #currentPriority = null;
+    #signedExchangeInfo = null;
+    #webBundleInfo = null;
+    #webBundleInnerRequestInfo = null;
+    #resourceType = Common.ResourceType.resourceTypes.Other;
+    #contentData = null;
+    #streamingContentData = null;
+    #frames = [];
+    #responseHeaderValues = {};
+    #responseHeadersText = '';
+    #originalResponseHeaders = [];
     #sortedOriginalResponseHeaders;
     // This field is only used when intercepting and overriding requests, because
     // in that case 'this.responseHeaders' does not contain 'set-cookie' headers.
-    #setCookieHeaders;
-    #requestHeadersInternal;
-    #requestHeaderValues;
-    #remoteAddressInternal;
-    #remoteAddressSpaceInternal;
-    #referrerPolicyInternal;
-    #securityStateInternal;
-    #securityDetailsInternal;
-    connectionId;
-    connectionReused;
-    hasNetworkData;
-    #formParametersPromise;
-    #requestFormDataPromise;
-    #hasExtraRequestInfoInternal;
-    #hasExtraResponseInfoInternal;
-    #blockedRequestCookiesInternal;
-    #includedRequestCookiesInternal;
-    #blockedResponseCookiesInternal;
-    #exemptedResponseCookiesInternal;
-    #responseCookiesPartitionKey;
-    #responseCookiesPartitionKeyOpaque;
-    #siteHasCookieInOtherPartition;
-    localizedFailDescription;
-    #urlInternal;
-    #responseReceivedTimeInternal;
-    #transferSizeInternal;
-    #finishedInternal;
-    #failedInternal;
-    #canceledInternal;
-    #preservedInternal;
-    #mimeTypeInternal;
+    #setCookieHeaders = [];
+    #requestHeaders = [];
+    #requestHeaderValues = {};
+    #remoteAddress = '';
+    #remoteAddressSpace = "Unknown" /* Protocol.Network.IPAddressSpace.Unknown */;
+    #referrerPolicy = null;
+    #securityState = "unknown" /* Protocol.Security.SecurityState.Unknown */;
+    #securityDetails = null;
+    connectionId = '0';
+    connectionReused = false;
+    hasNetworkData = false;
+    #formParametersPromise = null;
+    #requestFormDataPromise = Promise.resolve(null);
+    #hasExtraRequestInfo = false;
+    #hasExtraResponseInfo = false;
+    #blockedRequestCookies = [];
+    #includedRequestCookies = [];
+    #blockedResponseCookies = [];
+    #exemptedResponseCookies = [];
+    #responseCookiesPartitionKey = null;
+    #responseCookiesPartitionKeyOpaque = null;
+    #siteHasCookieInOtherPartition = false;
+    localizedFailDescription = null;
+    #url;
+    #responseReceivedTime;
+    #transferSize;
+    #finished;
+    #failed;
+    #canceled;
+    #preserved;
+    #mimeType;
     #charset;
-    #parsedURLInternal;
-    #nameInternal;
-    #pathInternal;
-    #clientSecurityStateInternal;
-    #trustTokenParamsInternal;
-    #trustTokenOperationDoneEventInternal;
+    #parsedURL;
+    #name;
+    #path;
+    #clientSecurityState;
+    #trustTokenParams;
+    #trustTokenOperationDoneEvent;
     #responseCacheStorageCacheName;
-    #serviceWorkerResponseSourceInternal;
+    #serviceWorkerResponseSource;
     #wallIssueTime;
     #responseRetrievalTime;
-    #resourceSizeInternal;
+    #resourceSize;
     #fromMemoryCache;
     #fromDiskCache;
-    #fromPrefetchCacheInternal;
+    #fromPrefetchCache;
     #fromEarlyHints;
-    #fetchedViaServiceWorkerInternal;
-    #serviceWorkerRouterInfoInternal;
-    #timingInternal;
-    #requestHeadersTextInternal;
-    #responseHeadersInternal;
-    #earlyHintsHeadersInternal;
-    #sortedResponseHeadersInternal;
-    #responseCookiesInternal;
-    #serverTimingsInternal;
-    #queryStringInternal;
+    #fetchedViaServiceWorker;
+    #serviceWorkerRouterInfo;
+    #timing;
+    #requestHeadersText;
+    #responseHeaders;
+    #earlyHintsHeaders;
+    #sortedResponseHeaders;
+    #responseCookies;
+    #serverTimings;
+    #queryString;
     #parsedQueryParameters;
     #contentDataProvider;
-    #isSameSiteInternal;
-    #wasIntercepted;
+    #isSameSite = null;
+    #wasIntercepted = false;
     #associatedData = new Map();
-    #hasOverriddenContent;
-    #hasThirdPartyCookiePhaseoutIssue;
+    #hasOverriddenContent = false;
+    #hasThirdPartyCookiePhaseoutIssue = false;
     #serverSentEvents;
     responseReceivedPromise;
     responseReceivedPromiseResolve;
     directSocketInfo;
-    #directSocketChunksInternal;
+    #directSocketChunks = [];
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
-        this.#requestIdInternal = requestId;
-        this.#backendRequestIdInternal = backendRequestId;
+        this.#requestId = requestId;
+        this.#backendRequestId = backendRequestId;
         this.setUrl(url);
-        this.#documentURLInternal = documentURL;
-        this.#frameIdInternal = frameId;
-        this.#loaderIdInternal = loaderId;
-        this.#initiatorInternal = initiator;
+        this.#documentURL = documentURL;
+        this.#frameId = frameId;
+        this.#loaderId = loaderId;
+        this.#initiator = initiator;
         this.#hasUserGesture = hasUserGesture;
-        this.#redirectSourceInternal = null;
-        this.#preflightRequestInternal = null;
-        this.#preflightInitiatorRequestInternal = null;
-        this.#isRedirectInternal = false;
-        this.#redirectDestinationInternal = null;
-        this.#issueTimeInternal = -1;
-        this.#startTimeInternal = -1;
-        this.#endTimeInternal = -1;
-        this.#blockedReasonInternal = undefined;
-        this.#corsErrorStatusInternal = undefined;
-        this.statusCode = 0;
-        this.statusText = '';
-        this.requestMethod = '';
-        this.requestTime = 0;
-        this.protocol = '';
-        this.alternateProtocolUsage = undefined;
-        this.mixedContentType = "none" /* Protocol.Security.MixedContentType.None */;
-        this.#initialPriorityInternal = null;
-        this.#currentPriority = null;
-        this.#signedExchangeInfoInternal = null;
-        this.#webBundleInfoInternal = null;
-        this.#webBundleInnerRequestInfoInternal = null;
-        this.#resourceTypeInternal = Common.ResourceType.resourceTypes.Other;
-        this.#contentDataInternal = null;
-        this.#streamingContentData = null;
-        this.#framesInternal = [];
-        this.#responseHeaderValues = {};
-        this.#responseHeadersTextInternal = '';
-        this.#originalResponseHeaders = [];
-        this.#setCookieHeaders = [];
-        this.#requestHeadersInternal = [];
-        this.#requestHeaderValues = {};
-        this.#remoteAddressInternal = '';
-        this.#remoteAddressSpaceInternal = "Unknown" /* Protocol.Network.IPAddressSpace.Unknown */;
-        this.#referrerPolicyInternal = null;
-        this.#securityStateInternal = "unknown" /* Protocol.Security.SecurityState.Unknown */;
-        this.#securityDetailsInternal = null;
-        this.connectionId = '0';
-        this.connectionReused = false;
-        this.hasNetworkData = false;
-        this.#formParametersPromise = null;
-        this.#requestFormDataPromise = Promise.resolve(null);
-        this.#hasExtraRequestInfoInternal = false;
-        this.#hasExtraResponseInfoInternal = false;
-        this.#blockedRequestCookiesInternal = [];
-        this.#includedRequestCookiesInternal = [];
-        this.#blockedResponseCookiesInternal = [];
-        this.#exemptedResponseCookiesInternal = [];
-        this.#siteHasCookieInOtherPartition = false;
-        this.#responseCookiesPartitionKey = null;
-        this.#responseCookiesPartitionKeyOpaque = null;
-        this.localizedFailDescription = null;
-        this.#isSameSiteInternal = null;
-        this.#wasIntercepted = false;
-        this.#hasOverriddenContent = false;
-        this.#hasThirdPartyCookiePhaseoutIssue = false;
-        this.#directSocketChunksInternal = [];
     }
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -395,49 +338,49 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return 0;
     }
     requestId() {
-        return this.#requestIdInternal;
+        return this.#requestId;
     }
     backendRequestId() {
-        return this.#backendRequestIdInternal;
+        return this.#backendRequestId;
     }
     url() {
-        return this.#urlInternal;
+        return this.#url;
     }
     isBlobRequest() {
-        return Common.ParsedURL.schemeIs(this.#urlInternal, 'blob:');
+        return Common.ParsedURL.schemeIs(this.#url, 'blob:');
     }
     setUrl(x) {
-        if (this.#urlInternal === x) {
+        if (this.#url === x) {
             return;
         }
-        this.#urlInternal = x;
-        this.#parsedURLInternal = new Common.ParsedURL.ParsedURL(x);
-        this.#queryStringInternal = undefined;
+        this.#url = x;
+        this.#parsedURL = new Common.ParsedURL.ParsedURL(x);
+        this.#queryString = undefined;
         this.#parsedQueryParameters = undefined;
-        this.#nameInternal = undefined;
-        this.#pathInternal = undefined;
+        this.#name = undefined;
+        this.#path = undefined;
     }
     get documentURL() {
-        return this.#documentURLInternal;
+        return this.#documentURL;
     }
     get parsedURL() {
-        return this.#parsedURLInternal;
+        return this.#parsedURL;
     }
     get frameId() {
-        return this.#frameIdInternal;
+        return this.#frameId;
     }
     get loaderId() {
-        return this.#loaderIdInternal;
+        return this.#loaderId;
     }
     setRemoteAddress(ip, port) {
-        this.#remoteAddressInternal = ip + ':' + port;
+        this.#remoteAddress = ip + ':' + port;
         this.dispatchEventToListeners(Events.REMOTE_ADDRESS_CHANGED, this);
     }
     remoteAddress() {
-        return this.#remoteAddressInternal;
+        return this.#remoteAddress;
     }
     remoteAddressSpace() {
-        return this.#remoteAddressSpaceInternal;
+        return this.#remoteAddressSpace;
     }
     /**
      * The cache #name of the CacheStorage from where the response is served via
@@ -450,51 +393,51 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#responseCacheStorageCacheName = x;
     }
     serviceWorkerResponseSource() {
-        return this.#serviceWorkerResponseSourceInternal;
+        return this.#serviceWorkerResponseSource;
     }
     setServiceWorkerResponseSource(serviceWorkerResponseSource) {
-        this.#serviceWorkerResponseSourceInternal = serviceWorkerResponseSource;
+        this.#serviceWorkerResponseSource = serviceWorkerResponseSource;
     }
     setReferrerPolicy(referrerPolicy) {
-        this.#referrerPolicyInternal = referrerPolicy;
+        this.#referrerPolicy = referrerPolicy;
     }
     referrerPolicy() {
-        return this.#referrerPolicyInternal;
+        return this.#referrerPolicy;
     }
     securityState() {
-        return this.#securityStateInternal;
+        return this.#securityState;
     }
     setSecurityState(securityState) {
-        this.#securityStateInternal = securityState;
+        this.#securityState = securityState;
     }
     securityDetails() {
-        return this.#securityDetailsInternal;
+        return this.#securityDetails;
     }
     securityOrigin() {
-        return this.#parsedURLInternal.securityOrigin();
+        return this.#parsedURL.securityOrigin();
     }
     setSecurityDetails(securityDetails) {
-        this.#securityDetailsInternal = securityDetails;
+        this.#securityDetails = securityDetails;
     }
     get startTime() {
-        return this.#startTimeInternal || -1;
+        return this.#startTime || -1;
     }
     setIssueTime(monotonicTime, wallTime) {
-        this.#issueTimeInternal = monotonicTime;
+        this.#issueTime = monotonicTime;
         this.#wallIssueTime = wallTime;
-        this.#startTimeInternal = monotonicTime;
+        this.#startTime = monotonicTime;
     }
     issueTime() {
-        return this.#issueTimeInternal;
+        return this.#issueTime;
     }
     pseudoWallTime(monotonicTime) {
-        return this.#wallIssueTime ? this.#wallIssueTime - this.#issueTimeInternal + monotonicTime : monotonicTime;
+        return this.#wallIssueTime ? this.#wallIssueTime - this.#issueTime + monotonicTime : monotonicTime;
     }
     get responseReceivedTime() {
-        return this.#responseReceivedTimeInternal || -1;
+        return this.#responseReceivedTime || -1;
     }
     set responseReceivedTime(x) {
-        this.#responseReceivedTimeInternal = x;
+        this.#responseReceivedTime = x;
     }
     /**
      * The time at which the returned response was generated. For cached
@@ -507,106 +450,106 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#responseRetrievalTime = x;
     }
     get endTime() {
-        return this.#endTimeInternal || -1;
+        return this.#endTime || -1;
     }
     set endTime(x) {
         if (this.timing?.requestTime) {
             // Check against accurate responseReceivedTime.
-            this.#endTimeInternal = Math.max(x, this.responseReceivedTime);
+            this.#endTime = Math.max(x, this.responseReceivedTime);
         }
         else {
             // Prefer endTime since it might be from the network stack.
-            this.#endTimeInternal = x;
-            if (this.#responseReceivedTimeInternal > x) {
-                this.#responseReceivedTimeInternal = x;
+            this.#endTime = x;
+            if (this.#responseReceivedTime > x) {
+                this.#responseReceivedTime = x;
             }
         }
         this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
     }
     get duration() {
-        if (this.#endTimeInternal === -1 || this.#startTimeInternal === -1) {
+        if (this.#endTime === -1 || this.#startTime === -1) {
             return -1;
         }
-        return this.#endTimeInternal - this.#startTimeInternal;
+        return this.#endTime - this.#startTime;
     }
     get latency() {
-        if (this.#responseReceivedTimeInternal === -1 || this.#startTimeInternal === -1) {
+        if (this.#responseReceivedTime === -1 || this.#startTime === -1) {
             return -1;
         }
-        return this.#responseReceivedTimeInternal - this.#startTimeInternal;
+        return this.#responseReceivedTime - this.#startTime;
     }
     get resourceSize() {
-        return this.#resourceSizeInternal || 0;
+        return this.#resourceSize || 0;
     }
     set resourceSize(x) {
-        this.#resourceSizeInternal = x;
+        this.#resourceSize = x;
     }
     get transferSize() {
-        return this.#transferSizeInternal || 0;
+        return this.#transferSize || 0;
     }
     increaseTransferSize(x) {
-        this.#transferSizeInternal = (this.#transferSizeInternal || 0) + x;
+        this.#transferSize = (this.#transferSize || 0) + x;
     }
     setTransferSize(x) {
-        this.#transferSizeInternal = x;
+        this.#transferSize = x;
     }
     get finished() {
-        return this.#finishedInternal;
+        return this.#finished;
     }
     set finished(x) {
-        if (this.#finishedInternal === x) {
+        if (this.#finished === x) {
             return;
         }
-        this.#finishedInternal = x;
+        this.#finished = x;
         if (x) {
             this.dispatchEventToListeners(Events.FINISHED_LOADING, this);
         }
     }
     get failed() {
-        return this.#failedInternal;
+        return this.#failed;
     }
     set failed(x) {
-        this.#failedInternal = x;
+        this.#failed = x;
     }
     get canceled() {
-        return this.#canceledInternal;
+        return this.#canceled;
     }
     set canceled(x) {
-        this.#canceledInternal = x;
+        this.#canceled = x;
     }
     get preserved() {
-        return this.#preservedInternal;
+        return this.#preserved;
     }
     set preserved(x) {
-        this.#preservedInternal = x;
+        this.#preserved = x;
     }
     blockedReason() {
-        return this.#blockedReasonInternal;
+        return this.#blockedReason;
     }
     setBlockedReason(reason) {
-        this.#blockedReasonInternal = reason;
+        this.#blockedReason = reason;
     }
     corsErrorStatus() {
-        return this.#corsErrorStatusInternal;
+        return this.#corsErrorStatus;
     }
     setCorsErrorStatus(corsErrorStatus) {
-        this.#corsErrorStatusInternal = corsErrorStatus;
+        this.#corsErrorStatus = corsErrorStatus;
     }
     wasBlocked() {
-        return Boolean(this.#blockedReasonInternal);
+        return Boolean(this.#blockedReason);
     }
     cached() {
-        return (Boolean(this.#fromMemoryCache) || Boolean(this.#fromDiskCache)) && !this.#transferSizeInternal;
+        return ((Boolean(this.#fromMemoryCache) || Boolean(this.#fromDiskCache)) && !this.#transferSize);
     }
     cachedInMemory() {
-        return Boolean(this.#fromMemoryCache) && !this.#transferSizeInternal;
+        return Boolean(this.#fromMemoryCache) && !this.#transferSize;
     }
     fromPrefetchCache() {
-        return Boolean(this.#fromPrefetchCacheInternal);
+        return Boolean(this.#fromPrefetchCache);
     }
     setFromMemoryCache() {
         this.#fromMemoryCache = true;
-        this.#timingInternal = undefined;
+        this.#timing = undefined;
     }
     get fromDiskCache() {
         return this.#fromDiskCache;
@@ -615,7 +558,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#fromDiskCache = true;
     }
     setFromPrefetchCache() {
-        this.#fromPrefetchCacheInternal = true;
+        this.#fromPrefetchCache = true;
     }
     fromEarlyHints() {
         return Boolean(this.#fromEarlyHints);
@@ -628,16 +571,16 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
      * provided its own response.
      */
     get fetchedViaServiceWorker() {
-        return Boolean(this.#fetchedViaServiceWorkerInternal);
+        return Boolean(this.#fetchedViaServiceWorker);
     }
     set fetchedViaServiceWorker(x) {
-        this.#fetchedViaServiceWorkerInternal = x;
+        this.#fetchedViaServiceWorker = x;
     }
     get serviceWorkerRouterInfo() {
-        return this.#serviceWorkerRouterInfoInternal;
+        return this.#serviceWorkerRouterInfo;
     }
     set serviceWorkerRouterInfo(x) {
-        this.#serviceWorkerRouterInfoInternal = x;
+        this.#serviceWorkerRouterInfo = x;
     }
     /**
      * Returns true if the request was matched to a route when using the
@@ -645,8 +588,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
      */
     hasMatchingServiceWorkerRouter() {
         // See definitions in `browser_protocol.pdl` for justification.
-        return this.#serviceWorkerRouterInfoInternal !== undefined &&
-            this.serviceWorkerRouterInfo?.matchedSourceType !== undefined;
+        return (this.#serviceWorkerRouterInfo !== undefined && this.serviceWorkerRouterInfo?.matchedSourceType !== undefined);
     }
     /**
      * Returns true if the request was sent by a service worker.
@@ -659,7 +601,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return networkManager.target().type() === Type.ServiceWorker;
     }
     get timing() {
-        return this.#timingInternal;
+        return this.#timing;
     }
     set timing(timingInfo) {
         if (!timingInfo || this.#fromMemoryCache) {
@@ -667,83 +609,84 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
         // Take startTime and responseReceivedTime from timing data for better accuracy.
         // Timing's requestTime is a baseline in seconds, rest of the numbers there are ticks in millis.
-        this.#startTimeInternal = timingInfo.requestTime;
+        this.#startTime = timingInfo.requestTime;
         const headersReceivedTime = timingInfo.requestTime + timingInfo.receiveHeadersEnd / 1000.0;
-        if ((this.#responseReceivedTimeInternal || -1) < 0 || this.#responseReceivedTimeInternal > headersReceivedTime) {
-            this.#responseReceivedTimeInternal = headersReceivedTime;
+        if ((this.#responseReceivedTime || -1) < 0 || this.#responseReceivedTime > headersReceivedTime) {
+            this.#responseReceivedTime = headersReceivedTime;
         }
-        if (this.#startTimeInternal > this.#responseReceivedTimeInternal) {
-            this.#responseReceivedTimeInternal = this.#startTimeInternal;
+        if (this.#startTime > this.#responseReceivedTime) {
+            this.#responseReceivedTime = this.#startTime;
         }
-        this.#timingInternal = timingInfo;
+        this.#timing = timingInfo;
         this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
     }
     setConnectTimingFromExtraInfo(connectTiming) {
-        this.#startTimeInternal = connectTiming.requestTime;
+        this.#startTime = connectTiming.requestTime;
         this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
     }
     get mimeType() {
-        return this.#mimeTypeInternal;
+        return this.#mimeType;
     }
     set mimeType(x) {
-        this.#mimeTypeInternal = x;
+        this.#mimeType = x;
         if (x === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */ && !this.#serverSentEvents) {
             const parseFromStreamedData = this.resourceType() !== Common.ResourceType.resourceTypes.EventSource;
             this.#serverSentEvents = new ServerSentEvents(this, parseFromStreamedData);
         }
     }
     get displayName() {
-        return this.#parsedURLInternal.displayName;
+        return this.#parsedURL.displayName;
     }
     name() {
-        if (this.#nameInternal) {
-            return this.#nameInternal;
+        if (this.#name) {
+            return this.#name;
         }
         this.parseNameAndPathFromURL();
-        return this.#nameInternal;
+        return this.#name;
     }
     path() {
-        if (this.#pathInternal) {
-            return this.#pathInternal;
+        if (this.#path) {
+            return this.#path;
         }
         this.parseNameAndPathFromURL();
-        return this.#pathInternal;
+        return this.#path;
     }
     parseNameAndPathFromURL() {
-        if (this.#parsedURLInternal.isDataURL()) {
-            this.#nameInternal = this.#parsedURLInternal.dataURLDisplayName();
-            this.#pathInternal = '';
+        if (this.#parsedURL.isDataURL()) {
+            this.#name = this.#parsedURL.dataURLDisplayName();
+            this.#path = '';
         }
-        else if (this.#parsedURLInternal.isBlobURL()) {
-            this.#nameInternal = this.#parsedURLInternal.url;
-            this.#pathInternal = '';
+        else if (this.#parsedURL.isBlobURL()) {
+            this.#name = this.#parsedURL.url;
+            this.#path = '';
         }
-        else if (this.#parsedURLInternal.isAboutBlank()) {
-            this.#nameInternal = this.#parsedURLInternal.url;
-            this.#pathInternal = '';
+        else if (this.#parsedURL.isAboutBlank()) {
+            this.#name = this.#parsedURL.url;
+            this.#path = '';
         }
         else {
-            this.#pathInternal = this.#parsedURLInternal.host + this.#parsedURLInternal.folderPathComponents;
+            this.#path = this.#parsedURL.host + this.#parsedURL.folderPathComponents;
             const networkManager = NetworkManager.forRequest(this);
-            const inspectedURL = networkManager ? Common.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
-            this.#pathInternal = Platform.StringUtilities.trimURL(this.#pathInternal, inspectedURL ? inspectedURL.host : '');
-            if (this.#parsedURLInternal.lastPathComponent || this.#parsedURLInternal.queryParams) {
-                this.#nameInternal = this.#parsedURLInternal.lastPathComponent +
-                    (this.#parsedURLInternal.queryParams ? '?' + this.#parsedURLInternal.queryParams : '');
+            const inspectedURL = networkManager ? Common.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) :
+                null;
+            this.#path = Platform.StringUtilities.trimURL(this.#path, inspectedURL ? inspectedURL.host : '');
+            if (this.#parsedURL.lastPathComponent || this.#parsedURL.queryParams) {
+                this.#name =
+                    this.#parsedURL.lastPathComponent + (this.#parsedURL.queryParams ? '?' + this.#parsedURL.queryParams : '');
             }
-            else if (this.#parsedURLInternal.folderPathComponents) {
-                this.#nameInternal = this.#parsedURLInternal.folderPathComponents.substring(this.#parsedURLInternal.folderPathComponents.lastIndexOf('/') + 1) +
+            else if (this.#parsedURL.folderPathComponents) {
+                this.#name = this.#parsedURL.folderPathComponents.substring(this.#parsedURL.folderPathComponents.lastIndexOf('/') + 1) +
                     '/';
-                this.#pathInternal = this.#pathInternal.substring(0, this.#pathInternal.lastIndexOf('/'));
+                this.#path = this.#path.substring(0, this.#path.lastIndexOf('/'));
             }
             else {
-                this.#nameInternal = this.#parsedURLInternal.host;
-                this.#pathInternal = '';
+                this.#name = this.#parsedURL.host;
+                this.#path = '';
             }
         }
     }
     get folder() {
-        let path = this.#parsedURLInternal.path;
+        let path = this.#parsedURL.path;
         const indexOfQuery = path.indexOf('?');
         if (indexOfQuery !== -1) {
             path = path.substring(0, indexOfQuery);
@@ -752,63 +695,63 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return lastSlashIndex !== -1 ? path.substring(0, lastSlashIndex) : '';
     }
     get pathname() {
-        return this.#parsedURLInternal.path;
+        return this.#parsedURL.path;
     }
     resourceType() {
-        return this.#resourceTypeInternal;
+        return this.#resourceType;
     }
     setResourceType(resourceType) {
-        this.#resourceTypeInternal = resourceType;
+        this.#resourceType = resourceType;
     }
     get domain() {
-        return this.#parsedURLInternal.host;
+        return this.#parsedURL.host;
     }
     get scheme() {
-        return this.#parsedURLInternal.scheme;
+        return this.#parsedURL.scheme;
     }
     getInferredStatusText() {
-        return this.statusText || HttpReasonPhraseStrings.getStatusText(this.statusCode);
+        return (this.statusText || HttpReasonPhraseStrings.getStatusText(this.statusCode));
     }
     redirectSource() {
-        return this.#redirectSourceInternal;
+        return this.#redirectSource;
     }
     setRedirectSource(originatingRequest) {
-        this.#redirectSourceInternal = originatingRequest;
+        this.#redirectSource = originatingRequest;
     }
     preflightRequest() {
-        return this.#preflightRequestInternal;
+        return this.#preflightRequest;
     }
     setPreflightRequest(preflightRequest) {
-        this.#preflightRequestInternal = preflightRequest;
+        this.#preflightRequest = preflightRequest;
     }
     preflightInitiatorRequest() {
-        return this.#preflightInitiatorRequestInternal;
+        return this.#preflightInitiatorRequest;
     }
     setPreflightInitiatorRequest(preflightInitiatorRequest) {
-        this.#preflightInitiatorRequestInternal = preflightInitiatorRequest;
+        this.#preflightInitiatorRequest = preflightInitiatorRequest;
     }
     isPreflightRequest() {
-        return this.#initiatorInternal !== null && this.#initiatorInternal !== undefined &&
-            this.#initiatorInternal.type === "preflight" /* Protocol.Network.InitiatorType.Preflight */;
+        return (this.#initiator !== null && this.#initiator !== undefined &&
+            this.#initiator.type === "preflight" /* Protocol.Network.InitiatorType.Preflight */);
     }
     redirectDestination() {
-        return this.#redirectDestinationInternal;
+        return this.#redirectDestination;
     }
     setRedirectDestination(redirectDestination) {
-        this.#redirectDestinationInternal = redirectDestination;
+        this.#redirectDestination = redirectDestination;
     }
     requestHeaders() {
-        return this.#requestHeadersInternal;
+        return this.#requestHeaders;
     }
     setRequestHeaders(headers) {
-        this.#requestHeadersInternal = headers;
+        this.#requestHeaders = headers;
         this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
     }
     requestHeadersText() {
-        return this.#requestHeadersTextInternal;
+        return this.#requestHeadersText;
     }
     setRequestHeadersText(text) {
-        this.#requestHeadersTextInternal = text;
+        this.#requestHeadersText = text;
         this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
     }
     requestHeaderValue(headerName) {
@@ -825,7 +768,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#requestFormDataPromise;
     }
     setRequestFormData(hasData, data) {
-        this.#requestFormDataPromise = (hasData && data === null) ? null : Promise.resolve(data);
+        this.#requestFormDataPromise = hasData && data === null ? null : Promise.resolve(data);
         this.#formParametersPromise = null;
     }
     filteredProtocolName() {
@@ -849,21 +792,21 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return match ? match[1] : 'HTTP/0.9';
     }
     get responseHeaders() {
-        return this.#responseHeadersInternal || [];
+        return this.#responseHeaders || [];
     }
     set responseHeaders(x) {
-        this.#responseHeadersInternal = x;
-        this.#sortedResponseHeadersInternal = undefined;
-        this.#serverTimingsInternal = undefined;
-        this.#responseCookiesInternal = undefined;
+        this.#responseHeaders = x;
+        this.#sortedResponseHeaders = undefined;
+        this.#serverTimings = undefined;
+        this.#responseCookies = undefined;
         this.#responseHeaderValues = {};
         this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
     }
     get earlyHintsHeaders() {
-        return this.#earlyHintsHeadersInternal || [];
+        return this.#earlyHintsHeaders || [];
     }
     set earlyHintsHeaders(x) {
-        this.#earlyHintsHeadersInternal = x;
+        this.#earlyHintsHeaders = x;
     }
     get originalResponseHeaders() {
         return this.#originalResponseHeaders;
@@ -879,18 +822,18 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#setCookieHeaders = headers;
     }
     get responseHeadersText() {
-        return this.#responseHeadersTextInternal;
+        return this.#responseHeadersText;
     }
     set responseHeadersText(x) {
-        this.#responseHeadersTextInternal = x;
+        this.#responseHeadersText = x;
         this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
     }
     get sortedResponseHeaders() {
-        if (this.#sortedResponseHeadersInternal !== undefined) {
-            return this.#sortedResponseHeadersInternal;
+        if (this.#sortedResponseHeaders !== undefined) {
+            return this.#sortedResponseHeaders;
         }
-        this.#sortedResponseHeadersInternal = this.responseHeaders.slice();
-        return this.#sortedResponseHeadersInternal.sort(function (a, b) {
+        this.#sortedResponseHeaders = this.responseHeaders.slice();
+        return this.#sortedResponseHeaders.sort(function (a, b) {
             return Platform.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
         });
     }
@@ -967,25 +910,25 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.earlyHintsHeaders = headers;
     }
     get responseCookies() {
-        if (!this.#responseCookiesInternal) {
-            this.#responseCookiesInternal =
-                CookieParser.parseSetCookie(this.responseHeaderValue('Set-Cookie'), this.domain) || [];
+        if (!this.#responseCookies) {
+            this.#responseCookies = CookieParser.parseSetCookie(this.responseHeaderValue('Set-Cookie'), this.domain) ||
+                [];
             if (this.#responseCookiesPartitionKey) {
-                for (const cookie of this.#responseCookiesInternal) {
+                for (const cookie of this.#responseCookies) {
                     if (cookie.partitioned()) {
                         cookie.setPartitionKey(this.#responseCookiesPartitionKey.topLevelSite, this.#responseCookiesPartitionKey.hasCrossSiteAncestor);
                     }
                 }
             }
             else if (this.#responseCookiesPartitionKeyOpaque) {
-                for (const cookie of this.#responseCookiesInternal) {
+                for (const cookie of this.#responseCookies) {
                     // Do not check cookie.partitioned() since most opaque partitions
                     // are fenced/credentialless frames partitioned by default.
                     cookie.setPartitionKeyOpaque();
                 }
             }
         }
-        return this.#responseCookiesInternal;
+        return this.#responseCookies;
     }
     responseLastModified() {
         return this.responseHeaderValue('last-modified');
@@ -999,14 +942,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         ].filter(v => !!v);
     }
     get serverTimings() {
-        if (typeof this.#serverTimingsInternal === 'undefined') {
-            this.#serverTimingsInternal = ServerTiming.parseHeaders(this.responseHeaders);
+        if (typeof this.#serverTimings === 'undefined') {
+            this.#serverTimings = ServerTiming.parseHeaders(this.responseHeaders);
         }
-        return this.#serverTimingsInternal;
+        return this.#serverTimings;
     }
     queryString() {
-        if (this.#queryStringInternal !== undefined) {
-            return this.#queryStringInternal;
+        if (this.#queryString !== undefined) {
+            return this.#queryString;
         }
         let queryString = null;
         const url = this.url();
@@ -1018,8 +961,8 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
                 queryString = queryString.substring(0, hashSignPosition);
             }
         }
-        this.#queryStringInternal = queryString;
-        return this.#queryStringInternal;
+        this.#queryString = queryString;
+        return this.#queryString;
     }
     get queryParameters() {
         if (this.#parsedQueryParameters) {
@@ -1067,7 +1010,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#formParametersPromise;
     }
     responseHttpVersion() {
-        const headersText = this.#responseHeadersTextInternal;
+        const headersText = this.#responseHeadersText;
         if (!headersText) {
             const version = this.responseHeaderValue('version') || this.responseHeaderValue(':version');
             if (version) {
@@ -1085,7 +1028,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             if (position === -1) {
                 return { name: pair, value: '' };
             }
-            return { name: pair.substring(0, position), value: pair.substring(position + 1) };
+            return {
+                name: pair.substring(0, position),
+                value: pair.substring(position + 1),
+            };
         }
         return queryString.split('&').map(parseNameValue);
     }
@@ -1122,7 +1068,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             if (!match) {
                 return result;
             }
-            const processedValue = (filename || contentType) ? i18nString(UIStrings.binary) : value;
+            const processedValue = filename || contentType ? i18nString(UIStrings.binary) : value;
             result.push({ name, value: processedValue });
             return result;
         }
@@ -1145,19 +1091,19 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return values.join(', ');
     }
     requestContentData() {
-        if (this.#contentDataInternal) {
-            return this.#contentDataInternal;
+        if (this.#contentData) {
+            return this.#contentData;
         }
         if (this.#contentDataProvider) {
-            this.#contentDataInternal = this.#contentDataProvider();
+            this.#contentData = this.#contentDataProvider();
         }
         else {
-            this.#contentDataInternal = NetworkManager.requestContentData(this);
+            this.#contentData = NetworkManager.requestContentData(this);
         }
-        return this.#contentDataInternal;
+        return this.#contentData;
     }
     setContentDataProvider(dataProvider) {
-        console.assert(!this.#contentDataInternal, 'contentData can only be set once.');
+        console.assert(!this.#contentData, 'contentData can only be set once.');
         this.#contentDataProvider = dataProvider;
     }
     requestStreamingContent() {
@@ -1176,13 +1122,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#streamingContentData;
     }
     contentURL() {
-        return this.#urlInternal;
+        return this.#url;
     }
     contentType() {
-        return this.#resourceTypeInternal;
-    }
-    async requestContent() {
-        return TextUtils.ContentData.ContentData.asDeferredContent(await this.requestContentData());
+        return this.#resourceType;
     }
     async searchInContent(query, caseSensitive, isRegex) {
         if (!this.#contentDataProvider) {
@@ -1201,34 +1144,34 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.statusCode >= 400;
     }
     setInitialPriority(priority) {
-        this.#initialPriorityInternal = priority;
+        this.#initialPriority = priority;
     }
     initialPriority() {
-        return this.#initialPriorityInternal;
+        return this.#initialPriority;
     }
     setPriority(priority) {
         this.#currentPriority = priority;
     }
     priority() {
-        return this.#currentPriority || this.#initialPriorityInternal || null;
+        return this.#currentPriority || this.#initialPriority || null;
     }
     setSignedExchangeInfo(info) {
-        this.#signedExchangeInfoInternal = info;
+        this.#signedExchangeInfo = info;
     }
     signedExchangeInfo() {
-        return this.#signedExchangeInfoInternal;
+        return this.#signedExchangeInfo;
     }
     setWebBundleInfo(info) {
-        this.#webBundleInfoInternal = info;
+        this.#webBundleInfo = info;
     }
     webBundleInfo() {
-        return this.#webBundleInfoInternal;
+        return this.#webBundleInfo;
     }
     setWebBundleInnerRequestInfo(info) {
-        this.#webBundleInnerRequestInfoInternal = info;
+        this.#webBundleInnerRequestInfo = info;
     }
     webBundleInnerRequestInfo() {
-        return this.#webBundleInnerRequestInfoInternal;
+        return this.#webBundleInnerRequestInfo;
     }
     async populateImageSource(image) {
         const contentData = await this.requestContentData();
@@ -1236,10 +1179,10 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         let imageSrc = contentData.asDataUrl();
-        if (imageSrc === null && !this.#failedInternal) {
+        if (imageSrc === null && !this.#failed) {
             const cacheControl = this.responseHeaderValue('cache-control') || '';
             if (!cacheControl.includes('no-cache')) {
-                imageSrc = this.#urlInternal;
+                imageSrc = this.#url;
             }
         }
         if (imageSrc !== null) {
@@ -1247,16 +1190,22 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     initiator() {
-        return this.#initiatorInternal || null;
+        return this.#initiator || null;
     }
     hasUserGesture() {
         return this.#hasUserGesture ?? null;
     }
     frames() {
-        return this.#framesInternal;
+        return this.#frames;
     }
     addProtocolFrameError(errorMessage, time) {
-        this.addFrame({ type: WebSocketFrameType.Error, text: errorMessage, time: this.pseudoWallTime(time), opCode: -1, mask: false });
+        this.addFrame({
+            type: WebSocketFrameType.Error,
+            text: errorMessage,
+            time: this.pseudoWallTime(time),
+            opCode: -1,
+            mask: false,
+        });
     }
     addProtocolFrame(response, time, sent) {
         const type = sent ? WebSocketFrameType.Send : WebSocketFrameType.Receive;
@@ -1269,14 +1218,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         });
     }
     addFrame(frame) {
-        this.#framesInternal.push(frame);
+        this.#frames.push(frame);
         this.dispatchEventToListeners(Events.WEBSOCKET_FRAME_ADDED, frame);
     }
     directSocketChunks() {
-        return this.#directSocketChunksInternal;
+        return this.#directSocketChunks;
     }
     addDirectSocketChunk(chunk) {
-        this.#directSocketChunksInternal.push(chunk);
+        this.#directSocketChunks.push(chunk);
         this.dispatchEventToListeners(Events.DIRECTSOCKET_CHUNK_ADDED, chunk);
     }
     eventSourceMessages() {
@@ -1286,15 +1235,15 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#serverSentEvents?.onProtocolEventSourceMessageReceived(eventName, data, eventId, this.pseudoWallTime(time));
     }
     markAsRedirect(redirectCount) {
-        this.#isRedirectInternal = true;
-        this.#requestIdInternal = `${this.#backendRequestIdInternal}:redirected.${redirectCount}`;
+        this.#isRedirect = true;
+        this.#requestId = `${this.#backendRequestId}:redirected.${redirectCount}`;
     }
     isRedirect() {
-        return this.#isRedirectInternal;
+        return this.#isRedirect;
     }
     setRequestIdForTest(requestId) {
-        this.#backendRequestIdInternal = requestId;
-        this.#requestIdInternal = requestId;
+        this.#backendRequestId = requestId;
+        this.#requestId = requestId;
     }
     charset() {
         return this.#charset ?? null;
@@ -1303,27 +1252,27 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#charset = charset;
     }
     addExtraRequestInfo(extraRequestInfo) {
-        this.#blockedRequestCookiesInternal = extraRequestInfo.blockedRequestCookies;
-        this.#includedRequestCookiesInternal = extraRequestInfo.includedRequestCookies;
+        this.#blockedRequestCookies = extraRequestInfo.blockedRequestCookies;
+        this.#includedRequestCookies = extraRequestInfo.includedRequestCookies;
         this.setRequestHeaders(extraRequestInfo.requestHeaders);
-        this.#hasExtraRequestInfoInternal = true;
+        this.#hasExtraRequestInfo = true;
         this.setRequestHeadersText(''); // Mark request headers as non-provisional
-        this.#clientSecurityStateInternal = extraRequestInfo.clientSecurityState;
+        this.#clientSecurityState = extraRequestInfo.clientSecurityState;
         this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
         this.#siteHasCookieInOtherPartition = extraRequestInfo.siteHasCookieInOtherPartition ?? false;
-        this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookiesInternal.some(item => item.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */));
+        this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookies.some(item => item.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */));
     }
     hasExtraRequestInfo() {
-        return this.#hasExtraRequestInfoInternal;
+        return this.#hasExtraRequestInfo;
     }
     blockedRequestCookies() {
-        return this.#blockedRequestCookiesInternal;
+        return this.#blockedRequestCookies;
     }
     includedRequestCookies() {
-        return this.#includedRequestCookiesInternal;
+        return this.#includedRequestCookies;
     }
     hasRequestCookies() {
-        return this.#includedRequestCookiesInternal.length > 0 || this.#blockedRequestCookiesInternal.length > 0;
+        return (this.#includedRequestCookies.length > 0 || this.#blockedRequestCookies.length > 0);
     }
     siteHasCookieInOtherPartition() {
         return this.#siteHasCookieInOtherPartition;
@@ -1335,9 +1284,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return firstLineParts.slice(2).join(' ');
     }
     addExtraResponseInfo(extraResponseInfo) {
-        this.#blockedResponseCookiesInternal = extraResponseInfo.blockedResponseCookies;
+        this.#blockedResponseCookies = extraResponseInfo.blockedResponseCookies;
         if (extraResponseInfo.exemptedResponseCookies) {
-            this.#exemptedResponseCookiesInternal = extraResponseInfo.exemptedResponseCookies;
+            this.#exemptedResponseCookies = extraResponseInfo.exemptedResponseCookies;
         }
         this.#responseCookiesPartitionKey =
             extraResponseInfo.cookiePartitionKey ? extraResponseInfo.cookiePartitionKey : null;
@@ -1363,30 +1312,32 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
             }
             this.statusText = NetworkRequest.parseStatusTextFromResponseHeadersText(extraResponseInfo.responseHeadersText);
         }
-        this.#remoteAddressSpaceInternal = extraResponseInfo.resourceIPAddressSpace;
+        this.#remoteAddressSpace = extraResponseInfo.resourceIPAddressSpace;
         if (extraResponseInfo.statusCode) {
             this.statusCode = extraResponseInfo.statusCode;
         }
-        this.#hasExtraResponseInfoInternal = true;
+        this.#hasExtraResponseInfo = true;
         // TODO(crbug.com/1252463) Explore replacing this with a DevTools Issue.
         const networkManager = NetworkManager.forRequest(this);
         if (!networkManager) {
             return;
         }
-        for (const blockedCookie of this.#blockedResponseCookiesInternal) {
+        for (const blockedCookie of this.#blockedResponseCookies) {
             if (blockedCookie.blockedReasons.includes("NameValuePairExceedsMaxSize" /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */)) {
-                const message = i18nString(UIStrings.setcookieHeaderIsIgnoredIn, { PH1: this.url() });
-                networkManager.dispatchEventToListeners(NetworkManagerEvents.MessageGenerated, { message, requestId: this.#requestIdInternal, warning: true });
+                const message = i18nString(UIStrings.setcookieHeaderIsIgnoredIn, {
+                    PH1: this.url(),
+                });
+                networkManager.dispatchEventToListeners(NetworkManagerEvents.MessageGenerated, { message, requestId: this.#requestId, warning: true });
             }
         }
         const cookieModel = networkManager.target().model(CookieModel);
         if (!cookieModel) {
             return;
         }
-        for (const exemptedCookie of this.#exemptedResponseCookiesInternal) {
+        for (const exemptedCookie of this.#exemptedResponseCookies) {
             cookieModel.removeBlockedCookie(exemptedCookie.cookie);
         }
-        for (const blockedCookie of this.#blockedResponseCookiesInternal) {
+        for (const blockedCookie of this.#blockedResponseCookies) {
             const cookie = blockedCookie.cookie;
             if (!cookie) {
                 continue;
@@ -1401,13 +1352,13 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     hasExtraResponseInfo() {
-        return this.#hasExtraResponseInfoInternal;
+        return this.#hasExtraResponseInfo;
     }
     blockedResponseCookies() {
-        return this.#blockedResponseCookiesInternal;
+        return this.#blockedResponseCookies;
     }
     exemptedResponseCookies() {
-        return this.#exemptedResponseCookiesInternal;
+        return this.#exemptedResponseCookies;
     }
     nonBlockedResponseCookies() {
         const blockedCookieLines = this.blockedResponseCookies().map(blockedCookie => blockedCookie.cookieLine);
@@ -1430,30 +1381,30 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         return this.#responseCookiesPartitionKeyOpaque;
     }
     redirectSourceSignedExchangeInfoHasNoErrors() {
-        return this.#redirectSourceInternal !== null && this.#redirectSourceInternal.#signedExchangeInfoInternal !== null &&
-            !this.#redirectSourceInternal.#signedExchangeInfoInternal.errors;
+        return (this.#redirectSource !== null && this.#redirectSource.#signedExchangeInfo !== null &&
+            !this.#redirectSource.#signedExchangeInfo.errors);
     }
     clientSecurityState() {
-        return this.#clientSecurityStateInternal;
+        return this.#clientSecurityState;
     }
     setTrustTokenParams(trustTokenParams) {
-        this.#trustTokenParamsInternal = trustTokenParams;
+        this.#trustTokenParams = trustTokenParams;
     }
     trustTokenParams() {
-        return this.#trustTokenParamsInternal;
+        return this.#trustTokenParams;
     }
     setTrustTokenOperationDoneEvent(doneEvent) {
-        this.#trustTokenOperationDoneEventInternal = doneEvent;
+        this.#trustTokenOperationDoneEvent = doneEvent;
         this.dispatchEventToListeners(Events.TRUST_TOKEN_RESULT_ADDED);
     }
     trustTokenOperationDoneEvent() {
-        return this.#trustTokenOperationDoneEventInternal;
+        return this.#trustTokenOperationDoneEvent;
     }
     setIsSameSite(isSameSite) {
-        this.#isSameSiteInternal = isSameSite;
+        this.#isSameSite = isSameSite;
     }
     isSameSite() {
-        return this.#isSameSiteInternal;
+        return this.#isSameSite;
     }
     getAssociatedData(key) {
         return this.#associatedData.get(key) || null;
@@ -1467,7 +1418,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     hasThirdPartyCookiePhaseoutIssue() {
         return this.#hasThirdPartyCookiePhaseoutIssue;
     }
-    addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data }) {
+    addDataReceivedEvent({ timestamp, dataLength, encodedDataLength, data, }) {
         this.resourceSize += dataLength;
         if (encodedDataLength !== -1) {
             this.increaseTransferSize(encodedDataLength);
@@ -1574,9 +1525,13 @@ export const setCookieBlockedReasonToUiString = function (blockedReason) {
         case "SecureOnly" /* Protocol.Network.SetCookieBlockedReason.SecureOnly */:
             return i18nString(UIStrings.blockedReasonSecureOnly);
         case "SameSiteStrict" /* Protocol.Network.SetCookieBlockedReason.SameSiteStrict */:
-            return i18nString(UIStrings.blockedReasonSameSiteStrictLax, { PH1: 'SameSite=Strict' });
+            return i18nString(UIStrings.blockedReasonSameSiteStrictLax, {
+                PH1: 'SameSite=Strict',
+            });
         case "SameSiteLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteLax */:
-            return i18nString(UIStrings.blockedReasonSameSiteStrictLax, { PH1: 'SameSite=Lax' });
+            return i18nString(UIStrings.blockedReasonSameSiteStrictLax, {
+                PH1: 'SameSite=Lax',
+            });
         case "SameSiteUnspecifiedTreatedAsLax" /* Protocol.Network.SetCookieBlockedReason.SameSiteUnspecifiedTreatedAsLax */:
             return i18nString(UIStrings.blockedReasonSameSiteUnspecifiedTreatedAsLax);
         case "SameSiteNoneInsecure" /* Protocol.Network.SetCookieBlockedReason.SameSiteNoneInsecure */:

@@ -1,5 +1,6 @@
 import * as Extras from '../extras/extras.js';
 import type * as Handlers from '../handlers/handlers.js';
+import type * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
@@ -24,3 +25,4 @@ export type DuplicatedJavaScriptInsightModel = InsightModel<typeof UIStrings, {
     mainDocumentUrl: string;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DuplicatedJavaScriptInsightModel;
+export declare function createOverlays(model: DuplicatedJavaScriptInsightModel): Types.Overlays.Overlay[];

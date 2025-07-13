@@ -285,7 +285,8 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         this.#bindings.set(fileSystemUISourceCode, binding);
         await PersistenceImpl.instance().addBinding(binding);
         const uiSourceCodeOfTruth = this.#savingForOverrides.has(networkUISourceCode) ? networkUISourceCode : fileSystemUISourceCode;
-        const { content, isEncoded } = await uiSourceCodeOfTruth.requestContent();
+        const contentDataOrError = await uiSourceCodeOfTruth.requestContentData();
+        const { content, isEncoded } = TextUtils.ContentData.ContentData.asDeferredContent(contentDataOrError);
         PersistenceImpl.instance().syncContent(uiSourceCodeOfTruth, content || '', isEncoded);
     }
     onUISourceCodeWorkingCopyCommitted(uiSourceCode) {
@@ -349,7 +350,8 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         }
         this.#savingForOverrides.add(uiSourceCode);
         let encodedPath = this.encodedPathFromUrl(uiSourceCode.url());
-        const { content, isEncoded } = await uiSourceCode.requestContent();
+        const contentDataOrError = await uiSourceCode.requestContentData();
+        const { content, isEncoded } = TextUtils.ContentData.ContentData.asDeferredContent(contentDataOrError);
         const lastIndexOfSlash = encodedPath.lastIndexOf('/');
         const encodedFileName = Common.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
         const rawFileName = Common.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);

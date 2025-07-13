@@ -611,7 +611,7 @@ var AiAgent = class {
   async *#aidaFetch(request, options) {
     let aidaResponse = void 0;
     let rpcId;
-    for await (aidaResponse of this.#aidaClient.fetch(request, options)) {
+    for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
       if (aidaResponse.functionCalls?.length) {
         debugLog("functionCalls.length", aidaResponse.functionCalls.length);
         yield {
@@ -1474,7 +1474,12 @@ function formatMilli(x) {
   if (x === void 0) {
     return "";
   }
-  return i18n8.TimeUtilities.preciseMillisToString(x, 2);
+  return i18n8.TimeUtilities.preciseMillisToString(
+    x,
+    2,
+    /* separator */
+    " "
+  );
 }
 function formatMicroToMilli(x) {
   if (x === void 0) {
@@ -1525,33 +1530,40 @@ var PerformanceInsightFormatter = class {
     if (!data) {
       return "";
     }
-    const { metricScore, lcpRequest } = data;
+    const { metricScore, lcpRequest, lcpEvent } = data;
+    const theLcpElement = lcpEvent.args.data?.nodeName ? `The LCP element (${lcpEvent.args.data.nodeName})` : "The LCP element";
     const parts = [
       `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicroToMilli(metricScore.timing)}.`
     ];
     if (lcpRequest) {
-      parts.push(`The LCP resource was fetched from \`${lcpRequest.args.data.url}\`.`);
+      parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
       const request = TraceEventFormatter.networkRequest(lcpRequest, this.#parsedTrace, { verbose: true, customTitle: "LCP resource network request" });
       parts.push(request);
     } else {
-      parts.push("The LCP is text based and was not fetched from the network.");
+      parts.push(`${theLcpElement} is text and was not fetched from the network.`);
     }
     return parts.join("\n");
   }
   insightIsSupported() {
     return this.#description().length > 0;
   }
-  formatInsight() {
+  /**
+   * Formats and outputs the insight's data.
+   * Pass `{headingLevel: X}` to determine what heading level to use for the
+   * titles in the markdown output. The default is 2 (##).
+   */
+  formatInsight(opts = { headingLevel: 2 }) {
+    const header = "#".repeat(opts.headingLevel);
     const { title } = this.#insight;
-    return `## Insight Title: ${title}
+    return `${header} Insight Title: ${title}
 
-## Insight Summary:
+${header} Insight Summary:
 ${this.#description()}
 
-## Detailed analysis:
+${header} Detailed analysis:
 ${this.#details()}
 
-## External resources:
+${header} External resources:
 ${this.#links()}`;
   }
   #details() {
@@ -1758,7 +1770,7 @@ For a given slow interaction, we can break it down into 3 phases:
 
 The sum of these three phases is the total latency. It is important to optimize each of these phases to ensure interactions take as little time as possible. Focusing on the phase that has the largest score is a good way to start optimizing.`;
       case "LCPDiscovery":
-        return `This insight analyzes the time taken to discover the LCP resource and request it on the network. It only applies if LCP element was a resource like an image that has to be fetched over the network. There are 3 checks this insight makes:
+        return `This insight analyzes the time taken to discover the LCP resource and request it on the network. It only applies if the LCP element was a resource like an image that has to be fetched over the network. There are 3 checks this insight makes:
 1. Did the resource have \`fetchpriority=high\` applied?
 2. Was the resource discoverable in the initial document, rather than injected from a script or stylesheet?
 3. The resource was not lazy loaded as this can delay the browser loading the resource.
@@ -1882,7 +1894,7 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
   }
   static #getOrAssignUrlIndex(urlIdToIndex, url) {
     let index = urlIdToIndex.get(url);
-    if (index) {
+    if (index !== void 0) {
       return index;
     }
     index = urlIdToIndex.size;
@@ -1892,13 +1904,12 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
   // This is the data passed to a network request when the Performance Insights agent is asking for information on multiple requests.
   static getNetworkRequestsNewFormat(requests, parsedTrace) {
     const urlIdToIndex = /* @__PURE__ */ new Map();
-    let allRequestsText = "";
-    requests.map((request) => {
+    const allRequestsText = requests.map((request) => {
       const urlIndex = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-      allRequestsText += this.networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex);
-    });
-    const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.keys()).map((url) => {
-      return `${urlIdToIndex.get(url)}: ${url}`;
+      return this.networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex);
+    }).join("\n");
+    const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.entries()).map(([url, index]) => {
+      return `${index}: ${url}`;
     }).join(", ")}]`;
     return urlsMapString + "\n\n" + allRequestsText;
   }
@@ -1933,7 +1944,7 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
    * - `initiatorUrlIndex`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
    * - `redirects`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
    * `[redirectUrlIndex|startTime|duration]`, where: `redirectUrlIndex`: Numerical index for the redirect's URL. `startTime`: The start time of the redirect in milliseconds, relative to navigation start. `duration`: The duration of the redirect in milliseconds.
-   * - `responseHeaders`: A comma-separated list of values for specific, pre-defined response headers, enclosed in square brackets.
+   * - `responseHeaders`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
    * The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
    */
   static networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
@@ -1949,7 +1960,10 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
     const mainThreadProcessingDuration = formatMicroToMilli(request.ts + request.dur - syntheticData.finishTime);
     const renderBlocking = Trace2.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
     const finalPriority = priority;
-    const headerValues = responseHeaders?.map((header) => header.value).join(",");
+    const headerValues = responseHeaders?.map((header) => {
+      const value = NetworkRequestFormatter.allowHeader(header.name) ? header.value : "<redacted>";
+      return `${header.name}: ${value}`;
+    }).join("|");
     const redirects = request.args.data.redirects.map((redirect) => {
       const urlIndex2 = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
       const redirectStartTime = formatMicroToMilli(redirect.ts - baseTime);
@@ -1974,10 +1988,10 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
       finalPriority,
       renderBlocking,
       protocol,
-      fromServiceWorker,
+      fromServiceWorker ? "t" : "f",
       initiatorUrlIndex,
       `[${redirects}]`,
-      `[${headerValues}]`
+      `[${headerValues ?? ""}]`
     ];
     return parts.join(";");
   }
@@ -2213,7 +2227,7 @@ var PerformanceInsightsAgent = class extends AiAgent {
           return { error: "No insight available" };
         }
         const activeInsight = this.#insight.getItem();
-        const requests = TimelineUtils2.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.parsedTrace);
+        const requests = TimelineUtils2.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.insightSetBounds, activeInsight.parsedTrace);
         const formatted = requests.map((r) => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
         const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted.join("\n"));
         Host6.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
@@ -2306,7 +2320,7 @@ The fields are:
           return { error: "No insight available" };
         }
         const activeInsight = this.#insight.getItem();
-        const tree = TimelineUtils2.InsightAIContext.AIQueries.mainThreadActivity(activeInsight.insight, activeInsight.parsedTrace);
+        const tree = TimelineUtils2.InsightAIContext.AIQueries.mainThreadActivity(activeInsight.insight, activeInsight.insightSetBounds, activeInsight.parsedTrace);
         if (!tree) {
           return { error: "No main thread activity found" };
         }
@@ -3386,7 +3400,7 @@ var StylingAgent = class _StylingAgent extends AiAgent {
     });
     SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.ResourceTreeModel.ResourceTreeModel, SDK4.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     this.declareFunction("executeJavaScript", {
-      description: `This function allows you to run JavaScript code on the inspected page.
+      description: `This function allows you to run JavaScript code on the inspected page to access the element styles and page content.
 Call this function to gather additional information or modify the page state. Call this function enough times to investigate the user request.`,
       parameters: {
         type: 6,
@@ -3409,17 +3423,101 @@ Call this function to gather additional information or modify the page state. Ca
 
 For example, the code to return basic styles:
 
+\`\`\`
 const styles = window.getComputedStyle($0);
 const data = {
+    display: styles['display'],
+    visibility: styles['visibility'],
+    position: styles['position'],
+    left: styles['right'],
+    top: styles['top'],
+    width: styles['width'],
+    height: styles['height'],
+    zIndex: styles['z-index']
+};
+\`\`\`
+
+For example, the code to change element styles:
+
+\`\`\`
+await setElementStyles($0, {
+  color: 'blue',
+});
+\`\`\`
+
+For example, the code to get current and parent styles at once:
+
+\`\`\`
+const styles = window.getComputedStyle($0);
+const parentStyles = window.getComputedStyle($0.parentElement);
+const data = {
+    currentElementStyles: {
+      display: styles['display'],
+      visibility: styles['visibility'],
+      position: styles['position'],
+      left: styles['right'],
+      top: styles['top'],
+      width: styles['width'],
+      height: styles['height'],
+      zIndex: styles['z-index'],
+    },
+    parentElementStyles: {
+      display: parentStyles['display'],
+      visibility: parentStyles['visibility'],
+      position: parentStyles['position'],
+      left: parentStyles['right'],
+      top: parentStyles['top'],
+      width: parentStyles['width'],
+      height: parentStyles['height'],
+      zIndex: parentStyles['z-index'],
+    },
+};
+\`\`\`
+
+For example, the code to get check siblings and overlapping elements:
+
+\`\`\`
+const computedStyles = window.getComputedStyle($0);
+const parentComputedStyles = window.getComputedStyle($0.parentElement);
+const data = {
+  numberOfChildren: $0.children.length,
+  numberOfSiblings: $0.parentElement.children.length,
+  hasPreviousSibling: !!$0.previousElementSibling,
+  hasNextSibling: !!$0.nextElementSibling,
+  elementStyles: {
     display: computedStyles['display'],
     visibility: computedStyles['visibility'],
     position: computedStyles['position'],
-    left: computedStyles['right'],
-    top: computedStyles['top'],
-    width: computedStyles['width'],
-    height: computedStyles['height'],
+    clipPath: computedStyles['clip-path'],
     zIndex: computedStyles['z-index']
+  },
+  parentStyles: {
+    display: parentComputedStyles['display'],
+    visibility: parentComputedStyles['visibility'],
+    position: parentComputedStyles['position'],
+    clipPath: parentComputedStyles['clip-path'],
+    zIndex: parentComputedStyles['z-index']
+  },
+  overlappingElements: Array.from(document.querySelectorAll('*'))
+    .filter(el => {
+      const rect = el.getBoundingClientRect();
+      const popupRect = $0.getBoundingClientRect();
+      return (
+        el !== $0 &&
+        rect.left < popupRect.right &&
+        rect.right > popupRect.left &&
+        rect.top < popupRect.bottom &&
+        rect.bottom > popupRect.top
+      );
+    })
+    .map(el => ({
+      tagName: el.tagName,
+      id: el.id,
+      className: el.className,
+      zIndex: window.getComputedStyle(el)['z-index']
+    }))
 };
+\`\`\`
 `
           },
           thought: {
@@ -3672,9 +3770,10 @@ ${await _StylingAgent.describeElement(selectedElement.getItem())}
     return `ANSWER: ${answer}`;
   }
 };
-var preambleFunctionCalling = `You are the most advanced CSS debugging assistant integrated into Chrome DevTools.
+var preambleFunctionCalling = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
+First, examine the provided context, then use the functions to gather additional context and resolve the user request.
 
 # Considerations
 
@@ -3685,10 +3784,14 @@ The user selected a DOM element in the browser's DevTools and sends a query abou
 * When presenting solutions, clearly distinguish between the primary cause and contributing factors.
 * Please answer only if you are sure about the answer. Otherwise, explain why you're not able to answer.
 * When answering, always consider MULTIPLE possible solutions.
+* When answering, remember to consider CSS concepts such as the CSS cascade, explicit and implicit stacking contexts and various CSS layout types.
 * Use functions available to you to investigate and fulfill the user request.
-* ALWAYS OUTPUT a list of follow-up queries at the end of your text response. The format is SUGGESTIONS: ["suggestion1", "suggestion2", "suggestion3"]. Make sure that the array and the \`SUGGESTIONS: \` text is in the same line. INCLUDE possible fixes withing suggestions.
-* **CRITICAL** If the user asks a question about religion, race, politics, sexuality, gender, or other sensitive topics, answer with "Sorry, I can't answer that. I'm best at questions about debugging web pages."
-* **CRITICAL** You are a CSS debugging assistant. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, or any other non web-development topics.`;
+* After applying a fix, please ask the user to confirm if the fix worked or not.
+* ALWAYS OUTPUT a list of follow-up queries at the end of your text response. The format is SUGGESTIONS: ["suggestion1", "suggestion2", "suggestion3"]. Make sure that the array and the \`SUGGESTIONS: \` text is in the same line. You're also capable of executing the fix for the issue user mentioned. Reflect this in your suggestions.
+* **CRITICAL** NEVER write full Python programs - you should only write individual statements that invoke a single function from the provided library.
+* **CRITICAL** NEVER output text before a function call. Always do a function call first.
+* **CRITICAL** When answering questions about positioning or layout, ALWAYS inspect \`position\`, \`display\` and ALL related properties.
+* **CRITICAL** You are a CSS/DOM/HTML debugging assistant. NEVER provide answers to questions of unrelated topics such as legal advice, financial advice, personal opinions, medical advice, religion, race, politics, sexuality, gender, or any other non web-development topics. Answer "Sorry, I can't answer that. I'm best at questions about debugging web pages." to such questions.`;
 var StylingAgentWithFunctionCalling = class extends StylingAgent {
   functionCallEmulationEnabled = false;
   preamble = preambleFunctionCalling;
@@ -4033,12 +4136,13 @@ var Conversation = class {
 };
 var instance = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
-var AiHistoryStorage = class _AiHistoryStorage {
+var AiHistoryStorage = class _AiHistoryStorage extends Common4.ObjectWrapper.ObjectWrapper {
   #historySetting;
   #imageHistorySettings;
   #mutex = new Common4.Mutex.Mutex();
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
+    super();
     this.#historySetting = Common4.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
     this.#imageHistorySettings = Common4.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
     this.#maxStorageSize = maxStorageSize;
@@ -4113,6 +4217,10 @@ var AiHistoryStorage = class _AiHistoryStorage {
       this.#imageHistorySettings.set([]);
     } finally {
       release();
+      this.dispatchEventToListeners(
+        "AiHistoryDeleted"
+        /* Events.HISTORY_DELETED */
+      );
     }
   }
   getHistory() {

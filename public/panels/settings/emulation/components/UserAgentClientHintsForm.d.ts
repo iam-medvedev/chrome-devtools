@@ -17,6 +17,7 @@ export interface UserAgentClientHintsFormData {
     showMobileCheckbox?: boolean;
     showSubmitButton?: boolean;
 }
+export declare const ALL_PROTOCOL_FORM_FACTORS: string[];
 /**
  * Component for user agent client hints form, it is used in device settings panel
  * and network conditions panel. It is customizable through showMobileCheckbox and showSubmitButton.
