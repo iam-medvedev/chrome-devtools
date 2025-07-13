@@ -6,69 +6,35 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { createLimitedRows, renderOthersLabel } from './Table.js';
-const { UIStrings, i18nString } = Trace.Insights.Models.ThirdParties;
+const { UIStrings, i18nString, createOverlaysForSummary } = Trace.Insights.Models.ThirdParties;
 const { html } = Lit;
 const MAX_TO_SHOW = 5;
 export class ThirdParties extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-third-parties`;
     internalName = 'third-parties';
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        const overlays = [];
-        const summaries = this.model.entitySummaries ?? [];
-        for (const summary of summaries) {
-            if (summary.entity === this.model.firstPartyEntity) {
-                continue;
-            }
-            const summaryOverlays = this.#createOverlaysForSummary(summary);
-            overlays.push(...summaryOverlays);
-        }
-        return overlays;
-    }
-    #createOverlaysForSummary(summary) {
-        const overlays = [];
-        for (const event of summary.relatedEvents) {
-            // The events found for a third party can be vast, as they gather every
-            // single main thread task along with everything else on the page. If the
-            // main thread is busy with large icicles, we can easily create tens of
-            // thousands of overlays. Therefore, only create overlays for events of at least 1ms.
-            if (event.dur === undefined || event.dur < 1_000) {
-                continue;
-            }
-            const overlay = {
-                type: 'ENTRY_OUTLINE',
-                entry: event,
-                outlineReason: 'INFO',
-            };
-            overlays.push(overlay);
-        }
-        return overlays;
-    }
     #mainThreadTimeAggregator = {
         mapToRow: summary => ({
             values: [summary.entity.name, i18n.TimeUtilities.millisToString(summary.mainThreadTime)],
-            overlays: this.#createOverlaysForSummary(summary),
+            overlays: createOverlaysForSummary(summary),
         }),
         createAggregatedTableRow: remaining => {
             const totalMainThreadTime = remaining.reduce((acc, summary) => acc + summary.mainThreadTime, 0);
             return {
                 values: [renderOthersLabel(remaining.length), i18n.TimeUtilities.millisToString(totalMainThreadTime)],
-                overlays: remaining.flatMap(summary => this.#createOverlaysForSummary(summary) ?? []),
+                overlays: remaining.flatMap(summary => createOverlaysForSummary(summary) ?? []),
             };
         },
     };
     #transferSizeAggregator = {
         mapToRow: summary => ({
             values: [summary.entity.name, i18n.ByteUtilities.formatBytesToKb(summary.transferSize)],
-            overlays: this.#createOverlaysForSummary(summary),
+            overlays: createOverlaysForSummary(summary),
         }),
         createAggregatedTableRow: remaining => {
             const totalBytes = remaining.reduce((acc, summary) => acc + summary.transferSize, 0);
             return {
                 values: [renderOthersLabel(remaining.length), i18n.ByteUtilities.formatBytesToKb(totalBytes)],
-                overlays: remaining.flatMap(summary => this.#createOverlaysForSummary(summary) ?? []),
+                overlays: remaining.flatMap(summary => createOverlaysForSummary(summary) ?? []),
             };
         },
     };

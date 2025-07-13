@@ -873,9 +873,6 @@ var StaticContentProvider = class _StaticContentProvider {
   contentType() {
     return this.#contentType;
   }
-  requestContent() {
-    return this.#lazyContent().then(ContentData.asDeferredContent.bind(void 0));
-  }
   requestContentData() {
     return this.#lazyContent();
   }

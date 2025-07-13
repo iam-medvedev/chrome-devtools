@@ -69,4 +69,11 @@ export function generateInsight(parsedTrace, context) {
         metricSavings: { FCP: savings },
     });
 }
+export function createOverlays(model) {
+    return model.fonts.map(font => ({
+        type: 'ENTRY_OUTLINE',
+        entry: font.request,
+        outlineReason: font.wastedTime ? 'ERROR' : 'INFO',
+    }));
+}
 //# sourceMappingURL=FontDisplay.js.map

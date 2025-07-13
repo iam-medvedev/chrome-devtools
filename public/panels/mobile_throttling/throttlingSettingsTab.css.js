@@ -27,6 +27,15 @@ export default `/*
   overflow-x: auto;
 }
 
+.settings-container::-webkit-scrollbar {
+  -webkit-appearance: none;
+}
+
+.settings-container::-webkit-scrollbar-thumb {
+  border-radius: var( --sys-size-3);
+  background-color: var(--sys-color-primary);
+}
+
 .setting {
   display: flex;
   flex-direction: column;

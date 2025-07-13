@@ -1,6 +1,5 @@
 import * as Trace from '../../../models/trace/trace.js';
 import type * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
-import * as Components from './components/components.js';
 /**
  * Represents which flamechart an entry is rendered in.
  * We need to know this because when we place an overlay for an entry we need
@@ -9,104 +8,16 @@ import * as Components from './components/components.js';
  */
 export type EntryChartLocation = 'main' | 'network';
 /**
- * You can add overlays to trace events, but also right now frames are drawn on
- * the timeline but they are not trace events, so we need to allow for that.
- * In the future when the frames track has been migrated to be powered by
- * animation frames (crbug.com/345144583), we can remove the requirement to
- * support TimelineFrame instances (which themselves will be removed from the
- * codebase.)
- */
-export type OverlayEntry = Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame;
-/**
- * Represents when a user has selected an entry in the timeline
- */
-export interface EntrySelected {
-    type: 'ENTRY_SELECTED';
-    entry: OverlayEntry;
-}
-/**
- * Drawn around an entry when we want to highlight it to the user.
- */
-export interface EntryOutline {
-    type: 'ENTRY_OUTLINE';
-    entry: OverlayEntry;
-    outlineReason: 'ERROR' | 'INFO';
-}
-/**
- * Represents an object created when a user creates a label for an entry in the timeline.
- */
-export interface EntryLabel {
-    type: 'ENTRY_LABEL';
-    entry: OverlayEntry;
-    label: string;
-}
-export interface EntriesLink {
-    type: 'ENTRIES_LINK';
-    state: Trace.Types.File.EntriesLinkState;
-    entryFrom: OverlayEntry;
-    entryTo?: OverlayEntry;
-}
-/**
- * Represents a time range on the trace. Also used when the user shift+clicks
- * and drags to create a time range.
- */
-export interface TimeRangeLabel {
-    type: 'TIME_RANGE';
-    bounds: Trace.Types.Timing.TraceWindowMicro;
-    label: string;
-    showDuration: boolean;
-}
-/**
  * Given a list of overlays, this method will calculate the smallest possible
  * trace window that will contain all of the overlays.
  * `overlays` is expected to be non-empty, and this will return `null` if it is empty.
  */
-export declare function traceWindowContainingOverlays(overlays: TimelineOverlay[]): Trace.Types.Timing.TraceWindowMicro | null;
+export declare function traceWindowContainingOverlays(overlays: Trace.Types.Overlays.Overlay[]): Trace.Types.Timing.TraceWindowMicro | null;
 /**
  * Get a list of entries for a given overlay.
  */
-export declare function entriesForOverlay(overlay: TimelineOverlay): readonly OverlayEntry[];
-export declare function chartForEntry(entry: OverlayEntry): EntryChartLocation;
-/**
- * Used to highlight with a red-candy stripe a time range. It takes an entry
- * because this entry is the row that will be used to place the candy stripe,
- * and its height will be set to the height of that row.
- */
-export interface CandyStripedTimeRange {
-    type: 'CANDY_STRIPED_TIME_RANGE';
-    bounds: Trace.Types.Timing.TraceWindowMicro;
-    entry: Trace.Types.Events.Event;
-}
-/**
- * Represents a timespan on a trace broken down into parts. Each part has a label to it.
- * If an entry is defined, the breakdown will be vertically positioned based on it.
- */
-export interface TimespanBreakdown {
-    type: 'TIMESPAN_BREAKDOWN';
-    sections: Components.TimespanBreakdownOverlay.EntryBreakdown[];
-    entry?: Trace.Types.Events.Event;
-    renderLocation?: 'BOTTOM_OF_TIMELINE' | 'BELOW_EVENT' | 'ABOVE_EVENT';
-}
-export interface TimestampMarker {
-    type: 'TIMESTAMP_MARKER';
-    timestamp: Trace.Types.Timing.Micro;
-}
-/**
- * Represents a timings marker. This has a line that runs up the whole canvas.
- * We can hold an array of entries, in the case we want to hold more than one with the same timestamp.
- * The adjusted timestamp being the timestamp for the event adjusted by closest navigation.
- */
-export interface TimingsMarker {
-    type: 'TIMINGS_MARKER';
-    entries: Trace.Types.Events.PageLoadEvent[];
-    entryToFieldResult: Map<Trace.Types.Events.PageLoadEvent, TimingsMarkerFieldResult>;
-    adjustedTimestamp: Trace.Types.Timing.Micro;
-}
-export type TimingsMarkerFieldResult = Trace.Insights.Common.CrUXFieldMetricTimingResult;
-/**
- * All supported overlay types.
- */
-export type TimelineOverlay = EntrySelected | EntryOutline | TimeRangeLabel | EntryLabel | EntriesLink | TimespanBreakdown | TimestampMarker | CandyStripedTimeRange | TimingsMarker;
+export declare function entriesForOverlay(overlay: Trace.Types.Overlays.Overlay): readonly Trace.Types.Overlays.OverlayEntry[];
+export declare function chartForEntry(entry: Trace.Types.Overlays.OverlayEntry): EntryChartLocation;
 export interface TimelineOverlaySetOptions {
     /** Whether to update the trace window. Defaults to false. */
     updateTraceWindow?: boolean;
@@ -128,9 +39,9 @@ export interface TimelineOverlaySetOptions {
  * exist at any given time. If one exists and the add() method is called, the
  * new overlay will replace the existing one.
  */
-type SingletonOverlay = EntrySelected | TimestampMarker;
-export declare function overlayIsSingleton(overlay: TimelineOverlay): overlay is SingletonOverlay;
-export declare function overlayTypeIsSingleton(type: TimelineOverlay['type']): type is SingletonOverlay['type'];
+type SingletonOverlay = Trace.Types.Overlays.EntrySelected | Trace.Types.Overlays.TimestampMarker;
+export declare function overlayIsSingleton(overlay: Trace.Types.Overlays.Overlay): overlay is SingletonOverlay;
+export declare function overlayTypeIsSingleton(type: Trace.Types.Overlays.Overlay['type']): type is SingletonOverlay['type'];
 /**
  * The dimensions each flame chart reports. Note that in the current UI they
  * will always have the same width, so theoretically we could only gather that
@@ -156,10 +67,10 @@ export interface OverlayEntryQueries {
 }
 export type UpdateAction = 'Remove' | 'Update';
 export declare class AnnotationOverlayActionEvent extends Event {
-    overlay: TimelineOverlay;
+    overlay: Trace.Types.Overlays.Overlay;
     action: UpdateAction;
     static readonly eventName = "annotationoverlayactionsevent";
-    constructor(overlay: TimelineOverlay, action: UpdateAction);
+    constructor(overlay: Trace.Types.Overlays.Overlay, action: UpdateAction);
 }
 export declare class ConsentDialogVisibilityChange extends Event {
     isVisible: boolean;
@@ -167,18 +78,18 @@ export declare class ConsentDialogVisibilityChange extends Event {
     constructor(isVisible: boolean);
 }
 export declare class TimeRangeMouseOverEvent extends Event {
-    overlay: TimeRangeLabel;
+    overlay: Trace.Types.Overlays.TimeRangeLabel;
     static readonly eventName = "timerangemouseoverevent";
-    constructor(overlay: TimeRangeLabel);
+    constructor(overlay: Trace.Types.Overlays.TimeRangeLabel);
 }
 export declare class TimeRangeMouseOutEvent extends Event {
     static readonly eventName = "timerangemouseoutevent";
     constructor();
 }
 export declare class EntryLabelMouseClick extends Event {
-    overlay: EntryLabel;
+    overlay: Trace.Types.Overlays.EntryLabel;
     static readonly eventName = "entrylabelmouseclick";
-    constructor(overlay: EntryLabel);
+    constructor(overlay: Trace.Types.Overlays.EntryLabel);
 }
 export declare class EventReferenceClick extends Event {
     event: Trace.Types.Events.Event;
@@ -207,7 +118,7 @@ export declare class Overlays extends EventTarget {
     /**
      * Add a new overlay to the view.
      */
-    add<T extends TimelineOverlay>(newOverlay: T): T;
+    add<T extends Trace.Types.Overlays.Overlay>(newOverlay: T): T;
     /**
      * Update an existing overlay without destroying and recreating its
      * associated DOM.
@@ -216,36 +127,36 @@ export declare class Overlays extends EventTarget {
      * dragging to create time ranges - without the thrashing of destroying the
      * old overlay and re-creating the new one.
      */
-    updateExisting<T extends TimelineOverlay>(existingOverlay: T, newData: Partial<T>): void;
-    enterLabelEditMode(overlay: EntryLabel): void;
-    bringLabelForward(overlay: EntryLabel): void;
+    updateExisting<T extends Trace.Types.Overlays.Overlay>(existingOverlay: T, newData: Partial<T>): void;
+    enterLabelEditMode(overlay: Trace.Types.Overlays.EntryLabel): void;
+    bringLabelForward(overlay: Trace.Types.Overlays.EntryLabel): void;
     /**
      * @returns the list of overlays associated with a given entry.
      */
-    overlaysForEntry(entry: OverlayEntry): TimelineOverlay[];
+    overlaysForEntry(entry: Trace.Types.Overlays.OverlayEntry): Trace.Types.Overlays.Overlay[];
     /**
      * Used for debugging and testing. Do not mutate the element directly using
      * this method.
      */
-    elementForOverlay(overlay: TimelineOverlay): HTMLElement | null;
+    elementForOverlay(overlay: Trace.Types.Overlays.Overlay): HTMLElement | null;
     /**
      * Removes any active overlays that match the provided type.
      * @returns the number of overlays that were removed.
      */
-    removeOverlaysOfType(type: TimelineOverlay['type']): number;
+    removeOverlaysOfType(type: Trace.Types.Overlays.Overlay['type']): number;
     /**
      * @returns all overlays that match the provided type.
      */
-    overlaysOfType<T extends TimelineOverlay>(type: T['type']): Array<NoInfer<T>>;
+    overlaysOfType<T extends Trace.Types.Overlays.Overlay>(type: T['type']): Array<NoInfer<T>>;
     /**
      * @returns all overlays.
      */
-    allOverlays(): TimelineOverlay[];
+    allOverlays(): Trace.Types.Overlays.Overlay[];
     /**
      * Removes the provided overlay from the list of overlays and destroys any
      * DOM associated with it.
      */
-    remove(overlay: TimelineOverlay): void;
+    remove(overlay: Trace.Types.Overlays.Overlay): void;
     /**
      * Update the dimensions of a chart.
      * IMPORTANT: this does not trigger a re-draw. You must call the render() method manually.
@@ -272,7 +183,7 @@ export declare class Overlays extends EventTarget {
      * @returns true if the entry is visible on chart, which means that both
      * horizontally and vertically it is at least partially in view.
      */
-    entryIsVisibleOnChart(entry: OverlayEntry): boolean;
+    entryIsVisibleOnChart(entry: Trace.Types.Overlays.OverlayEntry): boolean;
     /**
      * Calculate the X pixel position for an event start on the timeline.
      * @param chartName - the chart that the event is on. It is expected that both
@@ -281,7 +192,7 @@ export declare class Overlays extends EventTarget {
      *
      * @param event - the trace event you want to get the pixel position of
      */
-    xPixelForEventStartOnChart(event: OverlayEntry): number | null;
+    xPixelForEventStartOnChart(event: Trace.Types.Overlays.OverlayEntry): number | null;
     /**
      * Calculate the X pixel position for an event end on the timeline.
      * @param chartName - the chart that the event is on. It is expected that both
@@ -290,7 +201,7 @@ export declare class Overlays extends EventTarget {
      *
      * @param event - the trace event you want to get the pixel position of
      */
-    xPixelForEventEndOnChart(event: OverlayEntry): number | null;
+    xPixelForEventEndOnChart(event: Trace.Types.Overlays.OverlayEntry): number | null;
     /**
      * Calculate the Y pixel position for the event on the timeline relative to
      * the entire window.
@@ -301,11 +212,11 @@ export declare class Overlays extends EventTarget {
      * visible (if the level it's on is hidden because the track is collapsed,
      * for example)
      */
-    yPixelForEventOnChart(event: OverlayEntry): number | null;
+    yPixelForEventOnChart(event: Trace.Types.Overlays.OverlayEntry): number | null;
     /**
      * Calculate the height of the event on the timeline.
      */
-    pixelHeightForEventOnChart(event: OverlayEntry): number | null;
+    pixelHeightForEventOnChart(event: Trace.Types.Overlays.OverlayEntry): number | null;
     /**
      * Calculate the height of the network chart. If the network chart has
      * height, we also allow for the size of the resize handle shown between the
@@ -321,12 +232,12 @@ export declare class Overlays extends EventTarget {
  * helper exists to return a consistent set of timings regardless of the type
  * of entry.
  */
-export declare function timingsForOverlayEntry(entry: OverlayEntry): Trace.Helpers.Timing.EventTimingsData<Trace.Types.Timing.Micro>;
+export declare function timingsForOverlayEntry(entry: Trace.Types.Overlays.OverlayEntry): Trace.Helpers.Timing.EventTimingsData<Trace.Types.Timing.Micro>;
 /**
  * Defines if the overlay container `div` should have a jslog context attached.
  * Note that despite some of the overlays being used currently exclusively
  * for annotations, we log here with `overlays` to be generic as overlays can
  * be used for insights, annotations or in the future, who knows...
  */
-export declare function jsLogContext(overlay: TimelineOverlay): string | null;
+export declare function jsLogContext(overlay: Trace.Types.Overlays.Overlay): string | null;
 export {};

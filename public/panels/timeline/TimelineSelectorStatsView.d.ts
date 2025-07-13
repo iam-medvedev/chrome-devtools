@@ -18,7 +18,9 @@ export declare class TimelineSelectorStatsView extends UI.Widget.VBox {
     #private;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, view?: View);
     performUpdate(): void;
-    setEvent(event: Trace.Types.Events.UpdateLayoutTree): boolean;
+    private getDescendentNodeCount;
+    private updateInvalidationCount;
+    private aggregateEvents;
     setAggregatedEvents(events: Trace.Types.Events.UpdateLayoutTree[]): void;
     private processSelectorTimings;
 }

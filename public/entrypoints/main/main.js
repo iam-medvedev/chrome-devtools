@@ -590,22 +590,26 @@ var MainImpl = class _MainImpl {
       await runtimeModel?.addBinding({ name: binding });
       runtimeModel?.addEventListener(SDK2.RuntimeModel.Events.BindingCalled, (event) => {
         if (event.data.name === binding) {
-          VisualLogging.setVeDebuggingEnabled(event.data.payload === "true", (query) => {
-            VisualLogging.setVeDebuggingEnabled(false);
-            void runtimeModel?.defaultExecutionContext()?.evaluate(
-              {
-                expression: `window.inspect(${JSON.stringify(query)})`,
-                includeCommandLineAPI: false,
-                silent: true,
-                returnByValue: false,
-                generatePreview: false
-              },
-              /* userGesture */
-              false,
-              /* awaitPromise */
-              false
-            );
-          });
+          if (event.data.payload === "true" || event.data.payload === "false") {
+            VisualLogging.setVeDebuggingEnabled(event.data.payload === "true", (query) => {
+              VisualLogging.setVeDebuggingEnabled(false);
+              void runtimeModel?.defaultExecutionContext()?.evaluate(
+                {
+                  expression: `window.inspect(${JSON.stringify(query)})`,
+                  includeCommandLineAPI: false,
+                  silent: true,
+                  returnByValue: false,
+                  generatePreview: false
+                },
+                /* userGesture */
+                false,
+                /* awaitPromise */
+                false
+              );
+            });
+          } else {
+            VisualLogging.setHighlightedVe(event.data.payload === "null" ? null : event.data.payload);
+          }
         }
       });
     }
@@ -991,15 +995,34 @@ async function handleExternalRequest(input) {
       const AiAssistance = await import("./../../panels/ai_assistance/ai_assistance.js");
       const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
       const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-      return await panelInstance.handleExternalRequest(input.args.prompt, "performance-insight", input.args.insightTitle);
+      return await panelInstance.handleExternalRequest({
+        conversationType: "performance-insight",
+        prompt: input.args.prompt,
+        insightTitle: input.args.insightTitle
+      });
+    }
+    case "NETWORK_DEBUGGER": {
+      const AiAssistance = await import("./../../panels/ai_assistance/ai_assistance.js");
+      const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
+      const panelInstance = await AiAssistance.AiAssistancePanel.instance();
+      return await panelInstance.handleExternalRequest({
+        conversationType: "drjones-network-request",
+        prompt: input.args.prompt,
+        requestUrl: input.args.requestUrl
+      });
     }
     case "LIVE_STYLE_DEBUGGER": {
       const AiAssistance = await import("./../../panels/ai_assistance/ai_assistance.js");
       const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
       const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-      return await panelInstance.handleExternalRequest(input.args.prompt, "freestyler", input.args.selector);
+      return await panelInstance.handleExternalRequest({
+        conversationType: "freestyler",
+        prompt: input.args.prompt,
+        selector: input.args.selector
+      });
     }
   }
+  throw new Error(`Debugging with an agent of type '${input.kind}' is not implemented yet.`);
 }
 globalThis.handleExternalRequest = handleExternalRequest;
 

@@ -67,3 +67,4 @@ export type DOMSizeInsightModel = InsightModel<typeof UIStrings, {
     maxDOMStats?: Types.Events.DOMStats;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DOMSizeInsightModel;
+export declare function createOverlays(model: DOMSizeInsightModel): Types.Overlays.Overlay[];

@@ -119,23 +119,25 @@ export interface RequestFact {
     metadata: RequestFactMetadata;
 }
 export type RpcGlobalId = string | number;
-export interface AidaRequest {
+export interface RequestMetadata {
+    string_session_id?: string;
+    user_tier?: UserTier;
+    disable_user_content_logging: boolean;
+    client_version: string;
+}
+export interface ConversationOptions {
+    temperature?: number;
+    model_id?: string;
+}
+export interface DoConversationRequest {
     client: string;
     current_message: Content;
     preamble?: string;
     historical_contexts?: Content[];
     function_declarations?: FunctionDeclaration[];
     facts?: RequestFact[];
-    options?: {
-        temperature?: number;
-        model_id?: string;
-    };
-    metadata: {
-        disable_user_content_logging: boolean;
-        client_version: string;
-        string_session_id?: string;
-        user_tier?: UserTier;
-    };
+    options?: ConversationOptions;
+    metadata: RequestMetadata;
     functionality_type?: FunctionalityType;
     client_feature?: ClientFeature;
 }
@@ -186,14 +188,14 @@ export interface FactualityFact {
 export interface FactualityMetadata {
     facts: FactualityFact[];
 }
-export interface AidaResponseMetadata {
+export interface ResponseMetadata {
     rpcGlobalId?: RpcGlobalId;
     attributionMetadata?: AttributionMetadata;
     factualityMetadata?: FactualityMetadata;
 }
-export interface AidaResponse {
+export interface DoConversationResponse {
     explanation: string;
-    metadata: AidaResponseMetadata;
+    metadata: ResponseMetadata;
     functionCalls?: [AidaFunctionCallResponse, ...AidaFunctionCallResponse[]];
     completed: boolean;
 }
@@ -209,11 +211,11 @@ export declare class AidaAbortError extends Error {
 export declare class AidaBlockError extends Error {
 }
 export declare class AidaClient {
-    static buildConsoleInsightsRequest(input: string): AidaRequest;
+    static buildConsoleInsightsRequest(input: string): DoConversationRequest;
     static checkAccessPreconditions(): Promise<AidaAccessPreconditions>;
-    fetch(request: AidaRequest, options?: {
+    doConversation(request: DoConversationRequest, options?: {
         signal?: AbortSignal;
-    }): AsyncGenerator<AidaResponse, void, void>;
+    }): AsyncGenerator<DoConversationResponse, void, void>;
     registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
 }
 export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;

@@ -65,11 +65,14 @@ function anyValuesNaN(...values) {
  */
 function determineSubparts(nav, docRequest, lcpEvent, lcpRequest) {
     const docReqTiming = docRequest.args.data.timing;
-    if (!docReqTiming) {
-        throw new Error('no timing for document request');
+    let firstDocByteTs;
+    if (docReqTiming) {
+        firstDocByteTs = Types.Timing.Micro(Helpers.Timing.secondsToMicro(docReqTiming.requestTime) +
+            Helpers.Timing.milliToMicro(docReqTiming.receiveHeadersStart));
     }
-    const firstDocByteTs = Types.Timing.Micro(Helpers.Timing.secondsToMicro(docReqTiming.requestTime) +
-        Helpers.Timing.milliToMicro(docReqTiming.receiveHeadersStart));
+    else {
+        firstDocByteTs = docRequest.ts; // file:
+    }
     const ttfb = Helpers.Timing.traceWindowFromMicroSeconds(nav.ts, firstDocByteTs);
     ttfb.label = i18nString(UIStrings.timeToFirstByte);
     let renderDelay = Helpers.Timing.traceWindowFromMicroSeconds(ttfb.max, lcpEvent.ts);
@@ -168,5 +171,21 @@ export function generateInsight(parsedTrace, context) {
         lcpRequest,
         subparts: determineSubparts(context.navigation, docRequest, lcpEvent, lcpRequest) ?? undefined,
     });
+}
+export function createOverlays(model) {
+    if (!model.subparts || !model.lcpTs) {
+        return [];
+    }
+    const overlays = [
+        {
+            type: 'TIMESPAN_BREAKDOWN',
+            sections: Object.values(model.subparts)
+                .map((subpart) => ({ bounds: subpart, label: subpart.label, showDuration: true })),
+        },
+    ];
+    if (model.lcpRequest) {
+        overlays.push({ type: 'ENTRY_OUTLINE', entry: model.lcpRequest, outlineReason: 'INFO' });
+    }
+    return overlays;
 }
 //# sourceMappingURL=LCPBreakdown.js.map

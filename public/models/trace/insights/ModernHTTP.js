@@ -187,4 +187,14 @@ export function generateInsight(parsedTrace, context) {
         metricSavings: computeMetricSavings(http1Requests, context),
     });
 }
+export function createOverlayForRequest(request) {
+    return {
+        type: 'ENTRY_OUTLINE',
+        entry: request,
+        outlineReason: 'ERROR',
+    };
+}
+export function createOverlays(model) {
+    return model.http1Requests.map(req => createOverlayForRequest(req)) ?? [];
+}
 //# sourceMappingURL=ModernHTTP.js.map

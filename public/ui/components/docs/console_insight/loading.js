@@ -16,7 +16,7 @@ const component = new ConsoleInsight({
         return { prompt: '', sources: [], isPageReloadRecommended: false };
     },
 }, {
-    async *fetch() {
+    async *doConversation() {
         await new Promise(_resolve => { });
         yield {
             explanation: `## Result

@@ -50,3 +50,15 @@ export type LCPDiscoveryInsightModel = InsightModel<typeof UIStrings, {
     checklist?: Checklist<'priorityHinted' | 'requestDiscoverable' | 'eagerlyLoaded'>;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LCPDiscoveryInsightModel;
+interface LCPImageDiscoveryData {
+    checklist: Exclude<LCPDiscoveryInsightModel['checklist'], undefined>;
+    request: Types.Events.SyntheticNetworkRequest;
+    discoveryDelay: Types.Timing.Micro | null;
+    estimatedSavings: Types.Timing.Milli | null;
+}
+/**
+ * TODO: this extra transformation (getImageData) should not be necessary.
+ */
+export declare function getImageData(model: LCPDiscoveryInsightModel): LCPImageDiscoveryData | null;
+export declare function createOverlays(model: LCPDiscoveryInsightModel): Types.Overlays.Overlay[];
+export {};

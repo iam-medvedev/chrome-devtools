@@ -11,11 +11,11 @@ import { DevToolsLocale } from './DevToolsLocale.js';
 export function defineFormatter(options) {
     let intlNumberFormat;
     return {
-        format(value) {
+        format(value, separator) {
             if (!intlNumberFormat) {
                 intlNumberFormat = new Intl.NumberFormat(DevToolsLocale.instance().locale, options);
             }
-            return formatAndEnsureSpace(intlNumberFormat, value);
+            return formatAndEnsureSpace(intlNumberFormat, value, separator);
         },
         formatToParts(value) {
             if (!intlNumberFormat) {
@@ -27,18 +27,18 @@ export function defineFormatter(options) {
 }
 /**
  * When using 'narrow' unitDisplay, many locales exclude the space between the literal and the unit.
- * We don't like that, so when there is no space literal we inject an nbsp manually.
+ * We don't like that, so when there is no space literal we inject the provided separator manually.
  */
-function formatAndEnsureSpace(formatter, value) {
+function formatAndEnsureSpace(formatter, value, separator = '\xA0') {
     const parts = formatter.formatToParts(value);
     let hasSpace = false;
     for (const part of parts) {
         if (part.type === 'literal') {
             if (part.value === ' ') {
                 hasSpace = true;
-                part.value = '\xA0';
+                part.value = separator;
             }
-            else if (part.value === '\xA0') {
+            else if (part.value === separator) {
                 hasSpace = true;
             }
         }
@@ -53,10 +53,10 @@ function formatAndEnsureSpace(formatter, value) {
     }
     // For locales where the unit comes first (sw), the space has to come after the unit.
     if (unitIndex === 0) {
-        return parts[0].value + '\xA0' + parts.slice(1).map(part => part.value).join('');
+        return parts[0].value + separator + parts.slice(1).map(part => part.value).join('');
     }
     // Otherwise, it comes before.
-    return parts.slice(0, unitIndex).map(part => part.value).join('') + '\xA0' +
+    return parts.slice(0, unitIndex).map(part => part.value).join('') + separator +
         parts.slice(unitIndex).map(part => part.value).join('');
 }
 //# sourceMappingURL=NumberFormatter.js.map

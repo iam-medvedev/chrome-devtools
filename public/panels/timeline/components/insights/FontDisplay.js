@@ -13,6 +13,21 @@ const { html } = Lit;
 export class FontDisplay extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-font-display`;
     internalName = 'font-display';
+    #overlayForRequest = new Map();
+    createOverlays() {
+        this.#overlayForRequest.clear();
+        if (!this.model) {
+            return [];
+        }
+        const overlays = this.model.createOverlays?.();
+        if (!overlays) {
+            return [];
+        }
+        for (const overlay of overlays.filter(overlay => overlay.type === 'ENTRY_OUTLINE')) {
+            this.#overlayForRequest.set(overlay.entry, overlay);
+        }
+        return overlays;
+    }
     mapToRow(font) {
         const overlay = this.#overlayForRequest.get(font.request);
         return {
@@ -28,21 +43,6 @@ export class FontDisplay extends BaseInsightComponent {
             values: [renderOthersLabel(remaining.length), ''],
             overlays: remaining.map(r => this.#overlayForRequest.get(r.request)).filter(o => !!o),
         };
-    }
-    #overlayForRequest = new Map();
-    createOverlays() {
-        this.#overlayForRequest.clear();
-        if (!this.model) {
-            return [];
-        }
-        for (const font of this.model.fonts) {
-            this.#overlayForRequest.set(font.request, {
-                type: 'ENTRY_OUTLINE',
-                entry: font.request,
-                outlineReason: font.wastedTime ? 'ERROR' : 'INFO',
-            });
-        }
-        return [...this.#overlayForRequest.values()];
     }
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;

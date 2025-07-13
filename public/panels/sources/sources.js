@@ -6717,7 +6717,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common10.ObjectWrapper.
     return this.#uiSourceCode;
   }
   setUISourceCode(uiSourceCode) {
-    const loaded = uiSourceCode.contentLoaded() ? Promise.resolve() : uiSourceCode.requestContent();
+    const loaded = uiSourceCode.contentLoaded() ? Promise.resolve() : uiSourceCode.requestContentData();
     const startUISourceCode = this.#uiSourceCode;
     loaded.then(async () => {
       if (this.#uiSourceCode !== startUISourceCode) {
@@ -12456,6 +12456,7 @@ import * as Common15 from "./../../core/common/common.js";
 import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Formatter2 from "./../../models/formatter/formatter.js";
 import * as Persistence14 from "./../../models/persistence/persistence.js";
+import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
 import * as Workspace24 from "./../../models/workspace/workspace.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
 var UIStrings21 = {
@@ -12540,8 +12541,8 @@ var InplaceFormatterEditorAction = class _InplaceFormatterEditorAction {
     if (uiSourceCode.isDirty()) {
       void this.contentLoaded(uiSourceCode, sourceFrame, uiSourceCode.workingCopy());
     } else {
-      void uiSourceCode.requestContent().then((deferredContent) => {
-        void this.contentLoaded(uiSourceCode, sourceFrame, deferredContent.content || "");
+      void uiSourceCode.requestContentData().then((contentDataOrError) => TextUtils11.ContentData.ContentData.textOr(contentDataOrError, "")).then((content) => {
+        void this.contentLoaded(uiSourceCode, sourceFrame, content);
       });
     }
   }
@@ -13161,7 +13162,7 @@ import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings11 from "./../../models/bindings/bindings.js";
 import * as Persistence16 from "./../../models/persistence/persistence.js";
-import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils12 from "./../../models/text_utils/text_utils.js";
 import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as Snippets5 from "./../snippets/snippets.js";
@@ -13512,7 +13513,7 @@ var SnippetsNavigatorView = class extends NavigatorView {
   async handleSaveAs(uiSourceCode) {
     uiSourceCode.commitWorkingCopy();
     const contentData = await uiSourceCode.requestContentData();
-    if (TextUtils11.ContentData.ContentData.isError(contentData)) {
+    if (TextUtils12.ContentData.ContentData.isError(contentData)) {
       console.error(`Failed to retrieve content for ${uiSourceCode.url()}: ${contentData}`);
       Common17.Console.Console.instance().error(
         i18nString23(UIStrings24.saveAsFailed),

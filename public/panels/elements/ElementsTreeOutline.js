@@ -36,21 +36,20 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Elements from '../../models/elements/elements.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
-import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 import * as CopyToClipboard from '../../ui/components/copy_to_clipboard/copy_to_clipboard.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as IssueCounter from '../../ui/components/issue_counter/issue_counter.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as ElementsComponents from './components/components.js';
 import { getElementIssueDetails } from './ElementIssueUtils.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ElementsTreeElement, InitialChildrenLimit, isOpeningTag } from './ElementsTreeElement.js';
 import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
+import { ShortcutTreeElement } from './ShortcutTreeElement.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
 const UIStrings = {
     /**
@@ -66,10 +65,6 @@ const UIStrings = {
      *@example {3} PH1
      */
     showAllNodesDMore: 'Show all nodes ({PH1} more)',
-    /**
-     *@description Link text content in Elements Tree Outline of the Elements panel
-     */
-    reveal: 'reveal',
     /**
      * @description Text for popover that directs to Issues panel
      */
@@ -323,14 +318,14 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         event.handled = true;
         this.performCopyOrCut(isCut, targetNode);
     }
-    performCopyOrCut(isCut, node) {
+    performCopyOrCut(isCut, node, includeShadowRoots = false) {
         if (!node) {
             return;
         }
         if (isCut && (node.isShadowRoot() || node.ancestorUserAgentShadowRoot())) {
             return;
         }
-        void node.getOuterHTML().then(outerHTML => {
+        void node.getOuterHTML(includeShadowRoots).then(outerHTML => {
             if (outerHTML !== null) {
                 CopyToClipboard.copyTextToClipboard(outerHTML);
             }
@@ -969,7 +964,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     addUpdateRecord(node) {
         let record = this.updateRecords.get(node);
         if (!record) {
-            record = new UpdateRecord();
+            record = new Elements.ElementUpdateRecord.ElementUpdateRecord();
             this.updateRecords.set(node, record);
         }
         return record;
@@ -1399,184 +1394,4 @@ export const MappedCharToEntity = new Map([
     ['\u2060', 'NoBreak'],
     ['\uFEFF', '#xFEFF'],
 ]);
-// clang-format on
-export class UpdateRecord {
-    modifiedAttributes;
-    removedAttributes;
-    hasChangedChildrenInternal;
-    hasRemovedChildrenInternal;
-    charDataModifiedInternal;
-    attributeModified(attrName) {
-        if (this.removedAttributes?.has(attrName)) {
-            this.removedAttributes.delete(attrName);
-        }
-        if (!this.modifiedAttributes) {
-            this.modifiedAttributes = (new Set());
-        }
-        this.modifiedAttributes.add(attrName);
-    }
-    attributeRemoved(attrName) {
-        if (this.modifiedAttributes?.has(attrName)) {
-            this.modifiedAttributes.delete(attrName);
-        }
-        if (!this.removedAttributes) {
-            this.removedAttributes = (new Set());
-        }
-        this.removedAttributes.add(attrName);
-    }
-    nodeInserted(_node) {
-        this.hasChangedChildrenInternal = true;
-    }
-    nodeRemoved(_node) {
-        this.hasChangedChildrenInternal = true;
-        this.hasRemovedChildrenInternal = true;
-    }
-    charDataModified() {
-        this.charDataModifiedInternal = true;
-    }
-    childrenModified() {
-        this.hasChangedChildrenInternal = true;
-    }
-    isAttributeModified(attributeName) {
-        return this.modifiedAttributes?.has(attributeName) ?? false;
-    }
-    hasRemovedAttributes() {
-        return this.removedAttributes !== null && this.removedAttributes !== undefined &&
-            Boolean(this.removedAttributes.size);
-    }
-    isCharDataModified() {
-        return Boolean(this.charDataModifiedInternal);
-    }
-    hasChangedChildren() {
-        return Boolean(this.hasChangedChildrenInternal);
-    }
-    hasRemovedChildren() {
-        return Boolean(this.hasRemovedChildrenInternal);
-    }
-}
-let rendererInstance;
-export class Renderer {
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!rendererInstance || forceNew) {
-            rendererInstance = new Renderer();
-        }
-        return rendererInstance;
-    }
-    async render(object) {
-        let node = null;
-        if (object instanceof SDK.DOMModel.DOMNode) {
-            node = (object);
-        }
-        else if (object instanceof SDK.DOMModel.DeferredDOMNode) {
-            node = await (object).resolvePromise();
-        }
-        if (!node) {
-            // Can't render not-a-node, or couldn't resolve deferred node.
-            return null;
-        }
-        const treeOutline = new ElementsTreeOutline(
-        /* omitRootDOMNode: */ false, /* selectEnabled: */ true, /* hideGutter: */ true);
-        treeOutline.rootDOMNode = node;
-        const firstChild = treeOutline.firstChild();
-        if (firstChild && !firstChild.isExpandable()) {
-            treeOutline.element.classList.add('single-node');
-        }
-        treeOutline.setVisible(true);
-        // @ts-expect-error used in console_test_runner
-        treeOutline.element.treeElementForTest = firstChild;
-        treeOutline.setShowSelectionOnKeyboardFocus(/* show: */ true, /* preventTabOrder: */ true);
-        return { node: treeOutline.element, tree: treeOutline };
-    }
-}
-export class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
-    nodeShortcut;
-    hoveredInternal;
-    constructor(nodeShortcut) {
-        super('');
-        this.listItemElement.createChild('div', 'selection fill');
-        const title = this.listItemElement.createChild('span', 'elements-tree-shortcut-title');
-        let text = nodeShortcut.nodeName.toLowerCase();
-        if (nodeShortcut.nodeType === Node.ELEMENT_NODE) {
-            text = '<' + text + '>';
-        }
-        title.textContent = '\u21AA ' + text;
-        this.nodeShortcut = nodeShortcut;
-        this.addRevealAdorner();
-    }
-    addRevealAdorner() {
-        const adorner = new Adorners.Adorner.Adorner();
-        adorner.classList.add('adorner-reveal');
-        const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.REVEAL);
-        const name = config.name;
-        const adornerContent = document.createElement('span');
-        const linkIcon = IconButton.Icon.create('select-element');
-        const slotText = document.createElement('span');
-        slotText.textContent = name;
-        adornerContent.append(linkIcon);
-        adornerContent.append(slotText);
-        adornerContent.classList.add('adorner-with-icon');
-        adorner.data = {
-            name,
-            content: adornerContent,
-            jslogContext: 'reveal',
-        };
-        this.listItemElement.appendChild(adorner);
-        const onClick = (() => {
-            this.nodeShortcut.deferredNode.resolve(node => {
-                void Common.Revealer.reveal(node);
-            });
-        });
-        adorner.addInteraction(onClick, {
-            isToggle: false,
-            shouldPropagateOnKeydown: false,
-            ariaLabelDefault: i18nString(UIStrings.reveal),
-            ariaLabelActive: i18nString(UIStrings.reveal),
-        });
-        adorner.addEventListener('mousedown', e => e.consume(), false);
-        ElementsPanel.instance().registerAdorner(adorner);
-    }
-    get hovered() {
-        return Boolean(this.hoveredInternal);
-    }
-    set hovered(x) {
-        if (this.hoveredInternal === x) {
-            return;
-        }
-        this.hoveredInternal = x;
-        this.listItemElement.classList.toggle('hovered', x);
-    }
-    deferredNode() {
-        return this.nodeShortcut.deferredNode;
-    }
-    domModel() {
-        return this.nodeShortcut.deferredNode.domModel();
-    }
-    setLeftIndentOverlay() {
-        // We use parent's `--indent` value and add 24px to account for an extra level of indent.
-        let indent = 24;
-        if (this.parent && this.parent instanceof ElementsTreeElement) {
-            const parentIndent = parseFloat(this.parent.listItemElement.style.getPropertyValue('--indent')) || 0;
-            indent += parentIndent;
-        }
-        this.listItemElement.style.setProperty('--indent', indent + 'px');
-    }
-    onattach() {
-        this.setLeftIndentOverlay();
-    }
-    onselect(selectedByUser) {
-        if (!selectedByUser) {
-            return true;
-        }
-        this.nodeShortcut.deferredNode.highlight();
-        this.nodeShortcut.deferredNode.resolve(resolved.bind(this));
-        function resolved(node) {
-            if (node && this.treeOutline instanceof ElementsTreeOutline) {
-                this.treeOutline.selectedDOMNodeInternal = node;
-                this.treeOutline.selectedNodeChanged(false);
-            }
-        }
-        return true;
-    }
-}
 //# sourceMappingURL=ElementsTreeOutline.js.map

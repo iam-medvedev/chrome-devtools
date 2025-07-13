@@ -41,6 +41,7 @@
   "files": [
     "../../../../../../front_end/core/i18n/ByteUtilities.test.ts",
     "../../../../../../front_end/core/i18n/DevToolsLocale.test.ts",
+    "../../../../../../front_end/core/i18n/NumberFormatter.test.ts",
     "../../../../../../front_end/core/i18n/i18n.test.ts",
     "../../../../../../front_end/core/i18n/time-utilities.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

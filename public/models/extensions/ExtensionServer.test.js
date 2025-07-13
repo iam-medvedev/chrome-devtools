@@ -5,10 +5,12 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, expectConsoleLogs } from '../../testing/EnvironmentHelpers.js';
+import { spyCall } from '../../testing/ExpectStubCall.js';
 import { describeWithDevtoolsExtension, getExtensionOrigin, } from '../../testing/ExtensionHelpers.js';
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
 import { addChildFrame, FRAME_URL, getMainFrame } from '../../testing/ResourceTreeHelpers.js';
 import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
+import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Extensions from '../extensions/extensions.js';
@@ -126,6 +128,46 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             assert.strictEqual(resources[0].url, 'http://example.com/index.js');
             assert.strictEqual(resources[0].buildId, 'my-build-id');
         });
+    });
+});
+describeWithDevtoolsExtension('Extensions', {}, context => {
+    beforeEach(() => {
+        createTarget().setInspectedURL(urlString `http://example.com`);
+    });
+    it('can register and unregister a global open resource handler', async () => {
+        const registerLinkHandlerSpy = spyCall(Components.Linkifier.Linkifier, 'registerLinkHandler');
+        const unregisterLinkHandlerSpy = spyCall(Components.Linkifier.Linkifier, 'unregisterLinkHandler');
+        // Register without a specific scheme (global handler).
+        context.chrome.devtools?.panels.setOpenResourceHandler(() => { });
+        const registration = await (await registerLinkHandlerSpy).args[0];
+        assert.strictEqual(registration.title, 'TestExtension');
+        assert.isUndefined(registration.scheme);
+        assert.isFunction(registration.handler);
+        assert.isFunction(registration.filter);
+        // Now unregister the extension.
+        context.chrome.devtools?.panels.setOpenResourceHandler();
+        const unregistration = await (await unregisterLinkHandlerSpy).args[0];
+        assert.strictEqual(unregistration.title, 'TestExtension');
+        assert.isUndefined(unregistration.scheme);
+        assert.isFunction(unregistration.handler);
+        assert.isFunction(unregistration.filter);
+    });
+    it('can register and unregister a scheme specific open resource handler', async () => {
+        const registerLinkHandlerSpy = spyCall(Components.Linkifier.Linkifier, 'registerLinkHandler');
+        const unregisterLinkHandlerSpy = spyCall(Components.Linkifier.Linkifier, 'unregisterLinkHandler');
+        context.chrome.devtools?.panels.setOpenResourceHandler(() => { }, 'foo-extension:');
+        const registration = await (await registerLinkHandlerSpy).args[0];
+        assert.strictEqual(registration.title, 'TestExtension');
+        assert.strictEqual(registration.scheme, 'foo-extension:');
+        assert.isFunction(registration.handler);
+        assert.isFunction(registration.filter);
+        // Now unregister the extension.
+        context.chrome.devtools?.panels.setOpenResourceHandler();
+        const unregistration = await (await unregisterLinkHandlerSpy).args[0];
+        assert.strictEqual(unregistration.title, 'TestExtension');
+        assert.isUndefined(unregistration.scheme);
+        assert.isFunction(unregistration.handler);
+        assert.isFunction(unregistration.filter);
     });
 });
 describeWithDevtoolsExtension('Extensions', {}, context => {

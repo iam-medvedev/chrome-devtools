@@ -1,6 +1,7 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 import { getNavigationForTraceEvent } from './Trace.js';
 export const milliToMicro = (value) => Types.Timing.Micro(value * 1000);
@@ -84,16 +85,65 @@ export function traceWindowFromMicroSeconds(min, max) {
     const traceWindow = {
         min,
         max,
-        range: Types.Timing.Micro(max - min),
+        range: (max - min),
     };
     return traceWindow;
 }
 export function traceWindowFromEvent(event) {
     return {
         min: event.ts,
-        max: Types.Timing.Micro(event.ts + (event.dur ?? 0)),
-        range: event.dur ?? Types.Timing.Micro(0),
+        max: event.ts + (event.dur ?? 0),
+        range: event.dur ?? 0,
     };
+}
+export function traceWindowFromOverlay(overlay) {
+    switch (overlay.type) {
+        case 'ENTRY_LABEL':
+        case 'ENTRY_OUTLINE':
+        case 'ENTRY_SELECTED': {
+            return traceWindowFromEvent(overlay.entry);
+        }
+        case 'TIMESPAN_BREAKDOWN': {
+            const windows = overlay.sections.map(s => s.bounds);
+            if (overlay.entry) {
+                windows.push(traceWindowFromEvent(overlay.entry));
+            }
+            return combineTraceWindowsMicro(windows);
+        }
+        case 'CANDY_STRIPED_TIME_RANGE':
+        case 'TIME_RANGE': {
+            return structuredClone(overlay.bounds);
+        }
+        case 'ENTRIES_LINK': {
+            const from = traceWindowFromEvent(overlay.entryFrom);
+            if (!overlay.entryTo) {
+                return from;
+            }
+            const to = traceWindowFromEvent(overlay.entryTo);
+            return combineTraceWindowsMicro([from, to]);
+        }
+        case 'TIMESTAMP_MARKER':
+            return traceWindowFromMicroSeconds(overlay.timestamp, overlay.timestamp);
+        case 'TIMINGS_MARKER':
+            return traceWindowFromMicroSeconds(overlay.adjustedTimestamp, overlay.adjustedTimestamp);
+        default:
+            Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
+    }
+}
+/**
+ * Combines (as in a union) multiple windows into one.
+ */
+export function combineTraceWindowsMicro(windows) {
+    if (!windows.length) {
+        return null;
+    }
+    const result = structuredClone(windows[0]);
+    for (const bounds of windows.slice(1)) {
+        result.min = Math.min(result.min, bounds.min);
+        result.max = Math.max(result.max, bounds.max);
+    }
+    result.range = result.max - result.min;
+    return result;
 }
 /**
  * Checks to see if the timeRange is within the bounds. By "within" we mean

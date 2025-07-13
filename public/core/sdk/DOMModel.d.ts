@@ -93,7 +93,7 @@ export declare class DOMNode {
     getChildNodesPromise(): Promise<DOMNode[] | null>;
     getChildNodes(callback: (arg0: DOMNode[] | null) => void): void;
     getSubtree(depth: number, pierce: boolean): Promise<DOMNode[] | null>;
-    getOuterHTML(): Promise<string | null>;
+    getOuterHTML(includeShadowDOM?: boolean): Promise<string | null>;
     setOuterHTML(html: string, callback?: ((arg0: string | null) => void)): void;
     removeNode(callback?: ((arg0: string | null, arg1?: Protocol.DOM.NodeId | undefined) => void)): Promise<void>;
     path(): string;

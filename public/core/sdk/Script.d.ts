@@ -42,7 +42,6 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
     private loadTextContent;
     private loadWasmContent;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
-    requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     private requestContentInternal;
     getWasmBytecode(): Promise<ArrayBuffer>;
     originalContentProvider(): TextUtils.ContentProvider.ContentProvider;

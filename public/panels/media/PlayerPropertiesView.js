@@ -125,6 +125,10 @@ const UIStrings = {
      *@description Media property signaling whether the encoder is hardware accelerated.
      */
     hardwareEncoder: 'Hardware encoder',
+    /**
+     *@description Property for adaptive (HLS) playback which shows the start/end time of the loaded content buffer
+     */
+    hlsBufferedRanges: 'Buffered media ranges',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/media/PlayerPropertiesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -146,20 +150,6 @@ export class PropertyRenderer extends UI.Widget.VBox {
     updateData(propvalue) {
         // convert all empty possibilities into nulls for easier handling.
         if (propvalue === '' || propvalue === null) {
-            return this.updateDataInternal(null);
-        }
-        try {
-            propvalue = JSON.parse(propvalue);
-        }
-        catch {
-            // TODO(tmathmeyer) typecheck the type of propvalue against
-            // something defined or sourced from the c++ definitions.
-            // Do nothing, some strings just stay strings!
-        }
-        return this.updateDataInternal(propvalue);
-    }
-    updateDataInternal(propvalue) {
-        if (propvalue === null) {
             this.changeContents(null);
         }
         else if (this.value === propvalue) {
@@ -167,6 +157,16 @@ export class PropertyRenderer extends UI.Widget.VBox {
         }
         else {
             this.value = propvalue;
+            this.updateDataInternal(propvalue);
+        }
+    }
+    updateDataInternal(propvalue) {
+        try {
+            const parsed = JSON.parse(propvalue);
+            this.changeContents(parsed);
+        }
+        catch {
+            // Some properties are just raw strings.
             this.changeContents(propvalue);
         }
     }
@@ -219,11 +219,13 @@ export class FormattedPropertyRenderer extends PropertyRenderer {
         this.formatfunction = formatfunction;
     }
     updateDataInternal(propvalue) {
-        if (propvalue === null) {
-            this.changeContents(null);
+        try {
+            const parsed = JSON.parse(propvalue);
+            this.changeContents(this.formatfunction(parsed));
         }
-        else {
-            this.changeContents(this.formatfunction(propvalue));
+        catch {
+            const unparsed = propvalue;
+            this.changeContents(this.formatfunction(unparsed));
         }
     }
 }
@@ -451,6 +453,14 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
         const bytesDecimal = (actualBytes / Math.pow(1000, power)).toFixed(2);
         return `${bytesDecimal} ${suffix}`;
     }
+    formatBufferedRanges(ranges) {
+        // ranges is an array of `Range`, where a `Range` is a tuple-array of start/end floating point numbers.
+        return ranges
+            .map(range => {
+            return '[' + range[0] + ' → ' + range[1] + ']';
+        })
+            .join(', ');
+    }
     populateAttributesAndElements() {
         /* Media properties */
         const resolution = new PropertyRenderer(i18nString(UIStrings.resolution));
@@ -495,6 +505,9 @@ export class PlayerPropertiesView extends UI.Widget.VBox {
         const rendererName = new PropertyRenderer(i18nString(UIStrings.rendererName));
         this.mediaElements.push(rendererName);
         this.attributeMap.set("kRendererName" /* PlayerPropertyKeys.RENDERER_NAME */, rendererName);
+        const hlsBufferedRanges = new FormattedPropertyRenderer(i18nString(UIStrings.hlsBufferedRanges), this.formatBufferedRanges);
+        this.mediaElements.push(hlsBufferedRanges);
+        this.attributeMap.set("kHlsBufferedRanges" /* PlayerPropertyKeys.HLS_BUFFERED_RANGES */, hlsBufferedRanges);
         /* Video Decoder Properties */
         const decoderName = new DefaultPropertyRenderer(i18nString(UIStrings.decoderName), i18nString(UIStrings.noDecoder));
         this.videoDecoderElements.push(decoderName);

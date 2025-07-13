@@ -16,23 +16,18 @@ export class CLSCulprits extends BaseInsightComponent {
         return true;
     }
     createOverlays() {
-        const clustersByScore = this.model?.clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore) ?? [];
-        const worstCluster = clustersByScore[0];
-        if (!worstCluster) {
+        if (!this.model) {
             return [];
         }
-        const range = Trace.Types.Timing.Micro(worstCluster.dur ?? 0);
-        const max = Trace.Types.Timing.Micro(worstCluster.ts + range);
-        const label = html `<div>${i18nString(UIStrings.worstLayoutShiftCluster)}</div>`;
-        return [{
-                type: 'TIMESPAN_BREAKDOWN',
-                sections: [
-                    { bounds: { min: worstCluster.ts, range, max }, label, showDuration: false },
-                ],
-                // This allows for the overlay to sit over the layout shift.
-                entry: worstCluster.events[0],
-                renderLocation: 'ABOVE_EVENT',
-            }];
+        const overlays = this.model.createOverlays?.();
+        if (!overlays) {
+            return [];
+        }
+        const timespanOverlaySection = overlays.find(overlay => overlay.type === 'TIMESPAN_BREAKDOWN')?.sections[0];
+        if (timespanOverlaySection) {
+            timespanOverlaySection.label = html `<div>${i18nString(UIStrings.worstLayoutShiftCluster)}</div>`;
+        }
+        return overlays;
     }
     #clickEvent(event) {
         this.dispatchEvent(new EventReferenceClick(event));

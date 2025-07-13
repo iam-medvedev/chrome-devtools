@@ -396,7 +396,7 @@ export class AiAgent {
     async *#aidaFetch(request, options) {
         let aidaResponse = undefined;
         let rpcId;
-        for await (aidaResponse of this.#aidaClient.fetch(request, options)) {
+        for await (aidaResponse of this.#aidaClient.doConversation(request, options)) {
             if (aidaResponse.functionCalls?.length) {
                 debugLog('functionCalls.length', aidaResponse.functionCalls.length);
                 yield {

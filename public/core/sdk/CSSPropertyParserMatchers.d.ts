@@ -10,10 +10,10 @@ export declare class BaseVariableMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
     readonly name: string;
-    readonly fallback: CodeMirror.SyntaxNode[];
+    readonly fallback: CodeMirror.SyntaxNode[] | undefined;
     readonly matching: BottomUpTreeMatching;
     readonly computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null;
-    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching, computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null);
+    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[] | undefined, matching: BottomUpTreeMatching, computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null);
     computedText(): string | null;
 }
 declare const BaseVariableMatcher_base: {
@@ -31,7 +31,7 @@ export declare class BaseVariableMatcher extends BaseVariableMatcher_base {
 export declare class VariableMatch extends BaseVariableMatch {
     readonly matchedStyles: CSSMatchedStyles;
     readonly style: CSSStyleDeclaration;
-    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[], matching: BottomUpTreeMatching, matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration);
+    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[] | undefined, matching: BottomUpTreeMatching, matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration);
     resolveVariable(): CSSVariableValue | null;
     fallbackValue(): string | null;
 }

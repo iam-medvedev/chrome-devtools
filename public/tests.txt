@@ -30,6 +30,7 @@ core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
 core/i18n/ByteUtilities.test.js
 core/i18n/DevToolsLocale.test.js
+core/i18n/NumberFormatter.test.js
 core/i18n/i18n.test.js
 core/i18n/time-utilities.test.js
 core/platform/ArrayUtilities.test.js

@@ -3,6 +3,21 @@ import * as Host from '../../core/host/host.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ChatView, type Props as ChatViewProps } from './components/ChatView.js';
+interface ExternalStylingRequestParameters {
+    conversationType: AiAssistanceModel.ConversationType.STYLING;
+    prompt: string;
+    selector?: string;
+}
+interface ExternalNetworkRequestParameters {
+    conversationType: AiAssistanceModel.ConversationType.NETWORK;
+    prompt: string;
+    requestUrl: string;
+}
+interface ExternalPerformanceInsightsRequestParameters {
+    conversationType: AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT;
+    prompt: string;
+    insightTitle: string;
+}
 interface ToolbarViewInput {
     onNewChatClick: () => void;
     populateHistoryMenu: (contextMenu: UI.ContextMenu.ContextMenu) => void;
@@ -40,7 +55,7 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
      * Performance Insights it is the name of the Insight that forms the
      * context of the conversation.
      */
-    handleExternalRequest(prompt: string, conversationType: AiAssistanceModel.ConversationType, selector?: string): Promise<{
+    handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceInsightsRequestParameters): Promise<{
         response: string;
         devToolsLogs: object[];
     }>;
@@ -49,6 +64,10 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
         devToolsLogs: object[];
     }>;
     handleExternalStylingRequest(prompt: string, selector?: string): Promise<{
+        response: string;
+        devToolsLogs: object[];
+    }>;
+    handleExternalNetworkRequest(prompt: string, requestUrl: string): Promise<{
         response: string;
         devToolsLogs: object[];
     }>;

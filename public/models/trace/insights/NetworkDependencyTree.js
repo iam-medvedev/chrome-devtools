@@ -314,12 +314,21 @@ export function handleLinkResponseHeader(linkHeaderValue) {
         return [];
     }
     const preconnectedOrigins = [];
-    // const headerTextParts = linkHeaderValue.split(',');
     for (let i = 0; i < linkHeaderValue.length;) {
         const firstUrlEnd = linkHeaderValue.indexOf('>', i);
+        if (firstUrlEnd === -1) {
+            break;
+        }
         const commaIndex = linkHeaderValue.indexOf(',', firstUrlEnd);
         const partEnd = commaIndex !== -1 ? commaIndex : linkHeaderValue.length;
         const part = linkHeaderValue.substring(i, partEnd);
+        // This shouldn't be necessary, but we had a bug that created an infinite loop so
+        // let's guard against that.
+        // See crbug.com/431239629
+        if (partEnd + 1 <= i) {
+            console.warn('unexpected infinite loop, bailing');
+            break;
+        }
         i = partEnd + 1;
         const preconnectedOrigin = handleLinkResponseHeaderPart(part.trim());
         if (preconnectedOrigin) {
@@ -514,5 +523,20 @@ export function generateInsight(parsedTrace, context) {
         preconnectedOrigins,
         preconnectCandidates,
     });
+}
+export function createOverlays(model) {
+    function walk(nodes, overlays) {
+        nodes.forEach(node => {
+            overlays.push({
+                type: 'ENTRY_OUTLINE',
+                entry: node.request,
+                outlineReason: 'ERROR',
+            });
+            walk(node.children, overlays);
+        });
+    }
+    const overlays = [];
+    walk(model.rootNodes, overlays);
+    return overlays;
 }
 //# sourceMappingURL=NetworkDependencyTree.js.map

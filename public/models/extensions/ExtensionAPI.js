@@ -154,14 +154,14 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             const id = 'extension-panel-' + extensionServer.nextObjectId();
             extensionServer.sendRequest({ command: "createPanel" /* PrivateAPI.Commands.CreatePanel */, id, title, page }, callback && (() => callback.call(this, new (Constructor(ExtensionPanel))(id))));
         },
-        setOpenResourceHandler: function (callback) {
+        setOpenResourceHandler: function (callback, urlScheme) {
             const hadHandler = extensionServer.hasHandler("open-resource" /* PrivateAPI.Events.OpenResource */);
             function callbackWrapper(message) {
                 // Allow the panel to show itself when handling the event.
                 userAction = true;
                 try {
-                    const { resource, lineNumber } = message;
-                    callback.call(null, new (Constructor(Resource))(resource), lineNumber);
+                    const { resource, lineNumber, columnNumber } = message;
+                    callback.call(null, new (Constructor(Resource))(resource), lineNumber, columnNumber);
                 }
                 finally {
                     userAction = false;
@@ -175,7 +175,7 @@ self.injectedExtensionAPI = function (extensionInfo, inspectedTabId, themeName, 
             }
             // Only send command if we either removed an existing handler or added handler and had none before.
             if (hadHandler === !callback) {
-                extensionServer.sendRequest({ command: "setOpenResourceHandler" /* PrivateAPI.Commands.SetOpenResourceHandler */, handlerPresent: Boolean(callback) });
+                extensionServer.sendRequest({ command: "setOpenResourceHandler" /* PrivateAPI.Commands.SetOpenResourceHandler */, handlerPresent: Boolean(callback), urlScheme });
             }
         },
         setThemeChangeHandler: function (callback) {

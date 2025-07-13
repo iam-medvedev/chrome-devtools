@@ -1,5 +1,6 @@
 import * as Extras from '../extras/extras.js';
 import * as Handlers from '../handlers/handlers.js';
+import type * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
@@ -27,3 +28,5 @@ export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
     firstPartyEntity?: Extras.ThirdParties.Entity;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ThirdPartiesInsightModel;
+export declare function createOverlaysForSummary(summary: Extras.ThirdParties.EntitySummary): Types.Overlays.Overlay[];
+export declare function createOverlays(model: ThirdPartiesInsightModel): Types.Overlays.Overlay[];

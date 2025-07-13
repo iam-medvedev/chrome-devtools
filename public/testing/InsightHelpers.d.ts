@@ -5,6 +5,7 @@ export declare function processTrace(context: Mocha.Suite | Mocha.Context, trace
     metadata: Trace.Types.File.MetaData | null;
 }>;
 export declare function createContextForNavigation(parsedTrace: Trace.Handlers.Types.ParsedTrace, navigation: Trace.Types.Events.NavigationStart, frameId: string): Trace.Insights.Types.InsightSetContextWithNavigation;
+export declare function getInsightSetOrError(insights: Trace.Insights.Types.TraceInsightSets, navigation?: Trace.Types.Events.NavigationStart): Trace.Insights.Types.InsightSet;
 export declare function getInsightOrError<InsightName extends keyof Trace.Insights.Types.InsightModels>(insightName: InsightName, insights: Trace.Insights.Types.TraceInsightSets, navigation?: Trace.Types.Events.NavigationStart): Trace.Insights.Types.InsightModels[InsightName];
 export declare function getFirstOrError<T>(iterator: IterableIterator<T>): T;
 export declare function getFirst<T>(iterator: IterableIterator<T>): T | undefined;

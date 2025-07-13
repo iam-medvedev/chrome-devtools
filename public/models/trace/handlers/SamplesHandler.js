@@ -107,13 +107,9 @@ export function handleEvent(event) {
         // id and thread id are not really important, so we use the data
         // in the fake event. Should multi-thread CPU profiling be supported
         // we could use these fields in the event to pass thread info.
-        const pid = event.pid;
-        const tid = event.tid;
-        // Create an arbitrary profile id.
-        const profileId = '0x1';
-        const profileData = getOrCreatePreProcessedData(pid, profileId);
+        const profileData = getOrCreatePreProcessedData(event.pid, event.id);
         profileData.rawProfile = event.args.data.cpuProfile;
-        profileData.threadId = tid;
+        profileData.threadId = event.tid;
         return;
     }
     if (Types.Events.isProfile(event)) {

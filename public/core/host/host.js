@@ -886,7 +886,7 @@ var AidaClient = class {
     }
     return "available";
   }
-  async *fetch(request, options) {
+  async *doConversation(request, options) {
     if (!InspectorFrontendHostInstance.doAidaConversation) {
       throw new Error("doAidaConversation is not available");
     }

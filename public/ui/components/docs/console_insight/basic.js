@@ -66,7 +66,7 @@ Response status: 404`,
         };
     },
 }, {
-    async *fetch() {
+    async *doConversation() {
         await new Promise(resolve => setTimeout(resolve, 2000));
         yield {
             explanation: `Some text with \`code\`. Some code:

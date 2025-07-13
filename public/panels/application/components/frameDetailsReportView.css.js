@@ -71,7 +71,7 @@ button.text-link {
 
 .inline-name {
   color: var(--sys-color-token-subtle);
-  padding-right: 4px;
+  padding-inline: 4px;
   user-select: none;
   white-space: pre-line;
 }

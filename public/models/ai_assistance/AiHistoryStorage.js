@@ -81,12 +81,13 @@ export class Conversation {
 }
 let instance = null;
 const DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
-export class AiHistoryStorage {
+export class AiHistoryStorage extends Common.ObjectWrapper.ObjectWrapper {
     #historySetting;
     #imageHistorySettings;
     #mutex = new Common.Mutex.Mutex();
     #maxStorageSize;
     constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
+        super();
         this.#historySetting = Common.Settings.Settings.instance().createSetting('ai-assistance-history-entries', []);
         this.#imageHistorySettings = Common.Settings.Settings.instance().createSetting('ai-assistance-history-images', []);
         this.#maxStorageSize = maxStorageSize;
@@ -171,6 +172,7 @@ export class AiHistoryStorage {
         }
         finally {
             release();
+            this.dispatchEventToListeners("AiHistoryDeleted" /* Events.HISTORY_DELETED */);
         }
     }
     getHistory() {

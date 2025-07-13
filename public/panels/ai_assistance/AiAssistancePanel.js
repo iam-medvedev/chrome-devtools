@@ -5,6 +5,7 @@ import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
@@ -258,7 +259,8 @@ function toolbarView(input) {
           aria-label=${i18nString(UIStrings.history)}
           .iconName=${'history'}
           .jslogContext=${'freestyler.history'}
-          .populateMenuCall=${input.populateHistoryMenu}></devtools-menu-button>`
+          .populateMenuCall=${input.populateHistoryMenu}
+        ></devtools-menu-button>`
         : Lit.nothing}
         ${input.showDeleteHistoryAction
         ? html `<devtools-button
@@ -384,6 +386,24 @@ async function inspectElementBySelector(selector) {
     }
     return null;
 }
+async function inspectNetworkRequestByUrl(selector) {
+    const networkManagers = SDK.TargetManager.TargetManager.instance().models(SDK.NetworkManager.NetworkManager, { scoped: true });
+    const results = networkManagers
+        .map(networkManager => {
+        let request = networkManager.requestForURL(Platform.DevToolsPath.urlString `${selector}`);
+        if (!request && selector.at(-1) === '/') {
+            request =
+                networkManager.requestForURL(Platform.DevToolsPath.urlString `${selector.slice(0, -1)}`);
+        }
+        else if (!request && selector.at(-1) !== '/') {
+            request = networkManager.requestForURL(Platform.DevToolsPath.urlString `${selector}/`);
+        }
+        return request;
+    })
+        .filter(req => !!req);
+    const request = results.at(0);
+    return request ?? null;
+}
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
     view;
@@ -444,6 +464,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#toggleSearchElementAction =
                 UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         }
+        AiAssistanceModel.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted" /* AiAssistanceModel.Events.HISTORY_DELETED */, this.#onHistoryDeleted, this);
     }
     #getChatUiState() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -1023,14 +1044,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             });
         }
         contextMenu.footerSection().appendItem(i18nString(UIStrings.clearChatHistory), () => {
-            this.#clearHistory();
+            void AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
         }, {
             disabled: historyEmpty,
         });
     }
-    #clearHistory() {
+    #onHistoryDeleted() {
         this.#historicalConversations = [];
-        void AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
         this.#updateConversationState();
     }
     #onDeleteClicked() {
@@ -1379,7 +1399,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
      * Performance Insights it is the name of the Insight that forms the
      * context of the conversation.
      */
-    async handleExternalRequest(prompt, conversationType, selector) {
+    async handleExternalRequest(parameters) {
         try {
             Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
             const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
@@ -1390,17 +1410,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             if (disabledReasons.length > 0) {
                 throw new Error(disabledReasons.join(' '));
             }
-            void VisualLogging.logFunctionCall(`start-conversation-${conversationType}`, 'external');
-            switch (conversationType) {
+            void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, 'external');
+            switch (parameters.conversationType) {
                 case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
-                    return await this.handleExternalStylingRequest(prompt, selector);
+                    return await this.handleExternalStylingRequest(parameters.prompt, parameters.selector);
                 case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-                    if (!selector) {
+                    if (!parameters.insightTitle) {
                         throw new Error('The insightTitle parameter is required for debugging a Performance Insight.');
                     }
-                    return await this.handleExternalPerformanceInsightsRequest(prompt, selector);
-                default:
-                    throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
+                    return await this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
+                case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
+                    if (!parameters.requestUrl) {
+                        throw new Error('The url is required for debugging a network request.');
+                    }
+                    return await this.handleExternalNetworkRequest(parameters.prompt, parameters.requestUrl);
             }
         }
         catch (error) {
@@ -1452,6 +1475,35 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         const runner = stylingAgent.run(prompt, {
             selected: createNodeContext(node),
+        });
+        const devToolsLogs = [];
+        for await (const data of runner) {
+            // We don't want to save partial responses to the conversation history.
+            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
+                void externalConversation.addHistoryItem(data);
+                devToolsLogs.push(data);
+            }
+            if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
+                data.confirm(true);
+            }
+            if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
+                return { response: data.text, devToolsLogs };
+            }
+        }
+        throw new Error('Something went wrong. No answer was generated.');
+    }
+    async handleExternalNetworkRequest(prompt, requestUrl) {
+        const networkAgent = this.#createAgent("drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */);
+        const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(networkAgent), [], networkAgent.id, 
+        /* isReadOnly */ true, 
+        /* isExternal */ true);
+        this.#historicalConversations.push(externalConversation);
+        const request = await inspectNetworkRequestByUrl(requestUrl);
+        if (!request) {
+            throw new Error(`Can't find request with the given selector ${requestUrl}`);
+        }
+        const runner = networkAgent.run(prompt, {
+            selected: createRequestContext(request),
         });
         const devToolsLogs = [];
         for await (const data of runner) {

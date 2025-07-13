@@ -18,6 +18,11 @@ export declare function traceWindowMicroSecondsToMilliSeconds(bounds: Types.Timi
 export declare function traceWindowFromMilliSeconds(min: Types.Timing.Milli, max: Types.Timing.Milli): Types.Timing.TraceWindowMicro;
 export declare function traceWindowFromMicroSeconds(min: Types.Timing.Micro, max: Types.Timing.Micro): Types.Timing.TraceWindowMicro;
 export declare function traceWindowFromEvent(event: Types.Events.Event): Types.Timing.TraceWindowMicro;
+export declare function traceWindowFromOverlay(overlay: Types.Overlays.Overlay): Types.Timing.TraceWindowMicro | null;
+/**
+ * Combines (as in a union) multiple windows into one.
+ */
+export declare function combineTraceWindowsMicro(windows: Types.Timing.TraceWindowMicro[]): Types.Timing.TraceWindowMicro | null;
 export interface BoundsIncludeTimeRange {
     timeRange: Types.Timing.TraceWindowMicro;
     bounds: Types.Timing.TraceWindowMicro;

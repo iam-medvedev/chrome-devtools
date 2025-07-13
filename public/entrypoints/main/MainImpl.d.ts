@@ -54,6 +54,12 @@ type ExternalRequestInput = {
         insightTitle: string;
         prompt: string;
     };
+} | {
+    kind: 'NETWORK_DEBUGGER';
+    args: {
+        requestUrl: string;
+        prompt: string;
+    };
 };
 interface ExternalRequestResponse {
     response: string;

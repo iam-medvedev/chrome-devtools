@@ -1,3 +1,4 @@
+import type * as Platform from '../../../core/platform/platform.js';
 import type { Args, ConsoleTimeStamp, Event, PerformanceMark, PerformanceMeasureBegin, Phase, SyntheticBased } from './TraceEvents.js';
 export type ExtensionEntryType = 'track-entry' | 'marker';
 export declare const extensionPalette: readonly ["primary", "primary-light", "primary-dark", "secondary", "secondary-light", "secondary-dark", "tertiary", "tertiary-light", "tertiary-dark", "error", "warning"];
@@ -13,10 +14,15 @@ export interface ExtensionDataPayloadBase {
     tooltipText?: string;
 }
 export type ExtensionDataPayload = ExtensionTrackEntryPayload | ExtensionMarkerPayload;
+export interface ExtensionTrackEntryPayloadDeeplink {
+    url: Platform.DevToolsPath.UrlString;
+    description: string;
+}
 export interface ExtensionTrackEntryPayload extends ExtensionDataPayloadBase {
     dataType?: 'track-entry';
     track: string;
     trackGroup?: string;
+    additionalContext?: ExtensionTrackEntryPayloadDeeplink;
 }
 export interface ExtensionMarkerPayload extends ExtensionDataPayloadBase {
     dataType: 'marker';
@@ -41,10 +47,16 @@ export declare function isExtensionPayloadTrackEntry(payload: {
     track?: string;
     dataType?: string;
 }): payload is ExtensionTrackEntryPayload;
+export declare function isConsoleTimestampPayloadTrackEntry(payload: {
+    description?: string;
+    url?: string;
+}): payload is ExtensionTrackEntryPayloadDeeplink;
 export declare function isValidExtensionPayload(payload: {
     track?: string;
     dataType?: string;
-}): payload is ExtensionDataPayload;
+    description?: string;
+    url?: string;
+}): payload is ExtensionDataPayload | ExtensionTrackEntryPayloadDeeplink;
 export declare function isSyntheticExtensionEntry(entry: Event): entry is SyntheticExtensionEntry;
 export interface ExtensionTrackData {
     name: string;

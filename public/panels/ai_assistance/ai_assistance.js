@@ -9,6 +9,7 @@ import "./../../ui/legacy/legacy.js";
 import * as Common4 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as Platform4 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
@@ -4196,7 +4197,8 @@ function toolbarView(input) {
           aria-label=${i18nString2(UIStrings2.history)}
           .iconName=${"history"}
           .jslogContext=${"freestyler.history"}
-          .populateMenuCall=${input.populateHistoryMenu}></devtools-menu-button>` : Lit3.nothing}
+          .populateMenuCall=${input.populateHistoryMenu}
+        ></devtools-menu-button>` : Lit3.nothing}
         ${input.showDeleteHistoryAction ? html6`<devtools-button
               title=${i18nString2(UIStrings2.deleteChat)}
               aria-label=${i18nString2(UIStrings2.deleteChat)}
@@ -4313,6 +4315,20 @@ async function inspectElementBySelector(selector) {
   }
   return null;
 }
+async function inspectNetworkRequestByUrl(selector) {
+  const networkManagers = SDK.TargetManager.TargetManager.instance().models(SDK.NetworkManager.NetworkManager, { scoped: true });
+  const results = networkManagers.map((networkManager) => {
+    let request2 = networkManager.requestForURL(Platform4.DevToolsPath.urlString`${selector}`);
+    if (!request2 && selector.at(-1) === "/") {
+      request2 = networkManager.requestForURL(Platform4.DevToolsPath.urlString`${selector.slice(0, -1)}`);
+    } else if (!request2 && selector.at(-1) !== "/") {
+      request2 = networkManager.requestForURL(Platform4.DevToolsPath.urlString`${selector}/`);
+    }
+    return request2;
+  }).filter((req) => !!req);
+  const request = results.at(0);
+  return request ?? null;
+}
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   view;
@@ -4372,6 +4388,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (UI6.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
       this.#toggleSearchElementAction = UI6.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     }
+    AiAssistanceModel3.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
   }
   #getChatUiState() {
     const blockedByAge = Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -4903,14 +4920,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       });
     }
     contextMenu.footerSection().appendItem(i18nString2(UIStrings2.clearChatHistory), () => {
-      this.#clearHistory();
+      void AiAssistanceModel3.AiHistoryStorage.instance().deleteAll();
     }, {
       disabled: historyEmpty
     });
   }
-  #clearHistory() {
+  #onHistoryDeleted() {
     this.#historicalConversations = [];
-    void AiAssistanceModel3.AiHistoryStorage.instance().deleteAll();
     this.#updateConversationState();
   }
   #onDeleteClicked() {
@@ -5240,7 +5256,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
    * Performance Insights it is the name of the Insight that forms the
    * context of the conversation.
    */
-  async handleExternalRequest(prompt, conversationType, selector) {
+  async handleExternalRequest(parameters) {
     try {
       Snackbars.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) });
       const disabledReasons = AiAssistanceModel3.getDisabledReasons(this.#aidaAvailability);
@@ -5251,17 +5267,20 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       if (disabledReasons.length > 0) {
         throw new Error(disabledReasons.join(" "));
       }
-      void VisualLogging6.logFunctionCall(`start-conversation-${conversationType}`, "external");
-      switch (conversationType) {
+      void VisualLogging6.logFunctionCall(`start-conversation-${parameters.conversationType}`, "external");
+      switch (parameters.conversationType) {
         case "freestyler":
-          return await this.handleExternalStylingRequest(prompt, selector);
+          return await this.handleExternalStylingRequest(parameters.prompt, parameters.selector);
         case "performance-insight":
-          if (!selector) {
+          if (!parameters.insightTitle) {
             throw new Error("The insightTitle parameter is required for debugging a Performance Insight.");
           }
-          return await this.handleExternalPerformanceInsightsRequest(prompt, selector);
-        default:
-          throw new Error(`Debugging with an agent of type '${conversationType}' is not implemented yet.`);
+          return await this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
+        case "drjones-network-request":
+          if (!parameters.requestUrl) {
+            throw new Error("The url is required for debugging a network request.");
+          }
+          return await this.handleExternalNetworkRequest(parameters.prompt, parameters.requestUrl);
       }
     } catch (error) {
       console.error(error);
@@ -5327,6 +5346,43 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
     const runner = stylingAgent.run(prompt, {
       selected: createNodeContext(node)
+    });
+    const devToolsLogs = [];
+    for await (const data of runner) {
+      if (data.type !== "answer" || data.complete) {
+        void externalConversation.addHistoryItem(data);
+        devToolsLogs.push(data);
+      }
+      if (data.type === "side-effect") {
+        data.confirm(true);
+      }
+      if (data.type === "answer" && data.complete) {
+        return { response: data.text, devToolsLogs };
+      }
+    }
+    throw new Error("Something went wrong. No answer was generated.");
+  }
+  async handleExternalNetworkRequest(prompt, requestUrl) {
+    const networkAgent = this.#createAgent(
+      "drjones-network-request"
+      /* AiAssistanceModel.ConversationType.NETWORK */
+    );
+    const externalConversation = new AiAssistanceModel3.Conversation(
+      agentToConversationType(networkAgent),
+      [],
+      networkAgent.id,
+      /* isReadOnly */
+      true,
+      /* isExternal */
+      true
+    );
+    this.#historicalConversations.push(externalConversation);
+    const request = await inspectNetworkRequestByUrl(requestUrl);
+    if (!request) {
+      throw new Error(`Can't find request with the given selector ${requestUrl}`);
+    }
+    const runner = networkAgent.run(prompt, {
+      selected: createRequestContext(request)
     });
     const devToolsLogs = [];
     for await (const data of runner) {

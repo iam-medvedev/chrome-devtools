@@ -39,12 +39,21 @@ export const UIStrings = {
      * @description Text status indicating that no CSS selector data was found.
      */
     enableSelectorData: 'No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings.',
+    /**
+     *@description top CSS selector when ranked by elapsed time in ms
+     */
+    topSelectorElapsedTime: 'Top selector elaspsed time',
+    /**
+     *@description top CSS selector when ranked by match attempt
+     */
+    topSelectorMatchAttempt: 'Top selector match attempt',
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/SlowCSSSelector.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const slowCSSSelectorThreshold = 500; // 500us threshold for slow selectors
 function aggregateSelectorStats(data, context) {
     const selectorMap = new Map();
-    for (const [event, value] of data) {
+    for (const [event, value] of data.dataForUpdateLayoutEvent) {
         if (event.args.beginData?.frame !== context.frameId) {
             continue;
         }
@@ -74,8 +83,7 @@ function finalize(partialModel) {
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.ALL,
-        state: partialModel.topElapsedMs.length !== 0 && partialModel.topMatchAttempts.length !== 0 ? 'informative' :
-            'pass',
+        state: partialModel.topSelectorElapsedMs && partialModel.topSelectorMatchAttempts ? 'informative' : 'pass',
         ...partialModel,
     };
 }
@@ -84,7 +92,7 @@ export function generateInsight(parsedTrace, context) {
     if (!selectorStatsData) {
         throw new Error('no selector stats data');
     }
-    const selectorTimings = aggregateSelectorStats(selectorStatsData.dataForUpdateLayoutEvent, context);
+    const selectorTimings = aggregateSelectorStats(selectorStatsData, context);
     let totalElapsedUs = 0;
     let totalMatchAttempts = 0;
     let totalMatchCount = 0;
@@ -93,22 +101,33 @@ export function generateInsight(parsedTrace, context) {
         totalMatchAttempts += timing[SelectorTimingsKey.MatchAttempts];
         totalMatchCount += timing[SelectorTimingsKey.MatchCount];
     });
-    // sort by elapsed time
-    const sortByElapsedMs = selectorTimings.toSorted((a, b) => {
-        return b[SelectorTimingsKey.Elapsed] - a[SelectorTimingsKey.Elapsed];
-    });
-    // sort by match attempts
-    const sortByMatchAttempts = selectorTimings.toSorted((a, b) => {
-        return b[SelectorTimingsKey.MatchAttempts] - a[SelectorTimingsKey.MatchAttempts];
-    });
+    let topSelectorElapsedMs = null;
+    let topSelectorMatchAttempts = null;
+    if (selectorTimings.length > 0) {
+        // find the selector with most elapsed time
+        topSelectorElapsedMs = selectorTimings.reduce((a, b) => {
+            return a[SelectorTimingsKey.Elapsed] > b[SelectorTimingsKey.Elapsed] ? a : b;
+        });
+        // check if the slowest selector is slow enough to trigger insights info
+        if (topSelectorElapsedMs && topSelectorElapsedMs[SelectorTimingsKey.Elapsed] < slowCSSSelectorThreshold) {
+            topSelectorElapsedMs = null;
+        }
+        // find the selector with most match attempts
+        topSelectorMatchAttempts = selectorTimings.reduce((a, b) => {
+            return a[SelectorTimingsKey.MatchAttempts] > b[SelectorTimingsKey.MatchAttempts] ? a : b;
+        });
+    }
     return finalize({
         // TODO: should we identify UpdateLayout events as linked to this insight?
         relatedEvents: [],
         totalElapsedMs: Types.Timing.Milli(totalElapsedUs / 1000.0),
         totalMatchAttempts,
         totalMatchCount,
-        topElapsedMs: sortByElapsedMs.slice(0, 3),
-        topMatchAttempts: sortByMatchAttempts.slice(0, 3),
+        topSelectorElapsedMs,
+        topSelectorMatchAttempts,
     });
+}
+export function createOverlays(_) {
+    return [];
 }
 //# sourceMappingURL=SlowCSSSelector.js.map

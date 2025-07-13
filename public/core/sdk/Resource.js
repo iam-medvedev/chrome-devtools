@@ -104,10 +104,6 @@ export class Resource {
         }
         return this.resourceType();
     }
-    async requestContent() {
-        const contentData = await this.requestContentData();
-        return TextUtils.ContentData.ContentData.asDeferredContent(contentData);
-    }
     async requestContentData() {
         if (this.#contentData) {
             return this.#contentData;

@@ -20,7 +20,7 @@ export class Printer extends SDK.CSSPropertyParser.TreeWalker {
     }
     static log(ast) {
         /* eslint-disable-next-line no-console */
-        console.log(Printer.walk(ast).get());
+        console.log('\n' + Printer.walk(ast).get());
     }
     static rule(rule) {
         const ast = new SDK.CSSPropertyParser.SyntaxTree('', rule, CodeMirror.css.cssLanguage.parser.parse(rule).topNode);

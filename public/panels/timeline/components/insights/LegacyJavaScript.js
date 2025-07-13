@@ -18,19 +18,6 @@ export class LegacyJavaScript extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        const requests = [...this.model.legacyJavaScriptResults.keys()].map(script => script.request).filter(e => !!e);
-        return requests.map(request => {
-            return {
-                type: 'ENTRY_OUTLINE',
-                entry: request,
-                outlineReason: 'ERROR',
-            };
-        });
-    }
     async #revealLocation(script, match) {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         if (!target) {

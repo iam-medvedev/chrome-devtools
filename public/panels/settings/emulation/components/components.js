@@ -7,6 +7,7 @@ var __export = (target, all) => {
 // gen/front_end/panels/settings/emulation/components/UserAgentClientHintsForm.js
 var UserAgentClientHintsForm_exports = {};
 __export(UserAgentClientHintsForm_exports, {
+  ALL_PROTOCOL_FORM_FACTORS: () => ALL_PROTOCOL_FORM_FACTORS,
   ClientHintsChangeEvent: () => ClientHintsChangeEvent,
   ClientHintsSubmitEvent: () => ClientHintsSubmitEvent,
   UserAgentClientHintsForm: () => UserAgentClientHintsForm
@@ -66,6 +67,25 @@ var userAgentClientHintsForm_css_default = `/*
 
 .full-row {
   grid-column: 1 / 5;
+}
+
+.form-factors-checkbox-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 10px;
+}
+
+.form-factor-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+hr.section-separator {
+  grid-column: 1 / 5; /* Ensures the separator spans all columns */
+  border: none;
+  margin-top: 1px;
 }
 
 .half-row {
@@ -223,9 +243,45 @@ var UIStrings = {
    */
   brandFullVersionListDelete: "Delete brand from full version list",
   /**
+   * @description Heading for the form factors section.
+   */
+  formFactorsTitle: "Form Factors (Sec-CH-UA-Form-Factors)",
+  /**
+   * @description ARIA label for the group of form factor checkboxes.
+   */
+  formFactorsGroupAriaLabel: "Available Form Factors",
+  /**
+   * @description Form factor option: Desktop.
+   */
+  formFactorDesktop: "Desktop",
+  /**
+   * @description Form factor option: Automotive.
+   */
+  formFactorAutomotive: "Automotive",
+  /**
+   * @description Form factor option: Mobile.
+   */
+  formFactorMobile: "Mobile",
+  /**
+   * @description Form factor option: Tablet.
+   */
+  formFactorTablet: "Tablet",
+  /**
+   * @description Form factor option: XR.
+   */
+  formFactorXR: "XR",
+  /**
+   * @description Form factor option: EInk.
+   */
+  formFactorEInk: "EInk",
+  /**
+   * @description Form factor option: Watch.
+   */
+  formFactorWatch: "Watch",
+  /**
    * @description Label for full browser version input field.
    */
-  fullBrowserVersion: "Full browser version (Sec-CH-UA-Full-Browser-Version)",
+  fullBrowserVersion: "Full browser version (Sec-CH-UA-Full-Version)",
   /**
    * @description Placeholder for full browser version input field.
    */
@@ -327,8 +383,18 @@ var DEFAULT_METADATA = {
   platformVersion: "",
   architecture: "",
   model: "",
-  mobile: false
+  mobile: false,
+  formFactors: []
 };
+var ALL_PROTOCOL_FORM_FACTORS = [
+  UIStrings.formFactorDesktop,
+  UIStrings.formFactorAutomotive,
+  UIStrings.formFactorMobile,
+  UIStrings.formFactorTablet,
+  UIStrings.formFactorXR,
+  UIStrings.formFactorEInk,
+  UIStrings.formFactorWatch
+];
 var UserAgentClientHintsForm = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #isFormOpened = false;
@@ -513,6 +579,22 @@ var UserAgentClientHintsForm = class extends HTMLElement {
       event.preventDefault();
       this.#handleAddFullVersionListBrandClick();
     }
+  };
+  #handleFormFactorCheckboxChange = (formFactorValue, isChecked) => {
+    let currentFormFactors = [...this.#metaData.formFactors || []];
+    if (isChecked) {
+      if (!currentFormFactors.includes(formFactorValue)) {
+        currentFormFactors.push(formFactorValue);
+      }
+    } else {
+      currentFormFactors = currentFormFactors.filter((ff) => ff !== formFactorValue);
+    }
+    this.#metaData = {
+      ...this.#metaData,
+      formFactors: currentFormFactors
+    };
+    this.dispatchEvent(new ClientHintsChangeEvent());
+    this.#render();
   };
   #handleInputChange = (stateKey, value) => {
     if (stateKey in this.#metaData) {
@@ -833,11 +915,41 @@ var UserAgentClientHintsForm = class extends HTMLElement {
       </div>
     `;
   }
+  #renderFormFactorsSection() {
+    const checkboxElements = ALL_PROTOCOL_FORM_FACTORS.map((ffValue) => {
+      const isChecked = this.#metaData.formFactors?.includes(ffValue) || false;
+      const labelStringId = `formFactor${ffValue}`;
+      const label = i18nString(UIStrings[labelStringId]);
+      return html`
+        <label class="form-factor-checkbox-label">
+          <input
+            type="checkbox"
+            .checked=${isChecked}
+            value=${ffValue}
+            jslog=${VisualLogging.toggle(Platform.StringUtilities.toKebabCase(ffValue)).track({
+        click: true
+      })}
+            @change=${(e) => this.#handleFormFactorCheckboxChange(ffValue, e.target.checked)}
+          />
+          ${label}
+        </label>
+      `;
+    });
+    return html`
+      <span class="full-row label" jslog=${VisualLogging.sectionHeader("form-factors")}>
+        ${i18nString(UIStrings.formFactorsTitle)}
+      </span>
+      <div class="full-row form-factors-checkbox-group" role="group" aria-label=${i18nString(UIStrings.formFactorsGroupAriaLabel)}>
+        ${checkboxElements}
+      </div>
+    `;
+  }
   #render() {
     const { fullVersion, architecture } = this.#metaData;
     const useragentSection = this.#renderUseragent();
     const fullVersionListSection = this.#renderFullVersionList();
     const fullBrowserInput = this.#renderInputWithLabel(i18nString(UIStrings.fullBrowserVersion), i18nString(UIStrings.fullBrowserVersionPlaceholder), fullVersion || "", "fullVersion");
+    const formFactorsSection = this.#renderFormFactorsSection();
     const platformSection = this.#renderPlatformSection();
     const architectureInput = this.#renderInputWithLabel(i18nString(UIStrings.architecture), i18nString(UIStrings.architecturePlaceholder), architecture, "architecture");
     const deviceModelSection = this.#renderDeviceModelSection();
@@ -887,10 +999,17 @@ var UserAgentClientHintsForm = class extends HTMLElement {
           @submit=${this.#handleSubmit}
         >
           ${useragentSection}
+          <hr class="section-separator">
           ${fullVersionListSection}
+          <hr class="section-separator">
           ${fullBrowserInput}
+          <hr class="section-separator">
+          ${formFactorsSection}
+          <hr class="section-separator">
           ${platformSection}
+          <hr class="section-separator">
           ${architectureInput}
+          <hr class="section-separator">
           ${deviceModelSection}
           ${submitButton}
         </form>
@@ -909,6 +1028,22 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         });
         if (!isBrandValid) {
           return { valid: false, errorMessage: i18nString(UIStrings.notRepresentable) };
+        }
+      } else if (metaDataKey === "formFactors") {
+        const formFactors = metaDataValue;
+        if (formFactors) {
+          for (const ff of formFactors) {
+            if (!ALL_PROTOCOL_FORM_FACTORS.includes(ff)) {
+              return {
+                valid: false,
+                errorMessage: i18nString(UIStrings.notRepresentable) + ` (Invalid form factor: ${ff})`
+              };
+            }
+            const ffError = EmulationUtils.UserAgentMetadata.validateAsStructuredHeadersString(ff, i18nString(UIStrings.notRepresentable));
+            if (!ffError.valid) {
+              return ffError;
+            }
+          }
         }
       } else {
         const metaDataError = EmulationUtils.UserAgentMetadata.validateAsStructuredHeadersString(metaDataValue, i18nString(UIStrings.notRepresentable));

@@ -84,4 +84,35 @@ export function generateInsight(parsedTrace, context) {
         highPercentileInteractionEvent: normalizedInteractionEvents[highPercentileIndex],
     });
 }
+/**
+ * If `subpart` is -1, then all subparts are included. Otherwise it's just that index.
+ **/
+export function createOverlaysForSubpart(event, subpartIndex = -1) {
+    const p1 = Helpers.Timing.traceWindowFromMicroSeconds(event.ts, (event.ts + event.inputDelay));
+    const p2 = Helpers.Timing.traceWindowFromMicroSeconds(p1.max, (p1.max + event.mainThreadHandling));
+    const p3 = Helpers.Timing.traceWindowFromMicroSeconds(p2.max, (p2.max + event.presentationDelay));
+    let sections = [
+        { bounds: p1, label: i18nString(UIStrings.inputDelay), showDuration: true },
+        { bounds: p2, label: i18nString(UIStrings.processingDuration), showDuration: true },
+        { bounds: p3, label: i18nString(UIStrings.presentationDelay), showDuration: true },
+    ];
+    if (subpartIndex !== -1) {
+        sections = [sections[subpartIndex]];
+    }
+    return [
+        {
+            type: 'TIMESPAN_BREAKDOWN',
+            sections,
+            renderLocation: 'BELOW_EVENT',
+            entry: event,
+        },
+    ];
+}
+export function createOverlays(model) {
+    const event = model.longestInteractionEvent;
+    if (!event) {
+        return [];
+    }
+    return createOverlaysForSubpart(event);
+}
 //# sourceMappingURL=INPBreakdown.js.map

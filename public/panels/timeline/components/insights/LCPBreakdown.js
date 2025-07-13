@@ -20,16 +20,11 @@ export class LCPBreakdown extends BaseInsightComponent {
         if (!this.model || !this.model.subparts || !this.model.lcpTs) {
             return [];
         }
-        const { subparts } = this.model;
-        const overlays = [];
-        if (this.model.lcpRequest) {
-            overlays.push({ type: 'ENTRY_OUTLINE', entry: this.model.lcpRequest, outlineReason: 'INFO' });
+        const overlays = this.model.createOverlays?.();
+        if (!overlays) {
+            return [];
         }
-        this.#overlay = {
-            type: 'TIMESPAN_BREAKDOWN',
-            sections: Object.values(subparts).map((subpart) => ({ bounds: subpart, label: subpart.label, showDuration: true })),
-        };
-        overlays.push(this.#overlay);
+        this.#overlay = overlays[0];
         return overlays;
     }
     #renderFieldSubparts() {

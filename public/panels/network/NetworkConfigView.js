@@ -33,9 +33,9 @@ const UIStrings = {
      */
     disableCache: 'Disable cache',
     /**
-     *@description Header in Network conditions panel for the network throttling settings.
+     *@description Header in Network conditions panel for the network throttling and emulation settings.
      */
-    networkThrottling: 'Network throttling',
+    networkThrottling: 'Network',
     /**
      *@description Header in the network conditions panel for the user agent settings.
      */
@@ -181,6 +181,8 @@ export class NetworkConfigView extends UI.Widget.VBox {
         const networkThrottlingSelect = section.createChild('select');
         MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(networkThrottlingSelect);
         UI.ARIAUtils.setLabel(networkThrottlingSelect, title);
+        const saveDataSelect = MobileThrottling.ThrottlingManager.throttlingManager().createSaveDataOverrideSelector('chrome-select').element;
+        section.appendChild(saveDataSelect);
     }
     createUserAgentSection() {
         const userAgentMetadataSetting = Common.Settings.Settings.instance().createSetting('custom-user-agent-metadata', null);

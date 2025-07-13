@@ -1270,6 +1270,7 @@ var cssVariableValueView_css_default = `/*
   max-width: 232px;
   font-size: 12px;
   line-height: 1.4;
+  word-break: break-all;
 }
 
 .monospace {

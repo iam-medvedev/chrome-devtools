@@ -54,95 +54,8 @@ var str_ = i18n.i18n.registerUIStrings("panels/timeline/overlays/OverlaysImpl.ts
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var NETWORK_RESIZE_ELEM_HEIGHT_PX = 8;
 function traceWindowContainingOverlays(overlays) {
-  let minTime = Trace.Types.Timing.Micro(Number.POSITIVE_INFINITY);
-  let maxTime = Trace.Types.Timing.Micro(Number.NEGATIVE_INFINITY);
-  if (overlays.length === 0) {
-    return null;
-  }
-  for (const overlay of overlays) {
-    const windowForOverlay = traceWindowForOverlay(overlay);
-    if (windowForOverlay.min < minTime) {
-      minTime = windowForOverlay.min;
-    }
-    if (windowForOverlay.max > maxTime) {
-      maxTime = windowForOverlay.max;
-    }
-  }
-  return Trace.Helpers.Timing.traceWindowFromMicroSeconds(minTime, maxTime);
-}
-function traceWindowForOverlay(overlay) {
-  const overlayMinBounds = [];
-  const overlayMaxBounds = [];
-  switch (overlay.type) {
-    case "ENTRY_SELECTED": {
-      const timings = timingsForOverlayEntry(overlay.entry);
-      overlayMinBounds.push(timings.startTime);
-      overlayMaxBounds.push(timings.endTime);
-      break;
-    }
-    case "ENTRY_OUTLINE": {
-      const timings = timingsForOverlayEntry(overlay.entry);
-      overlayMinBounds.push(timings.startTime);
-      overlayMaxBounds.push(timings.endTime);
-      break;
-    }
-    case "TIME_RANGE": {
-      overlayMinBounds.push(overlay.bounds.min);
-      overlayMaxBounds.push(overlay.bounds.max);
-      break;
-    }
-    case "ENTRY_LABEL": {
-      const timings = timingsForOverlayEntry(overlay.entry);
-      overlayMinBounds.push(timings.startTime);
-      overlayMaxBounds.push(timings.endTime);
-      break;
-    }
-    case "ENTRIES_LINK": {
-      const timingsFrom = timingsForOverlayEntry(overlay.entryFrom);
-      overlayMinBounds.push(timingsFrom.startTime);
-      if (overlay.entryTo) {
-        const timingsTo = timingsForOverlayEntry(overlay.entryTo);
-        overlayMaxBounds.push(timingsTo.endTime);
-      } else {
-        overlayMaxBounds.push(timingsFrom.endTime);
-      }
-      break;
-    }
-    case "TIMESPAN_BREAKDOWN": {
-      if (overlay.entry) {
-        const timings = timingsForOverlayEntry(overlay.entry);
-        overlayMinBounds.push(timings.startTime);
-        overlayMaxBounds.push(timings.endTime);
-      }
-      for (const section of overlay.sections) {
-        overlayMinBounds.push(section.bounds.min);
-        overlayMaxBounds.push(section.bounds.max);
-      }
-      break;
-    }
-    case "TIMESTAMP_MARKER": {
-      overlayMinBounds.push(overlay.timestamp);
-      break;
-    }
-    case "CANDY_STRIPED_TIME_RANGE": {
-      const timings = timingsForOverlayEntry(overlay.entry);
-      overlayMinBounds.push(timings.startTime);
-      overlayMaxBounds.push(timings.endTime);
-      overlayMinBounds.push(overlay.bounds.min);
-      overlayMaxBounds.push(overlay.bounds.max);
-      break;
-    }
-    case "TIMINGS_MARKER": {
-      const timings = timingsForOverlayEntry(overlay.entries[0]);
-      overlayMinBounds.push(timings.startTime);
-      break;
-    }
-    default:
-      Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
-  }
-  const min = Trace.Types.Timing.Micro(Math.min(...overlayMinBounds));
-  const max = Trace.Types.Timing.Micro(Math.max(...overlayMaxBounds));
-  return Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
+  const windows = overlays.map(Trace.Helpers.Timing.traceWindowFromOverlay).filter((b) => !!b);
+  return Trace.Helpers.Timing.combineTraceWindowsMicro(windows);
 }
 function entriesForOverlay(overlay) {
   const entries = [];
@@ -868,7 +781,6 @@ var Overlays = class extends EventTarget {
     element.style.width = `${rangeWidth}px`;
   }
   /**
-   * Positions an EntryLabel overlay
    * @param overlay - the EntrySelected overlay that we need to position.
    * @param element - the DOM element representing the overlay
    */
@@ -937,8 +849,8 @@ var Overlays = class extends EventTarget {
   /**
    * Draw and position borders around an entry. Multiple overlays either fully consist
    * of a border around an entry of have an entry border as a part of the overlay.
-   * Positions an EntrySelected or EntryOutline overlay and a part of the EntryLabel.
-   * @param overlay - the EntrySelected/EntryOutline/EntryLabel overlay that we need to position.
+   * Positions an EntrySelected or EntryOutline overlay and a part of the Trace.Types.Overlays.EntryLabel.
+   * @param overlay - the EntrySelected/EntryOutline/Trace.Types.Overlays.EntryLabel overlay that we need to position.
    * @param element - the DOM element representing the overlay
    */
   #positionEntryBorderOutlineType(entry, element) {

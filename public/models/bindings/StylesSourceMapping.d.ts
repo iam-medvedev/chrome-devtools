@@ -32,7 +32,6 @@ export declare class StyleFile implements TextUtils.ContentProvider.ContentProvi
     dispose(): void;
     contentURL(): Platform.DevToolsPath.UrlString;
     contentType(): Common.ResourceType.ResourceType;
-    requestContent(): Promise<TextUtils.ContentProvider.DeferredContent>;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     getHeaders(): Set<SDK.CSSStyleSheetHeader.CSSStyleSheetHeader>;

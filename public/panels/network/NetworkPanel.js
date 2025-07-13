@@ -723,51 +723,47 @@ export class NetworkLogWithFilterRevealer {
     }
 }
 export class FilmStripRecorder {
-    tracingManager;
-    resourceTreeModel;
-    timeCalculator;
-    filmStripView;
-    callback;
+    #tracingManager = null;
+    #resourceTreeModel = null;
+    #timeCalculator;
+    #filmStripView;
+    #callback = null;
     // Used to fetch screenshots of the page load and show them in the panel.
-    #traceEngine;
+    #traceEngine = Trace.TraceModel.Model.createWithSubsetOfHandlers({
+        Screenshots: Trace.Handlers.ModelHandlers.Screenshots,
+    });
     #collectedTraceEvents = [];
     constructor(timeCalculator, filmStripView) {
-        this.#traceEngine = Trace.TraceModel.Model.createWithSubsetOfHandlers({
-            Screenshots: Trace.Handlers.ModelHandlers.Screenshots,
-        });
-        this.tracingManager = null;
-        this.resourceTreeModel = null;
-        this.timeCalculator = timeCalculator;
-        this.filmStripView = filmStripView;
-        this.callback = null;
+        this.#timeCalculator = timeCalculator;
+        this.#filmStripView = filmStripView;
     }
     traceEventsCollected(events) {
         this.#collectedTraceEvents.push(...events);
     }
     async tracingComplete() {
-        if (!this.tracingManager) {
+        if (!this.#tracingManager) {
             return;
         }
-        this.tracingManager = null;
+        this.#tracingManager = null;
         await this.#traceEngine.parse(this.#collectedTraceEvents);
         const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1);
         if (!data) {
             return;
         }
-        const zeroTimeInSeconds = Trace.Types.Timing.Seconds(this.timeCalculator.minimumBoundary());
+        const zeroTimeInSeconds = Trace.Types.Timing.Seconds(this.#timeCalculator.minimumBoundary());
         const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data, Trace.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
-        if (this.callback) {
-            this.callback(filmStrip);
+        if (this.#callback) {
+            this.#callback(filmStrip);
         }
-        this.callback = null;
+        this.#callback = null;
         // Now we have created the film strip and stored the data, we need to reset
         // the trace processor so that it is ready to record again if the user
         // refreshes the page.
         this.#traceEngine.resetProcessor();
-        if (this.resourceTreeModel) {
-            this.resourceTreeModel.resumeReload();
+        if (this.#resourceTreeModel) {
+            this.#resourceTreeModel.resumeReload();
         }
-        this.resourceTreeModel = null;
+        this.#resourceTreeModel = null;
     }
     tracingBufferUsage() {
     }
@@ -775,30 +771,30 @@ export class FilmStripRecorder {
     }
     startRecording() {
         this.#collectedTraceEvents = [];
-        this.filmStripView.reset();
-        this.filmStripView.setStatusText(i18nString(UIStrings.recordingFrames));
+        this.#filmStripView.reset();
+        this.#filmStripView.setStatusText(i18nString(UIStrings.recordingFrames));
         const tracingManager = SDK.TargetManager.TargetManager.instance().scopeTarget()?.model(Tracing.TracingManager.TracingManager);
-        if (this.tracingManager || !tracingManager) {
+        if (this.#tracingManager || !tracingManager) {
             return;
         }
-        this.tracingManager = tracingManager;
-        this.resourceTreeModel = this.tracingManager.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
-        void this.tracingManager.start(this, '-*,disabled-by-default-devtools.screenshot');
+        this.#tracingManager = tracingManager;
+        this.#resourceTreeModel = this.#tracingManager.target().model(SDK.ResourceTreeModel.ResourceTreeModel);
+        void this.#tracingManager.start(this, '-*,disabled-by-default-devtools.screenshot');
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.FilmStripStartedRecording);
     }
     isRecording() {
-        return Boolean(this.tracingManager);
+        return Boolean(this.#tracingManager);
     }
     stopRecording(callback) {
-        if (!this.tracingManager) {
+        if (!this.#tracingManager) {
             return;
         }
-        this.tracingManager.stop();
-        if (this.resourceTreeModel) {
-            this.resourceTreeModel.suspendReload();
+        this.#tracingManager.stop();
+        if (this.#resourceTreeModel) {
+            this.#resourceTreeModel.suspendReload();
         }
-        this.callback = callback;
-        this.filmStripView.setStatusText(i18nString(UIStrings.fetchingFrames));
+        this.#callback = callback;
+        this.#filmStripView.setStatusText(i18nString(UIStrings.fetchingFrames));
     }
 }
 export class ActionDelegate {

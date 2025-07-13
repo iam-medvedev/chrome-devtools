@@ -22,9 +22,6 @@ export class StaticContentProvider {
     contentType() {
         return this.#contentType;
     }
-    requestContent() {
-        return this.#lazyContent().then(ContentData.asDeferredContent.bind(undefined));
-    }
     requestContentData() {
         return this.#lazyContent();
     }

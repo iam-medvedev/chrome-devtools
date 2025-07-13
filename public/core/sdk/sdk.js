@@ -788,6 +788,13 @@ var generatedProperties = [
       "text-wrap-mode",
       "text-wrap-style",
       "timeline-scope",
+      "timeline-trigger-behavior",
+      "timeline-trigger-exit-range-end",
+      "timeline-trigger-exit-range-start",
+      "timeline-trigger-name",
+      "timeline-trigger-range-end",
+      "timeline-trigger-range-start",
+      "timeline-trigger-timeline",
       "top",
       "touch-action",
       "transform",
@@ -3118,6 +3125,15 @@ var generatedProperties = [
     "name": "mask-type"
   },
   {
+    "longhands": [
+      "grid-template-areas",
+      "grid-template-columns",
+      "masonry-direction",
+      "masonry-fill"
+    ],
+    "name": "masonry"
+  },
+  {
     "keywords": [
       "row",
       "row-reverse",
@@ -4226,8 +4242,8 @@ var generatedProperties = [
   {
     "inherited": true,
     "keywords": [
-      "normal",
-      "no-autospace"
+      "no-autospace",
+      "normal"
     ],
     "name": "text-autospace"
   },
@@ -4461,6 +4477,49 @@ var generatedProperties = [
   },
   {
     "name": "timeline-scope"
+  },
+  {
+    "longhands": [
+      "timeline-trigger-name",
+      "timeline-trigger-timeline",
+      "timeline-trigger-behavior",
+      "timeline-trigger-range-start",
+      "timeline-trigger-range-end",
+      "timeline-trigger-exit-range-start",
+      "timeline-trigger-exit-range-end"
+    ],
+    "name": "timeline-trigger"
+  },
+  {
+    "keywords": [
+      "once",
+      "repeat",
+      "alternate",
+      "state"
+    ],
+    "name": "timeline-trigger-behavior"
+  },
+  {
+    "name": "timeline-trigger-exit-range-end"
+  },
+  {
+    "name": "timeline-trigger-exit-range-start"
+  },
+  {
+    "name": "timeline-trigger-name"
+  },
+  {
+    "name": "timeline-trigger-range-end"
+  },
+  {
+    "name": "timeline-trigger-range-start"
+  },
+  {
+    "keywords": [
+      "none",
+      "auto"
+    ],
+    "name": "timeline-trigger-timeline"
   },
   {
     "keywords": [
@@ -6680,8 +6739,8 @@ var generatedPropertyValues = {
   },
   "text-autospace": {
     "values": [
-      "normal",
-      "no-autospace"
+      "no-autospace",
+      "normal"
     ]
   },
   "text-box-trim": {
@@ -6815,6 +6874,20 @@ var generatedPropertyValues = {
       "balance",
       "pretty",
       "stable"
+    ]
+  },
+  "timeline-trigger-behavior": {
+    "values": [
+      "once",
+      "repeat",
+      "alternate",
+      "state"
+    ]
+  },
+  "timeline-trigger-timeline": {
+    "values": [
+      "none",
+      "auto"
     ]
   },
   "top": {
@@ -11901,7 +11974,7 @@ var BaseVariableMatcher = class extends matcherBase(BaseVariableMatch) {
     if (fallbackOrRParenNodes.length <= 1 && fallbackOrRParenNodes[0]?.name !== ")") {
       return null;
     }
-    let fallback = [];
+    let fallback;
     if (fallbackOrRParenNodes.length > 1) {
       if (fallbackOrRParenNodes.shift()?.name !== ",") {
         return null;
@@ -11910,9 +11983,6 @@ var BaseVariableMatcher = class extends matcherBase(BaseVariableMatch) {
         return null;
       }
       fallback = fallbackOrRParenNodes;
-      if (fallback.length === 0) {
-        return null;
-      }
       if (fallback.some((n) => n.name === ",")) {
         return null;
       }
@@ -11936,7 +12006,13 @@ var VariableMatch = class extends BaseVariableMatch {
     return this.matchedStyles.computeCSSVariable(this.style, this.name);
   }
   fallbackValue() {
-    if (this.fallback.length === 0 || this.matching.hasUnresolvedVarsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
+    if (!this.fallback) {
+      return null;
+    }
+    if (this.fallback.length === 0) {
+      return "";
+    }
+    if (this.matching.hasUnresolvedVarsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
       return null;
     }
     return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
@@ -12439,7 +12515,7 @@ var LinkableNameMatcher = class _LinkableNameMatcher extends matcherBase(Linkabl
     if (!parentNode) {
       return null;
     }
-    if (parentNode.name === "CallExpression" && node.name === "Callee" && text.startsWith("--")) {
+    if (parentNode.name === "CallExpression" && node.name === "VariableName") {
       return new LinkableNameMatch(
         text,
         node,
@@ -12740,7 +12816,7 @@ var GridTemplateMatcher = class extends matcherBase(GridTemplateMatch) {
           if (varNodes.length === 0) {
             continue;
           }
-          if (varNodes[0].name === "StringLiteral" && !hasLeadingLineNames || varNodes[0].name === "LineNames" && !needClosingLineNames) {
+          if (varNodes[0].name === "StringLiteral" && !hasLeadingLineNames || varNodes[0].name === "BracketedValue" && !needClosingLineNames) {
             lines.push(curLine);
             curLine = [curNode];
           } else {
@@ -12760,7 +12836,7 @@ var GridTemplateMatcher = class extends matcherBase(GridTemplateMatch) {
           }
           needClosingLineNames = true;
           hasLeadingLineNames = false;
-        } else if (curNode.name === "LineNames") {
+        } else if (curNode.name === "BracketedValue") {
           if (!varParsingMode) {
             if (needClosingLineNames) {
               curLine.push(curNode);
@@ -13010,6 +13086,9 @@ var SyntaxTree = class _SyntaxTree {
     return nodeText(node ?? this.tree, this.rule);
   }
   textRange(from, to) {
+    if (!from || !to) {
+      return "";
+    }
     return nodeTextRange(from, to, this.rule);
   }
   subtree(node) {
@@ -13136,6 +13215,9 @@ var BottomUpTreeMatching = class extends TreeWalker {
     return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
   }
   getComputedTextRange(from, to, substitutionHook) {
+    if (!from || !to) {
+      return "";
+    }
     return this.computedText.get(from.from - this.ast.tree.from, to.to - this.ast.tree.from, substitutionHook);
   }
 };
@@ -15695,7 +15777,13 @@ var DOMInheritanceCascade = class {
       if (cssVariableValue2?.value !== void 0) {
         return cssVariableValue2.value;
       }
-      if (match.fallback.length === 0 || match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
+      if (!match.fallback) {
+        return null;
+      }
+      if (match.fallback.length === 0) {
+        return "";
+      }
+      if (match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
         return null;
       }
       return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
@@ -15972,9 +16060,6 @@ var CSSStyleSheetHeader = class {
   }
   contentType() {
     return Common8.ResourceType.resourceTypes.Stylesheet;
-  }
-  requestContent() {
-    return this.requestContentData().then(TextUtils12.ContentData.ContentData.asDeferredContent.bind(void 0));
   }
   async requestContentData() {
     const cssText = await this.#cssModelInternal.getStyleSheetText(this.id);
@@ -20771,10 +20856,6 @@ var Script = class _Script {
     }
     return this.#contentPromise;
   }
-  async requestContent() {
-    const contentData = await this.requestContentData();
-    return TextUtils16.ContentData.ContentData.asDeferredContent(contentData);
-  }
   async requestContentInternal() {
     if (!this.scriptId) {
       return { error: i18nString5(UIStrings5.scriptRemovedOrDeleted) };
@@ -23751,8 +23832,8 @@ var DOMNode = class _DOMNode {
     const response = await this.#agent.invoke_requestChildNodes({ nodeId: this.id, depth, pierce });
     return response.getError() ? null : this.childrenInternal;
   }
-  async getOuterHTML() {
-    const { outerHTML } = await this.#agent.invoke_getOuterHTML({ nodeId: this.id });
+  async getOuterHTML(includeShadowDOM = false) {
+    const { outerHTML } = await this.#agent.invoke_getOuterHTML({ nodeId: this.id, includeShadowDOM });
     return outerHTML;
   }
   setOuterHTML(html, callback) {
@@ -24924,10 +25005,6 @@ var Resource = class {
       return Common22.ResourceType.resourceTypes.Script;
     }
     return this.resourceType();
-  }
-  async requestContent() {
-    const contentData = await this.requestContentData();
-    return TextUtils18.ContentData.ContentData.asDeferredContent(contentData);
   }
   async requestContentData() {
     if (this.#contentData) {
@@ -26927,181 +27004,124 @@ var UIStrings9 = {
 var str_9 = i18n21.i18n.registerUIStrings("core/sdk/NetworkRequest.ts", UIStrings9);
 var i18nString9 = i18n21.i18n.getLocalizedString.bind(void 0, str_9);
 var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.ObjectWrapper {
-  #requestIdInternal;
-  #backendRequestIdInternal;
-  #documentURLInternal;
-  #frameIdInternal;
-  #loaderIdInternal;
+  #requestId;
+  #backendRequestId;
+  #documentURL;
+  #frameId;
+  #loaderId;
   #hasUserGesture;
-  #initiatorInternal;
-  #redirectSourceInternal;
-  #preflightRequestInternal;
-  #preflightInitiatorRequestInternal;
-  #isRedirectInternal;
-  #redirectDestinationInternal;
-  #issueTimeInternal;
-  #startTimeInternal;
-  #endTimeInternal;
-  #blockedReasonInternal;
-  #corsErrorStatusInternal;
-  statusCode;
-  statusText;
-  requestMethod;
-  requestTime;
-  protocol;
-  alternateProtocolUsage;
-  mixedContentType;
-  #initialPriorityInternal;
-  #currentPriority;
-  #signedExchangeInfoInternal;
-  #webBundleInfoInternal;
-  #webBundleInnerRequestInfoInternal;
-  #resourceTypeInternal;
-  #contentDataInternal;
-  #streamingContentData;
-  #framesInternal;
-  #responseHeaderValues;
-  #responseHeadersTextInternal;
-  #originalResponseHeaders;
+  #initiator;
+  #redirectSource = null;
+  #preflightRequest = null;
+  #preflightInitiatorRequest = null;
+  #isRedirect = false;
+  #redirectDestination = null;
+  #issueTime = -1;
+  #startTime = -1;
+  #endTime = -1;
+  #blockedReason = void 0;
+  #corsErrorStatus = void 0;
+  statusCode = 0;
+  statusText = "";
+  requestMethod = "";
+  requestTime = 0;
+  protocol = "";
+  alternateProtocolUsage = void 0;
+  mixedContentType = "none";
+  #initialPriority = null;
+  #currentPriority = null;
+  #signedExchangeInfo = null;
+  #webBundleInfo = null;
+  #webBundleInnerRequestInfo = null;
+  #resourceType = Common27.ResourceType.resourceTypes.Other;
+  #contentData = null;
+  #streamingContentData = null;
+  #frames = [];
+  #responseHeaderValues = {};
+  #responseHeadersText = "";
+  #originalResponseHeaders = [];
   #sortedOriginalResponseHeaders;
   // This field is only used when intercepting and overriding requests, because
   // in that case 'this.responseHeaders' does not contain 'set-cookie' headers.
-  #setCookieHeaders;
-  #requestHeadersInternal;
-  #requestHeaderValues;
-  #remoteAddressInternal;
-  #remoteAddressSpaceInternal;
-  #referrerPolicyInternal;
-  #securityStateInternal;
-  #securityDetailsInternal;
-  connectionId;
-  connectionReused;
-  hasNetworkData;
-  #formParametersPromise;
-  #requestFormDataPromise;
-  #hasExtraRequestInfoInternal;
-  #hasExtraResponseInfoInternal;
-  #blockedRequestCookiesInternal;
-  #includedRequestCookiesInternal;
-  #blockedResponseCookiesInternal;
-  #exemptedResponseCookiesInternal;
-  #responseCookiesPartitionKey;
-  #responseCookiesPartitionKeyOpaque;
-  #siteHasCookieInOtherPartition;
-  localizedFailDescription;
-  #urlInternal;
-  #responseReceivedTimeInternal;
-  #transferSizeInternal;
-  #finishedInternal;
-  #failedInternal;
-  #canceledInternal;
-  #preservedInternal;
-  #mimeTypeInternal;
+  #setCookieHeaders = [];
+  #requestHeaders = [];
+  #requestHeaderValues = {};
+  #remoteAddress = "";
+  #remoteAddressSpace = "Unknown";
+  #referrerPolicy = null;
+  #securityState = "unknown";
+  #securityDetails = null;
+  connectionId = "0";
+  connectionReused = false;
+  hasNetworkData = false;
+  #formParametersPromise = null;
+  #requestFormDataPromise = Promise.resolve(null);
+  #hasExtraRequestInfo = false;
+  #hasExtraResponseInfo = false;
+  #blockedRequestCookies = [];
+  #includedRequestCookies = [];
+  #blockedResponseCookies = [];
+  #exemptedResponseCookies = [];
+  #responseCookiesPartitionKey = null;
+  #responseCookiesPartitionKeyOpaque = null;
+  #siteHasCookieInOtherPartition = false;
+  localizedFailDescription = null;
+  #url;
+  #responseReceivedTime;
+  #transferSize;
+  #finished;
+  #failed;
+  #canceled;
+  #preserved;
+  #mimeType;
   #charset;
-  #parsedURLInternal;
-  #nameInternal;
-  #pathInternal;
-  #clientSecurityStateInternal;
-  #trustTokenParamsInternal;
-  #trustTokenOperationDoneEventInternal;
+  #parsedURL;
+  #name;
+  #path;
+  #clientSecurityState;
+  #trustTokenParams;
+  #trustTokenOperationDoneEvent;
   #responseCacheStorageCacheName;
-  #serviceWorkerResponseSourceInternal;
+  #serviceWorkerResponseSource;
   #wallIssueTime;
   #responseRetrievalTime;
-  #resourceSizeInternal;
+  #resourceSize;
   #fromMemoryCache;
   #fromDiskCache;
-  #fromPrefetchCacheInternal;
+  #fromPrefetchCache;
   #fromEarlyHints;
-  #fetchedViaServiceWorkerInternal;
-  #serviceWorkerRouterInfoInternal;
-  #timingInternal;
-  #requestHeadersTextInternal;
-  #responseHeadersInternal;
-  #earlyHintsHeadersInternal;
-  #sortedResponseHeadersInternal;
-  #responseCookiesInternal;
-  #serverTimingsInternal;
-  #queryStringInternal;
+  #fetchedViaServiceWorker;
+  #serviceWorkerRouterInfo;
+  #timing;
+  #requestHeadersText;
+  #responseHeaders;
+  #earlyHintsHeaders;
+  #sortedResponseHeaders;
+  #responseCookies;
+  #serverTimings;
+  #queryString;
   #parsedQueryParameters;
   #contentDataProvider;
-  #isSameSiteInternal;
-  #wasIntercepted;
+  #isSameSite = null;
+  #wasIntercepted = false;
   #associatedData = /* @__PURE__ */ new Map();
-  #hasOverriddenContent;
-  #hasThirdPartyCookiePhaseoutIssue;
+  #hasOverriddenContent = false;
+  #hasThirdPartyCookiePhaseoutIssue = false;
   #serverSentEvents;
   responseReceivedPromise;
   responseReceivedPromiseResolve;
   directSocketInfo;
-  #directSocketChunksInternal;
+  #directSocketChunks = [];
   constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
     super();
-    this.#requestIdInternal = requestId;
-    this.#backendRequestIdInternal = backendRequestId;
+    this.#requestId = requestId;
+    this.#backendRequestId = backendRequestId;
     this.setUrl(url);
-    this.#documentURLInternal = documentURL;
-    this.#frameIdInternal = frameId;
-    this.#loaderIdInternal = loaderId;
-    this.#initiatorInternal = initiator;
+    this.#documentURL = documentURL;
+    this.#frameId = frameId;
+    this.#loaderId = loaderId;
+    this.#initiator = initiator;
     this.#hasUserGesture = hasUserGesture;
-    this.#redirectSourceInternal = null;
-    this.#preflightRequestInternal = null;
-    this.#preflightInitiatorRequestInternal = null;
-    this.#isRedirectInternal = false;
-    this.#redirectDestinationInternal = null;
-    this.#issueTimeInternal = -1;
-    this.#startTimeInternal = -1;
-    this.#endTimeInternal = -1;
-    this.#blockedReasonInternal = void 0;
-    this.#corsErrorStatusInternal = void 0;
-    this.statusCode = 0;
-    this.statusText = "";
-    this.requestMethod = "";
-    this.requestTime = 0;
-    this.protocol = "";
-    this.alternateProtocolUsage = void 0;
-    this.mixedContentType = "none";
-    this.#initialPriorityInternal = null;
-    this.#currentPriority = null;
-    this.#signedExchangeInfoInternal = null;
-    this.#webBundleInfoInternal = null;
-    this.#webBundleInnerRequestInfoInternal = null;
-    this.#resourceTypeInternal = Common27.ResourceType.resourceTypes.Other;
-    this.#contentDataInternal = null;
-    this.#streamingContentData = null;
-    this.#framesInternal = [];
-    this.#responseHeaderValues = {};
-    this.#responseHeadersTextInternal = "";
-    this.#originalResponseHeaders = [];
-    this.#setCookieHeaders = [];
-    this.#requestHeadersInternal = [];
-    this.#requestHeaderValues = {};
-    this.#remoteAddressInternal = "";
-    this.#remoteAddressSpaceInternal = "Unknown";
-    this.#referrerPolicyInternal = null;
-    this.#securityStateInternal = "unknown";
-    this.#securityDetailsInternal = null;
-    this.connectionId = "0";
-    this.connectionReused = false;
-    this.hasNetworkData = false;
-    this.#formParametersPromise = null;
-    this.#requestFormDataPromise = Promise.resolve(null);
-    this.#hasExtraRequestInfoInternal = false;
-    this.#hasExtraResponseInfoInternal = false;
-    this.#blockedRequestCookiesInternal = [];
-    this.#includedRequestCookiesInternal = [];
-    this.#blockedResponseCookiesInternal = [];
-    this.#exemptedResponseCookiesInternal = [];
-    this.#siteHasCookieInOtherPartition = false;
-    this.#responseCookiesPartitionKey = null;
-    this.#responseCookiesPartitionKeyOpaque = null;
-    this.localizedFailDescription = null;
-    this.#isSameSiteInternal = null;
-    this.#wasIntercepted = false;
-    this.#hasOverriddenContent = false;
-    this.#hasThirdPartyCookiePhaseoutIssue = false;
-    this.#directSocketChunksInternal = [];
   }
   static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
     return new _NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -27124,49 +27144,49 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return 0;
   }
   requestId() {
-    return this.#requestIdInternal;
+    return this.#requestId;
   }
   backendRequestId() {
-    return this.#backendRequestIdInternal;
+    return this.#backendRequestId;
   }
   url() {
-    return this.#urlInternal;
+    return this.#url;
   }
   isBlobRequest() {
-    return Common27.ParsedURL.schemeIs(this.#urlInternal, "blob:");
+    return Common27.ParsedURL.schemeIs(this.#url, "blob:");
   }
   setUrl(x) {
-    if (this.#urlInternal === x) {
+    if (this.#url === x) {
       return;
     }
-    this.#urlInternal = x;
-    this.#parsedURLInternal = new Common27.ParsedURL.ParsedURL(x);
-    this.#queryStringInternal = void 0;
+    this.#url = x;
+    this.#parsedURL = new Common27.ParsedURL.ParsedURL(x);
+    this.#queryString = void 0;
     this.#parsedQueryParameters = void 0;
-    this.#nameInternal = void 0;
-    this.#pathInternal = void 0;
+    this.#name = void 0;
+    this.#path = void 0;
   }
   get documentURL() {
-    return this.#documentURLInternal;
+    return this.#documentURL;
   }
   get parsedURL() {
-    return this.#parsedURLInternal;
+    return this.#parsedURL;
   }
   get frameId() {
-    return this.#frameIdInternal;
+    return this.#frameId;
   }
   get loaderId() {
-    return this.#loaderIdInternal;
+    return this.#loaderId;
   }
   setRemoteAddress(ip, port) {
-    this.#remoteAddressInternal = ip + ":" + port;
+    this.#remoteAddress = ip + ":" + port;
     this.dispatchEventToListeners(Events.REMOTE_ADDRESS_CHANGED, this);
   }
   remoteAddress() {
-    return this.#remoteAddressInternal;
+    return this.#remoteAddress;
   }
   remoteAddressSpace() {
-    return this.#remoteAddressSpaceInternal;
+    return this.#remoteAddressSpace;
   }
   /**
    * The cache #name of the CacheStorage from where the response is served via
@@ -27179,51 +27199,51 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#responseCacheStorageCacheName = x;
   }
   serviceWorkerResponseSource() {
-    return this.#serviceWorkerResponseSourceInternal;
+    return this.#serviceWorkerResponseSource;
   }
   setServiceWorkerResponseSource(serviceWorkerResponseSource) {
-    this.#serviceWorkerResponseSourceInternal = serviceWorkerResponseSource;
+    this.#serviceWorkerResponseSource = serviceWorkerResponseSource;
   }
   setReferrerPolicy(referrerPolicy) {
-    this.#referrerPolicyInternal = referrerPolicy;
+    this.#referrerPolicy = referrerPolicy;
   }
   referrerPolicy() {
-    return this.#referrerPolicyInternal;
+    return this.#referrerPolicy;
   }
   securityState() {
-    return this.#securityStateInternal;
+    return this.#securityState;
   }
   setSecurityState(securityState) {
-    this.#securityStateInternal = securityState;
+    this.#securityState = securityState;
   }
   securityDetails() {
-    return this.#securityDetailsInternal;
+    return this.#securityDetails;
   }
   securityOrigin() {
-    return this.#parsedURLInternal.securityOrigin();
+    return this.#parsedURL.securityOrigin();
   }
   setSecurityDetails(securityDetails) {
-    this.#securityDetailsInternal = securityDetails;
+    this.#securityDetails = securityDetails;
   }
   get startTime() {
-    return this.#startTimeInternal || -1;
+    return this.#startTime || -1;
   }
   setIssueTime(monotonicTime, wallTime) {
-    this.#issueTimeInternal = monotonicTime;
+    this.#issueTime = monotonicTime;
     this.#wallIssueTime = wallTime;
-    this.#startTimeInternal = monotonicTime;
+    this.#startTime = monotonicTime;
   }
   issueTime() {
-    return this.#issueTimeInternal;
+    return this.#issueTime;
   }
   pseudoWallTime(monotonicTime) {
-    return this.#wallIssueTime ? this.#wallIssueTime - this.#issueTimeInternal + monotonicTime : monotonicTime;
+    return this.#wallIssueTime ? this.#wallIssueTime - this.#issueTime + monotonicTime : monotonicTime;
   }
   get responseReceivedTime() {
-    return this.#responseReceivedTimeInternal || -1;
+    return this.#responseReceivedTime || -1;
   }
   set responseReceivedTime(x) {
-    this.#responseReceivedTimeInternal = x;
+    this.#responseReceivedTime = x;
   }
   /**
    * The time at which the returned response was generated. For cached
@@ -27236,103 +27256,103 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#responseRetrievalTime = x;
   }
   get endTime() {
-    return this.#endTimeInternal || -1;
+    return this.#endTime || -1;
   }
   set endTime(x) {
     if (this.timing?.requestTime) {
-      this.#endTimeInternal = Math.max(x, this.responseReceivedTime);
+      this.#endTime = Math.max(x, this.responseReceivedTime);
     } else {
-      this.#endTimeInternal = x;
-      if (this.#responseReceivedTimeInternal > x) {
-        this.#responseReceivedTimeInternal = x;
+      this.#endTime = x;
+      if (this.#responseReceivedTime > x) {
+        this.#responseReceivedTime = x;
       }
     }
     this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
   }
   get duration() {
-    if (this.#endTimeInternal === -1 || this.#startTimeInternal === -1) {
+    if (this.#endTime === -1 || this.#startTime === -1) {
       return -1;
     }
-    return this.#endTimeInternal - this.#startTimeInternal;
+    return this.#endTime - this.#startTime;
   }
   get latency() {
-    if (this.#responseReceivedTimeInternal === -1 || this.#startTimeInternal === -1) {
+    if (this.#responseReceivedTime === -1 || this.#startTime === -1) {
       return -1;
     }
-    return this.#responseReceivedTimeInternal - this.#startTimeInternal;
+    return this.#responseReceivedTime - this.#startTime;
   }
   get resourceSize() {
-    return this.#resourceSizeInternal || 0;
+    return this.#resourceSize || 0;
   }
   set resourceSize(x) {
-    this.#resourceSizeInternal = x;
+    this.#resourceSize = x;
   }
   get transferSize() {
-    return this.#transferSizeInternal || 0;
+    return this.#transferSize || 0;
   }
   increaseTransferSize(x) {
-    this.#transferSizeInternal = (this.#transferSizeInternal || 0) + x;
+    this.#transferSize = (this.#transferSize || 0) + x;
   }
   setTransferSize(x) {
-    this.#transferSizeInternal = x;
+    this.#transferSize = x;
   }
   get finished() {
-    return this.#finishedInternal;
+    return this.#finished;
   }
   set finished(x) {
-    if (this.#finishedInternal === x) {
+    if (this.#finished === x) {
       return;
     }
-    this.#finishedInternal = x;
+    this.#finished = x;
     if (x) {
       this.dispatchEventToListeners(Events.FINISHED_LOADING, this);
     }
   }
   get failed() {
-    return this.#failedInternal;
+    return this.#failed;
   }
   set failed(x) {
-    this.#failedInternal = x;
+    this.#failed = x;
   }
   get canceled() {
-    return this.#canceledInternal;
+    return this.#canceled;
   }
   set canceled(x) {
-    this.#canceledInternal = x;
+    this.#canceled = x;
   }
   get preserved() {
-    return this.#preservedInternal;
+    return this.#preserved;
   }
   set preserved(x) {
-    this.#preservedInternal = x;
+    this.#preserved = x;
   }
   blockedReason() {
-    return this.#blockedReasonInternal;
+    return this.#blockedReason;
   }
   setBlockedReason(reason) {
-    this.#blockedReasonInternal = reason;
+    this.#blockedReason = reason;
   }
   corsErrorStatus() {
-    return this.#corsErrorStatusInternal;
+    return this.#corsErrorStatus;
   }
   setCorsErrorStatus(corsErrorStatus) {
-    this.#corsErrorStatusInternal = corsErrorStatus;
+    this.#corsErrorStatus = corsErrorStatus;
   }
   wasBlocked() {
-    return Boolean(this.#blockedReasonInternal);
+    return Boolean(this.#blockedReason);
   }
   cached() {
-    return (Boolean(this.#fromMemoryCache) || Boolean(this.#fromDiskCache)) && !this.#transferSizeInternal;
+    return (Boolean(this.#fromMemoryCache) || Boolean(this.#fromDiskCache)) && !this.#transferSize;
   }
   cachedInMemory() {
-    return Boolean(this.#fromMemoryCache) && !this.#transferSizeInternal;
+    return Boolean(this.#fromMemoryCache) && !this.#transferSize;
   }
   fromPrefetchCache() {
-    return Boolean(this.#fromPrefetchCacheInternal);
+    return Boolean(this.#fromPrefetchCache);
   }
   setFromMemoryCache() {
     this.#fromMemoryCache = true;
-    this.#timingInternal = void 0;
+    this.#timing = void 0;
   }
   get fromDiskCache() {
     return this.#fromDiskCache;
@@ -27341,7 +27361,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#fromDiskCache = true;
   }
   setFromPrefetchCache() {
-    this.#fromPrefetchCacheInternal = true;
+    this.#fromPrefetchCache = true;
   }
   fromEarlyHints() {
     return Boolean(this.#fromEarlyHints);
@@ -27354,23 +27374,23 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
    * provided its own response.
    */
   get fetchedViaServiceWorker() {
-    return Boolean(this.#fetchedViaServiceWorkerInternal);
+    return Boolean(this.#fetchedViaServiceWorker);
   }
   set fetchedViaServiceWorker(x) {
-    this.#fetchedViaServiceWorkerInternal = x;
+    this.#fetchedViaServiceWorker = x;
   }
   get serviceWorkerRouterInfo() {
-    return this.#serviceWorkerRouterInfoInternal;
+    return this.#serviceWorkerRouterInfo;
   }
   set serviceWorkerRouterInfo(x) {
-    this.#serviceWorkerRouterInfoInternal = x;
+    this.#serviceWorkerRouterInfo = x;
   }
   /**
    * Returns true if the request was matched to a route when using the
    * ServiceWorker static routing API.
    */
   hasMatchingServiceWorkerRouter() {
-    return this.#serviceWorkerRouterInfoInternal !== void 0 && this.serviceWorkerRouterInfo?.matchedSourceType !== void 0;
+    return this.#serviceWorkerRouterInfo !== void 0 && this.serviceWorkerRouterInfo?.matchedSourceType !== void 0;
   }
   /**
    * Returns true if the request was sent by a service worker.
@@ -27383,82 +27403,82 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return networkManager.target().type() === Type.ServiceWorker;
   }
   get timing() {
-    return this.#timingInternal;
+    return this.#timing;
   }
   set timing(timingInfo) {
     if (!timingInfo || this.#fromMemoryCache) {
       return;
     }
-    this.#startTimeInternal = timingInfo.requestTime;
+    this.#startTime = timingInfo.requestTime;
     const headersReceivedTime = timingInfo.requestTime + timingInfo.receiveHeadersEnd / 1e3;
-    if ((this.#responseReceivedTimeInternal || -1) < 0 || this.#responseReceivedTimeInternal > headersReceivedTime) {
-      this.#responseReceivedTimeInternal = headersReceivedTime;
+    if ((this.#responseReceivedTime || -1) < 0 || this.#responseReceivedTime > headersReceivedTime) {
+      this.#responseReceivedTime = headersReceivedTime;
     }
-    if (this.#startTimeInternal > this.#responseReceivedTimeInternal) {
-      this.#responseReceivedTimeInternal = this.#startTimeInternal;
+    if (this.#startTime > this.#responseReceivedTime) {
+      this.#responseReceivedTime = this.#startTime;
     }
-    this.#timingInternal = timingInfo;
+    this.#timing = timingInfo;
     this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
   }
   setConnectTimingFromExtraInfo(connectTiming) {
-    this.#startTimeInternal = connectTiming.requestTime;
+    this.#startTime = connectTiming.requestTime;
     this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
   }
   get mimeType() {
-    return this.#mimeTypeInternal;
+    return this.#mimeType;
   }
   set mimeType(x) {
-    this.#mimeTypeInternal = x;
+    this.#mimeType = x;
     if (x === "text/event-stream" && !this.#serverSentEvents) {
       const parseFromStreamedData = this.resourceType() !== Common27.ResourceType.resourceTypes.EventSource;
       this.#serverSentEvents = new ServerSentEvents(this, parseFromStreamedData);
     }
   }
   get displayName() {
-    return this.#parsedURLInternal.displayName;
+    return this.#parsedURL.displayName;
   }
   name() {
-    if (this.#nameInternal) {
-      return this.#nameInternal;
+    if (this.#name) {
+      return this.#name;
     }
     this.parseNameAndPathFromURL();
-    return this.#nameInternal;
+    return this.#name;
   }
   path() {
-    if (this.#pathInternal) {
-      return this.#pathInternal;
+    if (this.#path) {
+      return this.#path;
     }
     this.parseNameAndPathFromURL();
-    return this.#pathInternal;
+    return this.#path;
   }
   parseNameAndPathFromURL() {
-    if (this.#parsedURLInternal.isDataURL()) {
-      this.#nameInternal = this.#parsedURLInternal.dataURLDisplayName();
-      this.#pathInternal = "";
-    } else if (this.#parsedURLInternal.isBlobURL()) {
-      this.#nameInternal = this.#parsedURLInternal.url;
-      this.#pathInternal = "";
-    } else if (this.#parsedURLInternal.isAboutBlank()) {
-      this.#nameInternal = this.#parsedURLInternal.url;
-      this.#pathInternal = "";
+    if (this.#parsedURL.isDataURL()) {
+      this.#name = this.#parsedURL.dataURLDisplayName();
+      this.#path = "";
+    } else if (this.#parsedURL.isBlobURL()) {
+      this.#name = this.#parsedURL.url;
+      this.#path = "";
+    } else if (this.#parsedURL.isAboutBlank()) {
+      this.#name = this.#parsedURL.url;
+      this.#path = "";
     } else {
-      this.#pathInternal = this.#parsedURLInternal.host + this.#parsedURLInternal.folderPathComponents;
+      this.#path = this.#parsedURL.host + this.#parsedURL.folderPathComponents;
       const networkManager = NetworkManager.forRequest(this);
       const inspectedURL = networkManager ? Common27.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
-      this.#pathInternal = Platform18.StringUtilities.trimURL(this.#pathInternal, inspectedURL ? inspectedURL.host : "");
-      if (this.#parsedURLInternal.lastPathComponent || this.#parsedURLInternal.queryParams) {
-        this.#nameInternal = this.#parsedURLInternal.lastPathComponent + (this.#parsedURLInternal.queryParams ? "?" + this.#parsedURLInternal.queryParams : "");
-      } else if (this.#parsedURLInternal.folderPathComponents) {
-        this.#nameInternal = this.#parsedURLInternal.folderPathComponents.substring(this.#parsedURLInternal.folderPathComponents.lastIndexOf("/") + 1) + "/";
-        this.#pathInternal = this.#pathInternal.substring(0, this.#pathInternal.lastIndexOf("/"));
+      this.#path = Platform18.StringUtilities.trimURL(this.#path, inspectedURL ? inspectedURL.host : "");
+      if (this.#parsedURL.lastPathComponent || this.#parsedURL.queryParams) {
+        this.#name = this.#parsedURL.lastPathComponent + (this.#parsedURL.queryParams ? "?" + this.#parsedURL.queryParams : "");
+      } else if (this.#parsedURL.folderPathComponents) {
+        this.#name = this.#parsedURL.folderPathComponents.substring(this.#parsedURL.folderPathComponents.lastIndexOf("/") + 1) + "/";
+        this.#path = this.#path.substring(0, this.#path.lastIndexOf("/"));
       } else {
-        this.#nameInternal = this.#parsedURLInternal.host;
-        this.#pathInternal = "";
+        this.#name = this.#parsedURL.host;
+        this.#path = "";
       }
     }
   }
   get folder() {
-    let path = this.#parsedURLInternal.path;
+    let path = this.#parsedURL.path;
     const indexOfQuery = path.indexOf("?");
     if (indexOfQuery !== -1) {
       path = path.substring(0, indexOfQuery);
@@ -27467,62 +27487,62 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return lastSlashIndex !== -1 ? path.substring(0, lastSlashIndex) : "";
   }
   get pathname() {
-    return this.#parsedURLInternal.path;
+    return this.#parsedURL.path;
   }
   resourceType() {
-    return this.#resourceTypeInternal;
+    return this.#resourceType;
   }
   setResourceType(resourceType) {
-    this.#resourceTypeInternal = resourceType;
+    this.#resourceType = resourceType;
   }
   get domain() {
-    return this.#parsedURLInternal.host;
+    return this.#parsedURL.host;
   }
   get scheme() {
-    return this.#parsedURLInternal.scheme;
+    return this.#parsedURL.scheme;
   }
   getInferredStatusText() {
     return this.statusText || getStatusText(this.statusCode);
   }
   redirectSource() {
-    return this.#redirectSourceInternal;
+    return this.#redirectSource;
   }
   setRedirectSource(originatingRequest) {
-    this.#redirectSourceInternal = originatingRequest;
+    this.#redirectSource = originatingRequest;
   }
   preflightRequest() {
-    return this.#preflightRequestInternal;
+    return this.#preflightRequest;
   }
   setPreflightRequest(preflightRequest) {
-    this.#preflightRequestInternal = preflightRequest;
+    this.#preflightRequest = preflightRequest;
   }
   preflightInitiatorRequest() {
-    return this.#preflightInitiatorRequestInternal;
+    return this.#preflightInitiatorRequest;
   }
   setPreflightInitiatorRequest(preflightInitiatorRequest) {
-    this.#preflightInitiatorRequestInternal = preflightInitiatorRequest;
+    this.#preflightInitiatorRequest = preflightInitiatorRequest;
   }
   isPreflightRequest() {
-    return this.#initiatorInternal !== null && this.#initiatorInternal !== void 0 && this.#initiatorInternal.type === "preflight";
+    return this.#initiator !== null && this.#initiator !== void 0 && this.#initiator.type === "preflight";
   }
   redirectDestination() {
-    return this.#redirectDestinationInternal;
+    return this.#redirectDestination;
   }
   setRedirectDestination(redirectDestination) {
-    this.#redirectDestinationInternal = redirectDestination;
+    this.#redirectDestination = redirectDestination;
   }
   requestHeaders() {
-    return this.#requestHeadersInternal;
+    return this.#requestHeaders;
   }
   setRequestHeaders(headers) {
-    this.#requestHeadersInternal = headers;
+    this.#requestHeaders = headers;
     this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
   }
   requestHeadersText() {
-    return this.#requestHeadersTextInternal;
+    return this.#requestHeadersText;
   }
   setRequestHeadersText(text) {
-    this.#requestHeadersTextInternal = text;
+    this.#requestHeadersText = text;
     this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
   }
   requestHeaderValue(headerName) {
@@ -27563,21 +27583,21 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return match ? match[1] : "HTTP/0.9";
   }
   get responseHeaders() {
-    return this.#responseHeadersInternal || [];
+    return this.#responseHeaders || [];
   }
   set responseHeaders(x) {
-    this.#responseHeadersInternal = x;
-    this.#sortedResponseHeadersInternal = void 0;
-    this.#serverTimingsInternal = void 0;
-    this.#responseCookiesInternal = void 0;
+    this.#responseHeaders = x;
+    this.#sortedResponseHeaders = void 0;
+    this.#serverTimings = void 0;
+    this.#responseCookies = void 0;
     this.#responseHeaderValues = {};
     this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
   }
   get earlyHintsHeaders() {
-    return this.#earlyHintsHeadersInternal || [];
+    return this.#earlyHintsHeaders || [];
   }
   set earlyHintsHeaders(x) {
-    this.#earlyHintsHeadersInternal = x;
+    this.#earlyHintsHeaders = x;
   }
   get originalResponseHeaders() {
     return this.#originalResponseHeaders;
@@ -27593,18 +27613,18 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#setCookieHeaders = headers;
   }
   get responseHeadersText() {
-    return this.#responseHeadersTextInternal;
+    return this.#responseHeadersText;
   }
   set responseHeadersText(x) {
-    this.#responseHeadersTextInternal = x;
+    this.#responseHeadersText = x;
     this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
   }
   get sortedResponseHeaders() {
-    if (this.#sortedResponseHeadersInternal !== void 0) {
-      return this.#sortedResponseHeadersInternal;
+    if (this.#sortedResponseHeaders !== void 0) {
+      return this.#sortedResponseHeaders;
     }
-    this.#sortedResponseHeadersInternal = this.responseHeaders.slice();
-    return this.#sortedResponseHeadersInternal.sort(function(a, b) {
+    this.#sortedResponseHeaders = this.responseHeaders.slice();
+    return this.#sortedResponseHeaders.sort(function(a, b) {
       return Platform18.StringUtilities.compare(a.name.toLowerCase(), b.name.toLowerCase());
     });
   }
@@ -27680,21 +27700,21 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.earlyHintsHeaders = headers;
   }
   get responseCookies() {
-    if (!this.#responseCookiesInternal) {
-      this.#responseCookiesInternal = CookieParser.parseSetCookie(this.responseHeaderValue("Set-Cookie"), this.domain) || [];
+    if (!this.#responseCookies) {
+      this.#responseCookies = CookieParser.parseSetCookie(this.responseHeaderValue("Set-Cookie"), this.domain) || [];
       if (this.#responseCookiesPartitionKey) {
-        for (const cookie of this.#responseCookiesInternal) {
+        for (const cookie of this.#responseCookies) {
           if (cookie.partitioned()) {
             cookie.setPartitionKey(this.#responseCookiesPartitionKey.topLevelSite, this.#responseCookiesPartitionKey.hasCrossSiteAncestor);
           }
         }
       } else if (this.#responseCookiesPartitionKeyOpaque) {
-        for (const cookie of this.#responseCookiesInternal) {
+        for (const cookie of this.#responseCookies) {
           cookie.setPartitionKeyOpaque();
         }
       }
     }
-    return this.#responseCookiesInternal;
+    return this.#responseCookies;
   }
   responseLastModified() {
     return this.responseHeaderValue("last-modified");
@@ -27708,14 +27728,14 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     ].filter((v) => !!v);
   }
   get serverTimings() {
-    if (typeof this.#serverTimingsInternal === "undefined") {
-      this.#serverTimingsInternal = ServerTiming.parseHeaders(this.responseHeaders);
+    if (typeof this.#serverTimings === "undefined") {
+      this.#serverTimings = ServerTiming.parseHeaders(this.responseHeaders);
     }
-    return this.#serverTimingsInternal;
+    return this.#serverTimings;
   }
   queryString() {
-    if (this.#queryStringInternal !== void 0) {
-      return this.#queryStringInternal;
+    if (this.#queryString !== void 0) {
+      return this.#queryString;
     }
     let queryString = null;
     const url = this.url();
@@ -27727,8 +27747,8 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
         queryString = queryString.substring(0, hashSignPosition);
       }
     }
-    this.#queryStringInternal = queryString;
-    return this.#queryStringInternal;
+    this.#queryString = queryString;
+    return this.#queryString;
   }
   get queryParameters() {
     if (this.#parsedQueryParameters) {
@@ -27774,7 +27794,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return this.#formParametersPromise;
   }
   responseHttpVersion() {
-    const headersText = this.#responseHeadersTextInternal;
+    const headersText = this.#responseHeadersText;
     if (!headersText) {
       const version = this.responseHeaderValue("version") || this.responseHeaderValue(":version");
       if (version) {
@@ -27792,7 +27812,10 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
       if (position === -1) {
         return { name: pair, value: "" };
       }
-      return { name: pair.substring(0, position), value: pair.substring(position + 1) };
+      return {
+        name: pair.substring(0, position),
+        value: pair.substring(position + 1)
+      };
     }
     return queryString.split("&").map(parseNameValue);
   }
@@ -27845,18 +27868,18 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return values.join(", ");
   }
   requestContentData() {
-    if (this.#contentDataInternal) {
-      return this.#contentDataInternal;
+    if (this.#contentData) {
+      return this.#contentData;
     }
     if (this.#contentDataProvider) {
-      this.#contentDataInternal = this.#contentDataProvider();
+      this.#contentData = this.#contentDataProvider();
     } else {
-      this.#contentDataInternal = NetworkManager.requestContentData(this);
+      this.#contentData = NetworkManager.requestContentData(this);
     }
-    return this.#contentDataInternal;
+    return this.#contentData;
   }
   setContentDataProvider(dataProvider) {
-    console.assert(!this.#contentDataInternal, "contentData can only be set once.");
+    console.assert(!this.#contentData, "contentData can only be set once.");
     this.#contentDataProvider = dataProvider;
   }
   requestStreamingContent() {
@@ -27873,13 +27896,10 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return this.#streamingContentData;
   }
   contentURL() {
-    return this.#urlInternal;
+    return this.#url;
   }
   contentType() {
-    return this.#resourceTypeInternal;
-  }
-  async requestContent() {
-    return TextUtils21.ContentData.ContentData.asDeferredContent(await this.requestContentData());
+    return this.#resourceType;
   }
   async searchInContent(query, caseSensitive, isRegex) {
     if (!this.#contentDataProvider) {
@@ -27898,34 +27918,34 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return this.statusCode >= 400;
   }
   setInitialPriority(priority) {
-    this.#initialPriorityInternal = priority;
+    this.#initialPriority = priority;
   }
   initialPriority() {
-    return this.#initialPriorityInternal;
+    return this.#initialPriority;
   }
   setPriority(priority) {
     this.#currentPriority = priority;
   }
   priority() {
-    return this.#currentPriority || this.#initialPriorityInternal || null;
+    return this.#currentPriority || this.#initialPriority || null;
   }
   setSignedExchangeInfo(info) {
-    this.#signedExchangeInfoInternal = info;
+    this.#signedExchangeInfo = info;
   }
   signedExchangeInfo() {
-    return this.#signedExchangeInfoInternal;
+    return this.#signedExchangeInfo;
   }
   setWebBundleInfo(info) {
-    this.#webBundleInfoInternal = info;
+    this.#webBundleInfo = info;
   }
   webBundleInfo() {
-    return this.#webBundleInfoInternal;
+    return this.#webBundleInfo;
   }
   setWebBundleInnerRequestInfo(info) {
-    this.#webBundleInnerRequestInfoInternal = info;
+    this.#webBundleInnerRequestInfo = info;
   }
   webBundleInnerRequestInfo() {
-    return this.#webBundleInnerRequestInfoInternal;
+    return this.#webBundleInnerRequestInfo;
   }
   async populateImageSource(image) {
     const contentData = await this.requestContentData();
@@ -27933,10 +27953,10 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
       return;
     }
     let imageSrc = contentData.asDataUrl();
-    if (imageSrc === null && !this.#failedInternal) {
+    if (imageSrc === null && !this.#failed) {
       const cacheControl = this.responseHeaderValue("cache-control") || "";
       if (!cacheControl.includes("no-cache")) {
-        imageSrc = this.#urlInternal;
+        imageSrc = this.#url;
       }
     }
     if (imageSrc !== null) {
@@ -27944,16 +27964,22 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     }
   }
   initiator() {
-    return this.#initiatorInternal || null;
+    return this.#initiator || null;
   }
   hasUserGesture() {
     return this.#hasUserGesture ?? null;
   }
   frames() {
-    return this.#framesInternal;
+    return this.#frames;
   }
   addProtocolFrameError(errorMessage, time) {
-    this.addFrame({ type: WebSocketFrameType.Error, text: errorMessage, time: this.pseudoWallTime(time), opCode: -1, mask: false });
+    this.addFrame({
+      type: WebSocketFrameType.Error,
+      text: errorMessage,
+      time: this.pseudoWallTime(time),
+      opCode: -1,
+      mask: false
+    });
   }
   addProtocolFrame(response, time, sent) {
     const type = sent ? WebSocketFrameType.Send : WebSocketFrameType.Receive;
@@ -27966,14 +27992,14 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     });
   }
   addFrame(frame) {
-    this.#framesInternal.push(frame);
+    this.#frames.push(frame);
     this.dispatchEventToListeners(Events.WEBSOCKET_FRAME_ADDED, frame);
   }
   directSocketChunks() {
-    return this.#directSocketChunksInternal;
+    return this.#directSocketChunks;
   }
   addDirectSocketChunk(chunk) {
-    this.#directSocketChunksInternal.push(chunk);
+    this.#directSocketChunks.push(chunk);
     this.dispatchEventToListeners(Events.DIRECTSOCKET_CHUNK_ADDED, chunk);
   }
   eventSourceMessages() {
@@ -27983,15 +28009,15 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#serverSentEvents?.onProtocolEventSourceMessageReceived(eventName, data, eventId, this.pseudoWallTime(time));
   }
   markAsRedirect(redirectCount) {
-    this.#isRedirectInternal = true;
-    this.#requestIdInternal = `${this.#backendRequestIdInternal}:redirected.${redirectCount}`;
+    this.#isRedirect = true;
+    this.#requestId = `${this.#backendRequestId}:redirected.${redirectCount}`;
   }
   isRedirect() {
-    return this.#isRedirectInternal;
+    return this.#isRedirect;
   }
   setRequestIdForTest(requestId) {
-    this.#backendRequestIdInternal = requestId;
-    this.#requestIdInternal = requestId;
+    this.#backendRequestId = requestId;
+    this.#requestId = requestId;
   }
   charset() {
     return this.#charset ?? null;
@@ -28000,30 +28026,30 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#charset = charset;
   }
   addExtraRequestInfo(extraRequestInfo) {
-    this.#blockedRequestCookiesInternal = extraRequestInfo.blockedRequestCookies;
-    this.#includedRequestCookiesInternal = extraRequestInfo.includedRequestCookies;
+    this.#blockedRequestCookies = extraRequestInfo.blockedRequestCookies;
+    this.#includedRequestCookies = extraRequestInfo.includedRequestCookies;
     this.setRequestHeaders(extraRequestInfo.requestHeaders);
-    this.#hasExtraRequestInfoInternal = true;
+    this.#hasExtraRequestInfo = true;
     this.setRequestHeadersText("");
-    this.#clientSecurityStateInternal = extraRequestInfo.clientSecurityState;
+    this.#clientSecurityState = extraRequestInfo.clientSecurityState;
     this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
     this.#siteHasCookieInOtherPartition = extraRequestInfo.siteHasCookieInOtherPartition ?? false;
-    this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookiesInternal.some((item) => item.blockedReasons.includes(
+    this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookies.some((item) => item.blockedReasons.includes(
       "ThirdPartyPhaseout"
       /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */
     ));
   }
   hasExtraRequestInfo() {
-    return this.#hasExtraRequestInfoInternal;
+    return this.#hasExtraRequestInfo;
   }
   blockedRequestCookies() {
-    return this.#blockedRequestCookiesInternal;
+    return this.#blockedRequestCookies;
   }
   includedRequestCookies() {
-    return this.#includedRequestCookiesInternal;
+    return this.#includedRequestCookies;
   }
   hasRequestCookies() {
-    return this.#includedRequestCookiesInternal.length > 0 || this.#blockedRequestCookiesInternal.length > 0;
+    return this.#includedRequestCookies.length > 0 || this.#blockedRequestCookies.length > 0;
   }
   siteHasCookieInOtherPartition() {
     return this.#siteHasCookieInOtherPartition;
@@ -28035,9 +28061,9 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return firstLineParts.slice(2).join(" ");
   }
   addExtraResponseInfo(extraResponseInfo) {
-    this.#blockedResponseCookiesInternal = extraResponseInfo.blockedResponseCookies;
+    this.#blockedResponseCookies = extraResponseInfo.blockedResponseCookies;
     if (extraResponseInfo.exemptedResponseCookies) {
-      this.#exemptedResponseCookiesInternal = extraResponseInfo.exemptedResponseCookies;
+      this.#exemptedResponseCookies = extraResponseInfo.exemptedResponseCookies;
     }
     this.#responseCookiesPartitionKey = extraResponseInfo.cookiePartitionKey ? extraResponseInfo.cookiePartitionKey : null;
     this.#responseCookiesPartitionKeyOpaque = extraResponseInfo.cookiePartitionKeyOpaque || null;
@@ -28059,32 +28085,34 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
       }
       this.statusText = _NetworkRequest.parseStatusTextFromResponseHeadersText(extraResponseInfo.responseHeadersText);
     }
-    this.#remoteAddressSpaceInternal = extraResponseInfo.resourceIPAddressSpace;
+    this.#remoteAddressSpace = extraResponseInfo.resourceIPAddressSpace;
     if (extraResponseInfo.statusCode) {
       this.statusCode = extraResponseInfo.statusCode;
     }
-    this.#hasExtraResponseInfoInternal = true;
+    this.#hasExtraResponseInfo = true;
     const networkManager = NetworkManager.forRequest(this);
     if (!networkManager) {
       return;
     }
-    for (const blockedCookie of this.#blockedResponseCookiesInternal) {
+    for (const blockedCookie of this.#blockedResponseCookies) {
       if (blockedCookie.blockedReasons.includes(
         "NameValuePairExceedsMaxSize"
         /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */
       )) {
-        const message = i18nString9(UIStrings9.setcookieHeaderIsIgnoredIn, { PH1: this.url() });
-        networkManager.dispatchEventToListeners(Events2.MessageGenerated, { message, requestId: this.#requestIdInternal, warning: true });
+        const message = i18nString9(UIStrings9.setcookieHeaderIsIgnoredIn, {
+          PH1: this.url()
+        });
+        networkManager.dispatchEventToListeners(Events2.MessageGenerated, { message, requestId: this.#requestId, warning: true });
       }
     }
     const cookieModel = networkManager.target().model(CookieModel);
     if (!cookieModel) {
       return;
     }
-    for (const exemptedCookie of this.#exemptedResponseCookiesInternal) {
+    for (const exemptedCookie of this.#exemptedResponseCookies) {
       cookieModel.removeBlockedCookie(exemptedCookie.cookie);
     }
-    for (const blockedCookie of this.#blockedResponseCookiesInternal) {
+    for (const blockedCookie of this.#blockedResponseCookies) {
       const cookie = blockedCookie.cookie;
       if (!cookie) {
         continue;
@@ -28102,13 +28130,13 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     }
   }
   hasExtraResponseInfo() {
-    return this.#hasExtraResponseInfoInternal;
+    return this.#hasExtraResponseInfo;
   }
   blockedResponseCookies() {
-    return this.#blockedResponseCookiesInternal;
+    return this.#blockedResponseCookies;
   }
   exemptedResponseCookies() {
-    return this.#exemptedResponseCookiesInternal;
+    return this.#exemptedResponseCookies;
   }
   nonBlockedResponseCookies() {
     const blockedCookieLines = this.blockedResponseCookies().map((blockedCookie) => blockedCookie.cookieLine);
@@ -28129,29 +28157,29 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     return this.#responseCookiesPartitionKeyOpaque;
   }
   redirectSourceSignedExchangeInfoHasNoErrors() {
-    return this.#redirectSourceInternal !== null && this.#redirectSourceInternal.#signedExchangeInfoInternal !== null && !this.#redirectSourceInternal.#signedExchangeInfoInternal.errors;
+    return this.#redirectSource !== null && this.#redirectSource.#signedExchangeInfo !== null && !this.#redirectSource.#signedExchangeInfo.errors;
   }
   clientSecurityState() {
-    return this.#clientSecurityStateInternal;
+    return this.#clientSecurityState;
   }
   setTrustTokenParams(trustTokenParams) {
-    this.#trustTokenParamsInternal = trustTokenParams;
+    this.#trustTokenParams = trustTokenParams;
   }
   trustTokenParams() {
-    return this.#trustTokenParamsInternal;
+    return this.#trustTokenParams;
   }
   setTrustTokenOperationDoneEvent(doneEvent) {
-    this.#trustTokenOperationDoneEventInternal = doneEvent;
+    this.#trustTokenOperationDoneEvent = doneEvent;
     this.dispatchEventToListeners(Events.TRUST_TOKEN_RESULT_ADDED);
   }
   trustTokenOperationDoneEvent() {
-    return this.#trustTokenOperationDoneEventInternal;
+    return this.#trustTokenOperationDoneEvent;
   }
   setIsSameSite(isSameSite) {
-    this.#isSameSiteInternal = isSameSite;
+    this.#isSameSite = isSameSite;
   }
   isSameSite() {
-    return this.#isSameSiteInternal;
+    return this.#isSameSite;
   }
   getAssociatedData(key) {
     return this.#associatedData.get(key) || null;
@@ -28270,9 +28298,13 @@ var setCookieBlockedReasonToUiString = function(blockedReason) {
     case "SecureOnly":
       return i18nString9(UIStrings9.blockedReasonSecureOnly);
     case "SameSiteStrict":
-      return i18nString9(UIStrings9.blockedReasonSameSiteStrictLax, { PH1: "SameSite=Strict" });
+      return i18nString9(UIStrings9.blockedReasonSameSiteStrictLax, {
+        PH1: "SameSite=Strict"
+      });
     case "SameSiteLax":
-      return i18nString9(UIStrings9.blockedReasonSameSiteStrictLax, { PH1: "SameSite=Lax" });
+      return i18nString9(UIStrings9.blockedReasonSameSiteStrictLax, {
+        PH1: "SameSite=Lax"
+      });
     case "SameSiteUnspecifiedTreatedAsLax":
       return i18nString9(UIStrings9.blockedReasonSameSiteUnspecifiedTreatedAsLax);
     case "SameSiteNoneInsecure":
@@ -30758,10 +30790,6 @@ var CompilerSourceMappingContentProvider = class {
   contentType() {
     return this.#contentTypeInternal;
   }
-  async requestContent() {
-    const contentData = await this.requestContentData();
-    return TextUtils23.ContentData.ContentData.asDeferredContent(contentData);
-  }
   async requestContentData() {
     try {
       const { content } = await PageResourceLoader.instance().loadResource(this.#sourceURL, this.#initiator);
@@ -31837,6 +31865,10 @@ var EmulationModel = class extends SDKModel {
   }
   setDisabledImageTypes(imageTypes) {
     void this.#emulationAgent.invoke_setDisabledImageTypes({ imageTypes });
+  }
+  async setDataSaverOverride(dataSaverOverride) {
+    const dataSaverEnabled = dataSaverOverride === "unset" ? void 0 : dataSaverOverride === "enabled" ? true : false;
+    await this.#emulationAgent.invoke_setDataSaverOverride({ dataSaverEnabled });
   }
   async setCPUThrottlingRate(rate) {
     await this.#emulationAgent.invoke_setCPUThrottlingRate({ rate });

@@ -24,6 +24,7 @@ function configToCacheKey(config) {
 var Extensions_exports = {};
 __export(Extensions_exports, {
   extensionPalette: () => extensionPalette,
+  isConsoleTimestampPayloadTrackEntry: () => isConsoleTimestampPayloadTrackEntry,
   isExtensionPayloadMarker: () => isExtensionPayloadMarker,
   isExtensionPayloadTrackEntry: () => isExtensionPayloadTrackEntry,
   isSyntheticExtensionEntry: () => isSyntheticExtensionEntry,
@@ -50,8 +51,11 @@ function isExtensionPayloadTrackEntry(payload) {
   const validEntryType = payload.dataType === "track-entry" || payload.dataType === void 0;
   return validEntryType && hasTrack;
 }
+function isConsoleTimestampPayloadTrackEntry(payload) {
+  return payload.url !== void 0 && payload.description !== void 0;
+}
 function isValidExtensionPayload(payload) {
-  return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload);
+  return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload) || isConsoleTimestampPayloadTrackEntry(payload);
 }
 function isSyntheticExtensionEntry(entry) {
   return entry.cat === "devtools.extension";
@@ -118,6 +122,9 @@ function traceEventKeyToValues(key) {
       throw new Error(`Unknown trace event key: ${key}`);
   }
 }
+
+// gen/front_end/models/trace/types/Overlays.js
+var Overlays_exports = {};
 
 // gen/front_end/models/trace/types/Timing.js
 var Timing_exports = {};
@@ -451,6 +458,7 @@ var SelectorTimingsKey;
   SelectorTimingsKey2["MatchCount"] = "match_count";
   SelectorTimingsKey2["Selector"] = "selector";
   SelectorTimingsKey2["StyleSheetId"] = "style_sheet_id";
+  SelectorTimingsKey2["InvalidationCount"] = "invalidation_count";
 })(SelectorTimingsKey || (SelectorTimingsKey = {}));
 function isSelectorStats(event) {
   return event.name === "SelectorStats";
@@ -830,6 +838,7 @@ export {
   TraceEvents_exports as Events,
   Extensions_exports as Extensions,
   File_exports as File,
+  Overlays_exports as Overlays,
   Timing_exports as Timing
 };
 //# sourceMappingURL=types.js.map

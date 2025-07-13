@@ -1,5 +1,6 @@
 import type * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
+import type { ExtensionTrackEntryPayloadDeeplink } from './Extensions.js';
 import type { Micro, Milli, Seconds, TraceWindowMicro } from './Timing.js';
 export declare const enum Phase {
     BEGIN = "B",
@@ -83,9 +84,13 @@ export interface Sample extends Event {
 /**
  * A fake trace event created to support CDP.Profiler.Profiles in the
  * trace engine.
+ *
+ * Do not extend the SyntheticBased interface because this one doesn't have a raw trace event but a raw cpu profile.
+ * Also we won't manage this event through SyntheticEventsManager.
  */
-export interface SyntheticCpuProfile extends Instant, SyntheticBased<Phase.INSTANT> {
+export interface SyntheticCpuProfile extends Complete {
     name: Name.CPU_PROFILE;
+    id: ProfileID;
     args: Args & {
         data: ArgsData & {
             cpuProfile: Protocol.Profiler.Profile;
@@ -576,6 +581,7 @@ export interface LargestTextPaintCandidate extends Mark {
         data?: ArgsData & {
             candidateIndex: number;
             DOMNodeId: Protocol.DOM.BackendNodeId;
+            nodeName?: string;
         };
     };
 }
@@ -952,7 +958,8 @@ export interface ScheduleStyleInvalidationTracking extends Instant {
 }
 export declare function isScheduleStyleInvalidationTracking(event: Event): event is ScheduleStyleInvalidationTracking;
 export declare const enum StyleRecalcInvalidationReason {
-    ANIMATION = "Animation"
+    ANIMATION = "Animation",
+    RELATED_STYLE_RULE = "Related style rule"
 }
 export interface StyleRecalcInvalidationTracking extends Instant {
     name: Name.STYLE_RECALC_INVALIDATION_TRACKING;
@@ -982,6 +989,10 @@ export interface StyleInvalidatorInvalidationTracking extends Instant {
             subtree: boolean;
             nodeName?: string;
             extraData?: string;
+            selectors?: Array<{
+                selector: string;
+                style_sheet_id: string;
+            }>;
         };
     };
 }
@@ -1021,6 +1032,9 @@ export interface ScheduleStyleRecalculation extends Instant {
     args: Args & {
         data: {
             frame: string;
+            reason?: StyleRecalcInvalidationReason;
+            subtree?: boolean;
+            nodeId?: Protocol.DOM.BackendNodeId;
         };
     };
 }
@@ -1160,6 +1174,9 @@ export interface ConsoleTimeStamp extends Event {
             track?: string | number;
             trackGroup?: string | number;
             color?: string | number;
+            devtools?: {
+                link: ExtensionTrackEntryPayloadDeeplink;
+            };
             sampleTraceId?: number;
         };
     };
@@ -1453,6 +1470,10 @@ export interface DecodeImage extends Complete {
     };
 }
 export declare function isDecodeImage(event: Event): event is DecodeImage;
+export declare const enum InvalidationEventType {
+    StyleInvalidatorInvalidationTracking = "StyleInvalidatorInvalidationTracking",
+    StyleRecalcInvalidationTracking = "StyleRecalcInvalidationTracking"
+}
 export interface SelectorTiming {
     'elapsed (us)': number;
     fast_reject_count: number;
@@ -1460,6 +1481,7 @@ export interface SelectorTiming {
     selector: string;
     style_sheet_id: string;
     match_count: number;
+    invalidation_count: number;
 }
 export declare enum SelectorTimingsKey {
     Elapsed = "elapsed (us)",
@@ -1468,7 +1490,8 @@ export declare enum SelectorTimingsKey {
     MatchAttempts = "match_attempts",
     MatchCount = "match_count",
     Selector = "selector",
-    StyleSheetId = "style_sheet_id"
+    StyleSheetId = "style_sheet_id",
+    InvalidationCount = "invalidation_count"
 }
 export interface SelectorStats {
     selector_timings: SelectorTiming[];

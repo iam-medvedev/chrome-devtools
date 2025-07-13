@@ -77,4 +77,13 @@ export function generateInsight(parsedTrace, context) {
         wastedBytes: wastedBytesByRequestId.values().reduce((acc, cur) => acc + cur, 0),
     });
 }
+export function createOverlays(model) {
+    return [...model.legacyJavaScriptResults.keys()].map(script => script.request).filter(e => !!e).map(request => {
+        return {
+            type: 'ENTRY_OUTLINE',
+            entry: request,
+            outlineReason: 'ERROR',
+        };
+    });
+}
 //# sourceMappingURL=LegacyJavaScript.js.map

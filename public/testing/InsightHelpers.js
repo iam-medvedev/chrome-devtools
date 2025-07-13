@@ -30,7 +30,7 @@ export function createContextForNavigation(parsedTrace, navigation, frameId) {
         navigationId: navigation.args.data?.navigationId,
     };
 }
-export function getInsightOrError(insightName, insights, navigation) {
+export function getInsightSetOrError(insights, navigation) {
     let key;
     if (navigation) {
         if (!navigation.args.data?.navigationId) {
@@ -45,7 +45,11 @@ export function getInsightOrError(insightName, insights, navigation) {
     if (!insightSets) {
         throw new Error(`Could not find Insights for navigation ${key}. If you are trying to load an Insight for a particular navigation, you must supply it as an argument to \`getInsightOrError\``);
     }
-    const insight = insightSets.model[insightName];
+    return insightSets;
+}
+export function getInsightOrError(insightName, insights, navigation) {
+    const insightSet = getInsightSetOrError(insights, navigation);
+    const insight = insightSet.model[insightName];
     if (insight instanceof Error) {
         throw insight;
     }

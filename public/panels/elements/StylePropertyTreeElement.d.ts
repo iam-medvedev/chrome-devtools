@@ -303,6 +303,7 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     startEditingValue(): void;
     startEditingName(): void;
     private editingNameValueKeyDown;
+    static shouldCommitValueSemicolon(text: string, cursorPosition: number): boolean;
     private editingNameValueKeyPress;
     private applyFreeFlowStyleTextEdit;
     kickFreeFlowStyleEditForTest(): Promise<void>;

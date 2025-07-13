@@ -588,6 +588,23 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const menuAfterDelete = openHistoryContextMenu(view.input, 'User question to Freestyler?');
             assert.isUndefined(menuAfterDelete.id);
         });
+        it('should clear the list of previous conversations when all history is deleted', async () => {
+            const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }]]) });
+            panel.handleAction('freestyler.elements-floating-button');
+            (await view.nextInput).onTextSubmit('test');
+            await view.nextInput;
+            let { contextMenu } = openHistoryContextMenu(view.input, 'test');
+            assert.isDefined(findMenuItemWithLabel(contextMenu.defaultSection(), 'test'));
+            contextMenu.discard();
+            await AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
+            const newViewInput = await view.nextInput;
+            ({ contextMenu } = openHistoryContextMenu(newViewInput, 'test'));
+            const defaultSectionItems = contextMenu.defaultSection().items;
+            assert.lengthOf(defaultSectionItems, 1, 'Default section should have one item');
+            const placeholderItem = defaultSectionItems[0];
+            assert.strictEqual(placeholderItem.buildDescriptor().label, 'No past conversations');
+            assert.isFalse(placeholderItem.isEnabled(), 'Placeholder item should be disabled');
+        });
     });
     describe('empty state', () => {
         it('should have empty state after clear chat', async () => {
@@ -1207,6 +1224,9 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 devToolsFreestyler: {
                     enabled: true,
                 },
+                devToolsAiAssistanceNetworkAgent: {
+                    enabled: true,
+                }
             });
             const target = createTarget();
             performSearchStub = sinon.stub(target.domAgent(), 'invoke_performSearch')
@@ -1218,7 +1238,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
             try {
-                await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+                await panel.handleExternalRequest({
+                    prompt: 'Please help me debug this problem',
+                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
+                });
                 assert.fail('Expected `handleExternalRequest` to throw');
             }
             catch (err) {
@@ -1231,7 +1254,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 aidaAvailability: "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */,
             });
             try {
-                await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+                await panel.handleExternalRequest({
+                    prompt: 'Please help me debug this problem',
+                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
+                });
                 assert.fail('Expected `handleExternalRequest` to throw');
             }
             catch (err) {
@@ -1251,7 +1277,10 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
             try {
-                await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+                await panel.handleExternalRequest({
+                    prompt: 'Please help me debug this problem',
+                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
+                });
                 assert.fail('Expected `handleExternalRequest` to throw');
             }
             catch (err) {
@@ -1263,7 +1292,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
             const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
-            const response = await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+            const response = await panel.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
             assert.strictEqual(response.response, explanation);
             sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
         });
@@ -1271,7 +1300,11 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const { panel } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
-            const response = await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */, 'h1');
+            const response = await panel.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                selector: 'h1'
+            });
             assert.strictEqual(response.response, explanation);
             sinon.assert.calledOnce(performSearchStub);
             assert.strictEqual(performSearchStub.getCall(0).args[0].query, 'h1');
@@ -1287,7 +1320,10 @@ STOP`,
                 ])
             });
             try {
-                await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+                await panel.handleExternalRequest({
+                    prompt: 'Please help me debug this problem',
+                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
+                });
                 assert.fail('Expected `handleExternalRequest` to throw');
             }
             catch (err) {
@@ -1298,7 +1334,7 @@ STOP`,
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
-            await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+            await panel.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
             const { contextMenu, id } = openHistoryContextMenu(view.input, '[External] Please help me debug this problem');
             assert.isDefined(id);
             contextMenu.invokeHandler(id);
@@ -1372,7 +1408,7 @@ STOP`,
                     steps,
                 },
             ]);
-            const response = await panel.handleExternalRequest('Please help me debug this problem', "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+            const response = await panel.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
             assert.strictEqual(response.response, 'test2');
             view.input.onTextSubmit('Follow-up question to DrJones?');
             assert.deepEqual((await view.nextInput).messages, [
@@ -1402,41 +1438,25 @@ STOP`,
                 },
             ]);
         });
-        it('throws an error for file assistance requests', async () => {
+        it('returns an explanation for network assistance requests', async () => {
+            await createNetworkPanelForMockConnection();
+            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             const { panel } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
-            try {
-                await panel.handleExternalRequest('Please help me debug this problem', "drjones-file" /* AiAssistanceModel.ConversationType.FILE */);
-                assert.fail('Expected `handleExternalRequest` to throw');
-            }
-            catch (err) {
-                assert.strictEqual(err.message, `Debugging with an agent of type '${"drjones-file" /* AiAssistanceModel.ConversationType.FILE */}' is not implemented yet.`);
-            }
-        });
-        it('throws an error for network assistance requests', async () => {
-            const { panel } = await createAiAssistancePanel({
-                aidaClient: mockAidaClient([[{ explanation }]]),
+            const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
+            const request = createNetworkRequest();
+            const networkManager = sinon.createStubInstance(SDK.NetworkManager.NetworkManager, {
+                requestForURL: request,
             });
-            try {
-                await panel.handleExternalRequest('Please help me debug this problem', "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */);
-                assert.fail('Expected `handleExternalRequest` to throw');
-            }
-            catch (err) {
-                assert.strictEqual(err.message, `Debugging with an agent of type '${"drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */}' is not implemented yet.`);
-            }
-        });
-        it('throws an error for performance assistance requests', async () => {
-            const { panel } = await createAiAssistancePanel({
-                aidaClient: mockAidaClient([[{ explanation }]]),
+            sinon.stub(SDK.TargetManager.TargetManager.instance(), 'models').returns([networkManager]);
+            const response = await panel.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */,
+                requestUrl: 'https://localhost:8080/'
             });
-            try {
-                await panel.handleExternalRequest('Please help me debug this problem', "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
-                assert.fail('Expected `handleExternalRequest` to throw');
-            }
-            catch (err) {
-                assert.strictEqual(err.message, `Debugging with an agent of type '${"drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */}' is not implemented yet.`);
-            }
+            assert.strictEqual(response.response, explanation);
+            sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
         });
         it('handles performance insight requests with an insight title', async function () {
             const { panel } = await createAiAssistancePanel({
@@ -1447,7 +1467,11 @@ STOP`,
             const traceModel = Trace.TraceModel.Model.createWithAllHandlers();
             await traceModel.parse(events);
             Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, isNode: false, traceModel });
-            const response = await panel.handleExternalRequest('Please help me debug this problem', "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */, 'LCP breakdown');
+            const response = await panel.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */,
+                insightTitle: 'LCP breakdown'
+            });
             assert.strictEqual(response.response, explanation);
         });
         it('errors for performance insight requests with no insightTitle', async () => {
@@ -1455,7 +1479,12 @@ STOP`,
                 aidaClient: mockAidaClient([[{ explanation }]]),
             });
             try {
-                await panel.handleExternalRequest('Please help me debug this problem', "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
+                await panel.handleExternalRequest(
+                // @ts-expect-error
+                {
+                    prompt: 'Please help me debug this problem',
+                    conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */
+                });
                 assert.fail('Expected `handleExternalRequest` to throw');
             }
             catch (err) {

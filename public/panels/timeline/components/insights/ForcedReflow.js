@@ -9,23 +9,23 @@ import * as LegacyComponents from '../../../../ui/legacy/components/utils/utils.
 import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { createLimitedRows, renderOthersLabel } from './Table.js';
-const { UIStrings, i18nString } = Trace.Insights.Models.ForcedReflow;
+const { UIStrings, i18nString, createOverlayForEvents } = Trace.Insights.Models.ForcedReflow;
 const { html, nothing } = Lit;
 export class ForcedReflow extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-forced-reflow`;
+    internalName = 'forced-reflow';
     mapToRow(data) {
         return {
             values: [this.#linkifyUrl(data.bottomUpData)],
-            overlays: this.#createOverlayForEvents(data.relatedEvents),
+            overlays: createOverlayForEvents(data.relatedEvents),
         };
     }
     createAggregatedTableRow(remaining) {
         return {
             values: [renderOthersLabel(remaining.length)],
-            overlays: remaining.flatMap(r => this.#createOverlayForEvents(r.relatedEvents)),
+            overlays: remaining.flatMap(r => createOverlayForEvents(r.relatedEvents)),
         };
     }
-    internalName = 'forced-reflow';
     #linkifyUrl(callFrame) {
         const style = 'display: flex; gap: 4px; padding: 4px 0; overflow: hidden; white-space: nowrap';
         if (!callFrame) {
@@ -71,7 +71,7 @@ export class ForcedReflow extends BaseInsightComponent {
                         this.#linkifyUrl(topLevelFunctionCallData.topLevelFunctionCall),
                         time(Trace.Types.Timing.Micro(topLevelFunctionCallData.totalReflowTime)),
                     ],
-                    overlays: this.#createOverlayForEvents(topLevelFunctionCallData.topLevelFunctionCallEvents, 'INFO'),
+                    overlays: createOverlayForEvents(topLevelFunctionCallData.topLevelFunctionCallEvents, 'INFO'),
                 }],
         }}>
           </devtools-performance-table>
@@ -87,23 +87,6 @@ export class ForcedReflow extends BaseInsightComponent {
         </devtools-performance-table>
       </div>`;
         // clang-format on
-    }
-    createOverlays() {
-        if (!this.model || !this.model.topLevelFunctionCallData) {
-            return [];
-        }
-        const allBottomUpEvents = [...this.model.aggregatedBottomUpData.values().flatMap(data => data.relatedEvents)];
-        return [
-            ...this.#createOverlayForEvents(this.model.topLevelFunctionCallData.topLevelFunctionCallEvents, 'INFO'),
-            ...this.#createOverlayForEvents(allBottomUpEvents),
-        ];
-    }
-    #createOverlayForEvents(events, outlineReason = 'ERROR') {
-        return events.map(e => ({
-            type: 'ENTRY_OUTLINE',
-            entry: e,
-            outlineReason,
-        }));
     }
 }
 customElements.define('devtools-performance-forced-reflow', ForcedReflow);

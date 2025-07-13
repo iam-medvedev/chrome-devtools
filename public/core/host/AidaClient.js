@@ -142,7 +142,7 @@ export class AidaClient {
         }
         return "available" /* AidaAccessPreconditions.AVAILABLE */;
     }
-    async *fetch(request, options) {
+    async *doConversation(request, options) {
         if (!InspectorFrontendHostInstance.doAidaConversation) {
             throw new Error('doAidaConversation is not available');
         }

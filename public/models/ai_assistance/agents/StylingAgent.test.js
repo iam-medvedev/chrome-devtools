@@ -650,7 +650,7 @@ STOP`,
                 execJs,
             });
             await Array.fromAsync(agent.run('test', { selected: new AiAssistance.NodeContext(element) }));
-            const requests = aidaClient.fetch.args.map(arg => arg[0]);
+            const requests = aidaClient.doConversation.args.map(arg => arg[0]);
             assert.lengthOf(requests, 2, 'Unexpected number of AIDA requests');
             assert.isUndefined(requests[0].historical_contexts, 'Unexpected historical contexts in the initial request');
             assert.exists(requests[0].current_message);

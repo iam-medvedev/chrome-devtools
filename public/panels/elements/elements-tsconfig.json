@@ -48,6 +48,7 @@
     "../../../../../../front_end/panels/elements/ElementsTreeElement.ts",
     "../../../../../../front_end/panels/elements/ElementsTreeElementHighlighter.ts",
     "../../../../../../front_end/panels/elements/ElementsTreeOutline.ts",
+    "../../../../../../front_end/panels/elements/ElementsTreeOutlineRenderer.ts",
     "../../../../../../front_end/panels/elements/EventListenersWidget.ts",
     "../../../../../../front_end/panels/elements/ImagePreviewPopover.ts",
     "../../../../../../front_end/panels/elements/InspectElementModeController.ts",
@@ -60,6 +61,7 @@
     "../../../../../../front_end/panels/elements/PropertiesWidget.ts",
     "../../../../../../front_end/panels/elements/PropertyNameCategories.ts",
     "../../../../../../front_end/panels/elements/PropertyRenderer.ts",
+    "../../../../../../front_end/panels/elements/ShortcutTreeElement.ts",
     "../../../../../../front_end/panels/elements/StyleEditorWidget.ts",
     "../../../../../../front_end/panels/elements/StylePropertiesSection.ts",
     "../../../../../../front_end/panels/elements/StylePropertyHighlighter.ts",
@@ -99,6 +101,9 @@
     },
     {
       "path": "../../models/bindings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/elements/bundle-tsconfig.json"
     },
     {
       "path": "../../models/extensions/bundle-tsconfig.json"

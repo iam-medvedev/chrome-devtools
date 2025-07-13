@@ -134,3 +134,4 @@ export interface LayoutShiftRootCausesData {
 export declare function getNonCompositedFailure(animationEvent: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
 export declare function isCLSCulprits(insight: InsightModel): insight is CLSCulpritsInsightModel;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): CLSCulpritsInsightModel;
+export declare function createOverlays(model: CLSCulpritsInsightModel): Types.Overlays.Overlay[];

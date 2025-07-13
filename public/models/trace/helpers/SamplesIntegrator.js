@@ -456,39 +456,31 @@ export class SamplesIntegrator {
         stack.length = j;
     }
     static createFakeTraceFromCpuProfile(profile, tid) {
-        const traceEvents = [];
         if (!profile) {
-            return { traceEvents, metadata: {} };
+            return { traceEvents: [], metadata: {} };
         }
         // The |Name.CPU_PROFILE| will let MetaHandler to set |traceIsGeneric| to false
         // The start time and duration is important here because we'll use them to determine the traceBounds
         // We use the start and end time of the profile (which is longer than all samples), so the Performance
         // panel won't truncate this time period.
-        appendEvent("CpuProfile" /* Types.Events.Name.CPU_PROFILE */, { data: { cpuProfile: profile } }, profile.startTime, profile.endTime - profile.startTime, "X" /* Types.Events.Phase.COMPLETE */);
+        const cpuProfileEvent = {
+            cat: 'disabled-by-default-devtools.timeline',
+            name: "CpuProfile" /* Types.Events.Name.CPU_PROFILE */,
+            ph: "X" /* Types.Events.Phase.COMPLETE */,
+            pid: Types.Events.ProcessID(1),
+            tid,
+            ts: Types.Timing.Micro(profile.startTime),
+            dur: Types.Timing.Micro(profile.endTime - profile.startTime),
+            args: { data: { cpuProfile: profile } },
+            // Create an arbitrary profile id.
+            id: '0x1',
+        };
         return {
-            traceEvents,
+            traceEvents: [cpuProfileEvent],
             metadata: {
                 dataOrigin: "CPUProfile" /* Types.File.DataOrigin.CPU_PROFILE */,
             }
         };
-        function appendEvent(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        name, args, ts, dur, ph, cat) {
-            const event = {
-                cat: cat || 'disabled-by-default-devtools.timeline',
-                name,
-                ph: ph || "X" /* Types.Events.Phase.COMPLETE */,
-                pid: Types.Events.ProcessID(1),
-                tid,
-                ts: Types.Timing.Micro(ts),
-                args,
-            };
-            if (dur) {
-                event.dur = Types.Timing.Micro(dur);
-            }
-            traceEvents.push(event);
-            return event;
-        }
     }
 }
 //# sourceMappingURL=SamplesIntegrator.js.map

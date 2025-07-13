@@ -25,3 +25,4 @@ export type FontDisplayInsightModel = InsightModel<typeof UIStrings, {
     fonts: RemoteFont[];
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): FontDisplayInsightModel;
+export declare function createOverlays(model: FontDisplayInsightModel): Types.Overlays.Overlay[];

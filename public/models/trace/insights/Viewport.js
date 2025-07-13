@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
+import * as Types from '../types/types.js';
 import { InsightCategory, InsightWarning, } from './types.js';
 export const UIStrings = {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
@@ -78,6 +79,21 @@ export function generateInsight(parsedTrace, context) {
     return finalize({
         mobileOptimized: true,
         viewportEvent,
+    });
+}
+export function createOverlays(model) {
+    if (!model.longPointerInteractions) {
+        return [];
+    }
+    return model.longPointerInteractions.map(interaction => {
+        const delay = Math.min(interaction.inputDelay, 300 * 1000);
+        const bounds = Helpers.Timing.traceWindowFromMicroSeconds(Types.Timing.Micro(interaction.ts), Types.Timing.Micro(interaction.ts + delay));
+        return {
+            type: 'TIMESPAN_BREAKDOWN',
+            entry: interaction,
+            sections: [{ bounds, label: i18nString(UIStrings.mobileTapDelayLabel), showDuration: true }],
+            renderLocation: 'ABOVE_EVENT',
+        };
     });
 }
 //# sourceMappingURL=Viewport.js.map

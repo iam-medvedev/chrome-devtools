@@ -15,17 +15,6 @@ const { html } = Lit;
 export class DOMSize extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-dom-size`;
     internalName = 'dom-size';
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        const entries = [...this.model.largeStyleRecalcs, ...this.model.largeLayoutUpdates];
-        return entries.map(entry => ({
-            type: 'ENTRY_OUTLINE',
-            entry,
-            outlineReason: 'ERROR',
-        }));
-    }
     #renderNodeTable(domStatsData) {
         const rows = [];
         if (domStatsData.maxDepth) {

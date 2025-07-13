@@ -1911,7 +1911,7 @@ button.text-link {
 
 .inline-name {
   color: var(--sys-color-token-subtle);
-  padding-right: 4px;
+  padding-inline: 4px;
   user-select: none;
   white-space: pre-line;
 }
@@ -3179,13 +3179,37 @@ var FrameDetailsReportView = class extends LegacyWrapper5.LegacyWrapper.Wrappabl
     if (!info) {
       return Lit7.nothing;
     }
+    function crossOriginValueToString(value) {
+      switch (value) {
+        case "Credentialless":
+          return "credentialless";
+        case "None":
+          return "none";
+        case "RequireCorp":
+          return "require-corp";
+        case "NoopenerAllowPopups":
+          return "noopenener-allow-popups";
+        case "SameOrigin":
+          return "same-origin";
+        case "SameOriginAllowPopups":
+          return "same-origin-allow-popups";
+        case "SameOriginPlusCoep":
+          return "same-origin-plus-coep";
+        case "RestrictProperties":
+          return "restrict-properties";
+        case "RestrictPropertiesPlusCoep":
+          return "restrict-properties-plus-coep";
+        case "UnsafeNone":
+          return "unsafe-none";
+      }
+    }
     const isEnabled = info.value !== noneValue;
     const isReportOnly = !isEnabled && info.reportOnlyValue !== noneValue;
     const endpoint = isEnabled ? info.reportingEndpoint : info.reportOnlyReportingEndpoint;
     return html7`
       <devtools-report-key>${policyName}</devtools-report-key>
       <devtools-report-value>
-        ${isEnabled ? info.value : info.reportOnlyValue}
+        ${crossOriginValueToString(isEnabled ? info.value : info.reportOnlyValue)}
         ${isReportOnly ? html7`<span class="inline-comment">report-only</span>` : Lit7.nothing}
         ${endpoint ? html7`<span class="inline-name">${i18nString7(UIStrings8.reportingTo)}</span>${endpoint}` : Lit7.nothing}
       </devtools-report-value>

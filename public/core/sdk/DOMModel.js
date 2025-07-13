@@ -432,8 +432,8 @@ export class DOMNode {
         const response = await this.#agent.invoke_requestChildNodes({ nodeId: this.id, depth, pierce });
         return response.getError() ? null : this.childrenInternal;
     }
-    async getOuterHTML() {
-        const { outerHTML } = await this.#agent.invoke_getOuterHTML({ nodeId: this.id });
+    async getOuterHTML(includeShadowDOM = false) {
+        const { outerHTML } = await this.#agent.invoke_getOuterHTML({ nodeId: this.id, includeShadowDOM });
         return outerHTML;
     }
     setOuterHTML(html, callback) {

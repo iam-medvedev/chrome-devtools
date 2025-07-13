@@ -136,6 +136,9 @@ export interface HostConfigAiCodeCompletion {
     enabled: boolean;
     userTier: string;
 }
+export interface HostConfigDeepLinksViaExtensibilityApi {
+    enabled: boolean;
+}
 export interface HostConfigVeLogging {
     enabled: boolean;
     testing: boolean;
@@ -182,6 +185,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     aidaAvailability: AidaAvailability;
     channel: Channel;
     devToolsConsoleInsights: HostConfigConsoleInsights;
+    devToolsDeepLinksViaExtensibilityApi: HostConfigDeepLinksViaExtensibilityApi;
     devToolsFreestyler: HostConfigFreestyler;
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;

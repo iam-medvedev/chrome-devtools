@@ -186,9 +186,6 @@ export class UISourceCode extends Common.ObjectWrapper.ObjectWrapper {
         this.#requestContentPromise = this.#requestContent();
         return this.#requestContentPromise;
     }
-    async requestContent(options = {}) {
-        return TextUtils.ContentData.ContentData.asDeferredContent(await this.requestContentData(options));
-    }
     async #requestContent() {
         if (this.#content) {
             throw new Error('Called UISourceCode#requestContentImpl even though content is available for ' + this.#url);

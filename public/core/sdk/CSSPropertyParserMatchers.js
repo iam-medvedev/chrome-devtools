@@ -49,7 +49,7 @@ export class BaseVariableMatcher extends matcherBase(BaseVariableMatch) {
         if (fallbackOrRParenNodes.length <= 1 && fallbackOrRParenNodes[0]?.name !== ')') {
             return null;
         }
-        let fallback = [];
+        let fallback;
         if (fallbackOrRParenNodes.length > 1) {
             if (fallbackOrRParenNodes.shift()?.name !== ',') {
                 return null;
@@ -58,9 +58,6 @@ export class BaseVariableMatcher extends matcherBase(BaseVariableMatch) {
                 return null;
             }
             fallback = fallbackOrRParenNodes;
-            if (fallback.length === 0) {
-                return null;
-            }
             if (fallback.some(n => n.name === ',')) {
                 return null;
             }
@@ -84,8 +81,14 @@ export class VariableMatch extends BaseVariableMatch {
         return this.matchedStyles.computeCSSVariable(this.style, this.name);
     }
     fallbackValue() {
-        if (this.fallback.length === 0 ||
-            this.matching.hasUnresolvedVarsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
+        // Fallback can be missing but it can be also be empty: var(--v,)
+        if (!this.fallback) {
+            return null;
+        }
+        if (this.fallback.length === 0) {
+            return '';
+        }
+        if (this.matching.hasUnresolvedVarsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
             return null;
         }
         return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
@@ -627,7 +630,7 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
         if (!parentNode) {
             return null;
         }
-        if (parentNode.name === 'CallExpression' && node.name === 'Callee' && text.startsWith('--')) {
+        if (parentNode.name === 'CallExpression' && node.name === 'VariableName') {
             return new LinkableNameMatch(text, node, "function" /* LinkableNameProperties.FUNCTION */);
         }
         if (!(propertyName && LinkableNameMatcher.isLinkableNameProperty(propertyName))) {
@@ -900,7 +903,7 @@ export class GridTemplateMatcher extends matcherBase(GridTemplateMatch) {
                         continue;
                     }
                     if ((varNodes[0].name === 'StringLiteral' && !hasLeadingLineNames) ||
-                        (varNodes[0].name === 'LineNames' && !needClosingLineNames)) {
+                        (varNodes[0].name === 'BracketedValue' && !needClosingLineNames)) {
                         // The variable value either starts with a string, or with a line name that belongs to a new row;
                         // therefore we start a new line with the variable.
                         lines.push(curLine);
@@ -929,7 +932,7 @@ export class GridTemplateMatcher extends matcherBase(GridTemplateMatch) {
                     needClosingLineNames = true;
                     hasLeadingLineNames = false;
                 }
-                else if (curNode.name === 'LineNames') {
+                else if (curNode.name === 'BracketedValue') {
                     if (!varParsingMode) {
                         if (needClosingLineNames) {
                             curLine.push(curNode);

@@ -621,13 +621,37 @@ export class FrameDetailsReportView extends LegacyWrapper.LegacyWrapper.Wrappabl
         if (!info) {
             return Lit.nothing;
         }
+        function crossOriginValueToString(value) {
+            switch (value) {
+                case "Credentialless" /* Protocol.Network.CrossOriginEmbedderPolicyValue.Credentialless */:
+                    return 'credentialless';
+                case "None" /* Protocol.Network.CrossOriginEmbedderPolicyValue.None */:
+                    return 'none';
+                case "RequireCorp" /* Protocol.Network.CrossOriginEmbedderPolicyValue.RequireCorp */:
+                    return 'require-corp';
+                case "NoopenerAllowPopups" /* Protocol.Network.CrossOriginOpenerPolicyValue.NoopenerAllowPopups */:
+                    return 'noopenener-allow-popups';
+                case "SameOrigin" /* Protocol.Network.CrossOriginOpenerPolicyValue.SameOrigin */:
+                    return 'same-origin';
+                case "SameOriginAllowPopups" /* Protocol.Network.CrossOriginOpenerPolicyValue.SameOriginAllowPopups */:
+                    return 'same-origin-allow-popups';
+                case "SameOriginPlusCoep" /* Protocol.Network.CrossOriginOpenerPolicyValue.SameOriginPlusCoep */:
+                    return 'same-origin-plus-coep';
+                case "RestrictProperties" /* Protocol.Network.CrossOriginOpenerPolicyValue.RestrictProperties */:
+                    return 'restrict-properties';
+                case "RestrictPropertiesPlusCoep" /* Protocol.Network.CrossOriginOpenerPolicyValue.RestrictPropertiesPlusCoep */:
+                    return 'restrict-properties-plus-coep';
+                case "UnsafeNone" /* Protocol.Network.CrossOriginOpenerPolicyValue.UnsafeNone */:
+                    return 'unsafe-none';
+            }
+        }
         const isEnabled = info.value !== noneValue;
         const isReportOnly = (!isEnabled && info.reportOnlyValue !== noneValue);
         const endpoint = isEnabled ? info.reportingEndpoint : info.reportOnlyReportingEndpoint;
         return html `
       <devtools-report-key>${policyName}</devtools-report-key>
       <devtools-report-value>
-        ${isEnabled ? info.value : info.reportOnlyValue}
+        ${crossOriginValueToString(isEnabled ? info.value : info.reportOnlyValue)}
         ${isReportOnly ? html `<span class="inline-comment">report-only</span>` : Lit.nothing}
         ${endpoint ? html `<span class="inline-name">${i18nString(UIStrings.reportingTo)}</span>${endpoint}` : Lit.nothing}
       </devtools-report-value>

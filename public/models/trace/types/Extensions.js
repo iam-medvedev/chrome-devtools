@@ -22,8 +22,12 @@ export function isExtensionPayloadTrackEntry(payload) {
     const validEntryType = payload.dataType === 'track-entry' || payload.dataType === undefined;
     return validEntryType && hasTrack;
 }
+export function isConsoleTimestampPayloadTrackEntry(payload) {
+    return payload.url !== undefined && payload.description !== undefined;
+}
 export function isValidExtensionPayload(payload) {
-    return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload);
+    return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload) ||
+        isConsoleTimestampPayloadTrackEntry(payload);
 }
 export function isSyntheticExtensionEntry(entry) {
     return entry.cat === 'devtools.extension';

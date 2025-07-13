@@ -190,6 +190,7 @@ export declare namespace PrivateAPI {
     interface SetOpenResourceHandlerRequest {
         command: Commands.SetOpenResourceHandler;
         handlerPresent: boolean;
+        urlScheme?: string;
     }
     interface SetThemeChangeHandlerRequest {
         command: Commands.SetThemeChangeHandler;
@@ -455,7 +456,7 @@ declare namespace APIImpl {
     }
     interface Panels extends PublicAPI.Chrome.DevTools.Panels {
         get SearchAction(): Record<string, string>;
-        setOpenResourceHandler(callback?: (resource: PublicAPI.Chrome.DevTools.Resource, lineNumber: number) => unknown): void;
+        setOpenResourceHandler(callback?: (resource: PublicAPI.Chrome.DevTools.Resource, lineNumber: number, columnNumber: number) => unknown): void;
         setThemeChangeHandler(callback?: (themeName: string) => unknown): void;
     }
     interface ExtensionView extends PublicAPI.Chrome.DevTools.ExtensionView {

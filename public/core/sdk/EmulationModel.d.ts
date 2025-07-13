@@ -2,6 +2,11 @@ import * as Protocol from '../../generated/protocol.js';
 import { OverlayModel } from './OverlayModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
+export declare const enum DataSaverOverride {
+    UNSET = "unset",
+    ENABLED = "enabled",
+    DISABLED = "disabled"
+}
 export declare class EmulationModel extends SDKModel<void> {
     #private;
     constructor(target: Target);
@@ -25,6 +30,7 @@ export declare class EmulationModel extends SDKModel<void> {
     private emulateOSTextScale;
     private setLocalFontsDisabled;
     private setDisabledImageTypes;
+    setDataSaverOverride(dataSaverOverride: DataSaverOverride): Promise<void>;
     setCPUThrottlingRate(rate: number): Promise<void>;
     setHardwareConcurrency(hardwareConcurrency: number): Promise<void>;
     emulateTouch(enabled: boolean, mobile: boolean): Promise<void>;

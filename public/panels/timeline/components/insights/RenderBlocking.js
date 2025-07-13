@@ -7,41 +7,28 @@ import * as Lit from '../../../../ui/lit/lit.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
 import { createLimitedRows, renderOthersLabel } from './Table.js';
-const { UIStrings, i18nString } = Trace.Insights.Models.RenderBlocking;
+const { UIStrings, i18nString, createOverlayForRequest } = Trace.Insights.Models.RenderBlocking;
 const { html } = Lit;
 export class RenderBlocking extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-render-blocking-requests`;
+    internalName = 'render-blocking-requests';
     mapToRow(request) {
         return {
             values: [
                 eventRef(request),
                 i18n.TimeUtilities.formatMicroSecondsTime(request.dur),
             ],
-            overlays: [this.#createOverlayForRequest(request)],
+            overlays: [createOverlayForRequest(request)],
         };
     }
     createAggregatedTableRow(remaining) {
         return {
             values: [renderOthersLabel(remaining.length), ''],
-            overlays: remaining.map(r => this.#createOverlayForRequest(r)),
+            overlays: remaining.map(r => createOverlayForRequest(r)),
         };
     }
-    internalName = 'render-blocking-requests';
     hasAskAiSupport() {
         return !!this.model;
-    }
-    createOverlays() {
-        if (!this.model) {
-            return [];
-        }
-        return this.model.renderBlockingRequests.map(request => this.#createOverlayForRequest(request));
-    }
-    #createOverlayForRequest(request) {
-        return {
-            type: 'ENTRY_OUTLINE',
-            entry: request,
-            outlineReason: 'ERROR',
-        };
     }
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;

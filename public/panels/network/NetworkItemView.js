@@ -150,38 +150,38 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const requestToResponseView = new WeakMap();
 const requestToPreviewView = new WeakMap();
 export class NetworkItemView extends UI.TabbedPane.TabbedPane {
-    requestInternal;
-    resourceViewTabSetting;
-    headersViewComponent;
-    payloadView;
-    responseView;
-    cookiesView;
-    initialTab;
-    firstTab;
+    #request;
+    #resourceViewTabSetting;
+    #headersViewComponent;
+    #payloadView = null;
+    #responseView;
+    #cookiesView = null;
+    #initialTab;
+    #firstTab;
     constructor(request, calculator, initialTab) {
         super();
-        this.requestInternal = request;
+        this.#request = request;
         this.element.classList.add('network-item-view');
         this.headerElement().setAttribute('jslog', `${VisualLogging.toolbar('request-details').track({
             keydown: 'ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space',
         })}`);
         if (request.resourceType() === Common.ResourceType.resourceTypes.DirectSocket) {
-            this.firstTab = "direct-socket-connection" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION */;
+            this.#firstTab = "direct-socket-connection" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION */;
             this.appendTab("direct-socket-connection" /* NetworkForward.UIRequestLocation.UIRequestTabs.DIRECT_SOCKET_CONNECTION */, i18nString(UIStrings.connectionInfo), new NetworkComponents.DirectSocketConnectionView.DirectSocketConnectionView(request), i18nString(UIStrings.headers));
         }
         else {
-            this.firstTab = "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
-            this.headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
-            this.appendTab("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.headersViewComponent), i18nString(UIStrings.headers));
+            this.#firstTab = "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */;
+            this.#headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
+            this.appendTab("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, i18nString(UIStrings.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, this.#headersViewComponent), i18nString(UIStrings.headers));
         }
-        this.resourceViewTabSetting = Common.Settings.Settings.instance().createSetting('resource-view-tab', this.firstTab);
-        if (this.requestInternal.hasOverriddenHeaders()) {
+        this.#resourceViewTabSetting =
+            Common.Settings.Settings.instance().createSetting('resource-view-tab', this.#firstTab);
+        if (this.#request.hasOverriddenHeaders()) {
             const statusDot = document.createElement('div');
             statusDot.className = 'status-dot';
             statusDot.title = i18nString(UIStrings.containsOverriddenHeaders);
             this.setSuffixElement("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */, statusDot);
         }
-        this.payloadView = null;
         void this.maybeAppendPayloadPanel();
         this.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         if (request.resourceType() === Common.ResourceType.resourceTypes.WebSocket) {
@@ -193,13 +193,13 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         }
         else if (request.mimeType === "text/event-stream" /* Platform.MimeType.MimeType.EVENTSTREAM */) {
             this.appendTab("eventSource" /* NetworkForward.UIRequestLocation.UIRequestTabs.EVENT_SOURCE */, i18nString(UIStrings.eventstream), new EventSourceMessagesView(request));
-            this.responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
-            requestToResponseView.set(request, this.responseView);
-            this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
+            this.#responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
+            requestToResponseView.set(request, this.#responseView);
+            this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, i18nString(UIStrings.response), this.#responseView, i18nString(UIStrings.rawResponseData));
         }
         else {
-            this.responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
-            requestToResponseView.set(request, this.responseView);
+            this.#responseView = requestToResponseView.get(request) ?? new RequestResponseView(request);
+            requestToResponseView.set(request, this.#responseView);
             const previewView = requestToPreviewView.get(request) ?? new RequestPreviewView(request);
             requestToPreviewView.set(request, previewView);
             this.appendTab("preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.PREVIEW */, i18nString(UIStrings.preview), previewView, i18nString(UIStrings.responsePreview));
@@ -210,8 +210,8 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
                 UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.signedexchangeError));
                 this.setTabIcon("preview" /* NetworkForward.UIRequestLocation.UIRequestTabs.PREVIEW */, icon);
             }
-            this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, i18nString(UIStrings.response), this.responseView, i18nString(UIStrings.rawResponseData));
-            if (this.requestInternal.hasOverriddenContent) {
+            this.appendTab("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */, i18nString(UIStrings.response), this.#responseView, i18nString(UIStrings.rawResponseData));
+            if (this.#request.hasOverriddenContent) {
                 const statusDot = document.createElement('div');
                 statusDot.className = 'status-dot';
                 statusDot.title = i18nString(UIStrings.responseIsOverridden);
@@ -223,44 +223,43 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         if (request.trustTokenParams()) {
             this.appendTab("trust-tokens" /* NetworkForward.UIRequestLocation.UIRequestTabs.TRUST_TOKENS */, i18nString(UIStrings.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString(UIStrings.trustTokenOperationDetails));
         }
-        this.cookiesView = null;
-        this.initialTab = initialTab || this.resourceViewTabSetting.get();
+        this.#initialTab = initialTab || this.#resourceViewTabSetting.get();
         // Selecting tabs should not be handled by the super class.
         this.setAutoSelectFirstItemOnShow(false);
     }
     wasShown() {
         super.wasShown();
-        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
-        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
-        this.requestInternal.addEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+        this.#request.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
+        this.#request.addEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
+        this.#request.addEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
         this.maybeAppendCookiesPanel();
         this.maybeShowErrorIconInTrustTokenTabHeader();
         // Only select the initial tab the first time the view is shown after construction.
         // When the view is re-shown (without re-constructing) users or revealers might have changed
         // the selected tab in the mean time. Show the previously selected tab in that
         // case instead, by simply doing nohting.
-        if (this.initialTab) {
-            this.selectTabInternal(this.initialTab);
-            this.initialTab = undefined;
+        if (this.#initialTab) {
+            this.selectTabInternal(this.#initialTab);
+            this.#initialTab = undefined;
         }
     }
     willHide() {
-        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
-        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
-        this.requestInternal.removeEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
+        this.#request.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
+        this.#request.removeEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
+        this.#request.removeEventListener(SDK.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
     }
     async requestHeadersChanged() {
         this.maybeAppendCookiesPanel();
         void this.maybeAppendPayloadPanel();
     }
     maybeAppendCookiesPanel() {
-        const cookiesPresent = this.requestInternal.hasRequestCookies() || this.requestInternal.responseCookies.length > 0;
-        console.assert(cookiesPresent || !this.cookiesView, 'Cookies were introduced in headers and then removed!');
-        if (cookiesPresent && !this.cookiesView) {
-            this.cookiesView = new RequestCookiesView(this.requestInternal);
-            this.appendTab("cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.COOKIES */, i18nString(UIStrings.cookies), this.cookiesView, i18nString(UIStrings.requestAndResponseCookies));
+        const cookiesPresent = this.#request.hasRequestCookies() || this.#request.responseCookies.length > 0;
+        console.assert(cookiesPresent || !this.#cookiesView, 'Cookies were introduced in headers and then removed!');
+        if (cookiesPresent && !this.#cookiesView) {
+            this.#cookiesView = new RequestCookiesView(this.#request);
+            this.appendTab("cookies" /* NetworkForward.UIRequestLocation.UIRequestTabs.COOKIES */, i18nString(UIStrings.cookies), this.#cookiesView, i18nString(UIStrings.requestAndResponseCookies));
         }
-        if (this.requestInternal.hasThirdPartyCookiePhaseoutIssue()) {
+        if (this.#request.hasThirdPartyCookiePhaseoutIssue()) {
             const icon = new IconButton.Icon.Icon();
             icon.data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
             icon.title = i18nString(UIStrings.thirdPartyPhaseout);
@@ -271,14 +270,14 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         if (this.hasTab('payload')) {
             return;
         }
-        if (this.requestInternal.queryParameters || await this.requestInternal.requestFormData()) {
-            this.payloadView = new RequestPayloadView(this.requestInternal);
-            this.appendTab("payload" /* NetworkForward.UIRequestLocation.UIRequestTabs.PAYLOAD */, i18nString(UIStrings.payload), this.payloadView, i18nString(UIStrings.payload), /* userGesture=*/ void 0, 
+        if (this.#request.queryParameters || await this.#request.requestFormData()) {
+            this.#payloadView = new RequestPayloadView(this.#request);
+            this.appendTab("payload" /* NetworkForward.UIRequestLocation.UIRequestTabs.PAYLOAD */, i18nString(UIStrings.payload), this.#payloadView, i18nString(UIStrings.payload), /* userGesture=*/ void 0, 
             /* isCloseable=*/ void 0, /* isPreviewFeature=*/ void 0, /* index=*/ 1);
         }
     }
     maybeShowErrorIconInTrustTokenTabHeader() {
-        const trustTokenResult = this.requestInternal.trustTokenOperationDoneEvent();
+        const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
         if (trustTokenResult &&
             !NetworkComponents.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
             const icon = new IconButton.Icon.Icon();
@@ -292,7 +291,7 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
             // it makes sense to retry on the next tick
             window.setTimeout(() => {
                 if (!this.selectTab(tabId)) {
-                    this.selectTab(this.firstTab);
+                    this.selectTab(this.#firstTab);
                 }
             }, 0);
         }
@@ -301,21 +300,21 @@ export class NetworkItemView extends UI.TabbedPane.TabbedPane {
         if (!event.data.isUserGesture) {
             return;
         }
-        this.resourceViewTabSetting.set(event.data.tabId);
+        this.#resourceViewTabSetting.set(event.data.tabId);
     }
     request() {
-        return this.requestInternal;
+        return this.#request;
     }
     async revealResponseBody(position) {
         this.selectTabInternal("response" /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */);
-        await this.responseView?.revealPosition(position);
+        await this.#responseView?.revealPosition(position);
     }
     revealHeader(section, header) {
         this.selectTabInternal("headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
-        this.headersViewComponent?.revealHeader(section, header);
+        this.#headersViewComponent?.revealHeader(section, header);
     }
     getHeadersViewComponent() {
-        return this.headersViewComponent;
+        return this.#headersViewComponent;
     }
 }
 //# sourceMappingURL=NetworkItemView.js.map

@@ -25,9 +25,10 @@ export function spyCall(obj, method) {
     const { promise, resolve } = Promise.withResolvers();
     const original = obj[method];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sinon.stub(obj, method).callsFake(function (...args) {
+    const stub = sinon.stub(obj, method).callsFake(function (...args) {
         const result = original.apply(this, args);
         resolve({ args, result });
+        stub.restore();
     });
     return promise;
 }

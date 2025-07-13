@@ -146,6 +146,9 @@
     },
     {
       "path": "../../models/text_utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/source-map-scopes-codec/bundle-tsconfig.json"
     }
   ]
 }

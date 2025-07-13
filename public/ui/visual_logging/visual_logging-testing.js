@@ -16,6 +16,7 @@ __export(Debugging_exports, {
   processForDebugging: () => processForDebugging,
   processImpressionsForDebugging: () => processImpressionsForDebugging,
   processStartLoggingForDebugging: () => processStartLoggingForDebugging,
+  setHighlightedVe: () => setHighlightedVe,
   setVeDebugLoggingEnabled: () => setVeDebugLoggingEnabled,
   setVeDebuggingEnabled: () => setVeDebuggingEnabled
 });
@@ -533,6 +534,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "automatic-workspace-folders",
   "automatic-workspace-folders.connect",
   "automatically-ignore-list-known-third-party-scripts",
+  "automotive",
   "auxclick",
   "avif-format-disabled",
   "avif-format-disabled-true",
@@ -1327,6 +1329,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "dynamic-local-setting",
   "dynamic-range-limit",
   "dynamic-synced-setting",
+  "e-ink",
   "early-hints-headers",
   "edit",
   "edit-and-resend",
@@ -1518,6 +1521,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "extension-storage-for-domain",
   "extension-storage-viewer",
   "extension-view",
+  "external",
   "extremely-slow",
   "fa",
   "fair",
@@ -1628,6 +1632,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "forced-color-adjust",
   "forced-reflow",
   "form-data",
+  "form-factors",
   "fourth",
   "fr",
   "fr-ca",
@@ -1888,6 +1893,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "internet-explorer-9",
   "interpolate-size",
   "invalid",
+  "invalidation-count",
   "invert-filter",
   "is",
   "is-landscape",
@@ -2244,6 +2250,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "lighthouse.audit.third-party-summary",
   "lighthouse.audit.total-blocking-time",
   "lighthouse.audit.total-byte-weight",
+  "lighthouse.audit.trusted-types-xss",
   "lighthouse.audit.unminified-css",
   "lighthouse.audit.unminified-javascript",
   "lighthouse.audit.unsized-images",
@@ -2390,6 +2397,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "mask-repeat",
   "mask-size",
   "mask-type",
+  "masonry",
   "masonry-auto-tracks",
   "masonry-direction",
   "masonry-fill",
@@ -3557,6 +3565,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "tab-5",
   "tab-size",
   "table-layout",
+  "tablet",
   "tag-name",
   "take-screenshot",
   "target",
@@ -3672,6 +3681,14 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline-status",
   "timeline-tree-current-thread",
   "timeline-tree-group-by",
+  "timeline-trigger",
+  "timeline-trigger-behavior",
+  "timeline-trigger-exit-range-end",
+  "timeline-trigger-exit-range-start",
+  "timeline-trigger-name",
+  "timeline-trigger-range-end",
+  "timeline-trigger-range-start",
+  "timeline-trigger-timeline",
   "timeline-user-has-opened-sidebar-once",
   "timeline-v8-runtime-call-stats",
   "timeline.animations",
@@ -3885,6 +3902,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "uc-browser-android-mobile",
   "uc-browser-i-os",
   "uc-browser-windows-phone",
+  "ui",
   "ui-monospace",
   "ui-rounded",
   "ui-sans-serif",
@@ -3975,6 +3993,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "wasm",
   "wasm-auto-stepping",
   "wasm-auto-stepping-false",
+  "watch",
   "watch-test-expression",
   "watch-test-object",
   "waterfall",
@@ -4023,6 +4042,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "x-offset",
   "x-small",
   "xhr",
+  "xr",
   "xx-large",
   "xx-small",
   "xy",
@@ -4233,13 +4253,22 @@ function setMappedParent(element, parent2) {
 
 // gen/front_end/ui/visual_logging/Debugging.js
 var veDebuggingEnabled = false;
+var debugOverlay = null;
 var debugPopover = null;
-var highlightedElement = null;
+var highlightedElements = [];
 var nonDomDebugElements = /* @__PURE__ */ new WeakMap();
 var onInspect = void 0;
-function setVeDebuggingEnabled(enabled, inspect) {
-  veDebuggingEnabled = enabled;
-  if (enabled && !debugPopover) {
+function ensureDebugOverlay() {
+  if (!debugOverlay) {
+    debugOverlay = document.createElement("div");
+    debugOverlay.style.position = "fixed";
+    debugOverlay.style.top = "0";
+    debugOverlay.style.left = "0";
+    debugOverlay.style.width = "100vw";
+    debugOverlay.style.height = "100vh";
+    debugOverlay.style.zIndex = "100000";
+    debugOverlay.style.pointerEvents = "none";
+    document.body.appendChild(debugOverlay);
     debugPopover = document.createElement("div");
     debugPopover.classList.add("ve-debug");
     debugPopover.style.position = "absolute";
@@ -4247,17 +4276,54 @@ function setVeDebuggingEnabled(enabled, inspect) {
     debugPopover.style.borderRadius = "2px";
     debugPopover.style.padding = "8px";
     debugPopover.style.boxShadow = "var(--drop-shadow)";
-    debugPopover.style.zIndex = "100000";
-    document.body.appendChild(debugPopover);
+    debugOverlay.appendChild(debugPopover);
+  }
+}
+function setVeDebuggingEnabled(enabled, inspect) {
+  veDebuggingEnabled = enabled;
+  if (enabled) {
+    ensureDebugOverlay();
   }
   onInspect = inspect;
-  if (!enabled && highlightedElement) {
-    highlightedElement.style.backgroundColor = "";
-    highlightedElement.style.outline = "";
+  if (!enabled) {
+    highlightElement(null);
   }
 }
 globalThis.setVeDebuggingEnabled = setVeDebuggingEnabled;
+var highlightedVeKey = null;
+function setHighlightedVe(veKey) {
+  ensureDebugOverlay();
+  highlightedVeKey = veKey;
+  highlightElement(null);
+}
+function maybeHighlightElement(element, highlightedKey) {
+  highlightedKey = highlightedKey.trim();
+  let state2 = getLoggingState(element);
+  let trailingVe = state2?.config?.ve ? VisualElements[state2?.config?.ve] : null;
+  while (state2 && highlightedKey) {
+    const currentKey = elementKey(state2.config);
+    if (highlightedKey.endsWith(currentKey)) {
+      highlightedKey = highlightedKey.slice(0, -currentKey.length).trim();
+    } else if (trailingVe && highlightedKey.endsWith(trailingVe)) {
+      highlightedKey = highlightedKey.slice(0, -trailingVe.length).trim();
+      trailingVe = null;
+    } else {
+      break;
+    }
+    state2 = state2.parent;
+    if (state2 && !highlightedKey.endsWith(">")) {
+      break;
+    }
+    highlightedKey = highlightedKey.slice(0, -1).trim();
+  }
+  if (!highlightedKey && !state2) {
+    highlightElement(element, true);
+  }
+}
 function processForDebugging(loggable) {
+  if (highlightedVeKey && loggable instanceof HTMLElement) {
+    maybeHighlightElement(loggable, highlightedVeKey);
+  }
   const loggingState = getLoggingState(loggable);
   if (!veDebuggingEnabled || !loggingState || loggingState.processedForDebugging) {
     return;
@@ -4290,6 +4356,31 @@ function showDebugPopover(content, rect) {
     }
   }
 }
+function highlightElement(element, allowMultiple = false) {
+  if (highlightedElements.length > 0 && !allowMultiple && debugOverlay) {
+    [...debugOverlay.children].forEach((e) => {
+      if (e !== debugPopover) {
+        e.remove();
+      }
+    });
+    highlightedElements.length = 0;
+  }
+  if (element && !highlightedElements.includes(element)) {
+    assertNotNullOrUndefined(debugOverlay);
+    const rect = element.getBoundingClientRect();
+    const highlight = document.createElement("div");
+    highlight.style.position = "absolute";
+    highlight.style.top = `${rect.top}px`;
+    highlight.style.left = `${rect.left}px`;
+    highlight.style.width = `${rect.width}px`;
+    highlight.style.height = `${rect.height}px`;
+    highlight.style.background = "rgb(71 140 222 / 50%)";
+    highlight.style.border = "dashed 1px #7327C6";
+    highlight.style.pointerEvents = "none";
+    debugOverlay.appendChild(highlight);
+    highlightedElements.push(element);
+  }
+}
 function processElementForDebugging(element, loggingState) {
   if (element.tagName === "OPTION") {
     if (loggingState.parent?.selectOpen && debugPopover) {
@@ -4298,8 +4389,14 @@ function processElementForDebugging(element, loggingState) {
     }
   } else {
     element.addEventListener("mousedown", (event) => {
-      if (event.currentTarget === highlightedElement && onInspect && debugPopover && veDebuggingEnabled) {
-        onInspect(debugPopover.textContent || "");
+      if (highlightedElements.length && debugPopover && veDebuggingEnabled) {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      }
+    }, { capture: true });
+    element.addEventListener("click", (event) => {
+      if (highlightedElements.includes(event.currentTarget) && debugPopover && veDebuggingEnabled) {
+        onInspect?.(debugPopover.textContent || "");
         event.stopImmediatePropagation();
         event.preventDefault();
       }
@@ -4308,13 +4405,7 @@ function processElementForDebugging(element, loggingState) {
       if (!veDebuggingEnabled) {
         return;
       }
-      if (highlightedElement) {
-        highlightedElement.style.backgroundColor = "";
-        highlightedElement.style.outline = "";
-      }
-      element.style.backgroundColor = "#A7C3E4";
-      element.style.outline = "dashed 1px #7327C6";
-      highlightedElement = element;
+      highlightElement(element);
       assertNotNullOrUndefined(debugPopover);
       const pathToRoot = [loggingState];
       let ancestor = loggingState.parent;
@@ -4897,6 +4988,7 @@ __export(LoggingDriver_exports, {
   clickLogThrottler: () => clickLogThrottler,
   isLogging: () => isLogging,
   keyboardLogThrottler: () => keyboardLogThrottler,
+  process: () => process,
   resizeLogThrottler: () => resizeLogThrottler,
   scheduleProcessing: () => scheduleProcessing,
   startLogging: () => startLogging,

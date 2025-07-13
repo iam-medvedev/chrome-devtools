@@ -167,4 +167,12 @@ export function generateInsight(parsedTrace, context) {
         maxDOMStats,
     });
 }
+export function createOverlays(model) {
+    const entries = [...model.largeStyleRecalcs, ...model.largeLayoutUpdates];
+    return entries.map(entry => ({
+        type: 'ENTRY_OUTLINE',
+        entry,
+        outlineReason: 'ERROR',
+    }));
+}
 //# sourceMappingURL=DOMSize.js.map

@@ -1264,6 +1264,13 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
+     * Set size of the browser contents resizing browser window as necessary.
+     */
+    'Browser.setContentsSize': {
+      paramsType: [Protocol.Browser.SetContentsSizeRequest];
+      returnType: void;
+    };
+    /**
      * Set dock tile details, platform-specific.
      */
     'Browser.setDockTile': {
@@ -2492,6 +2499,13 @@ export namespace ProtocolMapping {
     };
     'Emulation.setDisabledImageTypes': {
       paramsType: [Protocol.Emulation.SetDisabledImageTypesRequest];
+      returnType: void;
+    };
+    /**
+     * Override the value of navigator.connection.saveData
+     */
+    'Emulation.setDataSaverOverride': {
+      paramsType: [Protocol.Emulation.SetDataSaverOverrideRequest?];
       returnType: void;
     };
     'Emulation.setHardwareConcurrencyOverride': {

@@ -210,7 +210,7 @@ export declare abstract class AiAgent<T> {
     addFact(fact: Host.AidaClient.RequestFact): ReadonlySet<Host.AidaClient.RequestFact>;
     removeFact(fact: Host.AidaClient.RequestFact): boolean;
     clearFacts(): void;
-    buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.AidaRequest;
+    buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.DoConversationRequest;
     get id(): string;
     get origin(): string | undefined;
     /**
@@ -237,7 +237,7 @@ export declare abstract class AiAgent<T> {
      * function call.
      */
     protected functionCallEmulationEnabled: boolean;
-    protected emulateFunctionCall(_aidaResponse: Host.AidaClient.AidaResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
+    protected emulateFunctionCall(_aidaResponse: Host.AidaClient.DoConversationResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
     run(initialQuery: string, options: {
         selected: ConversationContext<T> | null;
         signal?: AbortSignal;

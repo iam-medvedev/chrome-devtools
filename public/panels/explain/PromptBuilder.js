@@ -6,6 +6,7 @@ import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js'
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 const MAX_MESSAGE_SIZE = 1000;
 const MAX_STACK_TRACE_SIZE = 1000;
@@ -44,7 +45,7 @@ export class PromptBuilder {
         }
         const rawLocation = new SDK.DebuggerModel.Location(debuggerModel, callframe.scriptId, callframe.lineNumber, callframe.columnNumber);
         const mappedLocation = await Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
-        const content = await mappedLocation?.uiSourceCode.requestContent();
+        const content = await mappedLocation?.uiSourceCode.requestContentData().then(contentDataOrError => TextUtils.ContentData.ContentData.asDeferredContent(contentDataOrError));
         const text = !content?.isEncoded && content?.content ? content.content : '';
         const firstNewline = text.indexOf('\n');
         if (text.length > MAX_CODE_SIZE && (firstNewline < 0 || firstNewline > MAX_CODE_SIZE)) {

@@ -44,7 +44,7 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     parseTextResponse(text: string): ParsedResponse;
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;
-    protected emulateFunctionCall(aidaResponse: Host.AidaClient.AidaResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
+    protected emulateFunctionCall(aidaResponse: Host.AidaClient.DoConversationResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
     generateObservation(action: string, { throwOnSideEffect, }: {
         throwOnSideEffect: boolean;
     }): Promise<{

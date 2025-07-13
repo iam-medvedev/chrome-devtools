@@ -55,10 +55,6 @@ export class CompilerSourceMappingContentProvider {
     contentType() {
         return this.#contentTypeInternal;
     }
-    async requestContent() {
-        const contentData = await this.requestContentData();
-        return TextUtils.ContentData.ContentData.asDeferredContent(contentData);
-    }
     async requestContentData() {
         try {
             const { content } = await PageResourceLoader.instance().loadResource(this.#sourceURL, this.#initiator);

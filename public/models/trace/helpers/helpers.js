@@ -9,7 +9,7 @@ var Extensions_exports = {};
 __export(Extensions_exports, {
   buildTrackDataFromExtensionEntries: () => buildTrackDataFromExtensionEntries
 });
-import * as Platform2 from "./../../../core/platform/platform.js";
+import * as Platform3 from "./../../../core/platform/platform.js";
 
 // gen/front_end/models/trace/helpers/Trace.js
 var Trace_exports = {};
@@ -43,7 +43,7 @@ __export(Trace_exports, {
   stackTraceInEvent: () => stackTraceInEvent
 });
 import * as Common from "./../../../core/common/common.js";
-import * as Platform from "./../../../core/platform/platform.js";
+import * as Platform2 from "./../../../core/platform/platform.js";
 import * as Types2 from "./../types/types.js";
 
 // gen/front_end/models/trace/helpers/SyntheticEvents.js
@@ -122,6 +122,7 @@ var SyntheticEventsManager = class _SyntheticEventsManager {
 var Timing_exports = {};
 __export(Timing_exports, {
   boundsIncludeTimeRange: () => boundsIncludeTimeRange,
+  combineTraceWindowsMicro: () => combineTraceWindowsMicro,
   eventIsInBounds: () => eventIsInBounds,
   eventTimingsMicroSeconds: () => eventTimingsMicroSeconds,
   eventTimingsMilliSeconds: () => eventTimingsMilliSeconds,
@@ -136,11 +137,13 @@ __export(Timing_exports, {
   traceWindowFromEvent: () => traceWindowFromEvent,
   traceWindowFromMicroSeconds: () => traceWindowFromMicroSeconds,
   traceWindowFromMilliSeconds: () => traceWindowFromMilliSeconds,
+  traceWindowFromOverlay: () => traceWindowFromOverlay,
   traceWindowMicroSecondsToMilliSeconds: () => traceWindowMicroSecondsToMilliSeconds,
   traceWindowMilliSeconds: () => traceWindowMilliSeconds,
   windowFitsInsideBounds: () => windowFitsInsideBounds,
   windowsEqual: () => windowsEqual
 });
+import * as Platform from "./../../../core/platform/platform.js";
 import * as Types from "./../types/types.js";
 var milliToMicro = (value) => Types.Timing.Micro(value * 1e3);
 var secondsToMilli = (value) => Types.Timing.Milli(value * 1e3);
@@ -219,16 +222,62 @@ function traceWindowFromMicroSeconds(min, max) {
   const traceWindow = {
     min,
     max,
-    range: Types.Timing.Micro(max - min)
+    range: max - min
   };
   return traceWindow;
 }
 function traceWindowFromEvent(event) {
   return {
     min: event.ts,
-    max: Types.Timing.Micro(event.ts + (event.dur ?? 0)),
-    range: event.dur ?? Types.Timing.Micro(0)
+    max: event.ts + (event.dur ?? 0),
+    range: event.dur ?? 0
   };
+}
+function traceWindowFromOverlay(overlay) {
+  switch (overlay.type) {
+    case "ENTRY_LABEL":
+    case "ENTRY_OUTLINE":
+    case "ENTRY_SELECTED": {
+      return traceWindowFromEvent(overlay.entry);
+    }
+    case "TIMESPAN_BREAKDOWN": {
+      const windows = overlay.sections.map((s) => s.bounds);
+      if (overlay.entry) {
+        windows.push(traceWindowFromEvent(overlay.entry));
+      }
+      return combineTraceWindowsMicro(windows);
+    }
+    case "CANDY_STRIPED_TIME_RANGE":
+    case "TIME_RANGE": {
+      return structuredClone(overlay.bounds);
+    }
+    case "ENTRIES_LINK": {
+      const from = traceWindowFromEvent(overlay.entryFrom);
+      if (!overlay.entryTo) {
+        return from;
+      }
+      const to = traceWindowFromEvent(overlay.entryTo);
+      return combineTraceWindowsMicro([from, to]);
+    }
+    case "TIMESTAMP_MARKER":
+      return traceWindowFromMicroSeconds(overlay.timestamp, overlay.timestamp);
+    case "TIMINGS_MARKER":
+      return traceWindowFromMicroSeconds(overlay.adjustedTimestamp, overlay.adjustedTimestamp);
+    default:
+      Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
+  }
+}
+function combineTraceWindowsMicro(windows) {
+  if (!windows.length) {
+    return null;
+  }
+  const result = structuredClone(windows[0]);
+  for (const bounds of windows.slice(1)) {
+    result.min = Math.min(result.min, bounds.min);
+    result.max = Math.max(result.max, bounds.max);
+  }
+  result.range = result.max - result.min;
+  return result;
 }
 function boundsIncludeTimeRange(data) {
   const { min: visibleMin, max: visibleMax } = data.bounds;
@@ -371,7 +420,7 @@ function getNavigationForTraceEvent(event, eventFrameId, navigationsByFrameId) {
   if (!navigations || eventFrameId === "") {
     return null;
   }
-  const eventNavigationIndex = Platform.ArrayUtilities.nearestIndexFromEnd(navigations, (navigation) => navigation.ts <= event.ts);
+  const eventNavigationIndex = Platform2.ArrayUtilities.nearestIndexFromEnd(navigations, (navigation) => navigation.ts <= event.ts);
   if (eventNavigationIndex === null) {
     return null;
   }
@@ -418,7 +467,7 @@ function matchEvents(unpairedEvents) {
     if (syntheticId === void 0) {
       continue;
     }
-    const otherEventsWithID = Platform.MapUtilities.getWithDefault(matchedPairs, syntheticId, () => {
+    const otherEventsWithID = Platform2.MapUtilities.getWithDefault(matchedPairs, syntheticId, () => {
       return { begin: null, end: null, instant: [] };
     });
     const isStartEvent = event.ph === "b";
@@ -576,7 +625,7 @@ function isTopLevelEvent(event) {
   return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask";
 }
 function topLevelEventIndexEndingAfter(events, time) {
-  let index = Platform.ArrayUtilities.upperBound(events, time, (time2, event) => time2 - event.ts) - 1;
+  let index = Platform2.ArrayUtilities.upperBound(events, time, (time2, event) => time2 - event.ts) - 1;
   while (index > 0 && !isTopLevelEvent(events[index])) {
     index--;
   }
@@ -598,11 +647,11 @@ function findUpdateLayoutTreeEvents(events, startTime, endTime) {
   return foundEvents;
 }
 function findNextEventAfterTimestamp(candidates, ts) {
-  const index = Platform.ArrayUtilities.nearestIndexFromBeginning(candidates, (candidate) => ts < candidate.ts);
+  const index = Platform2.ArrayUtilities.nearestIndexFromBeginning(candidates, (candidate) => ts < candidate.ts);
   return index === null ? null : candidates[index];
 }
 function findPreviousEventBeforeTimestamp(candidates, ts) {
-  const index = Platform.ArrayUtilities.nearestIndexFromEnd(candidates, (candidate) => candidate.ts < ts);
+  const index = Platform2.ArrayUtilities.nearestIndexFromEnd(candidates, (candidate) => candidate.ts < ts);
   return index === null ? null : candidates[index];
 }
 function forEachEvent(events, config) {
@@ -919,7 +968,7 @@ function buildTrackDataFromExtensionEntries(extensionEntries, extensionTrackData
   const dataByTrack = /* @__PURE__ */ new Map();
   for (const entry of extensionEntries) {
     const key = entry.args.trackGroup || `track-name-${entry.args.track}`;
-    const batchedData = Platform2.MapUtilities.getWithDefault(dataByTrack, key, () => ({
+    const batchedData = Platform3.MapUtilities.getWithDefault(dataByTrack, key, () => ({
       name: entry.args.trackGroup || entry.args.track,
       isTrackGroup: Boolean(entry.args.trackGroup),
       entriesByTrack: { [entry.args.track]: [] }
@@ -1384,40 +1433,27 @@ var SamplesIntegrator = class _SamplesIntegrator {
     stack.length = j;
   }
   static createFakeTraceFromCpuProfile(profile, tid) {
-    const traceEvents = [];
     if (!profile) {
-      return { traceEvents, metadata: {} };
+      return { traceEvents: [], metadata: {} };
     }
-    appendEvent(
-      "CpuProfile",
-      { data: { cpuProfile: profile } },
-      profile.startTime,
-      profile.endTime - profile.startTime,
-      "X"
-      /* Types.Events.Phase.COMPLETE */
-    );
+    const cpuProfileEvent = {
+      cat: "disabled-by-default-devtools.timeline",
+      name: "CpuProfile",
+      ph: "X",
+      pid: Types4.Events.ProcessID(1),
+      tid,
+      ts: Types4.Timing.Micro(profile.startTime),
+      dur: Types4.Timing.Micro(profile.endTime - profile.startTime),
+      args: { data: { cpuProfile: profile } },
+      // Create an arbitrary profile id.
+      id: "0x1"
+    };
     return {
-      traceEvents,
+      traceEvents: [cpuProfileEvent],
       metadata: {
         dataOrigin: "CPUProfile"
       }
     };
-    function appendEvent(name, args, ts, dur, ph, cat) {
-      const event = {
-        cat: cat || "disabled-by-default-devtools.timeline",
-        name,
-        ph: ph || "X",
-        pid: Types4.Events.ProcessID(1),
-        tid,
-        ts: Types4.Timing.Micro(ts),
-        args
-      };
-      if (dur) {
-        event.dur = Types4.Timing.Micro(dur);
-      }
-      traceEvents.push(event);
-      return event;
-    }
   }
 };
 export {

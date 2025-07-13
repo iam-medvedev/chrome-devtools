@@ -219,10 +219,6 @@ export class Script {
         }
         return this.#contentPromise;
     }
-    async requestContent() {
-        const contentData = await this.requestContentData();
-        return TextUtils.ContentData.ContentData.asDeferredContent(contentData);
-    }
     async requestContentInternal() {
         if (!this.scriptId) {
             return { error: i18nString(UIStrings.scriptRemovedOrDeleted) };

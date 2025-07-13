@@ -1,5 +1,6 @@
 import type * as Handlers from '../handlers/handlers.js';
 import type { SyntheticInteractionPair } from '../types/TraceEvents.js';
+import type * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
@@ -42,3 +43,8 @@ export type INPBreakdownInsightModel = InsightModel<typeof UIStrings, {
 }>;
 export declare function isINPBreakdown(insight: InsightModel): insight is INPBreakdownInsightModel;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): INPBreakdownInsightModel;
+/**
+ * If `subpart` is -1, then all subparts are included. Otherwise it's just that index.
+ **/
+export declare function createOverlaysForSubpart(event: Types.Events.SyntheticInteractionPair, subpartIndex?: number): Types.Overlays.Overlay[];
+export declare function createOverlays(model: INPBreakdownInsightModel): Types.Overlays.Overlay[];

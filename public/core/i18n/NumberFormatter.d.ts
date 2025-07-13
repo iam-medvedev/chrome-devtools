@@ -1,5 +1,5 @@
 export interface NumberFormatter {
-    format(value: number): string;
+    format(value: number, separator?: string): string;
     formatToParts(value: number): Intl.NumberFormatPart[];
 }
 /**

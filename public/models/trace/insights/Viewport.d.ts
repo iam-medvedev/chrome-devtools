@@ -1,6 +1,6 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as Handlers from '../handlers/handlers.js';
-import type * as Types from '../types/types.js';
+import * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /** Title of an insight that provides details about if the page's viewport is optimized for mobile viewing. */
@@ -21,3 +21,4 @@ export type ViewportInsightModel = InsightModel<typeof UIStrings, {
     longPointerInteractions?: Types.Events.SyntheticInteractionPair[];
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ViewportInsightModel;
+export declare function createOverlays(model: ViewportInsightModel): Types.Overlays.Overlay[];

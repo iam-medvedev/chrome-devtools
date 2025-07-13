@@ -30,3 +30,5 @@ export type RenderBlockingInsightModel = InsightModel<typeof UIStrings, {
     requestIdToWastedMs?: Map<string, number>;
 }>;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): RenderBlockingInsightModel;
+export declare function createOverlayForRequest(request: Types.Events.SyntheticNetworkRequest): Types.Overlays.EntryOutline;
+export declare function createOverlays(model: RenderBlockingInsightModel): Types.Overlays.Overlay[];

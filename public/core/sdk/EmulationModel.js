@@ -302,6 +302,12 @@ export class EmulationModel extends SDKModel {
     setDisabledImageTypes(imageTypes) {
         void this.#emulationAgent.invoke_setDisabledImageTypes({ imageTypes });
     }
+    async setDataSaverOverride(dataSaverOverride) {
+        const dataSaverEnabled = dataSaverOverride === "unset" /* DataSaverOverride.UNSET */ ? undefined :
+            dataSaverOverride === "enabled" /* DataSaverOverride.ENABLED */ ? true :
+                false;
+        await this.#emulationAgent.invoke_setDataSaverOverride({ dataSaverEnabled });
+    }
     async setCPUThrottlingRate(rate) {
         await this.#emulationAgent.invoke_setCPUThrottlingRate({ rate });
     }

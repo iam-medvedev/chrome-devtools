@@ -243,6 +243,10 @@ describeWithEnvironment('TraceProcessor', function () {
                         generateInsight: () => {
                             throw new Error('forced error');
                         },
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        createOverlays: (() => { }),
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        createOverlayForRequest: (() => { }),
                     },
                 };
             });

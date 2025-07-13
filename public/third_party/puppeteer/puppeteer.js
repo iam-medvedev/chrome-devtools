@@ -1902,6 +1902,27 @@ function ignoreElements() {
     source2.subscribe(createOperatorSubscriber(subscriber, noop));
   });
 }
+function distinctUntilChanged(comparator, keySelector) {
+  if (keySelector === void 0) {
+    keySelector = identity;
+  }
+  comparator = comparator !== null && comparator !== void 0 ? comparator : defaultCompare;
+  return operate(function(source2, subscriber) {
+    var previousKey;
+    var first2 = true;
+    source2.subscribe(createOperatorSubscriber(subscriber, function(value) {
+      var currentKey = keySelector(value);
+      if (first2 || !comparator(previousKey, currentKey)) {
+        first2 = false;
+        previousKey = currentKey;
+        subscriber.next(value);
+      }
+    }));
+  });
+}
+function defaultCompare(a, b) {
+  return a === b;
+}
 function throwIfEmpty(errorFactory) {
   if (errorFactory === void 0) {
     errorFactory = defaultErrorFactory;
@@ -2526,7 +2547,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.11.2";
+var packageVersion = "24.12.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -4860,6 +4881,9 @@ var Page = (() => {
     /**
      * Waits for the network to be idle.
      *
+     * @remarks The function will always wait at least the
+     * set {@link WaitForNetworkIdleOptions.idleTime | IdleTime}.
+     *
      * @param options - Options to configure waiting behavior.
      * @returns A promise which resolves once the network is idle.
      */
@@ -4871,8 +4895,10 @@ var Page = (() => {
      */
     waitForNetworkIdle$(options = {}) {
       const { timeout: ms = this._timeoutSettings.timeout(), idleTime = NETWORK_IDLE_TIME, concurrency = 0, signal } = options;
-      return this.#inflight$.pipe(switchMap((inflight) => {
-        if (inflight > concurrency) {
+      return this.#inflight$.pipe(map((inflight) => {
+        return inflight > concurrency;
+      }), distinctUntilChanged(), switchMap((isInflightOverConcurrency) => {
+        if (isInflightOverConcurrency) {
           return EMPTY;
         }
         return timer(idleTime);
@@ -8073,7 +8099,7 @@ function tokenizeBy(text, grammar = TOKENS) {
   }
   return tokens;
 }
-var STRING_PATTERN = /(['"])([^\\\n]+?)\1/g;
+var STRING_PATTERN = /(['"])([^\\\n]*?)\1/g;
 var ESCAPE_PATTERN = /\\./g;
 function tokenize(selector, grammar = TOKENS) {
   selector = selector.trim();
@@ -10593,6 +10619,8 @@ var ElementHandle = (() => {
 function intersectBoundingBox(box, width, height) {
   box.width = Math.max(box.x >= 0 ? Math.min(width - box.x, box.width) : Math.min(width, box.width + box.x), 0);
   box.height = Math.max(box.y >= 0 ? Math.min(height - box.y, box.height) : Math.min(height, box.height + box.y), 0);
+  box.x = Math.max(box.x, 0);
+  box.y = Math.max(box.y, 0);
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/utils.js
@@ -13703,12 +13731,14 @@ var NetworkManager = class extends EventEmitter {
     [CDPSessionEvent.Disconnected, this.#removeClient]
   ];
   #clients = /* @__PURE__ */ new Map();
-  constructor(frameManager) {
+  #networkEnabled = true;
+  constructor(frameManager, networkEnabled) {
     super();
     this.#frameManager = frameManager;
+    this.#networkEnabled = networkEnabled ?? true;
   }
   async addClient(client) {
-    if (this.#clients.has(client)) {
+    if (!this.#networkEnabled || this.#clients.has(client)) {
       return;
     }
     const subscriptions = new DisposableStack();
@@ -14175,7 +14205,7 @@ var FrameManager = class extends EventEmitter {
     super();
     this.#client = client;
     this.#page = page;
-    this.#networkManager = new NetworkManager(this);
+    this.#networkManager = new NetworkManager(this, page.browser().isNetworkEnabled());
     this.#timeoutSettings = timeoutSettings;
     this.setupEventListeners(this.#client);
     client.once(CDPSessionEvent.Disconnected, () => {
@@ -17230,8 +17260,8 @@ var TargetManager = class extends EventEmitter {
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Browser.js
 var CdpBrowser = class _CdpBrowser extends Browser {
   protocol = "cdp";
-  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true) {
-    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets);
+  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true) {
+    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled);
     if (acceptInsecureCerts) {
       await connection.send("Security.setIgnoreCertificateErrors", {
         ignore: true
@@ -17248,9 +17278,11 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #isPageTargetCallback;
   #defaultContext;
   #contexts = /* @__PURE__ */ new Map();
+  #networkEnabled = true;
   #targetManager;
-  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true) {
+  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true) {
     super();
+    this.#networkEnabled = networkEnabled;
     this.#defaultViewport = defaultViewport;
     this.#process = process3;
     this.#connection = connection;
@@ -17447,6 +17479,9 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     return {
       pendingProtocolErrors: this.#connection.getPendingProtocolErrors()
     };
+  }
+  isNetworkEnabled() {
+    return this.#networkEnabled;
   }
 };
 export {

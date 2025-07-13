@@ -49,7 +49,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     resetClipboardIfNeeded(removedNode: SDK.DOMModel.DOMNode): void;
     private onBeforeCopy;
     private onCopyOrCut;
-    performCopyOrCut(isCut: boolean, node: SDK.DOMModel.DOMNode | null): void;
+    performCopyOrCut(isCut: boolean, node: SDK.DOMModel.DOMNode | null, includeShadowRoots?: boolean): void;
     canPaste(targetNode: SDK.DOMModel.DOMNode): boolean;
     pasteNode(targetNode: SDK.DOMModel.DOMNode): void;
     duplicateNode(targetNode: SDK.DOMModel.DOMNode): void;
@@ -147,46 +147,6 @@ export declare namespace ElementsTreeOutline {
     }
 }
 export declare const MappedCharToEntity: Map<string, string>;
-export declare class UpdateRecord {
-    private modifiedAttributes?;
-    private removedAttributes?;
-    private hasChangedChildrenInternal?;
-    private hasRemovedChildrenInternal?;
-    private charDataModifiedInternal?;
-    attributeModified(attrName: string): void;
-    attributeRemoved(attrName: string): void;
-    nodeInserted(_node: SDK.DOMModel.DOMNode): void;
-    nodeRemoved(_node: SDK.DOMModel.DOMNode): void;
-    charDataModified(): void;
-    childrenModified(): void;
-    isAttributeModified(attributeName: string): boolean;
-    hasRemovedAttributes(): boolean;
-    isCharDataModified(): boolean;
-    hasChangedChildren(): boolean;
-    hasRemovedChildren(): boolean;
-}
-export declare class Renderer implements UI.UIUtils.Renderer {
-    static instance(opts?: {
-        forceNew: boolean | null;
-    }): Renderer;
-    render(object: Object): Promise<{
-        node: Node;
-        tree: UI.TreeOutline.TreeOutline | null;
-    } | null>;
-}
-export declare class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
-    private readonly nodeShortcut;
-    private hoveredInternal?;
-    constructor(nodeShortcut: SDK.DOMModel.DOMNodeShortcut);
-    addRevealAdorner(): void;
-    get hovered(): boolean;
-    set hovered(x: boolean);
-    deferredNode(): SDK.DOMModel.DeferredDOMNode;
-    domModel(): SDK.DOMModel.DOMModel;
-    private setLeftIndentOverlay;
-    onattach(): void;
-    onselect(selectedByUser?: boolean): boolean;
-}
 export interface MultilineEditorController {
     cancel: () => void;
     commit: () => void;

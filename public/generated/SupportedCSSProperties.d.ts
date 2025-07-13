@@ -884,6 +884,12 @@ export const generatedPropertyValues: {
     "text-wrap-style": {
         values: string[];
     };
+    "timeline-trigger-behavior": {
+        values: string[];
+    };
+    "timeline-trigger-timeline": {
+        values: string[];
+    };
     top: {
         values: string[];
     };

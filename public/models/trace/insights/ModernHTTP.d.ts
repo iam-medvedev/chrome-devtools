@@ -25,10 +25,10 @@ export declare const UIStrings: {
     readonly noOldProtocolRequests: "No requests used HTTP/1.1, or its current use of HTTP/1.1 does not present a significant optimization opportunity. HTTP/1.1 requests are only flagged if six or more static assets originate from the same origin, and they are not served from a local development environment or a third-party source.";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
-export type UseModernHTTPInsightModel = InsightModel<typeof UIStrings, {
+export type ModernHTTPInsightModel = InsightModel<typeof UIStrings, {
     http1Requests: Types.Events.SyntheticNetworkRequest[];
 }>;
-export declare function isModernHTTP(model: InsightModel): model is UseModernHTTPInsightModel;
+export declare function isModernHTTP(model: InsightModel): model is ModernHTTPInsightModel;
 /**
  * Determine the set of resources that aren't HTTP/2 but should be.
  * We're a little conservative about what we surface for a few reasons:
@@ -49,4 +49,6 @@ export declare function isModernHTTP(model: InsightModel): model is UseModernHTT
  * [3] https://www.cachefly.com/http-2-is-not-a-magic-bullet/
  */
 export declare function determineHttp1Requests(requests: Types.Events.SyntheticNetworkRequest[], entityMappings: Handlers.Helpers.EntityMappings, firstPartyEntity: Handlers.Helpers.Entity | null): Types.Events.SyntheticNetworkRequest[];
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): UseModernHTTPInsightModel;
+export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ModernHTTPInsightModel;
+export declare function createOverlayForRequest(request: Types.Events.SyntheticNetworkRequest): Types.Overlays.EntryOutline;
+export declare function createOverlays(model: ModernHTTPInsightModel): Types.Overlays.Overlay[];

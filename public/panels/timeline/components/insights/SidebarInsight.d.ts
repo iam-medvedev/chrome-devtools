@@ -30,10 +30,10 @@ export declare class InsightSetZoom extends Event {
     constructor(bounds: Trace.Types.Timing.TraceWindowMicro);
 }
 export declare class InsightProvideOverlays extends Event {
-    overlays: Overlays.Overlays.TimelineOverlay[];
+    overlays: Trace.Types.Overlays.Overlay[];
     options: Overlays.Overlays.TimelineOverlaySetOptions;
     static readonly eventName = "insightprovideoverlays";
-    constructor(overlays: Overlays.Overlays.TimelineOverlay[], options: Overlays.Overlays.TimelineOverlaySetOptions);
+    constructor(overlays: Trace.Types.Overlays.Overlay[], options: Overlays.Overlays.TimelineOverlaySetOptions);
 }
 declare global {
     interface GlobalEventHandlersEventMap {
