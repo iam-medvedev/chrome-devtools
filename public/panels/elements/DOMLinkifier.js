@@ -82,6 +82,7 @@ export class DOMNodeLink extends UI.Widget.Widget {
             classes: [],
             onClick: () => {
                 void Common.Revealer.reveal(this.#node);
+                void this.#node?.scrollIntoView();
                 return false;
             },
             onMouseOver: () => {
@@ -174,6 +175,7 @@ export class DeferredDOMNodeLink extends UI.Widget.Widget {
             onClick: () => {
                 this.#deferredNode?.resolve?.(node => {
                     void Common.Revealer.reveal(node);
+                    void node?.scrollIntoView();
                 });
             },
         };

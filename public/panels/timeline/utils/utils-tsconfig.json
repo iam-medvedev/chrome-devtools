@@ -31,6 +31,7 @@
   },
   "files": [
     "../../../../../../../front_end/panels/timeline/utils/AICallTree.ts",
+    "../../../../../../../front_end/panels/timeline/utils/AIContext.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntityMapper.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryName.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryNodes.ts",

@@ -34,9 +34,9 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/sources/CSSPlugin.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const dontCompleteIn = new Set(['ColorLiteral', 'NumberLiteral', 'StringLiteral', 'Comment', 'Important']);
+const doNotCompleteIn = new Set(['ColorLiteral', 'NumberLiteral', 'StringLiteral', 'Comment', 'Important']);
 function findPropertyAt(node, pos) {
-    if (dontCompleteIn.has(node.name)) {
+    if (doNotCompleteIn.has(node.name)) {
         return null;
     }
     for (let cur = node; cur; cur = cur.parent) {

@@ -128,6 +128,7 @@ var RegisteredAdorners;
   RegisteredAdorners2["REVEAL"] = "reveal";
   RegisteredAdorners2["MEDIA"] = "media";
   RegisteredAdorners2["SCROLL"] = "scroll";
+  RegisteredAdorners2["POPOVER"] = "popover";
 })(RegisteredAdorners || (RegisteredAdorners = {}));
 function getRegisteredAdorner(which) {
   switch (which) {
@@ -197,6 +198,13 @@ function getRegisteredAdorner(which) {
         category: "Layout",
         enabledByDefault: true
       };
+    case RegisteredAdorners.POPOVER: {
+      return {
+        name: "popover",
+        category: "Layout",
+        enabledByDefault: true
+      };
+    }
   }
 }
 var adornerNameToCategoryMap = void 0;
@@ -799,10 +807,10 @@ __export(CSSPropertyIconResolver_exports, {
   findIcon: () => findIcon,
   getPhysicalDirections: () => getPhysicalDirections,
   reverseDirection: () => reverseDirection,
-  roateFlexWrapIcon: () => roateFlexWrapIcon,
   rotateAlignContentIcon: () => rotateAlignContentIcon,
   rotateAlignItemsIcon: () => rotateAlignItemsIcon,
   rotateFlexDirectionIcon: () => rotateFlexDirectionIcon,
+  rotateFlexWrapIcon: () => rotateFlexWrapIcon,
   rotateJustifyContentIcon: () => rotateJustifyContentIcon,
   rotateJustifyItemsIcon: () => rotateJustifyItemsIcon
 });
@@ -1003,7 +1011,7 @@ function gridAlignSelfIcon(iconName) {
   }
   return getIcon;
 }
-function roateFlexWrapIcon(iconName, direction) {
+function rotateFlexWrapIcon(iconName, direction) {
   return {
     iconName,
     rotate: direction === "bottom-to-top" || direction === "top-to-bottom" ? 90 : 0,
@@ -1015,7 +1023,7 @@ function flexWrapIcon(iconName) {
   function getIcon(computedStyles) {
     const directions = getPhysicalDirections(computedStyles);
     const computedFlexDirection = computedStyles.get("flex-direction") || "row";
-    return roateFlexWrapIcon(iconName, directions[computedFlexDirection]);
+    return rotateFlexWrapIcon(iconName, directions[computedFlexDirection]);
   }
   return getIcon;
 }

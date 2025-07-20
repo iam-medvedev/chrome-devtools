@@ -1,10 +1,10 @@
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import type { SourceMap } from './SourceMap.js';
-import type { GeneratedRange, OriginalPosition, OriginalScope, Position } from './SourceMapScopes.js';
+import type { GeneratedRange, OriginalPosition, OriginalScope, Position, ScopeInfo } from './SourceMapScopes.js';
 export declare class SourceMapScopesInfo {
     #private;
-    constructor(sourceMap: SourceMap, originalScopes: OriginalScope[], generatedRanges: GeneratedRange[]);
-    addOriginalScopes(scopes: Array<OriginalScope | undefined>): void;
+    constructor(sourceMap: SourceMap, scopeInfo: ScopeInfo);
+    addOriginalScopes(scopes: Array<OriginalScope | null>): void;
     addGeneratedRanges(ranges: GeneratedRange[]): void;
     hasOriginalScopes(sourceIdx: number): boolean;
     addOriginalScopesAtIndex(sourceIdx: number, scope: OriginalScope): void;

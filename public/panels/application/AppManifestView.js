@@ -609,7 +609,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
                 };
                 copyButton.className = 'inline-button';
                 copyButton.addEventListener('click', () => {
-                    UI.ARIAUtils.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
+                    UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
                     Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
                 });
                 suggestedIdNote.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.appIdNote, { PH1: suggestedIdSpan, PH2: copyButton }));
@@ -705,18 +705,18 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
             link.tabIndex = 0;
             urlField.appendChild(link);
             const shortcutIcons = shortcut.icons || [];
-            let hasShorcutIconLargeEnough = false;
+            let hasShortcutIconLargeEnough = false;
             for (const shortcutIcon of shortcutIcons) {
                 const { imageResourceErrors: shortcutIconErrors } = await this.appendImageResourceToSection(url, shortcutIcon, shortcutSection, /** isScreenshot= */ false);
                 imageErrors.push(...shortcutIconErrors);
-                if (!hasShorcutIconLargeEnough && shortcutIcon.sizes) {
+                if (!hasShortcutIconLargeEnough && shortcutIcon.sizes) {
                     const shortcutIconSize = shortcutIcon.sizes.match(/^(\d+)x(\d+)$/);
                     if (shortcutIconSize && shortcutIconSize[1] >= 96 && shortcutIconSize[2] >= 96) {
-                        hasShorcutIconLargeEnough = true;
+                        hasShortcutIconLargeEnough = true;
                     }
                 }
             }
-            if (!hasShorcutIconLargeEnough) {
+            if (!hasShortcutIconLargeEnough) {
                 imageErrors.push(i18nString(UIStrings.shortcutSShouldIncludeAXPixel, { PH1: shortcutIndex }));
             }
             shortcutIndex++;

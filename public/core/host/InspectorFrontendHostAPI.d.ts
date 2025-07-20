@@ -99,6 +99,11 @@ export interface AidaClientResult {
     error?: string;
     detail?: string;
 }
+export interface AidaCodeCompleteResult {
+    response?: string;
+    error?: string;
+    detail?: string;
+}
 export interface VisualElementImpression {
     id: number;
     type: number;
@@ -258,6 +263,7 @@ export interface InspectorFrontendHostAPI {
     initialTargetId(): Promise<string | null>;
     doAidaConversation: (request: string, streamId: number, cb: (result: DoAidaConversationResult) => void) => void;
     registerAidaClientEvent: (request: string, cb: (result: AidaClientResult) => void) => void;
+    aidaCodeComplete: (request: string, cb: (result: AidaCodeCompleteResult) => void) => void;
     recordImpression(event: ImpressionEvent): void;
     recordClick(event: ClickEvent): void;
     recordHover(event: HoverEvent): void;

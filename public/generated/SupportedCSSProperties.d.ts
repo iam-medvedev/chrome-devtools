@@ -104,12 +104,6 @@ export const generatedPropertyValues: {
     "animation-timing-function": {
         values: string[];
     };
-    "animation-trigger-behavior": {
-        values: string[];
-    };
-    "animation-trigger-timeline": {
-        values: string[];
-    };
     "app-region": {
         values: string[];
     };
@@ -738,9 +732,6 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "scroll-initial-target": {
-        values: string[];
-    };
-    "scroll-marker-group": {
         values: string[];
     };
     "scroll-padding-block-end": {

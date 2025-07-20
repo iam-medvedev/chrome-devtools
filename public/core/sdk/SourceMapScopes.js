@@ -1,15 +1,6 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/**
- * @fileoverview This file implements the current state of the "Scopes" proposal
- * for the source map spec.
- *
- * See https://github.com/tc39/source-map-rfc/blob/main/proposals/scopes.md.
- *
- * The proposal is still being worked on so we expect the implementation details
- * in this file to change frequently.
- */
 import { TokenIterator } from './SourceMap.js';
 /** @returns 0 if both positions are equal, a negative number if a < b and a positive number if a > b */
 export function comparePositions(a, b) {
@@ -152,7 +143,7 @@ export function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees,
                 if (!originalScopeTrees[sourceIdx]) {
                     throw new Error('Invalid source index!');
                 }
-                range.callsite = {
+                range.callSite = {
                     sourceIndex: sourceIdx,
                     line,
                     column,
@@ -182,7 +173,8 @@ function resolveBindings(range, names, bindingsForAllVars) {
     }
     range.values = bindingsForAllVars.map(bindings => {
         if (bindings.length === 1) {
-            return resolveName(bindings[0].nameIdx, names);
+            const value = resolveName(bindings[0].nameIdx, names);
+            return value ?? null;
         }
         const bindingRanges = bindings.map(binding => ({
             from: { line: binding.line, column: binding.column },

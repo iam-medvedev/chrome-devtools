@@ -73,19 +73,19 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
             await this.#sharedStorage.clear();
             await this.refreshItems();
             this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemsCleared" /* SharedStorageItemsDispatcher.Events.ITEMS_CLEARED */);
-            UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemsCleared));
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sharedStorageItemsCleared));
             return;
         }
         await Promise.all(this.keys().map(key => this.#sharedStorage.deleteEntry(key)));
         await this.refreshItems();
         this.sharedStorageItemsDispatcher.dispatchEventToListeners("FilteredItemsCleared" /* SharedStorageItemsDispatcher.Events.FILTERED_ITEMS_CLEARED */);
-        UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageFilteredItemsCleared));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sharedStorageFilteredItemsCleared));
     }
     isEditAllowed(columnIdentifier, _oldText, newText) {
         if (columnIdentifier === 'key' && newText === '') {
             // The Shared Storage backend does not currently allow '' as a key, so we only set a new entry with a new key if its new key is nonempty.
             void this.refreshItems().then(() => {
-                UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemEditCanceled));
+                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sharedStorageItemEditCanceled));
             });
             return false;
         }
@@ -95,7 +95,7 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
         await this.#sharedStorage.setEntry(key, value, false);
         await this.refreshItems();
         this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemEdited" /* SharedStorageItemsDispatcher.Events.ITEM_EDITED */);
-        UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemEdited));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sharedStorageItemEdited));
     }
     #showSharedStorageItems(items) {
         if (this.toolbar) {
@@ -107,7 +107,7 @@ export class SharedStorageItemsView extends KeyValueStorageItemsView {
         await this.#sharedStorage.deleteEntry(key);
         await this.refreshItems();
         this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemDeleted" /* SharedStorageItemsDispatcher.Events.ITEM_DELETED */, { key });
-        UI.ARIAUtils.alert(i18nString(UIStrings.sharedStorageItemDeleted));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sharedStorageItemDeleted));
     }
     async createPreview(key, value) {
         const wrappedEntry = key && { key, value: value || '' };

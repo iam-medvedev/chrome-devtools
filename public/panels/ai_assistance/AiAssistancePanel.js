@@ -228,22 +228,26 @@ async function getEmptyStateSuggestions(context, conversationType) {
                 { title: 'Are there any security headers present?', jslogContext: 'network-default' },
                 { title: 'Why is the request failing?', jslogContext: 'network-default' },
             ];
-        case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
-            return [
-                { title: 'What\'s the purpose of this work?', jslogContext: 'performance-default' },
-                { title: 'Where is time being spent?', jslogContext: 'performance-default' },
-                { title: 'How can I optimize this?', jslogContext: 'performance-default' },
-            ];
         case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
+        case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
+            const focus = context?.getItem();
+            if (focus?.data.type === 'call-tree') {
+                return [
+                    { title: 'What\'s the purpose of this work?', jslogContext: 'performance-default' },
+                    { title: 'Where is time being spent?', jslogContext: 'performance-default' },
+                    { title: 'How can I optimize this?', jslogContext: 'performance-default' },
+                ];
+            }
             return [
                 { title: 'Help me optimize my page load performance', jslogContext: 'performance-insights-default' },
             ];
+        }
     }
 }
 function toolbarView(input) {
     // clang-format off
     return html `
-    <div class="toolbar-container" role="toolbar" .jslogContext=${VisualLogging.toolbar()}>
+    <div class="toolbar-container" role="toolbar" jslog=${VisualLogging.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
       ${input.showChatActions
         ? html `<devtools-button
@@ -340,17 +344,11 @@ function createRequestContext(request) {
     }
     return new AiAssistanceModel.RequestContext(request);
 }
-function createCallTreeContext(callTree) {
-    if (!callTree) {
+function createPerformanceTraceContext(focus) {
+    if (!focus) {
         return null;
     }
-    return new AiAssistanceModel.CallTreeContext(callTree);
-}
-function createPerfInsightContext(insight) {
-    if (!insight) {
-        return null;
-    }
-    return new AiAssistanceModel.InsightContext(insight);
+    return new AiAssistanceModel.PerformanceTraceContext(focus);
 }
 function agentToConversationType(agent) {
     if (agent instanceof AiAssistanceModel.StylingAgent) {
@@ -363,10 +361,7 @@ function agentToConversationType(agent) {
         return "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
     }
     if (agent instanceof AiAssistanceModel.PerformanceAgent) {
-        return "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
-    }
-    if (agent instanceof AiAssistanceModel.PerformanceInsightsAgent) {
-        return "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */;
+        return agent.getConversationType();
     }
     throw new Error('Provided agent does not have a corresponding conversation type');
 }
@@ -421,8 +416,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #historicalConversations = [];
     #selectedFile = null;
     #selectedElement = null;
-    #selectedCallTree = null;
-    #selectedPerformanceInsight = null;
+    #selectedPerformanceTrace = null;
     #selectedRequest = null;
     // Messages displayed in the `ChatView` component.
     #messages = [];
@@ -516,12 +510,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 agent = new AiAssistanceModel.FileAgent(options);
                 break;
             }
+            case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
             case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
-                agent = new AiAssistanceModel.PerformanceAgent(options);
-                break;
-            }
-            case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */: {
-                agent = new AiAssistanceModel.PerformanceInsightsAgent(options);
+                agent = new AiAssistanceModel.PerformanceAgent(options, conversationType);
                 break;
             }
         }
@@ -647,10 +638,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             createNodeContext(selectedElementFilter(UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)));
         this.#selectedRequest =
             createRequestContext(UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
-        this.#selectedCallTree =
-            createCallTreeContext(UI.Context.Context.instance().flavor(TimelineUtils.AICallTree.AICallTree));
-        this.#selectedPerformanceInsight =
-            createPerfInsightContext(UI.Context.Context.instance().flavor(TimelineUtils.InsightAIContext.ActiveInsight));
+        this.#selectedPerformanceTrace =
+            createPerformanceTraceContext(UI.Context.Context.instance().flavor(TimelineUtils.AIContext.AgentFocus));
         this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode));
         this.#updateConversationState(this.#conversationAgent);
         this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
@@ -658,9 +647,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction?.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.InsightAIContext.ActiveInsight, this.#handlePerfInsightFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().addFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().addFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
@@ -681,8 +669,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction?.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
-        UI.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.InsightAIContext.ActiveInsight, this.#handlePerfInsightFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().removeFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
@@ -730,18 +717,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedRequest = Boolean(ev.data) ? new AiAssistanceModel.RequestContext(ev.data) : null;
         this.#updateConversationState(this.#conversationAgent);
     };
-    #handleTraceEntryNodeFlavorChange = (ev) => {
-        if (this.#selectedCallTree?.getItem() === ev.data) {
+    #handlePerformanceTraceFlavorChange = (ev) => {
+        if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
             return;
         }
-        this.#selectedCallTree = Boolean(ev.data) ? new AiAssistanceModel.CallTreeContext(ev.data) : null;
-        this.#updateConversationState(this.#conversationAgent);
-    };
-    #handlePerfInsightFlavorChange = (ev) => {
-        if (this.#selectedPerformanceInsight?.getItem() === ev.data) {
-            return;
-        }
-        this.#selectedPerformanceInsight = Boolean(ev.data) ? new AiAssistanceModel.InsightContext(ev.data) : null;
+        this.#selectedPerformanceTrace =
+            Boolean(ev.data) ? new AiAssistanceModel.PerformanceTraceContext(ev.data) : null;
         this.#updateConversationState(this.#conversationAgent);
     };
     #handleUISourceCodeFlavorChange = (ev) => {
@@ -951,15 +932,18 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (context instanceof AiAssistanceModel.FileContext) {
             return Common.Revealer.reveal(context.getItem().uiLocation(0, 0));
         }
-        if (context instanceof AiAssistanceModel.CallTreeContext) {
-            const item = context.getItem();
-            const event = item.selectedNode?.event ?? item.rootNode.event;
-            const trace = new SDK.TraceObject.RevealableEvent(event);
-            return Common.Revealer.reveal(trace);
-        }
-        if (context instanceof AiAssistanceModel.InsightContext) {
-            const item = context.getItem();
-            return Common.Revealer.reveal(item);
+        if (context instanceof AiAssistanceModel.PerformanceTraceContext) {
+            const focus = context.getItem().data;
+            if (focus.type === 'call-tree') {
+                const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
+                const trace = new SDK.TraceObject.RevealableEvent(event);
+                return Common.Revealer.reveal(trace);
+            }
+            if (focus.type === 'insight') {
+                const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.insight, focus.insightSetBounds, focus.parsedTrace);
+                return Common.Revealer.reveal(activeInsight);
+            }
+            Platform.assertNever(focus, 'Unknown agent focus');
         }
         // Node picker is using linkifier.
     }
@@ -1061,7 +1045,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#historicalConversations.filter(conversation => conversation !== this.#conversation);
         void AiAssistanceModel.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
         this.#updateConversationState();
-        UI.ARIAUtils.alert(i18nString(UIStrings.chatDeleted));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.chatDeleted));
     }
     async #openConversation(conversation) {
         if (this.#conversation === conversation) {
@@ -1072,7 +1056,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #handleNewChatRequest() {
         this.#updateConversationState();
-        UI.ARIAUtils.alert(i18nString(UIStrings.newChatCreated));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.newChatCreated));
     }
     async #handleTakeScreenshot() {
         const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -1208,10 +1192,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 context = this.#selectedRequest;
                 break;
             case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
-                context = this.#selectedCallTree;
-                break;
             case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-                context = this.#selectedPerformanceInsight;
+                context = this.#selectedPerformanceTrace;
                 break;
         }
         return context;
@@ -1245,9 +1227,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             signal,
             selected: context,
         }, multimodalInput);
-        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerLoading));
         await this.#doConversation(this.#saveResponsesToCurrentConversation(runner));
-        UI.ARIAUtils.alert(lockedString(UIStringsNotTranslate.answerReady));
     }
     async *#saveResponsesToCurrentConversation(items) {
         const currentConversation = this.#conversation;
@@ -1276,6 +1256,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 }
             }
             this.#isLoading = true;
+            let announcedAnswerLoading = false;
+            let announcedAnswerReady = false;
             for await (const data of items) {
                 step.sideEffect = undefined;
                 switch (data.type) {
@@ -1383,6 +1365,25 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
                         this.#viewOutput.chatView?.scrollToBottom();
                     }
+                    // Announce as status update to screen readers when:
+                    // * Context is received (e.g. Analyzing the prompt)
+                    // * Answer started streaming
+                    // * Answer finished streaming
+                    switch (data.type) {
+                        case "context" /* AiAssistanceModel.ResponseType.CONTEXT */:
+                            UI.ARIAUtils.LiveAnnouncer.status(data.title);
+                            break;
+                        case "answer" /* AiAssistanceModel.ResponseType.ANSWER */: {
+                            if (!data.complete && !announcedAnswerLoading) {
+                                announcedAnswerLoading = true;
+                                UI.ARIAUtils.LiveAnnouncer.status(lockedString(UIStringsNotTranslate.answerLoading));
+                            }
+                            else if (data.complete && !announcedAnswerReady) {
+                                announcedAnswerReady = true;
+                                UI.ARIAUtils.LiveAnnouncer.status(lockedString(UIStringsNotTranslate.answerReady));
+                            }
+                        }
+                    }
                 }
             }
             this.#isLoading = false;
@@ -1448,7 +1449,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 devToolsLogs: [],
             };
         }
-        const selectedContext = createPerfInsightContext(insightOrError.insight);
+        const focus = new TimelineUtils.AIContext.AgentFocus({
+            type: 'insight',
+            parsedTrace: insightOrError.insight.parsedTrace,
+            insight: insightOrError.insight.insight,
+            insightSetBounds: insightOrError.insight.insightSetBounds
+        });
+        const selectedContext = createPerformanceTraceContext(focus);
         const runner = insightsAgent.run(prompt, { selected: selectedContext });
         const devToolsLogs = [];
         for await (const data of runner) {

@@ -75,7 +75,7 @@ const UIStrings = {
      */
     inheritedFroms: 'Inherited from ',
     /**
-     *@description Text of an inherited psuedo element in Styles Sidebar Pane of the Elements panel
+     *@description Text of an inherited pseudo element in Styles Sidebar Pane of the Elements panel
      *@example {highlight} PH1
      */
     inheritedFromSPseudoOf: 'Inherited from ::{PH1} pseudo of ',
@@ -396,7 +396,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             if (this.lastFilterChange) {
                 const stillTyping = Date.now() - this.lastFilterChange < FILTER_IDLE_PERIOD;
                 if (!stillTyping) {
-                    UI.ARIAUtils.alert(this.visibleSections ? i18nString(UIStrings.visibleSelectors, { n: this.visibleSections }) :
+                    UI.ARIAUtils.LiveAnnouncer.alert(this.visibleSections ? i18nString(UIStrings.visibleSelectors, { n: this.visibleSections }) :
                         i18nString(UIStrings.noMatchingSelectorOrStyle));
                 }
             }

@@ -773,11 +773,11 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     toggleSidebar() {
         if (this.showModeInternal !== "Both" /* ShowMode.BOTH */) {
             this.showBoth(true);
-            ARIAUtils.alert(this.shownSidebarString);
+            ARIAUtils.LiveAnnouncer.alert(this.shownSidebarString);
             return true;
         }
         this.hideSidebar(true);
-        ARIAUtils.alert(this.hiddenSidebarString);
+        ARIAUtils.LiveAnnouncer.alert(this.hiddenSidebarString);
         return false;
     }
     updateShowHideSidebarButton() {

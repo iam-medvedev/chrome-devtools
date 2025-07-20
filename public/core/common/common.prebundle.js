@@ -11,6 +11,7 @@ import * as ColorUtils from './ColorUtils.js';
 import * as Console from './Console.js';
 import * as Debouncer from './Debouncer.js';
 import * as EventTarget from './EventTarget.js';
+import * as Gzip from './Gzip.js';
 import * as JavaScriptMetaData from './JavaScriptMetaData.js';
 import * as Lazy from './Lazy.js';
 import * as Linkifier from './Linkifier.js';
@@ -39,5 +40,5 @@ import * as Worker from './Worker.js';
  * update all references to `Common.UIString` to `Platform.UIString`.
  */
 export { UIString } from '../platform/platform.js';
-export { App, AppProvider, Base64, CharacterIdMap, Color, ColorConverter, ColorUtils, Console, Debouncer, EventTarget, JavaScriptMetaData, Lazy, Linkifier, MapWithDefault, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, SettingRegistration, Settings, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, };
+export { App, AppProvider, Base64, CharacterIdMap, Color, ColorConverter, ColorUtils, Console, Debouncer, EventTarget, Gzip, JavaScriptMetaData, Lazy, Linkifier, MapWithDefault, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, SettingRegistration, Settings, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, };
 //# sourceMappingURL=common.prebundle.js.map

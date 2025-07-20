@@ -2794,7 +2794,7 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   ]: i18n11.i18n.lockedLazyString("watchPosition"),
   [
     "Notification.requestPermission"
-    /* SDK.EventBreakpointsModel.InstrumentationNames.NOTIFCATION_REQUEST_PERMISSION */
+    /* SDK.EventBreakpointsModel.InstrumentationNames.NOTIFICATION_REQUEST_PERMISSION */
   ]: i18n11.i18n.lockedLazyString("requestPermission"),
   [
     "DOMWindow.close"
@@ -3084,9 +3084,9 @@ var UIStrings8 = {
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/sources/CSSPlugin.ts", UIStrings8);
 var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var dontCompleteIn = /* @__PURE__ */ new Set(["ColorLiteral", "NumberLiteral", "StringLiteral", "Comment", "Important"]);
+var doNotCompleteIn = /* @__PURE__ */ new Set(["ColorLiteral", "NumberLiteral", "StringLiteral", "Comment", "Important"]);
 function findPropertyAt(node, pos) {
-  if (dontCompleteIn.has(node.name)) {
+  if (doNotCompleteIn.has(node.name)) {
     return null;
   }
   for (let cur = node; cur; cur = cur.parent) {
@@ -5479,7 +5479,7 @@ var NavigatorSourceTreeElement = class extends UI10.TreeOutline.TreeElement {
     const action3 = UI10.ActionRegistry.ActionRegistry.instance().getAction("drjones.sources-floating-button");
     if (!this.aiButtonContainer) {
       this.aiButtonContainer = this.listItemElement.createChild("span", "ai-button-container");
-      const floatingButton = Buttons2.FloatingButton.create("smart-assistant", action3.title());
+      const floatingButton = Buttons2.FloatingButton.create("smart-assistant", action3.title(), "ask-ai");
       floatingButton.addEventListener("click", (ev) => {
         ev.stopPropagation();
         this.navigatorView.sourceSelected(this.uiSourceCode, false);
@@ -13263,7 +13263,7 @@ var UIStrings24 = {
   /**
    * @description An error message logged to the Console panel when the user uses
    *              the "Save as…" context menu in the Sources panel and the operation
-   *              failes.
+   *              fails.
    */
   saveAsFailed: "Failed to save file to disk.",
   /**
@@ -14179,7 +14179,7 @@ var WatchExpression = class _WatchExpression extends Common18.ObjectWrapper.Obje
   }
   deleteWatchExpression(event) {
     event.consume(true);
-    UI25.ARIAUtils.alert(i18nString24(UIStrings25.watchExpressionDeleted));
+    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings25.watchExpressionDeleted));
     this.updateExpression(null);
   }
   createWatchExpression(result, exceptionDetails) {

@@ -50,7 +50,6 @@
     "../../../../../../front_end/models/ai_assistance/agents/PatchAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.test.ts",
-    "../../../../../../front_end/models/ai_assistance/agents/PerformanceInsightsAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.test.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/FileFormatter.test.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.test.ts",

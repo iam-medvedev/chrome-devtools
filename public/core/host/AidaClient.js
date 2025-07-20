@@ -57,6 +57,24 @@ export var UserTier;
     UserTier[UserTier["PUBLIC"] = 3] = "PUBLIC";
 })(UserTier || (UserTier = {}));
 /* eslint-enable @typescript-eslint/naming-convention */
+export var EditType;
+(function (EditType) {
+    // Unknown edit type
+    EditType[EditType["EDIT_TYPE_UNSPECIFIED"] = 0] = "EDIT_TYPE_UNSPECIFIED";
+    // User typed code/text into file
+    EditType[EditType["ADD"] = 1] = "ADD";
+    // User deleted code/text from file
+    EditType[EditType["DELETE"] = 2] = "DELETE";
+    // User pasted into file (this includes smart paste)
+    EditType[EditType["PASTE"] = 3] = "PASTE";
+    // User performs an undo action
+    EditType[EditType["UNDO"] = 4] = "UNDO";
+    // User performs a redo action
+    EditType[EditType["REDO"] = 5] = "REDO";
+    // User accepted a completion from AIDA
+    EditType[EditType["ACCEPT_COMPLETION"] = 6] = "ACCEPT_COMPLETION";
+})(EditType || (EditType = {}));
+/* eslint-enable @typescript-eslint/naming-convention */
 export var RecitationAction;
 (function (RecitationAction) {
     RecitationAction["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
@@ -275,6 +293,50 @@ export class AidaClient {
             ...clientEvent,
         }), resolve);
         return promise;
+    }
+    async completeCode(request) {
+        if (!InspectorFrontendHostInstance.aidaCodeComplete) {
+            throw new Error('aidaCodeComplete is not available');
+        }
+        const { promise, resolve } = Promise.withResolvers();
+        InspectorFrontendHostInstance.aidaCodeComplete(JSON.stringify(request), resolve);
+        const completeCodeResult = await promise;
+        if (completeCodeResult.error) {
+            throw new Error(`Cannot send request: ${completeCodeResult.error} ${completeCodeResult.detail || ''}`);
+        }
+        const response = completeCodeResult.response;
+        if (!response?.length) {
+            throw new Error('Empty response');
+        }
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(response);
+        }
+        catch (error) {
+            throw new Error('Cannot parse response: ' + response, { cause: error });
+        }
+        const generatedSamples = [];
+        let metadata = { rpcGlobalId: 0 };
+        if ('metadata' in parsedResponse) {
+            metadata = parsedResponse.metadata;
+        }
+        if ('generatedSamples' in parsedResponse) {
+            for (const generatedSample of parsedResponse.generatedSamples) {
+                const sample = {
+                    generationString: generatedSample.generationString,
+                    score: generatedSample.score,
+                    sampleId: generatedSample.sampleId,
+                };
+                if ('metadata' in generatedSample && 'attributionMetadata' in generatedSample.metadata) {
+                    sample.attributionMetadata = generatedSample.metadata.attributionMetadata;
+                }
+                generatedSamples.push(sample);
+            }
+        }
+        else {
+            return null;
+        }
+        return { generatedSamples, metadata };
     }
 }
 export function convertToUserTierEnum(userTier) {

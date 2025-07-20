@@ -916,8 +916,8 @@ export class SecurityMainView extends UI.Widget.VBox {
         else if (securityStateIssueIds.includes('lookalike') && safetyTipInfo?.safeUrl) {
             const hostname = new URL(safetyTipInfo.safeUrl).hostname;
             const hostnamePlaceholder = { PH1: hostname };
-            const formatedDescriptionSafety = `${i18nString(UIStrings.thisSitesHostnameLooksSimilarToP, hostnamePlaceholder)}\n\n${i18nString(UIStrings.ifYouBelieveThisIsShownInErrorSafety)}`;
-            currentExplanations.push({ summary: i18nString(UIStrings.possibleSpoofingUrl), description: formatedDescriptionSafety });
+            const formattedDescriptionSafety = `${i18nString(UIStrings.thisSitesHostnameLooksSimilarToP, hostnamePlaceholder)}\n\n${i18nString(UIStrings.ifYouBelieveThisIsShownInErrorSafety)}`;
+            currentExplanations.push({ summary: i18nString(UIStrings.possibleSpoofingUrl), description: formattedDescriptionSafety });
         }
         if (currentExplanations.length > 0) {
             // To avoid overwriting SafeBrowsing's title, set the main summary only if

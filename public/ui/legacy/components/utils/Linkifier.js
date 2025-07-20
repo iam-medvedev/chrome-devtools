@@ -689,7 +689,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
     // does not match. If no openResourceScheme is provided, it means the handler is
     // interested in all urls (except those handled by scheme-specific handlers, see
     // otherSchemeRegistrations).
-    static shouldHandleOpenResource = (openResourceScheme, url, otherSchemeRegistrations) => {
+    static shouldHandleOpenResource(openResourceScheme, url, otherSchemeRegistrations) {
         // If this is a scheme-specific handler, make sure the registered scheme is
         // present in the url.
         if (openResourceScheme) {
@@ -699,7 +699,7 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         // exception of urls that scheme-specific handlers have registered for.
         const scheme = URL.parse(url)?.protocol || '';
         return !otherSchemeRegistrations.has(scheme);
-    };
+    }
     static uiLocation(link) {
         const info = Linkifier.linkInfo(link);
         return info ? info.uiLocation : null;
@@ -744,11 +744,8 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
                 specificSchemeHandlers.add(registration.scheme);
             }
         }
-        for (const registration of linkHandlers.values()) {
-            if (!registration?.handler) {
-                continue;
-            }
-            const { title, handler, filter: shouldHandleOpenResource } = registration;
+        for (const registration of linkHandlers.values().filter(r => r.handler)) {
+            const { title, handler, shouldHandleOpenResource } = registration;
             if (url && !shouldHandleOpenResource(url, specificSchemeHandlers)) {
                 continue;
             }

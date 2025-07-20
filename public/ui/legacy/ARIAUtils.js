@@ -274,56 +274,72 @@ export function setSetSize(element, size) {
 export function setPositionInSet(element, position) {
     element.setAttribute('aria-posinset', position.toString());
 }
-function hideFromLayout(element) {
-    element.style.position = 'absolute';
-    element.style.left = '-999em';
-    element.style.width = '100em';
-    element.style.overflow = 'hidden';
-}
-const alertElements = new WeakMap();
-function createAlertElement(container) {
-    const element = container.createChild('div');
-    hideFromLayout(element);
-    element.setAttribute('role', 'alert');
-    element.setAttribute('aria-atomic', 'true');
-    return element;
-}
-export function getOrCreateAlertElement(container = document.body, opts) {
-    const existingAlertElement = alertElements.get(container);
-    if (existingAlertElement && existingAlertElement.isConnected && !opts?.force) {
-        return existingAlertElement;
+export class LiveAnnouncer {
+    static #announcerElementsByRole = {
+        ["alert" /* AnnouncerRole.ALERT */]: new WeakMap(),
+        ["status" /* AnnouncerRole.STATUS */]: new WeakMap(),
+    };
+    static #hideFromLayout(element) {
+        element.style.position = 'absolute';
+        element.style.left = '-999em';
+        element.style.width = '100em';
+        element.style.overflow = 'hidden';
     }
-    const newAlertElement = createAlertElement(container);
-    alertElements.set(container, newAlertElement);
-    return newAlertElement;
-}
-/**
- * Used only in tests to clear any left over alerts between test runs.
- */
-export function removeAlertElement(container) {
-    const alertElement = alertElements.get(container);
-    if (alertElement) {
-        alertElement.remove();
-        alertElements.delete(container);
+    static #createAnnouncerElement(container, role) {
+        const element = container.createChild('div');
+        LiveAnnouncer.#hideFromLayout(element);
+        element.setAttribute('role', role);
+        element.setAttribute('aria-atomic', 'true');
+        return element;
     }
-}
-/**
- * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
- * Ensures messages are announced even if identical to the previous message by appending
- * a non-breaking space ('\u00A0') when necessary. This works around screen reader
- * optimizations that might otherwise silence repeated identical alerts. The element's
- * `aria-atomic="true"` attribute ensures the entire message is announced upon change.
- *
- * The alert element is associated with the currently active dialog's content element
- * if a dialog is showing, otherwise defaults to an element associated with the document body.
- * Messages longer than 10000 characters will be trimmed.
- *
- * @param message The message to be announced.
- */
-export function alert(message) {
-    const dialog = Dialog.getInstance();
-    const element = getOrCreateAlertElement(dialog?.isShowing() ? dialog.contentElement : undefined);
-    const announcedMessage = element.textContent === message ? `${message}\u00A0` : message;
-    element.textContent = Platform.StringUtilities.trimEndWithMaxLength(announcedMessage, 10000);
+    static #removeAnnouncerElement(container, role) {
+        const element = LiveAnnouncer.#announcerElementsByRole[role].get(container);
+        if (element) {
+            element.remove();
+            LiveAnnouncer.#announcerElementsByRole[role].delete(container);
+        }
+    }
+    /**
+     * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
+     * Ensures messages are announced even if identical to the previous message by appending
+     * a non-breaking space ('\u00A0') when necessary. This works around screen reader
+     * optimizations that might otherwise silence repeated identical alerts. The element's
+     * `aria-atomic="true"` attribute ensures the entire message is announced upon change.
+     *
+     * The alert element is associated with the currently active dialog's content element
+     * if a dialog is showing, otherwise defaults to an element associated with the document body.
+     * Messages longer than 10000 characters will be trimmed.
+     *
+     * @param message The message to be announced.
+     */
+    static #announce(message, role) {
+        const dialog = Dialog.getInstance();
+        const element = LiveAnnouncer.getOrCreateAnnouncerElement(dialog?.isShowing() ? dialog.contentElement : undefined, role);
+        const announcedMessage = element.textContent === message ? `${message}\u00A0` : message;
+        element.textContent = Platform.StringUtilities.trimEndWithMaxLength(announcedMessage, 10000);
+    }
+    static getOrCreateAnnouncerElement(container = document.body, role, opts) {
+        const existingAnnouncerElement = LiveAnnouncer.#announcerElementsByRole[role].get(container);
+        if (existingAnnouncerElement && existingAnnouncerElement.isConnected && !opts?.force) {
+            return existingAnnouncerElement;
+        }
+        const newAnnouncerElement = LiveAnnouncer.#createAnnouncerElement(container, role);
+        LiveAnnouncer.#announcerElementsByRole[role].set(container, newAnnouncerElement);
+        return newAnnouncerElement;
+    }
+    static initializeAnnouncerElements(container = document.body) {
+        LiveAnnouncer.getOrCreateAnnouncerElement(container, "alert" /* AnnouncerRole.ALERT */);
+        LiveAnnouncer.getOrCreateAnnouncerElement(container, "status" /* AnnouncerRole.STATUS */);
+    }
+    static removeAnnouncerElements(container = document.body) {
+        LiveAnnouncer.#removeAnnouncerElement(container, "alert" /* AnnouncerRole.ALERT */);
+        LiveAnnouncer.#removeAnnouncerElement(container, "alert" /* AnnouncerRole.ALERT */);
+    }
+    static alert(message) {
+        LiveAnnouncer.#announce(message, "alert" /* AnnouncerRole.ALERT */);
+    }
+    static status(message) {
+        LiveAnnouncer.#announce(message, "status" /* AnnouncerRole.STATUS */);
+    }
 }
 //# sourceMappingURL=ARIAUtils.js.map

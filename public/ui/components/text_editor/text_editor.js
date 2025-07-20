@@ -101,6 +101,9 @@ var AutocompleteHistory = class _AutocompleteHistory {
 var config_exports = {};
 __export(config_exports, {
   DynamicSetting: () => DynamicSetting,
+  acceptAiAutoCompleteSuggestion: () => acceptAiAutoCompleteSuggestion,
+  aiAutoCompleteSuggestion: () => aiAutoCompleteSuggestion,
+  aiAutoCompleteSuggestionState: () => aiAutoCompleteSuggestionState,
   allowScrollPastEof: () => allowScrollPastEof,
   autoDetectIndent: () => autoDetectIndent,
   autocompletion: () => autocompletion2,
@@ -114,6 +117,7 @@ __export(config_exports, {
   dummyDarkTheme: () => dummyDarkTheme,
   dynamicSetting: () => dynamicSetting,
   indentUnit: () => indentUnit2,
+  setAiAutoCompleteSuggestion: () => setAiAutoCompleteSuggestion,
   showCompletionHint: () => showCompletionHint,
   showWhitespace: () => showWhitespace,
   sourcesWordWrap: () => sourcesWordWrap,
@@ -436,7 +440,7 @@ function announceSelectedCompletionInfo(view) {
     PH2: (CM2.selectedCompletionIndex(view.state) || 0) + 1,
     PH3: CM2.currentCompletions(view.state).length
   });
-  UI.ARIAUtils.alert(ariaMessage);
+  UI.ARIAUtils.LiveAnnouncer.alert(ariaMessage);
 }
 var autocompletion2 = new DynamicSetting("text-editor-autocompletion", (activateOnTyping) => [
   CM2.autocompletion({
@@ -704,6 +708,73 @@ function contentIncludingHint(view) {
   }
   return content;
 }
+var setAiAutoCompleteSuggestion = CM2.StateEffect.define();
+var aiAutoCompleteSuggestionState = CM2.StateField.define({
+  create: () => null,
+  update(value, tr) {
+    for (const effect of tr.effects) {
+      if (effect.is(setAiAutoCompleteSuggestion)) {
+        if (effect.value) {
+          return { text: effect.value, from: tr.state.selection.main.head };
+        }
+        return null;
+      }
+    }
+    if (!value) {
+      return value;
+    }
+    const from = tr.changes.mapPos(value.from);
+    const { head } = tr.state.selection.main;
+    if (tr.changes.touchesRange(0, from - 1) || head < from) {
+      return null;
+    }
+    const typedText = tr.state.doc.sliceString(from, head);
+    return value.text.startsWith(typedText) ? value : null;
+  }
+});
+function acceptAiAutoCompleteSuggestion(view) {
+  const suggestion = view.state.field(aiAutoCompleteSuggestionState);
+  if (!suggestion) {
+    return false;
+  }
+  const { text, from } = suggestion;
+  const { head } = view.state.selection.main;
+  const typedText = view.state.doc.sliceString(from, head);
+  if (!text.startsWith(typedText)) {
+    return false;
+  }
+  const remainingText = text.slice(typedText.length);
+  view.dispatch({
+    changes: { from: head, insert: remainingText },
+    selection: { anchor: head + remainingText.length },
+    effects: setAiAutoCompleteSuggestion.of(null),
+    userEvent: "input.complete"
+  });
+  return true;
+}
+var aiAutoCompleteSuggestion = [
+  aiAutoCompleteSuggestionState,
+  CM2.ViewPlugin.fromClass(class {
+    decorations = CM2.Decoration.none;
+    update(update) {
+      const activeSuggestion = update.state.field(aiAutoCompleteSuggestionState);
+      const { head, empty: empty2 } = update.state.selection.main;
+      let hint = "";
+      if (activeSuggestion && empty2 && head >= activeSuggestion.from) {
+        const { text, from } = activeSuggestion;
+        const typedText = update.state.doc.sliceString(from, head);
+        if (text.startsWith(typedText)) {
+          hint = text.slice(typedText.length);
+        }
+      }
+      if (!hint) {
+        this.decorations = CM2.Decoration.none;
+      } else {
+        this.decorations = CM2.Decoration.set([CM2.Decoration.widget({ widget: new CompletionHint(hint), side: 1 }).range(head)]);
+      }
+    }
+  }, { decorations: (p) => p.decorations })
+];
 
 // gen/front_end/ui/components/text_editor/ExecutionPositionHighlighter.js
 var ExecutionPositionHighlighter_exports = {};

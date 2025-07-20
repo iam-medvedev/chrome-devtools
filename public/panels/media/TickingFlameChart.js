@@ -212,8 +212,8 @@ export class TickingFlameChart extends UI.Widget.VBox {
         }
     }
     onScroll(e) {
-        // TODO: is this a good divisor? does it account for high presicision scroll wheels?
-        // low precisision scroll wheels?
+        // TODO: is this a good divisor? does it account for high precision scroll wheels?
+        // low precision scroll wheels?
         const scrollTickCount = Math.round(e.deltaY / 50);
         const scrollPositionRatio = e.offsetX / e.srcElement.clientWidth;
         if (scrollTickCount > 0) {
@@ -303,7 +303,7 @@ class TickingFlameChartDataProvider {
         // All events.
         // Map<Event>
         this.eventMap = new Map();
-        // Contains the numerical indicies. This is passed as a reference to the events
+        // Contains the numerical indices. This is passed as a reference to the events
         // so that they can update it when they change.
         this.timelineDataInternal = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
         // The current sum of all group heights.

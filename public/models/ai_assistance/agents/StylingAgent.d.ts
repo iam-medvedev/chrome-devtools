@@ -65,6 +65,7 @@ export declare class StylingAgentWithFunctionCalling extends StylingAgent {
     functionCallEmulationEnabled: boolean;
     preamble: string;
     formatParsedAnswer({ answer }: ParsedAnswer): string;
+    preambleFeatures(): string[];
     parseTextResponse(text: string): ParsedResponse;
 }
 export {};

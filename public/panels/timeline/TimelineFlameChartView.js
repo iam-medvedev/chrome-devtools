@@ -738,7 +738,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     }
     /**
      * Handles key presses that could impact the creation of a time range overlay with the keyboard.
-     * @returns `true` if the event should not be propogated + have its default behaviour stopped.
+     * @returns `true` if the event should not be propagated + have its default behaviour stopped.
      */
     #handleTimeRangeKeyboardCreation(event) {
         const visibleWindow = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.timelineTraceWindow;
@@ -821,7 +821,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         if (this.#linkSelectionAnnotation &&
             this.#linkSelectionAnnotation.state === "creation_not_started" /* Trace.Types.File.EntriesLinkState.CREATION_NOT_STARTED */) {
             this.#clearLinkSelectionAnnotation(true);
-            // We have dealt with the keypress as the user is typing into the label, so do not let it propogate up.
+            // We have dealt with the keypress as the user is typing into the label, so do not let it propagate up.
             // This also ensures that if the user uses "Escape" they don't toggle the DevTools drawer.
             event.stopPropagation();
         }
@@ -1269,13 +1269,14 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
                 }
                 const aiCallTree = Utils.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
                 if (aiCallTree) {
-                    UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
+                    const context = Utils.AIContext.AgentFocus.fromCallTree(aiCallTree);
+                    UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
                 }
             });
         }
     }
     // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
-    // their entry with a new UI. Becuase of that, thier entries can no longer be "selected" in the timings track,
+    // their entry with a new UI. Because of that, their entries can no longer be "selected" in the timings track,
     // so if clicked, we only open their details view.
     openSelectionDetailsView(selection) {
         if (this.detailsView) {

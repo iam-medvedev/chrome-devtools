@@ -1,4 +1,4 @@
-import { SelectorPart, type Selector } from './Selector.js';
+import { type Selector, SelectorPart } from './Selector.js';
 export interface QueryableNode extends Node {
     querySelectorAll(selectors: string): NodeListOf<Element>;
 }

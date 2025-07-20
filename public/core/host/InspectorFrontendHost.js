@@ -240,27 +240,10 @@ export class InspectorFrontendHostStub {
         return this.#fileSystem;
     }
     loadNetworkResource(url, _headers, streamId, callback) {
-        // Read the first 3 bytes looking for the gzip signature in the file header
-        function isGzip(ab) {
-            const buf = new Uint8Array(ab);
-            if (!buf || buf.length < 3) {
-                return false;
-            }
-            // https://www.rfc-editor.org/rfc/rfc1952#page-6
-            return buf[0] === 0x1F && buf[1] === 0x8B && buf[2] === 0x08;
-        }
         fetch(url)
             .then(async (result) => {
-            const resultArrayBuf = await result.arrayBuffer();
-            let decoded = resultArrayBuf;
-            if (isGzip(resultArrayBuf)) {
-                const ds = new DecompressionStream('gzip');
-                const writer = ds.writable.getWriter();
-                void writer.write(resultArrayBuf);
-                void writer.close();
-                decoded = ds.readable;
-            }
-            const text = await new Response(decoded).text();
+            const respBuffer = await result.arrayBuffer();
+            const text = await Common.Gzip.arrayBufferToString(respBuffer);
             return text;
         })
             .then(function (text) {
@@ -392,6 +375,20 @@ export class InspectorFrontendHostStub {
     showContextMenuAtPoint(_x, _y, _items, _document) {
         throw new Error('Soft context menu should be used');
     }
+    /**
+     * **Hosted mode** is when DevTools is loaded over `http(s)://` rather than from `devtools://`.
+     * It does **not** indicate whether the frontend is connected to a valid CDP target.
+     *
+     *  | Example case                                         | Mode           | Example URL                                                                   |
+     *  | :--------------------------------------------------- | :------------- | :---------------------------------------------------------------------------- |
+     *  | typical devtools: (un)docked w/ native CDP bindings  | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?targetType=tab&...`            |
+     *  | tab href is `devtools://…?ws=…`                      | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?ws=localhost:9228/...`         |
+     *  | tab href is `devtools://…` but no connection         | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html`                               |
+     *  | tab href is `https://…?ws=` (connected)              | **Hosted**     | `https://chrome-devtools-frontend.appspot.com/serve_rev/@.../worker_app.html` |
+     *  | tab href is `http://…` but no connection             | **Hosted**     | `http://localhost:9222/devtools/inspector.html?ws=localhost:9222/...`         |
+     *
+     * See also `canDock` which has similar semantics.
+     */
     isHostedMode() {
         return true;
     }
@@ -407,6 +404,11 @@ export class InspectorFrontendHostStub {
         });
     }
     registerAidaClientEvent(_request, callback) {
+        callback({
+            error: 'Not implemented',
+        });
+    }
+    aidaCodeComplete(_request, callback) {
         callback({
             error: 'Not implemented',
         });

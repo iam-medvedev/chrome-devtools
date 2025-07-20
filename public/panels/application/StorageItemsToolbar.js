@@ -108,7 +108,7 @@ export class StorageItemsToolbar extends Common.ObjectWrapper.eventMixin(UI.Widg
             onFilterChanged: this.filterChanged.bind(this),
             onRefresh: () => {
                 this.dispatchEventToListeners("Refresh" /* StorageItemsToolbar.Events.REFRESH */);
-                UI.ARIAUtils.alert(i18nString(UIStrings.refreshedStatus));
+                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.refreshedStatus));
             },
             onDeleteAll: () => this.dispatchEventToListeners("DeleteAll" /* StorageItemsToolbar.Events.DELETE_ALL */),
             onDeleteSelected: () => this.dispatchEventToListeners("DeleteSelected" /* StorageItemsToolbar.Events.DELETE_SELECTED */),

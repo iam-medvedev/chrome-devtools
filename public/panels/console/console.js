@@ -2819,7 +2819,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       stackTraceElement.classList.toggle("hidden-stack-trace", !expand);
       const stackTableState = expand ? i18nString4(UIStrings4.stackMessageExpanded) : i18nString4(UIStrings4.stackMessageCollapsed);
       UI4.ARIAUtils.setLabel(contentElement, `${messageElement.textContent} ${stackTableState}`);
-      UI4.ARIAUtils.alert(stackTableState);
+      UI4.ARIAUtils.LiveAnnouncer.alert(stackTableState);
       UI4.ARIAUtils.setExpanded(clickableElement, expand);
       this.traceExpanded = expand;
     };
@@ -5672,7 +5672,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     if (hadFocus) {
       this.prompt.focus();
     }
-    UI6.ARIAUtils.alert(i18nString5(UIStrings5.consoleCleared));
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.consoleCleared));
   }
   handleContextMenuEvent(event) {
     const contextMenu = new UI6.ContextMenu.ContextMenu(event);

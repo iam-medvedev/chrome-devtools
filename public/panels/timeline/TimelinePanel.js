@@ -440,7 +440,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.wrappable = true;
         this.panelRightToolbar = timelineToolbarContainer.createChild('devtools-toolbar');
         this.panelRightToolbar.role = 'presentation';
-        if (!isNode) {
+        if (!isNode && this.hasPrimaryTarget()) {
             this.createSettingsPane();
             this.updateShowSettingsToolbarButton();
         }
@@ -875,14 +875,26 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             });
         }
     }
+    /**
+     * Returns false if this was loaded in a standalone context such that recording is
+     * not possible, like an enhanced trace (which opens a new devtools window) or
+     * trace.cafe.
+     */
+    hasPrimaryTarget() {
+        return Boolean(SDK.TargetManager.TargetManager.instance().primaryPageTarget()?.sessionId);
+    }
     populateToolbar() {
-        // Record
-        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
-        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
+        const hasPrimaryTarget = this.hasPrimaryTarget();
+        if (hasPrimaryTarget || isNode) {
+            this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
+        }
+        if (hasPrimaryTarget) {
+            this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
+        }
         this.clearButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.clear), 'clear', undefined, 'timeline.clear');
         this.clearButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => this.onClearButton());
         this.panelToolbar.appendToolbarItem(this.clearButton);
-        // Load / SaveCLICK
+        // Load / Save
         this.loadButton =
             new UI.Toolbar.ToolbarButton(i18nString(UIStrings.loadProfile), 'import', undefined, 'timeline.load-from-file');
         this.loadButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
@@ -913,19 +925,20 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.appendSeparator();
         this.panelToolbar.appendToolbarItem(this.loadButton);
         this.panelToolbar.appendToolbarItem(this.saveButton);
-        // History
-        this.panelToolbar.appendSeparator();
-        if (!isNode) {
-            this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
-            this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
-                this.#changeView({ mode: 'LANDING_PAGE' });
-                this.#historyManager.navigateToLandingPage();
-            });
-            this.panelToolbar.appendToolbarItem(this.homeButton);
+        if (hasPrimaryTarget) {
             this.panelToolbar.appendSeparator();
+            if (!isNode) {
+                this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
+                this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
+                    this.#changeView({ mode: 'LANDING_PAGE' });
+                    this.#historyManager.navigateToLandingPage();
+                });
+                this.panelToolbar.appendToolbarItem(this.homeButton);
+                this.panelToolbar.appendSeparator();
+            }
         }
+        // TODO(crbug.com/337909145): need to hide "Live metrics" option if !canRecord.
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
-        this.panelToolbar.appendSeparator();
         // View
         this.panelToolbar.appendSeparator();
         if (!isNode) {
@@ -935,9 +948,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         }
         this.showMemoryToolbarCheckbox =
             this.createSettingCheckbox(this.showMemorySetting, i18nString(UIStrings.showMemoryTimeline));
-        this.panelToolbar.appendToolbarItem(this.showMemoryToolbarCheckbox);
-        // GC
-        this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('components.collect-garbage'));
+        if (hasPrimaryTarget) {
+            // GC
+            this.panelToolbar.appendToolbarItem(this.showMemoryToolbarCheckbox);
+            this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('components.collect-garbage'));
+        }
         // Ignore list setting
         this.panelToolbar.appendSeparator();
         const showIgnoreListSetting = new TimelineComponents.IgnoreListSetting.IgnoreListSetting();
@@ -954,7 +969,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.panelToolbar.appendToolbarItem(isolateSelector);
         }
         // Settings
-        if (!isNode) {
+        if (!isNode && hasPrimaryTarget) {
             this.panelRightToolbar.appendSeparator();
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
@@ -1291,25 +1306,19 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         if (this.state !== "Idle" /* State.IDLE */) {
             return;
         }
-        const maximumTraceFileLengthToDetermineEnhancedTraces = 5000;
-        // We are expecting to locate the enhanced traces version within the first 5000
-        // characters of the trace file if the given trace file is enhanced traces.
-        // Doing so can avoid serializing the whole trace while needing to serialize
-        // it again in rehydrated session for enhanced traces.
-        const blob = file.slice(0, maximumTraceFileLengthToDetermineEnhancedTraces);
-        const content = await blob.text();
+        const content = await Common.Gzip.fileToString(file);
         if (content.includes('enhancedTraceVersion')) {
             await window.scheduler.postTask(() => {
-                this.#launchRehydratedSession(file);
+                this.#launchRehydratedSession(content);
             }, { priority: 'background' });
         }
         else {
-            this.loader = await TimelineLoader.loadFromFile(file, this);
+            this.loader = TimelineLoader.loadFromParsedJsonFile(JSON.parse(content), this);
             this.prepareToLoadTimeline();
         }
         this.createFileSelector();
     }
-    #launchRehydratedSession(file) {
+    #launchRehydratedSession(traceJson) {
         let rehydratingWindow = null;
         let pathToLaunch = null;
         const url = new URL(window.location.href);
@@ -1320,7 +1329,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const hostWindow = window;
         function onMessageHandler(ev) {
             if (url && ev.data && ev.data.type === 'REHYDRATING_WINDOW_READY') {
-                rehydratingWindow?.postMessage({ type: 'REHYDRATING_TRACE_FILE', traceFile: file }, url.origin);
+                rehydratingWindow?.postMessage({ type: 'REHYDRATING_TRACE_FILE', traceJson }, url.origin);
             }
             hostWindow.removeEventListener('message', onMessageHandler);
         }
@@ -1370,7 +1379,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.flameChart.rebuildDataForTrace();
     }
     updateSettingsPaneVisibility() {
-        if (isNode) {
+        if (isNode || !this.hasPrimaryTarget()) {
             return;
         }
         if (this.showSettingsPaneSetting.get()) {
@@ -1620,20 +1629,23 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         void UI.InspectorView.InspectorView.instance().showPanel('timeline');
     }
     updateTimelineControls() {
-        this.toggleRecordAction.setToggled(this.state === "Recording" /* State.RECORDING */);
-        this.toggleRecordAction.setEnabled(this.state === "Recording" /* State.RECORDING */ || this.state === "Idle" /* State.IDLE */);
-        this.recordReloadAction.setEnabled(isNode ? false : this.state === "Idle" /* State.IDLE */);
-        this.#historyManager.setEnabled(this.state === "Idle" /* State.IDLE */);
-        this.clearButton.setEnabled(this.state === "Idle" /* State.IDLE */);
-        this.panelToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
-        this.panelRightToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
-        this.dropTarget.setEnabled(this.state === "Idle" /* State.IDLE */);
-        this.loadButton.setEnabled(this.state === "Idle" /* State.IDLE */);
-        this.saveButton.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
-        this.homeButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
         if (this.#viewMode.mode === 'VIEWING_TRACE') {
             this.#addSidebarIconToToolbar();
         }
+        this.saveButton.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
+        this.#historyManager.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.clearButton.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.dropTarget.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.loadButton.setEnabled(this.state === "Idle" /* State.IDLE */);
+        this.toggleRecordAction.setToggled(this.state === "Recording" /* State.RECORDING */);
+        this.toggleRecordAction.setEnabled(this.state === "Recording" /* State.RECORDING */ || this.state === "Idle" /* State.IDLE */);
+        if (!this.hasPrimaryTarget()) {
+            return;
+        }
+        this.recordReloadAction.setEnabled(isNode ? false : this.state === "Idle" /* State.IDLE */);
+        this.panelToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
+        this.panelRightToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
+        this.homeButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
     }
     async toggleRecording() {
         if (this.state === "Idle" /* State.IDLE */) {
@@ -1662,8 +1674,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.flameChart.getNetworkDataProvider().reset();
         this.flameChart.reset();
         this.#changeView({ mode: 'LANDING_PAGE' });
-        UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, null);
-        UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, null);
+        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, null);
     }
     #hasActiveTrace() {
         return this.#viewMode.mode === 'VIEWING_TRACE';
@@ -1683,7 +1694,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
      */
     #ariaDebouncer = Common.Debouncer.debounce(() => {
         if (this.#pendingAriaMessage) {
-            UI.ARIAUtils.alert(this.#pendingAriaMessage);
+            UI.ARIAUtils.LiveAnnouncer.alert(this.#pendingAriaMessage);
             this.#pendingAriaMessage = null;
         }
     }, 1_000);
@@ -1695,7 +1706,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // If the pending message is different, immediately announce the pending
         // message + then update the pending message to the new one.
         if (this.#pendingAriaMessage) {
-            UI.ARIAUtils.alert(this.#pendingAriaMessage);
+            UI.ARIAUtils.LiveAnnouncer.alert(this.#pendingAriaMessage);
         }
         this.#pendingAriaMessage = message;
         this.#ariaDebouncer();
@@ -2348,7 +2359,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     #announceSelectionToAria(oldSelection, newSelection) {
         if (oldSelection !== null && newSelection === null) {
-            UI.ARIAUtils.alert(i18nString(UIStrings.selectionCleared));
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.selectionCleared));
         }
         if (newSelection === null) {
             return;
@@ -2365,11 +2376,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         }
         // Announce the type of event that was selected (special casing frames.)
         if (Trace.Types.Events.isLegacyTimelineFrame(newSelection.event)) {
-            UI.ARIAUtils.alert(i18nString(UIStrings.frameSelected));
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.frameSelected));
             return;
         }
         const name = Utils.EntryName.nameForEntry(newSelection.event);
-        UI.ARIAUtils.alert(i18nString(UIStrings.eventSelected, { PH1: name }));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.eventSelected, { PH1: name }));
     }
     select(selection) {
         this.#announceSelectionToAria(this.selection, selection);

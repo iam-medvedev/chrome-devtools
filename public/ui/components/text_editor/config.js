@@ -136,7 +136,7 @@ function announceSelectedCompletionInfo(view) {
         PH2: (CM.selectedCompletionIndex(view.state) || 0) + 1,
         PH3: CM.currentCompletions(view.state).length,
     });
-    UI.ARIAUtils.alert(ariaMessage);
+    UI.ARIAUtils.LiveAnnouncer.alert(ariaMessage);
 }
 export const autocompletion = new DynamicSetting('text-editor-autocompletion', (activateOnTyping) => [CM.autocompletion({
         activateOnTyping,
@@ -417,4 +417,75 @@ export function contentIncludingHint(view) {
     }
     return content;
 }
+export const setAiAutoCompleteSuggestion = CM.StateEffect.define();
+export const aiAutoCompleteSuggestionState = CM.StateField.define({
+    create: () => null,
+    update(value, tr) {
+        for (const effect of tr.effects) {
+            if (effect.is(setAiAutoCompleteSuggestion)) {
+                if (effect.value) {
+                    return { text: effect.value, from: tr.state.selection.main.head };
+                }
+                return null;
+            }
+        }
+        if (!value) {
+            return value;
+        }
+        // If a change happened before the position from which suggestion was generated, set to null.
+        const from = tr.changes.mapPos(value.from);
+        const { head } = tr.state.selection.main;
+        if (tr.changes.touchesRange(0, from - 1) || head < from) {
+            return null;
+        }
+        // Check if what's typed is a prefix of the suggestion.
+        const typedText = tr.state.doc.sliceString(from, head);
+        return value.text.startsWith(typedText) ? value : null;
+    },
+});
+export function acceptAiAutoCompleteSuggestion(view) {
+    const suggestion = view.state.field(aiAutoCompleteSuggestionState);
+    if (!suggestion) {
+        return false;
+    }
+    const { text, from } = suggestion;
+    const { head } = view.state.selection.main;
+    const typedText = view.state.doc.sliceString(from, head);
+    if (!text.startsWith(typedText)) {
+        return false;
+    }
+    const remainingText = text.slice(typedText.length);
+    view.dispatch({
+        changes: { from: head, insert: remainingText },
+        selection: { anchor: head + remainingText.length },
+        effects: setAiAutoCompleteSuggestion.of(null),
+        userEvent: 'input.complete',
+    });
+    return true;
+}
+export const aiAutoCompleteSuggestion = [
+    aiAutoCompleteSuggestionState,
+    CM.ViewPlugin.fromClass(class {
+        decorations = CM.Decoration.none;
+        update(update) {
+            const activeSuggestion = update.state.field(aiAutoCompleteSuggestionState);
+            const { head, empty } = update.state.selection.main;
+            let hint = '';
+            if (activeSuggestion && empty && head >= activeSuggestion.from) {
+                const { text, from } = activeSuggestion;
+                const typedText = update.state.doc.sliceString(from, head);
+                if (text.startsWith(typedText)) {
+                    hint = text.slice(typedText.length);
+                }
+            }
+            if (!hint) {
+                this.decorations = CM.Decoration.none;
+            }
+            else {
+                this.decorations =
+                    CM.Decoration.set([CM.Decoration.widget({ widget: new CompletionHint(hint), side: 1 }).range(head)]);
+            }
+        }
+    }, { decorations: p => p.decorations }),
+];
 //# sourceMappingURL=config.js.map

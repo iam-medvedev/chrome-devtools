@@ -34,3 +34,12 @@ export declare const showCompletionHint: CM.ViewPlugin<{
     topCompletion(state: CM.EditorState): string | null;
 }>;
 export declare function contentIncludingHint(view: CM.EditorView): string;
+export declare const setAiAutoCompleteSuggestion: CM.StateEffectType<string | null>;
+interface ActiveSuggestion {
+    text: string;
+    from: number;
+}
+export declare const aiAutoCompleteSuggestionState: CM.StateField<ActiveSuggestion | null>;
+export declare function acceptAiAutoCompleteSuggestion(view: CM.EditorView): boolean;
+export declare const aiAutoCompleteSuggestion: CM.Extension;
+export {};

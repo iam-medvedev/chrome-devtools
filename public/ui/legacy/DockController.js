@@ -31,7 +31,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { alert } from './ARIAUtils.js';
+import { LiveAnnouncer } from './ARIAUtils.js';
 import { ToolbarButton } from './Toolbar.js';
 const UIStrings = {
     /**
@@ -99,6 +99,11 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     dockSide() {
         return this.dockSideInternal;
     }
+    /** Whether the DevTools can be docked, used to determine if we show docking UI.
+     * Set via `Root.Runtime.Runtime.queryParam('can_dock')`. See https://cs.chromium.org/can_dock+f:window
+     *
+     * Shouldn't be used as a heuristic for target connection state.
+     */
     canDock() {
         return this.canDockInternal;
     }
@@ -141,10 +146,10 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     }
     announceDockLocation() {
         if (this.dockSideInternal === "undocked" /* DockState.UNDOCKED */) {
-            alert(i18nString(UIStrings.devtoolsUndocked));
+            LiveAnnouncer.alert(i18nString(UIStrings.devtoolsUndocked));
         }
         else {
-            alert(i18nString(UIStrings.devToolsDockedTo, { PH1: this.dockSideInternal || '' }));
+            LiveAnnouncer.alert(i18nString(UIStrings.devToolsDockedTo, { PH1: this.dockSideInternal || '' }));
         }
     }
 }

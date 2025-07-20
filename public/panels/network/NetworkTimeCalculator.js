@@ -75,38 +75,34 @@ export class NetworkTimeBoundary {
     }
 }
 export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
+    #minimumBoundary = -1;
+    #maximumBoundary = -1;
+    #boundaryChangedEventThrottler = new Common.Throttler.Throttler(0);
+    #window = null;
+    #workingArea;
     startAtZero;
-    minimumBoundaryInternal;
-    maximumBoundaryInternal;
-    boundryChangedEventThrottler;
-    window;
-    workingArea;
     constructor(startAtZero) {
         super();
         this.startAtZero = startAtZero;
-        this.minimumBoundaryInternal = -1;
-        this.maximumBoundaryInternal = -1;
-        this.boundryChangedEventThrottler = new Common.Throttler.Throttler(0);
-        this.window = null;
     }
     setWindow(window) {
-        this.window = window;
+        this.#window = window;
         this.boundaryChanged();
     }
     computePosition(time) {
-        return (time - this.minimumBoundary()) / this.boundarySpan() * (this.workingArea || 0);
+        return (time - this.minimumBoundary()) / this.boundarySpan() * (this.#workingArea || 0);
     }
     formatValue(value, precision) {
         return i18n.TimeUtilities.secondsToString(value, Boolean(precision));
     }
     minimumBoundary() {
-        return this.window ? this.window.minimum : this.minimumBoundaryInternal;
+        return this.#window ? this.#window.minimum : this.#minimumBoundary;
     }
     zeroTime() {
-        return this.minimumBoundaryInternal;
+        return this.#minimumBoundary;
     }
     maximumBoundary() {
-        return this.window ? this.window.maximum : this.maximumBoundaryInternal;
+        return this.#window ? this.#window.maximum : this.#maximumBoundary;
     }
     boundary() {
         return new NetworkTimeBoundary(this.minimumBoundary(), this.maximumBoundary());
@@ -115,15 +111,15 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
         return this.maximumBoundary() - this.minimumBoundary();
     }
     reset() {
-        this.minimumBoundaryInternal = -1;
-        this.maximumBoundaryInternal = -1;
+        this.#minimumBoundary = -1;
+        this.#maximumBoundary = -1;
         this.boundaryChanged();
     }
     value() {
         return 0;
     }
     setDisplayWidth(clientWidth) {
-        this.workingArea = clientWidth;
+        this.#workingArea = clientWidth;
     }
     computeBarGraphPercentages(request) {
         let start;
@@ -155,7 +151,7 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
         return { start, middle, end };
     }
     boundaryChanged() {
-        void this.boundryChangedEventThrottler.schedule(async () => {
+        void this.#boundaryChangedEventThrottler.schedule(async () => {
             this.dispatchEventToListeners("BoundariesChanged" /* Events.BOUNDARIES_CHANGED */);
         });
     }
@@ -163,8 +159,8 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
         if (eventTime === -1 || this.startAtZero) {
             return;
         }
-        if (this.maximumBoundaryInternal === undefined || eventTime > this.maximumBoundaryInternal) {
-            this.maximumBoundaryInternal = eventTime;
+        if (this.#maximumBoundary === undefined || eventTime > this.#maximumBoundary) {
+            this.#maximumBoundary = eventTime;
             this.boundaryChanged();
         }
     }
@@ -212,20 +208,18 @@ export class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     extendBoundariesToIncludeTimestamp(timestamp) {
-        const previousMinimumBoundary = this.minimumBoundaryInternal;
-        const previousMaximumBoundary = this.maximumBoundaryInternal;
+        const previousMinimumBoundary = this.#minimumBoundary;
+        const previousMaximumBoundary = this.#maximumBoundary;
         const minOffset = MINIMUM_SPREAD;
-        if (this.minimumBoundaryInternal === -1 || this.maximumBoundaryInternal === -1) {
-            this.minimumBoundaryInternal = timestamp;
-            this.maximumBoundaryInternal = timestamp + minOffset;
+        if (this.#minimumBoundary === -1 || this.#maximumBoundary === -1) {
+            this.#minimumBoundary = timestamp;
+            this.#maximumBoundary = timestamp + minOffset;
         }
         else {
-            this.minimumBoundaryInternal = Math.min(timestamp, this.minimumBoundaryInternal);
-            this.maximumBoundaryInternal =
-                Math.max(timestamp, this.minimumBoundaryInternal + minOffset, this.maximumBoundaryInternal);
+            this.#minimumBoundary = Math.min(timestamp, this.#minimumBoundary);
+            this.#maximumBoundary = Math.max(timestamp, this.#minimumBoundary + minOffset, this.#maximumBoundary);
         }
-        return previousMinimumBoundary !== this.minimumBoundaryInternal ||
-            previousMaximumBoundary !== this.maximumBoundaryInternal;
+        return previousMinimumBoundary !== this.#minimumBoundary || previousMaximumBoundary !== this.#maximumBoundary;
     }
     lowerBound(_request) {
         return 0;

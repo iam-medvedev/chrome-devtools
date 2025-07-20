@@ -139,7 +139,7 @@ class SourceMapScopeRemoteObject extends RemoteObjectImpl {
         if (typeof expressionOrSubRanges === 'string') {
             return expressionOrSubRanges;
         }
-        if (expressionOrSubRanges === undefined) {
+        if (expressionOrSubRanges === null) {
             return null;
         }
         const pausedPosition = this.#callFrame.location();

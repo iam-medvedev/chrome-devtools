@@ -736,7 +736,7 @@ describe('CSSPropertyIconResolver', () => {
             },
         ];
         for (const test of tests) {
-            assert.deepEqual(ElementsComponents.CSSPropertyIconResolver.findIcon(`flex-wrap: ${test.style['flex-wrap']}`, mapFromStyle(test.style)), ElementsComponents.CSSPropertyIconResolver.roateFlexWrapIcon(test.iconName, test.expected), `Test flex-wrap(${JSON.stringify(test.style)}) failed.`);
+            assert.deepEqual(ElementsComponents.CSSPropertyIconResolver.findIcon(`flex-wrap: ${test.style['flex-wrap']}`, mapFromStyle(test.style)), ElementsComponents.CSSPropertyIconResolver.rotateFlexWrapIcon(test.iconName, test.expected), `Test flex-wrap(${JSON.stringify(test.style)}) failed.`);
         }
     });
     it('can rotate an icon for justify-items', () => {

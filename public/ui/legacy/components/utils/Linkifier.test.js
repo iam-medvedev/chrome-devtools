@@ -350,7 +350,7 @@ describeWithMockConnection('Linkifier', () => {
                 origin: urlString `foo-extension:abcdefghijklmnop`,
                 scheme: urlString `foo-extension:`,
                 handler,
-                filter: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(urlString `foo-extension:`, url, schemes),
+                shouldHandleOpenResource: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(urlString `foo-extension:`, url, schemes),
             });
             const url = urlString `foo-extension://node/1`;
             const actions = Components.Linkifier.Linkifier.linkActions({
@@ -377,7 +377,7 @@ describeWithMockConnection('Linkifier', () => {
                 origin: urlString `global:abcdefghijklmnop`,
                 scheme: undefined,
                 handler: () => { },
-                filter: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(null, url, schemes),
+                shouldHandleOpenResource: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(null, url, schemes),
             });
             // Register a scheme-specific handler for the foo-extension: origin.
             registerHandler({
@@ -385,7 +385,7 @@ describeWithMockConnection('Linkifier', () => {
                 origin: urlString `foo-extension:abcdefghijklmnop`,
                 scheme: urlString `foo-extension:`,
                 handler: () => { },
-                filter: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(urlString `foo-extension:`, url, schemes),
+                shouldHandleOpenResource: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(urlString `foo-extension:`, url, schemes),
             });
             {
                 // Ensure that the foo-extension is the main handler for foo-extension links, and that the

@@ -8,7 +8,7 @@ export declare const getHeaderCells: (node: ParentNode, options?: {
 }) => HTMLTableCellElement[];
 export declare const getAllRows: (node: ParentNode) => HTMLTableRowElement[];
 export declare const assertGridContents: (gridComponent: HTMLElement, headerExpected: string[], rowsExpected: string[][]) => {
-    "__#231@#private": any;
+    "__#234@#private": any;
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
     striped: boolean;
     inline: boolean;

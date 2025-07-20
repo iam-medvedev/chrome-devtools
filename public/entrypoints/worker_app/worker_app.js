@@ -40,7 +40,7 @@ var UIStrings = {
    */
   domBreakpoints: "DOM Breakpoints",
   /**
-   *@description Command for showing the 'Gobal Listeners' tool in the sources panel
+   *@description Command for showing the 'Global Listeners' tool in the sources panel
    */
   showGlobalListeners: "Show Global Listeners",
   /**

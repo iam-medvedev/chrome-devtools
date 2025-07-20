@@ -1056,7 +1056,13 @@ var NodeMainImpl = class _NodeMainImpl {
   async run() {
     Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.ConnectToNodeJSFromFrontend);
     void SDK2.Connections.initMainConnection(async () => {
-      const target = SDK2.TargetManager.TargetManager.instance().createTarget("main", i18nString2(UIStrings5.main), SDK2.Target.Type.BROWSER, null);
+      const target = SDK2.TargetManager.TargetManager.instance().createTarget(
+        // TODO: Use SDK.Target.Type.NODE rather thatn BROWSER once DevTools is loaded appropriately in that case.
+        "main",
+        i18nString2(UIStrings5.main),
+        SDK2.Target.Type.BROWSER,
+        null
+      );
       target.setInspectedURL("Node.js");
     }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
   }

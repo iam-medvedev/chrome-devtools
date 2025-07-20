@@ -58,7 +58,7 @@ export class EventBreakpointsManager {
             "Geolocation.watchPosition" /* InstrumentationNames.GEOLOCATION_WATCH_POSITION */,
         ]);
         this.createInstrumentationBreakpoints("notification" /* Category.NOTIFICATION */, [
-            "Notification.requestPermission" /* InstrumentationNames.NOTIFCATION_REQUEST_PERMISSION */,
+            "Notification.requestPermission" /* InstrumentationNames.NOTIFICATION_REQUEST_PERMISSION */,
         ]);
         this.createInstrumentationBreakpoints("parse" /* Category.PARSE */, [
             "Element.setInnerHTML" /* InstrumentationNames.ELEMENT_SET_INNER_HTML */,

@@ -248,7 +248,7 @@ describeWithEnvironment('Overlays', () => {
                 }
                 await overlays.update();
             });
-            // When an annotation overlay is remomved, this event is dispatched to the Modifications Manager.
+            // When an annotation overlay is removed, this event is dispatched to the Modifications Manager.
             overlays.addEventListener(Overlays.Overlays.AnnotationOverlayActionEvent.eventName, async (event) => {
                 const { overlay, action } = event;
                 if (action === 'Remove') {
@@ -504,7 +504,7 @@ describeWithEnvironment('Overlays', () => {
                                 rpcGlobalId: 123,
                             }
                         }]])
-            });
+            }, "drjones-performance" /* AiAssistanceModels.ConversationType.PERFORMANCE */);
             component.overrideAIAgentForTest(agent);
             // The Agent call is async, so wait for the change event on the label to ensure the UI is updated.
             const changeEvent = new Promise(resolve => {

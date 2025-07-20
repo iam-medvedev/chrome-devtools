@@ -450,7 +450,7 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     const patterns = this.manager.blockedPatterns();
     patterns.splice(index, 1);
     this.manager.setBlockedPatterns(patterns);
-    UI2.ARIAUtils.alert(UIStrings2.itemDeleted);
+    UI2.ARIAUtils.LiveAnnouncer.alert(UIStrings2.itemDeleted);
   }
   beginEdit(pattern) {
     this.editor = this.createEditor();
@@ -1197,7 +1197,7 @@ var NetworkConfigView = class _NetworkConfigView extends UI4.Widget.VBox {
   }
   wasShown() {
     super.wasShown();
-    UI4.ARIAUtils.alert(i18nString4(UIStrings4.networkConditionsPanelShown));
+    UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.networkConditionsPanelShown));
   }
 };
 function getUserAgentMetadata(userAgent) {
@@ -2014,16 +2014,16 @@ var NetworkNode = class extends DataGrid3.SortableDataGrid.SortableDataGridNode 
     super.setStriped(isStriped);
     this.updateBackgroundColor();
   }
-  select(supressSelectedEvent) {
-    super.select(supressSelectedEvent);
+  select(suppressSelectedEvent) {
+    super.select(suppressSelectedEvent);
     this.updateBackgroundColor();
     this.parentViewInternal.updateNodeSelectedClass(
       /* isSelected */
       true
     );
   }
-  deselect(supressSelectedEvent) {
-    super.deselect(supressSelectedEvent);
+  deselect(suppressSelectedEvent) {
+    super.deselect(suppressSelectedEvent);
     this.updateBackgroundColor();
     this.parentViewInternal.updateNodeSelectedClass(
       /* isSelected */
@@ -2560,8 +2560,8 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
   arrayLength(array) {
     return array ? String(array.length) : "";
   }
-  select(supressSelectedEvent) {
-    super.select(supressSelectedEvent);
+  select(suppressSelectedEvent) {
+    super.select(suppressSelectedEvent);
     this.parentView().dispatchEventToListeners("RequestSelected", this.requestInternal);
   }
   openInNewTab() {
@@ -2913,7 +2913,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       const action = UI5.ActionRegistry.ActionRegistry.instance().getAction("drjones.network-floating-button");
       const aiButtonContainer = document.createElement("span");
       aiButtonContainer.classList.add("ai-button-container");
-      const floatingButton = Buttons2.FloatingButton.create("smart-assistant", action.title());
+      const floatingButton = Buttons2.FloatingButton.create("smart-assistant", action.title(), "ask-ai");
       floatingButton.addEventListener("click", (ev) => {
         ev.stopPropagation();
         this.select();
@@ -2945,8 +2945,8 @@ var NetworkGroupNode = class extends NetworkNode {
       this.setCellAccessibleName(cell.textContent || "", cell, columnId);
     }
   }
-  select(supressSelectedEvent) {
-    super.select(supressSelectedEvent);
+  select(suppressSelectedEvent) {
+    super.select(suppressSelectedEvent);
     const firstChildNode = this.traverseNextNode(false, void 0, true);
     const request = firstChildNode?.request();
     if (request) {
@@ -4840,7 +4840,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     widget = html2`<devtools-widget
                     .widgetConfig=${widgetConfig((element) => new SourceFrame3.ResourceSourceFrame.SearchableContainer(input.request, input.mimeType, element))}
                     ${widgetRef(SourceFrame3.ResourceSourceFrame.SearchableContainer, (widget2) => {
-      output.revealPosition = widget2.revealPosition.bind(void 0);
+      output.revealPosition = widget2.revealPosition.bind(widget2);
     })}></devtools-widget>`;
   } else {
     widget = html2`<devtools-widget
@@ -6208,7 +6208,12 @@ var ResourceDirectSocketChunkView = class extends ResourceChunkView {
   getColumns() {
     if (this.request.directSocketInfo?.type === SDK9.NetworkRequest.DirectSocketType.UDP_BOUND) {
       return [
-        { id: "data", title: i18nString14(UIStrings14.data), sortable: false, weight: 63 },
+        {
+          id: "data",
+          title: i18nString14(UIStrings14.data),
+          sortable: false,
+          weight: 63
+        },
         {
           id: "address",
           title: i18nString14(UIStrings14.address),
@@ -6230,15 +6235,20 @@ var ResourceDirectSocketChunkView = class extends ResourceChunkView {
           align: "right",
           weight: 5
         },
-        { id: "time", title: i18nString14(UIStrings14.time), sortable: true, weight: 7 }
+        {
+          id: "time",
+          title: i18nString14(UIStrings14.time),
+          sortable: true,
+          weight: 7
+        }
       ];
     }
     return super.getColumns();
   }
 };
 var ResourceChunkNode = class extends DataGridItem {
+  #binaryView = null;
   chunk;
-  binaryViewInternal;
   constructor(chunk, boundSocket) {
     const time = new Date(chunk.timestamp * 1e3);
     const timeText = ("0" + time.getHours()).substr(-2) + ":" + ("0" + time.getMinutes()).substr(-2) + ":" + ("0" + time.getSeconds()).substr(-2) + "." + ("00" + time.getMilliseconds()).substr(-3);
@@ -6259,7 +6269,6 @@ var ResourceChunkNode = class extends DataGridItem {
       super({ data: description, length, time: timeNode });
     }
     this.chunk = chunk;
-    this.binaryViewInternal = null;
   }
   createCells(element) {
     element.classList.toggle("resource-chunk-view-row-send", this.chunk.type === SDK9.NetworkRequest.DirectSocketChunkType.SEND);
@@ -6273,12 +6282,12 @@ var ResourceChunkNode = class extends DataGridItem {
     return this.chunk.data;
   }
   binaryView() {
-    if (!this.binaryViewInternal) {
+    if (!this.#binaryView) {
       if (this.dataText().length > 0) {
-        this.binaryViewInternal = new BinaryResourceView(TextUtils5.StreamingContentData.StreamingContentData.from(new TextUtils5.ContentData.ContentData(this.dataText(), true, "applicaiton/octet-stream")), Platform5.DevToolsPath.EmptyUrlString, Common10.ResourceType.resourceTypes.DirectSocket);
+        this.#binaryView = new BinaryResourceView(TextUtils5.StreamingContentData.StreamingContentData.from(new TextUtils5.ContentData.ContentData(this.dataText(), true, "application/octet-stream")), Platform5.DevToolsPath.EmptyUrlString, Common10.ResourceType.resourceTypes.DirectSocket);
       }
     }
-    return this.binaryViewInternal;
+    return this.#binaryView;
   }
   getTime() {
     return this.chunk.timestamp;
@@ -6809,38 +6818,34 @@ var NetworkTimeBoundary = class {
   }
 };
 var NetworkTimeCalculator = class extends Common13.ObjectWrapper.ObjectWrapper {
+  #minimumBoundary = -1;
+  #maximumBoundary = -1;
+  #boundaryChangedEventThrottler = new Common13.Throttler.Throttler(0);
+  #window = null;
+  #workingArea;
   startAtZero;
-  minimumBoundaryInternal;
-  maximumBoundaryInternal;
-  boundryChangedEventThrottler;
-  window;
-  workingArea;
   constructor(startAtZero) {
     super();
     this.startAtZero = startAtZero;
-    this.minimumBoundaryInternal = -1;
-    this.maximumBoundaryInternal = -1;
-    this.boundryChangedEventThrottler = new Common13.Throttler.Throttler(0);
-    this.window = null;
   }
   setWindow(window2) {
-    this.window = window2;
+    this.#window = window2;
     this.boundaryChanged();
   }
   computePosition(time) {
-    return (time - this.minimumBoundary()) / this.boundarySpan() * (this.workingArea || 0);
+    return (time - this.minimumBoundary()) / this.boundarySpan() * (this.#workingArea || 0);
   }
   formatValue(value, precision) {
     return i18n33.TimeUtilities.secondsToString(value, Boolean(precision));
   }
   minimumBoundary() {
-    return this.window ? this.window.minimum : this.minimumBoundaryInternal;
+    return this.#window ? this.#window.minimum : this.#minimumBoundary;
   }
   zeroTime() {
-    return this.minimumBoundaryInternal;
+    return this.#minimumBoundary;
   }
   maximumBoundary() {
-    return this.window ? this.window.maximum : this.maximumBoundaryInternal;
+    return this.#window ? this.#window.maximum : this.#maximumBoundary;
   }
   boundary() {
     return new NetworkTimeBoundary(this.minimumBoundary(), this.maximumBoundary());
@@ -6849,15 +6854,15 @@ var NetworkTimeCalculator = class extends Common13.ObjectWrapper.ObjectWrapper {
     return this.maximumBoundary() - this.minimumBoundary();
   }
   reset() {
-    this.minimumBoundaryInternal = -1;
-    this.maximumBoundaryInternal = -1;
+    this.#minimumBoundary = -1;
+    this.#maximumBoundary = -1;
     this.boundaryChanged();
   }
   value() {
     return 0;
   }
   setDisplayWidth(clientWidth) {
-    this.workingArea = clientWidth;
+    this.#workingArea = clientWidth;
   }
   computeBarGraphPercentages(request) {
     let start;
@@ -6886,7 +6891,7 @@ var NetworkTimeCalculator = class extends Common13.ObjectWrapper.ObjectWrapper {
     return { start, middle, end };
   }
   boundaryChanged() {
-    void this.boundryChangedEventThrottler.schedule(async () => {
+    void this.#boundaryChangedEventThrottler.schedule(async () => {
       this.dispatchEventToListeners(
         "BoundariesChanged"
         /* Events.BOUNDARIES_CHANGED */
@@ -6897,8 +6902,8 @@ var NetworkTimeCalculator = class extends Common13.ObjectWrapper.ObjectWrapper {
     if (eventTime === -1 || this.startAtZero) {
       return;
     }
-    if (this.maximumBoundaryInternal === void 0 || eventTime > this.maximumBoundaryInternal) {
-      this.maximumBoundaryInternal = eventTime;
+    if (this.#maximumBoundary === void 0 || eventTime > this.#maximumBoundary) {
+      this.#maximumBoundary = eventTime;
       this.boundaryChanged();
     }
   }
@@ -6943,17 +6948,17 @@ var NetworkTimeCalculator = class extends Common13.ObjectWrapper.ObjectWrapper {
     }
   }
   extendBoundariesToIncludeTimestamp(timestamp) {
-    const previousMinimumBoundary = this.minimumBoundaryInternal;
-    const previousMaximumBoundary = this.maximumBoundaryInternal;
+    const previousMinimumBoundary = this.#minimumBoundary;
+    const previousMaximumBoundary = this.#maximumBoundary;
     const minOffset = MINIMUM_SPREAD;
-    if (this.minimumBoundaryInternal === -1 || this.maximumBoundaryInternal === -1) {
-      this.minimumBoundaryInternal = timestamp;
-      this.maximumBoundaryInternal = timestamp + minOffset;
+    if (this.#minimumBoundary === -1 || this.#maximumBoundary === -1) {
+      this.#minimumBoundary = timestamp;
+      this.#maximumBoundary = timestamp + minOffset;
     } else {
-      this.minimumBoundaryInternal = Math.min(timestamp, this.minimumBoundaryInternal);
-      this.maximumBoundaryInternal = Math.max(timestamp, this.minimumBoundaryInternal + minOffset, this.maximumBoundaryInternal);
+      this.#minimumBoundary = Math.min(timestamp, this.#minimumBoundary);
+      this.#maximumBoundary = Math.max(timestamp, this.#minimumBoundary + minOffset, this.#maximumBoundary);
     }
-    return previousMinimumBoundary !== this.minimumBoundaryInternal || previousMaximumBoundary !== this.maximumBoundaryInternal;
+    return previousMinimumBoundary !== this.#minimumBoundary || previousMaximumBoundary !== this.#maximumBoundary;
   }
   lowerBound(_request) {
     return 0;
@@ -10133,12 +10138,14 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   summaryToolbarInternal;
   filterBar;
   textFilterSetting;
+  networkRequestToNode;
   constructor(filterBar, progressBarContainer, networkLogLargeRowsSetting) {
     super();
     this.registerRequiredCSS(networkLogView_css_default);
     this.setMinimumSize(50, 64);
     this.element.id = "network-container";
     this.element.classList.add("no-node-selected");
+    this.networkRequestToNode = /* @__PURE__ */ new WeakMap();
     this.networkInvertFilterSetting = Common17.Settings.Settings.instance().createSetting("network-invert-filter", false);
     this.networkHideDataURLSetting = Common17.Settings.Settings.instance().createSetting("network-hide-data-url", false);
     this.networkHideChromeExtensions = Common17.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
@@ -10440,7 +10447,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.invalidateAllItems();
   }
   nodeForRequest(request) {
-    return networkRequestToNode.get(request) || null;
+    return this.networkRequestToNode.get(request) || null;
   }
   headerHeight() {
     return this.headerHeightInternal;
@@ -10577,7 +10584,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       this.recordingHint.detach();
       this.recordingHint = null;
     }
-    UI22.ARIAUtils.alert(i18nString20(UIStrings20.networkDataAvailable));
+    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.networkDataAvailable));
   }
   setHidden(value) {
     this.columnsInternal.setHidden(value);
@@ -10673,7 +10680,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     let maxTime = -1;
     let nodeCount = 0;
     for (const request of Logs5.NetworkLog.NetworkLog.instance().requests()) {
-      const node = networkRequestToNode.get(request);
+      const node = this.networkRequestToNode.get(request);
       if (!node) {
         continue;
       }
@@ -10875,7 +10882,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     while (this.staleRequests.size) {
       const request = this.staleRequests.values().next().value;
       this.staleRequests.delete(request);
-      let node = networkRequestToNode.get(request);
+      let node = this.networkRequestToNode.get(request);
       if (!node) {
         node = this.createNodeForRequest(request);
       }
@@ -10957,6 +10964,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.resetSuggestionBuilder();
     this.mainRequestLoadTime = -1;
     this.mainRequestDOMContentLoadedTime = -1;
+    this.networkRequestToNode = /* @__PURE__ */ new WeakMap();
     this.dataGrid.rootNode().removeChildren();
     this.updateSummaryBar();
     this.scheduleRefresh();
@@ -10973,7 +10981,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   }
   createNodeForRequest(request) {
     const node = new NetworkRequestNode(this, request);
-    networkRequestToNode.set(request, node);
+    this.networkRequestToNode.set(request, node);
     filteredNetworkRequests.add(node);
     for (let redirect = request.redirectSource(); redirect; redirect = redirect.redirectSource()) {
       this.refreshRequest(redirect);
@@ -10993,7 +11001,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   onRequestRemoved(event) {
     const { request } = event.data;
     this.staleRequests.delete(request);
-    const node = networkRequestToNode.get(request);
+    const node = this.networkRequestToNode.get(request);
     if (node) {
       this.removeNodeAndMaybeAncestors(node);
     }
@@ -11234,15 +11242,15 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   }
   async #handleCreateResponseHeaderOverrideClick(request) {
     const requestLocation = NetworkForward3.UIRequestLocation.UIRequestLocation.responseHeaderMatch(request, { name: "", value: "" });
-    const networkPersistanceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
-    if (networkPersistanceManager.project()) {
+    const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    if (networkPersistenceManager.project()) {
       Common17.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
-      await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
+      await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
       await Common17.Revealer.reveal(requestLocation);
     } else {
       UI22.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
         await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
-        await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
+        await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
         await Common17.Revealer.reveal(requestLocation);
       });
     }
@@ -11407,7 +11415,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   }
   reveal(request) {
     this.removeAllNodeHighlights();
-    const node = networkRequestToNode.get(request);
+    const node = this.networkRequestToNode.get(request);
     if (!node?.dataGrid) {
       return null;
     }
@@ -11698,7 +11706,6 @@ function computeStackTraceText(stackTrace) {
   return stackTraceText;
 }
 var filteredNetworkRequests = /* @__PURE__ */ new WeakSet();
-var networkRequestToNode = /* @__PURE__ */ new WeakMap();
 function isRequestFilteredOut(request) {
   return filteredNetworkRequests.has(request);
 }

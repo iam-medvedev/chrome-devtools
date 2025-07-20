@@ -330,7 +330,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
                 expandText = this.selectedNode.expanded ? i18nString(UIStrings.expanded) : i18nString(UIStrings.collapsed);
             }
             const accessibleText = expandText ? `${this.selectedNode.nodeAccessibleText}, ${expandText}` : this.selectedNode.nodeAccessibleText;
-            UI.ARIAUtils.alert(accessibleText);
+            UI.ARIAUtils.LiveAnnouncer.alert(accessibleText);
         }
     }
     getNumberOfRows() {
@@ -358,7 +358,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             const items = i18nString(UIStrings.rowsS, { PH1: numberOfRows });
             accessibleText = i18nString(UIStrings.sSUseTheUpAndDownArrowKeysTo, { PH1: this.displayName, PH2: items });
         }
-        UI.ARIAUtils.alert(accessibleText);
+        UI.ARIAUtils.LiveAnnouncer.alert(accessibleText);
     }
     innerAddColumn(column, position) {
         column.defaultWeight = column.weight;
@@ -995,7 +995,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
             emptyData[column] = null;
         }
         this.creationNode = new CreationDataGridNode(emptyData, hasChildren);
-        UI.ARIAUtils.alert(i18nString(UIStrings.emptyRowCreated));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.emptyRowCreated));
         this.rootNode().appendChild(this.creationNode);
     }
     keyDown(event) {
@@ -1208,7 +1208,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         cell.classList.add(sortOrder);
         const ariaLabel = this.isSortOrderAscending() ? 'ascending' : 'descending';
         cell.setAttribute('aria-sort', ariaLabel);
-        UI.ARIAUtils.alert(i18nString(UIStrings.enterToSort, { PH1: ariaLabel || '' }));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.enterToSort, { PH1: ariaLabel || '' }));
         this.dispatchEventToListeners("SortingChanged" /* Events.SORTING_CHANGED */);
     }
     markColumnAsSortedBy(columnId, sortOrder) {

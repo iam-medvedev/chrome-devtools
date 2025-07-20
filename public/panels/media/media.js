@@ -760,7 +760,7 @@ var PlayerEventsTimeline = class extends TickingFlameChart {
   }
   /**
    * Playback events are {kPlay, kPause, kSuspended, kEnded, and kWebMediaPlayerDestroyed}
-   * once destroyed, a player cannot recieve more events of any kind.
+   * once destroyed, a player cannot receive more events of any kind.
    */
   onPlaybackEvent(event, normalizedTime) {
     switch (event.event) {

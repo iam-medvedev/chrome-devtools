@@ -354,7 +354,7 @@ export class InspectorView extends VBox {
             this.focusRestorer = null;
         }
         this.emitDrawerChangeEvent(true);
-        ARIAUtils.alert(i18nString(UIStrings.drawerShown));
+        ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.drawerShown));
     }
     drawerVisible() {
         return this.drawerTabbedPane.isShowing();
@@ -368,7 +368,7 @@ export class InspectorView extends VBox {
         }
         this.drawerSplitWidget.hideSidebar(true);
         this.emitDrawerChangeEvent(false);
-        ARIAUtils.alert(i18nString(UIStrings.drawerHidden));
+        ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.drawerHidden));
     }
     toggleDrawerOrientation() {
         const drawerWillBeVertical = !this.drawerSplitWidget.isVertical();

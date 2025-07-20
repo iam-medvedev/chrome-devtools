@@ -1010,10 +1010,10 @@ var ContextMenuProvider = class {
       const labelString = label ? label() : "";
       if (domDebuggerModel.hasDOMBreakpoint(node, type)) {
         domDebuggerModel.removeDOMBreakpoint(node, type);
-        UI2.ARIAUtils.alert(`${i18nString2(UIStrings2.breakpointRemoved)}: ${labelString}`);
+        UI2.ARIAUtils.LiveAnnouncer.alert(`${i18nString2(UIStrings2.breakpointRemoved)}: ${labelString}`);
       } else {
         domDebuggerModel.setDOMBreakpoint(node, type);
-        UI2.ARIAUtils.alert(`${i18nString2(UIStrings2.breakpointSet)}: ${labelString}`);
+        UI2.ARIAUtils.LiveAnnouncer.alert(`${i18nString2(UIStrings2.breakpointSet)}: ${labelString}`);
       }
     }
     const breakpointsMenu = contextMenu.debugSection().appendSubMenuItem(i18nString2(UIStrings2.breakOn), false, "break-on");

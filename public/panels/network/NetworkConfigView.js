@@ -304,7 +304,7 @@ export class NetworkConfigView extends UI.Widget.VBox {
     }
     wasShown() {
         super.wasShown();
-        UI.ARIAUtils.alert(i18nString(UIStrings.networkConditionsPanelShown));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.networkConditionsPanelShown));
     }
 }
 function getUserAgentMetadata(userAgent) {

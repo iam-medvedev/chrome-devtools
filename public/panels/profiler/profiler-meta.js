@@ -30,7 +30,7 @@ var UIStrings = {
    */
   startStopRecording: "Start/stop recording",
   /**
-   *@description Command for shwoing the profiler tab
+   *@description Command for showing the profiler tab
    */
   showMemory: "Show Memory",
   /**

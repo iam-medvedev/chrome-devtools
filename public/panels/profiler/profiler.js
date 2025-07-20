@@ -7673,11 +7673,11 @@ var UIStrings14 = {
    */
   allocationStack: "Allocation stack",
   /**
-   *@description Screen reader label for a select box that chooses the perspective in the Memory panel when vieweing a Heap Snapshot
+   *@description Screen reader label for a select box that chooses the perspective in the Memory panel when viewing a Heap Snapshot
    */
   perspective: "Perspective",
   /**
-   *@description Screen reader label for a select box that chooses the snapshot to use as a base in the Memory panel when vieweing a Heap Snapshot
+   *@description Screen reader label for a select box that chooses the snapshot to use as a base in the Memory panel when viewing a Heap Snapshot
    */
   baseSnapshot: "Base snapshot",
   /**
@@ -9599,7 +9599,7 @@ var LiveHeapProfileView = class _LiveHeapProfileView extends UI16.Widget.VBox {
       }
     });
     const rootNode = this.dataGrid.rootNode();
-    const exisitingNodes = /* @__PURE__ */ new Set();
+    const existingNodes = /* @__PURE__ */ new Set();
     for (const pair of dataByUrl) {
       const url = pair[0];
       const size = pair[1].size;
@@ -9616,11 +9616,11 @@ var LiveHeapProfileView = class _LiveHeapProfileView extends UI16.Widget.VBox {
         this.gridNodeByUrl.set(url, node);
         rootNode.appendChild(node);
       }
-      exisitingNodes.add(node);
+      existingNodes.add(node);
     }
     for (const node of rootNode.children.slice()) {
       const gridNode = node;
-      if (!exisitingNodes.has(gridNode)) {
+      if (!existingNodes.has(gridNode)) {
         gridNode.remove();
       }
       this.gridNodeByUrl.delete(gridNode.url);

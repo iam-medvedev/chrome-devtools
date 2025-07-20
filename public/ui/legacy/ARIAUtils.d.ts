@@ -85,24 +85,17 @@ export declare function setDescription(element: Element, description: string): v
 export declare function setActiveDescendant(element: Element, activedescendant: Element | null): void;
 export declare function setSetSize(element: Element, size: number): void;
 export declare function setPositionInSet(element: Element, position: number): void;
-export declare function getOrCreateAlertElement(container?: HTMLElement, opts?: {
-    force: boolean;
-}): HTMLElement;
-/**
- * Used only in tests to clear any left over alerts between test runs.
- */
-export declare function removeAlertElement(container: HTMLElement): void;
-/**
- * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
- * Ensures messages are announced even if identical to the previous message by appending
- * a non-breaking space ('\u00A0') when necessary. This works around screen reader
- * optimizations that might otherwise silence repeated identical alerts. The element's
- * `aria-atomic="true"` attribute ensures the entire message is announced upon change.
- *
- * The alert element is associated with the currently active dialog's content element
- * if a dialog is showing, otherwise defaults to an element associated with the document body.
- * Messages longer than 10000 characters will be trimmed.
- *
- * @param message The message to be announced.
- */
-export declare function alert(message: string): void;
+export declare const enum AnnouncerRole {
+    ALERT = "alert",
+    STATUS = "status"
+}
+export declare class LiveAnnouncer {
+    #private;
+    static getOrCreateAnnouncerElement(container: HTMLElement | undefined, role: AnnouncerRole, opts?: {
+        force: boolean;
+    }): HTMLElement;
+    static initializeAnnouncerElements(container?: HTMLElement): void;
+    static removeAnnouncerElements(container?: HTMLElement): void;
+    static alert(message: string): void;
+    static status(message: string): void;
+}

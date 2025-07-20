@@ -397,13 +397,13 @@ export class NetworkNode extends DataGrid.SortableDataGrid.SortableDataGridNode 
         super.setStriped(isStriped);
         this.updateBackgroundColor();
     }
-    select(supressSelectedEvent) {
-        super.select(supressSelectedEvent);
+    select(suppressSelectedEvent) {
+        super.select(suppressSelectedEvent);
         this.updateBackgroundColor();
         this.parentViewInternal.updateNodeSelectedClass(/* isSelected */ true);
     }
-    deselect(supressSelectedEvent) {
-        super.deselect(supressSelectedEvent);
+    deselect(suppressSelectedEvent) {
+        super.deselect(suppressSelectedEvent);
         this.updateBackgroundColor();
         this.parentViewInternal.updateNodeSelectedClass(/* isSelected */ false);
     }
@@ -959,8 +959,8 @@ export class NetworkRequestNode extends NetworkNode {
     arrayLength(array) {
         return array ? String(array.length) : '';
     }
-    select(supressSelectedEvent) {
-        super.select(supressSelectedEvent);
+    select(suppressSelectedEvent) {
+        super.select(suppressSelectedEvent);
         this.parentView().dispatchEventToListeners("RequestSelected" /* Events.RequestSelected */, this.requestInternal);
     }
     openInNewTab() {
@@ -1350,7 +1350,7 @@ export class NetworkRequestNode extends NetworkNode {
             const action = UI.ActionRegistry.ActionRegistry.instance().getAction('drjones.network-floating-button');
             const aiButtonContainer = document.createElement('span');
             aiButtonContainer.classList.add('ai-button-container');
-            const floatingButton = Buttons.FloatingButton.create('smart-assistant', action.title());
+            const floatingButton = Buttons.FloatingButton.create('smart-assistant', action.title(), 'ask-ai');
             floatingButton.addEventListener('click', ev => {
                 ev.stopPropagation();
                 this.select();
@@ -1383,8 +1383,8 @@ export class NetworkGroupNode extends NetworkNode {
             this.setCellAccessibleName(cell.textContent || '', cell, columnId);
         }
     }
-    select(supressSelectedEvent) {
-        super.select(supressSelectedEvent);
+    select(suppressSelectedEvent) {
+        super.select(suppressSelectedEvent);
         const firstChildNode = this.traverseNextNode(false, undefined, true);
         const request = firstChildNode?.request();
         if (request) {

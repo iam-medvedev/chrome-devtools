@@ -75,7 +75,12 @@ export class ResourceDirectSocketChunkView extends ResourceChunkView {
     getColumns() {
         if (this.request.directSocketInfo?.type === SDK.NetworkRequest.DirectSocketType.UDP_BOUND) {
             return [
-                { id: 'data', title: i18nString(UIStrings.data), sortable: false, weight: 63 },
+                {
+                    id: 'data',
+                    title: i18nString(UIStrings.data),
+                    sortable: false,
+                    weight: 63,
+                },
                 {
                     id: 'address',
                     title: i18nString(UIStrings.address),
@@ -97,15 +102,20 @@ export class ResourceDirectSocketChunkView extends ResourceChunkView {
                     align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
                     weight: 5,
                 },
-                { id: 'time', title: i18nString(UIStrings.time), sortable: true, weight: 7 },
+                {
+                    id: 'time',
+                    title: i18nString(UIStrings.time),
+                    sortable: true,
+                    weight: 7,
+                },
             ];
         }
         return super.getColumns();
     }
 }
 class ResourceChunkNode extends DataGridItem {
+    #binaryView = null;
     chunk;
-    binaryViewInternal;
     constructor(chunk, boundSocket) {
         const time = new Date(chunk.timestamp * 1000);
         const timeText = ('0' + time.getHours()).substr(-2) + ':' + ('0' + time.getMinutes()).substr(-2) + ':' +
@@ -129,7 +139,6 @@ class ResourceChunkNode extends DataGridItem {
             super({ data: description, length, time: timeNode });
         }
         this.chunk = chunk;
-        this.binaryViewInternal = null;
     }
     createCells(element) {
         element.classList.toggle('resource-chunk-view-row-send', this.chunk.type === SDK.NetworkRequest.DirectSocketChunkType.SEND);
@@ -143,12 +152,12 @@ class ResourceChunkNode extends DataGridItem {
         return this.chunk.data;
     }
     binaryView() {
-        if (!this.binaryViewInternal) {
+        if (!this.#binaryView) {
             if (this.dataText().length > 0) {
-                this.binaryViewInternal = new BinaryResourceView(TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(this.dataText(), true, 'applicaiton/octet-stream')), Platform.DevToolsPath.EmptyUrlString, Common.ResourceType.resourceTypes.DirectSocket);
+                this.#binaryView = new BinaryResourceView(TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(this.dataText(), true, 'application/octet-stream')), Platform.DevToolsPath.EmptyUrlString, Common.ResourceType.resourceTypes.DirectSocket);
             }
         }
-        return this.binaryViewInternal;
+        return this.#binaryView;
     }
     getTime() {
         return this.chunk.timestamp;

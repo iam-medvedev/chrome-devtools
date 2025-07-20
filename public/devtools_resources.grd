@@ -265,6 +265,7 @@
       <include file="Images/smart-assistant.svg" name="IMAGES_SMART_ASSISTANT_SVG" resource_path="Images/smart-assistant.svg" type="BINDATA" compress="false"/>
       <include file="Images/snippet.svg" name="IMAGES_SNIPPET_SVG" resource_path="Images/snippet.svg" type="BINDATA" compress="false"/>
       <include file="Images/spark-info.svg" name="IMAGES_SPARK_INFO_SVG" resource_path="Images/spark-info.svg" type="BINDATA" compress="false"/>
+      <include file="Images/speculative-loads.svg" name="IMAGES_SPECULATIVE_LOADS_SVG" resource_path="Images/speculative-loads.svg" type="BINDATA" compress="false"/>
       <include file="Images/star.svg" name="IMAGES_STAR_SVG" resource_path="Images/star.svg" type="BINDATA" compress="false"/>
       <include file="Images/step-into.svg" name="IMAGES_STEP_INTO_SVG" resource_path="Images/step-into.svg" type="BINDATA" compress="false"/>
       <include file="Images/step-out.svg" name="IMAGES_STEP_OUT_SVG" resource_path="Images/step-out.svg" type="BINDATA" compress="false"/>

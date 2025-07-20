@@ -66,8 +66,8 @@ export declare class NetworkNode extends DataGrid.SortableDataGrid.SortableDataG
     backgroundColor(): string;
     updateBackgroundColor(): void;
     setStriped(isStriped: boolean): void;
-    select(supressSelectedEvent?: boolean): void;
-    deselect(supressSelectedEvent?: boolean): void;
+    select(suppressSelectedEvent?: boolean): void;
+    deselect(suppressSelectedEvent?: boolean): void;
     parentView(): NetworkLogViewInterface;
     hovered(): boolean;
     showingInitiatorChain(): boolean;
@@ -127,7 +127,7 @@ export declare class NetworkRequestNode extends NetworkNode {
     private setTextAndTitleAsLink;
     renderCell(c: Element, columnId: string): void;
     private arrayLength;
-    select(supressSelectedEvent?: boolean): void;
+    select(suppressSelectedEvent?: boolean): void;
     private openInNewTab;
     private isFailed;
     private renderPrimaryCell;
@@ -143,5 +143,5 @@ export declare class NetworkRequestNode extends NetworkNode {
 export declare class NetworkGroupNode extends NetworkNode {
     createCells(element: Element): void;
     renderCell(c: Element, columnId: string): void;
-    select(supressSelectedEvent?: boolean): void;
+    select(suppressSelectedEvent?: boolean): void;
 }

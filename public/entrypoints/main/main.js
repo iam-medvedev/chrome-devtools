@@ -301,8 +301,9 @@ var MainImpl = class _MainImpl {
     await this.requestAndRegisterLocaleData();
     Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting("sync-preferences").get());
     const veLogging = config.devToolsVeLogging;
+    const veLogsTestMode = Common.Settings.Settings.instance().createSetting("veLogsTestMode", false).get();
     if (veLogging?.enabled) {
-      if (veLogging?.testing) {
+      if (veLogging?.testing || veLogsTestMode) {
         VisualLogging.setVeDebugLoggingEnabled(
           true,
           "Test"
@@ -564,7 +565,7 @@ var MainImpl = class _MainImpl {
       const Timeline = await import("./../../panels/timeline/timeline.js");
       Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
     }
-    UI.ARIAUtils.getOrCreateAlertElement();
+    UI.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI.DockController.DockController.instance().announceDockLocation();
     window.setTimeout(this.#initializeTarget.bind(this), 0);
     _MainImpl.timeEnd("Main._showAppUI");

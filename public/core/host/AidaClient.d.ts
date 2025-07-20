@@ -141,6 +141,28 @@ export interface DoConversationRequest {
     functionality_type?: FunctionalityType;
     client_feature?: ClientFeature;
 }
+export interface CompleteCodeOptions {
+    temperature?: number;
+    model_id?: string;
+    inference_language?: AidaInferenceLanguage;
+}
+export declare enum EditType {
+    EDIT_TYPE_UNSPECIFIED = 0,
+    ADD = 1,
+    DELETE = 2,
+    PASTE = 3,
+    UNDO = 4,
+    REDO = 5,
+    ACCEPT_COMPLETION = 6
+}
+export interface CompletionRequest {
+    client: string;
+    prefix: string;
+    suffix?: string;
+    options?: CompleteCodeOptions;
+    metadata: RequestMetadata;
+    last_user_action?: EditType;
+}
 export interface AidaDoConversationClientEvent {
     corresponding_aida_rpc_global_id: RpcGlobalId;
     disable_user_content_logging: boolean;
@@ -199,11 +221,38 @@ export interface DoConversationResponse {
     functionCalls?: [AidaFunctionCallResponse, ...AidaFunctionCallResponse[]];
     completed: boolean;
 }
+export interface CompletionResponse {
+    generatedSamples: GenerationSample[];
+    metadata: ResponseMetadata;
+}
+export interface GenerationSample {
+    generationString: string;
+    score: number;
+    sampleId: number;
+    attributionMetadata?: AttributionMetadata;
+}
 export declare const enum AidaAccessPreconditions {
     AVAILABLE = "available",
     NO_ACCOUNT_EMAIL = "no-account-email",
     NO_INTERNET = "no-internet",
     SYNC_IS_PAUSED = "sync-is-paused"
+}
+export declare const enum AidaInferenceLanguage {
+    CPP = "CPP",
+    PYTHON = "PYTHON",
+    KOTLIN = "KOTLIN",
+    JAVA = "JAVA",
+    JAVASCRIPT = "JAVASCRIPT",
+    GO = "GO",
+    TYPESCRIPT = "TYPESCRIPT",
+    HTML = "HTML",
+    BASH = "BASH",
+    CSS = "CSS",
+    DART = "DART",
+    JSON = "JSON",
+    MARKDOWN = "MARKDOWN",
+    VUE = "VUE",
+    XML = "XML"
 }
 export declare const CLIENT_NAME = "CHROME_DEVTOOLS";
 export declare class AidaAbortError extends Error {
@@ -217,6 +266,7 @@ export declare class AidaClient {
         signal?: AbortSignal;
     }): AsyncGenerator<DoConversationResponse, void, void>;
     registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
+    completeCode(request: CompletionRequest): Promise<CompletionResponse | null>;
 }
 export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;
 export declare class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {

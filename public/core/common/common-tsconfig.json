@@ -39,6 +39,7 @@
     "../../../../../../front_end/core/common/Console.ts",
     "../../../../../../front_end/core/common/Debouncer.ts",
     "../../../../../../front_end/core/common/EventTarget.ts",
+    "../../../../../../front_end/core/common/Gzip.ts",
     "../../../../../../front_end/core/common/JavaScriptMetaData.ts",
     "../../../../../../front_end/core/common/Lazy.ts",
     "../../../../../../front_end/core/common/Linkifier.ts",

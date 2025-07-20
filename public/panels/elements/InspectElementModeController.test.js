@@ -19,7 +19,7 @@ describeWithMockConnection('InspectElementModeController', () => {
     }
     function failOnModeToggle(target) {
         const model = target.model(SDK.OverlayModel.OverlayModel);
-        model.addEventListener("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => assert.fail('Unexected mode toggle on out of scope target'));
+        model.addEventListener("InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => assert.fail('Unexpected mode toggle on out of scope target'));
     }
     beforeEach(() => {
         setMockResourceTree(false);

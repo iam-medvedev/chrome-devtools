@@ -158,6 +158,20 @@ export function widgetRef(type, callback) {
         callback(widget);
     });
 }
+/**
+ * Wraps CSS text in a @scope at-rule to encapsulate widget styles.
+ *
+ * This function relies on an implicit scope root (the parent element of the
+ * <style> tag) and sets an explicit scope limit at `<devtools-widget>`.
+ * This prevents a parent widget's styles from cascading into any nested
+ * child widgets.
+ *
+ * @param styles The CSS rules to be scoped.
+ * @returns The scoped CSS string.
+ */
+export function widgetScoped(styles) {
+    return `@scope to (devtools-widget) { ${styles} }`;
+}
 const widgetCounterMap = new WeakMap();
 const widgetMap = new WeakMap();
 function incrementWidgetCounter(parentElement, childElement) {

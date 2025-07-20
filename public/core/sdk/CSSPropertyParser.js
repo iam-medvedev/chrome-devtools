@@ -465,7 +465,9 @@ export var ASTUtils;
                 current.push(node);
             }
         }
-        result.push(current);
+        if (nodes.length > 0) {
+            result.push(current);
+        }
         return result;
     }
     ASTUtils.split = split;

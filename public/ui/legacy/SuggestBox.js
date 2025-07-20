@@ -139,20 +139,19 @@ export class SuggestBox {
     applySuggestion(isIntermediateSuggestion) {
         if (this.onlyCompletion) {
             isIntermediateSuggestion ?
-                ARIAUtils.alert(i18nString(UIStrings.sSuggestionSOfS, { PH1: this.onlyCompletion.text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length })) :
-                ARIAUtils.alert(i18nString(UIStrings.sSuggestionSSelected, { PH1: this.onlyCompletion.text }));
+                ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sSuggestionSOfS, { PH1: this.onlyCompletion.text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length })) :
+                ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sSuggestionSSelected, { PH1: this.onlyCompletion.text }));
             this.suggestBoxDelegate.applySuggestion(this.onlyCompletion, isIntermediateSuggestion);
             return true;
         }
         const suggestion = this.list.selectedItem();
         if (suggestion?.text) {
-            isIntermediateSuggestion ?
-                ARIAUtils.alert(i18nString(UIStrings.sSuggestionSOfS, {
-                    PH1: suggestion.title || suggestion.text,
-                    PH2: this.list.selectedIndex() + 1,
-                    PH3: this.items.length,
-                })) :
-                ARIAUtils.alert(i18nString(UIStrings.sSuggestionSSelected, { PH1: suggestion.title || suggestion.text }));
+            isIntermediateSuggestion ? ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sSuggestionSOfS, {
+                PH1: suggestion.title || suggestion.text,
+                PH2: this.list.selectedIndex() + 1,
+                PH3: this.items.length,
+            })) :
+                ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sSuggestionSSelected, { PH1: suggestion.title || suggestion.text }));
         }
         this.suggestBoxDelegate.applySuggestion(suggestion, isIntermediateSuggestion);
         return this.visible() && Boolean(suggestion);

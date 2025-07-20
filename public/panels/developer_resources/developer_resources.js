@@ -240,7 +240,7 @@ var DeveloperResourcesListView = class extends UI.Widget.VBox {
       } else {
         resourceMatch = i18nString(UIStrings.numberOfResourceMatch, { n: numberOfResourceMatch });
       }
-      UI.ARIAUtils.alert(resourceMatch);
+      UI.ARIAUtils.LiveAnnouncer.alert(resourceMatch);
     });
   }
   performUpdate() {

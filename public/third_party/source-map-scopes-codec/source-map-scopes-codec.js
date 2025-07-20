@@ -68,6 +68,11 @@ var TokenIterator = class {
   }
 };
 
+// gen/front_end/third_party/source-map-scopes-codec/package/src/util.js
+function comparePositions(a, b) {
+  return a.line - b.line || a.column - b.column;
+}
+
 // gen/front_end/third_party/source-map-scopes-codec/package/src/encode/encoder.js
 var DEFAULT_SCOPE_STATE = {
   line: 0,
@@ -186,6 +191,7 @@ var Encoder = class {
   #encodeGeneratedRange(range) {
     this.#encodeGeneratedRangeStart(range);
     this.#encodeGeneratedRangeBindings(range);
+    this.#encodeGeneratedRangeSubRangeBindings(range);
     this.#encodeGeneratedRangeCallSite(range);
     range.children.forEach((child) => this.#encodeGeneratedRange(child));
     this.#encodeGeneratedRangeEnd(range);
@@ -227,6 +233,39 @@ var Encoder = class {
       this.#encodeSigned(encodedDefinition);
     this.#finishItem();
   }
+  #encodeGeneratedRangeSubRangeBindings(range) {
+    if (range.values.length === 0)
+      return;
+    for (let i = 0; i < range.values.length; ++i) {
+      const value = range.values[i];
+      if (!Array.isArray(value) || value.length <= 1) {
+        continue;
+      }
+      this.#encodeTag(
+        "H"
+        /* EncodedTag.GENERATED_RANGE_SUBRANGE_BINDING */
+      ).#encodeUnsigned(i);
+      let lastLine = range.start.line;
+      let lastColumn = range.start.column;
+      for (let j = 1; j < value.length; ++j) {
+        const subRange = value[j];
+        const prevSubRange = value[j - 1];
+        if (comparePositions(prevSubRange.to, subRange.from) !== 0) {
+          throw new Error("Sub-range bindings must not have gaps");
+        }
+        const encodedLine = subRange.from.line - lastLine;
+        const encodedColumn = encodedLine === 0 ? subRange.from.column - lastColumn : subRange.from.column;
+        if (encodedLine < 0 || encodedColumn < 0) {
+          throw new Error("Sub-range bindings must be sorted");
+        }
+        lastLine = subRange.from.line;
+        lastColumn = subRange.from.column;
+        const binding = subRange.value === void 0 ? 0 : this.#resolveNamesIdx(subRange.value) + 1;
+        this.#encodeUnsigned(binding).#encodeUnsigned(encodedLine).#encodeUnsigned(encodedColumn);
+      }
+      this.#finishItem();
+    }
+  }
   #encodeGeneratedRangeBindings(range) {
     if (range.values.length === 0)
       return;
@@ -240,12 +279,14 @@ var Encoder = class {
       /* EncodedTag.GENERATED_RANGE_BINDINGS */
     );
     for (const val of range.values) {
-      if (val === null || val == void 0) {
+      if (val === null || val === void 0) {
         this.#encodeUnsigned(0);
       } else if (typeof val === "string") {
         this.#encodeUnsigned(this.#resolveNamesIdx(val) + 1);
       } else {
-        throw new Error("Sub-range bindings not implemented yet!");
+        const initialValue = val[0];
+        const binding = initialValue.value === void 0 ? 0 : this.#resolveNamesIdx(initialValue.value) + 1;
+        this.#encodeUnsigned(binding);
       }
     }
     this.#finishItem();
@@ -332,10 +373,38 @@ function encode(scopesInfo, inputSourceMap) {
 }
 
 // gen/front_end/third_party/source-map-scopes-codec/package/src/decode/decode.js
-function decode(sourceMap, options) {
+var DEFAULT_DECODE_OPTIONS = {
+  mode: 2,
+  generatedOffset: { line: 0, column: 0 }
+};
+function decode(sourceMap, options = DEFAULT_DECODE_OPTIONS) {
+  const opts = { ...DEFAULT_DECODE_OPTIONS, ...options };
+  if ("sections" in sourceMap) {
+    return decodeIndexMap(sourceMap, {
+      ...opts,
+      generatedOffset: { line: 0, column: 0 }
+    });
+  }
+  return decodeMap(sourceMap, opts);
+}
+function decodeMap(sourceMap, options) {
   if (!sourceMap.scopes || !sourceMap.names)
     return { scopes: [], ranges: [] };
   return new Decoder(sourceMap.scopes, sourceMap.names, options).decode();
+}
+function decodeIndexMap(sourceMap, options) {
+  const scopeInfo = { scopes: [], ranges: [] };
+  for (const section of sourceMap.sections) {
+    const { scopes, ranges } = decode(section.map, {
+      ...options,
+      generatedOffset: section.offset
+    });
+    for (const scope of scopes)
+      scopeInfo.scopes.push(scope);
+    for (const range of ranges)
+      scopeInfo.ranges.push(range);
+  }
+  return scopeInfo;
 }
 var DEFAULT_SCOPE_STATE2 = {
   line: 0,
@@ -360,10 +429,13 @@ var Decoder = class {
   #scopeStack = [];
   #rangeStack = [];
   #flatOriginalScopes = [];
+  #subRangeBindingsForRange = /* @__PURE__ */ new Map();
   constructor(scopes, names, options) {
     this.#encodedScopes = scopes;
     this.#names = names;
-    this.#mode = options?.mode ?? 2;
+    this.#mode = options.mode;
+    this.#rangeState.line = options.generatedOffset.line;
+    this.#rangeState.column = options.generatedOffset.column;
   }
   decode() {
     const iter = new TokenIterator(this.#encodedScopes);
@@ -431,6 +503,19 @@ var Decoder = class {
             valueIdxs.push(iter.nextUnsignedVLQ());
           }
           this.#handleGeneratedRangeBindingsItem(valueIdxs);
+          break;
+        }
+        case 7: {
+          const variableIndex = iter.nextUnsignedVLQ();
+          const bindings = [];
+          while (iter.hasNext() && iter.peek() !== ",") {
+            bindings.push([
+              iter.nextUnsignedVLQ(),
+              iter.nextUnsignedVLQ(),
+              iter.nextUnsignedVLQ()
+            ]);
+          }
+          this.#recordGeneratedSubRangeBindingItem(variableIndex, bindings);
           break;
         }
         case 8: {
@@ -564,6 +649,7 @@ var Decoder = class {
       }
     }
     this.#rangeStack.push(range);
+    this.#subRangeBindingsForRange.clear();
   }
   #handleGeneratedRangeBindingsItem(valueIdxs) {
     const range = this.#rangeStack.at(-1);
@@ -578,6 +664,13 @@ var Decoder = class {
         range.values.push(this.#resolveName(valueIdx - 1));
       }
     }
+  }
+  #recordGeneratedSubRangeBindingItem(variableIndex, bindings) {
+    if (this.#subRangeBindingsForRange.has(variableIndex)) {
+      this.#throwInStrictMode("Encountered multiple GENERATED_RANGE_SUBRANGE_BINDING items for the same variable");
+      return;
+    }
+    this.#subRangeBindingsForRange.set(variableIndex, bindings);
   }
   #handleGeneratedRangeCallSite(sourceIndex, line, column) {
     const range = this.#rangeStack.at(-1);
@@ -607,12 +700,50 @@ var Decoder = class {
       line: this.#rangeState.line,
       column: this.#rangeState.column
     };
+    this.#handleGeneratedRangeSubRangeBindings(range);
     if (this.#rangeStack.length > 0) {
       const parent = this.#rangeStack.at(-1);
       range.parent = parent;
       parent.children.push(range);
     } else {
       this.#ranges.push(range);
+    }
+  }
+  #handleGeneratedRangeSubRangeBindings(range) {
+    for (const [variableIndex, bindings] of this.#subRangeBindingsForRange) {
+      const value = range.values[variableIndex];
+      const subRanges = [];
+      range.values[variableIndex] = subRanges;
+      let lastLine = range.start.line;
+      let lastColumn = range.start.column;
+      subRanges.push({
+        from: { line: lastLine, column: lastColumn },
+        to: { line: 0, column: 0 },
+        value
+      });
+      for (const [binding, line, column] of bindings) {
+        lastLine += line;
+        if (line === 0) {
+          lastColumn += column;
+        } else {
+          lastColumn = column;
+        }
+        subRanges.push({
+          from: { line: lastLine, column: lastColumn },
+          to: { line: 0, column: 0 },
+          // This will be fixed in the post-processing step.
+          value: binding === 0 ? void 0 : this.#resolveName(binding - 1)
+        });
+      }
+    }
+    for (const value of range.values) {
+      if (Array.isArray(value)) {
+        const subRanges = value;
+        for (let i = 0; i < subRanges.length - 1; ++i) {
+          subRanges[i].to = subRanges[i + 1].from;
+        }
+        subRanges[subRanges.length - 1].to = range.end;
+      }
     }
   }
   #resolveName(index) {
@@ -805,11 +936,6 @@ var ScopeInfoBuilder = class {
   }
 };
 
-// gen/front_end/third_party/source-map-scopes-codec/package/src/util.js
-function comparePositions(a, b) {
-  return a.line - b.line || a.column - b.column;
-}
-
 // gen/front_end/third_party/source-map-scopes-codec/package/src/builder/safe_builder.js
 var SafeScopeInfoBuilder = class extends ScopeInfoBuilder {
   addNullScope() {
@@ -953,6 +1079,7 @@ var SafeScopeInfoBuilder = class extends ScopeInfoBuilder {
     if (comparePositions(range.start, { line, column }) > 0) {
       throw new Error(`Range end (${line}, ${column}) must not precede range start (${range.start.line}, ${range.start.column})`);
     }
+    this.#verifyRangeValues(range, { line, column });
     super.endRange(line, column);
     return this;
   }
@@ -981,6 +1108,37 @@ var SafeScopeInfoBuilder = class extends ScopeInfoBuilder {
   #verifyRangePresent(op) {
     if (this.rangeStack.length === 0) {
       throw new Error(`Can't ${op} while no GeneratedRange is on the stack.`);
+    }
+  }
+  #verifyRangeValues(range, end) {
+    for (const value of range.values) {
+      if (!Array.isArray(value)) {
+        continue;
+      }
+      const subRanges = value;
+      if (subRanges.length === 0) {
+        continue;
+      }
+      const first = subRanges.at(0);
+      if (comparePositions(first.from, range.start) !== 0) {
+        throw new Error(`Sub-range bindings must start at the generated range's start. Expected ${range.start.line}:${range.start.column}, but got ${first.from.line}:${first.from.column}`);
+      }
+      const last = subRanges.at(-1);
+      if (comparePositions(last.to, end) !== 0) {
+        throw new Error(`Sub-range bindings must end at the generated range's end. Expected ${end.line}:${end.column}, but got ${last.to.line}:${last.to.column}`);
+      }
+      for (let i = 0; i < subRanges.length; ++i) {
+        const current = subRanges[i];
+        if (comparePositions(current.from, current.to) >= 0) {
+          throw new Error(`Sub-range binding 'from' (${current.from.line}:${current.from.column}) must precede 'to' (${current.to.line}:${current.to.column})`);
+        }
+        if (i > 0) {
+          const prev = subRanges[i - 1];
+          if (comparePositions(prev.to, current.from) !== 0) {
+            throw new Error(`Sub-range bindings must be sorted and not overlap. Found gap between ${prev.to.line}:${prev.to.column} and ${current.from.line}:${current.from.column}`);
+          }
+        }
+      }
     }
   }
 };

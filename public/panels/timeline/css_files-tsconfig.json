@@ -5,6 +5,7 @@
     },
     "files": [
         "thirdPartyTreeView.css.js",
+        "timelineDetailsView.css.js",
         "timelineFlameChartView.css.js",
         "timelineFlamechartPopover.css.js",
         "timelineHistoryManager.css.js",

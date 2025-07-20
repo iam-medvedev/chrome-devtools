@@ -42,7 +42,6 @@
     "../../../../../../front_end/models/ai_assistance/agents/PatchAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.ts",
-    "../../../../../../front_end/models/ai_assistance/agents/PerformanceInsightsAgent.ts",
     "../../../../../../front_end/models/ai_assistance/agents/StylingAgent.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/FileFormatter.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.ts",

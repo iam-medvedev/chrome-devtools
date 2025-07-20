@@ -147,7 +147,7 @@ var SelectedProjectType;
     /**
      * The selected project is a disconnected automatic workspace project
      */
-    SelectedProjectType["AUTOMATIC_DISCONNECTED"] = "automaticDisconncted";
+    SelectedProjectType["AUTOMATIC_DISCONNECTED"] = "automaticDisconnected";
     /**
      * The selected project is a connected automatic workspace project
      */

@@ -576,7 +576,7 @@ var SelectedProjectType;
 (function(SelectedProjectType2) {
   SelectedProjectType2["NONE"] = "none";
   SelectedProjectType2["REGULAR"] = "regular";
-  SelectedProjectType2["AUTOMATIC_DISCONNECTED"] = "automaticDisconncted";
+  SelectedProjectType2["AUTOMATIC_DISCONNECTED"] = "automaticDisconnected";
   SelectedProjectType2["AUTOMATIC_CONNECTED"] = "automaticConnected";
 })(SelectedProjectType || (SelectedProjectType = {}));
 var PatchWidget = class extends UI2.Widget.Widget {
@@ -3832,11 +3832,7 @@ var UIStringsNotTranslate5 = {
   /**
    *@description The footer disclaimer that links to more information about the AI feature.
    */
-  learnAbout: "Learn about AI in DevTools",
-  /**
-   *@description Disclaimer text right after the chat input.
-   */
-  inputDisclaimerForEmptyState: "This is an experimental AI feature and won't always get it right."
+  learnAbout: "Learn about AI in DevTools"
 };
 var lockedString5 = i18n9.i18n.lockedString;
 var DEFAULT_VIEW2 = (input, _output, target) => {
@@ -3865,6 +3861,15 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
           <p>
             To chat about an item, right-click and select${" "}
             <strong>Ask AI</strong>.
+            <button
+              class="link"
+              role="link"
+              jslog=${VisualLogging5.link("open-ai-settings").track({ click: true })}
+              @click=${() => {
+    void UI5.ViewManager.ViewManager.instance().showView("chrome-ai");
+  }}
+            >${lockedString5(UIStringsNotTranslate5.learnAbout)}
+            </button>
           </p>
         </div>
         <div class="content">
@@ -3881,23 +3886,6 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             `)}
         </div>
       </div>
-      <footer class="ai-assistance-explore-footer" jslog=${VisualLogging5.section("footer")}>
-        <p>
-          ${lockedString5(UIStringsNotTranslate5.inputDisclaimerForEmptyState)}
-          <button
-            class="link"
-            role="link"
-            jslog=${VisualLogging5.link("open-ai-settings").track({
-    click: true
-  })}
-            @click=${() => {
-    void UI5.ViewManager.ViewManager.instance().showView("chrome-ai");
-  }}
-          >
-            ${lockedString5(UIStringsNotTranslate5.learnAbout)}
-          </button>
-        </p>
-      </footer>
     `, target, { host: target });
 };
 var ExploreWidget = class extends UI5.Widget.Widget {
@@ -4168,21 +4156,25 @@ async function getEmptyStateSuggestions(context, conversationType) {
         { title: "Are there any security headers present?", jslogContext: "network-default" },
         { title: "Why is the request failing?", jslogContext: "network-default" }
       ];
-    case "drjones-performance":
-      return [
-        { title: "What's the purpose of this work?", jslogContext: "performance-default" },
-        { title: "Where is time being spent?", jslogContext: "performance-default" },
-        { title: "How can I optimize this?", jslogContext: "performance-default" }
-      ];
     case "performance-insight":
+    case "drjones-performance": {
+      const focus = context?.getItem();
+      if (focus?.data.type === "call-tree") {
+        return [
+          { title: "What's the purpose of this work?", jslogContext: "performance-default" },
+          { title: "Where is time being spent?", jslogContext: "performance-default" },
+          { title: "How can I optimize this?", jslogContext: "performance-default" }
+        ];
+      }
       return [
         { title: "Help me optimize my page load performance", jslogContext: "performance-insights-default" }
       ];
+    }
   }
 }
 function toolbarView(input) {
   return html6`
-    <div class="toolbar-container" role="toolbar" .jslogContext=${VisualLogging6.toolbar()}>
+    <div class="toolbar-container" role="toolbar" jslog=${VisualLogging6.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
       ${input.showChatActions ? html6`<devtools-button
           title=${i18nString2(UIStrings2.newChat)}
@@ -4270,17 +4262,11 @@ function createRequestContext(request) {
   }
   return new AiAssistanceModel3.RequestContext(request);
 }
-function createCallTreeContext(callTree) {
-  if (!callTree) {
+function createPerformanceTraceContext(focus) {
+  if (!focus) {
     return null;
   }
-  return new AiAssistanceModel3.CallTreeContext(callTree);
-}
-function createPerfInsightContext(insight) {
-  if (!insight) {
-    return null;
-  }
-  return new AiAssistanceModel3.InsightContext(insight);
+  return new AiAssistanceModel3.PerformanceTraceContext(focus);
 }
 function agentToConversationType(agent) {
   if (agent instanceof AiAssistanceModel3.StylingAgent) {
@@ -4293,10 +4279,7 @@ function agentToConversationType(agent) {
     return "drjones-file";
   }
   if (agent instanceof AiAssistanceModel3.PerformanceAgent) {
-    return "drjones-performance";
-  }
-  if (agent instanceof AiAssistanceModel3.PerformanceInsightsAgent) {
-    return "performance-insight";
+    return agent.getConversationType();
   }
   throw new Error("Provided agent does not have a corresponding conversation type");
 }
@@ -4346,8 +4329,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   #historicalConversations = [];
   #selectedFile = null;
   #selectedElement = null;
-  #selectedCallTree = null;
-  #selectedPerformanceInsight = null;
+  #selectedPerformanceTrace = null;
   #selectedRequest = null;
   // Messages displayed in the `ChatView` component.
   #messages = [];
@@ -4438,12 +4420,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         agent = new AiAssistanceModel3.FileAgent(options);
         break;
       }
+      case "performance-insight":
       case "drjones-performance": {
-        agent = new AiAssistanceModel3.PerformanceAgent(options);
-        break;
-      }
-      case "performance-insight": {
-        agent = new AiAssistanceModel3.PerformanceInsightsAgent(options);
+        agent = new AiAssistanceModel3.PerformanceAgent(options, conversationType);
         break;
       }
     }
@@ -4541,8 +4520,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     void this.#handleAidaAvailabilityChange();
     this.#selectedElement = createNodeContext(selectedElementFilter(UI6.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)));
     this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
-    this.#selectedCallTree = createCallTreeContext(UI6.Context.Context.instance().flavor(TimelineUtils.AICallTree.AICallTree));
-    this.#selectedPerformanceInsight = createPerfInsightContext(UI6.Context.Context.instance().flavor(TimelineUtils.InsightAIContext.ActiveInsight));
+    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(TimelineUtils.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI6.Context.Context.instance().flavor(Workspace5.UISourceCode.UISourceCode));
     this.#updateConversationState(this.#conversationAgent);
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
@@ -4550,9 +4528,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
     UI6.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(Workspace5.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(TimelineUtils.InsightAIContext.ActiveInsight, this.#handlePerfInsightFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
     UI6.Context.Context.instance().addFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
     UI6.Context.Context.instance().addFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
@@ -4570,8 +4547,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
     UI6.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AICallTree.AICallTree, this.#handleTraceEntryNodeFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.InsightAIContext.ActiveInsight, this.#handlePerfInsightFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(Workspace5.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
     UI6.Context.Context.instance().removeFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
@@ -4619,18 +4595,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#selectedRequest = Boolean(ev.data) ? new AiAssistanceModel3.RequestContext(ev.data) : null;
     this.#updateConversationState(this.#conversationAgent);
   };
-  #handleTraceEntryNodeFlavorChange = (ev) => {
-    if (this.#selectedCallTree?.getItem() === ev.data) {
+  #handlePerformanceTraceFlavorChange = (ev) => {
+    if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
       return;
     }
-    this.#selectedCallTree = Boolean(ev.data) ? new AiAssistanceModel3.CallTreeContext(ev.data) : null;
-    this.#updateConversationState(this.#conversationAgent);
-  };
-  #handlePerfInsightFlavorChange = (ev) => {
-    if (this.#selectedPerformanceInsight?.getItem() === ev.data) {
-      return;
-    }
-    this.#selectedPerformanceInsight = Boolean(ev.data) ? new AiAssistanceModel3.InsightContext(ev.data) : null;
+    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel3.PerformanceTraceContext(ev.data) : null;
     this.#updateConversationState(this.#conversationAgent);
   };
   #handleUISourceCodeFlavorChange = (ev) => {
@@ -4830,15 +4799,18 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (context instanceof AiAssistanceModel3.FileContext) {
       return Common4.Revealer.reveal(context.getItem().uiLocation(0, 0));
     }
-    if (context instanceof AiAssistanceModel3.CallTreeContext) {
-      const item = context.getItem();
-      const event = item.selectedNode?.event ?? item.rootNode.event;
-      const trace = new SDK.TraceObject.RevealableEvent(event);
-      return Common4.Revealer.reveal(trace);
-    }
-    if (context instanceof AiAssistanceModel3.InsightContext) {
-      const item = context.getItem();
-      return Common4.Revealer.reveal(item);
+    if (context instanceof AiAssistanceModel3.PerformanceTraceContext) {
+      const focus = context.getItem().data;
+      if (focus.type === "call-tree") {
+        const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
+        const trace = new SDK.TraceObject.RevealableEvent(event);
+        return Common4.Revealer.reveal(trace);
+      }
+      if (focus.type === "insight") {
+        const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.insight, focus.insightSetBounds, focus.parsedTrace);
+        return Common4.Revealer.reveal(activeInsight);
+      }
+      Platform4.assertNever(focus, "Unknown agent focus");
     }
   }
   handleAction(actionId) {
@@ -4936,7 +4908,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#historicalConversations = this.#historicalConversations.filter((conversation) => conversation !== this.#conversation);
     void AiAssistanceModel3.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
     this.#updateConversationState();
-    UI6.ARIAUtils.alert(i18nString2(UIStrings2.chatDeleted));
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.chatDeleted));
   }
   async #openConversation(conversation) {
     if (this.#conversation === conversation) {
@@ -4947,7 +4919,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #handleNewChatRequest() {
     this.#updateConversationState();
-    UI6.ARIAUtils.alert(i18nString2(UIStrings2.newChatCreated));
+    UI6.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.newChatCreated));
   }
   async #handleTakeScreenshot() {
     const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -5085,10 +5057,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         context = this.#selectedRequest;
         break;
       case "drjones-performance":
-        context = this.#selectedCallTree;
-        break;
       case "performance-insight":
-        context = this.#selectedPerformanceInsight;
+        context = this.#selectedPerformanceTrace;
         break;
     }
     return context;
@@ -5117,9 +5087,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       signal,
       selected: context
     }, multimodalInput);
-    UI6.ARIAUtils.alert(lockedString6(UIStringsNotTranslate6.answerLoading));
     await this.#doConversation(this.#saveResponsesToCurrentConversation(runner));
-    UI6.ARIAUtils.alert(lockedString6(UIStringsNotTranslate6.answerReady));
   }
   async *#saveResponsesToCurrentConversation(items) {
     const currentConversation = this.#conversation;
@@ -5144,6 +5112,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       };
       let step = { isLoading: true };
       this.#isLoading = true;
+      let announcedAnswerLoading = false;
+      let announcedAnswerReady = false;
       for await (const data of items) {
         step.sideEffect = void 0;
         switch (data.type) {
@@ -5241,6 +5211,20 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
           if (data.type === "context" || data.type === "side-effect") {
             this.#viewOutput.chatView?.scrollToBottom();
           }
+          switch (data.type) {
+            case "context":
+              UI6.ARIAUtils.LiveAnnouncer.status(data.title);
+              break;
+            case "answer": {
+              if (!data.complete && !announcedAnswerLoading) {
+                announcedAnswerLoading = true;
+                UI6.ARIAUtils.LiveAnnouncer.status(lockedString6(UIStringsNotTranslate6.answerLoading));
+              } else if (data.complete && !announcedAnswerReady) {
+                announcedAnswerReady = true;
+                UI6.ARIAUtils.LiveAnnouncer.status(lockedString6(UIStringsNotTranslate6.answerReady));
+              }
+            }
+          }
         }
       }
       this.#isLoading = false;
@@ -5311,7 +5295,13 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         devToolsLogs: []
       };
     }
-    const selectedContext = createPerfInsightContext(insightOrError.insight);
+    const focus = new TimelineUtils.AIContext.AgentFocus({
+      type: "insight",
+      parsedTrace: insightOrError.insight.parsedTrace,
+      insight: insightOrError.insight.insight,
+      insightSetBounds: insightOrError.insight.insightSetBounds
+    });
+    const selectedContext = createPerformanceTraceContext(focus);
     const runner = insightsAgent.run(prompt, { selected: selectedContext });
     const devToolsLogs = [];
     for await (const data of runner) {

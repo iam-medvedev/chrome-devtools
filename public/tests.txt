@@ -9,6 +9,7 @@ core/common/ColorUtils.test.js
 core/common/Console.test.js
 core/common/Debouncer.test.js
 core/common/EventTarget.test.js
+core/common/Gzip.test.js
 core/common/Lazy.test.js
 core/common/MapWithDefault.test.js
 core/common/Mutex.test.js
@@ -120,11 +121,11 @@ models/ai_assistance/agents/NetworkAgent.test.js
 models/ai_assistance/agents/PatchAgent.test.js
 models/ai_assistance/agents/PerformanceAgent.test.js
 models/ai_assistance/agents/PerformanceAnnotationsAgent.test.js
-models/ai_assistance/agents/PerformanceInsightsAgent.test.js
 models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/data_formatters/FileFormatter.test.js
 models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
+models/ai_code_completion/AiCodeCompletion.test.js
 models/autofill_manager/AutofillManager.test.js
 models/bindings/CompilerScriptMapping.test.js
 models/bindings/ContentProviderBasedProject.test.js
@@ -454,7 +455,7 @@ panels/recorder/converters/PuppeteerConverter.test.js
 panels/recorder/converters/PuppeteerReplayConverter.test.js
 panels/recorder/injected/selectors/CSSSelector.test.js
 panels/recorder/models/RecorderSettings.test.js
-panels/recorder/models/RecorderShorcutHelper.test.js
+panels/recorder/models/RecorderShortcutHelper.test.js
 panels/recorder/models/RecordingPlayer.test.js
 panels/recorder/models/SchemaUtils.test.js
 panels/recorder/models/ScreenshotUtils.test.js

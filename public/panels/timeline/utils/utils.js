@@ -1730,6 +1730,32 @@ var MinDurationFilter = class extends Trace4.Extras.TraceFilter.TraceFilter {
   }
 };
 
+// gen/front_end/panels/timeline/utils/AIContext.js
+var AIContext_exports = {};
+__export(AIContext_exports, {
+  AgentFocus: () => AgentFocus
+});
+var AgentFocus = class _AgentFocus {
+  static fromInsight(insight) {
+    return new _AgentFocus({
+      type: "insight",
+      parsedTrace: insight.parsedTrace,
+      insight: insight.insight,
+      insightSetBounds: insight.insightSetBounds
+    });
+  }
+  static fromCallTree(callTree) {
+    return new _AgentFocus({ type: "call-tree", parsedTrace: callTree.parsedTrace, callTree });
+  }
+  #data;
+  constructor(data) {
+    this.#data = data;
+  }
+  get data() {
+    return this.#data;
+  }
+};
+
 // gen/front_end/panels/timeline/utils/EntityMapper.js
 var EntityMapper_exports = {};
 __export(EntityMapper_exports, {
@@ -2259,22 +2285,13 @@ __export(Treemap_exports, {
   makeScriptNode: () => makeScriptNode,
   openTreemap: () => openTreemap
 });
+import * as Common2 from "./../../../core/common/common.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
 import * as Trace10 from "./../../../models/trace/trace.js";
 async function toCompressedBase64(string) {
-  let bytes = new TextEncoder().encode(string);
-  const cs = new CompressionStream("gzip");
-  const writer = cs.writable.getWriter();
-  void writer.write(bytes);
-  void writer.close();
-  const compAb = await new Response(cs.readable).arrayBuffer();
-  bytes = new Uint8Array(compAb);
-  let binaryString = "";
-  const chunkSize = 5e3;
-  for (let i = 0; i < bytes.length; i += chunkSize) {
-    binaryString += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
-  }
-  return btoa(binaryString);
+  const compAb = await Common2.Gzip.compress(string);
+  const strb64 = await Common2.Base64.encode(compAb);
+  return strb64;
 }
 async function openTabWithUrlData(data, urlString, windowName) {
   const url = new URL(urlString);
@@ -2450,6 +2467,7 @@ function createTreemapData(scripts, duplication) {
 }
 export {
   AICallTree_exports as AICallTree,
+  AIContext_exports as AIContext,
   EntityMapper_exports as EntityMapper,
   EntryName_exports as EntryName,
   EntryNodes_exports as EntryNodes,

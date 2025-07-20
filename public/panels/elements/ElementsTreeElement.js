@@ -35,6 +35,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -177,6 +178,14 @@ const UIStrings = {
      *@description ARIA label for Elements Tree adorners
      */
     disableGridMode: 'Disable grid mode',
+    /**
+     * @description ARIA label for an elements tree adorner
+     */
+    forceOpenPopover: 'Keep this popover open',
+    /**
+     * @description ARIA label for an elements tree adorner
+     */
+    stopForceOpenPopover: 'Stop keeping this popover open',
     /**
      *@description Label of the adorner for flex elements in the Elements panel
      */
@@ -481,7 +490,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction('freestyler.elements-floating-button');
         if (this.contentElement && !this.aiButtonContainer) {
             this.aiButtonContainer = this.contentElement.createChild('span', 'ai-button-container');
-            const floatingButton = Buttons.FloatingButton.create('smart-assistant', action.title());
+            const floatingButton = Buttons.FloatingButton.create('smart-assistant', action.title(), 'ask-ai');
             floatingButton.addEventListener('click', ev => {
                 ev.stopPropagation();
                 this.select(true, false);
@@ -1899,24 +1908,54 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         for (const styleAdorner of this.tagTypeContext.styleAdorners) {
             this.removeAdorner(styleAdorner, this.tagTypeContext);
         }
-        if (!layout) {
-            return;
-        }
-        if (layout.isGrid) {
-            this.pushGridAdorner(this.tagTypeContext, layout.isSubgrid);
-        }
-        if (layout.isFlex) {
-            this.pushFlexAdorner(this.tagTypeContext);
-        }
-        if (layout.hasScroll) {
-            this.pushScrollSnapAdorner(this.tagTypeContext);
-        }
-        if (layout.isContainer) {
-            this.pushContainerAdorner(this.tagTypeContext);
+        if (layout) {
+            if (layout.isGrid) {
+                this.pushGridAdorner(this.tagTypeContext, layout.isSubgrid);
+            }
+            if (layout.isFlex) {
+                this.pushFlexAdorner(this.tagTypeContext);
+            }
+            if (layout.hasScroll) {
+                this.pushScrollSnapAdorner(this.tagTypeContext);
+            }
+            if (layout.isContainer) {
+                this.pushContainerAdorner(this.tagTypeContext);
+            }
         }
         if (node.isMediaNode()) {
             this.pushMediaAdorner(this.tagTypeContext);
         }
+        if (node.attributes().find(attr => attr.name === 'popover')) {
+            this.pushPopoverAdorner(this.tagTypeContext);
+        }
+    }
+    pushPopoverAdorner(context) {
+        if (!Root.Runtime.hostConfig.devToolsAllowPopoverForcing?.enabled) {
+            return;
+        }
+        const node = this.node();
+        const nodeId = node.id;
+        const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.POPOVER);
+        const adorner = this.adorn(config);
+        const onClick = async () => {
+            const { nodeIds } = await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: adorner.isActive() });
+            for (const closedPopoverNodeId of nodeIds) {
+                const node = this.node().domModel().nodeForId(closedPopoverNodeId);
+                const treeElement = node && this.treeOutline?.treeElementByNode.get(node);
+                if (!treeElement || !isOpeningTag(treeElement.tagTypeContext)) {
+                    return;
+                }
+                const adorner = treeElement.tagTypeContext.adorners.values().find(adorner => adorner.name === config.name);
+                adorner?.toggle(false);
+            }
+        };
+        adorner.addInteraction(onClick, {
+            isToggle: true,
+            shouldPropagateOnKeydown: false,
+            ariaLabelDefault: i18nString(UIStrings.forceOpenPopover),
+            ariaLabelActive: i18nString(UIStrings.stopForceOpenPopover),
+        });
+        context.styleAdorners.add(adorner);
     }
     pushGridAdorner(context, isSubgrid) {
         const node = this.node();

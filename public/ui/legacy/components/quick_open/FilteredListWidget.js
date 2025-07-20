@@ -286,7 +286,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         this.list.selectItem(item);
         const text = this.list.elementAtIndex(this.list.selectedIndex())?.textContent;
         if (text) {
-            UI.ARIAUtils.alert(i18nString(UIStrings.sItemSOfS, { PH1: text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length }));
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sItemSOfS, { PH1: text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length }));
         }
     }
     setQuery(query) {
@@ -433,7 +433,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         this.notFoundElement.classList.toggle('hidden', hasItems);
         if (!hasItems && this.provider) {
             this.notFoundElement.textContent = this.provider.notFoundText(this.cleanValue());
-            UI.ARIAUtils.alert(this.notFoundElement.textContent);
+            UI.ARIAUtils.LiveAnnouncer.alert(this.notFoundElement.textContent);
         }
     }
     onInput(event) {
@@ -485,7 +485,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
             keyboardEvent.consume(true);
             const text = this.list.elementAtIndex(this.list.selectedIndex())?.textContent;
             if (text) {
-                UI.ARIAUtils.alert(i18nString(UIStrings.sItemSOfS, { PH1: text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length }));
+                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sItemSOfS, { PH1: text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length }));
             }
         }
     }

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, getInsightOrError, processTrace } from '../../../testing/InsightHelpers.js';
-import { fetchFixture, TraceLoader } from '../../../testing/TraceLoader.js';
+import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describeWithEnvironment('DuplicatedJavaScript', function () {
     it('works (external source maps)', async () => {
@@ -79,8 +79,7 @@ describeWithEnvironment('DuplicatedJavaScript', function () {
     });
     it('works (inline source maps in metadata)', async function () {
         // Load this trace in a way that mutating it is safe.
-        const traceText = await fetchFixture(new URL('../../../panels/timeline/fixtures/traces/dupe-js-inline-maps.json.gz', import.meta.url));
-        const fileContents = JSON.parse(traceText);
+        const fileContents = await TraceLoader.loadTraceFileFromURL(new URL('../../../panels/timeline/fixtures/traces/dupe-js-inline-maps.json.gz', import.meta.url));
         // Remove the source map data urls from the trace, and move to metadata.
         // This reflects how Chromium will elide data source map urls.
         // The original trace here was recorded at a time where sourceMapUrl could be a

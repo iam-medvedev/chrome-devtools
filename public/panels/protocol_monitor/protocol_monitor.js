@@ -142,7 +142,7 @@ var UIStrings = {
    */
   addParameter: "Add a parameter",
   /**
-   *@description The title of a button that reset the value of a paremeters to its default value.
+   *@description The title of a button that reset the value of a parameters to its default value.
    */
   resetDefaultValue: "Reset to default value",
   /**

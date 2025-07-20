@@ -27,7 +27,7 @@ export declare const enum InstrumentationNames {
     CANVAS_CONTEXT_CREATED = "canvasContextCreated",
     GEOLOCATION_GET_CURRENT_POSITION = "Geolocation.getCurrentPosition",
     GEOLOCATION_WATCH_POSITION = "Geolocation.watchPosition",
-    NOTIFCATION_REQUEST_PERMISSION = "Notification.requestPermission",
+    NOTIFICATION_REQUEST_PERMISSION = "Notification.requestPermission",
     DOM_WINDOW_CLOSE = "DOMWindow.close",
     DOCUMENT_WRITE = "Document.write",
     AUDIO_CONTEXT_CREATED = "audioContextCreated",

@@ -16,6 +16,11 @@ export declare class DockController extends Common.ObjectWrapper.ObjectWrapper<E
     initialize(): void;
     private dockSideChanged;
     dockSide(): DockState | undefined;
+    /** Whether the DevTools can be docked, used to determine if we show docking UI.
+     * Set via `Root.Runtime.Runtime.queryParam('can_dock')`. See https://cs.chromium.org/can_dock+f:window
+     *
+     * Shouldn't be used as a heuristic for target connection state.
+     */
     canDock(): boolean;
     isVertical(): boolean;
     setDockSide(dockSide: DockState): void;

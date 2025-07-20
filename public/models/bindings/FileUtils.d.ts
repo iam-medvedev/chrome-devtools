@@ -1,4 +1,4 @@
-import type * as Common from '../../core/common/common.js';
+import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 export interface ChunkedReader {
     fileSize(): number;
@@ -16,7 +16,6 @@ export declare class ChunkedFileReader implements ChunkedReader {
     fileSize(): number;
     fileName(): string;
     error(): DOMException | null;
-    private decompressStream;
     private onChunkLoaded;
     private decodeChunkBuffer;
     private finishRead;

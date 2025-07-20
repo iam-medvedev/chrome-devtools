@@ -117,7 +117,7 @@ describeWithEnvironment('SourcesView', () => {
             assert.instanceOf(widget, Sources.UISourceCodeFrame.UISourceCodeFrame);
             const uiSourceCodeFrame = widget;
             // Skip creating the DebuggerPlugin, which times out and simulate DOM attach/showing.
-            sinon.stub(uiSourceCodeFrame, 'loadPlugins').callsFake(() => { });
+            sinon.stub(uiSourceCodeFrame, 'loadPlugins');
             uiSourceCodeFrame.wasShown();
             await contentLoadedPromise;
             sinon.assert.calledWithExactly(sourcesPanelFileOpenedSpy, 'text/typescript');

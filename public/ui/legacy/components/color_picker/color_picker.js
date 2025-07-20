@@ -1159,10 +1159,10 @@ var spectrum_css_default = `/*
 }
 
 .spectrum-hue.display-p3 {
+  /* stylelint-disable-next-line declaration-property-value-no-unknown */
   background: linear-gradient(
     to left in hsl longer hue,
     color(display-p3 1 0 0) 0 100%
-      /* stylelint-disable-next-line declaration-property-value-no-unknown */
   );
 }
 

@@ -47,6 +47,7 @@
     "../../../../../../front_end/core/common/Console.test.ts",
     "../../../../../../front_end/core/common/Debouncer.test.ts",
     "../../../../../../front_end/core/common/EventTarget.test.ts",
+    "../../../../../../front_end/core/common/Gzip.test.ts",
     "../../../../../../front_end/core/common/Lazy.test.ts",
     "../../../../../../front_end/core/common/MapWithDefault.test.ts",
     "../../../../../../front_end/core/common/Mutex.test.ts",

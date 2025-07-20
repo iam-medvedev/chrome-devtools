@@ -8,12 +8,6 @@ import * as RenderCoordinator from '../../../../ui/components/render_coordinator
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as UI from '../../legacy.js';
 const { render, html } = Lit;
-function getAccessibleText(element) {
-    element.blur();
-    element.focus();
-    const alertElement = UI.ARIAUtils.getOrCreateAlertElement();
-    return alertElement.textContent?.trim() || '';
-}
 function getFocusedElement() {
     let root = document;
     while (root.activeElement?.shadowRoot?.activeElement) {
@@ -31,7 +25,15 @@ function sendKeydown(element, key) {
 }
 describeWithEnvironment('DataGrid', () => {
     let container;
+    let liveAnnouncerAlertStub;
+    function getAlertAnnouncement(element) {
+        element.blur();
+        element.focus();
+        assert.isTrue(liveAnnouncerAlertStub.called, 'Expected UI.ARIAUtils.LiveAnnouncer.alert to be called');
+        return liveAnnouncerAlertStub.lastCall.args[0];
+    }
     beforeEach(() => {
+        liveAnnouncerAlertStub = sinon.stub(UI.ARIAUtils.LiveAnnouncer, 'alert').returns();
         container = document.createElement('div');
         container.style.display = 'flex';
         container.style.width = '640px';
@@ -53,7 +55,7 @@ describeWithEnvironment('DataGrid', () => {
         const element = await renderDataGrid(html `
         <devtools-data-grid .striped=${true} .displayName=${'Display Name'}>
         </devtools-data-grid>`);
-        assert.isTrue(getAccessibleText(element).startsWith('Display Name Rows: 0'));
+        assert.isTrue(getAlertAnnouncement(element).startsWith('Display Name Rows: 0'));
     });
     it('can initialize data from template', async () => {
         const element = await renderDataGrid(html `
@@ -70,7 +72,7 @@ describeWithEnvironment('DataGrid', () => {
           </table>
         </devtools-data-grid>`);
         sendKeydown(element, 'ArrowDown');
-        assert.strictEqual(getAccessibleText(element), 'Display Name Row  Column 1: Value 1, Column 2: Value 2');
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row  Column 1: Value 1, Column 2: Value 2');
     });
     it('can update data from template', async () => {
         await renderDataGridWithData(html `
@@ -96,7 +98,7 @@ describeWithEnvironment('DataGrid', () => {
           </table>
         </devtools-data-grid>`);
         sendKeydown(element, 'ArrowDown');
-        assert.strictEqual(getAccessibleText(element), 'Display Name Row  Column 3: Value 3, Column 4: Value 4');
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row  Column 3: Value 3, Column 4: Value 4');
     });
     it('can filter data', async () => {
         await renderDataGrid(html `
@@ -137,9 +139,9 @@ describeWithEnvironment('DataGrid', () => {
           </table>
         </devtools-data-grid>`);
         // clang-format on
-        assert.isTrue(getAccessibleText(element).startsWith('Display Name Rows: 1'));
+        assert.isTrue(getAlertAnnouncement(element).startsWith('Display Name Rows: 1'));
         sendKeydown(element, 'ArrowDown');
-        assert.strictEqual(getAccessibleText(element), 'Display Name Row  Column 1: Value 3, Column 2: Value 4');
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row  Column 1: Value 3, Column 2: Value 4');
     });
     it('can set selection from template', async () => {
         let element = await renderDataGrid(html `
@@ -160,7 +162,7 @@ describeWithEnvironment('DataGrid', () => {
           </table>
         </devtools-data-grid>`);
         // clang-format off
-        assert.strictEqual(getAccessibleText(element), 'Display Name Row  Column 1: Value 3, Column 2: Value 4');
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row  Column 1: Value 3, Column 2: Value 4');
         element = await renderDataGrid(html `
         <devtools-data-grid striped name=${'Display Name'}>
           <table>
@@ -179,7 +181,7 @@ describeWithEnvironment('DataGrid', () => {
           </table>
         </devtools-data-grid>`);
         // clang-format off
-        assert.isTrue(getAccessibleText(element).startsWith('Display Name Rows: 2'));
+        assert.isTrue(getAlertAnnouncement(element).startsWith('Display Name Rows: 2'));
     });
     it('supports editable columns', async () => {
         const editCallback = sinon.stub();

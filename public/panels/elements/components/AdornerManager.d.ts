@@ -24,7 +24,8 @@ export declare enum RegisteredAdorners {
     TOP_LAYER = "top-layer",
     REVEAL = "reveal",
     MEDIA = "media",
-    SCROLL = "scroll"
+    SCROLL = "scroll",
+    POPOVER = "popover"
 }
 export declare function getRegisteredAdorner(which: RegisteredAdorners): RegisteredAdorner;
 export declare const DefaultAdornerSettings: AdornerSetting[];

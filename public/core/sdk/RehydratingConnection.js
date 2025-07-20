@@ -49,31 +49,31 @@ export class RehydratingConnection {
      */
     #onReceiveHostWindowPayload(event) {
         if (event.data.type === 'REHYDRATING_TRACE_FILE') {
-            const { traceFile } = event.data;
-            const reader = new FileReader();
-            reader.onload = async () => {
-                await this.startHydration(reader.result);
-            };
-            reader.onerror = () => {
+            const traceJson = event.data.traceJson;
+            let trace;
+            try {
+                trace = JSON.parse(traceJson);
+            }
+            catch {
                 this.#onConnectionLost(i18nString(UIStrings.errorLoadingLog));
-            };
-            reader.readAsText(traceFile);
+                return;
+            }
+            void this.startHydration(trace);
         }
         this.#rehydratingWindow.removeEventListener('message', this.#onReceiveHostWindowPayloadBound);
     }
-    async startHydration(logPayload) {
+    async startHydration(trace) {
         // OnMessage should've been set before hydration, and the connection should
         // be initialized and not hydrated already.
         if (!this.onMessage || this.rehydratingConnectionState !== 2 /* RehydratingConnectionState.INITIALIZED */) {
             return false;
         }
-        const payload = JSON.parse(logPayload);
-        if (!('traceEvents' in payload)) {
+        if (!('traceEvents' in trace)) {
             console.error('RehydratingConnection failed to initialize due to missing trace events in payload');
             return false;
         }
-        this.trace = payload;
-        const enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser(payload);
+        this.trace = trace;
+        const enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser(trace);
         const hydratingData = enhancedTracesParser.data();
         let sessionId = 0;
         // Set up default rehydrating session.

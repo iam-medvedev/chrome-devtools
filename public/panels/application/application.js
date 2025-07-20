@@ -787,7 +787,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
         };
         copyButton.className = "inline-button";
         copyButton.addEventListener("click", () => {
-          UI2.ARIAUtils.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
+          UI2.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.copiedToClipboard, { PH1: recommendedId }));
           Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(recommendedId);
         });
         suggestedIdNote.appendChild(i18n.i18n.getFormatLocalizedString(str_, UIStrings.appIdNote, { PH1: suggestedIdSpan, PH2: copyButton }));
@@ -894,7 +894,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
       link4.tabIndex = 0;
       urlField.appendChild(link4);
       const shortcutIcons = shortcut.icons || [];
-      let hasShorcutIconLargeEnough = false;
+      let hasShortcutIconLargeEnough = false;
       for (const shortcutIcon of shortcutIcons) {
         const { imageResourceErrors: shortcutIconErrors } = await this.appendImageResourceToSection(
           url,
@@ -904,14 +904,14 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
           false
         );
         imageErrors.push(...shortcutIconErrors);
-        if (!hasShorcutIconLargeEnough && shortcutIcon.sizes) {
+        if (!hasShortcutIconLargeEnough && shortcutIcon.sizes) {
           const shortcutIconSize = shortcutIcon.sizes.match(/^(\d+)x(\d+)$/);
           if (shortcutIconSize && shortcutIconSize[1] >= 96 && shortcutIconSize[2] >= 96) {
-            hasShorcutIconLargeEnough = true;
+            hasShortcutIconLargeEnough = true;
           }
         }
       }
-      if (!hasShorcutIconLargeEnough) {
+      if (!hasShortcutIconLargeEnough) {
         imageErrors.push(i18nString(UIStrings.shortcutSShouldIncludeAXPixel, { PH1: shortcutIndex }));
       }
       shortcutIndex++;
@@ -3461,6 +3461,31 @@ var IDBDataView = class extends UI6.View.SimpleView {
     }
     this.needsRefresh.setVisible(true);
   }
+  async resolveArrayKey(key) {
+    const { properties } = await key.getOwnProperties(
+      false
+      /* generatePreview */
+    );
+    if (!properties) {
+      return [];
+    }
+    const result = [];
+    const propertyPromises = properties.filter((property) => !isNaN(Number(property.name))).map(async (property) => {
+      const value = property.value;
+      if (!value) {
+        return;
+      }
+      let propertyValue;
+      if (value.subtype === "array") {
+        propertyValue = await this.resolveArrayKey(value);
+      } else {
+        propertyValue = value.value;
+      }
+      result[Number(property.name)] = propertyValue;
+    });
+    await Promise.all(propertyPromises);
+    return result;
+  }
   async deleteButtonClicked(node) {
     if (!node) {
       node = this.dataGrid.selectedNode;
@@ -3469,7 +3494,7 @@ var IDBDataView = class extends UI6.View.SimpleView {
       }
     }
     const key = this.isIndex ? node.data["primary-key"] : node.data.key;
-    const keyValue = key.value;
+    const keyValue = key.subtype === "array" ? await this.resolveArrayKey(key) : key.value;
     await this.model.deleteEntries(this.databaseId, this.objectStore.name, window.IDBKeyRange.only(keyValue));
     this.refreshObjectStoreCallback();
   }
@@ -4314,7 +4339,7 @@ var UIStrings9 = {
   /**
    *  Description text for PrerenderFinalStatus::kUaChangeRequiresReload.
    */
-  prerenderFinalStatusUaChangeRequiresReload: "Changing User Agent occured in prerendering navigation.",
+  prerenderFinalStatusUaChangeRequiresReload: "Changing User Agent occurred in prerendering navigation.",
   /**
    *  Description text for PrerenderFinalStatus::kBlockedByClient.
    */
@@ -4719,6 +4744,8 @@ var PreloadingUIUtils = class {
       case "SourceIsNotJsonObject":
         return i18nString10(UIStrings10.validityInvalid);
       case "InvalidRulesSkipped":
+        return i18nString10(UIStrings10.validitySomeRulesInvalid);
+      case "InvalidRulesetLevelTag":
         return i18nString10(UIStrings10.validitySomeRulesInvalid);
     }
   }
@@ -5178,7 +5205,7 @@ var PreloadingTreeElementBase = class extends ApplicationPanelTreeElement {
     super(panel, title, false, "speculative-loads");
     this.#viewConstructor = viewConstructor;
     this.#path = path;
-    const icon = IconButton6.Icon.create("arrow-up-down");
+    const icon = IconButton6.Icon.create("speculative-loads");
     this.setLeadingIcons([icon]);
     this.#selectedInternal = false;
   }
@@ -5212,7 +5239,7 @@ var PreloadingSummaryTreeElement = class extends ExpandableApplicationPanelTreeE
   #attempt = null;
   constructor(panel) {
     super(panel, i18nString11(UIStrings11.speculativeLoads), "", "", "preloading");
-    const icon = IconButton6.Icon.create("arrow-up-down");
+    const icon = IconButton6.Icon.create("speculative-loads");
     this.setLeadingIcons([icon]);
     this.#selectedInternal = false;
   }
@@ -8135,7 +8162,7 @@ var StorageItemsToolbar = class extends Common12.ObjectWrapper.eventMixin(UI17.W
           "Refresh"
           /* StorageItemsToolbar.Events.REFRESH */
         );
-        UI17.ARIAUtils.alert(i18nString21(UIStrings21.refreshedStatus));
+        UI17.ARIAUtils.LiveAnnouncer.alert(i18nString21(UIStrings21.refreshedStatus));
       },
       onDeleteAll: () => this.dispatchEventToListeners(
         "DeleteAll"
@@ -8195,7 +8222,7 @@ var { Size } = UI18.Geometry;
 var { repeat } = LitDirectives;
 var UIStrings22 = {
   /**
-   *@description Text that shows in the Applicaiton Panel if no value is selected for preview
+   *@description Text that shows in the Application Panel if no value is selected for preview
    */
   noPreviewSelected: "No value selected",
   /**
@@ -8331,7 +8358,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
         this.#isSortOrderAscending = event.detail.ascending;
       },
       onCreate: (event) => {
-        this.#createCallback(event.detail.key, event.detail.value);
+        this.#createCallback(event.detail.key, event.detail.value || "");
       },
       onEdit: (event) => {
         this.#editingCallback(event.detail.node, event.detail.columnId, event.detail.valueBeforeEditing, event.detail.newText);
@@ -8402,7 +8429,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
     }
     this.performUpdate();
     this.#toolbar?.setCanDeleteSelected(Boolean(this.#selectedKey));
-    ARIAUtils6.alert(i18nString22(UIStrings22.numberEntries, { PH1: this.#items.length }));
+    ARIAUtils6.LiveAnnouncer.alert(i18nString22(UIStrings22.numberEntries, { PH1: this.#items.length }));
   }
   deleteSelectedItem() {
     if (!this.#selectedKey) {
@@ -8560,7 +8587,7 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
         "ItemsCleared"
         /* SharedStorageItemsDispatcher.Events.ITEMS_CLEARED */
       );
-      UI19.ARIAUtils.alert(i18nString23(UIStrings23.sharedStorageItemsCleared));
+      UI19.ARIAUtils.LiveAnnouncer.alert(i18nString23(UIStrings23.sharedStorageItemsCleared));
       return;
     }
     await Promise.all(this.keys().map((key) => this.#sharedStorage.deleteEntry(key)));
@@ -8569,12 +8596,12 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
       "FilteredItemsCleared"
       /* SharedStorageItemsDispatcher.Events.FILTERED_ITEMS_CLEARED */
     );
-    UI19.ARIAUtils.alert(i18nString23(UIStrings23.sharedStorageFilteredItemsCleared));
+    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString23(UIStrings23.sharedStorageFilteredItemsCleared));
   }
   isEditAllowed(columnIdentifier, _oldText, newText) {
     if (columnIdentifier === "key" && newText === "") {
       void this.refreshItems().then(() => {
-        UI19.ARIAUtils.alert(i18nString23(UIStrings23.sharedStorageItemEditCanceled));
+        UI19.ARIAUtils.LiveAnnouncer.alert(i18nString23(UIStrings23.sharedStorageItemEditCanceled));
       });
       return false;
     }
@@ -8587,7 +8614,7 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
       "ItemEdited"
       /* SharedStorageItemsDispatcher.Events.ITEM_EDITED */
     );
-    UI19.ARIAUtils.alert(i18nString23(UIStrings23.sharedStorageItemEdited));
+    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString23(UIStrings23.sharedStorageItemEdited));
   }
   #showSharedStorageItems(items) {
     if (this.toolbar) {
@@ -8599,7 +8626,7 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
     await this.#sharedStorage.deleteEntry(key);
     await this.refreshItems();
     this.sharedStorageItemsDispatcher.dispatchEventToListeners("ItemDeleted", { key });
-    UI19.ARIAUtils.alert(i18nString23(UIStrings23.sharedStorageItemDeleted));
+    UI19.ARIAUtils.LiveAnnouncer.alert(i18nString23(UIStrings23.sharedStorageItemDeleted));
   }
   async createPreview(key, value) {
     const wrappedEntry = key && { key, value: value || "" };
@@ -9274,7 +9301,7 @@ var StorageView = class _StorageView extends UI21.ThrottledWidget.ThrottledWidge
       this.clearButton.textContent = label;
       this.clearButton.focus();
     }, 500);
-    UI21.ARIAUtils.alert(i18nString25(UIStrings25.SiteDataCleared));
+    UI21.ARIAUtils.LiveAnnouncer.alert(i18nString25(UIStrings25.SiteDataCleared));
   }
   static clear(target, storageKey, originForCookies, selectedStorageTypes, includeThirdPartyCookies) {
     console.assert(Boolean(storageKey));
@@ -10385,7 +10412,7 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   }
   onInvoke() {
     this.view.getManifestElement().scrollIntoView();
-    UI23.ARIAUtils.alert(i18nString27(UIStrings27.onInvokeAlert, { PH1: this.listItemElement.title }));
+    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString27(UIStrings27.onInvokeAlert, { PH1: this.listItemElement.title }));
   }
   showManifestView() {
     this.showView(this.view);
@@ -10410,7 +10437,7 @@ var ManifestChildTreeElement = class extends ApplicationPanelTreeElement {
   onInvoke() {
     this.parent?.showManifestView();
     this.#sectionElement.scrollIntoView();
-    UI23.ARIAUtils.alert(i18nString27(UIStrings27.onInvokeAlert, { PH1: this.listItemElement.title }));
+    UI23.ARIAUtils.LiveAnnouncer.alert(i18nString27(UIStrings27.onInvokeAlert, { PH1: this.listItemElement.title }));
   }
   // direct focus to the corresponding element
   onInvokeElementKeydown(event) {
@@ -11741,7 +11768,7 @@ var CookieItemsView = class extends UI24.Widget.VBox {
       this.#toolbar.setDeleteAllGlyph("clear-list");
     }
     this.cookiesTable.setCookies(this.shownCookies, this.model.getCookieToBlockedReasonsMap());
-    UI24.ARIAUtils.alert(i18nString28(UIStrings28.numberOfCookiesShownInTableS, { PH1: this.shownCookies.length }));
+    UI24.ARIAUtils.LiveAnnouncer.alert(i18nString28(UIStrings28.numberOfCookiesShownInTableS, { PH1: this.shownCookies.length }));
     this.#toolbar.setCanFilter(true);
     this.#toolbar.setCanDeleteAll(this.shownCookies.length > 0);
     this.#toolbar.setCanDeleteSelected(Boolean(this.cookiesTable.selectedCookie()));
@@ -11855,7 +11882,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   }
   itemsCleared() {
     super.itemsCleared();
-    UI25.ARIAUtils.alert(i18nString29(UIStrings29.domStorageItemsCleared));
+    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString29(UIStrings29.domStorageItemsCleared));
   }
   domStorageItemRemoved(event) {
     if (!this.isShowing()) {
@@ -11865,7 +11892,7 @@ var DOMStorageItemsView = class extends KeyValueStorageItemsView {
   }
   itemRemoved(key) {
     super.itemRemoved(key);
-    UI25.ARIAUtils.alert(i18nString29(UIStrings29.domStorageItemDeleted));
+    UI25.ARIAUtils.LiveAnnouncer.alert(i18nString29(UIStrings29.domStorageItemDeleted));
   }
   domStorageItemAdded(event) {
     if (!this.isShowing()) {
@@ -11981,7 +12008,7 @@ var ExtensionStorageItemsView = class extends KeyValueStorageItemsView {
       return;
     }
     this.itemsCleared();
-    UI26.ARIAUtils.alert(i18nString30(UIStrings30.extensionStorageItemsCleared));
+    UI26.ARIAUtils.LiveAnnouncer.alert(i18nString30(UIStrings30.extensionStorageItemsCleared));
   }
   deleteSelectedItem() {
     if (!this.#isEditable) {

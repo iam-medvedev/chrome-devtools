@@ -5,6 +5,7 @@ export declare const enum Tag {
     GENERATED_RANGE_START = 4,
     GENERATED_RANGE_END = 5,
     GENERATED_RANGE_BINDINGS = 6,
+    GENERATED_RANGE_SUBRANGE_BINDING = 7,
     GENERATED_RANGE_CALL_SITE = 8
 }
 export declare const enum EncodedTag {
@@ -14,6 +15,7 @@ export declare const enum EncodedTag {
     GENERATED_RANGE_START = "E",// 0x4
     GENERATED_RANGE_END = "F",// 0x5
     GENERATED_RANGE_BINDINGS = "G",// 0x6
+    GENERATED_RANGE_SUBRANGE_BINDING = "H",// 0x7
     GENERATED_RANGE_CALL_SITE = "I"
 }
 export declare const enum OriginalScopeFlags {

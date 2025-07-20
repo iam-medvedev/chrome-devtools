@@ -650,6 +650,7 @@ __export(FloatingButton_exports, {
   create: () => create
 });
 import "./../icon_button/icon_button.js";
+import * as VisualLogging2 from "./../../visual_logging/visual_logging.js";
 import * as Lit2 from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/buttons/floatingButton.css.js
@@ -733,7 +734,7 @@ button {
 // gen/front_end/ui/components/buttons/FloatingButton.js
 var { html: html2 } = Lit2;
 var FloatingButton = class extends HTMLElement {
-  static observedAttributes = ["icon-name"];
+  static observedAttributes = ["icon-name", "jslogcontext"];
   #shadow = this.attachShadow({ mode: "open" });
   constructor() {
     super();
@@ -761,6 +762,16 @@ var FloatingButton = class extends HTMLElement {
       this.setAttribute("icon-name", iconName);
     }
   }
+  get jslogContext() {
+    return this.getAttribute("jslogcontext");
+  }
+  set jslogContext(jslogContext) {
+    if (jslogContext === null) {
+      this.removeAttribute("jslogcontext");
+    } else {
+      this.setAttribute("jslogcontext", jslogContext);
+    }
+  }
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) {
       return;
@@ -768,17 +779,30 @@ var FloatingButton = class extends HTMLElement {
     if (name === "icon-name") {
       this.#render();
     }
+    if (name === "jslogcontext") {
+      this.#updateJslog();
+    }
   }
   #render() {
     Lit2.render(html2`
         <style>${floatingButton_css_default}</style>
         <button><devtools-icon .name=${this.iconName}></devtools-icon></button>`, this.#shadow, { host: this });
   }
+  #updateJslog() {
+    if (this.jslogContext) {
+      this.setAttribute("jslog", `${VisualLogging2.action().track({ click: true }).context(this.jslogContext)}`);
+    } else {
+      this.removeAttribute("jslog");
+    }
+  }
 };
-var create = (iconName, title) => {
+var create = (iconName, title, jslogContext) => {
   const floatingButton = new FloatingButton();
   floatingButton.iconName = iconName;
   floatingButton.title = title;
+  if (jslogContext) {
+    floatingButton.jslogContext = jslogContext;
+  }
   return floatingButton;
 };
 customElements.define("devtools-floating-button", FloatingButton);

@@ -40,7 +40,7 @@
   },
   "files": [
     "../../../../../../../front_end/panels/recorder/models/RecorderSettings.test.ts",
-    "../../../../../../../front_end/panels/recorder/models/RecorderShorcutHelper.test.ts",
+    "../../../../../../../front_end/panels/recorder/models/RecorderShortcutHelper.test.ts",
     "../../../../../../../front_end/panels/recorder/models/RecordingPlayer.test.ts",
     "../../../../../../../front_end/panels/recorder/models/SchemaUtils.test.ts",
     "../../../../../../../front_end/panels/recorder/models/ScreenshotUtils.test.ts",

@@ -1,4 +1,8 @@
 import * as Platform from '../platform/platform.js';
+/** Returns the base URL (similar to `<base>`).
+ * Used to resolve the relative URLs of any additional DevTools files (locale strings, etc) needed.
+ * See: https://cs.chromium.org/remoteBase+f:devtools_window
+ */
 export declare function getRemoteBase(location?: string): {
     base: string;
     version: string;
@@ -168,6 +172,9 @@ export interface HostConfigThirdPartyCookieControls {
 interface AiGeneratedTimelineLabels {
     enabled: boolean;
 }
+interface AllowPopoverForcing {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -190,6 +197,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiAssistanceNetworkAgent: HostConfigAiAssistanceNetworkAgent;
     devToolsAiAssistanceFileAgent: HostConfigAiAssistanceFileAgent;
     devToolsAiAssistancePerformanceAgent: HostConfigAiAssistancePerformanceAgent;
+    devToolsAiCodeCompletion: HostConfigAiCodeCompletion;
     devToolsVeLogging: HostConfigVeLogging;
     devToolsWellKnown: HostConfigWellKnown;
     devToolsPrivacyUI: HostConfigPrivacyUI;
@@ -202,6 +210,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAnimationStylesInStylesTab: HostConfigAnimationStylesInStylesTab;
     thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
     devToolsAiGeneratedTimelineLabels: AiGeneratedTimelineLabels;
+    devToolsAllowPopoverForcing: AllowPopoverForcing;
 }>;
 /**
  * The host configuration for this DevTools instance.

@@ -350,12 +350,24 @@ export declare class LengthMatcher extends LengthMatcher_base {
     static readonly LENGTH_UNITS: Set<string>;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): LengthMatch | null;
 }
+export declare const enum SelectFunction {
+    MIN = "min",
+    MAX = "max",
+    CLAMP = "clamp"
+}
+export declare const enum ArithmeticFunction {
+    CALC = "calc",
+    SIBLING_COUNT = "sibling-count",
+    SIBLING_INDEX = "sibling-index"
+}
+type MathFunction = SelectFunction | ArithmeticFunction;
 export declare class MathFunctionMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
-    readonly func: string;
+    readonly func: MathFunction;
     readonly args: CodeMirror.SyntaxNode[][];
-    constructor(text: string, node: CodeMirror.SyntaxNode, func: string, args: CodeMirror.SyntaxNode[][]);
+    constructor(text: string, node: CodeMirror.SyntaxNode, func: MathFunction, args: CodeMirror.SyntaxNode[][]);
+    isArithmeticFunctionCall(): boolean;
 }
 declare const MathFunctionMatcher_base: {
     new (): {
@@ -365,6 +377,7 @@ declare const MathFunctionMatcher_base: {
     };
 };
 export declare class MathFunctionMatcher extends MathFunctionMatcher_base {
+    private static getFunctionType;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): MathFunctionMatch | null;
 }
 export declare class FlexGridMatch implements Match {

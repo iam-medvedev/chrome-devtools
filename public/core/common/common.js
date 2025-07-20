@@ -3803,6 +3803,67 @@ function fireEvent(name, detail = {}, target = window) {
   target.dispatchEvent(evt);
 }
 
+// gen/front_end/core/common/Gzip.js
+var Gzip_exports = {};
+__export(Gzip_exports, {
+  arrayBufferToString: () => arrayBufferToString,
+  compress: () => compress,
+  compressStream: () => compressStream,
+  decompress: () => decompress,
+  decompressStream: () => decompressStream,
+  fileToString: () => fileToString,
+  isGzip: () => isGzip
+});
+function isGzip(ab) {
+  const buf = new Uint8Array(ab);
+  if (!buf || buf.length < 3) {
+    return false;
+  }
+  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8;
+}
+async function arrayBufferToString(ab) {
+  if (isGzip(ab)) {
+    return await decompress(ab);
+  }
+  const str = new TextDecoder("utf-8").decode(ab);
+  return str;
+}
+async function fileToString(file) {
+  let stream = file.stream();
+  if (file.type.endsWith("gzip")) {
+    stream = decompressStream(stream);
+  }
+  const arrayBuffer = await new Response(stream).arrayBuffer();
+  const str = new TextDecoder("utf-8").decode(arrayBuffer);
+  return str;
+}
+async function decompress(gzippedBuffer) {
+  const buffer = await gzipCodec(gzippedBuffer, new DecompressionStream("gzip"));
+  const str = new TextDecoder("utf-8").decode(buffer);
+  return str;
+}
+async function compress(str) {
+  const encoded = new TextEncoder().encode(str);
+  const buffer = await gzipCodec(encoded, new CompressionStream("gzip"));
+  return buffer;
+}
+function gzipCodec(buffer, codecStream) {
+  const { readable, writable } = new TransformStream();
+  const codecReadable = readable.pipeThrough(codecStream);
+  const writer = writable.getWriter();
+  void writer.write(buffer);
+  void writer.close();
+  return new Response(codecReadable).arrayBuffer();
+}
+function decompressStream(stream) {
+  const ds = new DecompressionStream("gzip");
+  return stream.pipeThrough(ds);
+}
+function compressStream(stream) {
+  const cs = new CompressionStream("gzip");
+  return stream.pipeThrough(cs);
+}
+
 // gen/front_end/core/common/JavaScriptMetaData.js
 var JavaScriptMetaData_exports = {};
 
@@ -6928,6 +6989,7 @@ export {
   Console_exports as Console,
   Debouncer_exports as Debouncer,
   EventTarget_exports as EventTarget,
+  Gzip_exports as Gzip,
   JavaScriptMetaData_exports as JavaScriptMetaData,
   Lazy_exports as Lazy,
   Linkifier_exports as Linkifier,

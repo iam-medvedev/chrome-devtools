@@ -387,12 +387,7 @@ var generatedProperties = [
       "animation-range-start",
       "animation-timeline",
       "animation-timing-function",
-      "animation-trigger-behavior",
-      "animation-trigger-exit-range-end",
-      "animation-trigger-exit-range-start",
-      "animation-trigger-range-end",
-      "animation-trigger-range-start",
-      "animation-trigger-timeline",
+      "animation-trigger",
       "app-region",
       "appearance",
       "ascent-override",
@@ -950,57 +945,7 @@ var generatedProperties = [
     "name": "animation-timing-function"
   },
   {
-    "longhands": [
-      "animation-trigger-timeline",
-      "animation-trigger-behavior",
-      "animation-trigger-range-start",
-      "animation-trigger-range-end",
-      "animation-trigger-exit-range-start",
-      "animation-trigger-exit-range-end"
-    ],
     "name": "animation-trigger"
-  },
-  {
-    "keywords": [
-      "once",
-      "repeat",
-      "alternate",
-      "state"
-    ],
-    "name": "animation-trigger-behavior"
-  },
-  {
-    "longhands": [
-      "animation-trigger-exit-range-start",
-      "animation-trigger-exit-range-end"
-    ],
-    "name": "animation-trigger-exit-range"
-  },
-  {
-    "name": "animation-trigger-exit-range-end"
-  },
-  {
-    "name": "animation-trigger-exit-range-start"
-  },
-  {
-    "longhands": [
-      "animation-trigger-range-start",
-      "animation-trigger-range-end"
-    ],
-    "name": "animation-trigger-range"
-  },
-  {
-    "name": "animation-trigger-range-end"
-  },
-  {
-    "name": "animation-trigger-range-start"
-  },
-  {
-    "keywords": [
-      "none",
-      "auto"
-    ],
-    "name": "animation-trigger-timeline"
   },
   {
     "keywords": [
@@ -2866,7 +2811,8 @@ var generatedProperties = [
   },
   {
     "keywords": [
-      "normal"
+      "normal",
+      "infinite"
     ],
     "name": "item-tolerance"
   },
@@ -3905,11 +3851,6 @@ var generatedProperties = [
     "name": "scroll-margin-top"
   },
   {
-    "keywords": [
-      "none",
-      "after",
-      "before"
-    ],
     "name": "scroll-marker-group"
   },
   {
@@ -4963,20 +4904,6 @@ var generatedPropertyValues = {
       "step-end"
     ]
   },
-  "animation-trigger-behavior": {
-    "values": [
-      "once",
-      "repeat",
-      "alternate",
-      "state"
-    ]
-  },
-  "animation-trigger-timeline": {
-    "values": [
-      "none",
-      "auto"
-    ]
-  },
   "app-region": {
     "values": [
       "none",
@@ -6016,7 +5943,8 @@ var generatedPropertyValues = {
   },
   "item-tolerance": {
     "values": [
-      "normal"
+      "normal",
+      "infinite"
     ]
   },
   "left": {
@@ -6548,13 +6476,6 @@ var generatedPropertyValues = {
     "values": [
       "none",
       "nearest"
-    ]
-  },
-  "scroll-marker-group": {
-    "values": [
-      "none",
-      "after",
-      "before"
     ]
   },
   "scroll-padding-block-end": {
@@ -12727,15 +12648,41 @@ var MathFunctionMatch = class {
     this.func = func;
     this.args = args;
   }
+  isArithmeticFunctionCall() {
+    const func = this.func;
+    switch (func) {
+      case "calc":
+      case "sibling-count":
+      case "sibling-index":
+        return true;
+    }
+    const catchFallback = func;
+    return false;
+  }
 };
-var MathFunctionMatcher = class extends matcherBase(MathFunctionMatch) {
+var MathFunctionMatcher = class _MathFunctionMatcher extends matcherBase(MathFunctionMatch) {
   // clang-format on
+  static getFunctionType(callee) {
+    const maybeFunc = callee;
+    switch (maybeFunc) {
+      case null:
+      case "min":
+      case "max":
+      case "clamp":
+      case "calc":
+      case "sibling-count":
+      case "sibling-index":
+        return maybeFunc;
+    }
+    const catchFallback = maybeFunc;
+    return null;
+  }
   matches(node, matching) {
     if (node.name !== "CallExpression") {
       return null;
     }
-    const callee = matching.ast.text(node.getChild("Callee"));
-    if (!["min", "max", "clamp", "calc"].includes(callee)) {
+    const callee = _MathFunctionMatcher.getFunctionType(matching.ast.text(node.getChild("Callee")));
+    if (!callee) {
       return null;
     }
     const args = ASTUtils.callArgs(node);
@@ -12743,7 +12690,11 @@ var MathFunctionMatcher = class extends matcherBase(MathFunctionMatch) {
       return null;
     }
     const text = matching.ast.text(node);
-    return new MathFunctionMatch(text, node, callee, args);
+    const match = new MathFunctionMatch(text, node, callee, args);
+    if (!match.isArithmeticFunctionCall() && args.length === 0) {
+      return null;
+    }
+    return match;
   }
 };
 var FlexGridMatch = class {
@@ -13444,7 +13395,9 @@ var ASTUtils;
         current.push(node);
       }
     }
-    result.push(current);
+    if (nodes.length > 0) {
+      result.push(current);
+    }
     return result;
   }
   ASTUtils2.split = split;
@@ -17560,6 +17513,7 @@ __export(SourceMap_exports, {
   parseSourceMap: () => parseSourceMap
 });
 import * as TextUtils14 from "./../../models/text_utils/text_utils.js";
+import * as ScopesCodec from "./../../third_party/source-map-scopes-codec/source-map-scopes-codec.js";
 import * as Common12 from "./../common/common.js";
 import * as Platform8 from "./../platform/platform.js";
 import * as Root4 from "./../root/root.js";
@@ -17725,7 +17679,7 @@ function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, names,
         if (!originalScopeTrees[sourceIdx]) {
           throw new Error("Invalid source index!");
         }
-        range.callsite = {
+        range.callSite = {
           sourceIndex: sourceIdx,
           line,
           column
@@ -17754,7 +17708,8 @@ function resolveBindings(range, names, bindingsForAllVars) {
   }
   range.values = bindingsForAllVars.map((bindings) => {
     if (bindings.length === 1) {
-      return resolveName(bindings[0].nameIdx, names);
+      const value = resolveName(bindings[0].nameIdx, names);
+      return value ?? null;
     }
     const bindingRanges = bindings.map((binding) => ({
       from: { line: binding.line, column: binding.column },
@@ -18117,7 +18072,7 @@ var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends Remot
     if (typeof expressionOrSubRanges === "string") {
       return expressionOrSubRanges;
     }
-    if (expressionOrSubRanges === void 0) {
+    if (expressionOrSubRanges === null) {
       return null;
     }
     const pausedPosition = this.#callFrame.location();
@@ -18150,10 +18105,10 @@ var SourceMapScopesInfo = class {
   #originalScopes;
   #generatedRanges;
   #cachedVariablesAndBindingsPresent = null;
-  constructor(sourceMap, originalScopes, generatedRanges) {
+  constructor(sourceMap, scopeInfo) {
     this.#sourceMap = sourceMap;
-    this.#originalScopes = originalScopes;
-    this.#generatedRanges = generatedRanges;
+    this.#originalScopes = scopeInfo.scopes;
+    this.#generatedRanges = scopeInfo.ranges;
   }
   addOriginalScopes(scopes) {
     for (const scope of scopes) {
@@ -18191,8 +18146,8 @@ var SourceMapScopesInfo = class {
     };
     for (let i = rangeChain.length - 1; i >= 0; --i) {
       const range = rangeChain[i];
-      if (range.callsite) {
-        result.inlinedFunctions.push({ name: range.originalScope?.name ?? "", callsite: range.callsite });
+      if (range.callSite) {
+        result.inlinedFunctions.push({ name: range.originalScope?.name ?? "", callsite: range.callSite });
       }
       if (range.isStackFrame) {
         result.originalFunctionName = range.originalScope?.name ?? "";
@@ -18259,7 +18214,7 @@ var SourceMapScopesInfo = class {
         if ("variables" in node && node.variables.length > 0) {
           return true;
         }
-        if ("values" in node && node.values.some((v) => v !== void 0)) {
+        if ("values" in node && node.values.some((v) => v !== null)) {
           return true;
         }
         if (walkTree(node.children)) {
@@ -18324,7 +18279,7 @@ var SourceMapScopesInfo = class {
     }
     for (let inlineIndex = 0; inlineIndex < callFrame.inlineFrameIndex; ) {
       const range = rangeChain.pop();
-      if (range?.callsite) {
+      if (range?.callSite) {
         ++inlineIndex;
       }
     }
@@ -18456,7 +18411,7 @@ var SourceMap = class _SourceMap {
     const sourceIdx = this.#sourceIndex(scriptUrl);
     if (sourceIdx >= 0) {
       if (!this.#scopesInfo) {
-        this.#scopesInfo = new SourceMapScopesInfo(this, [], []);
+        this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
       }
       if (!this.#scopesInfo.hasOriginalScopes(sourceIdx)) {
         const originalScopes = buildOriginalScopes(ranges);
@@ -18730,17 +18685,17 @@ var SourceMap = class _SourceMap {
       /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */
     )) {
       if (!this.#scopesInfo) {
-        this.#scopesInfo = new SourceMapScopesInfo(this, [], []);
+        this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
       }
-      if (map.originalScopes && map.generatedRanges) {
-        const { originalScopes, generatedRanges } = decodeScopes(map, { line: baseLineNumber, column: baseColumnNumber });
-        this.#scopesInfo.addOriginalScopes(originalScopes);
-        this.#scopesInfo.addGeneratedRanges(generatedRanges);
+      if (map.scopes) {
+        const { scopes, ranges } = ScopesCodec.decode(map, { mode: 2, generatedOffset: { line: baseLineNumber, column: baseColumnNumber } });
+        this.#scopesInfo.addOriginalScopes(scopes);
+        this.#scopesInfo.addGeneratedRanges(ranges);
       } else if (map.x_com_bloomberg_sourcesFunctionMappings) {
         const originalScopes = this.parseBloombergScopes(map);
         this.#scopesInfo.addOriginalScopes(originalScopes);
       } else {
-        this.#scopesInfo.addOriginalScopes(new Array(map.sources.length));
+        this.#scopesInfo.addOriginalScopes(new Array(map.sources.length).fill(null));
       }
     }
   }
@@ -18754,7 +18709,7 @@ var SourceMap = class _SourceMap {
     const names = map.names ?? [];
     return scopeList.map((rawScopes) => {
       if (!rawScopes) {
-        return void 0;
+        return null;
       }
       const ranges = decodePastaRanges(rawScopes, names);
       return buildOriginalScopes(ranges);
@@ -30077,29 +30032,28 @@ var RehydratingConnection = class {
    */
   #onReceiveHostWindowPayload(event) {
     if (event.data.type === "REHYDRATING_TRACE_FILE") {
-      const { traceFile } = event.data;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        await this.startHydration(reader.result);
-      };
-      reader.onerror = () => {
+      const traceJson = event.data.traceJson;
+      let trace;
+      try {
+        trace = JSON.parse(traceJson);
+      } catch {
         this.#onConnectionLost(i18nString10(UIStrings10.errorLoadingLog));
-      };
-      reader.readAsText(traceFile);
+        return;
+      }
+      void this.startHydration(trace);
     }
     this.#rehydratingWindow.removeEventListener("message", this.#onReceiveHostWindowPayloadBound);
   }
-  async startHydration(logPayload) {
+  async startHydration(trace) {
     if (!this.onMessage || this.rehydratingConnectionState !== 2) {
       return false;
     }
-    const payload = JSON.parse(logPayload);
-    if (!("traceEvents" in payload)) {
+    if (!("traceEvents" in trace)) {
       console.error("RehydratingConnection failed to initialize due to missing trace events in payload");
       return false;
     }
-    this.trace = payload;
-    const enhancedTracesParser = new EnhancedTracesParser(payload);
+    this.trace = trace;
+    const enhancedTracesParser = new EnhancedTracesParser(trace);
     const hydratingData = enhancedTracesParser.data();
     let sessionId = 0;
     this.sessions.set(sessionId, new RehydratingSessionBase(this));

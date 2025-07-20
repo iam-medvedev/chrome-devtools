@@ -147,6 +147,8 @@ class PreloadingUIUtils {
                 return i18nString(UIStrings.validityInvalid);
             case "InvalidRulesSkipped" /* Protocol.Preload.RuleSetErrorType.InvalidRulesSkipped */:
                 return i18nString(UIStrings.validitySomeRulesInvalid);
+            case "InvalidRulesetLevelTag" /* Protocol.Preload.RuleSetErrorType.InvalidRulesetLevelTag */:
+                return i18nString(UIStrings.validitySomeRulesInvalid);
         }
     }
     // Where a rule set came from, shown in grid.

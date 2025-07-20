@@ -31,7 +31,7 @@ class PreloadingTreeElementBase extends ApplicationPanelTreeElement {
         super(panel, title, false, 'speculative-loads');
         this.#viewConstructor = viewConstructor;
         this.#path = path;
-        const icon = IconButton.Icon.create('arrow-up-down');
+        const icon = IconButton.Icon.create('speculative-loads');
         this.setLeadingIcons([icon]);
         this.#selectedInternal = false;
         // TODO(https://crbug.com/1384419): Set link
@@ -67,7 +67,7 @@ export class PreloadingSummaryTreeElement extends ExpandableApplicationPanelTree
     #attempt = null;
     constructor(panel) {
         super(panel, i18nString(UIStrings.speculativeLoads), '', '', 'preloading');
-        const icon = IconButton.Icon.create('arrow-up-down');
+        const icon = IconButton.Icon.create('speculative-loads');
         this.setLeadingIcons([icon]);
         this.#selectedInternal = false;
         // TODO(https://crbug.com/1384419): Set link

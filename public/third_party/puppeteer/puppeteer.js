@@ -2547,7 +2547,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.12.1";
+var packageVersion = "24.14.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -10022,7 +10022,42 @@ var ElementHandle = (() => {
     async click(options = {}) {
       await this.scrollIntoViewIfNeeded();
       const { x, y } = await this.clickablePoint(options.offset);
-      await this.frame.page().mouse.click(x, y, options);
+      try {
+        await this.frame.page().mouse.click(x, y, options);
+      } finally {
+        if (options.debugHighlight) {
+          await this.frame.page().evaluate((x2, y2) => {
+            const highlight = document.createElement("div");
+            highlight.innerHTML = `<style>
+        @scope {
+          :scope {
+              position: fixed;
+              left: ${x2}px;
+              top: ${y2}px;
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              animation: colorChange 10s 1 normal;
+              animation-fill-mode: forwards;
+          }
+
+          @keyframes colorChange {
+              from {
+                  background-color: red;
+              }
+              to {
+                  background-color: #FADADD00;
+              }
+          }
+        }
+      </style>`;
+            highlight.addEventListener("animationend", () => {
+              highlight.remove();
+            }, { once: true });
+            document.body.append(highlight);
+          }, x, y);
+        }
+      }
     }
     /**
      * Drags an element over the given element or point.
@@ -13737,6 +13772,9 @@ var NetworkManager = class extends EventEmitter {
     this.#frameManager = frameManager;
     this.#networkEnabled = networkEnabled ?? true;
   }
+  #canIgnoreError(error) {
+    return isErrorLike(error) && (isTargetClosedError(error) || error.message.includes("Not supported"));
+  }
   async addClient(client) {
     if (!this.#networkEnabled || this.#clients.has(client)) {
       return;
@@ -13759,7 +13797,7 @@ var NetworkManager = class extends EventEmitter {
         this.#applyUserAgent(client)
       ]);
     } catch (error) {
-      if (isErrorLike(error) && isTargetClosedError(error)) {
+      if (this.#canIgnoreError(error)) {
         return;
       }
       throw error;
@@ -13796,7 +13834,7 @@ var NetworkManager = class extends EventEmitter {
         headers: this.#extraHTTPHeaders
       });
     } catch (error) {
-      if (isErrorLike(error) && isTargetClosedError(error)) {
+      if (this.#canIgnoreError(error)) {
         return;
       }
       throw error;
@@ -13851,7 +13889,7 @@ var NetworkManager = class extends EventEmitter {
         downloadThroughput: this.#emulatedNetworkConditions.download
       });
     } catch (error) {
-      if (isErrorLike(error) && isTargetClosedError(error)) {
+      if (this.#canIgnoreError(error)) {
         return;
       }
       throw error;
@@ -13872,7 +13910,7 @@ var NetworkManager = class extends EventEmitter {
         userAgentMetadata: this.#userAgentMetadata
       });
     } catch (error) {
-      if (isErrorLike(error) && isTargetClosedError(error)) {
+      if (this.#canIgnoreError(error)) {
         return;
       }
       throw error;
@@ -13911,7 +13949,7 @@ var NetworkManager = class extends EventEmitter {
         ]);
       }
     } catch (error) {
-      if (isErrorLike(error) && isTargetClosedError(error)) {
+      if (this.#canIgnoreError(error)) {
         return;
       }
       throw error;
@@ -13926,7 +13964,7 @@ var NetworkManager = class extends EventEmitter {
         cacheDisabled: this.#userCacheDisabled
       });
     } catch (error) {
-      if (isErrorLike(error) && isTargetClosedError(error)) {
+      if (this.#canIgnoreError(error)) {
         return;
       }
       throw error;

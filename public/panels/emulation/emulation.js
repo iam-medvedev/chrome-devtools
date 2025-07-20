@@ -56,7 +56,7 @@ import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 import * as EmulationComponents from "./components/components.js";
 var UIStrings = {
   /**
-   * @description Title of the device dimensions selection iteam in the Device Mode Toolbar.
+   * @description Title of the device dimensions selection item in the Device Mode Toolbar.
    * webpage in pixels.
    */
   dimensions: "Dimensions",

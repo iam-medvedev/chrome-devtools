@@ -95,6 +95,12 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private loadFromCpuProfile;
     private setState;
     private createSettingCheckbox;
+    /**
+     * Returns false if this was loaded in a standalone context such that recording is
+     * not possible, like an enhanced trace (which opens a new devtools window) or
+     * trace.cafe.
+     */
+    private hasPrimaryTarget;
     private populateToolbar;
     private createSettingsPane;
     private createNetworkConditionsSelectToolbarItem;

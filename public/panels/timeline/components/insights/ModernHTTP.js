@@ -12,6 +12,9 @@ const { html } = Lit;
 export class ModernHTTP extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-modern-http`;
     internalName = 'modern-http';
+    hasAskAiSupport() {
+        return true;
+    }
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.LCP ?? null;
     }

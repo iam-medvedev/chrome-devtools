@@ -40,7 +40,7 @@ const { Size } = UI.Geometry;
 const { repeat } = LitDirectives;
 const UIStrings = {
     /**
-     *@description Text that shows in the Applicaiton Panel if no value is selected for preview
+     *@description Text that shows in the Application Panel if no value is selected for preview
      */
     noPreviewSelected: 'No value selected',
     /**
@@ -178,7 +178,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
                 this.#isSortOrderAscending = event.detail.ascending;
             },
             onCreate: (event) => {
-                this.#createCallback(event.detail.key, event.detail.value);
+                this.#createCallback(event.detail.key, event.detail.value || '');
             },
             onEdit: (event) => {
                 this.#editingCallback(event.detail.node, event.detail.columnId, event.detail.valueBeforeEditing, event.detail.newText);
@@ -250,7 +250,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
         }
         this.performUpdate();
         this.#toolbar?.setCanDeleteSelected(Boolean(this.#selectedKey));
-        ARIAUtils.alert(i18nString(UIStrings.numberEntries, { PH1: this.#items.length }));
+        ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.numberEntries, { PH1: this.#items.length }));
     }
     deleteSelectedItem() {
         if (!this.#selectedKey) {

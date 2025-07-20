@@ -13,12 +13,8 @@ export declare class NetworkTimeBoundary {
     equals(other: NetworkTimeBoundary): boolean;
 }
 export declare class NetworkTimeCalculator extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements PerfUI.TimelineGrid.Calculator {
+    #private;
     startAtZero: boolean;
-    private minimumBoundaryInternal;
-    private maximumBoundaryInternal;
-    private readonly boundryChangedEventThrottler;
-    private window;
-    private workingArea?;
     constructor(startAtZero: boolean);
     setWindow(window: NetworkTimeBoundary | null): void;
     computePosition(time: number): number;

@@ -26,7 +26,7 @@ const UIStrings = {
      */
     addParameter: 'Add a parameter',
     /**
-     *@description The title of a button that reset the value of a paremeters to its default value.
+     *@description The title of a button that reset the value of a parameters to its default value.
      */
     resetDefaultValue: 'Reset to default value',
     /**
@@ -54,7 +54,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/protocol_monitor/JSONEditor.ts'
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const splitDescription = (description) => {
     // If the description is too long we make the UI a bit better by highlighting the first sentence
-    // which contains the most informations.
+    // which contains the most information.
     // The number 150 has been chosen arbitrarily
     if (description.length > 150) {
         const [firstSentence, restOfDescription] = description.split('.');

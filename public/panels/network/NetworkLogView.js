@@ -488,12 +488,14 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     summaryToolbarInternal;
     filterBar;
     textFilterSetting;
+    networkRequestToNode;
     constructor(filterBar, progressBarContainer, networkLogLargeRowsSetting) {
         super();
         this.registerRequiredCSS(networkLogViewStyles);
         this.setMinimumSize(50, 64);
         this.element.id = 'network-container';
         this.element.classList.add('no-node-selected');
+        this.networkRequestToNode = new WeakMap();
         this.networkInvertFilterSetting = Common.Settings.Settings.instance().createSetting('network-invert-filter', false);
         this.networkHideDataURLSetting = Common.Settings.Settings.instance().createSetting('network-hide-data-url', false);
         this.networkHideChromeExtensions =
@@ -806,7 +808,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.invalidateAllItems();
     }
     nodeForRequest(request) {
-        return networkRequestToNode.get(request) || null;
+        return this.networkRequestToNode.get(request) || null;
     }
     headerHeight() {
         return this.headerHeightInternal;
@@ -931,7 +933,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             this.recordingHint.detach();
             this.recordingHint = null;
         }
-        UI.ARIAUtils.alert(i18nString(UIStrings.networkDataAvailable));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.networkDataAvailable));
     }
     setHidden(value) {
         this.columnsInternal.setHidden(value);
@@ -1025,7 +1027,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         let maxTime = -1;
         let nodeCount = 0;
         for (const request of Logs.NetworkLog.NetworkLog.instance().requests()) {
-            const node = networkRequestToNode.get(request);
+            const node = this.networkRequestToNode.get(request);
             if (!node) {
                 continue;
             }
@@ -1241,7 +1243,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         while (this.staleRequests.size) {
             const request = this.staleRequests.values().next().value;
             this.staleRequests.delete(request);
-            let node = networkRequestToNode.get(request);
+            let node = this.networkRequestToNode.get(request);
             if (!node) {
                 node = this.createNodeForRequest(request);
             }
@@ -1325,6 +1327,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.resetSuggestionBuilder();
         this.mainRequestLoadTime = -1;
         this.mainRequestDOMContentLoadedTime = -1;
+        this.networkRequestToNode = new WeakMap();
         this.dataGrid.rootNode().removeChildren();
         this.updateSummaryBar();
         this.scheduleRefresh();
@@ -1341,7 +1344,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     createNodeForRequest(request) {
         const node = new NetworkRequestNode(this, request);
-        networkRequestToNode.set(request, node);
+        this.networkRequestToNode.set(request, node);
         filteredNetworkRequests.add(node);
         for (let redirect = request.redirectSource(); redirect; redirect = redirect.redirectSource()) {
             this.refreshRequest(redirect);
@@ -1361,7 +1364,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     onRequestRemoved(event) {
         const { request } = event.data;
         this.staleRequests.delete(request);
-        const node = networkRequestToNode.get(request);
+        const node = this.networkRequestToNode.get(request);
         if (node) {
             this.removeNodeAndMaybeAncestors(node);
         }
@@ -1588,16 +1591,16 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     async #handleCreateResponseHeaderOverrideClick(request) {
         const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.responseHeaderMatch(request, { name: '', value: '' });
-        const networkPersistanceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
-        if (networkPersistanceManager.project()) {
+        const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+        if (networkPersistenceManager.project()) {
             Common.Settings.Settings.instance().moduleSetting('persistence-network-overrides-enabled').set(true);
-            await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
+            await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
             await Common.Revealer.reveal(requestLocation);
         }
         else { // If folder for local overrides has not been provided yet
             UI.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
                 await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
-                await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
+                await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
                 await Common.Revealer.reveal(requestLocation);
             });
         }
@@ -1772,7 +1775,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     }
     reveal(request) {
         this.removeAllNodeHighlights();
-        const node = networkRequestToNode.get(request);
+        const node = this.networkRequestToNode.get(request);
         if (!node?.dataGrid) {
             return null;
         }
@@ -2133,7 +2136,6 @@ export function computeStackTraceText(stackTrace) {
     return stackTraceText;
 }
 const filteredNetworkRequests = new WeakSet();
-const networkRequestToNode = new WeakMap();
 export function isRequestFilteredOut(request) {
     return filteredNetworkRequests.has(request);
 }

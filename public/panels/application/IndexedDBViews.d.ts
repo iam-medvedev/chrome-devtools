@@ -63,6 +63,7 @@ export declare class IDBDataView extends UI.View.SimpleView {
     private refreshButtonClicked;
     private clearButtonClicked;
     markNeedsRefresh(): void;
+    private resolveArrayKey;
     private deleteButtonClicked;
     clear(): void;
     private updateToolbarEnablement;

@@ -1250,7 +1250,7 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
                 return evaluation;
             }
         }
-        else if (match.func !== 'calc') {
+        else if (!match.isArithmeticFunctionCall()) {
             void this.applyMathFunction(renderedArgs, match, context);
         }
         return [span];
@@ -2272,7 +2272,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         });
         const invalidString = this.property.getInvalidStringForInvalidProperty();
         if (invalidString) {
-            UI.ARIAUtils.alert(invalidString);
+            UI.ARIAUtils.LiveAnnouncer.alert(invalidString);
         }
         const proxyElement = this.prompt.attachAndStartEditing(selectedElement, blurListener.bind(this, context));
         this.navigateToSource(selectedElement, true);

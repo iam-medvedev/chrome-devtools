@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../icon_button/icon_button.js';
+import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Lit from '../../lit/lit.js';
 import floatingButtonStyles from './floatingButton.css.js';
 const { html } = Lit;
@@ -26,10 +27,14 @@ const { html } = Lit;
  *
  * @attr icon-name - The basename of the icon file (not including the `.svg`
  *                   suffix).
- * @prop {String} iconName - The `"icon-name"` attribute is reflected as property.
+ * @attr jslogcontext - The context for the `jslog` attribute. A `jslog`
+ *                      attribute is generated automatically with the
+ *                      provided context.
+ * @prop {String} iconName - The `"icon-name"` attribute is reflected as a property.
+ * @prop {String} jslogContext - The `"jslogcontext"` attribute is reflected as a property.
  */
 export class FloatingButton extends HTMLElement {
-    static observedAttributes = ['icon-name'];
+    static observedAttributes = ['icon-name', 'jslogcontext'];
     #shadow = this.attachShadow({ mode: 'open' });
     constructor() {
         super();
@@ -58,12 +63,26 @@ export class FloatingButton extends HTMLElement {
             this.setAttribute('icon-name', iconName);
         }
     }
+    get jslogContext() {
+        return this.getAttribute('jslogcontext');
+    }
+    set jslogContext(jslogContext) {
+        if (jslogContext === null) {
+            this.removeAttribute('jslogcontext');
+        }
+        else {
+            this.setAttribute('jslogcontext', jslogContext);
+        }
+    }
     attributeChangedCallback(name, oldValue, newValue) {
         if (oldValue === newValue) {
             return;
         }
         if (name === 'icon-name') {
             this.#render();
+        }
+        if (name === 'jslogcontext') {
+            this.#updateJslog();
         }
     }
     #render() {
@@ -73,19 +92,31 @@ export class FloatingButton extends HTMLElement {
         <button><devtools-icon .name=${this.iconName}></devtools-icon></button>`, this.#shadow, { host: this });
         // clang-format on
     }
+    #updateJslog() {
+        if (this.jslogContext) {
+            this.setAttribute('jslog', `${VisualLogging.action().track({ click: true }).context(this.jslogContext)}`);
+        }
+        else {
+            this.removeAttribute('jslog');
+        }
+    }
 }
 /**
  * Helper function to programmatically create a `FloatingButton` instance with a
  * given `iconName` and `title`.
  *
- * @param iconName the name of the icon to use.
+ * @param iconName the name of the icon to use
  * @param title the tooltip for the `FloatingButton`
+ * @param jslogContext the context string for the `jslog` attribute
  * @returns the newly created `FloatingButton` instance.
  */
-export const create = (iconName, title) => {
+export const create = (iconName, title, jslogContext) => {
     const floatingButton = new FloatingButton();
     floatingButton.iconName = iconName;
     floatingButton.title = title;
+    if (jslogContext) {
+        floatingButton.jslogContext = jslogContext;
+    }
     return floatingButton;
 };
 customElements.define('devtools-floating-button', FloatingButton);

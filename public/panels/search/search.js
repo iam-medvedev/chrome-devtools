@@ -848,7 +848,7 @@ var SearchView = class extends UI2.Widget.VBox {
     }
     this.searchFinished(finished);
     this.searchConfig = null;
-    UI2.ARIAUtils.alert(this.searchMessageElement.textContent + " " + this.searchResultsMessageElement.textContent);
+    UI2.ARIAUtils.LiveAnnouncer.alert(this.searchMessageElement.textContent + " " + this.searchResultsMessageElement.textContent);
   }
   innerStartSearch(searchConfig) {
     this.searchConfig = searchConfig;

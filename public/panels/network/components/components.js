@@ -1821,14 +1821,14 @@ var ResponseHeaderSection = class extends ResponseHeaderSectionBase {
     }
     Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.HeaderOverrideEnableEditingClicked);
     const requestUrl = this.#request.url();
-    const networkPersistanceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
-    if (networkPersistanceManager.project()) {
+    const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    if (networkPersistenceManager.project()) {
       Common2.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
-      await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
+      await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
     } else {
       UI2.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
         await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
-        await networkPersistanceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
+        await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(requestUrl);
       });
     }
   }

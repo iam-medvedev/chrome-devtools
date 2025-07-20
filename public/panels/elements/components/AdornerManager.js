@@ -14,6 +14,7 @@ export var RegisteredAdorners;
     RegisteredAdorners["REVEAL"] = "reveal";
     RegisteredAdorners["MEDIA"] = "media";
     RegisteredAdorners["SCROLL"] = "scroll";
+    RegisteredAdorners["POPOVER"] = "popover";
 })(RegisteredAdorners || (RegisteredAdorners = {}));
 // This enum-like const object serves as the authoritative registry for all the
 // adorners available.
@@ -85,6 +86,13 @@ export function getRegisteredAdorner(which) {
                 category: "Layout" /* AdornerCategories.LAYOUT */,
                 enabledByDefault: true,
             };
+        case RegisteredAdorners.POPOVER: {
+            return {
+                name: 'popover',
+                category: "Layout" /* AdornerCategories.LAYOUT */,
+                enabledByDefault: true,
+            };
+        }
     }
 }
 let adornerNameToCategoryMap = undefined;
