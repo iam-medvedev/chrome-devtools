@@ -7,10 +7,10 @@ export class SourceMapScopesInfo {
     #originalScopes;
     #generatedRanges;
     #cachedVariablesAndBindingsPresent = null;
-    constructor(sourceMap, originalScopes, generatedRanges) {
+    constructor(sourceMap, scopeInfo) {
         this.#sourceMap = sourceMap;
-        this.#originalScopes = originalScopes;
-        this.#generatedRanges = generatedRanges;
+        this.#originalScopes = scopeInfo.scopes;
+        this.#generatedRanges = scopeInfo.ranges;
     }
     addOriginalScopes(scopes) {
         for (const scope of scopes) {
@@ -51,9 +51,9 @@ export class SourceMapScopesInfo {
         // encounter a range that is a scope in the generated code and a function scope originally.
         for (let i = rangeChain.length - 1; i >= 0; --i) {
             const range = rangeChain[i];
-            if (range.callsite) {
+            if (range.callSite) {
                 // Record the name and call-site if the range corresponds to an inlined function.
-                result.inlinedFunctions.push({ name: range.originalScope?.name ?? '', callsite: range.callsite });
+                result.inlinedFunctions.push({ name: range.originalScope?.name ?? '', callsite: range.callSite });
             }
             if (range.isStackFrame) {
                 // We arrived at an actual generated JS function, don't go further.
@@ -126,7 +126,7 @@ export class SourceMapScopesInfo {
                 if ('variables' in node && node.variables.length > 0) {
                     return true;
                 }
-                if ('values' in node && node.values.some(v => v !== undefined)) {
+                if ('values' in node && node.values.some(v => v !== null)) {
                     return true;
                 }
                 if (walkTree(node.children)) {
@@ -200,7 +200,7 @@ export class SourceMapScopesInfo {
         // Drop ranges in the chain until we reach our desired inlined range.
         for (let inlineIndex = 0; inlineIndex < callFrame.inlineFrameIndex;) {
             const range = rangeChain.pop();
-            if (range?.callsite) {
+            if (range?.callSite) {
                 ++inlineIndex;
             }
         }

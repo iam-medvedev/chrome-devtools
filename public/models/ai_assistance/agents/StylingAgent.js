@@ -832,6 +832,9 @@ export class StylingAgentWithFunctionCalling extends StylingAgent {
     formatParsedAnswer({ answer }) {
         return answer;
     }
+    preambleFeatures() {
+        return ['function_calling'];
+    }
     parseTextResponse(text) {
         // We're returning an empty answer to denote the erroneous case.
         if (!text.trim()) {

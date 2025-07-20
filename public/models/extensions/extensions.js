@@ -2218,7 +2218,7 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
       origin: extensionOrigin,
       scheme: message.urlScheme,
       handler: this.handleOpenURL.bind(this, port),
-      filter: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(extension.openResourceScheme, url, schemes)
+      shouldHandleOpenResource: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(extension.openResourceScheme, url, schemes)
     };
     if (message.handlerPresent) {
       Components.Linkifier.Linkifier.registerLinkHandler(registration);

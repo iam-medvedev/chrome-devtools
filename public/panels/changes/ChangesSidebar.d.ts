@@ -17,7 +17,7 @@ export declare class ChangesSidebar extends ChangesSidebar_base {
     constructor(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
     selectedUISourceCode(): Workspace.UISourceCode.UISourceCode | null;
     private selectionChanged;
-    private uiSourceCodeMofiedStatusChanged;
+    private uiSourceCodeModifiedStatusChanged;
     private removeUISourceCode;
     private addUISourceCode;
 }

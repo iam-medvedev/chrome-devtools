@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import { CallTreeContext, PerformanceAgent } from './PerformanceAgent.js';
+import { PerformanceAgent, PerformanceTraceContext } from './PerformanceAgent.js';
 export class PerformanceAnnotationsAgent extends PerformanceAgent {
-    clientFeature = Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+    get clientFeature() {
+        return Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+    }
     /**
      * Used in the Performance panel to automatically generate a label for a selected entry.
      */
     async generateAIEntryLabel(callTree) {
-        const context = new CallTreeContext(callTree);
+        const context = PerformanceTraceContext.fromCallTree(callTree);
         const response = await Array.fromAsync(this.run(AI_LABEL_GENERATION_PROMPT, { selected: context }));
         const lastResponse = response.at(-1);
         if (lastResponse && lastResponse.type === "answer" /* ResponseType.ANSWER */ && lastResponse.complete === true) {

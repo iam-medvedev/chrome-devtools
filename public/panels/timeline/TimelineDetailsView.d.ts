@@ -20,7 +20,6 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     private readonly detailsLinkifier;
     private tabbedPane;
     private readonly defaultDetailsWidget;
-    private defaultDetailsContentWidget;
     private rangeDetailViews;
     private lazyPaintProfilerView?;
     private lazyLayersView?;

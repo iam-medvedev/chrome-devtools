@@ -3,19 +3,21 @@
 // found in the LICENSE file.
 import { dispatchClickEvent, getCleanTextContentFromElements, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Components from './components.js';
 describeWithEnvironment('RelatedInsightChips', () => {
     // Event doesn't matter, so let's keep this test quick and avoid parsing a trace.
     const FAKE_EVENT = {};
-    it('renders nothing if the event has no insights', async () => {
+    async function renderComponent(relatedMap) {
         const component = new Components.RelatedInsightChips.RelatedInsightChips();
         renderElementIntoDOM(component);
         component.activeEvent = FAKE_EVENT;
-        component.eventToRelatedInsightsMap = new Map();
-        await RenderCoordinator.done();
-        assert.isOk(component.shadowRoot);
-        assert.strictEqual(component.shadowRoot.childElementCount, 0);
+        component.eventToInsightsMap = relatedMap;
+        await component.updateComplete;
+        return component.contentElement;
+    }
+    it('renders nothing if the event has no insights', async () => {
+        const output = await renderComponent(new Map());
+        assert.strictEqual(output.childElementCount, 0);
     });
     it('renders a chip for each insight the given event is associated with', async () => {
         const relatedInsight = {
@@ -25,13 +27,8 @@ describeWithEnvironment('RelatedInsightChips', () => {
         };
         const relatedMap = new Map();
         relatedMap.set(FAKE_EVENT, [relatedInsight]);
-        const component = new Components.RelatedInsightChips.RelatedInsightChips();
-        renderElementIntoDOM(component);
-        component.activeEvent = FAKE_EVENT;
-        component.eventToRelatedInsightsMap = relatedMap;
-        await RenderCoordinator.done();
-        assert.isOk(component.shadowRoot);
-        const chips = component.shadowRoot.querySelectorAll('li.insight-chip');
+        const element = await renderComponent(relatedMap);
+        const chips = element.querySelectorAll('li.insight-chip');
         assert.lengthOf(chips, 1);
         const text = getCleanTextContentFromElements(chips[0], 'button .insight-label');
         assert.deepEqual(text, ['Some fake insight']);
@@ -47,15 +44,10 @@ describeWithEnvironment('RelatedInsightChips', () => {
         };
         const relatedMap = new Map();
         relatedMap.set(FAKE_EVENT, [relatedInsight]);
-        const component = new Components.RelatedInsightChips.RelatedInsightChips();
-        renderElementIntoDOM(component);
-        component.activeEvent = FAKE_EVENT;
-        component.eventToRelatedInsightsMap = relatedMap;
-        await RenderCoordinator.done();
-        assert.isOk(component.shadowRoot);
-        const regularChips = component.shadowRoot.querySelectorAll('li.insight-chip');
+        const element = await renderComponent(relatedMap);
+        const regularChips = element.querySelectorAll('li.insight-chip');
         assert.lengthOf(regularChips, 1);
-        const optimizationChips = component.shadowRoot.querySelectorAll('li.insight-message-box');
+        const optimizationChips = element.querySelectorAll('li.insight-message-box');
         assert.lengthOf(optimizationChips, 2);
         const text1 = getCleanTextContentFromElements(optimizationChips[0], 'button');
         assert.deepEqual(text1, ['Insight: Some fake insight\nMessage 1']);
@@ -71,13 +63,8 @@ describeWithEnvironment('RelatedInsightChips', () => {
         };
         const relatedMap = new Map();
         relatedMap.set(FAKE_EVENT, [relatedInsight]);
-        const component = new Components.RelatedInsightChips.RelatedInsightChips();
-        renderElementIntoDOM(component);
-        component.activeEvent = FAKE_EVENT;
-        component.eventToRelatedInsightsMap = relatedMap;
-        await RenderCoordinator.done();
-        assert.isOk(component.shadowRoot);
-        const button = component.shadowRoot.querySelector('button');
+        const element = await renderComponent(relatedMap);
+        const button = element.querySelector('button');
         assert.isOk(button);
         dispatchClickEvent(button);
         sinon.assert.called(activateStub);

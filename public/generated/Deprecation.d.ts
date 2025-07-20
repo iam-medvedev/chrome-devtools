@@ -68,10 +68,6 @@ export declare const UIStrings: {
      */
     readonly HostCandidateAttributeGetter: "`RTCPeerConnectionIceErrorEvent.hostCandidate` is deprecated. Please use `RTCPeerConnectionIceErrorEvent.address` or `RTCPeerConnectionIceErrorEvent.port` instead.";
     /**
-     * @description A deprecation warning shown in the DevTools Issues tab, when a request for digital credentials API is formatted using a deprecated format.
-     */
-    readonly IdentityDigitalCredentials: "This format for the navigator.credentials.get() request for digital credentials is deprecated, please update your call to use the new format.";
-    /**
      * @description A deprecation warning shown in the DevTools Issues tab, when a service worker reads one of the fields from an event named 'canmakepayment'.
      */
     readonly IdentityInCanMakePaymentEvent: "The merchant origin and arbitrary data from the `canmakepayment` service worker event are deprecated and will be removed: `topOrigin`, `paymentRequestOrigin`, `methodData`, `modifiers`.";

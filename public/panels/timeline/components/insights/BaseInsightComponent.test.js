@@ -274,17 +274,17 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 .withArgs(sinon.match(/drjones\.performance-insight-context/))
                 .returns(FAKE_ACTION);
             dispatchClickEvent(button);
-            const context = UI.Context.Context.instance().flavor(Utils.InsightAIContext.ActiveInsight);
-            assert.instanceOf(context, Utils.InsightAIContext.ActiveInsight);
+            const context = UI.Context.Context.instance().flavor(Utils.AIContext.AgentFocus);
+            assert.instanceOf(context, Utils.AIContext.AgentFocus);
         });
         it('clears the active context when it gets toggled shut', async () => {
             const FAKE_ACTIVE_INSIGHT = {};
-            UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, FAKE_ACTIVE_INSIGHT);
+            UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, Utils.AIContext.AgentFocus.fromInsight(FAKE_ACTIVE_INSIGHT));
             const component = await renderComponent({ insightHasAISupport: true });
             const header = component.shadowRoot?.querySelector('header');
             assert.isOk(header);
             dispatchClickEvent(header);
-            const context = UI.Context.Context.instance().flavor(Utils.InsightAIContext.ActiveInsight);
+            const context = UI.Context.Context.instance().flavor(Utils.AIContext.AgentFocus);
             assert.isNull(context);
         });
         it('does not render the "Ask AI" button when the perf agent is not enabled', async () => {

@@ -11,7 +11,7 @@ __export(InspectElementModeController_exports, {
   ToggleSearchActionDelegate: () => ToggleSearchActionDelegate
 });
 import * as Common18 from "./../../core/common/common.js";
-import * as Root8 from "./../../core/root/root.js";
+import * as Root9 from "./../../core/root/root.js";
 import * as SDK21 from "./../../core/sdk/sdk.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
@@ -30,7 +30,7 @@ import * as Common17 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
-import * as Root7 from "./../../core/root/root.js";
+import * as Root8 from "./../../core/root/root.js";
 import * as SDK20 from "./../../core/sdk/sdk.js";
 import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
@@ -1724,6 +1724,13 @@ var isGridContainer = (computedStyles) => {
   const display = computedStyles.get("display");
   return display === "grid" || display === "inline-grid";
 };
+var isMasonryContainer = (computedStyles) => {
+  if (!computedStyles) {
+    return false;
+  }
+  const display = computedStyles.get("display");
+  return display === "masonry" || display === "inline-masonry";
+};
 var isMulticolContainer = (computedStyles) => {
   if (!computedStyles) {
     return false;
@@ -1838,7 +1845,7 @@ var AlignContentValidator = class extends CSSRuleValidator {
       return;
     }
     const isFlex = isFlexContainer(computedStyles);
-    if (!isFlex && !isBlockContainer(computedStyles) && !isGridContainer(computedStyles)) {
+    if (!isFlex && !isBlockContainer(computedStyles) && !isGridContainer(computedStyles) && !isMasonryContainer(computedStyles)) {
       const reasonPropertyDeclaration2 = buildPropertyDefinitionText("display", computedStyles?.get("display"));
       const affectedPropertyDeclarationCode2 = buildPropertyName("align-content");
       return new Hint(i18nString4(UIStrings4.ruleViolatedBySameElementRuleReason, {
@@ -1935,7 +1942,7 @@ var GridContainerValidator = class extends CSSRuleValidator {
     return 4;
   }
   getHint(propertyName, computedStyles) {
-    if (isGridContainer(computedStyles)) {
+    if (isGridContainer(computedStyles) || isMasonryContainer(computedStyles)) {
       return;
     }
     const reasonPropertyDeclaration = buildPropertyDefinitionText("display", computedStyles?.get("display"));
@@ -1967,7 +1974,7 @@ var GridItemValidator = class extends CSSRuleValidator {
     if (!parentComputedStyles) {
       return;
     }
-    if (isGridContainer(parentComputedStyles)) {
+    if (isGridContainer(parentComputedStyles) || isMasonryContainer(parentComputedStyles)) {
       return;
     }
     const reasonPropertyDeclaration = buildPropertyDefinitionText("display", parentComputedStyles?.get("display"));
@@ -2021,10 +2028,10 @@ var FlexGridValidator = class extends CSSRuleValidator {
     if (!computedStyles) {
       return;
     }
-    if (isFlexContainer(computedStyles) || isGridContainer(computedStyles)) {
+    if (isFlexContainer(computedStyles) || isGridContainer(computedStyles) || isMasonryContainer(computedStyles)) {
       return;
     }
-    if (parentComputedStyles && (isFlexContainer(parentComputedStyles) || isGridContainer(parentComputedStyles))) {
+    if (parentComputedStyles && (isFlexContainer(parentComputedStyles) || isGridContainer(parentComputedStyles) || isMasonryContainer(parentComputedStyles))) {
       const reasonContainerDisplayName = buildPropertyValue(parentComputedStyles.get("display"));
       const reasonPropertyName = buildPropertyName(propertyName);
       const reasonAlternativePropertyName = buildPropertyName("justify-self");
@@ -2065,7 +2072,7 @@ var MulticolFlexGridValidator = class extends CSSRuleValidator {
     if (!computedStyles) {
       return;
     }
-    if (isMulticolContainer(computedStyles) || isFlexContainer(computedStyles) || isGridContainer(computedStyles)) {
+    if (isMulticolContainer(computedStyles) || isFlexContainer(computedStyles) || isGridContainer(computedStyles) || isMasonryContainer(computedStyles)) {
       return;
     }
     const reasonPropertyDeclaration = buildPropertyDefinitionText("display", computedStyles?.get("display"));
@@ -4091,7 +4098,7 @@ var MathFunctionRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatc
       if (evaluation) {
         return evaluation;
       }
-    } else if (match.func !== "calc") {
+    } else if (!match.isArithmeticFunctionCall()) {
       void this.applyMathFunction(renderedArgs, match, context);
     }
     return [span];
@@ -5057,7 +5064,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     });
     const invalidString = this.property.getInvalidStringForInvalidProperty();
     if (invalidString) {
-      UI8.ARIAUtils.alert(invalidString);
+      UI8.ARIAUtils.LiveAnnouncer.alert(invalidString);
     }
     const proxyElement = this.prompt.attachAndStartEditing(selectedElement, blurListener.bind(this, context));
     this.navigateToSource(selectedElement, true);
@@ -5750,6 +5757,7 @@ var DOMNodeLink = class extends UI10.Widget.Widget {
       classes: [],
       onClick: () => {
         void Common4.Revealer.reveal(this.#node);
+        void this.#node?.scrollIntoView();
         return false;
       },
       onMouseOver: () => {
@@ -5837,6 +5845,7 @@ var DeferredDOMNodeLink = class extends UI10.Widget.Widget {
       onClick: () => {
         this.#deferredNode?.resolve?.((node) => {
           void Common4.Revealer.reveal(node);
+          void node?.scrollIntoView();
         });
       }
     };
@@ -7840,7 +7849,7 @@ var UIStrings8 = {
    */
   inheritedFroms: "Inherited from ",
   /**
-   *@description Text of an inherited psuedo element in Styles Sidebar Pane of the Elements panel
+   *@description Text of an inherited pseudo element in Styles Sidebar Pane of the Elements panel
    *@example {highlight} PH1
    */
   inheritedFromSPseudoOf: "Inherited from ::{PH1} pseudo of ",
@@ -8159,7 +8168,7 @@ ${allDeclarationText}
       if (this.lastFilterChange) {
         const stillTyping = Date.now() - this.lastFilterChange < FILTER_IDLE_PERIOD;
         if (!stillTyping) {
-          UI12.ARIAUtils.alert(this.visibleSections ? i18nString8(UIStrings8.visibleSelectors, { n: this.visibleSections }) : i18nString8(UIStrings8.noMatchingSelectorOrStyle));
+          UI12.ARIAUtils.LiveAnnouncer.alert(this.visibleSections ? i18nString8(UIStrings8.visibleSelectors, { n: this.visibleSections }) : i18nString8(UIStrings8.noMatchingSelectorOrStyle));
         }
       }
     }, FILTER_IDLE_PERIOD);
@@ -10637,6 +10646,7 @@ import * as Common13 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
+import * as Root7 from "./../../core/root/root.js";
 import * as SDK16 from "./../../core/sdk/sdk.js";
 import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -13147,6 +13157,14 @@ var UIStrings16 = {
    */
   disableGridMode: "Disable grid mode",
   /**
+   * @description ARIA label for an elements tree adorner
+   */
+  forceOpenPopover: "Keep this popover open",
+  /**
+   * @description ARIA label for an elements tree adorner
+   */
+  stopForceOpenPopover: "Stop keeping this popover open",
+  /**
    *@description Label of the adorner for flex elements in the Elements panel
    */
   enableFlexMode: "Enable flex mode",
@@ -13446,7 +13464,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI19.TreeOutline.Tr
     const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction("freestyler.elements-floating-button");
     if (this.contentElement && !this.aiButtonContainer) {
       this.aiButtonContainer = this.contentElement.createChild("span", "ai-button-container");
-      const floatingButton = Buttons3.FloatingButton.create("smart-assistant", action2.title());
+      const floatingButton = Buttons3.FloatingButton.create("smart-assistant", action2.title(), "ask-ai");
       floatingButton.addEventListener("click", (ev) => {
         ev.stopPropagation();
         this.select(true, false);
@@ -14781,24 +14799,54 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI19.TreeOutline.Tr
     for (const styleAdorner of this.tagTypeContext.styleAdorners) {
       this.removeAdorner(styleAdorner, this.tagTypeContext);
     }
-    if (!layout) {
-      return;
-    }
-    if (layout.isGrid) {
-      this.pushGridAdorner(this.tagTypeContext, layout.isSubgrid);
-    }
-    if (layout.isFlex) {
-      this.pushFlexAdorner(this.tagTypeContext);
-    }
-    if (layout.hasScroll) {
-      this.pushScrollSnapAdorner(this.tagTypeContext);
-    }
-    if (layout.isContainer) {
-      this.pushContainerAdorner(this.tagTypeContext);
+    if (layout) {
+      if (layout.isGrid) {
+        this.pushGridAdorner(this.tagTypeContext, layout.isSubgrid);
+      }
+      if (layout.isFlex) {
+        this.pushFlexAdorner(this.tagTypeContext);
+      }
+      if (layout.hasScroll) {
+        this.pushScrollSnapAdorner(this.tagTypeContext);
+      }
+      if (layout.isContainer) {
+        this.pushContainerAdorner(this.tagTypeContext);
+      }
     }
     if (node.isMediaNode()) {
       this.pushMediaAdorner(this.tagTypeContext);
     }
+    if (node.attributes().find((attr) => attr.name === "popover")) {
+      this.pushPopoverAdorner(this.tagTypeContext);
+    }
+  }
+  pushPopoverAdorner(context) {
+    if (!Root7.Runtime.hostConfig.devToolsAllowPopoverForcing?.enabled) {
+      return;
+    }
+    const node = this.node();
+    const nodeId = node.id;
+    const config = ElementsComponents7.AdornerManager.getRegisteredAdorner(ElementsComponents7.AdornerManager.RegisteredAdorners.POPOVER);
+    const adorner = this.adorn(config);
+    const onClick = async () => {
+      const { nodeIds } = await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: adorner.isActive() });
+      for (const closedPopoverNodeId of nodeIds) {
+        const node2 = this.node().domModel().nodeForId(closedPopoverNodeId);
+        const treeElement = node2 && this.treeOutline?.treeElementByNode.get(node2);
+        if (!treeElement || !isOpeningTag(treeElement.tagTypeContext)) {
+          return;
+        }
+        const adorner2 = treeElement.tagTypeContext.adorners.values().find((adorner3) => adorner3.name === config.name);
+        adorner2?.toggle(false);
+      }
+    };
+    adorner.addInteraction(onClick, {
+      isToggle: true,
+      shouldPropagateOnKeydown: false,
+      ariaLabelDefault: i18nString15(UIStrings16.forceOpenPopover),
+      ariaLabelActive: i18nString15(UIStrings16.stopForceOpenPopover)
+    });
+    context.styleAdorners.add(adorner);
   }
   pushGridAdorner(context, isSubgrid) {
     const node = this.node();
@@ -15406,7 +15454,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     const target2 = event.target;
     const input2 = target2.querySelector("input");
     input2.click();
-    UI21.ARIAUtils.alert(i18nString16(UIStrings17.colorPickerOpened));
+    UI21.ARIAUtils.LiveAnnouncer.alert(i18nString16(UIStrings17.colorPickerOpened));
     event.preventDefault();
   };
   const onColorLabelKeyDown = (event) => {
@@ -15467,8 +15515,8 @@ var DEFAULT_VIEW3 = (input, output, target) => {
   render6(
     html9`
       <div style="min-width: min-content;" jslog=${VisualLogging10.pane("layout").track({ resize: true })}>
-        <style>@scope to (devtools-widget) { ${layoutPane_css_default} }</style>
-        <style>@scope to (devtools-widget) { ${UI21.inspectorCommonStyles} }</style>
+        <style>${UI21.Widget.widgetScoped(layoutPane_css_default)}</style>
+        <style>${UI21.Widget.widgetScoped(UI21.inspectorCommonStyles)}</style>
         <details open>
           <summary class="header"
             @keydown=${input.onSummaryKeyDown}
@@ -15794,7 +15842,7 @@ var metricsSidebarPane_css_default = `/**
 }
 
 .metrics .position {
-  /* This border is different from the ones displayed between the box-moodel
+  /* This border is different from the ones displayed between the box-model
   regions because it is displayed against the pane background, so needs to be
   visible in both light and dark theme. We therefore use a theme variable. */
   border: 1px var(--sys-color-token-subtle) dotted;
@@ -16427,7 +16475,7 @@ var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
     this.mainContainer = document.createElement("div");
     this.domTreeContainer = document.createElement("div");
     const crumbsContainer = document.createElement("div");
-    if (Root7.Runtime.experiments.isEnabled("full-accessibility-tree")) {
+    if (Root8.Runtime.experiments.isEnabled("full-accessibility-tree")) {
       this.initializeFullAccessibilityTreeView();
     }
     this.mainContainer.appendChild(this.domTreeContainer);
@@ -17538,7 +17586,7 @@ var InspectElementModeController = class _InspectElementModeController {
 };
 var ToggleSearchActionDelegate = class {
   handleAction(_context, actionId) {
-    if (Root8.Runtime.Runtime.queryParam("isSharedWorker")) {
+    if (Root9.Runtime.Runtime.queryParam("isSharedWorker")) {
       return false;
     }
     inspectElementModeController = InspectElementModeController.instance();
@@ -18165,7 +18213,7 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
     }
     const joinClassString = classNames.join(" ");
     const announcementString = classNames.length > 1 ? i18nString21(UIStrings22.classesSAdded, { PH1: joinClassString }) : i18nString21(UIStrings22.classSAdded, { PH1: joinClassString });
-    UI28.ARIAUtils.alert(announcementString);
+    UI28.ARIAUtils.LiveAnnouncer.alert(announcementString);
     this.installNodeClasses(node);
     this.update();
   }

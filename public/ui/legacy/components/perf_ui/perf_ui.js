@@ -1757,12 +1757,12 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     const groupName = groups[groupIndex].name;
     if (!groups[groupIndex].selectable) {
       this.deselectAllGroups();
-      UI.ARIAUtils.alert(i18nString2(UIStrings2.sHovered, { PH1: groupName }));
+      UI.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.sHovered, { PH1: groupName }));
     } else {
       this.selectedGroupIndex = groupIndex;
       this.flameChartDelegate.updateSelectedGroup(this, groups[groupIndex]);
       this.draw();
-      UI.ARIAUtils.alert(i18nString2(UIStrings2.sSelected, { PH1: groupName }));
+      UI.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.sSelected, { PH1: groupName }));
     }
   }
   deselectAllGroups() {
@@ -1850,7 +1850,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     if (!propagatedExpand) {
       const groupName = groups[groupIndex].name;
       const content = group.expanded ? i18nString2(UIStrings2.sExpanded, { PH1: groupName }) : i18nString2(UIStrings2.sCollapsed, { PH1: groupName });
-      UI.ARIAUtils.alert(content);
+      UI.ARIAUtils.LiveAnnouncer.alert(content);
     }
   }
   moveGroupUp(groupIndex) {
@@ -2213,7 +2213,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     );
     const eventName = this.dataProvider.entryTitle(firstEntryIndex);
     if (eventName) {
-      UI.ARIAUtils.alert(i18nString2(UIStrings2.eventSelectedFromGroup, {
+      UI.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.eventSelectedFromGroup, {
         PH1: eventName,
         PH2: group.name
       }));

@@ -1775,10 +1775,6 @@ var UIStrings8 = {
    */
   HostCandidateAttributeGetter: "`RTCPeerConnectionIceErrorEvent.hostCandidate` is deprecated. Please use `RTCPeerConnectionIceErrorEvent.address` or `RTCPeerConnectionIceErrorEvent.port` instead.",
   /**
-   * @description A deprecation warning shown in the DevTools Issues tab, when a request for digital credentials API is formatted using a deprecated format.
-   */
-  IdentityDigitalCredentials: "This format for the navigator.credentials.get() request for digital credentials is deprecated, please update your call to use the new format.",
-  /**
    * @description A deprecation warning shown in the DevTools Issues tab, when a service worker reads one of the fields from an event named 'canmakepayment'.
    */
   IdentityInCanMakePaymentEvent: "The merchant origin and arbitrary data from the `canmakepayment` service worker event are deprecated and will be removed: `topOrigin`, `paymentRequestOrigin`, `methodData`, `modifiers`.",
@@ -1970,9 +1966,6 @@ var DEPRECATIONS_METADATA = {
   "H1UserAgentFontSizeInSection": {
     "chromeStatusFeature": 6192419898654720,
     "milestone": 136
-  },
-  "IdentityDigitalCredentials": {
-    "chromeStatusFeature": 5166035265650688
   },
   "IdentityInCanMakePaymentEvent": {
     "chromeStatusFeature": 5190978431352832

@@ -13,7 +13,7 @@ describeWithEnvironment('PerformanceAnnotationsAgent', () => {
             aidaClient: mockAidaClient([[{
                         explanation: 'hello world\n',
                     }]]),
-        });
+        }, "drjones-performance" /* ConversationType.PERFORMANCE */);
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const evalScriptEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
         assert.exists(evalScriptEvent);

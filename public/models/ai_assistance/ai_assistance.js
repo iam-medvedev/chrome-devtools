@@ -305,6 +305,9 @@ var AiAgent = class {
   clearFacts() {
     this.#facts.clear();
   }
+  preambleFeatures() {
+    return [];
+  }
   buildRequest(part, role) {
     const parts = Array.isArray(part) ? part : [part];
     const currentMessage = {
@@ -325,12 +328,12 @@ var AiAgent = class {
     }
     const enableAidaFunctionCalling = declarations.length && !this.functionCallEmulationEnabled;
     const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
-    const preamble7 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
+    const preamble5 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
     const facts = Array.from(this.#facts);
     const request = {
       client: Host.AidaClient.CLIENT_NAME,
       current_message: currentMessage,
-      preamble: preamble7,
+      preamble: preamble5,
       historical_contexts: history.length ? history : void 0,
       facts: facts.length ? facts : void 0,
       ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
@@ -342,7 +345,7 @@ var AiAgent = class {
         disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
         string_session_id: this.#sessionId,
         user_tier: userTier,
-        client_version: Root.Runtime.getChromeVersion()
+        client_version: Root.Runtime.getChromeVersion() + this.preambleFeatures().map((feature) => `+${feature}`).join("")
       },
       functionality_type: enableAidaFunctionCalling ? Host.AidaClient.FunctionalityType.AGENTIC_CHAT : Host.AidaClient.FunctionalityType.CHAT,
       client_feature: this.clientFeature
@@ -379,6 +382,9 @@ var AiAgent = class {
       throw new Error(`Duplicate function declaration ${name}`);
     }
     this.#functionDeclarations.set(name, declaration);
+  }
+  clearDeclaredFunctions() {
+    this.#functionDeclarations.clear();
   }
   formatParsedAnswer({ answer }) {
     return answer;
@@ -1274,207 +1280,21 @@ function createContextDetailsForNetworkAgent(request) {
 import "./../../ui/components/icon_button/icon_button.js";
 import * as Common from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n6 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as Platform from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as TimelineUtils from "./../../panels/timeline/utils/utils.js";
 import { html } from "./../../ui/lit/lit.js";
-import * as Trace from "./../trace/trace.js";
-var preamble3 = `You are an expert performance analyst embedded within Chrome DevTools.
-You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
-You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
-This tree originates from the root task associated with the selected call frame.
-
-Each call frame is presented in the following format:
-
-'id;name;duration;selfTime;urlIndex;childRange;[S]'
-
-Key definitions:
-
-* id: A unique numerical identifier for the call frame.
-* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-* duration: The total execution time of the call frame, including its children.
-* selfTime: The time spent directly within the call frame, excluding its children's execution.
-* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-* S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.
-
-Your objective is to provide a comprehensive analysis of the **selected call frame and the entire call tree** and its context within the performance recording, including:
-
-1.  **Functionality:** Clearly describe the purpose and actions of the selected call frame based on its properties (name, URL, etc.).
-2.  **Execution Flow:**
-    * **Ancestors:** Trace the execution path from the root task to the selected call frame, explaining the sequence of parent calls.
-    * **Descendants:** Analyze the child call frames, identifying the tasks they initiate and any performance-intensive sub-tasks.
-3.  **Performance Metrics:**
-    * **Duration and Self Time:** Report the execution time of the call frame and its children.
-    * **Relative Cost:** Evaluate the contribution of the call frame to the overall duration of its parent tasks and the entire trace.
-    * **Bottleneck Identification:** Identify potential performance bottlenecks based on duration and self time, including long-running tasks or idle periods.
-4.  **Optimization Recommendations:** Provide specific, actionable suggestions for improving the performance of the selected call frame and its related tasks, focusing on resource management and efficiency. Only provide recommendations if they are based on data present in the call tree.
-
-# Important Guidelines:
-
-* Maintain a concise and technical tone suitable for software engineers.
-* Exclude call frame IDs and URL indices from your response.
-* **Critical:** If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
-* **Critical:** Refrain from providing answers on non-web-development topics, such as legal, financial, medical, or personal advice.
-
-## Example Session:
-
-All URLs:
-* 0 - app.js
-
-Call Tree:
-
-1;main;500;100;;
-2;update;200;50;;3
-3;animate;150;20;0;4-5;S
-4;calculatePosition;80;80;;
-5;applyStyles;50;50;;
-
-Analyze the selected call frame.
-
-Example Response:
-
-The selected call frame is 'animate', responsible for visual animations within 'app.js'.
-It took 150ms total, with 20ms spent directly within the function.
-The 'calculatePosition' and 'applyStyles' child functions consumed the remaining 130ms.
-The 'calculatePosition' function, taking 80ms, is a potential bottleneck.
-Consider optimizing the position calculation logic or reducing the frequency of calls to improve animation performance.
-`;
-var UIStringsNotTranslate3 = {
-  analyzingCallTree: "Analyzing call tree"
-};
-var lockedString3 = i18n6.i18n.lockedString;
-var CallTreeContext = class extends ConversationContext {
-  #callTree;
-  constructor(callTree) {
-    super();
-    this.#callTree = callTree;
-  }
-  getOrigin() {
-    const node = this.#callTree.selectedNode ?? this.#callTree.rootNode;
-    const selectedEvent = node.event;
-    const nonResolvedURL = Trace.Handlers.Helpers.getNonResolvedURL(selectedEvent, this.#callTree.parsedTrace);
-    if (nonResolvedURL) {
-      const origin = Common.ParsedURL.ParsedURL.extractOrigin(nonResolvedURL);
-      if (origin) {
-        return origin;
-      }
-    }
-    const uuid = `${selectedEvent.name}_${selectedEvent.pid}_${selectedEvent.tid}_${selectedEvent.ts}`;
-    return uuid;
-  }
-  getItem() {
-    return this.#callTree;
-  }
-  getIcon() {
-    return html`<devtools-icon name="performance" title="Performance"
-        style="color: var(--sys-color-on-surface-subtle);"></devtools-icon>`;
-  }
-  getTitle() {
-    const event = this.#callTree.selectedNode?.event ?? this.#callTree.rootNode.event;
-    if (!event) {
-      return "unknown";
-    }
-    return TimelineUtils.EntryName.nameForEntry(event);
-  }
-};
-var PerformanceAgent = class extends AiAgent {
-  preamble = preamble3;
-  // We have to set the type of clientFeature here to be the entire enum
-  // because in PerformanceAnnotationsAgent.ts we override it.
-  // TODO(b/406961576): split the agents apart rather than have one extend the other.
-  clientFeature = Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_AGENT;
-  get userTier() {
-    return Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
-  }
-  get options() {
-    const temperature = Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
-    const modelId = Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
-    return {
-      temperature,
-      modelId
-    };
-  }
-  async *handleContextDetails(aiCallTree) {
-    yield {
-      type: "context",
-      title: lockedString3(UIStringsNotTranslate3.analyzingCallTree),
-      details: [
-        {
-          title: "Selected call tree",
-          text: aiCallTree?.getItem().serialize() ?? ""
-        }
-      ]
-    };
-  }
-  #contextSet = /* @__PURE__ */ new WeakSet();
-  async enhanceQuery(query, aiCallTree) {
-    const treeItem = aiCallTree?.getItem();
-    let treeStr = treeItem?.serialize();
-    if (treeItem && this.#contextSet.has(treeItem) && treeStr) {
-      treeStr = void 0;
-    }
-    if (treeItem && !this.#contextSet.has(treeItem)) {
-      this.#contextSet.add(treeItem);
-    }
-    const perfEnhancementQuery = treeStr ? `${treeStr}
-
-# User request
-
-` : "";
-    return `${perfEnhancementQuery}${query}`;
-  }
-};
-
-// gen/front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.js
-import * as Host5 from "./../../core/host/host.js";
-var PerformanceAnnotationsAgent = class extends PerformanceAgent {
-  clientFeature = Host5.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
-  /**
-   * Used in the Performance panel to automatically generate a label for a selected entry.
-   */
-  async generateAIEntryLabel(callTree) {
-    const context = new CallTreeContext(callTree);
-    const response = await Array.fromAsync(this.run(AI_LABEL_GENERATION_PROMPT, { selected: context }));
-    const lastResponse = response.at(-1);
-    if (lastResponse && lastResponse.type === "answer" && lastResponse.complete === true) {
-      return lastResponse.text.trim();
-    }
-    throw new Error("Failed to generate AI entry label");
-  }
-};
-var AI_LABEL_GENERATION_PROMPT = `## Instruction:
-Generate a concise label (max 60 chars, single line) describing the *user-visible effect* of the selected call tree's activity, based solely on the provided call tree data.
-
-## Strict Constraints:
-- Output must be a single line of text.
-- Maximum 60 characters.
-- No full stops.
-- Focus on user impact, not internal operations.
-- Do not include the name of the selected event.
-- Do not make assumptions about when the activity happened.
-- Base the description only on the information present within the call tree data.
-- Prioritize brevity.
-- Only include third-party script names if their identification is highly confident.
-- Very important: Only output the 60 character label text, your response will be used in full to show to the user as an annotation in the timeline.
-`;
-
-// gen/front_end/models/ai_assistance/agents/PerformanceInsightsAgent.js
-import * as Host6 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
-import * as Root5 from "./../../core/root/root.js";
-import * as TimelineUtils2 from "./../../panels/timeline/utils/utils.js";
-import { html as html2 } from "./../../ui/lit/lit.js";
+import * as Trace2 from "./../trace/trace.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
-import * as i18n8 from "./../../core/i18n/i18n.js";
-import * as Trace2 from "./../trace/trace.js";
+import * as i18n6 from "./../../core/i18n/i18n.js";
+import * as Trace from "./../trace/trace.js";
 function formatMilli(x) {
   if (x === void 0) {
     return "";
   }
-  return i18n8.TimeUtilities.preciseMillisToString(
+  return i18n6.TimeUtilities.preciseMillisToString(
     x,
     2,
     /* separator */
@@ -1485,7 +1305,7 @@ function formatMicroToMilli(x) {
   if (x === void 0) {
     return "";
   }
-  return formatMilli(Trace2.Helpers.Timing.microToMilli(x));
+  return formatMilli(Trace.Helpers.Timing.microToMilli(x));
 }
 function getLCPData(parsedTrace, frameId, navigationId) {
   const navMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigationId);
@@ -1496,11 +1316,11 @@ function getLCPData(parsedTrace, frameId, navigationId) {
     "LCP"
     /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */
   );
-  if (!metric || !Trace2.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
+  if (!metric || !Trace.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
     return null;
   }
   const lcpEvent = metric?.event;
-  if (!lcpEvent || !Trace2.Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
+  if (!lcpEvent || !Trace.Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
     return null;
   }
   return {
@@ -1537,7 +1357,7 @@ var PerformanceInsightFormatter = class {
     ];
     if (lcpRequest) {
       parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
-      const request = TraceEventFormatter.networkRequest(lcpRequest, this.#parsedTrace, { verbose: true, customTitle: "LCP resource network request" });
+      const request = TraceEventFormatter.networkRequests([lcpRequest], this.#parsedTrace, { verbose: true, customTitle: "LCP resource network request" });
       parts.push(request);
     } else {
       parts.push(`${theLcpElement} is text and was not fetched from the network.`);
@@ -1567,14 +1387,14 @@ ${header} External resources:
 ${this.#links()}`;
   }
   #details() {
-    if (Trace2.Insights.Models.LCPBreakdown.isLCPBreakdown(this.#insight)) {
+    if (Trace.Insights.Models.LCPBreakdown.isLCPBreakdown(this.#insight)) {
       const { subparts, lcpMs } = this.#insight;
       if (!lcpMs || !subparts) {
         return "";
       }
       const phaseBulletPoints = [];
       Object.values(subparts).forEach((subpart) => {
-        const phaseMilli = Trace2.Helpers.Timing.microToMilli(subpart.range);
+        const phaseMilli = Trace.Helpers.Timing.microToMilli(subpart.range);
         const percentage = (phaseMilli / lcpMs * 100).toFixed(1);
         phaseBulletPoints.push({ name: subpart.label, value: formatMilli(phaseMilli), percentage });
       });
@@ -1584,7 +1404,7 @@ We can break this time down into the ${phaseBulletPoints.length} phases that com
 
 ${phaseBulletPoints.map((phase) => `- ${phase.name}: ${phase.value} (${phase.percentage}% of total LCP time)`).join("\n")}`;
     }
-    if (Trace2.Insights.Models.LCPDiscovery.isLCPDiscovery(this.#insight)) {
+    if (Trace.Insights.Models.LCPDiscovery.isLCPDiscovery(this.#insight)) {
       const { checklist, lcpEvent, lcpRequest, earliestDiscoveryTimeTs } = this.#insight;
       if (!checklist || !lcpEvent || !lcpRequest || !earliestDiscoveryTimeTs) {
         return "";
@@ -1607,16 +1427,16 @@ ${phaseBulletPoints.map((phase) => `- ${phase.name}: ${phase.value} (${phase.per
 The result of the checks for this insight are:
 ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSED" : "FAILED"}`).join("\n")}`;
     }
-    if (Trace2.Insights.Models.RenderBlocking.isRenderBlocking(this.#insight)) {
-      const requestSummary = this.#insight.renderBlockingRequests.map((r) => TraceEventFormatter.networkRequest(r, this.#parsedTrace, { verbose: false }));
+    if (Trace.Insights.Models.RenderBlocking.isRenderBlocking(this.#insight)) {
+      const requestSummary = TraceEventFormatter.networkRequests(this.#insight.renderBlockingRequests, this.#parsedTrace, { verbose: false });
       if (requestSummary.length === 0) {
         return "There are no network requests that are render blocking.";
       }
       return `Here is a list of the network requests that were render blocking on this page and their duration:
 
-${requestSummary.join("\n\n")}`;
+${requestSummary}`;
     }
-    if (Trace2.Insights.Models.DocumentLatency.isDocumentLatency(this.#insight)) {
+    if (Trace.Insights.Models.DocumentLatency.isDocumentLatency(this.#insight)) {
       if (!this.#insight.data) {
         return "";
       }
@@ -1639,7 +1459,7 @@ ${requestSummary.join("\n\n")}`;
       });
       return `${this.#lcpMetricSharedContext()}
 
-${TraceEventFormatter.networkRequest(documentRequest, this.#parsedTrace, {
+${TraceEventFormatter.networkRequests([documentRequest], this.#parsedTrace, {
         verbose: true,
         customTitle: "Document network request"
       })}
@@ -1647,7 +1467,7 @@ ${TraceEventFormatter.networkRequest(documentRequest, this.#parsedTrace, {
 The result of the checks for this insight are:
 ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSED" : "FAILED"}`).join("\n")}`;
     }
-    if (Trace2.Insights.Models.INPBreakdown.isINPBreakdown(this.#insight)) {
+    if (Trace.Insights.Models.INPBreakdown.isINPBreakdown(this.#insight)) {
       const event = this.#insight.longestInteractionEvent;
       if (!event) {
         return "";
@@ -1659,7 +1479,7 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
 3. Presentation delay: ${formatMicroToMilli(event.presentationDelay)}.`;
       return inpInfoForEvent;
     }
-    if (Trace2.Insights.Models.CLSCulprits.isCLSCulprits(this.#insight)) {
+    if (Trace.Insights.Models.CLSCulprits.isCLSCulprits(this.#insight)) {
       const { worstCluster, shifts } = this.#insight;
       if (!worstCluster) {
         return "";
@@ -1678,13 +1498,13 @@ The score for this cluster is ${worstCluster.clusterCumulativeScore.toFixed(4)}.
 Layout shifts in this cluster:
 ${shiftsFormatted.join("\n")}`;
     }
-    if (Trace2.Insights.Models.ModernHTTP.isModernHTTP(this.#insight)) {
-      const requestSummary = this.#insight.http1Requests.map((request) => TraceEventFormatter.networkRequest(request, this.#parsedTrace, { verbose: true }));
+    if (Trace.Insights.Models.ModernHTTP.isModernHTTP(this.#insight)) {
+      const requestSummary = this.#insight.http1Requests.length === 1 ? TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) : TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace);
       if (requestSummary.length === 0) {
         return "There are no requests that were served over a legacy HTTP protocol.";
       }
       return `Here is a list of the network requests that were served over a legacy HTTP protocol:
-${requestSummary.join("\n")}`;
+${requestSummary}`;
     }
     return "";
   }
@@ -1830,6 +1650,16 @@ var TraceEventFormatter = class _TraceEventFormatter {
 - Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
 ${rootCauseText}`;
   }
+  // Stringify network requests for the LLM model.
+  static networkRequests(requests, parsedTrace, options) {
+    if (requests.length === 0) {
+      return "";
+    }
+    if (options?.verbose || requests.length === 1) {
+      return requests.map((request) => this.#networkRequestVerbosely(request, parsedTrace, options?.customTitle)).join("\n");
+    }
+    return this.#networkRequestsArrayCompressed(requests, parsedTrace);
+  }
   /**
    * This is the data passed to a network request when the Performance Insights
    * agent is asking for information. It is a slimmed down version of the
@@ -1838,10 +1668,10 @@ ${rootCauseText}`;
    * Security; be careful about adding new data here. If you are in doubt please
    * talk to jacktfranklin@.
    */
-  static networkRequest(request, parsedTrace, options) {
+  static #networkRequestVerbosely(request, parsedTrace, customTitle) {
     const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
-    const titlePrefix = `## ${options.customTitle ?? "Network request"}`;
-    const navigationForEvent = Trace2.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
+    const titlePrefix = `## ${customTitle ?? "Network request"}`;
+    const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
     const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
     const startTimesForLifecycle = {
       queuedAt: request.ts - baseTime,
@@ -1851,7 +1681,7 @@ ${rootCauseText}`;
     };
     const mainThreadProcessingDuration = startTimesForLifecycle.processingCompletedAt - startTimesForLifecycle.downloadCompletedAt;
     const downloadTime = syntheticData.finishTime - syntheticData.downloadStart;
-    const renderBlocking = Trace2.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
+    const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
     const initiator = parsedTrace.NetworkRequests.eventToInitiator.get(request);
     const priorityLines = [];
     if (initialPriority === priority) {
@@ -1866,12 +1696,6 @@ ${rootCauseText}`;
 - Start time: ${formatMicroToMilli(startTime)}
 - Duration: ${formatMicroToMilli(redirect.dur)}`;
     });
-    if (!options.verbose) {
-      return `${titlePrefix}: ${url}
-- Start time: ${formatMicroToMilli(startTimesForLifecycle.queuedAt)}
-- Duration: ${formatMicroToMilli(request.dur)}
-- MIME type: ${mimeType}${renderBlocking ? "\n- This request was render blocking" : ""}`;
-    }
     return `${titlePrefix}: ${url}
 Timings:
 - Queued at: ${formatMicroToMilli(startTimesForLifecycle.queuedAt)}
@@ -1901,17 +1725,53 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
     urlIdToIndex.set(url, index);
     return index;
   }
-  // This is the data passed to a network request when the Performance Insights agent is asking for information on multiple requests.
-  static getNetworkRequestsNewFormat(requests, parsedTrace) {
+  // A compact network requests format designed to save tokens when sending multiple network requests to the model.
+  // It creates a map that maps request URLs to IDs and references the IDs in the compressed format.
+  //
+  // Important: Do not use this method for stringifying a single network request. With this format, a format description
+  // needs to be provided, which is not worth sending if only one network request is being stringified.
+  // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
+  // format description.
+  static #networkRequestsArrayCompressed(requests, parsedTrace) {
+    const formatDescription = `The format is as follows:
+    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
+
+    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
+    Timings (all in milliseconds, relative to navigation start):
+    - \`queuedTime\`: When the request was queued.
+    - \`requestSentTime\`: When the request was sent.
+    - \`downloadCompleteTime\`: When the download completed.
+    - \`processingCompleteTime\`: When main thread processing finished.
+    Durations (all in milliseconds):
+    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
+    - \`downloadDuration\`: Time spent actively downloading the resource.
+    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
+    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
+    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
+    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
+    - \`initialPriority\`: The initial network request priority.
+    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
+    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
+    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
+    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
+    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
+    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
+    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
+    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
+    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+
+    Network requests data:
+
+    `;
     const urlIdToIndex = /* @__PURE__ */ new Map();
     const allRequestsText = requests.map((request) => {
       const urlIndex = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-      return this.networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex);
+      return this.#networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex);
     }).join("\n");
     const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.entries()).map(([url, index]) => {
       return `${index}: ${url}`;
     }).join(", ")}]`;
-    return urlsMapString + "\n\n" + allRequestsText;
+    return formatDescription + "\n\n" + urlsMapString + "\n\n" + allRequestsText;
   }
   /**
    *
@@ -1947,9 +1807,9 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
    * - `responseHeaders`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
    * The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
    */
-  static networkRequestNewFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
+  static #networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
     const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
-    const navigationForEvent = Trace2.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
+    const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
     const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
     const queuedTime = formatMicroToMilli(request.ts - baseTime);
     const requestSentTime = formatMicroToMilli(syntheticData.sendStartTime - baseTime);
@@ -1958,7 +1818,7 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
     const totalDuration = formatMicroToMilli(request.dur);
     const downloadDuration = formatMicroToMilli(syntheticData.finishTime - syntheticData.downloadStart);
     const mainThreadProcessingDuration = formatMicroToMilli(request.ts + request.dur - syntheticData.finishTime);
-    const renderBlocking = Trace2.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
+    const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
     const finalPriority = priority;
     const headerValues = responseHeaders?.map((header) => {
       const value = NetworkRequestFormatter.allowHeader(header.name) ? header.value : "<redacted>";
@@ -1997,8 +1857,9 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
   }
 };
 
-// gen/front_end/models/ai_assistance/agents/PerformanceInsightsAgent.js
+// gen/front_end/models/ai_assistance/agents/PerformanceAgent.js
 var UIStringsNotTranslated = {
+  analyzingCallTree: "Analyzing call tree",
   /**
    *@description Shown when the agent is investigating network activity
    */
@@ -2008,8 +1869,8 @@ var UIStringsNotTranslated = {
    */
   mainThreadActivity: "Investigating main thread activity\u2026"
 };
-var lockedString4 = i18n9.i18n.lockedString;
-var preamble4 = `You are an AI-powered web performance optimization expert, simulating a highly skilled Chrome DevTools user. Your goal is to provide actionable advice to web developers based on Chrome Performance Panel insights.
+var lockedString3 = i18n7.i18n.lockedString;
+var insightPreamble = `You are an AI-powered web performance optimization expert, simulating a highly skilled Chrome DevTools user. Your goal is to provide actionable advice to web developers based on Chrome Performance Panel insights.
 
 You will be provided with an Insight from the Chrome Performance Panel. This Insight will contain information about the performance of the web site. It is your task to analyze the data available to you and suggest solutions to improve the performance of the page.
 
@@ -2058,32 +1919,139 @@ Additionally, you may also be asked basic questions such as "What is LCP?". Ensu
 - If you are asked about "LCP by Phase" and the "element render delay" phase makes up a large percentage of the time, that indicates that there was main thread activity that blocked the browser painting. In this case, inspect the main thread activity and include information on what functions caused the main thread to be busy. Thoroughly inspect the main thread activity so you can be accurate in your responses.
 - Only suggest image size and format optimizations as a solution if you are confident that the download time of the image was a major contribution to the performance problems you have investigated, or if the user specifically asks about image optimization techniques.
 `;
-var InsightContext = class extends ConversationContext {
-  #insight;
-  constructor(insight) {
+var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
+You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
+You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
+This tree originates from the root task associated with the selected call frame.
+
+Each call frame is presented in the following format:
+
+'id;name;duration;selfTime;urlIndex;childRange;[S]'
+
+Key definitions:
+
+* id: A unique numerical identifier for the call frame.
+* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
+* duration: The total execution time of the call frame, including its children.
+* selfTime: The time spent directly within the call frame, excluding its children's execution.
+* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
+* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+* S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.
+
+Your objective is to provide a comprehensive analysis of the **selected call frame and the entire call tree** and its context within the performance recording, including:
+
+1.  **Functionality:** Clearly describe the purpose and actions of the selected call frame based on its properties (name, URL, etc.).
+2.  **Execution Flow:**
+    * **Ancestors:** Trace the execution path from the root task to the selected call frame, explaining the sequence of parent calls.
+    * **Descendants:** Analyze the child call frames, identifying the tasks they initiate and any performance-intensive sub-tasks.
+3.  **Performance Metrics:**
+    * **Duration and Self Time:** Report the execution time of the call frame and its children.
+    * **Relative Cost:** Evaluate the contribution of the call frame to the overall duration of its parent tasks and the entire trace.
+    * **Bottleneck Identification:** Identify potential performance bottlenecks based on duration and self time, including long-running tasks or idle periods.
+4.  **Optimization Recommendations:** Provide specific, actionable suggestions for improving the performance of the selected call frame and its related tasks, focusing on resource management and efficiency. Only provide recommendations if they are based on data present in the call tree.
+
+# Important Guidelines:
+
+* Maintain a concise and technical tone suitable for software engineers.
+* Exclude call frame IDs and URL indices from your response.
+* **Critical:** If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
+* **Critical:** Refrain from providing answers on non-web-development topics, such as legal, financial, medical, or personal advice.
+
+## Example Session:
+
+All URLs:
+* 0 - app.js
+
+Call Tree:
+
+1;main;500;100;;
+2;update;200;50;;3
+3;animate;150;20;0;4-5;S
+4;calculatePosition;80;80;;
+5;applyStyles;50;50;;
+
+Analyze the selected call frame.
+
+Example Response:
+
+The selected call frame is 'animate', responsible for visual animations within 'app.js'.
+It took 150ms total, with 20ms spent directly within the function.
+The 'calculatePosition' and 'applyStyles' child functions consumed the remaining 130ms.
+The 'calculatePosition' function, taking 80ms, is a potential bottleneck.
+Consider optimizing the position calculation logic or reducing the frequency of calls to improve animation performance.
+`;
+function serializeFocus(focus) {
+  if (focus.data.type === "call-tree") {
+    return focus.data.callTree.serialize();
+  }
+  if (focus.data.type === "insight") {
+    const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.data.insight, focus.data.insightSetBounds, focus.data.parsedTrace);
+    const formatter = new PerformanceInsightFormatter(activeInsight);
+    return formatter.formatInsight();
+  }
+  Platform.assertNever(focus.data, "Unknown agent focus");
+}
+var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
+  static fromInsight(insight) {
+    return new _PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(insight));
+  }
+  static fromCallTree(callTree) {
+    return new _PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromCallTree(callTree));
+  }
+  #focus;
+  constructor(focus) {
     super();
-    this.#insight = insight;
+    this.#focus = focus;
   }
   getOrigin() {
-    const { min, max } = this.#insight.parsedTrace.Meta.traceBounds;
+    const focus = this.#focus.data;
+    if (focus.type === "call-tree") {
+      const node = focus.callTree.selectedNode ?? focus.callTree.rootNode;
+      const selectedEvent = node.event;
+      const nonResolvedURL = Trace2.Handlers.Helpers.getNonResolvedURL(selectedEvent, focus.callTree.parsedTrace);
+      if (nonResolvedURL) {
+        const origin = Common.ParsedURL.ParsedURL.extractOrigin(nonResolvedURL);
+        if (origin) {
+          return origin;
+        }
+      }
+      const uuid = `${selectedEvent.name}_${selectedEvent.pid}_${selectedEvent.tid}_${selectedEvent.ts}`;
+      return uuid;
+    }
+    const { min, max } = focus.parsedTrace.Meta.traceBounds;
     return `trace-${min}-${max}`;
   }
   getItem() {
-    return this.#insight;
+    return this.#focus;
   }
   getIcon() {
-    return html2`<devtools-icon name="performance" title="Performance"
+    return html`<devtools-icon name="performance" title="Performance"
         style="color: var(--sys-color-on-surface-subtle);"></devtools-icon>`;
   }
   getTitle() {
-    return `Insight: ${this.#insight.title()}`;
+    const focus = this.#focus.data;
+    if (focus.type === "call-tree") {
+      const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
+      if (!event) {
+        return "unknown";
+      }
+      return TimelineUtils.EntryName.nameForEntry(event);
+    }
+    if (focus.type === "insight") {
+      return `Insight: ${focus.insight.title}`;
+    }
+    Platform.assertNever(focus, "Unknown agent focus");
   }
   /**
    * Presents the default suggestions that are shown when the user first clicks
-   * "Ask AI" on an Insight.
+   * "Ask AI".
    */
   async getSuggestions() {
-    switch (this.#insight.insight.insightKey) {
+    const focus = this.#focus.data;
+    if (focus.type !== "insight") {
+      return void 0;
+    }
+    switch (focus.insight.insightKey) {
       case "CLSCulprits":
         return [
           { title: "Help me optimize my CLS score" },
@@ -2152,14 +2120,19 @@ var InsightContext = class extends ConversationContext {
       case "LegacyJavaScript":
         return [{ title: "Is my site polyfilling modern JavaScript features?" }];
       default:
-        Platform.assertNever(this.#insight.insight.insightKey, "Unknown insight key");
+        Platform.assertNever(focus.insight.insightKey, "Unknown insight key");
     }
   }
 };
 var MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
-var PerformanceInsightsAgent = class extends AiAgent {
-  #insight;
-  #lastContextForEnhancedQuery;
+var PerformanceAgent = class extends AiAgent {
+  // TODO: would make more sense on AgentOptions
+  #conversationType;
+  #lastInsightForEnhancedQuery;
+  constructor(opts, conversationType) {
+    super(opts);
+    this.#conversationType = conversationType;
+  }
   /**
    * Store results (as facts) for the functions that are pure and return the
    * same data for the same insight.
@@ -2173,40 +2146,136 @@ var PerformanceInsightsAgent = class extends AiAgent {
    * make sure it isn't mistakenly duplicated in the request.
    */
   #functionCallCache = /* @__PURE__ */ new Map();
-  async *handleContextDetails(activeContext) {
-    if (!activeContext) {
-      return;
+  get preamble() {
+    if (this.#conversationType === "drjones-performance") {
+      return callTreePreamble;
     }
-    const activeInsight = activeContext.getItem();
-    const insightTitle = activeInsight.title();
-    const title = `Analyzing insight: ${insightTitle}`;
-    const formatter = new PerformanceInsightFormatter(activeInsight);
-    const titleDetail = {
-      // Purposefully use the raw title in the details view, we don't need to repeat "Analyzing insight"
-      title: insightTitle,
-      // Important: this must reflect what data is sent to the LLM.
-      text: formatter.formatInsight()
-    };
-    yield { type: "context", title, details: [titleDetail] };
+    if (this.#conversationType === "performance-insight") {
+      return insightPreamble;
+    }
+    Platform.assertNever(this.#conversationType, "Unexpected conversation type");
   }
-  preamble = preamble4;
-  clientFeature = Host6.AidaClient.ClientFeature.CHROME_PERFORMANCE_INSIGHTS_AGENT;
-  // Note: for both userTier and options we purposefully reuse the flags from
-  // the Performance Agent, rather than define new ones as we didn't think that
-  // was necessary.
+  get clientFeature() {
+    if (this.#conversationType === "drjones-performance") {
+      return Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_AGENT;
+    }
+    if (this.#conversationType === "performance-insight") {
+      return Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_INSIGHTS_AGENT;
+    }
+    Platform.assertNever(this.#conversationType, "Unexpected conversation type");
+  }
   get userTier() {
-    return Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+    return Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
   }
   get options() {
-    const temperature = Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
-    const modelId = Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+    const temperature = Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+    const modelId = Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
     return {
       temperature,
       modelId
     };
   }
-  constructor(opts) {
-    super(opts);
+  getConversationType() {
+    return this.#conversationType;
+  }
+  async *handleContextDetails(context) {
+    if (!context) {
+      return;
+    }
+    const focus = context.getItem();
+    if (focus.data.type === "call-tree") {
+      yield {
+        type: "context",
+        title: lockedString3(UIStringsNotTranslated.analyzingCallTree),
+        details: [
+          {
+            title: "Selected call tree",
+            text: serializeFocus(focus)
+          }
+        ]
+      };
+    }
+    if (focus.data.type === "insight") {
+      const activeInsight = focus.data.insight;
+      const title = `Analyzing insight: ${activeInsight.title}`;
+      yield {
+        type: "context",
+        title,
+        details: [
+          {
+            // Purposefully use the raw title in the details view, we don't need to repeat "Analyzing insight"
+            title: activeInsight.title,
+            text: serializeFocus(focus)
+          }
+        ]
+      };
+    }
+  }
+  #callTreeContextSet = /* @__PURE__ */ new WeakSet();
+  #isFunctionResponseTooLarge(response) {
+    return response.length > MAX_FUNCTION_RESULT_BYTE_LENGTH;
+  }
+  parseTextResponse(response) {
+    const trimmed = response.trim();
+    const FIVE_BACKTICKS = "`````";
+    if (trimmed.startsWith(FIVE_BACKTICKS) && trimmed.endsWith(FIVE_BACKTICKS)) {
+      const stripped = trimmed.slice(FIVE_BACKTICKS.length, -FIVE_BACKTICKS.length);
+      return super.parseTextResponse(stripped);
+    }
+    return super.parseTextResponse(response);
+  }
+  async enhanceQuery(query, context) {
+    if (!context) {
+      this.clearDeclaredFunctions();
+      return query;
+    }
+    this.clearDeclaredFunctions();
+    this.declareFunctions(context);
+    const focus = context.getItem();
+    let contextString = "";
+    if (focus.data.type === "call-tree") {
+      if (!this.#callTreeContextSet.has(focus.data.callTree)) {
+        contextString = serializeFocus(focus);
+      }
+      if (!this.#callTreeContextSet.has(focus.data.callTree)) {
+        this.#callTreeContextSet.add(focus.data.callTree);
+      }
+      const perfEnhancementQuery = contextString ? `${contextString}
+
+# User request
+
+` : "";
+      return `${perfEnhancementQuery}${query}`;
+    }
+    if (focus.data.type === "insight") {
+      const includeInsightInfo = focus.data.insight !== this.#lastInsightForEnhancedQuery;
+      const extraQuery = `${includeInsightInfo ? serializeFocus(focus) + "\n\n" : ""}# User question for you to answer:
+`;
+      this.#lastInsightForEnhancedQuery = focus.data.insight;
+      return `${extraQuery}${query}`;
+    }
+    Platform.assertNever(focus.data, "Unknown agent focus");
+  }
+  async *run(initialQuery, options) {
+    if (this.#conversationType === "performance-insight") {
+      const focus = options.selected?.getItem().data;
+      const insight = focus?.type === "insight" ? focus.insight : null;
+      this.clearFacts();
+      const cachedFunctionCalls = insight ? this.#functionCallCache.get(insight) : null;
+      if (cachedFunctionCalls) {
+        for (const fact of Object.values(cachedFunctionCalls)) {
+          this.addFact(fact);
+        }
+      }
+    }
+    return yield* super.run(initialQuery, options);
+  }
+  declareFunctions(context) {
+    const focus = context.getItem();
+    if (focus.data.type !== "insight") {
+      return;
+    }
+    const { parsedTrace, insight, insightSetBounds } = focus.data;
     this.declareFunction("getNetworkActivitySummary", {
       description: "Returns a summary of network activity for the selected insight. If you want to get more detailed information on a network request, you can pass the URL of a request into `getNetworkRequestDetail`.",
       parameters: {
@@ -2217,33 +2286,32 @@ var PerformanceInsightsAgent = class extends AiAgent {
       },
       displayInfoFromArgs: () => {
         return {
-          title: lockedString4(UIStringsNotTranslated.networkActivitySummary),
+          title: lockedString3(UIStringsNotTranslated.networkActivitySummary),
           action: "getNetworkActivitySummary()"
         };
       },
       handler: async () => {
         debugLog("Function call: getNetworkActivitySummary");
-        if (!this.#insight) {
+        if (!insight) {
           return { error: "No insight available" };
         }
-        const activeInsight = this.#insight.getItem();
-        const requests = TimelineUtils2.InsightAIContext.AIQueries.networkRequests(activeInsight.insight, activeInsight.insightSetBounds, activeInsight.parsedTrace);
-        const formatted = requests.map((r) => TraceEventFormatter.networkRequest(r, activeInsight.parsedTrace, { verbose: false }));
-        const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted.join("\n"));
-        Host6.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
-        if (this.#isFunctionResponseTooLarge(formatted.join("\n"))) {
+        const requests = TimelineUtils.InsightAIContext.AIQueries.networkRequests(insight, insightSetBounds, parsedTrace);
+        const formatted = TraceEventFormatter.networkRequests(requests, parsedTrace);
+        const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted);
+        Host4.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
+        if (this.#isFunctionResponseTooLarge(formatted)) {
           return {
             error: "getNetworkActivitySummary response is too large. Try investigating using other functions"
           };
         }
         const summaryFact = {
           text: `This is the network summary for this insight. You can use this and not call getNetworkActivitySummary again:
-${formatted.join("\n")}`,
+${formatted}`,
           metadata: { source: "getNetworkActivitySummary()" }
         };
-        const cacheForInsight = this.#functionCallCache.get(activeInsight) ?? {};
+        const cacheForInsight = this.#functionCallCache.get(insight) ?? {};
         cacheForInsight.getNetworkActivitySummary = summaryFact;
-        this.#functionCallCache.set(activeInsight, cacheForInsight);
+        this.#functionCallCache.set(insight, cacheForInsight);
         return { result: { requests: formatted } };
       }
     });
@@ -2263,23 +2331,22 @@ ${formatted.join("\n")}`,
       },
       displayInfoFromArgs: (params) => {
         return {
-          title: lockedString4(`Investigating network request ${params.url}\u2026`),
+          title: lockedString3(`Investigating network request ${params.url}\u2026`),
           action: `getNetworkRequestDetail('${params.url}')`
         };
       },
       handler: async (params) => {
         debugLog("Function call: getNetworkRequestDetail", params);
-        if (!this.#insight) {
+        if (!insight) {
           return { error: "No insight available" };
         }
-        const activeInsight = this.#insight.getItem();
-        const request = TimelineUtils2.InsightAIContext.AIQueries.networkRequest(activeInsight.parsedTrace, params.url);
+        const request = TimelineUtils.InsightAIContext.AIQueries.networkRequest(parsedTrace, params.url);
         if (!request) {
           return { error: "Request not found" };
         }
-        const formatted = TraceEventFormatter.networkRequest(request, activeInsight.parsedTrace, { verbose: true });
+        const formatted = TraceEventFormatter.networkRequests([request], parsedTrace, { verbose: true });
         const byteCount = Platform.StringUtilities.countWtf8Bytes(formatted);
-        Host6.userMetrics.performanceAINetworkRequestDetailResponseSize(byteCount);
+        Host4.userMetrics.performanceAINetworkRequestDetailResponseSize(byteCount);
         if (this.#isFunctionResponseTooLarge(formatted)) {
           return {
             error: "getNetworkRequestDetail response is too large. Try investigating using other functions"
@@ -2290,21 +2357,21 @@ ${formatted.join("\n")}`,
     });
     this.declareFunction("getMainThreadActivity", {
       description: `Returns the main thread activity for the selected insight.
-
-The tree is represented as a call frame with a root task and a series of children.
-The format of each callframe is:
-
-  'id;name;duration;selfTime;urlIndex;childRange;[S]'
-
-The fields are:
-
-* id: A unique numerical identifier for the call frame.
-* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-* duration: The total execution time of the call frame, including its children.
-* selfTime: The time spent directly within the call frame, excluding its children's execution.
-* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-* S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`,
+  
+  The tree is represented as a call frame with a root task and a series of children.
+  The format of each callframe is:
+  
+    'id;name;duration;selfTime;urlIndex;childRange;[S]'
+  
+  The fields are:
+  
+  * id: A unique numerical identifier for the call frame.
+  * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
+  * duration: The total execution time of the call frame, including its children.
+  * selfTime: The time spent directly within the call frame, excluding its children's execution.
+  * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
+  * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+  * S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`,
       parameters: {
         type: 6,
         description: "",
@@ -2312,21 +2379,20 @@ The fields are:
         properties: {}
       },
       displayInfoFromArgs: () => {
-        return { title: lockedString4(UIStringsNotTranslated.mainThreadActivity), action: "getMainThreadActivity()" };
+        return { title: lockedString3(UIStringsNotTranslated.mainThreadActivity), action: "getMainThreadActivity()" };
       },
       handler: async () => {
         debugLog("Function call: getMainThreadActivity");
-        if (!this.#insight) {
+        if (!insight) {
           return { error: "No insight available" };
         }
-        const activeInsight = this.#insight.getItem();
-        const tree = TimelineUtils2.InsightAIContext.AIQueries.mainThreadActivity(activeInsight.insight, activeInsight.insightSetBounds, activeInsight.parsedTrace);
+        const tree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivity(insight, insightSetBounds, parsedTrace);
         if (!tree) {
           return { error: "No main thread activity found" };
         }
         const activity = tree.serialize();
         const byteCount = Platform.StringUtilities.countWtf8Bytes(activity);
-        Host6.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
+        Host4.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
         if (this.#isFunctionResponseTooLarge(activity)) {
           return {
             error: "getMainThreadActivity response is too large. Try investigating using other functions"
@@ -2337,59 +2403,59 @@ The fields are:
 ${activity}`,
           metadata: { source: "getMainThreadActivity()" }
         };
-        const cacheForInsight = this.#functionCallCache.get(activeInsight) ?? {};
+        const cacheForInsight = this.#functionCallCache.get(insight) ?? {};
         cacheForInsight.getMainThreadActivity = activityFact;
-        this.#functionCallCache.set(activeInsight, cacheForInsight);
+        this.#functionCallCache.set(insight, cacheForInsight);
         return { result: { activity } };
       }
     });
   }
-  #isFunctionResponseTooLarge(response) {
-    return response.length > MAX_FUNCTION_RESULT_BYTE_LENGTH;
-  }
-  parseTextResponse(response) {
-    const trimmed = response.trim();
-    const FIVE_BACKTICKS = "`````";
-    if (trimmed.startsWith(FIVE_BACKTICKS) && trimmed.endsWith(FIVE_BACKTICKS)) {
-      const stripped = trimmed.slice(FIVE_BACKTICKS.length, -FIVE_BACKTICKS.length);
-      return super.parseTextResponse(stripped);
-    }
-    return super.parseTextResponse(response);
-  }
-  async enhanceQuery(query, selectedInsight) {
-    if (!selectedInsight) {
-      return query;
-    }
-    const formatter = new PerformanceInsightFormatter(selectedInsight.getItem());
-    const includeInsightInfo = selectedInsight !== this.#lastContextForEnhancedQuery;
-    const extraQuery = `${includeInsightInfo ? formatter.formatInsight() + "\n\n" : ""}# User question for you to answer:
-`;
-    const finalQuery = `${extraQuery}${query}`;
-    this.#lastContextForEnhancedQuery = selectedInsight;
-    return finalQuery;
-  }
-  async *run(initialQuery, options) {
-    this.#insight = options.selected ?? void 0;
-    this.clearFacts();
-    const cachedFunctionCalls = this.#insight ? this.#functionCallCache.get(this.#insight.getItem()) : null;
-    if (cachedFunctionCalls) {
-      for (const fact of Object.values(cachedFunctionCalls)) {
-        this.addFact(fact);
-      }
-    }
-    return yield* super.run(initialQuery, options);
-  }
 };
 
+// gen/front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.js
+import * as Host5 from "./../../core/host/host.js";
+var PerformanceAnnotationsAgent = class extends PerformanceAgent {
+  get clientFeature() {
+    return Host5.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+  }
+  /**
+   * Used in the Performance panel to automatically generate a label for a selected entry.
+   */
+  async generateAIEntryLabel(callTree) {
+    const context = PerformanceTraceContext.fromCallTree(callTree);
+    const response = await Array.fromAsync(this.run(AI_LABEL_GENERATION_PROMPT, { selected: context }));
+    const lastResponse = response.at(-1);
+    if (lastResponse && lastResponse.type === "answer" && lastResponse.complete === true) {
+      return lastResponse.text.trim();
+    }
+    throw new Error("Failed to generate AI entry label");
+  }
+};
+var AI_LABEL_GENERATION_PROMPT = `## Instruction:
+Generate a concise label (max 60 chars, single line) describing the *user-visible effect* of the selected call tree's activity, based solely on the provided call tree data.
+
+## Strict Constraints:
+- Output must be a single line of text.
+- Maximum 60 characters.
+- No full stops.
+- Focus on user impact, not internal operations.
+- Do not include the name of the selected event.
+- Do not make assumptions about when the activity happened.
+- Base the description only on the information present within the call tree data.
+- Prioritize brevity.
+- Only include third-party script names if their identification is highly confident.
+- Very important: Only output the 60 character label text, your response will be used in full to show to the user as an annotation in the timeline.
+`;
+
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
-import * as Host7 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as Host6 from "./../../core/host/host.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as ElementsPanel from "./../../panels/elements/elements.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
-import { html as html3 } from "./../../ui/lit/lit.js";
+import { html as html2 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/models/ai_assistance/ChangeManager.js
 import * as Common2 from "./../../core/common/common.js";
@@ -3018,7 +3084,7 @@ var ExtensionScope = class _ExtensionScope {
 };
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
-var UIStringsNotTranslate4 = {
+var UIStringsNotTranslate3 = {
   /**
    *@description Title for context details for Freestyler.
    */
@@ -3028,8 +3094,8 @@ var UIStringsNotTranslate4 = {
    */
   dataUsed: "Data used"
 };
-var lockedString5 = i18n11.i18n.lockedString;
-var preamble5 = `You are the most advanced CSS debugging assistant integrated into Chrome DevTools.
+var lockedString4 = i18n9.i18n.lockedString;
+var preamble3 = `You are the most advanced CSS debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
 
@@ -3211,7 +3277,7 @@ var NodeContext = class extends ConversationContext {
     const hiddenClassList = this.#node.classNames().filter((className) => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
     const { DOMNodeLink } = ElementsPanel.DOMLinkifier;
     const { widgetConfig } = UI2.Widget;
-    return html3`<devtools-widget .widgetConfig=${widgetConfig(DOMNodeLink, { node: this.#node, options: { hiddenClassList, disabled: opts.disabled } })}></devtools-widget>`;
+    return html2`<devtools-widget .widgetConfig=${widgetConfig(DOMNodeLink, { node: this.#node, options: { hiddenClassList, disabled: opts.disabled } })}></devtools-widget>`;
   }
   async getSuggestions() {
     const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
@@ -3258,24 +3324,24 @@ var NodeContext = class extends ConversationContext {
 };
 var StylingAgent = class _StylingAgent extends AiAgent {
   functionCallEmulationEnabled = true;
-  preamble = preamble5;
-  clientFeature = Host7.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
+  preamble = preamble3;
+  clientFeature = Host6.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
   get userTier() {
-    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root5.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get executionMode() {
-    return Root6.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root6.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
+    return Root5.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root5.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
   }
   get options() {
-    const temperature = Root6.Runtime.hostConfig.devToolsFreestyler?.temperature;
-    const modelId = Root6.Runtime.hostConfig.devToolsFreestyler?.modelId;
+    const temperature = Root5.Runtime.hostConfig.devToolsFreestyler?.temperature;
+    const modelId = Root5.Runtime.hostConfig.devToolsFreestyler?.modelId;
     return {
       temperature,
       modelId
     };
   }
   get multimodalInputEnabled() {
-    return Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodal);
+    return Boolean(Root5.Runtime.hostConfig.devToolsFreestyler?.multimodal);
   }
   parseTextResponse(text) {
     if (!text) {
@@ -3580,7 +3646,7 @@ const data = {
         })
       ]);
       const byteCount = Platform4.StringUtilities.countWtf8Bytes(result);
-      Host7.userMetrics.freestylerEvalResponseSize(byteCount);
+      Host6.userMetrics.freestylerEvalResponseSize(byteCount);
       if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
         throw new Error("Output exceeded the maximum allowed length.");
       }
@@ -3694,7 +3760,7 @@ const data = {
         error: "Error: User denied code execution with side effects."
       };
     }
-    if (this.executionMode === Root6.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+    if (this.executionMode === Root5.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
       return {
         error: "Error: JavaScript execution is currently disabled."
       };
@@ -3716,7 +3782,7 @@ const data = {
       const result = await this.generateObservation(action, { throwOnSideEffect });
       debugLog(`Action result: ${JSON.stringify(result)}`);
       if (result.sideEffect) {
-        if (this.executionMode === Root6.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
+        if (this.executionMode === Root5.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
           return {
             error: "Error: JavaScript execution that modifies the page is currently disabled."
           };
@@ -3748,9 +3814,9 @@ const data = {
     }
     yield {
       type: "context",
-      title: lockedString5(UIStringsNotTranslate4.analyzingThePrompt),
+      title: lockedString4(UIStringsNotTranslate3.analyzingThePrompt),
       details: [{
-        title: lockedString5(UIStringsNotTranslate4.dataUsed),
+        title: lockedString4(UIStringsNotTranslate3.dataUsed),
         text: await _StylingAgent.describeElement(selectedElement.getItem())
       }]
     };
@@ -3798,6 +3864,9 @@ var StylingAgentWithFunctionCalling = class extends StylingAgent {
   formatParsedAnswer({ answer }) {
     return answer;
   }
+  preambleFeatures() {
+    return ["function_calling"];
+  }
   parseTextResponse(text) {
     if (!text.trim()) {
       return { answer: "" };
@@ -3826,9 +3895,9 @@ var StylingAgentWithFunctionCalling = class extends StylingAgent {
 };
 
 // gen/front_end/models/ai_assistance/agents/PatchAgent.js
-import * as Host8 from "./../../core/host/host.js";
-import * as Root7 from "./../../core/root/root.js";
-var preamble6 = `You are a highly skilled software engineer with expertise in web development.
+import * as Host7 from "./../../core/host/host.js";
+import * as Root6 from "./../../core/root/root.js";
+var preamble4 = `You are a highly skilled software engineer with expertise in web development.
 The user asks you to apply changes to a source code folder.
 
 # Considerations
@@ -3864,15 +3933,15 @@ var PatchAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble6;
-  clientFeature = Host8.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+  preamble = preamble4;
+  clientFeature = Host7.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root7.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root7.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root6.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root6.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
   get agentProject() {
@@ -4041,15 +4110,15 @@ var FileUpdateAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble6;
-  clientFeature = Host8.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
+  preamble = preamble4;
+  clientFeature = Host7.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root7.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root7.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root6.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root6.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
 };
@@ -4240,9 +4309,9 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common4.ObjectWrapper.Obj
 
 // gen/front_end/models/ai_assistance/AiUtils.js
 import * as Common5 from "./../../core/common/common.js";
-import * as Host9 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Root8 from "./../../core/root/root.js";
+import * as Host8 from "./../../core/host/host.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as Root7 from "./../../core/root/root.js";
 var UIStrings = {
   /**
    * @description Message shown to the user if the age check is not successful.
@@ -4261,11 +4330,11 @@ var UIStrings = {
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode."
 };
-var str_ = i18n13.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
-var i18nString = i18n13.i18n.getLocalizedString.bind(void 0, str_);
+var str_ = i18n11.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
+var i18nString = i18n11.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
-  if (Root8.Runtime.hostConfig.isOffTheRecord) {
+  if (Root7.Runtime.hostConfig.isOffTheRecord) {
     reasons.push(i18nString(UIStrings.notAvailableInIncognitoMode));
   }
   switch (aidaAvailability) {
@@ -4277,7 +4346,7 @@ function getDisabledReasons(aidaAvailability) {
     case "no-internet":
       reasons.push(i18nString(UIStrings.offline));
     case "available": {
-      if (Root8.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
+      if (Root7.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
         reasons.push(i18nString(UIStrings.ageRestricted));
       }
     }
@@ -4289,7 +4358,6 @@ export {
   AgentProject,
   AiAgent,
   AiHistoryStorage,
-  CallTreeContext,
   ChangeManager,
   Conversation,
   ConversationContext,
@@ -4299,7 +4367,6 @@ export {
   FileContext,
   FileFormatter,
   FileUpdateAgent,
-  InsightContext,
   MAX_STEPS,
   NOT_FOUND_IMAGE_DATA,
   NetworkAgent,
@@ -4309,7 +4376,7 @@ export {
   PerformanceAgent,
   PerformanceAnnotationsAgent,
   PerformanceInsightFormatter,
-  PerformanceInsightsAgent,
+  PerformanceTraceContext,
   RequestContext,
   SideEffectError,
   StylingAgent,

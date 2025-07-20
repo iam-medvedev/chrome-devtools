@@ -9,9 +9,9 @@ import * as CSSOverview from './css_overview.js';
 describeWithMockConnection('CSSOverviewPanel', () => {
     let target;
     beforeEach(async () => {
-        const tabTaget = createTarget({ type: SDK.Target.Type.TAB });
-        createTarget({ parentTarget: tabTaget, subtype: 'prerender' });
-        target = createTarget({ parentTarget: tabTaget });
+        const tabTarget = createTarget({ type: SDK.Target.Type.TAB });
+        createTarget({ parentTarget: tabTarget, subtype: 'prerender' });
+        target = createTarget({ parentTarget: tabTarget });
     });
     it('reacts to start event and sends completion event', async () => {
         const view = createViewFunctionStub(CSSOverview.CSSOverviewPanel.CSSOverviewPanel);

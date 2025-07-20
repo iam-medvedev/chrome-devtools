@@ -980,7 +980,7 @@ export class AppManifestTreeElement extends ApplicationPanelTreeElement {
     }
     onInvoke() {
         this.view.getManifestElement().scrollIntoView();
-        UI.ARIAUtils.alert(i18nString(UIStrings.onInvokeAlert, { PH1: this.listItemElement.title }));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.onInvokeAlert, { PH1: this.listItemElement.title }));
     }
     showManifestView() {
         this.showView(this.view);
@@ -1005,7 +1005,7 @@ export class ManifestChildTreeElement extends ApplicationPanelTreeElement {
     onInvoke() {
         this.parent?.showManifestView();
         this.#sectionElement.scrollIntoView();
-        UI.ARIAUtils.alert(i18nString(UIStrings.onInvokeAlert, { PH1: this.listItemElement.title }));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.onInvokeAlert, { PH1: this.listItemElement.title }));
     }
     // direct focus to the corresponding element
     onInvokeElementKeydown(event) {

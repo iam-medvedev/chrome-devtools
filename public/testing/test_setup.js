@@ -79,7 +79,7 @@ afterEach(async function () {
     await cleanTestDOM();
     await removeGlassPanes();
     await removeTextEditorTooltip();
-    UI.ARIAUtils.removeAlertElement(document.body);
+    UI.ARIAUtils.LiveAnnouncer.removeAnnouncerElements(document.body);
     for (const child of document.body.children) {
         if (!documentBodyElements.has(child)) {
             console.error(`Test "${this.currentTest?.fullTitle()}" left DOM in document.body:`);

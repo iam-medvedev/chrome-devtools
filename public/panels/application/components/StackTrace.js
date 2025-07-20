@@ -13,7 +13,7 @@ import stackTraceRowStyles from './stackTraceRow.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
-     *@description Error message stating that something went wrong when tring to render stack trace
+     *@description Error message stating that something went wrong when trying to render stack trace
      */
     cannotRenderStackTrace: 'Cannot render stack trace',
     /**

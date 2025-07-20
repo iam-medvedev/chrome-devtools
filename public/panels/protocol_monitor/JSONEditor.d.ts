@@ -69,7 +69,7 @@ interface ViewInput {
     onParameterKeyBlur: (event: Event) => void;
     onParameterValueBlur: (event: Event) => void;
 }
-export type View = (input: ViewInput, output: object, targer: HTMLElement) => void;
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare function suggestionFilter(option: string, query: string): boolean;
 export declare const enum Events {
     SUBMIT_EDITOR = "submiteditor"

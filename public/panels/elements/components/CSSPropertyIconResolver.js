@@ -221,7 +221,7 @@ function gridAlignSelfIcon(iconName) {
     }
     return getIcon;
 }
-export function roateFlexWrapIcon(iconName, direction) {
+export function rotateFlexWrapIcon(iconName, direction) {
     return {
         iconName,
         rotate: direction === "bottom-to-top" /* PhysicalDirection.BOTTOM_TO_TOP */ || direction === "top-to-bottom" /* PhysicalDirection.TOP_TO_BOTTOM */ ? 90 : 0,
@@ -233,7 +233,7 @@ function flexWrapIcon(iconName) {
     function getIcon(computedStyles) {
         const directions = getPhysicalDirections(computedStyles);
         const computedFlexDirection = computedStyles.get('flex-direction') || 'row';
-        return roateFlexWrapIcon(iconName, directions[computedFlexDirection]);
+        return rotateFlexWrapIcon(iconName, directions[computedFlexDirection]);
     }
     return getIcon;
 }

@@ -188,7 +188,7 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         const panStepInPixels = 6;
         const rotateStepInDegrees = 5;
         if (this.mode === "Rotate" /* Modes.ROTATE */) {
-            // Sic! onRotate treats X and Y as "rotate around X" and "rotate around Y", so swap X/Y multiplers.
+            // Sic! onRotate treats X and Y as "rotate around X" and "rotate around Y", so swap X/Y multipliers.
             this.onRotate(this.rotateXInternal + yMultiplier * rotateStepInDegrees, this.rotateYInternal + xMultiplier * rotateStepInDegrees);
         }
         else {

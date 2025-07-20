@@ -1,4 +1,5 @@
 // gen/front_end/testing/TraceLoader.js
+import * as Common from "./../../../../core/common/common.js";
 import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as Trace from "./../../trace.js";
 import * as Timeline from "./../../../../panels/timeline/timeline.js";
@@ -31,7 +32,7 @@ var TraceLoader = class _TraceLoader {
       return cached;
     }
     const urlForTest = new URL(`../panels/timeline/fixtures/traces/${name}`, import.meta.url);
-    const contents = await loadTraceFileFromURL(urlForTest);
+    const contents = await _TraceLoader.loadTraceFileFromURL(urlForTest);
     fileContentsCache.set(name, contents);
     return contents;
   }
@@ -178,33 +179,20 @@ var TraceLoader = class _TraceLoader {
       }).catch((e) => console.error(e));
     });
   }
+  static async loadTraceFileFromURL(url) {
+    const contents = await fetchFileAsText(url);
+    const traceContents = JSON.parse(contents);
+    return traceContents;
+  }
 };
-async function loadTraceFileFromURL(url) {
+async function fetchFileAsText(url) {
   const response = await fetch(url);
   if (response.status !== 200) {
     throw new Error(`Unable to load ${url}`);
   }
-  const contentType = response.headers.get("content-type");
-  const isGzipEncoded = contentType?.includes("gzip");
-  let buffer = await response.arrayBuffer();
-  if (isGzipEncoded) {
-    buffer = await decodeGzipBuffer(buffer);
-  }
-  const decoder = new TextDecoder("utf-8");
-  const contents = JSON.parse(decoder.decode(buffer));
+  const buffer = await response.arrayBuffer();
+  const contents = await Common.Gzip.arrayBufferToString(buffer);
   return contents;
-}
-function codec(buffer, codecStream) {
-  const { readable, writable } = new TransformStream();
-  const codecReadable = readable.pipeThrough(codecStream);
-  const writer = writable.getWriter();
-  void writer.write(buffer);
-  void writer.close();
-  const response = new Response(codecReadable);
-  return response.arrayBuffer();
-}
-function decodeGzipBuffer(buffer) {
-  return codec(buffer, new DecompressionStream("gzip"));
 }
 async function wrapInTimeout(mochaContext, callback, timeoutMs, stepName) {
   const timeout = Promise.withResolvers();

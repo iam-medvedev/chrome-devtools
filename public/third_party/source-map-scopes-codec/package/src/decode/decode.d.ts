@@ -1,4 +1,4 @@
-import type { ScopeInfo, SourceMapJson } from "../scopes.d.ts";
+import type { Position, ScopeInfo, SourceMap } from "../scopes.d.ts";
 /**
  * The mode decides how well-formed the encoded scopes have to be, to be accepted by the decoder.
  *
@@ -17,6 +17,15 @@ export declare const enum DecodeMode {
     STRICT = 1,
     LAX = 2
 }
-export declare function decode(sourceMap: SourceMapJson, options?: {
+export interface DecodeOptions {
     mode: DecodeMode;
-}): ScopeInfo;
+    /**
+     * Offsets `start` and `end` of all generated ranges by the specified amount.
+     * Intended to be used when decoding sections of index source maps one-by-one.
+     *
+     * Has no effect when passing a {@link IndexSourceMapJson} directly to {@link decode}.
+     */
+    generatedOffset: Position;
+}
+export declare const DEFAULT_DECODE_OPTIONS: DecodeOptions;
+export declare function decode(sourceMap: SourceMap, options?: Partial<DecodeOptions>): ScopeInfo;

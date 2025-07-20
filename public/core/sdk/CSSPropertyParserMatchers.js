@@ -797,16 +797,44 @@ export class MathFunctionMatch {
         this.func = func;
         this.args = args;
     }
+    isArithmeticFunctionCall() {
+        const func = this.func;
+        switch (func) {
+            case "calc" /* ArithmeticFunction.CALC */:
+            case "sibling-count" /* ArithmeticFunction.SIBLING_COUNT */:
+            case "sibling-index" /* ArithmeticFunction.SIBLING_INDEX */:
+                return true;
+        }
+        // This assignment catches missed values in the switch above.
+        const catchFallback = func; // eslint-disable-line @typescript-eslint/no-unused-vars
+        return false;
+    }
 }
 // clang-format off
 export class MathFunctionMatcher extends matcherBase(MathFunctionMatch) {
     // clang-format on
+    static getFunctionType(callee) {
+        const maybeFunc = callee;
+        switch (maybeFunc) {
+            case null:
+            case "min" /* SelectFunction.MIN */:
+            case "max" /* SelectFunction.MAX */:
+            case "clamp" /* SelectFunction.CLAMP */:
+            case "calc" /* ArithmeticFunction.CALC */:
+            case "sibling-count" /* ArithmeticFunction.SIBLING_COUNT */:
+            case "sibling-index" /* ArithmeticFunction.SIBLING_INDEX */:
+                return maybeFunc;
+        }
+        // This assignment catches missed values in the switch above.
+        const catchFallback = maybeFunc; // eslint-disable-line @typescript-eslint/no-unused-vars
+        return null;
+    }
     matches(node, matching) {
         if (node.name !== 'CallExpression') {
             return null;
         }
-        const callee = matching.ast.text(node.getChild('Callee'));
-        if (!['min', 'max', 'clamp', 'calc'].includes(callee)) {
+        const callee = MathFunctionMatcher.getFunctionType(matching.ast.text(node.getChild('Callee')));
+        if (!callee) {
             return null;
         }
         const args = ASTUtils.callArgs(node);
@@ -814,7 +842,11 @@ export class MathFunctionMatcher extends matcherBase(MathFunctionMatch) {
             return null;
         }
         const text = matching.ast.text(node);
-        return new MathFunctionMatch(text, node, callee, args);
+        const match = new MathFunctionMatch(text, node, callee, args);
+        if (!match.isArithmeticFunctionCall() && args.length === 0) {
+            return null;
+        }
+        return match;
     }
 }
 export class FlexGridMatch {

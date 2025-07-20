@@ -3903,6 +3903,7 @@ __export(FileUtils_exports, {
   ChunkedFileReader: () => ChunkedFileReader,
   FileOutputStream: () => FileOutputStream
 });
+import * as Common12 from "./../../core/common/common.js";
 import * as TextUtils7 from "./../text_utils/text_utils.js";
 import * as Workspace21 from "./../workspace/workspace.js";
 var ChunkedFileReader = class {
@@ -3935,7 +3936,7 @@ var ChunkedFileReader = class {
     }
     if (this.#file?.type.endsWith("gzip")) {
       const fileStream = this.#file.stream();
-      const stream = this.decompressStream(fileStream);
+      const stream = Common12.Gzip.decompressStream(fileStream);
       this.#streamReader = stream.getReader();
     } else {
       this.#reader = new FileReader();
@@ -3965,12 +3966,6 @@ var ChunkedFileReader = class {
   }
   error() {
     return this.#errorInternal;
-  }
-  // Decompress gzip natively thanks to https://wicg.github.io/compression/
-  decompressStream(stream) {
-    const ds = new DecompressionStream("gzip");
-    const decompressionStream = stream.pipeThrough(ds);
-    return decompressionStream;
   }
   onChunkLoaded(event) {
     if (this.#isCanceled) {
@@ -4342,7 +4337,7 @@ var ResourceMapping_exports = {};
 __export(ResourceMapping_exports, {
   ResourceMapping: () => ResourceMapping
 });
-import * as Common12 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as TextUtils9 from "./../text_utils/text_utils.js";
 import * as Workspace24 from "./../workspace/workspace.js";
@@ -4602,16 +4597,16 @@ var ModelInfo2 = class {
   }
   acceptsResource(resource) {
     const resourceType = resource.resourceType();
-    if (resourceType !== Common12.ResourceType.resourceTypes.Image && resourceType !== Common12.ResourceType.resourceTypes.Font && resourceType !== Common12.ResourceType.resourceTypes.Document && resourceType !== Common12.ResourceType.resourceTypes.Manifest && resourceType !== Common12.ResourceType.resourceTypes.Fetch && resourceType !== Common12.ResourceType.resourceTypes.XHR) {
+    if (resourceType !== Common13.ResourceType.resourceTypes.Image && resourceType !== Common13.ResourceType.resourceTypes.Font && resourceType !== Common13.ResourceType.resourceTypes.Document && resourceType !== Common13.ResourceType.resourceTypes.Manifest && resourceType !== Common13.ResourceType.resourceTypes.Fetch && resourceType !== Common13.ResourceType.resourceTypes.XHR) {
       return false;
     }
-    if (resourceType === Common12.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
+    if (resourceType === Common13.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
       return false;
     }
-    if (resourceType === Common12.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
+    if (resourceType === Common13.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
       return false;
     }
-    if ((resourceType === Common12.ResourceType.resourceTypes.Image || resourceType === Common12.ResourceType.resourceTypes.Font) && Common12.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
+    if ((resourceType === Common13.ResourceType.resourceTypes.Image || resourceType === Common13.ResourceType.resourceTypes.Font) && Common13.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
       return false;
     }
     return true;
@@ -4661,7 +4656,7 @@ var ModelInfo2 = class {
     this.#bindings.clear();
   }
   dispose() {
-    Common12.EventTarget.removeEventListeners(this.#eventListeners);
+    Common13.EventTarget.removeEventListeners(this.#eventListeners);
     for (const binding of this.#bindings.values()) {
       binding.dispose();
     }
@@ -4807,7 +4802,7 @@ var TempFile_exports = {};
 __export(TempFile_exports, {
   TempFile: () => TempFile
 });
-import * as Common13 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
 var TempFile = class {
   #lastBlob;
   constructor() {
@@ -4827,7 +4822,7 @@ var TempFile = class {
   }
   async readRange(startOffset, endOffset) {
     if (!this.#lastBlob) {
-      Common13.Console.Console.instance().error("Attempt to read a temp file that was never written");
+      Common14.Console.Console.instance().error("Attempt to read a temp file that was never written");
       return "";
     }
     const blob = typeof startOffset === "number" || typeof endOffset === "number" ? this.#lastBlob.slice(startOffset, endOffset) : this.#lastBlob;
@@ -4839,7 +4834,7 @@ var TempFile = class {
         reader.readAsText(blob);
       });
     } catch (error) {
-      Common13.Console.Console.instance().error("Failed to read from temp file: " + error.message);
+      Common14.Console.Console.instance().error("Failed to read from temp file: " + error.message);
     }
     return reader.result;
   }

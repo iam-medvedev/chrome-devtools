@@ -931,7 +931,7 @@ export class ConsoleView extends UI.Widget.VBox {
         if (hadFocus) {
             this.prompt.focus();
         }
-        UI.ARIAUtils.alert(i18nString(UIStrings.consoleCleared));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.consoleCleared));
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);

@@ -210,6 +210,7 @@ export declare abstract class AiAgent<T> {
     addFact(fact: Host.AidaClient.RequestFact): ReadonlySet<Host.AidaClient.RequestFact>;
     removeFact(fact: Host.AidaClient.RequestFact): boolean;
     clearFacts(): void;
+    preambleFeatures(): string[];
     buildRequest(part: Host.AidaClient.Part | Host.AidaClient.Part[], role: Host.AidaClient.Role.USER | Host.AidaClient.Role.ROLE_UNSPECIFIED): Host.AidaClient.DoConversationRequest;
     get id(): string;
     get origin(): string | undefined;
@@ -231,6 +232,7 @@ export declare abstract class AiAgent<T> {
      *    called with one object with `foo` and `bar` keys.
      */
     protected declareFunction<Args extends Record<string, unknown>, ReturnType = unknown>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
+    protected clearDeclaredFunctions(): void;
     protected formatParsedAnswer({ answer }: ParsedAnswer): string;
     /**
      * Special mode for StylingAgent that turns custom text output into a

@@ -22,9 +22,11 @@ import { createViewFunctionStub } from './ViewFunctionHelpers.js';
 function createMockAidaClient(doConversation) {
     const doConversationStub = sinon.stub();
     const registerClientEventStub = sinon.stub();
+    const completeCodeStub = sinon.stub();
     return {
         doConversation: doConversationStub.callsFake(doConversation),
         registerClientEvent: registerClientEventStub,
+        completeCode: completeCodeStub,
     };
 }
 export const MockAidaAbortError = {

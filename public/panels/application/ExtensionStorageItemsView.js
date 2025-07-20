@@ -103,7 +103,7 @@ export class ExtensionStorageItemsView extends KeyValueStorageItemsView {
             return;
         }
         this.itemsCleared();
-        UI.ARIAUtils.alert(i18nString(UIStrings.extensionStorageItemsCleared));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.extensionStorageItemsCleared));
     }
     deleteSelectedItem() {
         if (!this.#isEditable) {

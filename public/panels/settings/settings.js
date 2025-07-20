@@ -594,7 +594,7 @@ var ExperimentsSettingsTab = class _ExperimentsSettingsTab extends UI.Widget.VBo
     if (!stableExperiments.length && !unstableExperiments.length) {
       const warning = document.createElement("span");
       warning.textContent = i18nString(UIStrings.noResults);
-      UI.ARIAUtils.alert(warning.textContent);
+      UI.ARIAUtils.LiveAnnouncer.alert(warning.textContent);
       this.#experimentsSection = createSettingsCard(i18nString(UIStrings.experiments), warning);
       this.containerElement.appendChild(this.#experimentsSection);
     }
@@ -2037,17 +2037,17 @@ var UIStrings4 = {
    */
   shortcutRemoved: "{PH1} Shortcut removed",
   /**
-   *@description Screen reader announcment for shortcut restored to default
+   *@description Screen reader announcement for shortcut restored to default
    */
   shortcutChangesRestored: "Changes to shortcut restored to default",
   /**
-   *@description Screen reader announcment for applied short cut changes
+   *@description Screen reader announcement for applied short cut changes
    */
   shortcutChangesApplied: "Changes to shortcut applied",
   /**
-   *@description Screen reader announcment for discarded short cut changes
+   *@description Screen reader announcement for discarded short cut changes
    */
-  shortcutChangesDiscared: "Changes to shortcut discarded"
+  shortcutChangesDiscarded: "Changes to shortcut discarded"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/settings/KeybindsSettingsTab.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -2308,12 +2308,12 @@ var ShortcutListItem = class {
     this.element.appendChild(this.createIconButton(i18nString4(UIStrings4.ResetShortcutsForAction), "undo", "", "undo", this.resetShortcutsToDefaults.bind(this)));
     this.confirmButton = this.createIconButton(i18nString4(UIStrings4.confirmChanges), "checkmark", "keybinds-confirm-button", "confirm", () => {
       this.settingsTab.commitChanges(this.item, this.editedShortcuts);
-      UI4.ARIAUtils.alert(i18nString4(UIStrings4.shortcutChangesApplied, { PH1: this.item.title() }));
+      UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutChangesApplied, { PH1: this.item.title() }));
     });
     this.element.appendChild(this.confirmButton);
     this.element.appendChild(this.createIconButton(i18nString4(UIStrings4.discardChanges), "cross", "keybinds-cancel-button", "cancel", () => {
       this.settingsTab.stopEditing(this.item);
-      UI4.ARIAUtils.alert(i18nString4(UIStrings4.shortcutChangesDiscared));
+      UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutChangesDiscarded));
     }));
     this.element.addEventListener("keydown", (event) => {
       if (Platform2.KeyboardUtilities.isEscKey(event)) {
@@ -2377,7 +2377,7 @@ var ShortcutListItem = class {
         this.update();
         this.focus();
         this.validateInputs();
-        UI4.ARIAUtils.alert(i18nString4(UIStrings4.shortcutRemoved, { PH1: this.item.title() }));
+        UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutRemoved, { PH1: this.item.title() }));
       }));
     } else {
       const separator = Host3.Platform.isMac() ? "\u2004" : "\u200A+\u200A";
@@ -2470,7 +2470,7 @@ var ShortcutListItem = class {
     });
     this.update();
     this.focus();
-    UI4.ARIAUtils.alert(i18nString4(UIStrings4.shortcutChangesRestored, { PH1: this.item.title() }));
+    UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutChangesRestored, { PH1: this.item.title() }));
   }
   onEscapeKeyPressed(event) {
     const activeElement = Platform2.DOMUtilities.deepActiveElement(document);

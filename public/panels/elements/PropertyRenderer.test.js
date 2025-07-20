@@ -16,7 +16,7 @@ describeWithEnvironment('PropertyRenderer', () => {
             return nodes.map(n => n.textContent);
         }
         it('parses text', () => {
-            // Prevent normaliztaion to get an accurate representation of the parser result.
+            // Prevent normalization to get an accurate representation of the parser result.
             sinon.stub(Element.prototype, 'normalize');
             assert.deepEqual(textFragments(Array.from(renderValueElement('--p', 'var(--v)').valueElement.childNodes)), ['var', '(', '--v', ')']);
             assert.deepEqual(textFragments(Array.from(renderValueElement('--p', '/* comments are text */ 1px solid 4').valueElement.childNodes)), ['/* comments are text */', ' ', '1px', ' ', 'solid', ' ', '4']);

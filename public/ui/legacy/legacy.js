@@ -461,12 +461,11 @@ var ActionRegistry = class _ActionRegistry {
 // gen/front_end/ui/legacy/ARIAUtils.js
 var ARIAUtils_exports = {};
 __export(ARIAUtils_exports, {
-  alert: () => alert,
+  LiveAnnouncer: () => LiveAnnouncer,
   bindLabelToControl: () => bindLabelToControl,
   clearAutocomplete: () => clearAutocomplete,
   clearSelected: () => clearSelected,
   ensureId: () => ensureId,
-  getOrCreateAlertElement: () => getOrCreateAlertElement,
   hasRole: () => hasRole,
   markAsAlert: () => markAsAlert,
   markAsApplication: () => markAsApplication,
@@ -503,7 +502,6 @@ __export(ARIAUtils_exports, {
   markAsTree: () => markAsTree,
   markAsTreeitem: () => markAsTreeitem,
   nextId: () => nextId,
-  removeAlertElement: () => removeAlertElement,
   removeRole: () => removeRole,
   setActiveDescendant: () => setActiveDescendant,
   setAriaValueMinMax: () => setAriaValueMinMax,
@@ -1605,6 +1603,11 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
   dockSide() {
     return this.dockSideInternal;
   }
+  /** Whether the DevTools can be docked, used to determine if we show docking UI.
+   * Set via `Root.Runtime.Runtime.queryParam('can_dock')`. See https://cs.chromium.org/can_dock+f:window
+   *
+   * Shouldn't be used as a heuristic for target connection state.
+   */
   canDock() {
     return this.canDockInternal;
   }
@@ -1649,9 +1652,9 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
   }
   announceDockLocation() {
     if (this.dockSideInternal === "undocked") {
-      alert(i18nString2(UIStrings2.devtoolsUndocked));
+      LiveAnnouncer.alert(i18nString2(UIStrings2.devtoolsUndocked));
     } else {
-      alert(i18nString2(UIStrings2.devToolsDockedTo, { PH1: this.dockSideInternal || "" }));
+      LiveAnnouncer.alert(i18nString2(UIStrings2.devToolsDockedTo, { PH1: this.dockSideInternal || "" }));
     }
   }
 };
@@ -2646,7 +2649,8 @@ __export(Widget_exports, {
   WidgetElement: () => WidgetElement,
   WidgetFocusRestorer: () => WidgetFocusRestorer,
   widgetConfig: () => widgetConfig,
-  widgetRef: () => widgetRef
+  widgetRef: () => widgetRef,
+  widgetScoped: () => widgetScoped
 });
 import "./../../core/dom_extension/dom_extension.js";
 import * as Platform5 from "./../../core/platform/platform.js";
@@ -3021,6 +3025,9 @@ function widgetRef(type, callback) {
     }
     callback(widget);
   });
+}
+function widgetScoped(styles) {
+  return `@scope to (devtools-widget) { ${styles} }`;
 }
 var widgetCounterMap = /* @__PURE__ */ new WeakMap();
 var widgetMap = /* @__PURE__ */ new WeakMap();
@@ -4406,11 +4413,11 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
   toggleSidebar() {
     if (this.showModeInternal !== "Both") {
       this.showBoth(true);
-      alert(this.shownSidebarString);
+      LiveAnnouncer.alert(this.shownSidebarString);
       return true;
     }
     this.hideSidebar(true);
-    alert(this.hiddenSidebarString);
+    LiveAnnouncer.alert(this.hiddenSidebarString);
     return false;
   }
   updateShowHideSidebarButton() {
@@ -7463,7 +7470,7 @@ var InspectorView = class _InspectorView extends VBox {
       this.focusRestorer = null;
     }
     this.emitDrawerChangeEvent(true);
-    alert(i18nString7(UIStrings7.drawerShown));
+    LiveAnnouncer.alert(i18nString7(UIStrings7.drawerShown));
   }
   drawerVisible() {
     return this.drawerTabbedPane.isShowing();
@@ -7477,7 +7484,7 @@ var InspectorView = class _InspectorView extends VBox {
     }
     this.drawerSplitWidget.hideSidebar(true);
     this.emitDrawerChangeEvent(false);
-    alert(i18nString7(UIStrings7.drawerHidden));
+    LiveAnnouncer.alert(i18nString7(UIStrings7.drawerHidden));
   }
   toggleDrawerOrientation() {
     const drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
@@ -10193,17 +10200,17 @@ var SuggestBox = class {
   }
   applySuggestion(isIntermediateSuggestion) {
     if (this.onlyCompletion) {
-      isIntermediateSuggestion ? alert(i18nString10(UIStrings10.sSuggestionSOfS, { PH1: this.onlyCompletion.text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length })) : alert(i18nString10(UIStrings10.sSuggestionSSelected, { PH1: this.onlyCompletion.text }));
+      isIntermediateSuggestion ? LiveAnnouncer.alert(i18nString10(UIStrings10.sSuggestionSOfS, { PH1: this.onlyCompletion.text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length })) : LiveAnnouncer.alert(i18nString10(UIStrings10.sSuggestionSSelected, { PH1: this.onlyCompletion.text }));
       this.suggestBoxDelegate.applySuggestion(this.onlyCompletion, isIntermediateSuggestion);
       return true;
     }
     const suggestion = this.list.selectedItem();
     if (suggestion?.text) {
-      isIntermediateSuggestion ? alert(i18nString10(UIStrings10.sSuggestionSOfS, {
+      isIntermediateSuggestion ? LiveAnnouncer.alert(i18nString10(UIStrings10.sSuggestionSOfS, {
         PH1: suggestion.title || suggestion.text,
         PH2: this.list.selectedIndex() + 1,
         PH3: this.items.length
-      })) : alert(i18nString10(UIStrings10.sSuggestionSSelected, { PH1: suggestion.title || suggestion.text }));
+      })) : LiveAnnouncer.alert(i18nString10(UIStrings10.sSuggestionSSelected, { PH1: suggestion.title || suggestion.text }));
     }
     this.suggestBoxDelegate.applySuggestion(suggestion, isIntermediateSuggestion);
     return this.visible() && Boolean(suggestion);
@@ -11986,7 +11993,7 @@ var ToolbarSettingToggle = class extends ToolbarToggle {
     this.setToggled(toggled);
     const toggleAnnouncement = toggled ? i18nString11(UIStrings11.pressed) : i18nString11(UIStrings11.notPressed);
     if (this.willAnnounceState) {
-      alert(toggleAnnouncement);
+      LiveAnnouncer.alert(toggleAnnouncement);
     }
     this.willAnnounceState = false;
     this.setTitle(this.defaultTitle);
@@ -15947,42 +15954,104 @@ function setSetSize(element, size) {
 function setPositionInSet(element, position) {
   element.setAttribute("aria-posinset", position.toString());
 }
-function hideFromLayout(element) {
-  element.style.position = "absolute";
-  element.style.left = "-999em";
-  element.style.width = "100em";
-  element.style.overflow = "hidden";
-}
-var alertElements = /* @__PURE__ */ new WeakMap();
-function createAlertElement(container) {
-  const element = container.createChild("div");
-  hideFromLayout(element);
-  element.setAttribute("role", "alert");
-  element.setAttribute("aria-atomic", "true");
-  return element;
-}
-function getOrCreateAlertElement(container = document.body, opts) {
-  const existingAlertElement = alertElements.get(container);
-  if (existingAlertElement && existingAlertElement.isConnected && !opts?.force) {
-    return existingAlertElement;
+var LiveAnnouncer = class _LiveAnnouncer {
+  static #announcerElementsByRole = {
+    [
+      "alert"
+      /* AnnouncerRole.ALERT */
+    ]: /* @__PURE__ */ new WeakMap(),
+    [
+      "status"
+      /* AnnouncerRole.STATUS */
+    ]: /* @__PURE__ */ new WeakMap()
+  };
+  static #hideFromLayout(element) {
+    element.style.position = "absolute";
+    element.style.left = "-999em";
+    element.style.width = "100em";
+    element.style.overflow = "hidden";
   }
-  const newAlertElement = createAlertElement(container);
-  alertElements.set(container, newAlertElement);
-  return newAlertElement;
-}
-function removeAlertElement(container) {
-  const alertElement = alertElements.get(container);
-  if (alertElement) {
-    alertElement.remove();
-    alertElements.delete(container);
+  static #createAnnouncerElement(container, role) {
+    const element = container.createChild("div");
+    _LiveAnnouncer.#hideFromLayout(element);
+    element.setAttribute("role", role);
+    element.setAttribute("aria-atomic", "true");
+    return element;
   }
-}
-function alert(message) {
-  const dialog3 = Dialog.getInstance();
-  const element = getOrCreateAlertElement(dialog3?.isShowing() ? dialog3.contentElement : void 0);
-  const announcedMessage = element.textContent === message ? `${message}\xA0` : message;
-  element.textContent = Platform17.StringUtilities.trimEndWithMaxLength(announcedMessage, 1e4);
-}
+  static #removeAnnouncerElement(container, role) {
+    const element = _LiveAnnouncer.#announcerElementsByRole[role].get(container);
+    if (element) {
+      element.remove();
+      _LiveAnnouncer.#announcerElementsByRole[role].delete(container);
+    }
+  }
+  /**
+   * Announces the provided message using a dedicated ARIA alert element (`role="alert"`).
+   * Ensures messages are announced even if identical to the previous message by appending
+   * a non-breaking space ('\u00A0') when necessary. This works around screen reader
+   * optimizations that might otherwise silence repeated identical alerts. The element's
+   * `aria-atomic="true"` attribute ensures the entire message is announced upon change.
+   *
+   * The alert element is associated with the currently active dialog's content element
+   * if a dialog is showing, otherwise defaults to an element associated with the document body.
+   * Messages longer than 10000 characters will be trimmed.
+   *
+   * @param message The message to be announced.
+   */
+  static #announce(message, role) {
+    const dialog3 = Dialog.getInstance();
+    const element = _LiveAnnouncer.getOrCreateAnnouncerElement(dialog3?.isShowing() ? dialog3.contentElement : void 0, role);
+    const announcedMessage = element.textContent === message ? `${message}\xA0` : message;
+    element.textContent = Platform17.StringUtilities.trimEndWithMaxLength(announcedMessage, 1e4);
+  }
+  static getOrCreateAnnouncerElement(container = document.body, role, opts) {
+    const existingAnnouncerElement = _LiveAnnouncer.#announcerElementsByRole[role].get(container);
+    if (existingAnnouncerElement && existingAnnouncerElement.isConnected && !opts?.force) {
+      return existingAnnouncerElement;
+    }
+    const newAnnouncerElement = _LiveAnnouncer.#createAnnouncerElement(container, role);
+    _LiveAnnouncer.#announcerElementsByRole[role].set(container, newAnnouncerElement);
+    return newAnnouncerElement;
+  }
+  static initializeAnnouncerElements(container = document.body) {
+    _LiveAnnouncer.getOrCreateAnnouncerElement(
+      container,
+      "alert"
+      /* AnnouncerRole.ALERT */
+    );
+    _LiveAnnouncer.getOrCreateAnnouncerElement(
+      container,
+      "status"
+      /* AnnouncerRole.STATUS */
+    );
+  }
+  static removeAnnouncerElements(container = document.body) {
+    _LiveAnnouncer.#removeAnnouncerElement(
+      container,
+      "alert"
+      /* AnnouncerRole.ALERT */
+    );
+    _LiveAnnouncer.#removeAnnouncerElement(
+      container,
+      "alert"
+      /* AnnouncerRole.ALERT */
+    );
+  }
+  static alert(message) {
+    _LiveAnnouncer.#announce(
+      message,
+      "alert"
+      /* AnnouncerRole.ALERT */
+    );
+  }
+  static status(message) {
+    _LiveAnnouncer.#announce(
+      message,
+      "status"
+      /* AnnouncerRole.STATUS */
+    );
+  }
+};
 
 // gen/front_end/ui/legacy/ContextFlavorListener.js
 var ContextFlavorListener_exports = {};
@@ -17739,7 +17808,7 @@ var ListWidget = class extends VBox {
       const index = this.elements.indexOf(element);
       this.element.focus();
       this.delegate.removeItemRequested(this.items[index], index);
-      alert(i18nString15(UIStrings15.removedItem));
+      LiveAnnouncer.alert(i18nString15(UIStrings15.removedItem));
       if (this.elements.length >= 1) {
         this.elements[Math.min(index, this.elements.length - 1)].focus();
       }
@@ -17786,7 +17855,7 @@ var ListWidget = class extends VBox {
     this.stopEditing();
     if (editItem !== null) {
       this.delegate.commitEdit(editItem, editor, isNew);
-      alert(i18nString15(UIStrings15.changesSaved));
+      LiveAnnouncer.alert(i18nString15(UIStrings15.changesSaved));
       if (this.elements[focusElementIndex]) {
         this.elements[focusElementIndex].focus();
       }

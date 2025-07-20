@@ -4,11 +4,11 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
-import { fetchFixture } from '../../../testing/TraceLoader.js';
+import { fetchFileAsText } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function loadScriptFixture(name, modify) {
-    const content = await fetchFixture(new URL(`../../../panels/timeline/fixtures/traces/scripts/${name}.js.gz`, import.meta.url));
-    const mapText = await fetchFixture(new URL(`../../../panels/timeline/fixtures/traces/scripts/${name}.js.map.gz`, import.meta.url));
+    const content = await fetchFileAsText(new URL(`../../../panels/timeline/fixtures/traces/scripts/${name}.js.gz`, import.meta.url));
+    const mapText = await fetchFileAsText(new URL(`../../../panels/timeline/fixtures/traces/scripts/${name}.js.map.gz`, import.meta.url));
     const sourceMapJson = JSON.parse(mapText);
     const fixture = { content, sourceMapJson };
     if (modify) {

@@ -112,7 +112,7 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     this.treeElements = /* @__PURE__ */ new Map();
     this.workspaceDiff = workspaceDiff;
     this.workspaceDiff.modifiedUISourceCodes().forEach(this.addUISourceCode.bind(this));
-    this.workspaceDiff.addEventListener("ModifiedStatusChanged", this.uiSourceCodeMofiedStatusChanged, this);
+    this.workspaceDiff.addEventListener("ModifiedStatusChanged", this.uiSourceCodeModifiedStatusChanged, this);
   }
   selectedUISourceCode() {
     return this.treeoutline.selectedTreeElement ? this.treeoutline.selectedTreeElement.uiSourceCode : null;
@@ -123,7 +123,7 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
       /* Events.SELECTED_UI_SOURCE_CODE_CHANGED */
     );
   }
-  uiSourceCodeMofiedStatusChanged(event) {
+  uiSourceCodeModifiedStatusChanged(event) {
     if (event.data.isModified) {
       this.addUISourceCode(event.data.uiSourceCode);
     } else {

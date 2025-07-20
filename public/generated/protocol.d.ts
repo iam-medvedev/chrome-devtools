@@ -3381,6 +3381,9 @@ export declare namespace CSS {
          */
         cssFunctionRules?: CSSFunctionRule[];
     }
+    interface GetEnvironmentVariablesResponse extends ProtocolResponseWithError {
+        environmentVariables: any;
+    }
     interface GetMediaQueriesResponse extends ProtocolResponseWithError {
         medias: CSSMedia[];
     }
@@ -4854,6 +4857,23 @@ export declare namespace DOM {
          * The anchor element of the given anchor query.
          */
         nodeId: NodeId;
+    }
+    interface ForceShowPopoverRequest {
+        /**
+         * Id of the popover HTMLElement
+         */
+        nodeId: NodeId;
+        /**
+         * If true, opens the popover and keeps it open. If false, closes the
+         * popover if it was previously force-opened.
+         */
+        enable: boolean;
+    }
+    interface ForceShowPopoverResponse extends ProtocolResponseWithError {
+        /**
+         * List of popovers that were closed in order to respect popover stacking order.
+         */
+        nodeIds: NodeId[];
     }
     /**
      * Fired when `Element`'s attribute is modified.
@@ -9188,7 +9208,7 @@ export declare namespace Network {
     }
     const enum IPAddressSpace {
         Loopback = "Loopback",
-        Private = "Private",
+        Local = "Local",
         Public = "Public",
         Unknown = "Unknown"
     }
@@ -12622,6 +12642,10 @@ export declare namespace Page {
          * User friendly error message, present if and only if navigation has failed.
          */
         errorText?: string;
+        /**
+         * Whether the navigation resulted in a download.
+         */
+        isDownload?: boolean;
     }
     interface NavigateToHistoryEntryRequest {
         /**
@@ -16862,7 +16886,8 @@ export declare namespace Preload {
     }
     const enum RuleSetErrorType {
         SourceIsNotJsonObject = "SourceIsNotJsonObject",
-        InvalidRulesSkipped = "InvalidRulesSkipped"
+        InvalidRulesSkipped = "InvalidRulesSkipped",
+        InvalidRulesetLevelTag = "InvalidRulesetLevelTag"
     }
     /**
      * The type of preloading attempted. It corresponds to

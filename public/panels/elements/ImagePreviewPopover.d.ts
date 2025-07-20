@@ -3,7 +3,7 @@ import type * as SDK from '../../core/sdk/sdk.js';
 /**
  * ImagePreviewPopover sets listeners on the container element to display
  * an image preview if needed. The image URL comes from the event (mouseover) target
- * in a propery identified by HrefSymbol. To enable preview for any child element
+ * in a property identified by HrefSymbol. To enable preview for any child element
  * set the property HrefSymbol.
  */
 export declare class ImagePreviewPopover {

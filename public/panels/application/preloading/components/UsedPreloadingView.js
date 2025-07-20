@@ -25,7 +25,7 @@ const UIStrings = {
      */
     speculativeLoadingStatusForThisPage: 'Speculative loading status for this page',
     /**
-     *@description Label for failure reason of preloeading
+     *@description Label for failure reason of preloading
      */
     detailsFailureReason: 'Failure reason',
     /**

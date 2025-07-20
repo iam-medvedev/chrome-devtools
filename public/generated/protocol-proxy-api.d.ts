@@ -716,6 +716,11 @@ declare namespace ProtocolProxyApi {
     invoke_getMatchedStylesForNode(params: Protocol.CSS.GetMatchedStylesForNodeRequest): Promise<Protocol.CSS.GetMatchedStylesForNodeResponse>;
 
     /**
+     * Returns the values of the default UA-defined environment variables used in env()
+     */
+    invoke_getEnvironmentVariables(): Promise<Protocol.CSS.GetEnvironmentVariablesResponse>;
+
+    /**
      * Returns all media queries parsed by the rendering engine.
      */
     invoke_getMediaQueries(): Promise<Protocol.CSS.GetMediaQueriesResponse>;
@@ -1245,6 +1250,12 @@ declare namespace ProtocolProxyApi {
      * https://www.w3.org/TR/css-anchor-position-1/#target.
      */
     invoke_getAnchorElement(params: Protocol.DOM.GetAnchorElementRequest): Promise<Protocol.DOM.GetAnchorElementResponse>;
+
+    /**
+     * When enabling, this API force-opens the popover identified by nodeId
+     * and keeps it open until disabled.
+     */
+    invoke_forceShowPopover(params: Protocol.DOM.ForceShowPopoverRequest): Promise<Protocol.DOM.ForceShowPopoverResponse>;
 
   }
   export interface DOMDispatcher {

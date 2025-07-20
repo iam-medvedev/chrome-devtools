@@ -45,6 +45,15 @@ describeWithEnvironment('CSSRuleValidator', () => {
             hintExpected: false,
         },
         {
+            description: 'Test `align-content`, validation passes when the element is a masonry container',
+            computedStyles: new Map([
+                ['align-content', 'center'],
+                ['display', 'masonry'],
+            ]),
+            validator: () => new Elements.CSSRuleValidator.AlignContentValidator(),
+            hintExpected: false,
+        },
+        {
             description: 'Test `align-content`, validation does not pass when the element is a math container',
             computedStyles: new Map([
                 ['align-content', 'center'],
@@ -66,6 +75,15 @@ describeWithEnvironment('CSSRuleValidator', () => {
             description: 'Test `justify-content`, validation passes when the element is grid containers',
             computedStyles: new Map([
                 ['display', 'grid'],
+                ['justify-content', 'center'],
+            ]),
+            validator: () => new Elements.CSSRuleValidator.FlexGridValidator(),
+            hintExpected: false,
+        },
+        {
+            description: 'Test `justify-content`, validation passes when the element is masonry containers',
+            computedStyles: new Map([
+                ['display', 'masonry'],
                 ['justify-content', 'center'],
             ]),
             validator: () => new Elements.CSSRuleValidator.FlexGridValidator(),
@@ -151,6 +169,16 @@ describeWithEnvironment('CSSRuleValidator', () => {
             hintExpected: false,
         },
         {
+            description: 'Passes the validation when grid container properties are set to masonry container',
+            computedStyles: new Map([
+                ['display', 'masonry'],
+                ['grid-template-columns', 'repeat(3, 10px 15%)'],
+            ]),
+            parentsComputedStyles: new Map(),
+            validator: () => new Elements.CSSRuleValidator.GridContainerValidator(),
+            hintExpected: false,
+        },
+        {
             description: 'Reports a rule validation when grid container properties are set to non-grid container',
             computedStyles: new Map([
                 ['display', 'flex'],
@@ -167,6 +195,17 @@ describeWithEnvironment('CSSRuleValidator', () => {
             ]),
             parentsComputedStyles: new Map([
                 ['display', 'grid'],
+            ]),
+            validator: () => new Elements.CSSRuleValidator.GridItemValidator(),
+            hintExpected: false,
+        },
+        {
+            description: 'Passes the validation when grid item properties are set to masonry items',
+            computedStyles: new Map([
+                ['grid-row', 'span 2'],
+            ]),
+            parentsComputedStyles: new Map([
+                ['display', 'masonry'],
             ]),
             validator: () => new Elements.CSSRuleValidator.GridItemValidator(),
             hintExpected: false,

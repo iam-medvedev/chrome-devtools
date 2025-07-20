@@ -236,7 +236,7 @@ export class GeneratedRangeBuilder {
             this.#state.callsiteColumn = column;
         }
         for (const bindings of options?.bindings ?? []) {
-            if (bindings === undefined || typeof bindings === 'string') {
+            if (bindings === undefined || bindings === null || typeof bindings === 'string') {
                 this.#encodedRange += encodeVlq(this.#nameIdx(bindings));
                 continue;
             }
@@ -276,7 +276,7 @@ export class GeneratedRangeBuilder {
         }
     }
     #nameIdx(name) {
-        if (name === undefined) {
+        if (name === undefined || name === null) {
             return -1;
         }
         let idx = this.#names.indexOf(name);

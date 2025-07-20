@@ -25,6 +25,18 @@ export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
     cloneNode(deep: boolean): Node;
 }
 export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Platform.Constructor.Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
+/**
+ * Wraps CSS text in a @scope at-rule to encapsulate widget styles.
+ *
+ * This function relies on an implicit scope root (the parent element of the
+ * <style> tag) and sets an explicit scope limit at `<devtools-widget>`.
+ * This prevents a parent widget's styles from cascading into any nested
+ * child widgets.
+ *
+ * @param styles The CSS rules to be scoped.
+ * @returns The scoped CSS string.
+ */
+export declare function widgetScoped(styles: string): string;
 export declare class Widget {
     #private;
     readonly element: HTMLElement;

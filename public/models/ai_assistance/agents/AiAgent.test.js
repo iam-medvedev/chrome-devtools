@@ -104,6 +104,26 @@ describeWithEnvironment('AiAgent', () => {
             const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.strictEqual(request.metadata?.string_session_id, 'sessionId');
         });
+        it('builds a request with preamble features in version', async () => {
+            const features = ['test'];
+            class MockWithFeatures extends AiAgentMock {
+                preambleFeatures() {
+                    return features;
+                }
+            }
+            const agent = new MockWithFeatures({
+                aidaClient: mockAidaClient(),
+            });
+            {
+                const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
+                assert.include(request.metadata.client_version, '+test');
+            }
+            features.push('2test');
+            {
+                const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
+                assert.include(request.metadata.client_version, '+test+2test');
+            }
+        });
         it('builds a request with preamble if user tier is TESTERS', async () => {
             const agent = new AiAgentMock({
                 aidaClient: mockAidaClient(),

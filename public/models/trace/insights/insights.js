@@ -1431,9 +1431,6 @@ function finalize5(partialModel) {
 }
 function generateInsight5(parsedTrace, context) {
   const scripts = parsedTrace.Scripts.scripts.filter((script) => {
-    if (!context.navigation) {
-      return false;
-    }
     if (script.frame !== context.frameId) {
       return false;
     }
@@ -2453,9 +2450,6 @@ function finalize12(partialModel) {
 }
 function generateInsight12(parsedTrace, context) {
   const scripts = parsedTrace.Scripts.scripts.filter((script) => {
-    if (!context.navigation) {
-      return false;
-    }
     if (script.frame !== context.frameId) {
       return false;
     }

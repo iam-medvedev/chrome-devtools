@@ -74,5 +74,6 @@ export declare class TraceLoader {
         parsedTrace: Trace.Handlers.Types.ParsedTrace;
         insights: Trace.Insights.Types.TraceInsightSets | null;
     }>;
+    static loadTraceFileFromURL(url: URL): Promise<Trace.Types.File.TraceFile>;
 }
-export declare function fetchFixture(url: URL): Promise<string>;
+export declare function fetchFileAsText(url: URL): Promise<string>;

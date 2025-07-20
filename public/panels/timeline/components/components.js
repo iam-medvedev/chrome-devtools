@@ -6002,10 +6002,11 @@ customElements.define("devtools-performance-network-request-details", NetworkReq
 // gen/front_end/panels/timeline/components/RelatedInsightChips.js
 var RelatedInsightChips_exports = {};
 __export(RelatedInsightChips_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   RelatedInsightChips: () => RelatedInsightChips
 });
 import * as i18n31 from "./../../../core/i18n/i18n.js";
-import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit14 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/relatedInsightChips.css.js
@@ -6089,7 +6090,7 @@ ul {
 /*# sourceURL=${import.meta.resolve("./relatedInsightChips.css")} */`;
 
 // gen/front_end/panels/timeline/components/RelatedInsightChips.js
-var { html: html14 } = Lit14;
+var { html: html14, render: render13 } = Lit14;
 var UIStrings16 = {
   /**
    *@description prefix shown next to related insight chips
@@ -6103,66 +6104,75 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/timeline/components/RelatedInsightChips.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var RelatedInsightChips = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #data = { eventToRelatedInsightsMap: /* @__PURE__ */ new Map(), activeEvent: null };
-  connectedCallback() {
-    this.#render();
+var RelatedInsightChips = class extends UI9.Widget.Widget {
+  #view;
+  #activeEvent = null;
+  #eventToInsightsMap = /* @__PURE__ */ new Map();
+  constructor(element, view = DEFAULT_VIEW) {
+    super(false, false, element);
+    this.#view = view;
   }
   set activeEvent(event) {
-    if (event === this.#data.activeEvent) {
+    if (event === this.#activeEvent) {
       return;
     }
-    this.#data.activeEvent = event;
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    this.#activeEvent = event;
+    this.requestUpdate();
   }
-  set eventToRelatedInsightsMap(map) {
-    this.#data.eventToRelatedInsightsMap = map;
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+  set eventToInsightsMap(map) {
+    this.#eventToInsightsMap = map ?? /* @__PURE__ */ new Map();
+    this.requestUpdate();
   }
-  #insightClick(insight) {
-    return (event) => {
-      event.preventDefault();
-      insight.activateInsight();
+  performUpdate() {
+    const input = {
+      activeEvent: this.#activeEvent,
+      eventToInsightsMap: this.#eventToInsightsMap,
+      onInsightClick(insight) {
+        insight.activateInsight();
+      }
     };
-  }
-  #render() {
-    const { activeEvent, eventToRelatedInsightsMap } = this.#data;
-    const relatedInsights = activeEvent ? eventToRelatedInsightsMap.get(activeEvent) ?? [] : [];
-    if (!activeEvent || eventToRelatedInsightsMap.size === 0 || relatedInsights.length === 0) {
-      Lit14.render(html14``, this.#shadow, { host: this });
-      return;
-    }
-    const insightMessages = relatedInsights.flatMap((insight) => {
-      return insight.messages.map((message) => html14`
-        <li class="insight-message-box">
-          <button type="button" @click=${this.#insightClick(insight)}>
-            <div class="insight-label">${i18nString15(UIStrings16.insightWithName, {
-        PH1: insight.insightLabel
-      })}</div>
-            <div class="insight-message">${message}</div>
-          </button>
-        </li>
-      `);
-    });
-    const insightChips = relatedInsights.flatMap((insight) => {
-      return [html14`
-        <li class="insight-chip">
-          <button type="button" @click=${this.#insightClick(insight)}>
-            <span class="keyword">${i18nString15(UIStrings16.insightKeyword)}</span>
-            <span class="insight-label">${insight.insightLabel}</span>
-          </button>
-        </li>
-      `];
-    });
-    Lit14.render(html14`
-      <style>${relatedInsightChips_css_default}</style>
-      <ul>${insightMessages}</ul>
-      <ul>${insightChips}</ul>
-    `, this.#shadow, { host: this });
+    this.#view(input, {}, this.contentElement);
   }
 };
-customElements.define("devtools-related-insight-chips", RelatedInsightChips);
+var DEFAULT_VIEW = (input, _output, target) => {
+  const { activeEvent, eventToInsightsMap } = input;
+  const relatedInsights = activeEvent ? eventToInsightsMap.get(activeEvent) ?? [] : [];
+  if (!activeEvent || eventToInsightsMap.size === 0 || relatedInsights.length === 0) {
+    render13(html14``, target, { host: input });
+    return;
+  }
+  const insightMessages = relatedInsights.flatMap((insight) => {
+    return insight.messages.map((message) => html14`
+          <li class="insight-message-box">
+            <button type="button" @click=${(event) => {
+      event.preventDefault();
+      input.onInsightClick(insight);
+    }}>
+              <div class="insight-label">${i18nString15(UIStrings16.insightWithName, {
+      PH1: insight.insightLabel
+    })}</div>
+              <div class="insight-message">${message}</div>
+            </button>
+          </li>
+        `);
+  });
+  const insightChips = relatedInsights.flatMap((insight) => {
+    return [html14`
+          <li class="insight-chip">
+            <button type="button" @click=${(event) => {
+      event.preventDefault();
+      input.onInsightClick(insight);
+    }}>
+              <span class="keyword">${i18nString15(UIStrings16.insightKeyword)}</span>
+              <span class="insight-label">${insight.insightLabel}</span>
+            </button>
+          </li>
+        `];
+  });
+  render13(html14`<style>${relatedInsightChips_css_default}</style>
+        <ul>${insightMessages}</ul>
+        <ul>${insightChips}</ul>`, target, { host: input });
+};
 
 // gen/front_end/panels/timeline/components/Sidebar.js
 var Sidebar_exports = {};
@@ -6174,7 +6184,7 @@ __export(Sidebar_exports, {
   SidebarWidget: () => SidebarWidget
 });
 import * as RenderCoordinator3 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/timeline/components/insights/SidebarInsight.js
 var InsightActivated = class _InsightActivated extends Event {
@@ -6197,7 +6207,7 @@ var InsightDeactivated = class _InsightDeactivated extends Event {
 // gen/front_end/panels/timeline/components/SidebarAnnotationsTab.js
 var SidebarAnnotationsTab_exports = {};
 __export(SidebarAnnotationsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   SidebarAnnotationsTab: () => SidebarAnnotationsTab
 });
 import * as Common5 from "./../../../core/common/common.js";
@@ -6205,7 +6215,7 @@ import * as i18n33 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
 import * as Trace7 from "./../../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../../services/trace_bounds/trace_bounds.js";
-import * as UI9 from "./../../../ui/legacy/legacy.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "./../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit15 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
@@ -6389,14 +6399,14 @@ var UIStrings17 = {
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/timeline/components/SidebarAnnotationsTab.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var SidebarAnnotationsTab = class extends UI9.Widget.Widget {
+var SidebarAnnotationsTab = class extends UI10.Widget.Widget {
   #annotations = [];
   // A map with annotated entries and the colours that are used to display them in the FlameChart.
   // We need this map to display the entries in the sidebar with the same colours.
   #annotationEntryToColorMap = /* @__PURE__ */ new Map();
   #annotationsHiddenSetting;
   #view;
-  constructor(view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW2) {
     super();
     this.#view = view;
     this.#annotationsHiddenSetting = Common5.Settings.Settings.instance().moduleSetting("annotations-hidden");
@@ -6620,7 +6630,7 @@ function renderTutorial() {
       </div>
     </div>`;
 }
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   render14(html15`
       <style>${sidebarAnnotationsTab_css_default}</style>
       <span class="annotations">
@@ -6681,7 +6691,7 @@ import * as Root from "./../../../core/root/root.js";
 import * as CrUXManager11 from "./../../../models/crux-manager/crux-manager.js";
 import * as Trace9 from "./../../../models/trace/trace.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit16 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -6903,7 +6913,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   #activeHighlightTimeout = -1;
   set data(data) {
     this.#data = data;
-    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
     this.#render();
@@ -7177,7 +7187,7 @@ customElements.define("devtools-performance-sidebar-single-navigation", SidebarS
 // gen/front_end/panels/timeline/components/SidebarInsightsTab.js
 import * as Trace10 from "./../../../models/trace/trace.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers11 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
 import * as Utils3 from "./../utils/utils.js";
 import * as Insights6 from "./insights/insights.js";
@@ -7280,7 +7290,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#parsedTrace = data;
     this.#selectedInsightSetKey = null;
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   set traceMetadata(data) {
     if (data === this.#traceMetadata) {
@@ -7288,7 +7298,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#traceMetadata = data;
     this.#selectedInsightSetKey = null;
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   set insights(data) {
     if (data === this.#insights) {
@@ -7300,7 +7310,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#insights = new Map(data);
     this.#selectedInsightSetKey = [...this.#insights.keys()].at(0) ?? null;
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   get activeInsight() {
     return this.#activeInsight;
@@ -7313,14 +7323,14 @@ var SidebarInsightsTab = class extends HTMLElement {
     if (this.#activeInsight) {
       this.#selectedInsightSetKey = this.#activeInsight.insightSetKey;
     }
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetToggled(id) {
     this.#selectedInsightSetKey = this.#selectedInsightSetKey === id ? null : id;
     if (this.#selectedInsightSetKey !== this.#activeInsight?.insightSetKey) {
       this.dispatchEvent(new Insights6.SidebarInsight.InsightDeactivated());
     }
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetHovered(id) {
     const data = this.#insights?.get(id);
@@ -7450,8 +7460,8 @@ var RevealAnnotation = class _RevealAnnotation extends Event {
 var DEFAULT_SIDEBAR_TAB = "insights";
 var DEFAULT_SIDEBAR_WIDTH_PX = 240;
 var MIN_SIDEBAR_WIDTH_PX = 170;
-var SidebarWidget = class extends UI10.Widget.VBox {
-  #tabbedPane = new UI10.TabbedPane.TabbedPane();
+var SidebarWidget = class extends UI11.Widget.VBox {
+  #tabbedPane = new UI11.TabbedPane.TabbedPane();
   #insightsView = new InsightsView();
   #annotationsView = new AnnotationsView();
   /**
@@ -7520,7 +7530,7 @@ var SidebarWidget = class extends UI10.Widget.VBox {
     }
   }
 };
-var InsightsView = class extends UI10.Widget.VBox {
+var InsightsView = class extends UI11.Widget.VBox {
   #component = new SidebarInsightsTab();
   constructor() {
     super();
@@ -7546,7 +7556,7 @@ var InsightsView = class extends UI10.Widget.VBox {
     }
   }
 };
-var AnnotationsView = class extends UI10.Widget.VBox {
+var AnnotationsView = class extends UI11.Widget.VBox {
   #component = new SidebarAnnotationsTab();
   constructor() {
     super();
@@ -7573,7 +7583,7 @@ __export(TimelineSummary_exports, {
   CategorySummary: () => CategorySummary
 });
 import * as i18n37 from "./../../../core/i18n/i18n.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
+import * as UI12 from "./../../../ui/legacy/legacy.js";
 import * as Lit18 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/timelineSummary.css.js
@@ -7668,7 +7678,7 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("panels/timeline/components/TimelineSummary.ts", UIStrings19);
 var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var CategorySummary = class extends HTMLElement {
-  #shadow = UI11.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
+  #shadow = UI12.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
   #rangeStart = 0;
   #rangeEnd = 0;
   #total = 0;

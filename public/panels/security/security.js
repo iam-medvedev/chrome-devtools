@@ -2942,10 +2942,10 @@ ${i18nString5(UIStrings5.ifYouBelieveThisIsShownIn)}`;
     } else if (securityStateIssueIds.includes("lookalike") && safetyTipInfo?.safeUrl) {
       const hostname = new URL(safetyTipInfo.safeUrl).hostname;
       const hostnamePlaceholder = { PH1: hostname };
-      const formatedDescriptionSafety = `${i18nString5(UIStrings5.thisSitesHostnameLooksSimilarToP, hostnamePlaceholder)}
+      const formattedDescriptionSafety = `${i18nString5(UIStrings5.thisSitesHostnameLooksSimilarToP, hostnamePlaceholder)}
 
 ${i18nString5(UIStrings5.ifYouBelieveThisIsShownInErrorSafety)}`;
-      currentExplanations.push({ summary: i18nString5(UIStrings5.possibleSpoofingUrl), description: formatedDescriptionSafety });
+      currentExplanations.push({ summary: i18nString5(UIStrings5.possibleSpoofingUrl), description: formattedDescriptionSafety });
     }
     if (currentExplanations.length > 0) {
       summary = summary || i18nString5(UIStrings5.thisPageIsSuspiciousFlaggedBy);

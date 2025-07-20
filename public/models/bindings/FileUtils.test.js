@@ -29,8 +29,7 @@ describe('FileUtils', () => {
         it('can decompress gzipped data', async () => {
             async function getAsCompressedFile(text) {
                 const blob = new Blob([text], { type: 'text/plain' });
-                // https://github.com/wicg/compression/blob/main/explainer.md#deflate-compress-an-arraybuffer
-                const cstream = blob.stream().pipeThrough(new CompressionStream('gzip'));
+                const cstream = Common.Gzip.compressStream(blob.stream());
                 const creader = cstream.getReader();
                 const values = [];
                 while (true) {

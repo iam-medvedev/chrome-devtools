@@ -1,7 +1,7 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { type AidaClientResult, type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type FunctionCallEvent, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type SettingAccessEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
+import { type AidaClientResult, type AidaCodeCompleteResult, type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type FunctionCallEvent, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type SettingAccessEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
 /**
  * The InspectorFrontendHostStub is a stub interface used the frontend is loaded like a webpage. Examples:
  *   - devtools://devtools/bundled/devtools_app.html
@@ -102,11 +102,26 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     openRemotePage(_browserId: string, _url: string): void;
     openNodeFrontend(): void;
     showContextMenuAtPoint(_x: number, _y: number, _items: ContextMenuDescriptor[], _document: Document): void;
+    /**
+     * **Hosted mode** is when DevTools is loaded over `http(s)://` rather than from `devtools://`.
+     * It does **not** indicate whether the frontend is connected to a valid CDP target.
+     *
+     *  | Example case                                         | Mode           | Example URL                                                                   |
+     *  | :--------------------------------------------------- | :------------- | :---------------------------------------------------------------------------- |
+     *  | typical devtools: (un)docked w/ native CDP bindings  | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?targetType=tab&...`            |
+     *  | tab href is `devtools://…?ws=…`                      | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?ws=localhost:9228/...`         |
+     *  | tab href is `devtools://…` but no connection         | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html`                               |
+     *  | tab href is `https://…?ws=` (connected)              | **Hosted**     | `https://chrome-devtools-frontend.appspot.com/serve_rev/@.../worker_app.html` |
+     *  | tab href is `http://…` but no connection             | **Hosted**     | `http://localhost:9222/devtools/inspector.html?ws=localhost:9222/...`         |
+     *
+     * See also `canDock` which has similar semantics.
+     */
     isHostedMode(): boolean;
     setAddExtensionCallback(_callback: (arg0: ExtensionDescriptor) => void): void;
     initialTargetId(): Promise<string | null>;
     doAidaConversation(_request: string, _streamId: number, callback: (result: DoAidaConversationResult) => void): void;
     registerAidaClientEvent(_request: string, callback: (result: AidaClientResult) => void): void;
+    aidaCodeComplete(_request: string, callback: (result: AidaCodeCompleteResult) => void): void;
     recordImpression(_event: ImpressionEvent): void;
     recordResize(_event: ResizeEvent): void;
     recordClick(_event: ClickEvent): void;

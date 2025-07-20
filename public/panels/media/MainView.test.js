@@ -16,7 +16,7 @@ describeWithMockConnection('MediaMainView', () => {
     const testUiUpdate = (event, expectedMethod, inScope) => async () => {
         SDK.TargetManager.TargetManager.instance().setScopeTarget(inScope ? target : null);
         const downloadStore = new Media.MainView.PlayerDataDownloadManager();
-        const expectedCall = sinon.stub(downloadStore, expectedMethod).returns();
+        const expectedCall = sinon.stub(downloadStore, expectedMethod);
         const mainView = new Media.MainView.MainView(downloadStore);
         renderElementIntoDOM(mainView);
         const model = target.model(Media.MediaModel.MediaModel);

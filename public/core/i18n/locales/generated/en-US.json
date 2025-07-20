@@ -1286,9 +1286,6 @@
   "generated/Deprecation.ts | HostCandidateAttributeGetter": {
     "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
   },
-  "generated/Deprecation.ts | IdentityDigitalCredentials": {
-    "message": "This format for the navigator.credentials.get() request for digital credentials is deprecated, please update your call to use the new format."
-  },
   "generated/Deprecation.ts | IdentityInCanMakePaymentEvent": {
     "message": "The merchant origin and arbitrary data from the canmakepayment service worker event are deprecated and will be removed: topOrigin, paymentRequestOrigin, methodData, modifiers."
   },
@@ -4800,7 +4797,7 @@
     "message": "The initiating page was backgrounded, so the prerendered page was discarded."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusUaChangeRequiresReload": {
-    "message": "Changing User Agent occured in prerendering navigation."
+    "message": "Changing User Agent occurred in prerendering navigation."
   },
   "panels/application/preloading/components/PreloadingString.ts | prerenderFinalStatusWindowClosed": {
     "message": "The prerendered page was unloaded because it called window.close()."
@@ -6785,6 +6782,9 @@
   "panels/elements/ElementsTreeElement.ts | focus": {
     "message": "Focus"
   },
+  "panels/elements/ElementsTreeElement.ts | forceOpenPopover": {
+    "message": "Keep this popover open"
+  },
   "panels/elements/ElementsTreeElement.ts | forceState": {
     "message": "Force state"
   },
@@ -6811,6 +6811,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
     "message": "Show element associated with the popovertarget attribute"
+  },
+  "panels/elements/ElementsTreeElement.ts | stopForceOpenPopover": {
+    "message": "Stop keeping this popover open"
   },
   "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
     "message": "This frame was identified as an ad frame"
@@ -7853,7 +7856,7 @@
   "panels/layer_viewer/LayerDetailsView.ts | slowScrollRegions": {
     "message": "Slow scroll regions"
   },
-  "panels/layer_viewer/LayerDetailsView.ts | stickyAncenstorLayersS": {
+  "panels/layer_viewer/LayerDetailsView.ts | stickyAncestorLayersS": {
     "message": "{PH1}: {PH2} ({PH3})"
   },
   "panels/layer_viewer/LayerDetailsView.ts | stickyBoxRectangleDimensions": {
@@ -12614,7 +12617,7 @@
   "panels/settings/KeybindsSettingsTab.ts | shortcutChangesApplied": {
     "message": "Changes to shortcut applied"
   },
-  "panels/settings/KeybindsSettingsTab.ts | shortcutChangesDiscared": {
+  "panels/settings/KeybindsSettingsTab.ts | shortcutChangesDiscarded": {
     "message": "Changes to shortcut discarded"
   },
   "panels/settings/KeybindsSettingsTab.ts | shortcutChangesRestored": {
@@ -14543,9 +14546,6 @@
   "panels/timeline/EventsTimelineTreeView.ts | startTime": {
     "message": "Start time"
   },
-  "panels/timeline/ExtensionTrackAppender.ts | customTrackDescription": {
-    "message": "This is a custom track added by a third party."
-  },
   "panels/timeline/ExtensionTrackAppender.ts | customTrackName": {
     "message": "{PH1} — Custom track"
   },
@@ -15000,13 +15000,13 @@
     "message": "Elapsed (ms)"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | elapsedExplanation": {
-    "message": "Elapsed time spent computing a style rule in micro seconds"
+    "message": "Elapsed time spent matching a selector against the DOM in milliseconds."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | invalidationCount": {
     "message": "Invalidation count"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | invalidationCountExplanation": {
-    "message": "Aggregated count of invalidations on nodes and subsequently had style recalculated, all of which are matched by this selector. Note that a node can be invalidated multiple times."
+    "message": "Aggregated count of invalidations on nodes and subsequently had style recalculated, all of which are matched by this selector. Note that a node can be invalidated multiple times and by multiple selectors."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | lineNumber": {
     "message": "Line {PH1}:{PH2}"
@@ -15015,19 +15015,19 @@
     "message": "Match attempts"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | matchAttemptsExplanation": {
-    "message": "Count of elements that the engine attempted to match against a style rule"
+    "message": "Count of nodes that the engine attempted to match against a style rule."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | matchCount": {
     "message": "Match count"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | matchCountExplanation": {
-    "message": "Count of elements that matched a style rule"
+    "message": "Count of nodes that matched a style rule."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selector": {
     "message": "Selector"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selectorExplanation": {
-    "message": "CSS selector text of a style rule"
+    "message": "CSS selector text of a style rule."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | selectorStats": {
     "message": "Selector stats"
@@ -15042,7 +15042,7 @@
     "message": "Style Sheet"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | styleSheetIdExplanation": {
-    "message": "Links to the selector rule defintion in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don't have a link."
+    "message": "Links to the selector rule definition in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don't have a link."
   },
   "panels/timeline/TimelineSelectorStatsView.ts | tableCopiedToClipboard": {
     "message": "Table copied to clipboard"

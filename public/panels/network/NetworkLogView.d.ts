@@ -59,6 +59,7 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private readonly summaryToolbarInternal;
     private readonly filterBar;
     private readonly textFilterSetting;
+    private networkRequestToNode;
     constructor(filterBar: UI.FilterBar.FilterBar, progressBarContainer: Element, networkLogLargeRowsSetting: Common.Settings.Setting<boolean>);
     private updateGroupByFrame;
     private static sortSearchValues;

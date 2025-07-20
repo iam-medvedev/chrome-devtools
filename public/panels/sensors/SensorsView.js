@@ -545,7 +545,7 @@ export class SensorsView extends UI.Widget.VBox {
         this.setBoxOrientation(deviceOrientation, animate);
         this.deviceOrientation = deviceOrientation;
         this.applyDeviceOrientation();
-        UI.ARIAUtils.alert(i18nString(UIStrings.deviceOrientationSetToAlphaSBeta, { PH1: deviceOrientation.alpha, PH2: deviceOrientation.beta, PH3: deviceOrientation.gamma }));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.deviceOrientationSetToAlphaSBeta, { PH1: deviceOrientation.alpha, PH2: deviceOrientation.beta, PH3: deviceOrientation.gamma }));
     }
     createAxisInput(parentElement, input, label, validator) {
         const div = parentElement.createChild('div', 'orientation-axis-input-container');

@@ -179,7 +179,7 @@ var UIStrings = {
   /**
    *  Description text for PrerenderFinalStatus::kUaChangeRequiresReload.
    */
-  prerenderFinalStatusUaChangeRequiresReload: "Changing User Agent occured in prerendering navigation.",
+  prerenderFinalStatusUaChangeRequiresReload: "Changing User Agent occurred in prerendering navigation.",
   /**
    *  Description text for PrerenderFinalStatus::kBlockedByClient.
    */
@@ -1079,9 +1079,9 @@ var PreloadingDetailsReportView = class extends LegacyWrapper3.LegacyWrapper.Wra
     assertNotNullOrUndefined2(this.#data);
     const attempt = this.#data.pipeline.getOriginallyTriggered();
     const action4 = capitalizedAction(attempt.action);
-    let maybeFellback = Lit2.nothing;
+    let maybeFallback = Lit2.nothing;
     if (isFallbackToPrefetch) {
-      maybeFellback = html2`${i18nString3(UIStrings3.automaticallyFellBackToPrefetch)}`;
+      maybeFallback = html2`${i18nString3(UIStrings3.automaticallyFellBackToPrefetch)}`;
     }
     let maybeInspectButton = Lit2.nothing;
     (() => {
@@ -1117,7 +1117,7 @@ var PreloadingDetailsReportView = class extends LegacyWrapper3.LegacyWrapper.Wra
         <devtools-report-key>${i18nString3(UIStrings3.detailsAction)}</devtools-report-key>
         <devtools-report-value>
           <div class="text-ellipsis" title="">
-            ${action4} ${maybeFellback} ${maybeInspectButton}
+            ${action4} ${maybeFallback} ${maybeInspectButton}
           </div>
         </devtools-report-value>
     `;
@@ -1402,11 +1402,11 @@ var PreloadingDisabledInfobar = class extends LegacyWrapper5.LegacyWrapper.Wrapp
     return html3`
       <div id='contents'>
         <devtools-report>
-          ${this.#maybeDisalebByPreference()}
-          ${this.#maybeDisalebByDataSaver()}
-          ${this.#maybeDisalebByBatterySaver()}
-          ${this.#maybeDisalebByHoldbackPrefetchSpeculationRules()}
-          ${this.#maybeDisalebByHoldbackPrerenderSpeculationRules()}
+          ${this.#maybeDisableByPreference()}
+          ${this.#maybeDisableByDataSaver()}
+          ${this.#maybeDisableByBatterySaver()}
+          ${this.#maybeDisableByHoldbackPrefetchSpeculationRules()}
+          ${this.#maybeDisableByHoldbackPrerenderSpeculationRules()}
         </devtools-report>
         <div id='footer'>
           ${learnMoreLink}
@@ -1428,7 +1428,7 @@ var PreloadingDisabledInfobar = class extends LegacyWrapper5.LegacyWrapper.Wrapp
       </div>
     `;
   }
-  #maybeDisalebByPreference() {
+  #maybeDisableByPreference() {
     const preloadingSettingLink = new ChromeLink.ChromeLink.ChromeLink();
     preloadingSettingLink.href = "chrome://settings/performance";
     preloadingSettingLink.textContent = i18nString4(UIStrings4.preloadingPagesSettings);
@@ -1438,16 +1438,16 @@ var PreloadingDisabledInfobar = class extends LegacyWrapper5.LegacyWrapper.Wrapp
     const description = i18n7.i18n.getFormatLocalizedString(str_4, UIStrings4.descriptionDisabledByPreference, { PH1: preloadingSettingLink, PH2: extensionsSettingLink });
     return this.#maybeKeyValue(this.#data.disabledByPreference, i18nString4(UIStrings4.headerDisabledByPreference), description);
   }
-  #maybeDisalebByDataSaver() {
+  #maybeDisableByDataSaver() {
     return this.#maybeKeyValue(this.#data.disabledByDataSaver, i18nString4(UIStrings4.headerDisabledByDataSaver), i18nString4(UIStrings4.descriptionDisabledByDataSaver));
   }
-  #maybeDisalebByBatterySaver() {
+  #maybeDisableByBatterySaver() {
     return this.#maybeKeyValue(this.#data.disabledByBatterySaver, i18nString4(UIStrings4.headerDisabledByBatterySaver), i18nString4(UIStrings4.descriptionDisabledByBatterySaver));
   }
-  #maybeDisalebByHoldbackPrefetchSpeculationRules() {
+  #maybeDisableByHoldbackPrefetchSpeculationRules() {
     return this.#maybeKeyValue(this.#data.disabledByHoldbackPrefetchSpeculationRules, i18nString4(UIStrings4.headerDisabledByHoldbackPrefetchSpeculationRules), i18nString4(UIStrings4.descriptionDisabledByHoldbackPrefetchSpeculationRules));
   }
-  #maybeDisalebByHoldbackPrerenderSpeculationRules() {
+  #maybeDisableByHoldbackPrerenderSpeculationRules() {
     return this.#maybeKeyValue(this.#data.disabledByHoldbackPrerenderSpeculationRules, i18nString4(UIStrings4.headerDisabledByHoldbackPrerenderSpeculationRules), i18nString4(UIStrings4.descriptionDisabledByHoldbackPrerenderSpeculationRules));
   }
 };
@@ -2143,7 +2143,7 @@ var UIStrings9 = {
    */
   speculativeLoadingStatusForThisPage: "Speculative loading status for this page",
   /**
-   *@description Label for failure reason of preloeading
+   *@description Label for failure reason of preloading
    */
   detailsFailureReason: "Failure reason",
   /**

@@ -17,7 +17,7 @@ async function renderPreloadingMismatchedHeadersGrid(data) {
     await RenderCoordinator.done();
     return component;
 }
-async function testPreloadingMismatchedHeadersGrid(recievedMismatchedHeaders, rowExpected) {
+async function testPreloadingMismatchedHeadersGrid(receivedMismatchedHeaders, rowExpected) {
     const data = {
         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
         key: {
@@ -29,7 +29,7 @@ async function testPreloadingMismatchedHeadersGrid(recievedMismatchedHeaders, ro
         status: "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */,
         prerenderStatus: "ActivationNavigationParameterMismatch" /* Protocol.Preload.PrerenderFinalStatus.ActivationNavigationParameterMismatch */,
         disallowedMojoInterface: null,
-        mismatchedHeaders: recievedMismatchedHeaders,
+        mismatchedHeaders: receivedMismatchedHeaders,
         ruleSetIds: ['ruleSetId:1'],
         nodeIds: [1],
     };

@@ -354,7 +354,7 @@ describe('ConsoleFormat', () => {
             assert.isFalse(styles.has('background-image'));
             Console.ConsoleFormat.updateStyle(styles, 'background-image:url("file://c/a.txt")'); // With double quotes.
             assert.isFalse(styles.has('background-image'));
-            Console.ConsoleFormat.updateStyle(styles, 'background-image:url(\'http://localhost/a.png\')'); // With single quots.
+            Console.ConsoleFormat.updateStyle(styles, 'background-image:url(\'http://localhost/a.png\')'); // With single quotes.
             assert.isFalse(styles.has('background-image'));
             Console.ConsoleFormat.updateStyle(styles, 'background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAAAAABzHgM7AAAAF0lEQVR42mM4Awb/wYCBYg6EgghRzAEAWDWBGQVyKPMAAAAASUVORK5CYII=), url(http://localhost/a.png)'); // Multiple URLs
             assert.isFalse(styles.has('background-image'));

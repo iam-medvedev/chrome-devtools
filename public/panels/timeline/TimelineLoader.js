@@ -64,6 +64,22 @@ export class TimelineLoader {
         });
         return loader;
     }
+    static loadFromParsedJsonFile(contents, client) {
+        const loader = new TimelineLoader(client);
+        window.setTimeout(async () => {
+            client.loadingStarted();
+            try {
+                loader.#processParsedFile(contents);
+                await loader.close();
+            }
+            catch (e) {
+                await loader.close();
+                const message = e instanceof Error ? e.message : '';
+                return loader.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS, { PH1: message }));
+            }
+        });
+        return loader;
+    }
     static loadFromEvents(events, client) {
         const loader = new TimelineLoader(client);
         window.setTimeout(async () => {

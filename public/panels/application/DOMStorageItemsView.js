@@ -95,7 +95,7 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
     }
     itemsCleared() {
         super.itemsCleared();
-        UI.ARIAUtils.alert(i18nString(UIStrings.domStorageItemsCleared));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.domStorageItemsCleared));
     }
     domStorageItemRemoved(event) {
         if (!this.isShowing()) {
@@ -105,7 +105,7 @@ export class DOMStorageItemsView extends KeyValueStorageItemsView {
     }
     itemRemoved(key) {
         super.itemRemoved(key);
-        UI.ARIAUtils.alert(i18nString(UIStrings.domStorageItemDeleted));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.domStorageItemDeleted));
     }
     domStorageItemAdded(event) {
         if (!this.isShowing()) {

@@ -82,17 +82,17 @@ const UIStrings = {
      */
     shortcutRemoved: '{PH1} Shortcut removed',
     /**
-     *@description Screen reader announcment for shortcut restored to default
+     *@description Screen reader announcement for shortcut restored to default
      */
     shortcutChangesRestored: 'Changes to shortcut restored to default',
     /**
-     *@description Screen reader announcment for applied short cut changes
+     *@description Screen reader announcement for applied short cut changes
      */
     shortcutChangesApplied: 'Changes to shortcut applied',
     /**
-     *@description Screen reader announcment for discarded short cut changes
+     *@description Screen reader announcement for discarded short cut changes
      */
-    shortcutChangesDiscared: 'Changes to shortcut discarded',
+    shortcutChangesDiscarded: 'Changes to shortcut discarded',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/KeybindsSettingsTab.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -353,12 +353,12 @@ export class ShortcutListItem {
         this.element.appendChild(this.createIconButton(i18nString(UIStrings.ResetShortcutsForAction), 'undo', '', 'undo', this.resetShortcutsToDefaults.bind(this)));
         this.confirmButton = this.createIconButton(i18nString(UIStrings.confirmChanges), 'checkmark', 'keybinds-confirm-button', 'confirm', () => {
             this.settingsTab.commitChanges(this.item, this.editedShortcuts);
-            UI.ARIAUtils.alert(i18nString(UIStrings.shortcutChangesApplied, { PH1: this.item.title() }));
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesApplied, { PH1: this.item.title() }));
         });
         this.element.appendChild(this.confirmButton);
         this.element.appendChild(this.createIconButton(i18nString(UIStrings.discardChanges), 'cross', 'keybinds-cancel-button', 'cancel', () => {
             this.settingsTab.stopEditing(this.item);
-            UI.ARIAUtils.alert(i18nString(UIStrings.shortcutChangesDiscared));
+            UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesDiscarded));
         }));
         this.element.addEventListener('keydown', event => {
             if (Platform.KeyboardUtilities.isEscKey(event)) {
@@ -417,7 +417,7 @@ export class ShortcutListItem {
                 this.update();
                 this.focus();
                 this.validateInputs();
-                UI.ARIAUtils.alert(i18nString(UIStrings.shortcutRemoved, { PH1: this.item.title() }));
+                UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutRemoved, { PH1: this.item.title() }));
             }));
         }
         else {
@@ -517,7 +517,7 @@ export class ShortcutListItem {
         });
         this.update();
         this.focus();
-        UI.ARIAUtils.alert(i18nString(UIStrings.shortcutChangesRestored, { PH1: this.item.title() }));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.shortcutChangesRestored, { PH1: this.item.title() }));
     }
     onEscapeKeyPressed(event) {
         const activeElement = Platform.DOMUtilities.deepActiveElement(document);

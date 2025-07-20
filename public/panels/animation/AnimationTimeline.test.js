@@ -7,6 +7,7 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings, } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Elements from '../elements/elements.js';
 import * as Animation from './animation.js';
 const TIME_ANIMATION_PAYLOAD = {
@@ -404,13 +405,15 @@ describeWithMockConnection('AnimationTimeline', () => {
         const waitForPreviewsManualPromise = new ManualPromise();
         const waitForAnimationGroupSelectedPromise = new ManualPromise();
         const waitForScheduleRedrawAfterAnimationGroupUpdated = new ManualPromise();
+        let toolbarViewStub;
         let domModel;
         let animationModel;
         let contentDocument;
         beforeEach(async () => {
             stubbedAnimationDOMNode = stubAnimationDOMNode();
             stubAnimationGroup();
-            view = Animation.AnimationTimeline.AnimationTimeline.instance({ forceNew: true });
+            toolbarViewStub = createViewFunctionStub(Animation.AnimationTimeline.AnimationTimeline);
+            view = new Animation.AnimationTimeline.AnimationTimeline(toolbarViewStub);
             view.markAsRoot();
             renderElementIntoDOM(view);
             sinon.stub(view, 'animationGroupSelectedForTest').callsFake(() => {
@@ -472,15 +475,8 @@ describeWithMockConnection('AnimationTimeline', () => {
         it('should disable global controls after a scroll driven animation is selected', async () => {
             const preview = await waitFor('.animation-buffer-preview', view.element.shadowRoot);
             preview.click();
-            await waitForAnimationGroupSelectedPromise.wait();
-            const playbackRateButtons = [...view.element.shadowRoot.querySelectorAll('.animation-playback-rate-button')];
-            assert.isTrue(playbackRateButtons.every(button => button.getAttribute('disabled')), 'All the playback rate buttons are disabled');
-            const timelineToolbar = view.element.shadowRoot.querySelector('.animation-timeline-toolbar');
-            const pauseAllButton = await waitFor('[aria-label=\'Pause all\']', timelineToolbar);
-            assert.isTrue(pauseAllButton.disabled, 'Pause all button is disabled');
-            const controlsToolbar = view.element.shadowRoot.querySelector('.animation-controls-toolbar');
-            const replayButton = await waitFor('[aria-label=\'Replay timeline\']', controlsToolbar);
-            assert.isTrue(replayButton.disabled, 'Replay button is disabled');
+            const toolbarViewInput = await toolbarViewStub.nextInput;
+            assert.isTrue(toolbarViewInput.playbackRateButtonsDisabled);
             cancelAllPendingRaf();
         });
         it('should show current time text in pixels', async () => {

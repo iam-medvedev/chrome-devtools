@@ -37,9 +37,6 @@ function finalize(partialModel) {
 }
 export function generateInsight(parsedTrace, context) {
     const scripts = parsedTrace.Scripts.scripts.filter(script => {
-        if (!context.navigation) {
-            return false;
-        }
         if (script.frame !== context.frameId) {
             return false;
         }

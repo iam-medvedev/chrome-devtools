@@ -7,6 +7,7 @@ import { type TableDataRow } from './Table.js';
 export declare class ModernHTTP extends BaseInsightComponent<ModernHTTPInsightModel> {
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     createOverlays(): Trace.Types.Overlays.Overlay[];
     mapToRow(req: Trace.Types.Events.SyntheticNetworkRequest): TableDataRow;

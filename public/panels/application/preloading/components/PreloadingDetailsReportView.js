@@ -233,9 +233,9 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
         const action = PreloadingString.capitalizedAction(attempt.action);
-        let maybeFellback = Lit.nothing;
+        let maybeFallback = Lit.nothing;
         if (isFallbackToPrefetch) {
-            maybeFellback = html `${i18nString(UIStrings.automaticallyFellBackToPrefetch)}`;
+            maybeFallback = html `${i18nString(UIStrings.automaticallyFellBackToPrefetch)}`;
         }
         let maybeInspectButton = Lit.nothing;
         (() => {
@@ -276,7 +276,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         <devtools-report-key>${i18nString(UIStrings.detailsAction)}</devtools-report-key>
         <devtools-report-value>
           <div class="text-ellipsis" title="">
-            ${action} ${maybeFellback} ${maybeInspectButton}
+            ${action} ${maybeFallback} ${maybeInspectButton}
           </div>
         </devtools-report-value>
     `;

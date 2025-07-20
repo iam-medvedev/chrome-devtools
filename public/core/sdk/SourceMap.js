@@ -31,11 +31,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { buildOriginalScopes, decodePastaRanges } from './SourceMapFunctionRanges.js';
-import { decodeScopes } from './SourceMapScopes.js';
 import { SourceMapScopesInfo } from './SourceMapScopesInfo.js';
 /**
  * Parses the {@link content} as JSON, ignoring BOM markers in the beginning, and
@@ -118,7 +118,7 @@ export class SourceMap {
         if (sourceIdx >= 0) {
             if (!this.#scopesInfo) {
                 // First time seeing this sourcemap, create an new empty scopesInfo object
-                this.#scopesInfo = new SourceMapScopesInfo(this, [], []);
+                this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
             }
             if (!this.#scopesInfo.hasOriginalScopes(sourceIdx)) {
                 const originalScopes = buildOriginalScopes(ranges);
@@ -424,12 +424,12 @@ export class SourceMap {
         }
         if (Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */)) {
             if (!this.#scopesInfo) {
-                this.#scopesInfo = new SourceMapScopesInfo(this, [], []);
+                this.#scopesInfo = new SourceMapScopesInfo(this, { scopes: [], ranges: [] });
             }
-            if (map.originalScopes && map.generatedRanges) {
-                const { originalScopes, generatedRanges } = decodeScopes(map, { line: baseLineNumber, column: baseColumnNumber });
-                this.#scopesInfo.addOriginalScopes(originalScopes);
-                this.#scopesInfo.addGeneratedRanges(generatedRanges);
+            if (map.scopes) {
+                const { scopes, ranges } = ScopesCodec.decode(map, { mode: 2 /* ScopesCodec.DecodeMode.LAX */, generatedOffset: { line: baseLineNumber, column: baseColumnNumber } });
+                this.#scopesInfo.addOriginalScopes(scopes);
+                this.#scopesInfo.addGeneratedRanges(ranges);
             }
             else if (map.x_com_bloomberg_sourcesFunctionMappings) {
                 const originalScopes = this.parseBloombergScopes(map);
@@ -437,7 +437,7 @@ export class SourceMap {
             }
             else {
                 // Keep the OriginalScope[] tree array consistent with sources.
-                this.#scopesInfo.addOriginalScopes(new Array(map.sources.length));
+                this.#scopesInfo.addOriginalScopes(new Array(map.sources.length).fill(null));
             }
         }
     }
@@ -452,7 +452,7 @@ export class SourceMap {
         const names = map.names ?? [];
         return scopeList.map(rawScopes => {
             if (!rawScopes) {
-                return undefined;
+                return null;
             }
             const ranges = decodePastaRanges(rawScopes, names);
             return buildOriginalScopes(ranges);

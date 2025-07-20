@@ -1683,7 +1683,7 @@ var UIStrings2 = {
    */
   filterByUrl: "Filter by URL",
   /**
-   *@description Label for the type filter in the Converage Panel
+   *@description Label for the type filter in the Coverage Panel
    */
   filterCoverageByType: "Filter coverage by type",
   /**

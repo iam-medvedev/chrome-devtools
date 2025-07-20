@@ -150,8 +150,13 @@ export class MainImpl {
         await this.requestAndRegisterLocaleData();
         Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting('sync-preferences').get());
         const veLogging = config.devToolsVeLogging;
+        // Used by e2e_non_hosted to put VE Logs into "test mode".
+        const veLogsTestMode = Common.Settings.Settings.instance().createSetting('veLogsTestMode', false).get();
         if (veLogging?.enabled) {
-            if (veLogging?.testing) {
+            // Note: as of https://crrev.com/c/6734500 landing, veLogging.testing is hard-coded to false.
+            // But the e2e tests (test/conductor/frontend_tab.ts) use this to enable this flag for e2e tests.
+            // TODO(crbug.com/432411398): remove the host config for VE logs + find a better way to set this up in e2e tests.
+            if (veLogging?.testing || veLogsTestMode) {
                 VisualLogging.setVeDebugLoggingEnabled(true, "Test" /* VisualLogging.DebugLoggingFormat.TEST */);
                 const options = {
                     processingThrottler: new Common.Throttler.Throttler(0),
@@ -448,8 +453,8 @@ export class MainImpl {
             const Timeline = await import('../../panels/timeline/timeline.js');
             Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
         }
-        // Initialize ARIAUtils.alert Element
-        UI.ARIAUtils.getOrCreateAlertElement();
+        // Initialize elements for the live announcer functionality for a11y.
+        UI.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
         UI.DockController.DockController.instance().announceDockLocation();
         // Allow UI cycles to repaint prior to creating connection.
         window.setTimeout(this.#initializeTarget.bind(this), 0);

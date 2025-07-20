@@ -143,14 +143,14 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.strictEqual(registration.title, 'TestExtension');
         assert.isUndefined(registration.scheme);
         assert.isFunction(registration.handler);
-        assert.isFunction(registration.filter);
+        assert.isFunction(registration.shouldHandleOpenResource);
         // Now unregister the extension.
         context.chrome.devtools?.panels.setOpenResourceHandler();
         const unregistration = await (await unregisterLinkHandlerSpy).args[0];
         assert.strictEqual(unregistration.title, 'TestExtension');
         assert.isUndefined(unregistration.scheme);
         assert.isFunction(unregistration.handler);
-        assert.isFunction(unregistration.filter);
+        assert.isFunction(unregistration.shouldHandleOpenResource);
     });
     it('can register and unregister a scheme specific open resource handler', async () => {
         const registerLinkHandlerSpy = spyCall(Components.Linkifier.Linkifier, 'registerLinkHandler');
@@ -160,14 +160,14 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
         assert.strictEqual(registration.title, 'TestExtension');
         assert.strictEqual(registration.scheme, 'foo-extension:');
         assert.isFunction(registration.handler);
-        assert.isFunction(registration.filter);
+        assert.isFunction(registration.shouldHandleOpenResource);
         // Now unregister the extension.
         context.chrome.devtools?.panels.setOpenResourceHandler();
         const unregistration = await (await unregisterLinkHandlerSpy).args[0];
         assert.strictEqual(unregistration.title, 'TestExtension');
         assert.isUndefined(unregistration.scheme);
         assert.isFunction(unregistration.handler);
-        assert.isFunction(unregistration.filter);
+        assert.isFunction(unregistration.shouldHandleOpenResource);
     });
 });
 describeWithDevtoolsExtension('Extensions', {}, context => {

@@ -20,10 +20,6 @@ const UIStringsNotTranslate = {
      *@description The footer disclaimer that links to more information about the AI feature.
      */
     learnAbout: 'Learn about AI in DevTools',
-    /**
-     *@description Disclaimer text right after the chat input.
-     */
-    inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
 };
 const lockedString = i18n.i18n.lockedString;
 export const DEFAULT_VIEW = (input, _output, target) => {
@@ -57,6 +53,13 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           <p>
             To chat about an item, right-click and select${' '}
             <strong>Ask AI</strong>.
+            <button
+              class="link"
+              role="link"
+              jslog=${VisualLogging.link('open-ai-settings').track({ click: true })}
+              @click=${() => { void UI.ViewManager.ViewManager.instance().showView('chrome-ai'); }}
+            >${lockedString(UIStringsNotTranslate.learnAbout)}
+            </button>
           </p>
         </div>
         <div class="content">
@@ -73,23 +76,6 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             `)}
         </div>
       </div>
-      <footer class="ai-assistance-explore-footer" jslog=${VisualLogging.section('footer')}>
-        <p>
-          ${lockedString(UIStringsNotTranslate.inputDisclaimerForEmptyState)}
-          <button
-            class="link"
-            role="link"
-            jslog=${VisualLogging.link('open-ai-settings').track({
-        click: true,
-    })}
-            @click=${() => {
-        void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
-    }}
-          >
-            ${lockedString(UIStringsNotTranslate.learnAbout)}
-          </button>
-        </p>
-      </footer>
     `, target, { host: target });
     // clang-format on
 };

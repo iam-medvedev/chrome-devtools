@@ -4,7 +4,7 @@ import * as UI from "./../../legacy/legacy.js";
 function copyTextToClipboard(text, alert) {
   Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
   if (alert) {
-    UI.ARIAUtils.alert(alert);
+    UI.ARIAUtils.LiveAnnouncer.alert(alert);
   }
 }
 export {

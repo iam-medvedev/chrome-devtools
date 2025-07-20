@@ -20,6 +20,7 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     private filter;
     constructor(client: Client);
     static loadFromFile(file: File, client: Client): Promise<TimelineLoader>;
+    static loadFromParsedJsonFile(contents: ParsedJSONFile, client: Client): TimelineLoader;
     static loadFromEvents(events: Trace.Types.Events.Event[], client: Client): TimelineLoader;
     static loadFromTraceFile(traceFile: Trace.Types.File.TraceFile, client: Client): TimelineLoader;
     static loadFromCpuProfile(profile: Protocol.Profiler.Profile, client: Client): TimelineLoader;
@@ -37,3 +38,8 @@ export declare class TimelineLoader implements Common.StringOutputStream.OutputS
     private finalizeTrace;
     traceFinalizedForTest(): Promise<void>;
 }
+/**
+ * Used when we parse the input, but do not yet know if it is a raw CPU Profile or a Trace
+ **/
+type ParsedJSONFile = Trace.Types.File.Contents | Protocol.Profiler.Profile;
+export {};

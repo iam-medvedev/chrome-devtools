@@ -37,7 +37,7 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
         this.treeElements = new Map();
         this.workspaceDiff = workspaceDiff;
         this.workspaceDiff.modifiedUISourceCodes().forEach(this.addUISourceCode.bind(this));
-        this.workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeMofiedStatusChanged, this);
+        this.workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);
     }
     selectedUISourceCode() {
         // @ts-expect-error uiSourceCode seems to be dynamically attached.
@@ -46,7 +46,7 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
     selectionChanged() {
         this.dispatchEventToListeners("SelectedUISourceCodeChanged" /* Events.SELECTED_UI_SOURCE_CODE_CHANGED */);
     }
-    uiSourceCodeMofiedStatusChanged(event) {
+    uiSourceCodeModifiedStatusChanged(event) {
         if (event.data.isModified) {
             this.addUISourceCode(event.data.uiSourceCode);
         }

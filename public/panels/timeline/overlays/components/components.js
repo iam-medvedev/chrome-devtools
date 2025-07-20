@@ -737,10 +737,14 @@ var EntryLabelOverlay = class _EntryLabelOverlay extends HTMLElement {
   #callTree = null;
   // Creates or gets the setting if it exists.
   #aiAnnotationsEnabledSetting = Common.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
-  #agent = new AiAssistanceModels.PerformanceAnnotationsAgent({
-    aidaClient: new Host.AidaClient.AidaClient(),
-    serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
-  });
+  #agent = new AiAssistanceModels.PerformanceAnnotationsAgent(
+    {
+      aidaClient: new Host.AidaClient.AidaClient(),
+      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
+    },
+    "drjones-performance"
+    /* AiAssistanceModels.ConversationType.PERFORMANCE */
+  );
   /**
    * We track this because when the user is in this flow we don't want the
    * empty annotation label to be removed on blur, as we take them to the flow &
@@ -973,7 +977,7 @@ var EntryLabelOverlay = class _EntryLabelOverlay extends HTMLElement {
       }
       try {
         this.#currAIButtonState = "generating_label";
-        UI.ARIAUtils.alert(UIStringsNotTranslate.generatingLabel);
+        UI.ARIAUtils.LiveAnnouncer.alert(UIStringsNotTranslate.generatingLabel);
         this.#render();
         this.#focusInputBox();
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);

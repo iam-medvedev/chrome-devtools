@@ -550,6 +550,29 @@ export class IDBDataView extends UI.View.SimpleView {
         }
         this.needsRefresh.setVisible(true);
     }
+    async resolveArrayKey(key) {
+        const { properties } = await key.getOwnProperties(false /* generatePreview */);
+        if (!properties) {
+            return [];
+        }
+        const result = [];
+        const propertyPromises = properties.filter(property => !isNaN(Number(property.name))).map(async (property) => {
+            const value = property.value;
+            if (!value) {
+                return;
+            }
+            let propertyValue;
+            if (value.subtype === 'array') {
+                propertyValue = await this.resolveArrayKey(value);
+            }
+            else {
+                propertyValue = value.value;
+            }
+            result[Number(property.name)] = propertyValue;
+        });
+        await Promise.all(propertyPromises);
+        return result;
+    }
     async deleteButtonClicked(node) {
         if (!node) {
             node = this.dataGrid.selectedNode;
@@ -558,9 +581,7 @@ export class IDBDataView extends UI.View.SimpleView {
             }
         }
         const key = (this.isIndex ? node.data['primary-key'] : node.data.key);
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const keyValue = key.value;
+        const keyValue = key.subtype === 'array' ? await this.resolveArrayKey(key) : key.value;
         await this.model.deleteEntries(this.databaseId, this.objectStore.name, window.IDBKeyRange.only(keyValue));
         this.refreshObjectStoreCallback();
     }

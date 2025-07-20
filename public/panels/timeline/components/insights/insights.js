@@ -416,7 +416,10 @@ var BaseInsightComponent = class extends HTMLElement {
   #dispatchInsightToggle() {
     if (this.#selected) {
       this.dispatchEvent(new InsightDeactivated());
-      UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, null);
+      const focus = UI.Context.Context.instance().flavor(Utils.AIContext.AgentFocus);
+      if (focus && focus.data.type === "insight") {
+        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, null);
+      }
       return;
     }
     if (!this.data.insightSetKey || !this.model) {
@@ -559,8 +562,9 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    const context = new Utils.InsightAIContext.ActiveInsight(this.#model, this.data.bounds, this.#parsedTrace);
-    UI.Context.Context.instance().setFlavor(Utils.InsightAIContext.ActiveInsight, context);
+    const activeInsight = new Utils.InsightAIContext.ActiveInsight(this.#model, this.data.bounds, this.#parsedTrace);
+    const context = Utils.AIContext.AgentFocus.fromInsight(activeInsight);
+    UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
     const action3 = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action3.execute();
   }
@@ -2145,6 +2149,9 @@ var { html: html19 } = Lit19;
 var ModernHTTP = class extends BaseInsightComponent {
   static litTagName = Lit19.StaticHtml.literal`devtools-performance-modern-http`;
   internalName = "modern-http";
+  hasAskAiSupport() {
+    return true;
+  }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.LCP ?? null;
   }

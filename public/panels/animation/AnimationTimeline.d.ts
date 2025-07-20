@@ -4,9 +4,18 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AnimationGroupPreviewUI } from './AnimationGroupPreviewUI.js';
 import { AnimationUI } from './AnimationUI.js';
+interface ToolbarViewInput {
+    selectedPlaybackRate: number;
+    playbackRateButtonsDisabled: boolean;
+    allPaused: boolean;
+    onClearClick: () => void;
+    onTogglePauseAllClick: () => void;
+    onSetPlaybackRateClick: (playbackRate: number) => void;
+}
+type ToolbarView = (input: ToolbarViewInput, output: undefined, target: HTMLElement) => void;
 export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.AnimationModel.AnimationModel> {
     #private;
-    private constructor();
+    constructor(toolbarView?: ToolbarView);
     static instance(opts?: {
         forceNew: boolean;
     }): AnimationTimeline;
@@ -22,12 +31,9 @@ export declare class AnimationTimeline extends UI.Widget.VBox implements SDK.Tar
     private removeEventListeners;
     private nodeChanged;
     private createScrubber;
+    private performToolbarViewUpdate;
     private createHeader;
-    private handlePlaybackRateControlKeyDown;
-    private focusNextPlaybackRateButton;
-    private togglePauseAll;
     private setPlaybackRate;
-    private updatePlaybackControls;
     private controlButtonToggle;
     private updateControlButton;
     private effectivePlaybackRate;
@@ -90,3 +96,4 @@ export declare class StepTimingFunction {
 export declare class AnimationGroupRevealer implements Common.Revealer.Revealer<SDK.AnimationModel.AnimationGroup> {
     reveal(animationGroup: SDK.AnimationModel.AnimationGroup): Promise<void>;
 }
+export {};

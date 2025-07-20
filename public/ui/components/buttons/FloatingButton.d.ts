@@ -19,7 +19,11 @@ import '../icon_button/icon_button.js';
  *
  * @attr icon-name - The basename of the icon file (not including the `.svg`
  *                   suffix).
- * @prop {String} iconName - The `"icon-name"` attribute is reflected as property.
+ * @attr jslogcontext - The context for the `jslog` attribute. A `jslog`
+ *                      attribute is generated automatically with the
+ *                      provided context.
+ * @prop {String} iconName - The `"icon-name"` attribute is reflected as a property.
+ * @prop {String} jslogContext - The `"jslogcontext"` attribute is reflected as a property.
  */
 export declare class FloatingButton extends HTMLElement {
     #private;
@@ -38,17 +42,20 @@ export declare class FloatingButton extends HTMLElement {
      * @param the new icon name or `null` to unset.
      */
     set iconName(iconName: string | null);
+    get jslogContext(): string | null;
+    set jslogContext(jslogContext: string | null);
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
 }
 /**
  * Helper function to programmatically create a `FloatingButton` instance with a
  * given `iconName` and `title`.
  *
- * @param iconName the name of the icon to use.
+ * @param iconName the name of the icon to use
  * @param title the tooltip for the `FloatingButton`
+ * @param jslogContext the context string for the `jslog` attribute
  * @returns the newly created `FloatingButton` instance.
  */
-export declare const create: (iconName: string, title: string) => FloatingButton;
+export declare const create: (iconName: string, title: string, jslogContext?: string) => FloatingButton;
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-floating-button': FloatingButton;

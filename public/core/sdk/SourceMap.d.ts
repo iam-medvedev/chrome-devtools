@@ -2,7 +2,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import { type NamedFunctionRange } from './SourceMapFunctionRanges.js';
-import { type Position as GeneratedPosition } from './SourceMapScopes.js';
+import type { Position as GeneratedPosition } from './SourceMapScopes.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -19,6 +19,7 @@ export interface SourceMapV3Object {
     sourcesContent?: Array<string | null>;
     names?: string[];
     ignoreList?: number[];
+    scopes?: string;
     originalScopes?: string[];
     generatedRanges?: string;
     x_google_linecount?: number;

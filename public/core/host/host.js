@@ -13,6 +13,7 @@ __export(AidaClient_exports, {
   CLIENT_NAME: () => CLIENT_NAME,
   CitationSourceType: () => CitationSourceType,
   ClientFeature: () => ClientFeature,
+  EditType: () => EditType,
   FunctionalityType: () => FunctionalityType,
   HostConfigTracker: () => HostConfigTracker,
   RecitationAction: () => RecitationAction,
@@ -532,24 +533,9 @@ var InspectorFrontendHostStub = class {
     return this.#fileSystem;
   }
   loadNetworkResource(url, _headers, streamId, callback) {
-    function isGzip(ab) {
-      const buf = new Uint8Array(ab);
-      if (!buf || buf.length < 3) {
-        return false;
-      }
-      return buf[0] === 31 && buf[1] === 139 && buf[2] === 8;
-    }
     fetch(url).then(async (result) => {
-      const resultArrayBuf = await result.arrayBuffer();
-      let decoded = resultArrayBuf;
-      if (isGzip(resultArrayBuf)) {
-        const ds = new DecompressionStream("gzip");
-        const writer = ds.writable.getWriter();
-        void writer.write(resultArrayBuf);
-        void writer.close();
-        decoded = ds.readable;
-      }
-      const text = await new Response(decoded).text();
+      const respBuffer = await result.arrayBuffer();
+      const text = await Common2.Gzip.arrayBufferToString(respBuffer);
       return text;
     }).then(function(text) {
       streamWrite(streamId, text);
@@ -670,6 +656,20 @@ var InspectorFrontendHostStub = class {
   showContextMenuAtPoint(_x, _y, _items, _document) {
     throw new Error("Soft context menu should be used");
   }
+  /**
+   * **Hosted mode** is when DevTools is loaded over `http(s)://` rather than from `devtools://`.
+   * It does **not** indicate whether the frontend is connected to a valid CDP target.
+   *
+   *  | Example case                                         | Mode           | Example URL                                                                   |
+   *  | :--------------------------------------------------- | :------------- | :---------------------------------------------------------------------------- |
+   *  | typical devtools: (un)docked w/ native CDP bindings  | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?targetType=tab&...`            |
+   *  | tab href is `devtools://…?ws=…`                      | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?ws=localhost:9228/...`         |
+   *  | tab href is `devtools://…` but no connection         | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html`                               |
+   *  | tab href is `https://…?ws=` (connected)              | **Hosted**     | `https://chrome-devtools-frontend.appspot.com/serve_rev/@.../worker_app.html` |
+   *  | tab href is `http://…` but no connection             | **Hosted**     | `http://localhost:9222/devtools/inspector.html?ws=localhost:9222/...`         |
+   *
+   * See also `canDock` which has similar semantics.
+   */
   isHostedMode() {
     return true;
   }
@@ -684,6 +684,11 @@ var InspectorFrontendHostStub = class {
     });
   }
   registerAidaClientEvent(_request, callback) {
+    callback({
+      error: "Not implemented"
+    });
+  }
+  aidaCodeComplete(_request, callback) {
     callback({
       error: "Not implemented"
     });
@@ -801,6 +806,16 @@ var UserTier;
   UserTier2[UserTier2["BETA"] = 2] = "BETA";
   UserTier2[UserTier2["PUBLIC"] = 3] = "PUBLIC";
 })(UserTier || (UserTier = {}));
+var EditType;
+(function(EditType2) {
+  EditType2[EditType2["EDIT_TYPE_UNSPECIFIED"] = 0] = "EDIT_TYPE_UNSPECIFIED";
+  EditType2[EditType2["ADD"] = 1] = "ADD";
+  EditType2[EditType2["DELETE"] = 2] = "DELETE";
+  EditType2[EditType2["PASTE"] = 3] = "PASTE";
+  EditType2[EditType2["UNDO"] = 4] = "UNDO";
+  EditType2[EditType2["REDO"] = 5] = "REDO";
+  EditType2[EditType2["ACCEPT_COMPLETION"] = 6] = "ACCEPT_COMPLETION";
+})(EditType || (EditType = {}));
 var RecitationAction;
 (function(RecitationAction2) {
   RecitationAction2["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";
@@ -1004,6 +1019,48 @@ var AidaClient = class {
       ...clientEvent
     }), resolve);
     return promise;
+  }
+  async completeCode(request) {
+    if (!InspectorFrontendHostInstance.aidaCodeComplete) {
+      throw new Error("aidaCodeComplete is not available");
+    }
+    const { promise, resolve } = Promise.withResolvers();
+    InspectorFrontendHostInstance.aidaCodeComplete(JSON.stringify(request), resolve);
+    const completeCodeResult = await promise;
+    if (completeCodeResult.error) {
+      throw new Error(`Cannot send request: ${completeCodeResult.error} ${completeCodeResult.detail || ""}`);
+    }
+    const response = completeCodeResult.response;
+    if (!response?.length) {
+      throw new Error("Empty response");
+    }
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(response);
+    } catch (error) {
+      throw new Error("Cannot parse response: " + response, { cause: error });
+    }
+    const generatedSamples = [];
+    let metadata = { rpcGlobalId: 0 };
+    if ("metadata" in parsedResponse) {
+      metadata = parsedResponse.metadata;
+    }
+    if ("generatedSamples" in parsedResponse) {
+      for (const generatedSample of parsedResponse.generatedSamples) {
+        const sample = {
+          generationString: generatedSample.generationString,
+          score: generatedSample.score,
+          sampleId: generatedSample.sampleId
+        };
+        if ("metadata" in generatedSample && "attributionMetadata" in generatedSample.metadata) {
+          sample.attributionMetadata = generatedSample.metadata.attributionMetadata;
+        }
+        generatedSamples.push(sample);
+      }
+    } else {
+      return null;
+    }
+    return { generatedSamples, metadata };
   }
 };
 function convertToUserTierEnum(userTier) {

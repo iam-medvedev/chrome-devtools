@@ -229,7 +229,8 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
                         return;
                     }
                     // The other side of setFlavor is handleTraceEntryNodeFlavorChange() in FreestylerPanel
-                    UI.Context.Context.instance().setFlavor(Utils.AICallTree.AICallTree, aiCallTree);
+                    const context = Utils.AIContext.AgentFocus.fromCallTree(aiCallTree);
+                    UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
                     return action.execute();
                 }, { jslogContext: PERF_AI_ACTION_ID });
             }
@@ -940,7 +941,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
             context.moveTo(begin, y);
             context.lineTo(end, y);
         }
-        // The left whisker starts at the enty timestamp, and continues until the start of the box (processingStart).
+        // The left whisker starts at the entry timestamp, and continues until the start of the box (processingStart).
         const leftWhiskerX = timeToPixel(entry.ts);
         // The right whisker ends at (entry.ts + entry.dur). We draw the line from the end of the box (processingEnd).
         const rightWhiskerX = timeToPixel(Trace.Types.Timing.Micro(entry.ts + entry.dur));

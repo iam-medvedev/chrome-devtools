@@ -4,7 +4,7 @@ import * as SDK from '../../core/sdk/sdk.js';
  *
  * Utilizes a benchmark from Lighthouse (LH BenchmarkIndex) to assess performance. This CPU benchmark serves as
  * a simple alias for device performance - but since results aren't exactly linear with clock speed a "bisect"
- * is run to find the ideal DevTools CPU throttling rate to recieve the same results on the benchmark.
+ * is run to find the ideal DevTools CPU throttling rate to receive the same results on the benchmark.
  *
  * @see go/cpq:adaptive-throttling
  * @see https://github.com/connorjclark/devtools-throttling-benchmarks/blob/main/calibrate.js

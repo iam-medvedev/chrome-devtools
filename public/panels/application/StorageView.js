@@ -378,7 +378,7 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
             this.clearButton.textContent = label;
             this.clearButton.focus();
         }, 500);
-        UI.ARIAUtils.alert(i18nString(UIStrings.SiteDataCleared));
+        UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.SiteDataCleared));
     }
     static clear(target, storageKey, originForCookies, selectedStorageTypes, includeThirdPartyCookies) {
         console.assert(Boolean(storageKey));
