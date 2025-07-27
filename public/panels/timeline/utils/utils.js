@@ -1736,12 +1736,12 @@ __export(AIContext_exports, {
   AgentFocus: () => AgentFocus
 });
 var AgentFocus = class _AgentFocus {
-  static fromInsight(insight) {
+  static fromInsight(parsedTrace, insight, insightSetBounds) {
     return new _AgentFocus({
       type: "insight",
-      parsedTrace: insight.parsedTrace,
-      insight: insight.insight,
-      insightSetBounds: insight.insightSetBounds
+      parsedTrace,
+      insight,
+      insightSetBounds
     });
   }
   static fromCallTree(callTree) {
@@ -1946,6 +1946,7 @@ async function domNodesForBackendIds(frameId, nodeIds) {
 // gen/front_end/panels/timeline/utils/Helpers.js
 var Helpers_exports = {};
 __export(Helpers_exports, {
+  RevealableInsight: () => RevealableInsight,
   createUrlLabels: () => createUrlLabels,
   formatOriginWithEntity: () => formatOriginWithEntity,
   getThrottlingRecommendations: () => getThrottlingRecommendations,
@@ -2051,6 +2052,12 @@ function formatOriginWithEntity(url, entity, parenthesizeEntity) {
   originWithEntity = Platform.StringUtilities.trimEndWithMaxLength(originWithEntity, MAX_ORIGIN_LENGTH);
   return originWithEntity;
 }
+var RevealableInsight = class {
+  insight;
+  constructor(insight) {
+    this.insight = insight;
+  }
+};
 
 // gen/front_end/panels/timeline/utils/IgnoreList.js
 var IgnoreList_exports = {};
@@ -2177,32 +2184,9 @@ var loadImageForTesting = loadImage;
 // gen/front_end/panels/timeline/utils/InsightAIContext.js
 var InsightAIContext_exports = {};
 __export(InsightAIContext_exports, {
-  AIQueries: () => AIQueries,
-  ActiveInsight: () => ActiveInsight
+  AIQueries: () => AIQueries
 });
 import * as Trace9 from "./../../../models/trace/trace.js";
-var ActiveInsight = class {
-  #insight;
-  #insightSetBounds;
-  #parsedTrace;
-  constructor(insight, insightSetBounds, parsedTrace) {
-    this.#insight = insight;
-    this.#insightSetBounds = insightSetBounds;
-    this.#parsedTrace = parsedTrace;
-  }
-  get insight() {
-    return this.#insight;
-  }
-  get insightSetBounds() {
-    return this.#insightSetBounds;
-  }
-  get parsedTrace() {
-    return this.#parsedTrace;
-  }
-  title() {
-    return this.#insight.title;
-  }
-};
 var AIQueries = class {
   /**
    * Returns the set of network requests that occurred within the timeframe of this Insight.

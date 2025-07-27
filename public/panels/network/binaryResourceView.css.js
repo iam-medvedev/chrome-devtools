@@ -13,6 +13,7 @@ export default `/*
   border-top: 1px solid var(--sys-color-divider);
   border-bottom: 0;
   padding-left: 5px;
+  flex: none;
 }
 
 .binary-view-copied-text {

@@ -1788,6 +1788,7 @@ export interface FireAnimationFrame extends Complete {
         };
     };
 }
+export declare function isFireAnimationFrame(event: Event): event is FireAnimationFrame;
 export interface RequestAnimationFrame extends Instant {
     name: Name.REQUEST_ANIMATION_FRAME;
     args: Args & {
@@ -1832,6 +1833,7 @@ export interface RequestIdleCallback extends Instant {
         };
     };
 }
+export declare function isRequestIdleCallback(event: Event): event is RequestIdleCallback;
 export interface WebSocketCreate extends Instant {
     name: Name.WEB_SOCKET_CREATE;
     args: Args & {

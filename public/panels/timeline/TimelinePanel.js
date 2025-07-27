@@ -63,7 +63,7 @@ import { Tracker } from './FreshRecording.js';
 import { IsolateSelector } from './IsolateSelector.js';
 import { AnnotationModifiedEvent, ModificationsManager } from './ModificationsManager.js';
 import * as Overlays from './overlays/overlays.js';
-import { cpuprofileJsonGenerator, traceJsonGenerator } from './SaveFileFormatter.js';
+import { traceJsonGenerator } from './SaveFileFormatter.js';
 import { StatusDialog } from './StatusDialog.js';
 import { TimelineController } from './TimelineController.js';
 import { Tab } from './TimelineDetailsView.js';
@@ -81,7 +81,7 @@ const UIStrings = {
     /**
      *@description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
      */
-    dropTimelineFileOrUrlHere: 'Drop timeline file or URL here',
+    dropTimelineFileOrUrlHere: 'Drop trace file or URL here',
     /**
      *@description Title of capture layers and pictures setting in timeline panel of the performance panel
      */
@@ -109,11 +109,11 @@ const UIStrings = {
     /**
      *@description Tooltip text that appears when hovering over the largeicon load button
      */
-    loadProfile: 'Load profile…',
+    loadTrace: 'Load trace…',
     /**
      *@description Tooltip text that appears when hovering over the largeicon download button
      */
-    saveProfile: 'Save profile…',
+    saveTrace: 'Save trace…',
     /**
      *@description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
      */
@@ -195,10 +195,10 @@ const UIStrings = {
      */
     exportingFailed: 'Exporting the trace failed',
     /**
-     * @description Text to indicate the progress of a profile. Informs the user that we are currently
-     * creating a peformance profile.
+     * @description Text to indicate the progress of a trace. Informs the user that we are currently
+     * creating a performance trace.
      */
-    profiling: 'Profiling…',
+    tracing: 'Tracing…',
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
@@ -206,15 +206,15 @@ const UIStrings = {
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
-    loadingProfile: 'Loading profile…',
+    loadingTrace: 'Loading trace…',
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
-    processingProfile: 'Processing profile…',
+    processingTrace: 'Processing trace…',
     /**
      *@description Text in Timeline Panel of the Performance panel
      */
-    initializingProfiler: 'Initializing profiler…',
+    initializingTracing: 'Initializing tracing…',
     /**
      *
      * @description Text for exporting basic traces
@@ -523,6 +523,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         });
         this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.RevealAnnotation.eventName, event => {
             this.flameChart.revealAnnotation(event.annotation);
+        });
+        this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.HoverAnnotation.eventName, event => {
+            this.flameChart.hoverAnnotationInSidebar(event.annotation);
+        });
+        this.#sideBar.element.addEventListener(TimelineComponents.Sidebar.AnnotationHoverOut.eventName, () => {
+            this.flameChart.sidebarAnnotationHoverOut();
         });
         this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightSetHovered.eventName, event => {
             if (event.bounds) {
@@ -896,13 +902,13 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.appendToolbarItem(this.clearButton);
         // Load / Save
         this.loadButton =
-            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.loadProfile), 'import', undefined, 'timeline.load-from-file');
+            new UI.Toolbar.ToolbarButton(i18nString(UIStrings.loadTrace), 'import', undefined, 'timeline.load-from-file');
         this.loadButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
             this.selectFileToLoad();
         });
         this.saveButton = new UI.Toolbar.ToolbarMenuButton(this.#populateDownloadMenu.bind(this), true, false, 'timeline.save-to-file-more-options', 'download');
-        this.saveButton.setTitle(i18nString(UIStrings.saveProfile));
+        this.saveButton.setTitle(i18nString(UIStrings.saveTrace));
         if (Root.Runtime.experiments.isEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */)) {
             this.saveButton.element.addEventListener('contextmenu', event => {
                 event.preventDefault();
@@ -1189,48 +1195,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 metadata.visualTrackConfig = visualConfig;
             }
         }
-        metadata.enhancedTraceVersion =
-            config.savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
-        const traceStart = Platform.DateUtilities.toISO8601Compact(new Date());
-        let fileName;
-        if (metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
-            fileName = `CPU-${traceStart}.cpuprofile`;
-        }
-        else if (metadata?.enhancedTraceVersion) {
-            fileName = `EnhancedTraces-${traceStart}.json`;
-        }
-        else {
-            fileName = `Trace-${traceStart}.json`;
-        }
         try {
-            // TODO(crbug.com/1456818): Extract this logic and add more tests.
-            let traceAsString;
-            if (metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
-                const profileEvent = traceEvents.find(e => Trace.Types.Events.isSyntheticCpuProfile(e));
-                const profile = profileEvent?.args.data.cpuProfile;
-                if (profile) {
-                    // TODO(crbug.com/1456799): Currently use a hack way because we can't differentiate
-                    // cpuprofile from trace events when loading a file.
-                    // The loader will directly add the fake trace created from CpuProfile to the tracingModel.
-                    // And there is where the old saving logic saves the cpuprofile.
-                    // This will be solved when the CPUProfileHandler is done. Then we can directly get it
-                    // from the new traceEngine
-                    traceAsString = cpuprofileJsonGenerator(profile);
-                }
-            }
-            else {
-                const formattedTraceIter = traceJsonGenerator(traceEvents, {
-                    ...metadata,
-                    sourceMaps: config.savingEnhancedTrace ? metadata?.sourceMaps : undefined,
-                });
-                traceAsString = Array.from(formattedTraceIter).join('');
-            }
-            if (!traceAsString) {
-                throw new Error('Trace content empty');
-            }
-            await Workspace.FileManager.FileManager.instance().save(fileName, new TextUtils.ContentData.ContentData(traceAsString, /* isBase64=*/ false, 'application/json'), 
-            /* forceSaveAs=*/ true);
-            Workspace.FileManager.FileManager.instance().close(fileName);
+            await this.innerSaveToFile(traceEvents, metadata, config);
         }
         catch (e) {
             // We expect the error to be an Error class, but this deals with any weird case where it's not.
@@ -1242,6 +1208,36 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
             this.#showExportTraceErrorDialog(error);
         }
+    }
+    async innerSaveToFile(traceEvents, metadata, config) {
+        // Base the filename on the trace's time of recording
+        const isoDate = Platform.DateUtilities.toISO8601Compact(metadata.startTime ? new Date(metadata.startTime) : new Date());
+        const isCpuProfile = metadata.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */;
+        const { savingEnhancedTrace } = config;
+        metadata.enhancedTraceVersion =
+            savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
+        const fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` :
+            savingEnhancedTrace ? `EnhancedTraces-${isoDate}.json` :
+                `Trace-${isoDate}.json`);
+        let traceAsString;
+        if (isCpuProfile) {
+            const profile = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
+            traceAsString = JSON.stringify(profile);
+        }
+        else {
+            const formattedTraceIter = traceJsonGenerator(traceEvents, {
+                ...metadata,
+                sourceMaps: savingEnhancedTrace ? metadata.sourceMaps : undefined,
+            });
+            // If this string is larger than 536MB (2**29 - 23), V8 will throw RangeError here
+            traceAsString = Array.from(formattedTraceIter).join('');
+        }
+        if (!traceAsString.length) {
+            throw new Error('Trace content empty');
+        }
+        await Workspace.FileManager.FileManager.instance().save(fileName, new TextUtils.ContentData.ContentData(traceAsString, /* isBase64=*/ false, 'application/json'), 
+        /* forceSaveAs=*/ true);
+        Workspace.FileManager.FileManager.instance().close(fileName);
     }
     #showExportTraceErrorDialog(error) {
         if (this.statusDialog) {
@@ -1945,7 +1941,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.showRecordingStarted();
         if (this.statusDialog) {
             this.statusDialog.enableAndFocusButton();
-            this.statusDialog.updateStatus(i18nString(UIStrings.profiling));
+            this.statusDialog.updateStatus(i18nString(UIStrings.tracing));
             this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
             this.statusDialog.startTimer();
         }
@@ -1998,7 +1994,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             description: undefined,
         }, () => this.cancelLoading());
         this.statusDialog.showPane(this.statusPaneContainer);
-        this.statusDialog.updateStatus(i18nString(UIStrings.loadingProfile));
+        this.statusDialog.updateStatus(i18nString(UIStrings.loadingTrace));
         // FIXME: make loading from backend cancelable as well.
         if (!this.loader) {
             this.statusDialog.finish();
@@ -2012,7 +2008,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         }
     }
     async processingStarted() {
-        this.statusDialog?.updateStatus(i18nString(UIStrings.processingProfile));
+        this.statusDialog?.updateStatus(i18nString(UIStrings.processingTrace));
     }
     #listenForProcessingProgress() {
         this.#traceEngineModel.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, e => {
@@ -2293,7 +2289,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             buttonText: undefined,
         }, () => this.stopRecording());
         this.statusDialog.showPane(this.statusPaneContainer);
-        this.statusDialog.updateStatus(i18nString(UIStrings.initializingProfiler));
+        this.statusDialog.updateStatus(i18nString(UIStrings.initializingTracing));
         this.statusDialog.updateProgressBar(i18nString(UIStrings.bufferUsage), 0);
     }
     cancelLoading() {
@@ -2509,9 +2505,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             let responseTextForPassedInsights = '';
             for (const modelName in insightsForNav.model) {
                 const model = modelName;
-                const data = insightsForNav.model[model];
-                const activeInsight = new Utils.InsightAIContext.ActiveInsight(data, insightsForNav.bounds, parsedTrace);
-                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(activeInsight);
+                const insight = insightsForNav.model[model];
+                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(parsedTrace, insight);
                 if (!formatter.insightIsSupported()) {
                     // Not all Insights are integrated with "Ask AI" yet, let's avoid
                     // filling up the response with those ones because there will be no
@@ -2519,7 +2514,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                     continue;
                 }
                 const formatted = formatter.formatInsight({ headingLevel: 3 });
-                if (data.state === 'pass') {
+                if (insight.state === 'pass') {
                     responseTextForPassedInsights += `${formatted}\n\n`;
                     continue;
                 }

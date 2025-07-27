@@ -67,6 +67,13 @@ __export(CSSMetadata_exports, {
 // gen/front_end/generated/SupportedCSSProperties.js
 var generatedProperties = [
   {
+    "longhands": [
+      "max-lines",
+      "continue"
+    ],
+    "name": "-alternative-webkit-line-clamp"
+  },
+  {
     "inherited": true,
     "name": "-webkit-border-horizontal-spacing"
   },
@@ -489,6 +496,7 @@ var generatedProperties = [
       "container-type",
       "content",
       "content-visibility",
+      "continue",
       "corner-bottom-left-shape",
       "corner-bottom-right-shape",
       "corner-end-end-shape",
@@ -583,7 +591,6 @@ var generatedProperties = [
       "letter-spacing",
       "lighting-color",
       "line-break",
-      "line-clamp",
       "line-gap-override",
       "line-height",
       "list-style-image",
@@ -616,6 +623,7 @@ var generatedProperties = [
       "max-block-size",
       "max-height",
       "max-inline-size",
+      "max-lines",
       "max-width",
       "min-block-size",
       "min-height",
@@ -1887,6 +1895,14 @@ var generatedProperties = [
     "name": "content-visibility"
   },
   {
+    "keywords": [
+      "auto",
+      "collapse",
+      "-webkit-legacy"
+    ],
+    "name": "continue"
+  },
+  {
     "longhands": [
       "corner-end-start-shape",
       "corner-end-end-shape"
@@ -2856,9 +2872,9 @@ var generatedProperties = [
     "name": "line-break"
   },
   {
-    "keywords": [
-      "none",
-      "auto"
+    "longhands": [
+      "max-lines",
+      "continue"
     ],
     "name": "line-clamp"
   },
@@ -3139,6 +3155,12 @@ var generatedProperties = [
       "none"
     ],
     "name": "max-inline-size"
+  },
+  {
+    "keywords": [
+      "none"
+    ],
+    "name": "max-lines"
   },
   {
     "keywords": [
@@ -5411,6 +5433,13 @@ var generatedPropertyValues = {
       "hidden"
     ]
   },
+  "continue": {
+    "values": [
+      "auto",
+      "collapse",
+      "-webkit-legacy"
+    ]
+  },
   "corner-bottom-left-shape": {
     "values": [
       "notch",
@@ -5971,12 +6000,6 @@ var generatedPropertyValues = {
       "anywhere"
     ]
   },
-  "line-clamp": {
-    "values": [
-      "none",
-      "auto"
-    ]
-  },
   "line-height": {
     "values": [
       "normal"
@@ -6117,6 +6140,11 @@ var generatedPropertyValues = {
     ]
   },
   "max-inline-size": {
+    "values": [
+      "none"
+    ]
+  },
+  "max-lines": {
     "values": [
       "none"
     ]
@@ -11822,6 +11850,8 @@ __export(CSSPropertyParserMatchers_exports, {
   ColorMatcher: () => ColorMatcher,
   ColorMixMatch: () => ColorMixMatch,
   ColorMixMatcher: () => ColorMixMatcher,
+  EnvFunctionMatch: () => EnvFunctionMatch,
+  EnvFunctionMatcher: () => EnvFunctionMatcher,
   FlexGridMatch: () => FlexGridMatch,
   FlexGridMatcher: () => FlexGridMatcher,
   FontMatch: () => FontMatch,
@@ -12964,6 +12994,44 @@ var PositionTryMatcher = class extends matcherBase(PositionTryMatch) {
     }
     const valueText = matching.ast.textRange(valueNodes[0], valueNodes[valueNodes.length - 1]);
     return new PositionTryMatch(valueText, node, preamble, fallbacks);
+  }
+};
+var EnvFunctionMatch = class {
+  text;
+  node;
+  varName;
+  value;
+  varNameIsValid;
+  constructor(text, node, varName, value, varNameIsValid) {
+    this.text = text;
+    this.node = node;
+    this.varName = varName;
+    this.value = value;
+    this.varNameIsValid = varNameIsValid;
+  }
+  computedText() {
+    return this.value;
+  }
+};
+var EnvFunctionMatcher = class extends matcherBase(EnvFunctionMatch) {
+  matchedStyles;
+  // clang-format on
+  constructor(matchedStyles) {
+    super();
+    this.matchedStyles = matchedStyles;
+  }
+  matches(node, matching) {
+    if (node.name !== "CallExpression" || matching.ast.text(node.getChild("Callee")) !== "env") {
+      return null;
+    }
+    const [valueNodes, ...fallbackNodes] = ASTUtils.callArgs(node);
+    if (!valueNodes?.length) {
+      return null;
+    }
+    const fallbackValue = fallbackNodes.length > 0 ? matching.getComputedTextRange(...ASTUtils.range(fallbackNodes.flat())) : void 0;
+    const varName = matching.getComputedTextRange(...ASTUtils.range(valueNodes)).trim();
+    const value = this.matchedStyles.environmentVariable(varName);
+    return new EnvFunctionMatch(matching.ast.text(node), node, varName, value ?? fallbackValue ?? null, Boolean(value));
   }
 };
 
@@ -14388,34 +14456,31 @@ var CSSSupports = class _CSSSupports extends CSSQuery {
 };
 
 // gen/front_end/core/sdk/CSSRule.js
+function styleSheetHeaderForRule(cssModel, { styleSheetId }) {
+  return styleSheetId && cssModel.styleSheetHeaderForId(styleSheetId) || null;
+}
 var CSSRule = class {
   cssModelInternal;
-  styleSheetId;
-  sourceURL;
   origin;
   style;
+  header;
   constructor(cssModel, payload) {
+    this.header = payload.header;
     this.cssModelInternal = cssModel;
-    this.styleSheetId = payload.styleSheetId;
-    if (this.styleSheetId) {
-      const styleSheetHeader = this.getStyleSheetHeader(this.styleSheetId);
-      this.sourceURL = styleSheetHeader.sourceURL;
-    }
     this.origin = payload.origin;
     this.style = new CSSStyleDeclaration(this.cssModelInternal, this, payload.style, Type2.Regular);
   }
+  get sourceURL() {
+    return this.header?.sourceURL;
+  }
   rebase(edit) {
-    if (this.styleSheetId !== edit.styleSheetId) {
+    if (this.header?.id !== edit.styleSheetId) {
       return;
     }
     this.style.rebase(edit);
   }
   resourceURL() {
-    if (!this.styleSheetId) {
-      return Platform5.DevToolsPath.EmptyUrlString;
-    }
-    const styleSheetHeader = this.getStyleSheetHeader(this.styleSheetId);
-    return styleSheetHeader.resourceURL();
+    return this.header?.resourceURL() ?? Platform5.DevToolsPath.EmptyUrlString;
   }
   isUserAgent() {
     return this.origin === "user-agent";
@@ -14434,11 +14499,6 @@ var CSSRule = class {
   }
   cssModel() {
     return this.cssModelInternal;
-  }
-  getStyleSheetHeader(styleSheetId) {
-    const styleSheetHeader = this.cssModelInternal.styleSheetHeaderForId(styleSheetId);
-    console.assert(styleSheetHeader !== null);
-    return styleSheetHeader;
   }
 };
 var CSSValue = class {
@@ -14472,7 +14532,7 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
   ruleTypes;
   wasUsed;
   constructor(cssModel, payload, wasUsed) {
-    super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
+    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
     this.reinitializeSelectors(payload.selectorList);
     this.nestingSelectors = payload.nestingSelectors;
     this.media = payload.media ? CSSMedia.parseMediaArrayPayload(cssModel, payload.media) : [];
@@ -14506,7 +14566,7 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
     }
   }
   setSelectorText(newSelector) {
-    const styleSheetId = this.styleSheetId;
+    const styleSheetId = this.header?.id;
     if (!styleSheetId) {
       throw new Error("No rule stylesheet id");
     }
@@ -14532,22 +14592,20 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
   }
   lineNumberInSource(selectorIndex) {
     const selector = this.selectors[selectorIndex];
-    if (!selector?.range || !this.styleSheetId) {
+    if (!selector?.range || !this.header) {
       return 0;
     }
-    const styleSheetHeader = this.getStyleSheetHeader(this.styleSheetId);
-    return styleSheetHeader.lineNumberInSource(selector.range.startLine);
+    return this.header.lineNumberInSource(selector.range.startLine);
   }
   columnNumberInSource(selectorIndex) {
     const selector = this.selectors[selectorIndex];
-    if (!selector?.range || !this.styleSheetId) {
+    if (!selector?.range || !this.header) {
       return void 0;
     }
-    const styleSheetHeader = this.getStyleSheetHeader(this.styleSheetId);
-    return styleSheetHeader.columnNumberInSource(selector.range.startLine, selector.range.startColumn);
+    return this.header.columnNumberInSource(selector.range.startLine, selector.range.startColumn);
   }
   rebase(edit) {
-    if (this.styleSheetId !== edit.styleSheetId) {
+    if (this.header?.id !== edit.styleSheetId) {
       return;
     }
     const range = this.selectorRange();
@@ -14568,7 +14626,7 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
 var CSSPropertyRule = class extends CSSRule {
   #name;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
+    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
     this.#name = new CSSValue(payload.propertyName);
   }
   propertyName() {
@@ -14584,7 +14642,7 @@ var CSSPropertyRule = class extends CSSRule {
     return this.style.getPropertyValue("inherits") === "true";
   }
   setPropertyName(newPropertyName) {
-    const styleSheetId = this.styleSheetId;
+    const styleSheetId = this.header?.id;
     if (!styleSheetId) {
       throw new Error("No rule stylesheet id");
     }
@@ -14598,7 +14656,7 @@ var CSSPropertyRule = class extends CSSRule {
 var CSSFontPaletteValuesRule = class extends CSSRule {
   #paletteName;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
+    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
     this.#paletteName = new CSSValue(payload.fontPaletteName);
   }
   name() {
@@ -14623,7 +14681,7 @@ var CSSKeyframeRule = class extends CSSRule {
   #keyText;
   #parentRuleName;
   constructor(cssModel, payload, parentRuleName) {
-    super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
+    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
     this.reinitializeKey(payload.keyText);
     this.#parentRuleName = parentRuleName;
   }
@@ -14637,7 +14695,7 @@ var CSSKeyframeRule = class extends CSSRule {
     this.#keyText = new CSSValue(payload);
   }
   rebase(edit) {
-    if (this.styleSheetId !== edit.styleSheetId || !this.#keyText.range) {
+    if (this.header?.id !== edit.styleSheetId || !this.#keyText.range) {
       return;
     }
     if (edit.oldRange.equal(this.#keyText.range)) {
@@ -14651,7 +14709,7 @@ var CSSKeyframeRule = class extends CSSRule {
     return true;
   }
   setKeyText(newKeyText) {
-    const styleSheetId = this.styleSheetId;
+    const styleSheetId = this.header?.id;
     if (!styleSheetId) {
       throw new Error("No rule stylesheet id");
     }
@@ -14666,7 +14724,7 @@ var CSSPositionTryRule = class extends CSSRule {
   #name;
   #active;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: payload.style, styleSheetId: payload.styleSheetId });
+    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
     this.#name = new CSSValue(payload.name);
     this.#active = payload.active;
   }
@@ -14682,7 +14740,11 @@ var CSSFunctionRule = class extends CSSRule {
   #parameters;
   #children;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: { cssProperties: [], shorthandEntries: [] }, styleSheetId: payload.styleSheetId });
+    super(cssModel, {
+      origin: payload.origin,
+      style: { cssProperties: [], shorthandEntries: [] },
+      header: styleSheetHeaderForRule(cssModel, payload)
+    });
     this.#name = new CSSValue(payload.name);
     this.#parameters = payload.parameters.map(({ name }) => name);
     this.#children = this.protocolNodesToNestedStyles(payload.children);
@@ -14911,6 +14973,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
   #functionRules;
   #functionRuleMap = /* @__PURE__ */ new Map();
   #fontPaletteValuesRule;
+  #environmentVariables = {};
   static async create(payload) {
     const cssMatchedStyles = new _CSSMatchedStyles(payload);
     await cssMatchedStyles.init(payload);
@@ -14937,6 +15000,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     for (const inheritedResult of inheritedPayload) {
       inheritedResult.matchedCSSRules = cleanUserAgentPayload(inheritedResult.matchedCSSRules);
     }
+    this.#environmentVariables = await this.cssModel().getEnvironmentVariales();
     this.#mainDOMCascade = await this.buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload);
     [this.#pseudoDOMCascades, this.#customHighlightPseudoDOMCascades] = this.buildPseudoCascades(pseudoPayload, inheritedPseudoPayload);
     for (const domCascade of Array.from(this.#customHighlightPseudoDOMCascades.values()).concat(Array.from(this.#pseudoDOMCascades.values())).concat(this.#mainDOMCascade)) {
@@ -15053,7 +15117,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
         /* #isInherited */
       ));
     }
-    return new DOMInheritanceCascade(nodeCascades, this.#registeredProperties);
+    return new DOMInheritanceCascade(this, nodeCascades, this.#registeredProperties);
   }
   /**
    * Pseudo rule matches received via the inspector protocol are grouped by pseudo type.
@@ -15173,10 +15237,10 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       }
     }
     for (const [pseudoType, nodeCascade] of pseudoCascades.entries()) {
-      pseudoInheritanceCascades.set(pseudoType, new DOMInheritanceCascade(nodeCascade, this.#registeredProperties));
+      pseudoInheritanceCascades.set(pseudoType, new DOMInheritanceCascade(this, nodeCascade, this.#registeredProperties));
     }
     for (const [highlightName, nodeCascade] of customHighlightPseudoCascades.entries()) {
-      customHighlightPseudoInheritanceCascades.set(highlightName, new DOMInheritanceCascade(nodeCascade, this.#registeredProperties));
+      customHighlightPseudoInheritanceCascades.set(highlightName, new DOMInheritanceCascade(this, nodeCascade, this.#registeredProperties));
     }
     return [pseudoInheritanceCascades, customHighlightPseudoInheritanceCascades];
   }
@@ -15394,8 +15458,12 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       new MathFunctionMatcher(),
       new AutoBaseMatcher(),
       new BinOpMatcher(),
-      new RelativeColorChannelMatcher()
+      new RelativeColorChannelMatcher(),
+      new EnvFunctionMatcher(this)
     ];
+  }
+  environmentVariable(name) {
+    return this.#environmentVariables[name];
   }
 };
 var NodeCascade = class {
@@ -15566,8 +15634,10 @@ var DOMInheritanceCascade = class {
   #initialized = false;
   #nodeCascades;
   #registeredProperties;
-  constructor(nodeCascades, registeredProperties) {
+  #matchedStyles;
+  constructor(matchedStyles, nodeCascades, registeredProperties) {
     this.#nodeCascades = nodeCascades;
+    this.#matchedStyles = matchedStyles;
     this.#registeredProperties = registeredProperties;
     for (const nodeCascade of nodeCascades) {
       for (const style of nodeCascade.styles) {
@@ -15710,37 +15780,40 @@ var DOMInheritanceCascade = class {
       return null;
     }
     const record = sccRecord.add(nodeCascade, variableName);
-    const matching = BottomUpTreeMatching.walk(ast, [new BaseVariableMatcher((match) => {
-      const parentStyle = definedValue.declaration.style;
-      const nodeCascade2 = this.#styleToNodeCascade.get(parentStyle);
-      if (!nodeCascade2) {
-        return null;
-      }
-      const childRecord = sccRecord.get(nodeCascade2, match.name);
-      if (childRecord) {
-        if (sccRecord.isInInProgressSCC(childRecord)) {
-          record.updateRoot(childRecord);
+    const matching = BottomUpTreeMatching.walk(ast, [
+      new BaseVariableMatcher((match) => {
+        const parentStyle = definedValue.declaration.style;
+        const nodeCascade2 = this.#styleToNodeCascade.get(parentStyle);
+        if (!nodeCascade2) {
           return null;
         }
-        return this.#computedCSSVariables.get(nodeCascade2)?.get(match.name)?.value ?? null;
-      }
-      const cssVariableValue2 = this.innerComputeCSSVariable(nodeCascade2, match.name, sccRecord);
-      const newChildRecord = sccRecord.get(nodeCascade2, match.name);
-      newChildRecord && record.updateRoot(newChildRecord);
-      if (cssVariableValue2?.value !== void 0) {
-        return cssVariableValue2.value;
-      }
-      if (!match.fallback) {
-        return null;
-      }
-      if (match.fallback.length === 0) {
-        return "";
-      }
-      if (match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
-        return null;
-      }
-      return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
-    })]);
+        const childRecord = sccRecord.get(nodeCascade2, match.name);
+        if (childRecord) {
+          if (sccRecord.isInInProgressSCC(childRecord)) {
+            record.updateRoot(childRecord);
+            return null;
+          }
+          return this.#computedCSSVariables.get(nodeCascade2)?.get(match.name)?.value ?? null;
+        }
+        const cssVariableValue2 = this.innerComputeCSSVariable(nodeCascade2, match.name, sccRecord);
+        const newChildRecord = sccRecord.get(nodeCascade2, match.name);
+        newChildRecord && record.updateRoot(newChildRecord);
+        if (cssVariableValue2?.value !== void 0) {
+          return cssVariableValue2.value;
+        }
+        if (!match.fallback) {
+          return null;
+        }
+        if (match.fallback.length === 0) {
+          return "";
+        }
+        if (match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
+          return null;
+        }
+        return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
+      }),
+      new EnvFunctionMatcher(this.#matchedStyles)
+    ]);
     const decl = ASTUtils.siblings(ASTUtils.declValue(matching.ast.tree));
     const computedText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : "";
     if (record.isRootEntry) {
@@ -19355,6 +19428,13 @@ var CSSModel = class _CSSModel extends SDKModel {
       hasScroll
     };
   }
+  async getEnvironmentVariales() {
+    const response = await this.agent.invoke_getEnvironmentVariables();
+    if (response.getError()) {
+      return {};
+    }
+    return response.environmentVariables;
+  }
   async getBackgroundColors(nodeId) {
     const response = await this.agent.invoke_getBackgroundColors({ nodeId });
     if (response.getError()) {
@@ -21717,6 +21797,35 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   static shouldResyncDebuggerId = false;
   getEvaluateOnCallFrameCallback() {
     return this.evaluateOnCallFrameCallback;
+  }
+  /**
+   * Iterates the async stack trace parents.
+   *
+   * Retrieving cross-target async stack fragments requires CDP interaction, so this is an async generator.
+   *
+   * Important: This iterator will not yield the "synchronous" part of the stack trace, only the async parent chain.
+   */
+  async *iterateAsyncParents(stackTraceOrPausedDetails) {
+    let stackTrace = stackTraceOrPausedDetails instanceof DebuggerPausedDetails ? {
+      callFrames: [],
+      parent: stackTraceOrPausedDetails.asyncStackTrace,
+      parentId: stackTraceOrPausedDetails.asyncStackTraceId
+    } : stackTraceOrPausedDetails;
+    while (true) {
+      if (stackTrace.parent) {
+        stackTrace = stackTrace.parent;
+      } else if (stackTrace.parentId) {
+        const model = stackTrace.parentId.debuggerId ? await _DebuggerModel.modelForDebuggerId(stackTrace.parentId.debuggerId) : this;
+        const maybeStackTrace = await model?.fetchAsyncStackTrace(stackTrace.parentId);
+        if (!maybeStackTrace) {
+          return;
+        }
+        stackTrace = maybeStackTrace;
+      } else {
+        return;
+      }
+      yield stackTrace;
+    }
   }
 };
 var debuggerIdToModel = /* @__PURE__ */ new Map();
@@ -30272,16 +30381,12 @@ var UIStrings11 = {
 var str_11 = i18n25.i18n.registerUIStrings("core/sdk/Connections.ts", UIStrings11);
 var i18nString11 = i18n25.i18n.getLocalizedString.bind(void 0, str_11);
 var MainConnection = class {
-  onMessage;
-  #onDisconnect;
-  #messageBuffer;
-  #messageSize;
+  onMessage = null;
+  #onDisconnect = null;
+  #messageBuffer = "";
+  #messageSize = 0;
   #eventListeners;
   constructor() {
-    this.onMessage = null;
-    this.#onDisconnect = null;
-    this.#messageBuffer = "";
-    this.#messageSize = 0;
     this.#eventListeners = [
       Host8.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host8.InspectorFrontendHostAPI.Events.DispatchMessage, this.dispatchMessage, this),
       Host8.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host8.InspectorFrontendHostAPI.Events.DispatchMessageChunk, this.dispatchMessageChunk, this)
@@ -30328,11 +30433,11 @@ var MainConnection = class {
 };
 var WebSocketConnection = class {
   #socket;
-  onMessage;
-  #onDisconnect;
+  onMessage = null;
+  #onDisconnect = null;
   #onWebSocketDisconnect;
-  #connected;
-  #messages;
+  #connected = false;
+  #messages = [];
   constructor(url, onWebSocketDisconnect) {
     this.#socket = new WebSocket(url);
     this.#socket.onerror = this.onError.bind(this);
@@ -30343,11 +30448,7 @@ var WebSocketConnection = class {
       }
     };
     this.#socket.onclose = this.onClose.bind(this);
-    this.onMessage = null;
-    this.#onDisconnect = null;
     this.#onWebSocketDisconnect = onWebSocketDisconnect;
-    this.#connected = false;
-    this.#messages = [];
   }
   setOnMessage(onMessage) {
     this.onMessage = onMessage;
@@ -30413,12 +30514,8 @@ var WebSocketConnection = class {
   }
 };
 var StubConnection = class {
-  onMessage;
-  #onDisconnect;
-  constructor() {
-    this.onMessage = null;
-    this.#onDisconnect = null;
-  }
+  onMessage = null;
+  #onDisconnect = null;
   setOnMessage(onMessage) {
     this.onMessage = onMessage;
   }
@@ -30450,13 +30547,11 @@ var StubConnection = class {
 var ParallelConnection = class {
   #connection;
   #sessionId;
-  onMessage;
-  #onDisconnect;
+  onMessage = null;
+  #onDisconnect = null;
   constructor(connection, sessionId) {
     this.#connection = connection;
     this.#sessionId = sessionId;
-    this.onMessage = null;
-    this.#onDisconnect = null;
   }
   setOnMessage(onMessage) {
     this.onMessage = onMessage;

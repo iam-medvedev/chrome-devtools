@@ -1332,9 +1332,9 @@ function getLCPData(parsedTrace, frameId, navigationId) {
 var PerformanceInsightFormatter = class {
   #insight;
   #parsedTrace;
-  constructor(activeInsight) {
-    this.#insight = activeInsight.insight;
-    this.#parsedTrace = activeInsight.parsedTrace;
+  constructor(parsedTrace, insight) {
+    this.#insight = insight;
+    this.#parsedTrace = parsedTrace;
   }
   /**
    * Information about LCP which we pass to the LLM for all insights that relate to LCP.
@@ -1506,6 +1506,17 @@ ${shiftsFormatted.join("\n")}`;
       return `Here is a list of the network requests that were served over a legacy HTTP protocol:
 ${requestSummary}`;
     }
+    if (Trace.Insights.Models.DuplicatedJavaScript.isDuplicatedJavaScript(this.#insight)) {
+      const totalWastedBytes = this.#insight.wastedBytes;
+      const duplicatedScriptsByModule = this.#insight.duplicationGroupedByNodeModules;
+      if (duplicatedScriptsByModule.size === 0) {
+        return "There is no duplicated JavaScript in the page modules";
+      }
+      const filesFormatted = Array.from(duplicatedScriptsByModule).map(([module, duplication]) => `- Source: ${module} - Duplicated bytes: ${duplication.estimatedDuplicateBytes} bytes`).join("\n");
+      return `Total wasted bytes: ${totalWastedBytes} bytes.
+
+Duplication grouped by Node modules: ${filesFormatted}`;
+    }
     return "";
   }
   #links() {
@@ -1570,7 +1581,8 @@ ${requestSummary}`;
       case "DOMSize":
         return "";
       case "DuplicatedJavaScript":
-        return "";
+        return `This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
+  This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.`;
       case "FontDisplay":
         return "";
       case "ForcedReflow":
@@ -1733,33 +1745,7 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
   // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
   // format description.
   static #networkRequestsArrayCompressed(requests, parsedTrace) {
-    const formatDescription = `The format is as follows:
-    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-    Timings (all in milliseconds, relative to navigation start):
-    - \`queuedTime\`: When the request was queued.
-    - \`requestSentTime\`: When the request was sent.
-    - \`downloadCompleteTime\`: When the download completed.
-    - \`processingCompleteTime\`: When main thread processing finished.
-    Durations (all in milliseconds):
-    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-    - \`downloadDuration\`: Time spent actively downloading the resource.
-    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-    - \`initialPriority\`: The initial network request priority.
-    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
-
+    const networkDataString = `
     Network requests data:
 
     `;
@@ -1771,7 +1757,7 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
     const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.entries()).map(([url, index]) => {
       return `${index}: ${url}`;
     }).join(", ")}]`;
-    return formatDescription + "\n\n" + urlsMapString + "\n\n" + allRequestsText;
+    return networkDataString + "\n\n" + urlsMapString + "\n\n" + allRequestsText;
   }
   /**
    *
@@ -1980,20 +1966,60 @@ The 'calculatePosition' and 'applyStyles' child functions consumed the remaining
 The 'calculatePosition' function, taking 80ms, is a potential bottleneck.
 Consider optimizing the position calculation logic or reducing the frequency of calls to improve animation performance.
 `;
+var networkDataFormatDescription = `The format is as follows:
+    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
+
+    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
+    Timings (all in milliseconds, relative to navigation start):
+    - \`queuedTime\`: When the request was queued.
+    - \`requestSentTime\`: When the request was sent.
+    - \`downloadCompleteTime\`: When the download completed.
+    - \`processingCompleteTime\`: When main thread processing finished.
+    Durations (all in milliseconds):
+    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
+    - \`downloadDuration\`: Time spent actively downloading the resource.
+    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
+    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
+    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
+    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
+    - \`initialPriority\`: The initial network request priority.
+    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
+    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
+    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
+    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
+    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
+    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
+    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
+    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
+    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+`;
+var mainThreadActivityFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
+  The format of each callframe is:
+
+    'id;name;duration;selfTime;urlIndex;childRange;[S]'
+
+  The fields are:
+
+  * id: A unique numerical identifier for the call frame.
+  * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
+  * duration: The total execution time of the call frame, including its children.
+  * selfTime: The time spent directly within the call frame, excluding its children's execution.
+  * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
+  * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+  * S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`;
 function serializeFocus(focus) {
   if (focus.data.type === "call-tree") {
     return focus.data.callTree.serialize();
   }
   if (focus.data.type === "insight") {
-    const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.data.insight, focus.data.insightSetBounds, focus.data.parsedTrace);
-    const formatter = new PerformanceInsightFormatter(activeInsight);
+    const formatter = new PerformanceInsightFormatter(focus.data.parsedTrace, focus.data.insight);
     return formatter.formatInsight();
   }
   Platform.assertNever(focus.data, "Unknown agent focus");
 }
 var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
-  static fromInsight(insight) {
-    return new _PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(insight));
+  static fromInsight(parsedTrace, insight, insightSetBounds) {
+    return new _PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insightSetBounds));
   }
   static fromCallTree(callTree) {
     return new _PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromCallTree(callTree));
@@ -2065,7 +2091,10 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       case "DOMSize":
         return [{ title: "How can I reduce the size of my DOM?" }];
       case "DuplicatedJavaScript":
-        return [{ title: "How do I deduplicate the identified scripts in my bundle?" }];
+        return [
+          { title: "How do I deduplicate the identified scripts in my bundle?" },
+          { title: "Which duplicated JavaScript modules are the most problematic?" }
+        ];
       case "FontDisplay":
         return [
           { title: "How can I update my CSS to avoid layout shifts caused by incorrect `font-display` properties?" }
@@ -2114,7 +2143,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
         return [{ title: "How do I make sure my page is optimized for mobile viewing?" }];
       case "ModernHTTP":
         return [
-          { title: "Is my site being served using the recommended HTTP best practices?" },
+          { title: "Is my site using the best HTTP practices?" },
           { title: "Which resources are not using a modern HTTP protocol?" }
         ];
       case "LegacyJavaScript":
@@ -2146,6 +2175,12 @@ var PerformanceAgent = class extends AiAgent {
    * make sure it isn't mistakenly duplicated in the request.
    */
   #functionCallCache = /* @__PURE__ */ new Map();
+  /*
+  * Since don't know for sure if the model will request the main thread or network requests information,
+  * add the formats description to facts once the main thread activity or network requests need to be sent.
+  */
+  #mainThreadActivityDescriptionFact = { text: mainThreadActivityFormatDescription, metadata: { source: "devtools" } };
+  #networkDataDescriptionFact = { text: networkDataFormatDescription, metadata: { source: "devtools" } };
   get preamble() {
     if (this.#conversationType === "drjones-performance") {
       return callTreePreamble;
@@ -2312,6 +2347,7 @@ ${formatted}`,
         const cacheForInsight = this.#functionCallCache.get(insight) ?? {};
         cacheForInsight.getNetworkActivitySummary = summaryFact;
         this.#functionCallCache.set(insight, cacheForInsight);
+        this.addFact(this.#networkDataDescriptionFact);
         return { result: { requests: formatted } };
       }
     });
@@ -2352,26 +2388,12 @@ ${formatted}`,
             error: "getNetworkRequestDetail response is too large. Try investigating using other functions"
           };
         }
+        this.addFact(this.#networkDataDescriptionFact);
         return { result: { request: formatted } };
       }
     });
     this.declareFunction("getMainThreadActivity", {
-      description: `Returns the main thread activity for the selected insight.
-  
-  The tree is represented as a call frame with a root task and a series of children.
-  The format of each callframe is:
-  
-    'id;name;duration;selfTime;urlIndex;childRange;[S]'
-  
-  The fields are:
-  
-  * id: A unique numerical identifier for the call frame.
-  * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-  * duration: The total execution time of the call frame, including its children.
-  * selfTime: The time spent directly within the call frame, excluding its children's execution.
-  * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-  * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-  * S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`,
+      description: "Returns the main thread activity for the selected insight.",
       parameters: {
         type: 6,
         description: "",
@@ -2406,6 +2428,7 @@ ${activity}`,
         const cacheForInsight = this.#functionCallCache.get(insight) ?? {};
         cacheForInsight.getMainThreadActivity = activityFact;
         this.#functionCallCache.set(insight, cacheForInsight);
+        this.addFact(this.#mainThreadActivityDescriptionFact);
         return { result: { activity } };
       }
     });
@@ -2414,9 +2437,66 @@ ${activity}`,
 
 // gen/front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.js
 import * as Host5 from "./../../core/host/host.js";
-var PerformanceAnnotationsAgent = class extends PerformanceAgent {
+import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as Root5 from "./../../core/root/root.js";
+var UIStringsNotTranslated2 = {
+  analyzingCallTree: "Analyzing call tree"
+  /**
+   *@description Shown when the agent is investigating network activity
+   */
+};
+var lockedString4 = i18n9.i18n.lockedString;
+var PerformanceAnnotationsAgent = class extends AiAgent {
+  preamble = callTreePreamble;
   get clientFeature() {
     return Host5.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+  }
+  get userTier() {
+    return Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+  }
+  get options() {
+    const temperature = Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+    const modelId = Root5.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+    return {
+      temperature,
+      modelId
+    };
+  }
+  async *handleContextDetails(context) {
+    if (!context) {
+      return;
+    }
+    const focus = context.getItem();
+    if (focus.data.type !== "call-tree") {
+      throw new Error("unexpected context");
+    }
+    const callTree = focus.data.callTree;
+    yield {
+      type: "context",
+      title: lockedString4(UIStringsNotTranslated2.analyzingCallTree),
+      details: [
+        {
+          title: "Selected call tree",
+          text: callTree.serialize()
+        }
+      ]
+    };
+  }
+  async enhanceQuery(query, context) {
+    if (!context) {
+      return query;
+    }
+    const focus = context.getItem();
+    if (focus.data.type !== "call-tree") {
+      throw new Error("unexpected context");
+    }
+    const callTree = focus.data.callTree;
+    const contextString = callTree.serialize();
+    return `${contextString}
+
+# User request
+
+${query}`;
   }
   /**
    * Used in the Performance panel to automatically generate a label for a selected entry.
@@ -2449,9 +2529,9 @@ Generate a concise label (max 60 chars, single line) describing the *user-visibl
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
 import * as Host6 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as ElementsPanel from "./../../panels/elements/elements.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
@@ -2946,10 +3026,7 @@ var ExtensionScope = class _ExtensionScope {
     return node.localName() || node.nodeName().toLowerCase();
   }
   static getSourceLocation(styleRule) {
-    if (!styleRule.styleSheetId) {
-      return;
-    }
-    const styleSheetHeader = styleRule.cssModel().styleSheetHeaderForId(styleRule.styleSheetId);
+    const styleSheetHeader = styleRule.header;
     if (!styleSheetHeader) {
       return;
     }
@@ -3094,7 +3171,7 @@ var UIStringsNotTranslate3 = {
    */
   dataUsed: "Data used"
 };
-var lockedString4 = i18n9.i18n.lockedString;
+var lockedString5 = i18n11.i18n.lockedString;
 var preamble3 = `You are the most advanced CSS debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
@@ -3327,21 +3404,21 @@ var StylingAgent = class _StylingAgent extends AiAgent {
   preamble = preamble3;
   clientFeature = Host6.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
   get userTier() {
-    return Root5.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get executionMode() {
-    return Root5.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root5.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
+    return Root6.Runtime.hostConfig.devToolsFreestyler?.executionMode ?? Root6.Runtime.HostConfigFreestylerExecutionMode.ALL_SCRIPTS;
   }
   get options() {
-    const temperature = Root5.Runtime.hostConfig.devToolsFreestyler?.temperature;
-    const modelId = Root5.Runtime.hostConfig.devToolsFreestyler?.modelId;
+    const temperature = Root6.Runtime.hostConfig.devToolsFreestyler?.temperature;
+    const modelId = Root6.Runtime.hostConfig.devToolsFreestyler?.modelId;
     return {
       temperature,
       modelId
     };
   }
   get multimodalInputEnabled() {
-    return Boolean(Root5.Runtime.hostConfig.devToolsFreestyler?.multimodal);
+    return Boolean(Root6.Runtime.hostConfig.devToolsFreestyler?.multimodal);
   }
   parseTextResponse(text) {
     if (!text) {
@@ -3760,7 +3837,7 @@ const data = {
         error: "Error: User denied code execution with side effects."
       };
     }
-    if (this.executionMode === Root5.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
+    if (this.executionMode === Root6.Runtime.HostConfigFreestylerExecutionMode.NO_SCRIPTS) {
       return {
         error: "Error: JavaScript execution is currently disabled."
       };
@@ -3782,7 +3859,7 @@ const data = {
       const result = await this.generateObservation(action, { throwOnSideEffect });
       debugLog(`Action result: ${JSON.stringify(result)}`);
       if (result.sideEffect) {
-        if (this.executionMode === Root5.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
+        if (this.executionMode === Root6.Runtime.HostConfigFreestylerExecutionMode.SIDE_EFFECT_FREE_SCRIPTS_ONLY) {
           return {
             error: "Error: JavaScript execution that modifies the page is currently disabled."
           };
@@ -3814,9 +3891,9 @@ const data = {
     }
     yield {
       type: "context",
-      title: lockedString4(UIStringsNotTranslate3.analyzingThePrompt),
+      title: lockedString5(UIStringsNotTranslate3.analyzingThePrompt),
       details: [{
-        title: lockedString4(UIStringsNotTranslate3.dataUsed),
+        title: lockedString5(UIStringsNotTranslate3.dataUsed),
         text: await _StylingAgent.describeElement(selectedElement.getItem())
       }]
     };
@@ -3896,7 +3973,7 @@ var StylingAgentWithFunctionCalling = class extends StylingAgent {
 
 // gen/front_end/models/ai_assistance/agents/PatchAgent.js
 import * as Host7 from "./../../core/host/host.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root7 from "./../../core/root/root.js";
 var preamble4 = `You are a highly skilled software engineer with expertise in web development.
 The user asks you to apply changes to a source code folder.
 
@@ -3936,12 +4013,12 @@ var PatchAgent = class extends AiAgent {
   preamble = preamble4;
   clientFeature = Host7.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root6.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root6.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root7.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root7.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
   get agentProject() {
@@ -4113,12 +4190,12 @@ var FileUpdateAgent = class extends AiAgent {
   preamble = preamble4;
   clientFeature = Host7.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
-    return Root6.Runtime.hostConfig.devToolsFreestyler?.userTier;
+    return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
   }
   get options() {
     return {
-      temperature: Root6.Runtime.hostConfig.devToolsFreestyler?.temperature,
-      modelId: Root6.Runtime.hostConfig.devToolsFreestyler?.modelId
+      temperature: Root7.Runtime.hostConfig.devToolsFreestyler?.temperature,
+      modelId: Root7.Runtime.hostConfig.devToolsFreestyler?.modelId
     };
   }
 };
@@ -4180,14 +4257,14 @@ var Conversation = class {
     this.#isReadOnly = true;
   }
   async addHistoryItem(item) {
+    this.history.push(item);
+    await AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
     if (item.type === "user-query") {
       if (item.imageId && item.imageInput && "inlineData" in item.imageInput) {
         const inlineData = item.imageInput.inlineData;
         await AiHistoryStorage.instance().upsertImage({ id: item.imageId, data: inlineData.data, mimeType: inlineData.mimeType });
       }
     }
-    this.history.push(item);
-    await AiHistoryStorage.instance().upsertHistoryEntry(this.serialize());
   }
   serialize() {
     return {
@@ -4310,8 +4387,8 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common4.ObjectWrapper.Obj
 // gen/front_end/models/ai_assistance/AiUtils.js
 import * as Common5 from "./../../core/common/common.js";
 import * as Host8 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root7 from "./../../core/root/root.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as Root8 from "./../../core/root/root.js";
 var UIStrings = {
   /**
    * @description Message shown to the user if the age check is not successful.
@@ -4330,11 +4407,11 @@ var UIStrings = {
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode."
 };
-var str_ = i18n11.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
-var i18nString = i18n11.i18n.getLocalizedString.bind(void 0, str_);
+var str_ = i18n13.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
+var i18nString = i18n13.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
-  if (Root7.Runtime.hostConfig.isOffTheRecord) {
+  if (Root8.Runtime.hostConfig.isOffTheRecord) {
     reasons.push(i18nString(UIStrings.notAvailableInIncognitoMode));
   }
   switch (aidaAvailability) {
@@ -4346,7 +4423,7 @@ function getDisabledReasons(aidaAvailability) {
     case "no-internet":
       reasons.push(i18nString(UIStrings.offline));
     case "available": {
-      if (Root7.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
+      if (Root8.Runtime.hostConfig?.aidaAvailability?.blockedByAge === true) {
         reasons.push(i18nString(UIStrings.ageRestricted));
       }
     }
@@ -4382,6 +4459,7 @@ export {
   StylingAgent,
   StylingAgentWithFunctionCalling,
   TraceEventFormatter,
+  callTreePreamble,
   debugLog,
   formatError,
   getDisabledReasons,

@@ -23,9 +23,7 @@ describe('SelectorStatsHandler', () => {
             return Trace.Types.Events.isUpdateLayoutTree(event) && event.ts === targetTimeStamp;
         });
         assert.isOk(updateLayoutEvent);
-        if (!Trace.Types.Events.isUpdateLayoutTree(updateLayoutEvent)) {
-            assert.fail('Event was of the wrong type.');
-        }
+        assert.isOk(Trace.Types.Events.isUpdateLayoutTree(updateLayoutEvent), 'Event was of the wrong type.');
         const selectorInfo = data.dataForUpdateLayoutEvent.get(updateLayoutEvent);
         assert.isOk(selectorInfo);
         // Ensure that we dumped the timings into the event

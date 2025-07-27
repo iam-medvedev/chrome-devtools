@@ -21,9 +21,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             const pageLoadMetricsData = PageLoadMetrics.metricScoresByFrameId;
             assert.strictEqual(pageLoadMetricsData.size, 3);
             const pageLoadEventsForMainFrame = pageLoadMetricsData.get(mainFrameId);
-            if (!pageLoadEventsForMainFrame) {
-                assert.fail('Page load events for main frame were unexpectedly null.');
-            }
+            assert.isOk(pageLoadEventsForMainFrame, 'Page load events for main frame were unexpectedly null.');
             // There are 2 FCP events and 2 LCP events on the main frame: one for the first navigation,
             // and one for the second.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 2);
@@ -41,9 +39,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             // Only one frame to deal with
             assert.strictEqual(pageLoadMetricsData.size, 1);
             const pageLoadEventsForMainFrame = pageLoadMetricsData.get(mainFrameId);
-            if (!pageLoadEventsForMainFrame) {
-                assert.fail('Page load events for main frame were unexpectedly null.');
-            }
+            assert.isOk(pageLoadEventsForMainFrame, 'Page load events for main frame were unexpectedly null.');
             // Single FCP event that occurred after the refresh.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 1);
             const scoresByMetricName = [...pageLoadEventsForMainFrame.values()];
@@ -65,9 +61,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             // Only one frame to deal with
             assert.strictEqual(pageLoadMetricsData.size, 1);
             const pageLoadEventsForMainFrame = pageLoadMetricsData.get(mainFrameId);
-            if (!pageLoadEventsForMainFrame) {
-                assert.fail('Page load events for main frame were unexpectedly null.');
-            }
+            assert.isOk(pageLoadEventsForMainFrame, 'Page load events for main frame were unexpectedly null.');
             // Single FCP event that occurred after the refresh.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 1);
             const events = pageLoadEventsForMainFrame.get(navigationId);
@@ -86,9 +80,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             // We expect 3 frames: main frame, and two iframes.
             assert.strictEqual(pageLoadMetricsData.size, 3);
             const pageLoadEventsForMainFrame = pageLoadMetricsData.get(mainFrameId);
-            if (!pageLoadEventsForMainFrame) {
-                assert.fail('Page load events for main frame were unexpectedly null.');
-            }
+            assert.isOk(pageLoadEventsForMainFrame, 'Page load events for main frame were unexpectedly null.');
             // There are 2 MarkDOMContent events on the main frame: one for the first navigation,
             // and one for the second.
             assert.strictEqual(pageLoadEventsForMainFrame.size, 2);
@@ -110,9 +102,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');
             const { Meta, PageLoadMetrics } = parsedTrace;
             const pageLoadMetricsData = PageLoadMetrics.metricScoresByFrameId.get(Meta.mainFrameId);
-            if (!pageLoadMetricsData) {
-                assert.fail('Page load events for main frame were unexpectedly undefined.');
-            }
+            assert.isOk(pageLoadMetricsData, 'Page load events for main frame were unexpectedly undefined.');
             const scoresByMetricName = [...pageLoadMetricsData.values()];
             allMetricScores = scoresByMetricName.flatMap(metricScores => [...metricScores.values()]);
         });
@@ -165,9 +155,7 @@ describeWithEnvironment('PageLoadMetricsHandler', function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'multiple-navigations-with-iframes.json.gz');
             const { Meta, PageLoadMetrics } = parsedTrace;
             const pageLoadMetricsData = PageLoadMetrics.metricScoresByFrameId.get(Meta.mainFrameId);
-            if (!pageLoadMetricsData) {
-                assert.fail('Page load events for main frame were unexpectedly null.');
-            }
+            assert.isOk(pageLoadMetricsData, 'Page load events for main frame were unexpectedly null.');
             const scoresByMetricName = [...pageLoadMetricsData.values()];
             const flatResults = scoresByMetricName.map(metricScores => [...metricScores.values()])
                 .reduce((acc, metricScore) => acc.concat(metricScore), []);

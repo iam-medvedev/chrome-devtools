@@ -852,21 +852,26 @@ export class ConsoleViewMessage {
         const formatErrorStack = async (errorObj, includeCausedByPrefix) => {
             const error = SDK.RemoteObject.RemoteError.objectAsError(errorObj);
             const [details, cause] = await Promise.all([error.exceptionDetails(), error.cause()]);
-            const errorElementType = includeCausedByPrefix ? 'div' : 'span';
-            let errorElement = this.tryFormatAsError(error.errorStack, details, errorElementType);
+            let errorElement = this.tryFormatAsError(error.errorStack, details);
             if (!errorElement) {
-                errorElement = document.createElement(errorElementType);
+                errorElement = document.createElement('span');
                 errorElement.append(this.linkifyStringAsFragment(error.errorStack));
             }
             if (includeCausedByPrefix) {
-                errorElement.prepend('Caused by: ');
+                const causeElement = document.createElement('div');
+                causeElement.append('Caused by: ', errorElement);
+                result.appendChild(causeElement);
             }
-            result.appendChild(errorElement);
+            else {
+                result.appendChild(errorElement);
+            }
             if (cause && cause.subtype === 'error') {
                 await formatErrorStack(cause, /* includeCausedByPrefix */ true);
             }
             else if (cause && cause.type === 'string') {
-                result.append(`Caused by: ${cause.value}`);
+                const stringCauseElement = document.createElement('div');
+                stringCauseElement.append(`Caused by: ${cause.value}`);
+                result.append(stringCauseElement);
             }
         };
         this.#formatErrorStackPromiseForTest = formatErrorStack(output, /* includeCausedByPrefix */ false);
@@ -1523,7 +1528,7 @@ export class ConsoleViewMessage {
         scriptLocationLink.tabIndex = -1;
         return scriptLocationLink;
     }
-    tryFormatAsError(string, exceptionDetails, formattedResultType = 'span') {
+    tryFormatAsError(string, exceptionDetails) {
         const runtimeModel = this.message.runtimeModel();
         if (!runtimeModel) {
             return null;
@@ -1540,7 +1545,7 @@ export class ConsoleViewMessage {
             augmentErrorStackWithScriptIds(linkInfos, exceptionDetails.stackTrace);
         }
         const debuggerModel = runtimeModel.debuggerModel();
-        const formattedResult = document.createElement(formattedResultType);
+        const formattedResult = document.createElement('span');
         for (let i = 0; i < linkInfos.length; ++i) {
             const newline = i < linkInfos.length - 1 ? '\n' : '';
             const { line, link, isCallFrame } = linkInfos[i];

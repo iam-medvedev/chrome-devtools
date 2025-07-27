@@ -103,7 +103,7 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private rebuildSectionsForMatchedStyleRules;
     createNewRuleInViaInspectorStyleSheet(): Promise<void>;
     private createNewRuleInStyleSheet;
-    addBlankSection(insertAfterSection: StylePropertiesSection, styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange): void;
+    addBlankSection(insertAfterSection: StylePropertiesSection, styleSheetHeader: SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, ruleLocation: TextUtils.TextRange.TextRange): void;
     removeSection(section: StylePropertiesSection): void;
     filterRegex(): RegExp | null;
     private updateFilter;

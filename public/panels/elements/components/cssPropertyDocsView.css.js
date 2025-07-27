@@ -10,7 +10,7 @@ export default `/*
  */
 
 .docs-popup-wrapper {
-  max-width: 350px;
+  max-width: 420px;
   font-size: 12px;
   line-height: 1.4;
 }
@@ -34,6 +34,17 @@ export default `/*
 .footer {
   display: flex;
   justify-content: space-between;
+}
+
+#baseline {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+#baseline-icon {
+  width: 18px;
+  height: 18px;
 }
 
 /*# sourceURL=${import.meta.resolve('./cssPropertyDocsView.css')} */`;

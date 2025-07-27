@@ -67,9 +67,10 @@ export default `/*
   }
 }
 
+/* This is the coloured box that shows next to the event name */
 .timeline-details-chip-title > div {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border: 1px solid var(--sys-color-divider);
   display: inline-block;
   margin-right: 4px;

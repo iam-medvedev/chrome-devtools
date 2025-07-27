@@ -6,6 +6,8 @@ export interface SidebarAnnotationsTabViewInput {
     annotationsHiddenSetting: Common.Settings.Setting<boolean>;
     annotationEntryToColorMap: ReadonlyMap<Trace.Types.Events.Event | Trace.Types.Events.LegacyTimelineFrame, string>;
     onAnnotationClick: (annotation: Trace.Types.File.Annotation) => void;
+    onAnnotationHover: (annotation: Trace.Types.File.Annotation) => void;
+    onAnnotationHoverOut: () => void;
     onAnnotationDelete: (annotation: Trace.Types.File.Annotation) => void;
 }
 export declare class SidebarAnnotationsTab extends UI.Widget.Widget {

@@ -1778,6 +1778,7 @@ customElements.define("devtools-interaction-breakdown", InteractionBreakdown);
 // gen/front_end/panels/timeline/components/LayoutShiftDetails.js
 var LayoutShiftDetails_exports = {};
 __export(LayoutShiftDetails_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   LayoutShiftDetails: () => LayoutShiftDetails
 });
 import * as i18n15 from "./../../../core/i18n/i18n.js";
@@ -1786,6 +1787,7 @@ import * as Helpers3 from "./../../../models/trace/helpers/helpers.js";
 import * as Trace3 from "./../../../models/trace/trace.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyComponents from "./../../../ui/legacy/components/utils/utils.js";
+import * as UI6 from "./../../../ui/legacy/legacy.js";
 import * as Lit7 from "./../../../ui/lit/lit.js";
 import * as Utils from "./../utils/utils.js";
 import * as Insights from "./insights/insights.js";
@@ -1809,6 +1811,8 @@ var layoutShiftDetails_css_default = `/*
     width: var(--sys-size-6);
     height: var(--sys-size-6);
     border: var(--sys-size-1) solid var(--sys-color-divider);
+    /* so the border adds onto the width/height */
+    box-sizing: content-box;
     display: inline-block;
     margin-right: var(--sys-size-3);
   }
@@ -1854,6 +1858,10 @@ var layoutShiftDetails_css_default = `/*
   text-align: left;
 }
 
+.parent-cluster-link {
+  margin-left: var(--sys-size-2);
+}
+
 .timeline-link.invalid-link {
   color: var(--sys-color-state-disabled);
 }
@@ -1891,7 +1899,7 @@ var layoutShiftDetails_css_default = `/*
   display: flex;
   flex-direction: column;
   column-gap: var(--sys-size-4);
-  padding: var(--sys-size-6) var(--sys-size-6) 0 var(--sys-size-6);
+  padding: var(--sys-size-5) var(--sys-size-5) 0 var(--sys-size-5);
 }
 
 .culprits {
@@ -1910,7 +1918,7 @@ var layoutShiftDetails_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./layoutShiftDetails.css")} */`;
 
 // gen/front_end/panels/timeline/components/LayoutShiftDetails.js
-var { html: html7 } = Lit7;
+var { html: html7, render: render7 } = Lit7;
 var MAX_URL_LENGTH = 20;
 var UIStrings8 = {
   /**
@@ -1970,186 +1978,107 @@ var UIStrings8 = {
 };
 var str_8 = i18n15.i18n.registerUIStrings("panels/timeline/components/LayoutShiftDetails.ts", UIStrings8);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
-var LayoutShiftDetails = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
+var LayoutShiftDetails = class extends UI6.Widget.Widget {
+  #view;
   #event = null;
   #traceInsightsSets = null;
   #parsedTrace = null;
   #isFreshRecording = false;
-  connectedCallback() {
-    this.#render();
+  constructor(element, view = DEFAULT_VIEW) {
+    super(false, false, element);
+    this.#view = view;
   }
-  setData(event, traceInsightsSets, parsedTrace, isFreshRecording) {
-    if (this.#event === event) {
-      return;
-    }
+  set event(event) {
     this.#event = event;
+    void this.requestUpdate();
+  }
+  set traceInsightsSets(traceInsightsSets) {
     this.#traceInsightsSets = traceInsightsSets;
+    void this.requestUpdate();
+  }
+  set parsedTrace(parsedTrace) {
     this.#parsedTrace = parsedTrace;
+    void this.requestUpdate();
+  }
+  set isFreshRecording(isFreshRecording) {
     this.#isFreshRecording = isFreshRecording;
-    this.#render();
-  }
-  #renderTitle(event) {
-    const title = Utils.EntryName.nameForEntry(event);
-    return html7`
-      <div class="layout-shift-details-title">
-        <div class="layout-shift-event-title"></div>
-        ${title}
-      </div>
-    `;
-  }
-  #renderShiftedElements(shift, elementsShifted) {
-    return html7`
-      ${elementsShifted?.map((el) => {
-      if (el.node_id !== void 0) {
-        return html7`
-            <devtools-performance-node-link
-              .data=${{
-          backendNodeId: el.node_id,
-          frame: shift.args.frame,
-          fallbackHtmlSnippet: el.debug_name
-        }}>
-            </devtools-performance-node-link>`;
-      }
-      return Lit7.nothing;
-    })}`;
-  }
-  #renderIframe(iframeRootCause) {
-    const domLoadingId = iframeRootCause.frame;
-    const domLoadingFrame = SDK3.FrameManager.FrameManager.instance().getFrame(domLoadingId);
-    let el;
-    if (domLoadingFrame) {
-      el = LegacyComponents.Linkifier.Linkifier.linkifyRevealable(domLoadingFrame, domLoadingFrame.displayName());
-    } else {
-      el = this.#linkifyURL(iframeRootCause.url);
-    }
-    return html7`
-      <span class="culprit">
-        <span class="culprit-type"> ${i18nString8(UIStrings8.injectedIframe)}: </span>
-        <span class="culprit-value">${el}</span>
-      </span>`;
-  }
-  #linkifyURL(url) {
-    return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, {
-      tabStop: true,
-      showColumnNumber: false,
-      inlineFrameIndex: 0,
-      maxLength: MAX_URL_LENGTH
-    });
-  }
-  #renderFontRequest(request) {
-    const linkifiedURL = this.#linkifyURL(request.args.data.url);
-    return html7`
-      <span class="culprit">
-        <span class="culprit-type">${i18nString8(UIStrings8.fontRequest)}: </span>
-        <span class="culprit-value">${linkifiedURL}</span>
-      </span>`;
+    void this.requestUpdate();
   }
   // TODO(crbug.com/368170718): use eventRef instead
-  #clickEvent(event) {
-    this.dispatchEvent(new Insights.EventRef.EventReferenceClick(event));
+  #handleTraceEventClick(event) {
+    this.contentElement.dispatchEvent(new Insights.EventRef.EventReferenceClick(event));
   }
-  #renderAnimation(failure) {
-    const event = failure.animation;
-    if (!event) {
-      return null;
+  #togglePopover(e) {
+    const show = e.type === "mouseover";
+    if (e.type === "mouseleave") {
+      this.contentElement.dispatchEvent(new CustomEvent("toggle-popover", { detail: { show }, bubbles: true, composed: true }));
     }
-    return html7`
-        <span class="culprit">
-        <span class="culprit-type">${i18nString8(UIStrings8.nonCompositedAnimation)}: </span>
-        <button type="button" class="culprit-value timeline-link" @click=${() => this.#clickEvent(event)}>${i18nString8(UIStrings8.animation)}</button>
-      </span>`;
-  }
-  #renderUnsizedImage(frame, unsizedImage) {
-    const el = html7`
-      <devtools-performance-node-link
-        .data=${{
-      backendNodeId: unsizedImage.backendNodeId,
-      frame,
-      fallbackUrl: unsizedImage.paintImageEvent.args.data.url
-    }}>
-      </devtools-performance-node-link>`;
-    return html7`
-      <span class="culprit">
-        <span class="culprit-type">${i18nString8(UIStrings8.unsizedImage)}: </span>
-        <span class="culprit-value">${el}</span>
-      </span>`;
-  }
-  #renderRootCauseValues(frame, rootCauses) {
-    return html7`
-      ${rootCauses?.webFonts.map((fontReq) => this.#renderFontRequest(fontReq))}
-      ${rootCauses?.iframes.map((iframe) => this.#renderIframe(iframe))}
-      ${rootCauses?.nonCompositedAnimations.map((failure) => this.#renderAnimation(failure))}
-      ${rootCauses?.unsizedImages.map((unsizedImage) => this.#renderUnsizedImage(frame, unsizedImage))}
-    `;
-  }
-  #renderStartTime(shift, parsedTrace) {
-    const ts = Trace3.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
-    if (shift === this.#event) {
-      return html7`${i18n15.TimeUtilities.preciseMillisToString(Helpers3.Timing.microToMilli(ts))}`;
+    if (!(e.target instanceof HTMLElement) || !this.#event) {
+      return;
     }
-    const shiftTs = i18n15.TimeUtilities.formatMicroSecondsTime(ts);
-    return html7`
-         <button type="button" class="timeline-link" @click=${() => this.#clickEvent(shift)}>${i18nString8(UIStrings8.layoutShift, { PH1: shiftTs })}</button>`;
+    const rowEl = e.target.closest("tbody tr");
+    if (!rowEl?.parentElement) {
+      return;
+    }
+    const event = Trace3.Types.Events.isSyntheticLayoutShift(this.#event) ? this.#event : this.#event.events.find((e2) => e2.ts === parseInt(rowEl.getAttribute("data-ts") ?? "", 10));
+    this.contentElement.dispatchEvent(new CustomEvent("toggle-popover", { detail: { event, show }, bubbles: true, composed: true }));
   }
-  #renderShiftRow(shift, parsedTrace, elementsShifted, rootCauses) {
-    const score = shift.args.data?.weighted_score_delta;
-    if (!score) {
-      return null;
-    }
-    const hasCulprits = Boolean(rootCauses && (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length || rootCauses.unsizedImages.length));
-    return html7`
-      <tr class="shift-row" data-ts=${shift.ts}>
-        <td>${this.#renderStartTime(shift, parsedTrace)}</td>
-        <td>${score.toFixed(4)}</td>
-        ${elementsShifted.length ? html7`
-          <td>
-            <div class="elements-shifted">
-              ${this.#renderShiftedElements(shift, elementsShifted)}
-            </div>
-          </td>` : Lit7.nothing}
-        ${hasCulprits ? html7`
-          <td class="culprits">
-            ${this.#renderRootCauseValues(shift.args.frame, rootCauses)}
-          </td>` : Lit7.nothing}
-      </tr>`;
+  performUpdate() {
+    this.#view({
+      event: this.#event,
+      traceInsightsSets: this.#traceInsightsSets,
+      parsedTrace: this.#parsedTrace,
+      isFreshRecording: this.#isFreshRecording,
+      togglePopover: (e) => this.#togglePopover(e),
+      onEventClick: (e) => this.#handleTraceEventClick(e)
+    }, {}, this.contentElement);
   }
-  #renderParentCluster(cluster, parsedTrace) {
-    if (!cluster) {
-      return null;
-    }
-    const ts = Trace3.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
-    const clusterTs = i18n15.TimeUtilities.formatMicroSecondsTime(ts);
-    return html7`
-      <span class="parent-cluster">${i18nString8(UIStrings8.parentCluster)}:
-         <button type="button" class="timeline-link" @click=${() => this.#clickEvent(cluster)}>${i18nString8(UIStrings8.cluster, { PH1: clusterTs })}</button>
-      </span>`;
+};
+var DEFAULT_VIEW = (input, _output, target) => {
+  if (!input.event || !input.parsedTrace) {
+    render7(html7``, target, { host: input });
+    return;
   }
-  #renderClusterTotalRow(cluster) {
-    return html7`
-      <td class="total-row">${i18nString8(UIStrings8.total)}</td>
-      <td class="total-row">${cluster.clusterCumulativeScore.toFixed(4)}</td>`;
+  const title = Utils.EntryName.nameForEntry(input.event);
+  render7(html7`
+        <style>${layoutShiftDetails_css_default}</style>
+        <style>${Buttons3.textButtonStyles}</style>
+
+      <div class="layout-shift-summary-details">
+        <div
+          class="event-details"
+          @mouseover=${input.togglePopover}
+          @mouseleave=${input.togglePopover}
+        >
+        <div class="layout-shift-details-title">
+          <div class="layout-shift-event-title"></div>
+          ${title}
+        </div>
+        ${Trace3.Types.Events.isSyntheticLayoutShift(input.event) ? renderLayoutShiftDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.onEventClick)}
+        </div>
+      </div>
+      `, target, { host: input });
+};
+function renderLayoutShiftDetails(layoutShift, traceInsightsSets, parsedTrace, isFreshRecording, onEventClick) {
+  if (!traceInsightsSets) {
+    return Lit7.nothing;
   }
-  #renderShiftDetails(layoutShift, traceInsightsSets, parsedTrace) {
-    if (!traceInsightsSets) {
-      return null;
-    }
-    const insightsId = layoutShift.args.data?.navigationId ?? Trace3.Types.Events.NO_NAVIGATION;
-    const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
-    if (!clsInsight || clsInsight instanceof Error) {
-      return null;
-    }
-    const rootCauses = clsInsight.shifts.get(layoutShift);
-    let elementsShifted = layoutShift.args.data?.impacted_nodes ?? [];
-    if (!this.#isFreshRecording) {
-      elementsShifted = elementsShifted?.filter((el) => el.debug_name);
-    }
-    const hasCulprits = rootCauses && (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length || rootCauses.unsizedImages.length);
-    const hasShiftedElements = elementsShifted?.length;
-    const parentCluster = clsInsight.clusters.find((cluster) => {
-      return cluster.events.find((event) => event === layoutShift);
-    });
-    return html7`
+  const insightsId = layoutShift.args.data?.navigationId ?? Trace3.Types.Events.NO_NAVIGATION;
+  const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
+  if (!clsInsight || clsInsight instanceof Error) {
+    return Lit7.nothing;
+  }
+  const rootCauses = clsInsight.shifts.get(layoutShift);
+  let elementsShifted = layoutShift.args.data?.impacted_nodes ?? [];
+  if (!isFreshRecording) {
+    elementsShifted = elementsShifted?.filter((el) => el.debug_name);
+  }
+  const hasCulprits = rootCauses && (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length || rootCauses.unsizedImages.length);
+  const hasShiftedElements = elementsShifted?.length;
+  const parentCluster = clsInsight.clusters.find((cluster) => {
+    return cluster.events.find((event) => event === layoutShift);
+  });
+  return html7`
       <table class="layout-shift-details-table">
         <thead class="table-title">
           <tr>
@@ -2162,82 +2091,166 @@ var LayoutShiftDetails = class extends HTMLElement {
           </tr>
         </thead>
         <tbody>
-          ${this.#renderShiftRow(layoutShift, parsedTrace, elementsShifted, rootCauses)}
+          ${renderShiftRow(layoutShift, true, parsedTrace, elementsShifted, onEventClick, rootCauses)}
         </tbody>
       </table>
-      ${this.#renderParentCluster(parentCluster, parsedTrace)}
+      ${renderParentCluster(parentCluster, onEventClick, parsedTrace)}
     `;
+}
+function renderLayoutShiftClusterDetails(cluster, traceInsightsSets, parsedTrace, onEventClick) {
+  if (!traceInsightsSets) {
+    return Lit7.nothing;
   }
-  #renderClusterDetails(cluster, traceInsightsSets, parsedTrace) {
-    if (!traceInsightsSets) {
-      return null;
-    }
-    const insightsId = cluster.navigationId ?? Trace3.Types.Events.NO_NAVIGATION;
-    const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
-    if (!clsInsight || clsInsight instanceof Error) {
-      return null;
-    }
-    const clusterCulprits = Array.from(clsInsight.shifts.entries()).filter(([key]) => cluster.events.includes(key)).map(([, value]) => value).flatMap((x) => Object.values(x)).flat();
-    const hasCulprits = Boolean(clusterCulprits.length);
-    return html7`
-          <table class="layout-shift-details-table">
-            <thead class="table-title">
-              <tr>
-                <th>${i18nString8(UIStrings8.startTime)}</th>
-                <th>${i18nString8(UIStrings8.shiftScore)}</th>
-                <th>${i18nString8(UIStrings8.elementsShifted)}</th>
-                ${hasCulprits ? html7`
-                  <th>${i18nString8(UIStrings8.culprit)}</th> ` : Lit7.nothing}
-              </tr>
-            </thead>
-            <tbody>
-              ${cluster.events.map((shift) => {
-      const rootCauses = clsInsight.shifts.get(shift);
-      const elementsShifted = shift.args.data?.impacted_nodes ?? [];
-      return this.#renderShiftRow(shift, parsedTrace, elementsShifted, rootCauses);
-    })}
-              ${this.#renderClusterTotalRow(cluster)}
-            </tbody>
-          </table>
-        `;
+  const insightsId = cluster.navigationId ?? Trace3.Types.Events.NO_NAVIGATION;
+  const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
+  if (!clsInsight || clsInsight instanceof Error) {
+    return Lit7.nothing;
   }
-  #render() {
-    if (!this.#event || !this.#parsedTrace) {
-      return;
-    }
-    const output = html7`
-      <style>${layoutShiftDetails_css_default}</style>
-      <style>${Buttons3.textButtonStyles}</style>
-      <div class="layout-shift-summary-details">
-        <div
-          class="event-details"
-          @mouseover=${this.#togglePopover}
-          @mouseleave=${this.#togglePopover}
-        >
-          ${this.#renderTitle(this.#event)}
-          ${Trace3.Types.Events.isSyntheticLayoutShift(this.#event) ? this.#renderShiftDetails(this.#event, this.#traceInsightsSets, this.#parsedTrace) : this.#renderClusterDetails(this.#event, this.#traceInsightsSets, this.#parsedTrace)}
-        </div>
-      </div>
-    `;
-    Lit7.render(output, this.#shadow, { host: this });
+  const clusterCulprits = Array.from(clsInsight.shifts.entries()).filter(([key]) => cluster.events.includes(key)).map(([, value]) => value).flatMap((x) => Object.values(x)).flat();
+  const hasCulprits = Boolean(clusterCulprits.length);
+  return html7`
+    <table class="layout-shift-details-table">
+      <thead class="table-title">
+        <tr>
+          <th>${i18nString8(UIStrings8.startTime)}</th>
+          <th>${i18nString8(UIStrings8.shiftScore)}</th>
+          <th>${i18nString8(UIStrings8.elementsShifted)}</th>
+          ${hasCulprits ? html7`
+            <th>${i18nString8(UIStrings8.culprit)}</th> ` : Lit7.nothing}
+        </tr>
+      </thead>
+      <tbody>
+        ${cluster.events.map((shift) => {
+    const rootCauses = clsInsight.shifts.get(shift);
+    const elementsShifted = shift.args.data?.impacted_nodes ?? [];
+    return renderShiftRow(shift, false, parsedTrace, elementsShifted, onEventClick, rootCauses);
+  })}
+
+        <tr>
+          <td class="total-row">${i18nString8(UIStrings8.total)}</td>
+          <td class="total-row">${cluster.clusterCumulativeScore.toFixed(4)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+}
+function renderShiftRow(currentShift, userHasSingleShiftSelected, parsedTrace, elementsShifted, onEventClick, rootCauses) {
+  const score = currentShift.args.data?.weighted_score_delta;
+  if (!score) {
+    return Lit7.nothing;
   }
-  #togglePopover(e) {
-    const show = e.type === "mouseover";
-    if (e.type === "mouseleave") {
-      this.dispatchEvent(new CustomEvent("toggle-popover", { detail: { show }, bubbles: true, composed: true }));
-    }
-    if (!(e.target instanceof HTMLElement) || !this.#event) {
-      return;
-    }
-    const rowEl = e.target.closest("tbody tr");
-    if (!rowEl?.parentElement) {
-      return;
-    }
-    const event = Trace3.Types.Events.isSyntheticLayoutShift(this.#event) ? this.#event : this.#event.events.find((e2) => e2.ts === parseInt(rowEl.getAttribute("data-ts") ?? "", 10));
-    this.dispatchEvent(new CustomEvent("toggle-popover", { detail: { event, show }, bubbles: true, composed: true }));
+  const hasCulprits = Boolean(rootCauses && (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length || rootCauses.unsizedImages.length));
+  return html7`
+      <tr class="shift-row" data-ts=${currentShift.ts}>
+        <td>${renderStartTime(currentShift, userHasSingleShiftSelected, parsedTrace, onEventClick)}</td>
+        <td>${score.toFixed(4)}</td>
+        ${elementsShifted.length ? html7`
+          <td>
+            <div class="elements-shifted">
+              ${renderShiftedElements(currentShift, elementsShifted)}
+            </div>
+          </td>` : Lit7.nothing}
+        ${hasCulprits ? html7`
+          <td class="culprits">
+            ${rootCauses?.webFonts.map((fontReq) => renderFontRequest(fontReq))}
+            ${rootCauses?.iframes.map((iframe) => renderIframe(iframe))}
+            ${rootCauses?.nonCompositedAnimations.map((failure) => renderAnimation(failure, onEventClick))}
+            ${rootCauses?.unsizedImages.map((unsizedImage) => renderUnsizedImage(currentShift.args.frame, unsizedImage))}
+          </td>` : Lit7.nothing}
+      </tr>`;
+}
+function renderStartTime(shift, userHasSingleShiftSelected, parsedTrace, onEventClick) {
+  const ts = Trace3.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
+  if (userHasSingleShiftSelected) {
+    return html7`${i18n15.TimeUtilities.preciseMillisToString(Helpers3.Timing.microToMilli(ts))}`;
   }
-};
-customElements.define("devtools-performance-layout-shift-details", LayoutShiftDetails);
+  const shiftTs = i18n15.TimeUtilities.formatMicroSecondsTime(ts);
+  return html7`
+         <button type="button" class="timeline-link" @click=${() => onEventClick(shift)}>${i18nString8(UIStrings8.layoutShift, { PH1: shiftTs })}</button>`;
+}
+function renderParentCluster(cluster, onEventClick, parsedTrace) {
+  if (!cluster) {
+    return Lit7.nothing;
+  }
+  const ts = Trace3.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
+  const clusterTs = i18n15.TimeUtilities.formatMicroSecondsTime(ts);
+  return html7`
+      <span class="parent-cluster">${i18nString8(UIStrings8.parentCluster)}:<button type="button" class="timeline-link parent-cluster-link" @click=${() => onEventClick(cluster)}>${i18nString8(UIStrings8.cluster, { PH1: clusterTs })}</button>
+      </span>`;
+}
+function renderShiftedElements(shift, elementsShifted) {
+  return html7`
+      ${elementsShifted?.map((el) => {
+    if (el.node_id !== void 0) {
+      return html7`
+            <devtools-performance-node-link
+              .data=${{
+        backendNodeId: el.node_id,
+        frame: shift.args.frame,
+        fallbackHtmlSnippet: el.debug_name
+      }}>
+            </devtools-performance-node-link>`;
+    }
+    return Lit7.nothing;
+  })}`;
+}
+function renderAnimation(failure, onEventClick) {
+  const event = failure.animation;
+  if (!event) {
+    return Lit7.nothing;
+  }
+  return html7`
+        <span class="culprit">
+        <span class="culprit-type">${i18nString8(UIStrings8.nonCompositedAnimation)}: </span>
+        <button type="button" class="culprit-value timeline-link" @click=${() => onEventClick(event)}>${i18nString8(UIStrings8.animation)}</button>
+      </span>`;
+}
+function renderUnsizedImage(frame, unsizedImage) {
+  const el = html7`
+      <devtools-performance-node-link
+        .data=${{
+    backendNodeId: unsizedImage.backendNodeId,
+    frame,
+    fallbackUrl: unsizedImage.paintImageEvent.args.data.url
+  }}>
+      </devtools-performance-node-link>`;
+  return html7`
+      <span class="culprit">
+        <span class="culprit-type">${i18nString8(UIStrings8.unsizedImage)}: </span>
+        <span class="culprit-value">${el}</span>
+      </span>`;
+}
+function renderFontRequest(request) {
+  const linkifiedURL = linkifyURL(request.args.data.url);
+  return html7`
+      <span class="culprit">
+        <span class="culprit-type">${i18nString8(UIStrings8.fontRequest)}: </span>
+        <span class="culprit-value">${linkifiedURL}</span>
+      </span>`;
+}
+function linkifyURL(url) {
+  return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, {
+    tabStop: true,
+    showColumnNumber: false,
+    inlineFrameIndex: 0,
+    maxLength: MAX_URL_LENGTH
+  });
+}
+function renderIframe(iframeRootCause) {
+  const domLoadingId = iframeRootCause.frame;
+  const domLoadingFrame = SDK3.FrameManager.FrameManager.instance().getFrame(domLoadingId);
+  let el;
+  if (domLoadingFrame) {
+    el = LegacyComponents.Linkifier.Linkifier.linkifyRevealable(domLoadingFrame, domLoadingFrame.displayName());
+  } else {
+    el = linkifyURL(iframeRootCause.url);
+  }
+  return html7`
+      <span class="culprit">
+        <span class="culprit-type"> ${i18nString8(UIStrings8.injectedIframe)}: </span>
+        <span class="culprit-value">${el}</span>
+      </span>`;
+}
 
 // gen/front_end/panels/timeline/components/LiveMetricsView.js
 var LiveMetricsView_exports = {};
@@ -2485,7 +2498,7 @@ import * as Platform5 from "./../../../core/platform/platform.js";
 import * as CrUXManager5 from "./../../../models/crux-manager/crux-manager.js";
 import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers7 from "./../../../ui/components/helpers/helpers.js";
-import * as UI6 from "./../../../ui/legacy/legacy.js";
+import * as UI7 from "./../../../ui/legacy/legacy.js";
 import * as Lit9 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/metricCard.css.js
@@ -3707,7 +3720,7 @@ var MetricCard = class extends HTMLElement {
             title=${this.#getHelpTooltip()}
             .iconName=${"help"}
             .variant=${"icon"}
-            @click=${() => UI6.UIUtils.openInNewTab(helpLink)}
+            @click=${() => UI7.UIUtils.openInNewTab(helpLink)}
           ></devtools-button>
         </h3>
         <div tabindex="0" class="metric-values-section"
@@ -3773,7 +3786,7 @@ import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers8 from "./../../../ui/components/helpers/helpers.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator2 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI7 from "./../../../ui/legacy/legacy.js";
+import * as UI8 from "./../../../ui/legacy/legacy.js";
 import * as Lit11 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling4 from "./../../mobile_throttling/mobile_throttling.js";
@@ -4472,8 +4485,8 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
   #deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
   constructor() {
     super();
-    this.#toggleRecordAction = UI7.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
-    this.#recordReloadAction = UI7.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
+    this.#toggleRecordAction = UI8.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
+    this.#recordReloadAction = UI8.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
   }
   set isNode(isNode) {
     this.#isNode = isNode;
@@ -4663,7 +4676,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     }}>
           ${action6.title()}
         </devtools-button>
-        <span class="shortcut-label">${UI7.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action6.id())}</span>
+        <span class="shortcut-label">${UI8.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action6.id())}</span>
       </div>
     `;
   }
@@ -4900,7 +4913,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     if (this.#cruxManager.getConfigSetting().get().enabled) {
       return this.#renderCollectionPeriod();
     }
-    const linkEl = UI7.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n25.i18n.lockedString("Chrome UX Report"));
+    const linkEl = UI8.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n25.i18n.lockedString("Chrome UX Report"));
     const messageEl = i18n25.i18n.getFormatLocalizedString(str_13, UIStrings13.seeHowYourLocalMetricsCompare, { PH1: linkEl });
     return html11`
       <div class="field-data-message">${messageEl}</div>
@@ -4934,7 +4947,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
         block: "center"
       });
       interactionEl.focus();
-      UI7.UIUtils.runCSSAnimationOnce(interactionEl, "highlight");
+      UI8.UIUtils.runCSSAnimationOnce(interactionEl, "highlight");
     });
   }
   async #logExtraInteractionDetails(interaction) {
@@ -5030,7 +5043,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       });
       layoutShiftEls[0].focus();
       for (const layoutShiftEl of layoutShiftEls) {
-        UI7.UIUtils.runCSSAnimationOnce(layoutShiftEl, "highlight");
+        UI8.UIUtils.runCSSAnimationOnce(layoutShiftEl, "highlight");
       }
     });
   }
@@ -5146,7 +5159,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     Lit11.render(output, this.#shadow, { host: this });
   };
 };
-var LiveMetricsLogs = class extends UI7.Widget.WidgetElement {
+var LiveMetricsLogs = class extends UI8.Widget.WidgetElement {
   #tabbedPane;
   constructor() {
     super();
@@ -5173,18 +5186,18 @@ var LiveMetricsLogs = class extends UI7.Widget.WidgetElement {
     }
   }
   createWidget() {
-    const containerWidget = new UI7.Widget.Widget(true, void 0, this);
+    const containerWidget = new UI8.Widget.Widget(true, void 0, this);
     containerWidget.contentElement.style.display = "contents";
-    this.#tabbedPane = new UI7.TabbedPane.TabbedPane();
+    this.#tabbedPane = new UI8.TabbedPane.TabbedPane();
     const interactionsSlot = document.createElement("slot");
     interactionsSlot.name = "interactions-log-content";
-    const interactionsTab = UI7.Widget.Widget.getOrCreateWidget(interactionsSlot);
+    const interactionsTab = UI8.Widget.Widget.getOrCreateWidget(interactionsSlot);
     this.#tabbedPane.appendTab("interactions", i18nString12(UIStrings13.interactions), interactionsTab, void 0, void 0, void 0, void 0, void 0, "timeline.landing.interactions-log");
     const layoutShiftsSlot = document.createElement("slot");
     layoutShiftsSlot.name = "layout-shifts-log-content";
-    const layoutShiftsTab = UI7.Widget.Widget.getOrCreateWidget(layoutShiftsSlot);
+    const layoutShiftsTab = UI8.Widget.Widget.getOrCreateWidget(layoutShiftsSlot);
     this.#tabbedPane.appendTab("layout-shifts", i18nString12(UIStrings13.layoutShifts), layoutShiftsTab, void 0, void 0, void 0, void 0, void 0, "timeline.landing.layout-shifts-log");
-    const clearButton = new UI7.Toolbar.ToolbarButton(i18nString12(UIStrings13.clearCurrentLog), "clear", void 0, "timeline.landing.clear-log");
+    const clearButton = new UI8.Toolbar.ToolbarButton(i18nString12(UIStrings13.clearCurrentLog), "clear", void 0, "timeline.landing.clear-log");
     clearButton.addEventListener("Click", this.#clearCurrentLog, this);
     this.#tabbedPane.rightToolbar().appendToolbarItem(clearButton);
     this.#tabbedPane.show(containerWidget.contentElement);
@@ -5205,7 +5218,7 @@ import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as Helpers6 from "./../../../models/trace/helpers/helpers.js";
 import * as Trace6 from "./../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../ui/legacy/components/utils/utils.js";
-import * as UI8 from "./../../../ui/legacy/legacy.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit13 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/networkRequestDetails.css.js
@@ -5224,8 +5237,8 @@ var networkRequestDetails_css_default = `/*
 
 .network-request-details-title > div {
   box-sizing: border-box;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border: 1px solid var(--sys-color-divider);
   display: inline-block;
   margin-right: 4px;
@@ -5825,7 +5838,7 @@ var NetworkRequestDetails = class extends HTMLElement {
         if (!this.#networkRequest) {
           return;
         }
-        const contextMenu = new UI8.ContextMenu.ContextMenu(event);
+        const contextMenu = new UI9.ContextMenu.ContextMenu(event);
         contextMenu.appendApplicableItems(networkRequest);
         void contextMenu.show();
       });
@@ -6002,11 +6015,11 @@ customElements.define("devtools-performance-network-request-details", NetworkReq
 // gen/front_end/panels/timeline/components/RelatedInsightChips.js
 var RelatedInsightChips_exports = {};
 __export(RelatedInsightChips_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RelatedInsightChips: () => RelatedInsightChips
 });
 import * as i18n31 from "./../../../core/i18n/i18n.js";
-import * as UI9 from "./../../../ui/legacy/legacy.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
 import * as Lit14 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/relatedInsightChips.css.js
@@ -6104,11 +6117,11 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/timeline/components/RelatedInsightChips.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var RelatedInsightChips = class extends UI9.Widget.Widget {
+var RelatedInsightChips = class extends UI10.Widget.Widget {
   #view;
   #activeEvent = null;
   #eventToInsightsMap = /* @__PURE__ */ new Map();
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW2) {
     super(false, false, element);
     this.#view = view;
   }
@@ -6134,7 +6147,7 @@ var RelatedInsightChips = class extends UI9.Widget.Widget {
     this.#view(input, {}, this.contentElement);
   }
 };
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   const { activeEvent, eventToInsightsMap } = input;
   const relatedInsights = activeEvent ? eventToInsightsMap.get(activeEvent) ?? [] : [];
   if (!activeEvent || eventToInsightsMap.size === 0 || relatedInsights.length === 0) {
@@ -6177,14 +6190,16 @@ var DEFAULT_VIEW = (input, _output, target) => {
 // gen/front_end/panels/timeline/components/Sidebar.js
 var Sidebar_exports = {};
 __export(Sidebar_exports, {
+  AnnotationHoverOut: () => AnnotationHoverOut,
   DEFAULT_SIDEBAR_TAB: () => DEFAULT_SIDEBAR_TAB,
   DEFAULT_SIDEBAR_WIDTH_PX: () => DEFAULT_SIDEBAR_WIDTH_PX,
+  HoverAnnotation: () => HoverAnnotation,
   RemoveAnnotation: () => RemoveAnnotation,
   RevealAnnotation: () => RevealAnnotation,
   SidebarWidget: () => SidebarWidget
 });
 import * as RenderCoordinator3 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
+import * as UI12 from "./../../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/timeline/components/insights/SidebarInsight.js
 var InsightActivated = class _InsightActivated extends Event {
@@ -6207,7 +6222,7 @@ var InsightDeactivated = class _InsightDeactivated extends Event {
 // gen/front_end/panels/timeline/components/SidebarAnnotationsTab.js
 var SidebarAnnotationsTab_exports = {};
 __export(SidebarAnnotationsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   SidebarAnnotationsTab: () => SidebarAnnotationsTab
 });
 import * as Common5 from "./../../../core/common/common.js";
@@ -6215,7 +6230,7 @@ import * as i18n33 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
 import * as Trace7 from "./../../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../../services/trace_bounds/trace_bounds.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "./../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit15 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
@@ -6399,14 +6414,14 @@ var UIStrings17 = {
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/timeline/components/SidebarAnnotationsTab.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var SidebarAnnotationsTab = class extends UI10.Widget.Widget {
+var SidebarAnnotationsTab = class extends UI11.Widget.Widget {
   #annotations = [];
   // A map with annotated entries and the colours that are used to display them in the FlameChart.
   // We need this map to display the entries in the sidebar with the same colours.
   #annotationEntryToColorMap = /* @__PURE__ */ new Map();
   #annotationsHiddenSetting;
   #view;
-  constructor(view = DEFAULT_VIEW2) {
+  constructor(view = DEFAULT_VIEW3) {
     super();
     this.#view = view;
     this.#annotationsHiddenSetting = Common5.Settings.Settings.instance().moduleSetting("annotations-hidden");
@@ -6473,6 +6488,12 @@ var SidebarAnnotationsTab = class extends UI10.Widget.Widget {
       annotationEntryToColorMap: this.#annotationEntryToColorMap,
       onAnnotationClick: (annotation) => {
         this.contentElement.dispatchEvent(new RevealAnnotation(annotation));
+      },
+      onAnnotationHover: (annotation) => {
+        this.contentElement.dispatchEvent(new HoverAnnotation(annotation));
+      },
+      onAnnotationHoverOut: () => {
+        this.contentElement.dispatchEvent(new AnnotationHoverOut());
       },
       onAnnotationDelete: (annotation) => {
         this.contentElement.dispatchEvent(new RemoveAnnotation(annotation));
@@ -6630,7 +6651,7 @@ function renderTutorial() {
       </div>
     </div>`;
 }
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   render14(html15`
       <style>${sidebarAnnotationsTab_css_default}</style>
       <span class="annotations">
@@ -6640,6 +6661,8 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     return html15`
                 <div class="annotation-container"
                   @click=${() => input.onAnnotationClick(annotation)}
+                  @mouseover=${() => annotation.type === "ENTRY_LABEL" ? input.onAnnotationHover(annotation) : null}
+                  @mouseout=${() => annotation.type === "ENTRY_LABEL" ? input.onAnnotationHoverOut() : null}
                   aria-label=${label}
                   tabindex="0"
                   jslog=${VisualLogging7.item(`timeline.annotation-sidebar.annotation-${jslogForAnnotation(annotation)}`).track({ click: true })}
@@ -6687,7 +6710,6 @@ __export(SidebarSingleInsightSet_exports, {
 });
 import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform9 from "./../../../core/platform/platform.js";
-import * as Root from "./../../../core/root/root.js";
 import * as CrUXManager11 from "./../../../models/crux-manager/crux-manager.js";
 import * as Trace9 from "./../../../models/trace/trace.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
@@ -6877,7 +6899,6 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/timeline/components/SidebarSingleInsightSet.ts", UIStrings18);
 var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var EXPERIMENTAL_INSIGHTS = /* @__PURE__ */ new Set([]);
 var INSIGHT_NAME_TO_COMPONENT = {
   Cache: Insights4.Cache.Cache,
   CLSCulprits: Insights4.CLSCulprits.CLSCulprits,
@@ -7096,10 +7117,6 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     `;
   }
   static categorizeInsights(insightSets, insightSetKey, activeCategory) {
-    const includeExperimental = Root.Runtime.experiments.isEnabled(
-      "timeline-experimental-insights"
-      /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */
-    );
     const insightSet = insightSets?.get(insightSetKey);
     if (!insightSet) {
       return { shownInsights: [], passedInsights: [] };
@@ -7109,9 +7126,6 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     for (const [name, model] of Object.entries(insightSet.model)) {
       const componentClass = INSIGHT_NAME_TO_COMPONENT[name];
       if (!componentClass) {
-        continue;
-      }
-      if (!includeExperimental && EXPERIMENTAL_INSIGHTS.has(name)) {
         continue;
       }
       if (!model || !shouldRenderForCategory({ activeCategory, insightCategory: model.category })) {
@@ -7457,11 +7471,25 @@ var RevealAnnotation = class _RevealAnnotation extends Event {
     this.annotation = annotation;
   }
 };
+var HoverAnnotation = class _HoverAnnotation extends Event {
+  annotation;
+  static eventName = "hoverannotation";
+  constructor(annotation) {
+    super(_HoverAnnotation.eventName, { bubbles: true, composed: true });
+    this.annotation = annotation;
+  }
+};
+var AnnotationHoverOut = class _AnnotationHoverOut extends Event {
+  static eventName = "annotationhoverout";
+  constructor() {
+    super(_AnnotationHoverOut.eventName, { bubbles: true, composed: true });
+  }
+};
 var DEFAULT_SIDEBAR_TAB = "insights";
 var DEFAULT_SIDEBAR_WIDTH_PX = 240;
 var MIN_SIDEBAR_WIDTH_PX = 170;
-var SidebarWidget = class extends UI11.Widget.VBox {
-  #tabbedPane = new UI11.TabbedPane.TabbedPane();
+var SidebarWidget = class extends UI12.Widget.VBox {
+  #tabbedPane = new UI12.TabbedPane.TabbedPane();
   #insightsView = new InsightsView();
   #annotationsView = new AnnotationsView();
   /**
@@ -7530,7 +7558,7 @@ var SidebarWidget = class extends UI11.Widget.VBox {
     }
   }
 };
-var InsightsView = class extends UI11.Widget.VBox {
+var InsightsView = class extends UI12.Widget.VBox {
   #component = new SidebarInsightsTab();
   constructor() {
     super();
@@ -7556,7 +7584,7 @@ var InsightsView = class extends UI11.Widget.VBox {
     }
   }
 };
-var AnnotationsView = class extends UI11.Widget.VBox {
+var AnnotationsView = class extends UI12.Widget.VBox {
   #component = new SidebarAnnotationsTab();
   constructor() {
     super();
@@ -7583,7 +7611,7 @@ __export(TimelineSummary_exports, {
   CategorySummary: () => CategorySummary
 });
 import * as i18n37 from "./../../../core/i18n/i18n.js";
-import * as UI12 from "./../../../ui/legacy/legacy.js";
+import * as UI13 from "./../../../ui/legacy/legacy.js";
 import * as Lit18 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/timelineSummary.css.js
@@ -7678,7 +7706,7 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("panels/timeline/components/TimelineSummary.ts", UIStrings19);
 var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var CategorySummary = class extends HTMLElement {
-  #shadow = UI12.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
+  #shadow = UI13.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
   #rangeStart = 0;
   #rangeEnd = 0;
   #total = 0;

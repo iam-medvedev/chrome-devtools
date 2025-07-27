@@ -1,11 +1,20 @@
 import * as Trace from '../../../models/trace/trace.js';
-export declare class LayoutShiftDetails extends HTMLElement {
+import * as UI from '../../../ui/legacy/legacy.js';
+export interface ViewInput {
+    event: Trace.Types.Events.SyntheticLayoutShift | Trace.Types.Events.SyntheticLayoutShiftCluster | null;
+    traceInsightsSets: Trace.Insights.Types.TraceInsightSets | null;
+    parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
+    isFreshRecording: boolean;
+    togglePopover: (e: MouseEvent) => void;
+    onEventClick: (event: Trace.Types.Events.Event) => void;
+}
+export declare class LayoutShiftDetails extends UI.Widget.Widget {
     #private;
-    connectedCallback(): void;
-    setData(event: Trace.Types.Events.SyntheticLayoutShift | Trace.Types.Events.SyntheticLayoutShiftCluster, traceInsightsSets: Trace.Insights.Types.TraceInsightSets | null, parsedTrace: Trace.Handlers.Types.ParsedTrace | null, isFreshRecording: boolean): void;
+    constructor(element?: HTMLElement, view?: (input: ViewInput, output: object, target: HTMLElement) => void);
+    set event(event: Trace.Types.Events.SyntheticLayoutShift | Trace.Types.Events.SyntheticLayoutShiftCluster);
+    set traceInsightsSets(traceInsightsSets: Trace.Insights.Types.TraceInsightSets | null);
+    set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace | null);
+    set isFreshRecording(isFreshRecording: boolean);
+    performUpdate(): Promise<void> | void;
 }
-declare global {
-    interface HTMLElementTagNameMap {
-        'devtools-performance-layout-shift-details': LayoutShiftDetails;
-    }
-}
+export declare const DEFAULT_VIEW: (input: ViewInput, output: object, target: HTMLElement) => void;

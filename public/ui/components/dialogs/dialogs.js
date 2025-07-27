@@ -494,6 +494,9 @@ var Dialog = class extends HTMLElement {
         const dialog2 = this.#getDialog();
         dialog2.style.visibility = "hidden";
         if (this.#isPendingShowDialog && !dialog2.hasAttribute("open")) {
+          if (!dialog2.isConnected) {
+            return;
+          }
           dialog2.showModal();
           this.setAttribute("open", "");
           this.#isPendingShowDialog = false;
@@ -581,6 +584,9 @@ var Dialog = class extends HTMLElement {
     await RenderCoordinator.done();
     this.#isPendingShowDialog = false;
     const dialog2 = this.#getDialog();
+    if (!dialog2.isConnected) {
+      return;
+    }
     if (!dialog2.hasAttribute("open")) {
       dialog2.showModal();
     }

@@ -8,10 +8,9 @@ import { buildGroupStyle, buildTrackHeader, getDurationString } from './Appender
 import * as Extensions from './extensions/extensions.js';
 const UIStrings = {
     /**
-     * @description The name of a track, which is a horizontal division of the timeline, synonym with "swimlane".
-     * @example {A track name} PH1
+     * @description The subtitle to show (by the side of the track name).
      */
-    customTrackName: '{PH1} — Custom track',
+    customTrackSubtitle: '— Custom',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/ExtensionTrackAppender.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -39,11 +38,12 @@ export class ExtensionTrackAppender {
      */
     #appendTopLevelHeaderAtLevel(currentLevel, expanded) {
         const style = buildGroupStyle({ shareHeaderLine: false, collapsible: true });
-        const headerTitle = i18nString(UIStrings.customTrackName, { PH1: this.#extensionTopLevelTrack.name });
+        const headerTitle = this.#extensionTopLevelTrack.name;
         const jsLogContext = this.#extensionTopLevelTrack.name === '🅰️ Angular' ? "angular-track" /* VisualLoggingTrackName.ANGULAR_TRACK */ :
             "extension" /* VisualLoggingTrackName.EXTENSION */;
         const group = buildTrackHeader(jsLogContext, currentLevel, headerTitle, style, 
         /* selectable= */ true, expanded);
+        group.subtitle = i18nString(UIStrings.customTrackSubtitle);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }
     /**

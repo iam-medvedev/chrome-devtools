@@ -205,6 +205,7 @@ import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Snippets from "./../../panels/snippets/snippets.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
+import * as Snackbar from "./../../ui/components/snackbars/snackbars.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
@@ -417,7 +418,6 @@ var MainImpl = class _MainImpl {
     Root.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", void 0, "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
     Root.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
     Root.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
-    Root.Runtime.experiments.register("timeline-experimental-insights", "Performance panel: enable experimental performance insights");
     Root.Runtime.experiments.enableExperimentsByDefault([
       "full-accessibility-tree",
       "highlight-errors-elements-panel",
@@ -446,6 +446,7 @@ var MainImpl = class _MainImpl {
   async #createAppUI() {
     _MainImpl.time("Main._createAppUI");
     const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
+    isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, (event) => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
     const defaultThemeSetting = "systemPreferred";
     const themeSetting = Common.Settings.Settings.instance().createSetting("ui-theme", defaultThemeSetting);
     UI.UIUtils.initializeUIUtils(document);

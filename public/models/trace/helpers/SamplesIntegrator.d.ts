@@ -52,6 +52,7 @@ export declare class SamplesIntegrator {
     static isNativeRuntimeFrame(frame: Protocol.Runtime.CallFrame): boolean;
     static filterStackFrames(stack: Types.Events.SyntheticProfileCall[], engineConfig: Types.Configuration.Configuration): void;
     static createFakeTraceFromCpuProfile(profile: Protocol.Profiler.Profile, tid: Types.Events.ThreadID): Types.File.TraceFile;
+    static extractCpuProfileFromFakeTrace(traceEvents: readonly Types.Events.Event[]): Protocol.Profiler.Profile;
 }
 export declare namespace SamplesIntegrator {
     const enum NativeGroups {

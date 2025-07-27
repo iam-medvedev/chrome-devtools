@@ -242,6 +242,8 @@ async function getEmptyStateSuggestions(context, conversationType) {
                 { title: 'Help me optimize my page load performance', jslogContext: 'performance-insights-default' },
             ];
         }
+        default:
+            Platform.assertNever(conversationType, 'Unknown conversation type');
     }
 }
 function toolbarView(input) {
@@ -940,8 +942,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 return Common.Revealer.reveal(trace);
             }
             if (focus.type === 'insight') {
-                const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.insight, focus.insightSetBounds, focus.parsedTrace);
-                return Common.Revealer.reveal(activeInsight);
+                return Common.Revealer.reveal(focus.insight);
             }
             Platform.assertNever(focus, 'Unknown agent focus');
         }
@@ -1002,7 +1003,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         let agent = this.#conversationAgent;
         if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType ||
-            this.#conversation?.isEmpty || targetConversationType === "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */) {
+            this.#conversation?.isEmpty || targetConversationType === "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */ ||
+            (agent instanceof AiAssistanceModel.PerformanceAgent &&
+                agent.getConversationType() !== targetConversationType)) {
             agent = this.#createAgent(targetConversationType);
         }
         this.#updateConversationState(agent);
@@ -1442,20 +1445,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         /* isExternal */ true);
         this.#historicalConversations.push(externalConversation);
         const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
-        const insightOrError = await TimelinePanel.ExternalRequests.getInsightToDebug(timelinePanel.model, insightTitle);
-        if ('error' in insightOrError) {
+        const focusOrError = await TimelinePanel.ExternalRequests.getInsightAgentFocusToDebug(timelinePanel.model, insightTitle);
+        if ('error' in focusOrError) {
             return {
-                response: insightOrError.error,
+                response: focusOrError.error,
                 devToolsLogs: [],
             };
         }
-        const focus = new TimelineUtils.AIContext.AgentFocus({
-            type: 'insight',
-            parsedTrace: insightOrError.insight.parsedTrace,
-            insight: insightOrError.insight.insight,
-            insightSetBounds: insightOrError.insight.insightSetBounds
-        });
-        const selectedContext = createPerformanceTraceContext(focus);
+        const selectedContext = createPerformanceTraceContext(focusOrError.focus);
         const runner = insightsAgent.run(prompt, { selected: selectedContext });
         const devToolsLogs = [];
         for await (const data of runner) {

@@ -100,9 +100,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
             dataProvider.setModel(parsedTrace, entityMapper);
             const timingsTrackGroup = dataProvider.timelineData().groups.find(g => g.name === 'Timings');
-            if (!timingsTrackGroup) {
-                assert.fail('Could not find Timings track flame chart group');
-            }
+            assert.isOk(timingsTrackGroup, 'Could not find Timings track flame chart group');
             const groupTreeEvents = dataProvider.groupTreeEvents(timingsTrackGroup);
             const allTimingEvents = [
                 ...parsedTrace.UserTimings.consoleTimings,
@@ -118,9 +116,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
             dataProvider.setModel(parsedTrace, entityMapper);
             const timingsTrackGroup = dataProvider.timelineData().groups.find(g => g.name === 'Timings');
-            if (!timingsTrackGroup) {
-                assert.fail('Could not find Timings track flame chart group');
-            }
+            assert.isOk(timingsTrackGroup, 'Could not find Timings track flame chart group');
             const groupTreeEvents = dataProvider.groupTreeEvents(timingsTrackGroup);
             assert.strictEqual(groupTreeEvents?.length, 6);
             const allEventsAreSync = groupTreeEvents?.every(event => !Trace.Types.Events.isPhaseAsync(event.ph));
@@ -144,22 +140,13 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
         const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
         dataProvider.setModel(parsedTrace, entityMapper);
-        const groupNames = dataProvider.timelineData().groups.map(g => g.name);
+        const groupNames = dataProvider.timelineData().groups.map(g => [g.name, g.subtitle]);
         assert.deepEqual(groupNames, [
-            'Frames',
-            'Timings',
-            'Interactions',
-            'A track group — Custom track',
-            'Another Extension Track',
-            'An Extension Track — Custom track',
-            'TimeStamp track — Custom track',
-            'Main — http://localhost:3000/',
-            'Thread pool',
-            'Thread pool worker 1',
-            'Thread pool worker 2',
-            'Thread pool worker 3',
-            'StackSamplingProfiler',
-            'GPU',
+            ['Frames', undefined], ['Timings', undefined], ['Interactions', undefined], ['A track group', '— Custom'],
+            ['Another Extension Track', undefined], ['An Extension Track', '— Custom'], ['TimeStamp track', '— Custom'],
+            ['Main — http://localhost:3000/', undefined], ['Thread pool', undefined], ['Thread pool worker 1', undefined],
+            ['Thread pool worker 2', undefined], ['Thread pool worker 3', undefined], ['StackSamplingProfiler', undefined],
+            ['GPU', undefined]
         ]);
     });
     it('can return the FlameChart group for a given event', async function () {

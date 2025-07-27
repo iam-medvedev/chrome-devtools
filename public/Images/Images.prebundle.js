@@ -57,6 +57,9 @@ style.setProperty('--image-file-arrow-up-down-circle', 'url(\"' + new URL('./src
 style.setProperty('--image-file-arrow-up-down', 'url(\"' + new URL('./src/arrow-up-down.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-arrow-up', 'url(\"' + new URL('./src/arrow-up.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-attach-file', 'url(\"' + new URL('./src/attach-file.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-baseline-high-availability', 'url(\"' + new URL('./src/baseline-high-availability.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-baseline-limited-availability', 'url(\"' + new URL('./src/baseline-limited-availability.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-baseline-low-availability', 'url(\"' + new URL('./src/baseline-low-availability.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bell', 'url(\"' + new URL('./src/bell.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bezier-curve-filled', 'url(\"' + new URL('./src/bezier-curve-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bin', 'url(\"' + new URL('./src/bin.svg', import.meta.url).toString() + '\")');

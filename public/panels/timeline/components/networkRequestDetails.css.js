@@ -18,8 +18,8 @@ export default `/*
 
 .network-request-details-title > div {
   box-sizing: border-box;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border: 1px solid var(--sys-color-divider);
   display: inline-block;
   margin-right: 4px;

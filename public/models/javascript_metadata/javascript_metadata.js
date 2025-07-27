@@ -7124,6 +7124,10 @@ var NativeFunctions = [
     signatures: [["options_bounds", "children_updated"]]
   },
   {
+    name: "PatchEvent",
+    signatures: [["type", "init"]]
+  },
+  {
     name: "allowsFeature",
     signatures: [["feature", "?origin"]]
   },
@@ -7182,6 +7186,14 @@ var NativeFunctions = [
   {
     name: "TaskPriorityChangeEvent",
     signatures: [["type", "eventInitDict"]]
+  },
+  {
+    name: "registerTool",
+    signatures: [["params"]]
+  },
+  {
+    name: "unregisterTool",
+    signatures: [["tool_name"]]
   },
   {
     name: "SnapEvent",
@@ -7525,6 +7537,10 @@ var NativeFunctions = [
   {
     name: "ContentIndexEvent",
     signatures: [["type", "init"]]
+  },
+  {
+    name: "userAgentAllowsProtocol",
+    signatures: [["protocol"]]
   },
   {
     name: "FederatedCredential",

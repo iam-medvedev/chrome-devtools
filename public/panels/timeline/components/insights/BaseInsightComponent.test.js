@@ -278,8 +278,8 @@ describeWithEnvironment('BaseInsightComponent', () => {
             assert.instanceOf(context, Utils.AIContext.AgentFocus);
         });
         it('clears the active context when it gets toggled shut', async () => {
-            const FAKE_ACTIVE_INSIGHT = {};
-            UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, Utils.AIContext.AgentFocus.fromInsight(FAKE_ACTIVE_INSIGHT));
+            const focus = { data: { type: 'insight' } };
+            UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, focus);
             const component = await renderComponent({ insightHasAISupport: true });
             const header = component.shadowRoot?.querySelector('header');
             assert.isOk(header);

@@ -281,5 +281,83 @@ describeWithEnvironment('TimelinePanel', function () {
             }
         });
     });
+    describe('saveToFile', function () {
+        let fileManager;
+        let saveSpy;
+        let closeSpy;
+        beforeEach(() => {
+            fileManager = Workspace.FileManager.FileManager.instance();
+            saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
+                return Promise.resolve({});
+            });
+            closeSpy = sinon.stub(fileManager, 'close');
+        });
+        it('saves a regular trace file', async function () {
+            const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
+            await timeline.innerSaveToFile(traceEvents, metadata, {
+                savingEnhancedTrace: false,
+                addModifications: false,
+            });
+            sinon.assert.calledOnce(saveSpy);
+            sinon.assert.calledOnce(closeSpy);
+            const [fileName, traceAsString] = saveSpy.getCall(0).args;
+            assert.match(fileName, /Trace-[\d|T]+\.json$/);
+            const parsedData = JSON.parse(traceAsString.text);
+            assert.isUndefined(parsedData.metadata.enhancedTraceVersion);
+            assert.deepEqual(parsedData.traceEvents, traceEvents);
+        });
+        it('saves a CPU profile trace file', async function () {
+            const profile = await TraceLoader.rawCPUProfile(this, 'node-fibonacci-website.cpuprofile.gz');
+            const file = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
+            const { traceEvents, metadata } = file;
+            await timeline.innerSaveToFile(traceEvents, metadata, {
+                savingEnhancedTrace: false,
+                addModifications: false,
+            });
+            sinon.assert.calledOnce(saveSpy);
+            sinon.assert.calledOnce(closeSpy);
+            const [fileName, traceAsString] = saveSpy.getCall(0).args;
+            assert.match(fileName, /CPU-[\d|T]+\.cpuprofile$/);
+            const parsedData = JSON.parse(traceAsString.text);
+            const profile2 = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
+            assert.deepEqual(parsedData, profile2);
+        });
+        it('saves an enhanced trace file', async function () {
+            const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'enhanced-traces.json.gz');
+            await timeline.innerSaveToFile(traceEvents, metadata, {
+                savingEnhancedTrace: true,
+                addModifications: false,
+            });
+            sinon.assert.calledOnce(saveSpy);
+            sinon.assert.calledOnce(closeSpy);
+            const [fileName, traceAsString] = saveSpy.getCall(0).args;
+            assert.match(fileName, /EnhancedTraces-[\d|T]+\.json$/);
+            const parsedData = JSON.parse(traceAsString.text);
+            assert.isDefined(parsedData.metadata.enhancedTraceVersion);
+        });
+        it('saves a trace file with modifications', async function () {
+            const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
+            // Load to initialize modification manager
+            await timeline.loadingComplete(traceEvents, null, metadata);
+            const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
+            assert.isOk(modificationsManager);
+            modificationsManager.createAnnotation({
+                bounds: Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Types.Timing.Micro(1), Trace.Types.Timing.Micro(2)),
+                type: 'TIME_RANGE',
+                label: 'Test Annotation',
+            });
+            await timeline.saveToFile({
+                savingEnhancedTrace: false,
+                addModifications: true,
+            });
+            sinon.assert.calledOnce(saveSpy);
+            sinon.assert.calledOnce(closeSpy);
+            const [, traceAsString] = saveSpy.getCall(0).args;
+            const parsedData = JSON.parse(traceAsString.text);
+            assert.isDefined(parsedData.metadata.modifications);
+            assert.lengthOf(parsedData.metadata.modifications.annotations.labelledTimeRanges, 1);
+            assert.strictEqual(parsedData.metadata.modifications.annotations.labelledTimeRanges[0].label, 'Test Annotation');
+        });
+    });
 });
 //# sourceMappingURL=TimelinePanel.test.js.map

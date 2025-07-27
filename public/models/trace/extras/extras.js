@@ -923,6 +923,14 @@ var SamplesIntegrator = class _SamplesIntegrator {
       }
     };
   }
+  static extractCpuProfileFromFakeTrace(traceEvents) {
+    const profileEvent = traceEvents.find((e) => Types6.Events.isSyntheticCpuProfile(e));
+    const profile = profileEvent?.args.data.cpuProfile;
+    if (!profile) {
+      throw new Error("Missing cpuProfile data");
+    }
+    return profile;
+  }
 };
 
 // gen/front_end/models/trace/extras/TraceTree.js

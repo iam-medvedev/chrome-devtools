@@ -147,9 +147,7 @@ export function dispatchFocusOutEvent(element, options = {}) {
 export function dispatchKeyDownEvent(element, options = {}) {
     const clickEvent = new KeyboardEvent('keydown', options);
     const success = element.dispatchEvent(clickEvent);
-    if (!success) {
-        assert.fail('Failed to trigger keydown event successfully.');
-    }
+    assert.isOk(success, 'Failed to trigger keydown event successfully.');
 }
 export function dispatchInputEvent(element, options = {}) {
     const inputEvent = new InputEvent('input', options);

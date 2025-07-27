@@ -3278,7 +3278,7 @@ Common12.Revealer.registerRevealer({
 });
 Common12.Revealer.registerRevealer({
   contextTypes() {
-    return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.InsightAIContext.ActiveInsight]);
+    return maybeRetrieveContextTypes5((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
   destination: Common12.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {

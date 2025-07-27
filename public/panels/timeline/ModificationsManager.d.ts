@@ -39,6 +39,7 @@ export declare class ModificationsManager extends EventTarget {
     updateAnnotation(updatedAnnotation: Trace.Types.File.Annotation): void;
     updateAnnotationOverlay(updatedOverlay: Trace.Types.Overlays.Overlay): void;
     getAnnotationByOverlay(overlay: Trace.Types.Overlays.Overlay): Trace.Types.File.Annotation | null;
+    getOverlaybyAnnotation(annotation: Trace.Types.File.Annotation): Trace.Types.Overlays.Overlay | null;
     getAnnotations(): Trace.Types.File.Annotation[];
     getOverlays(): Trace.Types.Overlays.Overlay[];
     applyAnnotationsFromCache(): void;

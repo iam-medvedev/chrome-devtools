@@ -1,4 +1,5 @@
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 declare const ConsolePrompt_base: (new (...args: any[]) => {
@@ -25,10 +26,17 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     private readonly eagerEvalSetting;
     protected previewRequestForTest: Promise<void> | null;
     private highlightingNode;
+    private aidaClient?;
+    private aiCodeCompletion?;
+    private placeholderCompartment;
+    private teaserContainer?;
+    private aiCodeCompletionThrottler?;
+    private aiCodeCompletionSetting;
     constructor();
     private eagerSettingChanged;
     belowEditorElement(): Element;
     private onTextChanged;
+    triggerAiCodeCompletion(): void;
     private requestPreview;
     willHide(): void;
     history(): TextEditor.AutocompleteHistory.AutocompleteHistory;
@@ -38,6 +46,7 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     text(): string;
     setAddCompletionsFromHistory(value: boolean): void;
     private editorKeymap;
+    private runOnEscape;
     private enterWillEvaluate;
     showSelfXssWarning(): void;
     private handleEnter;
@@ -47,7 +56,11 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     private substituteNames;
     private editorUpdate;
     focus(): void;
+    private setAiCodeCompletion;
+    private onAiCodeCompletionSettingChanged;
+    private isAiCodeCompletionEnabled;
     private editorSetForTest;
+    setAidaClientForTest(aidaClient: Host.AidaClient.AidaClient): void;
 }
 export declare const enum Events {
     TEXT_CHANGED = "TextChanged"

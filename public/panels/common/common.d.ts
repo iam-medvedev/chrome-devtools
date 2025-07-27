@@ -1,21 +1,4 @@
 import type * as Platform from '../../core/platform/platform.js';
-import * as Lit from '../../ui/lit/lit.js';
-export declare class FreDialog {
-    static show({ header, reminderItems, onLearnMoreClick, ariaLabel, learnMoreButtonTitle }: {
-        header: {
-            iconName: string;
-            text: Platform.UIString.LocalizedString;
-        };
-        reminderItems: Array<{
-            iconName: string;
-            content: Platform.UIString.LocalizedString | Lit.LitTemplate;
-        }>;
-        onLearnMoreClick: () => void;
-        ariaLabel?: string;
-        learnMoreButtonTitle?: string;
-    }): Promise<boolean>;
-    private constructor();
-}
 export declare class TypeToAllowDialog {
     static show(options: {
         jslogContext: {
@@ -28,3 +11,5 @@ export declare class TypeToAllowDialog {
         inputPlaceholder: Platform.UIString.LocalizedString;
     }): Promise<boolean>;
 }
+export { AiCodeCompletionTeaser } from './AiCodeCompletionTeaser.js';
+export { FreDialog } from './FreDialog.js';

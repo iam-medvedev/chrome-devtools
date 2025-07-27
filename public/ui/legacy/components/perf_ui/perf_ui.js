@@ -997,6 +997,7 @@ var TimelineGrid = class _TimelineGrid {
 
 // gen/front_end/ui/legacy/components/perf_ui/FlameChart.js
 var KEYBOARD_FAKED_CONTEXT_MENU_DETAIL = -1;
+var SUBTITLE_FONT_SIZE_AND_STYLE = "italic 10px";
 var UIStrings2 = {
   /**
    *@description Aria alert used to notify the user when an event has been selected because they tabbed into a group.
@@ -1053,6 +1054,7 @@ var ARROW_SIDE = 8;
 var EXPANSION_ARROW_INDENT = HEADER_LEFT_PADDING + ARROW_SIDE / 2;
 var HEADER_LABEL_X_PADDING = 3;
 var HEADER_LABEL_Y_PADDING = 2;
+var PADDING_BETWEEN_TITLE_AND_SUBTITLE = 6;
 var EDIT_ICON_WIDTH = 16;
 var GAP_BETWEEN_EDIT_ICONS = 3;
 var UP_ICON_LEFT = HEADER_LEFT_PADDING;
@@ -1125,6 +1127,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   dimShouldOutlineUndimmedEntries = false;
   #tooltipPopoverYAdjustment = 0;
   #font;
+  #subtitleFont;
   #groupTreeRoot;
   #searchResultEntryIndex = null;
   #inTrackConfigEditMode = false;
@@ -1138,6 +1141,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
     super(true);
     this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
+    this.#subtitleFont = `${SUBTITLE_FONT_SIZE_AND_STYLE} ${getFontFamilyForCanvas()}`;
     this.registerRequiredCSS(flameChart_css_default);
     this.registerRequiredCSS(UI.inspectorCommonStyles);
     this.contentElement.classList.add("flame-chart-main-pane");
@@ -3085,7 +3089,14 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       }
       context.fillStyle = this.#inTrackConfigEditMode && group.hidden ? ThemeSupport7.ThemeSupport.instance().getComputedValue("--sys-color-token-subtle", this.contentElement) : group.style.color;
       const titleStart = iconsWidth + EXPANSION_ARROW_INDENT * (group.style.nestingLevel + 1) + ARROW_SIDE / 2 + HEADER_LABEL_X_PADDING;
-      context.fillText(group.name, titleStart, offset + group.style.height - this.textBaseline);
+      const y = offset + group.style.height - this.textBaseline;
+      context.fillText(group.name, titleStart, y);
+      if (group.subtitle) {
+        const titleMetrics = context.measureText(group.name);
+        context.font = this.#subtitleFont;
+        context.fillText(group.subtitle, titleStart + titleMetrics.width + PADDING_BETWEEN_TITLE_AND_SUBTITLE, y - 1);
+        context.font = this.#font;
+      }
       if (this.#inTrackConfigEditMode && group.hidden) {
         context.fillRect(titleStart, offset + group.style.height / 2, UI.UIUtils.measureTextWidth(context, group.name), 1);
       }

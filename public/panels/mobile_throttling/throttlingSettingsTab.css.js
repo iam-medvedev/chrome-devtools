@@ -29,6 +29,7 @@ export default `/*
 
 .settings-container::-webkit-scrollbar {
   -webkit-appearance: none;
+  height: var(--sys-size-4);
 }
 
 .settings-container::-webkit-scrollbar-thumb {

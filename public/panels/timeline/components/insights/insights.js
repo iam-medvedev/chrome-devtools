@@ -562,8 +562,7 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    const activeInsight = new Utils.InsightAIContext.ActiveInsight(this.#model, this.data.bounds, this.#parsedTrace);
-    const context = Utils.AIContext.AgentFocus.fromInsight(activeInsight);
+    const context = Utils.AIContext.AgentFocus.fromInsight(this.#parsedTrace, this.#model, this.data.bounds);
     UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
     const action3 = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action3.execute();
@@ -1550,6 +1549,9 @@ var DuplicatedJavaScript = class extends BaseInsightComponent {
       return false;
     }
     return this.model.scripts.some((script) => !!script.url);
+  }
+  hasAskAiSupport() {
+    return true;
   }
   #openTreemap() {
     if (!this.model) {

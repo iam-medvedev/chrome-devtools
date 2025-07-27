@@ -82,9 +82,6 @@
       "path": "../../../../ui/visual_logging/bundle-tsconfig.json"
     },
     {
-      "path": "../../../common/bundle-tsconfig.json"
-    },
-    {
       "path": "../../utils/bundle-tsconfig.json"
     }
   ]

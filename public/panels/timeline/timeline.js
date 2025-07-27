@@ -431,10 +431,9 @@ import * as ThemeSupport5 from "./../../ui/legacy/theme_support/theme_support.js
 import * as Extensions from "./extensions/extensions.js";
 var UIStrings4 = {
   /**
-   * @description The name of a track, which is a horizontal division of the timeline, synonym with "swimlane".
-   * @example {A track name} PH1
+   * @description The subtitle to show (by the side of the track name).
    */
-  customTrackName: "{PH1} \u2014 Custom track"
+  customTrackSubtitle: "\u2014 Custom"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/timeline/ExtensionTrackAppender.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -462,7 +461,7 @@ var ExtensionTrackAppender = class {
    */
   #appendTopLevelHeaderAtLevel(currentLevel, expanded) {
     const style = buildGroupStyle({ shareHeaderLine: false, collapsible: true });
-    const headerTitle = i18nString4(UIStrings4.customTrackName, { PH1: this.#extensionTopLevelTrack.name });
+    const headerTitle = this.#extensionTopLevelTrack.name;
     const jsLogContext = this.#extensionTopLevelTrack.name === "\u{1F170}\uFE0F Angular" ? "angular-track" : "extension";
     const group = buildTrackHeader(
       jsLogContext,
@@ -473,6 +472,7 @@ var ExtensionTrackAppender = class {
       true,
       expanded
     );
+    group.subtitle = i18nString4(UIStrings4.customTrackSubtitle);
     this.#compatibilityBuilder.registerTrackForGroup(group, this);
   }
   /**
@@ -1595,6 +1595,9 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
       }
     }
     return null;
+  }
+  getOverlaybyAnnotation(annotation) {
+    return this.#overlayForAnnotation.get(annotation) || null;
   }
   getAnnotations() {
     return [...this.#overlayForAnnotation.keys()];
@@ -4929,7 +4932,6 @@ import * as Overlays from "./overlays/overlays.js";
 var SaveFileFormatter_exports = {};
 __export(SaveFileFormatter_exports, {
   arrayOfObjectsJsonGenerator: () => arrayOfObjectsJsonGenerator,
-  cpuprofileJsonGenerator: () => cpuprofileJsonGenerator,
   traceJsonGenerator: () => traceJsonGenerator
 });
 function* arrayOfObjectsJsonGenerator(arrayOfObjects) {
@@ -4966,9 +4968,6 @@ function* traceJsonGenerator(traceEvents, metadata) {
   yield ',\n"traceEvents": ';
   yield* arrayOfObjectsJsonGenerator(traceEvents);
   yield "}\n";
-}
-function cpuprofileJsonGenerator(cpuprofile) {
-  return JSON.stringify(cpuprofile);
 }
 
 // gen/front_end/panels/timeline/StatusDialog.js
@@ -7921,7 +7920,7 @@ var UIStrings19 = {
   /**
    *@description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
    */
-  dropTimelineFileOrUrlHere: "Drop timeline file or URL here",
+  dropTimelineFileOrUrlHere: "Drop trace file or URL here",
   /**
    *@description Title of capture layers and pictures setting in timeline panel of the performance panel
    */
@@ -7949,11 +7948,11 @@ var UIStrings19 = {
   /**
    *@description Tooltip text that appears when hovering over the largeicon load button
    */
-  loadProfile: "Load profile\u2026",
+  loadTrace: "Load trace\u2026",
   /**
    *@description Tooltip text that appears when hovering over the largeicon download button
    */
-  saveProfile: "Save profile\u2026",
+  saveTrace: "Save trace\u2026",
   /**
    *@description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
    */
@@ -8035,10 +8034,10 @@ var UIStrings19 = {
    */
   exportingFailed: "Exporting the trace failed",
   /**
-   * @description Text to indicate the progress of a profile. Informs the user that we are currently
-   * creating a peformance profile.
+   * @description Text to indicate the progress of a trace. Informs the user that we are currently
+   * creating a performance trace.
    */
-  profiling: "Profiling\u2026",
+  tracing: "Tracing\u2026",
   /**
    *@description Text in Timeline Panel of the Performance panel
    */
@@ -8046,15 +8045,15 @@ var UIStrings19 = {
   /**
    *@description Text in Timeline Panel of the Performance panel
    */
-  loadingProfile: "Loading profile\u2026",
+  loadingTrace: "Loading trace\u2026",
   /**
    *@description Text in Timeline Panel of the Performance panel
    */
-  processingProfile: "Processing profile\u2026",
+  processingTrace: "Processing trace\u2026",
   /**
    *@description Text in Timeline Panel of the Performance panel
    */
-  initializingProfiler: "Initializing profiler\u2026",
+  initializingTracing: "Initializing tracing\u2026",
   /**
    *
    * @description Text for exporting basic traces
@@ -8399,6 +8398,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.#sideBar.element.addEventListener(TimelineComponents3.Sidebar.RevealAnnotation.eventName, (event) => {
       this.flameChart.revealAnnotation(event.annotation);
     });
+    this.#sideBar.element.addEventListener(TimelineComponents3.Sidebar.HoverAnnotation.eventName, (event) => {
+      this.flameChart.hoverAnnotationInSidebar(event.annotation);
+    });
+    this.#sideBar.element.addEventListener(TimelineComponents3.Sidebar.AnnotationHoverOut.eventName, () => {
+      this.flameChart.sidebarAnnotationHoverOut();
+    });
     this.#sideBar.element.addEventListener(TimelineInsights.SidebarInsight.InsightSetHovered.eventName, (event) => {
       if (event.bounds) {
         this.#minimapComponent.highlightBounds(
@@ -8732,13 +8737,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.clearButton = new UI10.Toolbar.ToolbarButton(i18nString19(UIStrings19.clear), "clear", void 0, "timeline.clear");
     this.clearButton.addEventListener("Click", () => this.onClearButton());
     this.panelToolbar.appendToolbarItem(this.clearButton);
-    this.loadButton = new UI10.Toolbar.ToolbarButton(i18nString19(UIStrings19.loadProfile), "import", void 0, "timeline.load-from-file");
+    this.loadButton = new UI10.Toolbar.ToolbarButton(i18nString19(UIStrings19.loadTrace), "import", void 0, "timeline.load-from-file");
     this.loadButton.addEventListener("Click", () => {
       Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.PerfPanelTraceImported);
       this.selectFileToLoad();
     });
     this.saveButton = new UI10.Toolbar.ToolbarMenuButton(this.#populateDownloadMenu.bind(this), true, false, "timeline.save-to-file-more-options", "download");
-    this.saveButton.setTitle(i18nString19(UIStrings19.saveProfile));
+    this.saveButton.setTitle(i18nString19(UIStrings19.saveTrace));
     if (Root4.Runtime.experiments.isEnabled(
       "timeline-enhanced-traces"
       /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */
@@ -9039,46 +9044,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         metadata.visualTrackConfig = visualConfig;
       }
     }
-    metadata.enhancedTraceVersion = config.savingEnhancedTrace ? SDK8.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : void 0;
-    const traceStart = Platform11.DateUtilities.toISO8601Compact(/* @__PURE__ */ new Date());
-    let fileName;
-    if (metadata?.dataOrigin === "CPUProfile") {
-      fileName = `CPU-${traceStart}.cpuprofile`;
-    } else if (metadata?.enhancedTraceVersion) {
-      fileName = `EnhancedTraces-${traceStart}.json`;
-    } else {
-      fileName = `Trace-${traceStart}.json`;
-    }
     try {
-      let traceAsString;
-      if (metadata?.dataOrigin === "CPUProfile") {
-        const profileEvent = traceEvents.find((e) => Trace22.Types.Events.isSyntheticCpuProfile(e));
-        const profile = profileEvent?.args.data.cpuProfile;
-        if (profile) {
-          traceAsString = cpuprofileJsonGenerator(profile);
-        }
-      } else {
-        const formattedTraceIter = traceJsonGenerator(traceEvents, {
-          ...metadata,
-          sourceMaps: config.savingEnhancedTrace ? metadata?.sourceMaps : void 0
-        });
-        traceAsString = Array.from(formattedTraceIter).join("");
-      }
-      if (!traceAsString) {
-        throw new Error("Trace content empty");
-      }
-      await Workspace2.FileManager.FileManager.instance().save(
-        fileName,
-        new TextUtils2.ContentData.ContentData(
-          traceAsString,
-          /* isBase64=*/
-          false,
-          "application/json"
-        ),
-        /* forceSaveAs=*/
-        true
-      );
-      Workspace2.FileManager.FileManager.instance().close(fileName);
+      await this.innerSaveToFile(traceEvents, metadata, config);
     } catch (e) {
       const error = e instanceof Error ? e : new Error(e);
       console.error(error.stack);
@@ -9087,6 +9054,39 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       }
       this.#showExportTraceErrorDialog(error);
     }
+  }
+  async innerSaveToFile(traceEvents, metadata, config) {
+    const isoDate = Platform11.DateUtilities.toISO8601Compact(metadata.startTime ? new Date(metadata.startTime) : /* @__PURE__ */ new Date());
+    const isCpuProfile = metadata.dataOrigin === "CPUProfile";
+    const { savingEnhancedTrace } = config;
+    metadata.enhancedTraceVersion = savingEnhancedTrace ? SDK8.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : void 0;
+    const fileName = isCpuProfile ? `CPU-${isoDate}.cpuprofile` : savingEnhancedTrace ? `EnhancedTraces-${isoDate}.json` : `Trace-${isoDate}.json`;
+    let traceAsString;
+    if (isCpuProfile) {
+      const profile = Trace22.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
+      traceAsString = JSON.stringify(profile);
+    } else {
+      const formattedTraceIter = traceJsonGenerator(traceEvents, {
+        ...metadata,
+        sourceMaps: savingEnhancedTrace ? metadata.sourceMaps : void 0
+      });
+      traceAsString = Array.from(formattedTraceIter).join("");
+    }
+    if (!traceAsString.length) {
+      throw new Error("Trace content empty");
+    }
+    await Workspace2.FileManager.FileManager.instance().save(
+      fileName,
+      new TextUtils2.ContentData.ContentData(
+        traceAsString,
+        /* isBase64=*/
+        false,
+        "application/json"
+      ),
+      /* forceSaveAs=*/
+      true
+    );
+    Workspace2.FileManager.FileManager.instance().close(fileName);
   }
   #showExportTraceErrorDialog(error) {
     if (this.statusDialog) {
@@ -9768,7 +9768,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.showRecordingStarted();
     if (this.statusDialog) {
       this.statusDialog.enableAndFocusButton();
-      this.statusDialog.updateStatus(i18nString19(UIStrings19.profiling));
+      this.statusDialog.updateStatus(i18nString19(UIStrings19.tracing));
       this.statusDialog.updateProgressBar(i18nString19(UIStrings19.bufferUsage), 0);
       this.statusDialog.startTimer();
     }
@@ -9820,7 +9820,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       description: void 0
     }, () => this.cancelLoading());
     this.statusDialog.showPane(this.statusPaneContainer);
-    this.statusDialog.updateStatus(i18nString19(UIStrings19.loadingProfile));
+    this.statusDialog.updateStatus(i18nString19(UIStrings19.loadingTrace));
     if (!this.loader) {
       this.statusDialog.finish();
     }
@@ -9833,7 +9833,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
   }
   async processingStarted() {
-    this.statusDialog?.updateStatus(i18nString19(UIStrings19.processingProfile));
+    this.statusDialog?.updateStatus(i18nString19(UIStrings19.processingTrace));
   }
   #listenForProcessingProgress() {
     this.#traceEngineModel.addEventListener(Trace22.TraceModel.ModelUpdateEvent.eventName, (e) => {
@@ -10072,7 +10072,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       buttonText: void 0
     }, () => this.stopRecording());
     this.statusDialog.showPane(this.statusPaneContainer);
-    this.statusDialog.updateStatus(i18nString19(UIStrings19.initializingProfiler));
+    this.statusDialog.updateStatus(i18nString19(UIStrings19.initializingTracing));
     this.statusDialog.updateProgressBar(i18nString19(UIStrings19.bufferUsage), 0);
   }
   cancelLoading() {
@@ -10268,14 +10268,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       let responseTextForPassedInsights = "";
       for (const modelName in insightsForNav.model) {
         const model = modelName;
-        const data = insightsForNav.model[model];
-        const activeInsight = new Utils10.InsightAIContext.ActiveInsight(data, insightsForNav.bounds, parsedTrace);
-        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(activeInsight);
+        const insight = insightsForNav.model[model];
+        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(parsedTrace, insight);
         if (!formatter.insightIsSupported()) {
           continue;
         }
         const formatted = formatter.formatInsight({ headingLevel: 3 });
-        if (data.state === "pass") {
+        if (insight.state === "pass") {
           responseTextForPassedInsights += `${formatted}
 
 `;
@@ -12601,9 +12600,10 @@ var timelineDetailsView_css_default = `/*
   }
 }
 
+/* This is the coloured box that shows next to the event name */
 .timeline-details-chip-title > div {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border: 1px solid var(--sys-color-divider);
   display: inline-block;
   margin-right: 4px;
@@ -13808,7 +13808,6 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
   #eventToRelatedInsightsMap = null;
   #filmStrip = null;
   #networkRequestDetails;
-  #layoutShiftDetails;
   #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
   #thirdPartyTree = new ThirdPartyTreeViewWidget();
   #entityMapper = null;
@@ -13857,7 +13856,6 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
       this.dispatchEventToListeners("TreeRowClicked", { node: node.data.node, events: node.data.events ?? void 0 });
     });
     this.#networkRequestDetails = new TimelineComponents5.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
-    this.#layoutShiftDetails = new TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails();
     this.tabbedPane.addEventListener(UI16.TabbedPane.Events.TabSelected, this.tabSelected, this);
     TraceBounds13.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     this.lazySelectorStatsView = null;
@@ -13950,6 +13948,8 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.#traceInsightsSets = data.traceInsightsSets;
     this.#eventToRelatedInsightsMap = data.eventToRelatedInsightsMap;
     this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+    this.#summaryContent.traceInsightsSets = this.#traceInsightsSets;
+    this.#summaryContent.parsedTrace = this.#parsedTrace;
     this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
     for (const view of this.rangeDetailViews.values()) {
       view.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
@@ -13967,7 +13967,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
         this.tabbedPane.closeTab(allTabs[i]);
       }
     }
-    this.#summaryContent.node = node;
+    this.#summaryContent.node = node ?? null;
     this.#summaryContent.requestUpdate();
     await this.#summaryContent.updateComplete;
   }
@@ -14076,9 +14076,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
     this.#summaryContent.requestUpdate();
     if (Trace28.Types.Events.isSyntheticLayoutShift(event) || Trace28.Types.Events.isSyntheticLayoutShiftCluster(event)) {
-      const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
-      this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
-      return await this.setSummaryContent(this.#layoutShiftDetails);
+      return await this.setSummaryContent();
     }
     const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true, this.#entityMapper);
     this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
@@ -14215,21 +14213,38 @@ var Tab;
   Tab2["LayerViewer"] = "layer-viewer";
   Tab2["SelectorStats"] = "selector-stats";
 })(Tab || (Tab = {}));
+function eventIsLayoutShiftRelated(e) {
+  if (e === null) {
+    return false;
+  }
+  return Trace28.Types.Events.isSyntheticLayoutShift(e) || Trace28.Types.Events.isSyntheticLayoutShiftCluster(e);
+}
 var SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
+  const traceRecordingIsFresh = input.parsedTrace ? Tracker.instance().recordingIsFresh(input.parsedTrace) : false;
   render2(html2`
         <style>${timelineDetailsView_css_default}</style>
         ${input.node ?? nothing}
-        <devtools-widget .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
+        ${eventIsLayoutShiftRelated(input.selectedEvent) ? html2`
+          <devtools-widget data-layout-shift-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
+    event: input.selectedEvent,
+    traceInsightsSets: input.traceInsightsSets,
+    parsedTrace: input.parsedTrace,
+    isFreshRecording: traceRecordingIsFresh
+  })}></devtools-widget>
+          ` : nothing}
+        <devtools-widget data-related-insight-chips .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
     activeEvent: input.selectedEvent,
     eventToInsightsMap: input.eventToRelatedInsightsMap
   })}></devtools-widget>
       `, target, { host: input });
 };
-var SummaryView = class extends UI16.Widget.VBox {
+var SummaryView = class extends UI16.Widget.Widget {
   #view;
   node = null;
   selectedEvent = null;
   eventToRelatedInsightsMap = null;
+  parsedTrace = null;
+  traceInsightsSets = null;
   constructor(element, view = SUMMARY_DEFAULT_VIEW) {
     super(false, false, element);
     this.#view = view;
@@ -14238,7 +14253,9 @@ var SummaryView = class extends UI16.Widget.VBox {
     this.#view({
       node: this.node,
       selectedEvent: this.selectedEvent,
-      eventToRelatedInsightsMap: this.eventToRelatedInsightsMap
+      eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
+      parsedTrace: this.parsedTrace,
+      traceInsightsSets: this.traceInsightsSets
     }, {}, this.contentElement);
   }
 };
@@ -14975,6 +14992,7 @@ var timelineFlameChartView_css_default = `/*
 .overlay-type-ENTRY_LABEL {
   /* keep these above the selected entry overline, else they can become hard to read */
   z-index: 2;
+  transition: opacity 0.2s;
 
   /* if an overlay is being edited, keep it above the rest so the user is not obstructed */
   /* also bump the z-index if the label is being hovered, to ensure it appears above any other labels that might obstruct it */
@@ -15695,6 +15713,15 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       const earliestEntry = entries.reduce((earliest, current) => earliest.ts < current.ts ? earliest : current, entries[0]);
       this.revealEventVertically(earliestEntry);
     }
+  }
+  hoverAnnotationInSidebar(annotation) {
+    const overlay = ModificationsManager.activeManager()?.getOverlaybyAnnotation(annotation);
+    if (overlay && overlay.type === "ENTRY_LABEL") {
+      this.#overlays.highlightOverlay(overlay);
+    }
+  }
+  sidebarAnnotationHoverOut() {
+    this.#overlays.undimAllEntryLabels();
   }
   revealAnnotation(annotation) {
     const traceBounds = TraceBounds15.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
@@ -18313,11 +18340,11 @@ var CompatibilityTracksAppender = class {
 // gen/front_end/panels/timeline/ExternalRequests.js
 var ExternalRequests_exports = {};
 __export(ExternalRequests_exports, {
-  getInsightToDebug: () => getInsightToDebug
+  getInsightAgentFocusToDebug: () => getInsightAgentFocusToDebug
 });
 import * as Trace35 from "./../../models/trace/trace.js";
 import * as Utils18 from "./utils/utils.js";
-async function getInsightToDebug(model, insightTitle) {
+async function getInsightAgentFocusToDebug(model, insightTitle) {
   const parsedTrace = model.parsedTrace();
   const latestInsights = model.traceInsights();
   if (!latestInsights || !parsedTrace) {
@@ -18343,8 +18370,8 @@ async function getInsightToDebug(model, insightTitle) {
     };
   }
   const insight = insights.model[matchingInsightKey];
-  const activeInsight = new Utils18.InsightAIContext.ActiveInsight(insight, insights.bounds, parsedTrace);
-  return { insight: activeInsight };
+  const focus = Utils18.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insights.bounds);
+  return { focus };
 }
 
 // gen/front_end/panels/timeline/timeline.prebundle.js

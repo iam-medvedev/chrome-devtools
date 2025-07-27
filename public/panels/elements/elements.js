@@ -1588,6 +1588,7 @@ __export(StylePropertyTreeElement_exports, {
   CSSWideKeywordRenderer: () => CSSWideKeywordRenderer,
   ColorMixRenderer: () => ColorMixRenderer,
   ColorRenderer: () => ColorRenderer,
+  EnvFunctionRenderer: () => EnvFunctionRenderer,
   FlexGridRenderer: () => FlexGridRenderer,
   FontRenderer: () => FontRenderer,
   GridTemplateRenderer: () => GridTemplateRenderer,
@@ -2869,7 +2870,7 @@ function getCssDeclarationAsJavascriptProperty(declaration) {
 }
 
 // gen/front_end/panels/elements/StylePropertyTreeElement.js
-var { html: html4, nothing, render: render3 } = Lit3;
+var { html: html4, nothing, render: render3, Directives: { classMap: classMap2 } } = Lit3;
 var ASTUtils = SDK6.CSSPropertyParser.ASTUtils;
 var FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 var GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
@@ -2964,6 +2965,36 @@ var UIStrings5 = {
 var str_5 = i18n9.i18n.registerUIStrings("panels/elements/StylePropertyTreeElement.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var parentMap = /* @__PURE__ */ new WeakMap();
+var EnvFunctionRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.EnvFunctionMatch) {
+  treeElement;
+  matchedStyles;
+  computedStyles;
+  // clang-format on
+  constructor(treeElement, matchedStyles, computedStyles) {
+    super();
+    this.treeElement = treeElement;
+    this.matchedStyles = matchedStyles;
+    this.computedStyles = computedStyles;
+  }
+  render(match, context) {
+    const [, fallbackNodes] = ASTUtils.callArgs(match.node);
+    if (match.value) {
+      const substitution = context.tracing?.substitution();
+      if (substitution) {
+        if (match.varNameIsValid) {
+          return [document.createTextNode(match.value)];
+        }
+        return Renderer.render(fallbackNodes, substitution.renderingContext(context)).nodes;
+      }
+    }
+    const span = document.createElement("span");
+    const func = this.treeElement?.getTracingTooltip("env", match.node, this.matchedStyles, this.computedStyles, context) ?? "env";
+    const valueClass = classMap2({ "inactive-value": !match.varNameIsValid });
+    const fallbackClass = classMap2({ "inactive-value": match.varNameIsValid });
+    render3(html4`${func}(<span class=${valueClass}>${match.varName}</span>${fallbackNodes ? html4`, <span class=${fallbackClass}>${Renderer.render(fallbackNodes, context).nodes}</span>` : nothing})`, span, { host: span });
+    return [span];
+  }
+};
 var FlexGridRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.FlexGridMatch) {
   // clang-format on
   #treeElement;
@@ -4273,6 +4304,7 @@ function getPropertyRenderers(propertyName, style, stylesPane, matchedStyles, tr
     new AnchorFunctionRenderer(stylesPane),
     new PositionAnchorRenderer(stylesPane),
     new FlexGridRenderer(stylesPane, treeElement),
+    new EnvFunctionRenderer(treeElement, matchedStyles, computedStyles),
     new PositionTryRenderer(matchedStyles),
     new LengthRenderer(stylesPane, propertyName, treeElement),
     new MathFunctionRenderer(stylesPane, matchedStyles, computedStyles, propertyName, treeElement),
@@ -5685,7 +5717,7 @@ var domLinkifier_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./domLinkifier.css")} */`;
 
 // gen/front_end/panels/elements/DOMLinkifier.js
-var { classMap: classMap2 } = Directives;
+var { classMap: classMap3 } = Directives;
 var UIStrings6 = {
   /**
    * @description Text displayed when trying to create a link to a node in the UI, but the node
@@ -5700,7 +5732,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   render4(html5`${input.tagName || input.pseudo ? html5`
     <style>${domLinkifier_css_default}</style>
     <span class="monospace">
-      <button class="node-link text-button link-style ${classMap2({
+      <button class="node-link text-button link-style ${classMap3({
     "dynamic-link": Boolean(input.dynamic),
     disabled: Boolean(input.disabled)
   })}"
@@ -6088,9 +6120,8 @@ var StylePropertiesSection = class _StylePropertiesSection {
     if (rule) {
       if (rule.isUserAgent() || rule.isInjected()) {
         this.editable = false;
-      } else if (rule.styleSheetId) {
-        const header = rule.cssModel().styleSheetHeaderForId(rule.styleSheetId);
-        this.navigable = header && !header.isAnonymousInlineStyleSheet();
+      } else if (rule.header) {
+        this.navigable = !rule.header.isAnonymousInlineStyleSheet();
       }
     }
     this.selectorRefElement = document.createElement("div");
@@ -6161,13 +6192,13 @@ var StylePropertiesSection = class _StylePropertiesSection {
       return document.createTextNode("");
     }
     const ruleLocation = _StylePropertiesSection.getRuleLocationFromCSSRule(rule);
-    const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
+    const header = rule.header;
     function linkifyRuleLocation() {
       if (!rule) {
         return null;
       }
-      if (ruleLocation && rule.styleSheetId && header && (!header.isAnonymousInlineStyleSheet() || matchedStyles.cssModel().sourceMapManager().sourceMapForClient(header))) {
-        return _StylePropertiesSection.linkifyRuleLocation(matchedStyles.cssModel(), linkifier, rule.styleSheetId, ruleLocation);
+      if (ruleLocation && header && (!header.isAnonymousInlineStyleSheet() || matchedStyles.cssModel().sourceMapManager().sourceMapForClient(header))) {
+        return _StylePropertiesSection.linkifyRuleLocation(matchedStyles.cssModel(), linkifier, rule.header, ruleLocation);
       }
       return null;
     }
@@ -6228,18 +6259,17 @@ var StylePropertiesSection = class _StylePropertiesSection {
       return;
     }
     const ruleLocation = this.getRuleLocationFromCSSRule(rule);
-    const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
-    if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
-      const matchingSelectorLocation = this.getCSSSelectorLocation(matchedStyles.cssModel(), rule.styleSheetId, ruleLocation);
+    const header = rule.header;
+    if (ruleLocation && header && !header.isAnonymousInlineStyleSheet()) {
+      const matchingSelectorLocation = this.getCSSSelectorLocation(matchedStyles.cssModel(), rule.header, ruleLocation);
       this.revealSelectorSource(matchingSelectorLocation, true);
     }
   }
-  static linkifyRuleLocation(cssModel, linkifier, styleSheetId, ruleLocation) {
-    const matchingSelectorLocation = this.getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation);
+  static linkifyRuleLocation(cssModel, linkifier, styleSheetHeader, ruleLocation) {
+    const matchingSelectorLocation = this.getCSSSelectorLocation(cssModel, styleSheetHeader, ruleLocation);
     return linkifier.linkifyCSSLocation(matchingSelectorLocation);
   }
-  static getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation) {
-    const styleSheetHeader = cssModel.styleSheetHeaderForId(styleSheetId);
+  static getCSSSelectorLocation(cssModel, styleSheetHeader, ruleLocation) {
     const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
     const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
     return new SDK8.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
@@ -6457,11 +6487,11 @@ var StylePropertiesSection = class _StylePropertiesSection {
   onNewRuleClick(event) {
     event.data.consume();
     const rule = this.styleInternal.parentRule;
-    if (!rule?.style.range || rule.styleSheetId === void 0) {
+    if (!rule?.style.range || !rule.header) {
       return;
     }
     const range = TextUtils3.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
-    this.parentPane.addBlankSection(this, rule.styleSheetId, range);
+    this.parentPane.addBlankSection(this, rule.header, range);
   }
   styleSheetEdited(edit) {
     const rule = this.styleInternal.parentRule;
@@ -7019,10 +7049,10 @@ var StylePropertiesSection = class _StylePropertiesSection {
       return;
     }
     const rule = this.styleInternal.parentRule;
-    if (rule?.styleSheetId === void 0) {
+    if (!rule?.header) {
       return;
     }
-    const header = cssModel.styleSheetHeaderForId(rule.styleSheetId);
+    const header = cssModel.styleSheetHeaderForId(rule.header.id);
     if (!header) {
       return;
     }
@@ -7167,16 +7197,16 @@ var StylePropertiesSection = class _StylePropertiesSection {
 var BlankStylePropertiesSection = class extends StylePropertiesSection {
   normal;
   ruleLocation;
-  styleSheetId;
-  constructor(stylesPane, matchedStyles, defaultSelectorText, styleSheetId, ruleLocation, insertAfterStyle, sectionIdx) {
+  styleSheetHeader;
+  constructor(stylesPane, matchedStyles, defaultSelectorText, styleSheetHeader, ruleLocation, insertAfterStyle, sectionIdx) {
     const cssModel = stylesPane.cssModel();
     const rule = SDK8.CSSRule.CSSStyleRule.createDummyRule(cssModel, defaultSelectorText);
     super(stylesPane, matchedStyles, rule.style, sectionIdx, null, null);
     this.normal = false;
     this.ruleLocation = ruleLocation;
-    this.styleSheetId = styleSheetId;
+    this.styleSheetHeader = styleSheetHeader;
     this.selectorRefElement.removeChildren();
-    this.selectorRefElement.appendChild(StylePropertiesSection.linkifyRuleLocation(cssModel, this.parentPane.linkifier, styleSheetId, this.actualRuleLocation()));
+    this.selectorRefElement.appendChild(StylePropertiesSection.linkifyRuleLocation(cssModel, this.parentPane.linkifier, styleSheetHeader, this.actualRuleLocation()));
     if (insertAfterStyle?.parentRule && insertAfterStyle.parentRule instanceof SDK8.CSSRule.CSSStyleRule) {
       this.createAncestorRules(insertAfterStyle.parentRule);
     }
@@ -7230,7 +7260,7 @@ var BlankStylePropertiesSection = class extends StylePropertiesSection {
     const cssModel = this.parentPane.cssModel();
     const ruleText = this.rulePrefix() + newContent + " {}";
     if (cssModel) {
-      void cssModel.addRule(this.styleSheetId, ruleText, this.ruleLocation).then(onRuleAdded.bind(this));
+      void cssModel.addRule(this.styleSheetHeader.id, ruleText, this.ruleLocation).then(onRuleAdded.bind(this));
     }
   }
   editingSelectorCancelled() {
@@ -8734,12 +8764,12 @@ ${allDeclarationText}
     const lines = TextUtils4.ContentData.ContentData.textOr(contentDataOrError, "").split("\n");
     const range = TextUtils4.TextRange.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
     if (this.sectionBlocks && this.sectionBlocks.length > 0) {
-      this.addBlankSection(this.sectionBlocks[0].sections[0], styleSheetHeader.id, range);
+      this.addBlankSection(this.sectionBlocks[0].sections[0], styleSheetHeader, range);
     }
   }
-  addBlankSection(insertAfterSection, styleSheetId, ruleLocation) {
+  addBlankSection(insertAfterSection, styleSheetHeader, ruleLocation) {
     const node = this.node();
-    const blankSection = new BlankStylePropertiesSection(this, insertAfterSection.matchedStyles, node ? node.simpleSelector() : "", styleSheetId, ruleLocation, insertAfterSection.style(), 0);
+    const blankSection = new BlankStylePropertiesSection(this, insertAfterSection.matchedStyles, node ? node.simpleSelector() : "", styleSheetHeader, ruleLocation, insertAfterSection.style(), 0);
     this.sectionsContainer.contentElement.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
     for (const block of this.sectionBlocks) {
       const index = block.sections.indexOf(insertAfterSection);
@@ -9590,7 +9620,7 @@ var TracingContext = class _TracingContext {
   expandPercentagesInShorthands;
   constructor(highlighting, expandPercentagesInShorthands, initialLonghandOffset = 0, matchedResult) {
     this.#highlighting = highlighting;
-    this.#hasMoreSubstitutions = matchedResult?.hasMatches(SDK10.CSSPropertyParserMatchers.VariableMatch, SDK10.CSSPropertyParserMatchers.BaseVariableMatch) ?? false;
+    this.#hasMoreSubstitutions = matchedResult?.hasMatches(SDK10.CSSPropertyParserMatchers.VariableMatch, SDK10.CSSPropertyParserMatchers.BaseVariableMatch, SDK10.CSSPropertyParserMatchers.EnvFunctionMatch) ?? false;
     this.#propertyName = matchedResult?.ast.propertyName ?? null;
     this.#longhandOffset = initialLonghandOffset;
     this.expandPercentagesInShorthands = expandPercentagesInShorthands;
@@ -10290,7 +10320,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.ThrottledWidge
     const contextMenu = new UI14.ContextMenu.ContextMenu(event);
     const rule = property.ownerStyle.parentRule;
     if (rule) {
-      const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
+      const header = rule.header;
       if (header && !header.isAnonymousInlineStyleSheet()) {
         contextMenu.defaultSection().appendItem(i18nString10(UIStrings10.navigateToSelectorSource), () => {
           StylePropertiesSection.tryNavigateToRuleLocation(matchedStyles, rule);

@@ -194,6 +194,7 @@ __export(TraceEvents_exports, {
   isEventTiming: () => isEventTiming,
   isEventTimingEnd: () => isEventTimingEnd,
   isEventTimingStart: () => isEventTimingStart,
+  isFireAnimationFrame: () => isFireAnimationFrame,
   isFireIdleCallback: () => isFireIdleCallback,
   isFirstContentfulPaint: () => isFirstContentfulPaint,
   isFirstPaint: () => isFirstPaint,
@@ -248,6 +249,7 @@ __export(TraceEvents_exports, {
   isRemoteFontLoaded: () => isRemoteFontLoaded,
   isRenderFrameImplCreateChildFrame: () => isRenderFrameImplCreateChildFrame,
   isRendererEvent: () => isRendererEvent,
+  isRequestIdleCallback: () => isRequestIdleCallback,
   isRequestMainThreadFrame: () => isRequestMainThreadFrame,
   isResourceChangePriority: () => isResourceChangePriority,
   isResourceFinish: () => isResourceFinish,
@@ -736,11 +738,17 @@ function isDisplayListItemListSnapshot(event) {
 function isLayerTreeHostImplSnapshot(event) {
   return event.name === "cc::LayerTreeHostImpl";
 }
+function isFireAnimationFrame(event) {
+  return event.name === "FireAnimationFrame";
+}
 function isTimerInstall(event) {
   return event.name === "TimerInstall";
 }
 function isTimerFire(event) {
   return event.name === "TimerFire";
+}
+function isRequestIdleCallback(event) {
+  return event.name === "RequestIdleCallback";
 }
 function isWebSocketCreate(event) {
   return event.name === "WebSocketCreate";

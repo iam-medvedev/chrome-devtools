@@ -122,6 +122,7 @@ export default `/*
   font-family: var(--default-font-family);
   font-size: var(--sys-typescale-body2-size);
   font-weight: var(--ref-typeface-weight-medium);
+  outline: 2px solid var(--color-background);
 }
 
 

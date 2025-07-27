@@ -4,6 +4,8 @@
         "outDir": "."
     },
     "files": [
-        "common.css.js"
+        "aiCodeCompletionTeaser.css.js",
+        "common.css.js",
+        "freDialog.css.js"
     ]
 }

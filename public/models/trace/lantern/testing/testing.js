@@ -36,6 +36,12 @@ var TraceLoader = class _TraceLoader {
     fileContentsCache.set(name, contents);
     return contents;
   }
+  static async traceFile(context, name) {
+    const contents = await _TraceLoader.fixtureContents(context, name);
+    const traceEvents = "traceEvents" in contents ? contents.traceEvents : contents;
+    const metadata = "metadata" in contents ? contents.metadata : {};
+    return { traceEvents, metadata };
+  }
   /**
    * Load an array of raw events from the trace file.
    **/

@@ -22,6 +22,9 @@ export class DuplicatedJavaScript extends BaseInsightComponent {
         }
         return this.model.scripts.some(script => !!script.url);
     }
+    hasAskAiSupport() {
+        return true;
+    }
     #openTreemap() {
         if (!this.model) {
             return;

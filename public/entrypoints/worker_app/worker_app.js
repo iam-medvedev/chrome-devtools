@@ -1601,7 +1601,7 @@ Common6.Revealer.registerRevealer({
 });
 Common6.Revealer.registerRevealer({
   contextTypes() {
-    return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.InsightAIContext.ActiveInsight]);
+    return maybeRetrieveContextTypes4((Timeline) => [Timeline.Utils.Helpers.RevealableInsight]);
   },
   destination: Common6.Revealer.RevealerDestination.TIMELINE_PANEL,
   async loadRevealer() {

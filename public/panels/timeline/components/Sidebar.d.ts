@@ -14,9 +14,20 @@ export declare class RevealAnnotation extends Event {
     static readonly eventName = "revealannotation";
     constructor(annotation: Trace.Types.File.Annotation);
 }
+export declare class HoverAnnotation extends Event {
+    annotation: Trace.Types.File.Annotation;
+    static readonly eventName = "hoverannotation";
+    constructor(annotation: Trace.Types.File.Annotation);
+}
+export declare class AnnotationHoverOut extends Event {
+    static readonly eventName = "annotationhoverout";
+    constructor();
+}
 declare global {
     interface GlobalEventHandlersEventMap {
         [RevealAnnotation.eventName]: RevealAnnotation;
+        [HoverAnnotation.eventName]: HoverAnnotation;
+        [AnnotationHoverOut.eventName]: AnnotationHoverOut;
     }
 }
 export declare const enum SidebarTabs {

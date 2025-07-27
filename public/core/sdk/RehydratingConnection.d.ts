@@ -18,7 +18,7 @@ export declare class RehydratingConnection implements ProtocolClient.InspectorBa
     sessions: Map<number, RehydratingSessionBase>;
     constructor(onConnectionLost: (message: Platform.UIString.LocalizedString) => void);
     startHydration(trace: TraceFile): Promise<boolean>;
-    setOnMessage(onMessage: (arg0: (Object | string)) => void): void;
+    setOnMessage(onMessage: (arg0: Object | string) => void): void;
     setOnDisconnect(onDisconnect: (arg0: string) => void): void;
     sendRawMessage(message: string | object): void;
     postToFrontend(arg: ServerMessage): void;

@@ -1,7 +1,7 @@
 import * as Trace from '../../models/trace/trace.js';
 import * as Utils from './utils/utils.js';
 type InsightResponse = {
-    insight: Utils.InsightAIContext.ActiveInsight;
+    focus: Utils.AIContext.AgentFocus;
 } | {
     error: string;
 };
@@ -13,5 +13,5 @@ type InsightResponse = {
  *   to figure out which insight to use if there are >1 navigations -it would need
  *   some extra input data to figure it out.
  */
-export declare function getInsightToDebug(model: Trace.TraceModel.Model, insightTitle: string): Promise<InsightResponse>;
+export declare function getInsightAgentFocusToDebug(model: Trace.TraceModel.Model, insightTitle: string): Promise<InsightResponse>;
 export {};

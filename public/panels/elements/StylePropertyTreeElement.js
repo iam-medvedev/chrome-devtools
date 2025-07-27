@@ -27,7 +27,7 @@ import { BinOpRenderer, Renderer, rendererBase, RenderingContext, StringRenderer
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, } from './StylesSidebarPane.js';
-const { html, nothing, render } = Lit;
+const { html, nothing, render, Directives: { classMap } } = Lit;
 const ASTUtils = SDK.CSSPropertyParser.ASTUtils;
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
@@ -122,6 +122,40 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/StylePropertyTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const parentMap = new WeakMap();
+// clang-format off
+export class EnvFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.EnvFunctionMatch) {
+    treeElement;
+    matchedStyles;
+    computedStyles;
+    // clang-format on
+    constructor(treeElement, matchedStyles, computedStyles) {
+        super();
+        this.treeElement = treeElement;
+        this.matchedStyles = matchedStyles;
+        this.computedStyles = computedStyles;
+    }
+    render(match, context) {
+        const [, fallbackNodes] = ASTUtils.callArgs(match.node);
+        if (match.value) {
+            const substitution = context.tracing?.substitution();
+            if (substitution) {
+                if (match.varNameIsValid) {
+                    return [document.createTextNode(match.value)];
+                }
+                return Renderer.render(fallbackNodes, substitution.renderingContext(context)).nodes;
+            }
+        }
+        const span = document.createElement('span');
+        const func = this.treeElement?.getTracingTooltip('env', match.node, this.matchedStyles, this.computedStyles, context) ??
+            'env';
+        const valueClass = classMap({ 'inactive-value': !match.varNameIsValid });
+        const fallbackClass = classMap({ 'inactive-value': match.varNameIsValid });
+        render(html `${func}(<span class=${valueClass}>${match.varName}</span>${fallbackNodes ?
+            html `, <span class=${fallbackClass}>${Renderer.render(fallbackNodes, context).nodes}</span>` :
+            nothing})`, span, { host: span });
+        return [span];
+    }
+}
 // clang-format off
 export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FlexGridMatch) {
     // clang-format on
@@ -1438,6 +1472,7 @@ export function getPropertyRenderers(propertyName, style, stylesPane, matchedSty
         new AnchorFunctionRenderer(stylesPane),
         new PositionAnchorRenderer(stylesPane),
         new FlexGridRenderer(stylesPane, treeElement),
+        new EnvFunctionRenderer(treeElement, matchedStyles, computedStyles),
         new PositionTryRenderer(matchedStyles),
         new LengthRenderer(stylesPane, propertyName, treeElement),
         new MathFunctionRenderer(stylesPane, matchedStyles, computedStyles, propertyName, treeElement),

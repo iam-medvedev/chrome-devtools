@@ -23,9 +23,9 @@ export declare class NodeChildTargetManager extends SDK.SDKModel.SDKModel<void> 
 }
 export declare class NodeConnection implements ProtocolClient.InspectorBackend.Connection {
     #private;
-    onMessage: ((arg0: (Object | string)) => void) | null;
+    onMessage: ((arg0: Object | string) => void) | null;
     constructor(targetAgent: ProtocolProxyApi.TargetApi, sessionId: Protocol.Target.SessionID);
-    setOnMessage(onMessage: (arg0: (Object | string)) => void): void;
+    setOnMessage(onMessage: (arg0: Object | string) => void): void;
     setOnDisconnect(onDisconnect: (arg0: string) => void): void;
     sendRawMessage(message: string): void;
     disconnect(): Promise<void>;

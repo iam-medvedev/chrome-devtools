@@ -76,7 +76,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
     #eventToRelatedInsightsMap = null;
     #filmStrip = null;
     #networkRequestDetails;
-    #layoutShiftDetails;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     #thirdPartyTree = new ThirdPartyTreeViewWidget();
     #entityMapper = null;
@@ -131,7 +130,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         });
         this.#networkRequestDetails =
             new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
-        this.#layoutShiftDetails = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
         this.lazySelectorStatsView = null;
@@ -238,6 +236,8 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.#traceInsightsSets = data.traceInsightsSets;
         this.#eventToRelatedInsightsMap = data.eventToRelatedInsightsMap;
         this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
+        this.#summaryContent.traceInsightsSets = this.#traceInsightsSets;
+        this.#summaryContent.parsedTrace = this.#parsedTrace;
         this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
         for (const view of this.rangeDetailViews.values()) {
             view.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
@@ -256,7 +256,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
                 this.tabbedPane.closeTab(allTabs[i]);
             }
         }
-        this.#summaryContent.node = node;
+        this.#summaryContent.node = node ?? null;
         this.#summaryContent.requestUpdate();
         await this.#summaryContent.updateComplete;
     }
@@ -367,11 +367,10 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
         this.#summaryContent.requestUpdate();
         // Special case: if the user selects a layout shift or a layout shift cluster,
-        // render the new layout shift details component.
+        // That component is rendered within the summary content component, so we don't have to do anything.
+        // TODO: once we push more of the rendering into the Summary component, this special case can be removed.
         if (Trace.Types.Events.isSyntheticLayoutShift(event) || Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
-            const isFreshRecording = Boolean(this.#parsedTrace && Tracker.instance().recordingIsFresh(this.#parsedTrace));
-            this.#layoutShiftDetails.setData(event, this.#traceInsightsSets, this.#parsedTrace, isFreshRecording);
-            return await this.setSummaryContent(this.#layoutShiftDetails);
+            return await this.setSummaryContent();
         }
         // Otherwise, build the generic trace event details UI.
         const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true, this.#entityMapper);
@@ -523,21 +522,40 @@ export var Tab;
     Tab["SelectorStats"] = "selector-stats";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Tab || (Tab = {}));
+function eventIsLayoutShiftRelated(e) {
+    if (e === null) {
+        return false;
+    }
+    return Trace.Types.Events.isSyntheticLayoutShift(e) || Trace.Types.Events.isSyntheticLayoutShiftCluster(e);
+}
 const SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
+    const traceRecordingIsFresh = input.parsedTrace ? Tracker.instance().recordingIsFresh(input.parsedTrace) : false;
+    // clang-format off
     render(html `
         <style>${detailsViewStyles}</style>
         ${input.node ?? nothing}
-        <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {
+        ${eventIsLayoutShiftRelated(input.selectedEvent) ? html `
+          <devtools-widget data-layout-shift-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.LayoutShiftDetails.LayoutShiftDetails, {
+        event: input.selectedEvent,
+        traceInsightsSets: input.traceInsightsSets,
+        parsedTrace: input.parsedTrace,
+        isFreshRecording: traceRecordingIsFresh,
+    })}></devtools-widget>
+          ` : nothing}
+        <devtools-widget data-related-insight-chips .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {
         activeEvent: input.selectedEvent,
         eventToInsightsMap: input.eventToRelatedInsightsMap,
     })}></devtools-widget>
       `, target, { host: input });
+    // clang-format on
 };
-class SummaryView extends UI.Widget.VBox {
+class SummaryView extends UI.Widget.Widget {
     #view;
     node = null;
     selectedEvent = null;
     eventToRelatedInsightsMap = null;
+    parsedTrace = null;
+    traceInsightsSets = null;
     constructor(element, view = SUMMARY_DEFAULT_VIEW) {
         super(false, false, element);
         this.#view = view;
@@ -547,6 +565,8 @@ class SummaryView extends UI.Widget.VBox {
             node: this.node,
             selectedEvent: this.selectedEvent,
             eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
+            parsedTrace: this.parsedTrace,
+            traceInsightsSets: this.traceInsightsSets,
         }, {}, this.contentElement);
     }
 }

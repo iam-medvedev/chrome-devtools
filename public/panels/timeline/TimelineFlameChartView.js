@@ -623,6 +623,15 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             this.revealEventVertically(earliestEntry);
         }
     }
+    hoverAnnotationInSidebar(annotation) {
+        const overlay = ModificationsManager.activeManager()?.getOverlaybyAnnotation(annotation);
+        if (overlay && overlay.type === 'ENTRY_LABEL') {
+            this.#overlays.highlightOverlay(overlay);
+        }
+    }
+    sidebarAnnotationHoverOut() {
+        this.#overlays.undimAllEntryLabels();
+    }
     revealAnnotation(annotation) {
         const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
         if (!traceBounds) {

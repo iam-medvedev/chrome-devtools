@@ -156,6 +156,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
                 return null;
             }
             this.fileSystemsInternal.set(fileSystemURL, fileSystem);
+            fileSystem.addEventListener("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, this.#onFileSystemError, this);
             if (dispatchEvent) {
                 this.dispatchEventToListeners(Events.FileSystemAdded, fileSystem);
             }
@@ -164,6 +165,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     }
     addPlatformFileSystem(fileSystemURL, fileSystem) {
         this.fileSystemsInternal.set(fileSystemURL, fileSystem);
+        fileSystem.addEventListener("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, this.#onFileSystemError, this);
         this.dispatchEventToListeners(Events.FileSystemAdded, fileSystem);
     }
     onFileSystemAdded(event) {
@@ -187,6 +189,9 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
             });
         }
     }
+    #onFileSystemError(event) {
+        this.dispatchEventToListeners(Events.FileSystemError, event.data);
+    }
     onFileSystemRemoved(event) {
         const embedderPath = event.data;
         const fileSystemPath = Common.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
@@ -195,6 +200,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
             return;
         }
         this.fileSystemsInternal.delete(fileSystemPath);
+        isolatedFileSystem.removeEventListener("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, this.#onFileSystemError, this);
         isolatedFileSystem.fileSystemRemoved();
         this.dispatchEventToListeners(Events.FileSystemRemoved, isolatedFileSystem);
     }
@@ -290,6 +296,7 @@ export var Events;
     Events["FileSystemFilesChanged"] = "FileSystemFilesChanged";
     Events["ExcludedFolderAdded"] = "ExcludedFolderAdded";
     Events["ExcludedFolderRemoved"] = "ExcludedFolderRemoved";
+    Events["FileSystemError"] = "FileSystemError";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 let lastRequestId = 0;

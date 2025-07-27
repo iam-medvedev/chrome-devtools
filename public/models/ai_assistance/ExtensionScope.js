@@ -183,10 +183,7 @@ export class ExtensionScope {
         return node.localName() || node.nodeName().toLowerCase();
     }
     static getSourceLocation(styleRule) {
-        if (!styleRule.styleSheetId) {
-            return;
-        }
-        const styleSheetHeader = styleRule.cssModel().styleSheetHeaderForId(styleRule.styleSheetId);
+        const styleSheetHeader = styleRule.header;
         if (!styleSheetHeader) {
             return;
         }

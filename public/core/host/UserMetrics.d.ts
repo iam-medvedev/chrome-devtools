@@ -511,7 +511,6 @@ export declare enum DevtoolsExperiments {
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
-    'timeline-experimental-insights' = 102,
     'vertical-drawer' = 107,
     MAX_VALUE = 108
 }

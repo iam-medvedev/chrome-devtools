@@ -414,6 +414,7 @@ function moveCompletionSelectionIfNotConservative(forward, by = "option") {
     if (CM2.completionStatus(view.state) !== "active") {
       return false;
     }
+    view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
     if (view.state.field(conservativeCompletion, false)) {
       view.dispatch({ effects: disableConservativeCompletion.of(null) });
       announceSelectedCompletionInfo(view);
@@ -429,6 +430,7 @@ function moveCompletionSelectionBackwardWrapper() {
     if (CM2.completionStatus(view.state) !== "active") {
       return false;
     }
+    view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
     CM2.moveCompletionSelection(false)(view);
     announceSelectedCompletionInfo(view);
     return true;
@@ -725,6 +727,9 @@ var aiAutoCompleteSuggestionState = CM2.StateField.define({
     }
     const from = tr.changes.mapPos(value.from);
     const { head } = tr.state.selection.main;
+    if (from === head && tr.docChanged && tr.state.doc.length < tr.startState.doc.length) {
+      return null;
+    }
     if (tr.changes.touchesRange(0, from - 1) || head < from) {
       return null;
     }
