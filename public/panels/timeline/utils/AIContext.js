@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export class AgentFocus {
-    static fromInsight(insight) {
+    static fromInsight(parsedTrace, insight, insightSetBounds) {
         return new AgentFocus({
             type: 'insight',
-            parsedTrace: insight.parsedTrace,
-            insight: insight.insight,
-            insightSetBounds: insight.insightSetBounds
+            parsedTrace,
+            insight,
+            insightSetBounds,
         });
     }
     static fromCallTree(callTree) {

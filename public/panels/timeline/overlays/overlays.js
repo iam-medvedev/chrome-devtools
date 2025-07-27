@@ -948,6 +948,34 @@ var Overlays = class extends EventTarget {
       entryToIsSource: entryTo === overlay.entryTo
     };
   }
+  // Dimms all label annotations except the one that is hovered over in the timeline or sidebar.
+  // The highlighter annotation is brought forward.
+  highlightOverlay(overlay) {
+    const allLabelOverlays = this.overlaysOfType("ENTRY_LABEL");
+    for (const otherOverlay of allLabelOverlays) {
+      const element = this.elementForOverlay(otherOverlay);
+      const component = element?.querySelector("devtools-entry-label-overlay");
+      if (element && !component?.hasAttribute("data-user-editing-label")) {
+        if (otherOverlay === overlay) {
+          element.style.opacity = "1";
+          element.style.zIndex = "3";
+        } else {
+          element.style.opacity = "0.5";
+          element.style.zIndex = "2";
+        }
+      }
+    }
+  }
+  undimAllEntryLabels() {
+    const allLabelOverlays = this.overlaysOfType("ENTRY_LABEL");
+    for (const otherOverlay of allLabelOverlays) {
+      const element = this.elementForOverlay(otherOverlay);
+      if (element) {
+        element.style.opacity = "1";
+        element.style.zIndex = "2";
+      }
+    }
+  }
   #createElementForNewOverlay(overlay) {
     const overlayElement = document.createElement("div");
     overlayElement.classList.add("overlay-item", `overlay-type-${overlay.type}`);
@@ -973,6 +1001,12 @@ var Overlays = class extends EventTarget {
           const newLabel = event.newLabel;
           overlay.label = newLabel;
           this.dispatchEvent(new AnnotationOverlayActionEvent(overlay, "Update"));
+        });
+        overlayElement.addEventListener("mouseover", () => {
+          this.highlightOverlay(overlay);
+        });
+        overlayElement.addEventListener("mouseout", () => {
+          this.undimAllEntryLabels();
         });
         overlayElement.appendChild(component);
         overlayElement.addEventListener("click", (event) => {

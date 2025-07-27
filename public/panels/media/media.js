@@ -2172,7 +2172,7 @@ var PlayerListView = class extends UI6.Widget.VBox {
       return;
     }
     if (candidate.length >= max) {
-      candidate = candidate.substring(0, max - 3) + "...";
+      candidate = candidate.substring(0, max - 1) + "\u2026";
     }
     func.bind(this)(playerID, candidate);
   }

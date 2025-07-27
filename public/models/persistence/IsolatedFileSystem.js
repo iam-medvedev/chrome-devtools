@@ -55,6 +55,16 @@ const UIStrings = {
      *@example {example.url} PH1
      */
     linkedToS: 'Linked to {PH1}',
+    /**
+     *@description Error message shown when devtools failed to create a file system directory.
+     *@example {path/} PH1
+     */
+    createDirFailedBecausePathIsFile: 'Overrides: Failed to create directory {PH1} because the path exists and is a file.',
+    /**
+     *@description Error message shown when devtools failed to create a file system directory.
+     *@example {path/} PH1
+     */
+    createDirFailed: 'Overrides: Failed to create directory {PH1}. Are the workspace or overrides configured correctly?'
 };
 const str_ = i18n.i18n.registerUIStrings('models/persistence/IsolatedFileSystem.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -173,6 +183,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
     innerCreateFolderIfNeeded(path) {
         return new Promise(resolve => {
             this.domFileSystem.root.getDirectory(path, { create: true }, dirEntry => resolve(dirEntry), error => {
+                this.domFileSystem.root.getFile(path, undefined, () => this.dispatchEventToListeners("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, i18nString(UIStrings.createDirFailedBecausePathIsFile, { PH1: path })), () => this.dispatchEventToListeners("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, i18nString(UIStrings.createDirFailed, { PH1: path })));
                 const errorMessage = IsolatedFileSystem.errorMessage(error);
                 console.error(errorMessage + ' trying to create directory \'' + path + '\'');
                 resolve(null);

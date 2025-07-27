@@ -482,5 +482,13 @@ export class SamplesIntegrator {
             }
         };
     }
+    static extractCpuProfileFromFakeTrace(traceEvents) {
+        const profileEvent = traceEvents.find(e => Types.Events.isSyntheticCpuProfile(e));
+        const profile = profileEvent?.args.data.cpuProfile;
+        if (!profile) {
+            throw new Error('Missing cpuProfile data');
+        }
+        return profile;
+    }
 }
 //# sourceMappingURL=SamplesIntegrator.js.map

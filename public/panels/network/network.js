@@ -28,6 +28,7 @@ var binaryResourceView_css_default = `/*
   border-top: 1px solid var(--sys-color-divider);
   border-bottom: 0;
   padding-left: 5px;
+  flex: none;
 }
 
 .binary-view-copied-text {
@@ -6259,7 +6260,7 @@ var ResourceChunkNode = class extends DataGridItem {
     const length = i18n27.ByteUtilities.bytesToString(Platform5.StringUtilities.base64ToSize(chunk.data));
     const maxDisplayLen = 30;
     if (chunk.data.length > maxDisplayLen) {
-      description = chunk.data.substring(0, maxDisplayLen) + "...";
+      description = chunk.data.substring(0, maxDisplayLen) + "\u2026";
     } else {
       description = chunk.data;
     }
@@ -9328,8 +9329,9 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
   }
   addCustomHeader(headerTitle, headerId, index) {
     if (!headerId) {
-      headerId = headerTitle.toLowerCase();
+      headerId = headerTitle;
     }
+    headerId = headerId.toLowerCase();
     if (index === void 0) {
       index = this.columns.length - 1;
     }
@@ -9636,30 +9638,6 @@ var DEFAULT_COLUMNS = [
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "vary")
   },
   {
-    id: "request-header-content-type",
-    isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Content-Type"),
-    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "Content-Type")
-  },
-  {
-    id: "request-header-referer",
-    isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Referer"),
-    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "referer")
-  },
-  {
-    id: "request-header-origin",
-    isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Origin"),
-    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "origin")
-  },
-  {
-    id: "request-header-user-agent",
-    isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("User-Agent"),
-    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "user-agent")
-  },
-  {
     id: "request-header-accept",
     isRequestHeader: true,
     title: i18n37.i18n.lockedLazyString("Accept"),
@@ -9678,6 +9656,24 @@ var DEFAULT_COLUMNS = [
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "accept-language")
   },
   {
+    id: "request-header-content-type",
+    isRequestHeader: true,
+    title: i18n37.i18n.lockedLazyString("Content-Type"),
+    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "Content-Type")
+  },
+  {
+    id: "request-header-origin",
+    isRequestHeader: true,
+    title: i18n37.i18n.lockedLazyString("Origin"),
+    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "origin")
+  },
+  {
+    id: "request-header-referer",
+    isRequestHeader: true,
+    title: i18n37.i18n.lockedLazyString("Referer"),
+    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "referer")
+  },
+  {
     id: "request-header-sec-fetch-dest",
     isRequestHeader: true,
     title: i18n37.i18n.lockedLazyString("Sec-Fetch-Dest"),
@@ -9688,6 +9684,12 @@ var DEFAULT_COLUMNS = [
     isRequestHeader: true,
     title: i18n37.i18n.lockedLazyString("Sec-Fetch-Mode"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "sec-fetch-mode")
+  },
+  {
+    id: "request-header-user-agent",
+    isRequestHeader: true,
+    title: i18n37.i18n.lockedLazyString("User-Agent"),
+    sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "user-agent")
   },
   // This header is a placeholder to let datagrid know that it can be sorted by this column, but never shown.
   {
@@ -11552,7 +11554,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     const ignoredHeaders = /* @__PURE__ */ new Set(["accept-encoding", "host", "method", "path", "scheme", "version", "authority", "protocol"]);
     function escapeStringWin(str) {
       const encapsChars = '^"';
-      return encapsChars + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/\r?\n|\r/g, "^\n\n") + encapsChars;
+      return encapsChars + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/[^\S \r\n]/g, "^$&").replace(/\r?\n|\r/g, "^\n\n") + encapsChars;
     }
     function escapeStringPosix(str) {
       function escapeCharacter(x) {

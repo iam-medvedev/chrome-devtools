@@ -7,6 +7,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as Formatter from '../../models/formatter/formatter.js';
 import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -15,6 +16,7 @@ import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { AiCodeCompletionTeaser } from '../common/common.js';
 import { ConsolePanel } from './ConsolePanel.js';
 import consolePromptStyles from './consolePrompt.css.js';
 const { Direction } = TextEditor.TextEditorHistory;
@@ -57,6 +59,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     #editorHistory;
     #selfXssWarningShown = false;
     #javaScriptCompletionCompartment = new CodeMirror.Compartment();
+    aidaClient;
+    aiCodeCompletion;
+    placeholderCompartment = new CodeMirror.Compartment();
+    teaserContainer;
+    aiCodeCompletionThrottler;
+    aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-fre-completed', false);
     #getJavaScriptCompletionExtensions() {
         if (this.#selfXssWarningShown) {
             // No (JavaScript) completions at all while showing the self-XSS warning.
@@ -122,6 +130,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             CodeMirror.autocompletion({ aboveCursor: true }),
             this.#javaScriptCompletionCompartment.of(this.#getJavaScriptCompletionExtensions()),
         ];
+        if (this.isAiCodeCompletionEnabled()) {
+            this.teaserContainer = document.createElement('div');
+            const teaser = new AiCodeCompletionTeaser();
+            teaser.show(this.teaserContainer, undefined, true);
+            extensions.push(TextEditor.Config.aiAutoCompleteSuggestion, this.placeholderCompartment.of(CodeMirror.placeholder(this.teaserContainer)));
+        }
         const doc = this.initialText;
         const editorState = CodeMirror.EditorState.create({ doc, extensions });
         this.editor = new TextEditor.TextEditor.TextEditor(editorState);
@@ -143,6 +157,10 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             change: true,
             keydown: 'Enter|ArrowUp|ArrowDown|PageUp',
         })}`);
+        if (this.isAiCodeCompletionEnabled()) {
+            this.aiCodeCompletionSetting.addChangeListener(this.onAiCodeCompletionSettingChanged.bind(this));
+            this.onAiCodeCompletionSettingChanged();
+        }
     }
     eagerSettingChanged() {
         const enabled = this.eagerEvalSetting.get();
@@ -154,15 +172,47 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     belowEditorElement() {
         return this.eagerPreviewElement;
     }
-    onTextChanged() {
+    onTextChanged(docContentChanged) {
         // ConsoleView and prompt both use a throttler, so we clear the preview
         // ASAP to avoid inconsistency between a fresh viewport and stale preview.
         if (this.eagerEvalSetting.get()) {
             const asSoonAsPossible = !TextEditor.Config.contentIncludingHint(this.editor.editor);
             this.previewRequestForTest = this.textChangeThrottler.schedule(this.requestPreviewBound, asSoonAsPossible ? "AsSoonAsPossible" /* Common.Throttler.Scheduling.AS_SOON_AS_POSSIBLE */ : "Default" /* Common.Throttler.Scheduling.DEFAULT */);
         }
+        if (docContentChanged && this.aiCodeCompletion && this.isAiCodeCompletionEnabled()) {
+            // Only trigger when doc content changes.
+            // This ensures that it is not triggered when user is going through the options in existing completion menu.
+            this.triggerAiCodeCompletion();
+        }
         this.updatePromptIcon();
         this.dispatchEventToListeners("TextChanged" /* Events.TEXT_CHANGED */);
+    }
+    triggerAiCodeCompletion() {
+        const { doc, selection } = this.editor.state;
+        const query = doc.toString();
+        const cursor = selection.main.head;
+        const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
+        let prefix = query.substring(0, cursor);
+        if (currentExecutionContext) {
+            const consoleModel = currentExecutionContext.target().model(SDK.ConsoleModel.ConsoleModel);
+            if (consoleModel) {
+                let lastMessage = '';
+                let consoleMessages = '';
+                for (const message of consoleModel.messages()) {
+                    if (message.type !== SDK.ConsoleModel.FrontendMessageType.Command || message.messageText === lastMessage) {
+                        continue;
+                    }
+                    lastMessage = message.messageText;
+                    consoleMessages = consoleMessages + message.messageText + '\n\n';
+                }
+                prefix = consoleMessages + prefix;
+            }
+        }
+        let suffix = query.substring(cursor);
+        if (suffix === '') {
+            suffix = '\n';
+        }
+        this.aiCodeCompletion?.onTextChanged(prefix, suffix);
     }
     async requestPreview() {
         const id = ++this.requestPreviewCurrent;
@@ -218,16 +268,14 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.addCompletionsFromHistory = value;
     }
     editorKeymap() {
-        return [
+        const keymap = [
             { key: 'ArrowUp', run: () => this.#editorHistory.moveHistory(-1 /* Direction.BACKWARD */) },
             { key: 'ArrowDown', run: () => this.#editorHistory.moveHistory(1 /* Direction.FORWARD */) },
             { mac: 'Ctrl-p', run: () => this.#editorHistory.moveHistory(-1 /* Direction.BACKWARD */, true) },
             { mac: 'Ctrl-n', run: () => this.#editorHistory.moveHistory(1 /* Direction.FORWARD */, true) },
             {
                 key: 'Escape',
-                run: () => {
-                    return TextEditor.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState);
-                },
+                run: () => this.runOnEscape(),
             },
             {
                 key: 'Ctrl-Enter',
@@ -245,6 +293,27 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 shift: CodeMirror.insertNewlineAndIndent,
             },
         ];
+        if (this.isAiCodeCompletionEnabled()) {
+            keymap.push({
+                key: 'Tab',
+                run: () => {
+                    return TextEditor.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+                },
+            });
+        }
+        return keymap;
+    }
+    runOnEscape() {
+        if (TextEditor.JavaScript.closeArgumentsHintsTooltip(this.editor.editor, this.#argumentHintsState)) {
+            return true;
+        }
+        if (this.aiCodeCompletion && TextEditor.Config.setAiAutoCompleteSuggestion) {
+            this.editor.dispatch({
+                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(null),
+            });
+            return true;
+        }
+        return false;
     }
     async enterWillEvaluate(forceEvaluate) {
         const { doc, selection } = this.editor.state;
@@ -290,6 +359,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 changes: { from: 0, to: this.editor.state.doc.length },
                 scrollIntoView: true,
             });
+            if (this.teaserContainer) {
+                this.editor.dispatch({
+                    effects: this.placeholderCompartment.reconfigure([]),
+                });
+                this.teaserContainer = undefined;
+            }
         }
         else if (this.editor.state.doc.length) {
             CodeMirror.insertNewlineAndIndent(this.editor.editor);
@@ -339,7 +414,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     editorUpdate(update) {
         if (update.docChanged ||
             CodeMirror.selectedCompletion(update.state) !== CodeMirror.selectedCompletion(update.startState)) {
-            this.onTextChanged();
+            const docContentChanged = update.state.doc !== update.startState.doc;
+            this.onTextChanged(docContentChanged);
         }
         else if (update.selectionSet) {
             this.updatePromptIcon();
@@ -348,7 +424,28 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     focus() {
         this.editor.focus();
     }
+    setAiCodeCompletion() {
+        if (!this.aidaClient) {
+            this.aidaClient = new Host.AidaClient.AidaClient();
+        }
+        this.aiCodeCompletionThrottler = new Common.Throttler.Throttler(3000);
+        this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, this.aiCodeCompletionThrottler);
+    }
+    onAiCodeCompletionSettingChanged() {
+        if (this.aiCodeCompletionSetting.get() && this.isAiCodeCompletionEnabled()) {
+            this.setAiCodeCompletion();
+        }
+        else if (this.aiCodeCompletion) {
+            this.aiCodeCompletion = undefined;
+        }
+    }
+    isAiCodeCompletionEnabled() {
+        return Boolean(Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+    }
     editorSetForTest() {
+    }
+    setAidaClientForTest(aidaClient) {
+        this.aidaClient = aidaClient;
     }
 }
 //# sourceMappingURL=ConsolePrompt.js.map

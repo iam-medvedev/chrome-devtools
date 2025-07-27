@@ -2941,7 +2941,7 @@ var ChatView = class extends HTMLElement {
     if (!ev.target || !(ev.target instanceof HTMLTextAreaElement)) {
       return;
     }
-    if (ev.key === "Enter" && !ev.shiftKey) {
+    if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) {
       ev.preventDefault();
       if (!ev.target?.value || this.#props.imageInput?.isLoading) {
         return;
@@ -3552,7 +3552,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
         @keydown=${onTextAreaKeyDown}
         @input=${(event) => onTextInputChange(event.target.value)}
         placeholder=${inputPlaceholder}
-        jslog=${VisualLogging4.textField("query").track({ keydown: "Enter" })}
+        jslog=${VisualLogging4.textField("query").track({ change: true, keydown: "Enter" })}
         aria-description=${i18nString(UIStrings.inputTextAriaDescription)}
       ></textarea>
       <div class="chat-input-actions">
@@ -4170,6 +4170,8 @@ async function getEmptyStateSuggestions(context, conversationType) {
         { title: "Help me optimize my page load performance", jslogContext: "performance-insights-default" }
       ];
     }
+    default:
+      Platform4.assertNever(conversationType, "Unknown conversation type");
   }
 }
 function toolbarView(input) {
@@ -4807,8 +4809,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         return Common4.Revealer.reveal(trace);
       }
       if (focus.type === "insight") {
-        const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.insight, focus.insightSetBounds, focus.parsedTrace);
-        return Common4.Revealer.reveal(activeInsight);
+        return Common4.Revealer.reveal(focus.insight);
       }
       Platform4.assertNever(focus, "Unknown agent focus");
     }
@@ -4865,7 +4866,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     let agent = this.#conversationAgent;
-    if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType || this.#conversation?.isEmpty || targetConversationType === "drjones-performance") {
+    if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType || this.#conversation?.isEmpty || targetConversationType === "drjones-performance" || agent instanceof AiAssistanceModel3.PerformanceAgent && agent.getConversationType() !== targetConversationType) {
       agent = this.#createAgent(targetConversationType);
     }
     this.#updateConversationState(agent);
@@ -5288,20 +5289,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     );
     this.#historicalConversations.push(externalConversation);
     const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
-    const insightOrError = await TimelinePanel.ExternalRequests.getInsightToDebug(timelinePanel.model, insightTitle);
-    if ("error" in insightOrError) {
+    const focusOrError = await TimelinePanel.ExternalRequests.getInsightAgentFocusToDebug(timelinePanel.model, insightTitle);
+    if ("error" in focusOrError) {
       return {
-        response: insightOrError.error,
+        response: focusOrError.error,
         devToolsLogs: []
       };
     }
-    const focus = new TimelineUtils.AIContext.AgentFocus({
-      type: "insight",
-      parsedTrace: insightOrError.insight.parsedTrace,
-      insight: insightOrError.insight.insight,
-      insightSetBounds: insightOrError.insight.insightSetBounds
-    });
-    const selectedContext = createPerformanceTraceContext(focus);
+    const selectedContext = createPerformanceTraceContext(focusOrError.focus);
     const runner = insightsAgent.run(prompt, { selected: selectedContext });
     const devToolsLogs = [];
     for await (const data of runner) {

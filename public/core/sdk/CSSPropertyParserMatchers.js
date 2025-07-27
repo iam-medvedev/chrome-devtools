@@ -1155,4 +1155,43 @@ export class PositionTryMatcher extends matcherBase(PositionTryMatch) {
         return new PositionTryMatch(valueText, node, preamble, fallbacks);
     }
 }
+export class EnvFunctionMatch {
+    text;
+    node;
+    varName;
+    value;
+    varNameIsValid;
+    constructor(text, node, varName, value, varNameIsValid) {
+        this.text = text;
+        this.node = node;
+        this.varName = varName;
+        this.value = value;
+        this.varNameIsValid = varNameIsValid;
+    }
+    computedText() {
+        return this.value;
+    }
+}
+// clang-format off
+export class EnvFunctionMatcher extends matcherBase(EnvFunctionMatch) {
+    matchedStyles;
+    // clang-format on
+    constructor(matchedStyles) {
+        super();
+        this.matchedStyles = matchedStyles;
+    }
+    matches(node, matching) {
+        if (node.name !== 'CallExpression' || matching.ast.text(node.getChild('Callee')) !== 'env') {
+            return null;
+        }
+        const [valueNodes, ...fallbackNodes] = ASTUtils.callArgs(node);
+        if (!valueNodes?.length) {
+            return null;
+        }
+        const fallbackValue = fallbackNodes.length > 0 ? matching.getComputedTextRange(...ASTUtils.range(fallbackNodes.flat())) : undefined;
+        const varName = matching.getComputedTextRange(...ASTUtils.range(valueNodes)).trim();
+        const value = this.matchedStyles.environmentVariable(varName);
+        return new EnvFunctionMatch(matching.ast.text(node), node, varName, value ?? fallbackValue ?? null, Boolean(value));
+    }
+}
 //# sourceMappingURL=CSSPropertyParserMatchers.js.map

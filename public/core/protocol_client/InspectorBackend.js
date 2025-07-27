@@ -107,7 +107,6 @@ export class InspectorBackend {
 }
 let connectionFactory;
 export class Connection {
-    onMessage;
     setOnMessage(_onMessage) {
     }
     setOnDisconnect(_onDisconnect) {
@@ -155,18 +154,18 @@ export const test = {
 };
 const LongPollingMethods = new Set(['CSS.takeComputedStyleUpdates']);
 export class SessionRouter {
-    #connectionInternal;
+    #connection;
     #lastMessageId = 1;
     #pendingResponsesCount = 0;
     #pendingLongPollingMessageIds = new Set();
     #sessions = new Map();
     #pendingScripts = [];
     constructor(connection) {
-        this.#connectionInternal = connection;
+        this.#connection = connection;
         test.deprecatedRunAfterPendingDispatches = this.deprecatedRunAfterPendingDispatches.bind(this);
         test.sendRawMessage = this.sendRawMessageForTesting.bind(this);
-        this.#connectionInternal.setOnMessage(this.onMessage.bind(this));
-        this.#connectionInternal.setOnDisconnect(reason => {
+        this.#connection.setOnMessage(this.onMessage.bind(this));
+        this.#connection.setOnDisconnect(reason => {
             const session = this.#sessions.get('');
             if (session) {
                 session.target.dispose(reason);
@@ -207,7 +206,7 @@ export class SessionRouter {
         return this.#lastMessageId++;
     }
     connection() {
-        return this.#connectionInternal;
+        return this.#connection;
     }
     sendMessage(sessionId, domain, method, params, callback) {
         const messageId = this.nextMessageId();
@@ -237,7 +236,7 @@ export class SessionRouter {
             return;
         }
         session.callbacks.set(messageId, { callback, method });
-        this.#connectionInternal.sendRawMessage(JSON.stringify(messageObject));
+        this.#connection.sendRawMessage(JSON.stringify(messageObject));
     }
     sendRawMessageForTesting(method, params, callback, sessionId = '') {
         const domain = method.split('.')[0];

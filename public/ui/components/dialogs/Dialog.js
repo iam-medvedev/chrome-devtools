@@ -323,6 +323,9 @@ export class Dialog extends HTMLElement {
                 const dialog = this.#getDialog();
                 dialog.style.visibility = 'hidden';
                 if (this.#isPendingShowDialog && !dialog.hasAttribute('open')) {
+                    if (!dialog.isConnected) {
+                        return;
+                    }
                     dialog.showModal();
                     this.setAttribute('open', '');
                     this.#isPendingShowDialog = false;
@@ -427,6 +430,9 @@ export class Dialog extends HTMLElement {
         await RenderCoordinator.done();
         this.#isPendingShowDialog = false;
         const dialog = this.#getDialog();
+        if (!dialog.isConnected) {
+            return;
+        }
         // Make the dialog visible now.
         if (!dialog.hasAttribute('open')) {
             dialog.showModal();

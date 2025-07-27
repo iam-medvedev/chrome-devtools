@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../core/sdk/sdk.js';
-export function getMatchedStylesWithStylesheet(cssModel, origin, styleSheetId, header, payload = {}) {
-    cssModel.styleSheetAdded({
-        styleSheetId,
+import { clearMockConnectionResponseHandler, setMockConnectionResponseHandler } from './MockConnection.js';
+export function getMatchedStylesWithStylesheet(payload) {
+    payload.cssModel.styleSheetAdded({
         frameId: '',
         sourceURL: '',
-        origin,
         title: '',
         disabled: false,
         isInline: false,
@@ -18,12 +17,12 @@ export function getMatchedStylesWithStylesheet(cssModel, origin, styleSheetId, h
         length: 0,
         endLine: 0,
         endColumn: 0,
-        ...header,
+        ...payload,
     });
-    return getMatchedStyles({ cssModel, ...payload });
+    return getMatchedStyles(payload, payload.getEnvironmentVariablesCallback);
 }
-export function getMatchedStylesWithBlankRule(cssModel, selector = 'div', range = undefined, origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, styleSheetId = '0', payload = {}) {
-    return getMatchedStylesWithProperties(cssModel, {}, selector, range, origin, styleSheetId, payload);
+export function getMatchedStylesWithBlankRule(payload) {
+    return getMatchedStylesWithProperties({ properties: {}, ...payload });
 }
 export function createCSSStyle(cssProperties, range, styleSheetId = '0') {
     return {
@@ -55,11 +54,16 @@ export function ruleMatch(selectorOrList, properties, options = {}) {
         matchingSelectors,
     };
 }
-export function getMatchedStylesWithProperties(cssModel, properties, selector = 'div', range = undefined, origin = "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */, styleSheetId = '0', payload = {}) {
-    const matchedPayload = [ruleMatch(selector, properties, { range, origin, styleSheetId })];
-    return getMatchedStylesWithStylesheet(cssModel, origin, styleSheetId, {}, { matchedPayload, ...payload });
+export function getMatchedStylesWithProperties(payload) {
+    const styleSheetId = payload.styleSheetId ?? '0';
+    const range = payload.range;
+    const origin = payload.origin ?? "regular" /* Protocol.CSS.StyleSheetOrigin.Regular */;
+    const matchedPayload = [ruleMatch(payload.selector ?? 'div', payload.properties, { range, origin, styleSheetId })];
+    return getMatchedStylesWithStylesheet({ styleSheetId, origin, matchedPayload, ...payload });
 }
-export function getMatchedStyles(payload = {}) {
+export function getMatchedStyles(payload = {}, getEnvironmentVariablesCallback = () => ({})) {
+    clearMockConnectionResponseHandler('CSS.getEnvironmentVariables');
+    setMockConnectionResponseHandler('CSS.getEnvironmentVariables', getEnvironmentVariablesCallback);
     let node = payload.node;
     if (!node) {
         node = sinon.createStubInstance(SDK.DOMModel.DOMNode);

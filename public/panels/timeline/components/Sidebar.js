@@ -23,6 +23,20 @@ export class RevealAnnotation extends Event {
         this.annotation = annotation;
     }
 }
+export class HoverAnnotation extends Event {
+    annotation;
+    static eventName = 'hoverannotation';
+    constructor(annotation) {
+        super(HoverAnnotation.eventName, { bubbles: true, composed: true });
+        this.annotation = annotation;
+    }
+}
+export class AnnotationHoverOut extends Event {
+    static eventName = 'annotationhoverout';
+    constructor() {
+        super(AnnotationHoverOut.eventName, { bubbles: true, composed: true });
+    }
+}
 export const DEFAULT_SIDEBAR_TAB = "insights" /* SidebarTabs.INSIGHTS */;
 export const DEFAULT_SIDEBAR_WIDTH_PX = 240;
 const MIN_SIDEBAR_WIDTH_PX = 170;

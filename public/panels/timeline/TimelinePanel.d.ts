@@ -119,6 +119,10 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
         savingEnhancedTrace: boolean;
         addModifications: boolean;
     }): Promise<void>;
+    innerSaveToFile(traceEvents: readonly Trace.Types.Events.Event[], metadata: Trace.Types.File.MetaData, config: {
+        savingEnhancedTrace: boolean;
+        addModifications: boolean;
+    }): Promise<void>;
     showHistoryDropdown(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;
@@ -211,8 +215,8 @@ export declare class TraceRevealer implements Common.Revealer.Revealer<SDK.Trace
 export declare class EventRevealer implements Common.Revealer.Revealer<SDK.TraceObject.RevealableEvent> {
     reveal(rEvent: SDK.TraceObject.RevealableEvent): Promise<void>;
 }
-export declare class InsightRevealer implements Common.Revealer.Revealer<Utils.InsightAIContext.ActiveInsight> {
-    reveal(revealable: Utils.InsightAIContext.ActiveInsight): Promise<void>;
+export declare class InsightRevealer implements Common.Revealer.Revealer<Utils.Helpers.RevealableInsight> {
+    reveal(revealable: Utils.Helpers.RevealableInsight): Promise<void>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;

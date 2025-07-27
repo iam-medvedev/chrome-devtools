@@ -490,4 +490,25 @@ export declare class PositionTryMatcher extends PositionTryMatcher_base {
     accepts(propertyName: string): boolean;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): PositionTryMatch | null;
 }
+export declare class EnvFunctionMatch implements Match {
+    readonly text: string;
+    readonly node: CodeMirror.SyntaxNode;
+    readonly varName: string;
+    readonly value: string | null;
+    readonly varNameIsValid: boolean;
+    constructor(text: string, node: CodeMirror.SyntaxNode, varName: string, value: string | null, varNameIsValid: boolean);
+    computedText(): string | null;
+}
+declare const EnvFunctionMatcher_base: {
+    new (): {
+        matchType: Platform.Constructor.ConstructorOrAbstract<EnvFunctionMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): EnvFunctionMatch | null;
+    };
+};
+export declare class EnvFunctionMatcher extends EnvFunctionMatcher_base {
+    readonly matchedStyles: CSSMatchedStyles;
+    constructor(matchedStyles: CSSMatchedStyles);
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): EnvFunctionMatch | null;
+}
 export {};

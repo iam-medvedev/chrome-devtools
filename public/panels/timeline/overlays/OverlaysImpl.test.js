@@ -504,7 +504,7 @@ describeWithEnvironment('Overlays', () => {
                                 rpcGlobalId: 123,
                             }
                         }]])
-            }, "drjones-performance" /* AiAssistanceModels.ConversationType.PERFORMANCE */);
+            });
             component.overrideAIAgentForTest(agent);
             // The Agent call is async, so wait for the change event on the label to ensure the UI is updated.
             const changeEvent = new Promise(resolve => {

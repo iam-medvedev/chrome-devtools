@@ -319,6 +319,13 @@ export class CSSModel extends SDKModel {
             hasScroll,
         };
     }
+    async getEnvironmentVariales() {
+        const response = await this.agent.invoke_getEnvironmentVariables();
+        if (response.getError()) {
+            return {};
+        }
+        return response.environmentVariables;
+    }
     async getBackgroundColors(nodeId) {
         const response = await this.agent.invoke_getBackgroundColors({ nodeId });
         if (response.getError()) {

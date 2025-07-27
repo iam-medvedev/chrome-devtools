@@ -533,6 +533,7 @@ var entryLabelOverlay_css_default = `/*
   font-family: var(--default-font-family);
   font-size: var(--sys-typescale-body2-size);
   font-weight: var(--ref-typeface-weight-medium);
+  outline: 2px solid var(--color-background);
 }
 
 
@@ -737,14 +738,10 @@ var EntryLabelOverlay = class _EntryLabelOverlay extends HTMLElement {
   #callTree = null;
   // Creates or gets the setting if it exists.
   #aiAnnotationsEnabledSetting = Common.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
-  #agent = new AiAssistanceModels.PerformanceAnnotationsAgent(
-    {
-      aidaClient: new Host.AidaClient.AidaClient(),
-      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
-    },
-    "drjones-performance"
-    /* AiAssistanceModels.ConversationType.PERFORMANCE */
-  );
+  #agent = new AiAssistanceModels.PerformanceAnnotationsAgent({
+    aidaClient: new Host.AidaClient.AidaClient(),
+    serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
+  });
   /**
    * We track this because when the user is in this flow we don't want the
    * empty annotation label to be removed on blur, as we take them to the flow &
@@ -1183,12 +1180,12 @@ var EntryLabelOverlay = class _EntryLabelOverlay extends HTMLElement {
       </span>
     `;
   }
-  #handleFocusOutEvent() {
-    requestAnimationFrame(() => {
-      if (!this.hasFocus()) {
-        this.setLabelEditabilityAndRemoveEmptyLabel(false);
-      }
-    });
+  #handleFocusOutEvent(event) {
+    const relatedTarget = event.relatedTarget;
+    if (relatedTarget && this.#shadow.contains(relatedTarget)) {
+      return;
+    }
+    this.setLabelEditabilityAndRemoveEmptyLabel(false);
   }
   #render() {
     const inputFieldClasses = Lit.Directives.classMap({

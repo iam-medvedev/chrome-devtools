@@ -8540,6 +8540,11 @@ export declare namespace Network {
          * Security details for the request.
          */
         securityDetails?: SecurityDetails;
+        /**
+         * Indicates whether the request was sent through IP Protection proxies. If
+         * set to true, the request used the IP Protection privacy feature.
+         */
+        isIpProtectionUsed?: boolean;
     }
     /**
      * WebSocket request data.

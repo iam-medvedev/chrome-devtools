@@ -56,6 +56,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
         isContainer: boolean;
         hasScroll: boolean;
     } | null>;
+    getEnvironmentVariales(): Promise<Record<string, string>>;
     getBackgroundColors(nodeId: Protocol.DOM.NodeId): Promise<ContrastInfo | null>;
     getPlatformFonts(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.PlatformFontUsage[] | null>;
     allStyleSheets(): CSSStyleSheetHeader[];

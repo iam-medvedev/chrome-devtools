@@ -23,6 +23,7 @@ export declare class TraceLoader {
      *
      **/
     static fixtureContents(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<Trace.Types.File.Contents>;
+    static traceFile(context: Mocha.Context | Mocha.Suite | null, name: string): Promise<Trace.Types.File.TraceFile>;
     /**
      * Load an array of raw events from the trace file.
      **/

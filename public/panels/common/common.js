@@ -1,12 +1,109 @@
 // gen/front_end/panels/common/common.prebundle.js
+import * as Host2 from "./../../core/host/host.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
+
+// gen/front_end/panels/common/common.css.js
+var common_css_default = `/*
+ * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.type-to-allow-dialog {
+  width: 100%;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    font: var(--sys-typescale-body2-medium);
+    margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) var(--sys-size-8);
+  }
+
+  .title {
+    padding-top: var(--sys-size-3);
+  }
+
+  .dialog-close-button {
+    margin: var(--sys-size-3);
+    z-index: 1;
+  }
+
+  .message,
+  .text-input {
+    margin: 0 var(--sys-size-8);
+  }
+
+  .text-input {
+    margin-top: var(--sys-size-5);
+  }
+
+  .button {
+    text-align: right;
+    margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8) var(--sys-size-8);
+    gap: var(--sys-size-5);
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+  }
+
+  .button button {
+    min-width: var(--sys-size-19);
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./common.css")} */`;
+
+// gen/front_end/panels/common/AiCodeCompletionTeaser.js
+import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
+import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
+import { html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
+import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/common/aiCodeCompletionTeaser.css.js
+var aiCodeCompletionTeaser_css_default = `/*
+ * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.ai-code-completion-teaser {
+    pointer-events: all;
+    align-items: center;
+    font-style: italic;
+
+    .ai-code-completion-teaser-dismiss {
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .ai-code-completion-teaser-action {
+        display: inline-flex;
+        gap: var(--sys-size-2);
+
+        span {
+            border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
+            border-radius: var(--sys-shape-corner-extra-small);
+            padding: 0 var(--sys-size-3);
+        }
+    }
+}
+
+/*# sourceURL=${import.meta.resolve("./aiCodeCompletionTeaser.css")} */`;
+
+// gen/front_end/panels/common/FreDialog.js
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 
-// gen/front_end/panels/common/common.css.js
-var common_css_default = `/*
+// gen/front_end/panels/common/freDialog.css.js
+var freDialog_css_default = `/*
  * Copyright 2025 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
@@ -95,52 +192,10 @@ var common_css_default = `/*
   }
 }
 
-.type-to-allow-dialog {
-  width: 100%;
+/*# sourceURL=${import.meta.resolve("./freDialog.css")} */`;
 
-  .header {
-    display: flex;
-    justify-content: space-between;
-    font: var(--sys-typescale-body2-medium);
-    margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) var(--sys-size-8);
-  }
-
-  .title {
-    padding-top: var(--sys-size-3);
-  }
-
-  .dialog-close-button {
-    margin: var(--sys-size-3);
-    z-index: 1;
-  }
-
-  .message,
-  .text-input {
-    margin: 0 var(--sys-size-8);
-  }
-
-  .text-input {
-    margin-top: var(--sys-size-5);
-  }
-
-  .button {
-    text-align: right;
-    margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8) var(--sys-size-8);
-    gap: var(--sys-size-5);
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-start;
-  }
-
-  .button button {
-    min-width: var(--sys-size-19);
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./common.css")} */`;
-
-// gen/front_end/panels/common/common.prebundle.js
-var { html } = Lit;
+// gen/front_end/panels/common/FreDialog.js
+var { html, Directives: { ifDefined } } = Lit;
 var UIStrings = {
   /**
    *@description Header text for the feature reminder dialog.
@@ -155,18 +210,14 @@ var UIStrings = {
    */
   cancel: "Cancel",
   /**
-   *@description Text for the cancel button in the "type to allow" dialog.
-   */
-  allow: "Allow",
-  /**
    *@description Text for the got it button in the feature reminder dialog.
    */
   gotIt: "Got it"
 };
-var str_ = i18n.i18n.registerUIStrings("panels/common/common.ts", UIStrings);
+var str_ = i18n.i18n.registerUIStrings("panels/common/FreDialog.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var FreDialog = class {
-  static show({ header, reminderItems, onLearnMoreClick, ariaLabel, learnMoreButtonTitle }) {
+  static show({ header, reminderItems, onLearnMoreClick, ariaLabel, learnMoreButtonTitle, learnMoreButtonAriaLabel }) {
     const dialog = new UI.Dialog.Dialog();
     if (ariaLabel) {
       dialog.setAriaLabel(ariaLabel);
@@ -175,7 +226,7 @@ var FreDialog = class {
     Lit.render(html`
       <div class="fre-disclaimer">
         <style>
-          ${common_css_default}
+          ${freDialog_css_default}
         </style>
         <header>
           <div class="header-icon-container">
@@ -198,7 +249,8 @@ var FreDialog = class {
           <devtools-button
             @click=${onLearnMoreClick}
             .jslogContext=${"fre-disclaimer.learn-more"}
-            .variant=${"outlined"}>
+            .variant=${"outlined"}
+            aria-label=${ifDefined(learnMoreButtonAriaLabel)}>
             ${learnMoreButtonTitle ?? i18nString(UIStrings.learnMore)}
           </devtools-button>
           <div class="right-buttons">
@@ -242,16 +294,226 @@ var FreDialog = class {
   constructor() {
   }
 };
+
+// gen/front_end/panels/common/AiCodeCompletionTeaser.js
+var UIStringsNotTranslate = {
+  /**
+   *@description Text for `ctrl` key.
+   */
+  ctrl: "ctrl",
+  /**
+   *@description Text for `cmd` key.
+   */
+  cmd: "cmd",
+  /**
+   *@description Text for `i` key.
+   */
+  i: "i",
+  /**
+   *@description Text for dismissing teaser.
+   */
+  dontShowAgain: "Don't show again",
+  /**
+   *@description Text for teaser to turn on code suggestions.
+   */
+  toTurnOnCodeSuggestions: "to turn on code suggestions.",
+  /**
+   *@description Text for snackbar notification on dismissing the teaser.
+   */
+  turnOnCodeSuggestionsAtAnyTimeInSettings: "Turn on code suggestions at any time in Settings",
+  /**
+   *@description Text for snackbar action button to manage settings.
+   */
+  manage: "Manage",
+  /**
+   *@description The footer disclaimer that links to more information
+   * about the AI feature.
+   */
+  learnMore: "Learn more about AI code completion",
+  /**
+   *@description Header text for the AI-powered suggestions disclaimer dialog.
+   */
+  freDisclaimerHeader: "Code faster with AI-powered suggestions",
+  /**
+   *@description First disclaimer item text for the fre dialog.
+   */
+  freDisclaimerTextAiWontAlwaysGetItRight: "This feature uses AI and won\u2019t always get it right",
+  /**
+   *@description Second disclaimer item text for the fre dialog.
+   */
+  freDisclaimerTextPrivacy: "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.",
+  /**
+   *@description Second disclaimer item text for the fre dialog when enterprise logging is off.
+   */
+  freDisclaimerTextPrivacyNoLogging: "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
+  /**
+   *@description Third disclaimer item text for the fre dialog.
+   */
+  freDisclaimerTextUseWithCaution: "Use generated code snippets with caution"
+};
+var lockedString = i18n3.i18n.lockedString;
+var CODE_SNIPPET_WARNING_URL = "https://support.google.com/legal/answer/13505487";
+var DEFAULT_VIEW = (input, _output, target) => {
+  if (input.aidaAvailability !== "available") {
+    render2(nothing, target, { host: input });
+    return;
+  }
+  const cmdOrCtrl = Host.Platform.isMac() ? lockedString(UIStringsNotTranslate.cmd) : lockedString(UIStringsNotTranslate.ctrl);
+  render2(html2`
+          <style>${aiCodeCompletionTeaser_css_default}</style>
+          <div class="ai-code-completion-teaser">
+            <span class="ai-code-completion-teaser-action">
+              <span>${cmdOrCtrl}</span>
+              <span>${lockedString(UIStringsNotTranslate.i)}</span>
+            </span>
+            </span>&nbsp;${lockedString(UIStringsNotTranslate.toTurnOnCodeSuggestions)}&nbsp;
+            <span role="button" class="ai-code-completion-teaser-dismiss" @click=${input.onDismiss}
+              jslog=${VisualLogging.action("ai-code-completion-teaser.dismiss").track({ click: true })}>
+                ${lockedString(UIStringsNotTranslate.dontShowAgain)}
+            </span>
+          </div>
+        `, target, { host: input });
+};
+var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
+  #view;
+  #aidaAvailability = "no-account-email";
+  #boundOnAidaAvailabilityChange;
+  // Whether the user completed first run experience dialog or not.
+  #aiCodeCompletionFreCompletedSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-fre-completed", false);
+  // Whether the user dismissed the teaser or not.
+  #aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-teaser-dismissed", false);
+  #noLogging;
+  // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
+  constructor(view) {
+    super();
+    this.#view = view ?? DEFAULT_VIEW;
+    this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
+    this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    this.requestUpdate();
+  }
+  #showReminderSnackbar() {
+    Snackbars.Snackbar.Snackbar.show({
+      message: lockedString(UIStringsNotTranslate.turnOnCodeSuggestionsAtAnyTimeInSettings),
+      actionProperties: {
+        label: lockedString(UIStringsNotTranslate.manage),
+        onClick: () => {
+          void UI2.ViewManager.ViewManager.instance().showView("chrome-ai");
+        }
+      },
+      closable: true
+    });
+  }
+  async #onAidaAvailabilityChange() {
+    const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+    if (currentAidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = currentAidaAvailability;
+      this.requestUpdate();
+    }
+  }
+  #onKeyDown = async (event) => {
+    const keyboardEvent = event;
+    if (UI2.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent)) {
+      if (keyboardEvent.key === "i") {
+        keyboardEvent.consume(true);
+        await this.onAction(event);
+        void VisualLogging.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.fre");
+      } else if (keyboardEvent.key === "x") {
+        keyboardEvent.consume(true);
+        this.onDismiss(event);
+        void VisualLogging.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.dismiss");
+      }
+    }
+  };
+  onAction = async (event) => {
+    event.preventDefault();
+    const result = await FreDialog.show({
+      header: { iconName: "smart-assistant", text: lockedString(UIStringsNotTranslate.freDisclaimerHeader) },
+      reminderItems: [
+        {
+          iconName: "psychiatry",
+          content: lockedString(UIStringsNotTranslate.freDisclaimerTextAiWontAlwaysGetItRight)
+        },
+        {
+          iconName: "google",
+          content: this.#noLogging ? lockedString(UIStringsNotTranslate.freDisclaimerTextPrivacyNoLogging) : lockedString(UIStringsNotTranslate.freDisclaimerTextPrivacy)
+        },
+        {
+          iconName: "warning",
+          // clang-format off
+          content: html2`<x-link
+            href=${CODE_SNIPPET_WARNING_URL}
+            class="link devtools-link"
+            jslog=${VisualLogging.link("code-snippets-explainer.ai-code-completion-teaser").track({
+            click: true
+          })}
+          >${lockedString(UIStringsNotTranslate.freDisclaimerTextUseWithCaution)}</x-link>`
+          // clang-format on
+        }
+      ],
+      onLearnMoreClick: () => {
+        void UI2.ViewManager.ViewManager.instance().showView("chrome-ai");
+      },
+      ariaLabel: lockedString(UIStringsNotTranslate.freDisclaimerHeader),
+      learnMoreButtonAriaLabel: lockedString(UIStringsNotTranslate.learnMore)
+    });
+    if (result) {
+      this.#aiCodeCompletionFreCompletedSetting.set(true);
+    }
+    this.requestUpdate();
+  };
+  onDismiss = (event) => {
+    event.preventDefault();
+    this.#aiCodeCompletionTeaserDismissedSetting.set(true);
+    this.#showReminderSnackbar();
+    this.detach();
+  };
+  performUpdate() {
+    if (this.#aiCodeCompletionFreCompletedSetting.get() || this.#aiCodeCompletionTeaserDismissedSetting.get()) {
+      this.detach();
+      return;
+    }
+    const output = {};
+    this.#view({
+      aidaAvailability: this.#aidaAvailability,
+      onAction: this.onAction,
+      onDismiss: this.onDismiss
+    }, output, this.contentElement);
+  }
+  wasShown() {
+    super.wasShown();
+    document.body.addEventListener("keydown", this.#onKeyDown);
+    Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
+    void this.#onAidaAvailabilityChange();
+  }
+  willHide() {
+    document.body.removeEventListener("keydown", this.#onKeyDown);
+    Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
+  }
+};
+
+// gen/front_end/panels/common/common.prebundle.js
+var UIStrings2 = {
+  /**
+   *@description Text for the cancel button in the dialog.
+   */
+  cancel: "Cancel",
+  /**
+   *@description Text for the allow button in the "type to allow" dialog.
+   */
+  allow: "Allow"
+};
+var str_2 = i18n5.i18n.registerUIStrings("panels/common/common.ts", UIStrings2);
+var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_2);
 var TypeToAllowDialog = class {
   static async show(options) {
-    const dialog = new UI.Dialog.Dialog(options.jslogContext.dialog);
-    dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
+    const dialog = new UI3.Dialog.Dialog(options.jslogContext.dialog);
+    dialog.setMaxContentSize(new UI3.Geometry.Size(504, 340));
     dialog.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
     dialog.setDimmed(true);
-    const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: common_css_default });
+    const shadowRoot = UI3.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: common_css_default });
     const content = shadowRoot.createChild("div", "type-to-allow-dialog");
     const result = await new Promise((resolve) => {
       const header = content.createChild("div", "header");
@@ -268,12 +530,12 @@ var TypeToAllowDialog = class {
         /* Buttons.Button.Size.SMALL */
       );
       content.createChild("div", "message").textContent = options.message;
-      const input = UI.UIUtils.createInput("text-input", "text", options.jslogContext.input);
+      const input = UI3.UIUtils.createInput("text-input", "text", options.jslogContext.input);
       input.placeholder = options.inputPlaceholder;
       content.appendChild(input);
       const buttonsBar = content.createChild("div", "button");
-      const cancelButton = UI.UIUtils.createTextButton(i18nString(UIStrings.cancel), () => resolve(false), { jslogContext: "cancel" });
-      const allowButton = UI.UIUtils.createTextButton(i18nString(UIStrings.allow), () => {
+      const cancelButton = UI3.UIUtils.createTextButton(i18nString2(UIStrings2.cancel), () => resolve(false), { jslogContext: "cancel" });
+      const allowButton = UI3.UIUtils.createTextButton(i18nString2(UIStrings2.allow), () => {
         resolve(input.value === options.typePhrase);
       }, {
         jslogContext: "confirm",
@@ -293,13 +555,14 @@ var TypeToAllowDialog = class {
         resolve(false);
       });
       dialog.show();
-      Host.userMetrics.actionTaken(Host.UserMetrics.Action.SelfXssWarningDialogShown);
+      Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.SelfXssWarningDialogShown);
     });
     dialog.hide();
     return result;
   }
 };
 export {
+  AiCodeCompletionTeaser,
   FreDialog,
   TypeToAllowDialog
 };

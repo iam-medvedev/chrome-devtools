@@ -35,6 +35,9 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
+export function isDuplicatedJavaScript(model) {
+    return model.insightKey === "DuplicatedJavaScript" /* InsightKeys.DUPLICATE_JAVASCRIPT */;
+}
 export function generateInsight(parsedTrace, context) {
     const scripts = parsedTrace.Scripts.scripts.filter(script => {
         if (script.frame !== context.frameId) {

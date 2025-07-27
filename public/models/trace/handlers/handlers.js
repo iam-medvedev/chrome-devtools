@@ -2813,14 +2813,20 @@ var lastInvalidationEventForFrame = /* @__PURE__ */ new Map();
 var lastUpdateLayoutTreeByFrame = /* @__PURE__ */ new Map();
 var eventToInitiatorMap2 = /* @__PURE__ */ new Map();
 var initiatorToEventsMap = /* @__PURE__ */ new Map();
+var requestAnimationFrameEventsById = /* @__PURE__ */ new Map();
+var timerInstallEventsById = /* @__PURE__ */ new Map();
+var requestIdleCallbackEventsById = /* @__PURE__ */ new Map();
 var webSocketCreateEventsById = /* @__PURE__ */ new Map();
 var schedulePostTaskCallbackEventsById = /* @__PURE__ */ new Map();
 function reset17() {
   lastScheduleStyleRecalcByFrame.clear();
   lastInvalidationEventForFrame.clear();
   lastUpdateLayoutTreeByFrame.clear();
+  timerInstallEventsById.clear();
   eventToInitiatorMap2.clear();
   initiatorToEventsMap.clear();
+  requestAnimationFrameEventsById.clear();
+  requestIdleCallbackEventsById.clear();
   webSocketCreateEventsById.clear();
   schedulePostTaskCallbackEventsById.clear();
 }
@@ -2866,6 +2872,23 @@ function handleEvent17(event) {
       });
     }
     lastInvalidationEventForFrame.delete(event.args.beginData.frame);
+  } else if (Types18.Events.isTimerInstall(event)) {
+    timerInstallEventsById.set(event.args.data.timerId, event);
+  } else if (Types18.Events.isTimerFire(event)) {
+    const matchingInstall = timerInstallEventsById.get(event.args.data.timerId);
+    if (matchingInstall) {
+      storeInitiator({ event, initiator: matchingInstall });
+    }
+  } else if (Types18.Events.isRequestIdleCallback(event)) {
+    requestIdleCallbackEventsById.set(event.args.data.id, event);
+  } else if (Types18.Events.isFireIdleCallback(event)) {
+    const matchingRequestEvent = requestIdleCallbackEventsById.get(event.args.data.id);
+    if (matchingRequestEvent) {
+      storeInitiator({
+        event,
+        initiator: matchingRequestEvent
+      });
+    }
   } else if (Types18.Events.isWebSocketCreate(event)) {
     webSocketCreateEventsById.set(event.args.data.identifier, event);
   } else if (Types18.Events.isWebSocketInfo(event) || Types18.Events.isWebSocketTransfer(event)) {

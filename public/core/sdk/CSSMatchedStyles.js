@@ -5,7 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, EnvFunctionMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframeRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -214,6 +214,7 @@ export class CSSMatchedStyles {
     #functionRules;
     #functionRuleMap = new Map();
     #fontPaletteValuesRule;
+    #environmentVariables = {};
     static async create(payload) {
         const cssMatchedStyles = new CSSMatchedStyles(payload);
         await cssMatchedStyles.init(payload);
@@ -241,6 +242,7 @@ export class CSSMatchedStyles {
         for (const inheritedResult of inheritedPayload) {
             inheritedResult.matchedCSSRules = cleanUserAgentPayload(inheritedResult.matchedCSSRules);
         }
+        this.#environmentVariables = await this.cssModel().getEnvironmentVariales();
         this.#mainDOMCascade = await this.buildMainCascade(inlinePayload, attributesPayload, matchedPayload, inheritedPayload, animationStylesPayload, transitionsStylePayload, inheritedAnimatedPayload);
         [this.#pseudoDOMCascades, this.#customHighlightPseudoDOMCascades] =
             this.buildPseudoCascades(pseudoPayload, inheritedPseudoPayload);
@@ -362,7 +364,7 @@ export class CSSMatchedStyles {
             parentNode = await traverseParentInFlatTree(parentNode);
             nodeCascades.push(new NodeCascade(this, inheritedStyles, true /* #isInherited */));
         }
-        return new DOMInheritanceCascade(nodeCascades, this.#registeredProperties);
+        return new DOMInheritanceCascade(this, nodeCascades, this.#registeredProperties);
     }
     /**
      * Pseudo rule matches received via the inspector protocol are grouped by pseudo type.
@@ -472,10 +474,10 @@ export class CSSMatchedStyles {
         // Now that we've built the arrays of NodeCascades for each pseudo type, convert them into
         // DOMInheritanceCascades.
         for (const [pseudoType, nodeCascade] of pseudoCascades.entries()) {
-            pseudoInheritanceCascades.set(pseudoType, new DOMInheritanceCascade(nodeCascade, this.#registeredProperties));
+            pseudoInheritanceCascades.set(pseudoType, new DOMInheritanceCascade(this, nodeCascade, this.#registeredProperties));
         }
         for (const [highlightName, nodeCascade] of customHighlightPseudoCascades.entries()) {
-            customHighlightPseudoInheritanceCascades.set(highlightName, new DOMInheritanceCascade(nodeCascade, this.#registeredProperties));
+            customHighlightPseudoInheritanceCascades.set(highlightName, new DOMInheritanceCascade(this, nodeCascade, this.#registeredProperties));
         }
         return [pseudoInheritanceCascades, customHighlightPseudoInheritanceCascades];
     }
@@ -699,7 +701,11 @@ export class CSSMatchedStyles {
             new AutoBaseMatcher(),
             new BinOpMatcher(),
             new RelativeColorChannelMatcher(),
+            new EnvFunctionMatcher(this),
         ];
+    }
+    environmentVariable(name) {
+        return this.#environmentVariables[name];
     }
 }
 class NodeCascade {
@@ -858,8 +864,10 @@ class DOMInheritanceCascade {
     #initialized = false;
     #nodeCascades;
     #registeredProperties;
-    constructor(nodeCascades, registeredProperties) {
+    #matchedStyles;
+    constructor(matchedStyles, nodeCascades, registeredProperties) {
         this.#nodeCascades = nodeCascades;
+        this.#matchedStyles = matchedStyles;
         this.#registeredProperties = registeredProperties;
         for (const nodeCascade of nodeCascades) {
             for (const style of nodeCascade.styles) {
@@ -1014,7 +1022,8 @@ class DOMInheritanceCascade {
         // corresponding SCC, which is the node in that component with the smallest discovery time. This is determined by
         // bubbling up the minimum discovery time whenever we close a cycle.
         const record = sccRecord.add(nodeCascade, variableName);
-        const matching = PropertyParser.BottomUpTreeMatching.walk(ast, [new BaseVariableMatcher(match => {
+        const matching = PropertyParser.BottomUpTreeMatching.walk(ast, [
+            new BaseVariableMatcher(match => {
                 const parentStyle = definedValue.declaration.style;
                 const nodeCascade = this.#styleToNodeCascade.get(parentStyle);
                 if (!nodeCascade) {
@@ -1050,7 +1059,9 @@ class DOMInheritanceCascade {
                     return null;
                 }
                 return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
-            })]);
+            }),
+            new EnvFunctionMatcher(this.#matchedStyles)
+        ]);
         const decl = PropertyParser.ASTUtils.siblings(PropertyParser.ASTUtils.declValue(matching.ast.tree));
         const computedText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
         if (record.isRootEntry) {

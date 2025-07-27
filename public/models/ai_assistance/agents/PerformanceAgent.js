@@ -88,7 +88,7 @@ Additionally, you may also be asked basic questions such as "What is LCP?". Ensu
  *
  * Check token length in https://aistudio.google.com/
  */
-const callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
+export const callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
 This tree originates from the root task associated with the selected call frame.
@@ -149,21 +149,61 @@ The 'calculatePosition' and 'applyStyles' child functions consumed the remaining
 The 'calculatePosition' function, taking 80ms, is a potential bottleneck.
 Consider optimizing the position calculation logic or reducing the frequency of calls to improve animation performance.
 `;
+// Network requests format description that is sent to the model as a fact.
+const networkDataFormatDescription = `The format is as follows:
+    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
+
+    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
+    Timings (all in milliseconds, relative to navigation start):
+    - \`queuedTime\`: When the request was queued.
+    - \`requestSentTime\`: When the request was sent.
+    - \`downloadCompleteTime\`: When the download completed.
+    - \`processingCompleteTime\`: When main thread processing finished.
+    Durations (all in milliseconds):
+    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
+    - \`downloadDuration\`: Time spent actively downloading the resource.
+    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
+    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
+    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
+    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
+    - \`initialPriority\`: The initial network request priority.
+    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
+    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
+    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
+    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
+    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
+    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
+    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
+    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
+    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+`;
+const mainThreadActivityFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
+  The format of each callframe is:
+
+    'id;name;duration;selfTime;urlIndex;childRange;[S]'
+
+  The fields are:
+
+  * id: A unique numerical identifier for the call frame.
+  * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
+  * duration: The total execution time of the call frame, including its children.
+  * selfTime: The time spent directly within the call frame, excluding its children's execution.
+  * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
+  * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+  * S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`;
 function serializeFocus(focus) {
     if (focus.data.type === 'call-tree') {
         return focus.data.callTree.serialize();
     }
     if (focus.data.type === 'insight') {
-        // TODO(crbug.com/425269729): can likely remove ActiveInsight class.
-        const activeInsight = new TimelineUtils.InsightAIContext.ActiveInsight(focus.data.insight, focus.data.insightSetBounds, focus.data.parsedTrace);
-        const formatter = new PerformanceInsightFormatter(activeInsight);
+        const formatter = new PerformanceInsightFormatter(focus.data.parsedTrace, focus.data.insight);
         return formatter.formatInsight();
     }
     Platform.assertNever(focus.data, 'Unknown agent focus');
 }
 export class PerformanceTraceContext extends ConversationContext {
-    static fromInsight(insight) {
-        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(insight));
+    static fromInsight(parsedTrace, insight, insightSetBounds) {
+        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insightSetBounds));
     }
     static fromCallTree(callTree) {
         return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromCallTree(callTree));
@@ -248,7 +288,10 @@ export class PerformanceTraceContext extends ConversationContext {
             case 'DOMSize':
                 return [{ title: 'How can I reduce the size of my DOM?' }];
             case 'DuplicatedJavaScript':
-                return [{ title: 'How do I deduplicate the identified scripts in my bundle?' }];
+                return [
+                    { title: 'How do I deduplicate the identified scripts in my bundle?' },
+                    { title: 'Which duplicated JavaScript modules are the most problematic?' }
+                ];
             case 'FontDisplay':
                 return [
                     { title: 'How can I update my CSS to avoid layout shifts caused by incorrect `font-display` properties?' }
@@ -293,7 +336,7 @@ export class PerformanceTraceContext extends ConversationContext {
                 return [{ title: 'How do I make sure my page is optimized for mobile viewing?' }];
             case 'ModernHTTP':
                 return [
-                    { title: 'Is my site being served using the recommended HTTP best practices?' },
+                    { title: 'Is my site using the best HTTP practices?' },
                     { title: 'Which resources are not using a modern HTTP protocol?' },
                 ];
             case 'LegacyJavaScript':
@@ -330,6 +373,12 @@ export class PerformanceAgent extends AiAgent {
      * make sure it isn't mistakenly duplicated in the request.
      */
     #functionCallCache = new Map();
+    /*
+    * Since don't know for sure if the model will request the main thread or network requests information,
+    * add the formats description to facts once the main thread activity or network requests need to be sent.
+    */
+    #mainThreadActivityDescriptionFact = { text: mainThreadActivityFormatDescription, metadata: { source: 'devtools' } };
+    #networkDataDescriptionFact = { text: networkDataFormatDescription, metadata: { source: 'devtools' } };
     get preamble() {
         if (this.#conversationType === "drjones-performance" /* ConversationType.PERFORMANCE */) {
             return callTreePreamble;
@@ -506,6 +555,7 @@ export class PerformanceAgent extends AiAgent {
                 const cacheForInsight = this.#functionCallCache.get(insight) ?? {};
                 cacheForInsight.getNetworkActivitySummary = summaryFact;
                 this.#functionCallCache.set(insight, cacheForInsight);
+                this.addFact(this.#networkDataDescriptionFact);
                 return { result: { requests: formatted } };
             },
         });
@@ -546,26 +596,12 @@ export class PerformanceAgent extends AiAgent {
                         error: 'getNetworkRequestDetail response is too large. Try investigating using other functions',
                     };
                 }
+                this.addFact(this.#networkDataDescriptionFact);
                 return { result: { request: formatted } };
             },
         });
         this.declareFunction('getMainThreadActivity', {
-            description: `Returns the main thread activity for the selected insight.
-  
-  The tree is represented as a call frame with a root task and a series of children.
-  The format of each callframe is:
-  
-    'id;name;duration;selfTime;urlIndex;childRange;[S]'
-  
-  The fields are:
-  
-  * id: A unique numerical identifier for the call frame.
-  * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-  * duration: The total execution time of the call frame, including its children.
-  * selfTime: The time spent directly within the call frame, excluding its children's execution.
-  * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-  * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-  * S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`,
+            description: 'Returns the main thread activity for the selected insight.',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',
@@ -599,6 +635,7 @@ export class PerformanceAgent extends AiAgent {
                 const cacheForInsight = this.#functionCallCache.get(insight) ?? {};
                 cacheForInsight.getMainThreadActivity = activityFact;
                 this.#functionCallCache.set(insight, cacheForInsight);
+                this.addFact(this.#mainThreadActivityDescriptionFact);
                 return { result: { activity } };
             },
         });

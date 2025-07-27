@@ -683,6 +683,7 @@ export interface EventTypes {
 }
 export interface Group {
     name: Common.UIString.LocalizedString;
+    subtitle?: Common.UIString.LocalizedString;
     startLevel: number;
     expanded?: boolean;
     hidden?: boolean;

@@ -267,9 +267,8 @@ export class StylePropertiesSection {
                 this.editable = false;
                 // Check this is a real CSSRule, not a bogus object coming from BlankStylePropertiesSection.
             }
-            else if (rule.styleSheetId) {
-                const header = rule.cssModel().styleSheetHeaderForId(rule.styleSheetId);
-                this.navigable = header && !header.isAnonymousInlineStyleSheet();
+            else if (rule.header) {
+                this.navigable = !rule.header.isAnonymousInlineStyleSheet();
             }
         }
         this.selectorRefElement = document.createElement('div');
@@ -341,15 +340,15 @@ export class StylePropertiesSection {
             return document.createTextNode('');
         }
         const ruleLocation = StylePropertiesSection.getRuleLocationFromCSSRule(rule);
-        const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
+        const header = rule.header;
         function linkifyRuleLocation() {
             if (!rule) {
                 return null;
             }
-            if (ruleLocation && rule.styleSheetId && header &&
+            if (ruleLocation && header &&
                 (!header.isAnonymousInlineStyleSheet() ||
                     matchedStyles.cssModel().sourceMapManager().sourceMapForClient(header))) {
-                return StylePropertiesSection.linkifyRuleLocation(matchedStyles.cssModel(), linkifier, rule.styleSheetId, ruleLocation);
+                return StylePropertiesSection.linkifyRuleLocation(matchedStyles.cssModel(), linkifier, rule.header, ruleLocation);
             }
             return null;
         }
@@ -411,18 +410,17 @@ export class StylePropertiesSection {
             return;
         }
         const ruleLocation = this.getRuleLocationFromCSSRule(rule);
-        const header = rule.styleSheetId ? matchedStyles.cssModel().styleSheetHeaderForId(rule.styleSheetId) : null;
-        if (ruleLocation && rule.styleSheetId && header && !header.isAnonymousInlineStyleSheet()) {
-            const matchingSelectorLocation = this.getCSSSelectorLocation(matchedStyles.cssModel(), rule.styleSheetId, ruleLocation);
+        const header = rule.header;
+        if (ruleLocation && header && !header.isAnonymousInlineStyleSheet()) {
+            const matchingSelectorLocation = this.getCSSSelectorLocation(matchedStyles.cssModel(), rule.header, ruleLocation);
             this.revealSelectorSource(matchingSelectorLocation, true);
         }
     }
-    static linkifyRuleLocation(cssModel, linkifier, styleSheetId, ruleLocation) {
-        const matchingSelectorLocation = this.getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation);
+    static linkifyRuleLocation(cssModel, linkifier, styleSheetHeader, ruleLocation) {
+        const matchingSelectorLocation = this.getCSSSelectorLocation(cssModel, styleSheetHeader, ruleLocation);
         return linkifier.linkifyCSSLocation(matchingSelectorLocation);
     }
-    static getCSSSelectorLocation(cssModel, styleSheetId, ruleLocation) {
-        const styleSheetHeader = cssModel.styleSheetHeaderForId(styleSheetId);
+    static getCSSSelectorLocation(cssModel, styleSheetHeader, ruleLocation) {
         const lineNumber = styleSheetHeader.lineNumberInSource(ruleLocation.startLine);
         const columnNumber = styleSheetHeader.columnNumberInSource(ruleLocation.startLine, ruleLocation.startColumn);
         return new SDK.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
@@ -652,11 +650,11 @@ export class StylePropertiesSection {
     onNewRuleClick(event) {
         event.data.consume();
         const rule = this.styleInternal.parentRule;
-        if (!rule?.style.range || rule.styleSheetId === undefined) {
+        if (!rule?.style.range || !rule.header) {
             return;
         }
         const range = TextUtils.TextRange.TextRange.createFromLocation(rule.style.range.endLine, rule.style.range.endColumn + 1);
-        this.parentPane.addBlankSection(this, rule.styleSheetId, range);
+        this.parentPane.addBlankSection(this, rule.header, range);
     }
     styleSheetEdited(edit) {
         const rule = this.styleInternal.parentRule;
@@ -1235,10 +1233,10 @@ export class StylePropertiesSection {
             return;
         }
         const rule = this.styleInternal.parentRule;
-        if (rule?.styleSheetId === undefined) {
+        if (!rule?.header) {
             return;
         }
-        const header = cssModel.styleSheetHeaderForId(rule.styleSheetId);
+        const header = cssModel.styleSheetHeaderForId(rule.header.id);
         if (!header) {
             return;
         }
@@ -1390,16 +1388,16 @@ export class StylePropertiesSection {
 export class BlankStylePropertiesSection extends StylePropertiesSection {
     normal;
     ruleLocation;
-    styleSheetId;
-    constructor(stylesPane, matchedStyles, defaultSelectorText, styleSheetId, ruleLocation, insertAfterStyle, sectionIdx) {
+    styleSheetHeader;
+    constructor(stylesPane, matchedStyles, defaultSelectorText, styleSheetHeader, ruleLocation, insertAfterStyle, sectionIdx) {
         const cssModel = stylesPane.cssModel();
         const rule = SDK.CSSRule.CSSStyleRule.createDummyRule(cssModel, defaultSelectorText);
         super(stylesPane, matchedStyles, rule.style, sectionIdx, null, null);
         this.normal = false;
         this.ruleLocation = ruleLocation;
-        this.styleSheetId = styleSheetId;
+        this.styleSheetHeader = styleSheetHeader;
         this.selectorRefElement.removeChildren();
-        this.selectorRefElement.appendChild(StylePropertiesSection.linkifyRuleLocation(cssModel, this.parentPane.linkifier, styleSheetId, this.actualRuleLocation()));
+        this.selectorRefElement.appendChild(StylePropertiesSection.linkifyRuleLocation(cssModel, this.parentPane.linkifier, styleSheetHeader, this.actualRuleLocation()));
         if (insertAfterStyle?.parentRule && insertAfterStyle.parentRule instanceof SDK.CSSRule.CSSStyleRule) {
             this.createAncestorRules(insertAfterStyle.parentRule);
         }
@@ -1455,7 +1453,7 @@ export class BlankStylePropertiesSection extends StylePropertiesSection {
         const cssModel = this.parentPane.cssModel();
         const ruleText = this.rulePrefix() + newContent + ' {}';
         if (cssModel) {
-            void cssModel.addRule(this.styleSheetId, ruleText, this.ruleLocation).then(onRuleAdded.bind(this));
+            void cssModel.addRule(this.styleSheetHeader.id, ruleText, this.ruleLocation).then(onRuleAdded.bind(this));
         }
     }
     editingSelectorCancelled() {

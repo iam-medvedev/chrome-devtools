@@ -203,32 +203,16 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
             this.callFrameWarningsElement.classList.remove('hidden');
             UI.Tooltip.Tooltip.install(this.callFrameWarningsElement, Array.from(uniqueWarnings).join('\n'));
         }
-        let debuggerModel = details.debuggerModel;
-        let asyncStackTraceId = details.asyncStackTraceId;
-        let asyncStackTrace = details.asyncStackTrace;
         let previousStackTrace = details.callFrames;
-        for (let { maxAsyncStackChainDepth } = this; maxAsyncStackChainDepth > 0; --maxAsyncStackChainDepth) {
-            if (!asyncStackTrace) {
-                if (!asyncStackTraceId) {
-                    break;
-                }
-                if (asyncStackTraceId.debuggerId) {
-                    const dm = await SDK.DebuggerModel.DebuggerModel.modelForDebuggerId(asyncStackTraceId.debuggerId);
-                    if (!dm) {
-                        break;
-                    }
-                    debuggerModel = dm;
-                }
-                asyncStackTrace = await debuggerModel.fetchAsyncStackTrace(asyncStackTraceId);
-                if (!asyncStackTrace) {
-                    break;
-                }
-            }
+        let { maxAsyncStackChainDepth } = this;
+        let asyncStackTrace = null;
+        for await (asyncStackTrace of details.debuggerModel.iterateAsyncParents(details)) {
             const title = UI.UIUtils.asyncStackTraceLabel(asyncStackTrace.description, previousStackTrace);
-            items.push(...await Item.createItemsForAsyncStack(title, debuggerModel, asyncStackTrace.callFrames, this.locationPool, this.refreshItem.bind(this)));
+            items.push(...await Item.createItemsForAsyncStack(title, details.debuggerModel, asyncStackTrace.callFrames, this.locationPool, this.refreshItem.bind(this)));
             previousStackTrace = asyncStackTrace.callFrames;
-            asyncStackTraceId = asyncStackTrace.parentId;
-            asyncStackTrace = asyncStackTrace.parent;
+            if (--maxAsyncStackChainDepth <= 0) {
+                break;
+            }
         }
         this.showMoreMessageElement.classList.toggle('hidden', !asyncStackTrace);
         this.items.replaceAll(items);

@@ -1,4 +1,3 @@
-import type * as Protocol from '../../generated/protocol.js';
 import type * as Trace from '../../models/trace/trace.js';
 /**
  * Generates a JSON representation of an array of objects with the objects
@@ -10,7 +9,3 @@ export declare function arrayOfObjectsJsonGenerator(arrayOfObjects: readonly Tra
  * version with one trace event per line.
  */
 export declare function traceJsonGenerator(traceEvents: readonly Trace.Types.Events.Event[], metadata: Readonly<Trace.Types.File.MetaData> | null): IterableIterator<string>;
-/**
- * Generates a JSON representation of CPU profile.
- */
-export declare function cpuprofileJsonGenerator(cpuprofile: Protocol.Profiler.Profile): string;

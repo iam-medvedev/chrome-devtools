@@ -16,16 +16,12 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('core/sdk/Connections.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class MainConnection {
-    onMessage;
-    #onDisconnect;
-    #messageBuffer;
-    #messageSize;
+    onMessage = null;
+    #onDisconnect = null;
+    #messageBuffer = '';
+    #messageSize = 0;
     #eventListeners;
     constructor() {
-        this.onMessage = null;
-        this.#onDisconnect = null;
-        this.#messageBuffer = '';
-        this.#messageSize = 0;
         this.#eventListeners = [
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.DispatchMessage, this.dispatchMessage, this),
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.DispatchMessageChunk, this.dispatchMessageChunk, this),
@@ -72,11 +68,11 @@ export class MainConnection {
 }
 export class WebSocketConnection {
     #socket;
-    onMessage;
-    #onDisconnect;
+    onMessage = null;
+    #onDisconnect = null;
     #onWebSocketDisconnect;
-    #connected;
-    #messages;
+    #connected = false;
+    #messages = [];
     constructor(url, onWebSocketDisconnect) {
         this.#socket = new WebSocket(url);
         this.#socket.onerror = this.onError.bind(this);
@@ -87,11 +83,7 @@ export class WebSocketConnection {
             }
         };
         this.#socket.onclose = this.onClose.bind(this);
-        this.onMessage = null;
-        this.#onDisconnect = null;
         this.#onWebSocketDisconnect = onWebSocketDisconnect;
-        this.#connected = false;
-        this.#messages = [];
     }
     setOnMessage(onMessage) {
         this.onMessage = onMessage;
@@ -159,12 +151,8 @@ export class WebSocketConnection {
     }
 }
 export class StubConnection {
-    onMessage;
-    #onDisconnect;
-    constructor() {
-        this.onMessage = null;
-        this.#onDisconnect = null;
-    }
+    onMessage = null;
+    #onDisconnect = null;
     setOnMessage(onMessage) {
         this.onMessage = onMessage;
     }
@@ -196,13 +184,11 @@ export class StubConnection {
 export class ParallelConnection {
     #connection;
     #sessionId;
-    onMessage;
-    #onDisconnect;
+    onMessage = null;
+    #onDisconnect = null;
     constructor(connection, sessionId) {
         this.#connection = connection;
         this.#sessionId = sessionId;
-        this.onMessage = null;
-        this.#onDisconnect = null;
     }
     setOnMessage(onMessage) {
         this.onMessage = onMessage;

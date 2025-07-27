@@ -38,6 +38,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
             temperature: 0.5,
             model_id: 'test-model',
             inference_language: "JAVASCRIPT" /* Host.AidaClient.AidaInferenceLanguage.JAVASCRIPT */,
+            stop_sequences: ['\n'],
         });
     });
     it('dispatches a suggestion to the editor when AIDA returns one', async () => {

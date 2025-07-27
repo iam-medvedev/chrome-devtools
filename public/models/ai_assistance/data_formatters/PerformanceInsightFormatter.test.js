@@ -1,12 +1,10 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getFirstOrError, getInsightOrError, getInsightSetOrError } from '../../../testing/InsightHelpers.js';
+import { getFirstOrError, getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import { PerformanceInsightFormatter, TraceEventFormatter } from '../ai_assistance.js';
-const { ActiveInsight } = TimelineUtils.InsightAIContext;
 /**
  * Asserts two strings are equal, and logs the first differing line if not equal.
  */
@@ -31,9 +29,8 @@ describeWithEnvironment('PerformanceInsightFormatter', () => {
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             assert.isOk(insight.lcpRequest);
             const lcpRequestFormatted = TraceEventFormatter.networkRequests([insight.lcpRequest], parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
@@ -63,9 +60,8 @@ We can break this time down into the 4 phases that combine to make the LCP time:
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: LCP breakdown
 
@@ -91,9 +87,8 @@ We can break this time down into the 2 phases that combine to make the LCP time:
         const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'dpr.json.gz');
         assert.isOk(insights);
         const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-        const insightSet = getInsightSetOrError(insights, firstNav);
         const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
-        const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+        const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
         const output = formatter.formatInsight().split('Timings:')[0];
         const expected = `## Insight Title: LCP breakdown
 
@@ -112,9 +107,8 @@ The LCP element (IMG) is an image fetched from \`https://creativetouchrotherham.
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('RenderBlocking', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: Render blocking requests
 
@@ -133,9 +127,8 @@ There are no network requests that are render blocking.
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'render-blocking-requests.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('RenderBlocking', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: Render blocking requests
 
@@ -145,32 +138,6 @@ This insight identifies network requests that were render blocking. Render block
 ## Detailed analysis:
 Here is a list of the network requests that were render blocking on this page and their duration:
 
-The format is as follows:
-    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-    Timings (all in milliseconds, relative to navigation start):
-    - \`queuedTime\`: When the request was queued.
-    - \`requestSentTime\`: When the request was sent.
-    - \`downloadCompleteTime\`: When the download completed.
-    - \`processingCompleteTime\`: When main thread processing finished.
-    Durations (all in milliseconds):
-    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-    - \`downloadDuration\`: Time spent actively downloading the resource.
-    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-    - \`initialPriority\`: The initial network request priority.
-    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
 
     Network requests data:\n\n    \n\nallUrls = [0: https://code.jquery.com/jquery-3.7.1.js, 1: http://localhost:8000/, 2: http://localhost:8000/render-blocking-stylesheet.css, 3: http://localhost:8000/render-blocking-script.js]\n\n0;581.40 ms;584.53 ms;1,942.70 ms;1,944.05 ms;1,362.65 ms;775.53 ms;1.35 ms;200;application/javascript;High;High;High;t;h2;f;1;[];[content-encoding: gzip|etag: <redacted>|age: 3975412|x-cache: <redacted>|date: Fri, 07 Mar 2025 15:02:28 GMT|content-type: application/javascript; charset=utf-8|vary: Accept-Encoding|x-cache-hits: <redacted>|last-modified: Fri, 18 Oct 1991 12:00:00 GMT|x-served-by: <redacted>|cache-control: public, max-age=31536000, stale-while-revalidate=604800|x-timer: <redacted>|via: 1.1 varnish, 1.1 varnish|accept-ranges: bytes|access-control-allow-origin: *|content-length: <redacted>|server: nginx]\n2;581.60 ms;583.11 ms;1,192.93 ms;1,193.16 ms;611.56 ms;0.19 ms;0.23 ms;200;text/css;VeryHigh;VeryHigh;VeryHigh;t;http/1.0;f;1;[];[Content-Length: <redacted>|Date: Fri, 07 Mar 2025 15:02:28 GMT|Content-type: text/css|Last-Modified: Fri, 07 Mar 2025 14:58:07 GMT|Server: SimpleHTTP/0.6 Python/3.9.6]\n3;581.56 ms;583.25 ms;1,176.60 ms;1,177.86 ms;596.30 ms;0.36 ms;1.27 ms;200;text/javascript;High;High;High;t;http/1.0;f;1;[];[Content-Length: <redacted>|Date: Fri, 07 Mar 2025 15:02:28 GMT|Content-type: text/javascript|Last-Modified: Fri, 07 Mar 2025 15:00:28 GMT|Server: SimpleHTTP/0.6 Python/3.9.6]\n\n## External resources:\n- https://web.dev/articles/lcp\n- https://web.dev/articles/optimize-lcp`;
             assertStringEquals(output, expected);
@@ -181,9 +148,8 @@ The format is as follows:
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('LCPDiscovery', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             assert.isOk(insight.lcpRequest);
             const lcpRequestFormatted = TraceEventFormatter.networkRequests([insight.lcpRequest], parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
@@ -218,9 +184,8 @@ The result of the checks for this insight are:
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'bad-document-request-latency.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('DocumentLatency', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const request = insight.data?.documentRequest;
             assert.isOk(request);
@@ -256,9 +221,8 @@ The result of the checks for this insight are:
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'layout-shifts-root-causes.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('CLSCulprits', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: Layout shift culprits
 
@@ -308,9 +272,8 @@ Layout shifts in this cluster:
         it('serializes the correct details', async function () {
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
             assert.isOk(insights);
-            const insightSet = getInsightSetOrError(insights);
             const insight = getInsightOrError('INPBreakdown', insights);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: INP breakdown
 
@@ -347,9 +310,8 @@ The longest interaction on the page was a \`click\` which had a total duration o
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('ModernHTTP', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: Modern HTTP
 
@@ -374,9 +336,8 @@ There are no requests that were served over a legacy HTTP protocol.
             const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'http1.1.json.gz');
             assert.isOk(insights);
             const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const insight = getInsightOrError('ModernHTTP', insights, firstNav);
-            const formatter = new PerformanceInsightFormatter(new ActiveInsight(insight, insightSet.bounds, parsedTrace));
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
             const output = formatter.formatInsight();
             const expected = `## Insight Title: Modern HTTP
 
@@ -392,32 +353,6 @@ To pass this insight, ensure your server supports and prioritizes a modern HTTP 
 
 ## Detailed analysis:
 Here is a list of the network requests that were served over a legacy HTTP protocol:
-The format is as follows:
-    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-    Timings (all in milliseconds, relative to navigation start):
-    - \`queuedTime\`: When the request was queued.
-    - \`requestSentTime\`: When the request was sent.
-    - \`downloadCompleteTime\`: When the download completed.
-    - \`processingCompleteTime\`: When main thread processing finished.
-    Durations (all in milliseconds):
-    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-    - \`downloadDuration\`: Time spent actively downloading the resource.
-    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-    - \`initialPriority\`: The initial network request priority.
-    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
 
     Network requests data:
 
@@ -598,6 +533,90 @@ Response headers
             assert.strictEqual(fields[16], '0', 'initiatorUrlIndex');
             assert.strictEqual(fields[17], '[]', 'redirects');
             assert.strictEqual(fields[18], '[date: Thu, 07 Mar 2024 21:17:02 GMT|content-encoding: gzip|x-content-type-options: nosniff|last-modified: Thu, 07 Mar 2024 21:17:02 GMT|server: ESF|cross-origin-opener-policy: <redacted>|x-frame-options: SAMEORIGIN|content-type: text/css; charset=utf-8|access-control-allow-origin: *|cache-control: private, max-age=86400, stale-while-revalidate=604800|cross-origin-resource-policy: <redacted>|timing-allow-origin: *|link: <https://fonts.gstatic.com>; rel=preconnect; crossorigin|x-xss-protection: 0|expires: Thu, 07 Mar 2024 21:17:02 GMT]', 'headers');
+        });
+    });
+    describe('Duplicated javascript', () => {
+        it('serializes the correct details', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'dupe-js.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('DuplicatedJavaScript', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Duplicated JavaScript
+
+## Insight Summary:
+This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
+  This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.
+
+## Detailed analysis:
+Total wasted bytes: 615821 bytes.
+
+Duplication grouped by Node modules: - Source: node_modules/filestack-js - Duplicated bytes: 345779 bytes
+- Source: node_modules/@headlessui/react - Duplicated bytes: 46023 bytes
+- Source: node_modules/react-query - Duplicated bytes: 32976 bytes
+- Source: node_modules/@floating-ui/react-dom-interactions - Duplicated bytes: 26253 bytes
+- Source: node_modules/yup - Duplicated bytes: 22581 bytes
+- Source: node_modules/lodash - Duplicated bytes: 21453 bytes
+- Source: node_modules/@formatjs/icu-messageformat-parser - Duplicated bytes: 20835 bytes
+- Source: node_modules/react-hook-form - Duplicated bytes: 17328 bytes
+- Source: node_modules/@popperjs/core - Duplicated bytes: 15900 bytes
+- Source: node_modules/downshift - Duplicated bytes: 14925 bytes
+- Source: node_modules/axios - Duplicated bytes: 14079 bytes
+- Source: node_modules/react-dropzone - Duplicated bytes: 12180 bytes
+- Source: node_modules/@formatjs/intl - Duplicated bytes: 10839 bytes
+- Source: node_modules/qs - Duplicated bytes: 9210 bytes
+- Source: node_modules/object-inspect - Duplicated bytes: 7254 bytes
+- Source: node_modules/history - Duplicated bytes: 6870 bytes
+- Source: node_modules/@heroicons/react - Duplicated bytes: 6624 bytes
+- Source: node_modules/react-intl - Duplicated bytes: 6534 bytes
+- Source: node_modules/get-intrinsic - Duplicated bytes: 6411 bytes
+- Source: node_modules/@floating-ui/dom - Duplicated bytes: 6147 bytes
+- Source: node_modules/@formatjs/icu-skeleton-parser - Duplicated bytes: 5736 bytes
+- Source: webpack://ssi/src/components/Autocomplete/Autocomplete.tsx - Duplicated bytes: 5721 bytes
+- Source: node_modules/@floating-ui/core - Duplicated bytes: 5661 bytes
+- Source: node_modules/intl-messageformat - Duplicated bytes: 5583 bytes
+- Source: node_modules/@loadable/component - Duplicated bytes: 4482 bytes
+- Source: node_modules/file-selector - Duplicated bytes: 4374 bytes
+- Source: node_modules/universal-cookie - Duplicated bytes: 4191 bytes
+- Source: node_modules/tabbable - Duplicated bytes: 4146 bytes
+- Source: webpack://ssi/src/components/Button/Button.tsx - Duplicated bytes: 3711 bytes
+- Source: node_modules/path-to-regexp - Duplicated bytes: 2865 bytes
+- Source: webpack://ssi/src/components/Link/Link.tsx - Duplicated bytes: 2766 bytes
+- Source: node_modules/isomorphic-style-loader - Duplicated bytes: 2520 bytes
+- Source: webpack://ssi/src/components/Menu/MenuBase.tsx - Duplicated bytes: 2415 bytes
+- Source: node_modules/tslib - Duplicated bytes: 2376 bytes
+- Source: node_modules/compute-scroll-into-view - Duplicated bytes: 2166 bytes
+- Source: node_modules/react-router-dom - Duplicated bytes: 2154 bytes
+- Source: node_modules/react-fast-compare - Duplicated bytes: 1935 bytes
+- Source: node_modules/react-is - Duplicated bytes: 1845 bytes
+- Source: node_modules/react-router - Duplicated bytes: 1788 bytes
+- Source: node_modules/css-loader - Duplicated bytes: 1608 bytes
+- Source: node_modules/mini-create-react-context - Duplicated bytes: 1563 bytes
+
+## External resources:
+`;
+            assertStringEquals(output, expected);
+        });
+        it('serializes no details if there is no duplicate javascript', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('DuplicatedJavaScript', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Duplicated JavaScript
+
+## Insight Summary:
+This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
+  This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.
+
+## Detailed analysis:
+There is no duplicated JavaScript in the page modules
+
+## External resources:
+`;
+            assertStringEquals(output, expected);
         });
     });
 });

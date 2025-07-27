@@ -145,6 +145,7 @@ export interface CompleteCodeOptions {
     temperature?: number;
     model_id?: string;
     inference_language?: AidaInferenceLanguage;
+    stop_sequences?: string[];
 }
 export declare enum EditType {
     EDIT_TYPE_UNSPECIFIED = 0,

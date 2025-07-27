@@ -1,23 +1,23 @@
 export const generatedProperties: ({
-    inherited: boolean;
-    name: string;
-    keywords?: undefined;
-    longhands?: undefined;
-} | {
-    name: string;
-    inherited?: undefined;
-    keywords?: undefined;
-    longhands?: undefined;
-} | {
-    keywords: string[];
-    name: string;
-    inherited?: undefined;
-    longhands?: undefined;
-} | {
     longhands: string[];
     name: string;
     inherited?: undefined;
     keywords?: undefined;
+} | {
+    inherited: boolean;
+    name: string;
+    longhands?: undefined;
+    keywords?: undefined;
+} | {
+    name: string;
+    longhands?: undefined;
+    inherited?: undefined;
+    keywords?: undefined;
+} | {
+    keywords: string[];
+    name: string;
+    longhands?: undefined;
+    inherited?: undefined;
 } | {
     inherited: boolean;
     keywords: string[];
@@ -311,6 +311,9 @@ export const generatedPropertyValues: {
     "content-visibility": {
         values: string[];
     };
+    continue: {
+        values: string[];
+    };
     "corner-bottom-left-shape": {
         values: string[];
     };
@@ -518,9 +521,6 @@ export const generatedPropertyValues: {
     "line-break": {
         values: string[];
     };
-    "line-clamp": {
-        values: string[];
-    };
     "line-height": {
         values: string[];
     };
@@ -594,6 +594,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "max-inline-size": {
+        values: string[];
+    };
+    "max-lines": {
         values: string[];
     };
     "max-width": {

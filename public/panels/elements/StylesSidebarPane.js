@@ -1004,12 +1004,12 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         const lines = TextUtils.ContentData.ContentData.textOr(contentDataOrError, '').split('\n');
         const range = TextUtils.TextRange.TextRange.createFromLocation(lines.length - 1, lines[lines.length - 1].length);
         if (this.sectionBlocks && this.sectionBlocks.length > 0) {
-            this.addBlankSection(this.sectionBlocks[0].sections[0], styleSheetHeader.id, range);
+            this.addBlankSection(this.sectionBlocks[0].sections[0], styleSheetHeader, range);
         }
     }
-    addBlankSection(insertAfterSection, styleSheetId, ruleLocation) {
+    addBlankSection(insertAfterSection, styleSheetHeader, ruleLocation) {
         const node = this.node();
-        const blankSection = new BlankStylePropertiesSection(this, insertAfterSection.matchedStyles, node ? node.simpleSelector() : '', styleSheetId, ruleLocation, insertAfterSection.style(), 0);
+        const blankSection = new BlankStylePropertiesSection(this, insertAfterSection.matchedStyles, node ? node.simpleSelector() : '', styleSheetHeader, ruleLocation, insertAfterSection.style(), 0);
         this.sectionsContainer.contentElement.insertBefore(blankSection.element, insertAfterSection.element.nextSibling);
         for (const block of this.sectionBlocks) {
             const index = block.sections.indexOf(insertAfterSection);

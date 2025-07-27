@@ -1,8 +1,7 @@
-import type * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import * as Trace from '../../trace/trace.js';
 export declare class PerformanceInsightFormatter {
     #private;
-    constructor(activeInsight: TimelineUtils.InsightAIContext.ActiveInsight);
+    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace, insight: Trace.Insights.Types.InsightModel);
     insightIsSupported(): boolean;
     /**
      * Formats and outputs the insight's data.

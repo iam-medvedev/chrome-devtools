@@ -10,7 +10,7 @@ __export(Automapping_exports, {
   Automapping: () => Automapping,
   AutomappingStatus: () => AutomappingStatus
 });
-import * as Common7 from "./../../core/common/common.js";
+import * as Common8 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../bindings/bindings.js";
@@ -23,7 +23,7 @@ __export(FileSystemWorkspaceBinding_exports, {
   FileSystem: () => FileSystem,
   FileSystemWorkspaceBinding: () => FileSystemWorkspaceBinding
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as TextUtils2 from "./../text_utils/text_utils.js";
@@ -35,7 +35,7 @@ __export(IsolatedFileSystemManager_exports, {
   Events: () => Events,
   IsolatedFileSystemManager: () => IsolatedFileSystemManager
 });
-import * as Common2 from "./../../core/common/common.js";
+import * as Common3 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
@@ -46,7 +46,7 @@ __export(IsolatedFileSystem_exports, {
   BinaryExtensions: () => BinaryExtensions,
   IsolatedFileSystem: () => IsolatedFileSystem
 });
-import * as Common from "./../../core/common/common.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
@@ -58,6 +58,7 @@ __export(PlatformFileSystem_exports, {
   PlatformFileSystem: () => PlatformFileSystem,
   PlatformFileSystemType: () => PlatformFileSystemType
 });
+import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 var UIStrings = {
   /**
@@ -73,7 +74,7 @@ var PlatformFileSystemType;
   PlatformFileSystemType2["OVERRIDES"] = "overrides";
   PlatformFileSystemType2["WORKSPACE_PROJECT"] = "workspace-project";
 })(PlatformFileSystemType || (PlatformFileSystemType = {}));
-var PlatformFileSystem = class {
+var PlatformFileSystem = class extends Common.ObjectWrapper.ObjectWrapper {
   #path;
   #type;
   /**
@@ -82,6 +83,7 @@ var PlatformFileSystem = class {
    */
   automatic;
   constructor(path, type, automatic) {
+    super();
     this.#path = path;
     this.#type = type;
     this.automatic = automatic;
@@ -183,7 +185,17 @@ var UIStrings2 = {
    *@description Text to show something is linked to another
    *@example {example.url} PH1
    */
-  linkedToS: "Linked to {PH1}"
+  linkedToS: "Linked to {PH1}",
+  /**
+   *@description Error message shown when devtools failed to create a file system directory.
+   *@example {path/} PH1
+   */
+  createDirFailedBecausePathIsFile: "Overrides: Failed to create directory {PH1} because the path exists and is a file.",
+  /**
+   *@description Error message shown when devtools failed to create a file system directory.
+   *@example {path/} PH1
+   */
+  createDirFailed: "Overrides: Failed to create directory {PH1}. Are the workspace or overrides configured correctly?"
 };
 var str_2 = i18n3.i18n.registerUIStrings("models/persistence/IsolatedFileSystem.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -202,7 +214,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     this.manager = manager;
     this.embedderPathInternal = embedderPath;
     this.domFileSystem = domFileSystem;
-    this.excludedFoldersSetting = Common.Settings.Settings.instance().createLocalSetting("workspace-excluded-folders", {});
+    this.excludedFoldersSetting = Common2.Settings.Settings.instance().createLocalSetting("workspace-excluded-folders", {});
     this.excludedFoldersInternal = new Set(this.excludedFoldersSetting.get()[path] || []);
   }
   static async create(manager, path, embedderPath, type, name, rootURL, automatic) {
@@ -226,7 +238,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   }
   getMetadata(path) {
     const { promise, resolve } = Promise.withResolvers();
-    this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, fileEntryLoaded, errorHandler);
+    this.domFileSystem.root.getFile(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, fileEntryLoaded, errorHandler);
     return promise;
     function fileEntryLoaded(entry) {
       entry.getMetadata(resolve, errorHandler);
@@ -255,19 +267,19 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
         for (let i = 0; i < entries.length; ++i) {
           const entry = entries[i];
           if (!entry.isDirectory) {
-            if (this.isFileExcluded(Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath))) {
+            if (this.isFileExcluded(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath))) {
               continue;
             }
-            this.initialFilePathsInternal.add(Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(Common.ParsedURL.ParsedURL.substr(entry.fullPath, 1)));
+            this.initialFilePathsInternal.add(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(Common2.ParsedURL.ParsedURL.substr(entry.fullPath, 1)));
           } else {
             if (entry.fullPath.endsWith("/.git")) {
               const lastSlash = entry.fullPath.lastIndexOf("/");
-              const parentFolder = Common.ParsedURL.ParsedURL.substr(entry.fullPath, 1, lastSlash);
-              this.initialGitFoldersInternal.add(Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(parentFolder));
+              const parentFolder = Common2.ParsedURL.ParsedURL.substr(entry.fullPath, 1, lastSlash);
+              this.initialGitFoldersInternal.add(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(parentFolder));
             }
-            if (this.isFileExcluded(Common.ParsedURL.ParsedURL.concatenate(Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath), "/"))) {
-              const url = Common.ParsedURL.ParsedURL.concatenate(this.path(), Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath));
-              this.excludedEmbedderFolders.push(Common.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin()));
+            if (this.isFileExcluded(Common2.ParsedURL.ParsedURL.concatenate(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath), "/"))) {
+              const url = Common2.ParsedURL.ParsedURL.concatenate(this.path(), Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath));
+              this.excludedEmbedderFolders.push(Common2.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin()));
               continue;
             }
             ++pendingRequests;
@@ -299,6 +311,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   innerCreateFolderIfNeeded(path) {
     return new Promise((resolve) => {
       this.domFileSystem.root.getDirectory(path, { create: true }, (dirEntry) => resolve(dirEntry), (error) => {
+        this.domFileSystem.root.getFile(path, void 0, () => this.dispatchEventToListeners("file-system-error", i18nString2(UIStrings2.createDirFailedBecausePathIsFile, { PH1: path })), () => this.dispatchEventToListeners("file-system-error", i18nString2(UIStrings2.createDirFailed, { PH1: path })));
         const errorMessage = _IsolatedFileSystem.errorMessage(error);
         console.error(errorMessage + " trying to create directory '" + path + "'");
         resolve(null);
@@ -306,7 +319,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     });
   }
   async createFile(path, name) {
-    const dirEntry = await this.createFoldersIfNotExist(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path));
+    const dirEntry = await this.createFoldersIfNotExist(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path));
     if (!dirEntry) {
       return null;
     }
@@ -314,10 +327,10 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     if (!fileEntry) {
       return null;
     }
-    return Common.ParsedURL.ParsedURL.rawPathToEncodedPathString(Common.ParsedURL.ParsedURL.substr(fileEntry.fullPath, 1));
+    return Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(Common2.ParsedURL.ParsedURL.substr(fileEntry.fullPath, 1));
     function createFileCandidate(name2, newFileIndex) {
       return new Promise((resolve) => {
-        const nameCandidate = Common.ParsedURL.ParsedURL.concatenate(name2, (newFileIndex || "").toString());
+        const nameCandidate = Common2.ParsedURL.ParsedURL.concatenate(name2, (newFileIndex || "").toString());
         dirEntry.getFile(nameCandidate, { create: true, exclusive: true }, resolve, (error) => {
           if (error.name === "InvalidModificationError") {
             resolve(createFileCandidate.call(this, name2, newFileIndex ? newFileIndex + 1 : 1));
@@ -332,7 +345,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   }
   deleteFile(path) {
     const { promise, resolve } = Promise.withResolvers();
-    this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, fileEntryLoaded.bind(this), errorHandler.bind(this));
+    this.domFileSystem.root.getFile(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, fileEntryLoaded.bind(this), errorHandler.bind(this));
     return promise;
     function fileEntryLoaded(fileEntry) {
       fileEntry.remove(fileEntryRemoved, errorHandler.bind(this));
@@ -348,7 +361,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   }
   deleteDirectoryRecursively(path) {
     const { promise, resolve } = Promise.withResolvers();
-    this.domFileSystem.root.getDirectory(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, dirEntryLoaded.bind(this), errorHandler.bind(this));
+    this.domFileSystem.root.getDirectory(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, dirEntryLoaded.bind(this), errorHandler.bind(this));
     return promise;
     function dirEntryLoaded(dirEntry) {
       dirEntry.removeRecursively(dirEntryRemoved, errorHandler.bind(this));
@@ -364,7 +377,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   }
   requestFileBlob(path) {
     return new Promise((resolve) => {
-      this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, (entry) => {
+      this.domFileSystem.root.getFile(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, (entry) => {
         entry.file(resolve, errorHandler.bind(this));
       }, errorHandler.bind(this));
       function errorHandler(error) {
@@ -397,7 +410,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
         );
       }
       return new TextUtils.ContentData.ContentData(
-        await Common.Base64.encode(blob),
+        await Common2.Base64.encode(blob),
         /* isBase64 */
         true,
         mimeType
@@ -413,7 +426,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       const promise = new Promise((x) => {
         resolve = x;
       });
-      this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), { create: true }, fileEntryLoaded.bind(this), errorHandler.bind(this));
+      this.domFileSystem.root.getFile(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path), { create: true }, fileEntryLoaded.bind(this), errorHandler.bind(this));
       return promise;
     };
     void this.serializedFileOperation(path, innerSetFileContent);
@@ -442,14 +455,14 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     }
   }
   renameFile(path, newName, callback) {
-    newName = newName ? Common.ParsedURL.ParsedURL.trim(newName) : newName;
+    newName = newName ? Common2.ParsedURL.ParsedURL.trim(newName) : newName;
     if (!newName || newName.indexOf("/") !== -1) {
       callback(false);
       return;
     }
     let fileEntry;
     let dirEntry;
-    this.domFileSystem.root.getFile(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, fileEntryLoaded.bind(this), errorHandler.bind(this));
+    this.domFileSystem.root.getFile(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(path), void 0, fileEntryLoaded.bind(this), errorHandler.bind(this));
     function fileEntryLoaded(entry) {
       if (entry.name === newName) {
         callback(false);
@@ -538,7 +551,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       return true;
     }
     const regex = this.manager.workspaceFolderExcludePatternSetting().asRegExp();
-    return Boolean(regex?.test(Common.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
+    return Boolean(regex?.test(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
   }
   excludedFolders() {
     return this.excludedFoldersInternal;
@@ -548,7 +561,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       const requestId = this.manager.registerCallback(innerCallback);
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(requestId, this.embedderPathInternal, query);
       function innerCallback(files) {
-        resolve(files.map((path) => Common.ParsedURL.ParsedURL.rawPathToUrlString(path)));
+        resolve(files.map((path) => Common2.ParsedURL.ParsedURL.rawPathToUrlString(path)));
         progress.incrementWorked(1);
       }
     });
@@ -559,30 +572,30 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.indexPath(requestId, this.embedderPathInternal, JSON.stringify(this.excludedEmbedderFolders));
   }
   mimeFromPath(path) {
-    return Common.ResourceType.ResourceType.mimeFromURL(path) || "text/plain";
+    return Common2.ResourceType.ResourceType.mimeFromURL(path) || "text/plain";
   }
   canExcludeFolder(path) {
     return Boolean(path) && this.type() !== PlatformFileSystemType.OVERRIDES;
   }
   // path not typed as Branded Types as here we are interested in extention only
   contentType(path) {
-    const extension = Common.ParsedURL.ParsedURL.extractExtension(path);
+    const extension = Common2.ParsedURL.ParsedURL.extractExtension(path);
     if (STYLE_SHEET_EXTENSIONS.has(extension)) {
-      return Common.ResourceType.resourceTypes.Stylesheet;
+      return Common2.ResourceType.resourceTypes.Stylesheet;
     }
     if (DOCUMENT_EXTENSIONS.has(extension)) {
-      return Common.ResourceType.resourceTypes.Document;
+      return Common2.ResourceType.resourceTypes.Document;
     }
     if (IMAGE_EXTENSIONS.has(extension)) {
-      return Common.ResourceType.resourceTypes.Image;
+      return Common2.ResourceType.resourceTypes.Image;
     }
     if (SCRIPT_EXTENSIONS.has(extension)) {
-      return Common.ResourceType.resourceTypes.Script;
+      return Common2.ResourceType.resourceTypes.Script;
     }
-    return BinaryExtensions.has(extension) ? Common.ResourceType.resourceTypes.Other : Common.ResourceType.resourceTypes.Document;
+    return BinaryExtensions.has(extension) ? Common2.ResourceType.resourceTypes.Other : Common2.ResourceType.resourceTypes.Document;
   }
   tooltipForURL(url) {
-    const path = Platform2.StringUtilities.trimMiddle(Common.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin()), 150);
+    const path = Platform2.StringUtilities.trimMiddle(Common2.ParsedURL.ParsedURL.urlToRawPathString(url, Host.Platform.isWin()), 150);
     return i18nString2(UIStrings2.linkedToS, { PH1: path });
   }
   supportsAutomapping() {
@@ -593,8 +606,8 @@ function mimeTypeForBlob(path, blob) {
   if (blob.type) {
     return blob.type;
   }
-  const extension = Common.ParsedURL.ParsedURL.extractExtension(path);
-  const maybeMime = Common.ResourceType.ResourceType.mimeFromExtension(extension);
+  const extension = Common2.ParsedURL.ParsedURL.extractExtension(path);
+  const maybeMime = Common2.ResourceType.ResourceType.mimeFromExtension(extension);
   if (maybeMime) {
     return maybeMime;
   }
@@ -703,7 +716,7 @@ var UIStrings3 = {
 var str_3 = i18n5.i18n.registerUIStrings("models/persistence/IsolatedFileSystemManager.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var isolatedFileSystemManagerInstance;
-var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2.ObjectWrapper.ObjectWrapper {
+var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3.ObjectWrapper.ObjectWrapper {
   fileSystemsInternal;
   callbacks;
   progresses;
@@ -756,7 +769,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2
       defaultExcludedFolders = defaultExcludedFolders.concat(defaultLinuxExcludedFolders);
     }
     const defaultExcludedFoldersPattern = defaultExcludedFolders.join("|");
-    this.workspaceFolderExcludePatternSettingInternal = Common2.Settings.Settings.instance().createRegExpSetting("workspace-folder-exclude-pattern", defaultExcludedFoldersPattern, Host2.Platform.isWin() ? "i" : "");
+    this.workspaceFolderExcludePatternSettingInternal = Common3.Settings.Settings.instance().createRegExpSetting("workspace-folder-exclude-pattern", defaultExcludedFoldersPattern, Host2.Platform.isWin() ? "i" : "");
     this.fileSystemRequestResolve = null;
     this.fileSystemsLoadedPromise = this.requestFileSystems();
   }
@@ -803,7 +816,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2
   }
   innerAddFileSystem(fileSystem, dispatchEvent) {
     const embedderPath = fileSystem.fileSystemPath;
-    const fileSystemURL = Common2.ParsedURL.ParsedURL.rawPathToUrlString(fileSystem.fileSystemPath);
+    const fileSystemURL = Common3.ParsedURL.ParsedURL.rawPathToUrlString(fileSystem.fileSystemPath);
     const promise = IsolatedFileSystem.create(this, fileSystemURL, embedderPath, hostFileSystemTypeToPlatformFileSystemType(fileSystem.type), fileSystem.fileSystemName, fileSystem.rootURL, fileSystem.type === "automatic");
     return promise.then(storeFileSystem.bind(this));
     function storeFileSystem(fileSystem2) {
@@ -811,6 +824,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2
         return null;
       }
       this.fileSystemsInternal.set(fileSystemURL, fileSystem2);
+      fileSystem2.addEventListener("file-system-error", this.#onFileSystemError, this);
       if (dispatchEvent) {
         this.dispatchEventToListeners(Events.FileSystemAdded, fileSystem2);
       }
@@ -819,13 +833,14 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2
   }
   addPlatformFileSystem(fileSystemURL, fileSystem) {
     this.fileSystemsInternal.set(fileSystemURL, fileSystem);
+    fileSystem.addEventListener("file-system-error", this.#onFileSystemError, this);
     this.dispatchEventToListeners(Events.FileSystemAdded, fileSystem);
   }
   onFileSystemAdded(event) {
     const { errorMessage, fileSystem } = event.data;
     if (errorMessage) {
       if (errorMessage !== "<selection cancelled>" && errorMessage !== "<permission denied>") {
-        Common2.Console.Console.instance().error(i18nString3(UIStrings3.unableToAddFilesystemS, { PH1: errorMessage }));
+        Common3.Console.Console.instance().error(i18nString3(UIStrings3.unableToAddFilesystemS, { PH1: errorMessage }));
       }
       if (!this.fileSystemRequestResolve) {
         return;
@@ -841,14 +856,18 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2
       });
     }
   }
+  #onFileSystemError(event) {
+    this.dispatchEventToListeners(Events.FileSystemError, event.data);
+  }
   onFileSystemRemoved(event) {
     const embedderPath = event.data;
-    const fileSystemPath = Common2.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
+    const fileSystemPath = Common3.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
     const isolatedFileSystem = this.fileSystemsInternal.get(fileSystemPath);
     if (!isolatedFileSystem) {
       return;
     }
     this.fileSystemsInternal.delete(fileSystemPath);
+    isolatedFileSystem.removeEventListener("file-system-error", this.#onFileSystemError, this);
     isolatedFileSystem.fileSystemRemoved();
     this.dispatchEventToListeners(Events.FileSystemRemoved, isolatedFileSystem);
   }
@@ -862,10 +881,10 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common2
     function groupFilePathsIntoFileSystemPaths(embedderPaths) {
       const paths = new Platform4.MapUtilities.Multimap();
       for (const embedderPath of embedderPaths) {
-        const filePath = Common2.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
+        const filePath = Common3.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
         for (const fileSystemPath of this.fileSystemsInternal.keys()) {
           const fileSystem = this.fileSystemsInternal.get(fileSystemPath);
-          if (fileSystem?.isFileExcluded(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(embedderPath))) {
+          if (fileSystem?.isFileExcluded(Common3.ParsedURL.ParsedURL.rawPathToEncodedPathString(embedderPath))) {
             continue;
           }
           const pathPrefix = fileSystemPath.endsWith("/") ? fileSystemPath : fileSystemPath + "/";
@@ -943,6 +962,7 @@ var Events;
   Events3["FileSystemFilesChanged"] = "FileSystemFilesChanged";
   Events3["ExcludedFolderAdded"] = "ExcludedFolderAdded";
   Events3["ExcludedFolderRemoved"] = "ExcludedFolderRemoved";
+  Events3["FileSystemError"] = "FileSystemError";
 })(Events || (Events = {}));
 var lastRequestId = 0;
 function hostFileSystemTypeToPlatformFileSystemType(type) {
@@ -977,7 +997,7 @@ var FileSystemWorkspaceBinding = class {
   }
   static relativePath(uiSourceCode) {
     const baseURL = uiSourceCode.project().fileSystemBaseURL;
-    return Common3.ParsedURL.ParsedURL.split(Common3.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(uiSourceCode.url(), baseURL.length), "/");
+    return Common4.ParsedURL.ParsedURL.split(Common4.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(uiSourceCode.url(), baseURL.length), "/");
   }
   static tooltipForUISourceCode(uiSourceCode) {
     const fileSystem = uiSourceCode.project().fileSystem();
@@ -995,7 +1015,7 @@ var FileSystemWorkspaceBinding = class {
   }
   static completeURL(project, relativePath) {
     const fsProject = project;
-    return Common3.ParsedURL.ParsedURL.concatenate(fsProject.fileSystemBaseURL, relativePath);
+    return Common4.ParsedURL.ParsedURL.concatenate(fsProject.fileSystemBaseURL, relativePath);
   }
   static fileSystemPath(projectId) {
     return projectId;
@@ -1046,7 +1066,7 @@ var FileSystemWorkspaceBinding = class {
     }
   }
   dispose() {
-    Common3.EventTarget.removeEventListeners(this.#eventListeners);
+    Common4.EventTarget.removeEventListeners(this.#eventListeners);
     for (const fileSystem of this.#boundFileSystems.values()) {
       fileSystem.dispose();
       this.#boundFileSystems.delete(fileSystem.fileSystem().path());
@@ -1067,8 +1087,8 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     const displayName = fileSystemPath.substr(fileSystemPath.lastIndexOf("/") + 1);
     super(workspace, id, Workspace.Workspace.projectTypes.FileSystem, displayName);
     this.#fileSystem = isolatedFileSystem;
-    this.fileSystemBaseURL = Common3.ParsedURL.ParsedURL.concatenate(this.#fileSystem.path(), "/");
-    this.#fileSystemParentURL = Common3.ParsedURL.ParsedURL.substr(this.fileSystemBaseURL, 0, fileSystemPath.lastIndexOf("/") + 1);
+    this.fileSystemBaseURL = Common4.ParsedURL.ParsedURL.concatenate(this.#fileSystem.path(), "/");
+    this.#fileSystemParentURL = Common4.ParsedURL.ParsedURL.substr(this.fileSystemBaseURL, 0, fileSystemPath.lastIndexOf("/") + 1);
     this.#fileSystemWorkspaceBinding = fileSystemWorkspaceBinding;
     this.#fileSystemPath = fileSystemPath;
     workspace.addProject(this);
@@ -1084,10 +1104,10 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     return this.#fileSystem.mimeFromPath(uiSourceCode.url());
   }
   initialGitFolders() {
-    return this.#fileSystem.initialGitFolders().map((folder) => Common3.ParsedURL.ParsedURL.concatenate(this.#fileSystemPath, "/", folder));
+    return this.#fileSystem.initialGitFolders().map((folder) => Common4.ParsedURL.ParsedURL.concatenate(this.#fileSystemPath, "/", folder));
   }
   filePathForUISourceCode(uiSourceCode) {
-    return Common3.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(uiSourceCode.url(), this.#fileSystemPath.length);
+    return Common4.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(uiSourceCode.url(), this.#fileSystemPath.length);
   }
   isServiceProject() {
     return false;
@@ -1143,10 +1163,10 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
       }
       console.assert(Boolean(newName2));
       const slash = filePath.lastIndexOf("/");
-      const parentPath = Common3.ParsedURL.ParsedURL.substr(filePath, 0, slash);
-      filePath = Common3.ParsedURL.ParsedURL.encodedFromParentPathAndName(parentPath, newName2);
-      filePath = Common3.ParsedURL.ParsedURL.substr(filePath, 1);
-      const newURL = Common3.ParsedURL.ParsedURL.concatenate(this.fileSystemBaseURL, filePath);
+      const parentPath = Common4.ParsedURL.ParsedURL.substr(filePath, 0, slash);
+      filePath = Common4.ParsedURL.ParsedURL.encodedFromParentPathAndName(parentPath, newName2);
+      filePath = Common4.ParsedURL.ParsedURL.substr(filePath, 1);
+      const newURL = Common4.ParsedURL.ParsedURL.concatenate(this.fileSystemBaseURL, filePath);
       const newContentType = this.#fileSystem.contentType(newName2);
       this.renameUISourceCode(uiSourceCode, newName2);
       callback(true, newName2, newURL, newContentType);
@@ -1204,12 +1224,12 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     }
   }
   excludeFolder(url) {
-    let relativeFolder = Common3.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(url, this.fileSystemBaseURL.length);
+    let relativeFolder = Common4.ParsedURL.ParsedURL.sliceUrlToEncodedPathString(url, this.fileSystemBaseURL.length);
     if (!relativeFolder.startsWith("/")) {
-      relativeFolder = Common3.ParsedURL.ParsedURL.prepend("/", relativeFolder);
+      relativeFolder = Common4.ParsedURL.ParsedURL.prepend("/", relativeFolder);
     }
     if (!relativeFolder.endsWith("/")) {
-      relativeFolder = Common3.ParsedURL.ParsedURL.concatenate(relativeFolder, "/");
+      relativeFolder = Common4.ParsedURL.ParsedURL.concatenate(relativeFolder, "/");
     }
     this.#fileSystem.addExcludedFolder(relativeFolder);
     for (const uiSourceCode of this.uiSourceCodes()) {
@@ -1251,7 +1271,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
   }
   addFile(filePath, content, isBase64) {
     const contentType = this.#fileSystem.contentType(filePath);
-    const uiSourceCode = this.createUISourceCode(Common3.ParsedURL.ParsedURL.concatenate(this.fileSystemBaseURL, filePath), contentType);
+    const uiSourceCode = this.createUISourceCode(Common4.ParsedURL.ParsedURL.concatenate(this.fileSystemBaseURL, filePath), contentType);
     if (content !== void 0) {
       uiSourceCode.setContent(content, Boolean(isBase64));
     }
@@ -1290,7 +1310,7 @@ __export(PersistenceImpl_exports, {
   PersistenceBinding: () => PersistenceBinding,
   PersistenceImpl: () => PersistenceImpl
 });
-import * as Common6 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
@@ -1306,7 +1326,7 @@ __export(PersistenceUtils_exports, {
   LinkDecorator: () => LinkDecorator,
   PersistenceUtils: () => PersistenceUtils
 });
-import * as Common5 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
@@ -1323,7 +1343,7 @@ __export(NetworkPersistenceManager_exports, {
   extractDirectoryIndex: () => extractDirectoryIndex,
   isHeaderOverride: () => isHeaderOverride
 });
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
@@ -1333,22 +1353,22 @@ import * as TextUtils4 from "./../text_utils/text_utils.js";
 import * as Workspace3 from "./../workspace/workspace.js";
 var networkPersistenceManagerInstance;
 var forbiddenUrls = ["chromewebstore.google.com", "chrome.google.com"];
-var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4.ObjectWrapper.ObjectWrapper {
+var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common5.ObjectWrapper.ObjectWrapper {
   #bindings = /* @__PURE__ */ new WeakMap();
   #originalResponseContentPromises = /* @__PURE__ */ new WeakMap();
   #savingForOverrides = /* @__PURE__ */ new WeakSet();
-  #enabledSetting = Common4.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled");
+  #enabledSetting = Common5.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled");
   #workspace;
   #networkUISourceCodeForEncodedPath = /* @__PURE__ */ new Map();
   #interceptionHandlerBound;
-  #updateInterceptionThrottler = new Common4.Throttler.Throttler(50);
+  #updateInterceptionThrottler = new Common5.Throttler.Throttler(50);
   #project = null;
   #active = false;
   #enabled = false;
   #eventDescriptors = [];
   #headerOverridesMap = /* @__PURE__ */ new Map();
   #sourceCodeToBindProcessMutex = /* @__PURE__ */ new WeakMap();
-  #eventDispatchThrottler = new Common4.Throttler.Throttler(50);
+  #eventDispatchThrottler = new Common5.Throttler.Throttler(50);
   #headerOverridesForEventDispatch = /* @__PURE__ */ new Set();
   constructor(workspace) {
     super();
@@ -1418,7 +1438,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
       await this.updateActiveProject();
     } else {
       Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.PersistenceNetworkOverridesDisabled);
-      Common4.EventTarget.removeEventListeners(this.#eventDescriptors);
+      Common5.EventTarget.removeEventListeners(this.#eventDescriptors);
       await this.updateActiveProject();
     }
     this.dispatchEventToListeners("LocalOverridesProjectUpdated", this.#enabled);
@@ -1453,15 +1473,15 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     PersistenceImpl.instance().refreshAutomapping();
   }
   encodedPathFromUrl(url, ignoreInactive) {
-    return Common4.ParsedURL.ParsedURL.rawPathToEncodedPathString(this.rawPathFromUrl(url, ignoreInactive));
+    return Common5.ParsedURL.ParsedURL.rawPathToEncodedPathString(this.rawPathFromUrl(url, ignoreInactive));
   }
   rawPathFromUrl(url, ignoreInactive) {
     if (!this.#active && !ignoreInactive || !this.#project) {
       return Platform7.DevToolsPath.EmptyRawPathString;
     }
-    let initialEncodedPath = Common4.ParsedURL.ParsedURL.urlWithoutHash(url.replace(/^https?:\/\//, ""));
+    let initialEncodedPath = Common5.ParsedURL.ParsedURL.urlWithoutHash(url.replace(/^https?:\/\//, ""));
     if (initialEncodedPath.endsWith("/") && initialEncodedPath.indexOf("?") === -1) {
-      initialEncodedPath = Common4.ParsedURL.ParsedURL.concatenate(initialEncodedPath, "index.html");
+      initialEncodedPath = Common5.ParsedURL.ParsedURL.concatenate(initialEncodedPath, "index.html");
     }
     let encodedPathParts = _NetworkPersistenceManager.encodeEncodedPathToLocalPathParts(initialEncodedPath);
     const projectPath = FileSystemWorkspaceBinding.fileSystemPath(this.#project.id());
@@ -1470,7 +1490,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
       const domain = encodedPathParts[0];
       const encodedFileName = encodedPathParts[encodedPathParts.length - 1];
       const shortFileName = encodedFileName ? encodedFileName.substr(0, 10) + "-" : "";
-      const extension = Common4.ParsedURL.ParsedURL.extractExtension(initialEncodedPath);
+      const extension = Common5.ParsedURL.ParsedURL.extractExtension(initialEncodedPath);
       const extensionPart = extension ? "." + extension.substr(0, 10) : "";
       encodedPathParts = [
         domain,
@@ -1478,7 +1498,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
         shortFileName + Platform7.StringUtilities.hashCode(encodedPath).toString(16) + extensionPart
       ];
     }
-    return Common4.ParsedURL.ParsedURL.join(encodedPathParts, "/");
+    return Common5.ParsedURL.ParsedURL.join(encodedPathParts, "/");
   }
   static encodeEncodedPathToLocalPathParts(encodedPath) {
     const encodedParts = [];
@@ -1502,7 +1522,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     return encodedParts;
   }
   static #fileNamePartsFromEncodedPath(encodedPath) {
-    encodedPath = Common4.ParsedURL.ParsedURL.urlWithoutHash(encodedPath);
+    encodedPath = Common5.ParsedURL.ParsedURL.urlWithoutHash(encodedPath);
     const queryIndex = encodedPath.indexOf("?");
     if (queryIndex === -1) {
       return encodedPath.split("/");
@@ -1519,7 +1539,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     if (!this.#project) {
       return Platform7.DevToolsPath.EmptyUrlString;
     }
-    return Common4.ParsedURL.ParsedURL.concatenate(this.#project.fileSystemPath(), "/", this.encodedPathFromUrl(url, ignoreInactive));
+    return Common5.ParsedURL.ParsedURL.concatenate(this.#project.fileSystemPath(), "/", this.encodedPathFromUrl(url, ignoreInactive));
   }
   getHeadersUISourceCodeFromUrl(url) {
     const fileUrlFromRequest = this.fileUrlFromNetworkUrl(
@@ -1527,8 +1547,8 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
       /* ignoreNoActive */
       true
     );
-    const folderUrlFromRequest = Common4.ParsedURL.ParsedURL.substring(fileUrlFromRequest, 0, fileUrlFromRequest.lastIndexOf("/"));
-    const headersFileUrl = Common4.ParsedURL.ParsedURL.concatenate(folderUrlFromRequest, "/", HEADERS_FILENAME);
+    const folderUrlFromRequest = Common5.ParsedURL.ParsedURL.substring(fileUrlFromRequest, 0, fileUrlFromRequest.lastIndexOf("/"));
+    const headersFileUrl = Common5.ParsedURL.ParsedURL.concatenate(folderUrlFromRequest, "/", HEADERS_FILENAME);
     return Workspace3.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(headersFileUrl);
   }
   async getOrCreateHeadersUISourceCodeFromUrl(url) {
@@ -1539,7 +1559,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
         /* ignoreNoActive */
         true
       );
-      const encodedPath = Common4.ParsedURL.ParsedURL.substring(encodedFilePath, 0, encodedFilePath.lastIndexOf("/"));
+      const encodedPath = Common5.ParsedURL.ParsedURL.substring(encodedFilePath, 0, encodedFilePath.lastIndexOf("/"));
       uiSourceCode = await this.#project.createFile(encodedPath, HEADERS_FILENAME, "");
       Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.HeaderOverrideFileCreated);
     }
@@ -1592,7 +1612,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
   #getOrCreateMutex(networkUISourceCode) {
     let mutex = this.#sourceCodeToBindProcessMutex.get(networkUISourceCode);
     if (!mutex) {
-      mutex = new Common4.Mutex.Mutex();
+      mutex = new Common5.Mutex.Mutex();
       this.#sourceCodeToBindProcessMutex.set(networkUISourceCode, mutex);
     }
     return mutex;
@@ -1665,9 +1685,9 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     const contentDataOrError = await uiSourceCode.requestContentData();
     const { content, isEncoded } = TextUtils4.ContentData.ContentData.asDeferredContent(contentDataOrError);
     const lastIndexOfSlash = encodedPath.lastIndexOf("/");
-    const encodedFileName = Common4.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
-    const rawFileName = Common4.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
-    encodedPath = Common4.ParsedURL.ParsedURL.substr(encodedPath, 0, lastIndexOfSlash);
+    const encodedFileName = Common5.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
+    const rawFileName = Common5.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
+    encodedPath = Common5.ParsedURL.ParsedURL.substr(encodedPath, 0, lastIndexOfSlash);
     if (this.#project) {
       await this.#project.createFile(encodedPath, rawFileName, content ?? "", isEncoded);
     }
@@ -1702,7 +1722,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     return host === "chrome:" || forbiddenUrls.includes(host);
   }
   static isForbiddenNetworkUrl(urlString) {
-    const url = Common4.ParsedURL.ParsedURL.fromString(urlString);
+    const url = Common5.ParsedURL.ParsedURL.fromString(urlString);
     if (!url) {
       return false;
     }
@@ -1713,13 +1733,13 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     await this.filesystemUISourceCodeAdded(uiSourceCode);
   }
   canHandleNetworkUISourceCode(uiSourceCode) {
-    return this.#active && !Common4.ParsedURL.schemeIs(uiSourceCode.url(), "snippet:");
+    return this.#active && !Common5.ParsedURL.schemeIs(uiSourceCode.url(), "snippet:");
   }
   async networkUISourceCodeAdded(uiSourceCode) {
     if (uiSourceCode.project().type() !== Workspace3.Workspace.projectTypes.Network || !this.canHandleNetworkUISourceCode(uiSourceCode)) {
       return;
     }
-    const url = Common4.ParsedURL.ParsedURL.urlWithoutHash(uiSourceCode.url());
+    const url = Common5.ParsedURL.ParsedURL.urlWithoutHash(uiSourceCode.url());
     this.#networkUISourceCodeForEncodedPath.set(this.encodedPathFromUrl(url), uiSourceCode);
     const project = this.#project;
     const fileSystemUISourceCode = project.uiSourceCodeForURL(this.fileUrlFromNetworkUrl(url));
@@ -1734,7 +1754,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     }
     this.updateInterceptionPatterns();
     const relativePath = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
-    const networkUISourceCode = this.#networkUISourceCodeForEncodedPath.get(Common4.ParsedURL.ParsedURL.join(relativePath, "/"));
+    const networkUISourceCode = this.#networkUISourceCodeForEncodedPath.get(Common5.ParsedURL.ParsedURL.join(relativePath, "/"));
     if (networkUISourceCode) {
       await this.#bind(networkUISourceCode, uiSourceCode);
     }
@@ -1762,13 +1782,13 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
   async generateHeaderPatterns(uiSourceCode) {
     const headerOverrides = await this.#getHeaderOverridesFromUiSourceCode(uiSourceCode);
     const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
-    const relativePath = Common4.ParsedURL.ParsedURL.slice(Common4.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
+    const relativePath = Common5.ParsedURL.ParsedURL.slice(Common5.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
     const { singlyDecodedPath, decodedPath } = this.#doubleDecodeEncodedPathString(relativePath);
     let patterns;
     if (relativePathParts.length > 2 && relativePathParts[1] === "longurls" && headerOverrides.length) {
       patterns = this.#generateHeaderPatternsForLongUrl(decodedPath, headerOverrides, relativePathParts[0]);
     } else if (decodedPath.startsWith("file:/")) {
-      patterns = this.#generateHeaderPatternsForFileUrl(Common4.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length), headerOverrides);
+      patterns = this.#generateHeaderPatternsForFileUrl(Common5.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length), headerOverrides);
     } else {
       patterns = this.#generateHeaderPatternsForHttpUrl(decodedPath, headerOverrides);
     }
@@ -1818,11 +1838,11 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
   // the URL appears shorter. This special case is handled here.
   #generateHeaderPatternsForLongUrl(decodedPath, headerOverrides, relativePathPart) {
     const headerPatterns = /* @__PURE__ */ new Set();
-    let { decodedPath: decodedPattern } = this.#doubleDecodeEncodedPathString(Common4.ParsedURL.ParsedURL.concatenate(relativePathPart, "/*"));
+    let { decodedPath: decodedPattern } = this.#doubleDecodeEncodedPathString(Common5.ParsedURL.ParsedURL.concatenate(relativePathPart, "/*"));
     const isFileUrl = decodedPath.startsWith("file:/");
     if (isFileUrl) {
-      decodedPath = Common4.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length);
-      decodedPattern = Common4.ParsedURL.ParsedURL.substring(decodedPattern, "file:/".length);
+      decodedPath = Common5.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length);
+      decodedPattern = Common5.ParsedURL.ParsedURL.substring(decodedPattern, "file:/".length);
     }
     headerPatterns.add((isFileUrl ? "file:///" : "http?://") + decodedPattern);
     const overridesWithRegex = [];
@@ -1903,7 +1923,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
       if (fileUrl[i] !== "/") {
         continue;
       }
-      const headersFilePath = Common4.ParsedURL.ParsedURL.concatenate(Common4.ParsedURL.ParsedURL.substring(fileUrl, 0, i + 1), ".headers");
+      const headersFilePath = Common5.ParsedURL.ParsedURL.concatenate(Common5.ParsedURL.ParsedURL.substring(fileUrl, 0, i + 1), ".headers");
       const headersFileUiSourceCode = project.uiSourceCodeForURL(headersFilePath);
       if (!headersFileUiSourceCode) {
         continue;
@@ -1921,7 +1941,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
   }
   hasMatchingNetworkUISourceCodeForHeaderOverridesFile(headersFile) {
     const relativePathParts = FileSystemWorkspaceBinding.relativePath(headersFile);
-    const relativePath = Common4.ParsedURL.ParsedURL.slice(Common4.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
+    const relativePath = Common5.ParsedURL.ParsedURL.slice(Common5.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
     for (const encodedNetworkPath of this.#networkUISourceCodeForEncodedPath.keys()) {
       if (encodedNetworkPath.startsWith(relativePath)) {
         return true;
@@ -2014,7 +2034,7 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     let path = Platform7.DevToolsPath.EmptyEncodedPathString;
     result = this.#maybeMergeHeadersForPathSegment(path, interceptedRequest.request.url, result);
     for (const segment of urlSegments) {
-      path = Common4.ParsedURL.ParsedURL.concatenate(path, segment, "/");
+      path = Common5.ParsedURL.ParsedURL.concatenate(path, segment, "/");
       result = this.#maybeMergeHeadersForPathSegment(path, interceptedRequest.request.url, result);
     }
     return result;
@@ -2036,9 +2056,9 @@ var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common4
     }
     let { mimeType } = interceptedRequest.getMimeTypeAndCharset();
     if (!mimeType) {
-      const expectedResourceType = Common4.ResourceType.resourceTypes[interceptedRequest.resourceType] || Common4.ResourceType.resourceTypes.Other;
+      const expectedResourceType = Common5.ResourceType.resourceTypes[interceptedRequest.resourceType] || Common5.ResourceType.resourceTypes.Other;
       mimeType = fileSystemUISourceCode?.mimeType() || "";
-      if (Common4.ResourceType.ResourceType.fromMimeType(mimeType) !== expectedResourceType) {
+      if (Common5.ResourceType.ResourceType.fromMimeType(mimeType) !== expectedResourceType) {
         mimeType = expectedResourceType.canonicalMimeType();
       }
     }
@@ -2163,7 +2183,7 @@ var PersistenceUtils = class _PersistenceUtils {
   static iconForUISourceCode(uiSourceCode) {
     const binding = PersistenceImpl.instance().binding(uiSourceCode);
     if (binding) {
-      if (!Common5.ParsedURL.schemeIs(binding.fileSystem.url(), "file:")) {
+      if (!Common6.ParsedURL.schemeIs(binding.fileSystem.url(), "file:")) {
         return null;
       }
       const icon2 = new IconButton.Icon.Icon();
@@ -2176,7 +2196,7 @@ var PersistenceUtils = class _PersistenceUtils {
       }
       return icon2;
     }
-    if (uiSourceCode.project().type() !== Workspace5.Workspace.projectTypes.FileSystem || !Common5.ParsedURL.schemeIs(uiSourceCode.url(), "file:")) {
+    if (uiSourceCode.project().type() !== Workspace5.Workspace.projectTypes.FileSystem || !Common6.ParsedURL.schemeIs(uiSourceCode.url(), "file:")) {
       return null;
     }
     if (NetworkPersistenceManager.instance().isActiveHeaderOverrides(uiSourceCode)) {
@@ -2191,7 +2211,7 @@ var PersistenceUtils = class _PersistenceUtils {
     return icon;
   }
 };
-var LinkDecorator = class extends Common5.ObjectWrapper.ObjectWrapper {
+var LinkDecorator = class extends Common6.ObjectWrapper.ObjectWrapper {
   constructor(persistence) {
     super();
     persistence.addEventListener(Events2.BindingCreated, this.bindingChanged, this);
@@ -2208,7 +2228,7 @@ var LinkDecorator = class extends Common5.ObjectWrapper.ObjectWrapper {
 
 // gen/front_end/models/persistence/PersistenceImpl.js
 var persistenceInstance;
-var PersistenceImpl = class _PersistenceImpl extends Common6.ObjectWrapper.ObjectWrapper {
+var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.ObjectWrapper {
   #workspace;
   #breakpointManager;
   #filePathPrefixesToBindingCount = new FilePathPrefixesBindingCounts();
@@ -2459,7 +2479,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common6.ObjectWrapper.Objec
 var FilePathPrefixesBindingCounts = class {
   #prefixCounts = /* @__PURE__ */ new Map();
   getPlatformCanonicalFilePath(path) {
-    return Host5.Platform.isWin() ? Common6.ParsedURL.ParsedURL.toLowerCase(path) : path;
+    return Host5.Platform.isWin() ? Common7.ParsedURL.ParsedURL.toLowerCase(path) : path;
   }
   add(filePath) {
     filePath = this.getPlatformCanonicalFilePath(filePath);
@@ -2486,7 +2506,7 @@ var FilePathPrefixesBindingCounts = class {
   hasBindingPrefix(filePath) {
     filePath = this.getPlatformCanonicalFilePath(filePath);
     if (!filePath.endsWith("/")) {
-      filePath = Common6.ParsedURL.ParsedURL.concatenate(filePath, "/");
+      filePath = Common7.ParsedURL.ParsedURL.concatenate(filePath, "/");
     }
     return this.#prefixCounts.has(filePath);
   }
@@ -2521,7 +2541,7 @@ var Automapping = class {
   statuses = /* @__PURE__ */ new Set();
   #fileSystemUISourceCodes = new FileSystemUISourceCodes();
   // Used in web tests
-  sweepThrottler = new Common7.Throttler.Throttler(100);
+  sweepThrottler = new Common8.Throttler.Throttler(100);
   #sourceCodeToProcessingPromiseMap = /* @__PURE__ */ new WeakMap();
   #sourceCodeToAutoMappingStatusMap = /* @__PURE__ */ new WeakMap();
   #sourceCodeToMetadataMap = /* @__PURE__ */ new WeakMap();
@@ -2649,7 +2669,7 @@ var Automapping = class {
     if (this.#interceptors.some((interceptor) => interceptor(networkSourceCode))) {
       return Promise.resolve();
     }
-    if (Common7.ParsedURL.schemeIs(networkSourceCode.url(), "wasm:")) {
+    if (Common8.ParsedURL.schemeIs(networkSourceCode.url(), "wasm:")) {
       return Promise.resolve();
     }
     const createBindingPromise = this.#createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
@@ -2748,17 +2768,17 @@ var Automapping = class {
   }
   async #createBinding(networkSourceCode) {
     const url = networkSourceCode.url();
-    if (Common7.ParsedURL.schemeIs(url, "file:") || Common7.ParsedURL.schemeIs(url, "snippet:")) {
+    if (Common8.ParsedURL.schemeIs(url, "file:") || Common8.ParsedURL.schemeIs(url, "snippet:")) {
       const fileSourceCode = this.#fileSystemUISourceCodes.get(url);
       const status = fileSourceCode ? new AutomappingStatus(networkSourceCode, fileSourceCode, false) : null;
       return status;
     }
-    let networkPath = Common7.ParsedURL.ParsedURL.extractPath(url);
+    let networkPath = Common8.ParsedURL.ParsedURL.extractPath(url);
     if (networkPath === null) {
       return null;
     }
     if (networkPath.endsWith("/")) {
-      networkPath = Common7.ParsedURL.ParsedURL.concatenate(networkPath, "index.html");
+      networkPath = Common8.ParsedURL.ParsedURL.concatenate(networkPath, "index.html");
     }
     const similarFiles = this.#filesIndex.similarFiles(networkPath).map((path) => this.#fileSystemUISourceCodes.get(path));
     if (!similarFiles.length) {
@@ -2797,7 +2817,7 @@ var Automapping = class {
   }
 };
 var FilePathIndex = class {
-  #reversedIndex = Common7.Trie.Trie.newArrayTrie();
+  #reversedIndex = Common8.Trie.Trie.newArrayTrie();
   addPath(path) {
     const reversePathParts = path.split("/").reverse();
     this.#reversedIndex.add(reversePathParts);
@@ -2816,7 +2836,7 @@ var FilePathIndex = class {
   }
 };
 var FolderIndex = class {
-  #index = Common7.Trie.Trie.newArrayTrie();
+  #index = Common8.Trie.Trie.newArrayTrie();
   #folderCount = /* @__PURE__ */ new Map();
   addFolder(path) {
     const pathParts = this.#removeTrailingSlash(path).split("/");
@@ -2852,7 +2872,7 @@ var FolderIndex = class {
   }
   #removeTrailingSlash(path) {
     if (path.endsWith("/")) {
-      return Common7.ParsedURL.ParsedURL.substring(path, 0, path.length - 1);
+      return Common8.ParsedURL.ParsedURL.substring(path, 0, path.length - 1);
     }
     return path;
   }
@@ -2860,7 +2880,7 @@ var FolderIndex = class {
 var FileSystemUISourceCodes = class {
   #sourceCodes = /* @__PURE__ */ new Map();
   getPlatformCanonicalFileUrl(path) {
-    return Host6.Platform.isWin() ? Common7.ParsedURL.ParsedURL.toLowerCase(path) : path;
+    return Host6.Platform.isWin() ? Common8.ParsedURL.ParsedURL.toLowerCase(path) : path;
   }
   add(sourceCode) {
     const fileUrl = this.getPlatformCanonicalFileUrl(sourceCode.url());
@@ -2891,11 +2911,11 @@ var AutomaticFileSystemManager_exports = {};
 __export(AutomaticFileSystemManager_exports, {
   AutomaticFileSystemManager: () => AutomaticFileSystemManager
 });
-import * as Common8 from "./../../core/common/common.js";
+import * as Common9 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as ProjectSettings from "./../project_settings/project_settings.js";
 var automaticFileSystemManagerInstance;
-var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Common8.ObjectWrapper.ObjectWrapper {
+var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Common9.ObjectWrapper.ObjectWrapper {
   #automaticFileSystem;
   #availability = "unavailable";
   #inspectorFrontendHost;
@@ -3051,7 +3071,7 @@ __export(AutomaticFileSystemWorkspaceBinding_exports, {
   AutomaticFileSystemWorkspaceBinding: () => AutomaticFileSystemWorkspaceBinding,
   FileSystem: () => FileSystem2
 });
-import * as Common9 from "./../../core/common/common.js";
+import * as Common10 from "./../../core/common/common.js";
 import * as Host8 from "./../../core/host/host.js";
 import * as Workspace11 from "./../workspace/workspace.js";
 var FileSystem2 = class {
@@ -3209,7 +3229,7 @@ var AutomaticFileSystemWorkspaceBinding = class _AutomaticFileSystemWorkspaceBin
       this.#fileSystem = null;
     }
     if (automaticFileSystem !== null && automaticFileSystem.state !== "connected") {
-      const fileSystemURL = Common9.ParsedURL.ParsedURL.rawPathToUrlString(automaticFileSystem.root);
+      const fileSystemURL = Common10.ParsedURL.ParsedURL.rawPathToUrlString(automaticFileSystem.root);
       if (this.#isolatedFileSystemManager.fileSystem(fileSystemURL) === null) {
         this.#fileSystem = new FileSystem2(automaticFileSystem, this.#automaticFileSystemManager, this.#workspace);
         this.#workspace.addProject(this.#fileSystem);
@@ -3432,7 +3452,7 @@ var PersistenceActions_exports = {};
 __export(PersistenceActions_exports, {
   ContextMenuProvider: () => ContextMenuProvider
 });
-import * as Common10 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
@@ -3495,7 +3515,7 @@ var ContextMenuProvider = class {
       const maybeScript = getScript(contentProvider);
       if (maybeScript?.isWasm()) {
         try {
-          const base64 = await maybeScript.getWasmBytecode().then(Common10.Base64.encode);
+          const base64 = await maybeScript.getWasmBytecode().then(Common11.Base64.encode);
           contentData = new TextUtils7.ContentData.ContentData(
             base64,
             /* isBase64=*/
@@ -3504,7 +3524,7 @@ var ContextMenuProvider = class {
           );
         } catch (e) {
           console.error(`Unable to convert WASM byte code for ${url} to base64. Not saving to disk`, e.stack);
-          Common10.Console.Console.instance().error(
+          Common11.Console.Console.instance().error(
             i18nString6(UIStrings6.saveWasmFailed),
             /* show=*/
             false
@@ -3515,7 +3535,7 @@ var ContextMenuProvider = class {
         const contentDataOrError = await contentProvider.requestContentData();
         if (TextUtils7.ContentData.ContentData.isError(contentDataOrError)) {
           console.error(`Failed to retrieve content for ${url}: ${contentDataOrError}`);
-          Common10.Console.Console.instance().error(
+          Common11.Console.Console.instance().error(
             i18nString6(UIStrings6.saveFailed),
             /* show=*/
             false
@@ -3550,8 +3570,8 @@ var ContextMenuProvider = class {
     const networkPersistenceManager = NetworkPersistenceManager.instance();
     const binding = uiSourceCode && PersistenceImpl.instance().binding(uiSourceCode);
     const fileURL = binding ? binding.fileSystem.contentURL() : contentProvider.contentURL();
-    if (Common10.ParsedURL.schemeIs(fileURL, "file:")) {
-      const path = Common10.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host9.Platform.isWin());
+    if (Common11.ParsedURL.schemeIs(fileURL, "file:")) {
+      const path = Common11.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host9.Platform.isWin());
       contextMenu.revealSection().appendItem(i18nString6(UIStrings6.openInContainingFolder), () => Host9.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(path), { jslogContext: "open-in-containing-folder" });
     }
     if (contentProvider instanceof Workspace13.UISourceCode.UISourceCode && contentProvider.project().type() === Workspace13.Workspace.projectTypes.FileSystem) {
@@ -3584,7 +3604,7 @@ var ContextMenuProvider = class {
     const networkPersistenceManager = NetworkPersistenceManager.instance();
     const isSuccess = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
     if (isSuccess) {
-      await Common10.Revealer.reveal(uiSourceCode);
+      await Common11.Revealer.reveal(uiSourceCode);
     }
     if (contentProvider instanceof SDK4.NetworkRequest.NetworkRequest) {
       Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideContentFromNetworkContextMenu);
@@ -3629,7 +3649,7 @@ var ContextMenuProvider = class {
     if (!deployedStylesUrl) {
       return null;
     }
-    const deployedUiSourceCode = Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(deployedStylesUrl) || Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(Common10.ParsedURL.ParsedURL.urlWithoutHash(deployedStylesUrl));
+    const deployedUiSourceCode = Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(deployedStylesUrl) || Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(Common11.ParsedURL.ParsedURL.urlWithoutHash(deployedStylesUrl));
     return deployedUiSourceCode;
   }
 };
@@ -3657,7 +3677,7 @@ __export(WorkspaceSettingsTab_exports, {
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/buttons/buttons.js";
 import "./../../ui/components/cards/cards.js";
-import * as Common11 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
@@ -3791,7 +3811,7 @@ var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
     this.requestUpdate();
   }
   willHide() {
-    Common11.EventTarget.removeEventListeners(this.#eventListeners);
+    Common12.EventTarget.removeEventListeners(this.#eventListeners);
     this.#eventListeners = [];
   }
   performUpdate() {

@@ -102,6 +102,14 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
     resumeModel(): Promise<void>;
     private static shouldResyncDebuggerId;
     getEvaluateOnCallFrameCallback(): ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult | null>) | null;
+    /**
+     * Iterates the async stack trace parents.
+     *
+     * Retrieving cross-target async stack fragments requires CDP interaction, so this is an async generator.
+     *
+     * Important: This iterator will not yield the "synchronous" part of the stack trace, only the async parent chain.
+     */
+    iterateAsyncParents(stackTraceOrPausedDetails: Protocol.Runtime.StackTrace | DebuggerPausedDetails): AsyncGenerator<Protocol.Runtime.StackTrace>;
 }
 /**
  * Keep these in sync with WebCore::V8Debugger

@@ -1,18 +1,18 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Helpers from '../../../models/trace/helpers/helpers.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
+import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as Utils from '../utils/utils.js';
 import * as Insights from './insights/insights.js';
 import layoutShiftDetailsStyles from './layoutShiftDetails.css.js';
-const { html } = Lit;
+const { html, render } = Lit;
 const MAX_URL_LENGTH = 20;
 const UIStrings = {
     /**
@@ -72,297 +72,40 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LayoutShiftDetails.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class LayoutShiftDetails extends HTMLElement {
-    #shadow = this.attachShadow({ mode: 'open' });
+export class LayoutShiftDetails extends UI.Widget.Widget {
+    #view;
     #event = null;
     #traceInsightsSets = null;
     #parsedTrace = null;
     #isFreshRecording = false;
-    connectedCallback() {
-        this.#render();
+    constructor(element, view = DEFAULT_VIEW) {
+        super(false, false, element);
+        this.#view = view;
     }
-    setData(event, traceInsightsSets, parsedTrace, isFreshRecording) {
-        if (this.#event === event) {
-            return;
-        }
+    set event(event) {
         this.#event = event;
+        void this.requestUpdate();
+    }
+    set traceInsightsSets(traceInsightsSets) {
         this.#traceInsightsSets = traceInsightsSets;
+        void this.requestUpdate();
+    }
+    set parsedTrace(parsedTrace) {
         this.#parsedTrace = parsedTrace;
+        void this.requestUpdate();
+    }
+    set isFreshRecording(isFreshRecording) {
         this.#isFreshRecording = isFreshRecording;
-        this.#render();
-    }
-    #renderTitle(event) {
-        const title = Utils.EntryName.nameForEntry(event);
-        return html `
-      <div class="layout-shift-details-title">
-        <div class="layout-shift-event-title"></div>
-        ${title}
-      </div>
-    `;
-    }
-    #renderShiftedElements(shift, elementsShifted) {
-        // clang-format off
-        return html `
-      ${elementsShifted?.map(el => {
-            if (el.node_id !== undefined) {
-                return html `
-            <devtools-performance-node-link
-              .data=${{
-                    backendNodeId: el.node_id,
-                    frame: shift.args.frame,
-                    fallbackHtmlSnippet: el.debug_name,
-                }}>
-            </devtools-performance-node-link>`;
-            }
-            return Lit.nothing;
-        })}`;
-        // clang-format on
-    }
-    #renderIframe(iframeRootCause) {
-        const domLoadingId = iframeRootCause.frame;
-        const domLoadingFrame = SDK.FrameManager.FrameManager.instance().getFrame(domLoadingId);
-        let el;
-        if (domLoadingFrame) {
-            el = LegacyComponents.Linkifier.Linkifier.linkifyRevealable(domLoadingFrame, domLoadingFrame.displayName());
-        }
-        else {
-            el = this.#linkifyURL(iframeRootCause.url);
-        }
-        // clang-format off
-        return html `
-      <span class="culprit">
-        <span class="culprit-type"> ${i18nString(UIStrings.injectedIframe)}: </span>
-        <span class="culprit-value">${el}</span>
-      </span>`;
-        // clang-format on
-    }
-    #linkifyURL(url) {
-        return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, {
-            tabStop: true,
-            showColumnNumber: false,
-            inlineFrameIndex: 0,
-            maxLength: MAX_URL_LENGTH,
-        });
-    }
-    #renderFontRequest(request) {
-        const linkifiedURL = this.#linkifyURL(request.args.data.url);
-        // clang-format off
-        return html `
-      <span class="culprit">
-        <span class="culprit-type">${i18nString(UIStrings.fontRequest)}: </span>
-        <span class="culprit-value">${linkifiedURL}</span>
-      </span>`;
-        // clang-format on
+        void this.requestUpdate();
     }
     // TODO(crbug.com/368170718): use eventRef instead
-    #clickEvent(event) {
-        this.dispatchEvent(new Insights.EventRef.EventReferenceClick(event));
-    }
-    #renderAnimation(failure) {
-        const event = failure.animation;
-        if (!event) {
-            return null;
-        }
-        // clang-format off
-        return html `
-        <span class="culprit">
-        <span class="culprit-type">${i18nString(UIStrings.nonCompositedAnimation)}: </span>
-        <button type="button" class="culprit-value timeline-link" @click=${() => this.#clickEvent(event)}>${i18nString(UIStrings.animation)}</button>
-      </span>`;
-        // clang-format on
-    }
-    #renderUnsizedImage(frame, unsizedImage) {
-        // clang-format off
-        const el = html `
-      <devtools-performance-node-link
-        .data=${{
-            backendNodeId: unsizedImage.backendNodeId,
-            frame,
-            fallbackUrl: unsizedImage.paintImageEvent.args.data.url,
-        }}>
-      </devtools-performance-node-link>`;
-        return html `
-      <span class="culprit">
-        <span class="culprit-type">${i18nString(UIStrings.unsizedImage)}: </span>
-        <span class="culprit-value">${el}</span>
-      </span>`;
-        // clang-format on
-    }
-    #renderRootCauseValues(frame, rootCauses) {
-        return html `
-      ${rootCauses?.webFonts.map(fontReq => this.#renderFontRequest(fontReq))}
-      ${rootCauses?.iframes.map(iframe => this.#renderIframe(iframe))}
-      ${rootCauses?.nonCompositedAnimations.map(failure => this.#renderAnimation(failure))}
-      ${rootCauses?.unsizedImages.map(unsizedImage => this.#renderUnsizedImage(frame, unsizedImage))}
-    `;
-    }
-    #renderStartTime(shift, parsedTrace) {
-        const ts = Trace.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
-        if (shift === this.#event) {
-            return html `${i18n.TimeUtilities.preciseMillisToString(Helpers.Timing.microToMilli(ts))}`;
-        }
-        const shiftTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
-        // clang-format off
-        return html `
-         <button type="button" class="timeline-link" @click=${() => this.#clickEvent(shift)}>${i18nString(UIStrings.layoutShift, { PH1: shiftTs })}</button>`;
-        // clang-format on
-    }
-    #renderShiftRow(shift, parsedTrace, elementsShifted, rootCauses) {
-        const score = shift.args.data?.weighted_score_delta;
-        if (!score) {
-            return null;
-        }
-        const hasCulprits = Boolean(rootCauses &&
-            (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
-                rootCauses.unsizedImages.length));
-        // clang-format off
-        return html `
-      <tr class="shift-row" data-ts=${shift.ts}>
-        <td>${this.#renderStartTime(shift, parsedTrace)}</td>
-        <td>${(score.toFixed(4))}</td>
-        ${elementsShifted.length ? html `
-          <td>
-            <div class="elements-shifted">
-              ${this.#renderShiftedElements(shift, elementsShifted)}
-            </div>
-          </td>` : Lit.nothing}
-        ${hasCulprits ? html `
-          <td class="culprits">
-            ${this.#renderRootCauseValues(shift.args.frame, rootCauses)}
-          </td>` : Lit.nothing}
-      </tr>`;
-        // clang-format on
-    }
-    #renderParentCluster(cluster, parsedTrace) {
-        if (!cluster) {
-            return null;
-        }
-        const ts = Trace.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
-        const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
-        // clang-format off
-        return html `
-      <span class="parent-cluster">${i18nString(UIStrings.parentCluster)}:
-         <button type="button" class="timeline-link" @click=${() => this.#clickEvent(cluster)}>${i18nString(UIStrings.cluster, { PH1: clusterTs })}</button>
-      </span>`;
-        // clang-format on
-    }
-    #renderClusterTotalRow(cluster) {
-        // clang-format off
-        return html `
-      <td class="total-row">${i18nString(UIStrings.total)}</td>
-      <td class="total-row">${(cluster.clusterCumulativeScore.toFixed(4))}</td>`;
-        // clang-format on
-    }
-    #renderShiftDetails(layoutShift, traceInsightsSets, parsedTrace) {
-        if (!traceInsightsSets) {
-            return null;
-        }
-        const insightsId = layoutShift.args.data?.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
-        const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
-        if (!clsInsight || clsInsight instanceof Error) {
-            return null;
-        }
-        const rootCauses = clsInsight.shifts.get(layoutShift);
-        let elementsShifted = layoutShift.args.data?.impacted_nodes ?? [];
-        if (!this.#isFreshRecording) {
-            elementsShifted = elementsShifted?.filter(el => el.debug_name);
-        }
-        const hasCulprits = rootCauses &&
-            (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
-                rootCauses.unsizedImages.length);
-        const hasShiftedElements = elementsShifted?.length;
-        const parentCluster = clsInsight.clusters.find(cluster => {
-            return cluster.events.find(event => event === layoutShift);
-        });
-        // clang-format off
-        return html `
-      <table class="layout-shift-details-table">
-        <thead class="table-title">
-          <tr>
-            <th>${i18nString(UIStrings.startTime)}</th>
-            <th>${i18nString(UIStrings.shiftScore)}</th>
-            ${hasShiftedElements ? html `
-              <th>${i18nString(UIStrings.elementsShifted)}</th>` : Lit.nothing}
-            ${hasCulprits ? html `
-              <th>${i18nString(UIStrings.culprit)}</th> ` : Lit.nothing}
-          </tr>
-        </thead>
-        <tbody>
-          ${this.#renderShiftRow(layoutShift, parsedTrace, elementsShifted, rootCauses)}
-        </tbody>
-      </table>
-      ${this.#renderParentCluster(parentCluster, parsedTrace)}
-    `;
-        // clang-format on
-    }
-    #renderClusterDetails(cluster, traceInsightsSets, parsedTrace) {
-        if (!traceInsightsSets) {
-            return null;
-        }
-        const insightsId = cluster.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
-        const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
-        if (!clsInsight || clsInsight instanceof Error) {
-            return null;
-        }
-        // This finds the culprits of the cluster and returns an array of the culprits.
-        const clusterCulprits = Array.from(clsInsight.shifts.entries())
-            .filter(([key]) => cluster.events.includes(key))
-            .map(([, value]) => value)
-            .flatMap(x => Object.values(x))
-            .flat();
-        const hasCulprits = Boolean(clusterCulprits.length);
-        // clang-format off
-        return html `
-          <table class="layout-shift-details-table">
-            <thead class="table-title">
-              <tr>
-                <th>${i18nString(UIStrings.startTime)}</th>
-                <th>${i18nString(UIStrings.shiftScore)}</th>
-                <th>${i18nString(UIStrings.elementsShifted)}</th>
-                ${hasCulprits ? html `
-                  <th>${i18nString(UIStrings.culprit)}</th> ` : Lit.nothing}
-              </tr>
-            </thead>
-            <tbody>
-              ${cluster.events.map(shift => {
-            const rootCauses = clsInsight.shifts.get(shift);
-            const elementsShifted = shift.args.data?.impacted_nodes ?? [];
-            return this.#renderShiftRow(shift, parsedTrace, elementsShifted, rootCauses);
-        })}
-              ${this.#renderClusterTotalRow(cluster)}
-            </tbody>
-          </table>
-        `;
-        // clang-format on
-    }
-    #render() {
-        if (!this.#event || !this.#parsedTrace) {
-            return;
-        }
-        // clang-format off
-        const output = html `
-      <style>${layoutShiftDetailsStyles}</style>
-      <style>${Buttons.textButtonStyles}</style>
-      <div class="layout-shift-summary-details">
-        <div
-          class="event-details"
-          @mouseover=${this.#togglePopover}
-          @mouseleave=${this.#togglePopover}
-        >
-          ${this.#renderTitle(this.#event)}
-          ${Trace.Types.Events.isSyntheticLayoutShift(this.#event)
-            ? this.#renderShiftDetails(this.#event, this.#traceInsightsSets, this.#parsedTrace)
-            : this.#renderClusterDetails(this.#event, this.#traceInsightsSets, this.#parsedTrace)}
-        </div>
-      </div>
-    `;
-        // clang-format on
-        Lit.render(output, this.#shadow, { host: this });
+    #handleTraceEventClick(event) {
+        this.contentElement.dispatchEvent(new Insights.EventRef.EventReferenceClick(event));
     }
     #togglePopover(e) {
         const show = e.type === 'mouseover';
         if (e.type === 'mouseleave') {
-            this.dispatchEvent(new CustomEvent('toggle-popover', { detail: { show }, bubbles: true, composed: true }));
+            this.contentElement.dispatchEvent(new CustomEvent('toggle-popover', { detail: { show }, bubbles: true, composed: true }));
         }
         if (!(e.target instanceof HTMLElement) || !this.#event) {
             return;
@@ -375,8 +118,267 @@ export class LayoutShiftDetails extends HTMLElement {
         const event = Trace.Types.Events.isSyntheticLayoutShift(this.#event) ?
             this.#event :
             this.#event.events.find(e => e.ts === parseInt(rowEl.getAttribute('data-ts') ?? '', 10));
-        this.dispatchEvent(new CustomEvent('toggle-popover', { detail: { event, show }, bubbles: true, composed: true }));
+        this.contentElement.dispatchEvent(new CustomEvent('toggle-popover', { detail: { event, show }, bubbles: true, composed: true }));
+    }
+    performUpdate() {
+        this.#view({
+            event: this.#event,
+            traceInsightsSets: this.#traceInsightsSets,
+            parsedTrace: this.#parsedTrace,
+            isFreshRecording: this.#isFreshRecording,
+            togglePopover: e => this.#togglePopover(e),
+            onEventClick: e => this.#handleTraceEventClick(e)
+        }, {}, this.contentElement);
     }
 }
-customElements.define('devtools-performance-layout-shift-details', LayoutShiftDetails);
+export const DEFAULT_VIEW = (input, _output, target) => {
+    if (!input.event || !input.parsedTrace) {
+        render(html ``, target, { host: input });
+        return;
+    }
+    const title = Utils.EntryName.nameForEntry(input.event);
+    // clang-format off
+    render(html `
+        <style>${layoutShiftDetailsStyles}</style>
+        <style>${Buttons.textButtonStyles}</style>
+
+      <div class="layout-shift-summary-details">
+        <div
+          class="event-details"
+          @mouseover=${input.togglePopover}
+          @mouseleave=${input.togglePopover}
+        >
+        <div class="layout-shift-details-title">
+          <div class="layout-shift-event-title"></div>
+          ${title}
+        </div>
+        ${Trace.Types.Events.isSyntheticLayoutShift(input.event) ?
+        renderLayoutShiftDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.onEventClick)}
+        </div>
+      </div>
+      `, target, { host: input });
+    // clang-format on
+};
+function renderLayoutShiftDetails(layoutShift, traceInsightsSets, parsedTrace, isFreshRecording, onEventClick) {
+    if (!traceInsightsSets) {
+        return Lit.nothing;
+    }
+    const insightsId = layoutShift.args.data?.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
+    const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
+    if (!clsInsight || clsInsight instanceof Error) {
+        return Lit.nothing;
+    }
+    const rootCauses = clsInsight.shifts.get(layoutShift);
+    let elementsShifted = layoutShift.args.data?.impacted_nodes ?? [];
+    if (!isFreshRecording) {
+        elementsShifted = elementsShifted?.filter(el => el.debug_name);
+    }
+    const hasCulprits = rootCauses &&
+        (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
+            rootCauses.unsizedImages.length);
+    const hasShiftedElements = elementsShifted?.length;
+    const parentCluster = clsInsight.clusters.find(cluster => {
+        return cluster.events.find(event => event === layoutShift);
+    });
+    // clang-format off
+    return html `
+      <table class="layout-shift-details-table">
+        <thead class="table-title">
+          <tr>
+            <th>${i18nString(UIStrings.startTime)}</th>
+            <th>${i18nString(UIStrings.shiftScore)}</th>
+            ${hasShiftedElements ? html `
+              <th>${i18nString(UIStrings.elementsShifted)}</th>` : Lit.nothing}
+            ${hasCulprits ? html `
+              <th>${i18nString(UIStrings.culprit)}</th> ` : Lit.nothing}
+          </tr>
+        </thead>
+        <tbody>
+          ${renderShiftRow(layoutShift, true, parsedTrace, elementsShifted, onEventClick, rootCauses)}
+        </tbody>
+      </table>
+      ${renderParentCluster(parentCluster, onEventClick, parsedTrace)}
+    `;
+    // clang-format on
+}
+function renderLayoutShiftClusterDetails(cluster, traceInsightsSets, parsedTrace, onEventClick) {
+    if (!traceInsightsSets) {
+        return Lit.nothing;
+    }
+    const insightsId = cluster.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
+    const clsInsight = traceInsightsSets.get(insightsId)?.model.CLSCulprits;
+    if (!clsInsight || clsInsight instanceof Error) {
+        return Lit.nothing;
+    }
+    // This finds the culprits of the cluster and returns an array of the culprits.
+    const clusterCulprits = Array.from(clsInsight.shifts.entries())
+        .filter(([key]) => cluster.events.includes(key))
+        .map(([, value]) => value)
+        .flatMap(x => Object.values(x))
+        .flat();
+    const hasCulprits = Boolean(clusterCulprits.length);
+    // clang-format off
+    return html `
+    <table class="layout-shift-details-table">
+      <thead class="table-title">
+        <tr>
+          <th>${i18nString(UIStrings.startTime)}</th>
+          <th>${i18nString(UIStrings.shiftScore)}</th>
+          <th>${i18nString(UIStrings.elementsShifted)}</th>
+          ${hasCulprits ? html `
+            <th>${i18nString(UIStrings.culprit)}</th> ` : Lit.nothing}
+        </tr>
+      </thead>
+      <tbody>
+        ${cluster.events.map(shift => {
+        const rootCauses = clsInsight.shifts.get(shift);
+        const elementsShifted = shift.args.data?.impacted_nodes ?? [];
+        return renderShiftRow(shift, false, parsedTrace, elementsShifted, onEventClick, rootCauses);
+    })}
+
+        <tr>
+          <td class="total-row">${i18nString(UIStrings.total)}</td>
+          <td class="total-row">${(cluster.clusterCumulativeScore.toFixed(4))}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+    // clang-format on
+}
+function renderShiftRow(currentShift, userHasSingleShiftSelected, parsedTrace, elementsShifted, onEventClick, rootCauses) {
+    const score = currentShift.args.data?.weighted_score_delta;
+    if (!score) {
+        return Lit.nothing;
+    }
+    const hasCulprits = Boolean(rootCauses &&
+        (rootCauses.webFonts.length || rootCauses.iframes.length || rootCauses.nonCompositedAnimations.length ||
+            rootCauses.unsizedImages.length));
+    // clang-format off
+    return html `
+      <tr class="shift-row" data-ts=${currentShift.ts}>
+        <td>${renderStartTime(currentShift, userHasSingleShiftSelected, parsedTrace, onEventClick)}</td>
+        <td>${(score.toFixed(4))}</td>
+        ${elementsShifted.length ? html `
+          <td>
+            <div class="elements-shifted">
+              ${renderShiftedElements(currentShift, elementsShifted)}
+            </div>
+          </td>` : Lit.nothing}
+        ${hasCulprits ? html `
+          <td class="culprits">
+            ${rootCauses?.webFonts.map(fontReq => renderFontRequest(fontReq))}
+            ${rootCauses?.iframes.map(iframe => renderIframe(iframe))}
+            ${rootCauses?.nonCompositedAnimations.map(failure => renderAnimation(failure, onEventClick))}
+            ${rootCauses?.unsizedImages.map(unsizedImage => renderUnsizedImage(currentShift.args.frame, unsizedImage))}
+          </td>` : Lit.nothing}
+      </tr>`;
+    // clang-format on
+}
+function renderStartTime(shift, userHasSingleShiftSelected, parsedTrace, onEventClick) {
+    const ts = Trace.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
+    if (userHasSingleShiftSelected) {
+        return html `${i18n.TimeUtilities.preciseMillisToString(Helpers.Timing.microToMilli(ts))}`;
+    }
+    const shiftTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
+    // clang-format off
+    return html `
+         <button type="button" class="timeline-link" @click=${() => onEventClick(shift)}>${i18nString(UIStrings.layoutShift, { PH1: shiftTs })}</button>`;
+    // clang-format on
+}
+function renderParentCluster(cluster, onEventClick, parsedTrace) {
+    if (!cluster) {
+        return Lit.nothing;
+    }
+    const ts = Trace.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
+    const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
+    // clang-format off
+    return html `
+      <span class="parent-cluster">${i18nString(UIStrings.parentCluster)}:<button type="button" class="timeline-link parent-cluster-link" @click=${() => onEventClick(cluster)}>${i18nString(UIStrings.cluster, { PH1: clusterTs })}</button>
+      </span>`;
+    // clang-format on
+}
+function renderShiftedElements(shift, elementsShifted) {
+    // clang-format off
+    return html `
+      ${elementsShifted?.map(el => {
+        if (el.node_id !== undefined) {
+            return html `
+            <devtools-performance-node-link
+              .data=${{
+                backendNodeId: el.node_id,
+                frame: shift.args.frame,
+                fallbackHtmlSnippet: el.debug_name,
+            }}>
+            </devtools-performance-node-link>`;
+        }
+        return Lit.nothing;
+    })}`;
+    // clang-format on
+}
+function renderAnimation(failure, onEventClick) {
+    const event = failure.animation;
+    if (!event) {
+        return Lit.nothing;
+    }
+    // clang-format off
+    return html `
+        <span class="culprit">
+        <span class="culprit-type">${i18nString(UIStrings.nonCompositedAnimation)}: </span>
+        <button type="button" class="culprit-value timeline-link" @click=${() => onEventClick(event)}>${i18nString(UIStrings.animation)}</button>
+      </span>`;
+    // clang-format on
+}
+function renderUnsizedImage(frame, unsizedImage) {
+    // clang-format off
+    const el = html `
+      <devtools-performance-node-link
+        .data=${{
+        backendNodeId: unsizedImage.backendNodeId,
+        frame,
+        fallbackUrl: unsizedImage.paintImageEvent.args.data.url,
+    }}>
+      </devtools-performance-node-link>`;
+    return html `
+      <span class="culprit">
+        <span class="culprit-type">${i18nString(UIStrings.unsizedImage)}: </span>
+        <span class="culprit-value">${el}</span>
+      </span>`;
+    // clang-format on
+}
+function renderFontRequest(request) {
+    const linkifiedURL = linkifyURL(request.args.data.url);
+    // clang-format off
+    return html `
+      <span class="culprit">
+        <span class="culprit-type">${i18nString(UIStrings.fontRequest)}: </span>
+        <span class="culprit-value">${linkifiedURL}</span>
+      </span>`;
+    // clang-format on
+}
+function linkifyURL(url) {
+    return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, {
+        tabStop: true,
+        showColumnNumber: false,
+        inlineFrameIndex: 0,
+        maxLength: MAX_URL_LENGTH,
+    });
+}
+function renderIframe(iframeRootCause) {
+    const domLoadingId = iframeRootCause.frame;
+    const domLoadingFrame = SDK.FrameManager.FrameManager.instance().getFrame(domLoadingId);
+    let el;
+    if (domLoadingFrame) {
+        el = LegacyComponents.Linkifier.Linkifier.linkifyRevealable(domLoadingFrame, domLoadingFrame.displayName());
+    }
+    else {
+        el = linkifyURL(iframeRootCause.url);
+    }
+    // clang-format off
+    return html `
+      <span class="culprit">
+        <span class="culprit-type"> ${i18nString(UIStrings.injectedIframe)}: </span>
+        <span class="culprit-value">${el}</span>
+      </span>`;
+    // clang-format on
+}
 //# sourceMappingURL=LayoutShiftDetails.js.map

@@ -7,6 +7,7 @@ export declare class DuplicatedJavaScript extends BaseInsightComponent<Duplicate
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     renderContent(): Lit.LitTemplate;
 }

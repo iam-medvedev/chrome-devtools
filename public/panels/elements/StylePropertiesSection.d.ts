@@ -51,7 +51,7 @@ export declare class StylePropertiesSection {
     protected createRuleOriginNode(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, linkifier: Components.Linkifier.Linkifier, rule: SDK.CSSRule.CSSRule | null): Node;
     private static getRuleLocationFromCSSRule;
     static tryNavigateToRuleLocation(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, rule: SDK.CSSRule.CSSRule | null): void;
-    protected static linkifyRuleLocation(cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier, styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange): Node;
+    protected static linkifyRuleLocation(cssModel: SDK.CSSModel.CSSModel, linkifier: Components.Linkifier.Linkifier, styleSheetHeader: SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, ruleLocation: TextUtils.TextRange.TextRange): Node;
     private static getCSSSelectorLocation;
     private getFocused;
     private focusNext;
@@ -135,8 +135,8 @@ export declare class StylePropertiesSection {
 export declare class BlankStylePropertiesSection extends StylePropertiesSection {
     private normal;
     private readonly ruleLocation;
-    private readonly styleSheetId;
-    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, defaultSelectorText: string, styleSheetId: Protocol.CSS.StyleSheetId, ruleLocation: TextUtils.TextRange.TextRange, insertAfterStyle: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number);
+    private readonly styleSheetHeader;
+    constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, defaultSelectorText: string, styleSheetHeader: SDK.CSSStyleSheetHeader.CSSStyleSheetHeader, ruleLocation: TextUtils.TextRange.TextRange, insertAfterStyle: SDK.CSSStyleDeclaration.CSSStyleDeclaration, sectionIdx: number);
     private actualRuleLocation;
     private rulePrefix;
     get isBlank(): boolean;

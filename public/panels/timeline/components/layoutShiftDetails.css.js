@@ -21,6 +21,8 @@ export default `/*
     width: var(--sys-size-6);
     height: var(--sys-size-6);
     border: var(--sys-size-1) solid var(--sys-color-divider);
+    /* so the border adds onto the width/height */
+    box-sizing: content-box;
     display: inline-block;
     margin-right: var(--sys-size-3);
   }
@@ -66,6 +68,10 @@ export default `/*
   text-align: left;
 }
 
+.parent-cluster-link {
+  margin-left: var(--sys-size-2);
+}
+
 .timeline-link.invalid-link {
   color: var(--sys-color-state-disabled);
 }
@@ -103,7 +109,7 @@ export default `/*
   display: flex;
   flex-direction: column;
   column-gap: var(--sys-size-4);
-  padding: var(--sys-size-6) var(--sys-size-6) 0 var(--sys-size-6);
+  padding: var(--sys-size-5) var(--sys-size-5) 0 var(--sys-size-5);
 }
 
 .culprits {

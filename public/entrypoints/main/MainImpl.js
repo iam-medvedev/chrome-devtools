@@ -53,6 +53,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as Snippets from '../../panels/snippets/snippets.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
+import * as Snackbar from '../../ui/components/snackbars/snackbars.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -295,7 +296,6 @@ export class MainImpl {
         // Hide third party code (as determined by ignore lists or source maps)
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in Sources tree view');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
-        Root.Runtime.experiments.register("timeline-experimental-insights" /* Root.Runtime.ExperimentName.TIMELINE_EXPERIMENTAL_INSIGHTS */, 'Performance panel: enable experimental performance insights');
         Root.Runtime.experiments.enableExperimentsByDefault([
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
             "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
@@ -326,6 +326,7 @@ export class MainImpl {
         MainImpl.time('Main._createAppUI');
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
+        isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, event => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
         const defaultThemeSetting = 'systemPreferred';
         const themeSetting = Common.Settings.Settings.instance().createSetting('ui-theme', defaultThemeSetting);
         UI.UIUtils.initializeUIUtils(document);

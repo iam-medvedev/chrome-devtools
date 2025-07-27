@@ -1,4 +1,4 @@
-import type * as Common from '../../core/common/common.js';
+import * as Common from '../../core/common/common.js';
 import type * as Platform from '../../core/platform/platform.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 export declare enum PlatformFileSystemType {
@@ -29,7 +29,13 @@ export declare enum PlatformFileSystemType {
      */
     WORKSPACE_PROJECT = "workspace-project"
 }
-export declare class PlatformFileSystem {
+export declare const enum Events {
+    FILE_SYSTEM_ERROR = "file-system-error"
+}
+interface EventTypes {
+    [Events.FILE_SYSTEM_ERROR]: string;
+}
+export declare class PlatformFileSystem extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     /**
      * True if the filesystem was automatically discovered (see
@@ -66,3 +72,4 @@ export declare class PlatformFileSystem {
     tooltipForURL(_url: Platform.DevToolsPath.UrlString): string;
     supportsAutomapping(): boolean;
 }
+export {};

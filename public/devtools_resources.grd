@@ -53,6 +53,9 @@
       <include file="Images/arrow-up-down.svg" name="IMAGES_ARROW_UP_DOWN_SVG" resource_path="Images/arrow-up-down.svg" type="BINDATA" compress="false"/>
       <include file="Images/arrow-up.svg" name="IMAGES_ARROW_UP_SVG" resource_path="Images/arrow-up.svg" type="BINDATA" compress="false"/>
       <include file="Images/attach-file.svg" name="IMAGES_ATTACH_FILE_SVG" resource_path="Images/attach-file.svg" type="BINDATA" compress="false"/>
+      <include file="Images/baseline-high-availability.svg" name="IMAGES_BASELINE_HIGH_AVAILABILITY_SVG" resource_path="Images/baseline-high-availability.svg" type="BINDATA" compress="false"/>
+      <include file="Images/baseline-limited-availability.svg" name="IMAGES_BASELINE_LIMITED_AVAILABILITY_SVG" resource_path="Images/baseline-limited-availability.svg" type="BINDATA" compress="false"/>
+      <include file="Images/baseline-low-availability.svg" name="IMAGES_BASELINE_LOW_AVAILABILITY_SVG" resource_path="Images/baseline-low-availability.svg" type="BINDATA" compress="false"/>
       <include file="Images/bell.svg" name="IMAGES_BELL_SVG" resource_path="Images/bell.svg" type="BINDATA" compress="false"/>
       <include file="Images/bezier-curve-filled.svg" name="IMAGES_BEZIER_CURVE_FILLED_SVG" resource_path="Images/bezier-curve-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/bin.svg" name="IMAGES_BIN_SVG" resource_path="Images/bin.svg" type="BINDATA" compress="false"/>
@@ -381,6 +384,7 @@
       <include file="inspector.html" name="INSPECTOR_HTML" resource_path="inspector.html" type="BINDATA" compress="false"/>
       <include file="js_app.html" name="JS_APP_HTML" resource_path="js_app.html" type="BINDATA" compress="false"/>
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
+      <include file="models/ai_code_completion/ai_code_completion.js" name="MODELS_AI_CODE_COMPLETION_AI_CODE_COMPLETION_JS" resource_path="models/ai_code_completion/ai_code_completion.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>

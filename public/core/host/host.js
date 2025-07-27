@@ -1950,7 +1950,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-experimental-insights"] = 102] = "timeline-experimental-insights";
   DevtoolsExperiments2[DevtoolsExperiments2["vertical-drawer"] = 107] = "vertical-drawer";
   DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 108] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));

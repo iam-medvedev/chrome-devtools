@@ -396,8 +396,9 @@ export class ChatView extends HTMLElement {
         if (!ev.target || !(ev.target instanceof HTMLTextAreaElement)) {
             return;
         }
-        // Go to a new line only when Shift + Enter is pressed.
-        if (ev.key === 'Enter' && !ev.shiftKey) {
+        // Go to a new line on Shift+Enter. On Enter, submit unless the
+        // user is in IME composition.
+        if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) {
             ev.preventDefault();
             if (!ev.target?.value || this.#props.imageInput?.isLoading) {
                 return;
@@ -1088,7 +1089,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
         @keydown=${onTextAreaKeyDown}
         @input=${(event) => onTextInputChange(event.target.value)}
         placeholder=${inputPlaceholder}
-        jslog=${VisualLogging.textField('query').track({ keydown: 'Enter' })}
+        jslog=${VisualLogging.textField('query').track({ change: true, keydown: 'Enter' })}
         aria-description=${i18nString(UIStrings.inputTextAriaDescription)}
       ></textarea>
       <div class="chat-input-actions">

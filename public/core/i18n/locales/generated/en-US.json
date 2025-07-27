@@ -1280,9 +1280,6 @@
   "generated/Deprecation.ts | GetUserMediaInsecureOrigin": {
     "message": "getUserMedia() no longer works on insecure origins. To use this feature, you should consider switching your application to a secure origin, such as HTTPS. See https://goo.gle/chrome-insecure-origins for more details."
   },
-  "generated/Deprecation.ts | H1UserAgentFontSizeInSection": {
-    "message": "Found an &lt;h1&gt; tag within an &lt;article&gt;, &lt;aside&gt;, &lt;nav&gt;, or &lt;section&gt; which does not have a specified font-size. The size of this heading text will be changing in this browser in the near future. See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements#specifying_a_uniform_font_size_for_h1 for more information."
-  },
   "generated/Deprecation.ts | HostCandidateAttributeGetter": {
     "message": "RTCPeerConnectionIceErrorEvent.hostCandidate is deprecated. Please use RTCPeerConnectionIceErrorEvent.address or RTCPeerConnectionIceErrorEvent.port instead."
   },
@@ -1696,6 +1693,12 @@
   },
   "models/persistence/IsolatedFileSystem.ts | cantReadFileSS": {
     "message": "Can't read file: {PH1}: {PH2}"
+  },
+  "models/persistence/IsolatedFileSystem.ts | createDirFailed": {
+    "message": "Overrides: Failed to create directory {PH1}. Are the workspace or overrides configured correctly?"
+  },
+  "models/persistence/IsolatedFileSystem.ts | createDirFailedBecausePathIsFile": {
+    "message": "Overrides: Failed to create directory {PH1} because the path exists and is a file."
   },
   "models/persistence/IsolatedFileSystem.ts | fileSystemErrorS": {
     "message": "File system error: {PH1}"
@@ -5597,13 +5600,16 @@
   "panels/common/common.ts | cancel": {
     "message": "Cancel"
   },
-  "panels/common/common.ts | gotIt": {
+  "panels/common/FreDialog.ts | cancel": {
+    "message": "Cancel"
+  },
+  "panels/common/FreDialog.ts | gotIt": {
     "message": "Got it"
   },
-  "panels/common/common.ts | learnMore": {
+  "panels/common/FreDialog.ts | learnMore": {
     "message": "Learn more"
   },
-  "panels/common/common.ts | thingsToConsider": {
+  "panels/common/FreDialog.ts | thingsToConsider": {
     "message": "Things to consider"
   },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
@@ -6401,11 +6407,29 @@
   "panels/elements/components/CSSHintDetailsView.ts | learnMore": {
     "message": "Learn More"
   },
+  "panels/elements/components/CSSPropertyDocsView.ts | browserOnPlatform": {
+    "message": "{PH1} on {PH2}"
+  },
   "panels/elements/components/CSSPropertyDocsView.ts | dontShow": {
     "message": "Don't show"
   },
   "panels/elements/components/CSSPropertyDocsView.ts | learnMore": {
     "message": "Learn more"
+  },
+  "panels/elements/components/CSSPropertyDocsView.ts | limitedAvailability": {
+    "message": "Limited availability across major browsers"
+  },
+  "panels/elements/components/CSSPropertyDocsView.ts | limitedAvailabilityInBrowsers": {
+    "message": "Limited availability across major browsers (not fully implemented in {PH1})"
+  },
+  "panels/elements/components/CSSPropertyDocsView.ts | newlyAvailableSince": {
+    "message": "Newly available across major browsers (Baseline since {PH1})"
+  },
+  "panels/elements/components/CSSPropertyDocsView.ts | unknownDate": {
+    "message": "an unknown date"
+  },
+  "panels/elements/components/CSSPropertyDocsView.ts | widelyAvailableSince": {
+    "message": "Widely available across major browsers (Baseline since {PH1})"
   },
   "panels/elements/components/CSSVariableValueView.ts | invalidPropertyValue": {
     "message": "Invalid property value, expected type {type}"
@@ -14546,8 +14570,8 @@
   "panels/timeline/EventsTimelineTreeView.ts | startTime": {
     "message": "Start time"
   },
-  "panels/timeline/ExtensionTrackAppender.ts | customTrackName": {
-    "message": "{PH1} — Custom track"
+  "panels/timeline/ExtensionTrackAppender.ts | customTrackSubtitle": {
+    "message": "— Custom"
   },
   "panels/timeline/GPUTrackAppender.ts | gpu": {
     "message": "GPU"
@@ -14868,7 +14892,7 @@
     "message": "Dim 3rd parties"
   },
   "panels/timeline/TimelinePanel.ts | dropTimelineFileOrUrlHere": {
-    "message": "Drop timeline file or URL here"
+    "message": "Drop trace file or URL here"
   },
   "panels/timeline/TimelinePanel.ts | enableAdvancedPaint": {
     "message": "Enable advanced paint instrumentation (slow)"
@@ -14900,17 +14924,17 @@
   "panels/timeline/TimelinePanel.ts | hideSidebar": {
     "message": "Hide sidebar"
   },
-  "panels/timeline/TimelinePanel.ts | initializingProfiler": {
-    "message": "Initializing profiler…"
+  "panels/timeline/TimelinePanel.ts | initializingTracing": {
+    "message": "Initializing tracing…"
   },
   "panels/timeline/TimelinePanel.ts | learnMore": {
     "message": "Learn more"
   },
-  "panels/timeline/TimelinePanel.ts | loadingProfile": {
-    "message": "Loading profile…"
+  "panels/timeline/TimelinePanel.ts | loadingTrace": {
+    "message": "Loading trace…"
   },
-  "panels/timeline/TimelinePanel.ts | loadProfile": {
-    "message": "Load profile…"
+  "panels/timeline/TimelinePanel.ts | loadTrace": {
+    "message": "Load trace…"
   },
   "panels/timeline/TimelinePanel.ts | memory": {
     "message": "Memory"
@@ -14927,11 +14951,8 @@
   "panels/timeline/TimelinePanel.ts | processed": {
     "message": "Processed"
   },
-  "panels/timeline/TimelinePanel.ts | processingProfile": {
-    "message": "Processing profile…"
-  },
-  "panels/timeline/TimelinePanel.ts | profiling": {
-    "message": "Profiling…"
+  "panels/timeline/TimelinePanel.ts | processingTrace": {
+    "message": "Processing trace…"
   },
   "panels/timeline/TimelinePanel.ts | received": {
     "message": "Received"
@@ -14939,8 +14960,8 @@
   "panels/timeline/TimelinePanel.ts | recordingFailed": {
     "message": "Recording failed"
   },
-  "panels/timeline/TimelinePanel.ts | saveProfile": {
-    "message": "Save profile…"
+  "panels/timeline/TimelinePanel.ts | saveTrace": {
+    "message": "Save trace…"
   },
   "panels/timeline/TimelinePanel.ts | saveTraceWithAnnotationsMenuOption": {
     "message": "Save trace"
@@ -14992,6 +15013,9 @@
   },
   "panels/timeline/TimelinePanel.ts | timelineZoom": {
     "message": "Zoom"
+  },
+  "panels/timeline/TimelinePanel.ts | tracing": {
+    "message": "Tracing…"
   },
   "panels/timeline/TimelineSelectorStatsView.ts | copyTable": {
     "message": "Copy table"

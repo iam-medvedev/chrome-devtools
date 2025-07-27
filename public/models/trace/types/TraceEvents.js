@@ -449,11 +449,17 @@ export function isDisplayListItemListSnapshot(event) {
 export function isLayerTreeHostImplSnapshot(event) {
     return event.name === "cc::LayerTreeHostImpl" /* Name.LAYER_TREE_HOST_IMPL_SNAPSHOT */;
 }
+export function isFireAnimationFrame(event) {
+    return event.name === "FireAnimationFrame" /* Name.FIRE_ANIMATION_FRAME */;
+}
 export function isTimerInstall(event) {
     return event.name === "TimerInstall" /* Name.TIMER_INSTALL */;
 }
 export function isTimerFire(event) {
     return event.name === "TimerFire" /* Name.TIMER_FIRE */;
+}
+export function isRequestIdleCallback(event) {
+    return event.name === "RequestIdleCallback" /* Name.REQUEST_IDLE_CALLBACK */;
 }
 export function isWebSocketCreate(event) {
     return event.name === "WebSocketCreate" /* Name.WEB_SOCKET_CREATE */;

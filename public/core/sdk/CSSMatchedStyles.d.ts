@@ -89,6 +89,7 @@ export declare class CSSMatchedStyles {
     propertyState(property: CSSProperty): PropertyState | null;
     resetActiveProperties(): void;
     propertyMatchers(style: CSSStyleDeclaration, computedStyles: Map<string, string> | null): Array<Matcher<Match>>;
+    environmentVariable(name: string): string | undefined;
 }
 export declare class CSSValueSource {
     readonly declaration: CSSProperty | CSSRegisteredProperty;

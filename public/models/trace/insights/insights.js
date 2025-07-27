@@ -1395,7 +1395,8 @@ __export(DuplicatedJavaScript_exports, {
   UIStrings: () => UIStrings5,
   createOverlays: () => createOverlays5,
   generateInsight: () => generateInsight5,
-  i18nString: () => i18nString5
+  i18nString: () => i18nString5,
+  isDuplicatedJavaScript: () => isDuplicatedJavaScript
 });
 import * as i18n9 from "./../../../core/i18n/i18n.js";
 import * as Extras from "./../extras/extras.js";
@@ -1428,6 +1429,9 @@ function finalize5(partialModel) {
     relatedEvents: [...new Set(requests)],
     ...partialModel
   };
+}
+function isDuplicatedJavaScript(model) {
+  return model.insightKey === "DuplicatedJavaScript";
 }
 function generateInsight5(parsedTrace, context) {
   const scripts = parsedTrace.Scripts.scripts.filter((script) => {

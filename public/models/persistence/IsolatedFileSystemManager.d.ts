@@ -4,6 +4,7 @@ import type { FilesChangedData } from './FileSystemWorkspaceBinding.js';
 import { IsolatedFileSystem } from './IsolatedFileSystem.js';
 import { type PlatformFileSystem } from './PlatformFileSystem.js';
 export declare class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
     private readonly fileSystemsInternal;
     private readonly callbacks;
     private readonly progresses;
@@ -39,7 +40,8 @@ export declare enum Events {
     FileSystemRemoved = "FileSystemRemoved",
     FileSystemFilesChanged = "FileSystemFilesChanged",
     ExcludedFolderAdded = "ExcludedFolderAdded",
-    ExcludedFolderRemoved = "ExcludedFolderRemoved"
+    ExcludedFolderRemoved = "ExcludedFolderRemoved",
+    FileSystemError = "FileSystemError"
 }
 export interface EventTypes {
     [Events.FileSystemAdded]: PlatformFileSystem;
@@ -47,4 +49,5 @@ export interface EventTypes {
     [Events.FileSystemFilesChanged]: FilesChangedData;
     [Events.ExcludedFolderAdded]: Platform.DevToolsPath.EncodedPathString;
     [Events.ExcludedFolderRemoved]: Platform.DevToolsPath.EncodedPathString;
+    [Events.FileSystemError]: string;
 }

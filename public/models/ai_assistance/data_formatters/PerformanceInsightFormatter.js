@@ -41,9 +41,9 @@ function getLCPData(parsedTrace, frameId, navigationId) {
 export class PerformanceInsightFormatter {
     #insight;
     #parsedTrace;
-    constructor(activeInsight) {
-        this.#insight = activeInsight.insight;
-        this.#parsedTrace = activeInsight.parsedTrace;
+    constructor(parsedTrace, insight) {
+        this.#insight = insight;
+        this.#parsedTrace = parsedTrace;
     }
     /**
      * Information about LCP which we pass to the LLM for all insights that relate to LCP.
@@ -225,6 +225,19 @@ ${shiftsFormatted.join('\n')}`;
             return `Here is a list of the network requests that were served over a legacy HTTP protocol:
 ${requestSummary}`;
         }
+        if (Trace.Insights.Models.DuplicatedJavaScript.isDuplicatedJavaScript(this.#insight)) {
+            const totalWastedBytes = this.#insight.wastedBytes;
+            const duplicatedScriptsByModule = this.#insight.duplicationGroupedByNodeModules;
+            if (duplicatedScriptsByModule.size === 0) {
+                return 'There is no duplicated JavaScript in the page modules';
+            }
+            const filesFormatted = Array.from(duplicatedScriptsByModule)
+                .map(([module, duplication]) => `- Source: ${module} - Duplicated bytes: ${duplication.estimatedDuplicateBytes} bytes`)
+                .join('\n');
+            return `Total wasted bytes: ${totalWastedBytes} bytes.
+
+Duplication grouped by Node modules: ${filesFormatted}`;
+        }
         return '';
     }
     #links() {
@@ -289,7 +302,8 @@ ${requestSummary}`;
             case 'DOMSize':
                 return '';
             case 'DuplicatedJavaScript':
-                return '';
+                return `This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
+  This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.`;
             case 'FontDisplay':
                 return '';
             case 'ForcedReflow':
@@ -469,33 +483,7 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
     // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
     // format description.
     static #networkRequestsArrayCompressed(requests, parsedTrace) {
-        const formatDescription = `The format is as follows:
-    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-    Timings (all in milliseconds, relative to navigation start):
-    - \`queuedTime\`: When the request was queued.
-    - \`requestSentTime\`: When the request was sent.
-    - \`downloadCompleteTime\`: When the download completed.
-    - \`processingCompleteTime\`: When main thread processing finished.
-    Durations (all in milliseconds):
-    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-    - \`downloadDuration\`: Time spent actively downloading the resource.
-    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-    - \`initialPriority\`: The initial network request priority.
-    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
-
+        const networkDataString = `
     Network requests data:
 
     `;
@@ -512,7 +500,7 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
                 return `${index}: ${url}`;
             })
                 .join(', ')}]`;
-        return formatDescription + '\n\n' + urlsMapString + '\n\n' + allRequestsText;
+        return networkDataString + '\n\n' + urlsMapString + '\n\n' + allRequestsText;
     }
     /**
      *

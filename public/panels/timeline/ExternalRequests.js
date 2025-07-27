@@ -11,7 +11,7 @@ import * as Utils from './utils/utils.js';
  *   to figure out which insight to use if there are >1 navigations -it would need
  *   some extra input data to figure it out.
  */
-export async function getInsightToDebug(model, insightTitle) {
+export async function getInsightAgentFocusToDebug(model, insightTitle) {
     const parsedTrace = model.parsedTrace();
     const latestInsights = model.traceInsights();
     if (!latestInsights || !parsedTrace) {
@@ -40,7 +40,7 @@ export async function getInsightToDebug(model, insightTitle) {
         };
     }
     const insight = insights.model[matchingInsightKey];
-    const activeInsight = new Utils.InsightAIContext.ActiveInsight(insight, insights.bounds, parsedTrace);
-    return { insight: activeInsight };
+    const focus = Utils.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insights.bounds);
+    return { focus };
 }
 //# sourceMappingURL=ExternalRequests.js.map

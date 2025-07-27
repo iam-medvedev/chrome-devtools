@@ -43,3 +43,7 @@ export declare function md(markdown: Common.UIString.LocalizedString): Lit.Templ
  * @example 'securepubads.g.doubleclick.net (Google/Doubleclick Ads)'
  */
 export declare function formatOriginWithEntity(url: URL, entity: Trace.Handlers.Helpers.Entity | null, parenthesizeEntity?: boolean): string;
+export declare class RevealableInsight {
+    insight: Trace.Insights.Types.InsightModel;
+    constructor(insight: Trace.Insights.Types.InsightModel);
+}

@@ -61,6 +61,8 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     dimThirdPartiesIfRequired(): void;
     setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
     setOverlays(overlays: Trace.Types.Overlays.Overlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
+    hoverAnnotationInSidebar(annotation: Trace.Types.File.Annotation): void;
+    sidebarAnnotationHoverOut(): void;
     revealAnnotation(annotation: Trace.Types.File.Annotation): void;
     setActiveInsight(insight: TimelineComponents.Sidebar.ActiveInsight | null): void;
     addTimestampMarkerOverlay(timestamp: Trace.Types.Timing.Micro): void;

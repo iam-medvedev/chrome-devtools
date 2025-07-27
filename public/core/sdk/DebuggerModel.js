@@ -791,6 +791,42 @@ export class DebuggerModel extends SDKModel {
     getEvaluateOnCallFrameCallback() {
         return this.evaluateOnCallFrameCallback;
     }
+    /**
+     * Iterates the async stack trace parents.
+     *
+     * Retrieving cross-target async stack fragments requires CDP interaction, so this is an async generator.
+     *
+     * Important: This iterator will not yield the "synchronous" part of the stack trace, only the async parent chain.
+     */
+    async *iterateAsyncParents(stackTraceOrPausedDetails) {
+        // We make `DebuggerPausedDetails` look like a stack trace. We are only interested in `parent` and `parentId` in any case.
+        let stackTrace = stackTraceOrPausedDetails instanceof DebuggerPausedDetails ?
+            {
+                callFrames: [],
+                parent: stackTraceOrPausedDetails.asyncStackTrace,
+                parentId: stackTraceOrPausedDetails.asyncStackTraceId
+            } :
+            stackTraceOrPausedDetails;
+        while (true) {
+            if (stackTrace.parent) {
+                stackTrace = stackTrace.parent;
+            }
+            else if (stackTrace.parentId) {
+                const model = stackTrace.parentId.debuggerId ?
+                    await DebuggerModel.modelForDebuggerId(stackTrace.parentId.debuggerId) :
+                    this;
+                const maybeStackTrace = await model?.fetchAsyncStackTrace(stackTrace.parentId);
+                if (!maybeStackTrace) {
+                    return;
+                }
+                stackTrace = maybeStackTrace;
+            }
+            else {
+                return;
+            }
+            yield stackTrace;
+        }
+    }
 }
 const debuggerIdToModel = new Map();
 /**

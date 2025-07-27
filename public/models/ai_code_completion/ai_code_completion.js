@@ -36,7 +36,9 @@ var AiCodeCompletion = class {
       options: {
         inference_language: inferenceLanguage,
         temperature: validTemperature(this.#options.temperature),
-        model_id: this.#options.modelId || void 0
+        model_id: this.#options.modelId || void 0,
+        stop_sequences: ["\n"]
+        // We are prioritizing single line suggestions to reduce noise
       },
       metadata: {
         disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),

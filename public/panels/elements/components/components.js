@@ -709,7 +709,7 @@ var cssPropertyDocsView_css_default = `/*
  */
 
 .docs-popup-wrapper {
-  max-width: 350px;
+  max-width: 420px;
   font-size: 12px;
   line-height: 1.4;
 }
@@ -735,6 +735,17 @@ var cssPropertyDocsView_css_default = `/*
   justify-content: space-between;
 }
 
+#baseline {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+#baseline-icon {
+  width: 18px;
+  height: 18px;
+}
+
 /*# sourceURL=${import.meta.resolve("./cssPropertyDocsView.css")} */`;
 
 // gen/front_end/panels/elements/components/CSSPropertyDocsView.js
@@ -746,10 +757,150 @@ var UIStrings3 = {
   /**
    *@description Text for a checkbox to turn off the CSS property documentation.
    */
-  dontShow: "Don't show"
+  dontShow: "Don't show",
+  /**
+   *@description Text indicating that the CSS property has limited availability across major browsers.
+   */
+  limitedAvailability: "Limited availability across major browsers",
+  /**
+   *@description Text indicating that the CSS property has limited availability across major browsers, with a list of unsupported browsers.
+   *@example {Firefox} PH1
+   *@example {Safari on iOS} PH1
+   *@example {Chrome, Firefox on Android, or Safari} PH1
+   */
+  limitedAvailabilityInBrowsers: "Limited availability across major browsers (not fully implemented in {PH1})",
+  /**
+   *@description Text to display a combination of browser name and platform name.
+   *@example {Safari} PH1
+   *@example {iOS} PH2
+   */
+  browserOnPlatform: "{PH1} on {PH2}",
+  /**
+   *@description Text indicating that the CSS property is newly available across major browsers since a certain time.
+   *@example {September 2015} PH1
+   */
+  newlyAvailableSince: "Newly available across major browsers (`Baseline` since {PH1})",
+  /**
+   *@description Text indicating that the CSS property is widely available across major browsers since a certain time.
+   *@example {September 2015} PH1
+   *@example {an unknown date} PH1
+   */
+  widelyAvailableSince: "Widely available across major browsers (`Baseline` since {PH1})",
+  /**
+   *@description Text indicating that a specific date is not known.
+   */
+  unknownDate: "an unknown date"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/elements/components/CSSPropertyDocsView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var BASELINE_HIGH_AVAILABILITY_ICON = "../../../Images/baseline-high-availability.svg";
+var BASELINE_LOW_AVAILABILITY_ICON = "../../../Images/baseline-low-availability.svg";
+var BASELINE_LIMITED_AVAILABILITY_ICON = "../../../Images/baseline-limited-availability.svg";
+var getBaselineIconPath = (baseline) => {
+  let relativePath;
+  switch (baseline.status) {
+    case "high":
+      relativePath = BASELINE_HIGH_AVAILABILITY_ICON;
+      break;
+    case "low":
+      relativePath = BASELINE_LOW_AVAILABILITY_ICON;
+      break;
+    default:
+      relativePath = BASELINE_LIMITED_AVAILABILITY_ICON;
+  }
+  return new URL(relativePath, import.meta.url).toString();
+};
+var allBrowserIds = /* @__PURE__ */ new Set([
+  "C",
+  "CA",
+  "E",
+  "FF",
+  "FFA",
+  "S",
+  "SM"
+  /* BrowserId.SM */
+]);
+var browserIdToNameAndPlatform = /* @__PURE__ */ new Map([
+  ["C", {
+    name: "Chrome",
+    platform: "desktop"
+    /* BrowserPlatform.DESKTOP */
+  }],
+  ["CA", {
+    name: "Chrome",
+    platform: "Android"
+    /* BrowserPlatform.ANDROID */
+  }],
+  ["E", {
+    name: "Edge",
+    platform: "desktop"
+    /* BrowserPlatform.DESKTOP */
+  }],
+  ["FF", {
+    name: "Firefox",
+    platform: "desktop"
+    /* BrowserPlatform.DESKTOP */
+  }],
+  ["FFA", {
+    name: "Firefox",
+    platform: "Android"
+    /* BrowserPlatform.ANDROID */
+  }],
+  ["S", {
+    name: "Safari",
+    platform: "macOS"
+    /* BrowserPlatform.MACOS */
+  }],
+  ["SM", {
+    name: "Safari",
+    platform: "iOS"
+    /* BrowserPlatform.IOS */
+  }]
+]);
+function formatBrowserList(browserNames) {
+  const formatter = new Intl.ListFormat(i18n5.DevToolsLocale.DevToolsLocale.instance().locale, {
+    style: "long",
+    type: "disjunction"
+  });
+  return formatter.format(browserNames.entries().map(([name, platforms]) => platforms.length !== 1 || platforms[0] === "desktop" ? name : i18nString3(UIStrings3.browserOnPlatform, { PH1: name, PH2: platforms[0] })));
+}
+var formatBaselineDate = (date) => {
+  if (!date) {
+    return i18nString3(UIStrings3.unknownDate);
+  }
+  const parsedDate = new Date(date);
+  const formatter = new Intl.DateTimeFormat(i18n5.DevToolsLocale.DevToolsLocale.instance().locale, {
+    month: "long",
+    year: "numeric"
+  });
+  return formatter.format(parsedDate);
+};
+var getBaselineMissingBrowsers = (browsers) => {
+  const browserIds = browsers.map((v) => v.replace(/\d*$/, ""));
+  const missingBrowserIds = allBrowserIds.difference(new Set(browserIds));
+  const missingBrowsers = /* @__PURE__ */ new Map();
+  for (const id of missingBrowserIds) {
+    const browserInfo = browserIdToNameAndPlatform.get(id);
+    if (browserInfo) {
+      const { name, platform } = browserInfo;
+      missingBrowsers.set(name, [...missingBrowsers.get(name) ?? [], platform]);
+    }
+  }
+  return missingBrowsers;
+};
+var getBaselineText = (baseline, browsers) => {
+  if (baseline.status === "false") {
+    const missingBrowsers = browsers && getBaselineMissingBrowsers(browsers);
+    if (missingBrowsers) {
+      return i18nString3(UIStrings3.limitedAvailabilityInBrowsers, { PH1: formatBrowserList(missingBrowsers) });
+    }
+    return i18nString3(UIStrings3.limitedAvailability);
+  }
+  if (baseline.status === "low") {
+    return i18nString3(UIStrings3.newlyAvailableSince, { PH1: formatBaselineDate(baseline.baseline_low_date) });
+  }
+  return i18nString3(UIStrings3.widelyAvailableSince, { PH1: formatBaselineDate(baseline.baseline_high_date) });
+};
 var CSSPropertyDocsView = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #cssProperty;
@@ -763,14 +914,26 @@ var CSSPropertyDocsView = class extends HTMLElement {
     Common.Settings.Settings.instance().moduleSetting("show-css-property-documentation-on-hover").set(showDocumentation);
   }
   #render() {
-    const description = this.#cssProperty.description;
-    const link = this.#cssProperty.references?.[0].url;
+    const { description, references, baseline, browsers } = this.#cssProperty;
+    const link = references?.[0].url;
     render5(html5`
       <style>${cssPropertyDocsView_css_default}</style>
       <div class="docs-popup-wrapper">
         ${description ? html5`
           <div id="description">
             ${description}
+          </div>
+        ` : nothing2}
+        ${baseline ? html5`
+          <div id="baseline" class="docs-popup-section">
+            <img
+              id="baseline-icon"
+              src=${getBaselineIconPath(baseline)}
+              role="presentation"
+            >
+            <span>
+              ${getBaselineText(baseline, browsers)}
+            </span>
           </div>
         ` : nothing2}
         ${link ? html5`

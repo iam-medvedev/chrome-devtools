@@ -12,7 +12,7 @@ import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as Utils from '../utils/utils.js';
-import { RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
+import { AnnotationHoverOut, HoverAnnotation, RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
 const { html, render } = Lit;
 const diagramImageUrl = new URL('../../../Images/performance-panel-diagram.svg', import.meta.url).toString();
@@ -167,6 +167,12 @@ export class SidebarAnnotationsTab extends UI.Widget.Widget {
             annotationEntryToColorMap: this.#annotationEntryToColorMap,
             onAnnotationClick: (annotation) => {
                 this.contentElement.dispatchEvent(new RevealAnnotation(annotation));
+            },
+            onAnnotationHover: (annotation) => {
+                this.contentElement.dispatchEvent(new HoverAnnotation(annotation));
+            },
+            onAnnotationHoverOut: () => {
+                this.contentElement.dispatchEvent(new AnnotationHoverOut());
             },
             onAnnotationDelete: (annotation) => {
                 this.contentElement.dispatchEvent(new RemoveAnnotation(annotation));
@@ -357,6 +363,8 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             return html `
                 <div class="annotation-container"
                   @click=${() => input.onAnnotationClick(annotation)}
+                  @mouseover=${() => (annotation.type === 'ENTRY_LABEL') ? input.onAnnotationHover(annotation) : null}
+                  @mouseout=${() => (annotation.type === 'ENTRY_LABEL') ? input.onAnnotationHoverOut() : null}
                   aria-label=${label}
                   tabindex="0"
                   jslog=${VisualLogging.item(`timeline.annotation-sidebar.annotation-${jslogForAnnotation(annotation)}`).track({ click: true })}

@@ -91,7 +91,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         // Assert that the right component is rendered. This component has its own
         // tests for its contents so no need to duplicate those here.
-        const layoutShiftDetails = detailsContentElement.querySelector('devtools-performance-layout-shift-details');
+        const layoutShiftDetails = detailsContentElement.querySelector('[data-layout-shift-details]');
         assert.isNotNull(layoutShiftDetails);
     });
     it('renders the layout shift component for a selected cluster', async function () {
@@ -112,7 +112,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
         // Assert that the right component is rendered. This component has its own
         // tests for its contents so no need to duplicate those here.
-        const layoutShiftDetails = detailsContentElement.querySelector('devtools-performance-layout-shift-details');
+        const layoutShiftDetails = detailsContentElement.querySelector('[data-layout-shift-details]');
         assert.isNotNull(layoutShiftDetails);
     });
     it('updates the range details when the user has a range selected', async function () {

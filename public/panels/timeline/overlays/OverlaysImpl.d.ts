@@ -179,6 +179,8 @@ export declare class Overlays extends EventTarget {
      * rendered in the right place.
      */
     update(): Promise<void>;
+    highlightOverlay(overlay: Trace.Types.Overlays.EntryLabel): void;
+    undimAllEntryLabels(): void;
     /**
      * @returns true if the entry is visible on chart, which means that both
      * horizontally and vertically it is at least partially in view.

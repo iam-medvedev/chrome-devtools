@@ -11,15 +11,15 @@ import type { CSSStyleSheetHeader } from './CSSStyleSheetHeader.js';
 import { CSSSupports } from './CSSSupports.js';
 export declare class CSSRule {
     readonly cssModelInternal: CSSModel;
-    styleSheetId: Protocol.CSS.StyleSheetId | undefined;
-    sourceURL: string | undefined;
-    origin: Protocol.CSS.StyleSheetOrigin;
-    style: CSSStyleDeclaration;
+    readonly origin: Protocol.CSS.StyleSheetOrigin;
+    readonly style: CSSStyleDeclaration;
+    readonly header: CSSStyleSheetHeader | null;
     constructor(cssModel: CSSModel, payload: {
         style: Protocol.CSS.CSSStyle;
-        styleSheetId: Protocol.CSS.StyleSheetId | undefined;
         origin: Protocol.CSS.StyleSheetOrigin;
+        header: CSSStyleSheetHeader | null;
     });
+    get sourceURL(): string | undefined;
     rebase(edit: Edit): void;
     resourceURL(): Platform.DevToolsPath.UrlString;
     isUserAgent(): boolean;
@@ -28,7 +28,6 @@ export declare class CSSRule {
     isRegular(): boolean;
     isKeyframeRule(): boolean;
     cssModel(): CSSModel;
-    getStyleSheetHeader(styleSheetId: Protocol.CSS.StyleSheetId): CSSStyleSheetHeader;
 }
 declare class CSSValue {
     text: string;

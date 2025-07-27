@@ -248,6 +248,9 @@ export class ModificationsManager extends EventTarget {
         }
         return null;
     }
+    getOverlaybyAnnotation(annotation) {
+        return this.#overlayForAnnotation.get(annotation) || null;
+    }
     getAnnotations() {
         return [...this.#overlayForAnnotation.keys()];
     }

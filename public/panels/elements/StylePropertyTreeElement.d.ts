@@ -18,6 +18,17 @@ interface StylePropertyTreeElementParams {
     overloaded: boolean;
     newProperty: boolean;
 }
+declare const EnvFunctionRenderer_base: abstract new () => {
+    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.EnvFunctionMatch, any[]>;
+    render(_match: SDK.CSSPropertyParserMatchers.EnvFunctionMatch, _context: RenderingContext): Node[];
+};
+export declare class EnvFunctionRenderer extends EnvFunctionRenderer_base {
+    readonly treeElement: StylePropertyTreeElement | null;
+    readonly matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles;
+    readonly computedStyles: Map<string, string>;
+    constructor(treeElement: StylePropertyTreeElement | null, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>);
+    render(match: SDK.CSSPropertyParserMatchers.EnvFunctionMatch, context: RenderingContext): Node[];
+}
 declare const FlexGridRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.FlexGridMatch, any[]>;
     render(_match: SDK.CSSPropertyParserMatchers.FlexGridMatch, _context: RenderingContext): Node[];

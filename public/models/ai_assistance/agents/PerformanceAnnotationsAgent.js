@@ -2,10 +2,64 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
-import { PerformanceAgent, PerformanceTraceContext } from './PerformanceAgent.js';
-export class PerformanceAnnotationsAgent extends PerformanceAgent {
+import * as i18n from '../../../core/i18n/i18n.js';
+import * as Root from '../../../core/root/root.js';
+import { AiAgent } from './AiAgent.js';
+import { callTreePreamble, PerformanceTraceContext } from './PerformanceAgent.js';
+const UIStringsNotTranslated = {
+    analyzingCallTree: 'Analyzing call tree',
+    /**
+     *@description Shown when the agent is investigating network activity
+     */
+};
+const lockedString = i18n.i18n.lockedString;
+export class PerformanceAnnotationsAgent extends AiAgent {
+    preamble = callTreePreamble;
     get clientFeature() {
         return Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_ANNOTATIONS_AGENT;
+    }
+    get userTier() {
+        return Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
+    }
+    get options() {
+        const temperature = Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.temperature;
+        const modelId = Root.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.modelId;
+        return {
+            temperature,
+            modelId,
+        };
+    }
+    async *handleContextDetails(context) {
+        if (!context) {
+            return;
+        }
+        const focus = context.getItem();
+        if (focus.data.type !== 'call-tree') {
+            throw new Error('unexpected context');
+        }
+        const callTree = focus.data.callTree;
+        yield {
+            type: "context" /* ResponseType.CONTEXT */,
+            title: lockedString(UIStringsNotTranslated.analyzingCallTree),
+            details: [
+                {
+                    title: 'Selected call tree',
+                    text: callTree.serialize(),
+                },
+            ],
+        };
+    }
+    async enhanceQuery(query, context) {
+        if (!context) {
+            return query;
+        }
+        const focus = context.getItem();
+        if (focus.data.type !== 'call-tree') {
+            throw new Error('unexpected context');
+        }
+        const callTree = focus.data.callTree;
+        const contextString = callTree.serialize();
+        return `${contextString}\n\n# User request\n\n${query}`;
     }
     /**
      * Used in the Performance panel to automatically generate a label for a selected entry.

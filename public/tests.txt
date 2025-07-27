@@ -335,6 +335,7 @@ panels/browser_debugger/DOMBreakpointsSidebarPane.test.js
 panels/browser_debugger/browser_debugger.test.js
 panels/changes/CombinedDiffView.test.js
 panels/changes/changes.test.js
+panels/common/AiCodeCompletionTeaser.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsolePrompt.test.js
