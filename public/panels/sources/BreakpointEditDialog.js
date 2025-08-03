@@ -69,7 +69,7 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
     #history;
     #editorHistory;
     constructor(editorLineNumber, oldCondition, isLogpoint, onFinish) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(breakpointEditDialogStyles);
         const editorConfig = [
             CodeMirror.javascript.javascriptLanguage,

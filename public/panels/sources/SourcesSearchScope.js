@@ -127,7 +127,7 @@ export class SourcesSearchScope {
             if (!uiSourceCode.contentType().isTextType()) {
                 continue;
             }
-            if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+            if (Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
                 continue;
             }
             const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);

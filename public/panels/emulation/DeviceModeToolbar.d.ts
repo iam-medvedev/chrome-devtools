@@ -22,7 +22,6 @@ export declare class DeviceModeToolbar {
     private deviceSelectItem;
     private scaleItem;
     private uaItem;
-    private experimentalButton;
     private cachedDeviceScale;
     private cachedUaType;
     private xItem?;
@@ -37,8 +36,6 @@ export declare class DeviceModeToolbar {
     private appendDimensionInputs;
     private appendDisplaySettings;
     private appendDevicePositionItems;
-    private createExperimentalButton;
-    private experimentalClicked;
     private fillOptionsToolbar;
     private appendDevicePostureItems;
     private currentDevicePosture;

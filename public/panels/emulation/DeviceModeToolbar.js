@@ -46,14 +46,6 @@ const UIStrings = {
      */
     deviceType: 'Device type',
     /**
-     * @description Tooltip text for a button to disable Experimental Web Platform Features when they are enabled.
-     */
-    experimentalWebPlatformFeature: '"`Experimental Web Platform Feature`" flag is enabled. Click to disable it.',
-    /**
-     * @description Tooltip text for a button to enable Experimental Web Platform Features when they are disabled.
-     */
-    experimentalWebPlatformFeatureFlag: '"`Experimental Web Platform Feature`" flag is disabled. Click to enable it.',
-    /**
      * @description Tooltip text for a 'three dots' style menu button which shows an expanded set of options.
      */
     moreOptions: 'More options',
@@ -212,7 +204,6 @@ export class DeviceModeToolbar {
     deviceSelectItem;
     scaleItem;
     uaItem;
-    experimentalButton;
     cachedDeviceScale;
     cachedUaType;
     xItem;
@@ -343,21 +334,6 @@ export class DeviceModeToolbar {
         this.postureItem.setDarkText();
         setTitleForButton(this.postureItem, i18nString(UIStrings.devicePosture));
         toolbar.appendToolbarItem(this.postureItem);
-        this.createExperimentalButton(toolbar);
-    }
-    createExperimentalButton(toolbar) {
-        toolbar.appendToolbarItem(new UI.Toolbar.ToolbarSeparator(true));
-        const title = (this.model.webPlatformExperimentalFeaturesEnabled()) ?
-            i18nString(UIStrings.experimentalWebPlatformFeature) :
-            i18nString(UIStrings.experimentalWebPlatformFeatureFlag);
-        this.experimentalButton = new UI.Toolbar.ToolbarToggle(title, 'experiment-check');
-        this.experimentalButton.setToggled(this.model.webPlatformExperimentalFeaturesEnabled());
-        this.experimentalButton.setEnabled(true);
-        this.experimentalButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.experimentalClicked, this);
-        toolbar.appendToolbarItem(this.experimentalButton);
-    }
-    experimentalClicked() {
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab('chrome://flags/#enable-experimental-web-platform-features');
     }
     fillOptionsToolbar(toolbar) {
         toolbar.appendToolbarItem(new UI.Toolbar.ToolbarItem(this.createEmptyToolbarElement()));
@@ -668,27 +644,20 @@ export class DeviceModeToolbar {
             }
             this.cachedModelDevice = device;
         }
-        if (this.experimentalButton) {
-            const device = this.model.device();
-            if (device && (device.isDualScreen || device.isFoldableScreen)) {
-                if (device.isDualScreen) {
-                    this.spanButton.setVisible(true);
-                    this.postureItem.setVisible(false);
-                }
-                else if (device.isFoldableScreen) {
-                    this.spanButton.setVisible(false);
-                    this.postureItem.setVisible(true);
-                    this.postureItem.setText(this.currentDevicePosture());
-                }
-                this.experimentalButton.setVisible(true);
-            }
-            else {
-                this.spanButton.setVisible(false);
-                this.postureItem.setVisible(false);
-                this.experimentalButton.setVisible(false);
-            }
-            setTitleForButton(this.spanButton, i18nString(UIStrings.toggleDualscreenMode));
+        if (device?.isDualScreen) {
+            this.spanButton.setVisible(true);
+            this.postureItem.setVisible(false);
         }
+        else if (device?.isFoldableScreen) {
+            this.spanButton.setVisible(false);
+            this.postureItem.setVisible(true);
+            this.postureItem.setText(this.currentDevicePosture());
+        }
+        else {
+            this.spanButton.setVisible(false);
+            this.postureItem.setVisible(false);
+        }
+        setTitleForButton(this.spanButton, i18nString(UIStrings.toggleDualscreenMode));
         if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device) {
             this.lastMode.set(this.model.device(), this.model.mode());
         }

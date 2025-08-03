@@ -82,6 +82,9 @@
       "path": "../../../models/trace/bundle-tsconfig.json"
     },
     {
+      "path": "../../../models/workspace/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../services/trace_bounds/bundle-tsconfig.json"
     },
     {

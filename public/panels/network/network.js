@@ -101,7 +101,7 @@ var BinaryResourceView = class extends UI.Widget.VBox {
   addFadeoutSettimeoutId;
   lastView;
   constructor(content, contentUrl, resourceType, element) {
-    super(void 0, void 0, element);
+    super(element);
     this.registerRequiredCSS(binaryResourceView_css_default);
     this.binaryResourceViewFactory = new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(content, contentUrl, resourceType);
     this.toolbar = this.element.createChild("devtools-toolbar", "binary-view-toolbar");
@@ -374,7 +374,7 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
   editor;
   blockedCountForUrl;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(blockedURLsPane_css_default);
     this.element.setAttribute("jslog", `${VisualLogging.panel("network.blocked-urls").track({ resize: true })}`);
     this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
@@ -962,7 +962,7 @@ var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var networkConfigViewInstance;
 var NetworkConfigView = class _NetworkConfigView extends UI4.Widget.VBox {
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(networkConfigView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging3.panel("network-conditions").track({ resize: true })}`);
     this.contentElement.classList.add("network-config");
@@ -3380,9 +3380,8 @@ var RequestInitiatorView = class _RequestInitiatorView extends UI7.Widget.VBox {
       return null;
     }
     const networkManager = SDK6.NetworkManager.NetworkManager.forRequest(request);
-    const target = networkManager ? networkManager.target() : null;
-    const stackTrace = Components2.JSPresentationUtils.buildStackTracePreviewContents(target, linkifier, { stackTrace: initiator.stack, tabStops: focusableLink });
-    return stackTrace;
+    const target = networkManager ? networkManager.target() : void 0;
+    return new Components2.JSPresentationUtils.StackTracePreviewContent(void 0, target, linkifier, { stackTrace: initiator.stack, tabStops: focusableLink });
   }
   createTree() {
     const treeOutline = new UI7.TreeOutline.TreeOutlineInShadow();
@@ -3430,14 +3429,16 @@ var RequestInitiatorView = class _RequestInitiatorView extends UI7.Widget.VBox {
       }
     }
   }
-  buildStackTraceSection(content, title, tree2) {
+  buildStackTraceSection(stackTracePreview, title, tree2) {
     const root = new UI7.TreeOutline.TreeElement(title);
     tree2.appendChild(root);
     if (root.titleElement instanceof HTMLElement) {
       root.titleElement.classList.add("request-initiator-view-section-title");
     }
-    const contentElement = new UI7.TreeOutline.TreeElement(content, false);
+    const contentElement = new UI7.TreeOutline.TreeElement(void 0, false);
     contentElement.selectable = false;
+    stackTracePreview.markAsRoot();
+    stackTracePreview.show(contentElement.listItemElement);
     root.appendChild(contentElement);
     root.expand();
   }
@@ -3451,7 +3452,7 @@ var RequestInitiatorView = class _RequestInitiatorView extends UI7.Widget.VBox {
     const stackTracePreview = _RequestInitiatorView.createStackTracePreview(this.request, this.linkifier, true);
     if (stackTracePreview) {
       initiatorDataPresent = true;
-      this.buildStackTraceSection(stackTracePreview.element, i18nString7(UIStrings7.requestCallStack), containerTree);
+      this.buildStackTraceSection(stackTracePreview, i18nString7(UIStrings7.requestCallStack), containerTree);
     }
     const initiatorGraph = Logs3.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this.request);
     if (initiatorGraph.initiators.size > 1 || initiatorGraph.initiated.size > 1) {
@@ -4318,7 +4319,7 @@ var RequestHTMLView = class _RequestHTMLView extends UI9.Widget.VBox {
   #dataURL;
   #view;
   constructor(dataURL, view = DEFAULT_VIEW) {
-    super(true);
+    super({ useShadowDom: true });
     this.#dataURL = dataURL;
     this.#view = view;
   }
@@ -7010,6 +7011,7 @@ import * as Common17 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
 import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as HAR from "./../../models/har/har.js";
@@ -7647,7 +7649,7 @@ var NetworkManageCustomHeadersView = class extends UI19.Widget.VBox {
   removeHeaderColumnCallback;
   editor;
   constructor(columnData, addHeaderColumnCallback, changeHeaderColumnCallback, removeHeaderColumnCallback) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(networkManageCustomHeadersView_css_default);
     this.contentElement.createChild("div", "header").textContent = i18nString18(UIStrings18.manageHeaderColumns);
     this.list = new UI19.ListWidget.ListWidget(this);
@@ -8160,7 +8162,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
   pathForStyle;
   textLayers;
   constructor(calculator) {
-    super(false);
+    super();
     this.registerRequiredCSS(networkWaterfallColumn_css_default);
     this.canvas = this.contentElement.createChild("canvas");
     this.canvas.tabIndex = -1;
@@ -9404,7 +9406,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
         if (!content) {
           return false;
         }
-        popover.contentElement.appendChild(content.element);
+        content.show(popover.contentElement);
         return true;
       },
       hide: this.popupLinkifier.reset.bind(this.popupLinkifier)
@@ -9766,6 +9768,14 @@ var UIStrings20 = {
    */
   onlyShowThirdPartyRequests: "Show only requests with origin different from page origin",
   /**
+   *@description Label for a filter in the Network panel
+   */
+  ippRequests: "IP Protected requests",
+  /**
+   *@description Tooltip for a filter in the Network panel
+   */
+  onlyShowIPProtectedRequests: "(Incognito Only) Show only requests sent to IP Protection proxies",
+  /**
    *@description Text that appears when user drag and drop something (for example, a file) in Network Log View of the Network panel
    */
   dropHarFilesHere: "Drop HAR files here",
@@ -10109,6 +10119,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   networkOnlyThirdPartySetting;
   networkResourceTypeFiltersSetting;
   networkShowOptionsToGenerateHarWithSensitiveData;
+  networkOnlyIPProtectedRequestsSetting;
   progressBarContainer;
   networkLogLargeRowsSetting;
   rowHeightInternal;
@@ -10154,6 +10165,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.networkShowBlockedCookiesOnlySetting = Common17.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
     this.networkOnlyBlockedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
     this.networkOnlyThirdPartySetting = Common17.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
+    this.networkOnlyIPProtectedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-ip-protected-requests", false);
     this.networkResourceTypeFiltersSetting = Common17.Settings.Settings.instance().createSetting("network-resource-type-filters", {});
     this.networkShowOptionsToGenerateHarWithSensitiveData = Common17.Settings.Settings.instance().createSetting("network.show-options-to-generate-har-with-sensitive-data", false);
     this.progressBarContainer = progressBarContainer;
@@ -10979,6 +10991,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.networkOnlyBlockedRequestsSetting.set(false);
     this.networkOnlyThirdPartySetting.set(false);
     this.networkHideChromeExtensions.set(false);
+    this.networkOnlyIPProtectedRequestsSetting.set(false);
     this.resourceCategoryFilterUI.reset();
   }
   createNodeForRequest(request) {
@@ -11275,12 +11288,14 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     if (!this.resourceCategoryFilterUI.accept(categoryName)) {
       return false;
     }
-    const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL] = [
+    const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL, ippRequests] = [
       this.networkHideDataURLSetting.get(),
       this.networkShowBlockedCookiesOnlySetting.get(),
       this.networkOnlyBlockedRequestsSetting.get(),
       this.networkOnlyThirdPartySetting.get(),
-      this.networkHideChromeExtensions.get()
+      this.networkHideChromeExtensions.get(),
+      // TODO(crbug.com/425645896): Remove this guard once IP Protection is fully launched.
+      Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled ? this.networkOnlyIPProtectedRequestsSetting.get() : false
     ];
     if (hideDataURL && (request.parsedURL.isDataURL() || request.parsedURL.isBlobURL())) {
       return false;
@@ -11296,6 +11311,11 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     }
     if (hideExtensionURL && request.scheme === "chrome-extension") {
       return false;
+    }
+    if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+      if (ippRequests && !request.isIpProtectionUsed()) {
+        return false;
+      }
     }
     for (let i = 0; i < this.filters.length; ++i) {
       if (!this.filters[i](request)) {
@@ -11732,6 +11752,7 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
   networkShowBlockedCookiesOnlySetting;
   networkOnlyBlockedRequestsSetting;
   networkOnlyThirdPartySetting;
+  networkOnlyIPProtectedRequestsSetting;
   activeFiltersCount;
   activeFiltersCountAdorner;
   constructor() {
@@ -11741,6 +11762,7 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
     this.networkShowBlockedCookiesOnlySetting = Common17.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
     this.networkOnlyBlockedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
     this.networkOnlyThirdPartySetting = Common17.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
+    this.networkOnlyIPProtectedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-ip-protected-requests", false);
     this.filterElement = document.createElement("div");
     this.filterElement.setAttribute("aria-label", "Show only/hide requests dropdown");
     this.filterElement.setAttribute("jslog", `${VisualLogging13.dropDown("more-filters").track({ click: true })}`);
@@ -11784,6 +11806,9 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
     this.networkShowBlockedCookiesOnlySetting.addChangeListener(this.#onSettingChanged.bind(this));
     this.networkOnlyBlockedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
     this.networkOnlyThirdPartySetting.addChangeListener(this.#onSettingChanged.bind(this));
+    if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+      this.networkOnlyIPProtectedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
+    }
     contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.hideDataUrls), () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()), {
       checked: this.networkHideDataURLSetting.get(),
       tooltip: i18nString20(UIStrings20.hidesDataAndBlobUrls),
@@ -11805,6 +11830,14 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
       tooltip: i18nString20(UIStrings20.onlyShowBlockedRequests),
       jslogContext: "only-blocked-requests"
     });
+    if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+      contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.ippRequests), () => this.networkOnlyIPProtectedRequestsSetting.set(!this.networkOnlyIPProtectedRequestsSetting.get()), {
+        checked: this.networkOnlyIPProtectedRequestsSetting.get(),
+        disabled: !Root.Runtime.hostConfig.isOffTheRecord,
+        tooltip: i18nString20(UIStrings20.onlyShowIPProtectedRequests),
+        jslogContext: "only-ip-protected-requests"
+      });
+    }
     contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.thirdParty), () => this.networkOnlyThirdPartySetting.set(!this.networkOnlyThirdPartySetting.get()), {
       checked: this.networkOnlyThirdPartySetting.get(),
       tooltip: i18nString20(UIStrings20.onlyShowThirdPartyRequests),
@@ -11817,7 +11850,8 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
       ...this.networkHideChromeExtensionsSetting.get() ? [i18nString20(UIStrings20.chromeExtensions)] : [],
       ...this.networkShowBlockedCookiesOnlySetting.get() ? [i18nString20(UIStrings20.hasBlockedCookies)] : [],
       ...this.networkOnlyBlockedRequestsSetting.get() ? [i18nString20(UIStrings20.blockedRequests)] : [],
-      ...this.networkOnlyThirdPartySetting.get() ? [i18nString20(UIStrings20.thirdParty)] : []
+      ...this.networkOnlyThirdPartySetting.get() ? [i18nString20(UIStrings20.thirdParty)] : [],
+      ...Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled && this.networkOnlyIPProtectedRequestsSetting.get() ? [i18nString20(UIStrings20.ippRequests)] : []
     ];
     return filters;
   }

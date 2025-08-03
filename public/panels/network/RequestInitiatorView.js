@@ -47,9 +47,8 @@ export class RequestInitiatorView extends UI.Widget.VBox {
             return null;
         }
         const networkManager = SDK.NetworkManager.NetworkManager.forRequest(request);
-        const target = networkManager ? networkManager.target() : null;
-        const stackTrace = Components.JSPresentationUtils.buildStackTracePreviewContents(target, linkifier, { stackTrace: initiator.stack, tabStops: focusableLink });
-        return stackTrace;
+        const target = networkManager ? networkManager.target() : undefined;
+        return new Components.JSPresentationUtils.StackTracePreviewContent(undefined, target, linkifier, { stackTrace: initiator.stack, tabStops: focusableLink });
     }
     createTree() {
         const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
@@ -99,14 +98,16 @@ export class RequestInitiatorView extends UI.Widget.VBox {
             }
         }
     }
-    buildStackTraceSection(content, title, tree) {
+    buildStackTraceSection(stackTracePreview, title, tree) {
         const root = new UI.TreeOutline.TreeElement(title);
         tree.appendChild(root);
         if (root.titleElement instanceof HTMLElement) {
             root.titleElement.classList.add('request-initiator-view-section-title');
         }
-        const contentElement = new UI.TreeOutline.TreeElement(content, false);
+        const contentElement = new UI.TreeOutline.TreeElement(undefined, false);
         contentElement.selectable = false;
+        stackTracePreview.markAsRoot();
+        stackTracePreview.show(contentElement.listItemElement);
         root.appendChild(contentElement);
         root.expand();
     }
@@ -120,7 +121,7 @@ export class RequestInitiatorView extends UI.Widget.VBox {
         const stackTracePreview = RequestInitiatorView.createStackTracePreview(this.request, this.linkifier, true);
         if (stackTracePreview) {
             initiatorDataPresent = true;
-            this.buildStackTraceSection(stackTracePreview.element, i18nString(UIStrings.requestCallStack), containerTree);
+            this.buildStackTraceSection(stackTracePreview, i18nString(UIStrings.requestCallStack), containerTree);
         }
         const initiatorGraph = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this.request);
         if (initiatorGraph.initiators.size > 1 || initiatorGraph.initiated.size > 1) {

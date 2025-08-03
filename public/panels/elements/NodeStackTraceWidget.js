@@ -16,11 +16,15 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/NodeStackTraceWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
+    const { target: sdkTarget, linkifier, options } = input;
     // clang-format off
     render(html `
     <style>${nodeStackTraceWidgetStyles}</style>
-    ${input.stackTracePreview ?
-        html `<div class="stack-trace">${input.stackTracePreview}</div>` :
+    ${target && options.stackTrace ?
+        html `<devtools-widget
+                class="stack-trace"
+                .widgetConfig=${UI.Widget.widgetConfig(Components.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
+              </devtools-widget>` :
         html `<div class="gray-info-message">${i18nString(UIStrings.noStackTraceAvailable)}</div>`}`, target, { host: input });
     // clang-format on
 };
@@ -41,14 +45,11 @@ export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {
     }
     async doUpdate() {
         const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
-        const creationStackTrace = node ? await node.creationStackTrace() : null;
-        const stackTracePreview = node && creationStackTrace ?
-            Components.JSPresentationUtils
-                .buildStackTracePreviewContents(node.domModel().target(), this.#linkifier, { stackTrace: creationStackTrace, tabStops: undefined })
-                .element :
-            null;
+        const stackTrace = await node?.creationStackTrace() ?? undefined;
         const input = {
-            stackTracePreview,
+            target: node?.domModel().target(),
+            linkifier: this.#linkifier,
+            options: { stackTrace },
         };
         this.#view(input, {}, this.contentElement);
     }

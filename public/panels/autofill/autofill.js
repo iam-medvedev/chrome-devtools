@@ -16,8 +16,6 @@ import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as AutofillManager from "./../../models/autofill_manager/autofill_manager.js";
-import * as ComponentHelpers from "./../../ui/components/helpers/helpers.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
@@ -119,6 +117,7 @@ devtools-data-grid {
 // gen/front_end/panels/autofill/AutofillView.js
 var { html, render, Directives: { styleMap } } = Lit;
 var { FillingStrategy } = Protocol.Autofill;
+var { bindToSetting } = UI.SettingsUI;
 var UIStrings = {
   /**
    * @description Text shown when there is no data on autofill available.
@@ -198,157 +197,30 @@ var AUTOFILL_INFO_URL = "https://goo.gle/devtools-autofill-panel";
 var AUTOFILL_FEEDBACK_URL = "https://crbug.com/329106326";
 var str_ = i18n.i18n.registerUIStrings("panels/autofill/AutofillView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var AutofillView = class extends LegacyWrapper.LegacyWrapper.WrappableComponent {
-  #shadow = this.attachShadow({ mode: "open" });
-  #autoOpenViewSetting;
-  #showTestAddressesInAutofillMenuSetting;
-  #address = "";
-  #filledFields = [];
-  #matches = [];
-  #highlightedMatches = [];
-  constructor() {
-    super();
-    this.#autoOpenViewSetting = Common.Settings.Settings.instance().createSetting("auto-open-autofill-view-on-event", true);
-    this.#showTestAddressesInAutofillMenuSetting = Common.Settings.Settings.instance().createSetting("show-test-addresses-in-autofill-menu-on-event", false);
-  }
-  connectedCallback() {
-    const autofillManager = AutofillManager.AutofillManager.AutofillManager.instance();
-    const formFilledEvent = autofillManager.getLastFilledAddressForm();
-    if (formFilledEvent) {
-      ({
-        address: this.#address,
-        filledFields: this.#filledFields,
-        matches: this.#matches
-      } = formFilledEvent);
-    }
-    autofillManager.addEventListener("AddressFormFilled", this.#onAddressFormFilled, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  #onPrimaryPageChanged() {
-    this.#address = "";
-    this.#filledFields = [];
-    this.#matches = [];
-    this.#highlightedMatches = [];
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  #onAddressFormFilled({ data }) {
-    ({
-      address: this.#address,
-      filledFields: this.#filledFields,
-      matches: this.#matches
-    } = data);
-    this.#highlightedMatches = [];
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  async #render() {
-    if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
-      throw new Error("AutofillView render was not scheduled");
-    }
-    if (!this.#address && !this.#filledFields.length) {
-      render(html`
-        <style>${autofillView_css_default}</style>
-        <style>${UI.inspectorCommonStyles}</style>
-        <main>
-          <div class="top-left-corner">
-            <devtools-checkbox
-                ?checked=${this.#showTestAddressesInAutofillMenuSetting.get()}
-                title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
-                @change=${this.#onShowTestAddressesInAutofillMenuChanged.bind(this)}
-                jslog=${VisualLogging.toggle(this.#showTestAddressesInAutofillMenuSetting.name).track({ change: true })}>
-              ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
-            </devtools-checkbox>
-            <devtools-checkbox
-                title=${i18nString(UIStrings.autoShowTooltip)}
-                ?checked=${this.#autoOpenViewSetting.get()}
-                @change=${this.#onAutoOpenCheckboxChanged.bind(this)}
-                jslog=${VisualLogging.toggle(this.#autoOpenViewSetting.name).track({ change: true })}>
-              ${i18nString(UIStrings.autoShow)}
-            </devtools-checkbox>
-            <x-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
-          </div>
-          <div class="placeholder-container" jslog=${VisualLogging.pane("autofill-empty")}>
-            <div class="empty-state">
-              <span class="empty-state-header">${i18nString(UIStrings.noAutofill)}</span>
-              <div class="empty-state-description">
-                <span>${i18nString(UIStrings.toStartDebugging)}</span>
-                <x-link href=${AUTOFILL_INFO_URL} class="link" jslog=${VisualLogging.link("learn-more").track({ click: true })}>${i18nString(UIStrings.learnMore)}</x-link>
-              </div>
-            </div>
-          </div>
-        </main>
-      `, this.#shadow, { host: this });
-      return;
-    }
-    render(html`
-      <style>${autofillView_css_default}</style>
-      <style>${UI.inspectorCommonStyles}</style>
-      <main>
-        <div class="content-container" jslog=${VisualLogging.pane("autofill")}>
-          <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>
-            <div class="header">
-              <div class="label-container">
-                <devtools-checkbox
-                    title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
-                    ?checked=${this.#showTestAddressesInAutofillMenuSetting.get()}
-                    @change=${this.#onShowTestAddressesInAutofillMenuChanged.bind(this)}
-                    jslog=${VisualLogging.toggle(this.#showTestAddressesInAutofillMenuSetting.name).track({ change: true })}
-                  >${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
-                </devtools-checkbox>
-              </div>
-              <div class="label-container">
-                <devtools-checkbox
-                    title=${i18nString(UIStrings.autoShowTooltip)}
-                    ?checked=${this.#autoOpenViewSetting.get()}
-                    @change=${this.#onAutoOpenCheckboxChanged.bind(this)}
-                    jslog=${VisualLogging.toggle(this.#autoOpenViewSetting.name).track({ change: true })}
-                  >${i18nString(UIStrings.autoShow)}
-                </devtools-checkbox>
-              </div>
-              <x-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
-            </div>
-            ${this.#renderAddress()}
-          </div>
-          ${this.#renderFilledFields()}
-        </div>
-      </main>
-    `, this.#shadow, { host: this });
-  }
-  #onAutoOpenCheckboxChanged(e) {
-    const { checked } = e.target;
-    this.#autoOpenViewSetting.set(checked);
-  }
-  #onShowTestAddressesInAutofillMenuChanged(e) {
-    const { checked } = e.target;
-    this.#showTestAddressesInAutofillMenuSetting.set(checked);
-    AutofillManager.AutofillManager.AutofillManager.instance().onShowAutofillTestAddressesSettingsChanged();
-  }
-  #renderAddress() {
-    if (!this.#address) {
-      return Lit.nothing;
-    }
+var DEFAULT_VIEW = (input, _output, target) => {
+  const renderAddress = () => {
     const createSpan = (startIndex, endIndex) => {
-      const textContentLines = this.#address.substring(startIndex, endIndex).split("\n");
+      const textContentLines = input.address.substring(startIndex, endIndex).split("\n");
       const templateLines = textContentLines.map((line, i) => i === textContentLines.length - 1 ? line : html`${line}<br>`);
-      const hasMatches = this.#matches.some((match) => match.startIndex <= startIndex && match.endIndex > startIndex);
+      const hasMatches = input.matches.some((match) => match.startIndex <= startIndex && match.endIndex > startIndex);
       if (!hasMatches) {
         return html`<span>${templateLines}</span>`;
       }
       const spanClasses = Lit.Directives.classMap({
         "matches-filled-field": hasMatches,
-        highlighted: this.#highlightedMatches.some((match) => match.startIndex <= startIndex && match.endIndex > startIndex)
+        highlighted: input.highlightedMatches.some((match) => match.startIndex <= startIndex && match.endIndex > startIndex)
       });
       return html`
-        <span
-          class=${spanClasses}
-          @mouseenter=${() => this.#onSpanMouseEnter(startIndex)}
-          @mouseleave=${this.#onSpanMouseLeave}
-          jslog=${VisualLogging.item("matched-address-item").track({ hover: true })}
-        >${templateLines}</span>`;
+        <span class=${spanClasses}
+              jslog=${VisualLogging.item("matched-address-item").track({ hover: true })}
+              @mouseenter=${() => input.onHighlightMatchesInAddress(startIndex)}
+              @mouseleave=${input.onClearHighlightedMatches}>
+          ${templateLines}
+        </span>`;
     };
     const spans = [];
-    const matchIndices = /* @__PURE__ */ new Set([0, this.#address.length]);
-    for (const match of this.#matches) {
+    const matchIndices = /* @__PURE__ */ new Set([0, input.address.length]);
+    for (const match of input.matches) {
       matchIndices.add(match.startIndex);
       matchIndices.add(match.endIndex);
     }
@@ -361,41 +233,27 @@ var AutofillView = class extends LegacyWrapper.LegacyWrapper.WrappableComponent 
         ${spans}
       </div>
     `;
-  }
-  #onSpanMouseEnter(startIndex) {
-    this.#highlightedMatches = this.#matches.filter((match) => match.startIndex <= startIndex && match.endIndex > startIndex);
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  #onSpanMouseLeave() {
-    this.#highlightedMatches = [];
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  #renderFilledFields() {
-    if (!this.#filledFields.length) {
-      return Lit.nothing;
-    }
-    const highlightedGridRows = new Set(this.#highlightedMatches.map((match) => match.filledFieldIndex));
+  };
+  const renderFilledFields = () => {
+    const highlightedGridRows = new Set(input.highlightedMatches.map((match) => match.filledFieldIndex));
     return html`
       <div class="grid-wrapper" role="region" aria-label=${i18nString(UIStrings.formInspector)}>
-        <devtools-data-grid
-          striped
-          class="filled-fields-grid"
-        >
+        <devtools-data-grid striped
+                            class="filled-fields-grid">
           <table>
             <tr>
               <th id="name" weight="50" sortable>${i18nString(UIStrings.formField)}</th>
               <th id="autofill-type" weight="50" sortable>${i18nString(UIStrings.predictedAutofillValue)}</th>
               <th id="value" weight="50" sortable>${i18nString(UIStrings.value)}</th>
             </tr>
-            ${this.#filledFields.map((field, index) => html`
+            ${input.filledFields.map((field, index) => html`
                 <tr style=${styleMap({
       "font-family": "var(--monospace-font-family)",
       "font-size": "var(--monospace-font-size)",
       "background-color": highlightedGridRows.has(index) ? "var(--sys-color-state-hover-on-subtle)" : null
     })}
-                  @mouseenter=${() => this.#onGridRowMouseEnter(index)}
-                  @mouseleave=${this.#onGridRowMouseLeave.bind(this)}
-                >
+                    @mouseenter=${() => input.onHighlightMatchesInFilledFiels(index)}
+                    @mouseleave=${input.onClearHighlightedMatches}>
                   <td>${field.name || `#${field.id}`} (${field.htmlType})</td>
                   <td>
                       ${field.autofillType}
@@ -411,27 +269,153 @@ var AutofillView = class extends LegacyWrapper.LegacyWrapper.WrappableComponent 
         </devtools-data-grid>
       </div>
     `;
+  };
+  if (!input.address && !input.filledFields.length) {
+    render(html`
+        <style>${autofillView_css_default}</style>
+        <style>${UI.inspectorCommonStyles}</style>
+        <main>
+          <div class="top-left-corner">
+            <devtools-checkbox
+                ${bindToSetting(input.showTestAddressesInAutofillMenuSetting)}
+                title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
+                jslog=${VisualLogging.toggle(input.showTestAddressesInAutofillMenuSetting.name).track({ change: true })}>
+              ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
+            </devtools-checkbox>
+            <devtools-checkbox
+                ${bindToSetting(input.autoOpenViewSetting)}
+                title=${i18nString(UIStrings.autoShowTooltip)}
+                jslog=${VisualLogging.toggle(input.autoOpenViewSetting.name).track({ change: true })}>
+              ${i18nString(UIStrings.autoShow)}
+            </devtools-checkbox>
+            <x-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+          </div>
+          <div class="placeholder-container" jslog=${VisualLogging.pane("autofill-empty")}>
+            <div class="empty-state">
+              <span class="empty-state-header">${i18nString(UIStrings.noAutofill)}</span>
+              <div class="empty-state-description">
+                <span>${i18nString(UIStrings.toStartDebugging)}</span>
+                <x-link href=${AUTOFILL_INFO_URL} class="link" jslog=${VisualLogging.link("learn-more").track({ click: true })}>${i18nString(UIStrings.learnMore)}</x-link>
+              </div>
+            </div>
+          </div>
+        </main>
+      `, target, { host: void 0 });
+    return;
   }
-  #onGridRowMouseEnter(rowIndex) {
-    this.#highlightedMatches = this.#matches.filter((match) => match.filledFieldIndex === rowIndex);
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    const backendNodeId = this.#filledFields[rowIndex].fieldId;
-    const target = SDK.FrameManager.FrameManager.instance().getFrame(this.#filledFields[rowIndex].frameId)?.resourceTreeModel().target();
-    if (target) {
-      const deferredNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
-      const domModel = target.model(SDK.DOMModel.DOMModel);
-      if (deferredNode && domModel) {
-        domModel.overlayModel().highlightInOverlay({ deferredNode }, "all");
-      }
+  render(html`
+      <style>${autofillView_css_default}</style>
+      <style>${UI.inspectorCommonStyles}</style>
+      <main>
+        <div class="content-container" jslog=${VisualLogging.pane("autofill")}>
+          <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>
+            <div class="header">
+              <div class="label-container">
+                <devtools-checkbox
+                    ${bindToSetting(input.showTestAddressesInAutofillMenuSetting)}
+                    title=${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
+                    jslog=${VisualLogging.toggle(input.showTestAddressesInAutofillMenuSetting.name).track({ change: true })}>
+                  ${i18nString(UIStrings.showTestAddressesInAutofillMenu)}
+                </devtools-checkbox>
+              </div>
+              <div class="label-container">
+                <devtools-checkbox
+                    ${bindToSetting(input.autoOpenViewSetting)}
+                    title=${i18nString(UIStrings.autoShowTooltip)}
+                    jslog=${VisualLogging.toggle(input.autoOpenViewSetting.name).track({ change: true })}>
+                  ${i18nString(UIStrings.autoShow)}
+                </devtools-checkbox>
+              </div>
+              <x-link href=${AUTOFILL_FEEDBACK_URL} class="feedback link" jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString(UIStrings.sendFeedback)}</x-link>
+            </div>
+            ${renderAddress()}
+          </div>
+          ${renderFilledFields()}
+        </div>
+      </main>
+    `, target, { host: void 0 });
+};
+var AutofillView = class extends UI.Widget.VBox {
+  #view;
+  #autofillManager;
+  #autoOpenViewSetting;
+  #showTestAddressesInAutofillMenuSetting;
+  #address = "";
+  #filledFields = [];
+  #matches = [];
+  #highlightedMatches = [];
+  constructor(autofillManager = AutofillManager.AutofillManager.AutofillManager.instance(), view = DEFAULT_VIEW) {
+    super({ useShadowDom: true });
+    this.#autofillManager = autofillManager;
+    this.#view = view;
+    this.#autoOpenViewSetting = Common.Settings.Settings.instance().createSetting("auto-open-autofill-view-on-event", true);
+    this.#showTestAddressesInAutofillMenuSetting = Common.Settings.Settings.instance().createSetting("show-test-addresses-in-autofill-menu-on-event", false);
+  }
+  wasShown() {
+    super.wasShown();
+    const formFilledEvent = this.#autofillManager.getLastFilledAddressForm();
+    if (formFilledEvent) {
+      ({
+        address: this.#address,
+        filledFields: this.#filledFields,
+        matches: this.#matches
+      } = formFilledEvent);
     }
+    this.#autofillManager.addEventListener("AddressFormFilled", this.#onAddressFormFilled, this);
+    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    this.requestUpdate();
   }
-  #onGridRowMouseLeave() {
+  willHide() {
+    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    this.#autofillManager.removeEventListener("AddressFormFilled", this.#onAddressFormFilled, this);
+    super.willHide();
+  }
+  #onPrimaryPageChanged() {
+    this.#address = "";
+    this.#filledFields = [];
+    this.#matches = [];
     this.#highlightedMatches = [];
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    this.requestUpdate();
+  }
+  #onAddressFormFilled({ data }) {
+    ({
+      address: this.#address,
+      filledFields: this.#filledFields,
+      matches: this.#matches
+    } = data);
+    this.#highlightedMatches = [];
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const onHighlightMatchesInAddress = (startIndex) => {
+      this.#highlightedMatches = this.#matches.filter((match) => match.startIndex <= startIndex && match.endIndex > startIndex);
+      this.requestUpdate();
+    };
+    const onHighlightMatchesInFilledFiels = (rowIndex) => {
+      this.#autofillManager.highlightFilledField(this.#filledFields[rowIndex]);
+      this.#highlightedMatches = this.#matches.filter((match) => match.filledFieldIndex === rowIndex);
+      this.requestUpdate();
+    };
+    const onClearHighlightedMatches = () => {
+      this.#autofillManager.clearHighlightedFilledFields();
+      this.#highlightedMatches = [];
+      this.requestUpdate();
+    };
+    const input = {
+      autoOpenViewSetting: this.#autoOpenViewSetting,
+      showTestAddressesInAutofillMenuSetting: this.#showTestAddressesInAutofillMenuSetting,
+      address: this.#address,
+      filledFields: this.#filledFields,
+      matches: this.#matches,
+      highlightedMatches: this.#highlightedMatches,
+      onHighlightMatchesInAddress,
+      onHighlightMatchesInFilledFiels,
+      onClearHighlightedMatches
+    };
+    const output = void 0;
+    this.#view(input, output, this.contentElement);
   }
 };
-customElements.define("devtools-autofill-view", AutofillView);
 export {
   AutofillView_exports as AutofillView
 };

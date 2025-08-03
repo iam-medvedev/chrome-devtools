@@ -103,7 +103,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
     #excludedFolderPaths = [];
     #view;
     constructor(element, view = DEFAULT_VIEW) {
-        super(undefined, undefined, element);
+        super(element);
         this.#view = view;
     }
     set fileSystem(fileSystem) {

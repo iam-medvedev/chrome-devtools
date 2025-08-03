@@ -20,7 +20,7 @@ export class ReportView extends VBox {
     subtitleElement;
     urlElement;
     constructor(title) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(reportViewStyles);
         this.contentBox = this.contentElement.createChild('div', 'report-content-box');
         this.headerElement = this.contentBox.createChild('div', 'report-header vbox');

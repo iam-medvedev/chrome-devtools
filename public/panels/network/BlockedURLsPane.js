@@ -70,7 +70,7 @@ export class BlockedURLsPane extends UI.Widget.VBox {
     editor;
     blockedCountForUrl;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(blockedURLsPaneStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('network.blocked-urls').track({ resize: true })}`);
         this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();

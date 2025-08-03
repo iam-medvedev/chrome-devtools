@@ -35,12 +35,13 @@ describeWithMockConnection('TimelineUIUtils', function () {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
             targetManager,
+            ignoreListManager,
         });
-        Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
     });
     afterEach(() => {
         clearMockConnectionResponseHandler('DOM.pushNodesByBackendIdsToFrontend');
@@ -614,8 +615,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 throw new Error('Could not find extension entry.');
             }
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, extensionEntry, new Components.Linkifier.Linkifier(), false, null);
-            const rowData = getRowDataForDetailsElement(details).slice(0, 3);
+            const rowData = getRowDataForDetailsElement(details).slice(0, 4);
             assert.deepEqual(rowData, [
+                { title: 'Timestamp', value: '1,614.0 ms' },
                 { title: 'Duration', value: '1.00\xA0s (self 400.50\xA0ms)' },
                 {
                     title: 'Description',
@@ -641,6 +643,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mutableEntry, new Components.Linkifier.Linkifier(), false, null);
             const rowData = getRowDataForDetailsElement(details).slice(0, 3);
             assert.deepEqual(rowData, [
+                { title: 'Timestamp', value: '1,614.0 ms' },
                 { title: 'Duration', value: '1.00\xA0s' },
                 { title: 'key', value: 'null' },
             ]);
@@ -652,11 +655,17 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 throw new Error('Could not find extension mark.');
             }
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, extensionMark, new Components.Linkifier.Linkifier(), false, null);
-            const rowData = getRowDataForDetailsElement(details)[0];
-            assert.deepEqual(rowData, {
-                title: 'Description',
-                value: 'This marks the start of a task',
-            });
+            const rowData = getRowDataForDetailsElement(details).slice(0, 2);
+            assert.deepEqual(rowData, [
+                {
+                    title: 'Timestamp',
+                    value: '1,614.0\xA0ms',
+                },
+                {
+                    title: 'Description',
+                    value: 'This marks the start of a task',
+                }
+            ]);
         });
         it('renders the details for a profile call properly', async function () {
             Common.Linkifier.registerLinkifier({

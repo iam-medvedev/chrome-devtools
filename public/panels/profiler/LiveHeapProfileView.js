@@ -62,7 +62,7 @@ export class LiveHeapProfileView extends UI.Widget.VBox {
     dataGrid;
     currentPollId;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.gridNodeByUrl = new Map();
         this.registerRequiredCSS(liveHeapProfileStyles);
         this.setting = Common.Settings.Settings.instance().moduleSetting('memory-live-heap-profile');

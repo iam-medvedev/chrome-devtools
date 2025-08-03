@@ -45,6 +45,10 @@ export default `/*
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
+  & .new-badge {
+    margin-left: var(--sys-size-4);
+  }
+
   & devtools-icon {
     width: var(--sys-size-8);
     height: var(--sys-size-8);

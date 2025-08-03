@@ -2192,7 +2192,7 @@ var RecordingView = class extends UI.Widget.Widget {
   #view;
   #viewOutput = {};
   constructor(element, view) {
-    super(true, false, element);
+    super(element, { useShadowDom: true });
     this.#view = view || DEFAULT_VIEW;
   }
   performUpdate() {

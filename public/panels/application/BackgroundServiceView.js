@@ -170,7 +170,7 @@ export class BackgroundServiceView extends UI.Widget.VBox {
         }
     }
     constructor(serviceName, model) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(emptyWidgetStyles, backgroundServiceViewStyles);
         this.serviceName = serviceName;
         const kebabName = Platform.StringUtilities.toKebabCase(serviceName);

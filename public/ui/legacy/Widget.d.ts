@@ -37,12 +37,55 @@ export declare function widgetRef<T extends Widget, Args extends unknown[]>(type
  * @returns The scoped CSS string.
  */
 export declare function widgetScoped(styles: string): string;
+/**
+ * Additional options passed to the `Widget` constructor to configure the
+ * behavior of the resulting instance.
+ */
+export interface WidgetOptions {
+    /**
+     * If you pass `true` here, the `contentElement` of the resulting `Widget`
+     * will be placed into the shadow DOM of its `element`. If the `element`
+     * doesn't already have a `shadowRoot`, a new one will be created.
+     *
+     * Otherwise, the `contentElement` will be a regular child of the `element`.
+     *
+     * Its default value is `false`.
+     */
+    useShadowDom?: boolean;
+    /**
+     * A boolean that, when set to `true`, specifies behavior that mitigates
+     * custom element issues around focusability. When a non-focusable part of
+     * the shadow DOM is clicked, the first focusable part is given focus, and
+     * the shadow host is given any available `:focus` styling.
+     *
+     * Its default value is `false`.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
+     */
+    delegatesFocus?: boolean;
+}
 export declare class Widget {
     #private;
     readonly element: HTMLElement;
     contentElement: HTMLElement;
     defaultFocusedChild: Widget | null;
-    constructor(useShadowDom?: boolean, delegatesFocus?: boolean, element?: HTMLElement);
+    /**
+     * Constructs a new `Widget` with the given `options`.
+     *
+     * @param options optional settings to configure the behavior.
+     */
+    constructor(options?: WidgetOptions);
+    /**
+     * Constructs a new `Widget` with the given `options` and attached to the
+     * given `element`.
+     *
+     * If `element` is `undefined`, a new `<div>` element will be created instead
+     * and the widget will be attached to that.
+     *
+     * @param element an (optional) `HTMLElement` to attach the `Widget` to.
+     * @param options optional settings to configure the behavior.
+     */
+    constructor(element?: HTMLElement, options?: WidgetOptions);
     /**
      * Returns the {@link Widget} whose element is the given `node`, or `undefined`
      * if the `node` is not an element for a widget.
@@ -70,6 +113,7 @@ export declare class Widget {
     private notify;
     wasShown(): void;
     willHide(): void;
+    wasHidden(): void;
     onResize(): void;
     onLayout(): void;
     onDetach(): void;
@@ -153,11 +197,43 @@ export declare class Widget {
     get updateComplete(): Promise<boolean>;
 }
 export declare class VBox extends Widget {
-    constructor(useShadowDom?: boolean | HTMLElement, delegatesFocus?: boolean, element?: HTMLElement);
+    /**
+     * Constructs a new `VBox` with the given `options`.
+     *
+     * @param options optional settings to configure the behavior.
+     */
+    constructor(options?: WidgetOptions);
+    /**
+     * Constructs a new `VBox` with the given `options` and attached to the
+     * given `element`.
+     *
+     * If `element` is `undefined`, a new `<div>` element will be created instead
+     * and the widget will be attached to that.
+     *
+     * @param element an (optional) `HTMLElement` to attach the `VBox` to.
+     * @param options optional settings to configure the behavior.
+     */
+    constructor(element?: HTMLElement, options?: WidgetOptions);
     calculateConstraints(): Constraints;
 }
 export declare class HBox extends Widget {
-    constructor(useShadowDom?: boolean);
+    /**
+     * Constructs a new `HBox` with the given `options`.
+     *
+     * @param options optional settings to configure the behavior.
+     */
+    constructor(options?: WidgetOptions);
+    /**
+     * Constructs a new `HBox` with the given `options` and attached to the
+     * given `element`.
+     *
+     * If `element` is `undefined`, a new `<div>` element will be created instead
+     * and the widget will be attached to that.
+     *
+     * @param element an (optional) `HTMLElement` to attach the `HBox` to.
+     * @param options optional settings to configure the behavior.
+     */
+    constructor(element?: HTMLElement, options?: WidgetOptions);
     calculateConstraints(): Constraints;
 }
 export declare class VBoxWithResizeCallback extends VBox {

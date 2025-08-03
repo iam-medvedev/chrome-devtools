@@ -220,7 +220,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #persistedGroupConfig = null;
     #boundOnThemeChanged = this.#onThemeChanged.bind(this);
     constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
-        super(true);
+        super({ useShadowDom: true });
         this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
         this.#subtitleFont = `${SUBTITLE_FONT_SIZE_AND_STYLE} ${getFontFamilyForCanvas()}`;
         this.registerRequiredCSS(flameChartStyles);
@@ -244,6 +244,12 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.dataProvider = dataProvider;
         this.viewportElement = this.chartViewport.viewportElement;
         this.canvas = this.viewportElement.createChild('canvas', 'fill');
+        if (optionalConfig.canvasVELogContext) {
+            const context = VisualLogging.canvas(optionalConfig.canvasVELogContext).track({
+                hover: true,
+            });
+            this.canvas.setAttribute('jslog', `${context}`);
+        }
         this.context = this.canvas.getContext('2d');
         this.candyStripePattern = this.candyStripePatternGray = null;
         this.canvas.tabIndex = 0;

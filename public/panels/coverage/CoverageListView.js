@@ -121,7 +121,7 @@ export class CoverageListView extends UI.Widget.VBox {
     highlightRegExp;
     dataGrid;
     constructor(isVisibleFilter) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(coverageListViewStyles);
         this.nodeForCoverageInfo = new Map();
         this.isVisibleFilter = isVisibleFilter;

@@ -358,7 +358,6 @@ var MAX_RECORDED_HISTOGRAMS_SIZE = 100;
 var OVERRIDES_FILE_SYSTEM_PATH = "/overrides";
 var InspectorFrontendHostStub = class {
   #urlsBeingSaved = /* @__PURE__ */ new Map();
-  events;
   #fileSystem = null;
   recordedCountHistograms = [];
   recordedEnumeratedHistograms = [];
@@ -432,37 +431,45 @@ var InspectorFrontendHostStub = class {
   showItemInFolder(_fileSystemPath) {
     Common2.Console.Console.instance().error("Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect");
   }
-  save(url, content, _forceSaveAs, _isBase64) {
-    let buffer = this.#urlsBeingSaved.get(url);
+  // Reminder: the methods in this class belong to InspectorFrontendHostStub and are typically not executed.
+  // InspectorFrontendHostStub is ONLY used in the uncommon case of devtools not being embedded. For example: trace.cafe or http://localhost:9222/devtools/inspector.html?ws=localhost:9222/devtools/page/xTARGET_IDx
+  save(url, content, _forceSaveAs, isBase64) {
+    let buffer = this.#urlsBeingSaved.get(url)?.buffer;
     if (!buffer) {
       buffer = [];
-      this.#urlsBeingSaved.set(url, buffer);
+      this.#urlsBeingSaved.set(url, { isBase64, buffer });
     }
     buffer.push(content);
     this.events.dispatchEventToListeners(Events.SavedURL, { url, fileSystemPath: url });
   }
   append(url, content) {
-    const buffer = this.#urlsBeingSaved.get(url);
+    const buffer = this.#urlsBeingSaved.get(url)?.buffer;
     if (buffer) {
       buffer.push(content);
       this.events.dispatchEventToListeners(Events.AppendedToURL, url);
     }
   }
   close(url) {
-    const buffer = this.#urlsBeingSaved.get(url) || [];
+    const { isBase64, buffer } = this.#urlsBeingSaved.get(url) || { isBase64: false, buffer: [] };
     this.#urlsBeingSaved.delete(url);
     let fileName = "";
     if (url) {
       try {
         const trimmed = Platform.StringUtilities.trimURL(url);
         fileName = Platform.StringUtilities.removeURLFragment(trimmed);
-      } catch (error) {
+      } catch {
         fileName = url;
       }
     }
     const link = document.createElement("a");
     link.download = fileName;
-    const blob = new Blob([buffer.join("")], { type: "text/plain" });
+    let blob;
+    if (isBase64) {
+      const bytes = Common2.Base64.decode(buffer.join(""));
+      blob = new Blob([bytes], { type: "application/gzip" });
+    } else {
+      blob = new Blob(buffer, { type: "text/plain" });
+    }
     const blobUrl = URL.createObjectURL(blob);
     link.href = blobUrl;
     link.click();
@@ -744,11 +751,10 @@ var InspectorFrontendAPIImpl = class {
 };
 (function() {
   function initializeInspectorFrontendHost() {
-    let proto;
     if (!InspectorFrontendHostInstance) {
       globalThis.InspectorFrontendHost = InspectorFrontendHostInstance = new InspectorFrontendHostStub();
     } else {
-      proto = InspectorFrontendHostStub.prototype;
+      const proto = InspectorFrontendHostStub.prototype;
       for (const name of Object.getOwnPropertyNames(proto)) {
         const stub = proto[name];
         if (typeof stub !== "function" || InspectorFrontendHostInstance[name]) {
@@ -1947,11 +1953,12 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
+  DevtoolsExperiments2[DevtoolsExperiments2["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
   DevtoolsExperiments2[DevtoolsExperiments2["vertical-drawer"] = 107] = "vertical-drawer";
-  DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 108] = "MAX_VALUE";
+  DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 109] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 var IssueExpanded;
 (function(IssueExpanded2) {

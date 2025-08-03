@@ -116,6 +116,7 @@ __export(config_exports, {
   domWordWrap: () => domWordWrap,
   dummyDarkTheme: () => dummyDarkTheme,
   dynamicSetting: () => dynamicSetting,
+  hasActiveAiSuggestion: () => hasActiveAiSuggestion,
   indentUnit: () => indentUnit2,
   setAiAutoCompleteSuggestion: () => setAiAutoCompleteSuggestion,
   showCompletionHint: () => showCompletionHint,
@@ -717,7 +718,7 @@ var aiAutoCompleteSuggestionState = CM2.StateField.define({
     for (const effect of tr.effects) {
       if (effect.is(setAiAutoCompleteSuggestion)) {
         if (effect.value) {
-          return { text: effect.value, from: tr.state.selection.main.head };
+          return effect.value;
         }
         return null;
       }
@@ -737,6 +738,9 @@ var aiAutoCompleteSuggestionState = CM2.StateField.define({
     return value.text.startsWith(typedText) ? value : null;
   }
 });
+function hasActiveAiSuggestion(state) {
+  return state.field(aiAutoCompleteSuggestionState) !== null;
+}
 function acceptAiAutoCompleteSuggestion(view) {
   const suggestion = view.state.field(aiAutoCompleteSuggestionState);
   if (!suggestion) {

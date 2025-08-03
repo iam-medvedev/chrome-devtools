@@ -176,8 +176,10 @@ devtools-text-prompt {
 
 .filtered-list-widget-item.one-row {
   line-height: var(--sys-typescale-body3-line-height);
+  align-items: center;
   align-content: center;
   display: flex;
+  gap: var(--sys-size-4);
 }
 
 .filtered-list-widget-item.one-row .filtered-list-widget-title {
@@ -284,7 +286,7 @@ var FilteredListWidget = class extends Common.ObjectWrapper.eventMixin(UI.Widget
   provider;
   queryChangedCallback;
   constructor(provider, promptHistory, queryChangedCallback) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(filteredListWidget_css_default);
     this.promptHistory = promptHistory || [];
     this.scoringTimer = 0;
@@ -922,7 +924,7 @@ var CommandMenu = class _CommandMenu {
     return commandMenuInstance;
   }
   static createCommand(options) {
-    const { category, keys, title, shortcut, jslogContext, executeHandler, availableHandler, userActionCode, deprecationWarning, isPanelOrDrawer } = options;
+    const { category, keys, title, shortcut, jslogContext, executeHandler, availableHandler, userActionCode, deprecationWarning, isPanelOrDrawer, featurePromotionId } = options;
     let handler = executeHandler;
     if (userActionCode) {
       const actionCode = userActionCode;
@@ -931,7 +933,7 @@ var CommandMenu = class _CommandMenu {
         executeHandler();
       };
     }
-    return new Command(category, title, keys, shortcut, jslogContext, handler, availableHandler, deprecationWarning, isPanelOrDrawer);
+    return new Command(category, title, keys, shortcut, jslogContext, handler, availableHandler, deprecationWarning, isPanelOrDrawer, featurePromotionId);
   }
   static createSettingCommand(setting, title, value) {
     const category = setting.category();
@@ -990,7 +992,7 @@ var CommandMenu = class _CommandMenu {
     });
   }
   static createRevealViewCommand(options) {
-    const { title, tags, category, userActionCode, id } = options;
+    const { title, tags, category, userActionCode, id, featurePromotionId } = options;
     if (!category) {
       throw new Error(`Creating '${title}' reveal view command failed. Reveal view has no category.`);
     }
@@ -1007,6 +1009,9 @@ var CommandMenu = class _CommandMenu {
           /* Host.UserMetrics.IssueOpener.COMMAND_MENU */
         );
       }
+      if (featurePromotionId) {
+        UI2.UIUtils.PromotionManager.instance().recordFeatureInteraction(featurePromotionId);
+      }
       return UI2.ViewManager.ViewManager.instance().showView(
         id,
         /* userGesture */
@@ -1022,7 +1027,8 @@ var CommandMenu = class _CommandMenu {
       executeHandler,
       userActionCode,
       availableHandler: void 0,
-      isPanelOrDrawer: panelOrDrawer
+      isPanelOrDrawer: panelOrDrawer,
+      featurePromotionId
     });
   }
   loadCommands() {
@@ -1043,7 +1049,8 @@ var CommandMenu = class _CommandMenu {
         title: view.commandPrompt(),
         tags: view.tags() || "",
         category,
-        id: view.viewId()
+        id: view.viewId(),
+        featurePromotionId: view.featurePromotionId()
       };
       this.commandsInternal.push(_CommandMenu.createRevealViewCommand(options));
     }
@@ -1106,6 +1113,10 @@ var CommandMenuProvider = class extends Provider {
   itemScoreAt(itemIndex, query) {
     const command = this.commands[itemIndex];
     let score = Diff3.Diff.DiffWrapper.characterScore(query.toLowerCase(), command.title.toLowerCase());
+    if (command.featurePromotionId) {
+      score = Number.MAX_VALUE;
+      return score;
+    }
     if (command.isPanelOrDrawer === "PANEL") {
       score += 2;
     } else if (command.isPanelOrDrawer === "DRAWER") {
@@ -1120,6 +1131,12 @@ var CommandMenuProvider = class extends Provider {
     titleElement.parentElement?.parentElement?.insertBefore(icon, titleElement.parentElement);
     UI2.UIUtils.createTextChild(titleElement, command.title);
     FilteredListWidget.highlightRanges(titleElement, query, true);
+    if (command.featurePromotionId) {
+      const badge = UI2.UIUtils.maybeCreateNewBadge(command.featurePromotionId);
+      if (badge) {
+        titleElement.parentElement?.insertBefore(badge, subtitleElement);
+      }
+    }
     subtitleElement.textContent = command.shortcut;
     const deprecationWarning = command.deprecationWarning;
     if (deprecationWarning) {
@@ -1179,9 +1196,10 @@ var Command = class {
   jslogContext;
   deprecationWarning;
   isPanelOrDrawer;
+  featurePromotionId;
   #executeHandler;
   #availableHandler;
-  constructor(category, title, key, shortcut, jslogContext, executeHandler, availableHandler, deprecationWarning, isPanelOrDrawer) {
+  constructor(category, title, key, shortcut, jslogContext, executeHandler, availableHandler, deprecationWarning, isPanelOrDrawer, featurePromotionId) {
     this.category = category;
     this.title = title;
     this.key = category + "\0" + title + "\0" + key;
@@ -1191,6 +1209,7 @@ var Command = class {
     this.#availableHandler = availableHandler;
     this.deprecationWarning = deprecationWarning;
     this.isPanelOrDrawer = isPanelOrDrawer;
+    this.featurePromotionId = featurePromotionId;
   }
   available() {
     return this.#availableHandler ? this.#availableHandler() : true;

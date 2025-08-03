@@ -176,7 +176,7 @@ export class PatchWidget extends UI.Widget.Widget {
     // `rpcId` from the `applyPatch` request
     #rpcId = null;
     constructor(element, view, opts) {
-        super(false, false, element);
+        super(element);
         this.#aidaClient = opts?.aidaClient ?? new Host.AidaClient.AidaClient();
         this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;

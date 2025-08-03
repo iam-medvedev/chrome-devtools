@@ -19,6 +19,7 @@ __export(Common_exports, {
   getInsight: () => getInsight,
   getLCP: () => getLCP,
   isRequestCompressed: () => isRequestCompressed,
+  isRequestServedFromBrowserCache: () => isRequestServedFromBrowserCache,
   metricSavingsForWastedBytes: () => metricSavingsForWastedBytes
 });
 import * as Helpers from "./../helpers/helpers.js";
@@ -284,13 +285,27 @@ function isRequestCompressed(request) {
   const compressionTypes = ["gzip", "br", "deflate", "zstd"];
   return request.args.data.responseHeaders.some((header) => patterns.some((p) => header.name.match(p)) && compressionTypes.includes(header.value));
 }
+function isRequestServedFromBrowserCache(request) {
+  if (!request.args.data.responseHeaders || request.args.data.failed) {
+    return false;
+  }
+  if (request.args.data.statusCode === 304) {
+    return true;
+  }
+  const { transferSize, resourceSize } = getRequestSizes(request);
+  const ratio = resourceSize ? transferSize / resourceSize : 0;
+  if (ratio < 0.01) {
+    return true;
+  }
+  return false;
+}
 function getRequestSizes(request) {
   const resourceSize = request.args.data.decodedBodyLength;
   const transferSize = request.args.data.encodedDataLength;
   return { resourceSize, transferSize };
 }
 function estimateCompressedContentSize(request, totalBytes, resourceType) {
-  if (!request) {
+  if (!request || isRequestServedFromBrowserCache(request)) {
     switch (resourceType) {
       case "Stylesheet":
         return Math.round(totalBytes * 0.2);
@@ -1733,7 +1748,8 @@ __export(ImageDelivery_exports, {
   generateInsight: () => generateInsight8,
   getOptimizationMessage: () => getOptimizationMessage,
   getOptimizationMessageWithBytes: () => getOptimizationMessageWithBytes,
-  i18nString: () => i18nString8
+  i18nString: () => i18nString8,
+  isImageDelivery: () => isImageDelivery
 });
 import * as i18n15 from "./../../../core/i18n/i18n.js";
 import * as Helpers9 from "./../helpers/helpers.js";
@@ -1797,6 +1813,9 @@ var ImageOptimizationType;
   ImageOptimizationType2["VIDEO_FORMAT"] = "VIDEO_FORMAT";
   ImageOptimizationType2["RESPONSIVE_SIZE"] = "RESPONSIVE_SIZE";
 })(ImageOptimizationType || (ImageOptimizationType = {}));
+function isImageDelivery(model) {
+  return model.insightKey === "ImageDelivery";
+}
 function getOptimizationMessage(optimization) {
   switch (optimization.type) {
     case ImageOptimizationType.ADJUST_COMPRESSION:
@@ -2416,7 +2435,8 @@ __export(LegacyJavaScript_exports, {
   UIStrings: () => UIStrings12,
   createOverlays: () => createOverlays12,
   generateInsight: () => generateInsight12,
-  i18nString: () => i18nString12
+  i18nString: () => i18nString12,
+  isLegacyJavaScript: () => isLegacyJavaScript
 });
 import * as i18n23 from "./../../../core/i18n/i18n.js";
 import * as LegacyJavaScriptLib from "./../../../third_party/legacy-javascript/legacy-javascript.js";
@@ -2451,6 +2471,9 @@ function finalize12(partialModel) {
     relatedEvents: [...new Set(requests)],
     ...partialModel
   };
+}
+function isLegacyJavaScript(model) {
+  return model.insightKey === "LegacyJavaScript";
 }
 function generateInsight12(parsedTrace, context) {
   const scripts = parsedTrace.Scripts.scripts.filter((script) => {

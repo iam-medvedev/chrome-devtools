@@ -8,6 +8,7 @@ export declare class ImageDelivery extends BaseInsightComponent<ImageDeliveryIns
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
     mapToRow(image: Trace.Insights.Models.ImageDelivery.OptimizableImage): TableDataRow;
+    protected hasAskAiSupport(): boolean;
     createAggregatedTableRow(remaining: Trace.Insights.Models.ImageDelivery.OptimizableImage[]): TableDataRow;
     renderContent(): Lit.LitTemplate;
 }

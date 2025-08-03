@@ -82,7 +82,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
 export class ExploreWidget extends UI.Widget.Widget {
     view;
     constructor(element, view) {
-        super(false, false, element);
+        super(element);
         this.view = view ?? DEFAULT_VIEW;
     }
     wasShown() {

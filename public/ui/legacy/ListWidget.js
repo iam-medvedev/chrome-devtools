@@ -60,7 +60,7 @@ export class ListWidget extends VBox {
     emptyPlaceholder;
     isTable;
     constructor(delegate, delegatesFocus = true, isTable = false) {
-        super(true, delegatesFocus);
+        super({ useShadowDom: true, delegatesFocus });
         this.registerRequiredCSS(listWidgetStyles);
         this.delegate = delegate;
         this.list = this.contentElement.createChild('div', 'list');

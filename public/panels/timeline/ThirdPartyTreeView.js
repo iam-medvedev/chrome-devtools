@@ -213,7 +213,7 @@ export class ThirdPartyTreeElement extends UI.Widget.WidgetElement {
         this.style.display = 'contents';
     }
     createWidget() {
-        const containerWidget = new UI.Widget.Widget(false, undefined, this);
+        const containerWidget = new UI.Widget.Widget(this);
         containerWidget.contentElement.style.display = 'contents';
         if (this.#treeView) {
             this.#treeView.show(containerWidget.contentElement);

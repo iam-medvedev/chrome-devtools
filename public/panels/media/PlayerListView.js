@@ -33,7 +33,7 @@ export class PlayerListView extends UI.Widget.VBox {
     mainContainer;
     currentlySelectedEntry;
     constructor(mainContainer) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(playerListViewStyles);
         this.playerEntryFragments = new Map();
         this.playerEntriesWithHostnameFrameTitle = new Set();

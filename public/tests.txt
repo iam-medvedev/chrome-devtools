@@ -89,7 +89,6 @@ core/sdk/SourceMap.test.js
 core/sdk/SourceMapFunctionRanges.test.js
 core/sdk/SourceMapManager.test.js
 core/sdk/SourceMapScopeChainEntry.test.js
-core/sdk/SourceMapScopes.test.js
 core/sdk/SourceMapScopesInfo.test.js
 core/sdk/StorageBucketsModel.test.js
 core/sdk/StorageKeyManager.test.js
@@ -133,7 +132,6 @@ models/bindings/DebuggerLanguagePlugins.test.js
 models/bindings/DebuggerWorkspaceBinding.test.js
 models/bindings/DefaultScriptMapping.test.js
 models/bindings/FileUtils.test.js
-models/bindings/IgnoreListManager.test.js
 models/bindings/LiveLocation.test.js
 models/bindings/PresentationConsoleMessageHelper.test.js
 models/bindings/ResourceMapping.test.js
@@ -271,6 +269,7 @@ models/trace/lantern/simulation/Simulator.test.js
 models/trace/lantern/simulation/TCPConnection.test.js
 models/trace/types/File.test.js
 models/trace/types/TraceEvents.test.js
+models/workspace/IgnoreListManager.test.js
 models/workspace/SearchConfig.test.js
 models/workspace/UISourceCode.test.js
 models/workspace/WorkspaceImpl.test.js
@@ -335,6 +334,7 @@ panels/browser_debugger/DOMBreakpointsSidebarPane.test.js
 panels/browser_debugger/browser_debugger.test.js
 panels/changes/CombinedDiffView.test.js
 panels/changes/changes.test.js
+panels/common/AiCodeCompletionSummaryToolbar.test.js
 panels/common/AiCodeCompletionTeaser.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
@@ -490,6 +490,7 @@ panels/sources/NavigatorView.test.js
 panels/sources/OutlineQuickOpen.test.js
 panels/sources/ResourceOriginPlugin.test.js
 panels/sources/SourcesNavigator.test.js
+panels/sources/SourcesPanel.test.js
 panels/sources/SourcesView.test.js
 panels/sources/TabbedEditorContainer.test.js
 panels/sources/UISourceCodeFrame.test.js
@@ -498,7 +499,6 @@ panels/timeline/AnnotationHelpers.test.js
 panels/timeline/Breadcrumbs.test.js
 panels/timeline/CountersGraph.test.js
 panels/timeline/EntriesFilter.test.js
-panels/timeline/EventsSerializer.test.js
 panels/timeline/ExternalRequests.test.js
 panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
@@ -561,6 +561,7 @@ panels/timeline/utils/AICallTree.test.js
 panels/timeline/utils/EntityMapper.test.js
 panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/EntryNodes.test.js
+panels/timeline/utils/EventsSerializer.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js
@@ -639,6 +640,7 @@ ui/legacy/Toolbar.test.js
 ui/legacy/Treeoutline.test.js
 ui/legacy/UIUtils.test.js
 ui/legacy/View.test.js
+ui/legacy/ViewManager.test.js
 ui/legacy/ViewRegistration.test.js
 ui/legacy/Widget.test.js
 ui/legacy/XLink.test.js

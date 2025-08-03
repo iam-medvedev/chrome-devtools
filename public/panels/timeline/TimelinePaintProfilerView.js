@@ -174,7 +174,7 @@ export class TimelinePaintImageView extends UI.Widget.Widget {
     transformController;
     maskRectangle;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(timelinePaintProfilerStyles);
         this.contentElement.classList.add('fill', 'paint-profiler-image-view');
         this.imageContainer = this.contentElement.createChild('div', 'paint-profiler-image-container');

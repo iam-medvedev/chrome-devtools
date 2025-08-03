@@ -131,7 +131,7 @@ export class DOMBreakpointsSidebarPane extends UI.Widget.VBox {
     #list;
     #highlightedBreakpoint;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(domBreakpointsSidebarPaneStyles);
         this.elementToCheckboxes = new WeakMap();
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.dom-breakpoints').track({ resize: true })}`);

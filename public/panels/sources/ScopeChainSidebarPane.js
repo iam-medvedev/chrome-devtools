@@ -43,7 +43,7 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     infoElement;
     #scopeChainModel = null;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(scopeChainSidebarPaneStyles);
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.scope-chain')}`);
         this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();

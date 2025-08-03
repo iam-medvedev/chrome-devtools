@@ -167,7 +167,7 @@ describeWithEnvironment('TextEditor', () => {
             renderElementIntoDOM(editor);
             const text = 'hello';
             editor.dispatch({
-                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(text),
+                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text, from: 0 }),
             });
             const actualSuggestion = editor.editor.state.field(TextEditor.Config.aiAutoCompleteSuggestionState);
             assert.isOk(actualSuggestion);
@@ -178,7 +178,7 @@ describeWithEnvironment('TextEditor', () => {
             const editor = new TextEditor.TextEditor.TextEditor(makeState('', TextEditor.Config.aiAutoCompleteSuggestion));
             renderElementIntoDOM(editor);
             editor.dispatch({
-                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of('hello'),
+                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: 'hello', from: 0 }),
             });
             assert.isOk(editor.editor.state.field(TextEditor.Config.aiAutoCompleteSuggestionState));
             editor.dispatch({
@@ -192,7 +192,7 @@ describeWithEnvironment('TextEditor', () => {
             const editor = new TextEditor.TextEditor.TextEditor(makeState('', TextEditor.Config.aiAutoCompleteSuggestion));
             renderElementIntoDOM(editor);
             editor.dispatch({
-                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of('hello'),
+                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: 'hello', from: 0 }),
             });
             assert.isOk(editor.editor.state.field(TextEditor.Config.aiAutoCompleteSuggestionState));
             editor.dispatch({ changes: { from: 0, insert: 'a' }, selection: { anchor: 1 } });
@@ -204,7 +204,7 @@ describeWithEnvironment('TextEditor', () => {
             renderElementIntoDOM(editor);
             const text = 'hello';
             editor.dispatch({
-                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(text),
+                effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text, from: 0 }),
             });
             const accepted = TextEditor.Config.acceptAiAutoCompleteSuggestion(editor.editor);
             assert.isTrue(accepted);
@@ -239,7 +239,13 @@ describeWithMockConnection('TextEditor autocompletion', () => {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, targetManager, resourceMapping });
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+            ignoreListManager,
+        });
         const testScript = debuggerModel.parsedScriptSource('1', urlString `script://1`, 0, 0, 0, 0, executionContext.id, '', undefined, false, undefined, false, false, 0, null, null, null, null, null, null, null);
         const payload = {
             callFrameId: '0',

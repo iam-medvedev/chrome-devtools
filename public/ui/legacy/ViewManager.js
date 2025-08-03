@@ -14,7 +14,7 @@ import { Events as TabbedPaneEvents, TabbedPane } from './TabbedPane.js';
 import { ToolbarMenuButton } from './Toolbar.js';
 import { createTextChild } from './UIUtils.js';
 import viewContainersStyles from './viewContainers.css.js';
-import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
+import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensionForID, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
     /**
@@ -47,6 +47,9 @@ export class PreRegisteredView {
     }
     isPreviewFeature() {
         return Boolean(this.viewRegistration.isPreviewFeature);
+    }
+    featurePromotionId() {
+        return this.viewRegistration.featurePromotionId;
     }
     iconName() {
         return this.viewRegistration.iconName;
@@ -104,11 +107,12 @@ export class PreRegisteredView {
     }
 }
 let viewManagerInstance;
-export class ViewManager {
+export class ViewManager extends Common.ObjectWrapper.ObjectWrapper {
     views;
     locationNameByViewId;
     locationOverrideSetting;
     constructor() {
+        super();
         this.views = new Map();
         this.locationNameByViewId = new Map();
         // Read override setting for location
@@ -254,6 +258,17 @@ export class ViewManager {
         location.reveal();
         await location.showView(view, undefined, userGesture, omitFocus);
     }
+    isViewVisible(viewId) {
+        const view = this.views.get(viewId);
+        if (!view) {
+            return false;
+        }
+        const location = locationForView.get(view);
+        if (!location) {
+            return false;
+        }
+        return location.isViewVisible(view);
+    }
     async resolveLocation(location) {
         if (!location) {
             return null;
@@ -345,7 +360,7 @@ class ExpandableContainerWidget extends VBox {
     widget;
     materializePromise;
     constructor(view) {
-        super(true);
+        super({ useShadowDom: true });
         this.element.classList.add('flex-none');
         this.registerRequiredCSS(viewContainersStyles);
         this.titleElement = document.createElement('div');
@@ -478,10 +493,14 @@ class Location {
     removeView(_view) {
         throw new Error('not implemented');
     }
+    isViewVisible(_view) {
+        throw new Error('not implemented');
+    }
 }
 const locationForView = new WeakMap();
 class TabbedLocation extends Location {
     tabbedPaneInternal;
+    location;
     allowReorder;
     closeableTabSetting;
     tabOrderSetting;
@@ -494,10 +513,12 @@ class TabbedLocation extends Location {
             tabbedPane.setAllowTabReorder(true);
         }
         super(manager, tabbedPane, revealCallback);
+        this.location = location;
         this.tabbedPaneInternal = tabbedPane;
         this.allowReorder = allowReorder;
         this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
         this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabClosed, this.tabClosed, this);
+        this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.PaneVisibilityChanged, this.tabbedPaneVisibilityChanged, this);
         this.closeableTabSetting = Common.Settings.Settings.instance().createSetting('closeable-tabs', {});
         // As we give tabs the capability to be closed we also need to add them to the setting so they are still open
         // until the user decide to close them
@@ -664,11 +685,29 @@ class TabbedLocation extends Location {
         this.tabbedPaneInternal.closeTab(view.viewId());
         this.views.delete(view.viewId());
     }
+    isViewVisible(view) {
+        return this.tabbedPaneInternal.isShowing() && this.tabbedPaneInternal?.selectedTabId === view.viewId();
+    }
+    tabbedPaneVisibilityChanged(event) {
+        if (!this.tabbedPaneInternal.selectedTabId) {
+            return;
+        }
+        this.manager.dispatchEventToListeners("ViewVisibilityChanged" /* Events.VIEW_VISIBILITY_CHANGED */, {
+            location: this.location,
+            revealedViewId: event.data.isVisible ? this.tabbedPaneInternal.selectedTabId : undefined,
+            hiddenViewId: event.data.isVisible ? undefined : this.tabbedPaneInternal.selectedTabId,
+        });
+    }
     tabSelected(event) {
-        const { tabId } = event.data;
-        if (this.lastSelectedTabSetting && event.data['isUserGesture']) {
+        const { tabId, prevTabId, isUserGesture } = event.data;
+        if (this.lastSelectedTabSetting && isUserGesture) {
             this.lastSelectedTabSetting.set(tabId);
         }
+        this.manager.dispatchEventToListeners("ViewVisibilityChanged" /* Events.VIEW_VISIBILITY_CHANGED */, {
+            location: this.location,
+            revealedViewId: tabId,
+            hiddenViewId: prevTabId,
+        });
     }
     tabClosed(event) {
         const { tabId } = event.data;
@@ -756,11 +795,15 @@ class StackLocation extends Location {
         locationForView.delete(view);
         this.manager.views.delete(view.viewId());
     }
+    isViewVisible(_view) {
+        // TODO(crbug.com/435356108): Implement this
+        throw new Error('not implemented');
+    }
     appendApplicableItems(locationName) {
         for (const view of this.manager.viewsForLocation(locationName)) {
             this.appendView(view);
         }
     }
 }
-export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, };
+export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, getRegisteredViewExtensionForID, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, };
 //# sourceMappingURL=ViewManager.js.map

@@ -40,6 +40,7 @@ export class Item {
     typeInternal;
     label;
     accelerator;
+    featureName;
     previewFeature;
     disabled;
     checked;
@@ -50,7 +51,7 @@ export class Item {
     shortcut;
     #tooltip;
     jslogContext;
-    constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext) {
+    constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext, featureName) {
         this.typeInternal = type;
         this.label = label;
         this.previewFeature = Boolean(isPreviewFeature);
@@ -65,6 +66,7 @@ export class Item {
             this.idInternal = contextMenu ? contextMenu.nextId() : 0;
         }
         this.jslogContext = jslogContext;
+        this.featureName = featureName;
     }
     id() {
         if (this.idInternal === undefined) {
@@ -97,6 +99,7 @@ export class Item {
                     subItems: undefined,
                     tooltip: this.#tooltip,
                     jslogContext: this.jslogContext,
+                    featureName: this.featureName,
                 };
                 if (this.customElement) {
                     result.element = this.customElement;
@@ -164,7 +167,7 @@ export class Section {
         this.items = [];
     }
     appendItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'item', label, options?.isPreviewFeature, options?.disabled, undefined, options?.accelerator, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'item', label, options?.isPreviewFeature, options?.disabled, undefined, options?.accelerator, options?.tooltip, options?.jslogContext, options?.featureName);
         if (options?.additionalElement) {
             item.customElement = options?.additionalElement;
         }
@@ -185,7 +188,7 @@ export class Section {
         this.items.push(item);
         return item;
     }
-    appendAction(actionId, label, optional) {
+    appendAction(actionId, label, optional, jslogContext, feature) {
         if (optional && !ActionRegistry.instance().hasAction(actionId)) {
             return;
         }
@@ -195,7 +198,8 @@ export class Section {
         }
         const result = this.appendItem(label, action.execute.bind(action), {
             disabled: !action.enabled(),
-            jslogContext: actionId,
+            jslogContext: jslogContext ?? actionId,
+            featureName: feature,
         });
         const shortcut = ShortcutRegistry.instance().shortcutTitleForAction(actionId);
         const keyAndModifier = ShortcutRegistry.instance().keyAndModifiersForAction(actionId);
@@ -206,14 +210,14 @@ export class Section {
             result.setShortcut(shortcut);
         }
     }
-    appendSubMenuItem(label, disabled, jslogContext) {
-        const item = new SubMenu(this.contextMenu, label, disabled, jslogContext);
+    appendSubMenuItem(label, disabled, jslogContext, featureName) {
+        const item = new SubMenu(this.contextMenu, label, disabled, jslogContext, featureName);
         item.init();
         this.items.push(item);
         return item;
     }
     appendCheckboxItem(label, handler, options) {
-        const item = new Item(this.contextMenu, 'checkbox', label, options?.experimental, options?.disabled, options?.checked, undefined, options?.tooltip, options?.jslogContext);
+        const item = new Item(this.contextMenu, 'checkbox', label, options?.experimental, options?.disabled, options?.checked, undefined, options?.tooltip, options?.jslogContext, options?.featureName);
         this.items.push(item);
         if (this.contextMenu) {
             this.contextMenu.setHandler(item.id(), handler);
@@ -227,8 +231,8 @@ export class Section {
 export class SubMenu extends Item {
     sections;
     sectionList;
-    constructor(contextMenu, label, disabled, jslogContext) {
-        super(contextMenu, 'subMenu', label, undefined, disabled, undefined, undefined, undefined, jslogContext);
+    constructor(contextMenu, label, disabled, jslogContext, featureName) {
+        super(contextMenu, 'subMenu', label, undefined, disabled, undefined, undefined, undefined, jslogContext, featureName);
         this.sections = new Map();
         this.sectionList = [];
     }
@@ -300,6 +304,7 @@ export class SubMenu extends Item {
             id: undefined,
             checked: undefined,
             jslogContext: this.jslogContext,
+            featureName: this.featureName,
         };
         const nonEmptySections = this.sectionList.filter(section => Boolean(section.items.length));
         for (const section of nonEmptySections) {

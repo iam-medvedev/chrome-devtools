@@ -49,6 +49,7 @@ import objectValueStyles from '../../ui/legacy/components/object_ui/objectValue.
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { AiCodeCompletionSummaryToolbar } from '../common/common.js';
 import { ConsoleContextSelector } from './ConsoleContextSelector.js';
 import { ConsoleFilter, FilterType } from './ConsoleFilter.js';
 import { ConsolePinPane } from './ConsolePinPane.js';
@@ -250,6 +251,8 @@ const str_ = i18n.i18n.registerUIStrings('panels/console/ConsoleView.ts', UIStri
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let consoleViewInstance;
 const MIN_HISTORY_LENGTH_FOR_DISABLING_SELF_XSS_WARNING = 5;
+const DISCLAIMER_TOOLTIP_ID = 'console-ai-code-completion-disclaimer-tooltip';
+const CITATIONS_TOOLTIP_ID = 'console-ai-code-completion-citations-tooltip';
 export class ConsoleView extends UI.Widget.VBox {
     searchableViewInternal;
     sidebar;
@@ -308,6 +311,9 @@ export class ConsoleView extends UI.Widget.VBox {
     issueResolver = new IssuesManager.IssueResolver.IssueResolver();
     #isDetached = false;
     #onIssuesCountUpdateBound = this.#onIssuesCountUpdate.bind(this);
+    aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-fre-completed', false);
+    aiCodeCompletionSummaryToolbarContainer;
+    aiCodeCompletionSummaryToolbar;
     constructor(viewportThrottlerTimeout) {
         super();
         this.setMinimumSize(0, 35);
@@ -465,6 +471,11 @@ export class ConsoleView extends UI.Widget.VBox {
         this.prompt.show(this.promptElement);
         this.prompt.element.addEventListener('keydown', this.promptKeyDown.bind(this), true);
         this.prompt.addEventListener("TextChanged" /* ConsolePromptEvents.TEXT_CHANGED */, this.promptTextChanged, this);
+        if (this.isAiCodeCompletionEnabled()) {
+            this.aiCodeCompletionSetting.addChangeListener(this.onAiCodeCompletionSettingChanged.bind(this));
+            this.onAiCodeCompletionSettingChanged();
+            this.prompt.addEventListener("CitationsUpdated" /* ConsolePromptEvents.CITATIONS_UPDATED */, this.#onAiCodeCompletionCitationsUpdated, this);
+        }
         this.messagesElement.addEventListener('keydown', this.messagesKeyDown.bind(this), false);
         this.prompt.element.addEventListener('focusin', () => {
             if (this.isScrolledToBottom()) {
@@ -498,6 +509,25 @@ export class ConsoleView extends UI.Widget.VBox {
             consoleViewInstance = new ConsoleView(opts?.viewportThrottlerTimeout ?? 50);
         }
         return consoleViewInstance;
+    }
+    createAiCodeCompletionSummaryToolbar() {
+        this.aiCodeCompletionSummaryToolbar =
+            new AiCodeCompletionSummaryToolbar(DISCLAIMER_TOOLTIP_ID, CITATIONS_TOOLTIP_ID, 'console');
+        this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild('div');
+        this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, undefined, true);
+    }
+    #onAiCodeCompletionCitationsUpdated(event) {
+        if (!this.aiCodeCompletionSummaryToolbar) {
+            return;
+        }
+        const citations = [];
+        event.data.citations.forEach(citation => {
+            const uri = citation.uri;
+            if (uri) {
+                citations.push(uri);
+            }
+        });
+        this.aiCodeCompletionSummaryToolbar?.updateCitations(citations);
     }
     static clearConsole() {
         SDK.ConsoleModel.ConsoleModel.requestClearMessages();
@@ -928,6 +958,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.filter.clear();
         this.requestResolver.clear();
         this.consoleGroupStarts = [];
+        this.aiCodeCompletionSummaryToolbar?.clearCitations();
         if (hadFocus) {
             this.prompt.focus();
         }
@@ -1351,6 +1382,19 @@ export class ConsoleView extends UI.Widget.VBox {
         const distanceToPromptEditorBottom = this.messagesElement.scrollHeight - this.messagesElement.scrollTop -
             this.messagesElement.clientHeight - this.prompt.belowEditorElement().offsetHeight;
         return distanceToPromptEditorBottom <= 2;
+    }
+    onAiCodeCompletionSettingChanged() {
+        if (this.aiCodeCompletionSetting.get() && this.isAiCodeCompletionEnabled()) {
+            this.createAiCodeCompletionSummaryToolbar();
+        }
+        else if (this.aiCodeCompletionSummaryToolbarContainer) {
+            this.aiCodeCompletionSummaryToolbarContainer.remove();
+            this.aiCodeCompletionSummaryToolbarContainer = undefined;
+            this.aiCodeCompletionSummaryToolbar = undefined;
+        }
+    }
+    isAiCodeCompletionEnabled() {
+        return Boolean(Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
     }
 }
 // @ts-expect-error exported for Tests.js

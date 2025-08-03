@@ -18,6 +18,9 @@ export class ImageDelivery extends BaseInsightComponent {
             overlays: [createOverlayForRequest(image.request)],
         };
     }
+    hasAskAiSupport() {
+        return true;
+    }
     createAggregatedTableRow(remaining) {
         return {
             values: [renderOthersLabel(remaining.length)],

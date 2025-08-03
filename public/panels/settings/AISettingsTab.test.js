@@ -20,6 +20,9 @@ describeWithEnvironment('AISettingsTab', () => {
         updateHostConfig({
             devToolsAiGeneratedTimelineLabels: {
                 enabled: true,
+            },
+            devToolsAiCodeCompletion: {
+                enabled: true,
             }
         });
     });
@@ -42,24 +45,26 @@ describeWithEnvironment('AISettingsTab', () => {
         Common.Settings.moduleSetting('console-insights-enabled').set(false);
         Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
         Common.Settings.moduleSetting('ai-annotations-enabled').set(true);
+        Common.Settings.moduleSetting('ai-code-completion-fre-completed').set(false);
         view = new Settings.AISettingsTab.AISettingsTab();
         renderElementIntoDOM(view);
         await view.render();
         assert.isNotNull(view.shadowRoot);
         const switches = Array.from(view.shadowRoot.querySelectorAll('devtools-switch'));
-        assert.lengthOf(switches, 3);
+        assert.lengthOf(switches, 4);
         const details = Array.from(view.shadowRoot.querySelectorAll('.whole-row'));
-        assert.lengthOf(details, 3);
+        assert.lengthOf(details, 4);
         const dropdownButtons = Array.from(view.shadowRoot.querySelectorAll('.dropdown devtools-button'));
-        assert.lengthOf(dropdownButtons, 3);
+        assert.lengthOf(dropdownButtons, 4);
         const toggleContainers = Array.from(view.shadowRoot.querySelectorAll('.toggle-container'));
-        assert.lengthOf(toggleContainers, 3);
+        assert.lengthOf(toggleContainers, 4);
         return { switches, details, dropdownButtons, toggleContainers, view };
     }
     it('renders', async () => {
         Common.Settings.moduleSetting('console-insights-enabled').set(true);
         Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
         Common.Settings.moduleSetting('ai-annotations-enabled').set(true);
+        Common.Settings.moduleSetting('ai-code-completion-fre-completed').set(true);
         view = new Settings.AISettingsTab.AISettingsTab();
         renderElementIntoDOM(view);
         await view.render();
@@ -71,16 +76,18 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(disclaimers[5].textContent, 'Depending on your region, Google may refrain from data collection');
         const settingCards = view.shadowRoot.querySelectorAll('.setting-card h2');
         const settingNames = Array.from(settingCards).map(element => element.textContent);
-        assert.deepEqual(settingNames, ['Console Insights', 'AI assistance', 'Auto annotations']);
+        assert.deepEqual(settingNames, ['Console Insights', 'AI assistance', 'Auto annotations', 'Code suggestions']);
         const settingCardDesc = view.shadowRoot.querySelectorAll('.setting-description');
         assert.strictEqual(settingCardDesc[0].textContent, 'Helps you understand and fix console warnings and errors');
         assert.strictEqual(settingCardDesc[1].textContent, 'Get help with understanding CSS styles');
         assert.strictEqual(settingCardDesc[2].textContent, 'Get AI suggestions for performance panel annotations');
+        assert.strictEqual(settingCardDesc[3].textContent, 'Get help completing your code');
     });
     it('renders different dislaimers for managed users which have logging disabled', async () => {
         Common.Settings.moduleSetting('console-insights-enabled').set(true);
         Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
         Common.Settings.moduleSetting('ai-annotations-enabled').set(true);
+        Common.Settings.moduleSetting('ai-code-completion-fre-completed').set(true);
         updateHostConfig({
             aidaAvailability: {
                 enabled: true,
@@ -161,6 +168,8 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(toggleContainers[1].title, underAgeExplainer);
         assert.isTrue(switches[2].disabled);
         assert.strictEqual(toggleContainers[2].title, underAgeExplainer);
+        assert.isTrue(switches[3].disabled);
+        assert.strictEqual(toggleContainers[3].title, underAgeExplainer);
         aidaAccessStub.restore();
     });
     it('updates when the user logs in', async () => {
@@ -175,6 +184,8 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.strictEqual(toggleContainers[1].title, notLoggedInExplainer);
         assert.isTrue(switches[2].disabled);
         assert.strictEqual(toggleContainers[2].title, notLoggedInExplainer);
+        assert.isTrue(switches[3].disabled);
+        assert.strictEqual(toggleContainers[3].title, notLoggedInExplainer);
         aidaAccessStub.returns(Promise.resolve("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */));
         Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
         await drainMicroTasks();
@@ -182,6 +193,7 @@ describeWithEnvironment('AISettingsTab', () => {
         assert.isFalse(switches[0].disabled);
         assert.isFalse(switches[1].disabled);
         assert.isFalse(switches[2].disabled);
+        assert.isFalse(switches[3].disabled);
         aidaAccessStub.restore();
     });
     it('renders disabled switch component with reason', async () => {

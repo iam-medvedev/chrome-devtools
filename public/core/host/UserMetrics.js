@@ -722,13 +722,14 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["vertical-drawer"] = 107] = "vertical-drawer";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 108] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 109] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

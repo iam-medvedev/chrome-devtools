@@ -18,21 +18,19 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const targetManager = SDK.TargetManager.TargetManager.instance({ forceNew: true });
         const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
             targetManager,
-        });
-        Bindings.IgnoreListManager.IgnoreListManager.instance({
-            forceNew: true,
-            debuggerWorkspaceBinding,
+            ignoreListManager,
         });
     });
     afterEach(() => {
         SDK.TargetManager.TargetManager.removeInstance();
         Workspace.Workspace.WorkspaceImpl.removeInstance();
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
-        Bindings.IgnoreListManager.IgnoreListManager.removeInstance();
+        Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
     });
     it('shows initiator arrows when an event that has them is selected', async function () {
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();

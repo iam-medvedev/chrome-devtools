@@ -197,12 +197,7 @@ var JSONEditor = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   #hintPopoverHelper;
   #view;
   constructor(element, view = DEFAULT_VIEW) {
-    super(
-      /* useShadowDom=*/
-      true,
-      void 0,
-      element
-    );
+    super(element, { useShadowDom: true });
     this.#view = view;
     this.registerRequiredCSS(JSONEditor_css_default);
   }
@@ -1736,7 +1731,7 @@ var InfoWidget = class extends UI2.Widget.VBox {
   type;
   selectedTab;
   constructor(element) {
-    super(void 0, void 0, element);
+    super(element);
     this.tabbedPane = new UI2.TabbedPane.TabbedPane();
     this.tabbedPane.appendTab("request", i18nString2(UIStrings2.request), new UI2.Widget.Widget());
     this.tabbedPane.appendTab("response", i18nString2(UIStrings2.response), new UI2.Widget.Widget());

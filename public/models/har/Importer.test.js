@@ -75,6 +75,12 @@ const exampleLog = new HAR.HARFormat.HARLog({
                 ],
                 headersSize: -1,
                 bodySize: 109,
+                cookies: [
+                    {
+                        name: 'Foo',
+                        value: 'bar',
+                    },
+                ],
             },
             response: {
                 status: 200,
@@ -86,6 +92,12 @@ const exampleLog = new HAR.HARFormat.HARLog({
                     mimeType: 'application/json',
                     text: 'console.log(\'hello world\');',
                 },
+                cookies: [
+                    {
+                        name: 'MyAwesomeCookie',
+                        value: 'Secret!',
+                    },
+                ],
                 redirectURL: '',
                 headersSize: -1,
                 bodySize: -1,
@@ -155,6 +167,12 @@ const exampleLog = new HAR.HARFormat.HARLog({
                 ],
                 headersSize: -1,
                 bodySize: 109,
+                cookies: [
+                    {
+                        name: 'Foo',
+                        value: 'bar',
+                    },
+                ],
             },
             response: {
                 status: 200,
@@ -166,6 +184,12 @@ const exampleLog = new HAR.HARFormat.HARLog({
                     mimeType: 'text/plain',
                     text: '<html>Hello, World!</html>',
                 },
+                cookies: [
+                    {
+                        name: 'MyAwesomeCookie',
+                        value: 'Secret!',
+                    },
+                ],
                 redirectURL: '',
                 headersSize: -1,
                 bodySize: -1,
@@ -293,6 +317,20 @@ describe('HAR Importer', () => {
     it('Parses the Chrome-specific connection ID', () => {
         for (const request of requests) {
             assert.strictEqual(request.connectionId, '1');
+        }
+    });
+    it('Parses the request cookies correctly', () => {
+        for (const request of requests) {
+            assert.lengthOf(request.includedRequestCookies(), 1);
+            assert.strictEqual(request.includedRequestCookies()[0].cookie.name(), 'Foo');
+            assert.strictEqual(request.includedRequestCookies()[0].cookie.value(), 'bar');
+        }
+    });
+    it('Parses the response cookies correctly', () => {
+        for (const request of requests) {
+            assert.lengthOf(request.responseCookies, 1);
+            assert.strictEqual(request.responseCookies[0].name(), 'MyAwesomeCookie');
+            assert.strictEqual(request.responseCookies[0].value(), 'Secret!');
         }
     });
 });

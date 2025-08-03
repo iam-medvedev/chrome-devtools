@@ -219,7 +219,7 @@ export declare class DOMModel extends SDKModel<EventTypes> {
     getElementByRelation(nodeId: Protocol.DOM.NodeId, relation: Protocol.DOM.GetElementByRelationRequestRelation): Promise<Protocol.DOM.NodeId | null>;
     markUndoableState(minorChange?: boolean): void;
     nodeForLocation(x: number, y: number, includeUserAgentShadowDOM: boolean): Promise<DOMNode | null>;
-    getContainerForNode(nodeId: Protocol.DOM.NodeId, containerName?: string, physicalAxes?: Protocol.DOM.PhysicalAxes, logicalAxes?: Protocol.DOM.LogicalAxes, queriesScrollState?: boolean): Promise<DOMNode | null>;
+    getContainerForNode(nodeId: Protocol.DOM.NodeId, containerName?: string, physicalAxes?: Protocol.DOM.PhysicalAxes, logicalAxes?: Protocol.DOM.LogicalAxes, queriesScrollState?: boolean, queriesAnchored?: boolean): Promise<DOMNode | null>;
     pushObjectAsNodeToFrontend(object: RemoteObject): Promise<DOMNode | null>;
     suspendModel(): Promise<void>;
     resumeModel(): Promise<void>;

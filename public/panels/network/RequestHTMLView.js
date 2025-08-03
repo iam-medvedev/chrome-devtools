@@ -48,7 +48,7 @@ export class RequestHTMLView extends UI.Widget.VBox {
     #dataURL;
     #view;
     constructor(dataURL, view = DEFAULT_VIEW) {
-        super(true);
+        super({ useShadowDom: true });
         this.#dataURL = dataURL;
         this.#view = view;
     }

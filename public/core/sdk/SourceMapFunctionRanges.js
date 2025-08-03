@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { TokenIterator } from './SourceMap.js';
-import { comparePositions } from './SourceMapScopes.js';
 /**
  * Turns a list of {@link NamedFunctionRange}s into a single {@link OriginalScope} tree nested
  * according to the start/end position. Each range is turned into a OriginalScope with the `isStackFrame`
@@ -126,5 +125,9 @@ export function decodePastaRanges(encodedRanges, names) {
         });
     }
     return result;
+}
+/** @returns 0 if both positions are equal, a negative number if a < b and a positive number if a > b */
+function comparePositions(a, b) {
+    return a.line - b.line || a.column - b.column;
 }
 //# sourceMappingURL=SourceMapFunctionRanges.js.map

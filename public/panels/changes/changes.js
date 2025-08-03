@@ -442,7 +442,7 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
       </div>
     `, target, { host: target });
   }) {
-    super(false, false, element);
+    super(element);
     this.registerRequiredCSS(combinedDiffView_css_default);
     this.#view = view;
   }
@@ -567,7 +567,7 @@ var ChangesView = class _ChangesView extends UI3.Widget.VBox {
   diffContainer;
   combinedDiffView;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(changesView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging3.panel("changes").track({ resize: true })}`);
     const splitWidget = new UI3.SplitWidget.SplitWidget(

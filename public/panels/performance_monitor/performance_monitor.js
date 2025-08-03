@@ -172,7 +172,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
   model;
   pollTimer;
   constructor(pollIntervalMs = 500) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(performanceMonitor_css_default);
     this.element.setAttribute("jslog", `${VisualLogging.panel("performance.monitor").track({ resize: true })}`);
     this.contentElement.classList.add("perfmon-pane");

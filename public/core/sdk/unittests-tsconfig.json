@@ -82,7 +82,6 @@
     "../../../../../../front_end/core/sdk/SourceMapFunctionRanges.test.ts",
     "../../../../../../front_end/core/sdk/SourceMapManager.test.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopeChainEntry.test.ts",
-    "../../../../../../front_end/core/sdk/SourceMapScopes.test.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopesInfo.test.ts",
     "../../../../../../front_end/core/sdk/StorageBucketsModel.test.ts",
     "../../../../../../front_end/core/sdk/StorageKeyManager.test.ts",

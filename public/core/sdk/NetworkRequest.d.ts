@@ -167,6 +167,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     setWasIntercepted(wasIntercepted: boolean): void;
     setEarlyHintsHeaders(headers: NameValue[]): void;
     get responseCookies(): Cookie[];
+    set responseCookies(responseCookies: Cookie[]);
     responseLastModified(): string | undefined;
     allCookiesIncludingBlockedOnes(): Cookie[];
     get serverTimings(): ServerTiming[] | null;
@@ -228,6 +229,7 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     addExtraRequestInfo(extraRequestInfo: ExtraRequestInfo): void;
     hasExtraRequestInfo(): boolean;
     blockedRequestCookies(): BlockedCookieWithReason[];
+    setIncludedRequestCookies(includedRequestCookies: IncludedCookieWithReason[]): void;
     includedRequestCookies(): IncludedCookieWithReason[];
     hasRequestCookies(): boolean;
     siteHasCookieInOtherPartition(): boolean;
@@ -247,6 +249,8 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     trustTokenOperationDoneEvent(): Protocol.Network.TrustTokenOperationDoneEvent | undefined;
     setIsSameSite(isSameSite: boolean): void;
     isSameSite(): boolean | null;
+    setIsIpProtectionUsed(isIpProtectionUsed: boolean): void;
+    isIpProtectionUsed(): boolean | null;
     getAssociatedData(key: string): object | null;
     setAssociatedData(key: string, data: object): void;
     deleteAssociatedData(key: string): void;

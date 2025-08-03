@@ -37,7 +37,6 @@
     "../../../../../../front_end/models/bindings/DebuggerWorkspaceBinding.ts",
     "../../../../../../front_end/models/bindings/DefaultScriptMapping.ts",
     "../../../../../../front_end/models/bindings/FileUtils.ts",
-    "../../../../../../front_end/models/bindings/IgnoreListManager.ts",
     "../../../../../../front_end/models/bindings/LiveLocation.ts",
     "../../../../../../front_end/models/bindings/NetworkProject.ts",
     "../../../../../../front_end/models/bindings/PresentationConsoleMessageHelper.ts",

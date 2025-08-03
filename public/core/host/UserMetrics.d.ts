@@ -508,11 +508,12 @@ export declare enum DevtoolsExperiments {
     'highlight-errors-elements-panel' = 73,
     'use-source-map-scopes' = 76,
     'timeline-show-postmessage-events' = 86,
+    'timeline-save-as-gz' = 108,
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
     'vertical-drawer' = 107,
-    MAX_VALUE = 108
+    MAX_VALUE = 109
 }
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,

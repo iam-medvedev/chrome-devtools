@@ -70,7 +70,7 @@ export class XHRBreakpointsSidebarPane extends UI.Widget.VBox {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     #hitBreakpoint;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(xhrBreakpointsSidebarPaneStyles);
         this.#breakpoints = new UI.ListModel.ListModel();
         this.#list = new UI.ListControl.ListControl(this.#breakpoints, this, UI.ListControl.ListMode.NonViewport);

@@ -69,7 +69,7 @@ export class SecurityPanelSidebar extends UI.Widget.VBox {
     #mainViewReloadMessage;
     #mainOrigin;
     constructor(element) {
-        super(undefined, undefined, element);
+        super(element);
         this.#securitySidebarLastItemSetting =
             Common.Settings.Settings.instance().createSetting('security-last-selected-element-path', '');
         this.#mainOrigin = null;

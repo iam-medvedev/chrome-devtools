@@ -67,7 +67,7 @@ export class BinaryResourceView extends UI.Widget.VBox {
     addFadeoutSettimeoutId;
     lastView;
     constructor(content, contentUrl, resourceType, element) {
-        super(undefined, undefined, element);
+        super(element);
         this.registerRequiredCSS(binaryResourceViewStyles);
         this.binaryResourceViewFactory =
             new SourceFrame.BinaryResourceViewFactory.BinaryResourceViewFactory(content, contentUrl, resourceType);

@@ -86,7 +86,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     canvasOrigin;
     changedElement;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(cssShadowEditorStyles);
         this.contentElement.tabIndex = 0;
         this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('cssShadowEditor').parent('mapped').track({ keydown: 'Enter|Escape' })}`);

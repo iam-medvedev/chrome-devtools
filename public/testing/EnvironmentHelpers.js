@@ -105,6 +105,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
+    "timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */,
 ];
@@ -207,6 +208,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-annotations-enabled', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-history-entries', [], "array" /* Common.Settings.SettingType.ARRAY */),
         createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-assistance-patching-fre-completed', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("AI" /* Common.Settings.SettingCategory.AI */, 'ai-code-completion-fre-completed', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'timeline.user-had-shortcuts-dialog-opened-once', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
@@ -245,7 +247,7 @@ export async function deinitializeGlobalVars() {
     Common.Revealer.RevealerRegistry.removeInstance();
     Common.Console.Console.removeInstance();
     Workspace.Workspace.WorkspaceImpl.removeInstance();
-    Bindings.IgnoreListManager.IgnoreListManager.removeInstance();
+    Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
     Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
     Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.removeInstance();
     IssuesManager.IssuesManager.IssuesManager.removeInstance();

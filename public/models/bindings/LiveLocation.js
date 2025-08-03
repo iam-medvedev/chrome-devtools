@@ -37,9 +37,6 @@ export class LiveLocationWithPool {
     isDisposed() {
         return !this.#locationPool.has(this);
     }
-    async isIgnoreListed() {
-        throw new Error('Not implemented');
-    }
 }
 export class LiveLocationPool {
     #locations;

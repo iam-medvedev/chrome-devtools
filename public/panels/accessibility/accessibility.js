@@ -1577,7 +1577,7 @@ __export(AccessibilitySidebarView_exports, {
 });
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/accessibility/ARIAAttributesView.js
 var ARIAAttributesView_exports = {};
@@ -4119,9 +4119,9 @@ var RoleStyles = {
 };
 
 // gen/front_end/panels/accessibility/SourceOrderView.js
-import * as Host2 from "./../../core/host/host.js";
+import "./../../ui/legacy/legacy.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import { html, nothing, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
@@ -4147,84 +4147,98 @@ var UIStrings5 = {
 var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings5);
 var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var MAX_CHILD_ELEMENTS_THRESHOLD = 300;
+var DEFAULT_VIEW = (input, _output, target) => {
+  function onShowSourceOrderChanged(event) {
+    const checkbox = event.currentTarget;
+    input.onShowSourceOrderChanged(checkbox.checked);
+    event.consume();
+  }
+  render(html`
+    <div jslog=${VisualLogging4.section("source-order-viewer")}>
+      ${input.showSourceOrder === void 0 ? html`
+          <div class="gray-info-message info-message-overflow">
+            ${i18nString4(UIStrings5.noSourceOrderInformation)}
+          </div>
+        ` : html`
+        ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html`
+            <div class="gray-info-message info-message-overflow"
+                 id="source-order-warning">
+              ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
+            </div>
+          ` : nothing}
+        <devtools-checkbox class="source-order-checkbox"
+                           jslog=${VisualLogging4.toggle().track({ click: true })}
+                           ?checked=${input.showSourceOrder}
+                           @change=${onShowSourceOrderChanged}>
+          ${i18nString4(UIStrings5.showSourceOrder)}
+        </devtools-checkbox>
+        `}
+    </div>
+  `, target, { host: input });
+};
 var SourceOrderPane = class extends AccessibilitySubPane {
-  noNodeInfo;
-  warning;
-  checked;
-  checkbox;
-  overlayModel;
-  constructor() {
+  #childCount = 0;
+  #showSourceOrder = void 0;
+  #view;
+  constructor(view = DEFAULT_VIEW) {
     super(i18nString4(UIStrings5.sourceOrderViewer));
-    this.element.setAttribute("jslog", `${VisualLogging4.section("source-order-viewer")}`);
-    this.noNodeInfo = this.createInfo(i18nString4(UIStrings5.noSourceOrderInformation));
-    this.warning = this.createInfo(i18nString4(UIStrings5.thereMayBeADelayInDisplaying));
-    this.warning.id = "source-order-warning";
-    this.checked = false;
-    this.checkbox = UI5.UIUtils.CheckboxLabel.create(
-      /* title */
-      i18nString4(UIStrings5.showSourceOrder),
-      /* checked */
-      false
-    );
-    this.checkbox.classList.add("source-order-checkbox");
-    this.checkbox.setAttribute("jslog", `${VisualLogging4.toggle().track({ click: true })}`);
-    this.checkbox.addEventListener("click", this.checkboxClicked.bind(this), false);
-    this.element.appendChild(this.checkbox);
-    this.nodeInternal = null;
-    this.overlayModel = null;
+    this.#view = view;
   }
   async setNodeAsync(node) {
-    if (!this.checkbox.classList.contains("hidden")) {
-      this.checked = this.checkbox.checked;
+    if (this.nodeInternal && this.#showSourceOrder) {
+      this.nodeInternal.domModel().overlayModel().hideSourceOrderInOverlay();
     }
-    this.checkbox.checked = false;
-    this.checkboxClicked();
     super.setNode(node);
-    if (!this.nodeInternal) {
-      this.overlayModel = null;
-      return;
-    }
-    let foundSourceOrder = false;
-    const childCount = this.nodeInternal.childNodeCount();
-    if (childCount > 0) {
+    this.#childCount = this.nodeInternal?.childNodeCount() ?? 0;
+    if (!this.nodeInternal || !this.#childCount) {
+      this.#showSourceOrder = void 0;
+    } else {
       if (!this.nodeInternal.children()) {
         await this.nodeInternal.getSubtree(1, false);
       }
       const children = this.nodeInternal.children();
-      foundSourceOrder = children.some((child) => child.nodeType() === Node.ELEMENT_NODE);
+      if (!children.some((child) => child.nodeType() === Node.ELEMENT_NODE)) {
+        this.#showSourceOrder = void 0;
+      } else if (this.#showSourceOrder === void 0) {
+        this.#showSourceOrder = false;
+      }
+      if (this.#showSourceOrder) {
+        this.nodeInternal.domModel().overlayModel().highlightSourceOrderInOverlay(this.nodeInternal);
+      }
     }
-    this.noNodeInfo.classList.toggle("hidden", foundSourceOrder);
-    this.warning.classList.toggle("hidden", childCount < MAX_CHILD_ELEMENTS_THRESHOLD);
-    this.checkbox.classList.toggle("hidden", !foundSourceOrder);
-    if (foundSourceOrder) {
-      this.overlayModel = this.nodeInternal.domModel().overlayModel();
-      this.checkbox.checked = this.checked;
-      this.checkboxClicked();
-    } else {
-      this.overlayModel = null;
-    }
+    this.requestUpdate();
   }
-  checkboxClicked() {
-    if (!this.nodeInternal || !this.overlayModel) {
-      return;
-    }
-    if (this.checkbox.checked) {
-      Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.SourceOrderViewActivated);
-      this.overlayModel.highlightSourceOrderInOverlay(this.nodeInternal);
-    } else {
-      this.overlayModel.hideSourceOrderInOverlay();
-    }
+  async performUpdate() {
+    const onShowSourceOrderChanged = (showSourceOrder) => {
+      if (!this.nodeInternal) {
+        this.#showSourceOrder = void 0;
+        return;
+      }
+      if (showSourceOrder) {
+        this.nodeInternal.domModel().overlayModel().highlightSourceOrderInOverlay(this.nodeInternal);
+      } else {
+        this.nodeInternal.domModel().overlayModel().hideSourceOrderInOverlay();
+      }
+      this.#showSourceOrder = showSourceOrder;
+    };
+    const input = {
+      childCount: this.#childCount,
+      showSourceOrder: this.#showSourceOrder,
+      onShowSourceOrderChanged
+    };
+    const output = void 0;
+    this.#view(input, output, this.contentElement);
   }
 };
 
 // gen/front_end/panels/accessibility/AccessibilitySidebarView.js
 var accessibilitySidebarViewInstance;
-var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.ThrottledWidget.ThrottledWidget {
+var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.ThrottledWidget.ThrottledWidget {
   nodeInternal;
   axNodeInternal;
   skipNextPullNode;
   sidebarPaneStack;
-  breadcrumbsSubPane = null;
+  breadcrumbsSubPane;
   ariaSubPane;
   axNodeSubPane;
   sourceOrderSubPane;
@@ -4233,7 +4247,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Throt
     this.nodeInternal = null;
     this.axNodeInternal = null;
     this.skipNextPullNode = false;
-    this.sidebarPaneStack = UI6.ViewManager.ViewManager.instance().createStackLocation();
+    this.sidebarPaneStack = UI5.ViewManager.ViewManager.instance().createStackLocation();
     this.breadcrumbsSubPane = new AXBreadcrumbsPane(this);
     void this.sidebarPaneStack.showView(this.breadcrumbsSubPane);
     this.ariaSubPane = new ARIAAttributesPane();
@@ -4243,7 +4257,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Throt
     this.sourceOrderSubPane = new SourceOrderPane();
     void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
     this.sidebarPaneStack.widget().show(this.element);
-    UI6.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.pullNode, this);
+    UI5.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
   }
   static instance(opts) {
@@ -4273,20 +4287,14 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Throt
     } else {
       this.sidebarPaneStack.removeView(this.ariaSubPane);
     }
-    if (this.axNodeSubPane) {
-      this.axNodeSubPane.setAXNode(axNode);
-    }
-    if (this.breadcrumbsSubPane) {
-      this.breadcrumbsSubPane.setAXNode(axNode);
-    }
+    this.axNodeSubPane.setAXNode(axNode);
+    this.breadcrumbsSubPane.setAXNode(axNode);
   }
   async doUpdate() {
     const node = this.node();
     this.axNodeSubPane.setNode(node);
     this.ariaSubPane.setNode(node);
-    if (this.breadcrumbsSubPane) {
-      this.breadcrumbsSubPane.setNode(node);
-    }
+    this.breadcrumbsSubPane.setNode(node);
     void this.sourceOrderSubPane.setNodeAsync(node);
     if (!node) {
       return;
@@ -4320,7 +4328,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI6.Throt
       this.skipNextPullNode = false;
       return;
     }
-    this.setNode(UI6.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode));
+    this.setNode(UI5.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode));
   }
   onNodeChange(event) {
     if (!this.node()) {

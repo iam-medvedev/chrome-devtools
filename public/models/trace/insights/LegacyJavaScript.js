@@ -37,6 +37,9 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
+export function isLegacyJavaScript(model) {
+    return model.insightKey === "LegacyJavaScript" /* InsightKeys.LEGACY_JAVASCRIPT */;
+}
 export function generateInsight(parsedTrace, context) {
     const scripts = parsedTrace.Scripts.scripts.filter(script => {
         if (script.frame !== context.frameId) {

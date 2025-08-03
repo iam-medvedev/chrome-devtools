@@ -77,7 +77,7 @@ export class CSSOverviewStartView extends UI.Widget.Widget {
     #view;
     onStartCapture = () => { };
     constructor(element, view = DEFAULT_VIEW) {
-        super(true, true, element);
+        super(element, { useShadowDom: true, delegatesFocus: true });
         this.#view = view;
         this.performUpdate();
     }

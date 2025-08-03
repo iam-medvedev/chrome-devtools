@@ -84,7 +84,7 @@ export class ResourceSourceFrame extends SourceFrameImpl {
 export class SearchableContainer extends UI.Widget.VBox {
     sourceFrame;
     constructor(resource, contentType, element) {
-        super(true, undefined, element);
+        super(element, { useShadowDom: true });
         this.registerRequiredCSS(resourceSourceFrameStyles);
         const simpleContentType = Common.ResourceType.ResourceType.simplifyContentType(contentType);
         const sourceFrame = new ResourceSourceFrame(resource, simpleContentType);

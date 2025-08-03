@@ -4006,6 +4006,9 @@ function findFrame(meta, frameId) {
   return null;
 }
 function findNetworkRequest(networkRequests, script) {
+  if (!script.url) {
+    return null;
+  }
   return networkRequests.find((request) => request.args.data.url === script.url) ?? null;
 }
 function computeMappingEndColumns(map) {

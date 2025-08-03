@@ -23,7 +23,7 @@ export class XMLView extends UI.Widget.Widget {
     currentSearchTreeElements = [];
     searchConfig = null;
     constructor(parsedXML) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(xmlViewStyles);
         this.contentElement.classList.add('shadow-xml-view', 'source-code');
         this.treeOutline.registerRequiredCSS(xmlTreeStyles);

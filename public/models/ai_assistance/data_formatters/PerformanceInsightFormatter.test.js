@@ -51,6 +51,8 @@ We can break this time down into the 4 phases that combine to make the LCP time:
 - Resource load duration: 14.70 ms (11.4% of total LCP time)
 - Element render delay: 73.41 ms (56.8% of total LCP time)
 
+## Estimated savings: none
+
 ## External resources:
 - https://web.dev/articles/lcp
 - https://web.dev/articles/optimize-lcp`;
@@ -76,6 +78,8 @@ We can break this time down into the 2 phases that combine to make the LCP time:
 
 - Time to first byte: 6.12 ms (5.7% of total LCP time)
 - Element render delay: 100.37 ms (94.3% of total LCP time)
+
+## Estimated savings: none
 
 ## External resources:
 - https://web.dev/articles/lcp
@@ -118,6 +122,8 @@ This insight identifies network requests that were render blocking. Render block
 ## Detailed analysis:
 There are no network requests that are render blocking.
 
+## Estimated savings: FCP 0 ms, LCP 0 ms
+
 ## External resources:
 - https://web.dev/articles/lcp
 - https://web.dev/articles/optimize-lcp`;
@@ -139,7 +145,21 @@ This insight identifies network requests that were render blocking. Render block
 Here is a list of the network requests that were render blocking on this page and their duration:
 
 
-    Network requests data:\n\n    \n\nallUrls = [0: https://code.jquery.com/jquery-3.7.1.js, 1: http://localhost:8000/, 2: http://localhost:8000/render-blocking-stylesheet.css, 3: http://localhost:8000/render-blocking-script.js]\n\n0;581.40 ms;584.53 ms;1,942.70 ms;1,944.05 ms;1,362.65 ms;775.53 ms;1.35 ms;200;application/javascript;High;High;High;t;h2;f;1;[];[content-encoding: gzip|etag: <redacted>|age: 3975412|x-cache: <redacted>|date: Fri, 07 Mar 2025 15:02:28 GMT|content-type: application/javascript; charset=utf-8|vary: Accept-Encoding|x-cache-hits: <redacted>|last-modified: Fri, 18 Oct 1991 12:00:00 GMT|x-served-by: <redacted>|cache-control: public, max-age=31536000, stale-while-revalidate=604800|x-timer: <redacted>|via: 1.1 varnish, 1.1 varnish|accept-ranges: bytes|access-control-allow-origin: *|content-length: <redacted>|server: nginx]\n2;581.60 ms;583.11 ms;1,192.93 ms;1,193.16 ms;611.56 ms;0.19 ms;0.23 ms;200;text/css;VeryHigh;VeryHigh;VeryHigh;t;http/1.0;f;1;[];[Content-Length: <redacted>|Date: Fri, 07 Mar 2025 15:02:28 GMT|Content-type: text/css|Last-Modified: Fri, 07 Mar 2025 14:58:07 GMT|Server: SimpleHTTP/0.6 Python/3.9.6]\n3;581.56 ms;583.25 ms;1,176.60 ms;1,177.86 ms;596.30 ms;0.36 ms;1.27 ms;200;text/javascript;High;High;High;t;http/1.0;f;1;[];[Content-Length: <redacted>|Date: Fri, 07 Mar 2025 15:02:28 GMT|Content-type: text/javascript|Last-Modified: Fri, 07 Mar 2025 15:00:28 GMT|Server: SimpleHTTP/0.6 Python/3.9.6]\n\n## External resources:\n- https://web.dev/articles/lcp\n- https://web.dev/articles/optimize-lcp`;
+Network requests data:
+
+
+
+allUrls = [0: https://code.jquery.com/jquery-3.7.1.js, 1: http://localhost:8000/, 2: http://localhost:8000/render-blocking-stylesheet.css, 3: http://localhost:8000/render-blocking-script.js]
+
+0;581.40 ms;584.53 ms;1,942.70 ms;1,944.05 ms;1,362.65 ms;775.53 ms;1.35 ms;200;application/javascript;High;High;High;t;h2;f;1;[];[content-encoding: gzip|etag: <redacted>|age: 3975412|x-cache: <redacted>|date: Fri, 07 Mar 2025 15:02:28 GMT|content-type: application/javascript; charset=utf-8|vary: Accept-Encoding|x-cache-hits: <redacted>|last-modified: Fri, 18 Oct 1991 12:00:00 GMT|x-served-by: <redacted>|cache-control: public, max-age=31536000, stale-while-revalidate=604800|x-timer: <redacted>|via: 1.1 varnish, 1.1 varnish|accept-ranges: bytes|access-control-allow-origin: *|content-length: <redacted>|server: nginx]
+2;581.60 ms;583.11 ms;1,192.93 ms;1,193.16 ms;611.56 ms;0.19 ms;0.23 ms;200;text/css;VeryHigh;VeryHigh;VeryHigh;t;http/1.0;f;1;[];[Content-Length: <redacted>|Date: Fri, 07 Mar 2025 15:02:28 GMT|Content-type: text/css|Last-Modified: Fri, 07 Mar 2025 14:58:07 GMT|Server: SimpleHTTP/0.6 Python/3.9.6]
+3;581.56 ms;583.25 ms;1,176.60 ms;1,177.86 ms;596.30 ms;0.36 ms;1.27 ms;200;text/javascript;High;High;High;t;http/1.0;f;1;[];[Content-Length: <redacted>|Date: Fri, 07 Mar 2025 15:02:28 GMT|Content-type: text/javascript|Last-Modified: Fri, 07 Mar 2025 15:00:28 GMT|Server: SimpleHTTP/0.6 Python/3.9.6]
+
+## Estimated savings: FCP 2015 ms, LCP 0 ms
+
+## External resources:
+- https://web.dev/articles/lcp
+- https://web.dev/articles/optimize-lcp`;
             assertStringEquals(output, expected);
         });
     });
@@ -172,6 +192,8 @@ The result of the checks for this insight are:
 - fetchpriority=high should be applied: FAILED
 - lazy load not applied: PASSED
 - Request is discoverable in initial document: PASSED
+
+## Estimated savings: none
 
 ## External resources:
 - https://web.dev/articles/lcp
@@ -210,6 +232,8 @@ The result of the checks for this insight are:
 - The request was not redirected: FAILED
 - Server responded quickly: FAILED
 - Compression was applied: FAILED
+
+## Estimated savings: FCP 3428 ms, LCP 3428 ms
 
 ## External resources:
 - https://web.dev/articles/optimize-ttfb`;
@@ -262,6 +286,8 @@ Layout shifts in this cluster:
 - Score: 0.3396
 - No potential root causes identified
 
+## Estimated savings: none
+
 ## External resources:
 - https://wdeb.dev/articles/cls
 - https://web.dev/articles/optimize-cls`;
@@ -297,6 +323,8 @@ The longest interaction on the page was a \`click\` which had a total duration o
 2. Processing duration: 977.00 ms
 3. Presentation delay: 1.97 ms.
 
+## Estimated savings: none
+
 ## External resources:
 - https://web.dev/articles/inp
 - https://web.dev/explore/how-to-optimize-inp
@@ -328,6 +356,8 @@ To pass this insight, ensure your server supports and prioritizes a modern HTTP 
 ## Detailed analysis:
 There are no requests that were served over a legacy HTTP protocol.
 
+## Estimated savings: none
+
 ## External resources:
 - https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2`;
             assert.strictEqual(output.trim(), expected.trim());
@@ -354,13 +384,24 @@ To pass this insight, ensure your server supports and prioritizes a modern HTTP 
 ## Detailed analysis:
 Here is a list of the network requests that were served over a legacy HTTP protocol:
 
-    Network requests data:
+Network requests data:
 
-    
 
-allUrls = [0: https://ads.jetpackdigital.com/sites/_uploads/1742278386bg_opt_640x350-avif.avif, 1: http://localhost/old-http.html, 2: https://ads.jetpackdigital.com/sites/_uploads/1583540859Play.png, 3: https://ads.jetpackdigital.com/sites/_uploads/1583540859Muted.png, 4: https://ads.jetpackdigital.com/h5media/sites/_uploads/1742363510mm_allthefeels_20_mob.mp4, 5: https://ads.jetpackdigital.com/sites/_uploads/1583540860Pause.png, 6: https://ads.jetpackdigital.com/tracking_pixel.gif?8852762616, 7: https://ads.jetpackdigital.com/tracking_pixel.gif?7753243273]\n\n0;8.08 ms;12.43 ms;25.72 ms;25.81 ms;17.74 ms;1.58 ms;0.09 ms;200;image/avif;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 18 Mar 2025 06:13:07 GMT|Content-Type: image/avif|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]\n2;8.20 ms;12.53 ms;24.00 ms;24.30 ms;16.10 ms;0.60 ms;0.29 ms;200;image/png;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:05:17 GMT|Content-Type: image/png|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]\n3;8.30 ms;12.57 ms;24.64 ms;24.98 ms;16.68 ms;1.15 ms;0.34 ms;200;image/png;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:05:17 GMT|Content-Type: image/png|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]\n4;8.36 ms;12.82 ms;24.47 ms;24.48 ms;16.12 ms;0.36 ms;0.01 ms;200;video/mp4;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Wed, 19 Mar 2025 05:51:52 GMT|Content-Type: video/mp4|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]\n5;8.40 ms;12.86 ms;24.74 ms;25.02 ms;16.62 ms;1.28 ms;0.28 ms;200;image/png;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:05:18 GMT|Content-Type: image/png|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]\n6;8.43 ms;24.40 ms;38.53 ms;38.71 ms;30.28 ms;0.10 ms;0.18 ms;200;image/gif;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|x-amz-meta-jets3t-original-file-date-iso8601: <redacted>|ETag: <redacted>|x-amz-meta-md5-hash: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:54:47 GMT|Content-Type: image/gif|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]\n7;8.44 ms;24.87 ms;37.75 ms;38.00 ms;29.56 ms;0.23 ms;0.25 ms;200;image/gif;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|x-amz-meta-jets3t-original-file-date-iso8601: <redacted>|ETag: <redacted>|x-amz-meta-md5-hash: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:54:47 GMT|Content-Type: image/gif|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
 
-## External resources:\n- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2`;
+allUrls = [0: https://ads.jetpackdigital.com/sites/_uploads/1742278386bg_opt_640x350-avif.avif, 1: http://localhost/old-http.html, 2: https://ads.jetpackdigital.com/sites/_uploads/1583540859Play.png, 3: https://ads.jetpackdigital.com/sites/_uploads/1583540859Muted.png, 4: https://ads.jetpackdigital.com/h5media/sites/_uploads/1742363510mm_allthefeels_20_mob.mp4, 5: https://ads.jetpackdigital.com/sites/_uploads/1583540860Pause.png, 6: https://ads.jetpackdigital.com/tracking_pixel.gif?8852762616, 7: https://ads.jetpackdigital.com/tracking_pixel.gif?7753243273]
+
+0;8.08 ms;12.43 ms;25.72 ms;25.81 ms;17.74 ms;1.58 ms;0.09 ms;200;image/avif;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 18 Mar 2025 06:13:07 GMT|Content-Type: image/avif|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+2;8.20 ms;12.53 ms;24.00 ms;24.30 ms;16.10 ms;0.60 ms;0.29 ms;200;image/png;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:05:17 GMT|Content-Type: image/png|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+3;8.30 ms;12.57 ms;24.64 ms;24.98 ms;16.68 ms;1.15 ms;0.34 ms;200;image/png;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:05:17 GMT|Content-Type: image/png|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+4;8.36 ms;12.82 ms;24.47 ms;24.48 ms;16.12 ms;0.36 ms;0.01 ms;200;video/mp4;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Wed, 19 Mar 2025 05:51:52 GMT|Content-Type: video/mp4|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+5;8.40 ms;12.86 ms;24.74 ms;25.02 ms;16.62 ms;1.28 ms;0.28 ms;200;image/png;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|ETag: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:05:18 GMT|Content-Type: image/png|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+6;8.43 ms;24.40 ms;38.53 ms;38.71 ms;30.28 ms;0.10 ms;0.18 ms;200;image/gif;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|x-amz-meta-jets3t-original-file-date-iso8601: <redacted>|ETag: <redacted>|x-amz-meta-md5-hash: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:54:47 GMT|Content-Type: image/gif|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+7;8.44 ms;24.87 ms;37.75 ms;38.00 ms;29.56 ms;0.23 ms;0.25 ms;200;image/gif;Low;Low;Low;f;http/1.1;f;1;[];[x-amz-id-2: <redacted>|x-amz-meta-jets3t-original-file-date-iso8601: <redacted>|ETag: <redacted>|x-amz-meta-md5-hash: <redacted>|Connection: keep-alive|Access-Control-Allow-Methods: GET,HEAD,POST|x-amz-request-id: <redacted>|Accept-Ranges: bytes|Access-Control-Allow-Origin: *|Content-Length: <redacted>|Date: Thu, 20 Mar 2025 19:45:22 GMT|Last-Modified: Tue, 24 Jan 2023 19:54:47 GMT|Content-Type: image/gif|Server: AmazonS3|x-amz-server-side-encryption: <redacted>]
+
+## Estimated savings: FCP 0 ms, LCP 0 ms
+
+## External resources:
+- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2`;
             assert.strictEqual(output.trim(), expected.trim());
         });
     });
@@ -496,7 +537,7 @@ Response headers
             assert.strictEqual(fields[13], 'f', 'renderBlocking');
             assert.strictEqual(fields[14], 'http/1.1', 'protocol');
             assert.strictEqual(fields[15], 'f', 'fromServiceWorker');
-            assert.strictEqual(fields[16], '', 'initiatorUrlIndex');
+            assert.strictEqual(fields[16], '', 'initiators');
             assert.strictEqual(fields[17], '[[1|3.04 ms|512.02 ms],[2|515.06 ms|505.67 ms],[3|1,020.73 ms|507.09 ms]]', 'redirects');
             assert.strictEqual(fields[18], '[Transfer-Encoding: chunked|Keep-Alive: <redacted>|Date: Tue, 11 Mar 2025 10:19:12 GMT|Content-Type: text/html|Connection: keep-alive]\n0;3.04 ms;1,529.47 ms;3,532.63 ms;3,537.75 ms;3,534.71 ms;0.13 ms;5.12 ms;200;text/html;VeryHigh;VeryHigh;VeryHigh;f;http/1.1;f;;[[1|3.04 ms|512.02 ms],[2|515.06 ms|505.67 ms],[3|1,020.73 ms|507.09 ms]];[Transfer-Encoding: chunked|Keep-Alive: <redacted>|Date: Tue, 11 Mar 2025 10:19:12 GMT|Content-Type: text/html|Connection: keep-alive]', 'responseHeaders');
         });
@@ -530,9 +571,25 @@ Response headers
             assert.strictEqual(fields[13], 't', 'renderBlocking');
             assert.strictEqual(fields[14], 'unknown', 'protocol');
             assert.strictEqual(fields[15], 'f', 'fromServiceWorker');
-            assert.strictEqual(fields[16], '0', 'initiatorUrlIndex');
+            assert.strictEqual(fields[16], '0', 'initiators');
             assert.strictEqual(fields[17], '[]', 'redirects');
             assert.strictEqual(fields[18], '[date: Thu, 07 Mar 2024 21:17:02 GMT|content-encoding: gzip|x-content-type-options: nosniff|last-modified: Thu, 07 Mar 2024 21:17:02 GMT|server: ESF|cross-origin-opener-policy: <redacted>|x-frame-options: SAMEORIGIN|content-type: text/css; charset=utf-8|access-control-allow-origin: *|cache-control: private, max-age=86400, stale-while-revalidate=604800|cross-origin-resource-policy: <redacted>|timing-allow-origin: *|link: <https://fonts.gstatic.com>; rel=preconnect; crossorigin|x-xss-protection: 0|expires: Thu, 07 Mar 2024 21:17:02 GMT]', 'headers');
+        });
+        it('getNetworkRequestsNewFormat correctly formats an initiator chain for network-requests-initiators trace', async function () {
+            const { parsedTrace } = await TraceLoader.traceEngine(this, 'network-requests-initiators.json.gz');
+            const request = parsedTrace.NetworkRequests.byTime;
+            assert.isOk(request);
+            const output = TraceEventFormatter.networkRequests(request, parsedTrace);
+            const urlMapIndex = output.indexOf('allUrls = ');
+            assert.isAbove(urlMapIndex, -1, 'Could not find url map in output');
+            const dataWithUrlMap = output.substring(urlMapIndex);
+            const [urlMapString, requestData] = dataWithUrlMap.split('\n\n');
+            assert.strictEqual(urlMapString, 'allUrls = [0: https://www.youtube.com/, 1: https://i.ytimg.com/generate_204, 2: https://www.youtube.com/s/desktop/28bb7000/jsbin/desktop_polymer.vflset/desktop_polymer.js, 3: https://www.youtube.com/s/desktop/28bb7000/jsbin/web-animations-next-lite.min.vflset/web-animations-next-lite.min.js, 4: https://www.youtube.com/s/desktop/28bb7000/jsbin/custom-elements-es5-adapter.vflset/custom-elements-es5-adapter.js, 5: https://www.youtube.com/s/desktop/28bb7000/jsbin/webcomponents-sd.vflset/webcomponents-sd.js, 6: https://www.youtube.com/s/desktop/28bb7000/jsbin/intersection-observer.min.vflset/intersection-observer.min.js, 7: https://www.youtube.com/s/desktop/28bb7000/jsbin/scheduler.vflset/scheduler.js, 8: https://www.youtube.com/s/desktop/28bb7000/jsbin/www-i18n-constants-en_US.vflset/www-i18n-constants.js, 9: https://www.youtube.com/s/desktop/28bb7000/jsbin/www-tampering.vflset/www-tampering.js, 10: https://www.youtube.com/s/desktop/28bb7000/jsbin/spf.vflset/spf.js, 11: https://www.youtube.com/s/desktop/28bb7000/jsbin/network.vflset/network.js, 12: https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=YouTube+Sans:wght@300..900&display=swap, 13: https://www.youtube.com/s/desktop/28bb7000/cssbin/www-main-desktop-home-page-skeleton.css, 14: https://www.youtube.com/s/desktop/28bb7000/cssbin/www-onepick.css, 15: https://www.youtube.com/s/_/ytmainappweb/_/ss/k=ytmainappweb.kevlar_base.YzCM3q0siy4.L.B1.O/am=ADA7AQ/d=0/br=1/rs=AGKMywG7cU8b38Gfv3WYn4_os7hoqR-TIw, 16: https://googleads.g.doubleclick.net/pagead/id?slf_rd=1, 17: https://googleads.g.doubleclick.net/pagead/id, 18: https://fonts.gstatic.com/s/roboto/v30/KFOmCnqEu92Fr1Mu4mxK.woff2, 19: https://www.youtube.com/s/search/audio/failure.mp3, 20: https://www.youtube.com/s/search/audio/no_input.mp3, 21: https://www.youtube.com/s/search/audio/open.mp3, 22: https://www.youtube.com/s/search/audio/success.mp3, 23: https://www.youtube.com/s/desktop/28bb7000/cssbin/www-main-desktop-watch-page-skeleton.css, 24: https://www.youtube.com/youtubei/v1/att/get?prettyPrint=false, 25: https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmWUlfBBc4.woff2, 26: https://fonts.gstatic.com/s/youtubesans/v30/Qw38ZQNGEDjaO2m6tqIqX5E-AVS5_rSejo46_PCTRspJ0OosolrBEJL3HO_T7fE.woff2, 27: https://fonts.gstatic.com/s/roboto/v30/KFOlCnqEu92Fr1MmEU9fBBc4.woff2, 28: https://www.youtube.com/youtubei/v1/feedback?prettyPrint=false, 29: https://www.google.com/js/th/EirmVnnNlSgqRyHN1YLvHhRw11SWUqUPb76JYHphonQ.js, 30: https://www.youtube.com/manifest.webmanifest, 31: https://www.youtube.com/s/desktop/28bb7000/img/favicon.ico, 32: https://www.gstatic.com/youtube/img/branding/favicon/favicon_144x144.png, 33: https://www.youtube.com/s/player/5b22937f/player_ias.vflset/en_US/base.js, 34: https://www.youtube.com/s/player/5b22937f/www-player.css]');
+            const allRequests = requestData.split('\n');
+            const parts = allRequests[24].split(';');
+            // Join the last field because it is a list of headers that might contain a semicolon
+            const fields = [...parts.slice(0, 18), parts.slice(18).join(';')];
+            assert.strictEqual(fields[16], '0,12', 'initiators');
         });
     });
     describe('Duplicated javascript', () => {
@@ -594,6 +651,8 @@ Duplication grouped by Node modules: - Source: node_modules/filestack-js - Dupli
 - Source: node_modules/css-loader - Duplicated bytes: 1608 bytes
 - Source: node_modules/mini-create-react-context - Duplicated bytes: 1563 bytes
 
+## Estimated savings: FCP 100 ms, LCP 100 ms
+
 ## External resources:
 `;
             assertStringEquals(output, expected);
@@ -614,8 +673,179 @@ This insight identifies large, duplicated JavaScript modules that are present in
 ## Detailed analysis:
 There is no duplicated JavaScript in the page modules
 
+## Estimated savings: none
+
 ## External resources:
 `;
+            assertStringEquals(output, expected);
+        });
+    });
+    describe('Legacy JavaScript', () => {
+        it('serializes the correct details when there is no legacy javascript in modules', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('LegacyJavaScript', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Legacy JavaScript
+
+## Insight Summary:
+This insight identified legacy JavaScript in your application's modules that may be creating unnecessary code.
+
+Polyfills and transforms enable older browsers to use new JavaScript features. However, many are not necessary for modern browsers. Consider modifying your JavaScript build process to not transpile Baseline features, unless you know you must support older browsers.
+
+## Detailed analysis:
+There is no significant amount of legacy JavaScript on the page.
+
+## Estimated savings: none
+
+## External resources:
+- https://web.dev/articles/baseline-and-polyfills
+- https://philipwalton.com/articles/the-state-of-es5-on-the-web/`;
+            assertStringEquals(output, expected);
+        });
+        it('serializes the correct details when modules contain legacy javascript', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'yahoo-news.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('LegacyJavaScript', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Legacy JavaScript
+
+## Insight Summary:
+This insight identified legacy JavaScript in your application's modules that may be creating unnecessary code.
+
+Polyfills and transforms enable older browsers to use new JavaScript features. However, many are not necessary for modern browsers. Consider modifying your JavaScript build process to not transpile Baseline features, unless you know you must support older browsers.
+
+## Detailed analysis:
+Total legacy JavaScript: 8 files.
+
+Legacy JavaScript by file:
+
+- Script: https://s.yimg.com/aaq/benji/benji-2.2.99.js - Wasted bytes: 37204 bytes
+Matches:
+Line: 0, Column: 133, Name: Promise.allSettled
+
+- Script: https://s.yimg.com/aaq/c/25fa214.caas-news_web.min.js - Wasted bytes: 36084 bytes
+Matches:
+Line: 0, Column: 13310, Name: Array.from
+Line: 0, Column: 14623, Name: Object.assign
+
+- Script: https://s.yimg.com/du/ay/wnsrvbjmeprtfrnfx.js - Wasted bytes: 12850 bytes
+Matches:
+Line: 111, Column: 7829, Name: @babel/plugin-transform-spread
+Line: 111, Column: 1794, Name: Array.prototype.find
+Line: 111, Column: 2127, Name: Array.prototype.includes
+Line: 111, Column: 2748, Name: Object.values
+Line: 111, Column: 2473, Name: String.prototype.includes
+Line: 111, Column: 2627, Name: String.prototype.startsWith
+
+- Script: https://static.criteo.net/js/ld/publishertag.prebid.144.js - Wasted bytes: 10751 bytes
+Matches:
+Line: 1, Column: 74871, Name: Array.isArray
+Line: 1, Column: 75344, Name: Array.prototype.filter
+Line: 1, Column: 75013, Name: Array.prototype.indexOf
+
+- Script: https://s.yimg.com/oa/consent.js - Wasted bytes: 8157 bytes
+Matches:
+Line: 1, Column: 132267, Name: Array.prototype.includes
+
+- Script: https://pm-widget.taboola.com/yahooweb-network/pmk-20220605.1.js - Wasted bytes: 7625 bytes
+Matches:
+Line: 181, Column: 26, Name: Object.keys
+
+- Script: https://news.yahoo.com/ - Wasted bytes: 7141 bytes
+Matches:
+Line: 0, Column: 8382, Name: @babel/plugin-transform-classes
+Line: 0, Column: 107712, Name: Array.prototype.filter
+Line: 0, Column: 107393, Name: Array.prototype.forEach
+Line: 0, Column: 108005, Name: Array.prototype.map
+Line: 0, Column: 108358, Name: String.prototype.includes
+
+- Script: https://cdn.taboola.com/libtrc/yahooweb-network/loader.js - Wasted bytes: 7061 bytes
+Matches:
+Line: 0, Column: 390544, Name: Object.entries
+Line: 0, Column: 390688, Name: Object.values
+
+## Estimated savings: FCP 0 ms, LCP 0 ms
+
+## External resources:
+- https://web.dev/articles/baseline-and-polyfills
+- https://philipwalton.com/articles/the-state-of-es5-on-the-web/`;
+            assertStringEquals(output, expected);
+        });
+    });
+    describe('ImageDelivery', () => {
+        it('serializes the correct details when there are no optimizable images', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('ImageDelivery', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Improve image delivery
+
+## Insight Summary:
+This insight identifies unoptimized images that are downloaded at a much higher resolution than they are displayed. Properly sizing and compressing these assets will decrease their download time, directly improving the perceived page load time and LCP
+
+## Detailed analysis:
+There are no unoptimized images on this page.
+
+## Estimated savings: none
+
+## External resources:
+- https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/`;
+            assertStringEquals(output, expected);
+        });
+        it('serializes the correct details when there are images that can be optimized', async function () {
+            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'image-delivery.json.gz');
+            assert.isOk(insights);
+            const firstNav = getFirstOrError(parsedTrace.Meta.navigationsByNavigationId.values());
+            const insight = getInsightOrError('ImageDelivery', insights, firstNav);
+            const formatter = new PerformanceInsightFormatter(parsedTrace, insight);
+            const output = formatter.formatInsight();
+            const expected = `## Insight Title: Improve image delivery
+
+## Insight Summary:
+This insight identifies unoptimized images that are downloaded at a much higher resolution than they are displayed. Properly sizing and compressing these assets will decrease their download time, directly improving the perceived page load time and LCP
+
+## Detailed analysis:
+Total potential savings: 2.0 MB
+
+The following images could be optimized:
+
+### https://images.ctfassets.net/u275ja1nivmq/6T6z40ay5GFCUtwV7DONgh/0e23606ed1692d9721ab0f39a8d8a99e/yeti_cover.jpg
+- Potential savings: 1.1 MB
+- Optimizations:
+Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size. (Est 1.1 MB)
+
+### https://raw.githubusercontent.com/GoogleChrome/lighthouse/refs/heads/main/cli/test/fixtures/dobetterweb/lighthouse-rotating.gif
+- Potential savings: 682 kB
+- Optimizations:
+Using video formats instead of GIFs can improve the download size of animated content. (Est 682 kB)
+
+### https://onlinepngtools.com/images/examples-onlinepngtools/elephant-hd-quality.png
+- Potential savings: 176 kB
+- Optimizations:
+Using a modern image format (WebP, AVIF) or increasing the image compression could improve this image's download size. (Est 134 kB)
+This image file is larger than it needs to be (640x436) for its displayed dimensions (200x136). Use responsive images to reduce the image download size. (Est 163 kB)
+
+### https://images.ctfassets.net/u275ja1nivmq/6T6z40ay5GFCUtwV7DONgh/0e23606ed1692d9721ab0f39a8d8a99e/yeti_cover.jpg?fm=webp
+- Potential savings: 49.8 kB
+- Optimizations:
+Increasing the image compression factor could improve this image's download size. (Est 49.8 kB)
+
+### https://raw.githubusercontent.com/GoogleChrome/lighthouse/refs/heads/main/cli/test/fixtures/byte-efficiency/lighthouse-2048x1356.webp
+- Potential savings: 41.4 kB
+- Optimizations:
+This image file is larger than it needs to be (2048x1356) for its displayed dimensions (200x132). Use responsive images to reduce the image download size. (Est 41.4 kB)
+
+## Estimated savings: FCP 0 ms, LCP 100 ms
+
+## External resources:
+- https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/`;
             assertStringEquals(output, expected);
         });
     });

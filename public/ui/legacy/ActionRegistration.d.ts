@@ -3,7 +3,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import { Context } from './Context.js';
 export interface ActionDelegate {
-    handleAction(context: Context, actionId: string): boolean;
+    handleAction(context: Context, actionId: string, opts?: Record<string, unknown>): boolean;
 }
 export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     private enabledInternal;
@@ -11,7 +11,7 @@ export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventType
     private actionRegistration;
     constructor(actionRegistration: ActionRegistration);
     id(): string;
-    execute(): Promise<boolean>;
+    execute(opts?: Record<string, unknown>): Promise<boolean>;
     icon(): string | undefined;
     toggledIcon(): string | undefined;
     toggleWithRedColor(): boolean;

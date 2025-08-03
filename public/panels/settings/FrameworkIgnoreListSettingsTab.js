@@ -89,7 +89,7 @@ export class FrameworkIgnoreListSettingsTab extends UI.Widget.VBox {
     setting;
     editor;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(frameworkIgnoreListSettingsTabStyles, settingsScreenStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('blackbox')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');

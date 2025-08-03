@@ -55,7 +55,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
     provider;
     queryChangedCallback;
     constructor(provider, promptHistory, queryChangedCallback) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(filteredListWidgetStyles);
         this.promptHistory = promptHistory || [];
         this.scoringTimer = 0;

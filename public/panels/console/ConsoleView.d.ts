@@ -64,11 +64,15 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private issueToolbarThrottle;
     private requestResolver;
     private issueResolver;
+    private aiCodeCompletionSetting;
+    private aiCodeCompletionSummaryToolbarContainer?;
+    private aiCodeCompletionSummaryToolbar?;
     constructor(viewportThrottlerTimeout: number);
     static instance(opts?: {
         forceNew: boolean;
         viewportThrottlerTimeout?: number;
     }): ConsoleView;
+    createAiCodeCompletionSummaryToolbar(): void;
     static clearConsole(): void;
     issuesCountUpdatedForTest(): void;
     modelAdded(model: SDK.ConsoleModel.ConsoleModel): void;
@@ -146,6 +150,8 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private promptTextChanged;
     private promptTextChangedForTest;
     private isScrolledToBottom;
+    private onAiCodeCompletionSettingChanged;
+    private isAiCodeCompletionEnabled;
 }
 export declare class ConsoleViewFilter {
     private readonly filterChanged;

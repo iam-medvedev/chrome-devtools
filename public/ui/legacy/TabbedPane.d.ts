@@ -90,6 +90,7 @@ export declare class TabbedPane extends TabbedPane_base {
     onResize(): void;
     headerResized(): void;
     wasShown(): void;
+    wasHidden(): void;
     makeTabSlider(): void;
     private setTabSlider;
     calculateConstraints(): Constraints;
@@ -134,13 +135,17 @@ export declare enum Events {
     TabInvoked = "TabInvoked",
     TabSelected = "TabSelected",
     TabClosed = "TabClosed",
-    TabOrderChanged = "TabOrderChanged"
+    TabOrderChanged = "TabOrderChanged",
+    PaneVisibilityChanged = "PaneVisibilityChanged"
 }
 export interface EventTypes {
     [Events.TabInvoked]: EventData;
     [Events.TabSelected]: EventData;
     [Events.TabClosed]: EventData;
     [Events.TabOrderChanged]: EventData;
+    [Events.PaneVisibilityChanged]: {
+        isVisible: boolean;
+    };
 }
 export declare class TabbedPaneTab {
     closeable: boolean;

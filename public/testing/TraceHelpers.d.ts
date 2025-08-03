@@ -1,5 +1,5 @@
-import * as Bindings from '../models/bindings/bindings.js';
 import * as Trace from '../models/trace/trace.js';
+import * as Workspace from '../models/workspace/workspace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../ui/legacy/legacy.js';
@@ -182,7 +182,7 @@ export declare function getEventOfType<T extends Trace.Types.Events.Event>(event
  * errors.
  */
 export declare function setupIgnoreListManagerEnvironment(): {
-    ignoreListManager: Bindings.IgnoreListManager.IgnoreListManager;
+    ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager;
 };
 export declare function microsecondsTraceWindow(min: number, max: number): Trace.Types.Timing.TraceWindowMicro;
 export declare function microseconds(x: number): Trace.Types.Timing.Micro;

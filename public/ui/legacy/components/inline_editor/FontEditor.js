@@ -119,7 +119,7 @@ export class FontEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     fontSelectors;
     fontsList;
     constructor(propertyMap) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(fontEditorStyles);
         this.propertyMap = propertyMap;
         this.contentElement.tabIndex = 0;

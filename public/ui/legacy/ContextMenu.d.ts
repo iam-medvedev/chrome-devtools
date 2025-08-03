@@ -8,6 +8,7 @@ export declare class Item {
     private readonly typeInternal;
     protected readonly label: string | undefined;
     protected accelerator?: Host.InspectorFrontendHostAPI.AcceleratorDescriptor;
+    protected featureName?: string;
     protected readonly previewFeature: boolean;
     protected disabled: boolean | undefined;
     private readonly checked;
@@ -17,7 +18,7 @@ export declare class Item {
     customElement?: Element;
     private shortcut?;
     protected jslogContext: string | undefined;
-    constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, isPreviewFeature?: boolean, disabled?: boolean, checked?: boolean, accelerator?: Host.InspectorFrontendHostAPI.AcceleratorDescriptor, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string);
+    constructor(contextMenu: ContextMenu | null, type: 'checkbox' | 'item' | 'separator' | 'subMenu', label?: string, isPreviewFeature?: boolean, disabled?: boolean, checked?: boolean, accelerator?: Host.InspectorFrontendHostAPI.AcceleratorDescriptor, tooltip?: Platform.UIString.LocalizedString, jslogContext?: string, featureName?: string);
     id(): number;
     type(): string;
     isPreviewFeature(): boolean;
@@ -39,11 +40,12 @@ export declare class Section {
         additionalElement?: Element;
         tooltip?: Platform.UIString.LocalizedString;
         jslogContext?: string;
+        featureName?: string;
     }): Item;
     appendCustomItem(element: Element, jslogContext?: string): Item;
     appendSeparator(): Item;
-    appendAction(actionId: string, label?: string, optional?: boolean): void;
-    appendSubMenuItem(label: string, disabled?: boolean, jslogContext?: string): SubMenu;
+    appendAction(actionId: string, label?: string, optional?: boolean, jslogContext?: string, feature?: string): void;
+    appendSubMenuItem(label: string, disabled?: boolean, jslogContext?: string, featureName?: string): SubMenu;
     appendCheckboxItem(label: string, handler: () => void, options?: {
         checked?: boolean;
         disabled?: boolean;
@@ -51,12 +53,13 @@ export declare class Section {
         additionalElement?: Element;
         tooltip?: Platform.UIString.LocalizedString;
         jslogContext?: string;
+        featureName?: string;
     }): Item;
 }
 export declare class SubMenu extends Item {
     readonly sections: Map<string, Section>;
     private readonly sectionList;
-    constructor(contextMenu: ContextMenu | null, label?: string, disabled?: boolean, jslogContext?: string);
+    constructor(contextMenu: ContextMenu | null, label?: string, disabled?: boolean, jslogContext?: string, featureName?: string);
     init(): void;
     section(name?: string): Section;
     headerSection(): Section;

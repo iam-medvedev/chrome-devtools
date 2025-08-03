@@ -65,6 +65,7 @@ export declare class UISourceCode extends Common.ObjectWrapper.ObjectWrapper<Eve
     getDecorationData(type: string): any;
     disableEdit(): void;
     editDisabled(): boolean;
+    isIgnoreListed(): boolean;
 }
 export declare enum Events {
     WorkingCopyChanged = "WorkingCopyChanged",
@@ -98,6 +99,7 @@ export declare class UILocation {
     lineId(): string;
     static comparator(location1: UILocation, location2: UILocation): number;
     compareTo(other: UILocation): number;
+    isIgnoreListed(): boolean;
 }
 /**
  * A text range inside a specific {@link UISourceCode}.

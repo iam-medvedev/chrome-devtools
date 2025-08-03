@@ -88,14 +88,6 @@ var UIStrings = {
    */
   deviceType: "Device type",
   /**
-   * @description Tooltip text for a button to disable Experimental Web Platform Features when they are enabled.
-   */
-  experimentalWebPlatformFeature: '"`Experimental Web Platform Feature`" flag is enabled. Click to disable it.',
-  /**
-   * @description Tooltip text for a button to enable Experimental Web Platform Features when they are disabled.
-   */
-  experimentalWebPlatformFeatureFlag: '"`Experimental Web Platform Feature`" flag is disabled. Click to enable it.',
-  /**
    * @description Tooltip text for a 'three dots' style menu button which shows an expanded set of options.
    */
   moreOptions: "More options",
@@ -248,7 +240,6 @@ var DeviceModeToolbar = class {
   deviceSelectItem;
   scaleItem;
   uaItem;
-  experimentalButton;
   cachedDeviceScale;
   cachedUaType;
   xItem;
@@ -368,19 +359,6 @@ var DeviceModeToolbar = class {
     this.postureItem.setDarkText();
     setTitleForButton(this.postureItem, i18nString(UIStrings.devicePosture));
     toolbar2.appendToolbarItem(this.postureItem);
-    this.createExperimentalButton(toolbar2);
-  }
-  createExperimentalButton(toolbar2) {
-    toolbar2.appendToolbarItem(new UI.Toolbar.ToolbarSeparator(true));
-    const title = this.model.webPlatformExperimentalFeaturesEnabled() ? i18nString(UIStrings.experimentalWebPlatformFeature) : i18nString(UIStrings.experimentalWebPlatformFeatureFlag);
-    this.experimentalButton = new UI.Toolbar.ToolbarToggle(title, "experiment-check");
-    this.experimentalButton.setToggled(this.model.webPlatformExperimentalFeaturesEnabled());
-    this.experimentalButton.setEnabled(true);
-    this.experimentalButton.addEventListener("Click", this.experimentalClicked, this);
-    toolbar2.appendToolbarItem(this.experimentalButton);
-  }
-  experimentalClicked() {
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab("chrome://flags/#enable-experimental-web-platform-features");
   }
   fillOptionsToolbar(toolbar2) {
     toolbar2.appendToolbarItem(new UI.Toolbar.ToolbarItem(this.createEmptyToolbarElement()));
@@ -693,25 +671,18 @@ var DeviceModeToolbar = class {
       }
       this.cachedModelDevice = device2;
     }
-    if (this.experimentalButton) {
-      const device2 = this.model.device();
-      if (device2 && (device2.isDualScreen || device2.isFoldableScreen)) {
-        if (device2.isDualScreen) {
-          this.spanButton.setVisible(true);
-          this.postureItem.setVisible(false);
-        } else if (device2.isFoldableScreen) {
-          this.spanButton.setVisible(false);
-          this.postureItem.setVisible(true);
-          this.postureItem.setText(this.currentDevicePosture());
-        }
-        this.experimentalButton.setVisible(true);
-      } else {
-        this.spanButton.setVisible(false);
-        this.postureItem.setVisible(false);
-        this.experimentalButton.setVisible(false);
-      }
-      setTitleForButton(this.spanButton, i18nString(UIStrings.toggleDualscreenMode));
+    if (device?.isDualScreen) {
+      this.spanButton.setVisible(true);
+      this.postureItem.setVisible(false);
+    } else if (device?.isFoldableScreen) {
+      this.spanButton.setVisible(false);
+      this.postureItem.setVisible(true);
+      this.postureItem.setText(this.currentDevicePosture());
+    } else {
+      this.spanButton.setVisible(false);
+      this.postureItem.setVisible(false);
     }
+    setTitleForButton(this.spanButton, i18nString(UIStrings.toggleDualscreenMode));
     if (this.model.type() === EmulationModel.DeviceModeModel.Type.Device) {
       this.lastMode.set(this.model.device(), this.model.mode());
     }
@@ -1290,7 +1261,7 @@ var MediaQueryInspector = class extends UI2.Widget.Widget {
   cssModel;
   cachedQueryModels;
   constructor(getWidthCallback, setWidthCallback, mediaThrottler) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(mediaQueryInspector_css_default);
     this.contentElement.classList.add("media-inspector-view");
     this.contentElement.setAttribute("jslog", `${VisualLogging2.mediaInspectorView().track({ click: true })}`);
@@ -1736,7 +1707,7 @@ var DeviceModeView = class extends UI3.Widget.VBox {
   handleWidth;
   handleHeight;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.blockElementToWidth = /* @__PURE__ */ new WeakMap();
     this.setMinimumSize(150, 150);
     this.element.classList.add("device-mode-view");
@@ -2383,7 +2354,7 @@ var inspectedPagePlaceholderInstance;
 var InspectedPagePlaceholder = class _InspectedPagePlaceholder extends Common4.ObjectWrapper.eventMixin(UI5.Widget.Widget) {
   updateId;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(inspectedPagePlaceholder_css_default);
     UI5.ZoomManager.ZoomManager.instance().addEventListener("ZoomChanged", this.onResize, this);
     this.restoreMinimumSize();

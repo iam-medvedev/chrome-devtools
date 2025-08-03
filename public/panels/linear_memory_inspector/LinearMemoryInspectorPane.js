@@ -31,7 +31,7 @@ const MEMORY_INSPECTOR_EXPLANATION_URL = 'https://developer.chrome.com/docs/devt
 export class LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     #tabbedPane;
     constructor() {
-        super(false);
+        super();
         this.element.setAttribute('jslog', `${VisualLogging.panel('linear-memory-inspector').track({ resize: true })}`);
         this.#tabbedPane = new UI.TabbedPane.TabbedPane();
         this.#tabbedPane.setPlaceholderElement(this.createPlaceholder());
@@ -97,7 +97,7 @@ export class LinearMemoryInspectorView extends UI.Widget.VBox {
     firstTimeOpen;
     #hideValueInspector;
     constructor(memoryWrapper, address = 0, tabId, hideValueInspector) {
-        super(false);
+        super();
         if (address < 0 || address >= memoryWrapper.length()) {
             throw new Error('Requested address is out of bounds.');
         }

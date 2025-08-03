@@ -1,6 +1,8 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as SDK from './sdk.js';
 const { getPhysicalAxisFromQueryAxis, getQueryAxisFromContainerType, PhysicalAxis, QueryAxis } = SDK.CSSContainerQuery;
 describe('CSSContainerQuery', () => {
@@ -38,6 +40,15 @@ describe('CSSContainerQuery', () => {
             assert.strictEqual(getPhysicalAxisFromQueryAxis("size" /* QueryAxis.BOTH */, 'horizontal-tb'), "Both" /* PhysicalAxis.BOTH */);
             assert.strictEqual(getPhysicalAxisFromQueryAxis("size" /* QueryAxis.BOTH */, 'vertical-lr'), "Both" /* PhysicalAxis.BOTH */);
             assert.strictEqual(getPhysicalAxisFromQueryAxis("size" /* QueryAxis.BOTH */, 'vertical-rl'), "Both" /* PhysicalAxis.BOTH */);
+        });
+    });
+    describeWithMockConnection('Construction from protocol payload', () => {
+        it('anchored()', () => {
+            const target = createTarget();
+            const cssModel = new SDK.CSSModel.CSSModel(target);
+            const query = new SDK.CSSContainerQuery.CSSContainerQuery(cssModel, { queriesAnchored: true });
+            assert.isTrue(query.queriesAnchored);
+            assert.isUndefined(query.queriesScrollState);
         });
     });
 });

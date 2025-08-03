@@ -52,7 +52,7 @@ export class DOMNodeLink extends UI.Widget.Widget {
     #options = undefined;
     #view;
     constructor(element, node, options, view = DEFAULT_VIEW) {
-        super(true, undefined, element);
+        super(element, { useShadowDom: true });
         this.element.classList.remove('vbox');
         this.#node = node;
         this.#options = options;
@@ -162,7 +162,7 @@ export class DeferredDOMNodeLink extends UI.Widget.Widget {
     #options = undefined;
     #view;
     constructor(element, deferredNode, options, view = DEFERRED_DEFAULT_VIEW) {
-        super(true, undefined, element);
+        super(element, { useShadowDom: true });
         this.element.classList.remove('vbox');
         this.#deferredNode = deferredNode;
         this.#options = options;

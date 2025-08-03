@@ -8,6 +8,7 @@ var __export = (target, all) => {
 var HARFormat_exports = {};
 __export(HARFormat_exports, {
   HARCallFrame: () => HARCallFrame,
+  HARCookie: () => HARCookie,
   HAREntry: () => HAREntry,
   HARInitiator: () => HARInitiator,
   HARLog: () => HARLog,
@@ -492,6 +493,31 @@ var Importer = class _Importer {
     pageLoad.loadTime = Number(page.pageTimings.onLoad) * 1e3;
     return pageLoad;
   }
+  static fillCookieFromHARCookie(type, harCookie) {
+    const cookie = new SDK2.Cookie.Cookie(harCookie.name, harCookie.value, type);
+    if (harCookie.path) {
+      cookie.addAttribute("path", harCookie.path);
+    }
+    if (harCookie.domain) {
+      cookie.addAttribute("domain", harCookie.domain);
+    }
+    if (harCookie.expires) {
+      cookie.addAttribute("expires", harCookie.expires.getTime());
+    }
+    if (harCookie.httpOnly) {
+      cookie.addAttribute(
+        "http-only"
+        /* SDK.Cookie.Attribute.HTTP_ONLY */
+      );
+    }
+    if (harCookie.secure) {
+      cookie.addAttribute(
+        "secure"
+        /* SDK.Cookie.Attribute.SECURE */
+      );
+    }
+    return cookie;
+  }
   static fillRequestFromHAREntry(request, entry, pageLoad) {
     if (entry.request.postData) {
       request.setRequestFormData(true, entry.request.postData.text);
@@ -536,6 +562,17 @@ var Importer = class _Importer {
     _Importer.setupTiming(request, issueTime, entry.time, entry.timings);
     request.setRemoteAddress(entry.serverIPAddress || "", Number(entry.connection) || 80);
     request.setResourceType(_Importer.getResourceType(request, entry, pageLoad));
+    const includedRequestCookies = entry.request.cookies.map((cookie) => ({
+      cookie: this.fillCookieFromHARCookie(0, cookie),
+      exemptionReason: void 0
+    }));
+    request.setIncludedRequestCookies(includedRequestCookies);
+    const responseCookies = entry.response.cookies.map(this.fillCookieFromHARCookie.bind(
+      this,
+      1
+      /* SDK.Cookie.Type.RESPONSE */
+    ));
+    request.responseCookies = responseCookies;
     const priority = entry.customAsString("priority");
     if (priority && Protocol.Network.ResourcePriority.hasOwnProperty(priority)) {
       request.setPriority(priority);

@@ -52,6 +52,7 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     windowStartTime = Trace.Types.Timing.Milli(0);
     windowEndTime = Trace.Types.Timing.Milli(Infinity);
     muteOnWindowChanged = false;
+    hasPointer = false;
     #dimHighlightSVG;
     #boundOnThemeChanged = this.#onThemeChanged.bind(this);
     constructor(prefix) {
@@ -63,8 +64,11 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         this.element.appendChild(this.overviewGrid.element);
         this.cursorArea = this.overviewGrid.element.createChild('div', 'overview-grid-cursor-area');
         this.cursorElement = this.overviewGrid.element.createChild('div', 'overview-grid-cursor-position');
-        this.cursorArea.addEventListener('mousemove', this.onMouseMove.bind(this), true);
-        this.cursorArea.addEventListener('mouseleave', this.hideCursor.bind(this), true);
+        this.cursorArea.addEventListener('pointerdown', this.onMouseDown.bind(this), true);
+        this.cursorArea.addEventListener('pointerup', this.onMouseCancel.bind(this), true);
+        this.cursorArea.addEventListener('pointercancel', this.onMouseCancel.bind(this), true);
+        this.cursorArea.addEventListener('pointermove', this.onMouseMove.bind(this), true);
+        this.cursorArea.addEventListener('pointerleave', this.hideCursor.bind(this), true);
         this.overviewGrid.setResizeEnabled(false);
         this.overviewGrid.addEventListener("WindowChangedWithPosition" /* OverviewGridEvents.WINDOW_CHANGED_WITH_POSITION */, this.onWindowChanged, this);
         this.overviewGrid.addEventListener("BreadcrumbAdded" /* OverviewGridEvents.BREADCRUMB_ADDED */, this.onBreadcrumbAdded, this);
@@ -75,8 +79,27 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
     }
     enableCreateBreadcrumbsButton() {
         const breadcrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
-        breadcrumbsElement.addEventListener('mousemove', this.onMouseMove.bind(this), true);
-        breadcrumbsElement.addEventListener('mouseleave', this.hideCursor.bind(this), true);
+        breadcrumbsElement.addEventListener('pointerdown', this.onMouseDown.bind(this), true);
+        breadcrumbsElement.addEventListener('pointerup', this.onMouseCancel.bind(this), true);
+        breadcrumbsElement.addEventListener('pointercancel', this.onMouseCancel.bind(this), true);
+        breadcrumbsElement.addEventListener('pointermove', this.onMouseMove.bind(this), true);
+        breadcrumbsElement.addEventListener('pointerleave', this.hideCursor.bind(this), true);
+    }
+    onMouseDown(event) {
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+        event.target.setPointerCapture(event.pointerId);
+        this.overviewInfo.hide();
+        this.hasPointer = true;
+    }
+    onMouseCancel(event) {
+        if (!(event.target instanceof HTMLElement)) {
+            return;
+        }
+        event.target.releasePointerCapture(event.pointerId);
+        this.overviewInfo.show();
+        this.hasPointer = false;
     }
     onMouseMove(event) {
         if (!this.cursorEnabled) {
@@ -100,7 +123,9 @@ export class TimelineOverviewPane extends Common.ObjectWrapper.eventMixin(UI.Wid
         else {
             this.dispatchEventToListeners("OverviewPaneMouseLeave" /* Events.OVERVIEW_PANE_MOUSE_LEAVE */);
         }
-        void this.overviewInfo.setContent(this.buildOverviewInfo());
+        if (!this.hasPointer) {
+            void this.overviewInfo.setContent(this.buildOverviewInfo());
+        }
     }
     async buildOverviewInfo() {
         const document = this.element.ownerDocument;
@@ -446,6 +471,10 @@ export class OverviewInfo {
     hide() {
         this.visible = false;
         this.glassPane.hide();
+    }
+    show() {
+        this.visible = true;
+        this.glassPane.show(window.document);
     }
 }
 //# sourceMappingURL=TimelineOverviewPane.js.map

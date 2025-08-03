@@ -2,7 +2,7 @@ import glassPaneStyles from './glassPane.css.js';
 import { deepElementFromEvent, measuredScrollbarWidth } from './UIUtils.js';
 import { Widget } from './Widget.js';
 export class GlassPane {
-    widgetInternal = new Widget(true);
+    widgetInternal = new Widget({ useShadowDom: true });
     element;
     contentElement;
     onMouseDownBound;

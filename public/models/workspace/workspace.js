@@ -69,113 +69,25 @@ var FileManager = class _FileManager extends Common.ObjectWrapper.ObjectWrapper 
   }
 };
 
-// gen/front_end/models/workspace/SearchConfig.js
-var SearchConfig_exports = {};
-__export(SearchConfig_exports, {
-  SearchConfig: () => SearchConfig
+// gen/front_end/models/workspace/IgnoreListManager.js
+var IgnoreListManager_exports = {};
+__export(IgnoreListManager_exports, {
+  IgnoreListManager: () => IgnoreListManager
 });
-import * as Platform from "./../../core/platform/platform.js";
-var SearchConfig = class _SearchConfig {
-  #query;
-  #ignoreCase;
-  #isRegex;
-  #queries;
-  #fileRegexQueries;
-  constructor(query, ignoreCase, isRegex) {
-    this.#query = query;
-    this.#ignoreCase = ignoreCase;
-    this.#isRegex = isRegex;
-    const { queries, fileRegexQueries } = _SearchConfig.#parse(query, ignoreCase, isRegex);
-    this.#queries = queries;
-    this.#fileRegexQueries = fileRegexQueries;
-  }
-  static fromPlainObject(object) {
-    return new _SearchConfig(object.query, object.ignoreCase, object.isRegex);
-  }
-  filePathMatchesFileQuery(filePath) {
-    return this.#fileRegexQueries.every(({ regex, shouldMatch }) => Boolean(filePath.match(regex)) === shouldMatch);
-  }
-  queries() {
-    return this.#queries;
-  }
-  query() {
-    return this.#query;
-  }
-  ignoreCase() {
-    return this.#ignoreCase;
-  }
-  isRegex() {
-    return this.#isRegex;
-  }
-  toPlainObject() {
-    return { query: this.query(), ignoreCase: this.ignoreCase(), isRegex: this.isRegex() };
-  }
-  static #parse(query, ignoreCase, isRegex) {
-    const quotedPattern = /"([^\\"]|\\.)+"/;
-    const unquotedWordPattern = /(\s*(?!-?f(ile)?:)[^\\ ]|\\.)+/;
-    const unquotedPattern = unquotedWordPattern.source + "(\\s+" + unquotedWordPattern.source + ")*";
-    const pattern = [
-      "(\\s*" + FilePatternRegex.source + "\\s*)",
-      "(" + quotedPattern.source + ")",
-      "(" + unquotedPattern + ")"
-    ].join("|");
-    const regexp = new RegExp(pattern, "g");
-    const queryParts = query.match(regexp) || [];
-    const queries = [];
-    const fileRegexQueries = [];
-    for (const queryPart of queryParts) {
-      if (!queryPart) {
-        continue;
-      }
-      const fileQuery = _SearchConfig.#parseFileQuery(queryPart);
-      if (fileQuery) {
-        const regex = new RegExp(fileQuery.text, ignoreCase ? "i" : "");
-        fileRegexQueries.push({ regex, shouldMatch: fileQuery.shouldMatch });
-      } else if (isRegex) {
-        queries.push(queryPart);
-      } else if (queryPart.startsWith('"') && queryPart.endsWith('"')) {
-        queries.push(_SearchConfig.#parseQuotedQuery(queryPart));
-      } else {
-        queries.push(_SearchConfig.#parseUnquotedQuery(queryPart));
-      }
-    }
-    return { queries, fileRegexQueries };
-  }
-  static #parseUnquotedQuery(query) {
-    return query.replace(/\\(.)/g, "$1");
-  }
-  static #parseQuotedQuery(query) {
-    return query.substring(1, query.length - 1).replace(/\\(.)/g, "$1");
-  }
-  static #parseFileQuery(query) {
-    const match = query.match(FilePatternRegex);
-    if (!match) {
-      return null;
-    }
-    query = match[3];
-    let result = "";
-    for (let i = 0; i < query.length; ++i) {
-      const char = query[i];
-      if (char === "*") {
-        result += ".*";
-      } else if (char === "\\") {
-        ++i;
-        const nextChar = query[i];
-        if (nextChar === " ") {
-          result += " ";
-        }
-      } else {
-        if (Platform.StringUtilities.regexSpecialCharacters().indexOf(query.charAt(i)) !== -1) {
-          result += "\\";
-        }
-        result += query.charAt(i);
-      }
-    }
-    const shouldMatch = !Boolean(match[1]);
-    return { text: result, shouldMatch };
-  }
-};
-var FilePatternRegex = /(-)?f(ile)?:((?:[^\\ ]|\\.)+)/;
+import * as Common4 from "./../../core/common/common.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
+import * as Platform2 from "./../../core/platform/platform.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+
+// gen/front_end/models/workspace/WorkspaceImpl.js
+var WorkspaceImpl_exports = {};
+__export(WorkspaceImpl_exports, {
+  Events: () => Events,
+  ProjectStore: () => ProjectStore,
+  WorkspaceImpl: () => WorkspaceImpl,
+  projectTypes: () => projectTypes
+});
+import * as Common3 from "./../../core/common/common.js";
 
 // gen/front_end/models/workspace/UISourceCode.js
 var UISourceCode_exports = {};
@@ -187,215 +99,10 @@ __export(UISourceCode_exports, {
   UISourceCode: () => UISourceCode,
   UISourceCodeMetadata: () => UISourceCodeMetadata
 });
-import * as Common3 from "./../../core/common/common.js";
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as TextUtils from "./../text_utils/text_utils.js";
-
-// gen/front_end/models/workspace/WorkspaceImpl.js
-var WorkspaceImpl_exports = {};
-__export(WorkspaceImpl_exports, {
-  Events: () => Events,
-  ProjectStore: () => ProjectStore,
-  WorkspaceImpl: () => WorkspaceImpl,
-  projectTypes: () => projectTypes
-});
 import * as Common2 from "./../../core/common/common.js";
-var projectTypes;
-(function(projectTypes2) {
-  projectTypes2["Debugger"] = "debugger";
-  projectTypes2["Formatter"] = "formatter";
-  projectTypes2["Network"] = "network";
-  projectTypes2["FileSystem"] = "filesystem";
-  projectTypes2["ConnectableFileSystem"] = "connectablefilesystem";
-  projectTypes2["ContentScripts"] = "contentscripts";
-  projectTypes2["Service"] = "service";
-})(projectTypes || (projectTypes = {}));
-var ProjectStore = class {
-  #workspace;
-  #id;
-  #type;
-  #displayName;
-  #uiSourceCodes = /* @__PURE__ */ new Map();
-  constructor(workspace, id, type, displayName) {
-    this.#workspace = workspace;
-    this.#id = id;
-    this.#type = type;
-    this.#displayName = displayName;
-  }
-  id() {
-    return this.#id;
-  }
-  type() {
-    return this.#type;
-  }
-  displayName() {
-    return this.#displayName;
-  }
-  workspace() {
-    return this.#workspace;
-  }
-  createUISourceCode(url, contentType) {
-    return new UISourceCode(this, url, contentType);
-  }
-  addUISourceCode(uiSourceCode) {
-    const url = uiSourceCode.url();
-    if (this.uiSourceCodeForURL(url)) {
-      return false;
-    }
-    this.#uiSourceCodes.set(url, uiSourceCode);
-    this.#workspace.dispatchEventToListeners(Events.UISourceCodeAdded, uiSourceCode);
-    return true;
-  }
-  removeUISourceCode(url) {
-    const uiSourceCode = this.#uiSourceCodes.get(url);
-    if (uiSourceCode === void 0) {
-      return;
-    }
-    this.#uiSourceCodes.delete(url);
-    this.#workspace.dispatchEventToListeners(Events.UISourceCodeRemoved, uiSourceCode);
-  }
-  removeProject() {
-    this.#workspace.removeProject(this);
-    this.#uiSourceCodes.clear();
-  }
-  uiSourceCodeForURL(url) {
-    return this.#uiSourceCodes.get(url) ?? null;
-  }
-  uiSourceCodes() {
-    return this.#uiSourceCodes.values();
-  }
-  renameUISourceCode(uiSourceCode, newName) {
-    const oldPath = uiSourceCode.url();
-    const newPath = uiSourceCode.parentURL() ? Common2.ParsedURL.ParsedURL.urlFromParentUrlAndName(uiSourceCode.parentURL(), newName) : Common2.ParsedURL.ParsedURL.preEncodeSpecialCharactersInPath(newName);
-    this.#uiSourceCodes.set(newPath, uiSourceCode);
-    this.#uiSourceCodes.delete(oldPath);
-  }
-  // No-op implementation for a handful of interface methods.
-  rename(_uiSourceCode, _newName, _callback) {
-  }
-  excludeFolder(_path) {
-  }
-  deleteFile(_uiSourceCode) {
-  }
-  deleteDirectoryRecursively(_path) {
-    return Promise.resolve(false);
-  }
-  remove() {
-  }
-  indexContent(_progress) {
-  }
-};
-var workspaceInstance;
-var WorkspaceImpl = class _WorkspaceImpl extends Common2.ObjectWrapper.ObjectWrapper {
-  #projects = /* @__PURE__ */ new Map();
-  #hasResourceContentTrackingExtensions = false;
-  constructor() {
-    super();
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!workspaceInstance || forceNew) {
-      workspaceInstance = new _WorkspaceImpl();
-    }
-    return workspaceInstance;
-  }
-  static removeInstance() {
-    workspaceInstance = void 0;
-  }
-  uiSourceCode(projectId, url) {
-    const project = this.#projects.get(projectId);
-    return project ? project.uiSourceCodeForURL(url) : null;
-  }
-  uiSourceCodeForURL(url) {
-    for (const project of this.#projects.values()) {
-      const uiSourceCode = project.uiSourceCodeForURL(url);
-      if (uiSourceCode) {
-        return uiSourceCode;
-      }
-    }
-    return null;
-  }
-  findCompatibleUISourceCodes(uiSourceCode) {
-    const url = uiSourceCode.url();
-    const contentType = uiSourceCode.contentType();
-    const result = [];
-    for (const project of this.#projects.values()) {
-      if (uiSourceCode.project().type() !== project.type()) {
-        continue;
-      }
-      const candidate = project.uiSourceCodeForURL(url);
-      if (candidate && candidate.url() === url && candidate.contentType() === contentType) {
-        result.push(candidate);
-      }
-    }
-    return result;
-  }
-  uiSourceCodesForProjectType(type) {
-    const result = [];
-    for (const project of this.#projects.values()) {
-      if (project.type() === type) {
-        for (const uiSourceCode of project.uiSourceCodes()) {
-          result.push(uiSourceCode);
-        }
-      }
-    }
-    return result;
-  }
-  addProject(project) {
-    console.assert(!this.#projects.has(project.id()), `A project with id ${project.id()} already exists!`);
-    this.#projects.set(project.id(), project);
-    this.dispatchEventToListeners(Events.ProjectAdded, project);
-  }
-  removeProject(project) {
-    this.#projects.delete(project.id());
-    this.dispatchEventToListeners(Events.ProjectRemoved, project);
-  }
-  project(projectId) {
-    return this.#projects.get(projectId) || null;
-  }
-  projectForFileSystemRoot(root) {
-    const projectId = Common2.ParsedURL.ParsedURL.rawPathToUrlString(root);
-    return this.project(projectId);
-  }
-  projects() {
-    return [...this.#projects.values()];
-  }
-  projectsForType(type) {
-    function filterByType(project) {
-      return project.type() === type;
-    }
-    return this.projects().filter(filterByType);
-  }
-  uiSourceCodes() {
-    const result = [];
-    for (const project of this.#projects.values()) {
-      for (const uiSourceCode of project.uiSourceCodes()) {
-        result.push(uiSourceCode);
-      }
-    }
-    return result;
-  }
-  setHasResourceContentTrackingExtensions(hasExtensions) {
-    this.#hasResourceContentTrackingExtensions = hasExtensions;
-  }
-  hasResourceContentTrackingExtensions() {
-    return this.#hasResourceContentTrackingExtensions;
-  }
-};
-var Events;
-(function(Events3) {
-  Events3["UISourceCodeAdded"] = "UISourceCodeAdded";
-  Events3["UISourceCodeRemoved"] = "UISourceCodeRemoved";
-  Events3["UISourceCodeRenamed"] = "UISourceCodeRenamed";
-  Events3["WorkingCopyChanged"] = "WorkingCopyChanged";
-  Events3["WorkingCopyCommitted"] = "WorkingCopyCommitted";
-  Events3["WorkingCopyCommittedByUser"] = "WorkingCopyCommittedByUser";
-  Events3["ProjectAdded"] = "ProjectAdded";
-  Events3["ProjectRemoved"] = "ProjectRemoved";
-})(Events || (Events = {}));
-
-// gen/front_end/models/workspace/UISourceCode.js
+import * as i18n from "./../../core/i18n/i18n.js";
+import * as Platform from "./../../core/platform/platform.js";
+import * as TextUtils from "./../text_utils/text_utils.js";
 var UIStrings = {
   /**
    *@description Text for the index of something
@@ -408,7 +115,7 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("models/workspace/UISourceCode.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
+var UISourceCode = class extends Common2.ObjectWrapper.ObjectWrapper {
   #origin;
   #parentURL;
   #project;
@@ -434,10 +141,10 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
     super();
     this.#project = project;
     this.#url = url;
-    const parsedURL = Common3.ParsedURL.ParsedURL.fromString(url);
+    const parsedURL = Common2.ParsedURL.ParsedURL.fromString(url);
     if (parsedURL) {
       this.#origin = parsedURL.securityOrigin();
-      this.#parentURL = Common3.ParsedURL.ParsedURL.concatenate(this.#origin, parsedURL.folderPathComponents);
+      this.#parentURL = Common2.ParsedURL.ParsedURL.concatenate(this.#origin, parsedURL.folderPathComponents);
       if (parsedURL.queryParams && !(parsedURL.lastPathComponent && contentType.isFromSourceMap())) {
         this.#name = parsedURL.lastPathComponent + "?" + parsedURL.queryParams;
       } else {
@@ -448,8 +155,8 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
         }
       }
     } else {
-      this.#origin = Platform2.DevToolsPath.EmptyUrlString;
-      this.#parentURL = Platform2.DevToolsPath.EmptyUrlString;
+      this.#origin = Platform.DevToolsPath.EmptyUrlString;
+      this.#parentURL = Platform.DevToolsPath.EmptyUrlString;
       this.#name = url;
     }
     this.#contentType = contentType;
@@ -486,7 +193,7 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
       return i18nString(UIStrings.index);
     }
     const name = this.#name;
-    return skipTrim ? name : Platform2.StringUtilities.trimEndWithMaxLength(name, 100);
+    return skipTrim ? name : Platform.StringUtilities.trimEndWithMaxLength(name, 100);
   }
   canRename() {
     return this.#project.canRename();
@@ -511,7 +218,7 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
     if (url) {
       this.#url = url;
     } else {
-      this.#url = Common3.ParsedURL.ParsedURL.relativePathToUrlString(name, oldURL);
+      this.#url = Common2.ParsedURL.ParsedURL.relativePathToUrlString(name, oldURL);
     }
     if (contentType) {
       this.#contentType = contentType;
@@ -595,7 +302,7 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
       this.#contentCommitted(updatedContent.content, false);
       return;
     }
-    await Common3.Revealer.reveal(this);
+    await Common2.Revealer.reveal(this);
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     const shouldUpdate = window.confirm(i18nString(UIStrings.thisFileWasChangedExternally));
     if (shouldUpdate) {
@@ -718,7 +425,7 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
     return this.#isUnconditionallyIgnoreListed;
   }
   isFetchXHR() {
-    return [Common3.ResourceType.resourceTypes.XHR, Common3.ResourceType.resourceTypes.Fetch].includes(this.contentType());
+    return [Common2.ResourceType.resourceTypes.XHR, Common2.ResourceType.resourceTypes.Fetch].includes(this.contentType());
   }
   /**
    * Unconditionally ignore list this UISourcecode, ignoring any user
@@ -728,7 +435,7 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
     this.#isUnconditionallyIgnoreListed = true;
   }
   extension() {
-    return Common3.ParsedURL.ParsedURL.extractExtension(this.#name);
+    return Common2.ParsedURL.ParsedURL.extractExtension(this.#name);
   }
   content() {
     if (!this.#content || "error" in this.#content) {
@@ -795,6 +502,9 @@ var UISourceCode = class extends Common3.ObjectWrapper.ObjectWrapper {
   }
   editDisabled() {
     return this.#disableEdit;
+  }
+  isIgnoreListed() {
+    return IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this);
   }
 };
 var Events2;
@@ -868,6 +578,9 @@ var UILocation = class {
     }
     return this.columnNumber - other.columnNumber;
   }
+  isIgnoreListed() {
+    return this.uiSourceCode.isIgnoreListed();
+  }
 };
 var UILocationRange = class {
   uiSourceCode;
@@ -915,8 +628,791 @@ var UISourceCodeMetadata = class {
     this.contentSize = contentSize;
   }
 };
+
+// gen/front_end/models/workspace/WorkspaceImpl.js
+var projectTypes;
+(function(projectTypes2) {
+  projectTypes2["Debugger"] = "debugger";
+  projectTypes2["Formatter"] = "formatter";
+  projectTypes2["Network"] = "network";
+  projectTypes2["FileSystem"] = "filesystem";
+  projectTypes2["ConnectableFileSystem"] = "connectablefilesystem";
+  projectTypes2["ContentScripts"] = "contentscripts";
+  projectTypes2["Service"] = "service";
+})(projectTypes || (projectTypes = {}));
+var ProjectStore = class {
+  #workspace;
+  #id;
+  #type;
+  #displayName;
+  #uiSourceCodes = /* @__PURE__ */ new Map();
+  constructor(workspace, id, type, displayName) {
+    this.#workspace = workspace;
+    this.#id = id;
+    this.#type = type;
+    this.#displayName = displayName;
+  }
+  id() {
+    return this.#id;
+  }
+  type() {
+    return this.#type;
+  }
+  displayName() {
+    return this.#displayName;
+  }
+  workspace() {
+    return this.#workspace;
+  }
+  createUISourceCode(url, contentType) {
+    return new UISourceCode(this, url, contentType);
+  }
+  addUISourceCode(uiSourceCode) {
+    const url = uiSourceCode.url();
+    if (this.uiSourceCodeForURL(url)) {
+      return false;
+    }
+    this.#uiSourceCodes.set(url, uiSourceCode);
+    this.#workspace.dispatchEventToListeners(Events.UISourceCodeAdded, uiSourceCode);
+    return true;
+  }
+  removeUISourceCode(url) {
+    const uiSourceCode = this.#uiSourceCodes.get(url);
+    if (uiSourceCode === void 0) {
+      return;
+    }
+    this.#uiSourceCodes.delete(url);
+    this.#workspace.dispatchEventToListeners(Events.UISourceCodeRemoved, uiSourceCode);
+  }
+  removeProject() {
+    this.#workspace.removeProject(this);
+    this.#uiSourceCodes.clear();
+  }
+  uiSourceCodeForURL(url) {
+    return this.#uiSourceCodes.get(url) ?? null;
+  }
+  uiSourceCodes() {
+    return this.#uiSourceCodes.values();
+  }
+  renameUISourceCode(uiSourceCode, newName) {
+    const oldPath = uiSourceCode.url();
+    const newPath = uiSourceCode.parentURL() ? Common3.ParsedURL.ParsedURL.urlFromParentUrlAndName(uiSourceCode.parentURL(), newName) : Common3.ParsedURL.ParsedURL.preEncodeSpecialCharactersInPath(newName);
+    this.#uiSourceCodes.set(newPath, uiSourceCode);
+    this.#uiSourceCodes.delete(oldPath);
+  }
+  // No-op implementation for a handful of interface methods.
+  rename(_uiSourceCode, _newName, _callback) {
+  }
+  excludeFolder(_path) {
+  }
+  deleteFile(_uiSourceCode) {
+  }
+  deleteDirectoryRecursively(_path) {
+    return Promise.resolve(false);
+  }
+  remove() {
+  }
+  indexContent(_progress) {
+  }
+};
+var workspaceInstance;
+var WorkspaceImpl = class _WorkspaceImpl extends Common3.ObjectWrapper.ObjectWrapper {
+  #projects = /* @__PURE__ */ new Map();
+  #hasResourceContentTrackingExtensions = false;
+  constructor() {
+    super();
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!workspaceInstance || forceNew) {
+      workspaceInstance = new _WorkspaceImpl();
+    }
+    return workspaceInstance;
+  }
+  static removeInstance() {
+    workspaceInstance = void 0;
+  }
+  uiSourceCode(projectId, url) {
+    const project = this.#projects.get(projectId);
+    return project ? project.uiSourceCodeForURL(url) : null;
+  }
+  uiSourceCodeForURL(url) {
+    for (const project of this.#projects.values()) {
+      const uiSourceCode = project.uiSourceCodeForURL(url);
+      if (uiSourceCode) {
+        return uiSourceCode;
+      }
+    }
+    return null;
+  }
+  findCompatibleUISourceCodes(uiSourceCode) {
+    const url = uiSourceCode.url();
+    const contentType = uiSourceCode.contentType();
+    const result = [];
+    for (const project of this.#projects.values()) {
+      if (uiSourceCode.project().type() !== project.type()) {
+        continue;
+      }
+      const candidate = project.uiSourceCodeForURL(url);
+      if (candidate && candidate.url() === url && candidate.contentType() === contentType) {
+        result.push(candidate);
+      }
+    }
+    return result;
+  }
+  uiSourceCodesForProjectType(type) {
+    const result = [];
+    for (const project of this.#projects.values()) {
+      if (project.type() === type) {
+        for (const uiSourceCode of project.uiSourceCodes()) {
+          result.push(uiSourceCode);
+        }
+      }
+    }
+    return result;
+  }
+  addProject(project) {
+    console.assert(!this.#projects.has(project.id()), `A project with id ${project.id()} already exists!`);
+    this.#projects.set(project.id(), project);
+    this.dispatchEventToListeners(Events.ProjectAdded, project);
+  }
+  removeProject(project) {
+    this.#projects.delete(project.id());
+    this.dispatchEventToListeners(Events.ProjectRemoved, project);
+  }
+  project(projectId) {
+    return this.#projects.get(projectId) || null;
+  }
+  projectForFileSystemRoot(root) {
+    const projectId = Common3.ParsedURL.ParsedURL.rawPathToUrlString(root);
+    return this.project(projectId);
+  }
+  projects() {
+    return [...this.#projects.values()];
+  }
+  projectsForType(type) {
+    function filterByType(project) {
+      return project.type() === type;
+    }
+    return this.projects().filter(filterByType);
+  }
+  uiSourceCodes() {
+    const result = [];
+    for (const project of this.#projects.values()) {
+      for (const uiSourceCode of project.uiSourceCodes()) {
+        result.push(uiSourceCode);
+      }
+    }
+    return result;
+  }
+  setHasResourceContentTrackingExtensions(hasExtensions) {
+    this.#hasResourceContentTrackingExtensions = hasExtensions;
+  }
+  hasResourceContentTrackingExtensions() {
+    return this.#hasResourceContentTrackingExtensions;
+  }
+};
+var Events;
+(function(Events3) {
+  Events3["UISourceCodeAdded"] = "UISourceCodeAdded";
+  Events3["UISourceCodeRemoved"] = "UISourceCodeRemoved";
+  Events3["UISourceCodeRenamed"] = "UISourceCodeRenamed";
+  Events3["WorkingCopyChanged"] = "WorkingCopyChanged";
+  Events3["WorkingCopyCommitted"] = "WorkingCopyCommitted";
+  Events3["WorkingCopyCommittedByUser"] = "WorkingCopyCommittedByUser";
+  Events3["ProjectAdded"] = "ProjectAdded";
+  Events3["ProjectRemoved"] = "ProjectRemoved";
+})(Events || (Events = {}));
+
+// gen/front_end/models/workspace/IgnoreListManager.js
+var UIStrings2 = {
+  /**
+   *@description Text to stop preventing the debugger from stepping into library code
+   */
+  removeFromIgnoreList: "Remove from ignore list",
+  /**
+   *@description Text for scripts that should not be stepped into when debugging
+   */
+  addScriptToIgnoreList: "Add script to ignore list",
+  /**
+   *@description Text for directories whose scripts should not be stepped into when debugging
+   */
+  addDirectoryToIgnoreList: "Add directory to ignore list",
+  /**
+   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+   */
+  addAllContentScriptsToIgnoreList: "Add all extension scripts to ignore list",
+  /**
+   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+   */
+  addAllThirdPartyScriptsToIgnoreList: "Add all third-party scripts to ignore list",
+  /**
+   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+   */
+  addAllAnonymousScriptsToIgnoreList: "Add all anonymous scripts to ignore list"
+};
+var str_2 = i18n3.i18n.registerUIStrings("models/workspace/IgnoreListManager.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var ignoreListManagerInstance;
+var IgnoreListManager = class _IgnoreListManager extends Common4.ObjectWrapper.ObjectWrapper {
+  #listeners;
+  #isIgnoreListedURLCache;
+  #contentScriptExecutionContexts;
+  constructor() {
+    super();
+    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.clearCacheIfNeeded.bind(this), this);
+    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });
+    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.onExecutionContextDestroyed, this, { scoped: true });
+    Common4.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern").addChangeListener(this.patternChanged.bind(this));
+    Common4.Settings.Settings.instance().moduleSetting("skip-content-scripts").addChangeListener(this.patternChanged.bind(this));
+    Common4.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").addChangeListener(this.patternChanged.bind(this));
+    Common4.Settings.Settings.instance().moduleSetting("enable-ignore-listing").addChangeListener(this.patternChanged.bind(this));
+    Common4.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").addChangeListener(this.patternChanged.bind(this));
+    this.#listeners = /* @__PURE__ */ new Set();
+    this.#isIgnoreListedURLCache = /* @__PURE__ */ new Map();
+    this.#contentScriptExecutionContexts = /* @__PURE__ */ new Set();
+    SDK.TargetManager.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!ignoreListManagerInstance || forceNew) {
+      ignoreListManagerInstance = new _IgnoreListManager();
+    }
+    return ignoreListManagerInstance;
+  }
+  static removeInstance() {
+    ignoreListManagerInstance = void 0;
+  }
+  addChangeListener(listener) {
+    this.#listeners.add(listener);
+  }
+  removeChangeListener(listener) {
+    this.#listeners.delete(listener);
+  }
+  modelAdded(debuggerModel) {
+    void this.setIgnoreListPatterns(debuggerModel);
+    const sourceMapManager = debuggerModel.sourceMapManager();
+    sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
+    sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this);
+  }
+  modelRemoved(debuggerModel) {
+    this.clearCacheIfNeeded();
+    const sourceMapManager = debuggerModel.sourceMapManager();
+    sourceMapManager.removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
+    sourceMapManager.removeEventListener(SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this);
+  }
+  isContentScript(executionContext) {
+    return !executionContext.isDefault;
+  }
+  onExecutionContextCreated(event) {
+    if (this.isContentScript(event.data)) {
+      this.#contentScriptExecutionContexts.add(event.data.uniqueId);
+      if (this.skipContentScripts) {
+        for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+          void this.updateIgnoredExecutionContexts(debuggerModel);
+        }
+      }
+    }
+  }
+  onExecutionContextDestroyed(event) {
+    if (this.isContentScript(event.data)) {
+      this.#contentScriptExecutionContexts.delete(event.data.uniqueId);
+      if (this.skipContentScripts) {
+        for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+          void this.updateIgnoredExecutionContexts(debuggerModel);
+        }
+      }
+    }
+  }
+  clearCacheIfNeeded() {
+    if (this.#isIgnoreListedURLCache.size > 1024) {
+      this.#isIgnoreListedURLCache.clear();
+    }
+  }
+  getSkipStackFramesPatternSetting() {
+    return Common4.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
+  }
+  setIgnoreListPatterns(debuggerModel) {
+    const regexPatterns = this.enableIgnoreListing ? this.getSkipStackFramesPatternSetting().getAsArray() : [];
+    const patterns = [];
+    for (const item of regexPatterns) {
+      if (!item.disabled && item.pattern) {
+        patterns.push(item.pattern);
+      }
+    }
+    return debuggerModel.setBlackboxPatterns(patterns, this.skipAnonymousScripts);
+  }
+  updateIgnoredExecutionContexts(debuggerModel) {
+    return debuggerModel.setBlackboxExecutionContexts(this.skipContentScripts ? Array.from(this.#contentScriptExecutionContexts) : []);
+  }
+  getGeneralRulesForUISourceCode(uiSourceCode) {
+    const projectType = uiSourceCode.project().type();
+    const isContentScript = projectType === projectTypes.ContentScripts;
+    const isKnownThirdParty = uiSourceCode.isKnownThirdParty();
+    return { isContentScript, isKnownThirdParty };
+  }
+  isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode) {
+    if (uiSourceCode.isUnconditionallyIgnoreListed()) {
+      return true;
+    }
+    const url = this.uiSourceCodeURL(uiSourceCode);
+    return this.isUserIgnoreListedURL(url, this.getGeneralRulesForUISourceCode(uiSourceCode));
+  }
+  isUserIgnoreListedURL(url, options) {
+    if (!this.enableIgnoreListing) {
+      return false;
+    }
+    if (options?.isContentScript && this.skipContentScripts) {
+      return true;
+    }
+    if (options?.isKnownThirdParty && this.automaticallyIgnoreListKnownThirdPartyScripts) {
+      return true;
+    }
+    if (!url) {
+      return this.skipAnonymousScripts;
+    }
+    if (this.#isIgnoreListedURLCache.has(url)) {
+      return Boolean(this.#isIgnoreListedURLCache.get(url));
+    }
+    const isIgnoreListed = this.getFirstMatchedRegex(url) !== null;
+    this.#isIgnoreListedURLCache.set(url, isIgnoreListed);
+    return isIgnoreListed;
+  }
+  getFirstMatchedRegex(url) {
+    if (!url) {
+      return null;
+    }
+    const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
+    const regexValue = this.urlToRegExpString(url);
+    if (!regexValue) {
+      return null;
+    }
+    for (let i = 0; i < regexPatterns.length; ++i) {
+      const item = regexPatterns[i];
+      if (item.disabled || item.disabledForUrl === url) {
+        continue;
+      }
+      const regex = new RegExp(item.pattern);
+      if (regex.test(url)) {
+        return regex;
+      }
+    }
+    return null;
+  }
+  sourceMapAttached(event) {
+    const script = event.data.client;
+    const sourceMap = event.data.sourceMap;
+    void this.updateScriptRanges(script, sourceMap);
+  }
+  sourceMapDetached(event) {
+    const script = event.data.client;
+    void this.updateScriptRanges(script, void 0);
+  }
+  async updateScriptRanges(script, sourceMap) {
+    let hasIgnoreListedMappings = false;
+    if (!_IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
+      hasIgnoreListedMappings = sourceMap?.sourceURLs().some((url) => this.isUserIgnoreListedURL(url, { isKnownThirdParty: sourceMap.hasIgnoreListHint(url) })) ?? false;
+    }
+    if (!hasIgnoreListedMappings) {
+      if (scriptToRange.get(script) && await script.setBlackboxedRanges([])) {
+        scriptToRange.delete(script);
+      }
+      this.dispatchEventToListeners("IGNORED_SCRIPT_RANGES_UPDATED", script);
+      return;
+    }
+    if (!sourceMap) {
+      return;
+    }
+    const newRanges = sourceMap.findRanges((srcURL) => this.isUserIgnoreListedURL(srcURL, { isKnownThirdParty: sourceMap.hasIgnoreListHint(srcURL) }), { isStartMatching: true }).flatMap((range) => [range.start, range.end]);
+    const oldRanges = scriptToRange.get(script) || [];
+    if (!isEqual(oldRanges, newRanges) && await script.setBlackboxedRanges(newRanges)) {
+      scriptToRange.set(script, newRanges);
+    }
+    this.dispatchEventToListeners("IGNORED_SCRIPT_RANGES_UPDATED", script);
+    function isEqual(rangesA, rangesB) {
+      if (rangesA.length !== rangesB.length) {
+        return false;
+      }
+      for (let i = 0; i < rangesA.length; ++i) {
+        if (rangesA[i].lineNumber !== rangesB[i].lineNumber || rangesA[i].columnNumber !== rangesB[i].columnNumber) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+  uiSourceCodeURL(uiSourceCode) {
+    return uiSourceCode.project().type() === projectTypes.Debugger ? null : uiSourceCode.url();
+  }
+  canIgnoreListUISourceCode(uiSourceCode) {
+    const url = this.uiSourceCodeURL(uiSourceCode);
+    return url ? Boolean(this.urlToRegExpString(url)) : false;
+  }
+  ignoreListUISourceCode(uiSourceCode) {
+    const url = this.uiSourceCodeURL(uiSourceCode);
+    if (url) {
+      this.ignoreListURL(url);
+    }
+  }
+  unIgnoreListUISourceCode(uiSourceCode) {
+    this.unIgnoreListURL(this.uiSourceCodeURL(uiSourceCode), this.getGeneralRulesForUISourceCode(uiSourceCode));
+  }
+  get enableIgnoreListing() {
+    return Common4.Settings.Settings.instance().moduleSetting("enable-ignore-listing").get();
+  }
+  set enableIgnoreListing(value) {
+    Common4.Settings.Settings.instance().moduleSetting("enable-ignore-listing").set(value);
+  }
+  get skipContentScripts() {
+    return this.enableIgnoreListing && Common4.Settings.Settings.instance().moduleSetting("skip-content-scripts").get();
+  }
+  get skipAnonymousScripts() {
+    return this.enableIgnoreListing && Common4.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").get();
+  }
+  get automaticallyIgnoreListKnownThirdPartyScripts() {
+    return this.enableIgnoreListing && Common4.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").get();
+  }
+  ignoreListContentScripts() {
+    if (!this.enableIgnoreListing) {
+      this.enableIgnoreListing = true;
+    }
+    Common4.Settings.Settings.instance().moduleSetting("skip-content-scripts").set(true);
+  }
+  unIgnoreListContentScripts() {
+    Common4.Settings.Settings.instance().moduleSetting("skip-content-scripts").set(false);
+  }
+  ignoreListAnonymousScripts() {
+    if (!this.enableIgnoreListing) {
+      this.enableIgnoreListing = true;
+    }
+    Common4.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").set(true);
+  }
+  unIgnoreListAnonymousScripts() {
+    Common4.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").set(false);
+  }
+  ignoreListThirdParty() {
+    if (!this.enableIgnoreListing) {
+      this.enableIgnoreListing = true;
+    }
+    Common4.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").set(true);
+  }
+  unIgnoreListThirdParty() {
+    Common4.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").set(false);
+  }
+  ignoreListURL(url) {
+    const regexValue = this.urlToRegExpString(url);
+    if (!regexValue) {
+      return;
+    }
+    this.addRegexToIgnoreList(regexValue, url);
+  }
+  addRegexToIgnoreList(regexValue, disabledForUrl) {
+    const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
+    let found = false;
+    for (let i = 0; i < regexPatterns.length; ++i) {
+      const item = regexPatterns[i];
+      if (item.pattern === regexValue || disabledForUrl && item.disabledForUrl === disabledForUrl) {
+        item.disabled = false;
+        item.disabledForUrl = void 0;
+        found = true;
+      }
+    }
+    if (!found) {
+      regexPatterns.push({ pattern: regexValue, disabled: false });
+    }
+    if (!this.enableIgnoreListing) {
+      this.enableIgnoreListing = true;
+    }
+    this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
+  }
+  unIgnoreListURL(url, options) {
+    if (options?.isContentScript) {
+      this.unIgnoreListContentScripts();
+    }
+    if (options?.isKnownThirdParty) {
+      this.unIgnoreListThirdParty();
+    }
+    if (!url) {
+      this.unIgnoreListAnonymousScripts();
+      return;
+    }
+    let regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
+    const regexValue = _IgnoreListManager.instance().urlToRegExpString(url);
+    if (!regexValue) {
+      return;
+    }
+    regexPatterns = regexPatterns.filter(function(item) {
+      return item.pattern !== regexValue;
+    });
+    for (let i = 0; i < regexPatterns.length; ++i) {
+      const item = regexPatterns[i];
+      if (item.disabled) {
+        continue;
+      }
+      try {
+        const regex = new RegExp(item.pattern);
+        if (regex.test(url)) {
+          item.disabled = true;
+          item.disabledForUrl = url;
+        }
+      } catch {
+      }
+    }
+    this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
+  }
+  removeIgnoreListPattern(regexValue) {
+    let regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
+    regexPatterns = regexPatterns.filter(function(item) {
+      return item.pattern !== regexValue;
+    });
+    this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
+  }
+  ignoreListHasPattern(regexValue, enabledOnly) {
+    const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
+    return regexPatterns.some((item) => !(enabledOnly && item.disabled) && item.pattern === regexValue);
+  }
+  async patternChanged() {
+    this.#isIgnoreListedURLCache.clear();
+    const promises = [];
+    for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
+      promises.push(this.setIgnoreListPatterns(debuggerModel));
+      const sourceMapManager = debuggerModel.sourceMapManager();
+      for (const script of debuggerModel.scripts()) {
+        promises.push(this.updateScriptRanges(script, sourceMapManager.sourceMapForClient(script)));
+      }
+      promises.push(this.updateIgnoredExecutionContexts(debuggerModel));
+    }
+    await Promise.all(promises);
+    const listeners = Array.from(this.#listeners);
+    for (const listener of listeners) {
+      listener();
+    }
+    this.patternChangeFinishedForTests();
+  }
+  patternChangeFinishedForTests() {
+  }
+  urlToRegExpString(url) {
+    const parsedURL = new Common4.ParsedURL.ParsedURL(url);
+    if (parsedURL.isAboutBlank() || parsedURL.isDataURL()) {
+      return "";
+    }
+    if (!parsedURL.isValid) {
+      return "^" + Platform2.StringUtilities.escapeForRegExp(url) + "$";
+    }
+    let name = parsedURL.lastPathComponent;
+    if (name) {
+      name = "/" + name;
+    } else if (parsedURL.folderPathComponents) {
+      name = parsedURL.folderPathComponents + "/";
+    }
+    if (!name) {
+      name = parsedURL.host;
+    }
+    if (!name) {
+      return "";
+    }
+    const scheme = parsedURL.scheme;
+    let prefix = "";
+    if (scheme && scheme !== "http" && scheme !== "https") {
+      prefix = "^" + scheme + "://";
+      if (scheme === "chrome-extension") {
+        prefix += parsedURL.host + "\\b";
+      }
+      prefix += ".*";
+    }
+    return prefix + Platform2.StringUtilities.escapeForRegExp(name) + (url.endsWith(name) ? "$" : "\\b");
+  }
+  getIgnoreListURLContextMenuItems(uiSourceCode) {
+    if (uiSourceCode.project().type() === projectTypes.FileSystem) {
+      return [];
+    }
+    const menuItems = [];
+    const canIgnoreList = this.canIgnoreListUISourceCode(uiSourceCode);
+    const isIgnoreListed = this.isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode);
+    const isAnonymous = !this.uiSourceCodeURL(uiSourceCode);
+    const { isContentScript, isKnownThirdParty } = this.getGeneralRulesForUISourceCode(uiSourceCode);
+    if (isIgnoreListed) {
+      if (canIgnoreList || isContentScript || isKnownThirdParty || isAnonymous) {
+        menuItems.push({
+          text: i18nString2(UIStrings2.removeFromIgnoreList),
+          callback: this.unIgnoreListUISourceCode.bind(this, uiSourceCode),
+          jslogContext: "remove-script-from-ignorelist"
+        });
+      }
+    } else {
+      if (canIgnoreList) {
+        menuItems.push({
+          text: i18nString2(UIStrings2.addScriptToIgnoreList),
+          callback: this.ignoreListUISourceCode.bind(this, uiSourceCode),
+          jslogContext: "add-script-to-ignorelist"
+        });
+      } else if (isAnonymous) {
+        menuItems.push({
+          text: i18nString2(UIStrings2.addAllAnonymousScriptsToIgnoreList),
+          callback: this.ignoreListAnonymousScripts.bind(this),
+          jslogContext: "add-anonymous-scripts-to-ignorelist"
+        });
+      }
+      menuItems.push(...this.getIgnoreListGeneralContextMenuItems({ isContentScript, isKnownThirdParty }));
+    }
+    return menuItems;
+  }
+  getIgnoreListGeneralContextMenuItems(options) {
+    const menuItems = [];
+    if (options?.isContentScript) {
+      menuItems.push({
+        text: i18nString2(UIStrings2.addAllContentScriptsToIgnoreList),
+        callback: this.ignoreListContentScripts.bind(this),
+        jslogContext: "add-content-scripts-to-ignorelist"
+      });
+    }
+    if (options?.isKnownThirdParty) {
+      menuItems.push({
+        text: i18nString2(UIStrings2.addAllThirdPartyScriptsToIgnoreList),
+        callback: this.ignoreListThirdParty.bind(this),
+        jslogContext: "add-3p-scripts-to-ignorelist"
+      });
+    }
+    return menuItems;
+  }
+  getIgnoreListFolderContextMenuItems(url, options) {
+    const menuItems = [];
+    const regexValue = "^" + Platform2.StringUtilities.escapeForRegExp(url) + "/";
+    if (this.ignoreListHasPattern(regexValue, true)) {
+      menuItems.push({
+        text: i18nString2(UIStrings2.removeFromIgnoreList),
+        callback: this.removeIgnoreListPattern.bind(this, regexValue),
+        jslogContext: "remove-from-ignore-list"
+      });
+    } else if (this.isUserIgnoreListedURL(url, options)) {
+      menuItems.push({
+        text: i18nString2(UIStrings2.removeFromIgnoreList),
+        callback: this.unIgnoreListURL.bind(this, url, options),
+        jslogContext: "remove-from-ignore-list"
+      });
+    } else if (!options?.isCurrentlyIgnoreListed) {
+      menuItems.push({
+        text: i18nString2(UIStrings2.addDirectoryToIgnoreList),
+        callback: this.addRegexToIgnoreList.bind(this, regexValue),
+        jslogContext: "add-directory-to-ignore-list"
+      });
+      menuItems.push(...this.getIgnoreListGeneralContextMenuItems(options));
+    }
+    return menuItems;
+  }
+};
+var scriptToRange = /* @__PURE__ */ new WeakMap();
+
+// gen/front_end/models/workspace/SearchConfig.js
+var SearchConfig_exports = {};
+__export(SearchConfig_exports, {
+  SearchConfig: () => SearchConfig
+});
+import * as Platform3 from "./../../core/platform/platform.js";
+var SearchConfig = class _SearchConfig {
+  #query;
+  #ignoreCase;
+  #isRegex;
+  #queries;
+  #fileRegexQueries;
+  constructor(query, ignoreCase, isRegex) {
+    this.#query = query;
+    this.#ignoreCase = ignoreCase;
+    this.#isRegex = isRegex;
+    const { queries, fileRegexQueries } = _SearchConfig.#parse(query, ignoreCase, isRegex);
+    this.#queries = queries;
+    this.#fileRegexQueries = fileRegexQueries;
+  }
+  static fromPlainObject(object) {
+    return new _SearchConfig(object.query, object.ignoreCase, object.isRegex);
+  }
+  filePathMatchesFileQuery(filePath) {
+    return this.#fileRegexQueries.every(({ regex, shouldMatch }) => Boolean(filePath.match(regex)) === shouldMatch);
+  }
+  queries() {
+    return this.#queries;
+  }
+  query() {
+    return this.#query;
+  }
+  ignoreCase() {
+    return this.#ignoreCase;
+  }
+  isRegex() {
+    return this.#isRegex;
+  }
+  toPlainObject() {
+    return { query: this.query(), ignoreCase: this.ignoreCase(), isRegex: this.isRegex() };
+  }
+  static #parse(query, ignoreCase, isRegex) {
+    const quotedPattern = /"([^\\"]|\\.)+"/;
+    const unquotedWordPattern = /(\s*(?!-?f(ile)?:)[^\\ ]|\\.)+/;
+    const unquotedPattern = unquotedWordPattern.source + "(\\s+" + unquotedWordPattern.source + ")*";
+    const pattern = [
+      "(\\s*" + FilePatternRegex.source + "\\s*)",
+      "(" + quotedPattern.source + ")",
+      "(" + unquotedPattern + ")"
+    ].join("|");
+    const regexp = new RegExp(pattern, "g");
+    const queryParts = query.match(regexp) || [];
+    const queries = [];
+    const fileRegexQueries = [];
+    for (const queryPart of queryParts) {
+      if (!queryPart) {
+        continue;
+      }
+      const fileQuery = _SearchConfig.#parseFileQuery(queryPart);
+      if (fileQuery) {
+        const regex = new RegExp(fileQuery.text, ignoreCase ? "i" : "");
+        fileRegexQueries.push({ regex, shouldMatch: fileQuery.shouldMatch });
+      } else if (isRegex) {
+        queries.push(queryPart);
+      } else if (queryPart.startsWith('"') && queryPart.endsWith('"')) {
+        queries.push(_SearchConfig.#parseQuotedQuery(queryPart));
+      } else {
+        queries.push(_SearchConfig.#parseUnquotedQuery(queryPart));
+      }
+    }
+    return { queries, fileRegexQueries };
+  }
+  static #parseUnquotedQuery(query) {
+    return query.replace(/\\(.)/g, "$1");
+  }
+  static #parseQuotedQuery(query) {
+    return query.substring(1, query.length - 1).replace(/\\(.)/g, "$1");
+  }
+  static #parseFileQuery(query) {
+    const match = query.match(FilePatternRegex);
+    if (!match) {
+      return null;
+    }
+    query = match[3];
+    let result = "";
+    for (let i = 0; i < query.length; ++i) {
+      const char = query[i];
+      if (char === "*") {
+        result += ".*";
+      } else if (char === "\\") {
+        ++i;
+        const nextChar = query[i];
+        if (nextChar === " ") {
+          result += " ";
+        }
+      } else {
+        if (Platform3.StringUtilities.regexSpecialCharacters().indexOf(query.charAt(i)) !== -1) {
+          result += "\\";
+        }
+        result += query.charAt(i);
+      }
+    }
+    const shouldMatch = !Boolean(match[1]);
+    return { text: result, shouldMatch };
+  }
+};
+var FilePatternRegex = /(-)?f(ile)?:((?:[^\\ ]|\\.)+)/;
 export {
   FileManager_exports as FileManager,
+  IgnoreListManager_exports as IgnoreListManager,
   SearchConfig_exports as SearchConfig,
   UISourceCode_exports as UISourceCode,
   WorkspaceImpl_exports as Workspace

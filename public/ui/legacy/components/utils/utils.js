@@ -245,13 +245,14 @@ var ImagePreview = class {
 // gen/front_end/ui/legacy/components/utils/JSPresentationUtils.js
 var JSPresentationUtils_exports = {};
 __export(JSPresentationUtils_exports, {
-  buildStackTracePreviewContents: () => buildStackTracePreviewContents,
+  StackTracePreviewContent: () => StackTracePreviewContent,
   buildStackTraceRows: () => buildStackTraceRows
 });
 import * as Common3 from "./../../../../core/common/common.js";
 import * as i18n5 from "./../../../../core/i18n/i18n.js";
+import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK3 from "./../../../../core/sdk/sdk.js";
-import * as Bindings2 from "./../../../../models/bindings/bindings.js";
+import * as Workspace3 from "./../../../../models/workspace/workspace.js";
 import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
 import * as UI2 from "./../../legacy.js";
 
@@ -732,16 +733,6 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
     }
     const uiLocation = await liveLocation.uiLocation();
     if (!uiLocation) {
-      if (liveLocation instanceof Bindings.CSSWorkspaceBinding.LiveLocation) {
-        const header = liveLocation.header();
-        if (header?.ownerNode) {
-          anchor.addEventListener("click", (event) => {
-            event.consume(true);
-            void Common2.Revealer.reveal(header.ownerNode || null);
-          }, false);
-          _Linkifier.setTrimmedText(anchor, "<style>");
-        }
-      }
       anchor.classList.add("invalid-link");
       anchor.removeAttribute("role");
       return;
@@ -767,7 +758,8 @@ var Linkifier = class _Linkifier extends Common2.ObjectWrapper.ObjectWrapper {
       }
     }
     UI.Tooltip.Tooltip.install(anchor, titleText);
-    anchor.classList.toggle("ignore-list-link", await liveLocation.isIgnoreListed());
+    const isIgnoreListed = Boolean(uiLocation?.isIgnoreListed());
+    anchor.classList.toggle("ignore-list-link", isIgnoreListed);
     _Linkifier.updateLinkDecorations(anchor);
   }
   static updateLinkDecorations(anchor) {
@@ -1225,11 +1217,11 @@ function populateContextMenu(link3, event) {
   const contextMenu = new UI2.ContextMenu.ContextMenu(event);
   event.consume(true);
   const uiLocation = Linkifier.uiLocation(link3);
-  if (uiLocation && Bindings2.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiLocation.uiSourceCode)) {
-    if (Bindings2.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(uiLocation.uiSourceCode.url())) {
-      contextMenu.debugSection().appendItem(i18nString3(UIStrings3.removeFromIgnore), () => Bindings2.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: "remove-from-ignore-list" });
+  if (uiLocation && Workspace3.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiLocation.uiSourceCode)) {
+    if (Workspace3.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(uiLocation.uiSourceCode.url())) {
+      contextMenu.debugSection().appendItem(i18nString3(UIStrings3.removeFromIgnore), () => Workspace3.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: "remove-from-ignore-list" });
     } else {
-      contextMenu.debugSection().appendItem(i18nString3(UIStrings3.addToIgnore), () => Bindings2.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: "add-to-ignore-list" });
+      contextMenu.debugSection().appendItem(i18nString3(UIStrings3.addToIgnore), () => Workspace3.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: "add-to-ignore-list" });
     }
   }
   contextMenu.appendApplicableItems(event);
@@ -1284,25 +1276,6 @@ function buildStackTraceRows(stackTrace, target, linkifier, tabStops, updateCall
   }
   return stackTraceRows;
 }
-function buildStackTracePreviewContents(target, linkifier, options = {
-  widthConstrained: false,
-  stackTrace: void 0,
-  tabStops: void 0
-}) {
-  const { stackTrace, tabStops } = options;
-  const element = document.createElement("span");
-  element.classList.add("monospace");
-  element.classList.add("stack-preview-container");
-  element.classList.toggle("width-constrained", options.widthConstrained);
-  element.style.display = "inline-block";
-  const shadowRoot = UI2.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: jsUtils_css_default });
-  const contentElement = shadowRoot.createChild("table", "stack-preview-container");
-  contentElement.classList.toggle("width-constrained", options.widthConstrained);
-  const updateCallback = renderStackTraceTable.bind(null, contentElement, element);
-  const stackTraceRows = buildStackTraceRows(stackTrace ?? { callFrames: [] }, target, linkifier, tabStops, updateCallback, options.showColumnNumber);
-  const links = renderStackTraceTable(contentElement, element, stackTraceRows);
-  return { element, links };
-}
 function renderStackTraceTable(container, parent, stackTraceRows) {
   container.removeChildren();
   const links = [];
@@ -1353,6 +1326,53 @@ function renderStackTraceTable(container, parent, stackTraceRows) {
   }, false);
   return links;
 }
+var StackTracePreviewContent = class extends UI2.Widget.Widget {
+  #target;
+  #linkifier;
+  #options;
+  #links = [];
+  #table;
+  constructor(element, target, linkifier, options) {
+    super(element, { useShadowDom: true });
+    this.#target = target;
+    this.#linkifier = linkifier;
+    this.#options = options || {
+      widthConstrained: false
+    };
+    this.element.classList.add("monospace");
+    this.element.classList.add("stack-preview-container");
+    this.element.classList.toggle("width-constrained", this.#options.widthConstrained ?? false);
+    this.element.style.display = "inline-block";
+    Platform3.DOMUtilities.appendStyle(this.element.shadowRoot, jsUtils_css_default);
+    this.#table = this.contentElement.createChild("table", "stack-preview-container");
+    this.#table.classList.toggle("width-constrained", this.#options.widthConstrained ?? false);
+    this.performUpdate();
+  }
+  performUpdate() {
+    if (!this.#linkifier) {
+      return;
+    }
+    const { stackTrace, tabStops } = this.#options;
+    const updateCallback = renderStackTraceTable.bind(null, this.#table, this.element);
+    const stackTraceRows = buildStackTraceRows(stackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
+    this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
+  }
+  get linkElements() {
+    return this.#links;
+  }
+  set target(target) {
+    this.#target = target;
+    this.requestUpdate();
+  }
+  set linkifier(linkifier) {
+    this.#linkifier = linkifier;
+    this.requestUpdate();
+  }
+  set options(options) {
+    this.#options = options;
+    this.requestUpdate();
+  }
+};
 
 // gen/front_end/ui/legacy/components/utils/Reload.js
 var Reload_exports = {};

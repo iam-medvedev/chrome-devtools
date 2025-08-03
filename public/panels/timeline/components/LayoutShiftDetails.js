@@ -79,7 +79,7 @@ export class LayoutShiftDetails extends UI.Widget.Widget {
     #parsedTrace = null;
     #isFreshRecording = false;
     constructor(element, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
     }
     set event(event) {

@@ -37,7 +37,7 @@ export class StorageBucketsTreeParentElement extends ExpandableApplicationPanelT
     bucketTreeElements = new Set();
     constructor(storagePanel) {
         super(storagePanel, i18nString(UIStrings.storageBuckets), i18nString(UIStrings.noStorageBuckets), i18nString(UIStrings.storageBucketsDescription), 'storage-buckets');
-        const icon = IconButton.Icon.create('database');
+        const icon = IconButton.Icon.create('bucket');
         this.setLeadingIcons([icon]);
         this.setLink('https://github.com/WICG/storage-buckets/blob/gh-pages/explainer.md');
     }

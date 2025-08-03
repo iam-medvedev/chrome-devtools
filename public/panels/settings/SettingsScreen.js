@@ -108,7 +108,7 @@ export class SettingsScreen extends UI.Widget.VBox {
     keybindsTab;
     reportTabOnReveal;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(settingsScreenStyles);
         this.contentElement.classList.add('settings-window-main');
         this.contentElement.classList.add('vbox');

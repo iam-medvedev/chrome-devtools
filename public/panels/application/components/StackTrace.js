@@ -4,7 +4,6 @@
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import '../../../ui/components/expandable_list/expandable_list.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
@@ -117,10 +116,7 @@ export class StackTrace extends HTMLElement {
             // and is handled again in the linkifier live location update callback.
             if ('link' in item && item.link) {
                 const uiLocation = Components.Linkifier.Linkifier.uiLocation(item.link);
-                if (uiLocation &&
-                    Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiLocation.uiSourceCode)) {
-                    ignoreListHide = true;
-                }
+                ignoreListHide = Boolean(uiLocation?.isIgnoreListed());
             }
             if (this.#showHidden || !ignoreListHide) {
                 if ('functionName' in item) {

@@ -558,7 +558,7 @@ var CSSOverviewProcessingView = class extends UI.Widget.Widget {
   };
   #view;
   constructor(element, view = DEFAULT_VIEW) {
-    super(false, false, element);
+    super(element);
     this.#view = view;
     this.requestUpdate();
   }
@@ -1090,7 +1090,7 @@ var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
   #onReset = () => {
   };
   constructor(element, view = DEFAULT_VIEW2) {
-    super(true, true, element);
+    super(element, { useShadowDom: true, delegatesFocus: true });
     this.#view = view;
   }
   performUpdate() {
@@ -1601,7 +1601,7 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
     }
   };
   constructor(element, view = DEFAULT_VIEW3) {
-    super(false, false, element);
+    super(element);
     this.#view = view;
     this.registerRequiredCSS(cssOverviewCompletedView_css_default);
     this.#linkifier = new Components.Linkifier.Linkifier(
@@ -2189,7 +2189,7 @@ var CSSOverviewStartView = class extends UI4.Widget.Widget {
   onStartCapture = () => {
   };
   constructor(element, view = DEFAULT_VIEW4) {
-    super(true, true, element);
+    super(element, { useShadowDom: true, delegatesFocus: true });
     this.#view = view;
     this.performUpdate();
   }

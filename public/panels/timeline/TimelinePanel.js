@@ -1216,28 +1216,57 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const { savingEnhancedTrace } = config;
         metadata.enhancedTraceVersion =
             savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
-        const fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` :
-            savingEnhancedTrace ? `EnhancedTraces-${isoDate}.json` :
+        let fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` :
+            savingEnhancedTrace ? `EnhancedTrace-${isoDate}.json` :
                 `Trace-${isoDate}.json`);
-        let traceAsString;
+        let blobParts = [];
         if (isCpuProfile) {
             const profile = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
-            traceAsString = JSON.stringify(profile);
+            blobParts = [JSON.stringify(profile)];
         }
         else {
             const formattedTraceIter = traceJsonGenerator(traceEvents, {
                 ...metadata,
                 sourceMaps: savingEnhancedTrace ? metadata.sourceMaps : undefined,
             });
-            // If this string is larger than 536MB (2**29 - 23), V8 will throw RangeError here
-            traceAsString = Array.from(formattedTraceIter).join('');
+            blobParts = Array.from(formattedTraceIter);
         }
-        if (!traceAsString.length) {
+        if (!blobParts.length) {
             throw new Error('Trace content empty');
         }
-        await Workspace.FileManager.FileManager.instance().save(fileName, new TextUtils.ContentData.ContentData(traceAsString, /* isBase64=*/ false, 'application/json'), 
-        /* forceSaveAs=*/ true);
-        Workspace.FileManager.FileManager.instance().close(fileName);
+        let blob = new Blob(blobParts, { type: 'application/json' });
+        // TODO: Enable by default and connect with upcoming SaveDialog
+        if (Root.Runtime.experiments.isEnabled("timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */)) {
+            fileName = `${fileName}.gz`;
+            const gzStream = Common.Gzip.compressStream(blob.stream());
+            blob = await new Response(gzStream, {
+                headers: { 'Content-Type': 'application/gzip' },
+            }).blob();
+            // At this point this should be true:
+            //  blobParts.join('') === (await gzBlob.arrayBuffer().then(bytes => Common.Gzip.arrayBufferToString(bytes)))
+        }
+        let bytesAsB64 = '';
+        try {
+            // The maximum string length in v8 is `2 ** 29 - 23`, aka 538 MB.
+            // If the gzipped&base64-encoded trace is larger than that, this'll throw a RangeError.
+            bytesAsB64 = await Common.Base64.encode(blob);
+        }
+        catch {
+        }
+        if (bytesAsB64.length) {
+            const contentData = new TextUtils.ContentData.ContentData(bytesAsB64, /* isBase64=*/ true, blob.type);
+            await Workspace.FileManager.FileManager.instance().save(fileName, contentData, /* forceSaveAs=*/ true);
+            Workspace.FileManager.FileManager.instance().close(fileName);
+        }
+        else {
+            // Fallback scenario used in edge case where trace.gz.base64 is larger than 538 MB.
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
     }
     #showExportTraceErrorDialog(error) {
         if (this.statusDialog) {
@@ -2463,7 +2492,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const insightSetKey = insightModel.navigationId ?? Trace.Types.Events.NO_NAVIGATION;
         this.#setActiveInsight({ model: insightModel, insightSetKey }, { highlightInsight: true });
     }
-    static async handleExternalRecordRequest() {
+    static async *handleExternalRecordRequest() {
+        yield {
+            type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
+            message: 'Recording performance trace',
+        };
         void VisualLogging.logFunctionCall('timeline.record-reload', 'external');
         Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
         const panelInstance = TimelinePanel.instance();
@@ -2473,30 +2506,30 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         function onRecordingCompleted(eventData) {
             if ('errorText' in eventData) {
                 return {
-                    response: `Error running the trace: ${eventData.errorText}`,
-                    devToolsLogs: [],
+                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    message: `Error running the trace: ${eventData.errorText}`,
                 };
             }
             const parsedTrace = panelInstance.model.parsedTrace(eventData.traceIndex);
             const insights = panelInstance.model.traceInsights(eventData.traceIndex);
             if (!parsedTrace || !insights || insights.size === 0) {
                 return {
-                    response: 'The trace was loaded successfully but no Insights were detected.',
-                    devToolsLogs: [],
+                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    message: 'The trace was loaded successfully but no Insights were detected.',
                 };
             }
             const navigationId = Array.from(insights.keys()).find(k => k !== 'NO_NAVIGATION');
             if (!navigationId) {
                 return {
-                    response: 'The trace was loaded successfully but no navigation was detected.',
-                    devToolsLogs: [],
+                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    message: 'The trace was loaded successfully but no navigation was detected.',
                 };
             }
             const insightsForNav = insights.get(navigationId);
             if (!insightsForNav) {
                 return {
-                    response: 'The trace was loaded successfully but no Insights were detected.',
-                    devToolsLogs: [],
+                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    message: 'The trace was loaded successfully but no Insights were detected.',
                 };
             }
             let responseTextForNonPassedInsights = '';
@@ -2534,7 +2567,8 @@ ${responseTextForNonPassedInsights}
 These insights are passing, which means they are not considered to highlight considerable performance problems.
 ${responseTextForPassedInsights}`;
             return {
-                response: finalText,
+                type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
+                message: finalText,
                 devToolsLogs: [],
             };
         }

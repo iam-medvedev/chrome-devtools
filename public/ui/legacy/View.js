@@ -8,7 +8,7 @@ export class SimpleView extends VBox {
     #title;
     #viewId;
     constructor(title, useShadowDom, viewId) {
-        super(useShadowDom);
+        super({ useShadowDom });
         this.#title = title;
         if (viewId) {
             if (!Platform.StringUtilities.isExtendedKebabCase(viewId)) {

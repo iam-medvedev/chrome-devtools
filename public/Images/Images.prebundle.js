@@ -72,6 +72,7 @@ style.setProperty('--image-file-breakpoint-crossed', 'url(\"' + new URL('./src/b
 style.setProperty('--image-file-brush-2', 'url(\"' + new URL('./src/brush-2.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-brush-filled', 'url(\"' + new URL('./src/brush-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-brush', 'url(\"' + new URL('./src/brush.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-bucket', 'url(\"' + new URL('./src/bucket.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bug', 'url(\"' + new URL('./src/bug.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-bundle', 'url(\"' + new URL('./src/bundle.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-button-magic', 'url(\"' + new URL('./src/button-magic.svg', import.meta.url).toString() + '\")');
@@ -275,6 +276,7 @@ style.setProperty('--image-file-symbol', 'url(\"' + new URL('./src/symbol.svg', 
 style.setProperty('--image-file-sync', 'url(\"' + new URL('./src/sync.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-table', 'url(\"' + new URL('./src/table.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-terminal', 'url(\"' + new URL('./src/terminal.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-text-analysis', 'url(\"' + new URL('./src/text-analysis.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-down-filled', 'url(\"' + new URL('./src/thumb-down-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-down', 'url(\"' + new URL('./src/thumb-down.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-thumb-up-filled', 'url(\"' + new URL('./src/thumb-up-filled.svg', import.meta.url).toString() + '\")');

@@ -4,7 +4,6 @@ export interface LiveLocation {
     uiLocation(): Promise<Workspace.UISourceCode.UILocation | null>;
     dispose(): void;
     isDisposed(): boolean;
-    isIgnoreListed(): Promise<boolean>;
 }
 export declare class LiveLocationWithPool implements LiveLocation {
     #private;
@@ -13,7 +12,6 @@ export declare class LiveLocationWithPool implements LiveLocation {
     uiLocation(): Promise<Workspace.UISourceCode.UILocation | null>;
     dispose(): void;
     isDisposed(): boolean;
-    isIgnoreListed(): Promise<boolean>;
 }
 export declare class LiveLocationPool {
     #private;

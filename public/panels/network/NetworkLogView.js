@@ -36,6 +36,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
@@ -113,6 +114,14 @@ const UIStrings = {
      *@description Tooltip for a filter in the Network panel
      */
     onlyShowThirdPartyRequests: 'Show only requests with origin different from page origin',
+    /**
+     *@description Label for a filter in the Network panel
+     */
+    ippRequests: 'IP Protected requests',
+    /**
+     *@description Tooltip for a filter in the Network panel
+     */
+    onlyShowIPProtectedRequests: '(Incognito Only) Show only requests sent to IP Protection proxies',
     /**
      *@description Text that appears when user drag and drop something (for example, a file) in Network Log View of the Network panel
      */
@@ -457,6 +466,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     networkOnlyThirdPartySetting;
     networkResourceTypeFiltersSetting;
     networkShowOptionsToGenerateHarWithSensitiveData;
+    networkOnlyIPProtectedRequestsSetting;
     progressBarContainer;
     networkLogLargeRowsSetting;
     rowHeightInternal;
@@ -506,6 +516,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
             Common.Settings.Settings.instance().createSetting('network-only-blocked-requests', false);
         this.networkOnlyThirdPartySetting =
             Common.Settings.Settings.instance().createSetting('network-only-third-party-setting', false);
+        this.networkOnlyIPProtectedRequestsSetting =
+            Common.Settings.Settings.instance().createSetting('network-only-ip-protected-requests', false);
         this.networkResourceTypeFiltersSetting =
             Common.Settings.Settings.instance().createSetting('network-resource-type-filters', {});
         this.networkShowOptionsToGenerateHarWithSensitiveData = Common.Settings.Settings.instance().createSetting('network.show-options-to-generate-har-with-sensitive-data', false);
@@ -1340,6 +1352,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.networkOnlyBlockedRequestsSetting.set(false);
         this.networkOnlyThirdPartySetting.set(false);
         this.networkHideChromeExtensions.set(false);
+        this.networkOnlyIPProtectedRequestsSetting.set(false);
         this.resourceCategoryFilterUI.reset();
     }
     createNodeForRequest(request) {
@@ -1623,12 +1636,16 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         if (!this.resourceCategoryFilterUI.accept(categoryName)) {
             return false;
         }
-        const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL] = [
+        const [hideDataURL, blockedCookies, blockedRequests, thirdParty, hideExtensionURL, ippRequests] = [
             this.networkHideDataURLSetting.get(),
             this.networkShowBlockedCookiesOnlySetting.get(),
             this.networkOnlyBlockedRequestsSetting.get(),
             this.networkOnlyThirdPartySetting.get(),
             this.networkHideChromeExtensions.get(),
+            // TODO(crbug.com/425645896): Remove this guard once IP Protection is fully launched.
+            Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled ?
+                this.networkOnlyIPProtectedRequestsSetting.get() :
+                false,
         ];
         if (hideDataURL && (request.parsedURL.isDataURL() || request.parsedURL.isBlobURL())) {
             return false;
@@ -1644,6 +1661,12 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         if (hideExtensionURL && request.scheme === 'chrome-extension') {
             return false;
+        }
+        // TODO(crbug.com/425645896): Remove this guard once IP Protection is fully launched.
+        if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+            if (ippRequests && !request.isIpProtectionUsed()) {
+                return false;
+            }
         }
         for (let i = 0; i < this.filters.length; ++i) {
             if (!this.filters[i](request)) {
@@ -2161,6 +2184,7 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
     networkShowBlockedCookiesOnlySetting;
     networkOnlyBlockedRequestsSetting;
     networkOnlyThirdPartySetting;
+    networkOnlyIPProtectedRequestsSetting;
     activeFiltersCount;
     activeFiltersCountAdorner;
     constructor() {
@@ -2174,6 +2198,8 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             Common.Settings.Settings.instance().createSetting('network-only-blocked-requests', false);
         this.networkOnlyThirdPartySetting =
             Common.Settings.Settings.instance().createSetting('network-only-third-party-setting', false);
+        this.networkOnlyIPProtectedRequestsSetting =
+            Common.Settings.Settings.instance().createSetting('network-only-ip-protected-requests', false);
         this.filterElement = document.createElement('div');
         this.filterElement.setAttribute('aria-label', 'Show only/hide requests dropdown');
         this.filterElement.setAttribute('jslog', `${VisualLogging.dropDown('more-filters').track({ click: true })}`);
@@ -2204,6 +2230,10 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
         this.networkShowBlockedCookiesOnlySetting.addChangeListener(this.#onSettingChanged.bind(this));
         this.networkOnlyBlockedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
         this.networkOnlyThirdPartySetting.addChangeListener(this.#onSettingChanged.bind(this));
+        // TODO(crbug.com/425645896): Remove this guard once IP Protection is fully launched.
+        if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+            this.networkOnlyIPProtectedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
+        }
         contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.hideDataUrls), () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()), {
             checked: this.networkHideDataURLSetting.get(),
             tooltip: i18nString(UIStrings.hidesDataAndBlobUrls),
@@ -2225,6 +2255,16 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             tooltip: i18nString(UIStrings.onlyShowBlockedRequests),
             jslogContext: 'only-blocked-requests',
         });
+        // Disable this filter if in regular browsing, as IP Protection is only available in incognito mode.
+        // TODO(crbug.com/425645896): Remove this guard once IP Protection is fully launched.
+        if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+            contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.ippRequests), () => this.networkOnlyIPProtectedRequestsSetting.set(!this.networkOnlyIPProtectedRequestsSetting.get()), {
+                checked: this.networkOnlyIPProtectedRequestsSetting.get(),
+                disabled: !Root.Runtime.hostConfig.isOffTheRecord,
+                tooltip: i18nString(UIStrings.onlyShowIPProtectedRequests),
+                jslogContext: 'only-ip-protected-requests',
+            });
+        }
         contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.thirdParty), () => this.networkOnlyThirdPartySetting.set(!this.networkOnlyThirdPartySetting.get()), {
             checked: this.networkOnlyThirdPartySetting.get(),
             tooltip: i18nString(UIStrings.onlyShowThirdPartyRequests),
@@ -2238,6 +2278,10 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
             ...this.networkShowBlockedCookiesOnlySetting.get() ? [i18nString(UIStrings.hasBlockedCookies)] : [],
             ...this.networkOnlyBlockedRequestsSetting.get() ? [i18nString(UIStrings.blockedRequests)] : [],
             ...this.networkOnlyThirdPartySetting.get() ? [i18nString(UIStrings.thirdParty)] : [],
+            ...Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled &&
+                this.networkOnlyIPProtectedRequestsSetting.get() ?
+                [i18nString(UIStrings.ippRequests)] :
+                [],
         ];
         return filters;
     }

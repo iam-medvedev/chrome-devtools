@@ -105,13 +105,13 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
     id() {
         return this.actionRegistration.actionId;
     }
-    async execute() {
+    async execute(opts) {
         if (!this.actionRegistration.loadActionDelegate) {
             return false;
         }
         const delegate = await this.actionRegistration.loadActionDelegate();
         const actionId = this.id();
-        return delegate.handleAction(Context.instance(), actionId);
+        return delegate.handleAction(Context.instance(), actionId, opts);
     }
     icon() {
         return this.actionRegistration.iconClass;

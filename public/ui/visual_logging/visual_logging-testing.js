@@ -885,6 +885,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "console-user-activation-eval",
   "console-user-activation-eval-false",
   "console-view",
+  "console.ai-code-completion-citations",
+  "console.ai-code-completion-disclaimer",
   "console.clear",
   "console.clear.history",
   "console.create-pin",
@@ -1330,6 +1332,9 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "drjones.performance-panel-context",
   "drjones.sources-floating-button",
   "drjones.sources-panel-context",
+  "drjones.sources-panel-context.input",
+  "drjones.sources-panel-context.performance",
+  "drjones.sources-panel-context.script",
   "drop",
   "duration",
   "durationchange",
@@ -2557,6 +2562,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "network-log.record-log",
   "network-main",
   "network-only-blocked-requests",
+  "network-only-ip-protected-requests",
   "network-only-third-party-setting",
   "network-overview",
   "network-record-film-strip-setting",
@@ -2597,6 +2603,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "never-pause-here",
   "new-attribute",
   "new-authenticator",
+  "new-badge",
   "new-file",
   "next",
   "next-page",
@@ -2641,6 +2648,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "only-3rd-party-requests",
   "only-blocked-requests",
   "only-blocked-response-cookies",
+  "only-ip-protected-requests",
   "only-show-blocked-cookies",
   "only-show-blocked-requests",
   "only-show-cookies-with-issues",
@@ -3595,6 +3603,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "test-setting",
   "test-setting-true",
   "test-sidebar",
+  "testing-flamechart",
   "text-align",
   "text-align-last",
   "text-anchor",
@@ -3679,6 +3688,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline-main-flamechart-group-config",
   "timeline-network-flame-group-config",
   "timeline-overview",
+  "timeline-save-as-gz",
   "timeline-scope",
   "timeline-settings-pane",
   "timeline-settings-toggle",
@@ -3732,6 +3742,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline.field-data.setup",
   "timeline.field-metric-value",
   "timeline.flame-chart-view",
+  "timeline.flamechart.main",
+  "timeline.flamechart.network",
   "timeline.gpu",
   "timeline.history-item",
   "timeline.ignore-list",
@@ -3751,6 +3763,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline.insight-ask-ai.inp",
   "timeline.insight-ask-ai.lcp-by-phase",
   "timeline.insight-ask-ai.lcp-discovery",
+  "timeline.insight-ask-ai.legacy-javascript ",
   "timeline.insight-ask-ai.long-critical-network-tree",
   "timeline.insight-ask-ai.modern-http",
   "timeline.insight-ask-ai.render-blocking-requests",
@@ -4105,6 +4118,7 @@ var VisualElements;
   VisualElements2[VisualElements2["Gutter"] = 22] = "Gutter";
   VisualElements2[VisualElements2["MetricsBox"] = 23] = "MetricsBox";
   VisualElements2[VisualElements2["MetricsBoxPart"] = 24] = "MetricsBoxPart";
+  VisualElements2[VisualElements2["Badge"] = 25] = "Badge";
   VisualElements2[VisualElements2["DOMBreakpoint"] = 26] = "DOMBreakpoint";
   VisualElements2[VisualElements2["Action"] = 29] = "Action";
   VisualElements2[VisualElements2["FilterDropdown"] = 30] = "FilterDropdown";

@@ -294,7 +294,7 @@ var SettingsScreen = class _SettingsScreen extends UI.Widget.VBox {
   keybindsTab;
   reportTabOnReveal;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(settingsScreen_css_default);
     this.contentElement.classList.add("settings-window-main");
     this.contentElement.classList.add("vbox");
@@ -919,7 +919,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI2.Widget.VBox {
   setting;
   editor;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default, settingsScreen_css_default);
     this.element.setAttribute("jslog", `${VisualLogging2.pane("blackbox")}`);
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
@@ -1325,7 +1325,7 @@ var UIStrings3 = {
    */
   helpUnderstandConsole: "Helps you understand and fix console warnings and errors",
   /**
-   *@description Text describing the 'Console Insights' feature
+   *@description Text describing the 'Auto Annotations' feature
    */
   getAIAnnotationsSuggestions: "Get AI suggestions for performance panel annotations",
   /**
@@ -1379,6 +1379,10 @@ var UIStrings3 = {
    */
   helpUnderstandStylingNetworkPerformanceAndFile: "Get help with understanding CSS styles, network requests, performance, and files",
   /**
+   *@description Text describing the 'Code suggestions' feature
+   */
+  helpUnderstandCodeSuggestions: "Get help completing your code",
+  /**
    *@description Text which is a hyperlink to more documentation
    */
   learnMore: "Learn more",
@@ -1419,6 +1423,18 @@ var UIStrings3 = {
    */
   generatedAiAnnotationsSendDataNoLogging: "Your performance trace is sent to Google to generate an explanation. This data will not be used to improve Google\u2019s AI models.",
   /**
+   *@description Description of the 'Code suggestions' feature
+   */
+  asYouTypeCodeSuggestions: "As you type in the Console or Sources panel, you\u2019ll get code suggestions. Press Tab to accept one.",
+  /**
+   *@description Explainer for which data is being sent for the 'Code suggestions' feature
+   */
+  codeSuggestionsSendData: "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.",
+  /**
+   *@description Explainer for which data is being sent for the 'Code suggestions' feature when logging is not enabled
+   */
+  codeSuggestionsSendDataNoLogging: "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data will not be used to improve Google\u2019s AI models.",
+  /**
    *@description Label for a link to the terms of service
    */
   termsOfService: "Google Terms of Service",
@@ -1446,6 +1462,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
   #consoleInsightsSetting;
   #aiAnnotationsSetting;
   #aiAssistanceSetting;
+  #aiCodeCompletionSetting;
   #aidaAvailability = "no-account-email";
   #boundOnAidaAvailabilityChange;
   // Setting to parameters needed to display it in the UI.
@@ -1465,6 +1482,9 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     }
     if (Root2.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled) {
       this.#aiAnnotationsSetting = Common3.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
+    }
+    if (Root2.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled) {
+      this.#aiCodeCompletionSetting = Common3.Settings.Settings.instance().createSetting("ai-code-completion-fre-completed", false);
     }
     this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     this.#initSettings();
@@ -1524,7 +1544,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
       this.#settingToParams.set(this.#aiAssistanceSetting, aiAssistanceData);
     }
     if (this.#aiAnnotationsSetting) {
-      const aiAssistanceData = {
+      const aiAnnotationsData = {
         settingName: i18n5.i18n.lockedString("Auto annotations"),
         iconName: "pen-spark",
         settingDescription: i18nString3(UIStrings3.getAIAnnotationsSuggestions),
@@ -1542,10 +1562,30 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
         },
         settingExpandState: {
           isSettingExpanded: false,
-          expandSettingJSLogContext: "freestyler.accordion"
+          expandSettingJSLogContext: "auto-annotations.accordion"
         }
       };
-      this.#settingToParams.set(this.#aiAnnotationsSetting, aiAssistanceData);
+      this.#settingToParams.set(this.#aiAnnotationsSetting, aiAnnotationsData);
+    }
+    if (this.#aiCodeCompletionSetting) {
+      const aiCodeCompletionData = {
+        settingName: i18n5.i18n.lockedString("Code suggestions"),
+        iconName: "text-analysis",
+        settingDescription: i18nString3(UIStrings3.helpUnderstandCodeSuggestions),
+        enableSettingText: i18nString3(UIStrings3.enableAiSuggestedAnnotations),
+        settingItems: [{ iconName: "code", text: i18nString3(UIStrings3.asYouTypeCodeSuggestions) }],
+        toConsiderSettingItems: [{
+          iconName: "google",
+          text: noLogging ? i18nString3(UIStrings3.codeSuggestionsSendDataNoLogging) : i18nString3(UIStrings3.codeSuggestionsSendData)
+        }],
+        // TODO: Add a relevant link
+        learnMoreLink: { url: "", linkJSLogContext: "learn-more.code-completion" },
+        settingExpandState: {
+          isSettingExpanded: false,
+          expandSettingJSLogContext: "code-completion.accordion"
+        }
+      };
+      this.#settingToParams.set(this.#aiCodeCompletionSetting, aiCodeCompletionData);
     }
   }
   async #onAidaAvailabilityChange() {
@@ -2057,7 +2097,7 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
   editingItem;
   editingRow;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(keybindsSettingsTab_css_default, settingsScreen_css_default);
     this.element.setAttribute("jslog", `${VisualLogging4.pane("keybinds")}`);
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");

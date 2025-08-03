@@ -31,6 +31,7 @@
   },
   "files": [
     "../../../../../../front_end/models/workspace/FileManager.ts",
+    "../../../../../../front_end/models/workspace/IgnoreListManager.ts",
     "../../../../../../front_end/models/workspace/SearchConfig.ts",
     "../../../../../../front_end/models/workspace/UISourceCode.ts",
     "../../../../../../front_end/models/workspace/WorkspaceImpl.ts",
@@ -50,6 +51,9 @@
     },
     {
       "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
       "path": "../text_utils/bundle-tsconfig.json"

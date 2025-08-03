@@ -9,11 +9,11 @@ var CompilerScriptMapping_exports = {};
 __export(CompilerScriptMapping_exports, {
   CompilerScriptMapping: () => CompilerScriptMapping
 });
-import * as Common3 from "./../../core/common/common.js";
-import * as Platform3 from "./../../core/platform/platform.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as Common2 from "./../../core/common/common.js";
+import * as Platform2 from "./../../core/platform/platform.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as TextUtils2 from "./../text_utils/text_utils.js";
-import * as Workspace5 from "./../workspace/workspace.js";
+import * as Workspace3 from "./../workspace/workspace.js";
 
 // gen/front_end/models/bindings/ContentProviderBasedProject.js
 var ContentProviderBasedProject_exports = {};
@@ -143,510 +143,18 @@ var ContentProviderBasedProject = class extends Workspace.Workspace.ProjectStore
   }
 };
 
-// gen/front_end/models/bindings/IgnoreListManager.js
-var IgnoreListManager_exports = {};
-__export(IgnoreListManager_exports, {
-  IgnoreListManager: () => IgnoreListManager
-});
-import * as Common from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Workspace3 from "./../workspace/workspace.js";
-var UIStrings2 = {
-  /**
-   *@description Text to stop preventing the debugger from stepping into library code
-   */
-  removeFromIgnoreList: "Remove from ignore list",
-  /**
-   *@description Text for scripts that should not be stepped into when debugging
-   */
-  addScriptToIgnoreList: "Add script to ignore list",
-  /**
-   *@description Text for directories whose scripts should not be stepped into when debugging
-   */
-  addDirectoryToIgnoreList: "Add directory to ignore list",
-  /**
-   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
-   */
-  addAllContentScriptsToIgnoreList: "Add all extension scripts to ignore list",
-  /**
-   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
-   */
-  addAllThirdPartyScriptsToIgnoreList: "Add all third-party scripts to ignore list",
-  /**
-   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
-   */
-  addAllAnonymousScriptsToIgnoreList: "Add all anonymous scripts to ignore list"
-};
-var str_2 = i18n3.i18n.registerUIStrings("models/bindings/IgnoreListManager.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var ignoreListManagerInstance;
-var IgnoreListManager = class _IgnoreListManager {
-  #debuggerWorkspaceBinding;
-  #listeners;
-  #isIgnoreListedURLCache;
-  #contentScriptExecutionContexts;
-  constructor(debuggerWorkspaceBinding) {
-    this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.clearCacheIfNeeded.bind(this), this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.onExecutionContextDestroyed, this, { scoped: true });
-    Common.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern").addChangeListener(this.patternChanged.bind(this));
-    Common.Settings.Settings.instance().moduleSetting("skip-content-scripts").addChangeListener(this.patternChanged.bind(this));
-    Common.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").addChangeListener(this.patternChanged.bind(this));
-    Common.Settings.Settings.instance().moduleSetting("enable-ignore-listing").addChangeListener(this.patternChanged.bind(this));
-    Common.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").addChangeListener(this.patternChanged.bind(this));
-    this.#listeners = /* @__PURE__ */ new Set();
-    this.#isIgnoreListedURLCache = /* @__PURE__ */ new Map();
-    this.#contentScriptExecutionContexts = /* @__PURE__ */ new Set();
-    SDK.TargetManager.TargetManager.instance().observeModels(SDK.DebuggerModel.DebuggerModel, this);
-  }
-  static instance(opts = { forceNew: null, debuggerWorkspaceBinding: null }) {
-    const { forceNew, debuggerWorkspaceBinding } = opts;
-    if (!ignoreListManagerInstance || forceNew) {
-      if (!debuggerWorkspaceBinding) {
-        throw new Error(`Unable to create settings: debuggerWorkspaceBinding must be provided: ${new Error().stack}`);
-      }
-      ignoreListManagerInstance = new _IgnoreListManager(debuggerWorkspaceBinding);
-    }
-    return ignoreListManagerInstance;
-  }
-  static removeInstance() {
-    ignoreListManagerInstance = void 0;
-  }
-  addChangeListener(listener) {
-    this.#listeners.add(listener);
-  }
-  removeChangeListener(listener) {
-    this.#listeners.delete(listener);
-  }
-  modelAdded(debuggerModel) {
-    void this.setIgnoreListPatterns(debuggerModel);
-    const sourceMapManager = debuggerModel.sourceMapManager();
-    sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
-    sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this);
-  }
-  modelRemoved(debuggerModel) {
-    this.clearCacheIfNeeded();
-    const sourceMapManager = debuggerModel.sourceMapManager();
-    sourceMapManager.removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this);
-    sourceMapManager.removeEventListener(SDK.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this);
-  }
-  isContentScript(executionContext) {
-    return !executionContext.isDefault;
-  }
-  onExecutionContextCreated(event) {
-    if (this.isContentScript(event.data)) {
-      this.#contentScriptExecutionContexts.add(event.data.uniqueId);
-      if (this.skipContentScripts) {
-        for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
-          void this.updateIgnoredExecutionContexts(debuggerModel);
-        }
-      }
-    }
-  }
-  onExecutionContextDestroyed(event) {
-    if (this.isContentScript(event.data)) {
-      this.#contentScriptExecutionContexts.delete(event.data.uniqueId);
-      if (this.skipContentScripts) {
-        for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
-          void this.updateIgnoredExecutionContexts(debuggerModel);
-        }
-      }
-    }
-  }
-  clearCacheIfNeeded() {
-    if (this.#isIgnoreListedURLCache.size > 1024) {
-      this.#isIgnoreListedURLCache.clear();
-    }
-  }
-  getSkipStackFramesPatternSetting() {
-    return Common.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
-  }
-  setIgnoreListPatterns(debuggerModel) {
-    const regexPatterns = this.enableIgnoreListing ? this.getSkipStackFramesPatternSetting().getAsArray() : [];
-    const patterns = [];
-    for (const item of regexPatterns) {
-      if (!item.disabled && item.pattern) {
-        patterns.push(item.pattern);
-      }
-    }
-    return debuggerModel.setBlackboxPatterns(patterns, this.skipAnonymousScripts);
-  }
-  updateIgnoredExecutionContexts(debuggerModel) {
-    return debuggerModel.setBlackboxExecutionContexts(this.skipContentScripts ? Array.from(this.#contentScriptExecutionContexts) : []);
-  }
-  getGeneralRulesForUISourceCode(uiSourceCode) {
-    const projectType = uiSourceCode.project().type();
-    const isContentScript = projectType === Workspace3.Workspace.projectTypes.ContentScripts;
-    const isKnownThirdParty = uiSourceCode.isKnownThirdParty();
-    return { isContentScript, isKnownThirdParty };
-  }
-  isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode) {
-    if (uiSourceCode.isUnconditionallyIgnoreListed()) {
-      return true;
-    }
-    const url = this.uiSourceCodeURL(uiSourceCode);
-    return this.isUserIgnoreListedURL(url, this.getGeneralRulesForUISourceCode(uiSourceCode));
-  }
-  isUserIgnoreListedURL(url, options) {
-    if (!this.enableIgnoreListing) {
-      return false;
-    }
-    if (options?.isContentScript && this.skipContentScripts) {
-      return true;
-    }
-    if (options?.isKnownThirdParty && this.automaticallyIgnoreListKnownThirdPartyScripts) {
-      return true;
-    }
-    if (!url) {
-      return this.skipAnonymousScripts;
-    }
-    if (this.#isIgnoreListedURLCache.has(url)) {
-      return Boolean(this.#isIgnoreListedURLCache.get(url));
-    }
-    const isIgnoreListed = this.getFirstMatchedRegex(url) !== null;
-    this.#isIgnoreListedURLCache.set(url, isIgnoreListed);
-    return isIgnoreListed;
-  }
-  getFirstMatchedRegex(url) {
-    if (!url) {
-      return null;
-    }
-    const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
-    const regexValue = this.urlToRegExpString(url);
-    if (!regexValue) {
-      return null;
-    }
-    for (let i = 0; i < regexPatterns.length; ++i) {
-      const item = regexPatterns[i];
-      if (item.disabled || item.disabledForUrl === url) {
-        continue;
-      }
-      const regex = new RegExp(item.pattern);
-      if (regex.test(url)) {
-        return regex;
-      }
-    }
-    return null;
-  }
-  sourceMapAttached(event) {
-    const script = event.data.client;
-    const sourceMap = event.data.sourceMap;
-    void this.updateScriptRanges(script, sourceMap);
-  }
-  sourceMapDetached(event) {
-    const script = event.data.client;
-    void this.updateScriptRanges(script, void 0);
-  }
-  async updateScriptRanges(script, sourceMap) {
-    let hasIgnoreListedMappings = false;
-    if (!_IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
-      hasIgnoreListedMappings = sourceMap?.sourceURLs().some((url) => this.isUserIgnoreListedURL(url, { isKnownThirdParty: sourceMap.hasIgnoreListHint(url) })) ?? false;
-    }
-    if (!hasIgnoreListedMappings) {
-      if (scriptToRange.get(script) && await script.setBlackboxedRanges([])) {
-        scriptToRange.delete(script);
-      }
-      await this.#debuggerWorkspaceBinding.updateLocations(script);
-      return;
-    }
-    if (!sourceMap) {
-      return;
-    }
-    const newRanges = sourceMap.findRanges((srcURL) => this.isUserIgnoreListedURL(srcURL, { isKnownThirdParty: sourceMap.hasIgnoreListHint(srcURL) }), { isStartMatching: true }).flatMap((range) => [range.start, range.end]);
-    const oldRanges = scriptToRange.get(script) || [];
-    if (!isEqual(oldRanges, newRanges) && await script.setBlackboxedRanges(newRanges)) {
-      scriptToRange.set(script, newRanges);
-    }
-    void this.#debuggerWorkspaceBinding.updateLocations(script);
-    function isEqual(rangesA, rangesB) {
-      if (rangesA.length !== rangesB.length) {
-        return false;
-      }
-      for (let i = 0; i < rangesA.length; ++i) {
-        if (rangesA[i].lineNumber !== rangesB[i].lineNumber || rangesA[i].columnNumber !== rangesB[i].columnNumber) {
-          return false;
-        }
-      }
-      return true;
-    }
-  }
-  uiSourceCodeURL(uiSourceCode) {
-    return uiSourceCode.project().type() === Workspace3.Workspace.projectTypes.Debugger ? null : uiSourceCode.url();
-  }
-  canIgnoreListUISourceCode(uiSourceCode) {
-    const url = this.uiSourceCodeURL(uiSourceCode);
-    return url ? Boolean(this.urlToRegExpString(url)) : false;
-  }
-  ignoreListUISourceCode(uiSourceCode) {
-    const url = this.uiSourceCodeURL(uiSourceCode);
-    if (url) {
-      this.ignoreListURL(url);
-    }
-  }
-  unIgnoreListUISourceCode(uiSourceCode) {
-    this.unIgnoreListURL(this.uiSourceCodeURL(uiSourceCode), this.getGeneralRulesForUISourceCode(uiSourceCode));
-  }
-  get enableIgnoreListing() {
-    return Common.Settings.Settings.instance().moduleSetting("enable-ignore-listing").get();
-  }
-  set enableIgnoreListing(value) {
-    Common.Settings.Settings.instance().moduleSetting("enable-ignore-listing").set(value);
-  }
-  get skipContentScripts() {
-    return this.enableIgnoreListing && Common.Settings.Settings.instance().moduleSetting("skip-content-scripts").get();
-  }
-  get skipAnonymousScripts() {
-    return this.enableIgnoreListing && Common.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").get();
-  }
-  get automaticallyIgnoreListKnownThirdPartyScripts() {
-    return this.enableIgnoreListing && Common.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").get();
-  }
-  ignoreListContentScripts() {
-    if (!this.enableIgnoreListing) {
-      this.enableIgnoreListing = true;
-    }
-    Common.Settings.Settings.instance().moduleSetting("skip-content-scripts").set(true);
-  }
-  unIgnoreListContentScripts() {
-    Common.Settings.Settings.instance().moduleSetting("skip-content-scripts").set(false);
-  }
-  ignoreListAnonymousScripts() {
-    if (!this.enableIgnoreListing) {
-      this.enableIgnoreListing = true;
-    }
-    Common.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").set(true);
-  }
-  unIgnoreListAnonymousScripts() {
-    Common.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts").set(false);
-  }
-  ignoreListThirdParty() {
-    if (!this.enableIgnoreListing) {
-      this.enableIgnoreListing = true;
-    }
-    Common.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").set(true);
-  }
-  unIgnoreListThirdParty() {
-    Common.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts").set(false);
-  }
-  ignoreListURL(url) {
-    const regexValue = this.urlToRegExpString(url);
-    if (!regexValue) {
-      return;
-    }
-    this.addRegexToIgnoreList(regexValue, url);
-  }
-  addRegexToIgnoreList(regexValue, disabledForUrl) {
-    const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
-    let found = false;
-    for (let i = 0; i < regexPatterns.length; ++i) {
-      const item = regexPatterns[i];
-      if (item.pattern === regexValue || disabledForUrl && item.disabledForUrl === disabledForUrl) {
-        item.disabled = false;
-        item.disabledForUrl = void 0;
-        found = true;
-      }
-    }
-    if (!found) {
-      regexPatterns.push({ pattern: regexValue, disabled: false });
-    }
-    if (!this.enableIgnoreListing) {
-      this.enableIgnoreListing = true;
-    }
-    this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
-  }
-  unIgnoreListURL(url, options) {
-    if (options?.isContentScript) {
-      this.unIgnoreListContentScripts();
-    }
-    if (options?.isKnownThirdParty) {
-      this.unIgnoreListThirdParty();
-    }
-    if (!url) {
-      this.unIgnoreListAnonymousScripts();
-      return;
-    }
-    let regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
-    const regexValue = _IgnoreListManager.instance().urlToRegExpString(url);
-    if (!regexValue) {
-      return;
-    }
-    regexPatterns = regexPatterns.filter(function(item) {
-      return item.pattern !== regexValue;
-    });
-    for (let i = 0; i < regexPatterns.length; ++i) {
-      const item = regexPatterns[i];
-      if (item.disabled) {
-        continue;
-      }
-      try {
-        const regex = new RegExp(item.pattern);
-        if (regex.test(url)) {
-          item.disabled = true;
-          item.disabledForUrl = url;
-        }
-      } catch {
-      }
-    }
-    this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
-  }
-  removeIgnoreListPattern(regexValue) {
-    let regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
-    regexPatterns = regexPatterns.filter(function(item) {
-      return item.pattern !== regexValue;
-    });
-    this.getSkipStackFramesPatternSetting().setAsArray(regexPatterns);
-  }
-  ignoreListHasPattern(regexValue, enabledOnly) {
-    const regexPatterns = this.getSkipStackFramesPatternSetting().getAsArray();
-    return regexPatterns.some((item) => !(enabledOnly && item.disabled) && item.pattern === regexValue);
-  }
-  async patternChanged() {
-    this.#isIgnoreListedURLCache.clear();
-    const promises = [];
-    for (const debuggerModel of SDK.TargetManager.TargetManager.instance().models(SDK.DebuggerModel.DebuggerModel)) {
-      promises.push(this.setIgnoreListPatterns(debuggerModel));
-      const sourceMapManager = debuggerModel.sourceMapManager();
-      for (const script of debuggerModel.scripts()) {
-        promises.push(this.updateScriptRanges(script, sourceMapManager.sourceMapForClient(script)));
-      }
-      promises.push(this.updateIgnoredExecutionContexts(debuggerModel));
-    }
-    await Promise.all(promises);
-    const listeners = Array.from(this.#listeners);
-    for (const listener of listeners) {
-      listener();
-    }
-    this.patternChangeFinishedForTests();
-  }
-  patternChangeFinishedForTests() {
-  }
-  urlToRegExpString(url) {
-    const parsedURL = new Common.ParsedURL.ParsedURL(url);
-    if (parsedURL.isAboutBlank() || parsedURL.isDataURL()) {
-      return "";
-    }
-    if (!parsedURL.isValid) {
-      return "^" + Platform2.StringUtilities.escapeForRegExp(url) + "$";
-    }
-    let name = parsedURL.lastPathComponent;
-    if (name) {
-      name = "/" + name;
-    } else if (parsedURL.folderPathComponents) {
-      name = parsedURL.folderPathComponents + "/";
-    }
-    if (!name) {
-      name = parsedURL.host;
-    }
-    if (!name) {
-      return "";
-    }
-    const scheme = parsedURL.scheme;
-    let prefix = "";
-    if (scheme && scheme !== "http" && scheme !== "https") {
-      prefix = "^" + scheme + "://";
-      if (scheme === "chrome-extension") {
-        prefix += parsedURL.host + "\\b";
-      }
-      prefix += ".*";
-    }
-    return prefix + Platform2.StringUtilities.escapeForRegExp(name) + (url.endsWith(name) ? "$" : "\\b");
-  }
-  getIgnoreListURLContextMenuItems(uiSourceCode) {
-    if (uiSourceCode.project().type() === Workspace3.Workspace.projectTypes.FileSystem) {
-      return [];
-    }
-    const menuItems = [];
-    const canIgnoreList = this.canIgnoreListUISourceCode(uiSourceCode);
-    const isIgnoreListed = this.isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode);
-    const isAnonymous = !this.uiSourceCodeURL(uiSourceCode);
-    const { isContentScript, isKnownThirdParty } = this.getGeneralRulesForUISourceCode(uiSourceCode);
-    if (isIgnoreListed) {
-      if (canIgnoreList || isContentScript || isKnownThirdParty || isAnonymous) {
-        menuItems.push({
-          text: i18nString2(UIStrings2.removeFromIgnoreList),
-          callback: this.unIgnoreListUISourceCode.bind(this, uiSourceCode),
-          jslogContext: "remove-script-from-ignorelist"
-        });
-      }
-    } else {
-      if (canIgnoreList) {
-        menuItems.push({
-          text: i18nString2(UIStrings2.addScriptToIgnoreList),
-          callback: this.ignoreListUISourceCode.bind(this, uiSourceCode),
-          jslogContext: "add-script-to-ignorelist"
-        });
-      } else if (isAnonymous) {
-        menuItems.push({
-          text: i18nString2(UIStrings2.addAllAnonymousScriptsToIgnoreList),
-          callback: this.ignoreListAnonymousScripts.bind(this),
-          jslogContext: "add-anonymous-scripts-to-ignorelist"
-        });
-      }
-      menuItems.push(...this.getIgnoreListGeneralContextMenuItems({ isContentScript, isKnownThirdParty }));
-    }
-    return menuItems;
-  }
-  getIgnoreListGeneralContextMenuItems(options) {
-    const menuItems = [];
-    if (options?.isContentScript) {
-      menuItems.push({
-        text: i18nString2(UIStrings2.addAllContentScriptsToIgnoreList),
-        callback: this.ignoreListContentScripts.bind(this),
-        jslogContext: "add-content-scripts-to-ignorelist"
-      });
-    }
-    if (options?.isKnownThirdParty) {
-      menuItems.push({
-        text: i18nString2(UIStrings2.addAllThirdPartyScriptsToIgnoreList),
-        callback: this.ignoreListThirdParty.bind(this),
-        jslogContext: "add-3p-scripts-to-ignorelist"
-      });
-    }
-    return menuItems;
-  }
-  getIgnoreListFolderContextMenuItems(url, options) {
-    const menuItems = [];
-    const regexValue = "^" + Platform2.StringUtilities.escapeForRegExp(url) + "/";
-    if (this.ignoreListHasPattern(regexValue, true)) {
-      menuItems.push({
-        text: i18nString2(UIStrings2.removeFromIgnoreList),
-        callback: this.removeIgnoreListPattern.bind(this, regexValue),
-        jslogContext: "remove-from-ignore-list"
-      });
-    } else if (this.isUserIgnoreListedURL(url, options)) {
-      menuItems.push({
-        text: i18nString2(UIStrings2.removeFromIgnoreList),
-        callback: this.unIgnoreListURL.bind(this, url, options),
-        jslogContext: "remove-from-ignore-list"
-      });
-    } else if (!options?.isCurrentlyIgnoreListed) {
-      menuItems.push({
-        text: i18nString2(UIStrings2.addDirectoryToIgnoreList),
-        callback: this.addRegexToIgnoreList.bind(this, regexValue),
-        jslogContext: "add-directory-to-ignore-list"
-      });
-      menuItems.push(...this.getIgnoreListGeneralContextMenuItems(options));
-    }
-    return menuItems;
-  }
-};
-var scriptToRange = /* @__PURE__ */ new WeakMap();
-
 // gen/front_end/models/bindings/NetworkProject.js
 var NetworkProject_exports = {};
 __export(NetworkProject_exports, {
   NetworkProject: () => NetworkProject,
   NetworkProjectManager: () => NetworkProjectManager
 });
-import * as Common2 from "./../../core/common/common.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Common from "./../../core/common/common.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 var uiSourceCodeToAttributionMap = /* @__PURE__ */ new WeakMap();
 var projectToTargetMap = /* @__PURE__ */ new WeakMap();
 var networkProjectManagerInstance;
-var NetworkProjectManager = class _NetworkProjectManager extends Common2.ObjectWrapper.ObjectWrapper {
+var NetworkProjectManager = class _NetworkProjectManager extends Common.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
   }
@@ -660,7 +168,7 @@ var NetworkProjectManager = class _NetworkProjectManager extends Common2.ObjectW
 var NetworkProject = class _NetworkProject {
   static resolveFrame(uiSourceCode, frameId) {
     const target = _NetworkProject.targetForUISourceCode(uiSourceCode);
-    const resourceTreeModel = target?.model(SDK2.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = target?.model(SDK.ResourceTreeModel.ResourceTreeModel);
     return resourceTreeModel ? resourceTreeModel.frameForId(frameId) : null;
   }
   static setInitialFrameAttribution(uiSourceCode, frameId) {
@@ -736,7 +244,7 @@ var NetworkProject = class _NetworkProject {
   }
   static framesForUISourceCode(uiSourceCode) {
     const target = _NetworkProject.targetForUISourceCode(uiSourceCode);
-    const resourceTreeModel = target?.model(SDK2.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = target?.model(SDK.ResourceTreeModel.ResourceTreeModel);
     const attribution = uiSourceCodeToAttributionMap.get(uiSourceCode);
     if (!resourceTreeModel || !attribution) {
       return [];
@@ -755,23 +263,23 @@ var CompilerScriptMapping = class {
   #eventListeners;
   #projects = /* @__PURE__ */ new Map();
   #sourceMapToProject = /* @__PURE__ */ new Map();
-  #uiSourceCodeToSourceMaps = new Platform3.MapUtilities.Multimap();
+  #uiSourceCodeToSourceMaps = new Platform2.MapUtilities.Multimap();
   constructor(debuggerModel, workspace, debuggerWorkspaceBinding) {
     this.#sourceMapManager = debuggerModel.sourceMapManager();
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     this.#stubProject = new ContentProviderBasedProject(
       workspace,
       "jsSourceMaps:stub:" + debuggerModel.target().id(),
-      Workspace5.Workspace.projectTypes.Service,
+      Workspace3.Workspace.projectTypes.Service,
       "",
       true
       /* isServiceProject */
     );
     this.#eventListeners = [
-      this.#sourceMapManager.addEventListener(SDK3.SourceMapManager.Events.SourceMapWillAttach, this.sourceMapWillAttach, this),
-      this.#sourceMapManager.addEventListener(SDK3.SourceMapManager.Events.SourceMapFailedToAttach, this.sourceMapFailedToAttach, this),
-      this.#sourceMapManager.addEventListener(SDK3.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this),
-      this.#sourceMapManager.addEventListener(SDK3.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this)
+      this.#sourceMapManager.addEventListener(SDK2.SourceMapManager.Events.SourceMapWillAttach, this.sourceMapWillAttach, this),
+      this.#sourceMapManager.addEventListener(SDK2.SourceMapManager.Events.SourceMapFailedToAttach, this.sourceMapFailedToAttach, this),
+      this.#sourceMapManager.addEventListener(SDK2.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this),
+      this.#sourceMapManager.addEventListener(SDK2.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this)
     ];
   }
   setFunctionRanges(uiSourceCode, ranges) {
@@ -780,7 +288,7 @@ var CompilerScriptMapping = class {
     }
   }
   addStubUISourceCode(script) {
-    const stubUISourceCode = this.#stubProject.addContentProvider(Common3.ParsedURL.ParsedURL.concatenate(script.sourceURL, ":sourcemap"), TextUtils2.StaticContentProvider.StaticContentProvider.fromString(script.sourceURL, Common3.ResourceType.resourceTypes.Script, "\n\n\n\n\n// Please wait a bit.\n// Compiled script is not shown while source map is being loaded!"), "text/javascript");
+    const stubUISourceCode = this.#stubProject.addContentProvider(Common2.ParsedURL.ParsedURL.concatenate(script.sourceURL, ":sourcemap"), TextUtils2.StaticContentProvider.StaticContentProvider.fromString(script.sourceURL, Common2.ResourceType.resourceTypes.Script, "\n\n\n\n\n// Please wait a bit.\n// Compiled script is not shown while source map is being loaded!"), "text/javascript");
     this.#stubUISourceCodes.set(script, stubUISourceCode);
   }
   removeStubUISourceCode(script) {
@@ -827,7 +335,7 @@ var CompilerScriptMapping = class {
     });
   }
   uiSourceCodeForURL(url, isContentScript) {
-    const projectType = isContentScript ? Workspace5.Workspace.projectTypes.ContentScripts : Workspace5.Workspace.projectTypes.Network;
+    const projectType = isContentScript ? Workspace3.Workspace.projectTypes.ContentScripts : Workspace3.Workspace.projectTypes.Network;
     for (const project of this.#projects.values()) {
       if (project.type() !== projectType) {
         continue;
@@ -860,7 +368,7 @@ var CompilerScriptMapping = class {
     const { lineNumber, columnNumber } = script.rawLocationToRelativeLocation(rawLocation);
     const stubUISourceCode = this.#stubUISourceCodes.get(script);
     if (stubUISourceCode) {
-      return new Workspace5.UISourceCode.UILocation(stubUISourceCode, lineNumber, columnNumber);
+      return new Workspace3.UISourceCode.UILocation(stubUISourceCode, lineNumber, columnNumber);
     }
     const sourceMap = this.#sourceMapManager.sourceMapForClient(script);
     if (!sourceMap) {
@@ -970,7 +478,7 @@ var CompilerScriptMapping = class {
     const { client: script } = event.data;
     this.addStubUISourceCode(script);
     void this.#debuggerWorkspaceBinding.updateLocations(script);
-    if (IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
+    if (Workspace3.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
       this.#sourceMapManager.cancelAttachSourceMap(script);
     }
   }
@@ -1009,7 +517,7 @@ var CompilerScriptMapping = class {
     const projectId = `jsSourceMaps:${script.isContentScript() ? "extensions" : ""}:${target.id()}`;
     let project = this.#projects.get(projectId);
     if (!project) {
-      const projectType = script.isContentScript() ? Workspace5.Workspace.projectTypes.ContentScripts : Workspace5.Workspace.projectTypes.Network;
+      const projectType = script.isContentScript() ? Workspace3.Workspace.projectTypes.ContentScripts : Workspace3.Workspace.projectTypes.Network;
       project = new ContentProviderBasedProject(
         this.#stubProject.workspace(),
         projectId,
@@ -1024,19 +532,19 @@ var CompilerScriptMapping = class {
     }
     this.#sourceMapToProject.set(sourceMap, project);
     for (const url of sourceMap.sourceURLs()) {
-      const contentType = Common3.ResourceType.resourceTypes.SourceMapScript;
+      const contentType = Common2.ResourceType.resourceTypes.SourceMapScript;
       const uiSourceCode = project.createUISourceCode(url, contentType);
       if (sourceMap.hasIgnoreListHint(url)) {
         uiSourceCode.markKnownThirdParty();
       }
       const content = sourceMap.embeddedContentByURL(url);
-      const contentProvider = content !== null ? TextUtils2.StaticContentProvider.StaticContentProvider.fromString(url, contentType, content) : new SDK3.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, contentType, script.createPageResourceLoadInitiator());
+      const contentProvider = content !== null ? TextUtils2.StaticContentProvider.StaticContentProvider.fromString(url, contentType, content) : new SDK2.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, contentType, script.createPageResourceLoadInitiator());
       let metadata = null;
       if (content !== null) {
         const encoder = new TextEncoder();
-        metadata = new Workspace5.UISourceCode.UISourceCodeMetadata(null, encoder.encode(content).length);
+        metadata = new Workspace3.UISourceCode.UISourceCodeMetadata(null, encoder.encode(content).length);
       }
-      const mimeType = Common3.ResourceType.ResourceType.mimeFromURL(url) ?? contentType.canonicalMimeType();
+      const mimeType = Common2.ResourceType.ResourceType.mimeFromURL(url) ?? contentType.canonicalMimeType();
       this.#uiSourceCodeToSourceMaps.set(uiSourceCode, sourceMap);
       NetworkProject.setInitialFrameAttribution(uiSourceCode, script.frameId);
       const otherUISourceCode = project.uiSourceCodeForURL(url);
@@ -1099,7 +607,7 @@ var CompilerScriptMapping = class {
   sourceMapAttachedForTest(_sourceMap) {
   }
   dispose() {
-    Common3.EventTarget.removeEventListeners(this.#eventListeners);
+    Common2.EventTarget.removeEventListeners(this.#eventListeners);
     for (const project of this.#projects.values()) {
       project.dispose();
     }
@@ -1114,9 +622,9 @@ __export(CSSWorkspaceBinding_exports, {
   LiveLocation: () => LiveLocation,
   ModelInfo: () => ModelInfo
 });
-import * as Common7 from "./../../core/common/common.js";
-import * as Platform5 from "./../../core/platform/platform.js";
-import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as Common6 from "./../../core/common/common.js";
+import * as Platform4 from "./../../core/platform/platform.js";
+import * as SDK6 from "./../../core/sdk/sdk.js";
 
 // gen/front_end/models/bindings/LiveLocation.js
 var LiveLocation_exports = {};
@@ -1156,9 +664,6 @@ var LiveLocationWithPool = class {
   isDisposed() {
     return !this.#locationPool.has(this);
   }
-  async isIgnoreListed() {
-    throw new Error("Not implemented");
-  }
 };
 var LiveLocationPool = class {
   #locations;
@@ -1186,10 +691,10 @@ var SASSSourceMapping_exports = {};
 __export(SASSSourceMapping_exports, {
   SASSSourceMapping: () => SASSSourceMapping
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as Common3 from "./../../core/common/common.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as TextUtils3 from "./../text_utils/text_utils.js";
-import * as Workspace7 from "./../workspace/workspace.js";
+import * as Workspace5 from "./../workspace/workspace.js";
 var SASSSourceMapping = class {
   #sourceMapManager;
   #project;
@@ -1200,7 +705,7 @@ var SASSSourceMapping = class {
     this.#project = new ContentProviderBasedProject(
       workspace,
       "cssSourceMaps:" + target.id(),
-      Workspace7.Workspace.projectTypes.Network,
+      Workspace5.Workspace.projectTypes.Network,
       "",
       false
       /* isServiceProject */
@@ -1208,8 +713,8 @@ var SASSSourceMapping = class {
     NetworkProject.setTargetForProject(this.#project, target);
     this.#bindings = /* @__PURE__ */ new Map();
     this.#eventListeners = [
-      this.#sourceMapManager.addEventListener(SDK4.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this),
-      this.#sourceMapManager.addEventListener(SDK4.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this)
+      this.#sourceMapManager.addEventListener(SDK3.SourceMapManager.Events.SourceMapAttached, this.sourceMapAttached, this),
+      this.#sourceMapManager.addEventListener(SDK3.SourceMapManager.Events.SourceMapDetached, this.sourceMapDetached, this)
     ];
   }
   sourceMapAttachedForTest(_sourceMap) {
@@ -1282,7 +787,7 @@ var SASSSourceMapping = class {
       const entries = sourceMap.findReverseEntries(uiSourceCode.url(), lineNumber, columnNumber);
       const header = this.#sourceMapManager.clientForSourceMap(sourceMap);
       if (header) {
-        locations.push(...entries.map((entry) => new SDK4.CSSModel.CSSLocation(header, entry.lineNumber, entry.columnNumber)));
+        locations.push(...entries.map((entry) => new SDK3.CSSModel.CSSLocation(header, entry.lineNumber, entry.columnNumber)));
       }
     }
     return locations;
@@ -1295,7 +800,7 @@ var SASSSourceMapping = class {
     return [];
   }
   dispose() {
-    Common4.EventTarget.removeEventListeners(this.#eventListeners);
+    Common3.EventTarget.removeEventListeners(this.#eventListeners);
     this.#project.dispose();
   }
 };
@@ -1315,13 +820,13 @@ var Binding = class {
   }
   recreateUISourceCodeIfNeeded(frameId) {
     const sourceMap = this.referringSourceMaps[this.referringSourceMaps.length - 1];
-    const contentType = Common4.ResourceType.resourceTypes.SourceMapStyleSheet;
+    const contentType = Common3.ResourceType.resourceTypes.SourceMapStyleSheet;
     const embeddedContent = sourceMap.embeddedContentByURL(this.#url);
-    const contentProvider = embeddedContent !== null ? TextUtils3.StaticContentProvider.StaticContentProvider.fromString(this.#url, contentType, embeddedContent) : new SDK4.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(this.#url, contentType, this.#initiator);
+    const contentProvider = embeddedContent !== null ? TextUtils3.StaticContentProvider.StaticContentProvider.fromString(this.#url, contentType, embeddedContent) : new SDK3.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(this.#url, contentType, this.#initiator);
     const newUISourceCode = this.#project.createUISourceCode(this.#url, contentType);
     uiSourceCodeToBinding.set(newUISourceCode, this);
-    const mimeType = Common4.ResourceType.ResourceType.mimeFromURL(this.#url) || contentType.canonicalMimeType();
-    const metadata = typeof embeddedContent === "string" ? new Workspace7.UISourceCode.UISourceCodeMetadata(null, embeddedContent.length) : null;
+    const mimeType = Common3.ResourceType.ResourceType.mimeFromURL(this.#url) || contentType.canonicalMimeType();
+    const metadata = typeof embeddedContent === "string" ? new Workspace5.UISourceCode.UISourceCodeMetadata(null, embeddedContent.length) : null;
     if (this.uiSourceCode) {
       NetworkProject.cloneInitialFrameAttribution(this.uiSourceCode, newUISourceCode);
       this.#project.removeUISourceCode(this.uiSourceCode.url());
@@ -1366,10 +871,10 @@ __export(StylesSourceMapping_exports, {
   StyleFile: () => StyleFile,
   StylesSourceMapping: () => StylesSourceMapping
 });
-import * as Common6 from "./../../core/common/common.js";
-import * as SDK6 from "./../../core/sdk/sdk.js";
+import * as Common5 from "./../../core/common/common.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as TextUtils4 from "./../text_utils/text_utils.js";
-import * as Workspace11 from "./../workspace/workspace.js";
+import * as Workspace9 from "./../workspace/workspace.js";
 
 // gen/front_end/models/bindings/ResourceUtils.js
 var ResourceUtils_exports = {};
@@ -1379,18 +884,18 @@ __export(ResourceUtils_exports, {
   resourceForURL: () => resourceForURL,
   resourceMetadata: () => resourceMetadata
 });
-import * as Common5 from "./../../core/common/common.js";
-import * as Platform4 from "./../../core/platform/platform.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as Workspace9 from "./../workspace/workspace.js";
+import * as Common4 from "./../../core/common/common.js";
+import * as Platform3 from "./../../core/platform/platform.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as Workspace7 from "./../workspace/workspace.js";
 function resourceForURL(url) {
-  return SDK5.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+  return SDK4.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
 }
 function displayNameForURL(url) {
   if (!url) {
     return "";
   }
-  const uiSourceCode = Workspace9.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+  const uiSourceCode = Workspace7.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
   if (uiSourceCode) {
     return uiSourceCode.displayName();
   }
@@ -1398,11 +903,11 @@ function displayNameForURL(url) {
   if (resource) {
     return resource.displayName;
   }
-  const inspectedURL = SDK5.TargetManager.TargetManager.instance().inspectedURL();
+  const inspectedURL = SDK4.TargetManager.TargetManager.instance().inspectedURL();
   if (!inspectedURL) {
-    return Platform4.StringUtilities.trimURL(url, "");
+    return Platform3.StringUtilities.trimURL(url, "");
   }
-  const parsedURL = Common5.ParsedURL.ParsedURL.fromString(inspectedURL);
+  const parsedURL = Common4.ParsedURL.ParsedURL.fromString(inspectedURL);
   if (!parsedURL) {
     return url;
   }
@@ -1414,11 +919,11 @@ function displayNameForURL(url) {
       return url.substring(index);
     }
   }
-  const displayName = Platform4.StringUtilities.trimURL(url, parsedURL.host);
+  const displayName = Platform3.StringUtilities.trimURL(url, parsedURL.host);
   return displayName === "/" ? parsedURL.host + "/" : displayName;
 }
 function metadataForURL(target, frameId, url) {
-  const resourceTreeModel = target.model(SDK5.ResourceTreeModel.ResourceTreeModel);
+  const resourceTreeModel = target.model(SDK4.ResourceTreeModel.ResourceTreeModel);
   if (!resourceTreeModel) {
     return null;
   }
@@ -1432,7 +937,7 @@ function resourceMetadata(resource) {
   if (!resource || typeof resource.contentSize() !== "number" && !resource.lastModified()) {
     return null;
   }
-  return new Workspace9.UISourceCode.UISourceCodeMetadata(resource.lastModified(), resource.contentSize());
+  return new Workspace7.UISourceCode.UISourceCodeMetadata(resource.lastModified(), resource.contentSize());
 }
 
 // gen/front_end/models/bindings/StylesSourceMapping.js
@@ -1448,16 +953,16 @@ var StylesSourceMapping = class {
     this.#project = new ContentProviderBasedProject(
       workspace,
       "css:" + target.id(),
-      Workspace11.Workspace.projectTypes.Network,
+      Workspace9.Workspace.projectTypes.Network,
       "",
       false
       /* isServiceProject */
     );
     NetworkProject.setTargetForProject(this.#project, target);
     this.#eventListeners = [
-      this.#cssModel.addEventListener(SDK6.CSSModel.Events.StyleSheetAdded, this.styleSheetAdded, this),
-      this.#cssModel.addEventListener(SDK6.CSSModel.Events.StyleSheetRemoved, this.styleSheetRemoved, this),
-      this.#cssModel.addEventListener(SDK6.CSSModel.Events.StyleSheetChanged, this.styleSheetChanged, this)
+      this.#cssModel.addEventListener(SDK5.CSSModel.Events.StyleSheetAdded, this.styleSheetAdded, this),
+      this.#cssModel.addEventListener(SDK5.CSSModel.Events.StyleSheetRemoved, this.styleSheetRemoved, this),
+      this.#cssModel.addEventListener(SDK5.CSSModel.Events.StyleSheetChanged, this.styleSheetChanged, this)
     ];
   }
   addSourceMap(sourceUrl, sourceMapUrl) {
@@ -1498,7 +1003,7 @@ var StylesSourceMapping = class {
         columnNumber = header.columnNumberInSource(lineNumber, uiLocation.columnNumber || 0);
         lineNumber = header.lineNumberInSource(lineNumber);
       }
-      rawLocations.push(new SDK6.CSSModel.CSSLocation(header, lineNumber, columnNumber));
+      rawLocations.push(new SDK5.CSSModel.CSSLocation(header, lineNumber, columnNumber));
     }
     return rawLocations;
   }
@@ -1559,7 +1064,7 @@ var StylesSourceMapping = class {
       styleFile.dispose();
     }
     this.#styleFiles.clear();
-    Common6.EventTarget.removeEventListeners(this.#eventListeners);
+    Common5.EventTarget.removeEventListeners(this.#eventListeners);
     this.#project.removeProject();
   }
 };
@@ -1569,7 +1074,7 @@ var StyleFile = class {
   headers;
   uiSourceCode;
   #eventListeners;
-  #throttler = new Common6.Throttler.Throttler(200);
+  #throttler = new Common5.Throttler.Throttler(200);
   #terminated = false;
   #isAddingRevision;
   #isUpdatingHeaders;
@@ -1585,8 +1090,8 @@ var StyleFile = class {
     NetworkProject.setInitialFrameAttribution(this.uiSourceCode, header.frameId);
     this.#project.addUISourceCodeWithProvider(this.uiSourceCode, this, metadata, "text/css");
     this.#eventListeners = [
-      this.uiSourceCode.addEventListener(Workspace11.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this),
-      this.uiSourceCode.addEventListener(Workspace11.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this)
+      this.uiSourceCode.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this),
+      this.uiSourceCode.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this)
     ];
   }
   addHeader(header) {
@@ -1686,7 +1191,7 @@ var StyleFile = class {
     }
     this.#terminated = true;
     this.#project.removeUISourceCode(this.uiSourceCode.url());
-    Common6.EventTarget.removeEventListeners(this.#eventListeners);
+    Common5.EventTarget.removeEventListeners(this.#eventListeners);
   }
   contentURL() {
     console.assert(this.headers.size > 0);
@@ -1732,7 +1237,7 @@ var CSSWorkspaceBinding = class _CSSWorkspaceBinding {
   constructor(resourceMapping, targetManager) {
     this.#resourceMapping = resourceMapping;
     this.#modelToInfo = /* @__PURE__ */ new Map();
-    targetManager.observeModels(SDK7.CSSModel.CSSModel, this);
+    targetManager.observeModels(SDK6.CSSModel.CSSModel, this);
     this.#liveLocationPromises = /* @__PURE__ */ new Set();
   }
   static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null }) {
@@ -1786,7 +1291,7 @@ var CSSWorkspaceBinding = class _CSSWorkspaceBinding {
   }
   propertyRawLocation(cssProperty, forName) {
     const style = cssProperty.ownerStyle;
-    if (!style || style.type !== SDK7.CSSStyleDeclaration.Type.Regular || !style.styleSheetId) {
+    if (!style || style.type !== SDK6.CSSStyleDeclaration.Type.Regular || !style.styleSheetId) {
       return null;
     }
     const header = style.cssModel().styleSheetHeaderForId(style.styleSheetId);
@@ -1799,7 +1304,7 @@ var CSSWorkspaceBinding = class _CSSWorkspaceBinding {
     }
     const lineNumber = range.startLine;
     const columnNumber = range.startColumn;
-    return new SDK7.CSSModel.CSSLocation(header, header.lineNumberInSource(lineNumber), header.columnNumberInSource(lineNumber, columnNumber));
+    return new SDK6.CSSModel.CSSLocation(header, header.lineNumberInSource(lineNumber), header.columnNumberInSource(lineNumber, columnNumber));
   }
   propertyUILocation(cssProperty, forName) {
     const rawLocation = this.propertyRawLocation(cssProperty, forName);
@@ -1828,10 +1333,10 @@ var ModelInfo = class {
   #unboundLocations;
   constructor(cssModel, resourceMapping) {
     this.#eventListeners = [
-      cssModel.addEventListener(SDK7.CSSModel.Events.StyleSheetAdded, (event) => {
+      cssModel.addEventListener(SDK6.CSSModel.Events.StyleSheetAdded, (event) => {
         void this.styleSheetAdded(event);
       }, this),
-      cssModel.addEventListener(SDK7.CSSModel.Events.StyleSheetRemoved, (event) => {
+      cssModel.addEventListener(SDK6.CSSModel.Events.StyleSheetRemoved, (event) => {
         void this.styleSheetRemoved(event);
       }, this)
     ];
@@ -1839,8 +1344,8 @@ var ModelInfo = class {
     this.#stylesSourceMapping = new StylesSourceMapping(cssModel, resourceMapping.workspace);
     const sourceMapManager = cssModel.sourceMapManager();
     this.#sassSourceMapping = new SASSSourceMapping(cssModel.target(), sourceMapManager, resourceMapping.workspace);
-    this.#locations = new Platform5.MapUtilities.Multimap();
-    this.#unboundLocations = new Platform5.MapUtilities.Multimap();
+    this.#locations = new Platform4.MapUtilities.Multimap();
+    this.#unboundLocations = new Platform4.MapUtilities.Multimap();
   }
   get locations() {
     return this.#locations;
@@ -1919,7 +1424,7 @@ var ModelInfo = class {
     return this.#resourceMapping.uiLocationToCSSLocations(uiLocation);
   }
   dispose() {
-    Common7.EventTarget.removeEventListeners(this.#eventListeners);
+    Common6.EventTarget.removeEventListeners(this.#eventListeners);
     this.#stylesSourceMapping.dispose();
     this.#sassSourceMapping.dispose();
   }
@@ -1948,15 +1453,12 @@ var LiveLocation = class extends LiveLocationWithPool {
     if (!this.headerInternal) {
       return null;
     }
-    const rawLocation = new SDK7.CSSModel.CSSLocation(this.headerInternal, this.#lineNumber, this.#columnNumber);
+    const rawLocation = new SDK6.CSSModel.CSSLocation(this.headerInternal, this.#lineNumber, this.#columnNumber);
     return CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
   }
   dispose() {
     super.dispose();
     this.#info.disposeLocation(this);
-  }
-  async isIgnoreListed() {
-    return false;
   }
 };
 
@@ -1967,13 +1469,13 @@ __export(DebuggerLanguagePlugins_exports, {
   ExtensionRemoteObject: () => ExtensionRemoteObject,
   SourceScope: () => SourceScope
 });
-import * as Common8 from "./../../core/common/common.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Common7 from "./../../core/common/common.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
-import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as TextUtils5 from "./../text_utils/text_utils.js";
-import * as Workspace13 from "./../workspace/workspace.js";
-var UIStrings3 = {
+import * as Workspace11 from "./../workspace/workspace.js";
+var UIStrings2 = {
   /**
    *@description Error message that is displayed in the Console when language #plugins report errors
    *@example {File not found} PH1
@@ -2024,8 +1526,8 @@ var UIStrings3 = {
    */
   debugSymbolsIncomplete: "The debug information for function {PH1} is incomplete"
 };
-var str_3 = i18n5.i18n.registerUIStrings("models/bindings/DebuggerLanguagePlugins.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_2 = i18n3.i18n.registerUIStrings("models/bindings/DebuggerLanguagePlugins.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 function rawModuleIdForScript(script) {
   return `${script.sourceURL}@${script.hash}`;
 }
@@ -2057,7 +1559,7 @@ var FormattingError = class _FormattingError extends Error {
     return new _FormattingError(errorObject, exceptionDetails);
   }
 };
-var NamespaceObject = class extends SDK8.RemoteObject.LocalJSONObject {
+var NamespaceObject = class extends SDK7.RemoteObject.LocalJSONObject {
   get description() {
     return this.type;
   }
@@ -2096,7 +1598,7 @@ async function wrapRemoteObject(callFrame, object, plugin) {
   }
   return new ExtensionRemoteObject(callFrame, object, plugin);
 }
-var SourceScopeRemoteObject = class extends SDK8.RemoteObject.RemoteObjectImpl {
+var SourceScopeRemoteObject = class extends SDK7.RemoteObject.RemoteObjectImpl {
   variables;
   #callFrame;
   #plugin;
@@ -2115,7 +1617,7 @@ var SourceScopeRemoteObject = class extends SDK8.RemoteObject.RemoteObjectImpl {
     const properties = [];
     const namespaces = {};
     function makeProperty(name, obj) {
-      return new SDK8.RemoteObject.RemoteObjectProperty(
+      return new SDK7.RemoteObject.RemoteObjectProperty(
         name,
         obj,
         /* enumerable=*/
@@ -2132,10 +1634,10 @@ var SourceScopeRemoteObject = class extends SDK8.RemoteObject.RemoteObjectImpl {
       let sourceVar;
       try {
         const evalResult = await this.#plugin.evaluate(variable.name, getRawLocation(this.#callFrame), this.stopId);
-        sourceVar = evalResult ? await wrapRemoteObject(this.#callFrame, evalResult, this.#plugin) : new SDK8.RemoteObject.LocalJSONObject(void 0);
+        sourceVar = evalResult ? await wrapRemoteObject(this.#callFrame, evalResult, this.#plugin) : new SDK7.RemoteObject.LocalJSONObject(void 0);
       } catch (e) {
         console.warn(e);
-        sourceVar = new SDK8.RemoteObject.LocalJSONObject(void 0);
+        sourceVar = new SDK7.RemoteObject.LocalJSONObject(void 0);
       }
       if (variable.nestedName && variable.nestedName.length > 1) {
         let parent = namespaces;
@@ -2220,7 +1722,7 @@ var SourceScope = class {
     return [];
   }
 };
-var ExtensionRemoteObject = class extends SDK8.RemoteObject.RemoteObject {
+var ExtensionRemoteObject = class extends SDK7.RemoteObject.RemoteObject {
   extensionObject;
   plugin;
   callFrame;
@@ -2285,7 +1787,7 @@ var ExtensionRemoteObject = class extends SDK8.RemoteObject.RemoteObject {
     if (objectId) {
       assertNotNullOrUndefined(this.plugin.getProperties);
       const extensionObjectProperties = await this.plugin.getProperties(objectId);
-      const properties = await Promise.all(extensionObjectProperties.map(async (p) => new SDK8.RemoteObject.RemoteObjectProperty(p.name, await wrapRemoteObject(this.callFrame, p.value, this.plugin))));
+      const properties = await Promise.all(extensionObjectProperties.map(async (p) => new SDK7.RemoteObject.RemoteObjectProperty(p.name, await wrapRemoteObject(this.callFrame, p.value, this.plugin))));
       return { properties, internalProperties: null };
     }
     return { properties: null, internalProperties: null };
@@ -2321,7 +1823,7 @@ var DebuggerLanguagePluginManager = class {
     this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
     this.#plugins = [];
     this.#debuggerModelToData = /* @__PURE__ */ new Map();
-    targetManager.observeModels(SDK8.DebuggerModel.DebuggerModel, this);
+    targetManager.observeModels(SDK7.DebuggerModel.DebuggerModel, this);
     this.#rawModuleHandles = /* @__PURE__ */ new Map();
   }
   async evaluateOnCallFrame(callFrame, options) {
@@ -2347,7 +1849,7 @@ var DebuggerLanguagePluginManager = class {
       if (object) {
         return { object: await wrapRemoteObject(callFrame, object, plugin), exceptionDetails: void 0 };
       }
-      return { object: new SDK8.RemoteObject.LocalJSONObject(void 0), exceptionDetails: void 0 };
+      return { object: new SDK7.RemoteObject.LocalJSONObject(void 0), exceptionDetails: void 0 };
     } catch (error) {
       if (error instanceof FormattingError) {
         const { exception: object2, exceptionDetails: exceptionDetails2 } = error;
@@ -2379,11 +1881,11 @@ var DebuggerLanguagePluginManager = class {
         }
         if ("missingSymbolFiles" in functionInfo && functionInfo.missingSymbolFiles.length) {
           const resources = functionInfo.missingSymbolFiles;
-          const details = i18nString3(UIStrings3.debugSymbolsIncomplete, { PH1: callFrame.functionName });
+          const details = i18nString2(UIStrings2.debugSymbolsIncomplete, { PH1: callFrame.functionName });
           callFrame.missingDebugInfoDetails = { details, resources };
         } else {
           callFrame.missingDebugInfoDetails = {
-            details: i18nString3(UIStrings3.failedToLoadDebugSymbolsForFunction, { PH1: callFrame.functionName }),
+            details: i18nString2(UIStrings2.failedToLoadDebugSymbolsForFunction, { PH1: callFrame.functionName }),
             resources: []
           };
         }
@@ -2393,16 +1895,16 @@ var DebuggerLanguagePluginManager = class {
   }
   modelAdded(debuggerModel) {
     this.#debuggerModelToData.set(debuggerModel, new ModelData(debuggerModel, this.#workspace));
-    debuggerModel.addEventListener(SDK8.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
-    debuggerModel.addEventListener(SDK8.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this);
-    debuggerModel.addEventListener(SDK8.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
+    debuggerModel.addEventListener(SDK7.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
+    debuggerModel.addEventListener(SDK7.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this);
+    debuggerModel.addEventListener(SDK7.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
     debuggerModel.setEvaluateOnCallFrameCallback(this.evaluateOnCallFrame.bind(this));
     debuggerModel.setExpandCallFramesCallback(this.expandCallFrames.bind(this));
   }
   modelRemoved(debuggerModel) {
-    debuggerModel.removeEventListener(SDK8.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
-    debuggerModel.removeEventListener(SDK8.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this);
-    debuggerModel.removeEventListener(SDK8.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
+    debuggerModel.removeEventListener(SDK7.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
+    debuggerModel.removeEventListener(SDK7.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this);
+    debuggerModel.removeEventListener(SDK7.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
     debuggerModel.setEvaluateOnCallFrameCallback(null);
     debuggerModel.setExpandCallFramesCallback(null);
     const modelData = this.#debuggerModelToData.get(debuggerModel);
@@ -2414,8 +1916,8 @@ var DebuggerLanguagePluginManager = class {
       const scripts = rawModuleHandle.scripts.filter((script) => script.debuggerModel !== debuggerModel);
       if (scripts.length === 0) {
         rawModuleHandle.plugin.removeRawModule(rawModuleId).catch((error) => {
-          Common8.Console.Console.instance().error(
-            i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }),
+          Common7.Console.Console.instance().error(
+            i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
             /* show=*/
             false
           );
@@ -2515,8 +2017,8 @@ var DebuggerLanguagePluginManager = class {
         return uiSourceCode.uiLocation(sourceLocation.lineNumber, sourceLocation.columnNumber >= 0 ? sourceLocation.columnNumber : void 0);
       }
     } catch (error) {
-      Common8.Console.Console.instance().error(
-        i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }),
+      Common7.Console.Console.instance().error(
+        i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
         /* show=*/
         false
       );
@@ -2538,8 +2040,8 @@ var DebuggerLanguagePluginManager = class {
       return Promise.resolve(null);
     }
     return Promise.all(locationPromises).then((locations) => locations.flat()).catch((error) => {
-      Common8.Console.Console.instance().error(
-        i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }),
+      Common7.Console.Console.instance().error(
+        i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
         /* show=*/
         false
       );
@@ -2552,8 +2054,8 @@ var DebuggerLanguagePluginManager = class {
         return [];
       }
       return rawLocations.map((m) => ({
-        start: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
-        end: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
+        start: new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
+        end: new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
       }));
     }
   }
@@ -2620,16 +2122,16 @@ var DebuggerLanguagePluginManager = class {
       let rawModuleHandle = this.#rawModuleHandles.get(rawModuleId);
       if (!rawModuleHandle) {
         const sourceFileURLsPromise = (async () => {
-          const console2 = Common8.Console.Console.instance();
+          const console2 = Common7.Console.Console.instance();
           const url = script.sourceURL;
           const symbolsUrl = script.debugSymbols?.externalURL || "";
           if (symbolsUrl) {
-            console2.log(i18nString3(UIStrings3.loadingDebugSymbolsForVia, { PH1: plugin.name, PH2: url, PH3: symbolsUrl }));
+            console2.log(i18nString2(UIStrings2.loadingDebugSymbolsForVia, { PH1: plugin.name, PH2: url, PH3: symbolsUrl }));
           } else {
-            console2.log(i18nString3(UIStrings3.loadingDebugSymbolsFor, { PH1: plugin.name, PH2: url }));
+            console2.log(i18nString2(UIStrings2.loadingDebugSymbolsFor, { PH1: plugin.name, PH2: url }));
           }
           try {
-            const code = !symbolsUrl && Common8.ParsedURL.schemeIs(url, "wasm:") ? await script.getWasmBytecode() : void 0;
+            const code = !symbolsUrl && Common7.ParsedURL.schemeIs(url, "wasm:") ? await script.getWasmBytecode() : void 0;
             const addModuleResult = await plugin.addRawModule(rawModuleId, symbolsUrl, { url, code });
             if (rawModuleHandle !== this.#rawModuleHandles.get(rawModuleId)) {
               return [];
@@ -2644,14 +2146,14 @@ var DebuggerLanguagePluginManager = class {
             }
             const sourceFileURLs = addModuleResult;
             if (sourceFileURLs.length === 0) {
-              console2.warn(i18nString3(UIStrings3.loadedDebugSymbolsForButDidnt, { PH1: plugin.name, PH2: url }));
+              console2.warn(i18nString2(UIStrings2.loadedDebugSymbolsForButDidnt, { PH1: plugin.name, PH2: url }));
             } else {
-              console2.log(i18nString3(UIStrings3.loadedDebugSymbolsForFound, { PH1: plugin.name, PH2: url, PH3: sourceFileURLs.length }));
+              console2.log(i18nString2(UIStrings2.loadedDebugSymbolsForFound, { PH1: plugin.name, PH2: url, PH3: sourceFileURLs.length }));
             }
             return sourceFileURLs;
           } catch (error) {
             console2.error(
-              i18nString3(UIStrings3.failedToLoadDebugSymbolsFor, { PH1: plugin.name, PH2: url, PH3: error.message }),
+              i18nString2(UIStrings2.failedToLoadDebugSymbolsFor, { PH1: plugin.name, PH2: url, PH3: error.message }),
               /* show=*/
               false
             );
@@ -2725,8 +2227,8 @@ var DebuggerLanguagePluginManager = class {
       }
       return Array.from(scopes.values());
     } catch (error) {
-      Common8.Console.Console.instance().error(
-        i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }),
+      Common7.Console.Console.instance().error(
+        i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }),
         /* show=*/
         false
       );
@@ -2755,7 +2257,7 @@ var DebuggerLanguagePluginManager = class {
       }
       return functionInfo;
     } catch (error) {
-      Common8.Console.Console.instance().warn(i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+      Common7.Console.Console.instance().warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
       return { frames: [] };
     }
   }
@@ -2777,11 +2279,11 @@ var DebuggerLanguagePluginManager = class {
     try {
       const locations = await plugin.getInlinedFunctionRanges(pluginLocation);
       return locations.map((m) => ({
-        start: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
-        end: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
+        start: new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
+        end: new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
       }));
     } catch (error) {
-      Common8.Console.Console.instance().warn(i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+      Common7.Console.Console.instance().warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
       return [];
     }
   }
@@ -2803,11 +2305,11 @@ var DebuggerLanguagePluginManager = class {
     try {
       const locations = await plugin.getInlinedCalleesRanges(pluginLocation);
       return locations.map((m) => ({
-        start: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
-        end: new SDK8.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
+        start: new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.startOffset) + (script.codeOffset() || 0)),
+        end: new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, 0, Number(m.endOffset) + (script.codeOffset() || 0))
       }));
     } catch (error) {
-      Common8.Console.Console.instance().warn(i18nString3(UIStrings3.errorInDebuggerLanguagePlugin, { PH1: error.message }));
+      Common7.Console.Console.instance().warn(i18nString2(UIStrings2.errorInDebuggerLanguagePlugin, { PH1: error.message }));
       return [];
     }
   }
@@ -2838,7 +2340,7 @@ var ModelData = class {
     this.project = new ContentProviderBasedProject(
       workspace,
       "language_plugins::" + debuggerModel.target().id(),
-      Workspace13.Workspace.projectTypes.Network,
+      Workspace11.Workspace.projectTypes.Network,
       "",
       false
       /* isServiceProject */
@@ -2851,11 +2353,11 @@ var ModelData = class {
     for (const url of urls) {
       let uiSourceCode = this.project.uiSourceCodeForURL(url);
       if (!uiSourceCode) {
-        uiSourceCode = this.project.createUISourceCode(url, Common8.ResourceType.resourceTypes.SourceMapScript);
+        uiSourceCode = this.project.createUISourceCode(url, Common7.ResourceType.resourceTypes.SourceMapScript);
         NetworkProject.setInitialFrameAttribution(uiSourceCode, script.frameId);
         this.uiSourceCodeToScripts.set(uiSourceCode, [script]);
-        const contentProvider = new SDK8.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, Common8.ResourceType.resourceTypes.SourceMapScript, initiator);
-        const mimeType = Common8.ResourceType.ResourceType.mimeFromURL(url) || "text/javascript";
+        const contentProvider = new SDK7.CompilerSourceMappingContentProvider.CompilerSourceMappingContentProvider(url, Common7.ResourceType.resourceTypes.SourceMapScript, initiator);
+        const mimeType = Common7.ResourceType.ResourceType.mimeFromURL(url) || "text/javascript";
         this.project.addUISourceCodeWithProvider(uiSourceCode, contentProvider, null, mimeType);
       } else {
         const scripts = this.uiSourceCodeToScripts.get(uiSourceCode);
@@ -2890,19 +2392,19 @@ __export(DebuggerWorkspaceBinding_exports, {
   DebuggerWorkspaceBinding: () => DebuggerWorkspaceBinding,
   Location: () => Location
 });
-import * as Common11 from "./../../core/common/common.js";
-import * as Platform7 from "./../../core/platform/platform.js";
-import * as SDK11 from "./../../core/sdk/sdk.js";
-import * as Workspace19 from "./../workspace/workspace.js";
+import * as Common10 from "./../../core/common/common.js";
+import * as Platform6 from "./../../core/platform/platform.js";
+import * as SDK10 from "./../../core/sdk/sdk.js";
+import * as Workspace17 from "./../workspace/workspace.js";
 
 // gen/front_end/models/bindings/DefaultScriptMapping.js
 var DefaultScriptMapping_exports = {};
 __export(DefaultScriptMapping_exports, {
   DefaultScriptMapping: () => DefaultScriptMapping
 });
-import * as Common9 from "./../../core/common/common.js";
-import * as SDK9 from "./../../core/sdk/sdk.js";
-import * as Workspace15 from "./../workspace/workspace.js";
+import * as Common8 from "./../../core/common/common.js";
+import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as Workspace13 from "./../workspace/workspace.js";
 var DefaultScriptMapping = class _DefaultScriptMapping {
   #debuggerWorkspaceBinding;
   #project;
@@ -2915,21 +2417,21 @@ var DefaultScriptMapping = class _DefaultScriptMapping {
     this.#project = new ContentProviderBasedProject(
       workspace,
       "debugger:" + debuggerModel.target().id(),
-      Workspace15.Workspace.projectTypes.Debugger,
+      Workspace13.Workspace.projectTypes.Debugger,
       "",
       true
       /* isServiceProject */
     );
     this.#eventListeners = [
-      debuggerModel.addEventListener(SDK9.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
-      debuggerModel.addEventListener(SDK9.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this),
-      debuggerModel.addEventListener(SDK9.DebuggerModel.Events.DiscardedAnonymousScriptSource, this.discardedScriptSource, this)
+      debuggerModel.addEventListener(SDK8.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
+      debuggerModel.addEventListener(SDK8.DebuggerModel.Events.ParsedScriptSource, this.parsedScriptSource, this),
+      debuggerModel.addEventListener(SDK8.DebuggerModel.Events.DiscardedAnonymousScriptSource, this.discardedScriptSource, this)
     ];
     this.#uiSourceCodeToScript = /* @__PURE__ */ new Map();
     this.#scriptToUISourceCode = /* @__PURE__ */ new Map();
   }
   static createV8ScriptURL(script) {
-    const name = Common9.ParsedURL.ParsedURL.extractName(script.sourceURL);
+    const name = Common8.ParsedURL.ParsedURL.extractName(script.sourceURL);
     const url = "debugger:///VM" + script.scriptId + (name ? " " + name : "");
     return url;
   }
@@ -2979,7 +2481,7 @@ var DefaultScriptMapping = class _DefaultScriptMapping {
   parsedScriptSource(event) {
     const script = event.data;
     const url = _DefaultScriptMapping.createV8ScriptURL(script);
-    const uiSourceCode = this.#project.createUISourceCode(url, Common9.ResourceType.resourceTypes.Script);
+    const uiSourceCode = this.#project.createUISourceCode(url, Common8.ResourceType.resourceTypes.Script);
     if (script.isBreakpointCondition) {
       uiSourceCode.markAsUnconditionallyIgnoreListed();
     }
@@ -3005,7 +2507,7 @@ var DefaultScriptMapping = class _DefaultScriptMapping {
   }
   dispose() {
     defaultScriptMappings.delete(this);
-    Common9.EventTarget.removeEventListeners(this.#eventListeners);
+    Common8.EventTarget.removeEventListeners(this.#eventListeners);
     this.globalObjectCleared();
     this.#project.dispose();
   }
@@ -3018,13 +2520,13 @@ __export(ResourceScriptMapping_exports, {
   ResourceScriptFile: () => ResourceScriptFile,
   ResourceScriptMapping: () => ResourceScriptMapping
 });
-import * as Common10 from "./../../core/common/common.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform6 from "./../../core/platform/platform.js";
-import * as SDK10 from "./../../core/sdk/sdk.js";
+import * as Common9 from "./../../core/common/common.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Platform5 from "./../../core/platform/platform.js";
+import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as TextUtils6 from "./../text_utils/text_utils.js";
-import * as Workspace17 from "./../workspace/workspace.js";
-var UIStrings4 = {
+import * as Workspace15 from "./../workspace/workspace.js";
+var UIStrings3 = {
   /**
    *@description Error text displayed in the console when editing a live script fails. LiveEdit is
    *the name of the feature for editing code that is already running.
@@ -3038,8 +2540,8 @@ var UIStrings4 = {
    */
   liveEditCompileFailed: "`LiveEdit` compile failed: {PH1}"
 };
-var str_4 = i18n7.i18n.registerUIStrings("models/bindings/ResourceScriptMapping.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var str_3 = i18n5.i18n.registerUIStrings("models/bindings/ResourceScriptMapping.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var ResourceScriptMapping = class {
   debuggerModel;
   #workspace;
@@ -3057,9 +2559,9 @@ var ResourceScriptMapping = class {
     this.#scriptToUISourceCode = /* @__PURE__ */ new Map();
     const runtimeModel = debuggerModel.runtimeModel();
     this.#eventListeners = [
-      this.debuggerModel.addEventListener(SDK10.DebuggerModel.Events.ParsedScriptSource, (event) => this.addScript(event.data), this),
-      this.debuggerModel.addEventListener(SDK10.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
-      runtimeModel.addEventListener(SDK10.RuntimeModel.Events.ExecutionContextDestroyed, this.executionContextDestroyed, this),
+      this.debuggerModel.addEventListener(SDK9.DebuggerModel.Events.ParsedScriptSource, (event) => this.addScript(event.data), this),
+      this.debuggerModel.addEventListener(SDK9.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this),
+      runtimeModel.addEventListener(SDK9.RuntimeModel.Events.ExecutionContextDestroyed, this.executionContextDestroyed, this),
       runtimeModel.target().targetManager().addEventListener("InspectedURLChanged", this.inspectedURLChanged, this)
     ];
   }
@@ -3068,7 +2570,7 @@ var ResourceScriptMapping = class {
     const projectId = prefix + this.debuggerModel.target().id() + ":" + script.frameId;
     let project = this.#projects.get(projectId);
     if (!project) {
-      const projectType = script.isContentScript() ? Workspace17.Workspace.projectTypes.ContentScripts : Workspace17.Workspace.projectTypes.Network;
+      const projectType = script.isContentScript() ? Workspace15.Workspace.projectTypes.ContentScripts : Workspace15.Workspace.projectTypes.Network;
       project = new ContentProviderBasedProject(
         this.#workspace,
         projectId,
@@ -3151,13 +2653,13 @@ var ResourceScriptMapping = class {
       return;
     }
     if (script.hasSourceURL) {
-      url = SDK10.SourceMapManager.SourceMapManager.resolveRelativeSourceURL(script.debuggerModel.target(), url);
+      url = SDK9.SourceMapManager.SourceMapManager.resolveRelativeSourceURL(script.debuggerModel.target(), url);
     } else {
       if (script.isInlineScript()) {
         return;
       }
       if (script.isContentScript()) {
-        const parsedURL = new Common10.ParsedURL.ParsedURL(url);
+        const parsedURL = new Common9.ParsedURL.ParsedURL(url);
         if (!parsedURL.isValid) {
           return;
         }
@@ -3186,7 +2688,7 @@ var ResourceScriptMapping = class {
     return this.#uiSourceCodeToScriptFile.get(uiSourceCode) || null;
   }
   removeScripts(scripts) {
-    const uiSourceCodesByProject = new Platform6.MapUtilities.Multimap();
+    const uiSourceCodesByProject = new Platform5.MapUtilities.Multimap();
     for (const script of scripts) {
       const uiSourceCode = this.#scriptToUISourceCode.get(script);
       if (!uiSourceCode) {
@@ -3230,11 +2732,11 @@ var ResourceScriptMapping = class {
     this.globalObjectCleared();
   }
   dispose() {
-    Common10.EventTarget.removeEventListeners(this.#eventListeners);
+    Common9.EventTarget.removeEventListeners(this.#eventListeners);
     this.globalObjectCleared();
   }
 };
-var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
+var ResourceScriptFile = class extends Common9.ObjectWrapper.ObjectWrapper {
   #resourceScriptMapping;
   uiSourceCode;
   script;
@@ -3242,14 +2744,14 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
   #isDivergingFromVMInternal;
   #hasDivergedFromVMInternal;
   #isMergingToVMInternal;
-  #updateMutex = new Common10.Mutex.Mutex();
+  #updateMutex = new Common9.Mutex.Mutex();
   constructor(resourceScriptMapping, uiSourceCode, script) {
     super();
     this.#resourceScriptMapping = resourceScriptMapping;
     this.uiSourceCode = uiSourceCode;
     this.script = this.uiSourceCode.contentType().isScript() ? script : null;
-    this.uiSourceCode.addEventListener(Workspace17.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
-    this.uiSourceCode.addEventListener(Workspace17.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
+    this.uiSourceCode.addEventListener(Workspace15.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
+    this.uiSourceCode.addEventListener(Workspace15.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
   }
   isDiverged() {
     if (this.uiSourceCode.isDirty()) {
@@ -3269,7 +2771,7 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
       return true;
     }
     const suffix = this.uiSourceCode.workingCopy().substr(this.#scriptSource.length);
-    return Boolean(suffix.length) && !suffix.match(SDK10.Script.sourceURLRegex);
+    return Boolean(suffix.length) && !suffix.match(SDK9.Script.sourceURLRegex);
   }
   workingCopyChanged() {
     void this.update();
@@ -3295,14 +2797,14 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
       return;
     }
     if (!exceptionDetails) {
-      Common10.Console.Console.instance().addMessage(
-        i18nString4(UIStrings4.liveEditFailed, { PH1: getErrorText(status) }),
+      Common9.Console.Console.instance().addMessage(
+        i18nString3(UIStrings3.liveEditFailed, { PH1: getErrorText(status) }),
         "warning"
         /* Common.Console.MessageLevel.WARNING */
       );
       return;
     }
-    const messageText = i18nString4(UIStrings4.liveEditCompileFailed, { PH1: exceptionDetails.text });
+    const messageText = i18nString3(UIStrings3.liveEditCompileFailed, { PH1: exceptionDetails.text });
     this.uiSourceCode.addLineMessage("Error", messageText, exceptionDetails.lineNumber, exceptionDetails.columnNumber);
     function getErrorText(status2) {
       switch (status2) {
@@ -3374,8 +2876,8 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
   mappingCheckedForTest() {
   }
   dispose() {
-    this.uiSourceCode.removeEventListener(Workspace17.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
-    this.uiSourceCode.removeEventListener(Workspace17.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
+    this.uiSourceCode.removeEventListener(Workspace15.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
+    this.uiSourceCode.removeEventListener(Workspace15.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
   }
   addSourceMapURL(sourceMapURL) {
     if (!this.script) {
@@ -3410,12 +2912,13 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   #debuggerModelToData;
   #liveLocationPromises;
   pluginManager;
-  constructor(resourceMapping, targetManager) {
+  constructor(resourceMapping, targetManager, ignoreListManager) {
     this.resourceMapping = resourceMapping;
     this.#debuggerModelToData = /* @__PURE__ */ new Map();
-    targetManager.addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
-    targetManager.addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
-    targetManager.observeModels(SDK11.DebuggerModel.DebuggerModel, this);
+    targetManager.addModelListener(SDK10.DebuggerModel.DebuggerModel, SDK10.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
+    targetManager.addModelListener(SDK10.DebuggerModel.DebuggerModel, SDK10.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
+    targetManager.observeModels(SDK10.DebuggerModel.DebuggerModel, this);
+    ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED", (event) => this.updateLocations(event.data));
     this.#liveLocationPromises = /* @__PURE__ */ new Set();
     this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this);
   }
@@ -3424,13 +2927,13 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
       modelData.compilerMapping.setFunctionRanges(uiSourceCode, ranges);
     }
   }
-  static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null }) {
-    const { forceNew, resourceMapping, targetManager } = opts;
+  static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null, ignoreListManager: null }) {
+    const { forceNew, resourceMapping, targetManager, ignoreListManager } = opts;
     if (!debuggerWorkspaceBindingInstance || forceNew) {
-      if (!resourceMapping || !targetManager) {
-        throw new Error(`Unable to create DebuggerWorkspaceBinding: resourceMapping and targetManager must be provided: ${new Error().stack}`);
+      if (!resourceMapping || !targetManager || !ignoreListManager) {
+        throw new Error(`Unable to create DebuggerWorkspaceBinding: resourceMapping, targetManager and IgnoreLIstManager must be provided: ${new Error().stack}`);
       }
-      debuggerWorkspaceBindingInstance = new _DebuggerWorkspaceBinding(resourceMapping, targetManager);
+      debuggerWorkspaceBindingInstance = new _DebuggerWorkspaceBinding(resourceMapping, targetManager, ignoreListManager);
     }
     return debuggerWorkspaceBindingInstance;
   }
@@ -3576,11 +3079,11 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
   }
   waitForUISourceCodeAdded(url, target) {
     return new Promise((resolve) => {
-      const workspace = Workspace19.Workspace.WorkspaceImpl.instance();
-      const descriptor = workspace.addEventListener(Workspace19.Workspace.Events.UISourceCodeAdded, (event) => {
+      const workspace = Workspace17.Workspace.WorkspaceImpl.instance();
+      const descriptor = workspace.addEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, (event) => {
         const uiSourceCode = event.data;
         if (uiSourceCode.url() === url && NetworkProject.targetForUISourceCode(uiSourceCode) === target) {
-          workspace.removeEventListener(Workspace19.Workspace.Events.UISourceCodeAdded, descriptor.listener);
+          workspace.removeEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, descriptor.listener);
           resolve(uiSourceCode);
         }
       });
@@ -3695,7 +3198,7 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
     modelData.callFrameLocations.clear();
   }
   resetForTest(target) {
-    const debuggerModel = target.model(SDK11.DebuggerModel.DebuggerModel);
+    const debuggerModel = target.model(SDK10.DebuggerModel.DebuggerModel);
     const modelData = this.#debuggerModelToData.get(debuggerModel);
     if (modelData) {
       modelData.getResourceScriptMapping().resetForTest();
@@ -3723,7 +3226,7 @@ var DebuggerWorkspaceBinding = class _DebuggerWorkspaceBinding {
       return false;
     }
     const functionLocation = frame.functionLocation();
-    if (!autoSteppingContext || debuggerPausedDetails.reason !== "step" || !functionLocation || !frame.script.isWasm() || !Common11.Settings.moduleSetting("wasm-auto-stepping").get() || !this.pluginManager.hasPluginForScript(frame.script)) {
+    if (!autoSteppingContext || debuggerPausedDetails.reason !== "step" || !functionLocation || !frame.script.isWasm() || !Common10.Settings.moduleSetting("wasm-auto-stepping").get() || !this.pluginManager.hasPluginForScript(frame.script)) {
       return true;
     }
     const uiLocation = await this.pluginManager.rawLocationToUILocation(frame.location());
@@ -3751,7 +3254,7 @@ var ModelData2 = class {
     this.#resourceMapping = debuggerWorkspaceBinding.resourceMapping;
     this.#resourceScriptMapping = new ResourceScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
     this.compilerMapping = new CompilerScriptMapping(debuggerModel, workspace, debuggerWorkspaceBinding);
-    this.#locations = new Platform7.MapUtilities.Multimap();
+    this.#locations = new Platform6.MapUtilities.Multimap();
   }
   async createLiveLocation(rawLocation, updateDelegate, locationPool) {
     console.assert(rawLocation.scriptId !== "");
@@ -3831,13 +3334,6 @@ var Location = class extends LiveLocationWithPool {
     super.dispose();
     this.#binding.removeLiveLocation(this);
   }
-  async isIgnoreListed() {
-    const uiLocation = await this.uiLocation();
-    if (!uiLocation) {
-      return false;
-    }
-    return IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiLocation.uiSourceCode);
-  }
 };
 var StackTraceTopFrameLocation = class _StackTraceTopFrameLocation extends LiveLocationWithPool {
   #updateScheduled;
@@ -3858,9 +3354,6 @@ var StackTraceTopFrameLocation = class _StackTraceTopFrameLocation extends LiveL
   }
   async uiLocation() {
     return this.#current ? await this.#current.uiLocation() : null;
-  }
-  async isIgnoreListed() {
-    return this.#current ? await this.#current.isIgnoreListed() : false;
   }
   dispose() {
     super.dispose();
@@ -3888,7 +3381,8 @@ var StackTraceTopFrameLocation = class _StackTraceTopFrameLocation extends LiveL
     }
     this.#current = this.#locations[0];
     for (const location of this.#locations) {
-      if (!await location.isIgnoreListed()) {
+      const uiLocation = await location.uiLocation();
+      if (!uiLocation?.isIgnoreListed()) {
         this.#current = location;
         break;
       }
@@ -3903,9 +3397,9 @@ __export(FileUtils_exports, {
   ChunkedFileReader: () => ChunkedFileReader,
   FileOutputStream: () => FileOutputStream
 });
-import * as Common12 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as TextUtils7 from "./../text_utils/text_utils.js";
-import * as Workspace21 from "./../workspace/workspace.js";
+import * as Workspace19 from "./../workspace/workspace.js";
 var ChunkedFileReader = class {
   #file;
   #fileSizeInternal;
@@ -3936,7 +3430,7 @@ var ChunkedFileReader = class {
     }
     if (this.#file?.type.endsWith("gzip")) {
       const fileStream = this.#file.stream();
-      const stream = Common12.Gzip.decompressStream(fileStream);
+      const stream = Common11.Gzip.decompressStream(fileStream);
       this.#streamReader = stream.getReader();
     } else {
       this.#reader = new FileReader();
@@ -4046,21 +3540,21 @@ var FileOutputStream = class {
     this.#closed = false;
     this.#writeCallbacks = [];
     this.#fileName = fileName;
-    const saveResponse = await Workspace21.FileManager.FileManager.instance().save(
+    const saveResponse = await Workspace19.FileManager.FileManager.instance().save(
       this.#fileName,
       TextUtils7.ContentData.EMPTY_TEXT_CONTENT_DATA,
       /* forceSaveAs=*/
       true
     );
     if (saveResponse) {
-      Workspace21.FileManager.FileManager.instance().addEventListener("AppendedToURL", this.onAppendDone, this);
+      Workspace19.FileManager.FileManager.instance().addEventListener("AppendedToURL", this.onAppendDone, this);
     }
     return Boolean(saveResponse);
   }
   write(data) {
     return new Promise((resolve) => {
       this.#writeCallbacks.push(resolve);
-      Workspace21.FileManager.FileManager.instance().append(this.#fileName, data);
+      Workspace19.FileManager.FileManager.instance().append(this.#fileName, data);
     });
   }
   async close() {
@@ -4068,8 +3562,8 @@ var FileOutputStream = class {
     if (this.#writeCallbacks.length) {
       return;
     }
-    Workspace21.FileManager.FileManager.instance().removeEventListener("AppendedToURL", this.onAppendDone, this);
-    Workspace21.FileManager.FileManager.instance().close(this.#fileName);
+    Workspace19.FileManager.FileManager.instance().removeEventListener("AppendedToURL", this.onAppendDone, this);
+    Workspace19.FileManager.FileManager.instance().close(this.#fileName);
   }
   onAppendDone(event) {
     if (event.data !== this.#fileName) {
@@ -4085,8 +3579,8 @@ var FileOutputStream = class {
     if (!this.#closed) {
       return;
     }
-    Workspace21.FileManager.FileManager.instance().removeEventListener("AppendedToURL", this.onAppendDone, this);
-    Workspace21.FileManager.FileManager.instance().close(this.#fileName);
+    Workspace19.FileManager.FileManager.instance().removeEventListener("AppendedToURL", this.onAppendDone, this);
+    Workspace19.FileManager.FileManager.instance().close(this.#fileName);
   }
 };
 
@@ -4098,19 +3592,19 @@ __export(PresentationConsoleMessageHelper_exports, {
   PresentationSourceFrameMessageHelper: () => PresentationSourceFrameMessageHelper,
   PresentationSourceFrameMessageManager: () => PresentationSourceFrameMessageManager
 });
-import * as SDK12 from "./../../core/sdk/sdk.js";
+import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as TextUtils8 from "./../text_utils/text_utils.js";
-import * as Workspace22 from "./../workspace/workspace.js";
+import * as Workspace20 from "./../workspace/workspace.js";
 var PresentationSourceFrameMessageManager = class {
   #targetToMessageHelperMap = /* @__PURE__ */ new WeakMap();
   constructor() {
-    SDK12.TargetManager.TargetManager.instance().observeModels(SDK12.DebuggerModel.DebuggerModel, this);
-    SDK12.TargetManager.TargetManager.instance().observeModels(SDK12.CSSModel.CSSModel, this);
+    SDK11.TargetManager.TargetManager.instance().observeModels(SDK11.DebuggerModel.DebuggerModel, this);
+    SDK11.TargetManager.TargetManager.instance().observeModels(SDK11.CSSModel.CSSModel, this);
   }
   modelAdded(model) {
     const target = model.target();
     const helper = this.#targetToMessageHelperMap.get(target) ?? new PresentationSourceFrameMessageHelper();
-    if (model instanceof SDK12.DebuggerModel.DebuggerModel) {
+    if (model instanceof SDK11.DebuggerModel.DebuggerModel) {
       helper.setDebuggerModel(model);
     } else {
       helper.setCSSModel(model);
@@ -4127,7 +3621,7 @@ var PresentationSourceFrameMessageManager = class {
     void helper?.addMessage(message, source);
   }
   clear() {
-    for (const target of SDK12.TargetManager.TargetManager.instance().targets()) {
+    for (const target of SDK11.TargetManager.TargetManager.instance().targets()) {
       const helper = this.#targetToMessageHelperMap.get(target);
       helper?.clear();
     }
@@ -4136,9 +3630,9 @@ var PresentationSourceFrameMessageManager = class {
 var PresentationConsoleMessageManager = class {
   #sourceFrameMessageManager = new PresentationSourceFrameMessageManager();
   constructor() {
-    SDK12.TargetManager.TargetManager.instance().addModelListener(SDK12.ConsoleModel.ConsoleModel, SDK12.ConsoleModel.Events.MessageAdded, (event) => this.consoleMessageAdded(event.data));
-    SDK12.ConsoleModel.ConsoleModel.allMessagesUnordered().forEach(this.consoleMessageAdded, this);
-    SDK12.TargetManager.TargetManager.instance().addModelListener(SDK12.ConsoleModel.ConsoleModel, SDK12.ConsoleModel.Events.ConsoleCleared, () => this.#sourceFrameMessageManager.clear());
+    SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.ConsoleModel.ConsoleModel, SDK11.ConsoleModel.Events.MessageAdded, (event) => this.consoleMessageAdded(event.data));
+    SDK11.ConsoleModel.ConsoleModel.allMessagesUnordered().forEach(this.consoleMessageAdded, this);
+    SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.ConsoleModel.ConsoleModel, SDK11.ConsoleModel.Events.ConsoleCleared, () => this.#sourceFrameMessageManager.clear());
   }
   consoleMessageAdded(consoleMessage) {
     const runtimeModel = consoleMessage.runtimeModel();
@@ -4146,7 +3640,7 @@ var PresentationConsoleMessageManager = class {
       return;
     }
     const level = consoleMessage.level === "error" ? "Error" : "Warning";
-    this.#sourceFrameMessageManager.addMessage(new Workspace22.UISourceCode.Message(level, consoleMessage.messageText), consoleMessage, runtimeModel.target());
+    this.#sourceFrameMessageManager.addMessage(new Workspace20.UISourceCode.Message(level, consoleMessage.messageText), consoleMessage, runtimeModel.target());
   }
 };
 var PresentationSourceFrameMessageHelper = class {
@@ -4156,26 +3650,26 @@ var PresentationSourceFrameMessageHelper = class {
   #locationPool;
   constructor() {
     this.#locationPool = new LiveLocationPool();
-    Workspace22.Workspace.WorkspaceImpl.instance().addEventListener(Workspace22.Workspace.Events.UISourceCodeAdded, this.#uiSourceCodeAdded.bind(this));
+    Workspace20.Workspace.WorkspaceImpl.instance().addEventListener(Workspace20.Workspace.Events.UISourceCodeAdded, this.#uiSourceCodeAdded.bind(this));
   }
   setDebuggerModel(debuggerModel) {
     if (this.#debuggerModel) {
       throw new Error("Cannot set DebuggerModel twice");
     }
     this.#debuggerModel = debuggerModel;
-    debuggerModel.addEventListener(SDK12.DebuggerModel.Events.ParsedScriptSource, (event) => {
+    debuggerModel.addEventListener(SDK11.DebuggerModel.Events.ParsedScriptSource, (event) => {
       queueMicrotask(() => {
         this.#parsedScriptSource(event);
       });
     });
-    debuggerModel.addEventListener(SDK12.DebuggerModel.Events.GlobalObjectCleared, this.#debuggerReset, this);
+    debuggerModel.addEventListener(SDK11.DebuggerModel.Events.GlobalObjectCleared, this.#debuggerReset, this);
   }
   setCSSModel(cssModel) {
     if (this.#cssModel) {
       throw new Error("Cannot set CSSModel twice");
     }
     this.#cssModel = cssModel;
-    cssModel.addEventListener(SDK12.CSSModel.Events.StyleSheetAdded, (event) => queueMicrotask(() => this.#styleSheetAdded(event)));
+    cssModel.addEventListener(SDK11.CSSModel.Events.StyleSheetAdded, (event) => queueMicrotask(() => this.#styleSheetAdded(event)));
   }
   async addMessage(message, source) {
     const presentation = new PresentationSourceFrameMessage(message, this.#locationPool);
@@ -4196,11 +3690,11 @@ var PresentationSourceFrameMessageHelper = class {
     if (!source.url) {
       return null;
     }
-    const uiSourceCode = Workspace22.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(source.url);
+    const uiSourceCode = Workspace20.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(source.url);
     if (!uiSourceCode) {
       return null;
     }
-    return new Workspace22.UISourceCode.UILocation(uiSourceCode, source.line, source.column);
+    return new Workspace20.UISourceCode.UILocation(uiSourceCode, source.line, source.column);
   }
   #cssLocation(source) {
     if (!this.#cssModel || !source.url) {
@@ -4244,7 +3738,7 @@ var PresentationSourceFrameMessageHelper = class {
     const messages = this.#presentationMessages.get(uiSourceCode.url());
     const promises = [];
     for (const { presentation, source } of messages ?? []) {
-      promises.push(presentation.updateLocationSource(new Workspace22.UISourceCode.UILocation(uiSourceCode, source.line, source.column)));
+      promises.push(presentation.updateLocationSource(new Workspace20.UISourceCode.UILocation(uiSourceCode, source.line, source.column)));
     }
     void Promise.all(promises).then(this.uiSourceCodeAddedForTest.bind(this));
   }
@@ -4256,7 +3750,7 @@ var PresentationSourceFrameMessageHelper = class {
     const promises = [];
     for (const { source, presentation } of messages ?? []) {
       if (header.containsLocation(source.line, source.column)) {
-        promises.push(presentation.updateLocationSource(new SDK12.CSSModel.CSSLocation(header, source.line, source.column)));
+        promises.push(presentation.updateLocationSource(new SDK11.CSSModel.CSSLocation(header, source.line, source.column)));
       }
     }
     void Promise.all(promises).then(this.styleSheetAddedForTest.bind(this));
@@ -4281,9 +3775,6 @@ var FrozenLiveLocation = class extends LiveLocationWithPool {
     super(updateDelegate, locationPool);
     this.#uiLocation = uiLocation;
   }
-  async isIgnoreListed() {
-    return false;
-  }
   async uiLocation() {
     return this.#uiLocation;
   }
@@ -4298,11 +3789,11 @@ var PresentationSourceFrameMessage = class {
     this.#locationPool = locationPool;
   }
   async updateLocationSource(source) {
-    if (source instanceof SDK12.DebuggerModel.Location) {
+    if (source instanceof SDK11.DebuggerModel.Location) {
       await DebuggerWorkspaceBinding.instance().createLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
-    } else if (source instanceof SDK12.CSSModel.CSSLocation) {
+    } else if (source instanceof SDK11.CSSModel.CSSLocation) {
       await CSSWorkspaceBinding.instance().createLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
-    } else if (source instanceof Workspace22.UISourceCode.UILocation) {
+    } else if (source instanceof Workspace20.UISourceCode.UILocation) {
       if (!this.#liveLocation) {
         this.#liveLocation = new FrozenLiveLocation(source, this.#updateLocation.bind(this), this.#locationPool);
         await this.#liveLocation.update();
@@ -4337,10 +3828,10 @@ var ResourceMapping_exports = {};
 __export(ResourceMapping_exports, {
   ResourceMapping: () => ResourceMapping
 });
-import * as Common13 from "./../../core/common/common.js";
-import * as SDK13 from "./../../core/sdk/sdk.js";
+import * as Common12 from "./../../core/common/common.js";
+import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as TextUtils9 from "./../text_utils/text_utils.js";
-import * as Workspace24 from "./../workspace/workspace.js";
+import * as Workspace22 from "./../workspace/workspace.js";
 var styleSheetRangeMap = /* @__PURE__ */ new WeakMap();
 var scriptRangeMap = /* @__PURE__ */ new WeakMap();
 var boundUISourceCodes = /* @__PURE__ */ new WeakSet();
@@ -4355,7 +3846,7 @@ var ResourceMapping = class {
   #modelToInfo = /* @__PURE__ */ new Map();
   constructor(targetManager, workspace) {
     this.workspace = workspace;
-    targetManager.observeModels(SDK13.ResourceTreeModel.ResourceTreeModel, this);
+    targetManager.observeModels(SDK12.ResourceTreeModel.ResourceTreeModel, this);
   }
   modelAdded(resourceTreeModel) {
     const info = new ModelInfo2(this.workspace, resourceTreeModel);
@@ -4369,7 +3860,7 @@ var ResourceMapping = class {
     }
   }
   infoForTarget(target) {
-    const resourceTreeModel = target.model(SDK13.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = target.model(SDK12.ResourceTreeModel.ResourceTreeModel);
     return resourceTreeModel ? this.#modelToInfo.get(resourceTreeModel) || null : null;
   }
   uiSourceCodeForScript(script) {
@@ -4441,7 +3932,7 @@ var ResourceMapping = class {
     if (!target) {
       return [];
     }
-    const debuggerModel = target.model(SDK13.DebuggerModel.DebuggerModel);
+    const debuggerModel = target.model(SDK12.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return [];
     }
@@ -4474,7 +3965,7 @@ var ResourceMapping = class {
     if (!target) {
       return null;
     }
-    const debuggerModel = target.model(SDK13.DebuggerModel.DebuggerModel);
+    const debuggerModel = target.model(SDK12.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return null;
     }
@@ -4513,7 +4004,7 @@ var ResourceMapping = class {
     if (!target) {
       return null;
     }
-    const debuggerModel = target.model(SDK13.DebuggerModel.DebuggerModel);
+    const debuggerModel = target.model(SDK12.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return null;
     }
@@ -4537,14 +4028,14 @@ var ResourceMapping = class {
     if (!target) {
       return [];
     }
-    const cssModel = target.model(SDK13.CSSModel.CSSModel);
+    const cssModel = target.model(SDK12.CSSModel.CSSModel);
     if (!cssModel) {
       return [];
     }
     return cssModel.createRawLocationsByURL(uiLocation.uiSourceCode.url(), uiLocation.lineNumber, uiLocation.columnNumber);
   }
   resetForTest(target) {
-    const resourceTreeModel = target.model(SDK13.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = target.model(SDK12.ResourceTreeModel.ResourceTreeModel);
     const info = resourceTreeModel ? this.#modelToInfo.get(resourceTreeModel) : null;
     if (info) {
       info.resetForTest();
@@ -4561,13 +4052,13 @@ var ModelInfo2 = class {
     this.project = new ContentProviderBasedProject(
       workspace,
       "resources:" + target.id(),
-      Workspace24.Workspace.projectTypes.Network,
+      Workspace22.Workspace.projectTypes.Network,
       "",
       false
       /* isServiceProject */
     );
     NetworkProject.setTargetForProject(this.project, target);
-    const cssModel = target.model(SDK13.CSSModel.CSSModel);
+    const cssModel = target.model(SDK12.CSSModel.CSSModel);
     console.assert(Boolean(cssModel));
     this.#cssModel = cssModel;
     for (const frame of resourceTreeModel.frames()) {
@@ -4576,10 +4067,10 @@ var ModelInfo2 = class {
       }
     }
     this.#eventListeners = [
-      resourceTreeModel.addEventListener(SDK13.ResourceTreeModel.Events.ResourceAdded, this.resourceAdded, this),
-      resourceTreeModel.addEventListener(SDK13.ResourceTreeModel.Events.FrameWillNavigate, this.frameWillNavigate, this),
-      resourceTreeModel.addEventListener(SDK13.ResourceTreeModel.Events.FrameDetached, this.frameDetached, this),
-      this.#cssModel.addEventListener(SDK13.CSSModel.Events.StyleSheetChanged, (event) => {
+      resourceTreeModel.addEventListener(SDK12.ResourceTreeModel.Events.ResourceAdded, this.resourceAdded, this),
+      resourceTreeModel.addEventListener(SDK12.ResourceTreeModel.Events.FrameWillNavigate, this.frameWillNavigate, this),
+      resourceTreeModel.addEventListener(SDK12.ResourceTreeModel.Events.FrameDetached, this.frameDetached, this),
+      this.#cssModel.addEventListener(SDK12.CSSModel.Events.StyleSheetChanged, (event) => {
         void this.styleSheetChanged(event);
       }, this)
     ];
@@ -4597,16 +4088,16 @@ var ModelInfo2 = class {
   }
   acceptsResource(resource) {
     const resourceType = resource.resourceType();
-    if (resourceType !== Common13.ResourceType.resourceTypes.Image && resourceType !== Common13.ResourceType.resourceTypes.Font && resourceType !== Common13.ResourceType.resourceTypes.Document && resourceType !== Common13.ResourceType.resourceTypes.Manifest && resourceType !== Common13.ResourceType.resourceTypes.Fetch && resourceType !== Common13.ResourceType.resourceTypes.XHR) {
+    if (resourceType !== Common12.ResourceType.resourceTypes.Image && resourceType !== Common12.ResourceType.resourceTypes.Font && resourceType !== Common12.ResourceType.resourceTypes.Document && resourceType !== Common12.ResourceType.resourceTypes.Manifest && resourceType !== Common12.ResourceType.resourceTypes.Fetch && resourceType !== Common12.ResourceType.resourceTypes.XHR) {
       return false;
     }
-    if (resourceType === Common13.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
+    if (resourceType === Common12.ResourceType.resourceTypes.Image && resource.mimeType && !resource.mimeType.startsWith("image")) {
       return false;
     }
-    if (resourceType === Common13.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
+    if (resourceType === Common12.ResourceType.resourceTypes.Font && resource.mimeType && !resource.mimeType.includes("font")) {
       return false;
     }
-    if ((resourceType === Common13.ResourceType.resourceTypes.Image || resourceType === Common13.ResourceType.resourceTypes.Font) && Common13.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
+    if ((resourceType === Common12.ResourceType.resourceTypes.Image || resourceType === Common12.ResourceType.resourceTypes.Font) && Common12.ParsedURL.schemeIs(resource.contentURL(), "data:")) {
       return false;
     }
     return true;
@@ -4656,7 +4147,7 @@ var ModelInfo2 = class {
     this.#bindings.clear();
   }
   dispose() {
-    Common13.EventTarget.removeEventListeners(this.#eventListeners);
+    Common12.EventTarget.removeEventListeners(this.#eventListeners);
     for (const binding of this.#bindings.values()) {
       binding.dispose();
     }
@@ -4692,7 +4183,7 @@ var Binding2 = class {
     if (!target) {
       return stylesheets;
     }
-    const cssModel = target.model(SDK13.CSSModel.CSSModel);
+    const cssModel = target.model(SDK12.CSSModel.CSSModel);
     if (cssModel) {
       for (const headerId of cssModel.getStyleSheetIdsForURL(this.#uiSourceCode.url())) {
         const header = cssModel.styleSheetHeaderForId(headerId);
@@ -4708,7 +4199,7 @@ var Binding2 = class {
     if (!target) {
       return [];
     }
-    const debuggerModel = target.model(SDK13.DebuggerModel.DebuggerModel);
+    const debuggerModel = target.model(SDK12.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return [];
     }
@@ -4802,7 +4293,7 @@ var TempFile_exports = {};
 __export(TempFile_exports, {
   TempFile: () => TempFile
 });
-import * as Common14 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 var TempFile = class {
   #lastBlob;
   constructor() {
@@ -4822,7 +4313,7 @@ var TempFile = class {
   }
   async readRange(startOffset, endOffset) {
     if (!this.#lastBlob) {
-      Common14.Console.Console.instance().error("Attempt to read a temp file that was never written");
+      Common13.Console.Console.instance().error("Attempt to read a temp file that was never written");
       return "";
     }
     const blob = typeof startOffset === "number" || typeof endOffset === "number" ? this.#lastBlob.slice(startOffset, endOffset) : this.#lastBlob;
@@ -4834,7 +4325,7 @@ var TempFile = class {
         reader.readAsText(blob);
       });
     } catch (error) {
-      Common14.Console.Console.instance().error("Failed to read from temp file: " + error.message);
+      Common13.Console.Console.instance().error("Failed to read from temp file: " + error.message);
     }
     return reader.result;
   }
@@ -4858,7 +4349,6 @@ export {
   DebuggerWorkspaceBinding_exports as DebuggerWorkspaceBinding,
   DefaultScriptMapping_exports as DefaultScriptMapping,
   FileUtils_exports as FileUtils,
-  IgnoreListManager_exports as IgnoreListManager,
   LiveLocation_exports as LiveLocation,
   NetworkProject_exports as NetworkProject,
   PresentationConsoleMessageHelper_exports as PresentationConsoleMessageHelper,

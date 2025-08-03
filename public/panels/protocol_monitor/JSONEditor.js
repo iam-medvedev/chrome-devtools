@@ -85,7 +85,7 @@ export class JSONEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     #hintPopoverHelper;
     #view;
     constructor(element, view = DEFAULT_VIEW) {
-        super(/* useShadowDom=*/ true, undefined, element);
+        super(element, { useShadowDom: true });
         this.#view = view;
         this.registerRequiredCSS(editorWidgetStyles);
     }

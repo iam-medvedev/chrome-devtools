@@ -3352,7 +3352,7 @@ var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
   #excludedFolderPaths = [];
   #view;
   constructor(element, view = DEFAULT_VIEW) {
-    super(void 0, void 0, element);
+    super(element);
     this.#view = view;
   }
   set fileSystem(fileSystem) {

@@ -202,13 +202,13 @@ var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
   id() {
     return this.actionRegistration.actionId;
   }
-  async execute() {
+  async execute(opts) {
     if (!this.actionRegistration.loadActionDelegate) {
       return false;
     }
     const delegate = await this.actionRegistration.loadActionDelegate();
     const actionId = this.id();
-    return delegate.handleAction(Context.instance(), actionId);
+    return delegate.handleAction(Context.instance(), actionId, opts);
   }
   icon() {
     return this.actionRegistration.iconClass;
@@ -620,6 +620,7 @@ __export(UIUtils_exports, {
   LongClickController: () => LongClickController,
   MaxLengthForDisplayedURLs: () => MaxLengthForDisplayedURLs,
   MessageDialog: () => MessageDialog,
+  PromotionManager: () => PromotionManager,
   Renderer: () => Renderer,
   StyleValueDelimiters: () => StyleValueDelimiters,
   addPlatformClass: () => addPlatformClass,
@@ -672,6 +673,7 @@ __export(UIUtils_exports, {
   isScrolledToBottom: () => isScrolledToBottom,
   loadImage: () => loadImage,
   markBeingEdited: () => markBeingEdited,
+  maybeCreateNewBadge: () => maybeCreateNewBadge,
   measurePreferredSize: () => measurePreferredSize,
   measureTextWidth: () => measureTextWidth,
   measuredScrollbarWidth: () => measuredScrollbarWidth,
@@ -3070,13 +3072,22 @@ var Widget = class _Widget {
   #updateComplete = UPDATE_COMPLETE;
   #updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
   #updateRequestID = 0;
-  constructor(useShadowDom, delegatesFocus, element) {
-    this.element = element || document.createElement("div");
+  constructor(elementOrOptions, options) {
+    if (elementOrOptions instanceof HTMLElement) {
+      this.element = elementOrOptions;
+    } else {
+      this.element = document.createElement("div");
+      if (elementOrOptions !== void 0) {
+        options = elementOrOptions;
+      }
+    }
     this.#shadowRoot = this.element.shadowRoot;
-    if (useShadowDom && !this.#shadowRoot) {
+    if (options?.useShadowDom && !this.#shadowRoot) {
       this.element.classList.add("vbox");
       this.element.classList.add("flex-auto");
-      this.#shadowRoot = createShadowRootWithCoreStyles(this.element, { delegatesFocus });
+      this.#shadowRoot = createShadowRootWithCoreStyles(this.element, {
+        delegatesFocus: options?.delegatesFocus
+      });
       this.contentElement = document.createElement("div");
       this.#shadowRoot.appendChild(this.contentElement);
     } else {
@@ -3103,7 +3114,7 @@ var Widget = class _Widget {
     if (element instanceof WidgetElement) {
       return element.createWidget();
     }
-    return new _Widget(void 0, void 0, element);
+    return new _Widget(element);
   }
   markAsRoot() {
     assert(!this.element.parentElement, "Attempt to mark as root attached node");
@@ -3177,6 +3188,7 @@ var Widget = class _Widget {
   }
   processWasHidden() {
     this.callOnVisibleChildren(this.processWasHidden);
+    this.notify(this.wasHidden);
   }
   processOnResize() {
     if (this.inNotification()) {
@@ -3199,6 +3211,8 @@ var Widget = class _Widget {
   wasShown() {
   }
   willHide() {
+  }
+  wasHidden() {
   }
   onResize() {
   }
@@ -3577,12 +3591,8 @@ var Widget = class _Widget {
 };
 var storedScrollPositions2 = /* @__PURE__ */ new WeakMap();
 var VBox = class extends Widget {
-  constructor(useShadowDom, delegatesFocus, element) {
-    if (useShadowDom instanceof HTMLElement) {
-      element = useShadowDom;
-      useShadowDom = false;
-    }
-    super(useShadowDom, delegatesFocus, element);
+  constructor() {
+    super(...arguments);
     this.contentElement.classList.add("vbox");
   }
   calculateConstraints() {
@@ -3597,8 +3607,8 @@ var VBox = class extends Widget {
   }
 };
 var HBox = class extends Widget {
-  constructor(useShadowDom) {
-    super(useShadowDom);
+  constructor() {
+    super(...arguments);
     this.contentElement.classList.add("hbox");
   }
   calculateConstraints() {
@@ -3752,7 +3762,7 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
   savedShowMode;
   autoAdjustOrientation;
   constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.element.classList.add("split-widget");
     this.registerRequiredCSS(splitWidget_css_default);
     this.contentElement.classList.add("shadow-split-widget");
@@ -5121,7 +5131,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   allowTabReorder;
   automaticReorder;
   constructor(element) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.registerRequiredCSS(tabbedPane_css_default);
     this.element.classList.add("tabbed-pane");
     this.contentElement.classList.add("tabbed-pane-shadow");
@@ -5392,10 +5402,10 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.updateTabElements();
   }
   setBadge(id2, content) {
-    const badge = document.createElement("span");
-    badge.textContent = content;
-    badge.classList.add("badge");
-    this.setSuffixElement(id2, content ? badge : null);
+    const badge2 = document.createElement("span");
+    badge2.textContent = content;
+    badge2.classList.add("badge");
+    this.setSuffixElement(id2, content ? badge2 : null);
   }
   setTabEnabled(id2, enabled) {
     const tab = this.tabsById.get(id2);
@@ -5469,6 +5479,10 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       this.selectTab(effectiveTab.id);
     }
     this.updateTabElements();
+    this.dispatchEventToListeners(Events.PaneVisibilityChanged, { isVisible: true });
+  }
+  wasHidden() {
+    this.dispatchEventToListeners(Events.PaneVisibilityChanged, { isVisible: false });
   }
   makeTabSlider() {
     if (this.verticalTabLayout) {
@@ -5878,6 +5892,7 @@ var Events;
   Events3["TabSelected"] = "TabSelected";
   Events3["TabClosed"] = "TabClosed";
   Events3["TabOrderChanged"] = "TabOrderChanged";
+  Events3["PaneVisibilityChanged"] = "PaneVisibilityChanged";
 })(Events || (Events = {}));
 var TabbedPaneTab = class {
   closeable;
@@ -6242,6 +6257,7 @@ __export(ViewManager_exports, {
   defaultOptionsForTabs: () => defaultOptionsForTabs,
   getLocalizedViewLocationCategory: () => getLocalizedViewLocationCategory,
   getRegisteredLocationResolvers: () => getRegisteredLocationResolvers,
+  getRegisteredViewExtensionForID: () => getRegisteredViewExtensionForID,
   getRegisteredViewExtensions: () => getRegisteredViewExtensions,
   maybeRemoveViewExtension: () => maybeRemoveViewExtension,
   registerLocationResolver: () => registerLocationResolver,
@@ -6385,6 +6401,9 @@ function registerViewExtension(registration) {
   viewIdSet.add(viewId);
   registeredViewExtensions.push(new PreRegisteredView(registration));
 }
+function getRegisteredViewExtensionForID(id2) {
+  return registeredViewExtensions.find((view) => view.viewId() === id2 && Root2.Runtime.Runtime.isDescriptorEnabled({ experiment: view.experiment(), condition: view.condition() }));
+}
 function getRegisteredViewExtensions() {
   return registeredViewExtensions.filter((view) => Root2.Runtime.Runtime.isDescriptorEnabled({ experiment: view.experiment(), condition: view.condition() }));
 }
@@ -6469,6 +6488,9 @@ var PreRegisteredView = class {
   isPreviewFeature() {
     return Boolean(this.viewRegistration.isPreviewFeature);
   }
+  featurePromotionId() {
+    return this.viewRegistration.featurePromotionId;
+  }
   iconName() {
     return this.viewRegistration.iconName;
   }
@@ -6524,11 +6546,12 @@ var PreRegisteredView = class {
   }
 };
 var viewManagerInstance;
-var ViewManager = class _ViewManager {
+var ViewManager = class _ViewManager extends Common9.ObjectWrapper.ObjectWrapper {
   views;
   locationNameByViewId;
   locationOverrideSetting;
   constructor() {
+    super();
     this.views = /* @__PURE__ */ new Map();
     this.locationNameByViewId = /* @__PURE__ */ new Map();
     this.locationOverrideSetting = Common9.Settings.Settings.instance().createSetting("views-location-override", {});
@@ -6675,6 +6698,17 @@ var ViewManager = class _ViewManager {
     location.reveal();
     await location.showView(view, void 0, userGesture, omitFocus);
   }
+  isViewVisible(viewId) {
+    const view = this.views.get(viewId);
+    if (!view) {
+      return false;
+    }
+    const location = locationForView.get(view);
+    if (!location) {
+      return false;
+    }
+    return location.isViewVisible(view);
+  }
   async resolveLocation(location) {
     if (!location) {
       return null;
@@ -6764,7 +6798,7 @@ var ExpandableContainerWidget = class extends VBox {
   widget;
   materializePromise;
   constructor(view) {
-    super(true);
+    super({ useShadowDom: true });
     this.element.classList.add("flex-none");
     this.registerRequiredCSS(viewContainers_css_default);
     this.titleElement = document.createElement("div");
@@ -6894,10 +6928,14 @@ var Location = class {
   removeView(_view) {
     throw new Error("not implemented");
   }
+  isViewVisible(_view) {
+    throw new Error("not implemented");
+  }
 };
 var locationForView = /* @__PURE__ */ new WeakMap();
 var TabbedLocation = class _TabbedLocation extends Location {
   tabbedPaneInternal;
+  location;
   allowReorder;
   closeableTabSetting;
   tabOrderSetting;
@@ -6910,10 +6948,12 @@ var TabbedLocation = class _TabbedLocation extends Location {
       tabbedPane.setAllowTabReorder(true);
     }
     super(manager, tabbedPane, revealCallback);
+    this.location = location;
     this.tabbedPaneInternal = tabbedPane;
     this.allowReorder = allowReorder;
     this.tabbedPaneInternal.addEventListener(Events.TabSelected, this.tabSelected, this);
     this.tabbedPaneInternal.addEventListener(Events.TabClosed, this.tabClosed, this);
+    this.tabbedPaneInternal.addEventListener(Events.PaneVisibilityChanged, this.tabbedPaneVisibilityChanged, this);
     this.closeableTabSetting = Common9.Settings.Settings.instance().createSetting("closeable-tabs", {});
     this.setOrUpdateCloseableTabsSetting();
     this.tabOrderSetting = Common9.Settings.Settings.instance().createSetting(location + "-tab-order", {});
@@ -7076,11 +7116,29 @@ var TabbedLocation = class _TabbedLocation extends Location {
     this.tabbedPaneInternal.closeTab(view.viewId());
     this.views.delete(view.viewId());
   }
+  isViewVisible(view) {
+    return this.tabbedPaneInternal.isShowing() && this.tabbedPaneInternal?.selectedTabId === view.viewId();
+  }
+  tabbedPaneVisibilityChanged(event) {
+    if (!this.tabbedPaneInternal.selectedTabId) {
+      return;
+    }
+    this.manager.dispatchEventToListeners("ViewVisibilityChanged", {
+      location: this.location,
+      revealedViewId: event.data.isVisible ? this.tabbedPaneInternal.selectedTabId : void 0,
+      hiddenViewId: event.data.isVisible ? void 0 : this.tabbedPaneInternal.selectedTabId
+    });
+  }
   tabSelected(event) {
-    const { tabId } = event.data;
-    if (this.lastSelectedTabSetting && event.data["isUserGesture"]) {
+    const { tabId, prevTabId, isUserGesture } = event.data;
+    if (this.lastSelectedTabSetting && isUserGesture) {
       this.lastSelectedTabSetting.set(tabId);
     }
+    this.manager.dispatchEventToListeners("ViewVisibilityChanged", {
+      location: this.location,
+      revealedViewId: tabId,
+      hiddenViewId: prevTabId
+    });
   }
   tabClosed(event) {
     const { tabId } = event.data;
@@ -7168,6 +7226,9 @@ var StackLocation = class extends Location {
     this.expandableContainers.delete(view.viewId());
     locationForView.delete(view);
     this.manager.views.delete(view.viewId());
+  }
+  isViewVisible(_view) {
+    throw new Error("not implemented");
   }
   appendApplicableItems(locationName) {
     for (const view of this.manager.viewsForLocation(locationName)) {
@@ -7801,6 +7862,10 @@ var softContextMenu_css_default = `/*
     background-color: var(--sys-color-state-hover-on-subtle);
   }
 
+  & .new-badge {
+    margin-left: var(--sys-size-4);
+  }
+
   & devtools-icon {
     width: var(--sys-size-8);
     height: var(--sys-size-8);
@@ -8431,6 +8496,7 @@ var Item = class {
   typeInternal;
   label;
   accelerator;
+  featureName;
   previewFeature;
   disabled;
   checked;
@@ -8441,7 +8507,7 @@ var Item = class {
   shortcut;
   #tooltip;
   jslogContext;
-  constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext) {
+  constructor(contextMenu, type, label, isPreviewFeature, disabled, checked, accelerator, tooltip, jslogContext, featureName) {
     this.typeInternal = type;
     this.label = label;
     this.previewFeature = Boolean(isPreviewFeature);
@@ -8456,6 +8522,7 @@ var Item = class {
       this.idInternal = contextMenu ? contextMenu.nextId() : 0;
     }
     this.jslogContext = jslogContext;
+    this.featureName = featureName;
   }
   id() {
     if (this.idInternal === void 0) {
@@ -8487,7 +8554,8 @@ var Item = class {
           checked: void 0,
           subItems: void 0,
           tooltip: this.#tooltip,
-          jslogContext: this.jslogContext
+          jslogContext: this.jslogContext,
+          featureName: this.featureName
         };
         if (this.customElement) {
           result.element = this.customElement;
@@ -8555,7 +8623,7 @@ var Section = class {
     this.items = [];
   }
   appendItem(label, handler, options) {
-    const item8 = new Item(this.contextMenu, "item", label, options?.isPreviewFeature, options?.disabled, void 0, options?.accelerator, options?.tooltip, options?.jslogContext);
+    const item8 = new Item(this.contextMenu, "item", label, options?.isPreviewFeature, options?.disabled, void 0, options?.accelerator, options?.tooltip, options?.jslogContext, options?.featureName);
     if (options?.additionalElement) {
       item8.customElement = options?.additionalElement;
     }
@@ -8576,7 +8644,7 @@ var Section = class {
     this.items.push(item8);
     return item8;
   }
-  appendAction(actionId, label, optional) {
+  appendAction(actionId, label, optional, jslogContext, feature) {
     if (optional && !ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
@@ -8586,7 +8654,8 @@ var Section = class {
     }
     const result = this.appendItem(label, action6.execute.bind(action6), {
       disabled: !action6.enabled(),
-      jslogContext: actionId
+      jslogContext: jslogContext ?? actionId,
+      featureName: feature
     });
     const shortcut = ShortcutRegistry.instance().shortcutTitleForAction(actionId);
     const keyAndModifier = ShortcutRegistry.instance().keyAndModifiersForAction(actionId);
@@ -8597,14 +8666,14 @@ var Section = class {
       result.setShortcut(shortcut);
     }
   }
-  appendSubMenuItem(label, disabled, jslogContext) {
-    const item8 = new SubMenu(this.contextMenu, label, disabled, jslogContext);
+  appendSubMenuItem(label, disabled, jslogContext, featureName) {
+    const item8 = new SubMenu(this.contextMenu, label, disabled, jslogContext, featureName);
     item8.init();
     this.items.push(item8);
     return item8;
   }
   appendCheckboxItem(label, handler, options) {
-    const item8 = new Item(this.contextMenu, "checkbox", label, options?.experimental, options?.disabled, options?.checked, void 0, options?.tooltip, options?.jslogContext);
+    const item8 = new Item(this.contextMenu, "checkbox", label, options?.experimental, options?.disabled, options?.checked, void 0, options?.tooltip, options?.jslogContext, options?.featureName);
     this.items.push(item8);
     if (this.contextMenu) {
       this.contextMenu.setHandler(item8.id(), handler);
@@ -8618,8 +8687,8 @@ var Section = class {
 var SubMenu = class extends Item {
   sections;
   sectionList;
-  constructor(contextMenu, label, disabled, jslogContext) {
-    super(contextMenu, "subMenu", label, void 0, disabled, void 0, void 0, void 0, jslogContext);
+  constructor(contextMenu, label, disabled, jslogContext, featureName) {
+    super(contextMenu, "subMenu", label, void 0, disabled, void 0, void 0, void 0, jslogContext, featureName);
     this.sections = /* @__PURE__ */ new Map();
     this.sectionList = [];
   }
@@ -8689,7 +8758,8 @@ var SubMenu = class extends Item {
       subItems: [],
       id: void 0,
       checked: void 0,
-      jslogContext: this.jslogContext
+      jslogContext: this.jslogContext,
+      featureName: this.featureName
     };
     const nonEmptySections = this.sectionList.filter((section4) => Boolean(section4.items.length));
     for (const section4 of nonEmptySections) {
@@ -12915,6 +12985,19 @@ dt-icon-label {
   background-color: var(--sys-color-purple-bright);
 }
 
+.new-badge {
+  width: fit-content;
+  height: var(--sys-size-7);
+  line-height: var(--sys-size-7);
+  border-radius: var(--sys-shape-corner-extra-small);
+  padding: 0 var(--sys-size-3);
+  background-color: var(--sys-color-primary);
+  color: var(--sys-color-on-primary);
+  font-weight: var(--ref-typeface-weight-bold);
+  font-size: 9px;
+  text-align: center;
+}
+
 .expandable-inline-button {
   background-color: var(--sys-color-cdt-base-container);
   color: var(--sys-color-on-surface);
@@ -13769,7 +13852,11 @@ var UIStrings12 = {
   /**
    *@description Text to cancel something
    */
-  cancel: "Cancel"
+  cancel: "Cancel",
+  /**
+   *@description Text for the new badge appearing next to some menu items
+   */
+  new: "NEW"
 };
 var str_12 = i18n23.i18n.registerUIStrings("ui/legacy/UIUtils.ts", UIStrings12);
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
@@ -15279,10 +15366,82 @@ function openInNewTab(url) {
   }
   Host8.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(Platform16.DevToolsPath.urlString`${url}`);
 }
+var MAX_DISPLAY_COUNT = 10;
+var MAX_DURATION = 60 * 24 * 60 * 60 * 1e3;
+var MAX_INTERACTION_COUNT = 2;
+var PromotionManager = class _PromotionManager {
+  static #instance;
+  static instance() {
+    if (!_PromotionManager.#instance) {
+      _PromotionManager.#instance = new _PromotionManager();
+    }
+    return _PromotionManager.#instance;
+  }
+  getPromotionDisplayState(id2) {
+    const displayStateString = localStorage.getItem(id2);
+    return displayStateString ? JSON.parse(displayStateString) : null;
+  }
+  setPromotionDisplayState(id2, promotionDisplayState) {
+    localStorage.setItem(id2, JSON.stringify(promotionDisplayState));
+  }
+  registerPromotion(id2) {
+    this.setPromotionDisplayState(id2, {
+      displayCount: 0,
+      firstRegistered: Date.now(),
+      featureInteractionCount: 0
+    });
+  }
+  recordPromotionShown(id2) {
+    const displayState = this.getPromotionDisplayState(id2);
+    if (!displayState) {
+      throw new Error(`Cannot record promotion shown for unregistered promotion ${id2}`);
+    }
+    this.setPromotionDisplayState(id2, {
+      ...displayState,
+      displayCount: displayState.displayCount + 1
+    });
+  }
+  canShowPromotion(id2) {
+    const displayState = this.getPromotionDisplayState(id2);
+    if (!displayState) {
+      this.registerPromotion(id2);
+      return true;
+    }
+    return displayState.displayCount < MAX_DISPLAY_COUNT && Date.now() - displayState.firstRegistered < MAX_DURATION && displayState.featureInteractionCount < MAX_INTERACTION_COUNT;
+  }
+  recordFeatureInteraction(id2) {
+    const displayState = this.getPromotionDisplayState(id2);
+    if (!displayState) {
+      throw new Error(`Cannot record feature interaction for unregistered promotion ${id2}`);
+    }
+    this.setPromotionDisplayState(id2, {
+      ...displayState,
+      featureInteractionCount: displayState.featureInteractionCount + 1
+    });
+  }
+  maybeShowPromotion(id2) {
+    if (this.canShowPromotion(id2)) {
+      this.recordPromotionShown(id2);
+      return true;
+    }
+    return false;
+  }
+};
+function maybeCreateNewBadge(promotionId) {
+  const promotionManager = PromotionManager.instance();
+  if (promotionManager.maybeShowPromotion(promotionId)) {
+    const badge2 = document.createElement("div");
+    badge2.className = "new-badge";
+    badge2.textContent = i18nString12(UIStrings12.new);
+    badge2.setAttribute("jslog", `${VisualLogging15.badge("new-badge")}`);
+    return badge2;
+  }
+  return void 0;
+}
 
 // gen/front_end/ui/legacy/GlassPane.js
 var GlassPane = class _GlassPane {
-  widgetInternal = new Widget(true);
+  widgetInternal = new Widget({ useShadowDom: true });
   element;
   contentElement;
   onMouseDownBound;
@@ -16535,7 +16694,7 @@ var EmptyWidget = class extends VBox {
     if (!element && headerOrElement instanceof HTMLElement) {
       element = headerOrElement;
     }
-    super(void 0, void 0, element);
+    super(element);
     this.registerRequiredCSS(emptyWidget_css_default);
     this.element.classList.add("empty-view-scroller");
     this.contentElement = this.element.createChild("div", "empty-state");
@@ -17688,7 +17847,7 @@ var ListWidget = class extends VBox {
   emptyPlaceholder;
   isTable;
   constructor(delegate, delegatesFocus = true, isTable = false) {
-    super(true, delegatesFocus);
+    super({ useShadowDom: true, delegatesFocus });
     this.registerRequiredCSS(listWidget_css_default);
     this.delegate = delegate;
     this.list = this.contentElement.createChild("div", "list");
@@ -18049,7 +18208,7 @@ import * as VisualLogging21 from "./../visual_logging/visual_logging.js";
 var Panel = class extends VBox {
   panelName;
   constructor(name, useShadowDom) {
-    super(useShadowDom);
+    super({ useShadowDom });
     this.element.setAttribute("jslog", `${VisualLogging21.panel().context(name).track({ resize: true })}`);
     this.element.classList.add("panel");
     this.element.setAttribute("aria-label", name);
@@ -18545,7 +18704,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
 };
 var RemoteDebuggingTerminatedScreen = class _RemoteDebuggingTerminatedScreen extends VBox {
   constructor(reason, view = DEFAULT_VIEW) {
-    super(true);
+    super({ useShadowDom: true });
     const input = {
       reason,
       onReconnect: () => {
@@ -18746,7 +18905,7 @@ var ReportView = class extends VBox {
   subtitleElement;
   urlElement;
   constructor(title) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(reportView_css_default);
     this.contentBox = this.contentElement.createChild("div", "report-content-box");
     this.headerElement = this.contentBox.createChild("div", "report-header vbox");
@@ -19280,7 +19439,7 @@ var SearchableView = class extends VBox {
   currentQuery;
   valueChangedTimeoutId;
   constructor(searchable, replaceable, settingName) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(searchableView_css_default);
     searchableViewsByElement.set(this.element, this);
     this.searchProvider = searchable;
@@ -20167,7 +20326,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
 var TargetCrashedScreen = class extends VBox {
   hideCallback;
   constructor(hideCallback, view = DEFAULT_VIEW2) {
-    super(true);
+    super({ useShadowDom: true });
     view({}, {}, this.contentElement);
     this.hideCallback = hideCallback;
   }
@@ -20187,7 +20346,7 @@ var ThrottledWidget = class extends VBox {
   updateWhenVisible;
   lastUpdatePromise = Promise.resolve();
   constructor(useShadowDom, timeout) {
-    super(useShadowDom);
+    super({ useShadowDom });
     this.updateThrottler = new Common18.Throttler.Throttler(timeout === void 0 ? 100 : timeout);
     this.updateWhenVisible = false;
   }
@@ -21667,7 +21826,7 @@ var SimpleView = class extends VBox {
   #title;
   #viewId;
   constructor(title, useShadowDom, viewId) {
-    super(useShadowDom);
+    super({ useShadowDom });
     this.#title = title;
     if (viewId) {
       if (!Platform27.StringUtilities.isExtendedKebabCase(viewId)) {

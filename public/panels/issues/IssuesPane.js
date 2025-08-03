@@ -169,7 +169,7 @@ export class IssuesPane extends UI.Widget.VBox {
     #aggregator;
     #issueViewUpdatePromise = Promise.resolve();
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(issuesPaneStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('issues')}`);
         this.contentElement.classList.add('issues-pane');

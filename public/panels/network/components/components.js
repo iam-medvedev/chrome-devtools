@@ -371,7 +371,7 @@ var DirectSocketConnectionView = class extends UI.Widget.Widget {
   #request;
   #view;
   constructor(request, view = DEFAULT_VIEW) {
-    super(true);
+    super({ useShadowDom: true });
     this.#request = request;
     this.#view = view;
     this.element.setAttribute("jslog", `${VisualLogging.pane("connection-info").track({ resize: true })}`);

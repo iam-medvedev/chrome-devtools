@@ -1077,7 +1077,7 @@ var CoverageListView = class extends UI.Widget.VBox {
   highlightRegExp;
   dataGrid;
   constructor(isVisibleFilter) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(coverageListView_css_default);
     this.nodeForCoverageInfo = /* @__PURE__ */ new Map();
     this.isVisibleFilter = isVisibleFilter;
@@ -1784,7 +1784,7 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
   statusToolbarElement;
   statusMessageElement;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(coverageView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging.panel("coverage").track({ resize: true })}`);
     this.model = null;

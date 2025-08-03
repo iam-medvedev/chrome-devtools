@@ -38,7 +38,7 @@ export var VisualElements;
     VisualElements[VisualElements["Gutter"] = 22] = "Gutter";
     VisualElements[VisualElements["MetricsBox"] = 23] = "MetricsBox";
     VisualElements[VisualElements["MetricsBoxPart"] = 24] = "MetricsBoxPart";
-    /* 25 used to be DOMBreakpointsPane, but free to grab now */
+    VisualElements[VisualElements["Badge"] = 25] = "Badge";
     VisualElements[VisualElements["DOMBreakpoint"] = 26] = "DOMBreakpoint";
     /* 27 used to be ElementPropertiesPane, but free to grab now */
     /* 28 used to be EventListenersPane, but free to grab now */

@@ -86,7 +86,7 @@ export class DeviceModeView extends UI.Widget.VBox {
     handleWidth;
     handleHeight;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.blockElementToWidth = new WeakMap();
         this.setMinimumSize(150, 150);
         this.element.classList.add('device-mode-view');

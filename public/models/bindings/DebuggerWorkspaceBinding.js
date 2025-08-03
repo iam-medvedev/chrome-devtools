@@ -8,7 +8,6 @@ import * as Workspace from '../workspace/workspace.js';
 import { CompilerScriptMapping } from './CompilerScriptMapping.js';
 import { DebuggerLanguagePluginManager } from './DebuggerLanguagePlugins.js';
 import { DefaultScriptMapping } from './DefaultScriptMapping.js';
-import { IgnoreListManager } from './IgnoreListManager.js';
 import { LiveLocationWithPool } from './LiveLocation.js';
 import { NetworkProject } from './NetworkProject.js';
 import { ResourceScriptMapping } from './ResourceScriptMapping.js';
@@ -18,12 +17,13 @@ export class DebuggerWorkspaceBinding {
     #debuggerModelToData;
     #liveLocationPromises;
     pluginManager;
-    constructor(resourceMapping, targetManager) {
+    constructor(resourceMapping, targetManager, ignoreListManager) {
         this.resourceMapping = resourceMapping;
         this.#debuggerModelToData = new Map();
         targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.GlobalObjectCleared, this.globalObjectCleared, this);
         targetManager.addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this.debuggerResumed, this);
         targetManager.observeModels(SDK.DebuggerModel.DebuggerModel, this);
+        ignoreListManager.addEventListener("IGNORED_SCRIPT_RANGES_UPDATED" /* Workspace.IgnoreListManager.Events.IGNORED_SCRIPT_RANGES_UPDATED */, event => this.updateLocations(event.data));
         this.#liveLocationPromises = new Set();
         this.pluginManager = new DebuggerLanguagePluginManager(targetManager, resourceMapping.workspace, this);
     }
@@ -32,13 +32,14 @@ export class DebuggerWorkspaceBinding {
             modelData.compilerMapping.setFunctionRanges(uiSourceCode, ranges);
         }
     }
-    static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null }) {
-        const { forceNew, resourceMapping, targetManager } = opts;
+    static instance(opts = { forceNew: null, resourceMapping: null, targetManager: null, ignoreListManager: null }) {
+        const { forceNew, resourceMapping, targetManager, ignoreListManager } = opts;
         if (!debuggerWorkspaceBindingInstance || forceNew) {
-            if (!resourceMapping || !targetManager) {
-                throw new Error(`Unable to create DebuggerWorkspaceBinding: resourceMapping and targetManager must be provided: ${new Error().stack}`);
+            if (!resourceMapping || !targetManager || !ignoreListManager) {
+                throw new Error(`Unable to create DebuggerWorkspaceBinding: resourceMapping, targetManager and IgnoreLIstManager must be provided: ${new Error().stack}`);
             }
-            debuggerWorkspaceBindingInstance = new DebuggerWorkspaceBinding(resourceMapping, targetManager);
+            debuggerWorkspaceBindingInstance =
+                new DebuggerWorkspaceBinding(resourceMapping, targetManager, ignoreListManager);
         }
         return debuggerWorkspaceBindingInstance;
     }
@@ -458,13 +459,6 @@ export class Location extends LiveLocationWithPool {
         super.dispose();
         this.#binding.removeLiveLocation(this);
     }
-    async isIgnoreListed() {
-        const uiLocation = await this.uiLocation();
-        if (!uiLocation) {
-            return false;
-        }
-        return IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiLocation.uiSourceCode);
-    }
 }
 class StackTraceTopFrameLocation extends LiveLocationWithPool {
     #updateScheduled;
@@ -485,9 +479,6 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
     }
     async uiLocation() {
         return this.#current ? await this.#current.uiLocation() : null;
-    }
-    async isIgnoreListed() {
-        return this.#current ? await this.#current.isIgnoreListed() : false;
     }
     dispose() {
         super.dispose();
@@ -515,7 +506,8 @@ class StackTraceTopFrameLocation extends LiveLocationWithPool {
         }
         this.#current = this.#locations[0];
         for (const location of this.#locations) {
-            if (!(await location.isIgnoreListed())) {
+            const uiLocation = await location.uiLocation();
+            if (!uiLocation?.isIgnoreListed()) {
                 this.#current = location;
                 break;
             }

@@ -805,7 +805,7 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI4.Widget.VBox
   previewAnimation;
   debouncedStartPreviewAnimation;
   constructor(model) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(bezierEditor_css_default);
     this.model = model;
     this.contentElement.tabIndex = 0;
@@ -2199,7 +2199,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
   canvasOrigin;
   changedElement;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(cssShadowEditor_css_default);
     this.contentElement.tabIndex = 0;
     this.contentElement.setAttribute("jslog", `${VisualLogging7.dialog("cssShadowEditor").parent("mapped").track({ keydown: "Enter|Escape" })}`);
@@ -3250,7 +3250,7 @@ var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox)
   fontSelectors;
   fontsList;
   constructor(propertyMap) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(fontEditor_css_default);
     this.propertyMap = propertyMap;
     this.contentElement.tabIndex = 0;

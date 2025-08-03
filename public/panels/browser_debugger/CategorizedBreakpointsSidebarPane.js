@@ -143,7 +143,7 @@ export class FilterToolbar extends Common.ObjectWrapper.eventMixin(UI.Widget.VBo
     #view;
     #filterText = null;
     constructor(element, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
         this.performUpdate();
     }
@@ -177,7 +177,7 @@ export class CategorizedBreakpointsSidebarPane extends UI.Widget.VBox {
     filterToolbar;
     #expandedForFilter = new Set();
     constructor(breakpoints, viewId, detailsPausedReason) {
-        super(true);
+        super({ useShadowDom: true });
         this.filterToolbar = new FilterToolbar();
         this.filterToolbar.addEventListener(FilterToolbar.Events.FILTER_CHANGED, this.#onFilterChanged.bind(this));
         this.filterToolbar.show(this.contentElement);

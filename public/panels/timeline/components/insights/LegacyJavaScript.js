@@ -18,6 +18,9 @@ export class LegacyJavaScript extends BaseInsightComponent {
     getEstimatedSavingsTime() {
         return this.model?.metricSavings?.FCP ?? null;
     }
+    hasAskAiSupport() {
+        return true;
+    }
     async #revealLocation(script, match) {
         const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
         if (!target) {

@@ -408,7 +408,7 @@ export class CSSPlugin extends Plugin {
         const cssModel = this.#cssModel;
         const url = this.uiSourceCode.url();
         if (this.uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network && cssModel &&
-            !Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
+            !Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
             const addSourceMapURLLabel = i18nString(UIStrings.addSourceMap);
             contextMenu.debugSection().appendItem(addSourceMapURLLabel, () => addSourceMapURL(cssModel, url), { jslogContext: 'add-source-map' });
         }

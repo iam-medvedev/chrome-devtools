@@ -24,7 +24,7 @@ export class RelatedInsightChips extends UI.Widget.Widget {
     #activeEvent = null;
     #eventToInsightsMap = new Map();
     constructor(element, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
     }
     set activeEvent(event) {

@@ -98,6 +98,10 @@ const UIStrings = {
      *@description Text to cancel something
      */
     cancel: 'Cancel',
+    /**
+     *@description Text for the new badge appearing next to some menu items
+     */
+    new: 'NEW',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/UIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1726,5 +1730,92 @@ export function openInNewTab(url) {
         }
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(Platform.DevToolsPath.urlString `${url}`);
+}
+const MAX_DISPLAY_COUNT = 10;
+// 60 days in ms
+const MAX_DURATION = 60 * 24 * 60 * 60 * 1000;
+const MAX_INTERACTION_COUNT = 2;
+export class PromotionManager {
+    static #instance;
+    static instance() {
+        if (!PromotionManager.#instance) {
+            PromotionManager.#instance = new PromotionManager();
+        }
+        return PromotionManager.#instance;
+    }
+    getPromotionDisplayState(id) {
+        const displayStateString = localStorage.getItem(id);
+        return displayStateString ? JSON.parse(displayStateString) : null;
+    }
+    setPromotionDisplayState(id, promotionDisplayState) {
+        localStorage.setItem(id, JSON.stringify(promotionDisplayState));
+    }
+    registerPromotion(id) {
+        this.setPromotionDisplayState(id, {
+            displayCount: 0,
+            firstRegistered: Date.now(),
+            featureInteractionCount: 0,
+        });
+    }
+    recordPromotionShown(id) {
+        const displayState = this.getPromotionDisplayState(id);
+        if (!displayState) {
+            throw new Error(`Cannot record promotion shown for unregistered promotion ${id}`);
+        }
+        this.setPromotionDisplayState(id, {
+            ...displayState,
+            displayCount: displayState.displayCount + 1,
+        });
+    }
+    canShowPromotion(id) {
+        const displayState = this.getPromotionDisplayState(id);
+        if (!displayState) {
+            this.registerPromotion(id);
+            return true;
+        }
+        return displayState.displayCount < MAX_DISPLAY_COUNT && Date.now() - displayState.firstRegistered < MAX_DURATION &&
+            displayState.featureInteractionCount < MAX_INTERACTION_COUNT;
+    }
+    recordFeatureInteraction(id) {
+        const displayState = this.getPromotionDisplayState(id);
+        if (!displayState) {
+            throw new Error(`Cannot record feature interaction for unregistered promotion ${id}`);
+        }
+        this.setPromotionDisplayState(id, {
+            ...displayState,
+            featureInteractionCount: displayState.featureInteractionCount + 1,
+        });
+    }
+    maybeShowPromotion(id) {
+        if (this.canShowPromotion(id)) {
+            this.recordPromotionShown(id);
+            return true;
+        }
+        return false;
+    }
+}
+/**
+ * Creates a `<div>` element with the localized text NEW.
+ *
+ * The element is automatically styled correctly, as long as the core styles (in particular
+ * `inspectorCommon.css` is injected into the current document / shadow root). The lit
+ * equivalent of calling this method is:
+ *
+ * ```js
+ * const jslog = VisualLogging.badge('new-badge');
+ * html`<div class='new-badge' jsog=${jslog}>i18nString(UIStrings.new)</div>`
+ *
+ * @returns the newly created `HTMLDivElement` for the new badge.
+ */
+export function maybeCreateNewBadge(promotionId) {
+    const promotionManager = PromotionManager.instance();
+    if (promotionManager.maybeShowPromotion(promotionId)) {
+        const badge = document.createElement('div');
+        badge.className = 'new-badge';
+        badge.textContent = i18nString(UIStrings.new);
+        badge.setAttribute('jslog', `${VisualLogging.badge('new-badge')}`);
+        return badge;
+    }
+    return undefined;
 }
 //# sourceMappingURL=UIUtils.js.map

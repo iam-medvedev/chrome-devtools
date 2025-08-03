@@ -21,7 +21,7 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     list;
     selectedModel;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(threadsSidebarPaneStyles);
         this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.threads')}`);
         this.items = new UI.ListModel.ListModel();

@@ -296,6 +296,7 @@ export class MainImpl {
         // Hide third party code (as determined by ignore lists or source maps)
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in Sources tree view');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
+        Root.Runtime.experiments.register("timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */, 'Performance panel: enable saving traces as .gz');
         Root.Runtime.experiments.enableExperimentsByDefault([
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
             "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
@@ -367,10 +368,14 @@ export class MainImpl {
             resourceMapping,
             targetManager,
         });
+        Workspace.IgnoreListManager.IgnoreListManager.instance({
+            forceNew: true,
+        });
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
             targetManager,
+            ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager.instance(),
         });
         targetManager.setScopeTarget(targetManager.primaryPageTarget());
         UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, ({ data }) => {
@@ -394,10 +399,6 @@ export class MainImpl {
         });
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
         new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
-        Bindings.IgnoreListManager.IgnoreListManager.instance({
-            forceNew: true,
-            debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
-        });
         const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
             forceNew: true,
             hostConfig: Root.Runtime.hostConfig,
@@ -753,6 +754,20 @@ export class MainMenuItem {
             dockController.setDockSide(side);
             contextMenu.discard();
         }
+        const aiPreregisteredView = UI.ViewManager.getRegisteredViewExtensionForID('freestyler');
+        if (aiPreregisteredView) {
+            let additionalElement = undefined;
+            const promotionId = aiPreregisteredView.featurePromotionId();
+            if (promotionId) {
+                additionalElement = UI.UIUtils.maybeCreateNewBadge(promotionId);
+            }
+            contextMenu.defaultSection().appendItem(aiPreregisteredView.title(), () => {
+                void UI.ViewManager.ViewManager.instance().showView('freestyler', true, false);
+                if (promotionId) {
+                    UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(promotionId);
+                }
+            }, { additionalElement, jslogContext: 'freestyler' });
+        }
         if (dockController.dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */) {
             const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             if (mainTarget && mainTarget.type() === SDK.Target.Type.FRAME) {
@@ -785,6 +800,10 @@ export class MainMenuItem {
                 continue;
             }
             if (location !== 'drawer-view' && location !== 'panel') {
+                continue;
+            }
+            // Skip AI Assistance because we already show it in the main menu
+            if (id === 'freestyler') {
                 continue;
             }
             if (viewExtension.isPreviewFeature()) {
@@ -856,17 +875,40 @@ export class ReloadActionDelegate {
         return false;
     }
 }
+// For backwards-compatibility we iterate over the generator and drop the
+// intermediate results. The final response is transformed to its legacy type.
+// Instead of sending responses of type error, errors are throws.
 export async function handleExternalRequest(input) {
+    const generator = await handleExternalRequestGenerator(input);
+    let result;
+    do {
+        result = await generator.next();
+    } while (!result.done);
+    const response = result.value;
+    if (response.type === "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */) {
+        throw new Error(response.message);
+    }
+    if (response.type === "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */) {
+        return {
+            response: response.message,
+            devToolsLogs: response.devToolsLogs,
+        };
+    }
+    throw new Error('Received no response of type answer or type error');
+}
+// @ts-expect-error
+globalThis.handleExternalRequest = handleExternalRequest;
+export async function handleExternalRequestGenerator(input) {
     switch (input.kind) {
         case 'PERFORMANCE_RELOAD_GATHER_INSIGHTS': {
             const TimelinePanel = await import('../../panels/timeline/timeline.js');
-            return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
+            return TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
         }
         case 'PERFORMANCE_ANALYZE_INSIGHT': {
             const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
             const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-            return await panelInstance.handleExternalRequest({
+            return panelInstance.handleExternalRequest({
                 conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */,
                 prompt: input.args.prompt,
                 insightTitle: input.args.insightTitle,
@@ -876,7 +918,7 @@ export async function handleExternalRequest(input) {
             const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
             const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-            return await panelInstance.handleExternalRequest({
+            return panelInstance.handleExternalRequest({
                 conversationType: "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */,
                 prompt: input.args.prompt,
                 requestUrl: input.args.requestUrl,
@@ -886,16 +928,22 @@ export async function handleExternalRequest(input) {
             const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
             const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-            return await panelInstance.handleExternalRequest({
+            return panelInstance.handleExternalRequest({
                 conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
                 prompt: input.args.prompt,
                 selector: input.args.selector,
             });
         }
     }
-    // @ts-expect-error
-    throw new Error(`Debugging with an agent of type '${input.kind}' is not implemented yet.`);
+    // eslint-disable-next-line require-yield
+    return (async function* () {
+        return {
+            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+            // @ts-expect-error
+            message: `Debugging with an agent of type '${input.kind}' is not implemented yet.`,
+        };
+    })();
 }
 // @ts-expect-error
-globalThis.handleExternalRequest = handleExternalRequest;
+globalThis.handleExternalRequestGenerator = handleExternalRequestGenerator;
 //# sourceMappingURL=MainImpl.js.map

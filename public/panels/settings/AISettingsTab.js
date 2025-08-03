@@ -50,7 +50,7 @@ const UIStrings = {
      */
     helpUnderstandConsole: 'Helps you understand and fix console warnings and errors',
     /**
-     *@description Text describing the 'Console Insights' feature
+     *@description Text describing the 'Auto Annotations' feature
      */
     getAIAnnotationsSuggestions: 'Get AI suggestions for performance panel annotations',
     /**
@@ -104,6 +104,10 @@ const UIStrings = {
      */
     helpUnderstandStylingNetworkPerformanceAndFile: 'Get help with understanding CSS styles, network requests, performance, and files',
     /**
+     *@description Text describing the 'Code suggestions' feature
+     */
+    helpUnderstandCodeSuggestions: 'Get help completing your code',
+    /**
      *@description Text which is a hyperlink to more documentation
      */
     learnMore: 'Learn more',
@@ -144,6 +148,18 @@ const UIStrings = {
      */
     generatedAiAnnotationsSendDataNoLogging: 'Your performance trace is sent to Google to generate an explanation. This data will not be used to improve Google’s AI models.',
     /**
+     *@description Description of the 'Code suggestions' feature
+     */
+    asYouTypeCodeSuggestions: 'As you type in the Console or Sources panel, you’ll get code suggestions. Press Tab to accept one.',
+    /**
+     *@description Explainer for which data is being sent for the 'Code suggestions' feature
+     */
+    codeSuggestionsSendData: 'To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.',
+    /**
+     *@description Explainer for which data is being sent for the 'Code suggestions' feature when logging is not enabled
+     */
+    codeSuggestionsSendDataNoLogging: 'To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data will not be used to improve Google’s AI models.',
+    /**
      *@description Label for a link to the terms of service
      */
     termsOfService: 'Google Terms of Service',
@@ -171,6 +187,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
     #consoleInsightsSetting;
     #aiAnnotationsSetting;
     #aiAssistanceSetting;
+    #aiCodeCompletionSetting;
     #aidaAvailability = "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */;
     #boundOnAidaAvailabilityChange;
     // Setting to parameters needed to display it in the UI.
@@ -193,6 +210,11 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         if (Root.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled) {
             // Get an existing setting or, if it does not exist, create a new one.
             this.#aiAnnotationsSetting = Common.Settings.Settings.instance().createSetting('ai-annotations-enabled', false);
+        }
+        if (Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled) {
+            // Get an existing setting or, if it does not exist, create a new one.
+            this.#aiCodeCompletionSetting =
+                Common.Settings.Settings.instance().createSetting('ai-code-completion-fre-completed', false);
         }
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.#initSettings();
@@ -255,7 +277,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
             this.#settingToParams.set(this.#aiAssistanceSetting, aiAssistanceData);
         }
         if (this.#aiAnnotationsSetting) {
-            const aiAssistanceData = {
+            const aiAnnotationsData = {
                 settingName: i18n.i18n.lockedString('Auto annotations'),
                 iconName: 'pen-spark',
                 settingDescription: i18nString(UIStrings.getAIAnnotationsSuggestions),
@@ -274,10 +296,31 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
                 },
                 settingExpandState: {
                     isSettingExpanded: false,
-                    expandSettingJSLogContext: 'freestyler.accordion',
+                    expandSettingJSLogContext: 'auto-annotations.accordion',
                 },
             };
-            this.#settingToParams.set(this.#aiAnnotationsSetting, aiAssistanceData);
+            this.#settingToParams.set(this.#aiAnnotationsSetting, aiAnnotationsData);
+        }
+        if (this.#aiCodeCompletionSetting) {
+            const aiCodeCompletionData = {
+                settingName: i18n.i18n.lockedString('Code suggestions'),
+                iconName: 'text-analysis',
+                settingDescription: i18nString(UIStrings.helpUnderstandCodeSuggestions),
+                enableSettingText: i18nString(UIStrings.enableAiSuggestedAnnotations),
+                settingItems: [{ iconName: 'code', text: i18nString(UIStrings.asYouTypeCodeSuggestions) }],
+                toConsiderSettingItems: [{
+                        iconName: 'google',
+                        text: noLogging ? i18nString(UIStrings.codeSuggestionsSendDataNoLogging) :
+                            i18nString(UIStrings.codeSuggestionsSendData)
+                    }],
+                // TODO: Add a relevant link
+                learnMoreLink: { url: '', linkJSLogContext: 'learn-more.code-completion' },
+                settingExpandState: {
+                    isSettingExpanded: false,
+                    expandSettingJSLogContext: 'code-completion.accordion',
+                },
+            };
+            this.#settingToParams.set(this.#aiCodeCompletionSetting, aiCodeCompletionData);
         }
     }
     async #onAidaAvailabilityChange() {

@@ -401,16 +401,6 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
         }
         const uiLocation = await liveLocation.uiLocation();
         if (!uiLocation) {
-            if (liveLocation instanceof Bindings.CSSWorkspaceBinding.LiveLocation) {
-                const header = (liveLocation).header();
-                if (header?.ownerNode) {
-                    anchor.addEventListener('click', event => {
-                        event.consume(true);
-                        void Common.Revealer.reveal(header.ownerNode || null);
-                    }, false);
-                    Linkifier.setTrimmedText(anchor, '<style>');
-                }
-            }
             anchor.classList.add('invalid-link');
             anchor.removeAttribute('role');
             return;
@@ -439,7 +429,8 @@ export class Linkifier extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         UI.Tooltip.Tooltip.install(anchor, titleText);
-        anchor.classList.toggle('ignore-list-link', await liveLocation.isIgnoreListed());
+        const isIgnoreListed = Boolean(uiLocation?.isIgnoreListed());
+        anchor.classList.toggle('ignore-list-link', isIgnoreListed);
         Linkifier.updateLinkDecorations(anchor);
     }
     static updateLinkDecorations(anchor) {

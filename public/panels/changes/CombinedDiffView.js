@@ -86,7 +86,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
       </div>
     `, target, { host: target });
     }) {
-        super(false, false, element);
+        super(element);
         this.registerRequiredCSS(combinedDiffViewStyles);
         this.#view = view;
     }
