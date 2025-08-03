@@ -283,3 +283,33 @@ export declare function measuredScrollbarWidth(document?: Document | null): numb
  * @see https://en.wikipedia.org/wiki/UTM_parameters
  */
 export declare function openInNewTab(url: URL | string): void;
+export interface PromotionDisplayState {
+    displayCount: number;
+    firstRegistered: number;
+    featureInteractionCount: number;
+}
+export declare class PromotionManager {
+    #private;
+    static instance(): PromotionManager;
+    private getPromotionDisplayState;
+    private setPromotionDisplayState;
+    private registerPromotion;
+    private recordPromotionShown;
+    private canShowPromotion;
+    recordFeatureInteraction(id: string): void;
+    maybeShowPromotion(id: string): boolean;
+}
+/**
+ * Creates a `<div>` element with the localized text NEW.
+ *
+ * The element is automatically styled correctly, as long as the core styles (in particular
+ * `inspectorCommon.css` is injected into the current document / shadow root). The lit
+ * equivalent of calling this method is:
+ *
+ * ```js
+ * const jslog = VisualLogging.badge('new-badge');
+ * html`<div class='new-badge' jsog=${jslog}>i18nString(UIStrings.new)</div>`
+ *
+ * @returns the newly created `HTMLDivElement` for the new badge.
+ */
+export declare function maybeCreateNewBadge(promotionId: string): HTMLDivElement | undefined;

@@ -45,7 +45,6 @@
     "../../../../../../front_end/models/bindings/DebuggerWorkspaceBinding.test.ts",
     "../../../../../../front_end/models/bindings/DefaultScriptMapping.test.ts",
     "../../../../../../front_end/models/bindings/FileUtils.test.ts",
-    "../../../../../../front_end/models/bindings/IgnoreListManager.test.ts",
     "../../../../../../front_end/models/bindings/LiveLocation.test.ts",
     "../../../../../../front_end/models/bindings/PresentationConsoleMessageHelper.test.ts",
     "../../../../../../front_end/models/bindings/ResourceMapping.test.ts",

@@ -13,10 +13,15 @@ export class AutofillModel extends SDKModel {
         this.agent = target.autofillAgent();
         this.#showTestAddressesInAutofillMenu =
             Common.Settings.Settings.instance().createSetting('show-test-addresses-in-autofill-menu-on-event', false);
+        this.#showTestAddressesInAutofillMenu.addChangeListener(this.#setTestAddresses, this);
         target.registerAutofillDispatcher(this);
         this.enable();
     }
-    setTestAddresses() {
+    dispose() {
+        this.#showTestAddressesInAutofillMenu.removeChangeListener(this.#setTestAddresses, this);
+        super.dispose();
+    }
+    #setTestAddresses() {
         void this.agent.invoke_setAddresses({
             addresses: this.#showTestAddressesInAutofillMenu.get() ?
                 [
@@ -133,7 +138,7 @@ export class AutofillModel extends SDKModel {
             return;
         }
         void this.agent.invoke_enable();
-        this.setTestAddresses();
+        this.#setTestAddresses();
         this.#enabled = true;
     }
     disable() {

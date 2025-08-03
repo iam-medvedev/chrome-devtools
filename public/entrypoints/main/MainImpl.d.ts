@@ -1,4 +1,5 @@
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class MainImpl {
     #private;
@@ -61,9 +62,9 @@ type ExternalRequestInput = {
         prompt: string;
     };
 };
-interface ExternalRequestResponse {
+export declare function handleExternalRequest(input: ExternalRequestInput): Promise<{
     response: string;
     devToolsLogs: object[];
-}
-export declare function handleExternalRequest(input: ExternalRequestInput): Promise<ExternalRequestResponse>;
+}>;
+export declare function handleExternalRequestGenerator(input: ExternalRequestInput): Promise<AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>>;
 export {};

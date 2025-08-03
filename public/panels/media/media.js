@@ -2082,7 +2082,7 @@ var PlayerListView = class extends UI6.Widget.VBox {
   mainContainer;
   currentlySelectedEntry;
   constructor(mainContainer) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(playerListView_css_default);
     this.playerEntryFragments = /* @__PURE__ */ new Map();
     this.playerEntriesWithHostnameFrameTitle = /* @__PURE__ */ new Set();

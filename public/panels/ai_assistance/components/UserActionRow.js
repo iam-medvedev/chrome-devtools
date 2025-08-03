@@ -213,7 +213,7 @@ export class UserActionRow extends UI.Widget.Widget {
     #view;
     #viewOutput = {};
     constructor(element, view) {
-        super(false, false, element);
+        super(element);
         this.#view = view ?? DEFAULT_VIEW;
     }
     wasShown() {

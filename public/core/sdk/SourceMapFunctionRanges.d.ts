@@ -1,7 +1,7 @@
-import { type OriginalScope, type Position } from './SourceMapScopes.js';
+import type * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 export interface NamedFunctionRange {
-    start: Position;
-    end: Position;
+    start: ScopesCodec.Position;
+    end: ScopesCodec.Position;
     name: string;
 }
 /**
@@ -17,7 +17,7 @@ export interface NamedFunctionRange {
  * @throws if the ranges are not nested properly. Concretely: start < end for each range, and no
  * "straddling" (i.e. partially overlapping ranges).
  */
-export declare function buildOriginalScopes(ranges: NamedFunctionRange[]): OriginalScope;
+export declare function buildOriginalScopes(ranges: NamedFunctionRange[]): ScopesCodec.OriginalScope;
 /**
  * Implements decoding of the pasta source map specification.
  *

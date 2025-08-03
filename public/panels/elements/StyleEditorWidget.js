@@ -16,7 +16,7 @@ export class StyleEditorWidget extends UI.Widget.VBox {
     editorContainer;
     #triggerKey;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.contentElement.tabIndex = 0;
         this.setDefaultFocusedElement(this.contentElement);
         this.editorContainer = document.createElement('div');

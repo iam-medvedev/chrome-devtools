@@ -20,4 +20,8 @@ export declare class TraceEventFormatter {
     #private;
     static layoutShift(shift: Trace.Types.Events.SyntheticLayoutShift, index: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, rootCauses?: Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData): string;
     static networkRequests(requests: readonly Trace.Types.Events.SyntheticNetworkRequest[], parsedTrace: Trace.Handlers.Types.ParsedTrace, options?: NetworkRequestFormatOptions): string;
+    /**
+     * Network requests format description that is sent to the model as a fact.
+     */
+    static networkDataFormatDescription: string;
 }

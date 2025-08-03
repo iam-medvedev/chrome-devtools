@@ -31,7 +31,7 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
             workerIdByThread: new Map(),
             workerURLById: new Map(),
         };
-        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(urlString `${authoredScriptURL}`);
+        Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(urlString `${authoredScriptURL}`);
         const traceWithMappings = {
             Samples: makeMockSamplesHandlerData([profileCallWithMappings]),
             Workers: workersData,
@@ -113,14 +113,16 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
-        Bindings.IgnoreListManager.IgnoreListManager.instance({
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
-            debuggerWorkspaceBinding,
+            resourceMapping,
+            targetManager,
+            ignoreListManager,
         });
         ignoreRegex('youtube*');
         const url = urlString `https://www.youtube.com/s/desktop/2ebf714b/jsbin/desktop_polymer.vflset/desktop_polymer.js`;
-        Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
+        Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListURL(url);
         const entry = makeProfileCall('function name', 10, 100, Trace.Types.Events.ProcessID(1), Trace.Types.Events.ThreadID(1), /* nodeId= */ 1, url);
         // There are two matched rules (in order)
         // - youtube*

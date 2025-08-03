@@ -71,6 +71,7 @@ style.setProperty('--image-file-breakpoint-crossed', 'url(\"' + new URL(new URL(
 style.setProperty('--image-file-brush-2', 'url(\"' + new URL(new URL('brush-2.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-brush-filled', 'url(\"' + new URL(new URL('brush-filled.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-brush', 'url(\"' + new URL(new URL('brush.svg', import.meta.url).href).toString() + '\")');
+style.setProperty('--image-file-bucket', 'url(\"' + new URL(new URL('bucket.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-bug', 'url(\"' + new URL(new URL('bug.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-bundle', 'url(\"' + new URL(new URL('bundle.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-button-magic', 'url(\"' + new URL(new URL('button-magic.svg', import.meta.url).href).toString() + '\")');
@@ -274,6 +275,7 @@ style.setProperty('--image-file-symbol', 'url(\"' + new URL(new URL('symbol.svg'
 style.setProperty('--image-file-sync', 'url(\"' + new URL(new URL('sync.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-table', 'url(\"' + new URL(new URL('table.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-terminal', 'url(\"' + new URL(new URL('terminal.svg', import.meta.url).href).toString() + '\")');
+style.setProperty('--image-file-text-analysis', 'url(\"' + new URL(new URL('text-analysis.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-thumb-down-filled', 'url(\"' + new URL(new URL('thumb-down-filled.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-thumb-down', 'url(\"' + new URL(new URL('thumb-down.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-thumb-up-filled', 'url(\"' + new URL(new URL('thumb-up-filled.svg', import.meta.url).href).toString() + '\")');

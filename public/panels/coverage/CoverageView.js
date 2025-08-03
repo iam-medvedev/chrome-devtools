@@ -136,7 +136,7 @@ export class CoverageView extends UI.Widget.VBox {
     statusToolbarElement;
     statusMessageElement;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(coverageViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('coverage').track({ resize: true })}`);
         this.model = null;

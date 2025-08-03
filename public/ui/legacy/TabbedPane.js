@@ -114,7 +114,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     allowTabReorder;
     automaticReorder;
     constructor(element) {
-        super(true, undefined, element);
+        super(element, { useShadowDom: true });
         this.registerRequiredCSS(tabbedPaneStyles);
         this.element.classList.add('tabbed-pane');
         this.contentElement.classList.add('tabbed-pane-shadow');
@@ -465,6 +465,10 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             this.selectTab(effectiveTab.id);
         }
         this.updateTabElements();
+        this.dispatchEventToListeners(Events.PaneVisibilityChanged, { isVisible: true });
+    }
+    wasHidden() {
+        this.dispatchEventToListeners(Events.PaneVisibilityChanged, { isVisible: false });
     }
     makeTabSlider() {
         if (this.verticalTabLayout) {
@@ -890,6 +894,7 @@ export var Events;
     Events["TabSelected"] = "TabSelected";
     Events["TabClosed"] = "TabClosed";
     Events["TabOrderChanged"] = "TabOrderChanged";
+    Events["PaneVisibilityChanged"] = "PaneVisibilityChanged";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 export class TabbedPaneTab {

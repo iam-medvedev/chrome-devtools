@@ -568,8 +568,8 @@ var BaseInsightComponent = class extends HTMLElement {
     void action3.execute();
   }
   #canShowAskAI() {
-    const aiDisabledByEnterprisePolicy = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root.Runtime.GenAiEnterprisePolicyValue.DISABLE;
-    return !aiDisabledByEnterprisePolicy && this.#insightsAskAiEnabled && this.hasAskAiSupport();
+    const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root.Runtime.GenAiEnterprisePolicyValue.DISABLE && this.#insightsAskAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
+    return aiAvailable && this.hasAskAiSupport();
   }
   #renderInsightContent(insightModel) {
     if (!this.#selected) {
@@ -1809,6 +1809,9 @@ var ImageDelivery = class extends BaseInsightComponent {
       overlays: [createOverlayForRequest2(image.request)]
     };
   }
+  hasAskAiSupport() {
+    return true;
+  }
   createAggregatedTableRow(remaining) {
     return {
       values: [renderOthersLabel(remaining.length)],
@@ -2084,6 +2087,9 @@ var LegacyJavaScript = class extends BaseInsightComponent {
   internalName = "legacy-javascript";
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;
+  }
+  hasAskAiSupport() {
+    return true;
   }
   async #revealLocation(script, match) {
     const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();

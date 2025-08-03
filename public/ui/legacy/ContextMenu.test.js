@@ -105,6 +105,38 @@ describeWithEnvironment('ContextMenu', () => {
         sinon.assert.calledOnce(recordClick);
         await VisualLogging.stopLogging();
     });
+    it('can register an action menu item with a new badge', async () => {
+        UI.ActionRegistration.registerActionExtension({
+            actionId: 'test-action',
+            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            title: () => 'mock',
+            toggleable: true,
+        });
+        const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'isHostedMode').returns(false);
+        const showContextMenuAtPoint = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'showContextMenuAtPoint');
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        contextMenu.defaultSection().appendAction('test-action', 'mockLabel', false, undefined, 'mockFeature');
+        await contextMenu.show();
+        sinon.assert.calledOnce(showContextMenuAtPoint);
+        assert.strictEqual(showContextMenuAtPoint.args[0][2][0].featureName, 'mockFeature');
+    });
+    it('can register a submenu item with a new badge', async () => {
+        sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'isHostedMode').returns(false);
+        const showContextMenuAtPoint = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'showContextMenuAtPoint');
+        const event = new Event('contextmenu');
+        sinon.stub(event, 'target').value(document);
+        const contextMenu = new UI.ContextMenu.ContextMenu(event);
+        const subMenu = contextMenu.defaultSection().appendSubMenuItem('mockLabel', false, undefined, 'mockFeature');
+        subMenu.defaultSection().appendItem('subMenuLabel', () => { });
+        await contextMenu.show();
+        sinon.assert.calledOnce(showContextMenuAtPoint);
+        assert.strictEqual(showContextMenuAtPoint.args[0][2][0].featureName, 'mockFeature');
+        assert.strictEqual(showContextMenuAtPoint.args[0][2][0].type, 'subMenu');
+    });
 });
 describeWithEnvironment('MenuButton', function () {
     it('renders a button and opens a menu on click', async () => {

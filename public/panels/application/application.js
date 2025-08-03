@@ -620,7 +620,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
   overlayModel;
   protocolHandlersView;
   constructor(emptyView, reportView, throttler) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(appManifestView_css_default);
     this.contentElement.classList.add("manifest-container");
     this.contentElement.setAttribute("jslog", `${VisualLogging.pane("manifest")}`);
@@ -1636,7 +1636,7 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     }
   }
   constructor(serviceName, model) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(emptyWidget_css_default, backgroundServiceView_css_default);
     this.serviceName = serviceName;
     const kebabName = Platform.StringUtilities.toKebabCase(serviceName);
@@ -4777,12 +4777,7 @@ var PreloadingRuleSetView = class extends UI9.Widget.VBox {
   ruleSetDetails = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();
   shouldPrettyPrint = Common7.Settings.Settings.instance().moduleSetting("auto-pretty-print-minified").get();
   constructor(model) {
-    super(
-      /* isWebComponent */
-      true,
-      /* delegatesFocus */
-      false
-    );
+    super({ useShadowDom: true });
     this.registerRequiredCSS(emptyWidget_css_default, preloadingView_css_default);
     this.model = model;
     SDK12.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
@@ -4892,12 +4887,7 @@ var PreloadingAttemptView = class extends UI9.Widget.VBox {
   preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
   ruleSetSelector;
   constructor(model) {
-    super(
-      /* isWebComponent */
-      true,
-      /* delegatesFocus */
-      false
-    );
+    super({ useShadowDom: true });
     this.registerRequiredCSS(emptyWidget_css_default, preloadingView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging5.pane("preloading-speculations")}`);
     this.model = model;
@@ -5008,12 +4998,7 @@ var PreloadingSummaryView = class extends UI9.Widget.VBox {
   warningsView = new PreloadingWarningsView();
   usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
   constructor(model) {
-    super(
-      /* isWebComponent */
-      true,
-      /* delegatesFocus */
-      false
-    );
+    super({ useShadowDom: true });
     this.registerRequiredCSS(emptyWidget_css_default, preloadingView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging5.pane("speculative-loads")}`);
     this.model = model;
@@ -5161,12 +5146,7 @@ var PreloadingRuleSetSelector = class {
 var PreloadingWarningsView = class extends UI9.Widget.VBox {
   infobar = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
   constructor() {
-    super(
-      /* isWebComponent */
-      false,
-      /* delegatesFocus */
-      false
-    );
+    super();
     this.registerRequiredCSS(emptyWidget_css_default);
   }
   wasShown() {
@@ -7105,7 +7085,7 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
   sectionToRegistration;
   eventListeners;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(serviceWorkersView_css_default);
     this.currentWorkersView = new UI15.ReportView.ReportView(i18n35.i18n.lockedString("Service workers"));
     this.currentWorkersView.setBodyScrollable(false);
@@ -8134,7 +8114,7 @@ var StorageItemsToolbar = class extends Common12.ObjectWrapper.eventMixin(UI17.W
   #deleteAllButtonTitle = i18nString21(UIStrings21.clearAll);
   #mainToolbarItems = [];
   constructor(element, view = DEFAULT_VIEW) {
-    super(false, false, element);
+    super(element);
     this.#view = view;
     this.filterRegex = null;
   }
@@ -8316,7 +8296,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
         );
       };
     }
-    super(false);
+    super();
     this.metadataView = metadataView;
     this.#editable = editable;
     this.#view = view;
@@ -8696,7 +8676,7 @@ var StorageBucketsTreeParentElement = class extends ExpandableApplicationPanelTr
   bucketTreeElements = /* @__PURE__ */ new Set();
   constructor(storagePanel) {
     super(storagePanel, i18nString24(UIStrings24.storageBuckets), i18nString24(UIStrings24.noStorageBuckets), i18nString24(UIStrings24.storageBucketsDescription), "storage-buckets");
-    const icon = IconButton10.Icon.create("database");
+    const icon = IconButton10.Icon.create("bucket");
     this.setLeadingIcons([icon]);
     this.setLink("https://github.com/WICG/storage-buckets/blob/gh-pages/explainer.md");
   }

@@ -1102,7 +1102,7 @@ var ResourceSourceFrame = class extends SourceFrameImpl {
 var SearchableContainer = class extends UI2.Widget.VBox {
   sourceFrame;
   constructor(resource, contentType, element) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.registerRequiredCSS(resourceSourceFrame_css_default);
     const simpleContentType = Common2.ResourceType.ResourceType.simplifyContentType(contentType);
     const sourceFrame = new ResourceSourceFrame(resource, simpleContentType);
@@ -1143,7 +1143,7 @@ var LinearMemoryInspectorView = class extends UI3.Widget.VBox {
   #address = 0;
   #inspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
   constructor() {
-    super(false);
+    super();
     this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.MemoryRequestEvent.eventName, this.#memoryRequested.bind(this));
     this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.AddressChangedEvent.eventName, (event) => {
       this.#address = event.data;
@@ -2050,7 +2050,7 @@ var XMLView = class _XMLView extends UI7.Widget.Widget {
   currentSearchTreeElements = [];
   searchConfig = null;
   constructor(parsedXML) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(xmlView_css_default);
     this.contentElement.classList.add("shadow-xml-view", "source-code");
     this.treeOutline.registerRequiredCSS(xmlTree_css_default);

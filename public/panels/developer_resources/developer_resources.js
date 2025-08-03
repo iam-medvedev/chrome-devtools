@@ -197,7 +197,7 @@ var DeveloperResourcesListView = class extends UI.Widget.VBox {
   #view;
   #filters = [];
   constructor(element, view = DEFAULT_VIEW) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.#view = view;
   }
   set selectedItem(item) {

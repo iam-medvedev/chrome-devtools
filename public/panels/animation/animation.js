@@ -819,7 +819,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   #toolbarView;
   #playbackRateButtonsDisabled = false;
   constructor(toolbarView = DEFAULT_TOOLBAR_VIEW) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(animationTimeline_css_default);
     this.#toolbarView = toolbarView;
     this.element.classList.add("animations-timeline");

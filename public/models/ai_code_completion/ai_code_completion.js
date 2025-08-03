@@ -7,22 +7,26 @@ var __export = (target, all) => {
 // gen/front_end/models/ai_code_completion/AiCodeCompletion.js
 var AiCodeCompletion_exports = {};
 __export(AiCodeCompletion_exports, {
-  AiCodeCompletion: () => AiCodeCompletion
+  AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS: () => AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS,
+  AiCodeCompletion: () => AiCodeCompletion,
+  DELAY_BEFORE_SHOWING_RESPONSE_MS: () => DELAY_BEFORE_SHOWING_RESPONSE_MS
 });
+import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as Root from "./../../core/root/root.js";
 import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
-var AiCodeCompletion = class {
-  #aidaRequestThrottler;
+var DELAY_BEFORE_SHOWING_RESPONSE_MS = 500;
+var AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
+var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
   #editor;
   #sessionId = crypto.randomUUID();
   #aidaClient;
   #serverSideLoggingEnabled;
-  constructor(opts, editor, throttler) {
+  constructor(opts, editor) {
+    super();
     this.#aidaClient = opts.aidaClient;
     this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
     this.#editor = editor;
-    this.#aidaRequestThrottler = throttler;
   }
   #buildRequest(prefix, suffix, inferenceLanguage = "JAVASCRIPT") {
     const userTier = Host.AidaClient.convertToUserTierEnum(this.#userTier);
@@ -48,12 +52,20 @@ var AiCodeCompletion = class {
       }
     };
   }
-  async #requestAidaSuggestion(request) {
+  async #requestAidaSuggestion(request, cursor) {
+    const startTime = performance.now();
     const response = await this.#aidaClient.completeCode(request);
     if (response && response.generatedSamples.length > 0 && response.generatedSamples[0].generationString) {
-      this.#editor.dispatch({
-        effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(response.generatedSamples[0].generationString)
-      });
+      const remainderDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
+      setTimeout(() => {
+        this.#editor.dispatch({
+          effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: response.generatedSamples[0].generationString, from: cursor })
+        });
+        const citations = response.generatedSamples[0].attributionMetadata?.citations;
+        if (citations) {
+          this.dispatchEventToListeners("CitationsUpdated", { citations });
+        }
+      }, remainderDelay);
     }
   }
   get #userTier() {
@@ -67,9 +79,9 @@ var AiCodeCompletion = class {
       modelId
     };
   }
-  onTextChanged(prefix, suffix) {
-    void this.#aidaRequestThrottler.schedule(() => this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix)));
-  }
+  onTextChanged = Common.Debouncer.debounce((prefix, suffix, cursor) => {
+    void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix), cursor);
+  }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
 };
 export {
   AiCodeCompletion_exports as AiCodeCompletion

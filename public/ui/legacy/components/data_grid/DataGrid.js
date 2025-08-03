@@ -2154,7 +2154,7 @@ export class CreationDataGridNode extends DataGridNode {
 export class DataGridWidget extends UI.Widget.VBox {
     dataGrid;
     constructor(dataGrid, element) {
-        super(undefined, undefined, element);
+        super(element);
         this.dataGrid = dataGrid;
         this.element.appendChild(dataGrid.element);
         this.setDefaultFocusedElement(dataGrid.element);

@@ -86,6 +86,9 @@
       "path": "../../ui/components/adorners/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/buttons/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/linkifier/bundle-tsconfig.json"
     },
     {

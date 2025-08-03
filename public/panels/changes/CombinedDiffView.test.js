@@ -20,10 +20,12 @@ function createWorkspace() {
     return Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
 }
 function createWorkspaceDiff({ workspace }) {
+    const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
         forceNew: true,
         targetManager: SDK.TargetManager.TargetManager.instance(),
         resourceMapping: new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace),
+        ignoreListManager,
     });
     const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
         forceNew: true,

@@ -407,7 +407,7 @@ var CookieControlsView = class extends UI.Widget.VBox {
       </div>
     `, target, { host: this });
   }) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.#view = view;
     this.#isGracePeriodActive = false;
     this.#thirdPartyControlsDict = Root.Runtime.hostConfig.thirdPartyCookieControls;
@@ -812,7 +812,7 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
         </div>
     `, target, { host: this });
   }) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.#view = view;
     this.registerRequiredCSS(cookieReportView_css_default);
     this.searchText = Common2.Settings.Settings.instance().createSetting("cookie-report-search-query", "").get();
@@ -1844,7 +1844,7 @@ var SecurityPanelSidebar = class extends UI4.Widget.VBox {
   #mainViewReloadMessage;
   #mainOrigin;
   constructor(element) {
-    super(void 0, void 0, element);
+    super(element);
     this.#securitySidebarLastItemSetting = Common3.Settings.Settings.instance().createSetting("security-last-selected-element-path", "");
     this.#mainOrigin = null;
     this.sidebarTree = new UI4.TreeOutline.TreeOutlineInShadow(
@@ -2791,7 +2791,7 @@ var SecurityMainView = class extends UI5.Widget.VBox {
   explanations;
   securityState;
   constructor(element) {
-    super(void 0, void 0, element);
+    super(element);
     this.registerRequiredCSS(lockIcon_css_default, mainView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging3.pane("security.main-view")}`);
     this.setMinimumSize(200, 100);

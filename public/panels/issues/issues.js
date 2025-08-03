@@ -319,13 +319,16 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as IssuesManager13 from "./../../models/issues_manager/issues_manager.js";
 import * as IssueCounter5 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/HiddenIssuesRow.js
+import "./../../ui/components/adorners/adorners.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as IssuesManager2 from "./../../models/issues_manager/issues_manager.js";
-import * as Adorners from "./../../ui/components/adorners/adorners.js";
+import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import { html, render } from "./../../ui/lit/lit.js";
+import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings = {
   /**
    * @description Title for the hidden issues row
@@ -338,37 +341,45 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/issues/HiddenIssuesRow.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var DEFAULT_VIEW = (input, _output, target) => {
+  const stopPropagationForEnter = (event) => {
+    if (event.key === "Enter") {
+      event.stopImmediatePropagation();
+    }
+  };
+  render(html`
+  <div class="header">
+    <devtools-adorner class="aggregated-issues-count"
+                      .data=${{ name: "countWrapper" }}>
+      <span>${input.count}</span>
+    </devtools-adorner>
+    <div class="title">${i18nString(UIStrings.hiddenIssues)}</div>
+    <devtools-button class="unhide-all-issues-button"
+                     jslog=${VisualLogging.action().track({ click: true }).context("issues.unhide-all-hiddes")}
+                     @click=${input.onUnhideAllIssues}
+                     @keydown=${stopPropagationForEnter}
+                     .variant=${"outlined"}>${i18nString(UIStrings.unhideAll)}</devtools-button>
+  </div>`, target, { host: input });
+};
 var HiddenIssuesRow = class extends UI.TreeOutline.TreeElement {
-  #numHiddenAggregatedIssues;
-  constructor() {
+  #view;
+  constructor(view = DEFAULT_VIEW) {
     super(void 0, true);
-    this.#numHiddenAggregatedIssues = document.createElement("span");
+    this.#view = view;
     this.toggleOnClick = true;
     this.listItemElement.classList.add("issue-category", "hidden-issues");
     this.childrenListElement.classList.add("hidden-issues-body");
-    this.#appendHeader();
-  }
-  #appendHeader() {
-    const unhideAllIssuesBtn = UI.UIUtils.createTextButton(i18nString(UIStrings.unhideAll), () => IssuesManager2.IssuesManager.IssuesManager.instance().unhideAllIssues(), { className: "unhide-all-issues-button", jslogContext: "issues.unhide-all-hiddes" });
-    const countAdorner = new Adorners.Adorner.Adorner();
-    countAdorner.data = {
-      name: "countWrapper",
-      content: this.#numHiddenAggregatedIssues
-    };
-    countAdorner.classList.add("aggregated-issues-count");
-    this.#numHiddenAggregatedIssues.textContent = "0";
-    const header = document.createElement("div");
-    const title = document.createElement("div");
-    header.classList.add("header");
-    title.classList.add("title");
-    title.textContent = i18nString(UIStrings.hiddenIssues);
-    header.appendChild(countAdorner);
-    header.appendChild(title);
-    header.appendChild(unhideAllIssuesBtn);
-    this.listItemElement.appendChild(header);
+    this.update(0);
   }
   update(count) {
-    this.#numHiddenAggregatedIssues.textContent = `${count}`;
+    const issuesManager = IssuesManager2.IssuesManager.IssuesManager.instance();
+    const onUnhideAllIssues = issuesManager.unhideAllIssues.bind(issuesManager);
+    const input = {
+      count,
+      onUnhideAllIssues
+    };
+    const output = void 0;
+    this.#view(input, output, this.listItemElement);
   }
 };
 
@@ -376,7 +387,7 @@ var HiddenIssuesRow = class extends UI.TreeOutline.TreeElement {
 import * as Common2 from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as IssuesManager4 from "./../../models/issues_manager/issues_manager.js";
-import * as Adorners2 from "./../../ui/components/adorners/adorners.js";
+import * as Adorners from "./../../ui/components/adorners/adorners.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
@@ -453,7 +464,7 @@ var IssueKindView = class extends UI2.TreeOutline.TreeElement {
     const issueKindIcon = new IconButton.Icon.Icon();
     issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(this.#kind);
     issueKindIcon.classList.add("leading-issue-icon");
-    const countAdorner = new Adorners2.Adorner.Adorner();
+    const countAdorner = new Adorners.Adorner.Adorner();
     countAdorner.data = {
       name: "countWrapper",
       content: this.#issueCount
@@ -1013,12 +1024,12 @@ import * as Host7 from "./../../core/host/host.js";
 import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as IssuesManager11 from "./../../models/issues_manager/issues_manager.js";
 import * as NetworkForward3 from "./../network/forward/forward.js";
-import * as Adorners3 from "./../../ui/components/adorners/adorners.js";
+import * as Adorners2 from "./../../ui/components/adorners/adorners.js";
 import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter3 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
 import * as Host2 from "./../../core/host/host.js";
@@ -1035,7 +1046,7 @@ import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
 import * as RequestLinkIcon from "./../../ui/components/request_link_icon/request_link_icon.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings3 = {
   /**
    *@description Text in Object Properties Section
@@ -1230,7 +1241,7 @@ var AffectedResourcesView = class extends UI3.TreeOutline.TreeElement {
       const maxLengthForDisplayedURLs = 40;
       const linkifier = new Components2.Linkifier.Linkifier(maxLengthForDisplayedURLs);
       const sourceAnchor = linkifier.linkifyScriptLocation(target || null, sourceLocation.scriptId || null, sourceLocation.url, sourceLocation.lineNumber, { columnNumber: sourceLocation.columnNumber, inlineFrameIndex: 0 });
-      sourceAnchor.setAttribute("jslog", `${VisualLogging.link("source-location").track({ click: true })}`);
+      sourceAnchor.setAttribute("jslog", `${VisualLogging2.link("source-location").track({ click: true })}`);
       sourceCodeLocation.appendChild(sourceAnchor);
     }
     element.appendChild(sourceCodeLocation);
@@ -1339,7 +1350,7 @@ import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as NetworkForward from "./../network/forward/forward.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
    *@description Noun, singular or plural. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
@@ -1393,7 +1404,7 @@ var AffectedCookiesView = class extends AffectedResourcesView {
       link5.classList.add("link", "devtools-link");
       link5.textContent = cookie.name;
       link5.tabIndex = 0;
-      link5.setAttribute("jslog", `${VisualLogging2.link("issues.filter-network-requests-by-cookie").track({ click: true })}`);
+      link5.setAttribute("jslog", `${VisualLogging3.link("issues.filter-network-requests-by-cookie").track({ click: true })}`);
       link5.addEventListener("click", () => {
         Host3.userMetrics.issuesPanelResourceOpened(
           this.issue.getCategory(),
@@ -1446,7 +1457,7 @@ var AffectedRawCookieLinesView = class extends AffectedResourcesView {
         link5.textContent = cookie.rawCookieLine;
         link5.title = i18nString5(UIStrings5.filterSetCookieTitle);
         link5.tabIndex = 0;
-        link5.setAttribute("jslog", `${VisualLogging2.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}`);
+        link5.setAttribute("jslog", `${VisualLogging3.link("issues.filter-network-requests-by-raw-cookie").track({ click: true })}`);
         link5.addEventListener("click", () => {
           void Common4.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
             {
@@ -2185,7 +2196,7 @@ var AffectedSharedArrayBufferIssueDetailsView = class extends AffectedResourcesV
 // gen/front_end/panels/issues/AffectedSourcesView.js
 import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings15 = {
   /**
    *@description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
@@ -2210,7 +2221,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
     const cellElement = document.createElement("td");
     const linkifierURLOptions = { columnNumber, lineNumber, tabStop: true, showColumnNumber: false, inlineFrameIndex: 0 };
     const anchorElement = Components3.Linkifier.Linkifier.linkifyURL(url, linkifierURLOptions);
-    anchorElement.setAttribute("jslog", `${VisualLogging3.link("source-location").track({ click: true })}`);
+    anchorElement.setAttribute("jslog", `${VisualLogging4.link("source-location").track({ click: true })}`);
     cellElement.appendChild(anchorElement);
     const rowElement = document.createElement("tr");
     rowElement.classList.add("affected-resource-source");
@@ -3221,7 +3232,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     this.#issueKindIcon = new IconButton3.Icon.Icon();
     this.#issueKindIcon.classList.add("leading-issue-icon");
     this.#aggregatedIssuesCount = document.createElement("span");
-    const countAdorner = new Adorners3.Adorner.Adorner();
+    const countAdorner = new Adorners2.Adorner.Adorner();
     countAdorner.data = {
       name: "countWrapper",
       content: this.#aggregatedIssuesCount
@@ -3320,7 +3331,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     const linkList = linkWrapper.listItemElement.createChild("ul", "link-list");
     for (const description of this.#description.links) {
       const link5 = UI5.Fragment.html`<x-link class="link devtools-link" tabindex="0" href=${description.link}>${i18nString20(UIStrings20.learnMoreS, { PH1: description.linkTitle })}</x-link>`;
-      link5.setAttribute("jslog", `${VisualLogging4.link("learn-more").track({ click: true })}`);
+      link5.setAttribute("jslog", `${VisualLogging5.link("learn-more").track({ click: true })}`);
       const linkListItem = linkList.createChild("li");
       linkListItem.appendChild(link5);
     }
@@ -3510,9 +3521,9 @@ var IssuesPane = class extends UI6.Widget.VBox {
   #aggregator;
   #issueViewUpdatePromise = Promise.resolve();
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(issuesPane_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging5.panel("issues")}`);
+    this.element.setAttribute("jslog", `${VisualLogging6.panel("issues")}`);
     this.contentElement.classList.add("issues-pane");
     this.#categoryViews = /* @__PURE__ */ new Map();
     this.#kindViews = /* @__PURE__ */ new Map();
@@ -3542,7 +3553,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
   }
   #createToolbars() {
     const toolbarContainer = this.contentElement.createChild("div", "issues-toolbar-container");
-    toolbarContainer.setAttribute("jslog", `${VisualLogging5.toolbar()}`);
+    toolbarContainer.setAttribute("jslog", `${VisualLogging6.toolbar()}`);
     toolbarContainer.role = "toolbar";
     const leftToolbar = toolbarContainer.createChild("devtools-toolbar", "issues-toolbar-left");
     leftToolbar.role = "presentation";
@@ -3580,7 +3591,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
       issuesManager: IssuesManager13.IssuesManager.IssuesManager.instance()
     };
     issueCounter.id = "console-issues-counter";
-    issueCounter.setAttribute("jslog", `${VisualLogging5.counter("issues")}`);
+    issueCounter.setAttribute("jslog", `${VisualLogging6.counter("issues")}`);
     const issuesToolbarItem = new UI6.Toolbar.ToolbarItem(issueCounter);
     rightToolbar.appendToolbarItem(issuesToolbarItem);
     return { toolbarContainer };

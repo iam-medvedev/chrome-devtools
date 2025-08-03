@@ -9,7 +9,7 @@ export class ElementsSidebarPane extends UI.Widget.VBox {
     updateThrottler;
     updateWhenVisible;
     constructor(computedStyleModel, delegatesFocus) {
-        super(true, delegatesFocus);
+        super({ useShadowDom: true, delegatesFocus });
         this.element.classList.add('flex-none');
         this.computedStyleModelInternal = computedStyleModel;
         this.computedStyleModelInternal.addEventListener("CSSModelChanged" /* Events.CSS_MODEL_CHANGED */, this.onCSSModelChanged, this);

@@ -1139,7 +1139,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   #persistedGroupConfig = null;
   #boundOnThemeChanged = this.#onThemeChanged.bind(this);
   constructor(dataProvider, flameChartDelegate, optionalConfig = {}) {
-    super(true);
+    super({ useShadowDom: true });
     this.#font = `${DEFAULT_FONT_SIZE} ${getFontFamilyForCanvas()}`;
     this.#subtitleFont = `${SUBTITLE_FONT_SIZE_AND_STYLE} ${getFontFamilyForCanvas()}`;
     this.registerRequiredCSS(flameChart_css_default);
@@ -1160,6 +1160,12 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.dataProvider = dataProvider;
     this.viewportElement = this.chartViewport.viewportElement;
     this.canvas = this.viewportElement.createChild("canvas", "fill");
+    if (optionalConfig.canvasVELogContext) {
+      const context = VisualLogging.canvas(optionalConfig.canvasVELogContext).track({
+        hover: true
+      });
+      this.canvas.setAttribute("jslog", `${context}`);
+    }
     this.context = this.canvas.getContext("2d");
     this.candyStripePattern = this.candyStripePatternGray = null;
     this.canvas.tabIndex = 0;
@@ -4727,7 +4733,7 @@ var FilmStripView = class _FilmStripView extends Common3.ObjectWrapper.eventMixi
   zeroTime = Trace2.Types.Timing.Milli(0);
   #filmStrip = null;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(filmStripView_css_default);
     this.contentElement.classList.add("film-strip-view");
     this.statusLabel = this.contentElement.createChild("div", "gray-info-message");
@@ -6458,6 +6464,7 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
   windowStartTime = Trace4.Types.Timing.Milli(0);
   windowEndTime = Trace4.Types.Timing.Milli(Infinity);
   muteOnWindowChanged = false;
+  hasPointer = false;
   #dimHighlightSVG;
   #boundOnThemeChanged = this.#onThemeChanged.bind(this);
   constructor(prefix) {
@@ -6469,8 +6476,11 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
     this.element.appendChild(this.overviewGrid.element);
     this.cursorArea = this.overviewGrid.element.createChild("div", "overview-grid-cursor-area");
     this.cursorElement = this.overviewGrid.element.createChild("div", "overview-grid-cursor-position");
-    this.cursorArea.addEventListener("mousemove", this.onMouseMove.bind(this), true);
-    this.cursorArea.addEventListener("mouseleave", this.hideCursor.bind(this), true);
+    this.cursorArea.addEventListener("pointerdown", this.onMouseDown.bind(this), true);
+    this.cursorArea.addEventListener("pointerup", this.onMouseCancel.bind(this), true);
+    this.cursorArea.addEventListener("pointercancel", this.onMouseCancel.bind(this), true);
+    this.cursorArea.addEventListener("pointermove", this.onMouseMove.bind(this), true);
+    this.cursorArea.addEventListener("pointerleave", this.hideCursor.bind(this), true);
     this.overviewGrid.setResizeEnabled(false);
     this.overviewGrid.addEventListener("WindowChangedWithPosition", this.onWindowChanged, this);
     this.overviewGrid.addEventListener("BreadcrumbAdded", this.onBreadcrumbAdded, this);
@@ -6481,8 +6491,27 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
   }
   enableCreateBreadcrumbsButton() {
     const breadcrumbsElement = this.overviewGrid.enableCreateBreadcrumbsButton();
-    breadcrumbsElement.addEventListener("mousemove", this.onMouseMove.bind(this), true);
-    breadcrumbsElement.addEventListener("mouseleave", this.hideCursor.bind(this), true);
+    breadcrumbsElement.addEventListener("pointerdown", this.onMouseDown.bind(this), true);
+    breadcrumbsElement.addEventListener("pointerup", this.onMouseCancel.bind(this), true);
+    breadcrumbsElement.addEventListener("pointercancel", this.onMouseCancel.bind(this), true);
+    breadcrumbsElement.addEventListener("pointermove", this.onMouseMove.bind(this), true);
+    breadcrumbsElement.addEventListener("pointerleave", this.hideCursor.bind(this), true);
+  }
+  onMouseDown(event) {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+    event.target.setPointerCapture(event.pointerId);
+    this.overviewInfo.hide();
+    this.hasPointer = true;
+  }
+  onMouseCancel(event) {
+    if (!(event.target instanceof HTMLElement)) {
+      return;
+    }
+    event.target.releasePointerCapture(event.pointerId);
+    this.overviewInfo.show();
+    this.hasPointer = false;
   }
   onMouseMove(event) {
     if (!this.cursorEnabled) {
@@ -6505,7 +6534,9 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
         /* Events.OVERVIEW_PANE_MOUSE_LEAVE */
       );
     }
-    void this.overviewInfo.setContent(this.buildOverviewInfo());
+    if (!this.hasPointer) {
+      void this.overviewInfo.setContent(this.buildOverviewInfo());
+    }
   }
   async buildOverviewInfo() {
     const document2 = this.element.ownerDocument;
@@ -6838,6 +6869,10 @@ var OverviewInfo = class {
   hide() {
     this.visible = false;
     this.glassPane.hide();
+  }
+  show() {
+    this.visible = true;
+    this.glassPane.show(window.document);
   }
 };
 export {

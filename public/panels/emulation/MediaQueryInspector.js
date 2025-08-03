@@ -29,7 +29,7 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     cssModel;
     cachedQueryModels;
     constructor(getWidthCallback, setWidthCallback, mediaThrottler) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(mediaQueryInspectorStyles);
         this.contentElement.classList.add('media-inspector-view');
         this.contentElement.setAttribute('jslog', `${VisualLogging.mediaInspectorView().track({ click: true })}`);

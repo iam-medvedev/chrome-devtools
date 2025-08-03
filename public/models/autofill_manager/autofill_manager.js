@@ -33,11 +33,6 @@ var AutofillManager = class _AutofillManager extends Common.ObjectWrapper.Object
     }
     return autofillManagerInstance;
   }
-  onShowAutofillTestAddressesSettingsChanged() {
-    for (const autofillModel of SDK.TargetManager.TargetManager.instance().models(SDK.AutofillModel.AutofillModel)) {
-      autofillModel.setTestAddresses();
-    }
-  }
   async #addressFormFilled({ data }) {
     if (this.#autoOpenViewSetting.get()) {
       await UI.ViewManager.ViewManager.instance().showView("autofill-view");
@@ -51,8 +46,7 @@ var AutofillManager = class _AutofillManager extends Common.ObjectWrapper.Object
       this.dispatchEventToListeners("AddressFormFilled", {
         address: this.#address,
         filledFields: this.#filledFields,
-        matches: this.#matches,
-        autofillModel: this.#autofillModel
+        matches: this.#matches
       });
     }
   }
@@ -63,9 +57,22 @@ var AutofillManager = class _AutofillManager extends Common.ObjectWrapper.Object
     return {
       address: this.#address,
       filledFields: this.#filledFields,
-      matches: this.#matches,
-      autofillModel: this.#autofillModel
+      matches: this.#matches
     };
+  }
+  highlightFilledField(filledField) {
+    const backendNodeId = filledField.fieldId;
+    const target = SDK.FrameManager.FrameManager.instance().getFrame(filledField.frameId)?.resourceTreeModel().target();
+    if (target) {
+      const deferredNode = new SDK.DOMModel.DeferredDOMNode(target, backendNodeId);
+      const domModel = target.model(SDK.DOMModel.DOMModel);
+      if (deferredNode && domModel) {
+        domModel.overlayModel().highlightInOverlay({ deferredNode }, "all");
+      }
+    }
+  }
+  clearHighlightedFilledFields() {
+    SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
   }
   #processAddressFormFilledData({ addressUi, filledFields }) {
     const concatAddressFields = (addressFields) => addressFields.fields.filter((field) => field.value.length).map((field) => field.value).join(" ");

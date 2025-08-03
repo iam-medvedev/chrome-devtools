@@ -469,7 +469,7 @@ function isUpdateLayoutTree(event) {
   return event.name === "UpdateLayoutTree";
 }
 function isLayout(event) {
-  return event.name === "Layout";
+  return event.name === "Layout" && Boolean(event.args && "beginData" in event.args);
 }
 function isInvalidateLayout(event) {
   return event.name === "InvalidateLayout";

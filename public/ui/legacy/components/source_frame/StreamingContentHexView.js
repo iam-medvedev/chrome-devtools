@@ -17,7 +17,7 @@ class LinearMemoryInspectorView extends UI.Widget.VBox {
     #address = 0;
     #inspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
     constructor() {
-        super(false);
+        super();
         this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.MemoryRequestEvent.eventName, this.#memoryRequested.bind(this));
         this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.AddressChangedEvent.eventName, event => {
             this.#address = event.data;

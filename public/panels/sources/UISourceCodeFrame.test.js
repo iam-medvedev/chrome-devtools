@@ -19,10 +19,12 @@ describeWithMockConnection('UISourceCodeFrame', () => {
     describe('canEditSource', () => {
         function setup() {
             const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
             const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
                 forceNew: true,
                 targetManager: SDK.TargetManager.TargetManager.instance(),
                 resourceMapping: new Bindings.ResourceMapping.ResourceMapping(SDK.TargetManager.TargetManager.instance(), workspace),
+                ignoreListManager,
             });
             const breakpointManager = Breakpoints.BreakpointManager.BreakpointManager.instance({
                 forceNew: true,
@@ -33,7 +35,6 @@ describeWithMockConnection('UISourceCodeFrame', () => {
             const persistence = Persistence.Persistence.PersistenceImpl.instance({ forceNew: true, workspace, breakpointManager });
             Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace });
             const backend = new MockProtocolBackend();
-            Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
             return { persistence, backend, debuggerWorkspaceBinding };
         }
         it('returns false for source mapped files when they are not mapped in a workspace', async () => {

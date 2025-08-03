@@ -137,7 +137,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         editor.state = { doc: 'console.log();', selection: { main: { head: 12 } } };
         consolePrompt.triggerAiCodeCompletion();
         sinon.assert.calledOnce(onTextChangedSpy);
-        assert.deepEqual(onTextChangedSpy.firstCall.args, ['let x = 1;\n\nconsole.log(', ');']);
+        assert.deepEqual(onTextChangedSpy.firstCall.args, ['let x = 1;\n\nconsole.log(', ');', 12]);
     });
 });
 //# sourceMappingURL=ConsolePrompt.test.js.map

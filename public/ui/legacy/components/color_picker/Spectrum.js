@@ -249,7 +249,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     // actual variable string.
     colorStringInternal;
     constructor(contrastInfo) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(spectrumStyles);
         this.contentElement.tabIndex = 0;
         this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('colorPicker').parent('mapped').track({ keydown: 'Enter|Escape' })}`);

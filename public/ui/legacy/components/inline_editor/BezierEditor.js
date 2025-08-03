@@ -24,7 +24,7 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
     previewAnimation;
     debouncedStartPreviewAnimation;
     constructor(model) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(bezierEditorStyles);
         this.model = model;
         this.contentElement.tabIndex = 0;

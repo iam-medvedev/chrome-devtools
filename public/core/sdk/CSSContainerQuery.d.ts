@@ -7,6 +7,7 @@ export declare class CSSContainerQuery extends CSSQuery {
     physicalAxes?: Protocol.DOM.PhysicalAxes;
     logicalAxes?: Protocol.DOM.LogicalAxes;
     queriesScrollState?: boolean;
+    queriesAnchored?: boolean;
     static parseContainerQueriesPayload(cssModel: CSSModel, payload: Protocol.CSS.CSSContainerQuery[]): CSSContainerQuery[];
     constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSContainerQuery);
     reinitialize(payload: Protocol.CSS.CSSContainerQuery): void;

@@ -120,7 +120,7 @@ export class ElementStatePaneWidget extends UI.Widget.Widget {
     #states = new Map();
     #view;
     constructor(view = DEFAULT_VIEW) {
-        super(true);
+        super({ useShadowDom: true });
         this.#view = view;
         this.#duals = new Map();
         const setDualStateCheckboxes = (first, second) => {

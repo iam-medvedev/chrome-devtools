@@ -950,6 +950,8 @@ button.view-trace {
 
 .lighthouse-settings-pane {
   flex: none;
+  background-color: var(--sys-color-cdt-base-container);
+  border-bottom: 1px solid var(--sys-color-divider);
 }
 
 .lighthouse-settings-pane devtools-toolbar {
@@ -1739,10 +1741,7 @@ var StartView = class extends UI4.Widget.Widget {
   checkboxes = [];
   changeFormMode;
   constructor(controller, panel) {
-    super(
-      true
-      /* useShadowDom */
-    );
+    super({ useShadowDom: true });
     this.registerRequiredCSS(lighthouseStartView_css_default);
     this.controller = controller;
     this.panel = panel;

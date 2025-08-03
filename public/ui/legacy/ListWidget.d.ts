@@ -13,7 +13,7 @@ export declare class ListWidget<T> extends VBox {
     private editElement;
     private emptyPlaceholder;
     private isTable;
-    constructor(delegate: Delegate<T>, delegatesFocus?: boolean | undefined, isTable?: boolean);
+    constructor(delegate: Delegate<T>, delegatesFocus?: boolean, isTable?: boolean);
     clear(): void;
     appendItem(item: T, editable: boolean): void;
     appendSeparator(): void;

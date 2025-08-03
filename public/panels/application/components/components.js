@@ -1597,7 +1597,6 @@ __export(StackTrace_exports, {
 });
 import "./../../../ui/components/expandable_list/expandable_list.js";
 import * as i18n9 from "./../../../core/i18n/i18n.js";
-import * as Bindings from "./../../../models/bindings/bindings.js";
 import * as Components2 from "./../../../ui/legacy/components/utils/utils.js";
 import * as Lit4 from "./../../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
@@ -1778,9 +1777,7 @@ var StackTrace = class extends HTMLElement {
       let ignoreListHide = false;
       if ("link" in item2 && item2.link) {
         const uiLocation = Components2.Linkifier.Linkifier.uiLocation(item2.link);
-        if (uiLocation && Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiLocation.uiSourceCode)) {
-          ignoreListHide = true;
-        }
+        ignoreListHide = Boolean(uiLocation?.isIgnoreListed());
       }
       if (this.#showHidden || !ignoreListHide) {
         if ("functionName" in item2) {
@@ -1831,7 +1828,7 @@ import * as i18n15 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 import * as Root from "./../../../core/root/root.js";
 import * as SDK4 from "./../../../core/sdk/sdk.js";
-import * as Bindings2 from "./../../../models/bindings/bindings.js";
+import * as Bindings from "./../../../models/bindings/bindings.js";
 import * as Workspace from "./../../../models/workspace/workspace.js";
 import * as NetworkForward2 from "./../../network/forward/forward.js";
 import * as CspEvaluator from "./../../../third_party/csp_evaluator/csp_evaluator.js";
@@ -2950,7 +2947,7 @@ var FrameDetailsReportView = class extends LegacyWrapper5.LegacyWrapper.Wrappabl
   }
   #uiSourceCodeForFrame(frame) {
     for (const project of Workspace.Workspace.WorkspaceImpl.instance().projects()) {
-      const projectTarget = Bindings2.NetworkProject.NetworkProject.getTargetForProject(project);
+      const projectTarget = Bindings.NetworkProject.NetworkProject.getTargetForProject(project);
       if (projectTarget && projectTarget === frame.resourceTreeModel().target()) {
         const uiSourceCode = project.uiSourceCodeForURL(frame.url);
         if (uiSourceCode) {
@@ -4264,6 +4261,19 @@ dt-icon-label {
 
 .purple::before {
   background-color: var(--sys-color-purple-bright);
+}
+
+.new-badge {
+  width: fit-content;
+  height: var(--sys-size-7);
+  line-height: var(--sys-size-7);
+  border-radius: var(--sys-shape-corner-extra-small);
+  padding: 0 var(--sys-size-3);
+  background-color: var(--sys-color-primary);
+  color: var(--sys-color-on-primary);
+  font-weight: var(--ref-typeface-weight-bold);
+  font-size: 9px;
+  text-align: center;
 }
 
 .expandable-inline-button {

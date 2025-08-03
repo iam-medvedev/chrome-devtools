@@ -23,6 +23,7 @@ export declare function setHighlightedVe(veKey: string | null): void;
 export declare const action: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const adorner: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const animationClip: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
+export declare const badge: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const bezierCurveEditor: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const bezierPresetCategory: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;
 export declare const breakpointMarker: (context?: string | undefined) => LoggingConfig.ConfigStringBuilder;

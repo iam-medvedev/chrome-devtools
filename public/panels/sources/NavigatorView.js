@@ -204,7 +204,7 @@ export class NavigatorView extends UI.Widget.VBox {
     groupByDomain;
     groupByFolder;
     constructor(jslogContext, enableAuthoredGrouping) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(navigatorViewStyles);
         this.placeholder = null;
         this.scriptsTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
@@ -227,7 +227,7 @@ export class NavigatorView extends UI.Widget.VBox {
         if (enableAuthoredGrouping) {
             this.navigatorGroupByAuthoredExperiment = "authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */;
         }
-        Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListChanged.bind(this));
+        Workspace.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListChanged.bind(this));
         this.initGrouping();
         Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingCreated, this.onBindingChanged, this);
         Persistence.Persistence.PersistenceImpl.instance().addEventListener(Persistence.Persistence.Events.BindingRemoved, this.onBindingChanged, this);
@@ -417,7 +417,7 @@ export class NavigatorView extends UI.Widget.VBox {
     }
     addUISourceCode(uiSourceCode) {
         if (Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
-            Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+            Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
             return;
         }
         if (!this.acceptsUISourceCode(uiSourceCode)) {
@@ -930,7 +930,7 @@ export class NavigatorView extends UI.Widget.VBox {
                 isKnownThirdParty: node.recursiveProperties.exclusivelyThirdParty || false,
                 isCurrentlyIgnoreListed: node.recursiveProperties.exclusivelyIgnored || false,
             };
-            for (const { text, callback, jslogContext } of Bindings.IgnoreListManager.IgnoreListManager.instance()
+            for (const { text, callback, jslogContext } of Workspace.IgnoreListManager.IgnoreListManager.instance()
                 .getIgnoreListFolderContextMenuItems(url, options)) {
                 contextMenu.defaultSection().appendItem(text, callback, { jslogContext });
             }
@@ -1470,7 +1470,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         return this.treeElement;
     }
     updateTitle(ignoreIsDirty) {
-        const isIgnoreListed = Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.uiSourceCodeInternal);
+        const isIgnoreListed = Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.uiSourceCodeInternal);
         if (this.uiSourceCodeInternal.contentType().isScript() || isIgnoreListed) {
             this.recursiveProperties.exclusivelyIgnored = isIgnoreListed;
         }

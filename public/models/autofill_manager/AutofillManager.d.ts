@@ -1,5 +1,4 @@
 import * as Common from '../../core/common/common.js';
-import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
 export declare class AutofillManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
@@ -7,8 +6,9 @@ export declare class AutofillManager extends Common.ObjectWrapper.ObjectWrapper<
     static instance(opts?: {
         forceNew: boolean | null;
     }): AutofillManager;
-    onShowAutofillTestAddressesSettingsChanged(): void;
     getLastFilledAddressForm(): AddressFormFilledEvent | null;
+    highlightFilledField(filledField: Protocol.Autofill.FilledField): void;
+    clearHighlightedFilledFields(): void;
 }
 export interface Match {
     startIndex: number;
@@ -22,7 +22,6 @@ export interface AddressFormFilledEvent {
     address: string;
     filledFields: Protocol.Autofill.FilledField[];
     matches: Match[];
-    autofillModel: SDK.AutofillModel.AutofillModel;
 }
 export interface EventTypes {
     [Events.ADDRESS_FORM_FILLED]: AddressFormFilledEvent;

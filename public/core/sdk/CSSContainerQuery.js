@@ -8,6 +8,7 @@ export class CSSContainerQuery extends CSSQuery {
     physicalAxes;
     logicalAxes;
     queriesScrollState;
+    queriesAnchored;
     static parseContainerQueriesPayload(cssModel, payload) {
         return payload.map(cq => new CSSContainerQuery(cssModel, cq));
     }
@@ -23,12 +24,13 @@ export class CSSContainerQuery extends CSSQuery {
         this.physicalAxes = payload.physicalAxes;
         this.logicalAxes = payload.logicalAxes;
         this.queriesScrollState = payload.queriesScrollState;
+        this.queriesAnchored = payload.queriesAnchored;
     }
     active() {
         return true;
     }
     async getContainerForNode(nodeId) {
-        const containerNode = await this.cssModel.domModel().getContainerForNode(nodeId, this.name, this.physicalAxes, this.logicalAxes, this.queriesScrollState);
+        const containerNode = await this.cssModel.domModel().getContainerForNode(nodeId, this.name, this.physicalAxes, this.logicalAxes, this.queriesScrollState, this.queriesAnchored);
         if (!containerNode) {
             return;
         }

@@ -41,7 +41,7 @@ export class AddDebugInfoURLDialog extends UI.Widget.HBox {
     dialog;
     callback;
     constructor(label, jslogContext, callback, view = DEFAULT_VIEW) {
-        super(/* useShadowDom */ true);
+        super({ useShadowDom: true });
         const viewInput = {
             label,
             onKeyDown: this.onKeyDown.bind(this),

@@ -757,7 +757,7 @@ var OriginMap = class extends UI3.Widget.WidgetElement {
     this.#updateListFromSetting();
   }
   createWidget() {
-    const containerWidget = new UI3.Widget.Widget(false, false, this);
+    const containerWidget = new UI3.Widget.Widget(this);
     this.#list.registerRequiredCSS(originMap_css_default);
     this.#list.show(containerWidget.contentElement);
     return containerWidget;
@@ -1388,7 +1388,7 @@ import "./../../../ui/components/menus/menus.js";
 import * as Common2 from "./../../../core/common/common.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
-import * as Bindings from "./../../../models/bindings/bindings.js";
+import * as Workspace from "./../../../models/workspace/workspace.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
 import * as Dialogs2 from "./../../../ui/components/dialogs/dialogs.js";
 import * as ComponentHelpers4 from "./../../../ui/components/helpers/helpers.js";
@@ -1562,7 +1562,7 @@ var IgnoreListSetting = class extends HTMLElement {
     if (!regexInputIsValid(newRegex)) {
       return;
     }
-    Bindings.IgnoreListManager.IgnoreListManager.instance().addRegexToIgnoreList(newRegex);
+    Workspace.IgnoreListManager.IgnoreListManager.instance().addRegexToIgnoreList(newRegex);
     this.#resetInput();
   }
   #handleKeyDown(event) {
@@ -1985,7 +1985,7 @@ var LayoutShiftDetails = class extends UI6.Widget.Widget {
   #parsedTrace = null;
   #isFreshRecording = false;
   constructor(element, view = DEFAULT_VIEW) {
-    super(false, false, element);
+    super(element);
     this.#view = view;
   }
   set event(event) {
@@ -5186,7 +5186,7 @@ var LiveMetricsLogs = class extends UI8.Widget.WidgetElement {
     }
   }
   createWidget() {
-    const containerWidget = new UI8.Widget.Widget(true, void 0, this);
+    const containerWidget = new UI8.Widget.Widget(this, { useShadowDom: true });
     containerWidget.contentElement.style.display = "contents";
     this.#tabbedPane = new UI8.TabbedPane.TabbedPane();
     const interactionsSlot = document.createElement("slot");
@@ -6122,7 +6122,7 @@ var RelatedInsightChips = class extends UI10.Widget.Widget {
   #activeEvent = null;
   #eventToInsightsMap = /* @__PURE__ */ new Map();
   constructor(element, view = DEFAULT_VIEW2) {
-    super(false, false, element);
+    super(element);
     this.#view = view;
   }
   set activeEvent(event) {

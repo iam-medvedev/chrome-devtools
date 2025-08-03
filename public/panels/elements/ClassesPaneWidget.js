@@ -43,7 +43,7 @@ export class ClassesPaneWidget extends UI.Widget.Widget {
     updateNodeThrottler;
     previousTarget;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(classesPaneWidgetStyles);
         this.contentElement.className = 'styles-element-classes-pane';
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('elements-classes')}`);

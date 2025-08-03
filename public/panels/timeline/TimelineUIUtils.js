@@ -864,8 +864,9 @@ export class TimelineUIUtils {
                 contentHelper.appendElementRow(i18nString(UIStrings.warning), warning, true);
             }
         }
-        // Add timestamp to user timings.
-        if (Trace.Helpers.Trace.eventHasCategory(event, Trace.Types.Events.Categories.UserTiming)) {
+        // Add timestamp to user timings, including custom extensibility markers
+        if (Trace.Helpers.Trace.eventHasCategory(event, Trace.Types.Events.Categories.UserTiming) ||
+            Trace.Types.Extensions.isSyntheticExtensionEntry(event)) {
             const adjustedEventTimeStamp = timeStampForEventAdjustedForClosestNavigationIfPossible(event, parsedTrace);
             contentHelper.appendTextRow(i18nString(UIStrings.timestamp), i18n.TimeUtilities.preciseMillisToString(adjustedEventTimeStamp, 1));
         }
@@ -2084,8 +2085,9 @@ export class TimelineDetailsContentHelper {
             currentResolvedStackTrace = currentResolvedStackTrace.parent;
         }
         const stackTraceElement = this.tableElement.createChild('div', 'timeline-details-view-row timeline-details-stack-values');
-        const callFrameContents = LegacyComponents.JSPresentationUtils.buildStackTracePreviewContents(this.target, this.linkifierInternal, { stackTrace: resolvedStackTrace, tabStops: true, showColumnNumber: true });
-        stackTraceElement.appendChild(callFrameContents.element);
+        const callFrameContents = new LegacyComponents.JSPresentationUtils.StackTracePreviewContent(undefined, this.target ?? undefined, this.linkifierInternal, { stackTrace: resolvedStackTrace, tabStops: true, showColumnNumber: true });
+        callFrameContents.markAsRoot();
+        callFrameContents.show(stackTraceElement);
     }
 }
 export const categoryBreakdownCacheSymbol = Symbol('categoryBreakdownCache');

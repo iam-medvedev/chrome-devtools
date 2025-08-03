@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Trace from '../../../models/trace/trace.js';
+import * as Workspace from '../../../models/workspace/workspace.js';
 import { SourceMapsResolver } from './SourceMapsResolver.js';
 const UIStrings = {
     /**
@@ -45,7 +45,7 @@ export function isIgnoreListedEntry(entry) {
     return isIgnoreListedURL(url, ignoreListOptions);
 }
 function isIgnoreListedURL(url, options) {
-    return Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
+    return Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
 }
 /**
  * Returns the ignore reason for the given entry.
@@ -58,7 +58,7 @@ export function getIgnoredReasonString(entry) {
         return '';
     }
     const { url, ignoreListOptions } = getUrlAndIgnoreListOptions(entry);
-    const ignoreListMgr = Bindings.IgnoreListManager.IgnoreListManager.instance();
+    const ignoreListMgr = Workspace.IgnoreListManager.IgnoreListManager.instance();
     if (ignoreListOptions.isContentScript && ignoreListMgr.skipContentScripts) {
         return i18nString(UIStrings.skipContentScripts);
     }

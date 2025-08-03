@@ -114,7 +114,7 @@ export class LocationsSettingsTab extends UI.Widget.VBox {
     customSetting;
     editor;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(locationsSettingsTabStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('emulation-locations')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');

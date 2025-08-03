@@ -176,7 +176,7 @@ export function isUpdateLayoutTree(event) {
     return event.name === "UpdateLayoutTree" /* Name.UPDATE_LAYOUT_TREE */;
 }
 export function isLayout(event) {
-    return event.name === "Layout" /* Name.LAYOUT */;
+    return event.name === "Layout" /* Name.LAYOUT */ && Boolean(event.args && 'beginData' in event.args);
 }
 export function isInvalidateLayout(event) {
     return event.name === "InvalidateLayout" /* Name.INVALIDATE_LAYOUT */;

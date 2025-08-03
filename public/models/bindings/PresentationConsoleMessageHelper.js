@@ -218,9 +218,6 @@ class FrozenLiveLocation extends LiveLocationWithPool {
         super(updateDelegate, locationPool);
         this.#uiLocation = uiLocation;
     }
-    async isIgnoreListed() {
-        return false;
-    }
     async uiLocation() {
         return this.#uiLocation;
     }

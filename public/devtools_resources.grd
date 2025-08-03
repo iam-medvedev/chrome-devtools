@@ -68,6 +68,7 @@
       <include file="Images/brush-2.svg" name="IMAGES_BRUSH_2_SVG" resource_path="Images/brush-2.svg" type="BINDATA" compress="false"/>
       <include file="Images/brush-filled.svg" name="IMAGES_BRUSH_FILLED_SVG" resource_path="Images/brush-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/brush.svg" name="IMAGES_BRUSH_SVG" resource_path="Images/brush.svg" type="BINDATA" compress="false"/>
+      <include file="Images/bucket.svg" name="IMAGES_BUCKET_SVG" resource_path="Images/bucket.svg" type="BINDATA" compress="false"/>
       <include file="Images/bug.svg" name="IMAGES_BUG_SVG" resource_path="Images/bug.svg" type="BINDATA" compress="false"/>
       <include file="Images/bundle.svg" name="IMAGES_BUNDLE_SVG" resource_path="Images/bundle.svg" type="BINDATA" compress="false"/>
       <include file="Images/button-magic.svg" name="IMAGES_BUTTON_MAGIC_SVG" resource_path="Images/button-magic.svg" type="BINDATA" compress="false"/>
@@ -279,6 +280,7 @@
       <include file="Images/sync.svg" name="IMAGES_SYNC_SVG" resource_path="Images/sync.svg" type="BINDATA" compress="false"/>
       <include file="Images/table.svg" name="IMAGES_TABLE_SVG" resource_path="Images/table.svg" type="BINDATA" compress="false"/>
       <include file="Images/terminal.svg" name="IMAGES_TERMINAL_SVG" resource_path="Images/terminal.svg" type="BINDATA" compress="false"/>
+      <include file="Images/text-analysis.svg" name="IMAGES_TEXT_ANALYSIS_SVG" resource_path="Images/text-analysis.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-down-filled.svg" name="IMAGES_THUMB_DOWN_FILLED_SVG" resource_path="Images/thumb-down-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-down.svg" name="IMAGES_THUMB_DOWN_SVG" resource_path="Images/thumb-down.svg" type="BINDATA" compress="false"/>
       <include file="Images/thumb-up-filled.svg" name="IMAGES_THUMB_UP_FILLED_SVG" resource_path="Images/thumb-up-filled.svg" type="BINDATA" compress="false"/>

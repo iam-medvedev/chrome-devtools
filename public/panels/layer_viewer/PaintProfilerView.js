@@ -89,7 +89,7 @@ export class PaintProfilerView extends Common.ObjectWrapper.eventMixin(UI.Widget
     profiles;
     updateImageTimer;
     constructor(showImageCallback) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(paintProfilerStyles);
         this.contentElement.classList.add('paint-profiler-overview');
         this.canvasContainer = this.contentElement.createChild('div', 'paint-profiler-canvas-container');

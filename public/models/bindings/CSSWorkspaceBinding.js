@@ -240,8 +240,5 @@ export class LiveLocation extends LiveLocationWithPool {
         super.dispose();
         this.#info.disposeLocation(this);
     }
-    async isIgnoreListed() {
-        return false;
-    }
 }
 //# sourceMappingURL=CSSWorkspaceBinding.js.map

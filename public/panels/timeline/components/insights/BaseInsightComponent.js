@@ -295,9 +295,10 @@ export class BaseInsightComponent extends HTMLElement {
         void action.execute();
     }
     #canShowAskAI() {
-        const aiDisabledByEnterprisePolicy = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
-            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE;
-        return !aiDisabledByEnterprisePolicy && this.#insightsAskAiEnabled && this.hasAskAiSupport();
+        const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !==
+            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE &&
+            this.#insightsAskAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
+        return aiAvailable && this.hasAskAiSupport();
     }
     #renderInsightContent(insightModel) {
         if (!this.#selected) {

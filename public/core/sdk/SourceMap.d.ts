@@ -1,8 +1,8 @@
 import * as TextUtils from '../../models/text_utils/text_utils.js';
+import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import { type NamedFunctionRange } from './SourceMapFunctionRanges.js';
-import type { Position as GeneratedPosition } from './SourceMapScopes.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -141,7 +141,7 @@ export declare class SourceMap {
     compatibleForURL(sourceURL: Platform.DevToolsPath.UrlString, other: SourceMap): boolean;
     expandCallFrame(frame: CallFrame): CallFrame[];
     resolveScopeChain(frame: CallFrame): ScopeChainEntry[] | null;
-    findOriginalFunctionName(position: GeneratedPosition): string | null;
+    findOriginalFunctionName(position: ScopesCodec.Position): string | null;
 }
 export declare class TokenIterator {
     #private;

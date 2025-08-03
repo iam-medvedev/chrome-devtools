@@ -33,7 +33,6 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
-import { IgnoreListManager } from './IgnoreListManager.js';
 import { NetworkProject } from './NetworkProject.js';
 /**
  * The `CompilerScriptMapping` maps script entities from source maps to scripts and vice versa.
@@ -278,7 +277,7 @@ export class CompilerScriptMapping {
         // Create stub UISourceCode for the time source mapping is being loaded.
         this.addStubUISourceCode(script);
         void this.#debuggerWorkspaceBinding.updateLocations(script);
-        if (IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
+        if (Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(script.sourceURL, { isContentScript: script.isContentScript() })) {
             this.#sourceMapManager.cancelAttachSourceMap(script);
         }
     }

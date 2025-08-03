@@ -144,7 +144,7 @@ export class SearchView extends UI.Widget.VBox {
     #pendingSearchResults = [];
     #emptyStartView;
     constructor(settingKey, throttler) {
-        super(true);
+        super({ useShadowDom: true });
         this.setMinimumSize(0, 40);
         this.registerRequiredCSS(searchViewStyles);
         this.focusOnShow = false;

@@ -557,7 +557,7 @@ class SummaryView extends UI.Widget.Widget {
     parsedTrace = null;
     traceInsightsSets = null;
     constructor(element, view = SUMMARY_DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
     }
     performUpdate() {

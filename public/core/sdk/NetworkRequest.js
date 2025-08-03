@@ -306,6 +306,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     responseReceivedPromiseResolve;
     directSocketInfo;
     #directSocketChunks = [];
+    #isIpProtectionUsed;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestId = requestId;
@@ -316,6 +317,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#loaderId = loaderId;
         this.#initiator = initiator;
         this.#hasUserGesture = hasUserGesture;
+        this.#isIpProtectionUsed = false;
     }
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -930,6 +932,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         }
         return this.#responseCookies;
     }
+    set responseCookies(responseCookies) {
+        this.#responseCookies = responseCookies;
+    }
     responseLastModified() {
         return this.responseHeaderValue('last-modified');
     }
@@ -1253,12 +1258,14 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     addExtraRequestInfo(extraRequestInfo) {
         this.#blockedRequestCookies = extraRequestInfo.blockedRequestCookies;
-        this.#includedRequestCookies = extraRequestInfo.includedRequestCookies;
+        this.setIncludedRequestCookies(extraRequestInfo.includedRequestCookies);
         this.setRequestHeaders(extraRequestInfo.requestHeaders);
         this.#hasExtraRequestInfo = true;
         this.setRequestHeadersText(''); // Mark request headers as non-provisional
         this.#clientSecurityState = extraRequestInfo.clientSecurityState;
-        this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
+        if (extraRequestInfo.connectTiming) {
+            this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
+        }
         this.#siteHasCookieInOtherPartition = extraRequestInfo.siteHasCookieInOtherPartition ?? false;
         this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookies.some(item => item.blockedReasons.includes("ThirdPartyPhaseout" /* Protocol.Network.CookieBlockedReason.ThirdPartyPhaseout */));
     }
@@ -1267,6 +1274,9 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     blockedRequestCookies() {
         return this.#blockedRequestCookies;
+    }
+    setIncludedRequestCookies(includedRequestCookies) {
+        this.#includedRequestCookies = includedRequestCookies;
     }
     includedRequestCookies() {
         return this.#includedRequestCookies;
@@ -1405,6 +1415,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     isSameSite() {
         return this.#isSameSite;
+    }
+    setIsIpProtectionUsed(isIpProtectionUsed) {
+        this.#isIpProtectionUsed = isIpProtectionUsed;
+    }
+    isIpProtectionUsed() {
+        return this.#isIpProtectionUsed;
     }
     getAssociatedData(key) {
         return this.#associatedData.get(key) || null;

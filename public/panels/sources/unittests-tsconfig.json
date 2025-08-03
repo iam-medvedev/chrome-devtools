@@ -52,6 +52,7 @@
     "../../../../../../front_end/panels/sources/OutlineQuickOpen.test.ts",
     "../../../../../../front_end/panels/sources/ResourceOriginPlugin.test.ts",
     "../../../../../../front_end/panels/sources/SourcesNavigator.test.ts",
+    "../../../../../../front_end/panels/sources/SourcesPanel.test.ts",
     "../../../../../../front_end/panels/sources/SourcesView.test.ts",
     "../../../../../../front_end/panels/sources/TabbedEditorContainer.test.ts",
     "../../../../../../front_end/panels/sources/UISourceCodeFrame.test.ts",

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as QuickOpen from '../../ui/legacy/components/quick_open/quick_open.js';
@@ -61,7 +60,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
             return false;
         }
         if (Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */) &&
-            Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+            Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
             return false;
         }
         if (uiSourceCode.isFetchXHR()) {
@@ -111,7 +110,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
         if (uiSourceCode.contentType().isScript()) {
             // Bonus points for being a script if it is not ignore-listed. Note
             // that ignore listing logic does not apply to non-scripts.
-            if (!Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+            if (!Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
                 contentTypeBonus += 50;
             }
         }
@@ -126,7 +125,7 @@ export class FilteredUISourceCodeListProvider extends QuickOpen.FilteredListWidg
         const indexes = [];
         new FilePathScoreFunction(query).calculateScore(fullDisplayName, indexes);
         const fileNameIndex = fullDisplayName.lastIndexOf('/');
-        const isIgnoreListed = Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode);
+        const isIgnoreListed = Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode);
         let tooltipText = fullDisplayName;
         if (isIgnoreListed) {
             titleElement.parentElement?.classList.add('is-ignore-listed');

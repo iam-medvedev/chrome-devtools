@@ -50,7 +50,7 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     selectedTreeElement;
     treeElements;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.setMinimumSize(125, 0);
         this.tree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));

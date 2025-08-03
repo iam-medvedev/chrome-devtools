@@ -1371,7 +1371,7 @@ var IsolateSelector = class _IsolateSelector extends UI2.Widget.VBox {
   totalValueDiv;
   totalTrendDiv;
   constructor() {
-    super(false);
+    super();
     this.items = new UI2.ListModel.ListModel();
     this.list = new UI2.ListControl.ListControl(this.items, this, UI2.ListControl.ListMode.NonViewport);
     this.list.element.classList.add("javascript-vm-instances-list");
@@ -9465,7 +9465,7 @@ var LiveHeapProfileView = class _LiveHeapProfileView extends UI16.Widget.VBox {
   dataGrid;
   currentPollId;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.gridNodeByUrl = /* @__PURE__ */ new Map();
     this.registerRequiredCSS(liveHeapProfile_css_default);
     this.setting = Common14.Settings.Settings.instance().moduleSetting("memory-live-heap-profile");

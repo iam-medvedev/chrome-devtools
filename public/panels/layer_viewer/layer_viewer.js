@@ -359,7 +359,7 @@ var LayerDetailsView = class extends Common2.ObjectWrapper.eventMixin(UI.Widget.
   paintProfilerLink;
   selection;
   constructor(layerViewHost) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(layerDetailsView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging.pane("layers-details")}`);
     this.contentElement.classList.add("layer-details-container");
@@ -1210,7 +1210,7 @@ var Layers3DView = class extends Common5.ObjectWrapper.eventMixin(UI4.Widget.VBo
   mouseDownX;
   mouseDownY;
   constructor(layerViewHost) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(layers3DView_css_default);
     this.element.setAttribute("jslog", `${VisualLogging3.pane("layers-3d-view")}`);
     this.contentElement.classList.add("layers-3d-view");
@@ -2240,7 +2240,7 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
   profiles;
   updateImageTimer;
   constructor(showImageCallback) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(paintProfiler_css_default);
     this.contentElement.classList.add("paint-profiler-overview");
     this.canvasContainer = this.contentElement.createChild("div", "paint-profiler-canvas-container");

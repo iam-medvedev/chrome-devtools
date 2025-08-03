@@ -28,7 +28,7 @@ export class LayersWidget extends UI.Widget.Widget {
     cssModel;
     layerTreeComponent = new TreeOutline.TreeOutline.TreeOutline();
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(layersWidgetStyles);
         this.contentElement.className = 'styles-layers-pane';
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('css-layers')}`);

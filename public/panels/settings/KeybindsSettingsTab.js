@@ -102,7 +102,7 @@ export class KeybindsSettingsTab extends UI.Widget.VBox {
     editingItem;
     editingRow;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(keybindsSettingsTabStyles, settingsScreenStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('keybinds')}`);
         const settingsContent = this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');

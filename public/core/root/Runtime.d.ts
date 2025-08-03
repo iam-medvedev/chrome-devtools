@@ -77,6 +77,7 @@ export declare const enum ExperimentName {
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources",
+    TIMELINE_SAVE_AS_GZ = "timeline-save-as-gz",
     VERTICAL_DRAWER = "vertical-drawer"
 }
 export declare enum GenAiEnterprisePolicyValue {
@@ -113,12 +114,14 @@ export interface HostConfigFreestyler {
     multimodal?: boolean;
     multimodalUploadInput?: boolean;
     functionCalling?: boolean;
+    featureName?: string;
 }
 export interface HostConfigAiAssistanceNetworkAgent {
     modelId: string;
     temperature: number;
     enabled: boolean;
     userTier: string;
+    featureName?: string;
 }
 export interface HostConfigAiAssistancePerformanceAgent {
     modelId: string;
@@ -126,12 +129,14 @@ export interface HostConfigAiAssistancePerformanceAgent {
     enabled: boolean;
     userTier: string;
     insightsEnabled?: boolean;
+    featureName?: string;
 }
 export interface HostConfigAiAssistanceFileAgent {
     modelId: string;
     temperature: number;
     enabled: boolean;
     userTier: string;
+    featureName?: string;
 }
 export interface HostConfigAiCodeCompletion {
     modelId: string;
@@ -174,6 +179,12 @@ interface AiGeneratedTimelineLabels {
 interface AllowPopoverForcing {
     enabled: boolean;
 }
+interface AiSubmenuPrompts {
+    enabled: boolean;
+}
+interface IpProtectionInDevTools {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -210,6 +221,8 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     thirdPartyCookieControls: HostConfigThirdPartyCookieControls;
     devToolsAiGeneratedTimelineLabels: AiGeneratedTimelineLabels;
     devToolsAllowPopoverForcing: AllowPopoverForcing;
+    devToolsAiSubmenuPrompts: AiSubmenuPrompts;
+    devToolsIpProtectionInDevTools: IpProtectionInDevTools;
 }>;
 /**
  * The host configuration for this DevTools instance.

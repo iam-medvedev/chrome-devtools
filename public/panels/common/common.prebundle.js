@@ -68,4 +68,5 @@ export class TypeToAllowDialog {
 }
 export { AiCodeCompletionTeaser } from './AiCodeCompletionTeaser.js';
 export { FreDialog } from './FreDialog.js';
+export { AiCodeCompletionSummaryToolbar } from './AiCodeCompletionSummaryToolbar.js';
 //# sourceMappingURL=common.prebundle.js.map

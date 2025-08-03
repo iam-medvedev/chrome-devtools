@@ -233,7 +233,7 @@ export class DebuggerPlugin extends Plugin {
         this.loader = SDK.PageResourceLoader.PageResourceLoader.instance();
         this.loader.addEventListener("Update" /* SDK.PageResourceLoader.Events.UPDATE */, this.showSourceMapInfobarIfNeeded.bind(this), this);
         this.ignoreListCallback = this.showIgnoreListInfobarIfNeeded.bind(this);
-        Bindings.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
+        Workspace.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DebuggerModel.CallFrame, this.callFrameChanged, this);
         this.liveLocationPool = new Bindings.LiveLocation.LiveLocationPool();
         this.updateScriptFiles();
@@ -360,7 +360,7 @@ export class DebuggerPlugin extends Plugin {
         if (!uiSourceCode.contentType().hasScripts()) {
             return;
         }
-        if (!Bindings.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+        if (!Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
             this.hideIgnoreListInfobar();
             return;
         }
@@ -368,7 +368,7 @@ export class DebuggerPlugin extends Plugin {
             this.ignoreListInfobar.dispose();
         }
         function unIgnoreList() {
-            Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
+            Workspace.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
         }
         const infobar = new UI.Infobar.Infobar("warning" /* UI.Infobar.Type.WARNING */, i18nString(UIStrings.thisScriptIsOnTheDebuggersIgnore), [
             {
@@ -493,7 +493,7 @@ export class DebuggerPlugin extends Plugin {
         }
         if (this.uiSourceCode.project().type() === Workspace.Workspace.projectTypes.Network &&
             Common.Settings.Settings.instance().moduleSetting('js-source-maps-enabled').get() &&
-            !Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
+            !Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
             if (this.scriptFileForDebuggerModel.size) {
                 const scriptFile = this.scriptFileForDebuggerModel.values().next().value;
                 const addSourceMapURLLabel = i18nString(UIStrings.addSourceMap);
@@ -1509,7 +1509,7 @@ export class DebuggerPlugin extends Plugin {
         this.breakpointManager.removeEventListener(Breakpoints.BreakpointManager.Events.BreakpointRemoved, this.breakpointChange, this);
         this.uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
         this.uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
-        Bindings.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.ignoreListCallback);
+        Workspace.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.ignoreListCallback);
         debuggerPluginForUISourceCode.delete(this.uiSourceCode);
         super.dispose();
         window.clearTimeout(this.refreshBreakpointsTimeout);

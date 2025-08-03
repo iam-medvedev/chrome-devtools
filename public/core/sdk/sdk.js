@@ -9407,7 +9407,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
         this.#capabilitiesMask = 4 | 8 | 524288 | 16;
         break;
       case Type.NODE:
-        this.#capabilitiesMask = 4 | 16 | 32;
+        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
         break;
       case Type.AUCTION_WORKLET:
         this.#capabilitiesMask = 4 | 524288;
@@ -9419,7 +9419,7 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
         this.#capabilitiesMask = 32 | 128;
         break;
       case Type.NODE_WORKER:
-        this.#capabilitiesMask = 4 | 16 | 32;
+        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
     }
     this.#typeInternal = type;
     this.#parentTargetInternal = parentTarget;
@@ -10464,6 +10464,11 @@ var NetworkDispatcher = class {
     networkRequest.setSecurityState(response.securityState);
     if (response.securityDetails) {
       networkRequest.setSecurityDetails(response.securityDetails);
+    }
+    if (Root2.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+      if (response.isIpProtectionUsed) {
+        networkRequest.setIsIpProtectionUsed(response.isIpProtectionUsed);
+      }
     }
     const newResourceType = Common5.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
     if (newResourceType) {
@@ -13929,6 +13934,7 @@ var CSSContainerQuery = class _CSSContainerQuery extends CSSQuery {
   physicalAxes;
   logicalAxes;
   queriesScrollState;
+  queriesAnchored;
   static parseContainerQueriesPayload(cssModel, payload) {
     return payload.map((cq) => new _CSSContainerQuery(cssModel, cq));
   }
@@ -13944,12 +13950,13 @@ var CSSContainerQuery = class _CSSContainerQuery extends CSSQuery {
     this.physicalAxes = payload.physicalAxes;
     this.logicalAxes = payload.logicalAxes;
     this.queriesScrollState = payload.queriesScrollState;
+    this.queriesAnchored = payload.queriesAnchored;
   }
   active() {
     return true;
   }
   async getContainerForNode(nodeId) {
-    const containerNode = await this.cssModel.domModel().getContainerForNode(nodeId, this.name, this.physicalAxes, this.logicalAxes, this.queriesScrollState);
+    const containerNode = await this.cssModel.domModel().getContainerForNode(nodeId, this.name, this.physicalAxes, this.logicalAxes, this.queriesScrollState, this.queriesAnchored);
     if (!containerNode) {
       return;
     }
@@ -17597,298 +17604,6 @@ __export(SourceMapFunctionRanges_exports, {
   buildOriginalScopes: () => buildOriginalScopes,
   decodePastaRanges: () => decodePastaRanges
 });
-
-// gen/front_end/core/sdk/SourceMapScopes.js
-var SourceMapScopes_exports = {};
-__export(SourceMapScopes_exports, {
-  comparePositions: () => comparePositions,
-  decodeGeneratedRanges: () => decodeGeneratedRanges,
-  decodeOriginalScopes: () => decodeOriginalScopes,
-  decodeScopes: () => decodeScopes
-});
-function comparePositions(a, b) {
-  return a.line - b.line || a.column - b.column;
-}
-function decodeScopes(map, basePosition = {
-  line: 0,
-  column: 0
-}) {
-  if (!map.originalScopes || map.generatedRanges === void 0) {
-    throw new Error('Cant decode scopes without "originalScopes" or "generatedRanges"');
-  }
-  const scopeTrees = decodeOriginalScopes(map.originalScopes, map.names ?? []);
-  const originalScopes = scopeTrees.map((tree) => tree.root);
-  const generatedRanges = decodeGeneratedRanges(map.generatedRanges, scopeTrees, map.names ?? [], basePosition);
-  return { originalScopes, generatedRanges };
-}
-function decodeOriginalScopes(encodedOriginalScopes, names) {
-  return encodedOriginalScopes.map((scope) => decodeOriginalScope(scope, names));
-}
-function decodeOriginalScope(encodedOriginalScope, names) {
-  const scopeForItemIndex = /* @__PURE__ */ new Map();
-  const scopeStack = [];
-  let line = 0;
-  let kindIdx = 0;
-  for (const [index, item] of decodeOriginalScopeItems(encodedOriginalScope)) {
-    line += item.line;
-    const { column } = item;
-    if (isStart(item)) {
-      let kind;
-      if (item.kind !== void 0) {
-        kindIdx += item.kind;
-        kind = resolveName(kindIdx, names);
-      }
-      const name = resolveName(item.name, names);
-      const variables = item.variables.map((idx) => names[idx]);
-      const scope = {
-        start: { line, column },
-        end: { line, column },
-        kind,
-        name,
-        isStackFrame: Boolean(
-          item.flags & 4
-          /* EncodedOriginalScopeFlag.IS_STACK_FRAME */
-        ),
-        variables,
-        children: []
-      };
-      scopeStack.push(scope);
-      scopeForItemIndex.set(index, scope);
-    } else {
-      const scope = scopeStack.pop();
-      if (!scope) {
-        throw new Error('Scope items not nested properly: encountered "end" item without "start" item');
-      }
-      scope.end = { line, column };
-      if (scopeStack.length === 0) {
-        return { root: scope, scopeForItemIndex };
-      }
-      scope.parent = scopeStack[scopeStack.length - 1];
-      scopeStack[scopeStack.length - 1].children.push(scope);
-    }
-  }
-  throw new Error("Malformed original scope encoding");
-}
-function isStart(item) {
-  return "flags" in item;
-}
-function* decodeOriginalScopeItems(encodedOriginalScope) {
-  const iter = new TokenIterator(encodedOriginalScope);
-  let prevColumn = 0;
-  let itemCount = 0;
-  while (iter.hasNext()) {
-    if (iter.peek() === ",") {
-      iter.next();
-    }
-    const [line, column] = [iter.nextVLQ(), iter.nextVLQ()];
-    if (line === 0 && column < prevColumn) {
-      throw new Error("Malformed original scope encoding: start/end items must be ordered w.r.t. source positions");
-    }
-    prevColumn = column;
-    if (!iter.hasNext() || iter.peek() === ",") {
-      yield [itemCount++, { line, column }];
-      continue;
-    }
-    const startItem = {
-      line,
-      column,
-      flags: iter.nextVLQ(),
-      variables: []
-    };
-    if (startItem.flags & 1) {
-      startItem.name = iter.nextVLQ();
-    }
-    if (startItem.flags & 2) {
-      startItem.kind = iter.nextVLQ();
-    }
-    while (iter.hasNext() && iter.peek() !== ",") {
-      startItem.variables.push(iter.nextVLQ());
-    }
-    yield [itemCount++, startItem];
-  }
-}
-function decodeGeneratedRanges(encodedGeneratedRange, originalScopeTrees, names, basePosition = {
-  line: 0,
-  column: 0
-}) {
-  const rangeStack = [{
-    start: { line: 0, column: 0 },
-    end: { line: 0, column: 0 },
-    isStackFrame: false,
-    isHidden: false,
-    children: [],
-    values: []
-  }];
-  const rangeToStartItem = /* @__PURE__ */ new Map();
-  for (const item of decodeGeneratedRangeItems(encodedGeneratedRange, basePosition)) {
-    if (isRangeStart(item)) {
-      const range = {
-        start: { line: item.line, column: item.column },
-        end: { line: item.line, column: item.column },
-        isStackFrame: Boolean(
-          item.flags & 4
-          /* EncodedGeneratedRangeFlag.IS_STACK_FRAME */
-        ),
-        isHidden: Boolean(
-          item.flags & 8
-          /* EncodedGeneratedRangeFlag.IS_HIDDEN */
-        ),
-        values: [],
-        children: []
-      };
-      if (item.definition) {
-        const { scopeIdx, sourceIdx } = item.definition;
-        if (!originalScopeTrees[sourceIdx]) {
-          throw new Error("Invalid source index!");
-        }
-        const originalScope = originalScopeTrees[sourceIdx].scopeForItemIndex.get(scopeIdx);
-        if (!originalScope) {
-          throw new Error("Invalid original scope index!");
-        }
-        range.originalScope = originalScope;
-      }
-      if (item.callsite) {
-        const { sourceIdx, line, column } = item.callsite;
-        if (!originalScopeTrees[sourceIdx]) {
-          throw new Error("Invalid source index!");
-        }
-        range.callSite = {
-          sourceIndex: sourceIdx,
-          line,
-          column
-        };
-      }
-      rangeToStartItem.set(range, item);
-      rangeStack.push(range);
-    } else {
-      const range = rangeStack.pop();
-      if (!range) {
-        throw new Error('Range items not nested properly: encountered "end" item without "start" item');
-      }
-      range.end = { line: item.line, column: item.column };
-      resolveBindings(range, names, rangeToStartItem.get(range)?.bindings);
-      rangeStack[rangeStack.length - 1].children.push(range);
-    }
-  }
-  if (rangeStack.length !== 1) {
-    throw new Error("Malformed generated range encoding");
-  }
-  return rangeStack[0].children;
-}
-function resolveBindings(range, names, bindingsForAllVars) {
-  if (bindingsForAllVars === void 0) {
-    return;
-  }
-  range.values = bindingsForAllVars.map((bindings) => {
-    if (bindings.length === 1) {
-      const value = resolveName(bindings[0].nameIdx, names);
-      return value ?? null;
-    }
-    const bindingRanges = bindings.map((binding) => ({
-      from: { line: binding.line, column: binding.column },
-      to: { line: binding.line, column: binding.column },
-      value: resolveName(binding.nameIdx, names)
-    }));
-    for (let i = 1; i < bindingRanges.length; ++i) {
-      bindingRanges[i - 1].to = { ...bindingRanges[i].from };
-    }
-    bindingRanges[bindingRanges.length - 1].to = { ...range.end };
-    return bindingRanges;
-  });
-}
-function isRangeStart(item) {
-  return "flags" in item;
-}
-function* decodeGeneratedRangeItems(encodedGeneratedRange, basePosition) {
-  const iter = new TokenIterator(encodedGeneratedRange);
-  let line = basePosition.line;
-  const state = {
-    line: basePosition.line,
-    column: basePosition.column,
-    defSourceIdx: 0,
-    defScopeIdx: 0,
-    callsiteSourceIdx: 0,
-    callsiteLine: 0,
-    callsiteColumn: 0
-  };
-  while (iter.hasNext()) {
-    if (iter.peek() === ";") {
-      iter.next();
-      ++line;
-      continue;
-    } else if (iter.peek() === ",") {
-      iter.next();
-      continue;
-    }
-    state.column = iter.nextVLQ() + (line === state.line ? state.column : 0);
-    state.line = line;
-    if (iter.peekVLQ() === null) {
-      yield { line, column: state.column };
-      continue;
-    }
-    const startItem = {
-      line,
-      column: state.column,
-      flags: iter.nextVLQ(),
-      bindings: []
-    };
-    if (startItem.flags & 1) {
-      const sourceIdx = iter.nextVLQ();
-      const scopeIdx = iter.nextVLQ();
-      state.defScopeIdx = scopeIdx + (sourceIdx === 0 ? state.defScopeIdx : 0);
-      state.defSourceIdx += sourceIdx;
-      startItem.definition = {
-        sourceIdx: state.defSourceIdx,
-        scopeIdx: state.defScopeIdx
-      };
-    }
-    if (startItem.flags & 2) {
-      const sourceIdx = iter.nextVLQ();
-      const line2 = iter.nextVLQ();
-      const column = iter.nextVLQ();
-      state.callsiteColumn = column + (line2 === 0 && sourceIdx === 0 ? state.callsiteColumn : 0);
-      state.callsiteLine = line2 + (sourceIdx === 0 ? state.callsiteLine : 0);
-      state.callsiteSourceIdx += sourceIdx;
-      startItem.callsite = {
-        sourceIdx: state.callsiteSourceIdx,
-        line: state.callsiteLine,
-        column: state.callsiteColumn
-      };
-    }
-    while (iter.hasNext() && iter.peek() !== ";" && iter.peek() !== ",") {
-      const bindings = [];
-      startItem.bindings.push(bindings);
-      const idxOrSubrangeCount = iter.nextVLQ();
-      if (idxOrSubrangeCount >= -1) {
-        bindings.push({ line: startItem.line, column: startItem.column, nameIdx: idxOrSubrangeCount });
-        continue;
-      }
-      bindings.push({ line: startItem.line, column: startItem.column, nameIdx: iter.nextVLQ() });
-      const rangeCount = -idxOrSubrangeCount;
-      for (let i = 0; i < rangeCount - 1; ++i) {
-        const line2 = iter.nextVLQ();
-        const column = iter.nextVLQ();
-        const nameIdx = iter.nextVLQ();
-        const lastLine = bindings.at(-1)?.line ?? 0;
-        const lastColumn = bindings.at(-1)?.column ?? 0;
-        bindings.push({
-          line: line2 + lastLine,
-          column: column + (line2 === 0 ? lastColumn : 0),
-          nameIdx
-        });
-      }
-    }
-    yield startItem;
-  }
-}
-function resolveName(idx, names) {
-  if (idx === void 0 || idx < 0) {
-    return void 0;
-  }
-  return names[idx];
-}
-
-// gen/front_end/core/sdk/SourceMapFunctionRanges.js
 function buildOriginalScopes(ranges) {
   validateStartBeforeEnd(ranges);
   ranges.sort((a, b) => comparePositions(a.start, b.start) || comparePositions(b.end, a.end));
@@ -17973,6 +17688,9 @@ function decodePastaRanges(encodedRanges, names) {
     });
   }
   return result;
+}
+function comparePositions(a, b) {
+  return a.line - b.line || a.column - b.column;
 }
 
 // gen/front_end/core/sdk/SourceMapScopesInfo.js
@@ -24797,8 +24515,8 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     return this.nodeForId(response.nodeId);
   }
-  async getContainerForNode(nodeId, containerName, physicalAxes, logicalAxes, queriesScrollState) {
-    const { nodeId: containerNodeId } = await this.agent.invoke_getContainerForNode({ nodeId, containerName, physicalAxes, logicalAxes, queriesScrollState });
+  async getContainerForNode(nodeId, containerName, physicalAxes, logicalAxes, queriesScrollState, queriesAnchored) {
+    const { nodeId: containerNodeId } = await this.agent.invoke_getContainerForNode({ nodeId, containerName, physicalAxes, logicalAxes, queriesScrollState, queriesAnchored });
     if (!containerNodeId) {
       return null;
     }
@@ -27176,6 +26894,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   responseReceivedPromiseResolve;
   directSocketInfo;
   #directSocketChunks = [];
+  #isIpProtectionUsed;
   constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
     super();
     this.#requestId = requestId;
@@ -27186,6 +26905,7 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     this.#loaderId = loaderId;
     this.#initiator = initiator;
     this.#hasUserGesture = hasUserGesture;
+    this.#isIpProtectionUsed = false;
   }
   static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
     return new _NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -27780,6 +27500,9 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
     }
     return this.#responseCookies;
   }
+  set responseCookies(responseCookies) {
+    this.#responseCookies = responseCookies;
+  }
   responseLastModified() {
     return this.responseHeaderValue("last-modified");
   }
@@ -28091,12 +27814,14 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   addExtraRequestInfo(extraRequestInfo) {
     this.#blockedRequestCookies = extraRequestInfo.blockedRequestCookies;
-    this.#includedRequestCookies = extraRequestInfo.includedRequestCookies;
+    this.setIncludedRequestCookies(extraRequestInfo.includedRequestCookies);
     this.setRequestHeaders(extraRequestInfo.requestHeaders);
     this.#hasExtraRequestInfo = true;
     this.setRequestHeadersText("");
     this.#clientSecurityState = extraRequestInfo.clientSecurityState;
-    this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
+    if (extraRequestInfo.connectTiming) {
+      this.setConnectTimingFromExtraInfo(extraRequestInfo.connectTiming);
+    }
     this.#siteHasCookieInOtherPartition = extraRequestInfo.siteHasCookieInOtherPartition ?? false;
     this.#hasThirdPartyCookiePhaseoutIssue = this.#blockedRequestCookies.some((item) => item.blockedReasons.includes(
       "ThirdPartyPhaseout"
@@ -28108,6 +27833,9 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   blockedRequestCookies() {
     return this.#blockedRequestCookies;
+  }
+  setIncludedRequestCookies(includedRequestCookies) {
+    this.#includedRequestCookies = includedRequestCookies;
   }
   includedRequestCookies() {
     return this.#includedRequestCookies;
@@ -28244,6 +27972,12 @@ var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.Object
   }
   isSameSite() {
     return this.#isSameSite;
+  }
+  setIsIpProtectionUsed(isIpProtectionUsed) {
+    this.#isIpProtectionUsed = isIpProtectionUsed;
+  }
+  isIpProtectionUsed() {
+    return this.#isIpProtectionUsed;
   }
   getAssociatedData(key) {
     return this.#associatedData.get(key) || null;
@@ -29561,10 +29295,15 @@ var AutofillModel = class extends SDKModel {
     super(target);
     this.agent = target.autofillAgent();
     this.#showTestAddressesInAutofillMenu = Common29.Settings.Settings.instance().createSetting("show-test-addresses-in-autofill-menu-on-event", false);
+    this.#showTestAddressesInAutofillMenu.addChangeListener(this.#setTestAddresses, this);
     target.registerAutofillDispatcher(this);
     this.enable();
   }
-  setTestAddresses() {
+  dispose() {
+    this.#showTestAddressesInAutofillMenu.removeChangeListener(this.#setTestAddresses, this);
+    super.dispose();
+  }
+  #setTestAddresses() {
     void this.agent.invoke_setAddresses({
       addresses: this.#showTestAddressesInAutofillMenu.get() ? [
         {
@@ -29679,7 +29418,7 @@ var AutofillModel = class extends SDKModel {
       return;
     }
     void this.agent.invoke_enable();
-    this.setTestAddresses();
+    this.#setTestAddresses();
     this.#enabled = true;
   }
   disable() {
@@ -35404,7 +35143,6 @@ export {
   SourceMapFunctionRanges_exports as SourceMapFunctionRanges,
   SourceMapManager_exports as SourceMapManager,
   SourceMapScopeChainEntry_exports as SourceMapScopeChainEntry,
-  SourceMapScopes_exports as SourceMapScopes,
   SourceMapScopesInfo_exports as SourceMapScopesInfo,
   StorageBucketsModel_exports as StorageBucketsModel,
   StorageKeyManager_exports as StorageKeyManager,

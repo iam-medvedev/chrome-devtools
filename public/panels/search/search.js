@@ -167,7 +167,7 @@ var SearchResultsPane = class extends UI.Widget.VBox {
   treeOutline;
   matchesExpandedCount;
   constructor(searchConfig) {
-    super(true);
+    super({ useShadowDom: true });
     this.searchConfig = searchConfig;
     this.searchResults = [];
     this.treeElements = [];
@@ -656,7 +656,7 @@ var SearchView = class extends UI2.Widget.VBox {
   #pendingSearchResults = [];
   #emptyStartView;
   constructor(settingKey, throttler) {
-    super(true);
+    super({ useShadowDom: true });
     this.setMinimumSize(0, 40);
     this.registerRequiredCSS(searchView_css_default);
     this.focusOnShow = false;

@@ -213,7 +213,7 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
   customSetting;
   editor;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(locationsSettingsTab_css_default);
     this.element.setAttribute("jslog", `${VisualLogging.pane("emulation-locations")}`);
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
@@ -1009,7 +1009,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   mouseDownVector;
   originalBoxMatrix;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(sensors_css_default);
     this.element.setAttribute("jslog", `${VisualLogging2.panel("sensors").track({ resize: true })}`);
     this.contentElement.classList.add("sensors-view");

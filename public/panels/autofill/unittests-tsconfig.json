@@ -49,10 +49,13 @@
       "path": "./bundle-tsconfig.json"
     },
     {
-      "path": "../../testing/testing-tsconfig.json"
+      "path": "../../generated/protocol-tsconfig.json"
     },
     {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
+      "path": "../../models/autofill_manager/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../testing/testing-tsconfig.json"
     }
   ]
 }

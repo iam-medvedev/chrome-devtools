@@ -25,6 +25,7 @@ export interface RevealViewCommandOptions {
     tags: string;
     category: UI.ViewManager.ViewLocationCategory;
     userActionCode?: number;
+    featurePromotionId?: string;
 }
 export interface CreateCommandOptions {
     category: Platform.UIString.LocalizedString;
@@ -37,6 +38,7 @@ export interface CreateCommandOptions {
     userActionCode?: number;
     deprecationWarning?: Platform.UIString.LocalizedString;
     isPanelOrDrawer?: PanelOrDrawer;
+    featurePromotionId?: string;
 }
 export declare const enum PanelOrDrawer {
     PANEL = "PANEL",
@@ -64,7 +66,8 @@ export declare class Command {
     readonly jslogContext: string;
     readonly deprecationWarning?: Platform.UIString.LocalizedString;
     readonly isPanelOrDrawer?: PanelOrDrawer;
-    constructor(category: Common.UIString.LocalizedString, title: Common.UIString.LocalizedString, key: string, shortcut: string, jslogContext: string, executeHandler: () => unknown, availableHandler?: () => boolean, deprecationWarning?: Platform.UIString.LocalizedString, isPanelOrDrawer?: PanelOrDrawer);
+    readonly featurePromotionId?: string;
+    constructor(category: Common.UIString.LocalizedString, title: Common.UIString.LocalizedString, key: string, shortcut: string, jslogContext: string, executeHandler: () => unknown, availableHandler?: () => boolean, deprecationWarning?: Platform.UIString.LocalizedString, isPanelOrDrawer?: PanelOrDrawer, featurePromotionId?: string);
     available(): boolean;
     execute(): unknown;
 }

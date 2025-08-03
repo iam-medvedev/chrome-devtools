@@ -8,6 +8,7 @@ export declare class LegacyJavaScript extends BaseInsightComponent<LegacyJavaScr
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
+    protected hasAskAiSupport(): boolean;
     renderContent(): Lit.LitTemplate;
 }
 declare global {

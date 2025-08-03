@@ -448,7 +448,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
         addTab: (_id, _tabTitle, _view, _jslogContext) => { }
     };
     constructor(element, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
         this.registerRequiredCSS(cssOverviewCompletedViewStyles);
         this.#linkifier = new Components.Linkifier.Linkifier(/* maxLinkLength */ 20, /* useLinkDecorator */ true);

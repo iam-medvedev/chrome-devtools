@@ -78,10 +78,7 @@ var AddDebugInfoURLDialog = class _AddDebugInfoURLDialog extends UI.Widget.HBox 
   dialog;
   callback;
   constructor(label, jslogContext, callback, view = DEFAULT_VIEW) {
-    super(
-      /* useShadowDom */
-      true
-    );
+    super({ useShadowDom: true });
     const viewInput = {
       label,
       onKeyDown: this.onKeyDown.bind(this),
@@ -375,7 +372,7 @@ var BreakpointEditDialog = class extends UI3.Widget.Widget {
   #history;
   #editorHistory;
   constructor(editorLineNumber, oldCondition, isLogpoint, onFinish) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(breakpointEditDialog_css_default);
     const editorConfig = [
       CodeMirror.javascript.javascriptLanguage,
@@ -1584,12 +1581,7 @@ var BreakpointsView = class _BreakpointsView extends UI4.Widget.VBox {
     return breakpointsViewInstance;
   }
   constructor(element, view = DEFAULT_VIEW2) {
-    super(
-      /* useShadowDom */
-      true,
-      void 0,
-      element
-    );
+    super(element, { useShadowDom: true });
     this.#view = view;
     this.#controller = BreakpointsSidebarController.instance();
     void this.#controller.update();
@@ -1924,6 +1916,7 @@ import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
+import * as Workspace4 from "./../../models/workspace/workspace.js";
 import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
@@ -2448,7 +2441,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI5.View.SimpleVi
     if (menuSection.items.length > 0) {
       return;
     }
-    for (const { text, callback, jslogContext } of Bindings2.IgnoreListManager.IgnoreListManager.instance().getIgnoreListURLContextMenuItems(uiSourceCode)) {
+    for (const { text, callback, jslogContext } of Workspace4.IgnoreListManager.IgnoreListManager.instance().getIgnoreListURLContextMenuItems(uiSourceCode)) {
       menuSection.appendItem(text, callback, { jslogContext });
     }
   }
@@ -2577,7 +2570,7 @@ var Item = class _Item {
   }
   async update(liveLocation) {
     const uiLocation = await liveLocation.uiLocation();
-    this.isIgnoreListed = await liveLocation.isIgnoreListed();
+    this.isIgnoreListed = Boolean(uiLocation?.isIgnoreListed());
     this.linkText = uiLocation ? uiLocation.linkText() : "";
     this.uiLocation = uiLocation;
     this.updateDelegate(this);
@@ -3045,7 +3038,7 @@ import * as i18n15 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined3 } from "./../../core/platform/platform.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
-import * as Workspace4 from "./../../models/workspace/workspace.js";
+import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as CodeMirror3 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as ColorPicker from "./../../ui/legacy/components/color_picker/color_picker.js";
@@ -3429,7 +3422,7 @@ var CSSPlugin = class extends Plugin {
     }
     const cssModel = this.#cssModel;
     const url = this.uiSourceCode.url();
-    if (this.uiSourceCode.project().type() === Workspace4.Workspace.projectTypes.Network && cssModel && !Bindings3.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
+    if (this.uiSourceCode.project().type() === Workspace5.Workspace.projectTypes.Network && cssModel && !Workspace5.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url)) {
       const addSourceMapURLLabel = i18nString7(UIStrings8.addSourceMap);
       contextMenu.debugSection().appendItem(addSourceMapURLLabel, () => addSourceMapURL(cssModel, url), { jslogContext: "add-source-map" });
     }
@@ -3783,7 +3776,7 @@ import * as Breakpoints3 from "./../../models/breakpoints/breakpoints.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes2 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
-import * as Workspace20 from "./../../models/workspace/workspace.js";
+import * as Workspace21 from "./../../models/workspace/workspace.js";
 import * as CodeMirror6 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as TextEditor5 from "./../../ui/components/text_editor/text_editor.js";
@@ -3818,7 +3811,7 @@ import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Bindings8 from "./../../models/bindings/bindings.js";
 import * as Breakpoints2 from "./../../models/breakpoints/breakpoints.js";
 import * as Extensions2 from "./../../models/extensions/extensions.js";
-import * as Workspace18 from "./../../models/workspace/workspace.js";
+import * as Workspace19 from "./../../models/workspace/workspace.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
@@ -3846,7 +3839,7 @@ import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Bindings5 from "./../../models/bindings/bindings.js";
 import * as Persistence5 from "./../../models/persistence/persistence.js";
 import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
-import * as Workspace8 from "./../../models/workspace/workspace.js";
+import * as Workspace9 from "./../../models/workspace/workspace.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as IconButton5 from "./../../ui/components/icon_button/icon_button.js";
 import * as Spinners from "./../../ui/components/spinners/spinners.js";
@@ -4057,7 +4050,7 @@ import * as Platform4 from "./../../core/platform/platform.js";
 import * as Bindings4 from "./../../models/bindings/bindings.js";
 import * as Persistence3 from "./../../models/persistence/persistence.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
-import * as Workspace6 from "./../../models/workspace/workspace.js";
+import * as Workspace7 from "./../../models/workspace/workspace.js";
 var SourcesSearchScope = class _SourcesSearchScope {
   searchId;
   searchResultCandidates;
@@ -4078,8 +4071,8 @@ var SourcesSearchScope = class _SourcesSearchScope {
     if (!uiSourceCode1.isDirty() && uiSourceCode2.isDirty()) {
       return 1;
     }
-    const isFileSystem1 = uiSourceCode1.project().type() === Workspace6.Workspace.projectTypes.FileSystem && !Persistence3.Persistence.PersistenceImpl.instance().binding(uiSourceCode1);
-    const isFileSystem2 = uiSourceCode2.project().type() === Workspace6.Workspace.projectTypes.FileSystem && !Persistence3.Persistence.PersistenceImpl.instance().binding(uiSourceCode2);
+    const isFileSystem1 = uiSourceCode1.project().type() === Workspace7.Workspace.projectTypes.FileSystem && !Persistence3.Persistence.PersistenceImpl.instance().binding(uiSourceCode1);
+    const isFileSystem2 = uiSourceCode2.project().type() === Workspace7.Workspace.projectTypes.FileSystem && !Persistence3.Persistence.PersistenceImpl.instance().binding(uiSourceCode2);
     if (isFileSystem1 !== isFileSystem2) {
       return isFileSystem1 ? 1 : -1;
     }
@@ -4108,14 +4101,14 @@ var SourcesSearchScope = class _SourcesSearchScope {
   }
   projects() {
     const searchInAnonymousAndContentScripts = Common7.Settings.Settings.instance().moduleSetting("search-in-anonymous-and-content-scripts").get();
-    return Workspace6.Workspace.WorkspaceImpl.instance().projects().filter((project) => {
-      if (project.type() === Workspace6.Workspace.projectTypes.Service) {
+    return Workspace7.Workspace.WorkspaceImpl.instance().projects().filter((project) => {
+      if (project.type() === Workspace7.Workspace.projectTypes.Service) {
         return false;
       }
-      if (!searchInAnonymousAndContentScripts && project.isServiceProject() && project.type() !== Workspace6.Workspace.projectTypes.Formatter) {
+      if (!searchInAnonymousAndContentScripts && project.isServiceProject() && project.type() !== Workspace7.Workspace.projectTypes.Formatter) {
         return false;
       }
-      if (!searchInAnonymousAndContentScripts && project.type() === Workspace6.Workspace.projectTypes.ContentScripts) {
+      if (!searchInAnonymousAndContentScripts && project.type() === Workspace7.Workspace.projectTypes.ContentScripts) {
         return false;
       }
       return true;
@@ -4146,7 +4139,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
       if (!uiSourceCode.contentType().isTextType()) {
         continue;
       }
-      if (Bindings4.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+      if (Workspace7.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
         continue;
       }
       const binding = Persistence3.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
@@ -4272,7 +4265,7 @@ var FileBasedSearchResult = class {
   matchRevealable(index) {
     const { lineNumber, columnNumber, matchLength } = this.searchMatches[index];
     const range = new TextUtils3.TextRange.TextRange(lineNumber, columnNumber, lineNumber, columnNumber + matchLength);
-    return new Workspace6.UISourceCode.UILocationRange(this.uiSourceCode, range);
+    return new Workspace7.UISourceCode.UILocationRange(this.uiSourceCode, range);
   }
   matchLabel(index) {
     return String(this.searchMatches[index].lineNumber + 1);
@@ -4484,7 +4477,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   groupByDomain;
   groupByFolder;
   constructor(jslogContext, enableAuthoredGrouping) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(navigatorView_css_default);
     this.placeholder = null;
     this.scriptsTree = new UI10.TreeOutline.TreeOutlineInShadow(
@@ -4510,14 +4503,14 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     if (enableAuthoredGrouping) {
       this.navigatorGroupByAuthoredExperiment = "authored-deployed-grouping";
     }
-    Bindings5.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListChanged.bind(this));
+    Workspace9.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListChanged.bind(this));
     this.initGrouping();
     Persistence5.Persistence.PersistenceImpl.instance().addEventListener(Persistence5.Persistence.Events.BindingCreated, this.onBindingChanged, this);
     Persistence5.Persistence.PersistenceImpl.instance().addEventListener(Persistence5.Persistence.Events.BindingRemoved, this.onBindingChanged, this);
     Persistence5.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("RequestsForHeaderOverridesFileChanged", this.#onRequestsForHeaderOverridesFileChanged, this);
     SDK8.TargetManager.TargetManager.instance().addEventListener("NameChanged", this.targetNameChanged, this);
     SDK8.TargetManager.TargetManager.instance().observeTargets(this);
-    this.resetWorkspace(Workspace8.Workspace.WorkspaceImpl.instance());
+    this.resetWorkspace(Workspace9.Workspace.WorkspaceImpl.instance());
     this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
     Bindings5.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionAdded", this.frameAttributionAdded, this);
     Bindings5.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionRemoved", this.frameAttributionRemoved, this);
@@ -4634,30 +4627,30 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   }
   resetWorkspace(workspace) {
     if (this.workspaceInternal) {
-      this.workspaceInternal.removeEventListener(Workspace8.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
-      this.workspaceInternal.removeEventListener(Workspace8.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
-      this.workspaceInternal.removeEventListener(Workspace8.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-      this.workspaceInternal.removeEventListener(Workspace8.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
+      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
+      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
+      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
     }
     this.workspaceInternal = workspace;
-    this.workspaceInternal.addEventListener(Workspace8.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
-    this.workspaceInternal.addEventListener(Workspace8.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
-    this.workspaceInternal.addEventListener(Workspace8.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-    this.workspaceInternal.addEventListener(Workspace8.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
+    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
+    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
+    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
     this.workspaceInternal.projects().forEach(this.projectAdded.bind(this));
     this.computeUniqueFileSystemProjectNames();
   }
   projectAddedCallback(event) {
     const project = event.data;
     this.projectAdded(project);
-    if (project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
       this.computeUniqueFileSystemProjectNames();
     }
   }
   projectRemovedCallback(event) {
     const project = event.data;
     this.removeProject(project);
-    if (project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
       this.computeUniqueFileSystemProjectNames();
     }
   }
@@ -4693,7 +4686,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     if (Root.Runtime.experiments.isEnabled(
       "just-my-code"
       /* Root.Runtime.ExperimentName.JUST_MY_CODE */
-    ) && Bindings5.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+    ) && Workspace9.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
       return;
     }
     if (!this.acceptsUISourceCode(uiSourceCode)) {
@@ -4715,7 +4708,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   addUISourceCodeNode(uiSourceCode, frame) {
     const isFromSourceMap = uiSourceCode.contentType().isFromSourceMap();
     let path;
-    if (uiSourceCode.project().type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.FileSystem) {
       path = Persistence5.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.relativePath(uiSourceCode).slice(0, -1);
     } else {
       path = Common9.ParsedURL.ParsedURL.extractPath(uiSourceCode.url()).split("/").slice(1, -1);
@@ -4752,8 +4745,8 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   projectAdded(project) {
     const rootOrDeployed = this.rootOrDeployedNode();
     const FILE_SYSTEM_TYPES = [
-      Workspace8.Workspace.projectTypes.ConnectableFileSystem,
-      Workspace8.Workspace.projectTypes.FileSystem
+      Workspace9.Workspace.projectTypes.ConnectableFileSystem,
+      Workspace9.Workspace.projectTypes.FileSystem
     ];
     if (!this.acceptProject(project) || !FILE_SYSTEM_TYPES.includes(project.type()) || Snippets.ScriptSnippetFileSystem.isSnippetsProject(project) || rootOrDeployed.child(project.id())) {
       return;
@@ -4774,7 +4767,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     }
   }
   computeUniqueFileSystemProjectNames() {
-    const fileSystemProjects = this.workspaceInternal.projectsForType(Workspace8.Workspace.projectTypes.FileSystem);
+    const fileSystemProjects = this.workspaceInternal.projectsForType(Workspace9.Workspace.projectTypes.FileSystem);
     if (!fileSystemProjects.length) {
       return;
     }
@@ -4807,7 +4800,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   }
   removeProject(project) {
     this.removeUISourceCodes(project.uiSourceCodes());
-    if (project.type() !== Workspace8.Workspace.projectTypes.ConnectableFileSystem && project.type() !== Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() !== Workspace9.Workspace.projectTypes.ConnectableFileSystem && project.type() !== Workspace9.Workspace.projectTypes.FileSystem) {
       return;
     }
     const fileSystemNode = this.rootNode.child(project.id());
@@ -4817,7 +4810,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     this.rootNode.removeChild(fileSystemNode);
   }
   folderNodeId(project, target, frame, projectOrigin, isFromSourceMap, path) {
-    const projectId = project.type() === Workspace8.Workspace.projectTypes.FileSystem ? project.id() : "";
+    const projectId = project.type() === Workspace9.Workspace.projectTypes.FileSystem ? project.id() : "";
     let targetId = target && !(this.groupByAuthored && isFromSourceMap) ? target.id() : "";
     let frameId = this.groupByFrame && frame ? frame.id : "";
     if (this.groupByAuthored) {
@@ -4851,7 +4844,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     }
     const parentNode = this.folderNode(uiSourceCode, project, target, frame, projectOrigin, path.slice(0, -1), fromSourceMap);
     let type = Types.NetworkFolder;
-    if (project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
       type = Types.FileSystemFolder;
     }
     const name = Common9.ParsedURL.ParsedURL.encodedPathToRawPathString(path[path.length - 1]);
@@ -5033,7 +5026,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
       if (!parentNode) {
         break;
       }
-      if ((parentNode === this.rootNode || parentNode === this.deployedNode) && project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+      if ((parentNode === this.rootNode || parentNode === this.deployedNode) && project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
         break;
       }
       if (!(currentNode instanceof NavigatorGroupTreeNode || currentNode instanceof NavigatorFolderTreeNode)) {
@@ -5072,7 +5065,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     this.authoredNode = void 0;
     this.deployedNode = void 0;
     if (!tearDownOnly) {
-      this.resetWorkspace(Workspace8.Workspace.WorkspaceImpl.instance());
+      this.resetWorkspace(Workspace9.Workspace.WorkspaceImpl.instance());
     }
   }
   handleContextMenu(_event) {
@@ -5116,7 +5109,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     const contextMenu = new UI10.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(uiSourceCode);
     const project = uiSourceCode.project();
-    if (project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
       contextMenu.editSection().appendItem(i18nString9(UIStrings10.rename), this.handleContextMenuRename.bind(this, node), { jslogContext: "rename" });
       contextMenu.editSection().appendItem(i18nString9(UIStrings10.makeACopy), this.handleContextMenuCreate.bind(this, project, Platform6.DevToolsPath.EmptyEncodedPathString, uiSourceCode), { jslogContext: "make-a-copy" });
       contextMenu.editSection().appendItem(i18nString9(UIStrings10.delete), this.handleContextMenuDelete.bind(this, uiSourceCode), { jslogContext: "delete" });
@@ -5159,13 +5152,13 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     const path = node.folderPath || Platform6.DevToolsPath.EmptyEncodedPathString;
     const project = node.project || null;
     const contextMenu = new UI10.ContextMenu.ContextMenu(event);
-    if (project?.type() !== Workspace8.Workspace.projectTypes.ConnectableFileSystem) {
+    if (project?.type() !== Workspace9.Workspace.projectTypes.ConnectableFileSystem) {
       _NavigatorView.appendSearchItem(contextMenu, path);
     }
     if (!project) {
       return;
     }
-    if (project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
       const folderPath = Common9.ParsedURL.ParsedURL.urlToRawPathString(Persistence5.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.completeURL(project, path), Host3.Platform.isWin());
       contextMenu.revealSection().appendItem(i18nString9(UIStrings10.openFolder), () => Host3.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(folderPath), { jslogContext: "open-folder" });
       if (project.canCreateFile()) {
@@ -5180,14 +5173,14 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
         isKnownThirdParty: node.recursiveProperties.exclusivelyThirdParty || false,
         isCurrentlyIgnoreListed: node.recursiveProperties.exclusivelyIgnored || false
       };
-      for (const { text, callback, jslogContext } of Bindings5.IgnoreListManager.IgnoreListManager.instance().getIgnoreListFolderContextMenuItems(url, options)) {
+      for (const { text, callback, jslogContext } of Workspace9.IgnoreListManager.IgnoreListManager.instance().getIgnoreListFolderContextMenuItems(url, options)) {
         contextMenu.defaultSection().appendItem(text, callback, { jslogContext });
       }
     }
     if (project.canExcludeFolder(path)) {
       contextMenu.defaultSection().appendItem(i18nString9(UIStrings10.excludeFolder), this.handleContextMenuExclude.bind(this, project, path), { jslogContext: "exclude-folder" });
     }
-    if (project.type() === Workspace8.Workspace.projectTypes.ConnectableFileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.ConnectableFileSystem) {
       const automaticFileSystemManager = Persistence5.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
       const { automaticFileSystem } = automaticFileSystemManager;
       if (automaticFileSystem?.state === "disconnected") {
@@ -5199,7 +5192,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
         }, { jslogContext: "automatic-workspace-folders.connect" });
       }
     }
-    if (project.type() === Workspace8.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
       if (Persistence5.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== Persistence5.PlatformFileSystem.PlatformFileSystemType.OVERRIDES) {
         if (node instanceof NavigatorGroupTreeNode) {
           contextMenu.defaultSection().appendItem(i18nString9(UIStrings10.removeFolderFromWorkspace), async () => {
@@ -5252,7 +5245,7 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   groupingChanged() {
     this.reset(true);
     this.initGrouping();
-    this.resetWorkspace(Workspace8.Workspace.WorkspaceImpl.instance());
+    this.resetWorkspace(Workspace9.Workspace.WorkspaceImpl.instance());
     this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
   }
   ignoreListChanged() {
@@ -5685,7 +5678,7 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     this.recursiveProperties.exclusivelySourceMapped = uiSourceCode.contentType().isFromSourceMap();
     if (uiSourceCode.contentType().isScript()) {
       this.recursiveProperties.exclusivelyThirdParty = uiSourceCode.isKnownThirdParty();
-      this.recursiveProperties.exclusivelyContentScripts = uiSourceCode.project().type() === Workspace8.Workspace.projectTypes.ContentScripts;
+      this.recursiveProperties.exclusivelyContentScripts = uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.ContentScripts;
     }
   }
   frame() {
@@ -5702,14 +5695,14 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     this.updateTitle();
     const updateTitleBound = this.updateTitle.bind(this, void 0);
     this.eventListeners = [
-      this.uiSourceCodeInternal.addEventListener(Workspace8.UISourceCode.Events.TitleChanged, updateTitleBound),
-      this.uiSourceCodeInternal.addEventListener(Workspace8.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
-      this.uiSourceCodeInternal.addEventListener(Workspace8.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound)
+      this.uiSourceCodeInternal.addEventListener(Workspace9.UISourceCode.Events.TitleChanged, updateTitleBound),
+      this.uiSourceCodeInternal.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
+      this.uiSourceCodeInternal.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound)
     ];
     return this.treeElement;
   }
   updateTitle(ignoreIsDirty) {
-    const isIgnoreListed = Bindings5.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.uiSourceCodeInternal);
+    const isIgnoreListed = Workspace9.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.uiSourceCodeInternal);
     if (this.uiSourceCodeInternal.contentType().isScript() || isIgnoreListed) {
       this.recursiveProperties.exclusivelyIgnored = isIgnoreListed;
     }
@@ -5840,7 +5833,7 @@ var NavigatorFolderTreeNode = class _NavigatorFolderTreeNode extends NavigatorTr
     }
     this.treeElement.setFromSourceMap(this.recursiveProperties.exclusivelySourceMapped || false);
     this.treeElement.setIgnoreListed(this.recursiveProperties.exclusivelyIgnored || false);
-    if (!this.project || this.project.type() !== Workspace8.Workspace.projectTypes.FileSystem) {
+    if (!this.project || this.project.type() !== Workspace9.Workspace.projectTypes.FileSystem) {
       return;
     }
     const absoluteFileSystemPath = Common9.ParsedURL.ParsedURL.concatenate(Persistence5.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(this.project.id()), "/", this.folderPath);
@@ -6006,7 +5999,7 @@ var NavigatorGroupTreeNode = class extends NavigatorTreeNode {
     this.updateTitle();
   }
   updateTitle() {
-    if (!this.treeElement || !this.project || this.project.type() !== Workspace8.Workspace.projectTypes.FileSystem) {
+    if (!this.treeElement || !this.project || this.project.type() !== Workspace9.Workspace.projectTypes.FileSystem) {
       return;
     }
     const fileSystemPath = Persistence5.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemPath(this.project.id());
@@ -6134,7 +6127,7 @@ import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as Bindings7 from "./../../models/bindings/bindings.js";
 import * as Persistence11 from "./../../models/persistence/persistence.js";
-import * as Workspace16 from "./../../models/workspace/workspace.js";
+import * as Workspace17 from "./../../models/workspace/workspace.js";
 import * as IconButton8 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
@@ -6148,7 +6141,7 @@ __export(EditingLocationHistoryManager_exports, {
   EditingLocationHistoryManager: () => EditingLocationHistoryManager,
   HistoryDepth: () => HistoryDepth
 });
-import * as Workspace10 from "./../../models/workspace/workspace.js";
+import * as Workspace11 from "./../../models/workspace/workspace.js";
 import * as SourceFrame4 from "./../../ui/legacy/components/source_frame/source_frame.js";
 var HistoryDepth = 20;
 var EditingLocationHistoryManager = class {
@@ -6200,7 +6193,7 @@ var EditingLocationHistoryManager = class {
     }
   }
   reveal(entry) {
-    const uiSourceCode = Workspace10.Workspace.WorkspaceImpl.instance().uiSourceCode(entry.projectId, entry.url);
+    const uiSourceCode = Workspace11.Workspace.WorkspaceImpl.instance().uiSourceCode(entry.projectId, entry.url);
     if (uiSourceCode) {
       this.revealing = true;
       this.sourcesView.showSourceLocation(uiSourceCode, entry.position, false, true);
@@ -6318,7 +6311,7 @@ import * as Platform9 from "./../../core/platform/platform.js";
 import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Persistence9 from "./../../models/persistence/persistence.js";
 import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
-import * as Workspace14 from "./../../models/workspace/workspace.js";
+import * as Workspace15 from "./../../models/workspace/workspace.js";
 import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
 import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
 import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
@@ -6348,7 +6341,7 @@ var FORMATTABLE_MEDIA_TYPES = [
 import * as IssuesManager from "./../../models/issues_manager/issues_manager.js";
 import * as Persistence7 from "./../../models/persistence/persistence.js";
 import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
-import * as Workspace12 from "./../../models/workspace/workspace.js";
+import * as Workspace13 from "./../../models/workspace/workspace.js";
 import * as CodeMirror5 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as IconButton6 from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
@@ -6683,17 +6676,17 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common10.ObjectWrapper.
       const networkSourceCode = this.#persistenceBinding.network;
       const fileSystemSourceCode = this.#persistenceBinding.fileSystem;
       this.#messageAndDecorationListeners = [
-        networkSourceCode.addEventListener(Workspace12.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
-        networkSourceCode.addEventListener(Workspace12.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
-        networkSourceCode.addEventListener(Workspace12.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this),
-        fileSystemSourceCode.addEventListener(Workspace12.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
-        fileSystemSourceCode.addEventListener(Workspace12.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this)
+        networkSourceCode.addEventListener(Workspace13.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
+        networkSourceCode.addEventListener(Workspace13.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
+        networkSourceCode.addEventListener(Workspace13.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this),
+        fileSystemSourceCode.addEventListener(Workspace13.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
+        fileSystemSourceCode.addEventListener(Workspace13.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this)
       ];
     } else {
       this.#messageAndDecorationListeners = [
-        this.#uiSourceCode.addEventListener(Workspace12.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
-        this.#uiSourceCode.addEventListener(Workspace12.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
-        this.#uiSourceCode.addEventListener(Workspace12.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this)
+        this.#uiSourceCode.addEventListener(Workspace13.UISourceCode.Events.MessageAdded, this.onMessageAdded, this),
+        this.#uiSourceCode.addEventListener(Workspace13.UISourceCode.Events.MessageRemoved, this.onMessageRemoved, this),
+        this.#uiSourceCode.addEventListener(Workspace13.UISourceCode.Events.DecorationChanged, this.onDecorationChanged, this)
       ];
     }
   }
@@ -6725,9 +6718,9 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common10.ObjectWrapper.
   }
   initializeUISourceCode() {
     this.#uiSourceCodeEventListeners = [
-      this.#uiSourceCode.addEventListener(Workspace12.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this),
-      this.#uiSourceCode.addEventListener(Workspace12.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this),
-      this.#uiSourceCode.addEventListener(Workspace12.UISourceCode.Events.TitleChanged, this.onTitleChanged, this)
+      this.#uiSourceCode.addEventListener(Workspace13.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this),
+      this.#uiSourceCode.addEventListener(Workspace13.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this),
+      this.#uiSourceCode.addEventListener(Workspace13.UISourceCode.Events.TitleChanged, this.onTitleChanged, this)
     ];
     Persistence7.Persistence.PersistenceImpl.instance().subscribeForBindingEvent(this.#uiSourceCode, this.#boundOnBindingChanged);
     this.installMessageAndDecorationListeners();
@@ -6775,7 +6768,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common10.ObjectWrapper.
     if (this.#uiSourceCode.contentType().isFromSourceMap()) {
       return false;
     }
-    if (this.#uiSourceCode.project().type() === Workspace12.Workspace.projectTypes.Network && Persistence7.NetworkPersistenceManager.NetworkPersistenceManager.instance().active()) {
+    if (this.#uiSourceCode.project().type() === Workspace13.Workspace.projectTypes.Network && Persistence7.NetworkPersistenceManager.NetworkPersistenceManager.instance().active()) {
       return true;
     }
     if (this.pretty && this.#uiSourceCode.contentType().hasScripts()) {
@@ -6909,7 +6902,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common10.ObjectWrapper.
     super.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
     contextMenu.appendApplicableItems(this.#uiSourceCode);
     const location = this.editorLocationToUILocation(lineNumber, columnNumber);
-    contextMenu.appendApplicableItems(new Workspace12.UISourceCode.UILocation(this.#uiSourceCode, location.lineNumber, location.columnNumber));
+    contextMenu.appendApplicableItems(new Workspace13.UISourceCode.UILocation(this.#uiSourceCode, location.lineNumber, location.columnNumber));
     for (const plugin of this.plugins) {
       plugin.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
     }
@@ -7522,7 +7515,7 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     this.addViewListeners();
     if (this.currentView instanceof UISourceCodeFrame && this.currentView.uiSourceCode() !== uiSourceCode) {
       this.delegate.recycleUISourceCodeFrame(this.currentView, uiSourceCode);
-      if (uiSourceCode.project().type() !== Workspace14.Workspace.projectTypes.FileSystem) {
+      if (uiSourceCode.project().type() !== Workspace15.Workspace.projectTypes.FileSystem) {
         uiSourceCode.disableEdit();
       }
     }
@@ -7603,7 +7596,7 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     const duplicated = canonicalSourceCode !== uiSourceCode;
     const binding = Persistence9.Persistence.PersistenceImpl.instance().binding(canonicalSourceCode);
     uiSourceCode = binding ? binding.fileSystem : canonicalSourceCode;
-    if (duplicated && uiSourceCode.project().type() !== Workspace14.Workspace.projectTypes.FileSystem) {
+    if (duplicated && uiSourceCode.project().type() !== Workspace15.Workspace.projectTypes.FileSystem) {
       uiSourceCode.disableEdit();
     }
     if (this.currentFileInternal?.canonicalScriptId() === uiSourceCode.canonicalScriptId()) {
@@ -7744,14 +7737,14 @@ var TabbedEditorContainer = class extends Common11.ObjectWrapper.ObjectWrapper {
     }
   }
   addUISourceCodeListeners(uiSourceCode) {
-    uiSourceCode.addEventListener(Workspace14.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
-    uiSourceCode.addEventListener(Workspace14.UISourceCode.Events.WorkingCopyChanged, this.uiSourceCodeWorkingCopyChanged, this);
-    uiSourceCode.addEventListener(Workspace14.UISourceCode.Events.WorkingCopyCommitted, this.uiSourceCodeWorkingCopyCommitted, this);
+    uiSourceCode.addEventListener(Workspace15.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+    uiSourceCode.addEventListener(Workspace15.UISourceCode.Events.WorkingCopyChanged, this.uiSourceCodeWorkingCopyChanged, this);
+    uiSourceCode.addEventListener(Workspace15.UISourceCode.Events.WorkingCopyCommitted, this.uiSourceCodeWorkingCopyCommitted, this);
   }
   removeUISourceCodeListeners(uiSourceCode) {
-    uiSourceCode.removeEventListener(Workspace14.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
-    uiSourceCode.removeEventListener(Workspace14.UISourceCode.Events.WorkingCopyChanged, this.uiSourceCodeWorkingCopyChanged, this);
-    uiSourceCode.removeEventListener(Workspace14.UISourceCode.Events.WorkingCopyCommitted, this.uiSourceCodeWorkingCopyCommitted, this);
+    uiSourceCode.removeEventListener(Workspace15.UISourceCode.Events.TitleChanged, this.uiSourceCodeTitleChanged, this);
+    uiSourceCode.removeEventListener(Workspace15.UISourceCode.Events.WorkingCopyChanged, this.uiSourceCodeWorkingCopyChanged, this);
+    uiSourceCode.removeEventListener(Workspace15.UISourceCode.Events.WorkingCopyCommitted, this.uiSourceCodeWorkingCopyCommitted, this);
   }
   updateFileTitle(uiSourceCode) {
     const tabId2 = this.tabIds.get(uiSourceCode);
@@ -8007,7 +8000,7 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     this.element.id = "sources-panel-sources-view";
     this.element.setAttribute("jslog", `${VisualLogging9.pane("editor").track({ keydown: "Escape" })}`);
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
-    const workspace = Workspace16.Workspace.WorkspaceImpl.instance();
+    const workspace = Workspace17.Workspace.WorkspaceImpl.instance();
     this.searchableViewInternal = new UI15.SearchableView.SearchableView(this, this, "sources-view-search-config");
     this.searchableViewInternal.setMinimalSearchQuerySize(0);
     this.searchableViewInternal.show(this.element);
@@ -8026,16 +8019,16 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     UI15.UIUtils.startBatchUpdate();
     workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
     UI15.UIUtils.endBatchUpdate();
-    workspace.addEventListener(Workspace16.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
-    workspace.addEventListener(Workspace16.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemoved, this);
-    workspace.addEventListener(Workspace16.Workspace.Events.ProjectRemoved, this.projectRemoved.bind(this), this);
+    workspace.addEventListener(Workspace17.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
+    workspace.addEventListener(Workspace17.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemoved, this);
+    workspace.addEventListener(Workspace17.Workspace.Events.ProjectRemoved, this.projectRemoved.bind(this), this);
     SDK9.TargetManager.TargetManager.instance().addScopeChangeListener(this.#onScopeChange.bind(this));
     function handleBeforeUnload(event) {
       if (event.returnValue) {
         return;
       }
       const unsavedSourceCodes = [];
-      const projects = Workspace16.Workspace.WorkspaceImpl.instance().projectsForType(Workspace16.Workspace.projectTypes.FileSystem);
+      const projects = Workspace17.Workspace.WorkspaceImpl.instance().projectsForType(Workspace17.Workspace.projectTypes.FileSystem);
       for (const project of projects) {
         for (const uiSourceCode of project.uiSourceCodes()) {
           if (uiSourceCode.isDirty()) {
@@ -8166,9 +8159,9 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     this.historyManager.rollover();
   }
   #onScopeChange() {
-    const workspace = Workspace16.Workspace.WorkspaceImpl.instance();
+    const workspace = Workspace17.Workspace.WorkspaceImpl.instance();
     for (const uiSourceCode of workspace.uiSourceCodes()) {
-      if (uiSourceCode.project().type() !== Workspace16.Workspace.projectTypes.Network) {
+      if (uiSourceCode.project().type() !== Workspace17.Workspace.projectTypes.Network) {
         continue;
       }
       const target = Bindings7.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
@@ -8189,13 +8182,13 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
       return;
     }
     switch (project.type()) {
-      case Workspace16.Workspace.projectTypes.FileSystem: {
+      case Workspace17.Workspace.projectTypes.FileSystem: {
         if (Persistence11.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) === "overrides") {
           return;
         }
         break;
       }
-      case Workspace16.Workspace.projectTypes.Network: {
+      case Workspace17.Workspace.projectTypes.Network: {
         const target = Bindings7.NetworkProject.NetworkProject.targetForUISourceCode(uiSourceCode);
         if (!SDK9.TargetManager.TargetManager.instance().isInScope(target)) {
           return;
@@ -8260,7 +8253,7 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
       sourceView = new UISourceCodeFrame(uiSourceCode);
       this.historyManager.trackSourceFrameCursorJumps(sourceView);
     }
-    uiSourceCode.addEventListener(Workspace16.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+    uiSourceCode.addEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
     this.sourceViewByUISourceCode.set(uiSourceCode, sourceView);
     return sourceView;
   }
@@ -8307,11 +8300,11 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     return this.sourceViewByUISourceCode.get(uiSourceCode) || this.createSourceView(uiSourceCode);
   }
   recycleUISourceCodeFrame(sourceFrame, uiSourceCode) {
-    sourceFrame.uiSourceCode().removeEventListener(Workspace16.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+    sourceFrame.uiSourceCode().removeEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
     this.sourceViewByUISourceCode.delete(sourceFrame.uiSourceCode());
     sourceFrame.setUISourceCode(uiSourceCode);
     this.sourceViewByUISourceCode.set(uiSourceCode, sourceFrame);
-    uiSourceCode.addEventListener(Workspace16.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+    uiSourceCode.addEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
   }
   viewForFile(uiSourceCode) {
     return this.getOrCreateSourceView(uiSourceCode);
@@ -8322,7 +8315,7 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
     if (sourceView && sourceView instanceof UISourceCodeFrame) {
       sourceView.dispose();
     }
-    uiSourceCode.removeEventListener(Workspace16.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
+    uiSourceCode.removeEventListener(Workspace17.UISourceCode.Events.TitleChanged, this.#uiSourceCodeTitleChanged, this);
   }
   editorClosed(event) {
     const uiSourceCode = event.data;
@@ -8642,7 +8635,7 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
   list;
   selectedModel;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(threadsSidebarPane_css_default);
     this.contentElement.setAttribute("jslog", `${VisualLogging10.section("sources.threads")}`);
     this.items = new UI16.ListModel.ListModel();
@@ -8861,7 +8854,28 @@ var UIStrings17 = {
   /**
    *@description Text in Sources Panel of the Sources panel
    */
-  openInSourcesPanel: "Open in Sources panel"
+  openInSourcesPanel: "Open in Sources panel",
+  /**
+   *@description Context menu text in Sources Panel to that opens a submenu with AI prompts.
+   */
+  debugWithAi: "Debug with AI",
+  /**
+   *@description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
+   */
+  startAChat: "Start a chat",
+  /**
+   *@description Text of a context menu item to redirect to the AI assistance panel and directly execute
+   * a prompt to assess the performance of a script.
+   */
+  assessPerformance: "Assess performance",
+  /**
+   *@description Context menu item in Sources panel to explain a script via AI.
+   */
+  explainThisScript: "Explain this script",
+  /**
+   *@description Context menu item in Sources panel to explain input handling in a script via AI.
+   */
+  explainInputHandling: "Explain input handling"
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/sources/SourcesPanel.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
@@ -8902,7 +8916,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     super("sources");
     this.registerRequiredCSS(sourcesPanel_css_default);
     new UI17.DropTarget.DropTarget(this.element, [UI17.DropTarget.Type.Folder], i18nString16(UIStrings17.dropWorkspaceFolderHere), this.handleDrop.bind(this));
-    this.workspace = Workspace18.Workspace.WorkspaceImpl.instance();
+    this.workspace = Workspace19.Workspace.WorkspaceImpl.instance();
     this.togglePauseAction = UI17.ActionRegistry.ActionRegistry.instance().getAction("debugger.toggle-pause");
     this.stepOverAction = UI17.ActionRegistry.ActionRegistry.instance().getAction("debugger.step-over");
     this.stepIntoAction = UI17.ActionRegistry.ActionRegistry.instance().getAction("debugger.step-into");
@@ -9304,7 +9318,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
   }
   editorSelected(event) {
     const uiSourceCode = event.data;
-    UI17.Context.Context.instance().setFlavor(Workspace18.UISourceCode.UISourceCode, uiSourceCode);
+    UI17.Context.Context.instance().setFlavor(Workspace19.UISourceCode.UISourceCode, uiSourceCode);
     if (this.editorView.mainWidget() && Common13.Settings.Settings.instance().moduleSetting("auto-reveal-in-navigator").get()) {
       void this.revealInNavigator(uiSourceCode, true);
     }
@@ -9425,7 +9439,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     return debugToolbarDrawer;
   }
   appendApplicableItems(event, contextMenu, target) {
-    if (target instanceof Workspace18.UISourceCode.UISourceCode) {
+    if (target instanceof Workspace19.UISourceCode.UISourceCode) {
       this.appendUISourceCodeItems(event, contextMenu, target);
       return;
     }
@@ -9433,7 +9447,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
       this.appendUISourceCodeFrameItems(contextMenu, target);
       return;
     }
-    if (target instanceof Workspace18.UISourceCode.UILocation) {
+    if (target instanceof Workspace19.UISourceCode.UILocation) {
       this.appendUILocationItems(contextMenu, target);
       return;
     }
@@ -9451,20 +9465,33 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
     if (!uiSourceCode.project().isServiceProject() && !eventTarget.isSelfOrDescendant(this.navigatorTabbedLocation.widget().element) && !(Root2.Runtime.experiments.isEnabled(
       "just-my-code"
       /* Root.Runtime.ExperimentName.JUST_MY_CODE */
-    ) && Bindings8.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode))) {
+    ) && Workspace19.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode))) {
       contextMenu.revealSection().appendItem(i18nString16(UIStrings17.revealInSidebar), this.revealInNavigator.bind(this, uiSourceCode), {
         jslogContext: "sources.reveal-in-navigator-sidebar"
       });
     }
-    if (UI17.ActionRegistry.ActionRegistry.instance().hasAction("drjones.sources-panel-context")) {
+    const openAiAssistanceId = "drjones.sources-panel-context";
+    if (UI17.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
       const editorElement = this.element.querySelector("devtools-text-editor");
       if (!eventTarget.isSelfOrDescendant(editorElement) && uiSourceCode.contentType().isTextType()) {
-        UI17.Context.Context.instance().setFlavor(Workspace18.UISourceCode.UISourceCode, uiSourceCode);
-        contextMenu.footerSection().appendAction("drjones.sources-panel-context");
+        UI17.Context.Context.instance().setFlavor(Workspace19.UISourceCode.UISourceCode, uiSourceCode);
+        if (Root2.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+          const action3 = UI17.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+          const submenu = contextMenu.footerSection().appendSubMenuItem(i18nString16(UIStrings17.debugWithAi), false, openAiAssistanceId);
+          submenu.defaultSection().appendAction("drjones.sources-panel-context", i18nString16(UIStrings17.startAChat));
+          appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.assessPerformance), "Is this script optimized for performance?", openAiAssistanceId + ".performance");
+          appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainThisScript), "What does this script do?", openAiAssistanceId + ".script");
+          appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainInputHandling), "Does the script handle user input safely", openAiAssistanceId + ".input");
+        } else {
+          contextMenu.footerSection().appendAction(openAiAssistanceId);
+        }
       }
     }
     if (uiSourceCode.contentType().hasScripts() && Bindings8.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(uiSourceCode).every((script) => script.isJavaScript())) {
       this.callstackPane.appendIgnoreListURLContextMenuItems(contextMenu, uiSourceCode);
+    }
+    function appendSubmenuPromptAction(submenu, action3, label, prompt, jslogContext) {
+      submenu.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
     }
   }
   appendUISourceCodeFrameItems(contextMenu, target) {
@@ -9649,7 +9676,7 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
       splitWidget.setMainWidget(vbox);
       void this.sidebarPaneStack.showView(jsBreakpoints);
       void this.sidebarPaneStack.showView(this.callstackPane);
-      const tabbedLocation = UI17.ViewManager.ViewManager.instance().createTabbedLocation(this.revealDebuggerSidebar.bind(this));
+      const tabbedLocation = UI17.ViewManager.ViewManager.instance().createTabbedLocation(this.revealDebuggerSidebar.bind(this), "sources-panel-debugger-sidebar");
       splitWidget.setSidebarWidget(tabbedLocation.tabbedPane());
       this.tabbedLocationHeader = tabbedLocation.tabbedPane().headerElement();
       this.splitWidget.installResizer(this.tabbedLocationHeader);
@@ -10030,13 +10057,13 @@ var DebuggerPlugin = class extends Plugin {
     this.breakpointManager = Breakpoints3.BreakpointManager.BreakpointManager.instance();
     this.breakpointManager.addEventListener(Breakpoints3.BreakpointManager.Events.BreakpointAdded, this.breakpointChange, this);
     this.breakpointManager.addEventListener(Breakpoints3.BreakpointManager.Events.BreakpointRemoved, this.breakpointChange, this);
-    this.uiSourceCode.addEventListener(Workspace20.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
-    this.uiSourceCode.addEventListener(Workspace20.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
+    this.uiSourceCode.addEventListener(Workspace21.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
+    this.uiSourceCode.addEventListener(Workspace21.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
     this.scriptFileForDebuggerModel = /* @__PURE__ */ new Map();
     this.loader = SDK12.PageResourceLoader.PageResourceLoader.instance();
     this.loader.addEventListener("Update", this.showSourceMapInfobarIfNeeded.bind(this), this);
     this.ignoreListCallback = this.showIgnoreListInfobarIfNeeded.bind(this);
-    Bindings9.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
+    Workspace21.IgnoreListManager.IgnoreListManager.instance().addChangeListener(this.ignoreListCallback);
     UI18.Context.Context.instance().addFlavorChangeListener(SDK12.DebuggerModel.CallFrame, this.callFrameChanged, this);
     this.liveLocationPool = new Bindings9.LiveLocation.LiveLocationPool();
     this.updateScriptFiles();
@@ -10078,7 +10105,7 @@ var DebuggerPlugin = class extends Plugin {
       valueDecorations.field,
       CodeMirror6.Prec.lowest(evalExpression.field),
       theme4,
-      this.uiSourceCode.project().type() === Workspace20.Workspace.projectTypes.Debugger ? CodeMirror6.EditorView.editorAttributes.of({ class: "source-frame-debugger-script" }) : []
+      this.uiSourceCode.project().type() === Workspace21.Workspace.projectTypes.Debugger ? CodeMirror6.EditorView.editorAttributes.of({ class: "source-frame-debugger-script" }) : []
     ];
   }
   shortcutHandlers() {
@@ -10156,7 +10183,7 @@ var DebuggerPlugin = class extends Plugin {
     if (!uiSourceCode.contentType().hasScripts()) {
       return;
     }
-    if (!Bindings9.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+    if (!Workspace21.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
       this.hideIgnoreListInfobar();
       return;
     }
@@ -10164,7 +10191,7 @@ var DebuggerPlugin = class extends Plugin {
       this.ignoreListInfobar.dispose();
     }
     function unIgnoreList() {
-      Bindings9.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
+      Workspace21.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiSourceCode);
     }
     const infobar = new UI18.Infobar.Infobar("warning", i18nString17(UIStrings18.thisScriptIsOnTheDebuggersIgnore), [
       {
@@ -10215,7 +10242,7 @@ var DebuggerPlugin = class extends Plugin {
     this.editBreakpointCondition({ line, breakpoint, location: null, isLogpoint: breakpoint.isLogpoint() });
   }
   populateLineGutterContextMenu(contextMenu, editorLineNumber) {
-    const uiLocation = new Workspace20.UISourceCode.UILocation(this.uiSourceCode, editorLineNumber, 0);
+    const uiLocation = new Workspace21.UISourceCode.UILocation(this.uiSourceCode, editorLineNumber, 0);
     this.scriptsPanel.appendUILocationItems(contextMenu, uiLocation);
     if (this.muted || !this.editor) {
       return;
@@ -10299,7 +10326,7 @@ var DebuggerPlugin = class extends Plugin {
         this.updateScriptFile(scriptFile.script?.debuggerModel);
       }
     }
-    if (this.uiSourceCode.project().type() === Workspace20.Workspace.projectTypes.Network && Common14.Settings.Settings.instance().moduleSetting("js-source-maps-enabled").get() && !Bindings9.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
+    if (this.uiSourceCode.project().type() === Workspace21.Workspace.projectTypes.Network && Common14.Settings.Settings.instance().moduleSetting("js-source-maps-enabled").get() && !Workspace21.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(this.uiSourceCode.url())) {
       if (this.scriptFileForDebuggerModel.size) {
         const scriptFile = this.scriptFileForDebuggerModel.values().next().value;
         const addSourceMapURLLabel = i18nString17(UIStrings18.addSourceMap);
@@ -11287,9 +11314,9 @@ var DebuggerPlugin = class extends Plugin {
     this.setExecutionLocation(null);
     this.breakpointManager.removeEventListener(Breakpoints3.BreakpointManager.Events.BreakpointAdded, this.breakpointChange, this);
     this.breakpointManager.removeEventListener(Breakpoints3.BreakpointManager.Events.BreakpointRemoved, this.breakpointChange, this);
-    this.uiSourceCode.removeEventListener(Workspace20.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
-    this.uiSourceCode.removeEventListener(Workspace20.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
-    Bindings9.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.ignoreListCallback);
+    this.uiSourceCode.removeEventListener(Workspace21.UISourceCode.Events.WorkingCopyChanged, this.workingCopyChanged, this);
+    this.uiSourceCode.removeEventListener(Workspace21.UISourceCode.Events.WorkingCopyCommitted, this.workingCopyCommitted, this);
+    Workspace21.IgnoreListManager.IgnoreListManager.instance().removeChangeListener(this.ignoreListCallback);
     debuggerPluginForUISourceCode.delete(this.uiSourceCode);
     super.dispose();
     window.clearTimeout(this.refreshBreakpointsTimeout);
@@ -12075,9 +12102,8 @@ __export(FilteredUISourceCodeListProvider_exports, {
 });
 import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
-import * as Bindings10 from "./../../models/bindings/bindings.js";
 import * as Persistence12 from "./../../models/persistence/persistence.js";
-import * as Workspace22 from "./../../models/workspace/workspace.js";
+import * as Workspace23 from "./../../models/workspace/workspace.js";
 import * as QuickOpen3 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 var UIStrings19 = {
@@ -12116,7 +12142,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
   populate(skipProject) {
     this.uiSourceCodes = [];
     this.uiSourceCodeIds.clear();
-    for (const project of Workspace22.Workspace.WorkspaceImpl.instance().projects()) {
+    for (const project of Workspace23.Workspace.WorkspaceImpl.instance().projects()) {
       if (project !== skipProject && this.filterProject(project)) {
         for (const uiSourceCode of project.uiSourceCodes()) {
           if (this.filterUISourceCode(uiSourceCode)) {
@@ -12134,7 +12160,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     if (Root3.Runtime.experiments.isEnabled(
       "just-my-code"
       /* Root.Runtime.ExperimentName.JUST_MY_CODE */
-    ) && Bindings10.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+    ) && Workspace23.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
       return false;
     }
     if (uiSourceCode.isFetchXHR()) {
@@ -12171,7 +12197,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
       this.scorer = new FilePathScoreFunction(query);
     }
     let multiplier = 10;
-    if (uiSourceCode.project().type() === Workspace22.Workspace.projectTypes.FileSystem && !Persistence12.Persistence.PersistenceImpl.instance().binding(uiSourceCode)) {
+    if (uiSourceCode.project().type() === Workspace23.Workspace.projectTypes.FileSystem && !Persistence12.Persistence.PersistenceImpl.instance().binding(uiSourceCode)) {
       multiplier = 5;
     }
     let contentTypeBonus = 0;
@@ -12179,7 +12205,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
       contentTypeBonus = 100;
     }
     if (uiSourceCode.contentType().isScript()) {
-      if (!Bindings10.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
+      if (!Workspace23.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode)) {
         contentTypeBonus += 50;
       }
     }
@@ -12194,7 +12220,7 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     const indexes = [];
     new FilePathScoreFunction(query).calculateScore(fullDisplayName, indexes);
     const fileNameIndex = fullDisplayName.lastIndexOf("/");
-    const isIgnoreListed = Bindings10.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode);
+    const isIgnoreListed = Workspace23.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(uiSourceCode);
     let tooltipText = fullDisplayName;
     if (isIgnoreListed) {
       titleElement.parentElement?.classList.add("is-ignore-listed");
@@ -12267,13 +12293,13 @@ var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidg
     return i18nString18(UIStrings19.noFilesFound);
   }
   attach() {
-    Workspace22.Workspace.WorkspaceImpl.instance().addEventListener(Workspace22.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
-    Workspace22.Workspace.WorkspaceImpl.instance().addEventListener(Workspace22.Workspace.Events.ProjectRemoved, this.projectRemoved, this);
+    Workspace23.Workspace.WorkspaceImpl.instance().addEventListener(Workspace23.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
+    Workspace23.Workspace.WorkspaceImpl.instance().addEventListener(Workspace23.Workspace.Events.ProjectRemoved, this.projectRemoved, this);
     this.populate();
   }
   detach() {
-    Workspace22.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace22.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
-    Workspace22.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace22.Workspace.Events.ProjectRemoved, this.projectRemoved, this);
+    Workspace23.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace23.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAdded, this);
+    Workspace23.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace23.Workspace.Events.ProjectRemoved, this.projectRemoved, this);
     this.queryLineNumberAndColumnNumber = "";
     this.defaultScores = null;
   }
@@ -12441,7 +12467,7 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Formatter2 from "./../../models/formatter/formatter.js";
 import * as Persistence14 from "./../../models/persistence/persistence.js";
 import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
-import * as Workspace24 from "./../../models/workspace/workspace.js";
+import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
 var UIStrings21 = {
   /**
@@ -12482,7 +12508,7 @@ var InplaceFormatterEditorAction = class _InplaceFormatterEditorAction {
     if (this.uiSourceCodeTitleChangedEvent) {
       Common15.EventTarget.removeEventListeners([this.uiSourceCodeTitleChangedEvent]);
     }
-    this.uiSourceCodeTitleChangedEvent = uiSourceCode ? uiSourceCode.addEventListener(Workspace24.UISourceCode.Events.TitleChanged, (event) => this.updateButton(event.data), this) : null;
+    this.uiSourceCodeTitleChangedEvent = uiSourceCode ? uiSourceCode.addEventListener(Workspace25.UISourceCode.Events.TitleChanged, (event) => this.updateButton(event.data), this) : null;
     const isFormattable = this.isFormattable(uiSourceCode);
     this.button.element.classList.toggle("hidden", !isFormattable);
     if (uiSourceCode && isFormattable) {
@@ -13016,7 +13042,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI23.Widget.VBo
   infoElement;
   #scopeChainModel = null;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(scopeChainSidebarPane_css_default);
     this.contentElement.setAttribute("jslog", `${VisualLogging13.section("sources.scope-chain")}`);
     this.treeOutline = new ObjectUI3.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
@@ -13144,10 +13170,10 @@ import * as Host10 from "./../../core/host/host.js";
 import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
-import * as Bindings11 from "./../../models/bindings/bindings.js";
+import * as Bindings10 from "./../../models/bindings/bindings.js";
 import * as Persistence16 from "./../../models/persistence/persistence.js";
 import * as TextUtils12 from "./../../models/text_utils/text_utils.js";
-import * as Workspace25 from "./../../models/workspace/workspace.js";
+import * as Workspace26 from "./../../models/workspace/workspace.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 import * as Snippets5 from "./../snippets/snippets.js";
 
@@ -13280,10 +13306,10 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
     return networkNavigatorViewInstance;
   }
   acceptProject(project) {
-    return project.type() === Workspace25.Workspace.projectTypes.Network && SDK14.TargetManager.TargetManager.instance().isInScope(Bindings11.NetworkProject.NetworkProject.getTargetForProject(project));
+    return project.type() === Workspace26.Workspace.projectTypes.Network && SDK14.TargetManager.TargetManager.instance().isInScope(Bindings10.NetworkProject.NetworkProject.getTargetForProject(project));
   }
   onScopeChange() {
-    for (const project of Workspace25.Workspace.WorkspaceImpl.instance().projects()) {
+    for (const project of Workspace26.Workspace.WorkspaceImpl.instance().projects()) {
       if (!this.acceptProject(project)) {
         this.removeProject(project);
       } else {
@@ -13357,10 +13383,10 @@ var FilesNavigatorView = class extends NavigatorView {
     super.sourceSelected(uiSourceCode, focusSource);
   }
   acceptProject(project) {
-    if (project.type() === Workspace25.Workspace.projectTypes.ConnectableFileSystem) {
+    if (project.type() === Workspace26.Workspace.projectTypes.ConnectableFileSystem) {
       return true;
     }
-    return project.type() === Workspace25.Workspace.projectTypes.FileSystem && Persistence16.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides" && !Snippets5.ScriptSnippetFileSystem.isSnippetsProject(project);
+    return project.type() === Workspace26.Workspace.projectTypes.FileSystem && Persistence16.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides" && !Snippets5.ScriptSnippetFileSystem.isSnippetsProject(project);
   }
   handleContextMenu(event) {
     const contextMenu = new UI24.ContextMenu.ContextMenu(event);
@@ -13388,8 +13414,8 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
     this.toolbar.classList.add("navigator-toolbar");
     this.contentElement.insertBefore(this.toolbar, this.contentElement.firstChild);
     Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged", this.updateProjectAndUI, this);
-    this.workspace().addEventListener(Workspace25.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
-    this.workspace().addEventListener(Workspace25.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
+    this.workspace().addEventListener(Workspace26.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
+    this.workspace().addEventListener(Workspace26.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
     this.updateProjectAndUI();
   }
   static instance(opts = { forceNew: null }) {
@@ -13401,7 +13427,7 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
   }
   onProjectAddOrRemoved(event) {
     const project = event.data;
-    if (project && project.type() === Workspace25.Workspace.projectTypes.FileSystem && Persistence16.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
+    if (project && project.type() === Workspace26.Workspace.projectTypes.FileSystem && Persistence16.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
       return;
     }
     this.updateUI();
@@ -13459,7 +13485,7 @@ var ContentScriptsNavigatorView = class extends NavigatorView {
     placeholder2.link = "https://developer.chrome.com/extensions/content_scripts";
   }
   acceptProject(project) {
-    return project.type() === Workspace25.Workspace.projectTypes.ContentScripts;
+    return project.type() === Workspace26.Workspace.projectTypes.ContentScripts;
   }
 };
 var SnippetsNavigatorView = class extends NavigatorView {
@@ -13506,13 +13532,13 @@ var SnippetsNavigatorView = class extends NavigatorView {
       );
       return;
     }
-    await Workspace25.FileManager.FileManager.instance().save(
+    await Workspace26.FileManager.FileManager.instance().save(
       this.addJSExtension(uiSourceCode.url()),
       contentData,
       /* forceSaveAs=*/
       true
     );
-    Workspace25.FileManager.FileManager.instance().close(uiSourceCode.url());
+    Workspace26.FileManager.FileManager.instance().close(uiSourceCode.url());
   }
   addJSExtension(url) {
     return Common17.ParsedURL.ParsedURL.concatenate(url, ".js");

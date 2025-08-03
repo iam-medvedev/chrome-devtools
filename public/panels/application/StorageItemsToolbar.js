@@ -83,7 +83,7 @@ export class StorageItemsToolbar extends Common.ObjectWrapper.eventMixin(UI.Widg
     #deleteAllButtonTitle = i18nString(UIStrings.clearAll);
     #mainToolbarItems = [];
     constructor(element, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
         this.filterRegex = null;
     }

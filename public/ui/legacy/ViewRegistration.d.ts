@@ -107,8 +107,13 @@ export interface ViewRegistration {
      * Icon to be used next to view's title.
      */
     iconName?: string;
+    /**
+     * Whether a view needs to be promoted. A new badge is shown next to the menu items then.
+     */
+    featurePromotionId?: string;
 }
 export declare function registerViewExtension(registration: ViewRegistration): void;
+export declare function getRegisteredViewExtensionForID(id: string): PreRegisteredView | undefined;
 export declare function getRegisteredViewExtensions(): PreRegisteredView[];
 export declare function maybeRemoveViewExtension(viewId: string): boolean;
 export declare function registerLocationResolver(registration: LocationResolverRegistration): void;

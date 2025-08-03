@@ -181,7 +181,7 @@ export class PreloadingRuleSetView extends UI.Widget.VBox {
     ruleSetDetails = new PreloadingComponents.RuleSetDetailsView.RuleSetDetailsView();
     shouldPrettyPrint = Common.Settings.Settings.instance().moduleSetting('auto-pretty-print-minified').get();
     constructor(model) {
-        super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(emptyWidgetStyles, preloadingViewStyles);
         this.model = model;
         SDK.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
@@ -306,7 +306,7 @@ export class PreloadingAttemptView extends UI.Widget.VBox {
     preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
     ruleSetSelector;
     constructor(model) {
-        super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(emptyWidgetStyles, preloadingViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('preloading-speculations')}`);
         this.model = model;
@@ -432,7 +432,7 @@ export class PreloadingSummaryView extends UI.Widget.VBox {
     warningsView = new PreloadingWarningsView();
     usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
     constructor(model) {
-        super(/* isWebComponent */ true, /* delegatesFocus */ false);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(emptyWidgetStyles, preloadingViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('speculative-loads')}`);
         this.model = model;
@@ -585,7 +585,7 @@ class PreloadingRuleSetSelector {
 export class PreloadingWarningsView extends UI.Widget.VBox {
     infobar = new PreloadingComponents.PreloadingDisabledInfobar.PreloadingDisabledInfobar();
     constructor() {
-        super(/* isWebComponent */ false, /* delegatesFocus */ false);
+        super();
         this.registerRequiredCSS(emptyWidgetStyles);
     }
     wasShown() {

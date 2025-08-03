@@ -70,6 +70,9 @@
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
+      "path": "../network/bundle-tsconfig.json"
+    },
+    {
       "path": "../timeline/utils/bundle-tsconfig.json"
     },
     {

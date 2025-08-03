@@ -69,7 +69,13 @@ describeWithDevtoolsExtension('Extensions', {}, context => {
             project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
             const targetManager = target.targetManager();
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
-            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+                forceNew: true,
+                resourceMapping,
+                targetManager,
+                ignoreListManager,
+            });
         });
         describe('setFunctionRangesForScript', () => {
             expectConsoleLogs({
@@ -694,7 +700,13 @@ describeWithDevtoolsExtension('Wasm extension API', {}, context => {
         target.setInspectedURL(urlString `http://example.com`);
         const targetManager = target.targetManager();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, Workspace.Workspace.WorkspaceImpl.instance());
-        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, resourceMapping, targetManager });
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+            ignoreListManager,
+        });
         const callFrame = sinon.createStubInstance(SDK.DebuggerModel.CallFrame);
         callFrame.debuggerModel = new SDK.DebuggerModel.DebuggerModel(target);
         sinon.stub(callFrame, 'id').get(() => '0');
@@ -806,8 +818,13 @@ for (const allowFileAccess of [true, false]) {
             const workspace = Workspace.Workspace.WorkspaceImpl.instance();
             const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
             target.setInspectedURL(urlString `http://example.com`);
-            const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: true, targetManager, resourceMapping });
-            Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
+            const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+            Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+                forceNew: true,
+                resourceMapping,
+                targetManager,
+                ignoreListManager,
+            });
         });
         it('passes allowFileAccess to the LanguageExtensionEndpoint', async () => {
             const endpointSpy = sinon.spy(Extensions.LanguageExtensionEndpoint.LanguageExtensionEndpoint.prototype, 'handleScript');
@@ -853,9 +870,14 @@ describeWithDevtoolsExtension('validate attachSourceMapURL ', {}, context => {
         const targetManager = target.targetManager();
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
-        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({ forceNew: false, resourceMapping, targetManager });
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+        const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+            forceNew: true,
+            resourceMapping,
+            targetManager,
+            ignoreListManager,
+        });
         const backend = new MockProtocolBackend();
-        Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: false, debuggerWorkspaceBinding });
         // Before any script is registered, there shouldn't be any uiSourceCodes.
         assert.isNull(Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptInfo.url));
         // Create promise to await the uiSourceCode given the url and its target.

@@ -35,7 +35,7 @@ export class SearchResultsPane extends UI.Widget.VBox {
     treeOutline;
     matchesExpandedCount;
     constructor(searchConfig) {
-        super(true);
+        super({ useShadowDom: true });
         this.searchConfig = searchConfig;
         this.searchResults = [];
         this.treeElements = [];

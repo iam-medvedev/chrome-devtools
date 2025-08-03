@@ -79,7 +79,7 @@ export class CSSValueTraceView extends UI.Widget.VBox {
     #substitutions = [];
     #pendingFocus = false;
     constructor(element, view = defaultView) {
-        super(true, false, element);
+        super(element, { useShadowDom: true });
         this.registerRequiredCSS(cssValueTraceViewStyles, stylePropertiesTreeOutlineStyles);
         this.#view = view;
         this.requestUpdate();

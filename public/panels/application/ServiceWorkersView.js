@@ -188,7 +188,7 @@ export class ServiceWorkersView extends UI.Widget.VBox {
     sectionToRegistration;
     eventListeners;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(serviceWorkersViewStyles);
         // TODO(crbug.com/1156978): Replace UI.ReportView.ReportView with ReportView.ts web component.
         this.currentWorkersView = new UI.ReportView.ReportView(i18n.i18n.lockedString('Service workers'));

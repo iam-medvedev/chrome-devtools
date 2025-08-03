@@ -3779,9 +3779,9 @@ __export(Debouncer_exports, {
 });
 var debounce = function(func, delay) {
   let timer = 0;
-  const debounced = () => {
+  const debounced = (...args) => {
     clearTimeout(timer);
-    timer = window.setTimeout(() => func(), delay);
+    timer = window.setTimeout(() => func(...args), delay);
   };
   return debounced;
 };

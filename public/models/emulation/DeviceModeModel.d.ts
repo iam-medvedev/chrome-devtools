@@ -82,8 +82,6 @@ export declare class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper<
     private applyUserAgent;
     private applyDeviceMetrics;
     exitHingeMode(): void;
-    webPlatformExperimentalFeaturesEnabled(): boolean;
-    shouldReportDisplayFeature(): boolean;
     captureScreenshot(fullSize: boolean, clip?: Protocol.Page.Viewport): Promise<string | null>;
     private applyTouch;
     private showHingeIfApplicable;

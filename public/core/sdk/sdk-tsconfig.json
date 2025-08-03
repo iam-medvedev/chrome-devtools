@@ -104,7 +104,6 @@
     "../../../../../../front_end/core/sdk/SourceMapFunctionRanges.ts",
     "../../../../../../front_end/core/sdk/SourceMapManager.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopeChainEntry.ts",
-    "../../../../../../front_end/core/sdk/SourceMapScopes.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopesInfo.ts",
     "../../../../../../front_end/core/sdk/StorageBucketsModel.ts",
     "../../../../../../front_end/core/sdk/StorageKeyManager.ts",

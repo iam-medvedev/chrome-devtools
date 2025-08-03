@@ -35,7 +35,7 @@ export class CSSOverviewProcessingView extends UI.Widget.Widget {
     #onCancel = () => { };
     #view;
     constructor(element, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.#view = view;
         this.requestUpdate();
     }

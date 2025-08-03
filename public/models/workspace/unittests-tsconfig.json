@@ -39,6 +39,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/models/workspace/IgnoreListManager.test.ts",
     "../../../../../../front_end/models/workspace/SearchConfig.test.ts",
     "../../../../../../front_end/models/workspace/UISourceCode.test.ts",
     "../../../../../../front_end/models/workspace/WorkspaceImpl.test.ts",
@@ -55,6 +56,9 @@
     },
     {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../bindings/bundle-tsconfig.json"
     },
     {
       "path": "../persistence/bundle-tsconfig.json"

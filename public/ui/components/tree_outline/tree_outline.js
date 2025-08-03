@@ -14,8 +14,10 @@ __export(TreeOutline_exports, {
   defaultRenderer: () => defaultRenderer
 });
 import * as Platform2 from "./../../../core/platform/platform.js";
+import * as UI from "./../../legacy/legacy.js";
 import * as Lit2 from "./../../lit/lit.js";
 import * as VisualLogging from "./../../visual_logging/visual_logging.js";
+import * as Buttons from "./../buttons/buttons.js";
 import * as CodeHighlighter from "./../code_highlighter/code_highlighter.js";
 import * as ComponentHelpers from "./../helpers/helpers.js";
 import * as RenderCoordinator from "./../render_coordinator/render_coordinator.js";
@@ -724,6 +726,8 @@ var TreeOutline = class extends HTMLElement {
     this.#scheduledRender = true;
     await RenderCoordinator.write("TreeOutline render", () => {
       Lit2.render(html`
+      <style>${Buttons.textButtonStyles}</style>
+      <style>${UI.inspectorCommonStyles}</style>
       <style>${treeOutline_css_default}</style>
       <style>${CodeHighlighter.codeHighlighterStyles}</style>
       <div class="wrapping-container">

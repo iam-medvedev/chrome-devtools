@@ -7,12 +7,16 @@ export interface ViewInput {
 }
 export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
+export interface AiCodeCompletionTeaserConfig {
+    onDetach: () => void;
+}
 export declare class AiCodeCompletionTeaser extends UI.Widget.Widget {
     #private;
-    constructor(view?: View);
+    constructor(config: AiCodeCompletionTeaserConfig, view?: View);
     onAction: (event: Event) => Promise<void>;
     onDismiss: (event: Event) => void;
     performUpdate(): void;
     wasShown(): void;
     willHide(): void;
+    onDetach(): void;
 }

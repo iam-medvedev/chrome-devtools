@@ -50,7 +50,7 @@ export class StatusDialog extends UI.Widget.VBox {
     timeUpdateTimer;
     #rawEvents;
     constructor(options, onButtonClickCallback) {
-        super(true);
+        super({ useShadowDom: true });
         this.contentElement.classList.add('timeline-status-dialog');
         this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('timeline-status').track({ resize: true })}`);
         const statusLine = this.contentElement.createChild('div', 'status-dialog-line status');

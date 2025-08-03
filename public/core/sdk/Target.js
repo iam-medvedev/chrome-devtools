@@ -75,7 +75,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 524288 /* Capability.EVENT_BREAKPOINTS */ | 16 /* Capability.NETWORK */;
                 break;
             case Type.NODE:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ | 131072 /* Capability.IO */;
                 break;
             case Type.AUCTION_WORKLET:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
@@ -87,7 +87,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 this.#capabilitiesMask = 32 /* Capability.TARGET */ | 128 /* Capability.TRACING */;
                 break;
             case Type.NODE_WORKER:
-                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */;
+                this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ | 131072 /* Capability.IO */;
         }
         this.#typeInternal = type;
         this.#parentTargetInternal = parentTarget;

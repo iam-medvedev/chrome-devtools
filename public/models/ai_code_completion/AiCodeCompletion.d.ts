@@ -1,8 +1,35 @@
-import type * as Common from '../../core/common/common.js';
+import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import type { AgentOptions } from '../ai_assistance/ai_assistance.js';
-export declare class AiCodeCompletion {
+export declare const DELAY_BEFORE_SHOWING_RESPONSE_MS = 500;
+export declare const AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
+/**
+ * The AiCodeCompletion class is responsible for fetching code completion suggestions
+ * from the AIDA backend and displaying them in the text editor.
+ *
+ * 1. **Debouncing requests:** As the user types, we don't want to send a request
+ *    for every keystroke. Instead, we use debouncing to schedule a request
+ *    only after the user has paused typing for a short period
+ *    (AIDA_REQUEST_THROTTLER_TIMEOUT_MS). This prevents spamming the backend with
+ *    requests for intermediate typing states.
+ *
+ * 2. **Delaying suggestions:** When a suggestion is received from the AIDA
+ *    backend, we don't show it immediately. There is a minimum delay
+ *    (DELAY_BEFORE_SHOWING_RESPONSE_MS) from when the request was sent to when
+ *    the suggestion is displayed.
+ */
+export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, throttler: Common.Throttler.Throttler);
-    onTextChanged(prefix: string, suffix: string): void;
+    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor);
+    onTextChanged: (...args: any[]) => void;
+}
+export declare const enum Events {
+    CITATIONS_UPDATED = "CitationsUpdated"
+}
+export interface CitationsUpdatedEvent {
+    citations: Host.AidaClient.Citation[];
+}
+export interface EventTypes {
+    [Events.CITATIONS_UPDATED]: CitationsUpdatedEvent;
 }

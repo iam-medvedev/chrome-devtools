@@ -149,34 +149,6 @@ The 'calculatePosition' and 'applyStyles' child functions consumed the remaining
 The 'calculatePosition' function, taking 80ms, is a potential bottleneck.
 Consider optimizing the position calculation logic or reducing the frequency of calls to improve animation performance.
 `;
-// Network requests format description that is sent to the model as a fact.
-const networkDataFormatDescription = `The format is as follows:
-    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-    Timings (all in milliseconds, relative to navigation start):
-    - \`queuedTime\`: When the request was queued.
-    - \`requestSentTime\`: When the request was sent.
-    - \`downloadCompleteTime\`: When the download completed.
-    - \`processingCompleteTime\`: When main thread processing finished.
-    Durations (all in milliseconds):
-    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-    - \`downloadDuration\`: Time spent actively downloading the resource.
-    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-    - \`initialPriority\`: The initial network request priority.
-    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
-`;
 const mainThreadActivityFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
   The format of each callframe is:
 
@@ -302,7 +274,8 @@ export class PerformanceTraceContext extends ConversationContext {
                 ];
             case 'ImageDelivery':
                 return [
-                    { title: 'What should I do to improve and optimize the time taken to fetch and display images on the page?' }
+                    { title: 'What should I do to improve and optimize the time taken to fetch and display images on the page?' },
+                    { title: 'Are all images on my site optimized?' },
                 ];
             case 'INPBreakdown':
                 return [
@@ -340,7 +313,10 @@ export class PerformanceTraceContext extends ConversationContext {
                     { title: 'Which resources are not using a modern HTTP protocol?' },
                 ];
             case 'LegacyJavaScript':
-                return [{ title: 'Is my site polyfilling modern JavaScript features?' }];
+                return [
+                    { title: 'Is my site polyfilling modern JavaScript features?' },
+                    { title: 'How can I reduce the amount of legacy JavaScript on my page?' },
+                ];
             default:
                 Platform.assertNever(focus.insight.insightKey, 'Unknown insight key');
         }
@@ -378,7 +354,10 @@ export class PerformanceAgent extends AiAgent {
     * add the formats description to facts once the main thread activity or network requests need to be sent.
     */
     #mainThreadActivityDescriptionFact = { text: mainThreadActivityFormatDescription, metadata: { source: 'devtools' } };
-    #networkDataDescriptionFact = { text: networkDataFormatDescription, metadata: { source: 'devtools' } };
+    #networkDataDescriptionFact = {
+        text: TraceEventFormatter.networkDataFormatDescription,
+        metadata: { source: 'devtools' }
+    };
     get preamble() {
         if (this.#conversationType === "drjones-performance" /* ConversationType.PERFORMANCE */) {
             return callTreePreamble;

@@ -15,6 +15,12 @@ import { type AidaClientResult, type AidaCodeCompleteResult, type CanShowSurveyR
  */
 export declare class InspectorFrontendHostStub implements InspectorFrontendHostAPI {
     #private;
+    /**
+     * Injected bellow in both stub and normal runs via:
+     * ```ts
+     * InspectorFrontendHostInstance.events = new Common.ObjectWrapper.ObjectWrapper();
+     * ```
+     */
     events: Common.EventTarget.EventTarget<EventTypes>;
     recordedCountHistograms: Array<{
         histogramName: string;
@@ -55,7 +61,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     openInNewTab(url: Platform.DevToolsPath.UrlString): void;
     openSearchResultsInNewTab(_query: string): void;
     showItemInFolder(_fileSystemPath: Platform.DevToolsPath.RawPathString): void;
-    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, _forceSaveAs: boolean, _isBase64: boolean): void;
+    save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string, _forceSaveAs: boolean, isBase64: boolean): void;
     append(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, content: string): void;
     close(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString): void;
     sendMessageToBackend(_message: string): void;

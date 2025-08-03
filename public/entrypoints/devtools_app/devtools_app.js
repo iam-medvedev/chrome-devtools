@@ -2136,7 +2136,6 @@ Common7.Revealer.registerRevealer({
 
 // gen/front_end/panels/autofill/autofill-meta.js
 import * as i18n21 from "./../../core/i18n/i18n.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings11 = {
   /**
@@ -2166,7 +2165,7 @@ UI11.ViewManager.registerViewExtension({
   persistence: "closeable",
   async loadView() {
     const Autofill = await loadAutofillModule();
-    return LegacyWrapper.LegacyWrapper.legacyWrapper(UI11.Widget.Widget, new Autofill.AutofillView.AutofillView());
+    return new Autofill.AutofillView.AutofillView();
   }
 });
 

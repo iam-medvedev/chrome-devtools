@@ -26,12 +26,13 @@ describeWithMockConnection('ResourceScriptMapping', () => {
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         const targetManager = SDK.TargetManager.TargetManager.instance();
         const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+        const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
         const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
             forceNew: true,
             resourceMapping,
             targetManager,
+            ignoreListManager,
         });
-        Bindings.IgnoreListManager.IgnoreListManager.instance({ forceNew: true, debuggerWorkspaceBinding });
         target = createTarget();
         backend = new MockProtocolBackend();
         resourceScriptMapping = new Bindings.ResourceScriptMapping.ResourceScriptMapping(target.model(SDK.DebuggerModel.DebuggerModel), workspace, debuggerWorkspaceBinding);

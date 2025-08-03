@@ -200,7 +200,7 @@ const supportsPrefersContrast = () => {
 };
 export class RenderingOptionsView extends UI.Widget.VBox {
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(renderingOptionsStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('rendering').track({ resize: true })}`);
         this.#appendCheckbox(i18nString(UIStrings.paintFlashing), i18nString(UIStrings.highlightsAreasOfThePageGreen), Common.Settings.Settings.instance().moduleSetting('show-paint-rects'));

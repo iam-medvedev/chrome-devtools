@@ -63,7 +63,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let networkConfigViewInstance;
 export class NetworkConfigView extends UI.Widget.VBox {
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(networkConfigViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.panel('network-conditions').track({ resize: true })}`);
         this.contentElement.classList.add('network-config');

@@ -50,6 +50,25 @@ export class Importer {
         pageLoad.loadTime = Number(page.pageTimings.onLoad) * 1000;
         return pageLoad;
     }
+    static fillCookieFromHARCookie(type, harCookie) {
+        const cookie = new SDK.Cookie.Cookie(harCookie.name, harCookie.value, type);
+        if (harCookie.path) {
+            cookie.addAttribute("path" /* SDK.Cookie.Attribute.PATH */, harCookie.path);
+        }
+        if (harCookie.domain) {
+            cookie.addAttribute("domain" /* SDK.Cookie.Attribute.DOMAIN */, harCookie.domain);
+        }
+        if (harCookie.expires) {
+            cookie.addAttribute("expires" /* SDK.Cookie.Attribute.EXPIRES */, harCookie.expires.getTime());
+        }
+        if (harCookie.httpOnly) {
+            cookie.addAttribute("http-only" /* SDK.Cookie.Attribute.HTTP_ONLY */);
+        }
+        if (harCookie.secure) {
+            cookie.addAttribute("secure" /* SDK.Cookie.Attribute.SECURE */);
+        }
+        return cookie;
+    }
     static fillRequestFromHAREntry(request, entry, pageLoad) {
         // Request data.
         if (entry.request.postData) {
@@ -102,6 +121,15 @@ export class Importer {
         // Meta data.
         request.setRemoteAddress(entry.serverIPAddress || '', Number(entry.connection) || 80);
         request.setResourceType(Importer.getResourceType(request, entry, pageLoad));
+        // Request cookies.
+        const includedRequestCookies = entry.request.cookies.map(cookie => ({
+            cookie: this.fillCookieFromHARCookie(0 /* SDK.Cookie.Type.REQUEST */, cookie),
+            exemptionReason: undefined,
+        }));
+        request.setIncludedRequestCookies(includedRequestCookies);
+        // Response cookies.
+        const responseCookies = entry.response.cookies.map(this.fillCookieFromHARCookie.bind(this, 1 /* SDK.Cookie.Type.RESPONSE */));
+        request.responseCookies = responseCookies;
         const priority = entry.customAsString('priority');
         // @ts-expect-error This accesses the globalThis['Protocol'] where the enum is an actual JS object and not just a TS const enum.
         if (priority && Protocol.Network.ResourcePriority.hasOwnProperty(priority)) {

@@ -53,6 +53,7 @@ export declare function metricSavingsForWastedBytes(wastedBytesByRequestId: Map<
  * Returns whether the network request was sent encoded.
  */
 export declare function isRequestCompressed(request: Types.Events.SyntheticNetworkRequest): boolean;
+export declare function isRequestServedFromBrowserCache(request: Types.Events.SyntheticNetworkRequest): boolean;
 /**
  * Estimates the number of bytes the content of this network record would have consumed on the network based on the
  * uncompressed size (totalBytes). Uses the actual transfer size from the network record if applicable,

@@ -26,8 +26,11 @@ export declare class TimelineOverviewPane extends TimelineOverviewPane_base {
     private windowStartTime;
     private windowEndTime;
     private muteOnWindowChanged;
+    private hasPointer;
     constructor(prefix: string);
     enableCreateBreadcrumbsButton(): void;
+    private onMouseDown;
+    private onMouseCancel;
     private onMouseMove;
     private buildOverviewInfo;
     private hideCursor;
@@ -109,5 +112,6 @@ export declare class OverviewInfo {
     constructor(anchor: Element);
     setContent(contentPromise: Promise<DocumentFragment>): Promise<void>;
     hide(): void;
+    show(): void;
 }
 export {};

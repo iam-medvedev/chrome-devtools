@@ -569,7 +569,7 @@ export class InfoWidget extends UI.Widget.VBox {
     type;
     selectedTab;
     constructor(element) {
-        super(undefined, undefined, element);
+        super(element);
         this.tabbedPane = new UI.TabbedPane.TabbedPane();
         this.tabbedPane.appendTab('request', i18nString(UIStrings.request), new UI.Widget.Widget());
         this.tabbedPane.appendTab('response', i18nString(UIStrings.response), new UI.Widget.Widget());

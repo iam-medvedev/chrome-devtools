@@ -53,16 +53,17 @@ export class CommandMenu {
         return commandMenuInstance;
     }
     static createCommand(options) {
-        const { category, keys, title, shortcut, jslogContext, executeHandler, availableHandler, userActionCode, deprecationWarning, isPanelOrDrawer, } = options;
+        const { category, keys, title, shortcut, jslogContext, executeHandler, availableHandler, userActionCode, deprecationWarning, isPanelOrDrawer, featurePromotionId, } = options;
         let handler = executeHandler;
         if (userActionCode) {
             const actionCode = userActionCode;
             handler = () => {
                 Host.userMetrics.actionTaken(actionCode);
                 executeHandler();
+                // not here
             };
         }
-        return new Command(category, title, keys, shortcut, jslogContext, handler, availableHandler, deprecationWarning, isPanelOrDrawer);
+        return new Command(category, title, keys, shortcut, jslogContext, handler, availableHandler, deprecationWarning, isPanelOrDrawer, featurePromotionId);
     }
     static createSettingCommand(setting, title, value) {
         const category = setting.category();
@@ -122,7 +123,7 @@ export class CommandMenu {
         });
     }
     static createRevealViewCommand(options) {
-        const { title, tags, category, userActionCode, id } = options;
+        const { title, tags, category, userActionCode, id, featurePromotionId } = options;
         if (!category) {
             throw new Error(`Creating '${title}' reveal view command failed. Reveal view has no category.`);
         }
@@ -137,6 +138,9 @@ export class CommandMenu {
             if (id === 'issues-pane') {
                 Host.userMetrics.issuesPanelOpenedFrom(5 /* Host.UserMetrics.IssueOpener.COMMAND_MENU */);
             }
+            if (featurePromotionId) {
+                UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(featurePromotionId);
+            }
             return UI.ViewManager.ViewManager.instance().showView(id, /* userGesture */ true);
         };
         return CommandMenu.createCommand({
@@ -149,6 +153,7 @@ export class CommandMenu {
             userActionCode,
             availableHandler: undefined,
             isPanelOrDrawer: panelOrDrawer,
+            featurePromotionId,
         });
     }
     loadCommands() {
@@ -170,6 +175,7 @@ export class CommandMenu {
                 tags: view.tags() || '',
                 category,
                 id: view.viewId(),
+                featurePromotionId: view.featurePromotionId(),
             };
             this.commandsInternal.push(CommandMenu.createRevealViewCommand(options));
         }
@@ -234,6 +240,11 @@ export class CommandMenuProvider extends Provider {
     itemScoreAt(itemIndex, query) {
         const command = this.commands[itemIndex];
         let score = Diff.Diff.DiffWrapper.characterScore(query.toLowerCase(), command.title.toLowerCase());
+        // Increase score of promoted items so that these appear on top of the list
+        if (command.featurePromotionId) {
+            score = Number.MAX_VALUE;
+            return score;
+        }
         // Score panel/drawer reveals above regular actions.
         if (command.isPanelOrDrawer === "PANEL" /* PanelOrDrawer.PANEL */) {
             score += 2;
@@ -250,6 +261,12 @@ export class CommandMenuProvider extends Provider {
         titleElement.parentElement?.parentElement?.insertBefore(icon, titleElement.parentElement);
         UI.UIUtils.createTextChild(titleElement, command.title);
         FilteredListWidget.highlightRanges(titleElement, query, true);
+        if (command.featurePromotionId) {
+            const badge = UI.UIUtils.maybeCreateNewBadge(command.featurePromotionId);
+            if (badge) {
+                titleElement.parentElement?.insertBefore(badge, subtitleElement);
+            }
+        }
         subtitleElement.textContent = command.shortcut;
         const deprecationWarning = command.deprecationWarning;
         if (deprecationWarning) {
@@ -309,9 +326,10 @@ export class Command {
     jslogContext;
     deprecationWarning;
     isPanelOrDrawer;
+    featurePromotionId;
     #executeHandler;
     #availableHandler;
-    constructor(category, title, key, shortcut, jslogContext, executeHandler, availableHandler, deprecationWarning, isPanelOrDrawer) {
+    constructor(category, title, key, shortcut, jslogContext, executeHandler, availableHandler, deprecationWarning, isPanelOrDrawer, featurePromotionId) {
         this.category = category;
         this.title = title;
         this.key = category + '\0' + title + '\0' + key;
@@ -321,6 +339,7 @@ export class Command {
         this.#availableHandler = availableHandler;
         this.deprecationWarning = deprecationWarning;
         this.isPanelOrDrawer = isPanelOrDrawer;
+        this.featurePromotionId = featurePromotionId;
     }
     available() {
         return this.#availableHandler ? this.#availableHandler() : true;

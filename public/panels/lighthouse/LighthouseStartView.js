@@ -55,7 +55,7 @@ export class StartView extends UI.Widget.Widget {
     checkboxes = [];
     changeFormMode;
     constructor(controller, panel) {
-        super(true /* useShadowDom */);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(lighthouseStartViewStyles);
         this.controller = controller;
         this.panel = panel;

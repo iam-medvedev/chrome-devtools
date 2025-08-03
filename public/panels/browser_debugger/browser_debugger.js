@@ -207,7 +207,7 @@ var FilterToolbar = class _FilterToolbar extends Common.ObjectWrapper.eventMixin
   #view;
   #filterText = null;
   constructor(element, view = DEFAULT_VIEW) {
-    super(false, false, element);
+    super(element);
     this.#view = view;
     this.performUpdate();
   }
@@ -241,7 +241,7 @@ var CategorizedBreakpointsSidebarPane = class extends UI.Widget.VBox {
   filterToolbar;
   #expandedForFilter = /* @__PURE__ */ new Set();
   constructor(breakpoints, viewId, detailsPausedReason) {
-    super(true);
+    super({ useShadowDom: true });
     this.filterToolbar = new FilterToolbar();
     this.filterToolbar.addEventListener(FilterToolbar.Events.FILTER_CHANGED, this.#onFilterChanged.bind(this));
     this.filterToolbar.show(this.contentElement);
@@ -785,7 +785,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
   #list;
   #highlightedBreakpoint;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(domBreakpointsSidebarPane_css_default);
     this.elementToCheckboxes = /* @__PURE__ */ new WeakMap();
     this.contentElement.setAttribute("jslog", `${VisualLogging3.section("sources.dom-breakpoints").track({ resize: true })}`);
@@ -1307,7 +1307,7 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #hitBreakpoint;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(xhrBreakpointsSidebarPane_css_default);
     this.#breakpoints = new UI4.ListModel.ListModel();
     this.#list = new UI4.ListControl.ListControl(this.#breakpoints, this, UI4.ListControl.ListMode.NonViewport);

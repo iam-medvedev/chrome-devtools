@@ -33,7 +33,7 @@ export class NetworkManageCustomHeadersView extends UI.Widget.VBox {
     removeHeaderColumnCallback;
     editor;
     constructor(columnData, addHeaderColumnCallback, changeHeaderColumnCallback, removeHeaderColumnCallback) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(networkManageCustomHeadersViewStyles);
         this.contentElement.createChild('div', 'header').textContent = i18nString(UIStrings.manageHeaderColumns);
         this.list = new UI.ListWidget.ListWidget(this);

@@ -1363,7 +1363,7 @@ var ElementsSidebarPane = class extends UI5.Widget.VBox {
   updateThrottler;
   updateWhenVisible;
   constructor(computedStyleModel, delegatesFocus) {
-    super(true, delegatesFocus);
+    super({ useShadowDom: true, delegatesFocus });
     this.element.classList.add("flex-none");
     this.computedStyleModelInternal = computedStyleModel;
     this.computedStyleModelInternal.addEventListener("CSSModelChanged", this.onCSSModelChanged, this);
@@ -1469,7 +1469,7 @@ var LayersWidget = class _LayersWidget extends UI6.Widget.Widget {
   cssModel;
   layerTreeComponent = new TreeOutline2.TreeOutline.TreeOutline();
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(layersWidget_css_default);
     this.contentElement.className = "styles-layers-pane";
     this.contentElement.setAttribute("jslog", `${VisualLogging2.pane("css-layers")}`);
@@ -2776,7 +2776,7 @@ var CSSValueTraceView = class extends UI7.Widget.VBox {
   #substitutions = [];
   #pendingFocus = false;
   constructor(element, view = defaultView) {
-    super(true, false, element);
+    super(element, { useShadowDom: true });
     this.registerRequiredCSS(cssValueTraceView_css_default, stylePropertiesTreeOutline_css_default);
     this.#view = view;
     this.requestUpdate();
@@ -5480,7 +5480,7 @@ var StyleEditorWidget = class _StyleEditorWidget extends UI9.Widget.VBox {
   editorContainer;
   #triggerKey;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.contentElement.tabIndex = 0;
     this.setDefaultFocusedElement(this.contentElement);
     this.editorContainer = document.createElement("div");
@@ -5759,7 +5759,7 @@ var DOMNodeLink = class extends UI10.Widget.Widget {
   #options = void 0;
   #view;
   constructor(element, node, options, view = DEFAULT_VIEW2) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.element.classList.remove("vbox");
     this.#node = node;
     this.#options = options;
@@ -5864,7 +5864,7 @@ var DeferredDOMNodeLink = class extends UI10.Widget.Widget {
   #options = void 0;
   #view;
   constructor(element, deferredNode, options, view = DEFERRED_DEFAULT_VIEW) {
-    super(true, void 0, element);
+    super(element, { useShadowDom: true });
     this.element.classList.remove("vbox");
     this.#deferredNode = deferredNode;
     this.#options = options;
@@ -15616,7 +15616,7 @@ var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
   #domModels;
   #view;
   constructor(element, view = DEFAULT_VIEW3) {
-    super(false, false, element);
+    super(element);
     this.#settings = this.#makeSettings();
     this.#uaShadowDOMSetting = Common15.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom");
     this.#domModels = [];
@@ -18055,9 +18055,13 @@ var UIStrings21 = {
 var str_21 = i18n41.i18n.registerUIStrings("panels/elements/NodeStackTraceWidget.ts", UIStrings21);
 var i18nString20 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var DEFAULT_VIEW5 = (input, _output, target) => {
+  const { target: sdkTarget, linkifier, options } = input;
   render8(html11`
     <style>${nodeStackTraceWidget_css_default}</style>
-    ${input.stackTracePreview ? html11`<div class="stack-trace">${input.stackTracePreview}</div>` : html11`<div class="gray-info-message">${i18nString20(UIStrings21.noStackTraceAvailable)}</div>`}`, target, { host: input });
+    ${target && options.stackTrace ? html11`<devtools-widget
+                class="stack-trace"
+                .widgetConfig=${UI27.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
+              </devtools-widget>` : html11`<div class="gray-info-message">${i18nString20(UIStrings21.noStackTraceAvailable)}</div>`}`, target, { host: input });
 };
 var NodeStackTraceWidget = class extends UI27.ThrottledWidget.ThrottledWidget {
   #linkifier = new Components6.Linkifier.Linkifier(MaxLengthForLinks);
@@ -18079,10 +18083,11 @@ var NodeStackTraceWidget = class extends UI27.ThrottledWidget.ThrottledWidget {
   }
   async doUpdate() {
     const node = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
-    const creationStackTrace = node ? await node.creationStackTrace() : null;
-    const stackTracePreview = node && creationStackTrace ? Components6.JSPresentationUtils.buildStackTracePreviewContents(node.domModel().target(), this.#linkifier, { stackTrace: creationStackTrace, tabStops: void 0 }).element : null;
+    const stackTrace = await node?.creationStackTrace() ?? void 0;
     const input = {
-      stackTracePreview
+      target: node?.domModel().target(),
+      linkifier: this.#linkifier,
+      options: { stackTrace }
     };
     this.#view(input, {}, this.contentElement);
   }
@@ -18183,7 +18188,7 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
   updateNodeThrottler;
   previousTarget;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(classesPaneWidget_css_default);
     this.contentElement.className = "styles-element-classes-pane";
     this.contentElement.setAttribute("jslog", `${VisualLogging16.pane("elements-classes")}`);
@@ -18632,7 +18637,7 @@ var ElementStatePaneWidget = class extends UI29.Widget.Widget {
   #states = /* @__PURE__ */ new Map();
   #view;
   constructor(view = DEFAULT_VIEW6) {
-    super(true);
+    super({ useShadowDom: true });
     this.#view = view;
     this.#duals = /* @__PURE__ */ new Map();
     const setDualStateCheckboxes = (first, second) => {

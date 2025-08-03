@@ -30,6 +30,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/common/AiCodeCompletionSummaryToolbar.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionTeaser.ts",
     "../../../../../../front_end/panels/common/FreDialog.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
@@ -54,6 +55,9 @@
     },
     {
       "path": "../../ui/components/snackbars/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/tooltips/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"

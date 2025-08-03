@@ -77,6 +77,10 @@ export interface OptionalFlameChartConfig {
      * Used to disable the cursor element in ChartViewport and instead use the new overlays system.
      */
     useOverlaysForCursorRuler?: boolean;
+    /**
+     * If provided, this will add a VE Logging context to the canvas to log visibility and hovers.
+     */
+    canvasVELogContext?: string;
 }
 export declare const enum FilterAction {
     MERGE_FUNCTION = "MERGE_FUNCTION",

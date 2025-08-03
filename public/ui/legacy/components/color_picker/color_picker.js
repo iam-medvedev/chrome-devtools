@@ -2012,7 +2012,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   // actual variable string.
   colorStringInternal;
   constructor(contrastInfo) {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(spectrum_css_default);
     this.contentElement.tabIndex = 0;
     this.contentElement.setAttribute("jslog", `${VisualLogging.dialog("colorPicker").parent("mapped").track({ keydown: "Enter|Escape" })}`);

@@ -1,13 +1,13 @@
+import type * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import type { SourceMap } from './SourceMap.js';
-import type { GeneratedRange, OriginalPosition, OriginalScope, Position, ScopeInfo } from './SourceMapScopes.js';
 export declare class SourceMapScopesInfo {
     #private;
-    constructor(sourceMap: SourceMap, scopeInfo: ScopeInfo);
-    addOriginalScopes(scopes: Array<OriginalScope | null>): void;
-    addGeneratedRanges(ranges: GeneratedRange[]): void;
+    constructor(sourceMap: SourceMap, scopeInfo: ScopesCodec.ScopeInfo);
+    addOriginalScopes(scopes: Array<ScopesCodec.OriginalScope | null>): void;
+    addGeneratedRanges(ranges: ScopesCodec.GeneratedRange[]): void;
     hasOriginalScopes(sourceIdx: number): boolean;
-    addOriginalScopesAtIndex(sourceIdx: number, scope: OriginalScope): void;
+    addOriginalScopesAtIndex(sourceIdx: number, scope: ScopesCodec.OriginalScope): void;
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their
@@ -63,7 +63,7 @@ export declare class SourceMapScopesInfo {
     /**
      * Returns the authored function name of the function containing the provided generated position.
      */
-    findOriginalFunctionName({ line, column }: Position): string | null;
+    findOriginalFunctionName({ line, column }: ScopesCodec.Position): string | null;
 }
 /**
  * Represents the inlining information for a given generated position.
@@ -77,8 +77,8 @@ export declare class SourceMapScopesInfo {
 export interface InlineInfo {
     inlinedFunctions: Array<{
         name: string;
-        callsite: OriginalPosition;
+        callsite: ScopesCodec.OriginalPosition;
     }>;
     originalFunctionName: string;
 }
-export declare function contains(range: Pick<GeneratedRange, 'start' | 'end'>, line: number, column: number): boolean;
+export declare function contains(range: Pick<ScopesCodec.GeneratedRange, 'start' | 'end'>, line: number, column: number): boolean;

@@ -15,10 +15,7 @@ import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import * as ElementsPanel from '../elements/elements.js';
 import * as NetworkForward from '../network/forward/forward.js';
-import * as NetworkPanel from '../network/network.js';
-import * as SourcesPanel from '../sources/sources.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
@@ -560,10 +557,11 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         const { hostConfig } = Root.Runtime;
-        const isElementsPanelVisible = Boolean(UI.Context.Context.instance().flavor(ElementsPanel.ElementsPanel.ElementsPanel));
-        const isNetworkPanelVisible = Boolean(UI.Context.Context.instance().flavor(NetworkPanel.NetworkPanel.NetworkPanel));
-        const isSourcesPanelVisible = Boolean(UI.Context.Context.instance().flavor(SourcesPanel.SourcesPanel.SourcesPanel));
-        const isPerformancePanelVisible = Boolean(UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel));
+        const viewManager = UI.ViewManager.ViewManager.instance();
+        const isElementsPanelVisible = viewManager.isViewVisible('elements');
+        const isNetworkPanelVisible = viewManager.isViewVisible('network');
+        const isSourcesPanelVisible = viewManager.isViewVisible('sources');
+        const isPerformancePanelVisible = viewManager.isViewVisible('timeline');
         // Check if the user has an insight expanded in the performance panel sidebar.
         // If they have, we default to the Insights agent; otherwise we fallback to
         // the regular Performance agent.
@@ -651,10 +649,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
-        UI.Context.Context.instance().addFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
-        UI.Context.Context.instance().addFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
-        UI.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#selectDefaultAgentIfNeeded, this);
+        UI.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, this.#selectDefaultAgentIfNeeded, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
@@ -673,10 +668,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
-        UI.Context.Context.instance().removeFlavorChangeListener(ElementsPanel.ElementsPanel.ElementsPanel, this.#selectDefaultAgentIfNeeded, this);
-        UI.Context.Context.instance().removeFlavorChangeListener(NetworkPanel.NetworkPanel.NetworkPanel, this.#selectDefaultAgentIfNeeded, this);
-        UI.Context.Context.instance().removeFlavorChangeListener(SourcesPanel.SourcesPanel.SourcesPanel, this.#selectDefaultAgentIfNeeded, this);
-        UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#selectDefaultAgentIfNeeded, this);
+        UI.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
@@ -948,7 +940,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         // Node picker is using linkifier.
     }
-    handleAction(actionId) {
+    handleAction(actionId, opts) {
         if (this.#isLoading) {
             // If running some queries already, focus the input with the abort
             // button and do nothing.
@@ -1009,7 +1001,19 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             agent = this.#createAgent(targetConversationType);
         }
         this.#updateConversationState(agent);
-        this.#viewOutput.chatView?.focusTextInput();
+        const predefinedPrompt = opts?.['prompt'];
+        if (predefinedPrompt && typeof predefinedPrompt === 'string') {
+            this.#imageInput = undefined;
+            this.#isTextInputEmpty = true;
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
+            if (this.#blockedByCrossOrigin) {
+                this.#handleNewChatRequest();
+            }
+            void this.#startConversation(predefinedPrompt);
+        }
+        else {
+            this.#viewOutput.chatView?.focusTextInput();
+        }
     }
     #populateHistoryMenu(contextMenu) {
         for (const conversation of [...this.#historicalConversations].reverse()) {
@@ -1403,7 +1407,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
      * Performance Insights it is the name of the Insight that forms the
      * context of the conversation.
      */
-    async handleExternalRequest(parameters) {
+    handleExternalRequest(parameters) {
+        // eslint-disable-next-line require-yield
+        async function* generateErrorResponse(message) {
+            return {
+                type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                message,
+            };
+        }
         try {
             Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
             const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
@@ -1412,33 +1423,29 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 disabledReasons.push(lockedString(UIStringsNotTranslate.enableInSettings));
             }
             if (disabledReasons.length > 0) {
-                throw new Error(disabledReasons.join(' '));
+                return generateErrorResponse(disabledReasons.join(' '));
             }
             void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, 'external');
             switch (parameters.conversationType) {
                 case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
-                    return await this.handleExternalStylingRequest(parameters.prompt, parameters.selector);
+                    return this.handleExternalStylingRequest(parameters.prompt, parameters.selector);
                 case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
                     if (!parameters.insightTitle) {
-                        throw new Error('The insightTitle parameter is required for debugging a Performance Insight.');
+                        return generateErrorResponse('The insightTitle parameter is required for debugging a Performance Insight.');
                     }
-                    return await this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
+                    return this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
                 case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
                     if (!parameters.requestUrl) {
-                        throw new Error('The url is required for debugging a network request.');
+                        return generateErrorResponse('The url is required for debugging a network request.');
                     }
-                    return await this.handleExternalNetworkRequest(parameters.prompt, parameters.requestUrl);
+                    return this.handleExternalNetworkRequest(parameters.prompt, parameters.requestUrl);
             }
         }
         catch (error) {
-            // Puppeteer would append the stack trace to the error message. Callers of
-            // `handleExternalRequest` have no use for the stack trace.
-            console.error(error);
-            error.stack = '';
-            throw error;
+            return generateErrorResponse(error.message);
         }
     }
-    async handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
+    async *handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
         const insightsAgent = this.#createAgent("performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(insightsAgent), [], insightsAgent.id, 
         /* isReadOnly */ true, 
@@ -1448,8 +1455,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const focusOrError = await TimelinePanel.ExternalRequests.getInsightAgentFocusToDebug(timelinePanel.model, insightTitle);
         if ('error' in focusOrError) {
             return {
-                response: focusOrError.error,
-                devToolsLogs: [],
+                type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                message: focusOrError.error,
             };
         }
         const selectedContext = createPerformanceTraceContext(focusOrError.focus);
@@ -1462,12 +1469,25 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 devToolsLogs.push(data);
             }
             if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return { response: data.text, devToolsLogs };
+                return {
+                    type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
+                    message: data.text,
+                    devToolsLogs,
+                };
+            }
+            if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ || data.type === "title" /* AiAssistanceModel.ResponseType.TITLE */) {
+                yield {
+                    type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
+                    message: data.title,
+                };
             }
         }
-        throw new Error('Something went wrong. No answer was generated.');
+        return {
+            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+            message: 'Something went wrong. No answer was generated.',
+        };
     }
-    async handleExternalStylingRequest(prompt, selector = 'body') {
+    async *handleExternalStylingRequest(prompt, selector = 'body') {
         const stylingAgent = this.#createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(stylingAgent), [], stylingAgent.id, 
         /* isReadOnly */ true, 
@@ -1487,16 +1507,29 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 void externalConversation.addHistoryItem(data);
                 devToolsLogs.push(data);
             }
+            if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ || data.type === "title" /* AiAssistanceModel.ResponseType.TITLE */) {
+                yield {
+                    type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
+                    message: data.title,
+                };
+            }
             if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
                 data.confirm(true);
             }
             if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return { response: data.text, devToolsLogs };
+                return {
+                    type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
+                    message: data.text,
+                    devToolsLogs,
+                };
             }
         }
-        throw new Error('Something went wrong. No answer was generated.');
+        return {
+            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+            message: 'Something went wrong. No answer was generated.',
+        };
     }
-    async handleExternalNetworkRequest(prompt, requestUrl) {
+    async *handleExternalNetworkRequest(prompt, requestUrl) {
         const networkAgent = this.#createAgent("drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(networkAgent), [], networkAgent.id, 
         /* isReadOnly */ true, 
@@ -1504,7 +1537,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#historicalConversations.push(externalConversation);
         const request = await inspectNetworkRequestByUrl(requestUrl);
         if (!request) {
-            throw new Error(`Can't find request with the given selector ${requestUrl}`);
+            return {
+                type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                message: `Can't find request with the given selector ${requestUrl}`,
+            };
         }
         const runner = networkAgent.run(prompt, {
             selected: createRequestContext(request),
@@ -1516,18 +1552,31 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 void externalConversation.addHistoryItem(data);
                 devToolsLogs.push(data);
             }
+            if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ || data.type === "title" /* AiAssistanceModel.ResponseType.TITLE */) {
+                yield {
+                    type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
+                    message: data.title,
+                };
+            }
             if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
                 data.confirm(true);
             }
             if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return { response: data.text, devToolsLogs };
+                return {
+                    type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
+                    message: data.text,
+                    devToolsLogs,
+                };
             }
         }
-        throw new Error('Something went wrong. No answer was generated.');
+        return {
+            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+            message: 'Something went wrong. No answer was generated.',
+        };
     }
 }
 export class ActionDelegate {
-    handleAction(_context, actionId) {
+    handleAction(_context, actionId, opts) {
         switch (actionId) {
             case 'freestyler.elements-floating-button':
             case 'freestyler.element-panel-context':
@@ -1550,7 +1599,7 @@ export class ActionDelegate {
                         UI.InspectorView.InspectorView.instance().setDrawerSize(minDrawerSize);
                     }
                     const widget = (await view.widget());
-                    widget.handleAction(actionId);
+                    widget.handleAction(actionId, opts);
                 })();
                 return true;
             }

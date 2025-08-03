@@ -215,13 +215,23 @@ export class Widget {
     #updateComplete = UPDATE_COMPLETE;
     #updateCompleteResolve = UPDATE_COMPLETE_RESOLVE;
     #updateRequestID = 0;
-    constructor(useShadowDom, delegatesFocus, element) {
-        this.element = element || document.createElement('div');
+    constructor(elementOrOptions, options) {
+        if (elementOrOptions instanceof HTMLElement) {
+            this.element = elementOrOptions;
+        }
+        else {
+            this.element = document.createElement('div');
+            if (elementOrOptions !== undefined) {
+                options = elementOrOptions;
+            }
+        }
         this.#shadowRoot = this.element.shadowRoot;
-        if (useShadowDom && !this.#shadowRoot) {
+        if (options?.useShadowDom && !this.#shadowRoot) {
             this.element.classList.add('vbox');
             this.element.classList.add('flex-auto');
-            this.#shadowRoot = createShadowRootWithCoreStyles(this.element, { delegatesFocus });
+            this.#shadowRoot = createShadowRootWithCoreStyles(this.element, {
+                delegatesFocus: options?.delegatesFocus,
+            });
             this.contentElement = document.createElement('div');
             this.#shadowRoot.appendChild(this.contentElement);
         }
@@ -249,7 +259,7 @@ export class Widget {
         if (element instanceof WidgetElement) {
             return element.createWidget();
         }
-        return new Widget(undefined, undefined, element);
+        return new Widget(element);
     }
     markAsRoot() {
         assert(!this.element.parentElement, 'Attempt to mark as root attached node');
@@ -323,6 +333,7 @@ export class Widget {
     }
     processWasHidden() {
         this.callOnVisibleChildren(this.processWasHidden);
+        this.notify(this.wasHidden);
     }
     processOnResize() {
         if (this.inNotification()) {
@@ -346,6 +357,8 @@ export class Widget {
     wasShown() {
     }
     willHide() {
+    }
+    wasHidden() {
     }
     onResize() {
     }
@@ -750,12 +763,8 @@ export class Widget {
 }
 const storedScrollPositions = new WeakMap();
 export class VBox extends Widget {
-    constructor(useShadowDom, delegatesFocus, element) {
-        if (useShadowDom instanceof HTMLElement) {
-            element = useShadowDom;
-            useShadowDom = false;
-        }
-        super(useShadowDom, delegatesFocus, element);
+    constructor() {
+        super(...arguments);
         this.contentElement.classList.add('vbox');
     }
     calculateConstraints() {
@@ -770,8 +779,8 @@ export class VBox extends Widget {
     }
 }
 export class HBox extends Widget {
-    constructor(useShadowDom) {
-        super(useShadowDom);
+    constructor() {
+        super(...arguments);
         this.contentElement.classList.add('hbox');
     }
     calculateConstraints() {

@@ -16,6 +16,7 @@ export declare class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKMo
         forceNew: boolean | null;
         resourceMapping: ResourceMapping | null;
         targetManager: SDK.TargetManager.TargetManager | null;
+        ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager | null;
     }): DebuggerWorkspaceBinding;
     static removeInstance(): void;
     private computeAutoStepRanges;
@@ -89,14 +90,12 @@ export declare class Location extends LiveLocationWithPool {
     constructor(scriptId: string, rawLocation: SDK.DebuggerModel.Location, binding: DebuggerWorkspaceBinding, updateDelegate: (arg0: LiveLocation) => Promise<void>, locationPool: LiveLocationPool);
     uiLocation(): Promise<Workspace.UISourceCode.UILocation | null>;
     dispose(): void;
-    isIgnoreListed(): Promise<boolean>;
 }
 declare class StackTraceTopFrameLocation extends LiveLocationWithPool {
     #private;
     constructor(updateDelegate: (arg0: LiveLocation) => Promise<void>, locationPool: LiveLocationPool);
     static createStackTraceTopFrameLocation(rawLocations: SDK.DebuggerModel.Location[], binding: DebuggerWorkspaceBinding, updateDelegate: (arg0: LiveLocation) => Promise<void>, locationPool: LiveLocationPool): Promise<StackTraceTopFrameLocation>;
     uiLocation(): Promise<Workspace.UISourceCode.UILocation | null>;
-    isIgnoreListed(): Promise<boolean>;
     dispose(): void;
     private scheduleUpdate;
     private updateLocation;

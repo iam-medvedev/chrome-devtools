@@ -96,13 +96,15 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
     #view;
     #aidaAvailability = "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */;
     #boundOnAidaAvailabilityChange;
+    #onDetach;
     // Whether the user completed first run experience dialog or not.
     #aiCodeCompletionFreCompletedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-fre-completed', false);
     // Whether the user dismissed the teaser or not.
     #aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-teaser-dismissed', false);
     #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
-    constructor(view) {
+    constructor(config, view) {
         super();
+        this.#onDetach = config.onDetach;
         this.#view = view ?? DEFAULT_VIEW;
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
@@ -178,8 +180,11 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
         });
         if (result) {
             this.#aiCodeCompletionFreCompletedSetting.set(true);
+            this.detach();
         }
-        this.requestUpdate();
+        else {
+            this.requestUpdate();
+        }
     };
     onDismiss = (event) => {
         event.preventDefault();
@@ -188,10 +193,6 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
         this.detach();
     };
     performUpdate() {
-        if (this.#aiCodeCompletionFreCompletedSetting.get() || this.#aiCodeCompletionTeaserDismissedSetting.get()) {
-            this.detach();
-            return;
-        }
         const output = {};
         this.#view({
             aidaAvailability: this.#aidaAvailability,
@@ -208,6 +209,9 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
     willHide() {
         document.body.removeEventListener('keydown', this.#onKeyDown);
         Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+    }
+    onDetach() {
+        this.#onDetach();
     }
 }
 //# sourceMappingURL=AiCodeCompletionTeaser.js.map

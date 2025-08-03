@@ -63,7 +63,7 @@ export class IsolateSelector extends UI.Widget.VBox {
     totalValueDiv;
     totalTrendDiv;
     constructor() {
-        super(false);
+        super();
         this.items = new UI.ListModel.ListModel();
         this.list = new UI.ListControl.ListControl(this.items, this, UI.ListControl.ListMode.NonViewport);
         this.list.element.classList.add('javascript-vm-instances-list');

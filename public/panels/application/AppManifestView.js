@@ -440,7 +440,7 @@ export class AppManifestView extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     overlayModel;
     protocolHandlersView;
     constructor(emptyView, reportView, throttler) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(appManifestViewStyles);
         this.contentElement.classList.add('manifest-container');
         this.contentElement.setAttribute('jslog', `${VisualLogging.pane('manifest')}`);

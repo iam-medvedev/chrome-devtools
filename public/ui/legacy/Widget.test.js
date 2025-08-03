@@ -117,9 +117,6 @@ describe('Widget', () => {
         it('renders WidgetElement into DOM without a root element', async () => {
             const widget = new UI.Widget.WidgetElement();
             class WidgetInstance extends UI.Widget.Widget {
-                constructor(element) {
-                    super(false, false, element);
-                }
                 performUpdate() {
                     // no-op
                 }

@@ -2740,6 +2740,10 @@ export declare namespace CSS {
          * true if the query contains scroll-state() queries.
          */
         queriesScrollState?: boolean;
+        /**
+         * true if the query contains anchored() queries.
+         */
+        queriesAnchored?: boolean;
     }
     /**
      * CSS Supports at-rule descriptor.
@@ -4820,6 +4824,7 @@ export declare namespace DOM {
         physicalAxes?: PhysicalAxes;
         logicalAxes?: LogicalAxes;
         queriesScrollState?: boolean;
+        queriesAnchored?: boolean;
     }
     interface GetContainerForNodeResponse extends ProtocolResponseWithError {
         /**
@@ -17023,7 +17028,8 @@ export declare namespace Preload {
         OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated",
         V8OptimizerDisabled = "V8OptimizerDisabled",
         PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch",
-        BrowsingDataRemoved = "BrowsingDataRemoved"
+        BrowsingDataRemoved = "BrowsingDataRemoved",
+        PrerenderHostReused = "PrerenderHostReused"
     }
     /**
      * Preloading status values, see also PreloadingTriggeringOutcome. This

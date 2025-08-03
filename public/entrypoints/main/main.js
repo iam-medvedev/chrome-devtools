@@ -182,6 +182,7 @@ __export(MainImpl_exports, {
   SettingsButtonProvider: () => SettingsButtonProvider,
   ZoomActionDelegate: () => ZoomActionDelegate,
   handleExternalRequest: () => handleExternalRequest,
+  handleExternalRequestGenerator: () => handleExternalRequestGenerator,
   sendOverProtocol: () => sendOverProtocol
 });
 import * as Common from "./../../core/common/common.js";
@@ -418,6 +419,7 @@ var MainImpl = class _MainImpl {
     Root.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", void 0, "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
     Root.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
     Root.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
+    Root.Runtime.experiments.register("timeline-save-as-gz", "Performance panel: enable saving traces as .gz");
     Root.Runtime.experiments.enableExperimentsByDefault([
       "full-accessibility-tree",
       "highlight-errors-elements-panel",
@@ -485,10 +487,14 @@ var MainImpl = class _MainImpl {
       resourceMapping,
       targetManager
     });
+    Workspace.IgnoreListManager.IgnoreListManager.instance({
+      forceNew: true
+    });
     Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
       forceNew: true,
       resourceMapping,
-      targetManager
+      targetManager,
+      ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager.instance()
     });
     targetManager.setScopeTarget(targetManager.primaryPageTarget());
     UI.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, ({ data }) => {
@@ -511,10 +517,6 @@ var MainImpl = class _MainImpl {
     });
     Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
     new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
-    Bindings.IgnoreListManager.IgnoreListManager.instance({
-      forceNew: true,
-      debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance()
-    });
     const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
       forceNew: true,
       hostConfig: Root.Runtime.hostConfig,
@@ -879,6 +881,20 @@ var MainMenuItem = class _MainMenuItem {
       dockController.setDockSide(side);
       contextMenu.discard();
     }
+    const aiPreregisteredView = UI.ViewManager.getRegisteredViewExtensionForID("freestyler");
+    if (aiPreregisteredView) {
+      let additionalElement = void 0;
+      const promotionId = aiPreregisteredView.featurePromotionId();
+      if (promotionId) {
+        additionalElement = UI.UIUtils.maybeCreateNewBadge(promotionId);
+      }
+      contextMenu.defaultSection().appendItem(aiPreregisteredView.title(), () => {
+        void UI.ViewManager.ViewManager.instance().showView("freestyler", true, false);
+        if (promotionId) {
+          UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(promotionId);
+        }
+      }, { additionalElement, jslogContext: "freestyler" });
+    }
     if (dockController.dockSide() === "undocked") {
       const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
       if (mainTarget && mainTarget.type() === SDK2.Target.Type.FRAME) {
@@ -917,6 +933,9 @@ var MainMenuItem = class _MainMenuItem {
         continue;
       }
       if (location !== "drawer-view" && location !== "panel") {
+        continue;
+      }
+      if (id === "freestyler") {
         continue;
       }
       if (viewExtension.isPreviewFeature()) {
@@ -988,16 +1007,35 @@ var ReloadActionDelegate = class {
   }
 };
 async function handleExternalRequest(input) {
+  const generator = await handleExternalRequestGenerator(input);
+  let result;
+  do {
+    result = await generator.next();
+  } while (!result.done);
+  const response = result.value;
+  if (response.type === "error") {
+    throw new Error(response.message);
+  }
+  if (response.type === "answer") {
+    return {
+      response: response.message,
+      devToolsLogs: response.devToolsLogs
+    };
+  }
+  throw new Error("Received no response of type answer or type error");
+}
+globalThis.handleExternalRequest = handleExternalRequest;
+async function handleExternalRequestGenerator(input) {
   switch (input.kind) {
     case "PERFORMANCE_RELOAD_GATHER_INSIGHTS": {
       const TimelinePanel = await import("./../../panels/timeline/timeline.js");
-      return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
+      return TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
     }
     case "PERFORMANCE_ANALYZE_INSIGHT": {
       const AiAssistance = await import("./../../panels/ai_assistance/ai_assistance.js");
       const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
       const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-      return await panelInstance.handleExternalRequest({
+      return panelInstance.handleExternalRequest({
         conversationType: "performance-insight",
         prompt: input.args.prompt,
         insightTitle: input.args.insightTitle
@@ -1007,7 +1045,7 @@ async function handleExternalRequest(input) {
       const AiAssistance = await import("./../../panels/ai_assistance/ai_assistance.js");
       const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
       const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-      return await panelInstance.handleExternalRequest({
+      return panelInstance.handleExternalRequest({
         conversationType: "drjones-network-request",
         prompt: input.args.prompt,
         requestUrl: input.args.requestUrl
@@ -1017,16 +1055,22 @@ async function handleExternalRequest(input) {
       const AiAssistance = await import("./../../panels/ai_assistance/ai_assistance.js");
       const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
       const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-      return await panelInstance.handleExternalRequest({
+      return panelInstance.handleExternalRequest({
         conversationType: "freestyler",
         prompt: input.args.prompt,
         selector: input.args.selector
       });
     }
   }
-  throw new Error(`Debugging with an agent of type '${input.kind}' is not implemented yet.`);
+  return async function* () {
+    return {
+      type: "error",
+      // @ts-expect-error
+      message: `Debugging with an agent of type '${input.kind}' is not implemented yet.`
+    };
+  }();
 }
-globalThis.handleExternalRequest = handleExternalRequest;
+globalThis.handleExternalRequestGenerator = handleExternalRequestGenerator;
 
 // gen/front_end/entrypoints/main/SimpleApp.js
 var SimpleApp_exports = {};

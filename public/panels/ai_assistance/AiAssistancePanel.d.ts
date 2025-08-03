@@ -47,7 +47,7 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     wasShown(): void;
     willHide(): void;
     performUpdate(): Promise<void>;
-    handleAction(actionId: string): void;
+    handleAction(actionId: string, opts?: Record<string, unknown>): void;
     /**
      * Handles an external request using the given prompt and uses the
      * conversation type to use the correct agent. Note that the `selector` param
@@ -55,24 +55,12 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
      * Performance Insights it is the name of the Insight that forms the
      * context of the conversation.
      */
-    handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceInsightsRequestParameters): Promise<{
-        response: string;
-        devToolsLogs: object[];
-    }>;
-    handleExternalPerformanceInsightsRequest(prompt: string, insightTitle: string): Promise<{
-        response: string;
-        devToolsLogs: object[];
-    }>;
-    handleExternalStylingRequest(prompt: string, selector?: string): Promise<{
-        response: string;
-        devToolsLogs: object[];
-    }>;
-    handleExternalNetworkRequest(prompt: string, requestUrl: string): Promise<{
-        response: string;
-        devToolsLogs: object[];
-    }>;
+    handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceInsightsRequestParameters): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
+    handleExternalPerformanceInsightsRequest(prompt: string, insightTitle: string): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
+    handleExternalStylingRequest(prompt: string, selector?: string): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
+    handleExternalNetworkRequest(prompt: string, requestUrl: string): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
-    handleAction(_context: UI.Context.Context, actionId: string): boolean;
+    handleAction(_context: UI.Context.Context, actionId: string, opts?: Record<string, unknown>): boolean;
 }
 export {};

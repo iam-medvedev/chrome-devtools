@@ -1610,7 +1610,7 @@ var AICallTree = class _AICallTree {
     });
     let output = "";
     if (allUrls.length) {
-      output += "\n# All URL #s:\n\n" + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
+      output += "\n# All URLs:\n\n" + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
     }
     output += "\n\n# Call tree:\n" + nodesStr;
     return output;
@@ -1943,6 +1943,86 @@ async function domNodesForBackendIds(frameId, nodeIds) {
   return await domModel.pushNodesByBackendIdsToFrontend(nodeIds) || /* @__PURE__ */ new Map();
 }
 
+// gen/front_end/panels/timeline/utils/EventsSerializer.js
+var EventsSerializer_exports = {};
+__export(EventsSerializer_exports, {
+  EventsSerializer: () => EventsSerializer
+});
+import * as Trace7 from "./../../../models/trace/trace.js";
+var EventsSerializer = class _EventsSerializer {
+  #modifiedProfileCallByKey = /* @__PURE__ */ new Map();
+  keyForEvent(event) {
+    if (Trace7.Types.Events.isProfileCall(event)) {
+      return `${"p"}-${event.pid}-${event.tid}-${Trace7.Types.Events.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
+    }
+    if (Trace7.Types.Events.isLegacyTimelineFrame(event)) {
+      return `${"l"}-${event.index}`;
+    }
+    const rawEvents = Trace7.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
+    const key = Trace7.Types.Events.isSyntheticBased(event) ? `${"s"}-${rawEvents.indexOf(event.rawSourceEvent)}` : `${"r"}-${rawEvents.indexOf(event)}`;
+    if (key.length < 3) {
+      return null;
+    }
+    return key;
+  }
+  eventForKey(key, parsedTrace) {
+    const eventValues = Trace7.Types.File.traceEventKeyToValues(key);
+    if (_EventsSerializer.isProfileCallKey(eventValues)) {
+      return this.#getModifiedProfileCallByKeyValues(eventValues, parsedTrace);
+    }
+    if (_EventsSerializer.isLegacyTimelineFrameKey(eventValues)) {
+      const event = parsedTrace.Frames.frames.at(eventValues.rawIndex);
+      if (!event) {
+        throw new Error(`Could not find frame with index ${eventValues.rawIndex}`);
+      }
+      return event;
+    }
+    if (_EventsSerializer.isSyntheticEventKey(eventValues)) {
+      const syntheticEvents = Trace7.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraces();
+      const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
+      if (!syntheticEvent) {
+        throw new Error(`Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
+      }
+      return syntheticEvent;
+    }
+    if (_EventsSerializer.isRawEventKey(eventValues)) {
+      const rawEvents = Trace7.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
+      return rawEvents[eventValues.rawIndex];
+    }
+    throw new Error(`Unknown trace event serializable key values: ${eventValues.join("-")}`);
+  }
+  static isProfileCallKey(key) {
+    return key.type === "p";
+  }
+  static isLegacyTimelineFrameKey(key) {
+    return key.type === "l";
+  }
+  static isRawEventKey(key) {
+    return key.type === "r";
+  }
+  static isSyntheticEventKey(key) {
+    return key.type === "s";
+  }
+  #getModifiedProfileCallByKeyValues(key, parsedTrace) {
+    const cacheResult = this.#modifiedProfileCallByKey.get(key);
+    if (cacheResult) {
+      return cacheResult;
+    }
+    const profileCallsInThread = parsedTrace.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
+    if (!profileCallsInThread) {
+      throw new Error(`Unknown profile call serializable key: ${key}`);
+    }
+    const match = profileCallsInThread?.find((e) => {
+      return e.sampleIndex === key.sampleIndex && e.nodeId === key.protocol;
+    });
+    if (!match) {
+      throw new Error(`Unknown profile call serializable key: ${JSON.stringify(key)}`);
+    }
+    this.#modifiedProfileCallByKey.set(key, match);
+    return match;
+  }
+};
+
 // gen/front_end/panels/timeline/utils/Helpers.js
 var Helpers_exports = {};
 __export(Helpers_exports, {
@@ -2066,8 +2146,8 @@ __export(IgnoreList_exports, {
   isIgnoreListedEntry: () => isIgnoreListedEntry
 });
 import * as i18n5 from "./../../../core/i18n/i18n.js";
-import * as Bindings2 from "./../../../models/bindings/bindings.js";
-import * as Trace7 from "./../../../models/trace/trace.js";
+import * as Trace8 from "./../../../models/trace/trace.js";
+import * as Workspace3 from "./../../../models/workspace/workspace.js";
 var UIStrings3 = {
   /**
    * @description Refers to when skipping content scripts is enabled and the current script is ignored because it's a content script.
@@ -2101,22 +2181,22 @@ function getUrlAndIgnoreListOptions(entry) {
   return { url, ignoreListOptions };
 }
 function isIgnoreListedEntry(entry) {
-  if (!Trace7.Types.Events.isProfileCall(entry)) {
+  if (!Trace8.Types.Events.isProfileCall(entry)) {
     return false;
   }
   const { url, ignoreListOptions } = getUrlAndIgnoreListOptions(entry);
   return isIgnoreListedURL(url, ignoreListOptions);
 }
 function isIgnoreListedURL(url, options) {
-  return Bindings2.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
+  return Workspace3.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
 }
 function getIgnoredReasonString(entry) {
-  if (!Trace7.Types.Events.isProfileCall(entry)) {
+  if (!Trace8.Types.Events.isProfileCall(entry)) {
     console.warn("Ignore list feature should only support ProfileCall.");
     return "";
   }
   const { url, ignoreListOptions } = getUrlAndIgnoreListOptions(entry);
-  const ignoreListMgr = Bindings2.IgnoreListManager.IgnoreListManager.instance();
+  const ignoreListMgr = Workspace3.IgnoreListManager.IgnoreListManager.instance();
   if (ignoreListOptions.isContentScript && ignoreListMgr.skipContentScripts) {
     return i18nString3(UIStrings3.skipContentScripts);
   }
@@ -2142,14 +2222,14 @@ __export(ImageCache_exports, {
   loadImageForTesting: () => loadImageForTesting,
   preload: () => preload
 });
-import * as Trace8 from "./../../../models/trace/trace.js";
+import * as Trace9 from "./../../../models/trace/trace.js";
 var imageCache = /* @__PURE__ */ new WeakMap();
 var emitter = new EventTarget();
 function getOrQueue(screenshot) {
   if (imageCache.has(screenshot)) {
     return imageCache.get(screenshot) ?? null;
   }
-  const uri = Trace8.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+  const uri = Trace9.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
   loadImage(uri).then((imageOrNull) => {
     imageCache.set(screenshot, imageOrNull);
     emitter.dispatchEvent(new CustomEvent("screenshot-loaded", { detail: { screenshot, image: imageOrNull } }));
@@ -2170,7 +2250,7 @@ function preload(screenshots) {
     if (imageCache.has(screenshot)) {
       return;
     }
-    const uri = Trace8.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+    const uri = Trace9.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
     return loadImage(uri).then((image) => {
       imageCache.set(screenshot, image);
       return;
@@ -2186,7 +2266,7 @@ var InsightAIContext_exports = {};
 __export(InsightAIContext_exports, {
   AIQueries: () => AIQueries
 });
-import * as Trace9 from "./../../../models/trace/trace.js";
+import * as Trace10 from "./../../../models/trace/trace.js";
 var AIQueries = class {
   /**
    * Returns the set of network requests that occurred within the timeframe of this Insight.
@@ -2231,7 +2311,7 @@ var AIQueries = class {
         mainThreadTID = navigation.tid;
       }
     }
-    const threads = Trace9.Handlers.Threads.threadsInTrace(parsedTrace);
+    const threads = Trace10.Handlers.Threads.threadsInTrace(parsedTrace);
     const thread = threads.find((thread2) => {
       if (mainThreadPID && mainThreadTID) {
         return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
@@ -2254,8 +2334,8 @@ var AIQueries = class {
 };
 function insightBounds(insight, insightSetBounds) {
   const overlays = insight.createOverlays?.() ?? [];
-  const windows = overlays.map(Trace9.Helpers.Timing.traceWindowFromOverlay).filter((bounds) => !!bounds);
-  const overlaysBounds = Trace9.Helpers.Timing.combineTraceWindowsMicro(windows);
+  const windows = overlays.map(Trace10.Helpers.Timing.traceWindowFromOverlay).filter((bounds) => !!bounds);
+  const overlaysBounds = Trace10.Helpers.Timing.combineTraceWindowsMicro(windows);
   if (overlaysBounds) {
     return overlaysBounds;
   }
@@ -2271,7 +2351,7 @@ __export(Treemap_exports, {
 });
 import * as Common2 from "./../../../core/common/common.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
-import * as Trace10 from "./../../../models/trace/trace.js";
+import * as Trace11 from "./../../../models/trace/trace.js";
 async function toCompressedBase64(string) {
   const compAb = await Common2.Gzip.compress(string);
   const strb64 = await Common2.Base64.encode(compAb);
@@ -2381,7 +2461,7 @@ function createTreemapData(scripts, duplication) {
       continue;
     }
     const name = script.url;
-    const sizes = Trace10.Handlers.ModelHandlers.Scripts.getScriptGeneratedSizes(script);
+    const sizes = Trace11.Handlers.ModelHandlers.Scripts.getScriptGeneratedSizes(script);
     let node;
     if (script.sourceMap && sizes && !("errorMessage" in sizes)) {
       const sourcesData = {};
@@ -2390,7 +2470,7 @@ function createTreemapData(scripts, duplication) {
           resourceBytes,
           encodedBytes: void 0
         };
-        const key = Trace10.Extras.ScriptDuplication.normalizeSource(source);
+        const key = Trace11.Extras.ScriptDuplication.normalizeSource(source);
         if (duplication.has(key)) {
           sourceData.duplicatedNormalizedModuleName = key;
         }
@@ -2456,6 +2536,7 @@ export {
   EntryName_exports as EntryName,
   EntryNodes_exports as EntryNodes,
   EntryStyles_exports as EntryStyles,
+  EventsSerializer_exports as EventsSerializer,
   Helpers_exports as Helpers,
   IgnoreList_exports as IgnoreList,
   ImageCache_exports as ImageCache,

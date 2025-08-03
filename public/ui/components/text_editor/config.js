@@ -426,7 +426,7 @@ export const aiAutoCompleteSuggestionState = CM.StateField.define({
         for (const effect of tr.effects) {
             if (effect.is(setAiAutoCompleteSuggestion)) {
                 if (effect.value) {
-                    return { text: effect.value, from: tr.state.selection.main.head };
+                    return effect.value;
                 }
                 return null;
             }
@@ -449,6 +449,9 @@ export const aiAutoCompleteSuggestionState = CM.StateField.define({
         return value.text.startsWith(typedText) ? value : null;
     },
 });
+export function hasActiveAiSuggestion(state) {
+    return state.field(aiAutoCompleteSuggestionState) !== null;
+}
 export function acceptAiAutoCompleteSuggestion(view) {
     const suggestion = view.state.field(aiAutoCompleteSuggestionState);
     if (!suggestion) {

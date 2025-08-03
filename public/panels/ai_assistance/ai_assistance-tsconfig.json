@@ -76,13 +76,7 @@
       "path": "../common/bundle-tsconfig.json"
     },
     {
-      "path": "../elements/bundle-tsconfig.json"
-    },
-    {
-      "path": "../network/bundle-tsconfig.json"
-    },
-    {
-      "path": "../sources/bundle-tsconfig.json"
+      "path": "../network/forward/bundle-tsconfig.json"
     },
     {
       "path": "../timeline/bundle-tsconfig.json"

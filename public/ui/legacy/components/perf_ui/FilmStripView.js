@@ -39,7 +39,7 @@ export class FilmStripView extends Common.ObjectWrapper.eventMixin(UI.Widget.HBo
     zeroTime = Trace.Types.Timing.Milli(0);
     #filmStrip = null;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(filmStripViewStyles);
         this.contentElement.classList.add('film-strip-view');
         this.statusLabel = this.contentElement.createChild('div', 'gray-info-message');

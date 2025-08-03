@@ -1642,7 +1642,7 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
    */
   #customUserConditionsCount;
   constructor() {
-    super(true);
+    super({ useShadowDom: true });
     this.registerRequiredCSS(throttlingSettingsTab_css_default);
     this.element.setAttribute("jslog", `${VisualLogging2.pane("throttling-conditions")}`);
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");

@@ -34,6 +34,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as SourceMapScopes from '../../models/source_map_scopes/source_map_scopes.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -420,7 +421,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
             // Already added menu items.
             return;
         }
-        for (const { text, callback, jslogContext } of Bindings.IgnoreListManager.IgnoreListManager.instance()
+        for (const { text, callback, jslogContext } of Workspace.IgnoreListManager.IgnoreListManager.instance()
             .getIgnoreListURLContextMenuItems(uiSourceCode)) {
             menuSection.appendItem(text, callback, { jslogContext });
         }
@@ -552,7 +553,7 @@ export class Item {
     }
     async update(liveLocation) {
         const uiLocation = await liveLocation.uiLocation();
-        this.isIgnoreListed = await liveLocation.isIgnoreListed();
+        this.isIgnoreListed = Boolean(uiLocation?.isIgnoreListed());
         this.linkText = uiLocation ? uiLocation.linkText() : '';
         this.uiLocation = uiLocation;
         this.updateDelegate(this);

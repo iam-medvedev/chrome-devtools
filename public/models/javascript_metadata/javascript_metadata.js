@@ -704,6 +704,11 @@ var NativeFunctions = [
   },
   {
     name: "parse",
+    signatures: [["serializedOrigin"]],
+    receivers: ["Origin"]
+  },
+  {
+    name: "parse",
     signatures: [["url", "?base"]],
     receivers: ["URL"]
   },
@@ -6593,6 +6598,18 @@ var NativeFunctions = [
     signatures: [["node", "child"]]
   },
   {
+    name: "patchBetween",
+    signatures: [["prev_child", "next_child"]]
+  },
+  {
+    name: "patchAfter",
+    signatures: [["ref"]]
+  },
+  {
+    name: "patchBefore",
+    signatures: [["ref"]]
+  },
+  {
     name: "QuotaExceededError",
     signatures: [["?message", "?options"]]
   },
@@ -7294,6 +7311,18 @@ var NativeFunctions = [
   {
     name: "compareComponent",
     signatures: [["component", "left", "right"]]
+  },
+  {
+    name: "Origin",
+    signatures: [["?serializedOrigin"]]
+  },
+  {
+    name: "isSameOrigin",
+    signatures: [["other"]]
+  },
+  {
+    name: "isSameSite",
+    signatures: [["other"]]
   },
   {
     name: "URLSearchParams",

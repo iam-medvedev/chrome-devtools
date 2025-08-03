@@ -1439,24 +1439,6 @@
   "models/bindings/DebuggerLanguagePlugins.ts | loadingDebugSymbolsForVia": {
     "message": "[{PH1}] Loading debug symbols for {PH2} (via {PH3})…"
   },
-  "models/bindings/IgnoreListManager.ts | addAllAnonymousScriptsToIgnoreList": {
-    "message": "Add all anonymous scripts to ignore list"
-  },
-  "models/bindings/IgnoreListManager.ts | addAllContentScriptsToIgnoreList": {
-    "message": "Add all extension scripts to ignore list"
-  },
-  "models/bindings/IgnoreListManager.ts | addAllThirdPartyScriptsToIgnoreList": {
-    "message": "Add all third-party scripts to ignore list"
-  },
-  "models/bindings/IgnoreListManager.ts | addDirectoryToIgnoreList": {
-    "message": "Add directory to ignore list"
-  },
-  "models/bindings/IgnoreListManager.ts | addScriptToIgnoreList": {
-    "message": "Add script to ignore list"
-  },
-  "models/bindings/IgnoreListManager.ts | removeFromIgnoreList": {
-    "message": "Remove from ignore list"
-  },
   "models/bindings/ResourceScriptMapping.ts | liveEditCompileFailed": {
     "message": "LiveEdit compile failed: {PH1}"
   },
@@ -2225,6 +2207,24 @@
   "models/trace/insights/Viewport.ts | title": {
     "message": "Optimize viewport for mobile"
   },
+  "models/workspace/IgnoreListManager.ts | addAllAnonymousScriptsToIgnoreList": {
+    "message": "Add all anonymous scripts to ignore list"
+  },
+  "models/workspace/IgnoreListManager.ts | addAllContentScriptsToIgnoreList": {
+    "message": "Add all extension scripts to ignore list"
+  },
+  "models/workspace/IgnoreListManager.ts | addAllThirdPartyScriptsToIgnoreList": {
+    "message": "Add all third-party scripts to ignore list"
+  },
+  "models/workspace/IgnoreListManager.ts | addDirectoryToIgnoreList": {
+    "message": "Add directory to ignore list"
+  },
+  "models/workspace/IgnoreListManager.ts | addScriptToIgnoreList": {
+    "message": "Add script to ignore list"
+  },
+  "models/workspace/IgnoreListManager.ts | removeFromIgnoreList": {
+    "message": "Remove from ignore list"
+  },
   "models/workspace/UISourceCode.ts | index": {
     "message": "(index)"
   },
@@ -2653,6 +2653,9 @@
   },
   "panels/ai_assistance/ai_assistance-meta.ts | askAi": {
     "message": "Ask AI"
+  },
+  "panels/ai_assistance/ai_assistance-meta.ts | debugWithAi": {
+    "message": "Debug with AI"
   },
   "panels/ai_assistance/ai_assistance-meta.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
@@ -5594,6 +5597,27 @@
   "panels/changes/CombinedDiffView.ts | copyFile": {
     "message": "Copy file {PH1} to clipboard"
   },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | generatedCodeMayBeSubjectToALicense": {
+    "message": "Generated code may be subject to a license."
+  },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | isSentToGoogle": {
+    "message": "is sent to Google"
+  },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | manageInSettings": {
+    "message": "Manage in settings"
+  },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | relevantData": {
+    "message": "Relevant data"
+  },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | tooltipDisclaimerTextForAiCodeCompletion": {
+    "message": "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data may be seen by human reviewers to improve this feature."
+  },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | tooltipDisclaimerTextForAiCodeCompletionNoLogging": {
+    "message": "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data will not be used to improve Google’s AI models."
+  },
+  "panels/common/AiCodeCompletionSummaryToolbar.ts | viewSources": {
+    "message": "View Sources"
+  },
   "panels/common/common.ts | allow": {
     "message": "Allow"
   },
@@ -7132,12 +7156,6 @@
   },
   "panels/emulation/DeviceModeToolbar.ts | edit": {
     "message": "Edit…"
-  },
-  "panels/emulation/DeviceModeToolbar.ts | experimentalWebPlatformFeature": {
-    "message": "\"Experimental Web Platform Feature\" flag is enabled. Click to disable it."
-  },
-  "panels/emulation/DeviceModeToolbar.ts | experimentalWebPlatformFeatureFlag": {
-    "message": "\"Experimental Web Platform Feature\" flag is disabled. Click to enable it."
   },
   "panels/emulation/DeviceModeToolbar.ts | fitToWindowF": {
     "message": "Fit to window ({PH1}%)"
@@ -9602,6 +9620,9 @@
   "panels/network/NetworkLogView.ts | invertsFilter": {
     "message": "Inverts the search filter"
   },
+  "panels/network/NetworkLogView.ts | ippRequests": {
+    "message": "IP Protected requests"
+  },
   "panels/network/NetworkLogView.ts | loadS": {
     "message": "Load: {PH1}"
   },
@@ -9616,6 +9637,9 @@
   },
   "panels/network/NetworkLogView.ts | onlyShowBlockedRequests": {
     "message": "Show only blocked requests"
+  },
+  "panels/network/NetworkLogView.ts | onlyShowIPProtectedRequests": {
+    "message": "(Incognito Only) Show only requests sent to IP Protection proxies"
   },
   "panels/network/NetworkLogView.ts | onlyShowRequestsWithBlockedCookies": {
     "message": "Show only requests with blocked response cookies"
@@ -12275,8 +12299,17 @@
   "panels/sensors/SensorsView.ts | timezoneId": {
     "message": "Timezone ID"
   },
+  "panels/settings/AISettingsTab.ts | asYouTypeCodeSuggestions": {
+    "message": "As you type in the Console or Sources panel, you’ll get code suggestions. Press Tab to accept one."
+  },
   "panels/settings/AISettingsTab.ts | boostYourProductivity": {
     "message": "Boost your productivity with AI"
+  },
+  "panels/settings/AISettingsTab.ts | codeSuggestionsSendData": {
+    "message": "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature."
+  },
+  "panels/settings/AISettingsTab.ts | codeSuggestionsSendDataNoLogging": {
+    "message": "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data will not be used to improve Google’s AI models."
   },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
@@ -12331,6 +12364,9 @@
   },
   "panels/settings/AISettingsTab.ts | getAIAnnotationsSuggestions": {
     "message": "Get AI suggestions for performance panel annotations"
+  },
+  "panels/settings/AISettingsTab.ts | helpUnderstandCodeSuggestions": {
+    "message": "Get help completing your code"
   },
   "panels/settings/AISettingsTab.ts | helpUnderstandConsole": {
     "message": "Helps you understand and fix console warnings and errors"
@@ -13658,6 +13694,9 @@
   "panels/sources/SourcesNavigator.ts | selectFolderForOverrides": {
     "message": "Select folder for overrides"
   },
+  "panels/sources/SourcesPanel.ts | assessPerformance": {
+    "message": "Assess performance"
+  },
   "panels/sources/SourcesPanel.ts | continueToHere": {
     "message": "Continue to here"
   },
@@ -13679,8 +13718,17 @@
   "panels/sources/SourcesPanel.ts | debuggerShown": {
     "message": "Debugger sidebar shown"
   },
+  "panels/sources/SourcesPanel.ts | debugWithAi": {
+    "message": "Debug with AI"
+  },
   "panels/sources/SourcesPanel.ts | dropWorkspaceFolderHere": {
     "message": "Drop workspace folder here"
+  },
+  "panels/sources/SourcesPanel.ts | explainInputHandling": {
+    "message": "Explain input handling"
+  },
+  "panels/sources/SourcesPanel.ts | explainThisScript": {
+    "message": "Explain this script"
   },
   "panels/sources/SourcesPanel.ts | groupByAuthored": {
     "message": "Group by Authored/Deployed"
@@ -13726,6 +13774,9 @@
   },
   "panels/sources/SourcesPanel.ts | showNavigator": {
     "message": "Show navigator"
+  },
+  "panels/sources/SourcesPanel.ts | startAChat": {
+    "message": "Start a chat"
   },
   "panels/sources/SourcesPanel.ts | storeAsGlobalVariable": {
     "message": "Store as global variable"
@@ -17164,6 +17215,9 @@
   },
   "ui/legacy/UIUtils.ts | copyLinkAddress": {
     "message": "Copy link address"
+  },
+  "ui/legacy/UIUtils.ts | new": {
+    "message": "NEW"
   },
   "ui/legacy/UIUtils.ts | ok": {
     "message": "OK"

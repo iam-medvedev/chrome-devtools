@@ -14,6 +14,11 @@ export default `/*
   border: 1px solid var(--sys-color-divider) !important; /* stylelint-disable-line declaration-no-important */
   /* See: crbug.com/1152736 for color variable migration. */
   line-height: 120%;
+
+  :focus-visible {
+    outline: 2px solid var(--sys-color-state-focus-ring);
+    outline-offset: -2px;
+  }
 }
 
 .data-grid table {
@@ -258,7 +263,8 @@ export default `/*
 }
 
 .data-grid.no-selection:focus-visible {
-  border: 1px solid var(--sys-color-state-focus-ring) !important; /* stylelint-disable-line declaration-no-important */
+  outline: 2px solid var(--sys-color-state-focus-ring);
+  outline-offset: -2px;
 }
 
 .data-grid:focus tbody tr.selected {

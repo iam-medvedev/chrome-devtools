@@ -1383,10 +1383,34 @@ ${this.#description()}
 ${header} Detailed analysis:
 ${this.#details()}
 
+${header} Estimated savings: ${this.#estimatedSavings() || "none"}
+
 ${header} External resources:
 ${this.#links()}`;
   }
   #details() {
+    if (Trace.Insights.Models.ImageDelivery.isImageDelivery(this.#insight)) {
+      const optimizableImages = this.#insight.optimizableImages;
+      if (optimizableImages.length === 0) {
+        return "There are no unoptimized images on this page.";
+      }
+      const imageDetails = optimizableImages.map((image) => {
+        const optimizations = image.optimizations.map((optimization) => {
+          const message = Trace.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
+          const byteSavings = i18n6.ByteUtilities.bytesToString(optimization.byteSavings);
+          return `${message} (Est ${byteSavings})`;
+        }).join("\n");
+        return `### ${image.request.args.data.url}
+- Potential savings: ${i18n6.ByteUtilities.bytesToString(image.byteSavings)}
+- Optimizations:
+${optimizations}`;
+      }).join("\n\n");
+      return `Total potential savings: ${i18n6.ByteUtilities.bytesToString(this.#insight.wastedBytes)}
+
+The following images could be optimized:
+
+${imageDetails}`;
+    }
     if (Trace.Insights.Models.LCPBreakdown.isLCPBreakdown(this.#insight)) {
       const { subparts, lcpMs } = this.#insight;
       if (!lcpMs || !subparts) {
@@ -1517,7 +1541,29 @@ ${requestSummary}`;
 
 Duplication grouped by Node modules: ${filesFormatted}`;
     }
+    if (Trace.Insights.Models.LegacyJavaScript.isLegacyJavaScript(this.#insight)) {
+      const legacyJavaScriptResults = this.#insight.legacyJavaScriptResults;
+      if (legacyJavaScriptResults.size === 0) {
+        return "There is no significant amount of legacy JavaScript on the page.";
+      }
+      const filesFormatted = Array.from(legacyJavaScriptResults).map(([script, result]) => `
+- Script: ${script.url} - Wasted bytes: ${result.estimatedByteSavings} bytes
+Matches:
+${result.matches.map((match) => `Line: ${match.line}, Column: ${match.column}, Name: ${match.name}`).join("\n")}`).join("\n");
+      return `Total legacy JavaScript: ${legacyJavaScriptResults.size} files.
+
+Legacy JavaScript by file:
+${filesFormatted}`;
+    }
     return "";
+  }
+  #estimatedSavings() {
+    return Object.entries(this.#insight.metricSavings ?? {}).map(([k, v]) => {
+      if (k === "CLS") {
+        return `${k} ${v}`;
+      }
+      return `${k} ${v} ms`;
+    }).join(", ");
   }
   #links() {
     switch (this.#insight.insightKey) {
@@ -1535,7 +1581,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
       case "ForcedReflow":
         return "";
       case "ImageDelivery":
-        return "";
+        return "- https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/";
       case "INPBreakdown":
         return `- https://web.dev/articles/inp
 - https://web.dev/explore/how-to-optimize-inp
@@ -1563,7 +1609,8 @@ Duplication grouped by Node modules: ${filesFormatted}`;
       case "ModernHTTP":
         return "- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2";
       case "LegacyJavaScript":
-        return "";
+        return `- https://web.dev/articles/baseline-and-polyfills
+- https://philipwalton.com/articles/the-state-of-es5-on-the-web/`;
     }
   }
   #description() {
@@ -1588,7 +1635,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
       case "ForcedReflow":
         return "";
       case "ImageDelivery":
-        return "";
+        return "This insight identifies unoptimized images that are downloaded at a much higher resolution than they are displayed. Properly sizing and compressing these assets will decrease their download time, directly improving the perceived page load time and LCP";
       case "INPBreakdown":
         return `Interaction to Next Paint (INP) is a metric that tracks the responsiveness of the page when the user interacts with it. INP is a Core Web Vital and the thresholds for how we categorize a score are:
 - Good: 200 milliseconds or less.
@@ -1632,7 +1679,9 @@ We apply a conservative approach when flagging HTTP/1.1 usage. This insight will
 
 To pass this insight, ensure your server supports and prioritizes a modern HTTP protocol (like HTTP/2) for static assets, especially when serving a substantial number of them.`;
       case "LegacyJavaScript":
-        return "";
+        return `This insight identified legacy JavaScript in your application's modules that may be creating unnecessary code.
+
+Polyfills and transforms enable older browsers to use new JavaScript features. However, many are not necessary for modern browsers. Consider modifying your JavaScript build process to not transpile Baseline features, unless you know you must support older browsers.`;
     }
   }
 };
@@ -1746,9 +1795,9 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
   // format description.
   static #networkRequestsArrayCompressed(requests, parsedTrace) {
     const networkDataString = `
-    Network requests data:
+Network requests data:
 
-    `;
+`;
     const urlIdToIndex = /* @__PURE__ */ new Map();
     const allRequestsText = requests.map((request) => {
       const urlIndex = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
@@ -1760,38 +1809,43 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
     return networkDataString + "\n\n" + urlsMapString + "\n\n" + allRequestsText;
   }
   /**
+   * Network requests format description that is sent to the model as a fact.
+   */
+  static networkDataFormatDescription = `The format is as follows:
+\`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiators;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
+
+- \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
+Timings (all in milliseconds, relative to navigation start):
+- \`queuedTime\`: When the request was queued.
+- \`requestSentTime\`: When the request was sent.
+- \`downloadCompleteTime\`: When the download completed.
+- \`processingCompleteTime\`: When main thread processing finished.
+Durations (all in milliseconds):
+- \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
+- \`downloadDuration\`: Time spent actively downloading the resource.
+- \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
+- \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
+- \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
+- \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
+- \`initialPriority\`: The initial network request priority.
+- \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
+- \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
+- \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
+- \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
+- \`initiators\`: A list (separated by ,) of URL indices for the initiator chain of this request. Listed in order starting from the root request to the request that directly loaded this one. This represents the network dependencies necessary to load this request. If there is no initiator, this is empty.
+- \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
+\`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
+- \`responseHeaders\`: A list (separated by '|') of values for specific, pre-defined response headers, enclosed in square brackets.
+The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+`;
+  /**
    *
-   * This is the network request data passed to a the Performance Insights agent.
+   * This is the network request data passed to the Performance agent.
    *
    * The `urlIdToIndex` Map is used to map URLs to numerical indices in order to not need to pass whole url every time it's mentioned.
    * The map content is passed in the response together will all the requests data.
    *
-   * The format is as follows:
-   * `urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value,header2Value,...]`
-   *
-   * - `urlIndex`: Numerical index for the request's URL, referencing the 'All URLs' list.
-   * Timings (all in milliseconds, relative to navigation start):
-   * - `queuedTime`: When the request was queued.
-   * - `requestSentTime`: When the request was sent.
-   * - `downloadCompleteTime`: When the download completed.
-   * - `processingCompleteTime`: When main thread processing finished.
-   * Durations (all in milliseconds):
-   * - `totalDuration`: Total time from the request being queued until its main thread processing completed.
-   * - `downloadDuration`: Time spent actively downloading the resource.
-   * - `mainThreadProcessingDuration`: Time spent on the main thread after the download completed.
-   * - `statusCode`: The HTTP status code of the response (e.g., 200, 404).
-   * - `mimeType`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-   * - `priority`: The final network request priority (e.g., "VeryHigh", "Low").
-   * - `initialPriority`: The initial network request priority.
-   * - `finalPriority`: The final network request priority (redundant if `priority` is always final, but kept for clarity if `initialPriority` and `priority` differ).
-   * - `renderBlocking`: 't' if the request was render-blocking, 'f' otherwise.
-   * - `protocol`: The network protocol used (e.g., "h2", "http/1.1").
-   * - `fromServiceWorker`: 't' if the request was served from a service worker, 'f' otherwise.
-   * - `initiatorUrlIndex`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-   * - `redirects`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-   * `[redirectUrlIndex|startTime|duration]`, where: `redirectUrlIndex`: Numerical index for the redirect's URL. `startTime`: The start time of the redirect in milliseconds, relative to navigation start. `duration`: The duration of the redirect in milliseconds.
-   * - `responseHeaders`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-   * The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+   * See `networkDataFormatDescription` above for specifics.
    */
   static #networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
     const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
@@ -1816,8 +1870,8 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
       const redirectDuration = formatMicroToMilli(redirect.dur);
       return `[${urlIndex2}|${redirectStartTime}|${redirectDuration}]`;
     }).join(",");
-    const initiator = parsedTrace.NetworkRequests.eventToInitiator.get(request);
-    const initiatorUrlIndex = initiator ? _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, initiator.args.data.url) : "";
+    const initiators = this.#getInitiatorChain(parsedTrace, request);
+    const initiatorUrlIndices = initiators.map((initiator) => _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, initiator.args.data.url));
     const parts = [
       urlIndex,
       queuedTime,
@@ -1835,11 +1889,26 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
       renderBlocking,
       protocol,
       fromServiceWorker ? "t" : "f",
-      initiatorUrlIndex,
+      initiatorUrlIndices.join(","),
       `[${redirects}]`,
       `[${headerValues ?? ""}]`
     ];
     return parts.join(";");
+  }
+  static #getInitiatorChain(parsedTrace, request) {
+    const initiators = [];
+    let cur = request;
+    while (cur) {
+      const initiator = parsedTrace.NetworkRequests.eventToInitiator.get(cur);
+      if (initiator) {
+        if (initiators.includes(initiator)) {
+          return [];
+        }
+        initiators.unshift(initiator);
+      }
+      cur = initiator;
+    }
+    return initiators;
   }
 };
 
@@ -1966,33 +2035,6 @@ The 'calculatePosition' and 'applyStyles' child functions consumed the remaining
 The 'calculatePosition' function, taking 80ms, is a potential bottleneck.
 Consider optimizing the position calculation logic or reducing the frequency of calls to improve animation performance.
 `;
-var networkDataFormatDescription = `The format is as follows:
-    \`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiatorUrlIndex;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-    - \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-    Timings (all in milliseconds, relative to navigation start):
-    - \`queuedTime\`: When the request was queued.
-    - \`requestSentTime\`: When the request was sent.
-    - \`downloadCompleteTime\`: When the download completed.
-    - \`processingCompleteTime\`: When main thread processing finished.
-    Durations (all in milliseconds):
-    - \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-    - \`downloadDuration\`: Time spent actively downloading the resource.
-    - \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-    - \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-    - \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-    - \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-    - \`initialPriority\`: The initial network request priority.
-    - \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-    - \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-    - \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-    - \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-    - \`initiatorUrlIndex\`: Numerical index for the URL of the resource that initiated this request, or empty string if no initiator.
-    - \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-    \`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-    - \`responseHeaders\`: A list separated by '|' of values for specific, pre-defined response headers, enclosed in square brackets.
-    The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
-`;
 var mainThreadActivityFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
   The format of each callframe is:
 
@@ -2106,7 +2148,8 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
         ];
       case "ImageDelivery":
         return [
-          { title: "What should I do to improve and optimize the time taken to fetch and display images on the page?" }
+          { title: "What should I do to improve and optimize the time taken to fetch and display images on the page?" },
+          { title: "Are all images on my site optimized?" }
         ];
       case "INPBreakdown":
         return [
@@ -2147,7 +2190,10 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
           { title: "Which resources are not using a modern HTTP protocol?" }
         ];
       case "LegacyJavaScript":
-        return [{ title: "Is my site polyfilling modern JavaScript features?" }];
+        return [
+          { title: "Is my site polyfilling modern JavaScript features?" },
+          { title: "How can I reduce the amount of legacy JavaScript on my page?" }
+        ];
       default:
         Platform.assertNever(focus.insight.insightKey, "Unknown insight key");
     }
@@ -2180,7 +2226,10 @@ var PerformanceAgent = class extends AiAgent {
   * add the formats description to facts once the main thread activity or network requests need to be sent.
   */
   #mainThreadActivityDescriptionFact = { text: mainThreadActivityFormatDescription, metadata: { source: "devtools" } };
-  #networkDataDescriptionFact = { text: networkDataFormatDescription, metadata: { source: "devtools" } };
+  #networkDataDescriptionFact = {
+    text: TraceEventFormatter.networkDataFormatDescription,
+    metadata: { source: "devtools" }
+  };
   get preamble() {
     if (this.#conversationType === "drjones-performance") {
       return callTreePreamble;

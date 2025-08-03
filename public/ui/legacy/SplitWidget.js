@@ -73,7 +73,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
     savedShowMode;
     autoAdjustOrientation;
     constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
-        super(true, undefined, element);
+        super(element, { useShadowDom: true });
         this.element.classList.add('split-widget');
         this.registerRequiredCSS(splitWidgetStyles);
         this.contentElement.classList.add('shadow-split-widget');

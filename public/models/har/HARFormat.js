@@ -232,7 +232,7 @@ class HARResponse extends HARBase {
         this.custom.set('serviceWorkerRouterActualSourceType', HARBase.optionalString(data['_serviceWorkerRouterActualSourceType']));
     }
 }
-class HARCookie extends HARBase {
+export class HARCookie extends HARBase {
     name;
     value;
     path;

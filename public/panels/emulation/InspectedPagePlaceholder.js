@@ -8,7 +8,7 @@ let inspectedPagePlaceholderInstance;
 export class InspectedPagePlaceholder extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
     updateId;
     constructor() {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(inspectedPagePlaceholderStyles);
         UI.ZoomManager.ZoomManager.instance().addEventListener("ZoomChanged" /* UI.ZoomManager.Events.ZOOM_CHANGED */, this.onResize, this);
         this.restoreMinimumSize();

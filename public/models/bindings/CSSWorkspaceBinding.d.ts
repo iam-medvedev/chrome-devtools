@@ -56,5 +56,4 @@ export declare class LiveLocation extends LiveLocationWithPool {
     setHeader(header: SDK.CSSStyleSheetHeader.CSSStyleSheetHeader | null): void;
     uiLocation(): Promise<Workspace.UISourceCode.UILocation | null>;
     dispose(): void;
-    isIgnoreListed(): Promise<boolean>;
 }

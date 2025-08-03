@@ -169,7 +169,7 @@ export class LayerDetailsView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     paintProfilerLink;
     selection;
     constructor(layerViewHost) {
-        super(true);
+        super({ useShadowDom: true });
         this.registerRequiredCSS(layerDetailsViewStyles);
         this.element.setAttribute('jslog', `${VisualLogging.pane('layers-details')}`);
         this.contentElement.classList.add('layer-details-container');

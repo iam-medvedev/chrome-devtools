@@ -15,7 +15,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     axNodeInternal;
     skipNextPullNode;
     sidebarPaneStack;
-    breadcrumbsSubPane = null;
+    breadcrumbsSubPane;
     ariaSubPane;
     axNodeSubPane;
     sourceOrderSubPane;
@@ -65,20 +65,14 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         else {
             this.sidebarPaneStack.removeView(this.ariaSubPane);
         }
-        if (this.axNodeSubPane) {
-            this.axNodeSubPane.setAXNode(axNode);
-        }
-        if (this.breadcrumbsSubPane) {
-            this.breadcrumbsSubPane.setAXNode(axNode);
-        }
+        this.axNodeSubPane.setAXNode(axNode);
+        this.breadcrumbsSubPane.setAXNode(axNode);
     }
     async doUpdate() {
         const node = this.node();
         this.axNodeSubPane.setNode(node);
         this.ariaSubPane.setNode(node);
-        if (this.breadcrumbsSubPane) {
-            this.breadcrumbsSubPane.setNode(node);
-        }
+        this.breadcrumbsSubPane.setNode(node);
         void this.sourceOrderSubPane.setNodeAsync(node);
         if (!node) {
             return;

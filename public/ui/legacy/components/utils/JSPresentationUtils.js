@@ -34,8 +34,9 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
+import * as Platform from '../../../../core/platform/platform.js';
 import * as SDK from '../../../../core/sdk/sdk.js';
-import * as Bindings from '../../../../models/bindings/bindings.js';
+import * as Workspace from '../../../../models/workspace/workspace.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import jsUtilsStyles from './jsUtils.css.js';
@@ -69,12 +70,12 @@ function populateContextMenu(link, event) {
     event.consume(true);
     const uiLocation = Linkifier.uiLocation(link);
     if (uiLocation &&
-        Bindings.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiLocation.uiSourceCode)) {
-        if (Bindings.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(uiLocation.uiSourceCode.url())) {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.removeFromIgnore), () => Bindings.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: 'remove-from-ignore-list' });
+        Workspace.IgnoreListManager.IgnoreListManager.instance().canIgnoreListUISourceCode(uiLocation.uiSourceCode)) {
+        if (Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(uiLocation.uiSourceCode.url())) {
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.removeFromIgnore), () => Workspace.IgnoreListManager.IgnoreListManager.instance().unIgnoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: 'remove-from-ignore-list' });
         }
         else {
-            contextMenu.debugSection().appendItem(i18nString(UIStrings.addToIgnore), () => Bindings.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: 'add-to-ignore-list' });
+            contextMenu.debugSection().appendItem(i18nString(UIStrings.addToIgnore), () => Workspace.IgnoreListManager.IgnoreListManager.instance().ignoreListUISourceCode(uiLocation.uiSourceCode), { jslogContext: 'add-to-ignore-list' });
         }
     }
     contextMenu.appendApplicableItems(event);
@@ -128,25 +129,6 @@ export function buildStackTraceRows(stackTrace, target, linkifier, tabStops, upd
         previousCallFrames = asyncStackTrace.callFrames;
     }
     return stackTraceRows;
-}
-export function buildStackTracePreviewContents(target, linkifier, options = {
-    widthConstrained: false,
-    stackTrace: undefined,
-    tabStops: undefined,
-}) {
-    const { stackTrace, tabStops } = options;
-    const element = document.createElement('span');
-    element.classList.add('monospace');
-    element.classList.add('stack-preview-container');
-    element.classList.toggle('width-constrained', options.widthConstrained);
-    element.style.display = 'inline-block';
-    const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: jsUtilsStyles });
-    const contentElement = shadowRoot.createChild('table', 'stack-preview-container');
-    contentElement.classList.toggle('width-constrained', options.widthConstrained);
-    const updateCallback = renderStackTraceTable.bind(null, contentElement, element);
-    const stackTraceRows = buildStackTraceRows(stackTrace ?? { callFrames: [] }, target, linkifier, tabStops, updateCallback, options.showColumnNumber);
-    const links = renderStackTraceTable(contentElement, element, stackTraceRows);
-    return { element, links };
 }
 function renderStackTraceTable(container, parent, stackTraceRows) {
     container.removeChildren();
@@ -206,5 +188,52 @@ function renderStackTraceTable(container, parent, stackTraceRows) {
         UI.GlassPane.GlassPane.containerMoved(container);
     }, false);
     return links;
+}
+export class StackTracePreviewContent extends UI.Widget.Widget {
+    #target;
+    #linkifier;
+    #options;
+    #links = [];
+    #table;
+    constructor(element, target, linkifier, options) {
+        super(element, { useShadowDom: true });
+        this.#target = target;
+        this.#linkifier = linkifier;
+        this.#options = options || {
+            widthConstrained: false,
+        };
+        this.element.classList.add('monospace');
+        this.element.classList.add('stack-preview-container');
+        this.element.classList.toggle('width-constrained', this.#options.widthConstrained ?? false);
+        this.element.style.display = 'inline-block';
+        Platform.DOMUtilities.appendStyle(this.element.shadowRoot, jsUtilsStyles);
+        this.#table = this.contentElement.createChild('table', 'stack-preview-container');
+        this.#table.classList.toggle('width-constrained', this.#options.widthConstrained ?? false);
+        this.performUpdate();
+    }
+    performUpdate() {
+        if (!this.#linkifier) {
+            return;
+        }
+        const { stackTrace, tabStops } = this.#options;
+        const updateCallback = renderStackTraceTable.bind(null, this.#table, this.element);
+        const stackTraceRows = buildStackTraceRows(stackTrace ?? { callFrames: [] }, this.#target ?? null, this.#linkifier, tabStops, updateCallback, this.#options.showColumnNumber);
+        this.#links = renderStackTraceTable(this.#table, this.element, stackTraceRows);
+    }
+    get linkElements() {
+        return this.#links;
+    }
+    set target(target) {
+        this.#target = target;
+        this.requestUpdate();
+    }
+    set linkifier(linkifier) {
+        this.#linkifier = linkifier;
+        this.requestUpdate();
+    }
+    set options(options) {
+        this.#options = options;
+        this.requestUpdate();
+    }
 }
 //# sourceMappingURL=JSPresentationUtils.js.map

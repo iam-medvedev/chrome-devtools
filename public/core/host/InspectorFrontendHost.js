@@ -27,8 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
@@ -59,7 +57,6 @@ const OVERRIDES_FILE_SYSTEM_PATH = '/overrides';
  */
 export class InspectorFrontendHostStub {
     #urlsBeingSaved = new Map();
-    events;
     #fileSystem = null;
     recordedCountHistograms = [];
     recordedEnumeratedHistograms = [];
@@ -137,24 +134,26 @@ export class InspectorFrontendHostStub {
     showItemInFolder(_fileSystemPath) {
         Common.Console.Console.instance().error('Show item in folder is not enabled in hosted mode. Please inspect using chrome://inspect');
     }
-    save(url, content, _forceSaveAs, _isBase64) {
-        let buffer = this.#urlsBeingSaved.get(url);
+    // Reminder: the methods in this class belong to InspectorFrontendHostStub and are typically not executed.
+    // InspectorFrontendHostStub is ONLY used in the uncommon case of devtools not being embedded. For example: trace.cafe or http://localhost:9222/devtools/inspector.html?ws=localhost:9222/devtools/page/xTARGET_IDx
+    save(url, content, _forceSaveAs, isBase64) {
+        let buffer = this.#urlsBeingSaved.get(url)?.buffer;
         if (!buffer) {
             buffer = [];
-            this.#urlsBeingSaved.set(url, buffer);
+            this.#urlsBeingSaved.set(url, { isBase64, buffer });
         }
         buffer.push(content);
         this.events.dispatchEventToListeners(Events.SavedURL, { url, fileSystemPath: url });
     }
     append(url, content) {
-        const buffer = this.#urlsBeingSaved.get(url);
+        const buffer = this.#urlsBeingSaved.get(url)?.buffer;
         if (buffer) {
             buffer.push(content);
             this.events.dispatchEventToListeners(Events.AppendedToURL, url);
         }
     }
     close(url) {
-        const buffer = this.#urlsBeingSaved.get(url) || [];
+        const { isBase64, buffer } = this.#urlsBeingSaved.get(url) || { isBase64: false, buffer: [] };
         this.#urlsBeingSaved.delete(url);
         let fileName = '';
         if (url) {
@@ -162,7 +161,7 @@ export class InspectorFrontendHostStub {
                 const trimmed = Platform.StringUtilities.trimURL(url);
                 fileName = Platform.StringUtilities.removeURLFragment(trimmed);
             }
-            catch (error) {
+            catch {
                 // If url is not a valid URL, it is probably a filename.
                 fileName = url;
             }
@@ -170,7 +169,14 @@ export class InspectorFrontendHostStub {
         /* eslint-disable-next-line rulesdir/no-imperative-dom-api */
         const link = document.createElement('a');
         link.download = fileName;
-        const blob = new Blob([buffer.join('')], { type: 'text/plain' });
+        let blob;
+        if (isBase64) {
+            const bytes = Common.Base64.decode(buffer.join(''));
+            blob = new Blob([bytes], { type: 'application/gzip' });
+        }
+        else {
+            blob = new Blob(buffer, { type: 'text/plain' });
+        }
         const blobUrl = URL.createObjectURL(blob);
         link.href = blobUrl;
         link.click();
@@ -472,7 +478,6 @@ class InspectorFrontendAPIImpl {
 }
 (function () {
     function initializeInspectorFrontendHost() {
-        let proto;
         if (!InspectorFrontendHostInstance) {
             // Instantiate stub for web-hosted mode if necessary.
             // @ts-expect-error Global injected by devtools_compatibility.js
@@ -480,12 +485,9 @@ class InspectorFrontendAPIImpl {
         }
         else {
             // Otherwise add stubs for missing methods that are declared in the interface.
-            proto = InspectorFrontendHostStub.prototype;
+            const proto = InspectorFrontendHostStub.prototype;
             for (const name of Object.getOwnPropertyNames(proto)) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-                // @ts-expect-error
                 const stub = proto[name];
-                // @ts-expect-error Global injected by devtools_compatibility.js
                 if (typeof stub !== 'function' || InspectorFrontendHostInstance[name]) {
                     continue;
                 }

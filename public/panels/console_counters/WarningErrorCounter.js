@@ -106,7 +106,7 @@ export class WarningErrorCounterWidget extends UI.Widget.Widget {
     compact;
     static instanceForTest = null;
     constructor(element, setVisibility, view = DEFAULT_VIEW) {
-        super(false, false, element);
+        super(element);
         this.setVisibility = setVisibility;
         this.view = view;
         this.throttler = new Common.Throttler.Throttler(100);

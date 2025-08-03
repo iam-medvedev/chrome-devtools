@@ -7,10 +7,7 @@ export declare class RequestInitiatorView extends UI.Widget.VBox {
     private readonly emptyWidget;
     private hasShown;
     constructor(request: SDK.NetworkRequest.NetworkRequest);
-    static createStackTracePreview(request: SDK.NetworkRequest.NetworkRequest, linkifier: Components.Linkifier.Linkifier, focusableLink?: boolean): {
-        element: Element;
-        links: Element[];
-    } | null;
+    static createStackTracePreview(request: SDK.NetworkRequest.NetworkRequest, linkifier: Components.Linkifier.Linkifier, focusableLink?: boolean): Components.JSPresentationUtils.StackTracePreviewContent | null;
     private createTree;
     private buildRequestChainTree;
     private depthFirstSearchTreeBuilder;

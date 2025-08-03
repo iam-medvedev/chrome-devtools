@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Platform from '../../../core/platform/platform.js';
+import * as UI from '../../legacy/legacy.js';
 import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
+import * as Buttons from '../buttons/buttons.js';
 import * as CodeHighlighter from '../code_highlighter/code_highlighter.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import * as RenderCoordinator from '../render_coordinator/render_coordinator.js';
@@ -426,7 +428,16 @@ export class TreeOutline extends HTMLElement {
         await RenderCoordinator.write('TreeOutline render', () => {
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
+            // Unfortunately the TreeOutline web component adds the
+            // tree element into its own shadow DOM, so these don't
+            // inherit the surrounding (common) styles. But we need
+            // the common button styles at least (e.g. to fix the
+            // cause of http://crbug.com/435601104). Long-term the
+            // tree elements shouldn't be inside the TreeOutline's
+            // shadow DOM.
             Lit.render(html `
+      <style>${Buttons.textButtonStyles}</style>
+      <style>${UI.inspectorCommonStyles}</style>
       <style>${treeOutlineStyles}</style>
       <style>${CodeHighlighter.codeHighlighterStyles}</style>
       <div class="wrapping-container">
