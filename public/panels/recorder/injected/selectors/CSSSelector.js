@@ -177,10 +177,10 @@ export class SelectorRangeOps {
 /**
  * Computes the CSS selector for a node.
  *
- * @param node - The node to compute.
+ * @internal
+ * @param node The node to compute.
  * @returns The computed CSS selector.
  *
- * @internal
  */
 export const computeCSSSelector = (node, attributes) => {
     const selectors = [];

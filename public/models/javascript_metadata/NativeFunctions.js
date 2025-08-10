@@ -2605,7 +2605,13 @@ export const NativeFunctions = [
     },
     {
         name: "readAsText",
-        signatures: [["blob", "?encoding"], ["blob", "?label"]]
+        signatures: [["blob", "?encoding"]],
+        receivers: ["FileReader"]
+    },
+    {
+        name: "readAsText",
+        signatures: [["blob", "?encoding"], ["blob", "?label"]],
+        receivers: ["FileReaderSync"]
     },
     {
         name: "getDirectory",
@@ -3813,6 +3819,11 @@ export const NativeFunctions = [
         name: "initialize",
         signatures: [["newItem"]],
         receivers: ["SVGLengthList", "SVGNumberList", "SVGPointList", "SVGStringList", "SVGTransformList"]
+    },
+    {
+        name: "initialize",
+        signatures: [["length"]],
+        receivers: ["CrashReportStorage"]
     },
     {
         name: "initialize",
@@ -7309,6 +7320,10 @@ export const NativeFunctions = [
     {
         name: "Origin",
         signatures: [["?serializedOrigin"]]
+    },
+    {
+        name: "fromURL",
+        signatures: [["serializedURL"]]
     },
     {
         name: "isSameOrigin",

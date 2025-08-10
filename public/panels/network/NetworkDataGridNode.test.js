@@ -207,6 +207,18 @@ describeWithEnvironment('NetworkLogView', () => {
         const iconImage = iconElement.getAttribute('name');
         assert.strictEqual('file-json', iconImage);
     });
+    it('shows ip protection icon for ipp requests', async () => {
+        const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/api/list`, urlString ``, null, null, null);
+        request.setResourceType(Common.ResourceType.resourceTypes.Fetch);
+        request.mimeType = 'application/json';
+        request.setIsIpProtectionUsed(true);
+        const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
+        const el = document.createElement('div');
+        networkRequestNode.renderCell(el, 'name');
+        const iconElement = el.querySelector('.icon');
+        const iconImage = iconElement.getAttribute('name');
+        assert.strictEqual('shield', iconImage);
+    });
     it('shows the corresponding status text of a status code', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
         request.statusCode = 305;

@@ -7,9 +7,9 @@ import { SDKModel } from './SDKModel.js';
 import { StorageBucketsModel } from './StorageBucketsModel.js';
 const UIStrings = {
     /**
-     *@description Text in Service Worker Cache Model
-     *@example {https://cache} PH1
-     *@example {error message} PH2
+     * @description Text in Service Worker Cache Model
+     * @example {https://cache} PH1
+     * @example {error message} PH2
      */
     serviceworkercacheagentError: '`ServiceWorkerCacheAgent` error deleting cache entry {PH1} in cache: {PH2}',
 };

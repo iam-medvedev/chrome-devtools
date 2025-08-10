@@ -235,7 +235,8 @@ export class ShortcutRegistry {
         function hasModifier(mod) {
             return Boolean(keyModifiers & mod);
         }
-        /** ;
+        /**
+         * ;
          */
         async function maybeExecuteActionForKey(event) {
             const actions = this.applicableActions(key, handlers);

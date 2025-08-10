@@ -9,14 +9,14 @@ import type { Suggestion } from './SuggestBox.js';
 /**
  * Custom element for toolbars.
  *
- * @attr floating - If present the toolbar is rendered in columns, with a border
+ * @property floating - The `"floating"` attribute is reflected as property.
+ * @property wrappable - The `"wrappable"` attribute is reflected as property.
+ * @attribute floating - If present the toolbar is rendered in columns, with a border
  *                  around it, and a non-transparent background. This is used to
  *                  build vertical toolbars that open with long-click. Defaults
  *                  to `false`.
- * @attr wrappable - If present the toolbar items will wrap to a new row and the
+ * @attribute wrappable - If present the toolbar items will wrap to a new row and the
  *                   toolbar height increases.
- * @prop {boolean} floating - The `"floating"` attribute is reflected as property.
- * @prop {boolean} wrappable - The `"wrappable"` attribute is reflected as property.
  */
 export declare class Toolbar extends HTMLElement {
     #private;
@@ -29,7 +29,7 @@ export declare class Toolbar extends HTMLElement {
     /**
      * Returns whether this toolbar is floating.
      *
-     * @return `true` if the `"floating"` attribute is present on this toolbar,
+     * @returns `true` if the `"floating"` attribute is present on this toolbar,
      *         otherwise `false`.
      */
     get floating(): boolean;
@@ -42,7 +42,7 @@ export declare class Toolbar extends HTMLElement {
     /**
      * Returns whether this toolbar is wrappable.
      *
-     * @return `true` if the `"wrappable"` attribute is present on this toolbar,
+     * @returns `true` if the `"wrappable"` attribute is present on this toolbar,
      *         otherwise `false`.
      */
     get wrappable(): boolean;
@@ -87,6 +87,8 @@ export declare class ToolbarItem<T = any, E extends HTMLElement = HTMLElement> e
     visible(): boolean;
     setVisible(x: boolean): void;
     setCompactLayout(_enable: boolean): void;
+    setMaxWidth(width: number): void;
+    setMinWidth(width: number): void;
 }
 export declare const enum ToolbarItemWithCompactLayoutEvents {
     COMPACT_LAYOUT_UPDATED = "CompactLayoutUpdated"
@@ -228,8 +230,6 @@ export declare class ToolbarComboBox extends ToolbarItem<void, HTMLSelectElement
     select(option: Element): void;
     setSelectedIndex(index: number): void;
     selectedIndex(): number;
-    setMaxWidth(width: number): void;
-    setMinWidth(width: number): void;
 }
 export interface Option {
     value: string;

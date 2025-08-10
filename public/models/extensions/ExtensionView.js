@@ -36,7 +36,7 @@ const DEFAULT_VIEW = (input, output, target) => {
     ${ref(element => { output.iframe = element; })}
     src=${input.src}
     class=${input.className}
-    @load=${input.onLoad}></iframe>`, target, { host: input });
+    @load=${input.onLoad}></iframe>`, target);
     // clang-format on
 };
 export class ExtensionView extends UI.Widget.Widget {

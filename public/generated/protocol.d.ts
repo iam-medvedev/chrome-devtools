@@ -1025,6 +1025,12 @@ export declare namespace Audits {
         ValidationFailedSignatureMismatch = "ValidationFailedSignatureMismatch",
         ValidationFailedIntegrityMismatch = "ValidationFailedIntegrityMismatch"
     }
+    const enum UnencodedDigestError {
+        MalformedDictionary = "MalformedDictionary",
+        UnknownAlgorithm = "UnknownAlgorithm",
+        IncorrectDigestType = "IncorrectDigestType",
+        IncorrectDigestLength = "IncorrectDigestLength"
+    }
     /**
      * Details for issues around "Attribution Reporting API" usage.
      * Explainer: https://github.com/WICG/attribution-reporting-api
@@ -1062,6 +1068,10 @@ export declare namespace Audits {
         error: SRIMessageSignatureError;
         signatureBase: string;
         integrityAssertions: string[];
+        request: AffectedRequest;
+    }
+    interface UnencodedDigestIssueDetails {
+        error: UnencodedDigestError;
         request: AffectedRequest;
     }
     const enum GenericIssueErrorType {
@@ -1303,7 +1313,8 @@ export declare namespace Audits {
     }
     const enum UserReidentificationIssueType {
         BlockedFrameNavigation = "BlockedFrameNavigation",
-        BlockedSubresource = "BlockedSubresource"
+        BlockedSubresource = "BlockedSubresource",
+        NoisedCanvasReadback = "NoisedCanvasReadback"
     }
     /**
      * This issue warns about uses of APIs that may be considered misuse to
@@ -1315,6 +1326,10 @@ export declare namespace Audits {
          * Applies to BlockedFrameNavigation and BlockedSubresource issue types.
          */
         request?: AffectedRequest;
+        /**
+         * Applies to NoisedCanvasReadback issue type.
+         */
+        sourceCodeLocation?: SourceCodeLocation;
     }
     /**
      * A unique identifier for the type of issue. Each type may use one of the
@@ -1346,6 +1361,7 @@ export declare namespace Audits {
         SharedDictionaryIssue = "SharedDictionaryIssue",
         ElementAccessibilityIssue = "ElementAccessibilityIssue",
         SRIMessageSignatureIssue = "SRIMessageSignatureIssue",
+        UnencodedDigestIssue = "UnencodedDigestIssue",
         UserReidentificationIssue = "UserReidentificationIssue"
     }
     /**
@@ -1378,6 +1394,7 @@ export declare namespace Audits {
         sharedDictionaryIssueDetails?: SharedDictionaryIssueDetails;
         elementAccessibilityIssueDetails?: ElementAccessibilityIssueDetails;
         sriMessageSignatureIssueDetails?: SRIMessageSignatureIssueDetails;
+        unencodedDigestIssueDetails?: UnencodedDigestIssueDetails;
         userReidentificationIssueDetails?: UserReidentificationIssueDetails;
     }
     /**
@@ -3260,8 +3277,7 @@ export declare namespace CSS {
     }
     interface ResolveValuesRequest {
         /**
-         * Substitution functions (var()/env()/attr()) and cascade-dependent
-         * keywords (revert/revert-layer) do not work.
+         * Cascade-dependent keywords (revert/revert-layer) do not work.
          */
         values: string[];
         /**
@@ -3866,6 +3882,7 @@ export declare namespace DOM {
         Before = "before",
         After = "after",
         PickerIcon = "picker-icon",
+        InterestHint = "interest-hint",
         Marker = "marker",
         Backdrop = "backdrop",
         Column = "column",
@@ -11427,6 +11444,7 @@ export declare namespace Page {
         DeferredFetch = "deferred-fetch",
         DeferredFetchMinimal = "deferred-fetch-minimal",
         DeviceAttributes = "device-attributes",
+        DigitalCredentialsCreate = "digital-credentials-create",
         DigitalCredentialsGet = "digital-credentials-get",
         DirectSockets = "direct-sockets",
         DirectSocketsPrivate = "direct-sockets-private",
@@ -13476,8 +13494,7 @@ export declare namespace Page {
         userGesture: boolean;
     }
     /**
-     * Issued for every compilation cache generated. Is only available
-     * if Page.setGenerateCompilationCache is enabled.
+     * Issued for every compilation cache generated.
      */
     interface CompilationCacheProducedEvent {
         url: string;
@@ -15579,6 +15596,18 @@ export declare namespace Target {
          * List of remote locations.
          */
         locations: RemoteLocation[];
+    }
+    interface OpenDevToolsRequest {
+        /**
+         * This can be the page or tab target ID.
+         */
+        targetId: TargetID;
+    }
+    interface OpenDevToolsResponse extends ProtocolResponseWithError {
+        /**
+         * The targetId of DevTools page target.
+         */
+        targetId: TargetID;
     }
     /**
      * Issued when attached to target because of auto-attach or `attachToTarget` command.

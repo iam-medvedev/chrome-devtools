@@ -9,15 +9,15 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import dialogStyles from './dialog.css.js';
 const UIStrings = {
     /**
-     *@description Text in Add Source Map URLDialog of the Sources panel
+     * @description Text in Add Source Map URLDialog of the Sources panel
      */
     sourceMapUrl: 'Source map URL: ',
     /**
-     *@description Text in Add Debug Info URL Dialog of the Sources panel
+     * @description Text in Add Debug Info URL Dialog of the Sources panel
      */
     debugInfoUrl: 'DWARF symbols URL: ',
     /**
-     *@description Text to add something
+     * @description Text to add something
      */
     add: 'Add',
 };
@@ -27,13 +27,13 @@ const { ref } = Directives;
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-    <style>${dialogStyles}</style>
+    <style>${UI.Widget.widgetScoped(dialogStyles)}</style>
     <label>${input.label}</label>
     <input class="harmony-input add-source-map" spellcheck="false" type="text"
         jslog=${VisualLogging.textField('url').track({ keydown: 'Enter', change: true })}
         @keydown=${input.onKeyDown} ${ref(e => { output.input = e; })}>
     <devtools-button @click=${input.apply} .jslogContext=${'add'}
-        .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.add)}</devtools-button>`, target, { host: input });
+        .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.add)}</devtools-button>`, target);
     // clang-format on
 };
 export class AddDebugInfoURLDialog extends UI.Widget.HBox {

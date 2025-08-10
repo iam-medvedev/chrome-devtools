@@ -19,99 +19,99 @@ const { styleMap, ref } = Directives;
 const { widgetConfig } = UI.Widget;
 const UIStrings = {
     /**
-     *@description Label for the summary in the CSS overview report
+     * @description Label for the summary in the CSS overview report
      */
     overviewSummary: 'Overview summary',
     /**
-     *@description Title of colors subsection in the CSS overview panel
+     * @description Title of colors subsection in the CSS overview panel
      */
     colors: 'Colors',
     /**
-     *@description Title of font info subsection in the CSS overview panel
+     * @description Title of font info subsection in the CSS overview panel
      */
     fontInfo: 'Font info',
     /**
-     *@description Label to denote unused declarations in the target page
+     * @description Label to denote unused declarations in the target page
      */
     unusedDeclarations: 'Unused declarations',
     /**
-     *@description Label for the number of media queries in the CSS overview report
+     * @description Label for the number of media queries in the CSS overview report
      */
     mediaQueries: 'Media queries',
     /**
-     *@description Title of the Elements Panel
+     * @description Title of the Elements Panel
      */
     elements: 'Elements',
     /**
-     *@description Label for the number of External stylesheets in the CSS overview report
+     * @description Label for the number of External stylesheets in the CSS overview report
      */
     externalStylesheets: 'External stylesheets',
     /**
-     *@description Label for the number of inline style elements in the CSS overview report
+     * @description Label for the number of inline style elements in the CSS overview report
      */
     inlineStyleElements: 'Inline style elements',
     /**
-     *@description Label for the number of style rules in CSS overview report
+     * @description Label for the number of style rules in CSS overview report
      */
     styleRules: 'Style rules',
     /**
-     *@description Label for the number of type selectors in the CSS overview report
+     * @description Label for the number of type selectors in the CSS overview report
      */
     typeSelectors: 'Type selectors',
     /**
-     *@description Label for the number of ID selectors in the CSS overview report
+     * @description Label for the number of ID selectors in the CSS overview report
      */
     idSelectors: 'ID selectors',
     /**
-     *@description Label for the number of class selectors in the CSS overview report
+     * @description Label for the number of class selectors in the CSS overview report
      */
     classSelectors: 'Class selectors',
     /**
-     *@description Label for the number of universal selectors in the CSS overview report
+     * @description Label for the number of universal selectors in the CSS overview report
      */
     universalSelectors: 'Universal selectors',
     /**
-     *@description Label for the number of Attribute selectors in the CSS overview report
+     * @description Label for the number of Attribute selectors in the CSS overview report
      */
     attributeSelectors: 'Attribute selectors',
     /**
-     *@description Label for the number of non-simple selectors in the CSS overview report
+     * @description Label for the number of non-simple selectors in the CSS overview report
      */
     nonsimpleSelectors: 'Non-simple selectors',
     /**
-     *@description Label for unique background colors in the CSS overview panel
-     *@example {32} PH1
+     * @description Label for unique background colors in the CSS overview panel
+     * @example {32} PH1
      */
     backgroundColorsS: 'Background colors: {PH1}',
     /**
-     *@description Label for unique text colors in the CSS overview panel
-     *@example {32} PH1
+     * @description Label for unique text colors in the CSS overview panel
+     * @example {32} PH1
      */
     textColorsS: 'Text colors: {PH1}',
     /**
-     *@description Label for unique fill colors in the CSS overview panel
-     *@example {32} PH1
+     * @description Label for unique fill colors in the CSS overview panel
+     * @example {32} PH1
      */
     fillColorsS: 'Fill colors: {PH1}',
     /**
-     *@description Label for unique border colors in the CSS overview panel
-     *@example {32} PH1
+     * @description Label for unique border colors in the CSS overview panel
+     * @example {32} PH1
      */
     borderColorsS: 'Border colors: {PH1}',
     /**
-     *@description Label to indicate that there are no fonts in use
+     * @description Label to indicate that there are no fonts in use
      */
     thereAreNoFonts: 'There are no fonts.',
     /**
-     *@description Message to show when no unused declarations in the target page
+     * @description Message to show when no unused declarations in the target page
      */
     thereAreNoUnusedDeclarations: 'There are no unused declarations.',
     /**
-     *@description Message to show when no media queries are found in the target page
+     * @description Message to show when no media queries are found in the target page
      */
     thereAreNoMediaQueries: 'There are no media queries.',
     /**
-     *@description Title of the Drawer for contrast issues in the CSS overview panel
+     * @description Title of the Drawer for contrast issues in the CSS overview panel
      */
     contrastIssues: 'Contrast issues',
     /**
@@ -119,51 +119,51 @@ const UIStrings = {
      */
     nOccurrences: '{n, plural, =1 {# occurrence} other {# occurrences}}',
     /**
-     *@description Section header for contrast issues in the CSS overview panel
-     *@example {1} PH1
+     * @description Section header for contrast issues in the CSS overview panel
+     * @example {1} PH1
      */
     contrastIssuesS: 'Contrast issues: {PH1}',
     /**
-     *@description Title of the button for a contrast issue in the CSS overview panel
-     *@example {#333333} PH1
-     *@example {#333333} PH2
-     *@example {2} PH3
+     * @description Title of the button for a contrast issue in the CSS overview panel
+     * @example {#333333} PH1
+     * @example {#333333} PH2
+     * @example {2} PH3
      */
     textColorSOverSBackgroundResults: 'Text color {PH1} over {PH2} background results in low contrast for {PH3} elements',
     /**
-     *@description Label aa text content in Contrast Details of the Color Picker
+     * @description Label aa text content in Contrast Details of the Color Picker
      */
     aa: 'AA',
     /**
-     *@description Label aaa text content in Contrast Details of the Color Picker
+     * @description Label aaa text content in Contrast Details of the Color Picker
      */
     aaa: 'AAA',
     /**
-     *@description Label for the APCA contrast in Color Picker
+     * @description Label for the APCA contrast in Color Picker
      */
     apca: 'APCA',
     /**
-     *@description Label for the column in the element list in the CSS overview report
+     * @description Label for the column in the element list in the CSS overview report
      */
     element: 'Element',
     /**
-     *@description Column header title denoting which declaration is unused
+     * @description Column header title denoting which declaration is unused
      */
     declaration: 'Declaration',
     /**
-     *@description Text for the source of something
+     * @description Text for the source of something
      */
     source: 'Source',
     /**
-     *@description Text of a DOM element in Contrast Details of the Color Picker
+     * @description Text of a DOM element in Contrast Details of the Color Picker
      */
     contrastRatio: 'Contrast ratio',
     /**
-     *@description Accessible title of a table in the CSS overview elements.
+     * @description Accessible title of a table in the CSS overview elements.
      */
     cssOverviewElements: 'CSS overview elements',
     /**
-     *@description Title of the button to show the element in the CSS overview panel
+     * @description Title of the button to show the element in the CSS overview panel
      */
     showElement: 'Show element',
     /**
@@ -201,7 +201,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     }
     // clang-format off
     render(html `
-      <style>${cssOverviewCompletedViewStyles}</style>
+      <style>${UI.Widget.widgetScoped(cssOverviewCompletedViewStyles)}</style>
       <devtools-split-view direction="column" sidebar-position="first" sidebar-initial-size="200">
         <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig(CSSOverviewSidebarPanel, {
         minimumSize: new UI.Geometry.Size(100, 25),
@@ -220,7 +220,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         <devtools-split-view sidebar-position="second" slot="main" direction="row" sidebar-initial-size="minimized">
           <div class="vbox overview-completed-view" slot="main" @click=${input.onClick}>
             <!-- Dupe the styles into the main container because of the shadow root will prevent outer styles. -->
-            <style>${cssOverviewCompletedViewStyles}</style>
+            <style>${UI.Widget.widgetScoped(cssOverviewCompletedViewStyles)}</style>
             <div class="results-section horizontally-padded summary"
                   ${ref(e => { output.revealSection.set('summary', revealSection.bind(null, e)); })}>
               <h1>${i18nString(UIStrings.overviewSummary)}</h1>
@@ -269,7 +269,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
     })}>
           </devtools-widget>
         </devtools-split-view>
-      </devtools-split-view>`, target, { host: input });
+      </devtools-split-view>`, target);
     // clang-format on
 };
 function renderSummary(elementCount, globalStyleStats, mediaQueries) {
@@ -735,7 +735,7 @@ export const ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
             </tr>`)}
         </table>
       </devtools-data-grid>
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class ElementDetailsView extends UI.Widget.Widget {

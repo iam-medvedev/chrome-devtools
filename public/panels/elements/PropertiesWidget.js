@@ -80,7 +80,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         <div class="gray-info-message">${i18nString(UIStrings.noMatchingProperty)}</div>
       ` : nothing}
       ${input.treeOutlineElement}
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 const getShowAllPropertiesSetting = () => Common.Settings.Settings.instance().createSetting('show-all-properties', /* defaultValue */ false);

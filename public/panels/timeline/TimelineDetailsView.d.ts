@@ -44,7 +44,14 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
         eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap | null;
         entityMapper: Utils.EntityMapper.EntityMapper | null;
     }): Promise<void>;
-    private setSummaryContent;
+    /**
+     * Updates the UI shown in the Summary tab, and updates the UI to select the
+     * summary tab.
+     * @param node this is passed as an additional piece of DOM that will be
+     *     rendered in the summary view. This is a temporary ability to allow
+     *     incremental migration to the UI Eng vision.
+     */
+    private updateSummaryAndSelectTab;
     private updateContents;
     private appendTab;
     headerElement(): Element;
@@ -67,7 +74,12 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     private showSnapshotInPaintProfiler;
     private showSelectorStatsForIndividualEvent;
     private showAggregatedSelectorStats;
-    private appendDetailsTabsForTraceEventAndShowDetails;
+    /**
+     * When some events are selected, we show extra tabs. E.g. paint events get
+     * the Paint Profiler, and layout events might get CSS Selector Stats if
+     * they are available in the trace.
+     */
+    private appendExtraDetailsTabsForTraceEvent;
     private showEventInPaintProfiler;
     private updateSelectedRangeStats;
 }

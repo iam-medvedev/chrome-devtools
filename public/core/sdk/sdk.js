@@ -4176,7 +4176,8 @@ var generatedProperties = [
       "-webkit-right",
       "-webkit-center",
       "start",
-      "end"
+      "end",
+      "match-parent"
     ],
     "name": "text-align"
   },
@@ -4189,7 +4190,8 @@ var generatedProperties = [
       "left",
       "right",
       "center",
-      "justify"
+      "justify",
+      "match-parent"
     ],
     "name": "text-align-last"
   },
@@ -6665,7 +6667,8 @@ var generatedPropertyValues = {
       "-webkit-right",
       "-webkit-center",
       "start",
-      "end"
+      "end",
+      "match-parent"
     ]
   },
   "text-align-last": {
@@ -6676,7 +6679,8 @@ var generatedPropertyValues = {
       "left",
       "right",
       "center",
-      "justify"
+      "justify",
+      "match-parent"
     ]
   },
   "text-anchor": {
@@ -9950,27 +9954,27 @@ function isSDKModelEvent(arg) {
 // gen/front_end/core/sdk/NetworkManager.js
 var UIStrings = {
   /**
-   *@description Explanation why no content is shown for WebSocket connection.
+   * @description Explanation why no content is shown for WebSocket connection.
    */
   noContentForWebSocket: "Content for WebSockets is currently not supported",
   /**
-   *@description Explanation why no content is shown for redirect response.
+   * @description Explanation why no content is shown for redirect response.
    */
   noContentForRedirect: "No content available because this request was redirected",
   /**
-   *@description Explanation why no content is shown for preflight request.
+   * @description Explanation why no content is shown for preflight request.
    */
   noContentForPreflight: "No content available for preflight request",
   /**
-   *@description Text to indicate that network throttling is disabled
+   * @description Text to indicate that network throttling is disabled
    */
   noThrottling: "No throttling",
   /**
-   *@description Text to indicate the network connectivity is offline
+   * @description Text to indicate the network connectivity is offline
    */
   offline: "Offline",
   /**
-   *@description Text in Network Manager representing the "3G" throttling preset.
+   * @description Text in Network Manager representing the "3G" throttling preset.
    */
   slowG: "3G",
   // Named `slowG` for legacy reasons and because this value
@@ -9978,7 +9982,7 @@ var UIStrings = {
   // change it we break their stored throttling settings.
   // (See crrev.com/c/2947255)
   /**
-   *@description Text in Network Manager representing the "Slow 4G" throttling preset
+   * @description Text in Network Manager representing the "Slow 4G" throttling preset
    */
   fastG: "Slow 4G",
   // Named `fastG` for legacy reasons and because this value
@@ -9986,42 +9990,42 @@ var UIStrings = {
   // change it we break their stored throttling settings.
   // (See crrev.com/c/2947255)
   /**
-   *@description Text in Network Manager representing the "Fast 4G" throttling preset
+   * @description Text in Network Manager representing the "Fast 4G" throttling preset
    */
   fast4G: "Fast 4G",
   /**
-   *@description Text in Network Manager
-   *@example {https://example.com} PH1
+   * @description Text in Network Manager
+   * @example {https://example.com} PH1
    */
   requestWasBlockedByDevtoolsS: 'Request was blocked by DevTools: "{PH1}"',
   /**
-   *@description Message in Network Manager
-   *@example {XHR} PH1
-   *@example {GET} PH2
-   *@example {https://example.com} PH3
+   * @description Message in Network Manager
+   * @example {XHR} PH1
+   * @example {GET} PH2
+   * @example {https://example.com} PH3
    */
   sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}".',
   /**
-   *@description Message in Network Manager
-   *@example {XHR} PH1
-   *@example {GET} PH2
-   *@example {https://example.com} PH3
+   * @description Message in Network Manager
+   * @example {XHR} PH1
+   * @example {GET} PH2
+   * @example {https://example.com} PH3
    */
   sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
   /**
-   *@description One of direct socket connection statuses
+   * @description One of direct socket connection statuses
    */
   directSocketStatusOpening: "Opening",
   /**
-   *@description One of direct socket connection statuses
+   * @description One of direct socket connection statuses
    */
   directSocketStatusOpen: "Open",
   /**
-   *@description One of direct socket connection statuses
+   * @description One of direct socket connection statuses
    */
   directSocketStatusClosed: "Closed",
   /**
-   *@description One of direct socket connection statuses
+   * @description One of direct socket connection statuses
    */
   directSocketStatusAborted: "Aborted"
 };
@@ -15960,11 +15964,11 @@ import * as i18n3 from "./../i18n/i18n.js";
 import * as Platform7 from "./../platform/platform.js";
 var UIStrings2 = {
   /**
-   *@description Error message for when a CSS file can't be loaded
+   * @description Error message for when a CSS file can't be loaded
    */
   couldNotFindTheOriginalStyle: "Could not find the original style sheet.",
   /**
-   *@description Error message to display when a source CSS file could not be retrieved.
+   * @description Error message to display when a source CSS file could not be retrieved.
    */
   thereWasAnErrorRetrievingThe: "There was an error retrieving the source styles."
 };
@@ -17294,7 +17298,7 @@ SDKModel.register(IOModel, { capabilities: 131072, autostart: true });
 // gen/front_end/core/sdk/PageResourceLoader.js
 var UIStrings3 = {
   /**
-   *@description Error message for canceled source map loads
+   * @description Error message for canceled source map loads
    */
   loadCanceledDueToReloadOf: "Load canceled due to reload of inspected page"
 };
@@ -17708,23 +17712,23 @@ __export(SourceMapScopeChainEntry_exports, {
 import * as i18n7 from "./../i18n/i18n.js";
 var UIStrings4 = {
   /**
-   *@description Title of a section in the debugger showing local JavaScript variables.
+   * @description Title of a section in the debugger showing local JavaScript variables.
    */
   local: "Local",
   /**
-   *@description Text that refers to closure as a programming term
+   * @description Text that refers to closure as a programming term
    */
   closure: "Closure",
   /**
-   *@description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
+   * @description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
    */
   block: "Block",
   /**
-   *@description Title of a section in the debugger showing JavaScript variables from the global scope.
+   * @description Title of a section in the debugger showing JavaScript variables from the global scope.
    */
   global: "Global",
   /**
-   *@description Text in Scope Chain Sidebar Pane of the Sources panel
+   * @description Text in Scope Chain Sidebar Pane of the Sources panel
    */
   returnValue: "Return value"
 };
@@ -19905,7 +19909,8 @@ var RuntimeModel = class extends SDKModel {
   setExecutionContextComparator(comparator) {
     this.#executionContextComparatorInternal = comparator;
   }
-  /** comparator
+  /**
+   * comparator
    */
   executionContextComparator() {
     return this.#executionContextComparatorInternal;
@@ -20400,11 +20405,11 @@ import * as Common16 from "./../common/common.js";
 import * as i18n9 from "./../i18n/i18n.js";
 var UIStrings5 = {
   /**
-   *@description Error message for when a script can't be loaded which had been previously
+   * @description Error message for when a script can't be loaded which had been previously
    */
   scriptRemovedOrDeleted: "Script removed or deleted.",
   /**
-   *@description Error message when failing to load a script source text
+   * @description Error message when failing to load a script source text
    */
   unableToFetchScriptSource: "Unable to fetch script source."
 };
@@ -20774,51 +20779,51 @@ async function disassembleWasm(content) {
 // gen/front_end/core/sdk/DebuggerModel.js
 var UIStrings6 = {
   /**
-   *@description Title of a section in the debugger showing local JavaScript variables.
+   * @description Title of a section in the debugger showing local JavaScript variables.
    */
   local: "Local",
   /**
-   *@description Text that refers to closure as a programming term
+   * @description Text that refers to closure as a programming term
    */
   closure: "Closure",
   /**
-   *@description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
+   * @description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
    */
   block: "Block",
   /**
-   *@description Label for a group of JavaScript files
+   * @description Label for a group of JavaScript files
    */
   script: "Script",
   /**
-   *@description Title of a section in the debugger showing JavaScript variables from the a 'with'
+   * @description Title of a section in the debugger showing JavaScript variables from the a 'with'
    *block. Block here means section of code, 'with' refers to a JavaScript programming concept and
    *is a fixed term.
    */
   withBlock: "`With` block",
   /**
-   *@description Title of a section in the debugger showing JavaScript variables from the a 'catch'
+   * @description Title of a section in the debugger showing JavaScript variables from the a 'catch'
    *block. Block here means section of code, 'catch' refers to a JavaScript programming concept and
    *is a fixed term.
    */
   catchBlock: "`Catch` block",
   /**
-   *@description Title of a section in the debugger showing JavaScript variables from the global scope.
+   * @description Title of a section in the debugger showing JavaScript variables from the global scope.
    */
   global: "Global",
   /**
-   *@description Text for a JavaScript module, the programming concept
+   * @description Text for a JavaScript module, the programming concept
    */
   module: "Module",
   /**
-   *@description Text describing the expression scope in WebAssembly
+   * @description Text describing the expression scope in WebAssembly
    */
   expression: "Expression",
   /**
-   *@description Text in Scope Chain Sidebar Pane of the Sources panel
+   * @description Text in Scope Chain Sidebar Pane of the Sources panel
    */
   exception: "Exception",
   /**
-   *@description Text in Scope Chain Sidebar Pane of the Sources panel
+   * @description Text in Scope Chain Sidebar Pane of the Sources panel
    */
   returnValue: "Return value"
 };
@@ -22409,7 +22414,7 @@ var OverlayPersistentHighlighter = class {
 // gen/front_end/core/sdk/OverlayModel.js
 var UIStrings7 = {
   /**
-   *@description Text in Overlay Model
+   * @description Text in Overlay Model
    */
   pausedInDebugger: "Paused in debugger"
 };
@@ -26406,33 +26411,33 @@ import * as Common26 from "./../common/common.js";
 import * as i18n19 from "./../i18n/i18n.js";
 var UIStrings8 = {
   /**
-   *@description Text in Server Timing
-   *@example {sql-lookup} PH1
+   * @description Text in Server Timing
+   * @example {sql-lookup} PH1
    */
   deprecatedSyntaxFoundPleaseUse: 'Deprecated syntax found for metric "{PH1}". Please use: <name>;dur=<duration>;desc=<description>',
   /**
-   *@description Text in Server Timing
-   *@example {https} PH1
+   * @description Text in Server Timing
+   * @example {https} PH1
    */
   duplicateParameterSIgnored: 'Duplicate parameter "{PH1}" ignored.',
   /**
-   *@description Text in Server Timing
-   *@example {https} PH1
+   * @description Text in Server Timing
+   * @example {https} PH1
    */
   noValueFoundForParameterS: 'No value found for parameter "{PH1}".',
   /**
-   *@description Text in Server Timing
-   *@example {https} PH1
+   * @description Text in Server Timing
+   * @example {https} PH1
    */
   unrecognizedParameterS: 'Unrecognized parameter "{PH1}".',
   /**
-   *@description Text in Server Timing
+   * @description Text in Server Timing
    */
   extraneousTrailingCharacters: "Extraneous trailing characters.",
   /**
-   *@description Text in Server Timing
-   *@example {https} PH1
-   *@example {2.0} PH2
+   * @description Text in Server Timing
+   * @example {https} PH1
+   * @example {2.0} PH2
    */
   unableToParseSValueS: 'Unable to parse "{PH1}" value "{PH2}".'
 };
@@ -26604,182 +26609,182 @@ var ServerTiming = class _ServerTiming {
 // gen/front_end/core/sdk/NetworkRequest.js
 var UIStrings9 = {
   /**
-   *@description Text in Network Request
+   * @description Text in Network Request
    */
   binary: "(binary)",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   secureOnly: 'This cookie was blocked because it had the "`Secure`" attribute and the connection was not secure.',
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   notOnPath: "This cookie was blocked because its path was not an exact match for or a superdirectory of the request url's path.",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   domainMismatch: "This cookie was blocked because neither did the request URL's domain exactly match the cookie's domain, nor was the request URL's domain a subdomain of the cookie's Domain attribute value.",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   sameSiteStrict: 'This cookie was blocked because it had the "`SameSite=Strict`" attribute and the request was made from a different site. This includes top-level navigation requests initiated by other sites.',
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   sameSiteLax: 'This cookie was blocked because it had the "`SameSite=Lax`" attribute and the request was made from a different site and was not initiated by a top-level navigation.',
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   sameSiteUnspecifiedTreatedAsLax: 'This cookie didn\'t specify a "`SameSite`" attribute when it was stored and was defaulted to "SameSite=Lax," and was blocked because the request was made from a different site and was not initiated by a top-level navigation. The cookie had to have been set with "`SameSite=None`" to enable cross-site usage.',
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   sameSiteNoneInsecure: 'This cookie was blocked because it had the "`SameSite=None`" attribute but was not marked "Secure". Cookies without SameSite restrictions must be marked "Secure" and sent over a secure connection.',
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   userPreferences: "This cookie was blocked due to user preferences.",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   thirdPartyPhaseout: "This cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   unknownError: "An unknown error was encountered when trying to send this cookie.",
   /**
-   *@description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
+   * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
    */
   schemefulSameSiteStrict: 'This cookie was blocked because it had the "`SameSite=Strict`" attribute but the request was cross-site. This includes top-level navigation requests initiated by other sites. This request is considered cross-site because the URL has a different scheme than the current site.',
   /**
-   *@description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
+   * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
    */
   schemefulSameSiteLax: 'This cookie was blocked because it had the "`SameSite=Lax`" attribute but the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.',
   /**
-   *@description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
+   * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
    */
   schemefulSameSiteUnspecifiedTreatedAsLax: 'This cookie didn\'t specify a "`SameSite`" attribute when it was stored, was defaulted to "`SameSite=Lax"`, and was blocked because the request was cross-site and was not initiated by a top-level navigation. This request is considered cross-site because the URL has a different scheme than the current site.',
   /**
-   *@description Tooltip to explain why a cookie was blocked due to SameParty
+   * @description Tooltip to explain why a cookie was blocked due to SameParty
    */
   samePartyFromCrossPartyContext: "This cookie was blocked because it had the \"`SameParty`\" attribute but the request was cross-party. The request was considered cross-party because the domain of the resource's URL and the domains of the resource's enclosing frames/documents are neither owners nor members in the same First-Party Set.",
   /**
-   *@description Tooltip to explain why a cookie was blocked due to exceeding the maximum size
+   * @description Tooltip to explain why a cookie was blocked due to exceeding the maximum size
    */
   nameValuePairExceedsMaxSize: "This cookie was blocked because it was too large. The combined size of the name and value must be less than or equal to 4096 characters.",
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
    */
   thisSetcookieWasBlockedDueToUser: "This attempt to set a cookie via a `Set-Cookie` header was blocked due to user preferences.",
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
    */
   thisSetcookieWasBlockedDueThirdPartyPhaseout: "Setting this cookie was blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.",
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via `Set-Cookie` HTTP header on a request's response was blocked.
    */
   thisSetcookieHadInvalidSyntax: "This `Set-Cookie` header had invalid syntax.",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   thisSetcookieHadADisallowedCharacter: "This `Set-Cookie` header contained a disallowed character (a forbidden ASCII control character, or the tab character if it appears in the middle of the cookie name, value, an attribute name, or an attribute value).",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   theSchemeOfThisConnectionIsNot: "The scheme of this connection is not allowed to store cookies.",
   /**
-   *@description Tooltip to explain why a cookie was blocked
+   * @description Tooltip to explain why a cookie was blocked
    */
   anUnknownErrorWasEncounteredWhenTrying: "An unknown error was encountered when trying to store this cookie.",
   /**
-   *@description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
-   *@example {SameSite=Strict} PH1
+   * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
+   * @example {SameSite=Strict} PH1
    */
   thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the "{PH1}" attribute but came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.',
   /**
-   *@description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
+   * @description Tooltip to explain why a cookie was blocked due to Schemeful Same-Site
    */
   thisSetcookieDidntSpecifyASamesite: 'This `Set-Cookie` header didn\'t specify a "`SameSite`" attribute, was defaulted to "`SameSite=Lax"`, and was blocked because it came from a cross-site response which was not the response to a top-level navigation. This response is considered cross-site because the URL has a different scheme than the current site.',
   /**
-   *@description Tooltip to explain why a cookie was blocked due to SameParty
+   * @description Tooltip to explain why a cookie was blocked due to SameParty
    */
   thisSetcookieWasBlockedBecauseItHadTheSameparty: "This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the \"`SameParty`\" attribute but the request was cross-party. The request was considered cross-party because the domain of the resource's URL and the domains of the resource's enclosing frames/documents are neither owners nor members in the same First-Party Set.",
   /**
-   *@description Tooltip to explain why a cookie was blocked due to SameParty
+   * @description Tooltip to explain why a cookie was blocked due to SameParty
    */
   thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the "`SameParty`" attribute but also had other conflicting attributes. Chrome requires cookies that use the "`SameParty`" attribute to also have the "Secure" attribute, and to not be restricted to "`SameSite=Strict`".',
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
   blockedReasonSecureOnly: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the "Secure" attribute but was not received over a secure connection.',
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
-   *@example {SameSite=Strict} PH1
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @example {SameSite=Strict} PH1
    */
   blockedReasonSameSiteStrictLax: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the "{PH1}" attribute but came from a cross-site response which was not the response to a top-level navigation.',
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
   blockedReasonSameSiteUnspecifiedTreatedAsLax: 'This `Set-Cookie` header didn\'t specify a "`SameSite`" attribute and was defaulted to "`SameSite=Lax,`" and was blocked because it came from a cross-site response which was not the response to a top-level navigation. The `Set-Cookie` had to have been set with "`SameSite=None`" to enable cross-site usage.',
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
   blockedReasonSameSiteNoneInsecure: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it had the "`SameSite=None`" attribute but did not have the "Secure" attribute, which is required in order to use "`SameSite=None`".',
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
   blockedReasonOverwriteSecure: "This attempt to set a cookie via a `Set-Cookie` header was blocked because it was not sent over a secure connection and would have overwritten a cookie with the Secure attribute.",
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
   blockedReasonInvalidDomain: "This attempt to set a cookie via a `Set-Cookie` header was blocked because its Domain attribute was invalid with regards to the current host url.",
   /**
-   *@description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
+   * @description Tooltip to explain why an attempt to set a cookie via a `Set-Cookie` HTTP header on a request's response was blocked.
    */
   blockedReasonInvalidPrefix: 'This attempt to set a cookie via a `Set-Cookie` header was blocked because it used the "`__Secure-`" or "`__Host-`" prefix in its name and broke the additional rules applied to cookies with these prefixes as defined in `https://tools.ietf.org/html/draft-west-cookie-prefixes-05`.',
   /**
-   *@description Tooltip to explain why a cookie was blocked when the size of the #name plus the size of the value exceeds the max size.
+   * @description Tooltip to explain why a cookie was blocked when the size of the #name plus the size of the value exceeds the max size.
    */
   thisSetcookieWasBlockedBecauseTheNameValuePairExceedsMaxSize: "This attempt to set a cookie via a `Set-Cookie` header was blocked because the cookie was too large. The combined size of the name and value must be less than or equal to 4096 characters.",
   /**
-   *@description Text in Network Manager
-   *@example {https://example.com} PH1
+   * @description Text in Network Manager
+   * @example {https://example.com} PH1
    */
   setcookieHeaderIsIgnoredIn: "Set-Cookie header is ignored in response from url: {PH1}. The combined size of the name and value must be less than or equal to 4096 characters.",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonUserSetting: "This cookie is allowed by user preference.",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonTPCDMetadata: "This cookie is allowed by a third-party cookie deprecation trial grace period. Learn more: goo.gle/dt-grace.",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonTPCDDeprecationTrial: "This cookie is allowed by third-party cookie deprecation trial. Learn more: goo.gle/ps-dt.",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonTopLevelTPCDDeprecationTrial: "This cookie is allowed by top-level third-party cookie deprecation trial. Learn more: goo.gle/ps-dt.",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonTPCDHeuristics: "This cookie is allowed by third-party cookie heuristics. Learn more: goo.gle/hbe",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonEnterprisePolicy: "This cookie is allowed by Chrome Enterprise policy. Learn more: goo.gle/ce-3pc",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonStorageAccessAPI: "This cookie is allowed by the Storage Access API. Learn more: goo.gle/saa",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonTopLevelStorageAccessAPI: "This cookie is allowed by the top-level Storage Access API. Learn more: goo.gle/saa-top",
   /**
-   *@description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
+   * @description Tooltip to explain why the cookie should have been blocked by third-party cookie phaseout but is exempted.
    */
   exemptionReasonScheme: "This cookie is allowed by the top-level url scheme"
 };
@@ -30113,7 +30118,7 @@ var RehydratingSession = class extends RehydratingSessionBase {
 // gen/front_end/core/sdk/Connections.js
 var UIStrings11 = {
   /**
-   *@description Text on the remote debugging window to indicate the connection is lost
+   * @description Text on the remote debugging window to indicate the connection is lost
    */
   websocketDisconnected: "WebSocket disconnected"
 };
@@ -30555,9 +30560,9 @@ import * as TextUtils23 from "./../../models/text_utils/text_utils.js";
 import * as i18n29 from "./../i18n/i18n.js";
 var UIStrings13 = {
   /**
-   *@description Error message when failing to fetch a resource referenced in a source map
-   *@example {https://example.com/sourcemap.map} PH1
-   *@example {An error occurred} PH2
+   * @description Error message when failing to fetch a resource referenced in a source map
+   * @example {https://example.com/sourcemap.map} PH1
+   * @example {An error occurred} PH2
    */
   couldNotLoadContentForSS: "Could not load content for {PH1} ({PH2})"
 };
@@ -30630,8 +30635,8 @@ __export(CPUProfilerModel_exports, {
 import * as i18n31 from "./../i18n/i18n.js";
 var UIStrings14 = {
   /**
-   *@description Name of a profile. Placeholder is either a user-supplied name or a number automatically assigned to the profile.
-   *@example {2} PH1
+   * @description Name of a profile. Placeholder is either a user-supplied name or a number automatically assigned to the profile.
+   * @example {2} PH1
    */
   profileD: "Profile {PH1}"
 };
@@ -30761,28 +30766,28 @@ SDKModel.register(LogModel, { capabilities: 8, autostart: true });
 // gen/front_end/core/sdk/ConsoleModel.js
 var UIStrings15 = {
   /**
-   *@description Text shown when the main frame (page) of the website was navigated to a different URL.
-   *@example {https://example.com} PH1
+   * @description Text shown when the main frame (page) of the website was navigated to a different URL.
+   * @example {https://example.com} PH1
    */
   navigatedToS: "Navigated to {PH1}",
   /**
-   *@description Text shown when the main frame (page) of the website was navigated to a different URL
+   * @description Text shown when the main frame (page) of the website was navigated to a different URL
    * and the page was restored from back/forward cache (https://web.dev/bfcache/).
-   *@example {https://example.com} PH1
+   * @example {https://example.com} PH1
    */
   bfcacheNavigation: "Navigation to {PH1} was restored from back/forward cache (see https://web.dev/bfcache/)",
   /**
-   *@description Text shown in the console when a performance profile (with the given name) was started.
-   *@example {title} PH1
+   * @description Text shown in the console when a performance profile (with the given name) was started.
+   * @example {title} PH1
    */
   profileSStarted: "Profile ''{PH1}'' started.",
   /**
-   *@description Text shown in the console when a performance profile (with the given name) was stopped.
-   *@example {name} PH1
+   * @description Text shown in the console when a performance profile (with the given name) was stopped.
+   * @example {name} PH1
    */
   profileSFinished: "Profile ''{PH1}'' finished.",
   /**
-   *@description Error message shown in the console after the user tries to save a JavaScript value to a temporary variable.
+   * @description Error message shown in the console after the user tries to save a JavaScript value to a temporary variable.
    */
   failedToSaveToTempVariable: "Failed to save to temp variable."
 };
@@ -34205,9 +34210,9 @@ SDKModel.register(StorageBucketsModel, { capabilities: 8192, autostart: false })
 // gen/front_end/core/sdk/ServiceWorkerCacheModel.js
 var UIStrings17 = {
   /**
-   *@description Text in Service Worker Cache Model
-   *@example {https://cache} PH1
-   *@example {error message} PH2
+   * @description Text in Service Worker Cache Model
+   * @example {https://cache} PH1
+   * @example {error message} PH2
    */
   serviceworkercacheagentError: "`ServiceWorkerCacheAgent` error deleting cache entry {PH1} in cache: {PH2}"
 };
@@ -34483,50 +34488,50 @@ import * as Common41 from "./../common/common.js";
 import * as i18n39 from "./../i18n/i18n.js";
 var UIStrings18 = {
   /**
-   *@description Service worker running status displayed in the Service Workers view in the Application panel
+   * @description Service worker running status displayed in the Service Workers view in the Application panel
    */
   running: "running",
   /**
-   *@description Service worker running status displayed in the Service Workers view in the Application panel
+   * @description Service worker running status displayed in the Service Workers view in the Application panel
    */
   starting: "starting",
   /**
-   *@description Service worker running status displayed in the Service Workers view in the Application panel
+   * @description Service worker running status displayed in the Service Workers view in the Application panel
    */
   stopped: "stopped",
   /**
-   *@description Service worker running status displayed in the Service Workers view in the Application panel
+   * @description Service worker running status displayed in the Service Workers view in the Application panel
    */
   stopping: "stopping",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
    */
   activated: "activated",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
    */
   activating: "activating",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
    */
   installed: "installed",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
    */
   installing: "installing",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
    */
   new: "new",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
    */
   redundant: "redundant",
   /**
-   *@description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
-   *@example {sw.js} PH1
-   *@example {117} PH2
-   *@example {activated} PH3
+   * @description Service worker version status displayed in the Threads view of the Debugging side pane in the Sources panel
+   * @example {sw.js} PH1
+   * @example {117} PH2
+   * @example {activated} PH3
    */
   sSS: "{PH1} #{PH2} ({PH3})"
 };

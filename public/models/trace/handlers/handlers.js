@@ -16,15 +16,23 @@ __export(helpers_exports, {
 });
 import * as ThirdPartyWeb from "./../../../third_party/third-party-web/third-party-web.js";
 import * as Types from "./../types/types.js";
-function getEntityForEvent(event, entityCache) {
+function getEntityForEvent(event, entityMappings3) {
   const url = getNonResolvedURL(event);
   if (!url) {
     return;
   }
-  return getEntityForUrl(url, entityCache);
+  return getEntityForUrl(url, entityMappings3);
 }
-function getEntityForUrl(url, entityCache) {
-  return ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(entityCache, url);
+function getEntityForUrl(url, entityMappings3) {
+  const cachedByUrl = entityMappings3.entityByUrlCache.get(url);
+  if (cachedByUrl) {
+    return cachedByUrl;
+  }
+  const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(entityMappings3.createdEntityCache, url);
+  if (entity) {
+    entityMappings3.entityByUrlCache.set(url, entity);
+  }
+  return entity;
 }
 function getNonResolvedURL(entry, parsedTrace) {
   if (Types.Events.isProfileCall(entry)) {
@@ -119,7 +127,7 @@ function makeUpChromeExtensionEntity(entityCache, url, extensionName) {
   return chromeExtensionEntity;
 }
 function addEventToEntityMapping(event, entityMappings3) {
-  const entity = getEntityForEvent(event, entityMappings3.createdEntityCache);
+  const entity = getEntityForEvent(event, entityMappings3);
   if (!entity) {
     return;
   }
@@ -135,7 +143,7 @@ function addEventToEntityMapping(event, entityMappings3) {
   entityMappings3.entityByEvent.set(event, entity);
 }
 function addNetworkRequestToEntityMapping(networkRequest, entityMappings3, requestTraceEvents) {
-  const entity = getEntityForEvent(networkRequest, entityMappings3.createdEntityCache);
+  const entity = getEntityForEvent(networkRequest, entityMappings3);
   if (!entity) {
     return;
   }
@@ -857,7 +865,8 @@ var eventToInitiatorMap = /* @__PURE__ */ new Map();
 var entityMappings = {
   eventsByEntity: /* @__PURE__ */ new Map(),
   entityByEvent: /* @__PURE__ */ new Map(),
-  createdEntityCache: /* @__PURE__ */ new Map()
+  createdEntityCache: /* @__PURE__ */ new Map(),
+  entityByUrlCache: /* @__PURE__ */ new Map()
 };
 function storeTraceEventWithRequestId(requestId, key, value) {
   if (!requestMap.has(requestId)) {
@@ -1170,7 +1179,8 @@ function data6() {
     entityMappings: {
       entityByEvent: new Map(entityMappings.entityByEvent),
       eventsByEntity: new Map(entityMappings.eventsByEntity),
-      createdEntityCache: new Map(entityMappings.createdEntityCache)
+      createdEntityCache: new Map(entityMappings.createdEntityCache),
+      entityByUrlCache: new Map(entityMappings.entityByUrlCache)
     },
     linkPreconnectEvents
   };
@@ -1331,7 +1341,6 @@ function handleEvent7(event) {
     const nodesAndSamples = event.args?.data?.cpuProfile || { samples: [] };
     const samples = nodesAndSamples?.samples || [];
     const traceIds = event.args?.data?.cpuProfile?.trace_ids;
-    const nodes = [];
     for (const n of nodesAndSamples?.nodes || []) {
       const lineNumber = typeof n.callFrame.lineNumber === "undefined" ? -1 : n.callFrame.lineNumber;
       const columnNumber = typeof n.callFrame.columnNumber === "undefined" ? -1 : n.callFrame.columnNumber;
@@ -1347,18 +1356,17 @@ function handleEvent7(event) {
           scriptId
         }
       };
-      nodes.push(node);
+      cdpProfile.nodes.push(node);
     }
     const timeDeltas = event.args.data?.timeDeltas || [];
     const lines = event.args.data?.lines || Array(samples.length).fill(0);
-    cdpProfile.nodes.push(...nodes);
     cdpProfile.samples?.push(...samples);
     cdpProfile.timeDeltas?.push(...timeDeltas);
     cdpProfile.lines?.push(...lines);
     if (traceIds) {
-      cdpProfile.traceIds = cdpProfile.traceIds || {};
-      for (const [key, value] of Object.entries(traceIds)) {
-        cdpProfile.traceIds[key] = value;
+      cdpProfile.traceIds ??= {};
+      for (const key in traceIds) {
+        cdpProfile.traceIds[key] = traceIds[key];
       }
     }
     if (cdpProfile.samples && cdpProfile.timeDeltas && cdpProfile.samples.length !== cdpProfile.timeDeltas.length) {
@@ -1409,7 +1417,8 @@ var processes = /* @__PURE__ */ new Map();
 var entityMappings2 = {
   eventsByEntity: /* @__PURE__ */ new Map(),
   entityByEvent: /* @__PURE__ */ new Map(),
-  createdEntityCache: /* @__PURE__ */ new Map()
+  createdEntityCache: /* @__PURE__ */ new Map(),
+  entityByUrlCache: /* @__PURE__ */ new Map()
 };
 var compositorTileWorkers = Array();
 var entryToNode2 = /* @__PURE__ */ new Map();
@@ -1443,6 +1452,7 @@ function reset8() {
   entityMappings2.eventsByEntity.clear();
   entityMappings2.entityByEvent.clear();
   entityMappings2.createdEntityCache.clear();
+  entityMappings2.entityByUrlCache.clear();
   allTraceEntries.length = 0;
   completeEventStack.length = 0;
   compositorTileWorkers.length = 0;
@@ -1500,7 +1510,8 @@ function data8() {
     entityMappings: {
       entityByEvent: new Map(entityMappings2.entityByEvent),
       eventsByEntity: new Map(entityMappings2.eventsByEntity),
-      createdEntityCache: new Map(entityMappings2.createdEntityCache)
+      createdEntityCache: new Map(entityMappings2.createdEntityCache),
+      entityByUrlCache: new Map(entityMappings2.entityByUrlCache)
     }
   };
 }
@@ -1595,11 +1606,11 @@ function buildHierarchy(processes2, options) {
         const samplesIntegrator = cpuProfile && new Helpers7.SamplesIntegrator.SamplesIntegrator(cpuProfile, samplesDataForThread.profileId, pid, tid, config);
         const profileCalls = samplesIntegrator?.buildProfileCalls(thread.entries);
         if (samplesIntegrator && profileCalls) {
-          allTraceEntries = [...allTraceEntries, ...profileCalls];
+          allTraceEntries = allTraceEntries.concat(profileCalls);
           thread.entries = Helpers7.Trace.mergeEventsInOrder(thread.entries, profileCalls);
           thread.profileCalls = profileCalls;
           const jsSamples = samplesIntegrator.jsSampleEvents;
-          if (jsSamples) {
+          if (jsSamples.length) {
             allTraceEntries = [...allTraceEntries, ...jsSamples];
             thread.entries = Helpers7.Trace.mergeEventsInOrder(thread.entries, jsSamples);
           }

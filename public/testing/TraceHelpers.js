@@ -364,6 +364,7 @@ export function makeMockRendererHandlerData(entries, pid = 1, tid = 1) {
             entityByEvent: new Map(),
             eventsByEntity: new Map(),
             createdEntityCache: new Map(),
+            entityByUrlCache: new Map(),
         },
     };
 }
@@ -464,8 +465,8 @@ export class FakeFlameChartProvider {
 }
 /**
  * Renders a flame chart using a fake provider and mock delegate.
- * @param provider - The fake flame chart provider.
- * @param options - Optional parameters.  Includes windowTimes, an array specifying the minimum and maximum window times. Defaults to [0, 100].
+ * @param provider The fake flame chart provider.
+ * @param options Optional parameters.  Includes windowTimes, an array specifying the minimum and maximum window times. Defaults to [0, 100].
  * @returns A promise that resolves when the flame chart is rendered.
  */
 export async function renderFlameChartWithFakeProvider(provider, options) {
@@ -577,6 +578,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
                 entityByEvent: new Map(),
                 eventsByEntity: new Map(),
                 createdEntityCache: new Map(),
+                entityByUrlCache: new Map(),
             },
         },
         Screenshots: {
@@ -606,6 +608,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
                 entityByEvent: new Map(),
                 eventsByEntity: new Map(),
                 createdEntityCache: new Map(),
+                entityByUrlCache: new Map(),
             },
             linkPreconnectEvents: [],
         },

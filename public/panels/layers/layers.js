@@ -415,11 +415,11 @@ var LayerTreeDispatcher = class {
 // gen/front_end/panels/layers/LayersPanel.js
 var UIStrings = {
   /**
-   *@description Text for the details of something
+   * @description Text for the details of something
    */
   details: "Details",
   /**
-   *@description Title of the Profiler tool
+   * @description Title of the Profiler tool
    */
   profiler: "Profiler"
 };

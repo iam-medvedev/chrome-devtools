@@ -5,17 +5,17 @@ import * as Root from "./../../../../core/root/root.js";
 import * as UI from "./../../legacy.js";
 var UIStrings = {
   /**
-   *@description Title of a setting under the Performance category in Settings.
+   * @description Title of a setting under the Performance category in Settings.
    * Selected navigation allows switching between 2 different sets of shortcuts
    * and actions (like zoom on scroll or crtl/cmd + scroll) for navigating the performance panel.
    */
   flamechartSelectedNavigation: "Flamechart navigation:",
   /**
-   *@description Modern navigation option in the Performance Panel.
+   * @description Modern navigation option in the Performance Panel.
    */
   modern: "Modern",
   /**
-   *@description Classic navigation option in the Performance Panel.
+   * @description Classic navigation option in the Performance Panel.
    */
   classic: "Classic",
   /**
@@ -26,15 +26,15 @@ var UIStrings = {
    */
   liveMemoryAllocationAnnotations: "Live memory allocation annotations",
   /**
-   *@description Title of a setting under the Memory category that can be invoked through the Command Menu
+   * @description Title of a setting under the Memory category that can be invoked through the Command Menu
    */
   showLiveMemoryAllocation: "Show live memory allocation annotations",
   /**
-   *@description Title of a setting under the Memory category that can be invoked through the Command Menu
+   * @description Title of a setting under the Memory category that can be invoked through the Command Menu
    */
   hideLiveMemoryAllocation: "Hide live memory allocation annotations",
   /**
-   *@description Title of an action in the components tool to collect garbage
+   * @description Title of an action in the components tool to collect garbage
    */
   collectGarbage: "Collect garbage"
 };

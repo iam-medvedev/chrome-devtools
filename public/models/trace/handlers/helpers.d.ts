@@ -9,14 +9,11 @@ export type Entity = typeof ThirdPartyWeb.ThirdPartyWeb.entities[number] & {
 export interface EntityMappings {
     createdEntityCache: Map<string, Entity>;
     entityByEvent: Map<Types.Events.Event, Entity>;
-    /**
-     * This holds the entities that had to be created, because they were not found using the
-     * ThirdPartyWeb database.
-     */
     eventsByEntity: Map<Entity, Types.Events.Event[]>;
+    entityByUrlCache: Map<string, Entity>;
 }
-export declare function getEntityForEvent(event: Types.Events.Event, entityCache: Map<string, Entity>): Entity | undefined;
-export declare function getEntityForUrl(url: string, entityCache: Map<string, Entity>): Entity | undefined;
+export declare function getEntityForEvent(event: Types.Events.Event, entityMappings: EntityMappings): Entity | undefined;
+export declare function getEntityForUrl(url: string, entityMappings: EntityMappings): Entity | undefined;
 export declare function getNonResolvedURL(entry: Types.Events.Event, parsedTrace?: ParsedTrace): Platform.DevToolsPath.UrlString | null;
 export declare function makeUpEntity(entityCache: Map<string, Entity>, url: string): Entity | undefined;
 export declare function addEventToEntityMapping(event: Types.Events.Event, entityMappings: EntityMappings): void;

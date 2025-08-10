@@ -50,11 +50,11 @@ export type IconData = IconWithName | {
  * the default dimensions are 14px times 14px, and the default `vertical-align` is
  * `baseline` (instead of `sub`).
  *
- * @attr name - The basename of the icon file (not including the `.svg` suffix). For
+ * @property name - The `"name"` attribute is reflected as property.
+ * @property data - Deprecated way to set dimensions, color and name at once.
+ * @attribute name - The basename of the icon file (not including the `.svg` suffix). For
  *              backwards compatibility we also support a full URL here, but that
  *              should not be used in newly written code.
- * @prop {String} name - The `"name"` attribute is reflected as property.
- * @prop {IconData} data - Deprecated way to set dimensions, color and name at once.
  */
 export declare class Icon extends HTMLElement {
     #private;
@@ -88,7 +88,7 @@ export declare class Icon extends HTMLElement {
  *
  * @param name the name of the icon to use.
  * @param className optional CSS class name(s) to put onto the element.
- * @return the newly created `Icon` instance.
+ * @returns the newly created `Icon` instance.
  */
 export declare const create: (name: string, className?: string) => Icon;
 declare global {

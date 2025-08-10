@@ -4,14 +4,14 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import { html, render } from '../lit/lit.js';
 import targetCrashedScreenStyles from './targetCrashedScreen.css.js';
-import { VBox } from './Widget.js';
+import { VBox, widgetScoped } from './Widget.js';
 const UIStrings = {
     /**
-     *@description Text in dialog box when the target page crashed
+     * @description Text in dialog box when the target page crashed
      */
     devtoolsWasDisconnectedFromThe: 'DevTools was disconnected from the page.',
     /**
-     *@description Text content of content element
+     * @description Text content of content element
      */
     oncePageIsReloadedDevtoolsWill: 'Once page is reloaded, DevTools will automatically reconnect.',
 };
@@ -20,9 +20,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${targetCrashedScreenStyles}</style>
+    <style>${widgetScoped(targetCrashedScreenStyles)}</style>
     <div class="message">${i18nString(UIStrings.devtoolsWasDisconnectedFromThe)}</div>
-    <div class="message">${i18nString(UIStrings.oncePageIsReloadedDevtoolsWill)}</div>`, target, { host: input });
+    <div class="message">${i18nString(UIStrings.oncePageIsReloadedDevtoolsWill)}</div>`, target);
     // clang-format on
 };
 export class TargetCrashedScreen extends VBox {

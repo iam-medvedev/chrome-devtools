@@ -11,13 +11,13 @@ import * as ApplicationComponents from './components/components.js';
 import sharedStorageEventsViewStyles from './sharedStorageEventsView.css.js';
 const UIStrings = {
     /**
-     *@description Placeholder text if no shared storage event has been selected.
+     * @description Placeholder text if no shared storage event has been selected.
      * Shared storage allows to store and access data that can be shared across different sites.
      * A shared storage event is for example an access from a site to that storage.
      */
     noEventSelected: 'No shared storage event selected',
     /**
-     *@description Placeholder text instructing the user how to display shared
+     * @description Placeholder text instructing the user how to display shared
      * storage event details.
      * Shared storage allows to store and access data that can be shared across different sites.
      * A shared storage event is for example an access from a site to that storage.
@@ -37,17 +37,14 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
     constructor() {
         super(/* isVertical */ false, /* secondIsSidebar: */ true);
         this.element.setAttribute('jslog', `${VisualLogging.pane('shared-storage-events')}`);
-        const topPanel = new UI.Widget.VBox();
         this.#noDisplayView =
             new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEventSelected), i18nString(UIStrings.clickToDisplayBody));
-        topPanel.setMinimumSize(0, 80);
-        this.setMainWidget(topPanel);
         this.#noDisplayView.setMinimumSize(0, 40);
+        this.#sharedStorageEventGrid.setMinimumSize(0, 80);
+        this.#sharedStorageEventGrid.onSelect = this.#onFocus.bind(this);
+        this.setMainWidget(this.#sharedStorageEventGrid);
         this.setSidebarWidget(this.#noDisplayView);
         this.hideSidebar();
-        topPanel.contentElement.appendChild(this.#sharedStorageEventGrid);
-        this.#sharedStorageEventGrid.addEventListener('select', this.#onFocus.bind(this));
-        this.#sharedStorageEventGrid.setAttribute('jslog', `${VisualLogging.section('events-table')}`);
         this.#getMainFrameResourceTreeModel()?.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.clearEvents, this);
     }
     #getMainFrameResourceTreeModel() {
@@ -80,21 +77,16 @@ export class SharedStorageEventsView extends UI.SplitWidget.SplitWidget {
             this.showBoth();
         }
         this.#events.push(event);
-        this.#sharedStorageEventGrid.data = this.#events;
+        this.#sharedStorageEventGrid.events = this.#events;
     }
     clearEvents() {
         this.#events = [];
-        this.#sharedStorageEventGrid.data = this.#events;
+        this.#sharedStorageEventGrid.events = this.#events;
         this.setSidebarWidget(this.#noDisplayView);
         this.hideSidebar();
     }
-    async #onFocus(event) {
-        const focusedEvent = event;
-        const datastore = focusedEvent.detail;
-        if (!datastore) {
-            return;
-        }
-        const jsonView = SourceFrame.JSONView.JSONView.createViewSync(datastore);
+    #onFocus(event) {
+        const jsonView = SourceFrame.JSONView.JSONView.createViewSync(event);
         jsonView.setMinimumSize(0, 40);
         this.setSidebarWidget(jsonView);
     }

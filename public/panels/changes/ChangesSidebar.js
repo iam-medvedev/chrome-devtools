@@ -13,8 +13,8 @@ import * as Snippets from '../snippets/snippets.js';
 import changesSidebarStyles from './changesSidebar.css.js';
 const UIStrings = {
     /**
-     *@description Name of an item from source map
-     *@example {compile.html} PH1
+     * @description Name of an item from source map
+     * @example {compile.html} PH1
      */
     sFromSourceMap: '{PH1} (from source map)',
 };
@@ -25,7 +25,7 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
     treeElements;
     workspaceDiff;
     constructor(workspaceDiff) {
-        super();
+        super({ jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}` });
         this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.treeoutline.registerRequiredCSS(changesSidebarStyles);
         this.treeoutline.setFocusable(false);
@@ -33,7 +33,6 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
         this.treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged, this);
         UI.ARIAUtils.markAsTablist(this.treeoutline.contentElement);
         this.element.appendChild(this.treeoutline.element);
-        this.element.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.treeElements = new Map();
         this.workspaceDiff = workspaceDiff;
         this.workspaceDiff.modifiedUISourceCodes().forEach(this.addUISourceCode.bind(this));

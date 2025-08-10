@@ -8,7 +8,7 @@ import relatedInsightsStyles from './relatedInsightChips.css.js';
 const { html, render } = Lit;
 const UIStrings = {
     /**
-     *@description prefix shown next to related insight chips
+     * @description prefix shown next to related insight chips
      */
     insightKeyword: 'Insight',
     /**
@@ -55,7 +55,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const { activeEvent, eventToInsightsMap } = input;
     const relatedInsights = activeEvent ? eventToInsightsMap.get(activeEvent) ?? [] : [];
     if (!activeEvent || eventToInsightsMap.size === 0 || relatedInsights.length === 0) {
-        render(html ``, target, { host: input });
+        render(html ``, target);
         return;
     }
     // TODO: Render insight messages in a separate UX
@@ -94,9 +94,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         // clang-format on
     });
     // clang-format off
-    render(html `<style>${relatedInsightsStyles}</style>
+    render(html `<style>${UI.Widget.widgetScoped(relatedInsightsStyles)}</style>
         <ul>${insightMessages}</ul>
-        <ul>${insightChips}</ul>`, target, { host: input });
+        <ul>${insightChips}</ul>`, target);
     // clang-format on
 };
 //# sourceMappingURL=RelatedInsightChips.js.map

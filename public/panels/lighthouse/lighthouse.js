@@ -240,81 +240,81 @@ import * as EmulationModel from "./../../models/emulation/emulation.js";
 import * as Emulation from "./../emulation/emulation.js";
 var UIStrings = {
   /**
-   *@description Explanation for user that Ligthhouse can only audit HTTP/HTTPS pages
+   * @description Explanation for user that Ligthhouse can only audit HTTP/HTTPS pages
    */
   canOnlyAuditHttphttpsPages: "Can only audit pages on HTTP or HTTPS. Navigate to a different page.",
   /**
-   *@description Text when stored data in one location may affect Lighthouse run
-   *@example {IndexedDB} PH1
+   * @description Text when stored data in one location may affect Lighthouse run
+   * @example {IndexedDB} PH1
    */
   thereMayBeStoredDataAffectingSingular: "There may be stored data affecting loading performance in this location: {PH1}. Audit this page in an incognito window to prevent those resources from affecting your scores.",
   /**
-   *@description Text when stored data in multiple locations may affect Lighthouse run
-   *@example {IndexedDB, WebSQL} PH1
+   * @description Text when stored data in multiple locations may affect Lighthouse run
+   * @example {IndexedDB, WebSQL} PH1
    */
   thereMayBeStoredDataAffectingLoadingPlural: "There may be stored data affecting loading performance in these locations: {PH1}. Audit this page in an incognito window to prevent those resources from affecting your scores.",
   /**
-   *@description Help text in Lighthouse Controller
+   * @description Help text in Lighthouse Controller
    */
   multipleTabsAreBeingControlledBy: "Multiple tabs are being controlled by the same `service worker`. Close your other tabs on the same origin to audit this page.",
   /**
-   *@description Help text in Lighthouse Controller
+   * @description Help text in Lighthouse Controller
    */
   atLeastOneCategoryMustBeSelected: "At least one category must be selected.",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   localStorage: "Local storage",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   indexeddb: "IndexedDB",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   webSql: "Web SQL",
   /**
-   *@description Text of checkbox to include running the performance audits in Lighthouse
+   * @description Text of checkbox to include running the performance audits in Lighthouse
    */
   performance: "Performance",
   /**
-   *@description Tooltip text of checkbox to include running the performance audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the performance audits in Lighthouse
    */
   howLongDoesThisAppTakeToShow: "How long does this app take to show content and become usable",
   /**
-   *@description Text of checkbox to include running the Best Practices audits in Lighthouse
+   * @description Text of checkbox to include running the Best Practices audits in Lighthouse
    */
   bestPractices: "Best practices",
   /**
-   *@description Tooltip text of checkbox to include running the Best Practices audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Best Practices audits in Lighthouse
    */
   doesThisPageFollowBestPractices: "Does this page follow best practices for modern web development",
   /**
-   *@description Text of checkbox to include running the Accessibility audits in Lighthouse
+   * @description Text of checkbox to include running the Accessibility audits in Lighthouse
    */
   accessibility: "Accessibility",
   /**
-   *@description Tooltip text of checkbox to include running the Accessibility audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Accessibility audits in Lighthouse
    */
   isThisPageUsableByPeopleWith: "Is this page usable by people with disabilities or impairments",
   /**
-   *@description Text of checkbox to include running the Search Engine Optimization audits in Lighthouse
+   * @description Text of checkbox to include running the Search Engine Optimization audits in Lighthouse
    */
   seo: "SEO",
   /**
-   *@description Tooltip text of checkbox to include running the Search Engine Optimization audits in Lighthouse
+   * @description Tooltip text of checkbox to include running the Search Engine Optimization audits in Lighthouse
    */
   isThisPageOptimizedForSearch: "Is this page optimized for search engine results ranking",
   /**
-   *@description ARIA label for a radio button input to emulate mobile device behavior when running audits in Lighthouse.
+   * @description ARIA label for a radio button input to emulate mobile device behavior when running audits in Lighthouse.
    */
   applyMobileEmulation: "Apply mobile emulation",
   /**
-   *@description Tooltip text of checkbox to emulate mobile device behavior when running audits in Lighthouse
+   * @description Tooltip text of checkbox to emulate mobile device behavior when running audits in Lighthouse
    */
   applyMobileEmulationDuring: "Apply mobile emulation during auditing",
   /**
-   *@description Tooltip text of checkbox to emulate desktop device behavior when running audits in Lighthouse
+   * @description Tooltip text of checkbox to emulate desktop device behavior when running audits in Lighthouse
    */
   applyDesktopEmulationDuring: "Apply desktop emulation during auditing",
   /**
@@ -350,11 +350,11 @@ var UIStrings = {
    */
   snapshotTooltip: "Snapshot mode analyzes the page in a particular state, typically after user interactions.",
   /**
-   *@description Text for the mobile platform, as opposed to desktop
+   * @description Text for the mobile platform, as opposed to desktop
    */
   mobile: "Mobile",
   /**
-   *@description Text for the desktop platform, as opposed to mobile
+   * @description Text for the desktop platform, as opposed to mobile
    */
   desktop: "Desktop",
   /**
@@ -374,7 +374,7 @@ var UIStrings = {
    */
   simulateASlowerPageLoadBasedOn: "Simulated throttling simulates a slower page load based on data from an initial unthrottled load. DevTools throttling actually slows down the page.",
   /**
-   *@description Text of checkbox to reset storage features prior to running audits in Lighthouse
+   * @description Text of checkbox to reset storage features prior to running audits in Lighthouse
    */
   clearStorage: "Clear storage",
   /**
@@ -392,7 +392,7 @@ var UIStrings = {
    */
   enableJavaScriptSampling: "Enable JavaScript sampling during the Lighthouse run. This will provide more execution details in the performance panel when you view the trace, but has higher CPU overhead and may impact the performance of the page.",
   /**
-   *@description Explanation for user that Lighthouse can only audit when JavaScript is enabled
+   * @description Explanation for user that Lighthouse can only audit when JavaScript is enabled
    */
   javaScriptDisabled: "JavaScript is disabled. You need to enable JavaScript to audit this page. Open the Command Menu and run the Enable JavaScript command to enable JavaScript."
 };
@@ -1366,11 +1366,11 @@ import * as i18n4 from "./../../core/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
-   *@description Title of combo box in audits report selector
+   * @description Title of combo box in audits report selector
    */
   reports: "Reports",
   /**
-   *@description New report item label in Lighthouse Report Selector
+   * @description New report item label in Lighthouse Report Selector
    */
   newReport: "(new report)"
 };
@@ -2084,121 +2084,121 @@ var lighthouseDialog_css_default = `/*
 // gen/front_end/panels/lighthouse/LighthouseStatusView.js
 var UIStrings4 = {
   /**
-   *@description Text to cancel something
+   * @description Text to cancel something
    */
   cancel: "Cancel",
   /**
-   *@description Text when something is loading
+   * @description Text when something is loading
    */
   loading: "Loading\u2026",
   /**
-   *@description Status text in Lighthouse splash screen while an audit is being performed
-   *@example {github.com} PH1
+   * @description Status text in Lighthouse splash screen while an audit is being performed
+   * @example {github.com} PH1
    */
   auditingS: "Auditing {PH1}",
   /**
-   *@description Status text in Lighthouse splash screen while an audit is being performed
+   * @description Status text in Lighthouse splash screen while an audit is being performed
    */
   auditingYourWebPage: "Auditing your web page",
   /**
-   *@description Status text in Lighthouse splash screen while an audit is being performed, and cancellation to take effect
+   * @description Status text in Lighthouse splash screen while an audit is being performed, and cancellation to take effect
    */
   cancelling: "Cancelling\u2026",
   /**
-   *@description Status text in Lighthouse splash screen while preparing for an audit
+   * @description Status text in Lighthouse splash screen while preparing for an audit
    */
   lighthouseIsWarmingUp: "`Lighthouse` is warming up\u2026",
   /**
-   *@description Status text in Lighthouse splash screen while an audit is being performed
+   * @description Status text in Lighthouse splash screen while an audit is being performed
    */
   lighthouseIsLoadingYourPage: "`Lighthouse` is loading your page",
   /**
-   *@description Text in Lighthouse Status View
-   *@example {75% of global mobile users in 2016 were on 2G or 3G [Source: GSMA Mobile]} PH1
+   * @description Text in Lighthouse Status View
+   * @example {75% of global mobile users in 2016 were on 2G or 3G [Source: GSMA Mobile]} PH1
    */
   fastFactMessageWithPlaceholder: "\u{1F4A1} {PH1}",
   /**
-   *@description Text of a DOM element in Lighthouse Status View
+   * @description Text of a DOM element in Lighthouse Status View
    */
   ahSorryWeRanIntoAnError: "Ah, sorry! We ran into an error.",
   /**
-   *@description Text in Lighthouse Status View
+   * @description Text in Lighthouse Status View
    */
   tryToNavigateToTheUrlInAFresh: "Try to navigate to the URL in a fresh `Chrome` profile without any other tabs or extensions open and try again.",
   /**
-   *@description Text of a DOM element in Lighthouse Status View
+   * @description Text of a DOM element in Lighthouse Status View
    */
   ifThisIssueIsReproduciblePlease: "If this issue is reproducible, please report it at the `Lighthouse` `GitHub` repo.",
   /**
-   *@description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing
    */
   lighthouseIsLoadingThePage: "Lighthouse is loading the page.",
   /**
-   *@description Text in Lighthouse splash screen when Lighthouse is gathering information for display
+   * @description Text in Lighthouse splash screen when Lighthouse is gathering information for display
    */
   lighthouseIsGatheringInformation: "`Lighthouse` is gathering information about the page to compute your score.",
   /**
-   *@description Text in Lighthouse splash screen when Lighthouse is generating a report.
+   * @description Text in Lighthouse splash screen when Lighthouse is generating a report.
    */
   almostThereLighthouseIsNow: "Almost there! `Lighthouse` is now generating your report.",
   /**
-   *@description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing
    */
   lighthouseIsLoadingYourPageWith: "`Lighthouse` is loading your page with throttling to measure performance on a mobile device on 3G.",
   /**
-   *@description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing
    */
   lighthouseIsLoadingYourPageWithThrottling: "`Lighthouse` is loading your page with throttling to measure performance on a slow desktop on 3G.",
   /**
-   *@description Text in Lighthouse splash screen when loading the page for auditing
+   * @description Text in Lighthouse splash screen when loading the page for auditing
    */
   lighthouseIsLoadingYourPageWithMobile: "`Lighthouse` is loading your page with mobile emulation.",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   mbTakesAMinimumOfSecondsTo: "1MB takes a minimum of 5 seconds to download on a typical 3G connection [Source: `WebPageTest` and `DevTools` 3G definition].",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   rebuildingPinterestPagesFor: "Rebuilding Pinterest pages for performance increased conversion rates by 15% [Source: `WPO Stats`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   byReducingTheResponseSizeOfJson: "By reducing the response size of JSON needed for displaying comments, Instagram saw increased impressions [Source: `WPO Stats`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   walmartSawAIncreaseInRevenueFor: "Walmart saw a 1% increase in revenue for every 100ms improvement in page load [Source: `WPO Stats`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   ifASiteTakesSecondToBecome: "If a site takes >1 second to become interactive, users lose attention, and their perception of completing the page task is broken [Source: `Google Developers Blog`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   OfGlobalMobileUsersInWereOnGOrG: "75% of global mobile users in 2016 were on 2G or 3G [Source: `GSMA Mobile`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   theAverageUserDeviceCostsLess: "The average user device costs less than 200 USD. [Source: `International Data Corporation`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   SecondsIsTheAverageTimeAMobile: "19 seconds is the average time a mobile web page takes to load on a 3G connection [Source: `Google DoubleClick blog`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   OfMobilePagesTakeNearlySeconds: "70% of mobile pages take nearly 7 seconds for the visual content above the fold to display on the screen. [Source: `Think with Google`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   asPageLoadTimeIncreasesFromOne: "As page load time increases from one second to seven seconds, the probability of a mobile site visitor bouncing increases 113%. [Source: `Think with Google`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   asTheNumberOfElementsOnAPage: "As the number of elements on a page increases from 400 to 6,000, the probability of conversion drops 95%. [Source: `Think with Google`]",
   /**
-   *@description Fast fact in the splash screen while Lighthouse is performing an audit
+   * @description Fast fact in the splash screen while Lighthouse is performing an audit
    */
   lighthouseOnlySimulatesMobile: "`Lighthouse` only simulates mobile performance; to measure performance on a real device, try WebPageTest.org [Source: `Lighthouse` team]"
 };
@@ -2591,31 +2591,31 @@ var TimespanView = class extends UI6.Dialog.Dialog {
 // gen/front_end/panels/lighthouse/LighthousePanel.js
 var UIStrings6 = {
   /**
-   *@description Text that appears when user drag and drop something (for example, a file) in Lighthouse Panel
+   * @description Text that appears when user drag and drop something (for example, a file) in Lighthouse Panel
    */
   dropLighthouseJsonHere: "Drop `Lighthouse` JSON here",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon add button in the Lighthouse Panel
+   * @description Tooltip text that appears when hovering over the largeicon add button in the Lighthouse Panel
    */
   performAnAudit: "Perform an audit\u2026",
   /**
-   *@description Text to clear everything
+   * @description Text to clear everything
    */
   clearAll: "Clear all",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in start view of the audits panel
+   * @description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in start view of the audits panel
    */
   lighthouseSettings: "`Lighthouse` settings",
   /**
-   *@description Status header in the Lighthouse panel
+   * @description Status header in the Lighthouse panel
    */
   printing: "Printing",
   /**
-   *@description Status text in the Lighthouse panel
+   * @description Status text in the Lighthouse panel
    */
   thePrintPopupWindowIsOpenPlease: "The print popup window is open. Please close it to continue.",
   /**
-   *@description Text in Lighthouse Panel
+   * @description Text in Lighthouse Panel
    */
   cancelling: "Cancelling"
 };

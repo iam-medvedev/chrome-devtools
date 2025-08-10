@@ -41,7 +41,8 @@ export class RuntimeModel extends SDKModel {
     setExecutionContextComparator(comparator) {
         this.#executionContextComparatorInternal = comparator;
     }
-    /** comparator
+    /**
+     * comparator
      */
     executionContextComparator() {
         return this.#executionContextComparatorInternal;

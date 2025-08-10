@@ -59,7 +59,7 @@ export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.Profil
  * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
  * account for that.
  *
- * @returns {Map<string, MatchingPairableAsyncEvents>} Map of the animation's ID to it's matching events.
+ * @returns Map of the animation's ID to it's matching events.
  */
 export declare function matchEvents(unpairedEvents: Types.Events.PairableAsync[]): Map<string, MatchingPairableAsyncEvents>;
 export declare function createSortedSyntheticEvents<T extends Types.Events.PairableAsync>(matchedPairs: Map<string, {

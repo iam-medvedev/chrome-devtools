@@ -32,8 +32,8 @@ import { DebuggerModel, Location } from './DebuggerModel.js';
 import { SDKModel } from './SDKModel.js';
 const UIStrings = {
     /**
-     *@description Name of a profile. Placeholder is either a user-supplied name or a number automatically assigned to the profile.
-     *@example {2} PH1
+     * @description Name of a profile. Placeholder is either a user-supplied name or a number automatically assigned to the profile.
+     * @example {2} PH1
      */
     profileD: 'Profile {PH1}',
 };

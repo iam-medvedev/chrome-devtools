@@ -1055,11 +1055,11 @@ import * as Platform2 from "./../../core/platform/platform.js";
 import * as TextUtils2 from "./../text_utils/text_utils.js";
 var UIStrings = {
   /**
-   *@description Title of progress in harwriter of the network panel
+   * @description Title of progress in harwriter of the network panel
    */
   collectingContent: "Collecting content\u2026",
   /**
-   *@description Text to indicate DevTools is writing to a file
+   * @description Text to indicate DevTools is writing to a file
    */
   writingFile: "Writing file\u2026"
 };

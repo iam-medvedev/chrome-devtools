@@ -3,21 +3,6 @@ import * as Host from '../../core/host/host.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ChatView, type Props as ChatViewProps } from './components/ChatView.js';
-interface ExternalStylingRequestParameters {
-    conversationType: AiAssistanceModel.ConversationType.STYLING;
-    prompt: string;
-    selector?: string;
-}
-interface ExternalNetworkRequestParameters {
-    conversationType: AiAssistanceModel.ConversationType.NETWORK;
-    prompt: string;
-    requestUrl: string;
-}
-interface ExternalPerformanceInsightsRequestParameters {
-    conversationType: AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT;
-    prompt: string;
-    insightTitle: string;
-}
 interface ToolbarViewInput {
     onNewChatClick: () => void;
     populateHistoryMenu: (contextMenu: UI.ContextMenu.ContextMenu) => void;
@@ -50,15 +35,11 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     handleAction(actionId: string, opts?: Record<string, unknown>): void;
     /**
      * Handles an external request using the given prompt and uses the
-     * conversation type to use the correct agent. Note that the `selector` param
-     * is contextual; for styling it is a literal CSS selector, but for
-     * Performance Insights it is the name of the Insight that forms the
-     * context of the conversation.
+     * conversation type to use the correct agent.
      */
-    handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceInsightsRequestParameters): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
+    handleExternalRequest(parameters: AiAssistanceModel.ExternalStylingRequestParameters | AiAssistanceModel.ExternalNetworkRequestParameters | AiAssistanceModel.ExternalPerformanceInsightsRequestParameters): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
     handleExternalPerformanceInsightsRequest(prompt: string, insightTitle: string): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
     handleExternalStylingRequest(prompt: string, selector?: string): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
-    handleExternalNetworkRequest(prompt: string, requestUrl: string): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string, opts?: Record<string, unknown>): boolean;

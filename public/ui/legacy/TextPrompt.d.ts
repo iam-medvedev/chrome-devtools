@@ -83,7 +83,8 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     isSuggestBoxVisible(): boolean;
     private isCaretAtEndOfPrompt;
     moveCaretToEndOfPrompt(): void;
-    /** -1 if no caret can be found in text prompt
+    /**
+     * -1 if no caret can be found in text prompt
      */
     private getCaretPosition;
     tabKeyPressed(_event: Event): boolean;

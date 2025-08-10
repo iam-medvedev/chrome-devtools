@@ -102,7 +102,7 @@ var hideIssuesMenu_css_default = `/*
 // gen/front_end/panels/issues/components/HideIssuesMenu.js
 var UIStrings = {
   /**
-   *@description Title for the tooltip of the (3 dots) Hide Issues menu icon.
+   * @description Title for the tooltip of the (3 dots) Hide Issues menu icon.
    */
   tooltipTitle: "Hide issues"
 };

@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import { Issue } from './Issue.js';
 const UIStrings = {
     /**
-     *@description Link title for the Low Text Contrast issue in the Issues panel
+     * @description Link title for the Low Text Contrast issue in the Issues panel
      */
     colorAndContrastAccessibility: 'Color and contrast accessibility',
 };

@@ -31,8 +31,8 @@ var UIStrings = {
    * @description Text in the Performance panel to show how long was spent in a particular part of the code.
    * The first placeholder is the total time taken for this node and all children, the second is the self time
    * (time taken in this node, without children included).
-   *@example {10ms} PH1
-   *@example {10ms} PH2
+   * @example {10ms} PH1
+   * @example {10ms} PH2
    */
   sSelfS: "{PH1} (self {PH2})"
 };
@@ -99,7 +99,7 @@ function addDecorationToEvent(timelineData, eventIndex, decoration) {
 // gen/front_end/panels/timeline/AnimationsTrackAppender.js
 var UIStrings2 = {
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   animations: "Animations"
 };
@@ -168,46 +168,46 @@ import * as TraceBounds from "./../../services/trace_bounds/trace_bounds.js";
 import * as Utils from "./utils/utils.js";
 var UIStrings3 = {
   /**
-   *@description text used to announce to a screen reader that they have entered the mode to edit the label
+   * @description text used to announce to a screen reader that they have entered the mode to edit the label
    */
   srEnterLabelEditMode: "Editing the annotation label text",
   /**
-   *@description text used to announce to a screen reader that the entry label text has been updated
-   *@example {Hello world} PH1
+   * @description text used to announce to a screen reader that the entry label text has been updated
+   * @example {Hello world} PH1
    */
   srLabelTextUpdated: "Label updated to {PH1}",
   /**
-   *@description text used to announce to a screen reader that the bounds of a time range annotation have been upodated
-   *@example {13ms} PH1
-   *@example {20ms} PH2
+   * @description text used to announce to a screen reader that the bounds of a time range annotation have been upodated
+   * @example {13ms} PH1
+   * @example {20ms} PH2
    */
   srTimeRangeBoundsUpdated: "Time range updated, starting at {PH1} and ending at {PH2}",
   /**
-   *@description label for a time range overlay
+   * @description label for a time range overlay
    */
   timeRange: "time range",
   /**
-   *@description label for a entry label overlay
+   * @description label for a entry label overlay
    */
   entryLabel: "entry label",
   /**
-   *@description label for a connected entries overlay
+   * @description label for a connected entries overlay
    */
   entriesLink: "connected entries",
   /**
-   *@description screen reader text to announce that an annotation has been removed
-   *@example {Entry Label} PH1
+   * @description screen reader text to announce that an annotation has been removed
+   * @example {Entry Label} PH1
    */
   srAnnotationRemoved: "The {PH1} annotation has been removed",
   /**
-   *@description screen reader text to announce that an annotation has been added
-   *@example {Entry Label} PH1
+   * @description screen reader text to announce that an annotation has been added
+   * @example {Entry Label} PH1
    */
   srAnnotationAdded: "The {PH1} annotation has been added",
   /**
-   *@description screen reader text to announce the two events that the connected entries annotation links to
-   *@example {Paint} PH1
-   *@example {Function call} PH2
+   * @description screen reader text to announce the two events that the connected entries annotation links to
+   * @example {Paint} PH1
+   * @example {Function call} PH2
    */
   srEntriesLinked: "The connected entries annotation now links from {PH1} to {PH2}"
 };
@@ -527,7 +527,7 @@ import * as Trace5 from "./../../models/trace/trace.js";
 import * as ThemeSupport7 from "./../../ui/legacy/theme_support/theme_support.js";
 var UIStrings5 = {
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   gpu: "GPU"
 };
@@ -610,7 +610,7 @@ import * as Components from "./components/components.js";
 import * as Utils2 from "./utils/utils.js";
 var UIStrings6 = {
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   interactions: "Interactions"
 };
@@ -743,15 +743,15 @@ import * as ThemeSupport9 from "./../../ui/legacy/theme_support/theme_support.js
 import * as Utils3 from "./utils/utils.js";
 var UIStrings7 = {
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   layoutShifts: "Layout shifts",
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   layoutShiftCluster: "Layout shift cluster",
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   layoutShift: "Layout shift"
 };
@@ -1651,7 +1651,7 @@ var UIStrings8 = {
   onIgnoreList: "On ignore list ({rule})",
   /**
    * @description Refers to the "Main frame", meaning the top level frame. See https://www.w3.org/TR/html401/present/frames.html
-   * @example{example.com} PH1
+   * @example {example.com} PH1
    */
   mainS: "Main \u2014 {PH1}",
   /**
@@ -1664,77 +1664,77 @@ var UIStrings8 = {
    */
   frameS: "Frame \u2014 {PH1}",
   /**
-   *@description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
-   *@example {https://google.com} PH1
+   * @description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
+   * @example {https://google.com} PH1
    */
   workerS: "`Worker` \u2014 {PH1}",
   /**
-   *@description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
-   *@example {FormatterWorker} PH1
-   *@example {https://google.com} PH2
+   * @description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
+   * @example {FormatterWorker} PH1
+   * @example {https://google.com} PH2
    */
   workerSS: "`Worker`: {PH1} \u2014 {PH2}",
   /**
-   *@description Label for a web worker exclusively allocated for a purpose.
+   * @description Label for a web worker exclusively allocated for a purpose.
    */
   dedicatedWorker: "Dedicated `Worker`",
   /**
-   *@description A generic name given for a thread running in the browser (sequence of programmed instructions).
+   * @description A generic name given for a thread running in the browser (sequence of programmed instructions).
    * The placeholder is an enumeration given to the thread.
-   *@example {1} PH1
+   * @example {1} PH1
    */
   threadS: "Thread {PH1}",
   /**
-   *@description Rasterization in computer graphics.
+   * @description Rasterization in computer graphics.
    */
   raster: "Raster",
   /**
-   *@description Threads used for background tasks.
+   * @description Threads used for background tasks.
    */
   threadPool: "Thread pool",
   /**
-   *@description Name for a thread that rasterizes graphics in a website.
-   *@example {2} PH1
+   * @description Name for a thread that rasterizes graphics in a website.
+   * @example {2} PH1
    */
   rasterizerThreadS: "Rasterizer thread {PH1}",
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-   *@example {2} PH1
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @example {2} PH1
    */
   threadPoolThreadS: "Thread pool worker {PH1}",
   /**
-   *@description Title of a bidder auction worklet with known URL in the timeline flame chart of the Performance panel
-   *@example {https://google.com} PH1
+   * @description Title of a bidder auction worklet with known URL in the timeline flame chart of the Performance panel
+   * @example {https://google.com} PH1
    */
   bidderWorkletS: "Bidder Worklet \u2014 {PH1}",
   /**
-   *@description Title of a bidder auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+   * @description Title of a bidder auction worklet in the timeline flame chart of the Performance panel with an unknown URL
    */
   bidderWorklet: "Bidder Worklet",
   /**
-   *@description Title of a seller auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+   * @description Title of a seller auction worklet in the timeline flame chart of the Performance panel with an unknown URL
    */
   sellerWorklet: "Seller Worklet",
   /**
-   *@description Title of an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+   * @description Title of an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
    */
   unknownWorklet: "Auction Worklet",
   /**
-   *@description Title of control thread of a service process for an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+   * @description Title of control thread of a service process for an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
    */
   workletService: "Auction Worklet service",
   /**
-   *@description Title of a seller auction worklet with known URL in the timeline flame chart of the Performance panel
-   *@example {https://google.com} PH1
+   * @description Title of a seller auction worklet with known URL in the timeline flame chart of the Performance panel
+   * @example {https://google.com} PH1
    */
   sellerWorkletS: "Seller Worklet \u2014 {PH1}",
   /**
-   *@description Title of an auction worklet with known URL in the timeline flame chart of the Performance panel
-   *@example {https://google.com} PH1
+   * @description Title of an auction worklet with known URL in the timeline flame chart of the Performance panel
+   * @example {https://google.com} PH1
    */
   unknownWorkletS: "Auction Worklet \u2014 {PH1}",
   /**
-   *@description Title of control thread of a service process for an auction worklet with known URL in the timeline flame chart of the Performance panel
+   * @description Title of control thread of a service process for an auction worklet with known URL in the timeline flame chart of the Performance panel
    * @example {https://google.com} PH1
    */
   workletServiceS: "Auction Worklet service \u2014 {PH1}"
@@ -2298,29 +2298,29 @@ import * as PerfUI5 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
-   *@description Text for a heap profile type
+   * @description Text for a heap profile type
    */
   jsHeap: "JS heap",
   /**
-   *@description Text for documents, a type of resources
+   * @description Text for documents, a type of resources
    */
   documents: "Documents",
   /**
-   *@description Text in Counters Graph of the Performance panel
+   * @description Text in Counters Graph of the Performance panel
    */
   nodes: "Nodes",
   /**
-   *@description Text in Counters Graph of the Performance panel
+   * @description Text in Counters Graph of the Performance panel
    */
   listeners: "Listeners",
   /**
-   *@description Text in Counters Graph of the Performance panel
+   * @description Text in Counters Graph of the Performance panel
    */
   gpuMemory: "GPU memory",
   /**
-   *@description Range text content in Counters Graph of the Performance panel
-   *@example {2} PH1
-   *@example {10} PH2
+   * @description Range text content in Counters Graph of the Performance panel
+   * @example {2} PH1
+   * @example {10} PH2
    */
   ss: "[{PH1}\xA0\u2013\xA0{PH2}]",
   /**
@@ -2835,7 +2835,7 @@ import * as Trace27 from "./../../models/trace/trace.js";
 import * as TraceBounds13 from "./../../services/trace_bounds/trace_bounds.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
-import { html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
+import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineComponents5 from "./components/components.js";
 
@@ -3399,32 +3399,32 @@ var timelineTreeView_css_default = `/*
 import * as Utils6 from "./utils/utils.js";
 var UIStrings10 = {
   /**
-   *@description Text for the performance of something
+   * @description Text for the performance of something
    */
   performance: "Performance",
   /**
-   *@description Time of a single activity, as opposed to the total time
+   * @description Time of a single activity, as opposed to the total time
    */
   selfTime: "Self time",
   /**
-   *@description Text for the total time of something
+   * @description Text for the total time of something
    */
   totalTime: "Total time",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   activity: "Activity",
   /**
-   *@description Text of a DOM element in Timeline Tree View of the Performance panel
+   * @description Text of a DOM element in Timeline Tree View of the Performance panel
    */
   selectItemForDetails: "Select item for details.",
   /**
-   *@description Number followed by percent sign
-   *@example {20} PH1
+   * @description Number followed by percent sign
+   * @example {20} PH1
    */
   percentPlaceholder: "{PH1}\xA0%",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   chromeExtensionsOverhead: "[`Chrome` extensions overhead]",
   /**
@@ -3434,47 +3434,47 @@ var UIStrings10 = {
    */
   vRuntime: "[`V8` Runtime]",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   unattributed: "[unattributed]",
   /**
-   *@description Text that refers to one or a group of webpages
+   * @description Text that refers to one or a group of webpages
    */
   page: "Page",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   noGrouping: "No grouping",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupByActivity: "Group by activity",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupByCategory: "Group by category",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupByDomain: "Group by domain",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupByFrame: "Group by frame",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupBySubdomain: "Group by subdomain",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupByUrl: "Group by URL",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   groupByThirdParties: "Group by Third Parties",
   /**
-   *@description Aria-label for grouping combo box in Timeline Details View
+   * @description Aria-label for grouping combo box in Timeline Details View
    */
   groupBy: "Group by",
   /**
@@ -3501,15 +3501,15 @@ var UIStrings10 = {
    */
   heaviestStackHidden: "Heaviest stack sidebar hidden",
   /**
-   *@description Data grid name for Timeline Stack data grids
+   * @description Data grid name for Timeline Stack data grids
    */
   timelineStack: "Timeline stack",
   /**
-  /*@description Text to search by matching case of the input button
+   * /*@description Text to search by matching case of the input button
    */
   matchCase: "Match case",
   /**
-   *@description Text for searching with regular expression button
+   * @description Text for searching with regular expression button
    */
   useRegularExpression: "Use regular expression",
   /**
@@ -4500,19 +4500,19 @@ var TimelineStackView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widge
 import * as Utils7 from "./utils/utils.js";
 var UIStrings11 = {
   /**
-   *@description Unattributed text for an unattributed entity.
+   * @description Unattributed text for an unattributed entity.
    */
   unattributed: "[unattributed]",
   /**
-   *@description Title for the name of either 1st or 3rd Party entities.
+   * @description Title for the name of either 1st or 3rd Party entities.
    */
   firstOrThirdPartyName: "1st / 3rd party",
   /**
-   *@description Title referencing transfer size.
+   * @description Title referencing transfer size.
    */
   transferSize: "Transfer size",
   /**
-   *@description Title referencing main thread time.
+   * @description Title referencing main thread time.
    */
   mainThreadTime: "Main thread time"
 };
@@ -4755,11 +4755,11 @@ import * as Menus from "./../../ui/components/menus/menus.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
-   *@description Text to show an item is empty
+   * @description Text to show an item is empty
    */
   empty: "(empty)",
   /**
-   *@description Text in isolate selector in Performance panel
+   * @description Text in isolate selector in Performance panel
    */
   selectJavascriptVmInstance: "Select JavaScript VM instance"
 };
@@ -5002,23 +5002,23 @@ var timelineStatusDialog_css_default = `/*
 // gen/front_end/panels/timeline/StatusDialog.js
 var UIStrings13 = {
   /**
-   *@description Text to download the trace file after an error
+   * @description Text to download the trace file after an error
    */
   downloadAfterError: "Download trace",
   /**
-   *@description Text for the status of something
+   * @description Text for the status of something
    */
   status: "Status",
   /**
-   *@description Text that refers to the time
+   * @description Text that refers to the time
    */
   time: "Time",
   /**
-   *@description Text for the description of something
+   * @description Text for the description of something
    */
   description: "Description",
   /**
-   *@description Text of an item that stops the running task
+   * @description Text of an item that stops the running task
    */
   stop: "Stop"
 };
@@ -5036,9 +5036,11 @@ var StatusDialog = class extends UI6.Widget.VBox {
   timeUpdateTimer;
   #rawEvents;
   constructor(options, onButtonClickCallback) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging3.dialog("timeline-status").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.contentElement.classList.add("timeline-status-dialog");
-    this.contentElement.setAttribute("jslog", `${VisualLogging3.dialog("timeline-status").track({ resize: true })}`);
     const statusLine = this.contentElement.createChild("div", "status-dialog-line status");
     statusLine.createChild("div", "label").textContent = i18nString13(UIStrings13.status);
     this.status = statusLine.createChild("div", "content");
@@ -5233,7 +5235,7 @@ async function innerForTraceCalculate({ recordingStartTime, cruxFieldData } = {}
 // gen/front_end/panels/timeline/TimelineController.js
 var UIStrings14 = {
   /**
-   *@description Text in Timeline Controller of the Performance panel indicating that the Performance Panel cannot
+   * @description Text in Timeline Controller of the Performance panel indicating that the Performance Panel cannot
    * record a performance trace because the type of target (where possible types are page, service worker and shared
    * worker) doesn't support it.
    */
@@ -5484,21 +5486,21 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import * as Utils8 from "./utils/utils.js";
 var UIStrings15 = {
   /**
-   *@description Short for Network. Label for the network requests section of the Performance panel.
+   * @description Short for Network. Label for the network requests section of the Performance panel.
    */
   net: "NET",
   /**
-   *@description Text in Timeline Event Overview of the Performance panel
+   * @description Text in Timeline Event Overview of the Performance panel
    */
   cpu: "CPU",
   /**
-   *@description Text in Timeline Event Overview of the Performance panel
+   * @description Text in Timeline Event Overview of the Performance panel
    */
   heap: "HEAP",
   /**
-   *@description Heap size label text content in Timeline Event Overview of the Performance panel
-   *@example {10 MB} PH1
-   *@example {30 MB} PH2
+   * @description Heap size label text content in Timeline Event Overview of the Performance panel
+   * @example {10 MB} PH1
+   * @example {30 MB} PH2
    */
   sSDash: "{PH1} \u2013 {PH2}"
 };
@@ -6121,13 +6123,13 @@ var timelineHistoryManager_css_default = `/*
 var LANDING_PAGE_INDEX_DROPDOWN_CHOICE = Infinity;
 var UIStrings16 = {
   /**
-   *@description Screen reader label for the Timeline History dropdown button
-   *@example {example.com #3} PH1
-   *@example {Show recent timeline sessions} PH2
+   * @description Screen reader label for the Timeline History dropdown button
+   * @example {example.com #3} PH1
+   * @example {Show recent timeline sessions} PH2
    */
   currentSessionSS: "Current session: {PH1}. {PH2}",
   /**
-   *@description the title shown when the user is viewing the landing page which is showing live performance metrics that are updated automatically.
+   * @description the title shown when the user is viewing the landing page which is showing live performance metrics that are updated automatically.
    */
   landingPageTitle: "Live metrics",
   /**
@@ -6135,13 +6137,13 @@ var UIStrings16 = {
    */
   nodeLandingPageTitle: "New recording",
   /**
-   *@description Text in Timeline History Manager of the Performance panel
-   *@example {example.com} PH1
-   *@example {2} PH2
+   * @description Text in Timeline History Manager of the Performance panel
+   * @example {example.com} PH1
+   * @example {2} PH2
    */
   sD: "{PH1} #{PH2}",
   /**
-   *@description Accessible label for the timeline session selection menu
+   * @description Accessible label for the timeline session selection menu
    */
   selectTimelineSession: "Select timeline session",
   /**
@@ -6608,8 +6610,8 @@ import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as Trace19 from "./../../models/trace/trace.js";
 var UIStrings17 = {
   /**
-   *@description Text in Timeline Loader of the Performance panel
-   *@example {Unknown JSON format} PH1
+   * @description Text in Timeline Loader of the Performance panel
+   * @example {Unknown JSON format} PH1
    */
   malformedTimelineDataS: "Malformed timeline data: {PH1}"
 };
@@ -7075,8 +7077,8 @@ var TimelineMiniMap = class extends Common9.ObjectWrapper.eventMixin(UI9.Widget.
   }
   /**
    * Activates a given breadcrumb.
-   * @param options.removeChildBreadcrumbs - if true, any child breadcrumbs will be removed.
-   * @param options.updateVisibleWindow - if true, the visible window will be updated to match the bounds of the breadcrumb
+   * @param options.removeChildBreadcrumbs if true, any child breadcrumbs will be removed.
+   * @param options.updateVisibleWindow if true, the visible window will be updated to match the bounds of the breadcrumb
    */
   #activateBreadcrumb(breadcrumb, options) {
     if (!this.breadcrumbs) {
@@ -7680,63 +7682,63 @@ import * as Root3 from "./../../core/root/root.js";
 import * as Utils9 from "./utils/utils.js";
 var UIStrings18 = {
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   frameStart: "Frame start",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   drawFrame: "Draw frame",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   layout: "Layout",
   /**
-   *@description Text in UIDevtools Utils of the Performance panel
+   * @description Text in UIDevtools Utils of the Performance panel
    */
   rasterizing: "Rasterizing",
   /**
-   *@description Text in UIDevtools Utils of the Performance panel
+   * @description Text in UIDevtools Utils of the Performance panel
    */
   drawing: "Drawing",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   painting: "Painting",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   system: "System",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   idle: "Idle",
   /**
-   *@description Category in the Summary view of the Performance panel to indicate time spent to load resources
+   * @description Category in the Summary view of the Performance panel to indicate time spent to load resources
    */
   loading: "Loading",
   /**
-   *@description Text in Timeline for the Experience title
+   * @description Text in Timeline for the Experience title
    */
   experience: "Experience",
   /**
-   *@description Category in the Summary view of the Performance panel to indicate time spent in script execution
+   * @description Category in the Summary view of the Performance panel to indicate time spent in script execution
    */
   scripting: "Scripting",
   /**
-   *@description Category in the Summary view of the Performance panel to indicate time spent in rendering the web page
+   * @description Category in the Summary view of the Performance panel to indicate time spent in rendering the web page
    */
   rendering: "Rendering",
   /**
-   *@description Event category in the Performance panel for time spent in the GPU
+   * @description Event category in the Performance panel for time spent in the GPU
    */
   gpu: "GPU",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   async: "Async",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   messaging: "Messaging"
 };
@@ -7839,119 +7841,119 @@ var UIDevtoolsController = class extends TimelineController {
 import * as Utils11 from "./utils/utils.js";
 var UIStrings19 = {
   /**
-   *@description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
+   * @description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
    */
   dropTimelineFileOrUrlHere: "Drop trace file or URL here",
   /**
-   *@description Title of capture layers and pictures setting in timeline panel of the performance panel
+   * @description Title of capture layers and pictures setting in timeline panel of the performance panel
    */
   enableAdvancedPaint: "Enable advanced paint instrumentation (slow)",
   /**
-   *@description Title of CSS selector stats setting in timeline panel of the performance panel
+   * @description Title of CSS selector stats setting in timeline panel of the performance panel
    */
   enableSelectorStats: "Enable CSS selector stats (slow)",
   /**
-   *@description Title of show screenshots setting in timeline panel of the performance panel
+   * @description Title of show screenshots setting in timeline panel of the performance panel
    */
   screenshots: "Screenshots",
   /**
-   *@description Text for the memory of the page
+   * @description Text for the memory of the page
    */
   memory: "Memory",
   /**
-   *@description Text to clear content
+   * @description Text to clear content
    */
   clear: "Clear",
   /**
-   *@description A label for a button that fixes something.
+   * @description A label for a button that fixes something.
    */
   fixMe: "Fix me",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon load button
+   * @description Tooltip text that appears when hovering over the largeicon load button
    */
   loadTrace: "Load trace\u2026",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon download button
+   * @description Tooltip text that appears when hovering over the largeicon download button
    */
   saveTrace: "Save trace\u2026",
   /**
-   *@description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
+   * @description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
    */
   saveTraceWithAnnotationsMenuOption: "Save trace",
   /**
-   *@description An option to save trace without annotations that appears in the menu of the toolbar download button
+   * @description An option to save trace without annotations that appears in the menu of the toolbar download button
    */
   saveTraceWithoutAnnotationsMenuOption: "Save trace without annotations",
   /**
-   *@description Text to take screenshots
+   * @description Text to take screenshots
    */
   captureScreenshots: "Capture screenshots",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   showMemoryTimeline: "Show memory timeline",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in timeline panel of the performance panel
+   * @description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in timeline panel of the performance panel
    */
   captureSettings: "Capture settings",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   capturesAdvancedPaint: "Captures advanced paint instrumentation, introduces significant performance overhead",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   capturesSelectorStats: "Captures CSS selector statistics",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   network: "Network:",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   cpu: "CPU:",
   /**
-   *@description Title of the 'Network conditions' tool in the bottom drawer
+   * @description Title of the 'Network conditions' tool in the bottom drawer
    */
   networkConditions: "Network conditions",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   CpuThrottlingIsEnabled: "- CPU throttling is enabled",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   NetworkThrottlingIsEnabled: "- Network throttling is enabled",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   SignificantOverheadDueToPaint: "- Significant overhead due to paint instrumentation",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   SelectorStatsEnabled: "- Selector stats is enabled",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   stoppingTimeline: "Stopping timeline\u2026",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   received: "Received",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   processed: "Processed",
   /**
-   *@description Text to close something
+   * @description Text to close something
    */
   close: "Close",
   /**
-   *@description Status text to indicate the recording has failed in the Performance panel
+   * @description Status text to indicate the recording has failed in the Performance panel
    */
   recordingFailed: "Recording failed",
   /**
-   *@description Status text to indicate that exporting the trace has failed
+   * @description Status text to indicate that exporting the trace has failed
    */
   exportingFailed: "Exporting the trace failed",
   /**
@@ -7960,19 +7962,19 @@ var UIStrings19 = {
    */
   tracing: "Tracing\u2026",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   bufferUsage: "Buffer usage",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   loadingTrace: "Loading trace\u2026",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   processingTrace: "Processing trace\u2026",
   /**
-   *@description Text in Timeline Panel of the Performance panel
+   * @description Text in Timeline Panel of the Performance panel
    */
   initializingTracing: "Initializing tracing\u2026",
   /**
@@ -7986,11 +7988,11 @@ var UIStrings19 = {
    */
   exportEnhancedTraces: "Enhanced performance traces",
   /**
-   *@description Tooltip description for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
+   * @description Tooltip description for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
    */
   showDataAddedByExtensions: "Show data added by extensions of the Performance panel",
   /**
-   Label for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
+   * Label for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
    */
   showCustomtracks: "Show custom tracks",
   /**
@@ -8023,7 +8025,7 @@ var UIStrings19 = {
    */
   eventSelected: "Event {PH1} selected",
   /**
-   *@description Text of a hyperlink to documentation.
+   * @description Text of a hyperlink to documentation.
    */
   learnMore: "Learn more",
   /**
@@ -8229,7 +8231,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.panelToolbar.wrappable = true;
     this.panelRightToolbar = timelineToolbarContainer.createChild("devtools-toolbar");
     this.panelRightToolbar.role = "presentation";
-    if (!isNode && this.hasPrimaryTarget()) {
+    if (!isNode && this.canRecord()) {
       this.createSettingsPane();
       this.updateShowSettingsToolbarButton();
     }
@@ -8377,7 +8379,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   /**
    * This disables the 3P checkbox in the toolbar.
-   * If the checkbox was checked, we flip it to indeterminiate to communicate it doesn't currently apply. */
+   * If the checkbox was checked, we flip it to indeterminiate to communicate it doesn't currently apply.
+   */
   set3PCheckboxDisabled(disabled) {
     this.#thirdPartyCheckbox?.applyEnabledState(!disabled);
     if (this.#dimThirdPartiesSetting?.get()) {
@@ -8433,7 +8436,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   #onFieldDataChanged() {
     const recs = Utils11.Helpers.getThrottlingRecommendations();
     this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
-    this.networkThrottlingSelect?.updateRecommendedConditions(recs.networkConditions);
+    if (this.networkThrottlingSelect) {
+      this.networkThrottlingSelect.recommendedConditions = recs.networkConditions;
+    }
   }
   loadFromEvents(events) {
     if (this.state !== "Idle") {
@@ -8644,15 +8649,15 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
    * not possible, like an enhanced trace (which opens a new devtools window) or
    * trace.cafe.
    */
-  hasPrimaryTarget() {
-    return Boolean(SDK8.TargetManager.TargetManager.instance().primaryPageTarget()?.sessionId);
+  canRecord() {
+    return true;
   }
   populateToolbar() {
-    const hasPrimaryTarget = this.hasPrimaryTarget();
-    if (hasPrimaryTarget || isNode) {
+    const canRecord = this.canRecord();
+    if (canRecord || isNode) {
       this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
     }
-    if (hasPrimaryTarget) {
+    if (canRecord) {
       this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
     }
     this.clearButton = new UI10.Toolbar.ToolbarButton(i18nString19(UIStrings19.clear), "clear", void 0, "timeline.clear");
@@ -8689,7 +8694,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.panelToolbar.appendSeparator();
     this.panelToolbar.appendToolbarItem(this.loadButton);
     this.panelToolbar.appendToolbarItem(this.saveButton);
-    if (hasPrimaryTarget) {
+    if (canRecord) {
       this.panelToolbar.appendSeparator();
       if (!isNode) {
         this.homeButton = new UI10.Toolbar.ToolbarButton(i18nString19(UIStrings19.backToLiveMetrics), "home", void 0, "timeline.back-to-live-metrics");
@@ -8708,7 +8713,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.panelToolbar.appendToolbarItem(this.showScreenshotsToolbarCheckbox);
     }
     this.showMemoryToolbarCheckbox = this.createSettingCheckbox(this.showMemorySetting, i18nString19(UIStrings19.showMemoryTimeline));
-    if (hasPrimaryTarget) {
+    if (canRecord) {
       this.panelToolbar.appendToolbarItem(this.showMemoryToolbarCheckbox);
       this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
     }
@@ -8725,7 +8730,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.panelToolbar.appendSeparator();
       this.panelToolbar.appendToolbarItem(isolateSelector);
     }
-    if (!isNode && hasPrimaryTarget) {
+    if (!isNode && canRecord) {
       this.panelRightToolbar.appendSeparator();
       this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
     }
@@ -8877,8 +8882,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.updateSettingsPaneVisibility();
   }
   createNetworkConditionsSelectToolbarItem() {
-    const toolbarItem = new UI10.Toolbar.ToolbarComboBox(null, i18nString19(UIStrings19.networkConditions));
-    this.networkThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(toolbarItem.element);
+    const toolbarItem = new UI10.Toolbar.ToolbarItem(document.createElement("div"));
+    this.networkThrottlingSelect = MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(toolbarItem.element, i18nString19(UIStrings19.networkConditions));
     return toolbarItem;
   }
   prepareToLoadTimeline() {
@@ -9007,12 +9012,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         headers: { "Content-Type": "application/gzip" }
       }).blob();
     }
-    let bytesAsB64 = "";
+    let bytesAsB64 = null;
     try {
       bytesAsB64 = await Common10.Base64.encode(blob);
     } catch {
     }
-    if (bytesAsB64.length) {
+    if (bytesAsB64?.length) {
       const contentData = new TextUtils2.ContentData.ContentData(
         bytesAsB64,
         /* isBase64=*/
@@ -9170,7 +9175,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.flameChart.rebuildDataForTrace();
   }
   updateSettingsPaneVisibility() {
-    if (isNode || !this.hasPrimaryTarget()) {
+    if (isNode || !this.canRecord()) {
       return;
     }
     if (this.showSettingsPaneSetting.get()) {
@@ -9434,7 +9439,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.state === "Recording" || this.state === "Idle"
       /* State.IDLE */
     );
-    if (!this.hasPrimaryTarget()) {
+    if (!this.canRecord()) {
       return;
     }
     this.recordReloadAction.setEnabled(
@@ -10347,59 +10352,59 @@ var SelectedInsight = class {
 import * as Utils12 from "./utils/utils.js";
 var UIStrings20 = {
   /**
-   *@description Text that only contain a placeholder
-   *@example {100ms (at 200ms)} PH1
+   * @description Text that only contain a placeholder
+   * @example {100ms (at 200ms)} PH1
    */
   emptyPlaceholder: "{PH1}",
   // eslint-disable-line rulesdir/l10n-no-locked-or-placeholder-only-phrase
   /**
-   *@description Text for timestamps of items
+   * @description Text for timestamps of items
    */
   timestamp: "Timestamp",
   /**
-   *@description Text shown next to the interaction event's ID in the detail view.
+   * @description Text shown next to the interaction event's ID in the detail view.
    */
   interactionID: "ID",
   /**
-   *@description Text shown next to the interaction event's input delay time in the detail view.
+   * @description Text shown next to the interaction event's input delay time in the detail view.
    */
   inputDelay: "Input delay",
   /**
-   *@description Text shown next to the interaction event's thread processing duration in the detail view.
+   * @description Text shown next to the interaction event's thread processing duration in the detail view.
    */
   processingDuration: "Processing duration",
   /**
-   *@description Text shown next to the interaction event's presentation delay time in the detail view.
+   * @description Text shown next to the interaction event's presentation delay time in the detail view.
    */
   presentationDelay: "Presentation delay",
   /**
-   *@description Text shown when the user has selected an event that represents script compiliation.
+   * @description Text shown when the user has selected an event that represents script compiliation.
    */
   compile: "Compile",
   /**
-   *@description Text shown when the user selects an event that represents script parsing.
+   * @description Text shown when the user selects an event that represents script parsing.
    */
   parse: "Parse",
   /**
-   *@description Text with two placeholders separated by a colon
-   *@example {Node removed} PH1
-   *@example {div#id1} PH2
+   * @description Text with two placeholders separated by a colon
+   * @example {Node removed} PH1
+   * @example {div#id1} PH2
    */
   sS: "{PH1}: {PH2}",
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more",
   /**
-   *@description Text referring to the status of the browser's compilation cache.
+   * @description Text referring to the status of the browser's compilation cache.
    */
   compilationCacheStatus: "Compilation cache status",
   /**
-   *@description Text referring to the size of the browser's compiliation cache.
+   * @description Text referring to the size of the browser's compiliation cache.
    */
   compilationCacheSize: "Compilation cache size",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel. "Compilation
+   * @description Text in Timeline UIUtils of the Performance panel. "Compilation
    * cache" refers to the code cache described at
    * https://v8.dev/blog/code-caching-for-devs . This label is followed by the
    * type of code cache data used, either "normal" or "full" as described in the
@@ -10407,203 +10412,203 @@ var UIStrings20 = {
    */
   compilationCacheKind: "Compilation cache kind",
   /**
-   *@description Text used to inform the user that the script they are looking
+   * @description Text used to inform the user that the script they are looking
    *             at was loaded from the browser's cache.
    */
   scriptLoadedFromCache: "script loaded from cache",
   /**
-   *@description Text to inform the user that the script they are looking at
+   * @description Text to inform the user that the script they are looking at
    *             was unable to be loaded from the browser's cache.
    */
   failedToLoadScriptFromCache: "failed to load script from cache",
   /**
-   *@description Text to inform the user that the script they are looking at was not eligible to be loaded from the browser's cache.
+   * @description Text to inform the user that the script they are looking at was not eligible to be loaded from the browser's cache.
    */
   scriptNotEligibleToBeLoadedFromCache: "script not eligible",
   /**
-   *@description Label in the summary view in the Performance panel for a number which indicates how much managed memory has been reclaimed by performing Garbage Collection
+   * @description Label in the summary view in the Performance panel for a number which indicates how much managed memory has been reclaimed by performing Garbage Collection
    */
   collected: "Collected",
   /**
-   *@description Text for a programming function
+   * @description Text for a programming function
    */
   function: "Function",
   /**
-   *@description Text for referring to the ID of a timer.
+   * @description Text for referring to the ID of a timer.
    */
   timerId: "Timer ID",
   /**
-   *@description Text for referring to a timer that has timed-out and therefore is being removed.
+   * @description Text for referring to a timer that has timed-out and therefore is being removed.
    */
   timeout: "Timeout",
   /**
-   *@description Text used to indicate that a timer is repeating (e.g. every X seconds) rather than a one off.
+   * @description Text used to indicate that a timer is repeating (e.g. every X seconds) rather than a one off.
    */
   repeats: "Repeats",
   /**
-   *@description Text for referring to the ID of a callback function installed by an event.
+   * @description Text for referring to the ID of a callback function installed by an event.
    */
   callbackId: "Callback ID",
   /**
-   *@description Text for a module, the programming concept
+   * @description Text for a module, the programming concept
    */
   module: "Module",
   /**
-   *@description Label for a group of JavaScript files
+   * @description Label for a group of JavaScript files
    */
   script: "Script",
   /**
-   *@description Text used to tell a user that a compilation trace event was streamed.
+   * @description Text used to tell a user that a compilation trace event was streamed.
    */
   streamed: "Streamed",
   /**
-   *@description Text to indicate if a compilation event was eager.
+   * @description Text to indicate if a compilation event was eager.
    */
   eagerCompile: "Compiling all functions eagerly",
   /**
-   *@description Text to refer to the URL associated with a given event.
+   * @description Text to refer to the URL associated with a given event.
    */
   url: "Url",
   /**
-   *@description Text to indicate to the user the size of the cache (as a filesize - e.g. 5mb).
+   * @description Text to indicate to the user the size of the cache (as a filesize - e.g. 5mb).
    */
   producedCacheSize: "Produced cache size",
   /**
-   *@description Text to indicate to the user the amount of the cache (as a filesize - e.g. 5mb) that has been used.
+   * @description Text to indicate to the user the amount of the cache (as a filesize - e.g. 5mb) that has been used.
    */
   consumedCacheSize: "Consumed cache size",
   /**
-   *@description Related node label in Timeline UIUtils of the Performance panel
+   * @description Related node label in Timeline UIUtils of the Performance panel
    */
   layerRoot: "Layer root",
   /**
-   *@description Related node label in Timeline UIUtils of the Performance panel
+   * @description Related node label in Timeline UIUtils of the Performance panel
    */
   ownerElement: "Owner element",
   /**
-   *@description Text used to show the user the URL of the image they are viewing.
+   * @description Text used to show the user the URL of the image they are viewing.
    */
   imageUrl: "Image URL",
   /**
-   *@description Text used to show the user that the URL they are viewing is loading a CSS stylesheet.
+   * @description Text used to show the user that the URL they are viewing is loading a CSS stylesheet.
    */
   stylesheetUrl: "Stylesheet URL",
   /**
-   *@description Text used next to a number to show the user how many elements were affected.
+   * @description Text used next to a number to show the user how many elements were affected.
    */
   elementsAffected: "Elements affected",
   /**
-   *@description Text used next to a number to show the user how many nodes required the browser to update and re-layout the page.
+   * @description Text used next to a number to show the user how many nodes required the browser to update and re-layout the page.
    */
   nodesThatNeedLayout: "Nodes that need layout",
   /**
-   *@description Text used to show the amount in a subset - e.g. "2 of 10".
-   *@example {2} PH1
-   *@example {10} PH2
+   * @description Text used to show the amount in a subset - e.g. "2 of 10".
+   * @example {2} PH1
+   * @example {10} PH2
    */
   sOfS: "{PH1} of {PH2}",
   /**
-   *@description Related node label in Timeline UIUtils of the Performance panel
+   * @description Related node label in Timeline UIUtils of the Performance panel
    */
   layoutRoot: "Layout root",
   /**
-   *@description Text used when viewing an event that can have a custom message attached.
+   * @description Text used when viewing an event that can have a custom message attached.
    */
   message: "Message",
   /**
-   *@description Text used to tell the user they are viewing an event that has a function embedded in it, which is referred to as the "callback function".
+   * @description Text used to tell the user they are viewing an event that has a function embedded in it, which is referred to as the "callback function".
    */
   callbackFunction: "Callback function",
   /**
-   *@description Text used to show the relevant range of a file - e.g. "lines 2-10".
+   * @description Text used to show the relevant range of a file - e.g. "lines 2-10".
    */
   range: "Range",
   /**
-   *@description Text used to refer to the amount of time some event or code was given to complete within.
+   * @description Text used to refer to the amount of time some event or code was given to complete within.
    */
   allottedTime: "Allotted time",
   /**
-   *@description Text used to tell a user that a particular event or function was automatically run by a timeout.
+   * @description Text used to tell a user that a particular event or function was automatically run by a timeout.
    */
   invokedByTimeout: "Invoked by timeout",
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Text for the size of something
+   * @description Text for the size of something
    */
   size: "Size",
   /**
-   *@description Text for the details of something
+   * @description Text for the details of something
    */
   details: "Details",
   /**
-   *@description Text to indicate an item is a warning
+   * @description Text to indicate an item is a warning
    */
   warning: "Warning",
   /**
-   *@description Text that indicates a particular HTML element or node is related to what the user is viewing.
+   * @description Text that indicates a particular HTML element or node is related to what the user is viewing.
    */
   relatedNode: "Related node",
   /**
-   *@description Text for previewing items
+   * @description Text for previewing items
    */
   preview: "Preview",
   /**
-   *@description Text used to refer to the total time summed up across multiple events.
+   * @description Text used to refer to the total time summed up across multiple events.
    */
   aggregatedTime: "Aggregated time",
   /**
-   *@description Text for the duration of something
+   * @description Text for the duration of something
    */
   duration: "Duration",
   /**
-   *@description Text for the stack trace of the initiator of something. The Initiator is the event or factor that directly triggered or precipitated a subsequent action.
+   * @description Text for the stack trace of the initiator of something. The Initiator is the event or factor that directly triggered or precipitated a subsequent action.
    */
   initiatorStackTrace: "Initiator stack trace",
   /**
-   *@description Text for the event initiated by another one
+   * @description Text for the event initiated by another one
    */
   initiatedBy: "Initiated by",
   /**
-   *@description Text for the event that is an initiator for another one
+   * @description Text for the event that is an initiator for another one
    */
   initiatorFor: "Initiator for",
   /**
-   *@description Text for the underlying data behing a specific flamechart selection. Trace events are the browser instrumentation that are emitted as JSON objects.
+   * @description Text for the underlying data behing a specific flamechart selection. Trace events are the browser instrumentation that are emitted as JSON objects.
    */
   traceEvent: "Trace event",
   /**
-   *@description Call site stack label in Timeline UIUtils of the Performance panel
+   * @description Call site stack label in Timeline UIUtils of the Performance panel
    */
   timerInstalled: "Timer installed",
   /**
-   *@description Call site stack label in Timeline UIUtils of the Performance panel
+   * @description Call site stack label in Timeline UIUtils of the Performance panel
    */
   animationFrameRequested: "Animation frame requested",
   /**
-   *@description Call site stack label in Timeline UIUtils of the Performance panel
+   * @description Call site stack label in Timeline UIUtils of the Performance panel
    */
   idleCallbackRequested: "Idle callback requested",
   /**
-   *@description Stack label in Timeline UIUtils of the Performance panel
+   * @description Stack label in Timeline UIUtils of the Performance panel
    */
   recalculationForced: "Recalculation forced",
   /**
-   *@description Call site stack label in Timeline UIUtils of the Performance panel
+   * @description Call site stack label in Timeline UIUtils of the Performance panel
    */
   firstLayoutInvalidation: "First layout invalidation",
   /**
-   *@description Stack label in Timeline UIUtils of the Performance panel
+   * @description Stack label in Timeline UIUtils of the Performance panel
    */
   layoutForced: "Layout forced",
   /**
-   *@description Label in front of CSS property (eg `opacity`) being animated or a CSS animation name (eg `layer-4-fade-in-out`)
+   * @description Label in front of CSS property (eg `opacity`) being animated or a CSS animation name (eg `layer-4-fade-in-out`)
    */
   animating: "Animating",
   /**
-   *@description Label in front of reasons why a CSS animation wasn't composited (aka hardware accelerated)
+   * @description Label in front of reasons why a CSS animation wasn't composited (aka hardware accelerated)
    */
   compositingFailed: "Compositing failed",
   /** Descriptive reason for why a user-provided animation failed to be optimized by the browser due to accelerated animations being disabled. Shown in a table with a list of other potential failure reasons.  */
@@ -10651,11 +10656,11 @@ var UIStrings20 = {
   /** Descriptive reason for why a user-provided animation failed to be optimized by the browser due to an unknown reason. Shown in a table with a list of other potential failure reasons.  */
   compositingFailedUnknownReason: "Unknown Reason",
   /**
-   *@description Text for the execution stack trace
+   * @description Text for the execution stack trace
    */
   stackTrace: "Stack trace",
   /**
-   *@description Text used to show any invalidations for a particular event that caused the browser to have to do more work to update the page.
+   * @description Text used to show any invalidations for a particular event that caused the browser to have to do more work to update the page.
    * @example {2} PH1
    */
   invalidations: "Invalidations ({PH1} total)",
@@ -10666,59 +10671,59 @@ var UIStrings20 = {
    */
   pendingFor: "Pending for",
   /**
-   *@description Noun label for a stack trace which indicates the first time some condition was invalidated.
+   * @description Noun label for a stack trace which indicates the first time some condition was invalidated.
    */
   firstInvalidated: "First invalidated",
   /**
-   *@description Title of the paint profiler, old name of the performance pane
+   * @description Title of the paint profiler, old name of the performance pane
    */
   paintProfiler: "Paint profiler",
   /**
-   *@description Text in Timeline Flame Chart View of the Performance panel
-   *@example {Frame} PH1
-   *@example {10ms} PH2
+   * @description Text in Timeline Flame Chart View of the Performance panel
+   * @example {Frame} PH1
+   * @example {10ms} PH2
    */
   sAtS: "{PH1} at {PH2}",
   /**
-   *@description Text used next to a time to indicate that the particular event took that much time itself. In context this might look like "3ms blink.console (self)"
-   *@example {blink.console} PH1
+   * @description Text used next to a time to indicate that the particular event took that much time itself. In context this might look like "3ms blink.console (self)"
+   * @example {blink.console} PH1
    */
   sSelf: "{PH1} (self)",
   /**
-   *@description Text used next to a time to indicate that the event's children took that much time. In context this might look like "3ms blink.console (children)"
-   *@example {blink.console} PH1
+   * @description Text used next to a time to indicate that the event's children took that much time. In context this might look like "3ms blink.console (children)"
+   * @example {blink.console} PH1
    */
   sChildren: "{PH1} (children)",
   /**
-   *@description Text used to show the user how much time the browser spent on rendering (drawing the page onto the screen).
+   * @description Text used to show the user how much time the browser spent on rendering (drawing the page onto the screen).
    */
   timeSpentInRendering: "Time spent in rendering",
   /**
-   *@description Text for a rendering frame
+   * @description Text for a rendering frame
    */
   frame: "Frame",
   /**
-   *@description Text used to refer to the duration of an event at a given offset - e.g. "2ms at 10ms" which can be read as "2ms starting after 10ms".
-   *@example {10ms} PH1
-   *@example {10ms} PH2
+   * @description Text used to refer to the duration of an event at a given offset - e.g. "2ms at 10ms" which can be read as "2ms starting after 10ms".
+   * @example {10ms} PH1
+   * @example {10ms} PH2
    */
   sAtSParentheses: "{PH1} (at {PH2})",
   /**
-   *@description Text of a DOM element in Timeline UIUtils of the Performance panel
+   * @description Text of a DOM element in Timeline UIUtils of the Performance panel
    */
   UnknownNode: "[ unknown node ]",
   /**
-   *@description Text used to refer to a particular element and the file it was referred to in.
-   *@example {node} PH1
-   *@example {app.js} PH2
+   * @description Text used to refer to a particular element and the file it was referred to in.
+   * @example {node} PH1
+   * @example {app.js} PH2
    */
   invalidationWithCallFrame: "{PH1} at {PH2}",
   /**
-   *@description Text indicating that something is outside of the Performace Panel Timeline Minimap range
+   * @description Text indicating that something is outside of the Performace Panel Timeline Minimap range
    */
   outsideBreadcrumbRange: "(outside of the breadcrumb range)",
   /**
-   *@description Text indicating that something is hidden from the Performace Panel Timeline
+   * @description Text indicating that something is hidden from the Performace Panel Timeline
    */
   entryIsHidden: "(entry is hidden)",
   /**
@@ -12340,15 +12345,15 @@ var TimelineRegExp = class extends Trace23.Extras.TraceFilter.TraceFilter {
 import * as Utils13 from "./utils/utils.js";
 var UIStrings21 = {
   /**
-   *@description Text for the start time of an activity
+   * @description Text for the start time of an activity
    */
   startTime: "Start time",
   /**
-   *@description Screen reader label for a select box that filters the Performance panel Event Log by duration.
+   * @description Screen reader label for a select box that filters the Performance panel Event Log by duration.
    */
   durationFilter: "Duration filter",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   all: "All"
 };
@@ -13290,90 +13295,90 @@ devtools-data-grid {
 import * as Utils14 from "./utils/utils.js";
 var UIStrings22 = {
   /**
-   *@description Label for selector stats data table
+   * @description Label for selector stats data table
    */
   selectorStats: "Selector stats",
   /**
-   *@description Column name and time unit for elapsed time spent computing a style rule
+   * @description Column name and time unit for elapsed time spent computing a style rule
    */
   elapsed: "Elapsed (ms)",
   /**
-   *@description Tooltip description 'Elapsed (ms)'
+   * @description Tooltip description 'Elapsed (ms)'
    */
   elapsedExplanation: "Elapsed time spent matching a selector against the DOM in milliseconds.",
   /**
-   *@description Column name and percentage of slow mach non-matches computing a style rule
+   * @description Column name and percentage of slow mach non-matches computing a style rule
    */
   slowPathNonMatches: "% of slow-path non-matches",
   /**
-   *@description Tooltip description '% of slow-path non-matches'
+   * @description Tooltip description '% of slow-path non-matches'
    */
   slowPathNonMatchesExplanation: "The percentage of non-matching nodes (Match Attempts - Match Count) that couldn't be quickly ruled out by the bloom filter due to high selector complexity. Lower is better.",
   /**
-   *@description Column name for count of elements that the engine attempted to match against a style rule
+   * @description Column name for count of elements that the engine attempted to match against a style rule
    */
   matchAttempts: "Match attempts",
   /**
-   *@description Tooltip description 'Match attempts'
+   * @description Tooltip description 'Match attempts'
    */
   matchAttemptsExplanation: "Count of nodes that the engine attempted to match against a style rule.",
   /**
-   *@description Column name for count of elements that matched a style rule
+   * @description Column name for count of elements that matched a style rule
    */
   matchCount: "Match count",
   /**
-   *@description Tooltip description 'Match count'
+   * @description Tooltip description 'Match count'
    */
   matchCountExplanation: "Count of nodes that matched a style rule.",
   /**
-   *@description Column name for a style rule's CSS selector text
+   * @description Column name for a style rule's CSS selector text
    */
   selector: "Selector",
   /**
-   *@description Tooltip description 'Selector'
+   * @description Tooltip description 'Selector'
    */
   selectorExplanation: "CSS selector text of a style rule.",
   /**
-   *@description Column name for a style rule's CSS selector text
+   * @description Column name for a style rule's CSS selector text
    */
   styleSheetId: "Style Sheet",
   /**
-   *@description Tooltip description 'Style Sheet'
+   * @description Tooltip description 'Style Sheet'
    */
   styleSheetIdExplanation: "Links to the selector rule definition in the style sheets. Note that a selector rule could be defined in multiple places in a style sheet or defined in multiple style sheets. Selector rules from browser user-agent style sheet or dynamic style sheets don't have a link.",
   /**
-   *@description A context menu item in data grids to copy entire table to clipboard
+   * @description A context menu item in data grids to copy entire table to clipboard
    */
   copyTable: "Copy table",
   /**
-   *@description A cell value displayed in table when no source file can be traced via css style
+   * @description A cell value displayed in table when no source file can be traced via css style
    */
   unableToLink: "Unable to link",
   /**
-   *@description Tooltip for the cell that no source file can be traced via style sheet id
-   *@example {style-sheet-4} PH1
+   * @description Tooltip for the cell that no source file can be traced via style sheet id
+   * @example {style-sheet-4} PH1
    */
   unableToLinkViaStyleSheetId: "Unable to link via {PH1}",
   /**
-   *@description Text for announcing that the entire table was copied to clipboard
+   * @description Text for announcing that the entire table was copied to clipboard
    */
   tableCopiedToClipboard: "Table copied to clipboard",
   /**
-   *@description Text shown as the "Selectelector" cell value for one row of the Selector Stats table, however this particular row is the totals. While normally the Selector cell is values like "div.container", the parenthesis can denote this description is not an actual selector, but a general row description.
+   * @description Text shown as the "Selectelector" cell value for one row of the Selector Stats table, however this particular row is the totals. While normally the Selector cell is values like "div.container", the parenthesis can denote this description is not an actual selector, but a general row description.
    */
   totalForAllSelectors: "(Totals for all selectors)",
   /**
-   *@description Text for showing the location of a selector in the style sheet
-   *@example {256} PH1
-   *@example {14} PH2
+   * @description Text for showing the location of a selector in the style sheet
+   * @example {256} PH1
+   * @example {14} PH2
    */
   lineNumber: "Line {PH1}:{PH2}",
   /**
-   *@description Count of invalidation for a specific selector. Note that a node can be invalidated multiple times.
+   * @description Count of invalidation for a specific selector. Note that a node can be invalidated multiple times.
    */
   invalidationCount: "Invalidation count",
   /**
-   *@description Tooltip description 'Invalidation count'
+   * @description Tooltip description 'Invalidation count'
    */
   invalidationCountExplanation: "Aggregated count of invalidations on nodes and subsequently had style recalculated, all of which are matched by this selector. Note that a node can be invalidated multiple times and by multiple selectors."
 };
@@ -13457,10 +13462,9 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
         </table>
       </devtools-data-grid>`, target, { host: this });
   }) {
-    super();
+    super({ jslog: `${VisualLogging8.pane("selector-stats").track({ resize: true })}` });
     this.registerRequiredCSS(timelineSelectorStatsView_css_default);
     this.#view = view;
-    this.element.setAttribute("jslog", `${VisualLogging8.pane("selector-stats").track({ resize: true })}`);
     this.#selectorLocations = /* @__PURE__ */ new Map();
     this.#parsedTrace = parsedTrace;
     this.performUpdate();
@@ -13713,31 +13717,31 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
 import * as Utils15 from "./utils/utils.js";
 var UIStrings23 = {
   /**
-   *@description Text for the summary view
+   * @description Text for the summary view
    */
   summary: "Summary",
   /**
-   *@description Text in Timeline Details View of the Performance panel
+   * @description Text in Timeline Details View of the Performance panel
    */
   bottomup: "Bottom-up",
   /**
-   *@description Text in Timeline Details View of the Performance panel
+   * @description Text in Timeline Details View of the Performance panel
    */
   callTree: "Call tree",
   /**
-   *@description Text in Timeline Details View of the Performance panel
+   * @description Text in Timeline Details View of the Performance panel
    */
   eventLog: "Event log",
   /**
-   *@description Title of the paint profiler, old name of the performance pane
+   * @description Title of the paint profiler, old name of the performance pane
    */
   paintProfiler: "Paint profiler",
   /**
-   *@description Title of the Layers tool
+   * @description Title of the Layers tool
    */
   layers: "Layers",
   /**
-   *@description Title of the selector stats tab
+   * @description Title of the selector stats tab
    */
   selectorStats: "Selector stats"
 };
@@ -13759,8 +13763,6 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
   #parsedTrace = null;
   #traceInsightsSets = null;
   #eventToRelatedInsightsMap = null;
-  #filmStrip = null;
-  #networkRequestDetails;
   #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
   #thirdPartyTree = new ThirdPartyTreeViewWidget();
   #entityMapper = null;
@@ -13808,7 +13810,6 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.#thirdPartyTree.addEventListener("TreeRowClicked", (node) => {
       this.dispatchEventToListeners("TreeRowClicked", { node: node.data.node, events: node.data.events ?? void 0 });
     });
-    this.#networkRequestDetails = new TimelineComponents5.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
     this.tabbedPane.addEventListener(UI16.TabbedPane.Events.TabSelected, this.tabSelected, this);
     TraceBounds13.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     this.lazySelectorStatsView = null;
@@ -13894,7 +13895,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
       this.#parsedTrace = data.parsedTrace;
     }
     if (data.parsedTrace) {
-      this.#filmStrip = Trace27.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
+      this.#summaryContent.filmStrip = Trace27.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
       this.#entityMapper = new Utils15.EntityMapper.EntityMapper(data.parsedTrace);
     }
     this.#selectedEvents = data.selectedEvents;
@@ -13903,6 +13904,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
     this.#summaryContent.traceInsightsSets = this.#traceInsightsSets;
     this.#summaryContent.parsedTrace = this.#parsedTrace;
+    this.#summaryContent.entityMapper = this.#entityMapper;
     this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
     for (const view of this.rangeDetailViews.values()) {
       view.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
@@ -13913,7 +13915,14 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.lazyLayersView = null;
     await this.setSelection(null);
   }
-  async setSummaryContent(node) {
+  /**
+   * Updates the UI shown in the Summary tab, and updates the UI to select the
+   * summary tab.
+   * @param node this is passed as an additional piece of DOM that will be
+   *     rendered in the summary view. This is a temporary ability to allow
+   *     incremental migration to the UI Eng vision.
+   */
+  async updateSummaryAndSelectTab(node) {
     const allTabs = this.tabbedPane.otherTabs(Tab.Details);
     for (let i = 0; i < allTabs.length; ++i) {
       if (!this.rangeDetailViews.has(allTabs[i])) {
@@ -13958,7 +13967,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
    */
   scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
     if (!this.#parsedTrace) {
-      void this.setSummaryContent(UI16.Fragment.html`<div/>`);
+      void this.updateSummaryAndSelectTab(null);
       return;
     }
     if (forceImmediateUpdate) {
@@ -13985,22 +13994,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     this.updateSelectedRangeStats(visibleWindow.min, visibleWindow.max);
     this.updateContents();
   }
-  #getFilmStripFrame(frame) {
-    if (!this.#filmStrip) {
-      return null;
-    }
-    const screenshotTime = frame.idle ? frame.startTime : frame.endTime;
-    const filmStripFrame = Trace27.Extras.FilmStrip.frameClosestToTimestamp(this.#filmStrip, screenshotTime);
-    if (!filmStripFrame) {
-      return null;
-    }
-    const frameTimeMilliSeconds = Trace27.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
-    const frameEndTimeMilliSeconds = Trace27.Helpers.Timing.microToMilli(frame.endTime);
-    return frameTimeMilliSeconds - frameEndTimeMilliSeconds < 10 ? filmStripFrame : null;
-  }
-  #setSelectionForTimelineFrame(frame) {
-    const matchedFilmStripFrame = this.#getFilmStripFrame(frame);
-    void this.setSummaryContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
+  #addLayerTreeForSelectedFrame(frame) {
     const target = SDK13.TargetManager.TargetManager.instance().rootTarget();
     if (frame.layerTree && target) {
       const layerTreeForFrame = new TracingFrameLayerTree(target, frame.layerTree);
@@ -14011,28 +14005,16 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
       }
     }
   }
-  async #setSelectionForNetworkEvent(networkRequest) {
-    if (!this.#parsedTrace) {
-      return;
-    }
-    const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
-    await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget, this.#entityMapper);
-    this.#summaryContent.selectedEvent = networkRequest;
-    this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
-    await this.setSummaryContent(this.#networkRequestDetails);
-  }
   async #setSelectionForTraceEvent(event) {
     if (!this.#parsedTrace) {
       return;
     }
     this.#summaryContent.selectedEvent = event;
     this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
-    this.#summaryContent.requestUpdate();
-    if (Trace27.Types.Events.isSyntheticLayoutShift(event) || Trace27.Types.Events.isSyntheticLayoutShiftCluster(event)) {
-      return await this.setSummaryContent();
-    }
-    const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true, this.#entityMapper);
-    this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
+    this.#summaryContent.linkifier = this.detailsLinkifier;
+    this.#summaryContent.target = targetForEvent(this.#parsedTrace, event);
+    await this.updateSummaryAndSelectTab(null);
+    this.appendExtraDetailsTabsForTraceEvent(event);
   }
   async setSelection(selection) {
     if (!this.#parsedTrace) {
@@ -14050,13 +14032,10 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     }
     if (selectionIsEvent(selection)) {
       this.updateContentsScheduled = false;
-      if (Trace27.Types.Events.isSyntheticNetworkRequest(selection.event)) {
-        await this.#setSelectionForNetworkEvent(selection.event);
-      } else if (Trace27.Types.Events.isLegacyTimelineFrame(selection.event)) {
-        this.#setSelectionForTimelineFrame(selection.event);
-      } else {
-        await this.#setSelectionForTraceEvent(selection.event);
+      if (Trace27.Types.Events.isLegacyTimelineFrame(selection.event)) {
+        this.#addLayerTreeForSelectedFrame(selection.event);
       }
+      await this.#setSelectionForTraceEvent(selection.event);
     } else if (selectionIsRange(selection)) {
       const timings = Trace27.Helpers.Timing.traceWindowMicroSecondsToMilliSeconds(selection.bounds);
       this.updateSelectedRangeStats(timings.min, timings.max);
@@ -14108,8 +14087,12 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
       this.appendTab(Tab.SelectorStats, i18nString23(UIStrings23.selectorStats), selectorStatsView);
     }
   }
-  appendDetailsTabsForTraceEventAndShowDetails(event, content) {
-    void this.setSummaryContent(content);
+  /**
+   * When some events are selected, we show extra tabs. E.g. paint events get
+   * the Paint Profiler, and layout events might get CSS Selector Stats if
+   * they are available in the trace.
+   */
+  appendExtraDetailsTabsForTraceEvent(event) {
     if (Trace27.Types.Events.isPaint(event) || Trace27.Types.Events.isRasterTask(event)) {
       this.showEventInPaintProfiler(event);
     }
@@ -14144,7 +14127,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.W
     const startOffset = startTime - minBoundsMilli;
     const endOffset = endTime - minBoundsMilli;
     const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
-    void this.setSummaryContent(summaryDetailElem).then(() => {
+    void this.updateSummaryAndSelectTab(summaryDetailElem).then(() => {
       this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(startTime, endTime));
     });
     const isSelectorStatsEnabled = Common14.Settings.Settings.instance().createSetting("timeline-capture-selector-stats", false).get();
@@ -14166,30 +14149,16 @@ var Tab;
   Tab2["LayerViewer"] = "layer-viewer";
   Tab2["SelectorStats"] = "selector-stats";
 })(Tab || (Tab = {}));
-function eventIsLayoutShiftRelated(e) {
-  if (e === null) {
-    return false;
-  }
-  return Trace27.Types.Events.isSyntheticLayoutShift(e) || Trace27.Types.Events.isSyntheticLayoutShiftCluster(e);
-}
 var SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
-  const traceRecordingIsFresh = input.parsedTrace ? Tracker.instance().recordingIsFresh(input.parsedTrace) : false;
   render2(html2`
-        <style>${timelineDetailsView_css_default}</style>
+        <style>${UI16.Widget.widgetScoped(timelineDetailsView_css_default)}</style>
         ${input.node ?? nothing}
-        ${eventIsLayoutShiftRelated(input.selectedEvent) ? html2`
-          <devtools-widget data-layout-shift-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
-    event: input.selectedEvent,
-    traceInsightsSets: input.traceInsightsSets,
-    parsedTrace: input.parsedTrace,
-    isFreshRecording: traceRecordingIsFresh
-  })}></devtools-widget>
-          ` : nothing}
+        ${Directives.until(renderSelectedEventDetails(input))}
         <devtools-widget data-related-insight-chips .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
     activeEvent: input.selectedEvent,
     eventToInsightsMap: input.eventToRelatedInsightsMap
   })}></devtools-widget>
-      `, target, { host: input });
+      `, target);
 };
 var SummaryView = class extends UI16.Widget.Widget {
   #view;
@@ -14198,6 +14167,10 @@ var SummaryView = class extends UI16.Widget.Widget {
   eventToRelatedInsightsMap = null;
   parsedTrace = null;
   traceInsightsSets = null;
+  entityMapper = null;
+  target = null;
+  linkifier = null;
+  filmStrip = null;
   constructor(element, view = SUMMARY_DEFAULT_VIEW) {
     super(element);
     this.#view = view;
@@ -14208,10 +14181,71 @@ var SummaryView = class extends UI16.Widget.Widget {
       selectedEvent: this.selectedEvent,
       eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
       parsedTrace: this.parsedTrace,
-      traceInsightsSets: this.traceInsightsSets
+      traceInsightsSets: this.traceInsightsSets,
+      entityMapper: this.entityMapper,
+      target: this.target,
+      linkifier: this.linkifier,
+      filmStrip: this.filmStrip
     }, {}, this.contentElement);
   }
 };
+async function renderSelectedEventDetails(input) {
+  const { selectedEvent, parsedTrace, linkifier } = input;
+  if (!selectedEvent || !parsedTrace || !linkifier) {
+    return nothing;
+  }
+  const traceRecordingIsFresh = parsedTrace ? Tracker.instance().recordingIsFresh(parsedTrace) : false;
+  if (Trace27.Types.Events.isSyntheticLayoutShift(selectedEvent) || Trace27.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
+    return html2`
+      <devtools-widget data-layout-shift-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
+      event: selectedEvent,
+      traceInsightsSets: input.traceInsightsSets,
+      parsedTrace: input.parsedTrace,
+      isFreshRecording: traceRecordingIsFresh
+    })}
+      ></devtools-widget>`;
+  }
+  if (Trace27.Types.Events.isSyntheticNetworkRequest(selectedEvent)) {
+    return html2`
+      <devtools-widget data-network-request-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.NetworkRequestDetails.NetworkRequestDetails, {
+      request: selectedEvent,
+      entityMapper: input.entityMapper,
+      target: input.target,
+      linkifier: input.linkifier,
+      parsedTrace: input.parsedTrace
+    })}
+      ></devtools-widget>
+    `;
+  }
+  if (Trace27.Types.Events.isLegacyTimelineFrame(selectedEvent) && input.filmStrip) {
+    const matchedFilmStripFrame = getFilmStripFrame(input.filmStrip, selectedEvent);
+    const content = TimelineUIUtils.generateDetailsContentForFrame(selectedEvent, input.filmStrip, matchedFilmStripFrame);
+    return html2`${content}`;
+  }
+  const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(parsedTrace, selectedEvent, linkifier, true, input.entityMapper);
+  return html2`${traceEventDetails}`;
+}
+var filmStripFrameCache = /* @__PURE__ */ new WeakMap();
+function getFilmStripFrame(filmStrip, frame) {
+  const fromCache = filmStripFrameCache.get(frame);
+  if (typeof fromCache !== "undefined") {
+    return fromCache;
+  }
+  const screenshotTime = frame.idle ? frame.startTime : frame.endTime;
+  const filmStripFrame = Trace27.Extras.FilmStrip.frameClosestToTimestamp(filmStrip, screenshotTime);
+  if (!filmStripFrame) {
+    filmStripFrameCache.set(frame, null);
+    return null;
+  }
+  const frameTimeMilliSeconds = Trace27.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
+  const frameEndTimeMilliSeconds = Trace27.Helpers.Timing.microToMilli(frame.endTime);
+  if (frameTimeMilliSeconds - frameEndTimeMilliSeconds < 10) {
+    filmStripFrameCache.set(frame, filmStripFrame);
+    return filmStripFrame;
+  }
+  filmStripFrameCache.set(frame, null);
+  return null;
+}
 
 // gen/front_end/panels/timeline/TimelineFlameChartNetworkDataProvider.js
 var TimelineFlameChartNetworkDataProvider_exports = {};
@@ -14239,7 +14273,7 @@ import * as ThemeSupport13 from "./../../ui/legacy/theme_support/theme_support.j
 import * as Components4 from "./components/components.js";
 var UIStrings24 = {
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   network: "Network"
 };
@@ -15141,9 +15175,9 @@ var timelineFlameChartView_css_default = `/*
 import * as Utils17 from "./utils/utils.js";
 var UIStrings25 = {
   /**
-   *@description Text in Timeline Flame Chart View of the Performance panel
-   *@example {Frame} PH1
-   *@example {10ms} PH2
+   * @description Text in Timeline Flame Chart View of the Performance panel
+   * @example {Frame} PH1
+   * @example {10ms} PH2
    */
   sAtS: "{PH1} at {PH2}"
 };
@@ -15260,7 +15294,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
   #networkPersistedGroupConfigSetting;
   #mainPersistedGroupConfigSetting;
   constructor(delegate) {
-    super();
+    super({ jslog: `${VisualLogging10.section("timeline.flame-chart-view")}` });
     this.registerRequiredCSS(timelineFlameChartView_css_default);
     this.element.classList.add("timeline-flamechart");
     this.delegate = delegate;
@@ -15370,7 +15404,6 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.element.addEventListener(OverlayComponents.EntriesLinkOverlay.EntryLinkStartCreating.eventName, () => {
       this.focus();
     });
-    this.element.setAttribute("jslog", `${VisualLogging10.section("timeline.flame-chart-view")}`);
     this.networkPane = new UI18.Widget.VBox();
     this.networkPane.setMinimumSize(23, 23);
     this.networkFlameChart.show(this.networkPane.element);
@@ -15397,6 +15430,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.#onMainEntriesLinkAnnotationCreated = (event) => this.onEntriesLinkAnnotationCreate(this.mainDataProvider, event.data.entryFromIndex);
     this.#onNetworkEntriesLinkAnnotationCreated = (event) => this.onEntriesLinkAnnotationCreate(this.networkDataProvider, event.data.entryFromIndex);
     this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded", this.onMainAddEntryLabelAnnotation, this);
+    this.mainDataProvider.addEventListener("EntryLabelAnnotationAdded", this.onMainAddEntryLabelAnnotation, this);
     this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded", this.onNetworkAddEntryLabelAnnotation, this);
     this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated", this.#onMainEntriesLinkAnnotationCreated, this);
     this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated", this.#onNetworkEntriesLinkAnnotationCreated, this);
@@ -15929,8 +15963,8 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     TraceBounds15.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace30.Helpers.Timing.traceWindowFromMilliSeconds(Trace30.Types.Timing.Milli(windowStartTime), Trace30.Types.Timing.Milli(windowEndTime)), { shouldAnimate: animate });
   }
   /**
-   * @param startTime - the start time of the selection in MilliSeconds
-   * @param endTime - the end time of the selection in MilliSeconds
+   * @param startTime the start time of the selection in MilliSeconds
+   * @param endTime the end time of the selection in MilliSeconds
    * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
    */
   updateRangeSelection(startTime, endTime) {
@@ -16579,53 +16613,73 @@ function groupForLevel(groups, level) {
 import * as Utils18 from "./utils/utils.js";
 var UIStrings26 = {
   /**
-   *@description Text for rendering frames
+   * @description Text for rendering frames
    */
   frames: "Frames",
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   idleFrame: "Idle frame",
   /**
-   *@description Text in Timeline Frame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Frame Chart Data Provider of the Performance panel
    */
   droppedFrame: "Dropped frame",
   /**
-   *@description Text in Timeline Frame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Frame Chart Data Provider of the Performance panel
    */
   partiallyPresentedFrame: "Partially-presented frame",
   /**
-   *@description Text for a rendering frame
+   * @description Text for a rendering frame
    */
   frame: "Frame",
   /**
-   *@description Text for Hiding a function from the Flame Chart
+   * @description Text for Hiding a function from the Flame Chart
    */
   hideFunction: "Hide function",
   /**
-   *@description Text for Hiding all children of a function from the Flame Chart
+   * @description Text for Hiding all children of a function from the Flame Chart
    */
   hideChildren: "Hide children",
   /**
-   *@description Text for Hiding all child entries that are identical to the selected entry from the Flame Chart
+   * @description Text for Hiding all child entries that are identical to the selected entry from the Flame Chart
    */
   hideRepeatingChildren: "Hide repeating children",
   /**
-   *@description Text for remove script from ignore list from the Flame Chart
+   * @description Text for remove script from ignore list from the Flame Chart
    */
   removeScriptFromIgnoreList: "Remove script from ignore list",
   /**
-   *@description Text for add script to ignore list from the Flame Chart
+   * @description Text for add script to ignore list from the Flame Chart
    */
   addScriptToIgnoreList: "Add script to ignore list",
   /**
-   *@description Text for an action that shows all of the hidden children of an entry
+   * @description Text for an action that shows all of the hidden children of an entry
    */
   resetChildren: "Reset children",
   /**
-   *@description Text for an action that shows all of the hidden entries of the Flame Chart
+   * @description Text for an action that shows all of the hidden entries of the Flame Chart
    */
-  resetTrace: "Reset trace"
+  resetTrace: "Reset trace",
+  /**
+   * @description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
+   */
+  startAChat: "Start a chat",
+  /**
+   * @description Context menu item in Performance panel to label an entry.
+   */
+  labelEntry: "Label entry",
+  /**
+   * @description Context menu item in Performance panel to assess the purpose of an entry via AI.
+   */
+  assessThePurpose: "Assess the purpose",
+  /**
+   * @description Context menu item in Performance panel to identify time spent in a call tree via AI.
+   */
+  identifyTimeSpent: "Identify time spent",
+  /**
+   * @description Context menu item in Performance panel to find improvements for a call tree via AI.
+   */
+  findImprovements: "Find improvements"
 };
 var str_26 = i18n52.i18n.registerUIStrings("panels/timeline/TimelineFlameChartDataProvider.ts", UIStrings26);
 var i18nString26 = i18n52.i18n.getLocalizedString.bind(void 0, str_26);
@@ -16736,15 +16790,27 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       const aiCallTree = Utils18.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
       if (aiCallTree) {
         const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
-        contextMenu.footerSection().appendItem(action2.title(), () => {
-          const event = this.eventByIndex(entryIndex);
-          if (!event || !this.parsedTrace) {
-            return;
-          }
-          const context = Utils18.AIContext.AgentFocus.fromCallTree(aiCallTree);
-          UI19.Context.Context.instance().setFlavor(Utils18.AIContext.AgentFocus, context);
-          return action2.execute();
-        }, { jslogContext: PERF_AI_ACTION_ID });
+        const context = Utils18.AIContext.AgentFocus.fromCallTree(aiCallTree);
+        UI19.Context.Context.instance().setFlavor(Utils18.AIContext.AgentFocus, context);
+        if (Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+          let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {
+            submenu2.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
+          };
+          const submenu = contextMenu.footerSection().appendSubMenuItem(action2.title(), false, PERF_AI_ACTION_ID, Root6.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.featureName);
+          submenu.defaultSection().appendAction(PERF_AI_ACTION_ID, i18nString26(UIStrings26.startAChat));
+          submenu.defaultSection().appendItem(i18nString26(UIStrings26.labelEntry), () => {
+            this.dispatchEventToListeners("EntryLabelAnnotationAdded", { entryIndex, withLinkCreationButton: false });
+          }, {
+            jslogContext: "timeline.annotations.create-entry-label"
+          });
+          appendSubmenuPromptAction(submenu, action2, i18nString26(UIStrings26.assessThePurpose), "What's the purpose of this entry?", PERF_AI_ACTION_ID + ".purpose");
+          appendSubmenuPromptAction(submenu, action2, i18nString26(UIStrings26.identifyTimeSpent), "Where is most time being spent in this call tree?", PERF_AI_ACTION_ID + ".time-spent");
+          appendSubmenuPromptAction(submenu, action2, i18nString26(UIStrings26.findImprovements), "How can I reduce the time of this call tree?", PERF_AI_ACTION_ID + ".improvements");
+        } else if (Root6.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
+          contextMenu.footerSection().appendAction(PERF_AI_ACTION_ID, void 0, false, void 0, Root6.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.featureName);
+        } else {
+          contextMenu.footerSection().appendAction(PERF_AI_ACTION_ID);
+        }
       }
     }
     if (!possibleActions) {
@@ -17397,16 +17463,16 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   /**
    * Draws the left and right whiskers around an interaction in the timeline.
-   * @param context - the canvas that will be drawn onto
+   * @param context the canvas that will be drawn onto
    * @param entryIndex
-   * @param entryTitle - the title of the entry
-   * @param entry - the entry itself
-   * @param barX - the starting X pixel position of the bar representing this event. This is clipped: if the bar is off the left side of the screen, this value will be 0
-   * @param barY - the starting Y pixel position of the bar representing this event.
-   * @param unclippedBarXStartPixel - the starting X pixel position of the bar representing this event, not clipped. This means if the bar is off the left of the screen this will be a negative number.
-   * @param barWidth - the width of the full bar in pixels
-   * @param barHeight - the height of the full bar in pixels
-   * @param timeToPixelRatio - the ratio required to convert a millisecond time to a pixel value.
+   * @param entryTitle the title of the entry
+   * @param entry the entry itself
+   * @param barX the starting X pixel position of the bar representing this event. This is clipped: if the bar is off the left side of the screen, this value will be 0
+   * @param barY the starting Y pixel position of the bar representing this event.
+   * @param unclippedBarXStartPixel the starting X pixel position of the bar representing this event, not clipped. This means if the bar is off the left of the screen this will be a negative number.
+   * @param barWidth the width of the full bar in pixels
+   * @param barHeight the height of the full bar in pixels
+   * @param timeToPixelRatio the ratio required to convert a millisecond time to a pixel value.
    **/
   #drawInteractionEventWithWhiskers(context, entryIndex, entryTitle, entry, barX, barY, unclippedBarXStartPixel, barWidth, barHeight, timeToPixelRatio) {
     const beginTime = Trace31.Helpers.Timing.microToMilli(entry.ts);
@@ -17632,7 +17698,7 @@ import * as Trace32 from "./../../models/trace/trace.js";
 import * as Extensions5 from "./extensions/extensions.js";
 var UIStrings27 = {
   /**
-   *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+   * @description Text in Timeline Flame Chart Data Provider of the Performance panel
    */
   timings: "Timings"
 };

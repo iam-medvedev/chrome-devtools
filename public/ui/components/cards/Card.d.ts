@@ -31,8 +31,8 @@
  * `;
  * ```
  *
- * @attr heading - The heading text.
- * @prop {String} heading - The `"heading"` attribute is reflect as property.
+ * @property heading - The `"heading"` attribute is reflect as property.
+ * @attribute heading - The heading text.
  */
 export declare class Card extends HTMLElement {
     #private;

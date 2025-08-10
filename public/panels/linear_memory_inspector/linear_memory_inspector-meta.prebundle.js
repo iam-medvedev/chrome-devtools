@@ -8,11 +8,11 @@ import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Title of the Linear Memory inspector tool
+     * @description Title of the Linear Memory inspector tool
      */
     memoryInspector: 'Memory inspector',
     /**
-     *@description Command for showing the 'Memory inspector' tool
+     * @description Command for showing the 'Memory inspector' tool
      */
     showMemoryInspector: 'Show Memory inspector',
 };

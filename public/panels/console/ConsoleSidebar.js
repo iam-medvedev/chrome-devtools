@@ -19,27 +19,27 @@ const UIStrings = {
      */
     other: '<other>',
     /**
-     *@description Text in Console Sidebar of the Console panel to show how many user messages exist.
+     * @description Text in Console Sidebar of the Console panel to show how many user messages exist.
      */
     dUserMessages: '{n, plural, =0 {No user messages} =1 {# user message} other {# user messages}}',
     /**
-     *@description Text in Console Sidebar of the Console panel to show how many messages exist.
+     * @description Text in Console Sidebar of the Console panel to show how many messages exist.
      */
     dMessages: '{n, plural, =0 {No messages} =1 {# message} other {# messages}}',
     /**
-     *@description Text in Console Sidebar of the Console panel to show how many errors exist.
+     * @description Text in Console Sidebar of the Console panel to show how many errors exist.
      */
     dErrors: '{n, plural, =0 {No errors} =1 {# error} other {# errors}}',
     /**
-     *@description Text in Console Sidebar of the Console panel to show how many warnings exist.
+     * @description Text in Console Sidebar of the Console panel to show how many warnings exist.
      */
     dWarnings: '{n, plural, =0 {No warnings} =1 {# warning} other {# warnings}}',
     /**
-     *@description Text in Console Sidebar of the Console panel to show how many info messages exist.
+     * @description Text in Console Sidebar of the Console panel to show how many info messages exist.
      */
     dInfo: '{n, plural, =0 {No info} =1 {# info} other {# info}}',
     /**
-     *@description Text in Console Sidebar of the Console panel to show how many verbose messages exist.
+     * @description Text in Console Sidebar of the Console panel to show how many verbose messages exist.
      */
     dVerbose: '{n, plural, =0 {No verbose} =1 {# verbose} other {# verbose}}',
 };
@@ -50,13 +50,15 @@ export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
     selectedTreeElement;
     treeElements;
     constructor() {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}`,
+            useShadowDom: true,
+        });
         this.setMinimumSize(125, 0);
         this.tree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
         this.tree.registerRequiredCSS(consoleSidebarStyles);
         this.tree.hideOverflow();
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('sidebar').track({ resize: true })}`);
         this.contentElement.appendChild(this.tree.element);
         this.selectedTreeElement = null;
         this.treeElements = [];

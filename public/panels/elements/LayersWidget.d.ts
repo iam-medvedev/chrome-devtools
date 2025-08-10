@@ -1,11 +1,19 @@
+import type * as Protocol from '../../generated/protocol.js';
+import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface ViewInput {
+    rootLayer: Protocol.CSS.CSSLayerData;
+}
+interface ViewOutput {
+    treeOutline: TreeOutline.TreeOutline.TreeOutline<string> | undefined;
+}
+type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class LayersWidget extends UI.Widget.Widget {
-    private cssModel?;
-    private layerTreeComponent;
-    constructor();
-    private updateModel;
-    wasShown(): Promise<void>;
-    update(): Promise<void>;
+    #private;
+    constructor(view?: View);
+    wasShown(): void;
+    wasHidden(): void;
+    performUpdate(): Promise<void>;
     revealLayer(layerName: string): Promise<void>;
     static instance(opts?: {
         forceNew: boolean | null;
@@ -20,3 +28,4 @@ export declare class ButtonProvider implements UI.Toolbar.Provider {
     private clicked;
     item(): UI.Toolbar.ToolbarToggle;
 }
+export {};

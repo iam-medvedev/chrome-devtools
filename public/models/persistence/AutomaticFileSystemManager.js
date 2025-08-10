@@ -18,7 +18,7 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
     /**
      * Yields the current `AutomaticFileSystem` (if any).
      *
-     * @return the current automatic file system or `null`.
+     * @returns the current automatic file system or `null`.
      */
     get automaticFileSystem() {
         return this.#automaticFileSystem;
@@ -31,7 +31,7 @@ export class AutomaticFileSystemManager extends Common.ObjectWrapper.ObjectWrapp
      * providing a `com.chrome.devtools.json` or not, and whether or not that file
      * (if it exists) provides workspace information.
      *
-     * @return `'available'` if the feature is available and the project settings
+     * @returns `'available'` if the feature is available and the project settings
      *         feature is also available, otherwise `'unavailable'`.
      */
     get availability() {

@@ -152,14 +152,14 @@ var linearMemoryHighlightChipList_css_default = `/*
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryHighlightChipList.js
 var UIStrings = {
   /**
-   *@description Tooltip text that appears when hovering over an inspected variable's button in the Linear Memory Highlight Chip List.
-  Clicking the button changes the displayed slice of computer memory in the Linear Memory inspector to contain the inspected variable's bytes.
+   * @description Tooltip text that appears when hovering over an inspected variable's button in the Linear Memory Highlight Chip List.
+   * Clicking the button changes the displayed slice of computer memory in the Linear Memory inspector to contain the inspected variable's bytes.
    */
   jumpToAddress: "Jump to this memory",
   /**
-   *@description Tooltip text that appears when hovering over an inspected variable's delete button in the Linear Memory Highlight Chip List.
-   Clicking the delete button stops highlighting the variable's memory in the Linear Memory inspector.
-   'Memory' is a slice of bytes in the computer memory.
+   * @description Tooltip text that appears when hovering over an inspected variable's delete button in the Linear Memory Highlight Chip List.
+   * Clicking the delete button stops highlighting the variable's memory in the Linear Memory inspector.
+   * 'Memory' is a slice of bytes in the computer memory.
    */
   deleteHighlight: "Stop highlighting this memory"
 };
@@ -370,7 +370,7 @@ import * as i18n3 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 var UIStrings2 = {
   /**
-   *@description Text that is shown in the LinearMemoryInspector if a value could not be correctly formatted
+   * @description Text that is shown in the LinearMemoryInspector if a value could not be correctly formatted
    *             for the requested mode (e.g. we do not floats to be represented as hexadecimal numbers).
    *             Abbreviation stands for 'not applicable'.
    */
@@ -562,24 +562,24 @@ function formatInteger(value, mode) {
 // gen/front_end/panels/linear_memory_inspector/components/ValueInterpreterDisplay.js
 var UIStrings3 = {
   /**
-   *@description Tooltip text that appears when hovering over an unsigned interpretation of the memory under the Value Interpreter
+   * @description Tooltip text that appears when hovering over an unsigned interpretation of the memory under the Value Interpreter
    */
   unsignedValue: "`Unsigned` value",
   /**
-   *@description Tooltip text that appears when hovering over the element to change value type modes of under the Value Interpreter. Value type modes
+   * @description Tooltip text that appears when hovering over the element to change value type modes of under the Value Interpreter. Value type modes
    *             are different ways of viewing a certain value, e.g.: 10 (decimal) can be 0xa in hexadecimal mode, or 12 in octal mode.
    */
   changeValueTypeMode: "Change mode",
   /**
-   *@description Tooltip text that appears when hovering over a signed interpretation of the memory under the Value Interpreter
+   * @description Tooltip text that appears when hovering over a signed interpretation of the memory under the Value Interpreter
    */
   signedValue: "`Signed` value",
   /**
-   *@description Tooltip text that appears when hovering over a 'jump-to-address' button that is next to a pointer (32-bit or 64-bit) under the Value Interpreter
+   * @description Tooltip text that appears when hovering over a 'jump-to-address' button that is next to a pointer (32-bit or 64-bit) under the Value Interpreter
    */
   jumpToPointer: "Jump to address",
   /**
-   *@description Tooltip text that appears when hovering over a 'jump-to-address' button that is next to a pointer (32-bit or 64-bit) with an invalid address under the Value Interpreter.
+   * @description Tooltip text that appears when hovering over a 'jump-to-address' button that is next to a pointer (32-bit or 64-bit) with an invalid address under the Value Interpreter.
    */
   addressOutOfRange: "Address out of memory range"
 };
@@ -778,7 +778,7 @@ var valueInterpreterSettings_css_default = `/*
 var { render: render3, html: html3 } = Lit3;
 var UIStrings4 = {
   /**
-   *@description Name of a group of selectable value types that do not fall under integer and floating point value types, e.g. Pointer32. The group appears name appears under the Value Interpreter Settings.
+   * @description Name of a group of selectable value types that do not fall under integer and floating point value types, e.g. Pointer32. The group appears name appears under the Value Interpreter Settings.
    */
   otherGroup: "Other"
 };
@@ -924,12 +924,12 @@ var linearMemoryValueInterpreter_css_default = `/*
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.js
 var UIStrings5 = {
   /**
-   *@description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear memory inspector. These settings
+   * @description Tooltip text that appears when hovering over the gear button to open and close settings in the Linear memory inspector. These settings
    *             allow the user to change the value type to view, such as 32-bit Integer, or 32-bit Float.
    */
   toggleValueTypeSettings: "Toggle value type settings",
   /**
-   *@description Tooltip text that appears when hovering over the 'Little Endian' or 'Big Endian' setting in the Linear memory inspector.
+   * @description Tooltip text that appears when hovering over the 'Little Endian' or 'Big Endian' setting in the Linear memory inspector.
    */
   changeEndianness: "Change `Endianness`"
 };
@@ -1438,9 +1438,9 @@ devtools-linear-memory-inspector-navigator + devtools-linear-memory-inspector-vi
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryInspector.js
 var UIStrings6 = {
   /**
-   *@description Tooltip text that appears when hovering over an invalid address in the address line in the Linear memory inspector
-   *@example {0x00000000} PH1
-   *@example {0x00400000} PH2
+   * @description Tooltip text that appears when hovering over an invalid address in the address line in the Linear memory inspector
+   * @example {0x00000000} PH1
+   * @example {0x00400000} PH2
    */
   addressHasToBeANumberBetweenSAnd: "Address has to be a number between {PH1} and {PH2}"
 };
@@ -1796,27 +1796,27 @@ var linearMemoryNavigator_css_default = `/*
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryNavigator.js
 var UIStrings7 = {
   /**
-   *@description Tooltip text that appears when hovering over a valid memory address (e.g. 0x0) in the address line in the Linear memory inspector.
+   * @description Tooltip text that appears when hovering over a valid memory address (e.g. 0x0) in the address line in the Linear memory inspector.
    */
   enterAddress: "Enter address",
   /**
-   *@description Tooltip text that appears when hovering over the button to go back in history in the Linear Memory Navigator
+   * @description Tooltip text that appears when hovering over the button to go back in history in the Linear Memory Navigator
    */
   goBackInAddressHistory: "Go back in address history",
   /**
-   *@description Tooltip text that appears when hovering over the button to go forward in history in the Linear Memory Navigator
+   * @description Tooltip text that appears when hovering over the button to go forward in history in the Linear Memory Navigator
    */
   goForwardInAddressHistory: "Go forward in address history",
   /**
-   *@description Tooltip text that appears when hovering over the page back icon in the Linear Memory Navigator
+   * @description Tooltip text that appears when hovering over the page back icon in the Linear Memory Navigator
    */
   previousPage: "Previous page",
   /**
-   *@description Tooltip text that appears when hovering over the next page icon in the Linear Memory Navigator
+   * @description Tooltip text that appears when hovering over the next page icon in the Linear Memory Navigator
    */
   nextPage: "Next page",
   /**
-   *@description Text to refresh the page
+   * @description Text to refresh the page
    */
   refresh: "Refresh"
 };

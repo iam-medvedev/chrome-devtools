@@ -1113,7 +1113,8 @@ var CommandMenuProvider = class extends Provider {
   itemScoreAt(itemIndex, query) {
     const command = this.commands[itemIndex];
     let score = Diff3.Diff.DiffWrapper.characterScore(query.toLowerCase(), command.title.toLowerCase());
-    if (command.featurePromotionId) {
+    const promotionId = command.featurePromotionId;
+    if (promotionId && UI2.UIUtils.PromotionManager.instance().canShowPromotion(promotionId)) {
       score = Number.MAX_VALUE;
       return score;
     }

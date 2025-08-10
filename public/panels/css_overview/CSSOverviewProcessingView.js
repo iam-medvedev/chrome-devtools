@@ -8,7 +8,7 @@ import { html, render } from '../../ui/lit/lit.js';
 import cssOverviewProcessingViewStyles from './cssOverviewProcessingView.css.js';
 const UIStrings = {
     /**
-     *@description Text to cancel something
+     * @description Text to cancel something
      */
     cancel: 'Cancel',
 };
@@ -17,7 +17,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${cssOverviewProcessingViewStyles}</style>
+    <style>${UI.Widget.widgetScoped(cssOverviewProcessingViewStyles)}</style>
     <div style="overflow:auto">
       <div class="vbox overview-processing-view">
         <h1>Processing page</h1>
@@ -28,7 +28,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
               .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.cancel)}</devtools-button>
         </div>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class CSSOverviewProcessingView extends UI.Widget.Widget {

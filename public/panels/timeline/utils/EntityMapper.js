@@ -27,7 +27,7 @@ export class EntityMapper {
         if (!firstPartyUrl) {
             return null;
         }
-        return Trace.Handlers.Helpers.getEntityForUrl(firstPartyUrl, this.#entityMappings.createdEntityCache) ?? null;
+        return Trace.Handlers.Helpers.getEntityForUrl(firstPartyUrl, this.#entityMappings) ?? null;
     }
     #getThirdPartyEvents() {
         const entries = Array.from(this.#entityMappings.eventsByEntity.entries());
@@ -74,8 +74,8 @@ export class EntityMapper {
             return;
         }
         const compiledURL = callFrame.url;
-        const currentEntity = Trace.Handlers.Helpers.getEntityForUrl(compiledURL, this.#entityMappings.createdEntityCache);
-        const resolvedEntity = Trace.Handlers.Helpers.getEntityForUrl(sourceURL, this.#entityMappings.createdEntityCache);
+        const currentEntity = Trace.Handlers.Helpers.getEntityForUrl(compiledURL, this.#entityMappings);
+        const resolvedEntity = Trace.Handlers.Helpers.getEntityForUrl(sourceURL, this.#entityMappings);
         // If the entity changed, then we should update our caches. If we don't have a currentEntity,
         // we can't do much with that. Additionally without our current entity, we don't have a reference to the related
         // events so there are no relationships to be made.

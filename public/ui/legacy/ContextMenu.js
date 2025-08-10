@@ -526,14 +526,24 @@ export class ContextMenu extends SubMenu {
     }
     itemSelected(id) {
         this.invokeHandler(id);
+        // Collect all features used along the way when searching for the clicked item.
+        // I.e. a 'feature' on a submenu should be counted as 'used' if its submenu items are clicked.
+        const featuresUsed = [];
         if (this.openHostedMenu) {
             const itemWithId = (items, id) => {
                 for (const item of items) {
                     if (item.id === id) {
+                        if (item.featureName) {
+                            featuresUsed.push(item.featureName);
+                        }
                         return item;
                     }
                     const subitem = item.subItems && itemWithId(item.subItems, id);
                     if (subitem) {
+                        // Record submenu feature.
+                        if (item.featureName) {
+                            featuresUsed.push(item.featureName);
+                        }
                         return subitem;
                     }
                 }
@@ -542,6 +552,9 @@ export class ContextMenu extends SubMenu {
             const item = itemWithId(this.openHostedMenu, id);
             if (item?.jslogContext) {
                 void VisualLogging.logClick(item, new MouseEvent('click'));
+            }
+            if (item && featuresUsed.length > 0) {
+                featuresUsed.map(feature => Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordNewBadgeUsage(feature));
             }
         }
         this.menuCleared();
@@ -584,18 +597,18 @@ export class ContextMenu extends SubMenu {
 }
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 /**
- * @attr soft-menu - Whether to use the soft menu implementation.
- * @attr keep-open - Whether the menu should stay open after an item is clicked.
- * @attr icon-name - Name of the icon to display on the button.
- * @attr disabled - Whether the menu button is disabled
- * @attr jslogContext - The jslog context for the button.
+ * @property jslogContext - Reflects the `"jslogContext"` attribute.
+ * @property populateMenuCall - Callback function to populate the menu.
+ * @property softMenu - Reflects the `"soft-menu"` attribute.
+ * @property keepOpen -Reflects the `"keep-open"` attribute.
+ * @property iconName - Reflects the `"icon-name"` attribute.
+ * @property disabled - Reflects the `"disabled"` attribute.
+ * @attribute soft-menu - Whether to use the soft menu implementation.
+ * @attribute keep-open - Whether the menu should stay open after an item is clicked.
+ * @attribute icon-name - Name of the icon to display on the button.
+ * @attribute disabled - Whether the menu button is disabled
+ * @attribute jslogContext - The jslog context for the button.
  *
- * @prop {Function} populateMenuCall - Callback function to populate the menu.
- * @prop {Boolean} softMenu - Reflects the `"soft-menu"` attribute.
- * @prop {Boolean} keepOpen -Reflects the `"keep-open"` attribute.
- * @prop {String} iconName - Reflects the `"icon-name"` attribute.
- * @prop {Boolean} disabled - Reflects the `"disabled"` attribute.
- * @prop {String} jslogContext - Reflects the `"jslogContext"` attribute.
  */
 export class MenuButton extends HTMLElement {
     static observedAttributes = ['icon-name', 'disabled'];
@@ -604,7 +617,7 @@ export class MenuButton extends HTMLElement {
     #populateMenuCall;
     /**
      * Sets the callback function used to populate the context menu when the button is clicked.
-     * @param {Function} populateCall - A function that takes a `ContextMenu` instance and adds items to it.
+     * @param populateCall A function that takes a `ContextMenu` instance and adds items to it.
      */
     set populateMenuCall(populateCall) {
         this.#populateMenuCall = populateCall;
@@ -661,7 +674,7 @@ export class MenuButton extends HTMLElement {
      * Creates and shows the `ContextMenu`. It calls the `populateMenuCall`
      * callback to fill the menu with items before displaying it relative to the button.
      * Manages the `aria-expanded` state.
-     * @param {Event} event - The event that triggered the menu
+     * @param event The event that triggered the menu
      */
     #openMenu(event) {
         this.#triggerTimeoutId = undefined;
@@ -685,7 +698,7 @@ export class MenuButton extends HTMLElement {
     /**
      * Handles the click event on the button. It clears any pending trigger timeout
      * and immediately calls the `openMenu` method to show the context menu.
-     * @param {Event} event - The click event.
+     * @param event The click event.
      */
     #triggerContextMenu(event) {
         const triggerTimeout = 50;

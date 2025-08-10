@@ -15,7 +15,7 @@ const { mimeFromURL, fromMimeTypeOverride, fromMimeType } = Common.ResourceType.
 const { iconDataForResourceType } = PanelUtils;
 const UIStrings = {
     /**
-     *@description Header for the column that contains URL of the resource in a web bundle.
+     * @description Header for the column that contains URL of the resource in a web bundle.
      */
     bundledResource: 'Bundled resource',
 };

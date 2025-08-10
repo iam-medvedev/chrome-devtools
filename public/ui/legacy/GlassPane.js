@@ -2,7 +2,7 @@ import glassPaneStyles from './glassPane.css.js';
 import { deepElementFromEvent, measuredScrollbarWidth } from './UIUtils.js';
 import { Widget } from './Widget.js';
 export class GlassPane {
-    widgetInternal = new Widget({ useShadowDom: true });
+    widgetInternal;
     element;
     contentElement;
     onMouseDownBound;
@@ -17,12 +17,10 @@ export class GlassPane {
     marginBehavior = "DefaultMargin" /* MarginBehavior.DEFAULT_MARGIN */;
     #ignoreLeftMargin = false;
     constructor(jslog) {
+        this.widgetInternal = new Widget({ jslog, useShadowDom: true });
         this.widgetInternal.markAsRoot();
         this.element = this.widgetInternal.element;
         this.contentElement = this.widgetInternal.contentElement;
-        if (jslog) {
-            this.contentElement.setAttribute('jslog', jslog);
-        }
         this.registerRequiredCSS(glassPaneStyles);
         this.setPointerEventsBehavior("PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */);
         this.onMouseDownBound = this.onMouseDown.bind(this);

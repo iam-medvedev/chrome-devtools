@@ -45,19 +45,19 @@ var eventDisplayTable_css_default = `/*
 // gen/front_end/panels/media/EventDisplayTable.js
 var UIStrings = {
   /**
-   *@description Text for timestamps of items
+   * @description Text for timestamps of items
    */
   timestamp: "Timestamp",
   /**
-   *@description The column header for event names.
+   * @description The column header for event names.
    */
   eventName: "Event name",
   /**
-   *@description Text for the value of something
+   * @description Text for the value of something
    */
   value: "Value",
   /**
-   *@description The accessible name of a table that displays information about events that occurred
+   * @description The accessible name of a table that displays information about events that occurred
    * while a video/media player was present on the page.
    */
   eventDisplay: "Event display"
@@ -89,9 +89,8 @@ var PlayerEventsView = class _PlayerEventsView extends UI.Widget.VBox {
   dataGrid;
   firstEventTime;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging.pane("events")}` });
     this.registerRequiredCSS(eventDisplayTable_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging.pane("events")}`);
     this.contentElement.classList.add("event-display-table-contents-table-container");
     this.dataGrid = this.createDataGrid([
       {
@@ -433,7 +432,7 @@ var Event = class {
   /**
    * set an event to be "live" where it's ended time is always the chart maximum
    * or to be a fixed time.
-   * @param {number} time
+   * @param time
    */
   set endTime(time) {
     if (time === -1) {
@@ -677,7 +676,8 @@ var TickingFlameChartDataProvider = class {
   timelineData() {
     return this.timelineDataInternal;
   }
-  /** time in milliseconds
+  /**
+   * time in milliseconds
    */
   minimumBoundary() {
     return this.bounds.low;
@@ -727,11 +727,11 @@ var TickingFlameChartDataProvider = class {
 var NO_NORMALIZED_TIMESTAMP = -1.5;
 var UIStrings2 = {
   /**
-   *@description Title of the 'Playback Status' button
+   * @description Title of the 'Playback Status' button
    */
   playbackStatus: "Playback Status",
   /**
-   *@description Title of the 'Buffering Status' button
+   * @description Title of the 'Buffering Status' button
    */
   bufferingStatus: "Buffering Status"
 };
@@ -973,59 +973,59 @@ var playerMessagesView_css_default = `/*
 // gen/front_end/panels/media/PlayerMessagesView.js
 var UIStrings3 = {
   /**
-   *@description A context menu item in the Console View of the Console panel
+   * @description A context menu item in the Console View of the Console panel
    */
   default: "Default",
   /**
-   *@description Text in Network Throttling Selector of the Network panel
+   * @description Text in Network Throttling Selector of the Network panel
    */
   custom: "Custom",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   all: "All",
   /**
-   *@description Text for errors
+   * @description Text for errors
    */
   error: "Error",
   /**
-   *@description Text to indicate an item is a warning
+   * @description Text to indicate an item is a warning
    */
   warning: "Warning",
   /**
-   *@description Sdk console message message level info of level Labels in Console View of the Console panel
+   * @description Sdk console message message level info of level Labels in Console View of the Console panel
    */
   info: "Info",
   /**
-   *@description Debug log level
+   * @description Debug log level
    */
   debug: "Debug",
   /**
-   *@description Label for selecting between the set of log levels to show.
+   * @description Label for selecting between the set of log levels to show.
    */
   logLevel: "Log level:",
   /**
-   *@description Default text for user-text-entry for searching log messages.
+   * @description Default text for user-text-entry for searching log messages.
    */
   filterByLogMessages: "Filter by log messages",
   /**
-   *@description The label for the group name that this error belongs to.
+   * @description The label for the group name that this error belongs to.
    */
   errorGroupLabel: "Error Group:",
   /**
-   *@description The label for the numeric code associated with this error.
+   * @description The label for the numeric code associated with this error.
    */
   errorCodeLabel: "Error Code:",
   /**
-   *@description The label for extra data associated with an error.
+   * @description The label for extra data associated with an error.
    */
   errorDataLabel: "Data:",
   /**
-   *@description The label for the stacktrace associated with the error.
+   * @description The label for the stacktrace associated with the error.
    */
   errorStackLabel: "Stacktrace:",
   /**
-   *@description The label for a root cause error associated with this error.
+   * @description The label for a root cause error associated with this error.
    */
   errorCauseLabel: "Caused by:"
 };
@@ -1164,9 +1164,8 @@ var PlayerMessagesView = class extends UI3.Widget.VBox {
   bodyPanel;
   messageLevelSelector;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging3.pane("messages")}` });
     this.registerRequiredCSS(playerMessagesView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging3.pane("messages")}`);
     this.headerPanel = this.contentElement.createChild("div", "media-messages-header");
     this.bodyPanel = this.contentElement.createChild("div", "media-messages-body");
     this.buildToolbar();
@@ -1373,27 +1372,27 @@ var playerPropertiesView_css_default = `/*
 // gen/front_end/panels/media/PlayerPropertiesView.js
 var UIStrings4 = {
   /**
-   *@description The type of media, for example - video, audio, or text. Capitalized.
+   * @description The type of media, for example - video, audio, or text. Capitalized.
    */
   video: "Video",
   /**
-   *@description The type of media, for example - video, audio, or text. Capitalized.
+   * @description The type of media, for example - video, audio, or text. Capitalized.
    */
   audio: "Audio",
   /**
-   *@description A video or audio stream - but capitalized.
+   * @description A video or audio stream - but capitalized.
    */
   track: "Track",
   /**
-   *@description A device that converts media files into playable streams of audio or video.
+   * @description A device that converts media files into playable streams of audio or video.
    */
   decoder: "Decoder",
   /**
-   *@description Title of the 'Properties' tool in the sidebar of the elements tool
+   * @description Title of the 'Properties' tool in the sidebar of the elements tool
    */
   properties: "Properties",
   /**
-   *@description Menu label for text tracks, it is followed by a number, like 'Text Track #1'
+   * @description Menu label for text tracks, it is followed by a number, like 'Text Track #1'
    */
   textTrack: "Text track",
   /**
@@ -1402,47 +1401,47 @@ var UIStrings4 = {
    */
   noTextTracks: "No text tracks",
   /**
-   *@description Media property giving the width x height of the video
+   * @description Media property giving the width x height of the video
    */
   resolution: "Resolution",
   /**
-   *@description Media property giving the file size of the media
+   * @description Media property giving the file size of the media
    */
   fileSize: "File size",
   /**
-   *@description Media property giving the media file bitrate
+   * @description Media property giving the media file bitrate
    */
   bitrate: "Bitrate",
   /**
-   *@description Text for the duration of something
+   * @description Text for the duration of something
    */
   duration: "Duration",
   /**
-   *@description The label for a timestamp when a video was started.
+   * @description The label for a timestamp when a video was started.
    */
   startTime: "Start time",
   /**
-   *@description Media property signaling whether the media is streaming
+   * @description Media property signaling whether the media is streaming
    */
   streaming: "Streaming",
   /**
-   *@description Media property describing where the media is playing from.
+   * @description Media property describing where the media is playing from.
    */
   playbackFrameUrl: "Playback frame URL",
   /**
-   *@description Media property giving the title of the frame where the media is embedded
+   * @description Media property giving the title of the frame where the media is embedded
    */
   playbackFrameTitle: "Playback frame title",
   /**
-   *@description Media property describing whether the file is single or cross origin in nature
+   * @description Media property describing whether the file is single or cross origin in nature
    */
   singleoriginPlayback: "Single-origin playback",
   /**
-   *@description Media property describing support for range http headers
+   * @description Media property describing support for range http headers
    */
   rangeHeaderSupport: "`Range` header support",
   /**
-   *@description Media property giving the media file frame rate
+   * @description Media property giving the media file frame rate
    */
   frameRate: "Frame rate",
   /**
@@ -1452,44 +1451,44 @@ var UIStrings4 = {
    */
   videoPlaybackRoughness: "Video playback roughness",
   /**
-   *@description A score describing how choppy the video playback is.
+   * @description A score describing how choppy the video playback is.
    */
   videoFreezingScore: "Video freezing score",
   /**
-   *@description Media property giving the name of the renderer being used
+   * @description Media property giving the name of the renderer being used
    */
   rendererName: "Renderer name",
   /**
-   *@description Media property giving the name of the decoder being used
+   * @description Media property giving the name of the decoder being used
    */
   decoderName: "Decoder name",
   /**
-   *@description There is no decoder
+   * @description There is no decoder
    */
   noDecoder: "No decoder",
   /**
-   *@description Media property signaling whether a hardware decoder is being used
+   * @description Media property signaling whether a hardware decoder is being used
    */
   hardwareDecoder: "Hardware decoder",
   /**
-   *@description Media property signaling whether the content is encrypted. This is a noun phrase for
+   * @description Media property signaling whether the content is encrypted. This is a noun phrase for
    *a demultiplexer that does decryption.
    */
   decryptingDemuxer: "Decrypting demuxer",
   /**
-   *@description Media property giving the name of the video encoder being used.
+   * @description Media property giving the name of the video encoder being used.
    */
   encoderName: "Encoder name",
   /**
-   *@description There is no encoder.
+   * @description There is no encoder.
    */
   noEncoder: "No encoder",
   /**
-   *@description Media property signaling whether the encoder is hardware accelerated.
+   * @description Media property signaling whether the encoder is hardware accelerated.
    */
   hardwareEncoder: "Hardware encoder",
   /**
-   *@description Property for adaptive (HLS) playback which shows the start/end time of the loaded content buffer
+   * @description Property for adaptive (HLS) playback which shows the start/end time of the loaded content buffer
    */
   hlsBufferedRanges: "Buffered media ranges"
 };
@@ -1735,9 +1734,8 @@ var PlayerPropertiesView = class extends UI4.Widget.VBox {
   audioDecoderTabs;
   textTracksTabs;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging4.pane("properties")}` });
     this.registerRequiredCSS(playerPropertiesView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging4.pane("properties")}`);
     this.contentElement.classList.add("media-properties-frame");
     this.mediaElements = [];
     this.videoDecoderElements = [];
@@ -1898,35 +1896,35 @@ var PlayerPropertiesView = class extends UI4.Widget.VBox {
 // gen/front_end/panels/media/PlayerDetailView.js
 var UIStrings5 = {
   /**
-   *@description Title of the 'Properties' tool in the sidebar of the elements tool
+   * @description Title of the 'Properties' tool in the sidebar of the elements tool
    */
   properties: "Properties",
   /**
-   *@description Button text for viewing properties.
+   * @description Button text for viewing properties.
    */
   playerProperties: "Player properties",
   /**
-   *@description Button text for viewing events.
+   * @description Button text for viewing events.
    */
   events: "Events",
   /**
-   *@description Hover text for the Events button.
+   * @description Hover text for the Events button.
    */
   playerEvents: "Player events",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   messages: "Messages",
   /**
-   *@description Column header for messages view.
+   * @description Column header for messages view.
    */
   playerMessages: "Player messages",
   /**
-   *@description Title for the timeline tab.
+   * @description Title for the timeline tab.
    */
   timeline: "Timeline",
   /**
-   *@description Hovertext for Timeline tab.
+   * @description Hovertext for Timeline tab.
    */
   playerTimeline: "Player timeline"
 };
@@ -2058,19 +2056,19 @@ li.storage-group-list-item::before {
 // gen/front_end/panels/media/PlayerListView.js
 var UIStrings6 = {
   /**
-   *@description A right-click context menu entry which when clicked causes the menu entry for that player to be removed.
+   * @description A right-click context menu entry which when clicked causes the menu entry for that player to be removed.
    */
   hidePlayer: "Hide player",
   /**
-   *@description A right-click context menu entry which should keep the element selected, while hiding all other entries.
+   * @description A right-click context menu entry which should keep the element selected, while hiding all other entries.
    */
   hideAllOthers: "Hide all others",
   /**
-   *@description Context menu entry which downloads the json dump when clicked
+   * @description Context menu entry which downloads the json dump when clicked
    */
   savePlayerInfo: "Save player info",
   /**
-   *@description Side-panel entry title text for the players section.
+   * @description Side-panel entry title text for the players section.
    */
   players: "Players"
 };
@@ -2235,22 +2233,22 @@ var PlayerListView = class extends UI6.Widget.VBox {
 // gen/front_end/panels/media/MainView.js
 var UIStrings7 = {
   /**
-   *@description Text to show if no media player has been selected
+   * @description Text to show if no media player has been selected
    * A media player can be an audio and video source of a page.
    */
   noPlayerDetailsSelected: "No media player selected",
   /**
-   *@description Text to instruct the user on how to view media player details
+   * @description Text to instruct the user on how to view media player details
    * A media player can be an audio and video source of a page.
    */
   selectToViewDetails: "Select a media player to inspect its details.",
   /**
-   *@description Text to show if no player can be shown
+   * @description Text to show if no player can be shown
    * A media player can be an audio and video source of a page.
    */
   noMediaPlayer: "No media player",
   /**
-   *@description Text to explain this panel
+   * @description Text to explain this panel
    * A media player can be an audio and video source of a page.
    */
   mediaPlayerDescription: "On this page you can view and export media player details."

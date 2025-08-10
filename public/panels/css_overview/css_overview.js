@@ -12,31 +12,31 @@ __export(CSSOverviewUnusedDeclarations_exports, {
 import * as i18n from "./../../core/i18n/i18n.js";
 var UIStrings = {
   /**
-   *@description Label to explain why top values are ignored
+   * @description Label to explain why top values are ignored
    */
   topAppliedToAStatically: "`Top` applied to a statically positioned element",
   /**
-   *@description Label to explain why left (opposite to right) values are ignored.
+   * @description Label to explain why left (opposite to right) values are ignored.
    */
   leftAppliedToAStatically: "`Left` applied to a statically positioned element",
   /**
-   *@description Label to explain why right values are ignored
+   * @description Label to explain why right values are ignored
    */
   rightAppliedToAStatically: "`Right` applied to a statically positioned element",
   /**
-   *@description Label to explain why bottom values are ignored
+   * @description Label to explain why bottom values are ignored
    */
   bottomAppliedToAStatically: "`Bottom` applied to a statically positioned element",
   /**
-   *@description Label to explain why width values are ignored
+   * @description Label to explain why width values are ignored
    */
   widthAppliedToAnInlineElement: "`Width` applied to an inline element",
   /**
-   *@description Label to explain why height values are ignored
+   * @description Label to explain why height values are ignored
    */
   heightAppliedToAnInlineElement: "`Height` applied to an inline element",
   /**
-   *@description Label to explain why vertical-align values are ignored
+   * @description Label to explain why vertical-align values are ignored
    */
   verticalAlignmentAppliedTo: "Vertical alignment applied to element which is neither `inline` nor `table-cell`"
 };
@@ -532,7 +532,7 @@ var cssOverviewProcessingView_css_default = `/**
 // gen/front_end/panels/css_overview/CSSOverviewProcessingView.js
 var UIStrings2 = {
   /**
-   *@description Text to cancel something
+   * @description Text to cancel something
    */
   cancel: "Cancel"
 };
@@ -540,7 +540,7 @@ var str_2 = i18n3.i18n.registerUIStrings("panels/css_overview/CSSOverviewProcess
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
-    <style>${cssOverviewProcessingView_css_default}</style>
+    <style>${UI.Widget.widgetScoped(cssOverviewProcessingView_css_default)}</style>
     <div style="overflow:auto">
       <div class="vbox overview-processing-view">
         <h1>Processing page</h1>
@@ -551,7 +551,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
               .variant=${"outlined"}>${i18nString2(UIStrings2.cancel)}</devtools-button>
         </div>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var CSSOverviewProcessingView = class extends UI.Widget.Widget {
   #onCancel = () => {
@@ -1027,7 +1027,7 @@ var cssOverviewSidebarPanel_css_default = `/**
 var { classMap } = Directives;
 var UIStrings3 = {
   /**
-   *@description Label for the 'Clear overview' button in the CSS overview report
+   * @description Label for the 'Clear overview' button in the CSS overview report
    */
   clearOverview: "Clear overview",
   /**
@@ -1059,7 +1059,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     event.consume(true);
   };
   render2(html2`
-      <style>${cssOverviewSidebarPanel_css_default}</style>
+      <style>${UI2.Widget.widgetScoped(cssOverviewSidebarPanel_css_default)}</style>
       <div class="overview-sidebar-panel" @click=${onClick} @keydown=${onKeyDown}
            aria-label=${i18nString3(UIStrings3.cssOverviewPanelSidebar)} role="tree">
         <div class="overview-toolbar">
@@ -1079,7 +1079,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
               ${name}
             </div>`;
   })}
-      </div>`, target, { host: input });
+      </div>`, target);
 };
 var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
   #view;
@@ -1160,99 +1160,99 @@ var { styleMap, ref } = Directives2;
 var { widgetConfig } = UI3.Widget;
 var UIStrings4 = {
   /**
-   *@description Label for the summary in the CSS overview report
+   * @description Label for the summary in the CSS overview report
    */
   overviewSummary: "Overview summary",
   /**
-   *@description Title of colors subsection in the CSS overview panel
+   * @description Title of colors subsection in the CSS overview panel
    */
   colors: "Colors",
   /**
-   *@description Title of font info subsection in the CSS overview panel
+   * @description Title of font info subsection in the CSS overview panel
    */
   fontInfo: "Font info",
   /**
-   *@description Label to denote unused declarations in the target page
+   * @description Label to denote unused declarations in the target page
    */
   unusedDeclarations: "Unused declarations",
   /**
-   *@description Label for the number of media queries in the CSS overview report
+   * @description Label for the number of media queries in the CSS overview report
    */
   mediaQueries: "Media queries",
   /**
-   *@description Title of the Elements Panel
+   * @description Title of the Elements Panel
    */
   elements: "Elements",
   /**
-   *@description Label for the number of External stylesheets in the CSS overview report
+   * @description Label for the number of External stylesheets in the CSS overview report
    */
   externalStylesheets: "External stylesheets",
   /**
-   *@description Label for the number of inline style elements in the CSS overview report
+   * @description Label for the number of inline style elements in the CSS overview report
    */
   inlineStyleElements: "Inline style elements",
   /**
-   *@description Label for the number of style rules in CSS overview report
+   * @description Label for the number of style rules in CSS overview report
    */
   styleRules: "Style rules",
   /**
-   *@description Label for the number of type selectors in the CSS overview report
+   * @description Label for the number of type selectors in the CSS overview report
    */
   typeSelectors: "Type selectors",
   /**
-   *@description Label for the number of ID selectors in the CSS overview report
+   * @description Label for the number of ID selectors in the CSS overview report
    */
   idSelectors: "ID selectors",
   /**
-   *@description Label for the number of class selectors in the CSS overview report
+   * @description Label for the number of class selectors in the CSS overview report
    */
   classSelectors: "Class selectors",
   /**
-   *@description Label for the number of universal selectors in the CSS overview report
+   * @description Label for the number of universal selectors in the CSS overview report
    */
   universalSelectors: "Universal selectors",
   /**
-   *@description Label for the number of Attribute selectors in the CSS overview report
+   * @description Label for the number of Attribute selectors in the CSS overview report
    */
   attributeSelectors: "Attribute selectors",
   /**
-   *@description Label for the number of non-simple selectors in the CSS overview report
+   * @description Label for the number of non-simple selectors in the CSS overview report
    */
   nonsimpleSelectors: "Non-simple selectors",
   /**
-   *@description Label for unique background colors in the CSS overview panel
-   *@example {32} PH1
+   * @description Label for unique background colors in the CSS overview panel
+   * @example {32} PH1
    */
   backgroundColorsS: "Background colors: {PH1}",
   /**
-   *@description Label for unique text colors in the CSS overview panel
-   *@example {32} PH1
+   * @description Label for unique text colors in the CSS overview panel
+   * @example {32} PH1
    */
   textColorsS: "Text colors: {PH1}",
   /**
-   *@description Label for unique fill colors in the CSS overview panel
-   *@example {32} PH1
+   * @description Label for unique fill colors in the CSS overview panel
+   * @example {32} PH1
    */
   fillColorsS: "Fill colors: {PH1}",
   /**
-   *@description Label for unique border colors in the CSS overview panel
-   *@example {32} PH1
+   * @description Label for unique border colors in the CSS overview panel
+   * @example {32} PH1
    */
   borderColorsS: "Border colors: {PH1}",
   /**
-   *@description Label to indicate that there are no fonts in use
+   * @description Label to indicate that there are no fonts in use
    */
   thereAreNoFonts: "There are no fonts.",
   /**
-   *@description Message to show when no unused declarations in the target page
+   * @description Message to show when no unused declarations in the target page
    */
   thereAreNoUnusedDeclarations: "There are no unused declarations.",
   /**
-   *@description Message to show when no media queries are found in the target page
+   * @description Message to show when no media queries are found in the target page
    */
   thereAreNoMediaQueries: "There are no media queries.",
   /**
-   *@description Title of the Drawer for contrast issues in the CSS overview panel
+   * @description Title of the Drawer for contrast issues in the CSS overview panel
    */
   contrastIssues: "Contrast issues",
   /**
@@ -1260,51 +1260,51 @@ var UIStrings4 = {
    */
   nOccurrences: "{n, plural, =1 {# occurrence} other {# occurrences}}",
   /**
-   *@description Section header for contrast issues in the CSS overview panel
-   *@example {1} PH1
+   * @description Section header for contrast issues in the CSS overview panel
+   * @example {1} PH1
    */
   contrastIssuesS: "Contrast issues: {PH1}",
   /**
-   *@description Title of the button for a contrast issue in the CSS overview panel
-   *@example {#333333} PH1
-   *@example {#333333} PH2
-   *@example {2} PH3
+   * @description Title of the button for a contrast issue in the CSS overview panel
+   * @example {#333333} PH1
+   * @example {#333333} PH2
+   * @example {2} PH3
    */
   textColorSOverSBackgroundResults: "Text color {PH1} over {PH2} background results in low contrast for {PH3} elements",
   /**
-   *@description Label aa text content in Contrast Details of the Color Picker
+   * @description Label aa text content in Contrast Details of the Color Picker
    */
   aa: "AA",
   /**
-   *@description Label aaa text content in Contrast Details of the Color Picker
+   * @description Label aaa text content in Contrast Details of the Color Picker
    */
   aaa: "AAA",
   /**
-   *@description Label for the APCA contrast in Color Picker
+   * @description Label for the APCA contrast in Color Picker
    */
   apca: "APCA",
   /**
-   *@description Label for the column in the element list in the CSS overview report
+   * @description Label for the column in the element list in the CSS overview report
    */
   element: "Element",
   /**
-   *@description Column header title denoting which declaration is unused
+   * @description Column header title denoting which declaration is unused
    */
   declaration: "Declaration",
   /**
-   *@description Text for the source of something
+   * @description Text for the source of something
    */
   source: "Source",
   /**
-   *@description Text of a DOM element in Contrast Details of the Color Picker
+   * @description Text of a DOM element in Contrast Details of the Color Picker
    */
   contrastRatio: "Contrast ratio",
   /**
-   *@description Accessible title of a table in the CSS overview elements.
+   * @description Accessible title of a table in the CSS overview elements.
    */
   cssOverviewElements: "CSS overview elements",
   /**
-   *@description Title of the button to show the element in the CSS overview panel
+   * @description Title of the button to show the element in the CSS overview panel
    */
   showElement: "Show element",
   /**
@@ -1342,7 +1342,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
     }
   }
   render3(html3`
-      <style>${cssOverviewCompletedView_css_default}</style>
+      <style>${UI3.Widget.widgetScoped(cssOverviewCompletedView_css_default)}</style>
       <devtools-split-view direction="column" sidebar-position="first" sidebar-initial-size="200">
         <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig(CSSOverviewSidebarPanel, {
     minimumSize: new UI3.Geometry.Size(100, 25),
@@ -1361,7 +1361,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
         <devtools-split-view sidebar-position="second" slot="main" direction="row" sidebar-initial-size="minimized">
           <div class="vbox overview-completed-view" slot="main" @click=${input.onClick}>
             <!-- Dupe the styles into the main container because of the shadow root will prevent outer styles. -->
-            <style>${cssOverviewCompletedView_css_default}</style>
+            <style>${UI3.Widget.widgetScoped(cssOverviewCompletedView_css_default)}</style>
             <div class="results-section horizontally-padded summary"
                   ${ref((e) => {
     output.revealSection.set("summary", revealSection.bind(null, e));
@@ -1432,7 +1432,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
   })}>
           </devtools-widget>
         </devtools-split-view>
-      </devtools-split-view>`, target, { host: input });
+      </devtools-split-view>`, target);
 };
 function renderSummary(elementCount, globalStyleStats, mediaQueries) {
   const renderSummaryItem = (label, value) => html3`
@@ -1887,7 +1887,7 @@ var ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
             </tr>`)}
         </table>
       </devtools-data-grid>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var ElementDetailsView = class extends UI3.Widget.Widget {
   #domModel;
@@ -2124,27 +2124,27 @@ devtools-feedback-button {
 // gen/front_end/panels/css_overview/CSSOverviewStartView.js
 var UIStrings5 = {
   /**
-   *@description Label for the capture button in the CSS overview panel
+   * @description Label for the capture button in the CSS overview panel
    */
   captureOverview: "Capture overview",
   /**
-   *@description Header for the summary of CSS overview
+   * @description Header for the summary of CSS overview
    */
   identifyCSSImprovements: "Identify potential CSS improvements",
   /**
-   *@description First point of the summarized features of CSS overview
+   * @description First point of the summarized features of CSS overview
    */
   capturePageCSSOverview: "Capture an overview of your page\u2019s CSS",
   /**
-   *@description Second point of the summarized features of CSS overview
+   * @description Second point of the summarized features of CSS overview
    */
   identifyCSSImprovementsWithExampleIssues: "Identify potential CSS improvements (e.g. low contrast issues, unused declarations, color or font mismatches)",
   /**
-   *@description Third point of the summarized features of CSS overview
+   * @description Third point of the summarized features of CSS overview
    */
   locateAffectedElements: "Locate the affected elements in the Elements panel",
   /**
-   *@description Title of the link to the quick start video and documentation to CSS overview panel
+   * @description Title of the link to the quick start video and documentation to CSS overview panel
    */
   quickStartWithCSSOverview: "Quick start: get started with the new CSS overview panel"
 };
@@ -2154,7 +2154,7 @@ var FEEDBACK_LINK = "https://g.co/devtools/css-overview-feedback";
 var DOC_LINK = "https://developer.chrome.com/docs/devtools/css-overview";
 var DEFAULT_VIEW4 = (input, output, target) => {
   render4(html4`
-    <style>${cssOverviewStartView_css_default}</style>
+    <style>${UI4.Widget.widgetScoped(cssOverviewStartView_css_default)}</style>
     <div class="css-overview-start-view">
       <devtools-panel-introduction-steps>
         <span slot="title">${i18nString5(UIStrings5.identifyCSSImprovements)}</span>
@@ -2182,7 +2182,7 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     feedbackUrl: FEEDBACK_LINK
   }}>
       </devtools-feedback-button>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var CSSOverviewStartView = class extends UI4.Widget.Widget {
   #view;
@@ -2208,7 +2208,7 @@ var DEFAULT_VIEW5 = (input, _output, target) => {
     onReset: input.onReset,
     overviewData: input.overviewData,
     target: input.target
-  })}></devtools-widget>`, target, { host: input });
+  })}></devtools-widget>`, target);
 };
 var CSSOverviewPanel = class extends UI5.Panel.Panel {
   #currentUrl;

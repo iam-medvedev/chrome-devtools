@@ -5,11 +5,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Title of the Layers tool
+     * @description Title of the Layers tool
      */
     layers: 'Layers',
     /**
-     *@description Command for showing the Layers tool
+     * @description Command for showing the Layers tool
      */
     showLayers: 'Show Layers',
 };

@@ -10,11 +10,11 @@ import { AccessibilitySubPane } from './AccessibilitySubPane.js';
 import { ariaMetadata } from './ARIAMetadata.js';
 const UIStrings = {
     /**
-     *@description Text in ARIAAttributes View of the Accessibility panel
+     * @description Text in ARIAAttributes View of the Accessibility panel
      */
     ariaAttributes: 'ARIA Attributes',
     /**
-     *@description Text in ARIAAttributes View of the Accessibility panel
+     * @description Text in ARIAAttributes View of the Accessibility panel
      */
     noAriaAttributes: 'No ARIA attributes',
 };
@@ -24,10 +24,13 @@ export class ARIAAttributesPane extends AccessibilitySubPane {
     noPropertiesInfo;
     treeOutline;
     constructor() {
-        super(i18nString(UIStrings.ariaAttributes));
+        super({
+            title: i18nString(UIStrings.ariaAttributes),
+            viewId: 'aria-attributes',
+            jslog: `${VisualLogging.section('aria-attributes')}`,
+        });
         this.noPropertiesInfo = this.createInfo(i18nString(UIStrings.noAriaAttributes));
         this.treeOutline = this.createTreeOutline();
-        this.element.setAttribute('jslog', `${VisualLogging.section('aria-attributes')}`);
     }
     setNode(node) {
         super.setNode(node);

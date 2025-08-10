@@ -11,7 +11,8 @@ export class Node {
     id;
     /** The first trace event encountered that necessitated the creation of this tree node. */
     event;
-    /** All of the trace events associated with this aggregate node.
+    /**
+     * All of the trace events associated with this aggregate node.
      * Minor: In the case of Event Log (EventsTimelineTreeView), the node is not aggregate and this will only hold 1 event, the same that's in this.event
      */
     events;

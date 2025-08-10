@@ -197,8 +197,8 @@ export declare function measureTextWidth(context: CanvasRenderingContext2D, text
 export declare function loadImage(url: string): Promise<HTMLImageElement | null>;
 /**
  * Creates a file selector element.
- * @param callback - the function that will be called with the file the user selected
- * @param accept - optionally used to set the [`accept`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept) parameter to limit file-types the user can pick.
+ * @param callback the function that will be called with the file the user selected
+ * @param accept optionally used to set the [`accept`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept) parameter to limit file-types the user can pick.
  */
 export declare function createFileSelectorElement(callback: (arg0: File) => void, accept?: string): HTMLInputElement;
 export declare const MaxLengthForDisplayedURLs = 150;
@@ -295,7 +295,7 @@ export declare class PromotionManager {
     private setPromotionDisplayState;
     private registerPromotion;
     private recordPromotionShown;
-    private canShowPromotion;
+    canShowPromotion(id: string): boolean;
     recordFeatureInteraction(id: string): void;
     maybeShowPromotion(id: string): boolean;
 }

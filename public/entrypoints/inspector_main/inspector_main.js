@@ -594,12 +594,12 @@ var outermostTargetSelector_css_default = `/*
 // gen/front_end/entrypoints/inspector_main/OutermostTargetSelector.js
 var UIStrings3 = {
   /**
-   *@description Title of toolbar item in outermost target selector in the main toolbar
+   * @description Title of toolbar item in outermost target selector in the main toolbar
    */
   targetNotSelected: "Page: Not selected",
   /**
-   *@description Title of toolbar item in outermost target selector in the main toolbar
-   *@example {top} PH1
+   * @description Title of toolbar item in outermost target selector in the main toolbar
+   * @example {top} PH1
    */
   targetS: "Page: {PH1}"
 };

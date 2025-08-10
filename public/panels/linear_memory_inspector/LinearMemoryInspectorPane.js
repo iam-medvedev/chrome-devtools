@@ -10,17 +10,17 @@ import * as LinearMemoryInspectorComponents from './components/components.js';
 import { LinearMemoryInspectorController } from './LinearMemoryInspectorController.js';
 const UIStrings = {
     /**
-     *@description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
+     * @description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
      *             Inspection hereby refers to viewing, navigating and understanding the memory through this tool.
      */
     noOpenInspections: 'No open inspections',
     /**
-     *@description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
+     * @description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
      *             Inspection hereby refers to viewing, navigating and understanding the memory through this tool.
      */
     memoryInspectorExplanation: 'On this page you can inspect binary data.',
     /**
-     *@description Label in the Linear Memory inspector tool for a link.
+     * @description Label in the Linear Memory inspector tool for a link.
      */
     learnMore: 'Learn more',
 };
@@ -31,8 +31,7 @@ const MEMORY_INSPECTOR_EXPLANATION_URL = 'https://developer.chrome.com/docs/devt
 export class LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     #tabbedPane;
     constructor() {
-        super();
-        this.element.setAttribute('jslog', `${VisualLogging.panel('linear-memory-inspector').track({ resize: true })}`);
+        super({ jslog: `${VisualLogging.panel('linear-memory-inspector').track({ resize: true })}` });
         this.#tabbedPane = new UI.TabbedPane.TabbedPane();
         this.#tabbedPane.setPlaceholderElement(this.createPlaceholder());
         this.#tabbedPane.setCloseableTabs(true);

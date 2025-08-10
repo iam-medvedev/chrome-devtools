@@ -1,26 +1,10 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { MockStore } from '../../testing/MockSettingStorage.js';
 import * as Common from './common.js';
 const SettingsStorage = Common.Settings.SettingsStorage;
 const VersionController = Common.Settings.VersionController;
-class MockStore {
-    #store = new Map();
-    register() {
-    }
-    set(key, value) {
-        this.#store.set(key, value);
-    }
-    get(key) {
-        return this.#store.get(key);
-    }
-    remove(key) {
-        this.#store.delete(key);
-    }
-    clear() {
-        this.#store.clear();
-    }
-}
 describe('SettingsStorage class', () => {
     it('is able to set a name', () => {
         const settingsStorage = new SettingsStorage({});

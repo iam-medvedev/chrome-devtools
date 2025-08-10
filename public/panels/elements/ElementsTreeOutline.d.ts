@@ -86,7 +86,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private ondragend;
     private clearDragOverTreeElementMarker;
     private contextMenuEventFired;
-    showContextMenu(treeElement: ElementsTreeElement, event: Event): void;
+    showContextMenu(treeElement: ElementsTreeElement, event: Event): Promise<void>;
     private saveNodeToTempVariable;
     runPendingUpdates(): void;
     private onKeyDown;

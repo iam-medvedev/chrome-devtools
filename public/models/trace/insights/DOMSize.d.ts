@@ -40,7 +40,7 @@ export declare const UIStrings: {
      */
     readonly topUpdatesDescription: "These are the largest layout and style recalculation events. Their performance impact may be reduced by making the DOM simpler.";
     /**
-     *@description Label used for a time duration.
+     * @description Label used for a time duration.
      */
     readonly duration: "Duration";
     /**

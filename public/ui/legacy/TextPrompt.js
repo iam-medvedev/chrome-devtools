@@ -628,7 +628,8 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
             selection.addRange(selectionRange);
         }
     }
-    /** -1 if no caret can be found in text prompt
+    /**
+     * -1 if no caret can be found in text prompt
      */
     getCaretPosition() {
         if (!this.element().hasFocus()) {

@@ -9,10 +9,10 @@ export default `/*
  * found in the LICENSE file.
  */
 
- .widget.dialog-container {
+:scope {
   width: 100%;
   box-shadow: none;
- }
+}
 
 .dialog-header {
   margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-5);

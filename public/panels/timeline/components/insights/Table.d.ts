@@ -4,7 +4,7 @@ import type * as BaseInsightComponent from './BaseInsightComponent.js';
 export declare const i18nString: (id: string, values?: import("../../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../../core/platform/UIString.js").LocalizedString;
 type BaseInsightComponent = BaseInsightComponent.BaseInsightComponent<Trace.Insights.Types.InsightModel>;
 /**
- * @fileoverview An interactive table component.
+ * @file An interactive table component.
  *
  * On hover:
  *           desaturates the relevant events (in both the minimap and the flamegraph), and

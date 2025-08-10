@@ -6,11 +6,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Title of combo box in audits report selector
+     * @description Title of combo box in audits report selector
      */
     reports: 'Reports',
     /**
-     *@description New report item label in Lighthouse Report Selector
+     * @description New report item label in Lighthouse Report Selector
      */
     newReport: '(new report)',
 };

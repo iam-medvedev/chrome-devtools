@@ -25,50 +25,30 @@ function getReleaseNote() {
   return releaseNote;
 }
 var releaseNote = {
-  version: 80,
-  header: "What's new in DevTools 139",
+  version: 81,
+  header: "What's new in DevTools 140",
   markdownLinks: [
     {
-      key: "reliable-devtools",
-      link: "https://developer.chrome.com/blog/new-in-devtools-139/#reliable-devtools"
-    },
-    {
-      key: "multimodal-input",
-      link: "https://developer.chrome.com/blog/new-in-devtools-139/#multimodal-input"
-    },
-    {
-      key: "from-elements",
-      link: "https://developer.chrome.com/docs/devtools/ai-assistance/styling#from_the_elements_panel"
-    },
-    {
-      key: "element-context",
-      link: "https://developer.chrome.com/docs/devtools/ai-assistance/styling#conversation_context"
-    },
-    {
-      key: "devtools-io",
-      link: "https://developer.chrome.com/blog/new-in-devtools-137"
-    },
-    {
-      key: "ai-styling",
-      link: "https://developer.chrome.com/blog/new-in-devtools-137#ai-styling"
-    },
-    {
       key: "ai-insights",
-      link: "https://developer.chrome.com/blog/new-in-devtools-137#ai-insights"
+      link: "https://developer.chrome.com/blog/new-in-devtools-140/#ai-insights"
     },
     {
-      key: "ai-annotations",
-      link: "https://developer.chrome.com/blog/new-in-devtools-137#ai-annotations"
+      key: "save-data",
+      link: "https://developer.chrome.com/blog/new-in-devtools-140/#save-data"
+    },
+    {
+      key: "debug-css",
+      link: "https://developer.chrome.com/blog/new-in-devtools-138#debug-css-values"
     }
   ],
   videoLinks: [
     {
-      description: "See past highlights from Chrome 138",
-      link: "https://developer.chrome.com/blog/new-in-devtools-138",
+      description: "See past highlights from Chrome 139",
+      link: "https://developer.chrome.com/blog/new-in-devtools-139",
       type: "WhatsNew"
     }
   ],
-  link: "https://developer.chrome.com/blog/new-in-devtools-139/"
+  link: "https://developer.chrome.com/blog/new-in-devtools-140/"
 };
 
 // gen/front_end/panels/whats_new/ReleaseNoteView.js
@@ -215,7 +195,7 @@ x-link:focus .video {
 // gen/front_end/panels/whats_new/ReleaseNoteView.js
 var UIStrings = {
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   seeFeatures: "See all new features"
 };
@@ -247,7 +227,7 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
     const releaseNote2 = input.getReleaseNote();
     const markdownContent = input.markdownContent;
     render(html`
-      <style>${releaseNoteView_css_default}</style>
+      <style>${UI.Widget.widgetScoped(releaseNoteView_css_default)}</style>
       <div class="whatsnew" jslog=${VisualLogging.section().context("release-notes")}>
         <div class="whatsnew-content">
           <div class="header">
@@ -289,7 +269,7 @@ var ReleaseNoteView = class extends UI.Panel.Panel {
           </div>
         </div>
       </div>
-    `, target, { host: input });
+    `, target);
   }) {
     super("whats-new", true);
     this.#view = view;

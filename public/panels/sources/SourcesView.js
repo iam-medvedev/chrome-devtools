@@ -23,23 +23,23 @@ import { TabbedEditorContainer, } from './TabbedEditorContainer.js';
 import { UISourceCodeFrame } from './UISourceCodeFrame.js';
 const UIStrings = {
     /**
-     *@description Text to open a file
+     * @description Text to open a file
      */
     openFile: 'Open file',
     /**
-     *@description Text to run commands
+     * @description Text to run commands
      */
     runCommand: 'Run command',
     /**
-     *@description Text in Sources View of the Sources panel. This sentence follows by a list of actions.
+     * @description Text in Sources View of the Sources panel. This sentence follows by a list of actions.
      */
     workspaceDropInAFolderToSyncSources: 'To sync edits to the workspace, drop a folder with your sources here or',
     /**
-     *@description Text in Sources View of the Sources panel.
+     * @description Text in Sources View of the Sources panel.
      */
     selectFolder: 'Select folder',
     /**
-     *@description Accessible label for Sources placeholder view actions list
+     * @description Accessible label for Sources placeholder view actions list
      */
     sourceViewActions: 'Source View Actions',
 };
@@ -57,10 +57,9 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     searchView;
     searchConfig;
     constructor() {
-        super();
+        super({ jslog: `${VisualLogging.pane('editor').track({ keydown: 'Escape' })}` });
         this.registerRequiredCSS(sourcesViewStyles);
         this.element.id = 'sources-panel-sources-view';
-        this.element.setAttribute('jslog', `${VisualLogging.pane('editor').track({ keydown: 'Escape' })}`);
         this.setMinimumAndPreferredSizes(88, 52, 150, 100);
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
         this.searchableViewInternal = new UI.SearchableView.SearchableView(this, this, 'sources-view-search-config');

@@ -29,7 +29,7 @@ export declare function widgetRef<T extends Widget, Args extends unknown[]>(type
  * Wraps CSS text in a @scope at-rule to encapsulate widget styles.
  *
  * This function relies on an implicit scope root (the parent element of the
- * <style> tag) and sets an explicit scope limit at `<devtools-widget>`.
+ * <style> tag) and sets an explicit inclusive scope limit at `<devtools-widget>`.
  * This prevents a parent widget's styles from cascading into any nested
  * child widgets.
  *
@@ -63,6 +63,11 @@ export interface WidgetOptions {
      * @see https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow
      */
     delegatesFocus?: boolean;
+    /**
+     * The Visual Logging configuration to put onto the `element` of the resulting
+     * `Widget`.
+     */
+    jslog?: string;
 }
 export declare class Widget {
     #private;
@@ -157,7 +162,7 @@ export declare class Widget {
      * the `requestAnimationFrame` and executed with the animation frame. Instead,
      * use the `requestUpdate()` method to schedule an asynchronous update.
      *
-     * @return can either return nothing or a promise; in that latter case, the
+     * @returns can either return nothing or a promise; in that latter case, the
      *         update logic will await the resolution of the returned promise
      *         before proceeding.
      */

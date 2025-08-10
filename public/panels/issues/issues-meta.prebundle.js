@@ -7,11 +7,11 @@ import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Label for the issues pane
+     * @description Label for the issues pane
      */
     issues: 'Issues',
     /**
-     *@description Command for showing the 'Issues' tool
+     * @description Command for showing the 'Issues' tool
      */
     showIssues: 'Show Issues',
 };

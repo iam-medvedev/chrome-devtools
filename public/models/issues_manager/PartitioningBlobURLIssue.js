@@ -5,11 +5,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import { Issue } from './Issue.js';
 const UIStrings = {
     /**
-     *@description Title for Partitioning BlobURL explainer url link.
+     * @description Title for Partitioning BlobURL explainer url link.
      */
     partitioningBlobURL: 'Partitioning BlobURL',
     /**
-     *@description Title for Chrome Status Entry url link.
+     * @description Title for Chrome Status Entry url link.
      */
     chromeStatusEntry: 'Chrome Status Entry'
 };

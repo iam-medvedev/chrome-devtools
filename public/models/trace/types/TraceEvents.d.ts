@@ -1194,8 +1194,9 @@ export interface UserTimingMeasure extends Event {
         traceId: number;
     };
 }
-/** ChromeFrameReporter args for PipelineReporter event.
-    Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
+/**
+ * ChromeFrameReporter args for PipelineReporter event.
+ * Matching proto: https://source.chromium.org/chromium/chromium/src/+/main:third_party/perfetto/protos/perfetto/trace/track_event/chrome_frame_reporter.proto
  */
 interface ChromeFrameReporter {
     state: State;
@@ -1203,11 +1204,15 @@ interface ChromeFrameReporter {
     /** The reason is set only if |state| is not |STATE_UPDATED_ALL|. */
     reason: FrameDropReason;
     frame_source: number;
-    /**  Identifies a BeginFrameArgs (along with the source_id).
-         See comments in components/viz/common/frame_sinks/begin_frame_args.h. */
+    /**
+     * Identifies a BeginFrameArgs (along with the source_id).
+     * See comments in components/viz/common/frame_sinks/begin_frame_args.h.
+     */
     frame_sequence: number;
-    /**  If this is a dropped frame (i.e. if |state| is set to |STATE_DROPPED| or
-         |STATE_PRESENTED_PARTIAL|), then indicates whether this frame impacts smoothness. */
+    /**
+     * If this is a dropped frame (i.e. if |state| is set to |STATE_DROPPED| or
+     * |STATE_PRESENTED_PARTIAL|), then indicates whether this frame impacts smoothness.
+     */
     affects_smoothness: boolean;
     /** The type of active scroll. */
     scroll_state: ScrollState;
@@ -1217,48 +1222,66 @@ interface ChromeFrameReporter {
     has_compositor_animation: boolean;
     /** If any touch-driven UX (not scroll) is active during this frame. */
     has_smooth_input_main: boolean;
-    /**  Whether the frame contained any missing content (i.e. whether there was
-         checkerboarding in the frame). */
+    /**
+     * Whether the frame contained any missing content (i.e. whether there was
+     * checkerboarding in the frame).
+     */
     has_missing_content: boolean;
     /** The id of layer_tree_host that the frame has been produced for. */
     layer_tree_host_id: number;
     /** If total latency of PipelineReporter exceeds a certain limit. */
     has_high_latency: boolean;
-    /**  Indicate if the frame is "FORKED" (i.e. a PipelineReporter event starts at
-         the same frame sequence as another PipelineReporter) or "BACKFILL"
-         (i.e. dropped frames when there are no partial compositor updates). */
+    /**
+     *  Indicate if the frame is "FORKED" (i.e. a PipelineReporter event starts at
+     * the same frame sequence as another PipelineReporter) or "BACKFILL"
+     * (i.e. dropped frames when there are no partial compositor updates).
+     */
     frame_type: FrameType;
-    /**  The breakdown stage of PipelineReporter that is most likely accountable for
-         high latency. */
+    /**
+     * The breakdown stage of PipelineReporter that is most likely accountable for
+     * high latency.
+     */
     high_latency_contribution_stage: string[];
 }
 declare const enum State {
     /** The frame did not have any updates to present. **/
     STATE_NO_UPDATE_DESIRED = "STATE_NO_UPDATE_DESIRED",
-    /**  The frame presented all the desired updates (i.e. any updates requested
-         from both the compositor thread and main-threads were handled). **/
+    /**
+     * The frame presented all the desired updates (i.e. any updates requested
+     * from both the compositor thread and main-threads were handled). *
+     */
     STATE_PRESENTED_ALL = "STATE_PRESENTED_ALL",
-    /**  The frame was presented with some updates, but also missed some updates
-         (e.g. missed updates from the main-thread, but included updates from the
-          compositor thread). **/
+    /**
+     *  The frame was presented with some updates, but also missed some updates
+     * (e.g. missed updates from the main-thread, but included updates from the
+     * compositor thread). *
+     */
     STATE_PRESENTED_PARTIAL = "STATE_PRESENTED_PARTIAL",
-    /**  The frame was dropped, i.e. some updates were desired for the frame, but
-         was not presented. **/
+    /**
+     * The frame was dropped, i.e. some updates were desired for the frame, but
+     * was not presented. *
+     */
     STATE_DROPPED = "STATE_DROPPED"
 }
 declare const enum FrameDropReason {
     REASON_UNSPECIFIED = "REASON_UNSPECIFIED",
-    /**  Frame was dropped by the display-compositor.
-           The display-compositor may drop a frame some times (e.g. the frame missed
-          the deadline, or was blocked on surface-sync, etc.) **/
+    /**
+     *  Frame was dropped by the display-compositor.
+     * The display-compositor may drop a frame some times (e.g. the frame missed
+     * the deadline, or was blocked on surface-sync, etc.) *
+     */
     REASON_DISPLAY_COMPOSITOR = "REASON_DISPLAY_COMPOSITOR",
-    /**  Frame was dropped because of the main-thread.
-           The main-thread may cause a frame to be dropped, e.g. if the main-thread
-          is running expensive javascript, or doing a lot of layout updates, etc. **/
+    /**
+     *  Frame was dropped because of the main-thread.
+     * The main-thread may cause a frame to be dropped, e.g. if the main-thread
+     * is running expensive javascript, or doing a lot of layout updates, etc. *
+     */
     REASON_MAIN_THREAD = "REASON_MAIN_THREAD",
-    /**  Frame was dropped by the client compositor.
-           The client compositor can drop some frames too (e.g. attempting to
-           recover latency, missing the deadline, etc.). **/
+    /**
+     *  Frame was dropped by the client compositor.
+     * The client compositor can drop some frames too (e.g. attempting to
+     * recover latency, missing the deadline, etc.). *
+     */
     REASON_CLIENT_COMPOSITOR = "REASON_CLIENT_COMPOSITOR"
 }
 declare const enum ScrollState {

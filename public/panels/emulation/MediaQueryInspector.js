@@ -29,10 +29,12 @@ export class MediaQueryInspector extends UI.Widget.Widget {
     cssModel;
     cachedQueryModels;
     constructor(getWidthCallback, setWidthCallback, mediaThrottler) {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.mediaInspectorView().track({ click: true })}`,
+            useShadowDom: true,
+        });
         this.registerRequiredCSS(mediaQueryInspectorStyles);
         this.contentElement.classList.add('media-inspector-view');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.mediaInspectorView().track({ click: true })}`);
         this.contentElement.addEventListener('click', this.onMediaQueryClicked.bind(this), false);
         this.contentElement.addEventListener('contextmenu', this.onContextMenu.bind(this), false);
         this.mediaThrottler = mediaThrottler;

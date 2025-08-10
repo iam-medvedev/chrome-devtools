@@ -37,11 +37,11 @@ import { LayerPaintProfilerView } from './LayerPaintProfilerView.js';
 import { Events, LayerTreeModel } from './LayerTreeModel.js';
 const UIStrings = {
     /**
-     *@description Text for the details of something
+     * @description Text for the details of something
      */
     details: 'Details',
     /**
-     *@description Title of the Profiler tool
+     * @description Title of the Profiler tool
      */
     profiler: 'Profiler',
 };

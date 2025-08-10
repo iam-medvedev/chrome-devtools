@@ -6,11 +6,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import { AffectedElementsView } from './AffectedElementsView.js';
 const UIStrings = {
     /**
-     *@description Noun for singular or plural number of affected descendant nodes indication in issue view.
+     * @description Noun for singular or plural number of affected descendant nodes indication in issue view.
      */
     nDescendants: '{n, plural, =1 { descendant} other { descendants}}',
     /**
-     *@description Label for the disallowed node link in the issue view.
+     * @description Label for the disallowed node link in the issue view.
      */
     disallowedNode: 'Disallowed descendant',
 };

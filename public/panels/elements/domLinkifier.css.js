@@ -9,8 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
-:host,
-.widget {
+:scope {
   display: inline;
 }
 

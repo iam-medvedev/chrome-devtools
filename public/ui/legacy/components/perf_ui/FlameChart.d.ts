@@ -244,7 +244,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     private scrollGroupIntoView;
     /**
      * Toggle a group's expanded state.
-     * @param groupIndex - the index of this group in the timelineData.groups
+     * @param groupIndex the index of this group in the timelineData.groups
      * array. Note that this is the array index, and not the startLevel of the
      * group.
      */
@@ -383,7 +383,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
      */
     /**
      * Process the pixels of start and end, and other data of each group, which are used in drawing the group.
-     * @param {GroupCallback} callback
+     * @param callback
      */
     private forEachGroup;
     private forEachGroupInViewport;
@@ -521,8 +521,10 @@ export declare const enum FlameChartDecorationType {
  **/
 export type FlameChartDecoration = {
     type: FlameChartDecorationType.CANDY;
-    /** Relative to entry's ts. We often only want to highlight problem parts of events, so this time sets the minimum
-     * time at which the candystriping will start. If you want to candystripe the entire event, set this to 0. */
+    /**
+     * Relative to entry's ts. We often only want to highlight problem parts of events, so this time sets the minimum
+     * time at which the candystriping will start. If you want to candystripe the entire event, set this to 0.
+     */
     startAtTime: Trace.Types.Timing.Micro;
 } | {
     type: FlameChartDecorationType.WARNING_TRIANGLE;
@@ -704,8 +706,10 @@ export interface GroupStyle {
     collapsible: boolean;
     /** The color of the group title text. */
     color: string;
-    /** The background color of the group title when the track is collapsed,
-     * and this is usually around same length as the title text. */
+    /**
+     * The background color of the group title when the track is collapsed,
+     * and this is usually around same length as the title text.
+     */
     backgroundColor: string;
     nestingLevel: number;
     itemsHeight?: number;

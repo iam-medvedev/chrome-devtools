@@ -14,11 +14,11 @@ import * as WindowBounds from "./../../../../services/window_bounds/window_bound
 import * as ThemeSupport from "./../../theme_support/theme_support.js";
 var UIStrings = {
   /**
-   *@description Message congratulating the user for having won a game.
+   * @description Message congratulating the user for having won a game.
    */
   congrats: "Congrats, you win!",
   /**
-   *@description A Postscript hinting the user the possibility to open the game using a keycombo.
+   * @description A Postscript hinting the user the possibility to open the game using a keycombo.
    */
   ps: "PS: You can also open the game by typing `fixme`"
 };
@@ -1000,50 +1000,50 @@ var KEYBOARD_FAKED_CONTEXT_MENU_DETAIL = -1;
 var SUBTITLE_FONT_SIZE_AND_STYLE = "italic 10px";
 var UIStrings2 = {
   /**
-   *@description Aria alert used to notify the user when an event has been selected because they tabbed into a group.
-   *@example {Paint} PH1
-   *@example {Main thread} PH2
+   * @description Aria alert used to notify the user when an event has been selected because they tabbed into a group.
+   * @example {Paint} PH1
+   * @example {Main thread} PH2
    *
    */
   eventSelectedFromGroup: 'Selected a {PH1} event within {PH2}. Press "enter" to focus this event.',
   /**
-   *@description Aria accessible name in Flame Chart of the Performance panel
+   * @description Aria accessible name in Flame Chart of the Performance panel
    */
   flameChart: "Flame Chart",
   /**
-   *@description Text for the screen reader to announce a hovered group
-   *@example {Network} PH1
+   * @description Text for the screen reader to announce a hovered group
+   * @example {Network} PH1
    */
   sHovered: "{PH1} hovered",
   /**
-   *@description Text for screen reader to announce a selected group.
-   *@example {Network} PH1
+   * @description Text for screen reader to announce a selected group.
+   * @example {Network} PH1
    */
   sSelected: "{PH1} selected",
   /**
-   *@description Text for screen reader to announce an expanded group
-   *@example {Network} PH1
+   * @description Text for screen reader to announce an expanded group
+   * @example {Network} PH1
    */
   sExpanded: "{PH1} expanded",
   /**
-   *@description Text for screen reader to announce a collapsed group
-   *@example {Network} PH1
+   * @description Text for screen reader to announce a collapsed group
+   * @example {Network} PH1
    */
   sCollapsed: "{PH1} collapsed",
   /**
-   *@description Text for an action that adds a label annotation to an entry in the Flame Chart
+   * @description Text for an action that adds a label annotation to an entry in the Flame Chart
    */
   labelEntry: "Label entry",
   /**
-   *@description Text for an action that adds link annotation between entries in the Flame Chart
+   * @description Text for an action that adds link annotation between entries in the Flame Chart
    */
   linkEntries: "Link entries",
   /**
-   *@description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
+   * @description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
    */
   enterTrackConfigurationMode: "Configure tracks",
   /**
-   *@description Shown in the context menu when right clicking on a track header to allow the user to exit track configuration mode.
+   * @description Shown in the context menu when right clicking on a track header to allow the user to exit track configuration mode.
    */
   exitTrackConfigurationMode: "Finish configuring tracks"
 };
@@ -1811,7 +1811,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   }
   /**
    * Toggle a group's expanded state.
-   * @param groupIndex - the index of this group in the timelineData.groups
+   * @param groupIndex the index of this group in the timelineData.groups
    * array. Note that this is the array index, and not the startLevel of the
    * group.
    */
@@ -3262,7 +3262,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
    */
   /**
    * Process the pixels of start and end, and other data of each group, which are used in drawing the group.
-   * @param {GroupCallback} callback
+   * @param callback
    */
   forEachGroup(callback) {
     if (!this.rawTimelineData) {
@@ -4285,7 +4285,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.vScrollElement.scrollTop = this.scrollTop;
   }
   /**
-   * @param centered - If true, scrolls offset to where it is centered on the chart,
+   * @param centered If true, scrolls offset to where it is centered on the chart,
    * based on current the this.offsetHeight value.
    */
   setScrollOffset(offset, height, centered) {
@@ -4404,8 +4404,8 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.rangeSelectionEnd = null;
   }
   /**
-   * @param startTime - the start time of the selection in MilliSeconds
-   * @param endTime - the end time of the selection in MilliSeconds
+   * @param startTime the start time of the selection in MilliSeconds
+   * @param endTime the end time of the selection in MilliSeconds
    * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
    */
   setRangeSelection(startTime, endTime) {
@@ -4705,24 +4705,24 @@ var filmStripView_css_default = `/*
 // gen/front_end/ui/legacy/components/perf_ui/FilmStripView.js
 var UIStrings3 = {
   /**
-   *@description Element title in Film Strip View of the Performance panel
+   * @description Element title in Film Strip View of the Performance panel
    */
   doubleclickToZoomImageClickTo: "Doubleclick to zoom image. Click to view preceding requests.",
   /**
-   *@description Aria label for captured screenshots in network panel.
-   *@example {3ms} PH1
+   * @description Aria label for captured screenshots in network panel.
+   * @example {3ms} PH1
    */
   screenshotForSSelectToView: "Screenshot for {PH1} - select to view preceding requests.",
   /**
-   *@description Text for one or a group of screenshots
+   * @description Text for one or a group of screenshots
    */
   screenshot: "Screenshot",
   /**
-   *@description Prev button title in Film Strip View of the Performance panel
+   * @description Prev button title in Film Strip View of the Performance panel
    */
   previousFrame: "Previous frame",
   /**
-   *@description Next button title in Film Strip View of the Performance panel
+   * @description Next button title in Film Strip View of the Performance panel
    */
   nextFrame: "Next frame"
 };
@@ -5240,23 +5240,23 @@ __export(NetworkPriorities_exports, {
 import * as i18n7 from "./../../../../core/i18n/i18n.js";
 var UIStrings4 = {
   /**
-   *@description Text in Network Priorities of the Performance panel
+   * @description Text in Network Priorities of the Performance panel
    */
   lowest: "Lowest",
   /**
-   *@description Text in Network Priorities of the Performance panel
+   * @description Text in Network Priorities of the Performance panel
    */
   low: "Low",
   /**
-   *@description Text in Network Priorities of the Performance panel
+   * @description Text in Network Priorities of the Performance panel
    */
   medium: "Medium",
   /**
-   *@description Text in Network Priorities of the Performance panel
+   * @description Text in Network Priorities of the Performance panel
    */
   high: "High",
   /**
-   *@description Text in Network Priorities of the Performance panel
+   * @description Text in Network Priorities of the Performance panel
    */
   highest: "Highest"
 };
@@ -5476,15 +5476,15 @@ var overviewGrid_css_default = `/*
 // gen/front_end/ui/legacy/components/perf_ui/OverviewGrid.js
 var UIStrings5 = {
   /**
-   *@description Label for the window for Overview grids
+   * @description Label for the window for Overview grids
    */
   overviewGridWindow: "Overview grid window",
   /**
-   *@description Label for left window resizer for Overview grids
+   * @description Label for left window resizer for Overview grids
    */
   leftResizer: "Left Resizer",
   /**
-   *@description Label for right window resizer for Overview grids
+   * @description Label for right window resizer for Overview grids
    */
   rightResizer: "Right Resizer"
 };
@@ -6162,7 +6162,7 @@ var pieChart_css_default = `/*
 // gen/front_end/ui/legacy/components/perf_ui/PieChart.js
 var UIStrings6 = {
   /**
-   *@description Text for sum
+   * @description Text for sum
    */
   total: "Total"
 };

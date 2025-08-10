@@ -234,7 +234,7 @@ export function extensionDataInPerformanceTiming(timing) {
  * `ExtensionUI::extensionEntryColor`).
  *
  * @param timeStamp The `ConsoleTimeStamp` event to extract data from.
- * @return An `ExtensionTrackEntryPayload` object if the event contains
+ * @returns An `ExtensionTrackEntryPayload` object if the event contains
  *         valid extension data for a track entry, or `null` otherwise.
  */
 export function extensionDataInConsoleTimeStamp(timeStamp) {

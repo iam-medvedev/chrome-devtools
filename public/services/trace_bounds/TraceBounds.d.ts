@@ -55,7 +55,7 @@ export declare class BoundsManager extends EventTarget {
     setMiniMapBounds(newBounds: Trace.Types.Timing.TraceWindowMicro): void;
     /**
      * Updates the visible part of the trace that the user can see.
-     * @param options.ignoreMiniMapBounds - by default the visible window will be
+     * @param options.ignoreMiniMapBounds by default the visible window will be
      * bound by the minimap bounds. If you set this to `true` then the timeline
      * visible window will not be constrained by the minimap bounds. Be careful
      * with this! Unless you deal with this situation, the UI of the performance

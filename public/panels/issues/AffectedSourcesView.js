@@ -8,7 +8,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { AffectedResourcesView } from './AffectedResourcesView.js';
 const UIStrings = {
     /**
-     *@description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
+     * @description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
      */
     nSources: '{n, plural, =1 {# source} other {# sources}}',
 };

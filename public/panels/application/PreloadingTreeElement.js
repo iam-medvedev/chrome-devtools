@@ -7,15 +7,15 @@ import { ApplicationPanelTreeElement, ExpandableApplicationPanelTreeElement } fr
 import { PreloadingAttemptView, PreloadingRuleSetView, PreloadingSummaryView } from './preloading/PreloadingView.js';
 const UIStrings = {
     /**
-     *@description Text in Application Panel Sidebar of the Application panel
+     * @description Text in Application Panel Sidebar of the Application panel
      */
     speculativeLoads: 'Speculative loads',
     /**
-     *@description Text in Application Panel Sidebar of the Application panel
+     * @description Text in Application Panel Sidebar of the Application panel
      */
     rules: 'Rules',
     /**
-     *@description Text in Application Panel Sidebar of the Application panel
+     * @description Text in Application Panel Sidebar of the Application panel
      */
     speculations: 'Speculations',
 };

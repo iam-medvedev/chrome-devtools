@@ -392,6 +392,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
         this.#anchor.addEventListener("blur", this.hideTooltip);
         this.#anchor.addEventListener("mouseleave", this.hideTooltip);
         this.addEventListener("mouseleave", this.hideTooltip);
+        this.addEventListener("focusout", this.hideTooltip);
       }
     }
     this.addEventListener("click", this.#stopPropagation);

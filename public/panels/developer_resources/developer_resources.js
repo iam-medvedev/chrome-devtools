@@ -65,19 +65,19 @@ var developerResourcesListView_css_default = `/*
 var { ref } = Directives;
 var UIStrings = {
   /**
-   *@description Text for the status of something
+   * @description Text for the status of something
    */
   status: "Status",
   /**
-   *@description Text for web URLs
+   * @description Text for web URLs
    */
   url: "URL",
   /**
-   *@description Text for the initiator of something
+   * @description Text for the initiator of something
    */
   initiator: "Initiator",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   totalBytes: "Total Bytes",
   /**
@@ -85,15 +85,15 @@ var UIStrings = {
    */
   duration: "Duration",
   /**
-   *@description Text for errors
+   * @description Text for errors
    */
   error: "Error",
   /**
-   *@description Title for the Developer resources tab
+   * @description Title for the Developer resources tab
    */
   developerResources: "Developer resources",
   /**
-   *@description Text for a context menu entry
+   * @description Text for a context menu entry
    */
   copyUrl: "Copy URL",
   /**
@@ -102,19 +102,19 @@ var UIStrings = {
    */
   copyInitiatorUrl: "Copy initiator URL",
   /**
-   *@description Text for the status column of a list view
+   * @description Text for the status column of a list view
    */
   pending: "pending",
   /**
-   *@description Text for the status column of a list view
+   * @description Text for the status column of a list view
    */
   success: "success",
   /**
-   *@description Text for the status column of a list view
+   * @description Text for the status column of a list view
    */
   failure: "failure",
   /**
-   *@description Accessible text for the value in bytes in memory allocation.
+   * @description Accessible text for the value in bytes in memory allocation.
    */
   sBytes: "{n, plural, =1 {# byte} other {# bytes}}",
   /**
@@ -131,7 +131,7 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var { withThousandsSeparator } = Platform.NumberUtilities;
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
-      <style>${developerResourcesListView_css_default}</style>
+      <style>${UI.Widget.widgetScoped(developerResourcesListView_css_default)}</style>
       <devtools-data-grid name=${i18nString(UIStrings.developerResources)} striped class="flex-auto"
          .filters=${input.filters} @contextmenu=${input.onContextMenu} @selected=${input.onSelect}>
         <table>
@@ -188,7 +188,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
             </tr>`;
   })}
           </table>
-        </devtools-data-grid>`, target, { host: input });
+        </devtools-data-grid>`, target);
 };
 var DeveloperResourcesListView = class extends UI.Widget.VBox {
   #items = [];
@@ -346,7 +346,7 @@ var { widgetConfig } = UI2.Widget;
 var { bindToSetting } = UI2.SettingsUI;
 var UIStrings2 = {
   /**
-   *@description Placeholder for a search field in a toolbar
+   * @description Placeholder for a search field in a toolbar
    */
   filterByText: "Filter by URL and error",
   /**
@@ -362,9 +362,9 @@ var UIStrings2 = {
    */
   enableLoadingThroughTarget: "Load through website",
   /**
-   *@description Text for resources load status
-   *@example {1} PH1
-   *@example {1} PH2
+   * @description Text for resources load status
+   * @example {1} PH1
+   * @example {1} PH2
    */
   resourcesCurrentlyLoading: "{PH1} resources, {PH2} currently loading",
   /**
@@ -389,7 +389,7 @@ var DeveloperResourcesRevealer = class {
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render2(html2`
     <style>
-      ${developerResourcesView_css_default}
+      ${UI2.Widget.widgetScoped(developerResourcesView_css_default)}
     </style>
     <div class="vbox flex-auto" jslog=${VisualLogging.panel("developer-resources").track({ resize: true })}>
       <div class="developer-resource-view-toolbar-container" jslog=${VisualLogging.toolbar()}
@@ -420,7 +420,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
           ${input.numLoading > 0 ? i18nString2(UIStrings2.resourcesCurrentlyLoading, { PH1: input.numResources, PH2: input.numLoading }) : i18nString2(UIStrings2.resources, { n: input.numResources })}
          </div>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var DeveloperResourcesView = class extends UI2.ThrottledWidget.ThrottledWidget {
   #loader;

@@ -6,7 +6,7 @@ import { TimelineFlameChartMarker } from './TimelineFlameChartView.js';
 import { TimelinePanel } from './TimelinePanel.js';
 const UIStrings = {
     /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+     * @description Text in Timeline Flame Chart Data Provider of the Performance panel
      */
     timings: 'Timings',
 };

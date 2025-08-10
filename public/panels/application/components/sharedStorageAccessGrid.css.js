@@ -8,7 +8,7 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-:host {
+:scope {
   padding: 20px;
   height: 100%;
   display: flex;

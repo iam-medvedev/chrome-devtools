@@ -79,19 +79,19 @@ var UIStrings = {
    */
   auctionWorklet: "Ad Auction Worklet",
   /**
-   *@description Text that refers to the animation of the web page
+   * @description Text that refers to the animation of the web page
    */
   animation: "Animation",
   /**
-   *@description Screen reader description of a hit breakpoint in the Sources panel
+   * @description Screen reader description of a hit breakpoint in the Sources panel
    */
   breakpointHit: "breakpoint hit",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   canvas: "Canvas",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   clipboard: "Clipboard",
   /**
@@ -99,87 +99,87 @@ var UIStrings = {
    */
   control: "Control",
   /**
-   *@description Text that refers to device such as a phone
+   * @description Text that refers to device such as a phone
    */
   device: "Device",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   domMutation: "DOM Mutation",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   dragDrop: "Drag / drop",
   /**
-   *@description Title for a group of cities
+   * @description Title for a group of cities
    */
   geolocation: "Geolocation",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   keyboard: "Keyboard",
   /**
-   *@description Text to load something
+   * @description Text to load something
    */
   load: "Load",
   /**
-   *@description Text that appears on a button for the media resource type filter.
+   * @description Text that appears on a button for the media resource type filter.
    */
   media: "Media",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   mouse: "Mouse",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   notification: "Notification",
   /**
-   *@description Text to parse something
+   * @description Text to parse something
    */
   parse: "Parse",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   pictureinpicture: "Picture-in-Picture",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   pointer: "Pointer",
   /**
-   *@description Label for a group of JavaScript files
+   * @description Label for a group of JavaScript files
    */
   script: "Script",
   /**
-   *@description Category of breakpoints
+   * @description Category of breakpoints
    */
   sharedStorageWorklet: "Shared Storage Worklet",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   timer: "Timer",
   /**
-   *@description Text for the touch type to simulate on a device
+   * @description Text for the touch type to simulate on a device
    */
   touch: "Touch",
   /**
-   *@description Title for a category of breakpoints on Trusted Type violations
+   * @description Title for a category of breakpoints on Trusted Type violations
    */
   trustedTypeViolations: "Trusted Type Violations",
   /**
-   *@description Title of the WebAudio tool
+   * @description Title of the WebAudio tool
    */
   webaudio: "WebAudio",
   /**
-   *@description Text in DOMDebugger Model
+   * @description Text in DOMDebugger Model
    */
   window: "Window",
   /**
-   *@description Text for the service worker type.
+   * @description Text for the service worker type.
    */
   worker: "Worker",
   /**
-   *@description Text that appears on a button for the xhr resource type filter.
+   * @description Text that appears on a button for the xhr resource type filter.
    */
   xhr: "XHR"
 };
@@ -199,8 +199,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ></devtools-toolbar-input>
     </devtools-toolbar>`,
     // clang-format on
-    target,
-    { host: input }
+    target
   );
 };
 var FilterToolbar = class _FilterToolbar extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
@@ -691,73 +690,73 @@ var domBreakpointsSidebarPane_css_default = `/*
 // gen/front_end/panels/browser_debugger/DOMBreakpointsSidebarPane.js
 var UIStrings2 = {
   /**
-   *@description Header text to indicate there are no breakpoints
+   * @description Header text to indicate there are no breakpoints
    */
   noBreakpoints: "No DOM breakpoints",
   /**
-   *@description DOM breakpoints description that shows if no DOM breakpoints are set
+   * @description DOM breakpoints description that shows if no DOM breakpoints are set
    */
   domBreakpointsDescription: "DOM breakpoints pause on the code that changes a DOM node or its children.",
   /**
-   *@description Accessibility label for the DOM breakpoints list in the Sources panel
+   * @description Accessibility label for the DOM breakpoints list in the Sources panel
    */
   domBreakpointsList: "DOM Breakpoints list",
   /**
-   *@description Text with two placeholders separated by a colon
-   *@example {Node removed} PH1
-   *@example {div#id1} PH2
+   * @description Text with two placeholders separated by a colon
+   * @example {Node removed} PH1
+   * @example {div#id1} PH2
    */
   sS: "{PH1}: {PH2}",
   /**
-   *@description Text with three placeholders separated by a colon and a comma
-   *@example {Node removed} PH1
-   *@example {div#id1} PH2
-   *@example {checked} PH3
+   * @description Text with three placeholders separated by a colon and a comma
+   * @example {Node removed} PH1
+   * @example {div#id1} PH2
+   * @example {checked} PH3
    */
   sSS: "{PH1}: {PH2}, {PH3}",
   /**
-   *@description Text exposed to screen readers on checked items.
+   * @description Text exposed to screen readers on checked items.
    */
   checked: "checked",
   /**
-   *@description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
+   * @description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
    */
   unchecked: "unchecked",
   /**
-   *@description Accessibility label for hit breakpoints in the Sources panel.
-   *@example {checked} PH1
+   * @description Accessibility label for hit breakpoints in the Sources panel.
+   * @example {checked} PH1
    */
   sBreakpointHit: "{PH1} breakpoint hit",
   /**
-   *@description Screen reader description of a hit breakpoint in the Sources panel
+   * @description Screen reader description of a hit breakpoint in the Sources panel
    */
   breakpointHit: "breakpoint hit",
   /**
-   *@description A context menu item in the DOM Breakpoints sidebar that reveals the node on which the current breakpoint is set.
+   * @description A context menu item in the DOM Breakpoints sidebar that reveals the node on which the current breakpoint is set.
    */
   revealDomNodeInElementsPanel: "Reveal DOM node in Elements panel",
   /**
-   *@description Text to remove a breakpoint
+   * @description Text to remove a breakpoint
    */
   removeBreakpoint: "Remove breakpoint",
   /**
-   *@description A context menu item in the DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description A context menu item in the DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
    */
   removeAllDomBreakpoints: "Remove all DOM breakpoints",
   /**
-   *@description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
    */
   subtreeModified: "Subtree modified",
   /**
-   *@description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
    */
   attributeModified: "Attribute modified",
   /**
-   *@description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Text in DOMBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
    */
   nodeRemoved: "Node removed",
   /**
-   *@description Entry in context menu of the elements pane, allowing developers to select a DOM
+   * @description Entry in context menu of the elements pane, allowing developers to select a DOM
    * breakpoint for the element that they have right-clicked on. Short for the action 'set a
    * breakpoint on this DOM Element'. A breakpoint pauses the website when the code reaches a
    * specified line, or when a specific action happen (in this case, when the DOM Element is
@@ -765,11 +764,11 @@ var UIStrings2 = {
    */
   breakOn: "Break on",
   /**
-   *@description Screen reader description for removing a DOM breakpoint.
+   * @description Screen reader description for removing a DOM breakpoint.
    */
   breakpointRemoved: "Breakpoint removed",
   /**
-   *@description Screen reader description for setting a DOM breakpoint.
+   * @description Screen reader description for setting a DOM breakpoint.
    */
   breakpointSet: "Breakpoint set"
 };
@@ -1247,48 +1246,48 @@ var xhrBreakpointsSidebarPane_css_default = `/*
 // gen/front_end/panels/browser_debugger/XHRBreakpointsSidebarPane.js
 var UIStrings3 = {
   /**
-   *@description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   xhrfetchBreakpoints: "XHR/fetch Breakpoints",
   /**
-   *@description Text to indicate there are no breakpoints
+   * @description Text to indicate there are no breakpoints
    */
   noBreakpoints: "No breakpoints",
   /**
-   *@description Label for a button in the Sources panel that opens the input field to create a new XHR/fetch breakpoint.
+   * @description Label for a button in the Sources panel that opens the input field to create a new XHR/fetch breakpoint.
    */
   addXhrfetchBreakpoint: "Add XHR/fetch breakpoint",
   /**
-   *@description Text to add a breakpoint
+   * @description Text to add a breakpoint
    */
   addBreakpoint: "Add breakpoint",
   /**
-   *@description Input element container text content in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Input element container text content in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
    */
   breakWhenUrlContains: "Break when URL contains:",
   /**
-   *@description Accessible label for XHR/fetch breakpoint text input
+   * @description Accessible label for XHR/fetch breakpoint text input
    */
   urlBreakpoint: "URL Breakpoint",
   /**
-   *@description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
-   *@example {example.com} PH1
+   * @description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @example {example.com} PH1
    */
   urlContainsS: 'URL contains "{PH1}"',
   /**
-   *@description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
+   * @description Text in XHRBreakpoints Sidebar Pane of the JavaScript Debugging pane in the Sources panel or the DOM Breakpoints pane in the Elements panel
    */
   anyXhrOrFetch: "Any XHR or fetch",
   /**
-   *@description Screen reader description of a hit breakpoint in the Sources panel
+   * @description Screen reader description of a hit breakpoint in the Sources panel
    */
   breakpointHit: "breakpoint hit",
   /**
-   *@description Text to remove all breakpoints
+   * @description Text to remove all breakpoints
    */
   removeAllBreakpoints: "Remove all breakpoints",
   /**
-   *@description Text to remove a breakpoint
+   * @description Text to remove a breakpoint
    */
   removeBreakpoint: "Remove breakpoint"
 };
@@ -1307,11 +1306,13 @@ var XHRBreakpointsSidebarPane = class _XHRBreakpointsSidebarPane extends UI4.Wid
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   #hitBreakpoint;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging6.section("source.xhr-breakpoints")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(xhrBreakpointsSidebarPane_css_default);
     this.#breakpoints = new UI4.ListModel.ListModel();
     this.#list = new UI4.ListControl.ListControl(this.#breakpoints, this, UI4.ListControl.ListMode.NonViewport);
-    this.contentElement.setAttribute("jslog", `${VisualLogging6.section("source.xhr-breakpoints")}`);
     this.contentElement.appendChild(this.#list.element);
     this.#list.element.classList.add("breakpoint-list", "hidden");
     UI4.ARIAUtils.markAsList(this.#list.element);

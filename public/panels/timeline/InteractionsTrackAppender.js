@@ -6,7 +6,7 @@ import * as Components from './components/components.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
+     * @description Text in Timeline Flame Chart Data Provider of the Performance panel
      */
     interactions: 'Interactions',
 };

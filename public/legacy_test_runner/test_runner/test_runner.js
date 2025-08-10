@@ -447,14 +447,14 @@ function addScriptForFrame(url2, content, frame) {
 var formatters = {
   /**
    * @param {*} value
-   * @return {string}
+   * @returns {string}
    */
   formatAsTypeName(value) {
     return "<" + typeof value + ">";
   },
   /**
    * @param {*} value
-   * @return {string}
+   * @returns {string}
    */
   formatAsTypeNameOrNull(value) {
     if (value === null) {
@@ -464,7 +464,7 @@ var formatters = {
   },
   /**
    * @param {*} value
-   * @return {string|!Date}
+   * @returns {string|!Date}
    */
   formatAsRecentTime(value) {
     if (typeof value !== "object" || !(value instanceof Date)) {
@@ -475,7 +475,7 @@ var formatters = {
   },
   /**
    * @param {string} value
-   * @return {string}
+   * @returns {string}
    */
   formatAsURL(value) {
     if (!value) {
@@ -489,7 +489,7 @@ var formatters = {
   },
   /**
    * @param {string} value
-   * @return {string}
+   * @returns {string}
    */
   formatAsDescription(value) {
     if (!value) {
@@ -823,7 +823,7 @@ var StringOutputStream = class {
   }
   /**
    * @param {string} fileName
-   * @return {!Promise<boolean>}
+   * @returns {!Promise<boolean>}
    */
   async open(fileName) {
     return true;
@@ -846,7 +846,7 @@ var MockSetting = class {
     this.value = value;
   }
   /**
-   * @return {V}
+   * @returns {V}
    */
   get() {
     return this.value;
@@ -1056,8 +1056,8 @@ async function _executeTestScript() {
 var _startedTest = false;
 var _TestObserver = class {
   /**
-   * @param {!SDK.Target.Target} target
    * @override
+   * @param {!SDK.Target.Target} target
    */
   targetAdded(target) {
     if (target.id() === "main" && target.type() === "frame" || target.parentTarget()?.type() === "tab" && target.type() === "frame" && !target.targetInfo()?.subtype?.length) {
@@ -1076,8 +1076,8 @@ var _TestObserver = class {
     }
   }
   /**
-   * @param {!SDK.Target.Target} target
    * @override
+   * @param {!SDK.Target.Target} target
    */
   targetRemoved(target) {
   }

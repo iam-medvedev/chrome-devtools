@@ -29,17 +29,17 @@ const UIStrings = {
      */
     ignoreListDescription: 'Add regular expression rules to remove matching scripts from the flame chart.',
     /**
-     *@description Pattern title in Framework Ignore List Settings Tab of the Settings
-     *@example {ad.*?} regex
+     * @description Pattern title in Framework Ignore List Settings Tab of the Settings
+     * @example {ad.*?} regex
      */
     ignoreScriptsWhoseNamesMatchS: 'Ignore scripts whose names match \'\'{regex}\'\'',
     /**
-     *@description Label for the button to remove an regex
-     *@example {ad.*?} regex
+     * @description Label for the button to remove an regex
+     * @example {ad.*?} regex
      */
     removeRegex: 'Remove the regex: \'\'{regex}\'\'',
     /**
-     *@description Aria accessible name in Ignore List Settings Dialog in Performance panel. It labels the input
+     * @description Aria accessible name in Ignore List Settings Dialog in Performance panel. It labels the input
      * field used to add new or edit existing regular expressions that match file names to ignore in the debugger.
      */
     addNewRegex: 'Add a regular expression rule for the script\'s URL',

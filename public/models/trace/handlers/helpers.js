@@ -3,15 +3,23 @@
 // found in the LICENSE file.
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
 import * as Types from '../types/types.js';
-export function getEntityForEvent(event, entityCache) {
+export function getEntityForEvent(event, entityMappings) {
     const url = getNonResolvedURL(event);
     if (!url) {
         return;
     }
-    return getEntityForUrl(url, entityCache);
+    return getEntityForUrl(url, entityMappings);
 }
-export function getEntityForUrl(url, entityCache) {
-    return ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(entityCache, url);
+export function getEntityForUrl(url, entityMappings) {
+    const cachedByUrl = entityMappings.entityByUrlCache.get(url);
+    if (cachedByUrl) {
+        return cachedByUrl;
+    }
+    const entity = ThirdPartyWeb.ThirdPartyWeb.getEntity(url) ?? makeUpEntity(entityMappings.createdEntityCache, url);
+    if (entity) {
+        entityMappings.entityByUrlCache.set(url, entity);
+    }
+    return entity;
 }
 export function getNonResolvedURL(entry, parsedTrace) {
     if (Types.Events.isProfileCall(entry)) {
@@ -116,7 +124,7 @@ function makeUpChromeExtensionEntity(entityCache, url, extensionName) {
     return chromeExtensionEntity;
 }
 export function addEventToEntityMapping(event, entityMappings) {
-    const entity = getEntityForEvent(event, entityMappings.createdEntityCache);
+    const entity = getEntityForEvent(event, entityMappings);
     if (!entity) {
         return;
     }
@@ -136,7 +144,7 @@ export function addEventToEntityMapping(event, entityMappings) {
 }
 // A slight upgrade of addEventToEntityMapping to handle the sub-events of a network request.
 export function addNetworkRequestToEntityMapping(networkRequest, entityMappings, requestTraceEvents) {
-    const entity = getEntityForEvent(networkRequest, entityMappings.createdEntityCache);
+    const entity = getEntityForEvent(networkRequest, entityMappings);
     if (!entity) {
         return;
     }

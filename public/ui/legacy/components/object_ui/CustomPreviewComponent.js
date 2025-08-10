@@ -10,7 +10,7 @@ import customPreviewComponentStyles from './customPreviewComponent.css.js';
 import { ObjectPropertiesSection, ObjectPropertiesSectionsTreeOutline, ObjectPropertyTreeElement, } from './ObjectPropertiesSection.js';
 const UIStrings = {
     /**
-     *@description A context menu item in the Custom Preview Component
+     * @description A context menu item in the Custom Preview Component
      */
     showAsJavascriptObject: 'Show as JavaScript object',
 };

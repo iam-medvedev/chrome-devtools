@@ -1412,6 +1412,9 @@
   "models/ai_assistance/AiUtils.ts | offline": {
     "message": "This feature is only available with an active internet connection."
   },
+  "models/ai_assistance/ConversationHandler.ts | externalRequestReceived": {
+    "message": "DevTools received an external request"
+  },
   "models/bindings/ContentProviderBasedProject.ts | unknownErrorLoadingFile": {
     "message": "Unknown error loading file"
   },
@@ -1627,6 +1630,12 @@
   },
   "models/issues_manager/SRIMessageSignatureIssue.ts | signatureBasedIntegrity": {
     "message": "Signature-based Integrity"
+  },
+  "models/issues_manager/UnencodedDigestIssue.ts | integrityIntegration": {
+    "message": "Server-Initiated Integrity Checks"
+  },
+  "models/issues_manager/UnencodedDigestIssue.ts | unencodedDigestHeader": {
+    "message": "HTTP Unencoded Digest specification"
   },
   "models/live-metrics/LiveMetrics.ts | lcpEmulationWarning": {
     "message": "Simulating a new device after the page loads can affect LCP. Reload the page after simulating a new device for accurate LCP data."
@@ -6752,8 +6761,23 @@
   "panels/elements/ElementsTreeElement.ts | addAttribute": {
     "message": "Add attribute"
   },
+  "panels/elements/ElementsTreeElement.ts | addPadding": {
+    "message": "Add padding"
+  },
+  "panels/elements/ElementsTreeElement.ts | alignItems": {
+    "message": "Align items"
+  },
+  "panels/elements/ElementsTreeElement.ts | assessVisibility": {
+    "message": "Assess visibility"
+  },
   "panels/elements/ElementsTreeElement.ts | captureNodeScreenshot": {
     "message": "Capture node screenshot"
+  },
+  "panels/elements/ElementsTreeElement.ts | centerElement": {
+    "message": "Center element"
+  },
+  "panels/elements/ElementsTreeElement.ts | changeParentProperties": {
+    "message": "Change parent properties"
   },
   "panels/elements/ElementsTreeElement.ts | children": {
     "message": "Children:"
@@ -6800,6 +6824,9 @@
   "panels/elements/ElementsTreeElement.ts | disableScrollSnap": {
     "message": "Disable scroll-snap overlay"
   },
+  "panels/elements/ElementsTreeElement.ts | distributeItemsEvenly": {
+    "message": "Distribute items evenly"
+  },
   "panels/elements/ElementsTreeElement.ts | duplicateElement": {
     "message": "Duplicate element"
   },
@@ -6827,6 +6854,30 @@
   "panels/elements/ElementsTreeElement.ts | expandRecursively": {
     "message": "Expand recursively"
   },
+  "panels/elements/ElementsTreeElement.ts | explainContainerContext": {
+    "message": "Explain container context"
+  },
+  "panels/elements/ElementsTreeElement.ts | explainContainerQueries": {
+    "message": "Explain container queries"
+  },
+  "panels/elements/ElementsTreeElement.ts | explainContainerTypes": {
+    "message": "Explain container types"
+  },
+  "panels/elements/ElementsTreeElement.ts | explainFlexbox": {
+    "message": "Explain flexbox"
+  },
+  "panels/elements/ElementsTreeElement.ts | explainGridLayout": {
+    "message": "Explain grid layout"
+  },
+  "panels/elements/ElementsTreeElement.ts | explainScrollbars": {
+    "message": "Explain scrollbars"
+  },
+  "panels/elements/ElementsTreeElement.ts | explainSubgrids": {
+    "message": "Explain subgrids"
+  },
+  "panels/elements/ElementsTreeElement.ts | findGridDefinition": {
+    "message": "Find grid definition"
+  },
   "panels/elements/ElementsTreeElement.ts | focus": {
     "message": "Focus"
   },
@@ -6845,6 +6896,9 @@
   "panels/elements/ElementsTreeElement.ts | paste": {
     "message": "Paste"
   },
+  "panels/elements/ElementsTreeElement.ts | removeScrollbars": {
+    "message": "Remove scrollbars"
+  },
   "panels/elements/ElementsTreeElement.ts | scrollIntoView": {
     "message": "Scroll into view"
   },
@@ -6860,8 +6914,14 @@
   "panels/elements/ElementsTreeElement.ts | showPopoverTarget": {
     "message": "Show element associated with the popovertarget attribute"
   },
+  "panels/elements/ElementsTreeElement.ts | startAChat": {
+    "message": "Start a chat"
+  },
   "panels/elements/ElementsTreeElement.ts | stopForceOpenPopover": {
     "message": "Stop keeping this popover open"
+  },
+  "panels/elements/ElementsTreeElement.ts | styleScrollbars": {
+    "message": "Style scrollbars"
   },
   "panels/elements/ElementsTreeElement.ts | thisFrameWasIdentifiedAsAnAd": {
     "message": "This frame was identified as an ad frame"
@@ -6871,6 +6931,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | valueIsTooLargeToEdit": {
     "message": "<value is too large to edit>"
+  },
+  "panels/elements/ElementsTreeElement.ts | wrapTheseItems": {
+    "message": "Wrap these items"
   },
   "panels/elements/ElementsTreeOutline.ts | pageDom": {
     "message": "Page DOM"
@@ -6926,17 +6989,17 @@
   "panels/elements/LayoutPane.ts | flexboxOverlays": {
     "message": "Flexbox overlays"
   },
-  "panels/elements/LayoutPane.ts | grid": {
-    "message": "Grid"
+  "panels/elements/LayoutPane.ts | gridOrMasonry": {
+    "message": "Grid / Masonry"
   },
-  "panels/elements/LayoutPane.ts | gridOverlays": {
-    "message": "Grid overlays"
+  "panels/elements/LayoutPane.ts | gridOrMasonryOverlays": {
+    "message": "Grid / Masonry overlays"
   },
   "panels/elements/LayoutPane.ts | noFlexboxLayoutsFoundOnThisPage": {
     "message": "No flexbox layouts found on this page"
   },
-  "panels/elements/LayoutPane.ts | noGridLayoutsFoundOnThisPage": {
-    "message": "No grid layouts found on this page"
+  "panels/elements/LayoutPane.ts | noGridOrMasonryLayoutsFoundOnThisPage": {
+    "message": "No grid or masonry layouts found on this page"
   },
   "panels/elements/LayoutPane.ts | overlayDisplaySettings": {
     "message": "Overlay display settings"
@@ -8603,6 +8666,12 @@
   "panels/mobile_throttling/NetworkPanelIndicator.ts | requestsMayBeOverridden": {
     "message": "Requests may be overridden locally, see the Sources panel"
   },
+  "panels/mobile_throttling/NetworkThrottlingSelector.ts | add": {
+    "message": "Add…"
+  },
+  "panels/mobile_throttling/NetworkThrottlingSelector.ts | addS": {
+    "message": "Add {PH1}"
+  },
   "panels/mobile_throttling/NetworkThrottlingSelector.ts | custom": {
     "message": "Custom"
   },
@@ -8612,11 +8681,11 @@
   "panels/mobile_throttling/NetworkThrottlingSelector.ts | presets": {
     "message": "Presets"
   },
-  "panels/mobile_throttling/ThrottlingManager.ts | add": {
-    "message": "Add…"
+  "panels/mobile_throttling/NetworkThrottlingSelector.ts | recommendedThrottling": {
+    "message": "{PH1} – recommended"
   },
-  "panels/mobile_throttling/ThrottlingManager.ts | addS": {
-    "message": "Add {PH1}"
+  "panels/mobile_throttling/NetworkThrottlingSelector.ts | sS": {
+    "message": "{PH1}: {PH2}"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | calibrate": {
     "message": "Calibrate…"
@@ -8662,9 +8731,6 @@
   },
   "panels/mobile_throttling/ThrottlingManager.ts | saveDataSettingTooltip": {
     "message": "Override the value reported by navigator.connection.saveData on the page"
-  },
-  "panels/mobile_throttling/ThrottlingManager.ts | sS": {
-    "message": "{PH1}: {PH2}"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | throttling": {
     "message": "Throttling"
@@ -9350,6 +9416,9 @@
   "panels/network/NetworkDataGridNode.ts | redirect": {
     "message": "Redirect"
   },
+  "panels/network/NetworkDataGridNode.ts | responseIsIpProtectedToolTip": {
+    "message": "This request was sent through IP Protection proxies."
+  },
   "panels/network/NetworkDataGridNode.ts | script": {
     "message": "Script"
   },
@@ -9485,6 +9554,9 @@
   "panels/network/NetworkLogView.ts | areYouSureYouWantToClearBrowserCookies": {
     "message": "Are you sure you want to clear browser cookies?"
   },
+  "panels/network/NetworkLogView.ts | assessSecurityHeaders": {
+    "message": "Assess security headers"
+  },
   "panels/network/NetworkLogView.ts | blockedRequests": {
     "message": "Blocked requests"
   },
@@ -9599,6 +9671,15 @@
   "panels/network/NetworkLogView.ts | dropHarFilesHere": {
     "message": "Drop HAR files here"
   },
+  "panels/network/NetworkLogView.ts | explainFailures": {
+    "message": "Explain failures"
+  },
+  "panels/network/NetworkLogView.ts | explainPurpose": {
+    "message": "Explain purpose"
+  },
+  "panels/network/NetworkLogView.ts | explainSlowness": {
+    "message": "Explain slowness"
+  },
   "panels/network/NetworkLogView.ts | finishS": {
     "message": "Finish: {PH1}"
   },
@@ -9697,6 +9778,9 @@
   },
   "panels/network/NetworkLogView.ts | sSTransferred": {
     "message": "{PH1} / {PH2} transferred"
+  },
+  "panels/network/NetworkLogView.ts | startAChat": {
+    "message": "Start a chat"
   },
   "panels/network/NetworkLogView.ts | startRecording": {
     "message": "Start recording"
@@ -12306,10 +12390,10 @@
     "message": "Boost your productivity with AI"
   },
   "panels/settings/AISettingsTab.ts | codeSuggestionsSendData": {
-    "message": "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature."
+    "message": "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | codeSuggestionsSendDataNoLogging": {
-    "message": "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data will not be used to improve Google’s AI models."
+    "message": "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data will not be used to improve Google’s AI models."
   },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
@@ -13718,9 +13802,6 @@
   "panels/sources/SourcesPanel.ts | debuggerShown": {
     "message": "Debugger sidebar shown"
   },
-  "panels/sources/SourcesPanel.ts | debugWithAi": {
-    "message": "Debug with AI"
-  },
   "panels/sources/SourcesPanel.ts | dropWorkspaceFolderHere": {
     "message": "Drop workspace folder here"
   },
@@ -14849,8 +14930,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | addScriptToIgnoreList": {
     "message": "Add script to ignore list"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | assessThePurpose": {
+    "message": "Assess the purpose"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | droppedFrame": {
     "message": "Dropped frame"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | findImprovements": {
+    "message": "Find improvements"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | frame": {
     "message": "Frame"
@@ -14867,8 +14954,14 @@
   "panels/timeline/TimelineFlameChartDataProvider.ts | hideRepeatingChildren": {
     "message": "Hide repeating children"
   },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | identifyTimeSpent": {
+    "message": "Identify time spent"
+  },
   "panels/timeline/TimelineFlameChartDataProvider.ts | idleFrame": {
     "message": "Idle frame"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | labelEntry": {
+    "message": "Label entry"
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | partiallyPresentedFrame": {
     "message": "Partially-presented frame"
@@ -14881,6 +14974,9 @@
   },
   "panels/timeline/TimelineFlameChartDataProvider.ts | resetTrace": {
     "message": "Reset trace"
+  },
+  "panels/timeline/TimelineFlameChartDataProvider.ts | startAChat": {
+    "message": "Start a chat"
   },
   "panels/timeline/TimelineFlameChartView.ts | sAtS": {
     "message": "{PH1} at {PH2}"

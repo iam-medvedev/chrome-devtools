@@ -26,6 +26,9 @@ var spinner_css_default = `/*
   font-size: 0;
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+:host([active]) {
   animation: spinner-container-animation 1.5s linear infinite;
 }
 
@@ -98,7 +101,13 @@ var spinner_css_default = `/*
   }
 }
 
-circle {
+.inactive-spinner circle {
+  stroke: var(--sys-color-state-disabled);
+  stroke-width: var(--sys-size-6);
+  fill: transparent;
+}
+
+.indeterminate-spinner circle {
   stroke: var(--sys-color-primary);
   stroke-width: var(--sys-size-6);
   fill: transparent;
@@ -178,10 +187,37 @@ circle {
 
 // gen/front_end/ui/components/spinners/Spinner.js
 var Spinner = class extends HTMLElement {
+  static observedAttributes = ["active"];
   #shadow = this.attachShadow({ mode: "open" });
+  constructor(props) {
+    super();
+    this.active = props?.active ?? true;
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
+    if (name === "active") {
+      this.#render();
+    }
+  }
+  /**
+   * Returns whether the spinner is active or not.
+   */
+  get active() {
+    return this.hasAttribute("active");
+  }
+  /**
+   * Sets the `"active"` attribute for the spinner.
+   */
+  set active(active) {
+    this.toggleAttribute("active", active);
+  }
   connectedCallback() {
-    render(html`
-      <style>${spinner_css_default}</style>
+    this.#render();
+  }
+  #render() {
+    const content = this.active ? html`
       <div class="indeterminate-spinner">
         <div class="left-circle">
           <svg viewBox="0 0 100 100">
@@ -196,6 +232,18 @@ var Spinner = class extends HTMLElement {
             <circle cx="50%" cy="50%" r="2.75rem"></circle></svg>
         </div>
       </div>
+    ` : html`
+      <div class="inactive-spinner">
+        <svg viewBox="0 0 100 100">
+          <circle cx="50%" cy="50%" r="2.75rem"></circle>
+        </svg>
+      </div>
+    `;
+    render(html`
+      <style>
+        ${spinner_css_default}
+      </style>
+      ${content}
     `, this.#shadow, { host: this });
   }
 };

@@ -1,5 +1,5 @@
 /**
- * @fileoverview Uses Intl.NumberFormat.
+ * @file Uses Intl.NumberFormat.
  * @see go/cpq:i18n-units-design
  */
 import * as Platform from '../platform/platform.js';

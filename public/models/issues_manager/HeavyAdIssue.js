@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import { Issue } from './Issue.js';
 const UIStrings = {
     /**
-     *@description Title for a learn more link in Heavy Ads issue description
+     * @description Title for a learn more link in Heavy Ads issue description
      */
     handlingHeavyAdInterventions: 'Handling Heavy Ad Interventions',
 };

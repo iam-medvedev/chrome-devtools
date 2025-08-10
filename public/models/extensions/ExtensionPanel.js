@@ -29,6 +29,7 @@
  */
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../ui/legacy/legacy.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ExtensionNotifierView, ExtensionView } from './ExtensionView.js';
@@ -107,7 +108,10 @@ export class ExtensionSidebarPane extends UI.View.SimpleView {
     extensionView;
     objectPropertiesView;
     constructor(server, panelName, title, id) {
-        super(title);
+        // For backwards compatibility we use the Kebab case version of the `title`
+        // as `viewId` for sidebar panes created by extensions.
+        const viewId = Platform.StringUtilities.toKebabCase(title);
+        super({ title, viewId });
         this.element.classList.add('fill');
         this.panelNameInternal = panelName;
         this.server = server;

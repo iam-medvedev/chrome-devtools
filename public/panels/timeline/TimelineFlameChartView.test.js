@@ -242,6 +242,17 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         const metadataInSetting = flameChartView.getPersistedConfigMetadata(parsedTrace);
         assert.deepEqual(metadataInSetting, { main: null, network: [USER_VISUAL_CONFIG_NETWORK] });
     });
+    it('creates an entry label annotation when the data provider sends an entry label annotation created event', async function () {
+        const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-modifications.json.gz');
+        const mockViewDelegate = new MockViewDelegate();
+        const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
+        flameChartView.setModel(parsedTrace, metadata);
+        const modifications = Timeline.ModificationsManager.ModificationsManager.activeManager();
+        assert.exists(modifications);
+        const stub = sinon.stub(modifications, 'createAnnotation');
+        flameChartView.getMainDataProvider().dispatchEventToListeners("EntryLabelAnnotationAdded" /* Timeline.TimelineFlameChartDataProvider.Events.ENTRY_LABEL_ANNOTATION_ADDED */, { entryIndex: 0, withLinkCreationButton: false });
+        sinon.assert.calledOnce(stub);
+    });
     it('fires an event when an entry label overlay is clicked', async function () {
         const { parsedTrace, metadata } = await TraceLoader.traceEngine(this, 'web-dev-modifications.json.gz');
         const mockViewDelegate = new MockViewDelegate();
@@ -590,7 +601,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                 generateContextMenuForNodeId(nodeId);
             }
             it('When an entry has no children, correctly make only Hide Entry enabled in the Context Menu action', async function () {
-                /** Part of this stack looks roughly like so (with some events omitted):
+                /**
+                 * Part of this stack looks roughly like so (with some events omitted):
                  * =============== foo ===============
                  * =============== foo ===============
                  * =============== foo ===============
@@ -645,7 +657,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                     .enabled);
             });
             it('When an entry has children, correctly make only Hide Entry and Hide Children enabled in the Context Menu action', async function () {
-                /** Part of this stack looks roughly like so (with some events omitted):
+                /**
+                 * Part of this stack looks roughly like so (with some events omitted):
                  * =============== foo ===============
                  * =============== foo ===============
                  * =============== foo ===============
@@ -707,7 +720,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                     .enabled);
             });
             it('When an entry has repeating children, correctly make only Hide Entry, Hide Children and Hide repeating children enabled in the Context Menu action', async function () {
-                /** Part of this stack looks roughly like so (with some events omitted):
+                /**
+                 * Part of this stack looks roughly like so (with some events omitted):
                  * =============== foo ===============
                  * =============== foo ===============
                  * =============== foo ===============
@@ -769,7 +783,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                     .enabled);
             });
             it('When an entry has no parent and has children, correctly make only Hide Children enabled in the Context Menu action', async function () {
-                /** Part of this stack looks roughly like so (with some events omitted):
+                /**
+                 * Part of this stack looks roughly like so (with some events omitted):
                  * =============== Task ==============
                  * =============== foo ===============
                  * =============== foo ===============
@@ -835,7 +850,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
                     .enabled);
             });
             it('Reset Trace Context Menu action is disabled before some action has been applied', async function () {
-                /** Part of this stack looks roughly like so (with some events omitted):
+                /**
+                 * Part of this stack looks roughly like so (with some events omitted):
                  * =============== Task ==============
                  * =============== foo ===============
                  * =============== foo ===============

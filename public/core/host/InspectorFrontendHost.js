@@ -35,8 +35,8 @@ import { EventDescriptors, Events, } from './InspectorFrontendHostAPI.js';
 import { streamWrite as resourceLoaderStreamWrite } from './ResourceLoader.js';
 const UIStrings = {
     /**
-     *@description Document title in Inspector Frontend Host of the DevTools window
-     *@example {example.com} PH1
+     * @description Document title in Inspector Frontend Host of the DevTools window
+     * @example {example.com} PH1
      */
     devtoolsS: 'DevTools - {PH1}',
 };
@@ -203,6 +203,8 @@ export class InspectorFrontendHostStub {
         this.recordedPerformanceHistograms.push({ histogramName, duration });
     }
     recordUserMetricsAction(_umaName) {
+    }
+    recordNewBadgeUsage(_featureName) {
     }
     connectAutomaticFileSystem(_fileSystemPath, _fileSystemUUID, _addIfMissing, callback) {
         queueMicrotask(() => callback({ success: false }));

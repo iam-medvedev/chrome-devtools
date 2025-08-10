@@ -1068,11 +1068,7 @@ var toKebabCase = function(input) {
   return input.match?.(WORD)?.map((w) => w.toLowerCase()).join("-").replaceAll("-.-", ".") || input;
 };
 function toKebabCaseKeys(settingValue) {
-  const result = {};
-  for (const [key, value] of Object.entries(settingValue)) {
-    result[toKebabCase(key)] = value;
-  }
-  return result;
+  return Object.fromEntries(Object.entries(settingValue).map(([key, value]) => [toKebabCase(key), value]));
 }
 var replaceLast = function(input, search, replacement) {
   const replacementStartIndex = input.lastIndexOf(search);

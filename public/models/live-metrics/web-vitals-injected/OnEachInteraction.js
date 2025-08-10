@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /**
- * @fileoverview web-vitals.js doesn't provide a log of all interactions.
+ * @file web-vitals.js doesn't provide a log of all interactions.
  * This solution is hacky but it was recommended by web-vitals devs:
  * b/371052022
  */

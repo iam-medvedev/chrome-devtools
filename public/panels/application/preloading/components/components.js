@@ -24,103 +24,103 @@ import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as Bindings from "./../../../../models/bindings/bindings.js";
 var UIStrings = {
   /**
-   *@description  Description text for Prefetch status PrefetchFailedIneligibleRedirect.
+   * @description  Description text for Prefetch status PrefetchFailedIneligibleRedirect.
    */
   PrefetchFailedIneligibleRedirect: "The prefetch was redirected, but the redirect URL is not eligible for prefetch.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedInvalidRedirect.
+   * @description  Description text for Prefetch status PrefetchFailedInvalidRedirect.
    */
   PrefetchFailedInvalidRedirect: "The prefetch was redirected, but there was a problem with the redirect.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedMIMENotSupported.
+   * @description  Description text for Prefetch status PrefetchFailedMIMENotSupported.
    */
   PrefetchFailedMIMENotSupported: "The prefetch failed because the response's Content-Type header was not supported.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedNetError.
+   * @description  Description text for Prefetch status PrefetchFailedNetError.
    */
   PrefetchFailedNetError: "The prefetch failed because of a network error.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedNon2XX.
+   * @description  Description text for Prefetch status PrefetchFailedNon2XX.
    */
   PrefetchFailedNon2XX: "The prefetch failed because of a non-2xx HTTP response status code.",
   /**
-   *@description  Description text for Prefetch status PrefetchIneligibleRetryAfter.
+   * @description  Description text for Prefetch status PrefetchIneligibleRetryAfter.
    */
   PrefetchIneligibleRetryAfter: "A previous prefetch to the origin got a HTTP 503 response with an Retry-After header that has not elapsed yet.",
   /**
-   *@description  Description text for Prefetch status PrefetchIsPrivacyDecoy.
+   * @description  Description text for Prefetch status PrefetchIsPrivacyDecoy.
    */
   PrefetchIsPrivacyDecoy: "The URL was not eligible to be prefetched because there was a registered service worker or cross-site cookies for that origin, but the prefetch was put on the network anyways and not used, to disguise that the user had some kind of previous relationship with the origin.",
   /**
-   *@description  Description text for Prefetch status PrefetchIsStale.
+   * @description  Description text for Prefetch status PrefetchIsStale.
    */
   PrefetchIsStale: "Too much time elapsed between the prefetch and usage, so the prefetch was discarded.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleBrowserContextOffTheRecord.
+   * @description  Description text for Prefetch status PrefetchNotEligibleBrowserContextOffTheRecord.
    */
   PrefetchNotEligibleBrowserContextOffTheRecord: "The prefetch was not performed because the browser is in Incognito or Guest mode.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleDataSaverEnabled.
+   * @description  Description text for Prefetch status PrefetchNotEligibleDataSaverEnabled.
    */
   PrefetchNotEligibleDataSaverEnabled: "The prefetch was not performed because the operating system is in Data Saver mode.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleExistingProxy.
+   * @description  Description text for Prefetch status PrefetchNotEligibleExistingProxy.
    */
   PrefetchNotEligibleExistingProxy: "The URL is not eligible to be prefetched, because in the default network context it is configured to use a proxy server.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleHostIsNonUnique.
+   * @description  Description text for Prefetch status PrefetchNotEligibleHostIsNonUnique.
    */
   PrefetchNotEligibleHostIsNonUnique: "The URL was not eligible to be prefetched because its host was not unique (e.g., a non publicly routable IP address or a hostname which is not registry-controlled), but the prefetch was required to be proxied.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleNonDefaultStoragePartition.
+   * @description  Description text for Prefetch status PrefetchNotEligibleNonDefaultStoragePartition.
    */
   PrefetchNotEligibleNonDefaultStoragePartition: "The URL was not eligible to be prefetched because it uses a non-default storage partition.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy.
+   * @description  Description text for Prefetch status PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy.
    */
   PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy: "The URL was not eligible to be prefetched because the default network context cannot be configured to use the prefetch proxy for a same-site cross-origin prefetch request.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleSchemeIsNotHttps.
+   * @description  Description text for Prefetch status PrefetchNotEligibleSchemeIsNotHttps.
    */
   PrefetchNotEligibleSchemeIsNotHttps: "The URL was not eligible to be prefetched because its scheme was not https:.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleUserHasCookies.
+   * @description  Description text for Prefetch status PrefetchNotEligibleUserHasCookies.
    */
   PrefetchNotEligibleUserHasCookies: "The URL was not eligible to be prefetched because it was cross-site, but the user had cookies for that origin.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleUserHasServiceWorker.
+   * @description  Description text for Prefetch status PrefetchNotEligibleUserHasServiceWorker.
    */
   PrefetchNotEligibleUserHasServiceWorker: "The URL was not eligible to be prefetched because there was a registered service worker for that origin, which is currently not supported.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotUsedCookiesChanged.
+   * @description  Description text for Prefetch status PrefetchNotUsedCookiesChanged.
    */
   PrefetchNotUsedCookiesChanged: "The prefetch was not used because it was a cross-site prefetch, and cookies were added for that URL while the prefetch was ongoing, so the prefetched response is now out-of-date.",
   /**
-   *@description  Description text for Prefetch status PrefetchProxyNotAvailable.
+   * @description  Description text for Prefetch status PrefetchProxyNotAvailable.
    */
   PrefetchProxyNotAvailable: "A network error was encountered when trying to set up a connection to the prefetching proxy.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotUsedProbeFailed.
+   * @description  Description text for Prefetch status PrefetchNotUsedProbeFailed.
    */
   PrefetchNotUsedProbeFailed: "The prefetch was blocked by your Internet Service Provider or network administrator.",
   /**
-   *@description  Description text for Prefetch status PrefetchEvictedForNewerPrefetch.
+   * @description  Description text for Prefetch status PrefetchEvictedForNewerPrefetch.
    */
   PrefetchEvictedForNewerPrefetch: "The prefetch was discarded because the initiating page has too many prefetches ongoing, and this was one of the oldest.",
   /**
-   *@description Description text for Prefetch status PrefetchEvictedAfterCandidateRemoved.
+   * @description Description text for Prefetch status PrefetchEvictedAfterCandidateRemoved.
    */
   PrefetchEvictedAfterCandidateRemoved: "The prefetch was discarded because no speculation rule in the initating page triggers a prefetch for this URL anymore.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleBatterySaverEnabled.
+   * @description  Description text for Prefetch status PrefetchNotEligibleBatterySaverEnabled.
    */
   PrefetchNotEligibleBatterySaverEnabled: "The prefetch was not performed because the Battery Saver setting was enabled.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligiblePreloadingDisabled.
+   * @description  Description text for Prefetch status PrefetchNotEligiblePreloadingDisabled.
    */
   PrefetchNotEligiblePreloadingDisabled: "The prefetch was not performed because speculative loading was disabled.",
   /**
-   *@description  Description text for Prefetch status PrefetchEvictedAfterBrowsingDataRemoved.
+   * @description  Description text for Prefetch status PrefetchEvictedAfterBrowsingDataRemoved.
    */
   PrefetchEvictedAfterBrowsingDataRemoved: "The prefetch was discarded because browsing data was removed.",
   /**
@@ -140,8 +140,8 @@ var UIStrings = {
    */
   prerenderFinalStatusNavigationRequestBlockedByCsp: "The prerendering navigation was blocked by a Content Security Policy.",
   /**
-   *@description Description text for PrerenderFinalStatus::kMojoBinderPolicy.
-   *@example {device.mojom.GamepadMonitor} PH1
+   * @description Description text for PrerenderFinalStatus::kMojoBinderPolicy.
+   * @example {device.mojom.GamepadMonitor} PH1
    */
   prerenderFinalStatusMojoBinderPolicy: "The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: {PH1})",
   /**
@@ -337,27 +337,27 @@ var UIStrings = {
    */
   prerenderFinalStatusBrowsingDataRemoved: "The prerendered page was unloaded because browsing data was removed.",
   /**
-   *@description Text in grid and details: Preloading attempt is not yet triggered.
+   * @description Text in grid and details: Preloading attempt is not yet triggered.
    */
   statusNotTriggered: "Not triggered",
   /**
-   *@description Text in grid and details: Preloading attempt is eligible but pending.
+   * @description Text in grid and details: Preloading attempt is eligible but pending.
    */
   statusPending: "Pending",
   /**
-   *@description Text in grid and details: Preloading is running.
+   * @description Text in grid and details: Preloading is running.
    */
   statusRunning: "Running",
   /**
-   *@description Text in grid and details: Preloading finished and the result is ready for the next navigation.
+   * @description Text in grid and details: Preloading finished and the result is ready for the next navigation.
    */
   statusReady: "Ready",
   /**
-   *@description Text in grid and details: Ready, then used.
+   * @description Text in grid and details: Ready, then used.
    */
   statusSuccess: "Success",
   /**
-   *@description Text in grid and details: Preloading failed.
+   * @description Text in grid and details: Preloading failed.
    */
   statusFailure: "Failure"
 };
@@ -693,39 +693,39 @@ var { charDiff } = Diff.Diff.DiffWrapper;
 var { render, html, Directives: { styleMap } } = Lit;
 var UIStrings2 = {
   /**
-   *@description Column header
+   * @description Column header
    */
   url: "URL",
   /**
-   *@description Column header: Action of preloading (prefetch/prerender)
+   * @description Column header: Action of preloading (prefetch/prerender)
    */
   action: "Action",
   /**
-   *@description Column header: Status of preloading attempt
+   * @description Column header: Status of preloading attempt
    */
   status: "Status",
   /**
-   *@description Text in grid and details: Preloading attempt is not yet triggered.
+   * @description Text in grid and details: Preloading attempt is not yet triggered.
    */
   statusNotTriggered: "Not triggered",
   /**
-   *@description Text in grid and details: Preloading attempt is eligible but pending.
+   * @description Text in grid and details: Preloading attempt is eligible but pending.
    */
   statusPending: "Pending",
   /**
-   *@description Text in grid and details: Preloading is running.
+   * @description Text in grid and details: Preloading is running.
    */
   statusRunning: "Running",
   /**
-   *@description Text in grid and details: Preloading finished and the result is ready for the next navigation.
+   * @description Text in grid and details: Preloading finished and the result is ready for the next navigation.
    */
   statusReady: "Ready",
   /**
-   *@description Text in grid and details: Ready, then used.
+   * @description Text in grid and details: Ready, then used.
    */
   statusSuccess: "Success",
   /**
-   *@description Text in grid and details: Preloading failed.
+   * @description Text in grid and details: Preloading failed.
    */
   statusFailure: "Failure"
 };
@@ -887,81 +887,81 @@ button.link devtools-icon {
 var { html: html2 } = Lit2;
 var UIStrings3 = {
   /**
-   *@description Text in PreloadingDetailsReportView of the Application panel if no element is selected. An element here is an item in a
+   * @description Text in PreloadingDetailsReportView of the Application panel if no element is selected. An element here is an item in a
    * table of target URLs and additional prefetching states. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   noElementSelected: "No element selected",
   /**
-   *@description Text in PreloadingDetailsReportView of the Application panel to prompt user to select an element in a table. An element here is an item in a
+   * @description Text in PreloadingDetailsReportView of the Application panel to prompt user to select an element in a table. An element here is an item in a
    * table of target URLs and additional prefetching states. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   selectAnElementForMoreDetails: "Select an element for more details",
   /**
-   *@description Text in details
+   * @description Text in details
    */
   detailsDetailedInformation: "Detailed information",
   /**
-   *@description Text in details
+   * @description Text in details
    */
   detailsAction: "Action",
   /**
-   *@description Text in details
+   * @description Text in details
    */
   detailsStatus: "Status",
   /**
-   *@description Text in details
+   * @description Text in details
    */
   detailsTargetHint: "Target hint",
   /**
-   *@description Text in details
+   * @description Text in details
    */
   detailsFailureReason: "Failure reason",
   /**
-   *@description Header of rule set
+   * @description Header of rule set
    */
   detailsRuleSet: "Rule set",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   automaticallyFellBackToPrefetch: "(automatically fell back to prefetch)",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusNotTriggered: "Speculative load attempt is not yet triggered.",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusPending: "Speculative load attempt is eligible but pending.",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusRunning: "Speculative load is running.",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusReady: "Speculative load finished and the result is ready for the next navigation.",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusSuccess: "Speculative load finished and used for a navigation.",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusFailure: "Speculative load failed.",
   /**
-   *@description Description: status
+   * @description Description: status
    */
   detailedStatusFallbackToPrefetch: "Speculative load failed, but fallback to prefetch succeeded.",
   /**
-   *@description button: Contents of button to inspect prerendered page
+   * @description button: Contents of button to inspect prerendered page
    */
   buttonInspect: "Inspect",
   /**
-   *@description button: Title of button to inspect prerendered page
+   * @description button: Title of button to inspect prerendered page
    */
   buttonClickToInspect: "Click to inspect prerendered page",
   /**
-   *@description button: Title of button to reveal rule set
+   * @description button: Title of button to reveal rule set
    */
   buttonClickToRevealRuleSet: "Click to reveal rule set"
 };
@@ -1268,69 +1268,69 @@ x-link {
 var { html: html3 } = Lit3;
 var UIStrings4 = {
   /**
-   *@description Infobar text for disabled case
+   * @description Infobar text for disabled case
    */
   infobarPreloadingIsDisabled: "Speculative loading is disabled",
   /**
-   *@description Infobar text for force-enabled case
+   * @description Infobar text for force-enabled case
    */
   infobarPreloadingIsForceEnabled: "Speculative loading is force-enabled",
   /**
-   *@description Title for dialog
+   * @description Title for dialog
    */
   titleReasonsPreventingPreloading: "Reasons preventing speculative loading",
   /**
-   *@description Header in dialog
+   * @description Header in dialog
    */
   headerDisabledByPreference: "User settings or extensions",
   /**
-   *@description Description in dialog
-   *@example {Preload pages settings (linked to chrome://settings/performance)} PH1
-   *@example {Extensions settings (linked to chrome://extensions)} PH2
+   * @description Description in dialog
+   * @example {Preload pages settings (linked to chrome://settings/performance)} PH1
+   * @example {Extensions settings (linked to chrome://extensions)} PH2
    */
   descriptionDisabledByPreference: "Speculative loading is disabled because of user settings or an extension. Go to {PH1} to update your preference. Go to {PH2} to disable any extension that blocks speculative loading.",
   /**
-   *@description Text of link
+   * @description Text of link
    */
   preloadingPagesSettings: "Preload pages settings",
   /**
-   *@description Text of link
+   * @description Text of link
    */
   extensionsSettings: "Extensions settings",
   /**
-   *@description Header in dialog
+   * @description Header in dialog
    */
   headerDisabledByDataSaver: "Data Saver",
   /**
-   *@description Description in dialog
+   * @description Description in dialog
    */
   descriptionDisabledByDataSaver: "Speculative loading is disabled because of the operating system's Data Saver mode.",
   /**
-   *@description Header in dialog
+   * @description Header in dialog
    */
   headerDisabledByBatterySaver: "Battery Saver",
   /**
-   *@description Description in dialog
+   * @description Description in dialog
    */
   descriptionDisabledByBatterySaver: "Speculative loading is disabled because of the operating system's Battery Saver mode.",
   /**
-   *@description Header in dialog
+   * @description Header in dialog
    */
   headerDisabledByHoldbackPrefetchSpeculationRules: "Prefetch was disabled, but is force-enabled now",
   /**
-   *@description Description in infobar
+   * @description Description in infobar
    */
   descriptionDisabledByHoldbackPrefetchSpeculationRules: "Prefetch is forced-enabled because DevTools is open. When DevTools is closed, prefetch will be disabled because this browser session is part of a holdback group used for performance comparisons.",
   /**
-   *@description Header in dialog
+   * @description Header in dialog
    */
   headerDisabledByHoldbackPrerenderSpeculationRules: "Prerendering was disabled, but is force-enabled now",
   /**
-   *@description Description in infobar
+   * @description Description in infobar
    */
   descriptionDisabledByHoldbackPrerenderSpeculationRules: "Prerendering is forced-enabled because DevTools is open. When DevTools is closed, prerendering will be disabled because this browser session is part of a holdback group used for performance comparisons.",
   /**
-   *@description Footer link for more details
+   * @description Footer link for more details
    */
   footerLearnMore: "Learn more"
 };
@@ -1514,19 +1514,19 @@ devtools-data-grid {
 var { PreloadingStatus } = SDK4.PreloadingModel;
 var UIStrings5 = {
   /**
-   *@description Column header: Action of preloading (prefetch/prerender)
+   * @description Column header: Action of preloading (prefetch/prerender)
    */
   action: "Action",
   /**
-   *@description Column header: A rule set of preloading
+   * @description Column header: A rule set of preloading
    */
   ruleSet: "Rule set",
   /**
-   *@description Column header: Status of preloading attempt
+   * @description Column header: Status of preloading attempt
    */
   status: "Status",
   /**
-   *@description Status: Prerender failed, but prefetch is available
+   * @description Status: Prerender failed, but prefetch is available
    */
   prefetchFallbackReady: "Prefetch fallback ready"
 };
@@ -1615,19 +1615,19 @@ import * as LegacyWrapper9 from "./../../../../ui/components/legacy_wrapper/lega
 import * as Lit5 from "./../../../../ui/lit/lit.js";
 var UIStrings6 = {
   /**
-   *@description The name of the HTTP request header.
+   * @description The name of the HTTP request header.
    */
   headerName: "Header name",
   /**
-   *@description The value of the HTTP request header in initial navigation.
+   * @description The value of the HTTP request header in initial navigation.
    */
   initialNavigationValue: "Value in initial navigation",
   /**
-   *@description The value of the HTTP request header in activation navigation.
+   * @description The value of the HTTP request header in activation navigation.
    */
   activationNavigationValue: "Value in activation navigation",
   /**
-   *@description The string to indicate the value of the header is missing.
+   * @description The string to indicate the value of the header is missing.
    */
   missing: "(missing)"
 };
@@ -1734,13 +1734,13 @@ var RuleSetDetailsView_css_default = `/*
 var { html: html6 } = Lit6;
 var UIStrings7 = {
   /**
-   *@description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
+   * @description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
    *             table of speculation rules. Speculation rules define the rules when and which urls should be prefetched.
    *             https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   noElementSelected: "No element selected",
   /**
-   *@description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
+   * @description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
    *             table of speculation rules. Speculation rules define the rules when and which urls should be prefetched.
    *             https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
@@ -1885,27 +1885,27 @@ devtools-data-grid {
 var { html: html7, Directives: { styleMap: styleMap3 } } = Lit7;
 var UIStrings8 = {
   /**
-   *@description Column header: Short URL of rule set.
+   * @description Column header: Short URL of rule set.
    */
   ruleSet: "Rule set",
   /**
-   *@description Column header: Show how many preloads are associated if valid, error counts if invalid.
+   * @description Column header: Show how many preloads are associated if valid, error counts if invalid.
    */
   status: "Status",
   /**
-   *@description button: Title of button to reveal the corresponding request of rule set in Elements panel
+   * @description button: Title of button to reveal the corresponding request of rule set in Elements panel
    */
   clickToOpenInElementsPanel: "Click to open in Elements panel",
   /**
-   *@description button: Title of button to reveal the corresponding request of rule set in Network panel
+   * @description button: Title of button to reveal the corresponding request of rule set in Network panel
    */
   clickToOpenInNetworkPanel: "Click to open in Network panel",
   /**
-   *@description Value of status, specifying rule set contains how many errors.
+   * @description Value of status, specifying rule set contains how many errors.
    */
   errors: "{errorCount, plural, =1 {# error} other {# errors}}",
   /**
-   *@description button: Title of button to reveal preloading attempts with filter by selected rule set
+   * @description button: Title of button to reveal preloading attempts with filter by selected rule set
    */
   buttonRevealPreloadsAssociatedWithRuleSet: "Reveal speculative loads associated with this rule set"
 };
@@ -2139,91 +2139,91 @@ devtools-report-divider {
 var { html: html8 } = Lit8;
 var UIStrings9 = {
   /**
-   *@description Header for preloading status.
+   * @description Header for preloading status.
    */
   speculativeLoadingStatusForThisPage: "Speculative loading status for this page",
   /**
-   *@description Label for failure reason of preloading
+   * @description Label for failure reason of preloading
    */
   detailsFailureReason: "Failure reason",
   /**
-   *@description Message that tells this page was prerendered.
+   * @description Message that tells this page was prerendered.
    */
   downgradedPrefetchUsed: "The initiating page attempted to prerender this page's URL. The prerender failed, but the resulting response body was still used as a prefetch.",
   /**
-   *@description Message that tells this page was prefetched.
+   * @description Message that tells this page was prefetched.
    */
   prefetchUsed: "This page was successfully prefetched.",
   /**
-   *@description Message that tells this page was prerendered.
+   * @description Message that tells this page was prerendered.
    */
   prerenderUsed: "This page was successfully prerendered.",
   /**
-   *@description Message that tells this page was prefetched.
+   * @description Message that tells this page was prefetched.
    */
   prefetchFailed: "The initiating page attempted to prefetch this page's URL, but the prefetch failed, so a full navigation was performed instead.",
   /**
-   *@description Message that tells this page was prerendered.
+   * @description Message that tells this page was prerendered.
    */
   prerenderFailed: "The initiating page attempted to prerender this page's URL, but the prerender failed, so a full navigation was performed instead.",
   /**
-   *@description Message that tells this page was not preloaded.
+   * @description Message that tells this page was not preloaded.
    */
   noPreloads: "The initiating page did not attempt to speculatively load this page's URL.",
   /**
-   *@description Header for current URL.
+   * @description Header for current URL.
    */
   currentURL: "Current URL",
   /**
-   *@description Header for mismatched preloads.
+   * @description Header for mismatched preloads.
    */
   preloadedURLs: "URLs being speculatively loaded by the initiating page",
   /**
-   *@description Header for summary.
+   * @description Header for summary.
    */
   speculationsInitiatedByThisPage: "Speculations initiated by this page",
   /**
-   *@description Link text to reveal rules.
+   * @description Link text to reveal rules.
    */
   viewAllRules: "View all speculation rules",
   /**
-   *@description Link text to reveal preloads.
+   * @description Link text to reveal preloads.
    */
   viewAllSpeculations: "View all speculations",
   /**
-   *@description Link to learn more about Preloading
+   * @description Link to learn more about Preloading
    */
   learnMore: "Learn more: Speculative loading on developer.chrome.com",
   /**
-   *@description Header for the table of mismatched network request header.
+   * @description Header for the table of mismatched network request header.
    */
   mismatchedHeadersDetail: "Mismatched HTTP request headers",
   /**
-   *@description Label for badge, indicating speculative load successfully used for this page.
+   * @description Label for badge, indicating speculative load successfully used for this page.
    */
   badgeSuccess: "Success",
   /**
-   *@description Label for badge, indicating speculative load failed for this page.
+   * @description Label for badge, indicating speculative load failed for this page.
    */
   badgeFailure: "Failure",
   /**
-   *@description Label for badge, indicating no speculative loads used for this page.
+   * @description Label for badge, indicating no speculative loads used for this page.
    */
   badgeNoSpeculativeLoads: "No speculative loads",
   /**
-   *@description Label for badge, indicating how many not triggered speculations there are.
+   * @description Label for badge, indicating how many not triggered speculations there are.
    */
   badgeNotTriggeredWithCount: "{n, plural, =1 {# not triggered} other {# not triggered}}",
   /**
-   *@description Label for badge, indicating how many in progress speculations there are.
+   * @description Label for badge, indicating how many in progress speculations there are.
    */
   badgeInProgressWithCount: "{n, plural, =1 {# in progress} other {# in progress}}",
   /**
-   *@description Label for badge, indicating how many succeeded speculations there are.
+   * @description Label for badge, indicating how many succeeded speculations there are.
    */
   badgeSuccessWithCount: "{n, plural, =1 {# success} other {# success}}",
   /**
-   *@description Label for badge, indicating how many failed speculations there are.
+   * @description Label for badge, indicating how many failed speculations there are.
    */
   badgeFailureWithCount: "{n, plural, =1 {# failure} other {# failures}}"
 };

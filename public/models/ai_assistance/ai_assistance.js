@@ -368,8 +368,8 @@ var AiAgent = class {
   }
   /**
    * Declare a function that the AI model can call.
-   * @param name - The name of the function
-   * @param declaration - the function declaration. Currently functions must:
+   * @param name The name of the function
+   * @param declaration the function declaration. Currently functions must:
    * 1. Return an object of serializable key/value pairs. You cannot return
    *    anything other than a plain JavaScript object that can be serialized.
    * 2. Take one parameter which is an object that can have
@@ -1061,7 +1061,7 @@ MDN Web Docs: JavaScript Functions: https://developer.mozilla.org/en-US/docs/Web
 `;
 var UIStringsNotTranslate = {
   /**
-   *@description Title for thinking step of File agent.
+   * @description Title for thinking step of File agent.
    */
   analyzingFile: "Analyzing file"
 };
@@ -1168,31 +1168,31 @@ This request aims to retrieve a list of products matching the search query "lapt
 `;
 var UIStringsNotTranslate2 = {
   /**
-   *@description Title for thinking step of Network agent.
+   * @description Title for thinking step of Network agent.
    */
   analyzingNetworkData: "Analyzing network data",
   /**
-   *@description Heading text for the block that shows the network request details.
+   * @description Heading text for the block that shows the network request details.
    */
   request: "Request",
   /**
-   *@description Heading text for the block that shows the network response details.
+   * @description Heading text for the block that shows the network response details.
    */
   response: "Response",
   /**
-   *@description Prefix text for request URL.
+   * @description Prefix text for request URL.
    */
   requestUrl: "Request URL",
   /**
-   *@description Title text for request timing details.
+   * @description Title text for request timing details.
    */
   timing: "Timing",
   /**
-   *@description Prefix text for response status.
+   * @description Prefix text for response status.
    */
   responseStatus: "Response Status",
   /**
-   *@description Title text for request initiator chain.
+   * @description Title text for request initiator chain.
    */
   requestInitiatorChain: "Request initiator chain"
 };
@@ -1916,11 +1916,11 @@ The order of headers corresponds to an internal fixed list. If a header is not p
 var UIStringsNotTranslated = {
   analyzingCallTree: "Analyzing call tree",
   /**
-   *@description Shown when the agent is investigating network activity
+   * @description Shown when the agent is investigating network activity
    */
   networkActivitySummary: "Investigating network activity\u2026",
   /**
-   *@description Shown when the agent is investigating main thread activity
+   * @description Shown when the agent is investigating main thread activity
    */
   mainThreadActivity: "Investigating main thread activity\u2026"
 };
@@ -2491,7 +2491,7 @@ import * as Root5 from "./../../core/root/root.js";
 var UIStringsNotTranslated2 = {
   analyzingCallTree: "Analyzing call tree"
   /**
-   *@description Shown when the agent is investigating network activity
+   * @description Shown when the agent is investigating network activity
    */
 };
 var lockedString4 = i18n9.i18n.lockedString;
@@ -3212,11 +3212,11 @@ var ExtensionScope = class _ExtensionScope {
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
 var UIStringsNotTranslate3 = {
   /**
-   *@description Title for context details for Freestyler.
+   * @description Title for context details for Freestyler.
    */
   analyzingThePrompt: "Analyzing the prompt",
   /**
-   *@description Heading text for context details of Freestyler agent.
+   * @description Heading text for context details of Freestyler agent.
    */
   dataUsed: "Data used"
 };
@@ -4253,7 +4253,7 @@ var FileUpdateAgent = class extends AiAgent {
 import * as Common4 from "./../../core/common/common.js";
 var MAX_TITLE_LENGTH = 80;
 var NOT_FOUND_IMAGE_DATA = "";
-var Conversation = class {
+var Conversation = class _Conversation {
   id;
   type;
   #isReadOnly;
@@ -4322,11 +4322,24 @@ var Conversation = class {
         if (item.type === "user-query") {
           return { ...item, imageInput: void 0 };
         }
+        if (item.type === "side-effect") {
+          return { ...item, confirm: void 0 };
+        }
         return item;
       }),
       type: this.type,
       isExternal: this.#isExternal
     };
+  }
+  static fromSerializedConversation(serializedConversation) {
+    const history = serializedConversation.history.map((entry) => {
+      if (entry.type === "side-effect") {
+        return { ...entry, confirm: () => {
+        } };
+      }
+      return entry;
+    });
+    return new _Conversation(serializedConversation.type, history, serializedConversation.id, true, serializedConversation.isExternal);
   }
 };
 var instance = null;
@@ -4452,7 +4465,7 @@ var UIStrings = {
    */
   offline: "This feature is only available with an active internet connection.",
   /**
-   *@description Text informing the user that AI assistance is not available in Incognito mode or Guest mode.
+   * @description Text informing the user that AI assistance is not available in Incognito mode or Guest mode.
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode."
 };
@@ -4480,6 +4493,223 @@ function getDisabledReasons(aidaAvailability) {
   reasons.push(...Common5.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons());
   return reasons;
 }
+
+// gen/front_end/models/ai_assistance/ConversationHandler.js
+import * as Common6 from "./../../core/common/common.js";
+import * as Host9 from "./../../core/host/host.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as Platform5 from "./../../core/platform/platform.js";
+import * as Root9 from "./../../core/root/root.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
+import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+var UIStrings2 = {
+  /**
+   * @description Notification shown to the user whenever DevTools receives an external request.
+   */
+  externalRequestReceived: "`DevTools` received an external request"
+};
+var UIStringsNotTranslate4 = {
+  /**
+   * @description Error message shown when AI assistance is not enabled in DevTools settings.
+   */
+  enableInSettings: "For AI features to be available, you need to enable AI assistance in DevTools settings."
+};
+var str_2 = i18n15.i18n.registerUIStrings("models/ai_assistance/ConversationHandler.ts", UIStrings2);
+var i18nString2 = i18n15.i18n.getLocalizedString.bind(void 0, str_2);
+var lockedString6 = i18n15.i18n.lockedString;
+function isAiAssistanceStylingWithFunctionCallingEnabled() {
+  return Boolean(Root9.Runtime.hostConfig.devToolsFreestyler?.functionCalling);
+}
+function isAiAssistanceServerSideLoggingEnabled() {
+  return !Root9.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+}
+async function inspectNetworkRequestByUrl(selector) {
+  const networkManagers = SDK5.TargetManager.TargetManager.instance().models(SDK5.NetworkManager.NetworkManager, { scoped: true });
+  const results = networkManagers.map((networkManager) => {
+    let request2 = networkManager.requestForURL(Platform5.DevToolsPath.urlString`${selector}`);
+    if (!request2 && selector.at(-1) === "/") {
+      request2 = networkManager.requestForURL(Platform5.DevToolsPath.urlString`${selector.slice(0, -1)}`);
+    } else if (!request2 && selector.at(-1) !== "/") {
+      request2 = networkManager.requestForURL(Platform5.DevToolsPath.urlString`${selector}/`);
+    }
+    return request2;
+  }).filter((req) => !!req);
+  const request = results.at(0);
+  return request ?? null;
+}
+var conversationHandlerInstance;
+var ConversationHandler = class _ConversationHandler {
+  #aiAssistanceEnabledSetting;
+  #aidaClient;
+  #aidaAvailability;
+  constructor(aidaClient, aidaAvailability) {
+    this.#aidaClient = aidaClient;
+    if (aidaAvailability) {
+      this.#aidaAvailability = aidaAvailability;
+    }
+    this.#aiAssistanceEnabledSetting = this.#getAiAssistanceEnabledSetting();
+  }
+  static instance(opts) {
+    if (opts?.forceNew || conversationHandlerInstance === void 0) {
+      const aidaClient = opts?.aidaClient ?? new Host9.AidaClient.AidaClient();
+      conversationHandlerInstance = new _ConversationHandler(aidaClient, opts?.aidaAvailability ?? void 0);
+    }
+    return conversationHandlerInstance;
+  }
+  static removeInstance() {
+    conversationHandlerInstance = void 0;
+  }
+  #getAiAssistanceEnabledSetting() {
+    try {
+      return Common6.Settings.moduleSetting("ai-assistance-enabled");
+    } catch {
+      return;
+    }
+  }
+  async #getDisabledReasons() {
+    if (this.#aidaAvailability === void 0) {
+      this.#aidaAvailability = await Host9.AidaClient.AidaClient.checkAccessPreconditions();
+    }
+    return getDisabledReasons(this.#aidaAvailability);
+  }
+  /**
+   * Handles an external request using the given prompt and uses the
+   * conversation type to use the correct agent.
+   */
+  async handleExternalRequest(parameters) {
+    async function* generateErrorResponse(message) {
+      return {
+        type: "error",
+        message
+      };
+    }
+    try {
+      Snackbars.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) });
+      const disabledReasons = await this.#getDisabledReasons();
+      const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
+      if (!aiAssistanceSetting) {
+        disabledReasons.push(lockedString6(UIStringsNotTranslate4.enableInSettings));
+      }
+      if (disabledReasons.length > 0) {
+        return generateErrorResponse(disabledReasons.join(" "));
+      }
+      void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, "external");
+      switch (parameters.conversationType) {
+        case "freestyler": {
+          return generateErrorResponse("Not implemented here");
+        }
+        case "performance-insight":
+          return generateErrorResponse("Not implemented here");
+        case "drjones-network-request":
+          if (!parameters.requestUrl) {
+            return generateErrorResponse("The url is required for debugging a network request.");
+          }
+          return this.#handleExternalNetworkConversation(parameters.prompt, parameters.requestUrl);
+      }
+    } catch (error) {
+      return generateErrorResponse(error.message);
+    }
+  }
+  async *handleConversationWithHistory(items, conversation) {
+    for await (const data of items) {
+      if (data.type !== "answer" || data.complete) {
+        void conversation?.addHistoryItem(data);
+      }
+      yield data;
+    }
+  }
+  async *#handleExternalNetworkConversation(prompt, requestUrl) {
+    const options = {
+      aidaClient: this.#aidaClient,
+      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
+    };
+    const networkAgent = new NetworkAgent(options);
+    const externalConversation = new Conversation(
+      "drjones-network-request",
+      [],
+      networkAgent.id,
+      /* isReadOnly */
+      true,
+      /* isExternal */
+      true
+    );
+    const request = await inspectNetworkRequestByUrl(requestUrl);
+    if (!request) {
+      return {
+        type: "error",
+        message: `Can't find request with the given selector ${requestUrl}`
+      };
+    }
+    const generator = networkAgent.run(prompt, {
+      selected: new RequestContext(request)
+    });
+    const generatorWithHistory = this.handleConversationWithHistory(generator, externalConversation);
+    const devToolsLogs = [];
+    for await (const data of generatorWithHistory) {
+      if (data.type !== "answer" || data.complete) {
+        void externalConversation.addHistoryItem(data);
+        devToolsLogs.push(data);
+      }
+      if (data.type === "context" || data.type === "title") {
+        yield {
+          type: "notification",
+          message: data.title
+        };
+      }
+      if (data.type === "side-effect") {
+        data.confirm(true);
+      }
+      if (data.type === "answer" && data.complete) {
+        return {
+          type: "answer",
+          message: data.text,
+          devToolsLogs
+        };
+      }
+    }
+    return {
+      type: "error",
+      message: "Something went wrong. No answer was generated."
+    };
+  }
+  createAgent(conversationType, changeManager) {
+    const options = {
+      aidaClient: this.#aidaClient,
+      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
+    };
+    let agent;
+    switch (conversationType) {
+      case "freestyler": {
+        agent = new StylingAgent({
+          ...options,
+          changeManager
+        });
+        if (isAiAssistanceStylingWithFunctionCallingEnabled()) {
+          agent = new StylingAgentWithFunctionCalling({
+            ...options,
+            changeManager
+          });
+        }
+        break;
+      }
+      case "drjones-network-request": {
+        agent = new NetworkAgent(options);
+        break;
+      }
+      case "drjones-file": {
+        agent = new FileAgent(options);
+        break;
+      }
+      case "performance-insight":
+      case "drjones-performance": {
+        agent = new PerformanceAgent(options, conversationType);
+        break;
+      }
+    }
+    return agent;
+  }
+};
 export {
   AgentProject,
   AiAgent,
@@ -4487,6 +4717,7 @@ export {
   ChangeManager,
   Conversation,
   ConversationContext,
+  ConversationHandler,
   EvaluateAction,
   ExtensionScope,
   FileAgent,

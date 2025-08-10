@@ -5,55 +5,55 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   *@description Text for the performance of something
+   * @description Text for the performance of something
    */
   performance: "Performance",
   /**
-   *@description Command for showing the 'Performance' tool
+   * @description Command for showing the 'Performance' tool
    */
   showPerformance: "Show Performance",
   /**
-   *@description Text to record a series of actions for analysis
+   * @description Text to record a series of actions for analysis
    */
   record: "Record",
   /**
-   *@description Text of an item that stops the running task
+   * @description Text of an item that stops the running task
    */
   stop: "Stop",
   /**
-   *@description Title of an action in the timeline tool to record reload
+   * @description Title of an action in the timeline tool to record reload
    */
   recordAndReload: "Record and reload",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon download button
+   * @description Tooltip text that appears when hovering over the largeicon download button
    */
   saveProfile: "Save profile\u2026",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon load button
+   * @description Tooltip text that appears when hovering over the largeicon load button
    */
   loadProfile: "Load profile\u2026",
   /**
-   *@description Prev button title in Film Strip View of the Performance panel
+   * @description Prev button title in Film Strip View of the Performance panel
    */
   previousFrame: "Previous frame",
   /**
-   *@description Next button title in Film Strip View of the Performance panel
+   * @description Next button title in Film Strip View of the Performance panel
    */
   nextFrame: "Next frame",
   /**
-   *@description Title of an action in the timeline tool to show history
+   * @description Title of an action in the timeline tool to show history
    */
   showRecentTimelineSessions: "Show recent timeline sessions",
   /**
-   *@description Title of an action that opens the previous recording in the performance panel
+   * @description Title of an action that opens the previous recording in the performance panel
    */
   previousRecording: "Previous recording",
   /**
-   *@description Title of an action that opens the next recording in the performance panel
+   * @description Title of an action that opens the next recording in the performance panel
    */
   nextRecording: "Next recording",
   /**
-   *@description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings
    */
   hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
 };

@@ -95,12 +95,12 @@ var imagePreview_css_default = `/*
 // gen/front_end/ui/legacy/components/utils/ImagePreview.js
 var UIStrings = {
   /**
-   *@description Alt text description of an image's source
+   * @description Alt text description of an image's source
    */
   unknownSource: "unknown source",
   /**
-   *@description Text to indicate the source of an image
-   *@example {example.com} PH1
+   * @description Text to indicate the source of an image
+   * @example {example.com} PH1
    */
   imageFromS: "Image from {PH1}",
   /**
@@ -391,25 +391,25 @@ import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
 import * as UI from "./../../legacy.js";
 var UIStrings2 = {
   /**
-   *@description Text in Linkifier
+   * @description Text in Linkifier
    */
   unknown: "(unknown)",
   /**
-   *@description Text short for automatic
+   * @description Text short for automatic
    */
   auto: "auto",
   /**
-   *@description Text in Linkifier
-   *@example {Sources panel} PH1
+   * @description Text in Linkifier
+   * @example {Sources panel} PH1
    */
   revealInS: "Reveal in {PH1}",
   /**
-   *@description Text for revealing an item in its destination
+   * @description Text for revealing an item in its destination
    */
   reveal: "Reveal",
   /**
-   *@description A context menu item in the Linkifier
-   *@example {Extension} PH1
+   * @description A context menu item in the Linkifier
+   * @example {Extension} PH1
    */
   openUsingS: "Open using {PH1}",
   /**
@@ -1191,11 +1191,11 @@ var ContentProviderContextMenuProvider = class {
 // gen/front_end/ui/legacy/components/utils/JSPresentationUtils.js
 var UIStrings3 = {
   /**
-   *@description Text to stop preventing the debugger from stepping into library code
+   * @description Text to stop preventing the debugger from stepping into library code
    */
   removeFromIgnore: "Remove from ignore list",
   /**
-   *@description Text for scripts that should not be stepped into when debugging
+   * @description Text for scripts that should not be stepped into when debugging
    */
   addToIgnore: "Add script to ignore list",
   /**
@@ -1207,7 +1207,7 @@ var UIStrings3 = {
    */
   showLess: "Show less",
   /**
-   *@description Text indicating that source url of a link is currently unknown
+   * @description Text indicating that source url of a link is currently unknown
    */
   unknownSource: "unknown"
 };
@@ -1434,7 +1434,8 @@ var TargetDetachedDialog = class _TargetDetachedDialog extends SDK4.SDKModel.SDK
     }).show(dialog.contentElement);
     dialog.show();
   }
-  /** ;
+  /**
+   * ;
    */
   targetReloadedAfterCrash() {
     void this.target().runtimeAgent().invoke_runIfWaitingForDebugger();

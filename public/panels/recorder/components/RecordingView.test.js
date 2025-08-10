@@ -26,7 +26,6 @@ describeWithEnvironment('RecordingView', () => {
     });
     async function createView(output) {
         const view = createViewFunctionStub(Components.RecordingView.RecordingView, output);
-        // recorderSettingsMock.preferredCopyFormat = Models.ConverterIds.ConverterIds.JSON;
         const component = new Components.RecordingView.RecordingView(undefined, view);
         Object.assign(component, {
             replayState: { isPlaying: false, isPausedOnBreakpoint: false },

@@ -9,7 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
-:host {
+:scope {
   flex: auto;
   display: flex;
   flex-direction: column;

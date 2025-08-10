@@ -13,11 +13,11 @@ import exploreWidgetStyles from './exploreWidget.css.js';
 */
 const UIStringsNotTranslate = {
     /**
-     *@description Text for the empty state of the AI assistance panel when there is no agent selected.
+     * @description Text for the empty state of the AI assistance panel when there is no agent selected.
      */
     Explore: 'Explore AI assistance',
     /**
-     *@description The footer disclaimer that links to more information about the AI feature.
+     * @description The footer disclaimer that links to more information about the AI feature.
      */
     learnAbout: 'Learn about AI in DevTools',
 };
@@ -42,7 +42,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
       <style>
-        ${exploreWidgetStyles}
+        ${UI.Widget.widgetScoped(exploreWidgetStyles)}
       </style>
       <div class="ai-assistance-explore-container">
         <div class="header">

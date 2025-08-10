@@ -12,24 +12,24 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import scopeChainSidebarPaneStyles from './scopeChainSidebarPane.css.js';
 const UIStrings = {
     /**
-     *@description Loading indicator in Scope Sidebar Pane of the Sources panel
+     * @description Loading indicator in Scope Sidebar Pane of the Sources panel
      */
     loading: 'Loading…',
     /**
-     *@description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
+     * @description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
      */
     notPaused: 'Not paused',
     /**
-     *@description Empty placeholder in Scope Chain Sidebar Pane of the Sources panel
+     * @description Empty placeholder in Scope Chain Sidebar Pane of the Sources panel
      */
     noVariables: 'No variables',
     /**
-     *@description Text in the Sources panel Scope pane describing a closure scope.
-     *@example {func} PH1
+     * @description Text in the Sources panel Scope pane describing a closure scope.
+     * @example {func} PH1
      */
     closureS: 'Closure ({PH1})',
     /**
-     *@description Text that refers to closure as a programming term
+     * @description Text that refers to closure as a programming term
      */
     closure: 'Closure',
 };
@@ -43,9 +43,11 @@ export class ScopeChainSidebarPane extends UI.Widget.VBox {
     infoElement;
     #scopeChainModel = null;
     constructor() {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.section('sources.scope-chain')}`,
+            useShadowDom: true,
+        });
         this.registerRequiredCSS(scopeChainSidebarPaneStyles);
-        this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.scope-chain')}`);
         this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
         this.treeOutline.registerRequiredCSS(scopeChainSidebarPaneStyles);
         this.treeOutline.hideOverflow();

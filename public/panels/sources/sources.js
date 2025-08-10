@@ -23,11 +23,8 @@ var dialog_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
+:scope {
   padding: var(--sys-size-7) var(--sys-size-8);
-}
-
-.widget {
   align-items: center;
 }
 
@@ -46,15 +43,15 @@ input[type="text"].add-source-map {
 // gen/front_end/panels/sources/AddSourceMapURLDialog.js
 var UIStrings = {
   /**
-   *@description Text in Add Source Map URLDialog of the Sources panel
+   * @description Text in Add Source Map URLDialog of the Sources panel
    */
   sourceMapUrl: "Source map URL: ",
   /**
-   *@description Text in Add Debug Info URL Dialog of the Sources panel
+   * @description Text in Add Debug Info URL Dialog of the Sources panel
    */
   debugInfoUrl: "DWARF symbols URL: ",
   /**
-   *@description Text to add something
+   * @description Text to add something
    */
   add: "Add"
 };
@@ -63,7 +60,7 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var { ref } = Directives;
 var DEFAULT_VIEW = (input, output, target) => {
   render(html`
-    <style>${dialog_css_default}</style>
+    <style>${UI.Widget.widgetScoped(dialog_css_default)}</style>
     <label>${input.label}</label>
     <input class="harmony-input add-source-map" spellcheck="false" type="text"
         jslog=${VisualLogging.textField("url").track({ keydown: "Enter", change: true })}
@@ -71,7 +68,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     output.input = e;
   })}>
     <devtools-button @click=${input.apply} .jslogContext=${"add"}
-        .variant=${"outlined"}>${i18nString(UIStrings.add)}</devtools-button>`, target, { host: input });
+        .variant=${"outlined"}>${i18nString(UIStrings.add)}</devtools-button>`, target);
 };
 var AddDebugInfoURLDialog = class _AddDebugInfoURLDialog extends UI.Widget.HBox {
   input;
@@ -178,7 +175,7 @@ var Plugin = class {
 // gen/front_end/panels/sources/AiWarningInfobarPlugin.js
 var UIStrings2 = {
   /**
-   *@description Infobar text announcing that the file contents have been changed by AI
+   * @description Infobar text announcing that the file contents have been changed by AI
    */
   aiContentWarning: "This file contains AI-generated content"
 };
@@ -318,31 +315,31 @@ var breakpointEditDialog_css_default = `/*
 var { Direction } = TextEditor.TextEditorHistory;
 var UIStrings3 = {
   /**
-   *@description Screen reader label for a select box that chooses the breakpoint type in the Sources panel when editing a breakpoint
+   * @description Screen reader label for a select box that chooses the breakpoint type in the Sources panel when editing a breakpoint
    */
   breakpointType: "Breakpoint type",
   /**
-   *@description Text in Breakpoint Edit Dialog of the Sources panel
+   * @description Text in Breakpoint Edit Dialog of the Sources panel
    */
   breakpoint: "Breakpoint",
   /**
-   *@description Tooltip text in Breakpoint Edit Dialog of the Sources panel that shows up when hovering over the close icon
+   * @description Tooltip text in Breakpoint Edit Dialog of the Sources panel that shows up when hovering over the close icon
    */
   closeDialog: "Close edit dialog and save changes",
   /**
-   *@description Text in Breakpoint Edit Dialog of the Sources panel
+   * @description Text in Breakpoint Edit Dialog of the Sources panel
    */
   conditionalBreakpoint: "Conditional breakpoint",
   /**
-   *@description Text in Breakpoint Edit Dialog of the Sources panel
+   * @description Text in Breakpoint Edit Dialog of the Sources panel
    */
   logpoint: "Logpoint",
   /**
-   *@description Text in Breakpoint Edit Dialog of the Sources panel
+   * @description Text in Breakpoint Edit Dialog of the Sources panel
    */
   expressionToCheckBeforePausingEg: "Expression to check before pausing, e.g. x > 5",
   /**
-   *@description Type selector element title in Breakpoint Edit Dialog of the Sources panel
+   * @description Type selector element title in Breakpoint Edit Dialog of the Sources panel
    */
   pauseOnlyWhenTheConditionIsTrue: "Pause only when the condition is true",
   /**
@@ -350,14 +347,14 @@ var UIStrings3 = {
    */
   learnMoreOnBreakpointTypes: "Learn more: Breakpoint Types",
   /**
-   *@description Text in Breakpoint Edit Dialog of the Sources panel. It is used as
+   * @description Text in Breakpoint Edit Dialog of the Sources panel. It is used as
    *the placeholder for a text input field before the user enters text. Provides the user with
    *an example on how to use Logpoints. 'Log' is a verb and 'message' is a noun.
    *See: https://developer.chrome.com/blog/new-in-devtools-73/#logpoints
    */
   logMessageEgXIsX: "Log message, e.g. `'x is', x`",
   /**
-   *@description Type selector element title in Breakpoint Edit Dialog of the Sources panel
+   * @description Type selector element title in Breakpoint Edit Dialog of the Sources panel
    */
   logAMessageToConsoleDoNotBreak: "Log a message to Console, do not break"
 };
@@ -372,7 +369,10 @@ var BreakpointEditDialog = class extends UI3.Widget.Widget {
   #history;
   #editorHistory;
   constructor(editorLineNumber, oldCondition, isLogpoint, onFinish) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging2.dialog("edit-breakpoint")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(breakpointEditDialog_css_default);
     const editorConfig = [
       CodeMirror.javascript.javascriptLanguage,
@@ -392,7 +392,6 @@ var BreakpointEditDialog = class extends UI3.Widget.Widget {
     this.finished = false;
     this.element.tabIndex = -1;
     this.element.classList.add("sources-edit-breakpoint-dialog");
-    this.element.setAttribute("jslog", `${VisualLogging2.dialog("edit-breakpoint")}`);
     const header = this.contentElement.createChild("div", "dialog-header");
     const toolbar4 = header.createChild("devtools-toolbar", "source-frame-breakpoint-toolbar");
     toolbar4.appendText(`Line ${editorLineNumber + 1}:`);
@@ -569,7 +568,7 @@ var breakpointsView_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
+:scope {
   flex: auto;
   display: flex;
   flex-direction: column;
@@ -1068,82 +1067,82 @@ function getDifferentiatingPathMap(titleInfos) {
 var { html: html2, render: render2, Directives: { ifDefined, repeat, classMap, live } } = Lit;
 var UIStrings4 = {
   /**
-   *@description Label for a checkbox to toggle pausing on uncaught exceptions in the breakpoint sidebar of the Sources panel. When the checkbox is checked, DevTools will pause if an uncaught exception is thrown at runtime.
+   * @description Label for a checkbox to toggle pausing on uncaught exceptions in the breakpoint sidebar of the Sources panel. When the checkbox is checked, DevTools will pause if an uncaught exception is thrown at runtime.
    */
   pauseOnUncaughtExceptions: "Pause on uncaught exceptions",
   /**
-   *@description Label for a checkbox to toggling pausing on caught exceptions in the breakpoint sidebar of the Sources panel. When the checkbox is checked, DevTools will pause if an exception is thrown, but caught (handled) at runtime.
+   * @description Label for a checkbox to toggling pausing on caught exceptions in the breakpoint sidebar of the Sources panel. When the checkbox is checked, DevTools will pause if an exception is thrown, but caught (handled) at runtime.
    */
   pauseOnCaughtExceptions: "Pause on caught exceptions",
   /**
-   *@description Text exposed to screen readers on checked items.
+   * @description Text exposed to screen readers on checked items.
    */
   checked: "checked",
   /**
-   *@description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
+   * @description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
    */
   unchecked: "unchecked",
   /**
-   *@description Accessible text for a breakpoint collection with a combination of checked states.
+   * @description Accessible text for a breakpoint collection with a combination of checked states.
    */
   indeterminate: "mixed",
   /**
-   *@description Accessibility label for hit breakpoints in the Sources panel.
-   *@example {checked} PH1
+   * @description Accessibility label for hit breakpoints in the Sources panel.
+   * @example {checked} PH1
    */
   breakpointHit: "{PH1} breakpoint hit",
   /**
-   *@description Tooltip text that shows when hovered over a remove button that appears next to a filename in the breakpoint sidebar of the sources panel. Also used in the context menu for breakpoint groups.
+   * @description Tooltip text that shows when hovered over a remove button that appears next to a filename in the breakpoint sidebar of the sources panel. Also used in the context menu for breakpoint groups.
    */
   removeAllBreakpointsInFile: "Remove all breakpoints in file",
   /**
-   *@description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that disables all breakpoints in a file.
+   * @description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that disables all breakpoints in a file.
    */
   disableAllBreakpointsInFile: "Disable all breakpoints in file",
   /**
-   *@description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that enables all breakpoints in a file.
+   * @description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that enables all breakpoints in a file.
    */
   enableAllBreakpointsInFile: "Enable all breakpoints in file",
   /**
-   *@description Tooltip text that shows when hovered over an edit button that appears next to a breakpoint or conditional breakpoint in the breakpoint sidebar of the sources panel.
+   * @description Tooltip text that shows when hovered over an edit button that appears next to a breakpoint or conditional breakpoint in the breakpoint sidebar of the sources panel.
    */
   editCondition: "Edit condition",
   /**
-   *@description Tooltip text that shows when hovered over an edit button that appears next to a logpoint in the breakpoint sidebar of the sources panel.
+   * @description Tooltip text that shows when hovered over an edit button that appears next to a logpoint in the breakpoint sidebar of the sources panel.
    */
   editLogpoint: "Edit logpoint",
   /**
-   *@description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that disables all breakpoints.
+   * @description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that disables all breakpoints.
    */
   disableAllBreakpoints: "Disable all breakpoints",
   /**
-   *@description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that enables all breakpoints.
+   * @description Context menu item in the Breakpoints Sidebar Pane of the Sources panel that enables all breakpoints.
    */
   enableAllBreakpoints: "Enable all breakpoints",
   /**
-   *@description Tooltip text that shows when hovered over a remove button that appears next to a breakpoint in the breakpoint sidebar of the sources panel. Also used in the context menu for breakpoint items.
+   * @description Tooltip text that shows when hovered over a remove button that appears next to a breakpoint in the breakpoint sidebar of the sources panel. Also used in the context menu for breakpoint items.
    */
   removeBreakpoint: "Remove breakpoint",
   /**
-   *@description Text to remove all breakpoints
+   * @description Text to remove all breakpoints
    */
   removeAllBreakpoints: "Remove all breakpoints",
   /**
-   *@description Text in Breakpoints Sidebar Pane of the Sources panel
+   * @description Text in Breakpoints Sidebar Pane of the Sources panel
    */
   removeOtherBreakpoints: "Remove other breakpoints",
   /**
-   *@description Context menu item that reveals the source code location of a breakpoint in the Sources panel.
+   * @description Context menu item that reveals the source code location of a breakpoint in the Sources panel.
    */
   revealLocation: "Reveal location",
   /**
-   *@description Tooltip text that shows when hovered over a piece of code of a breakpoint in the breakpoint sidebar of the sources panel. It shows the condition, on which the breakpoint will stop.
-   *@example {x < 3} PH1
+   * @description Tooltip text that shows when hovered over a piece of code of a breakpoint in the breakpoint sidebar of the sources panel. It shows the condition, on which the breakpoint will stop.
+   * @example {x < 3} PH1
    */
   conditionCode: "Condition: {PH1}",
   /**
-   *@description Tooltip text that shows when hovered over a piece of code of a breakpoint in the breakpoint sidebar of the sources panel. It shows what is going to be printed in the console, if execution hits this breakpoint.
-   *@example {'hello'} PH1
+   * @description Tooltip text that shows when hovered over a piece of code of a breakpoint in the breakpoint sidebar of the sources panel. It shows what is going to be printed in the console, if execution hits this breakpoint.
+   * @example {'hello'} PH1
    */
   logpointCode: "Logpoint: {PH1}"
 };
@@ -1450,8 +1449,8 @@ var BreakpointsSidebarController = class _BreakpointsSidebarController {
 };
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render2(html2`
-    <style>${Input.checkboxStyles}</style>
-    <style>${breakpointsView_css_default}</style>
+    <style>${UI4.Widget.widgetScoped(Input.checkboxStyles)}</style>
+    <style>${UI4.Widget.widgetScoped(breakpointsView_css_default)}</style>
     <div jslog=${VisualLogging3.section("sources.js-breakpoints")} id="devtools-breakpoint-view">
       <div class='pause-on-uncaught-exceptions'
           tabindex='0'
@@ -1569,7 +1568,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
                 </div>`)}
             </details>`)}
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var BreakpointsView = class _BreakpointsView extends UI4.Widget.VBox {
   #view;
@@ -2063,36 +2062,36 @@ var callStackSidebarPane_css_default = `/*
 // gen/front_end/panels/sources/CallStackSidebarPane.js
 var UIStrings5 = {
   /**
-   *@description Text in Call Stack Sidebar Pane of the Sources panel
+   * @description Text in Call Stack Sidebar Pane of the Sources panel
    */
   callStack: "Call Stack",
   /**
-   *@description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
+   * @description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
    */
   notPaused: "Not paused",
   /**
-   *@description Text exposed to screen reader when navigating through a ignore-listed call frame in the sources panel
+   * @description Text exposed to screen reader when navigating through a ignore-listed call frame in the sources panel
    */
   onIgnoreList: "on ignore list",
   /**
-   *@description Show all link text content in Call Stack Sidebar Pane of the Sources panel
+   * @description Show all link text content in Call Stack Sidebar Pane of the Sources panel
    */
   showIgnorelistedFrames: "Show ignore-listed frames",
   /**
-   *@description Text to show more content
+   * @description Text to show more content
    */
   showMore: "Show more",
   /**
-   *@description A context menu item in the Call Stack Sidebar Pane of the Sources panel
+   * @description A context menu item in the Call Stack Sidebar Pane of the Sources panel
    */
   copyStackTrace: "Copy stack trace",
   /**
-   *@description Text in Call Stack Sidebar Pane of the Sources panel when some call frames have warnings
+   * @description Text in Call Stack Sidebar Pane of the Sources panel when some call frames have warnings
    */
   callFrameWarnings: "Some call frames have warnings",
   /**
-   *@description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
-   *@example {src/myapp.debug.wasm.dwp} PH1
+   * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
+   * @example {src/myapp.debug.wasm.dwp} PH1
    */
   debugFileNotFound: 'Failed to load debug file "{PH1}".',
   /**
@@ -2122,9 +2121,13 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI5.View.SimpleVi
   muteActivateItem;
   lastDebuggerModel = null;
   constructor() {
-    super(i18nString5(UIStrings5.callStack), true, "sources.callstack");
+    super({
+      jslog: `${VisualLogging4.section("sources.callstack")}`,
+      title: i18nString5(UIStrings5.callStack),
+      viewId: "sources.callstack",
+      useShadowDom: true
+    });
     this.registerRequiredCSS(callStackSidebarPane_css_default);
-    this.contentElement.setAttribute("jslog", `${VisualLogging4.section("sources.callstack")}`);
     ({ element: this.ignoreListMessageElement, checkbox: this.ignoreListCheckboxElement } = this.createIgnoreListMessageElementAndCheckbox());
     this.contentElement.appendChild(this.ignoreListMessageElement);
     this.notPausedMessageElement = this.contentElement.createChild("div", "gray-info-message");
@@ -2606,60 +2609,60 @@ var UIStrings6 = {
    */
   beforeSellerWorkletReportingStart: "Seller Reporting Phase Start",
   /**
-   *@description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
-   *@example {setTimeout} PH1
+   * @description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
+   * @example {setTimeout} PH1
    */
   setTimeoutOrIntervalFired: "{PH1} fired",
   /**
-   *@description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
+   * @description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
    */
   scriptFirstStatement: "Script First Statement",
   /**
-   *@description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
+   * @description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
    */
   scriptBlockedByContentSecurity: "Script Blocked by Content Security Policy",
   /**
-   *@description Text for the request animation frame event
+   * @description Text for the request animation frame event
    */
   requestAnimationFrame: "Request Animation Frame",
   /**
-   *@description Text to cancel the animation frame
+   * @description Text to cancel the animation frame
    */
   cancelAnimationFrame: "Cancel Animation Frame",
   /**
-   *@description Text for the event that an animation frame is fired
+   * @description Text for the event that an animation frame is fired
    */
   animationFrameFired: "Animation Frame Fired",
   /**
-   *@description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
+   * @description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
    */
   webglErrorFired: "WebGL Error Fired",
   /**
-   *@description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
+   * @description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
    */
   webglWarningFired: "WebGL Warning Fired",
   /**
-   *@description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
+   * @description Text in the Event Listener Breakpoints Panel of the JavaScript Debugger in the Sources Panel
    */
   setInnerhtml: "Set `innerHTML`",
   /**
-   *@description Name of a breakpoint type in the Sources Panel.
+   * @description Name of a breakpoint type in the Sources Panel.
    */
   createCanvasContext: "Create canvas context",
   /**
-   *@description Name of a breakpoint type in the Sources Panel.
+   * @description Name of a breakpoint type in the Sources Panel.
    */
   createAudiocontext: "Create `AudioContext`",
   /**
-   *@description Name of a breakpoint type in the Sources Panel. Close is a verb.
+   * @description Name of a breakpoint type in the Sources Panel. Close is a verb.
    */
   closeAudiocontext: "Close `AudioContext`",
   /**
-   *@description Name of a breakpoint type in the Sources Panel. Resume is a verb.
+   * @description Name of a breakpoint type in the Sources Panel. Resume is a verb.
    */
   resumeAudiocontext: "Resume `AudioContext`",
   /**
-   *@description Name of a breakpoint type in the Sources Panel.
+   * @description Name of a breakpoint type in the Sources Panel.
    */
   suspendAudiocontext: "Suspend `AudioContext`",
   /**
@@ -2670,7 +2673,7 @@ var UIStrings6 = {
    */
   sinkViolations: "Sink Violations",
   /**
-   *@description Title for a checkbox that turns on breakpoints on Trusted Type policy violations
+   * @description Title for a checkbox that turns on breakpoints on Trusted Type policy violations
    */
   policyViolations: "Policy Violations"
 };
@@ -2827,20 +2830,20 @@ import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Coverage from "./../coverage/coverage.js";
 var UIStrings7 = {
   /**
-   *@description Text for Coverage Status Bar Item in Sources Panel
+   * @description Text for Coverage Status Bar Item in Sources Panel
    */
   clickToShowCoveragePanel: "Click to show Coverage Panel",
   /**
-   *@description Text for Coverage Status Bar Item in Sources Panel
+   * @description Text for Coverage Status Bar Item in Sources Panel
    */
   showDetails: "Show Details",
   /**
-   *@description Text to show in the status bar if coverage data is available
-   *@example {12.3} PH1
+   * @description Text to show in the status bar if coverage data is available
+   * @example {12.3} PH1
    */
   coverageS: "Coverage: {PH1}",
   /**
-   *@description Text to be shown in the status bar if no coverage data is available
+   * @description Text to be shown in the status bar if no coverage data is available
    */
   coverageNa: "Coverage: n/a"
 };
@@ -3047,15 +3050,15 @@ import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings8 = {
   /**
-   *@description Swatch icon element title in CSSPlugin of the Sources panel
+   * @description Swatch icon element title in CSSPlugin of the Sources panel
    */
   openColorPicker: "Open color picker.",
   /**
-   *@description Text to open the cubic bezier editor
+   * @description Text to open the cubic bezier editor
    */
   openCubicBezierEditor: "Open cubic bezier editor.",
   /**
-   *@description Text for a context menu item for attaching a sourcemap to the currently open css file
+   * @description Text for a context menu item for attaching a sourcemap to the currently open css file
    */
   addSourceMap: "Add source map\u2026"
 };
@@ -3499,96 +3502,96 @@ devtools-icon {
 // gen/front_end/panels/sources/DebuggerPausedMessage.js
 var UIStrings9 = {
   /**
-   *@description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit
-   *@example {conditional breakpoint} PH1
+   * @description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit
+   * @example {conditional breakpoint} PH1
    */
   pausedOnS: "Paused on {PH1}",
   /**
-   *@description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit because a child is added to the subtree
-   *@example {node} PH1
+   * @description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit because a child is added to the subtree
+   * @example {node} PH1
    */
   childSAdded: "Child {PH1} added",
   /**
-   *@description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit because a descendant is added
-   *@example {node} PH1
+   * @description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit because a descendant is added
+   * @example {node} PH1
    */
   descendantSAdded: "Descendant {PH1} added",
   /**
-   *@description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit because a descendant is removed
-   *@example {node} PH1
+   * @description Text in the JavaScript Debugging pane of the Sources pane when a DOM breakpoint is hit because a descendant is removed
+   * @example {node} PH1
    */
   descendantSRemoved: "Descendant {PH1} removed",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnEventListener: "Paused on event listener",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnXhrOrFetch: "Paused on XHR or fetch",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnException: "Paused on exception",
   /**
-   *@description We pause exactly when the promise rejection is happening, so that the user can see where in the code it comes from.
+   * @description We pause exactly when the promise rejection is happening, so that the user can see where in the code it comes from.
    * A Promise is a Web API object (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise),
    * that will either be 'fulfilled' or 'rejected' at some unknown time in the future.
    * The subject of the term is omited but it is "Execution", that is, "Execution was paused on <event>".
    */
   pausedOnPromiseRejection: "Paused on `promise` rejection",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnAssertion: "Paused on assertion",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnDebuggedFunction: "Paused on debugged function",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedBeforePotentialOutofmemory: "Paused before potential out-of-memory crash",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnCspViolation: "Paused on CSP violation",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel specifying cause of break
+   * @description Text in Debugger Paused Message of the Sources panel specifying cause of break
    */
   trustedTypeSinkViolation: "`Trusted Type` Sink Violation",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel specifying cause of break
+   * @description Text in Debugger Paused Message of the Sources panel specifying cause of break
    */
   trustedTypePolicyViolation: "`Trusted Type` Policy Violation",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   pausedOnBreakpoint: "Paused on breakpoint",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   debuggerPaused: "Debugger paused",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   subtreeModifications: "subtree modifications",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   attributeModifications: "attribute modifications",
   /**
-   *@description Text in Debugger Paused Message of the Sources panel
+   * @description Text in Debugger Paused Message of the Sources panel
    */
   nodeRemoval: "node removal",
   /**
-   *@description Error message text
-   *@example {Snag Error} PH1
+   * @description Error message text
+   * @example {Snag Error} PH1
    */
   webglErrorFiredS: "WebGL Error Fired ({PH1})",
   /**
-   *@description Text in DOMDebugger Model
-   *@example {"script-src 'self'"} PH1
+   * @description Text in DOMDebugger Model
+   * @example {"script-src 'self'"} PH1
    */
   scriptBlockedDueToContent: "Script blocked due to Content Security Policy directive: {PH1}"
 };
@@ -4323,102 +4326,102 @@ var Revealer4 = class {
 // gen/front_end/panels/sources/NavigatorView.js
 var UIStrings10 = {
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   searchInFolder: "Search in folder",
   /**
-   *@description Search label in Navigator View of the Sources panel
+   * @description Search label in Navigator View of the Sources panel
    */
   searchInAllFiles: "Search in all files",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   noDomain: "(no domain)",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   authored: "Authored",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   authoredTooltip: "Contains original sources",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   deployed: "Deployed",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   deployedTooltip: "Contains final sources the browser sees",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   excludeThisFolder: "Exclude this folder?",
   /**
-   *@description Text in a dialog which appears when users click on 'Exclude from Workspace' menu item
+   * @description Text in a dialog which appears when users click on 'Exclude from Workspace' menu item
    */
   folderWillNotBeShown: "This folder and its contents will not be shown in workspace.",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   deleteThisFile: "Delete this file?",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel
+   * @description A context menu item in the Navigator View of the Sources panel
    */
   rename: "Rename\u2026",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel
+   * @description A context menu item in the Navigator View of the Sources panel
    */
   makeACopy: "Make a copy\u2026",
   /**
-   *@description Text to delete something
+   * @description Text to delete something
    */
   delete: "Delete",
   /**
-   *@description A button text to confirm an action to remove a folder. This is not the same as delete. It removes the folder from UI but do not delete them.
+   * @description A button text to confirm an action to remove a folder. This is not the same as delete. It removes the folder from UI but do not delete them.
    */
   remove: "Remove",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    */
   deleteFolder: "Delete this folder and its contents?",
   /**
-   *@description Text in Navigator View of the Sources panel. A confirmation message on action to delete a folder or file.
+   * @description Text in Navigator View of the Sources panel. A confirmation message on action to delete a folder or file.
    */
   actionCannotBeUndone: "This action cannot be undone.",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel
+   * @description A context menu item in the Navigator View of the Sources panel
    */
   openFolder: "Open folder",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel
+   * @description A context menu item in the Navigator View of the Sources panel
    */
   newFile: "New file",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel to exclude a folder from workspace
+   * @description A context menu item in the Navigator View of the Sources panel to exclude a folder from workspace
    */
   excludeFolder: "Exclude from workspace",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel
+   * @description A context menu item in the Navigator View of the Sources panel
    */
   removeFolderFromWorkspace: "Remove from workspace",
   /**
-   *@description Text in Navigator View of the Sources panel
+   * @description Text in Navigator View of the Sources panel
    * @example {a-folder-name} PH1
    */
   areYouSureYouWantToRemoveThis: "Remove \u2018{PH1}\u2019 from Workspace?",
   /**
-   *@description Text in Navigator View of the Sources panel. Warning message when user remove a folder.
+   * @description Text in Navigator View of the Sources panel. Warning message when user remove a folder.
    */
   workspaceStopSyncing: "This will stop syncing changes from DevTools to your sources.",
   /**
-   *@description Name of an item from source map
-   *@example {compile.html} PH1
+   * @description Name of an item from source map
+   * @example {compile.html} PH1
    */
   sFromSourceMap: "{PH1} (from source map)",
   /**
-   *@description Name of an item that is on the ignore list
-   *@example {compile.html} PH1
+   * @description Name of an item that is on the ignore list
+   * @example {compile.html} PH1
    */
   sIgnoreListed: "{PH1} (ignore listed)",
   /**
@@ -4477,7 +4480,10 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
   groupByDomain;
   groupByFolder;
   constructor(jslogContext, enableAuthoredGrouping) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging7.pane(jslogContext).track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(navigatorView_css_default);
     this.placeholder = null;
     this.scriptsTree = new UI10.TreeOutline.TreeOutlineInShadow(
@@ -4488,7 +4494,6 @@ var NavigatorView = class _NavigatorView extends UI10.Widget.VBox {
     this.scriptsTree.hideOverflow();
     this.scriptsTree.setComparator(_NavigatorView.treeElementsCompare);
     this.scriptsTree.setFocusable(false);
-    this.contentElement.setAttribute("jslog", `${VisualLogging7.pane(jslogContext).track({ resize: true })}`);
     this.contentElement.appendChild(this.scriptsTree.element);
     this.setDefaultFocusedElement(this.scriptsTree.element);
     this.uiSourceCodeNodes = new Platform6.MapUtilities.Multimap();
@@ -6356,15 +6361,15 @@ import * as CodeMirror4 from "./../../third_party/codemirror.next/codemirror.nex
 import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
 var UIStrings11 = {
   /**
-   *@description The milisecond unit
+   * @description The milisecond unit
    */
   ms: "ms",
   /**
-   *@description Unit for data size in DevTools
+   * @description Unit for data size in DevTools
    */
   mb: "MB",
   /**
-   *@description A unit
+   * @description A unit
    */
   kb: "kB"
 };
@@ -6599,11 +6604,11 @@ import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as Snippets2 from "./../snippets/snippets.js";
 var UIStrings13 = {
   /**
-   *@description Text in Snippets Plugin of the Sources panel
+   * @description Text in Snippets Plugin of the Sources panel
    */
   enter: "\u2318+Enter",
   /**
-   *@description Text in Snippets Plugin of the Sources panel
+   * @description Text in Snippets Plugin of the Sources panel
    */
   ctrlenter: "Ctrl+Enter"
 };
@@ -7292,12 +7297,12 @@ function rowMessages(initialMessages) {
 // gen/front_end/panels/sources/TabbedEditorContainer.js
 var UIStrings14 = {
   /**
-   *@description Text in Tabbed Editor Container of the Sources panel
-   *@example {example.file} PH1
+   * @description Text in Tabbed Editor Container of the Sources panel
+   * @example {example.file} PH1
    */
   areYouSureYouWantToCloseUnsaved: "Are you sure you want to close unsaved file: {PH1}?",
   /**
-   *@description Error message for tooltip showing that a file in Sources could not be loaded
+   * @description Error message for tooltip showing that a file in Sources could not be loaded
    */
   unableToLoadThisContent: "Unable to load this content.",
   /**
@@ -7961,23 +7966,23 @@ var EditorContainerTabDelegate = class {
 // gen/front_end/panels/sources/SourcesView.js
 var UIStrings15 = {
   /**
-   *@description Text to open a file
+   * @description Text to open a file
    */
   openFile: "Open file",
   /**
-   *@description Text to run commands
+   * @description Text to run commands
    */
   runCommand: "Run command",
   /**
-   *@description Text in Sources View of the Sources panel. This sentence follows by a list of actions.
+   * @description Text in Sources View of the Sources panel. This sentence follows by a list of actions.
    */
   workspaceDropInAFolderToSyncSources: "To sync edits to the workspace, drop a folder with your sources here or",
   /**
-   *@description Text in Sources View of the Sources panel.
+   * @description Text in Sources View of the Sources panel.
    */
   selectFolder: "Select folder",
   /**
-   *@description Accessible label for Sources placeholder view actions list
+   * @description Accessible label for Sources placeholder view actions list
    */
   sourceViewActions: "Source View Actions"
 };
@@ -7995,10 +8000,9 @@ var SourcesView = class _SourcesView extends Common12.ObjectWrapper.eventMixin(U
   searchView;
   searchConfig;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging9.pane("editor").track({ keydown: "Escape" })}` });
     this.registerRequiredCSS(sourcesView_css_default);
     this.element.id = "sources-panel-sources-view";
-    this.element.setAttribute("jslog", `${VisualLogging9.pane("editor").track({ keydown: "Escape" })}`);
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
     const workspace = Workspace17.Workspace.WorkspaceImpl.instance();
     this.searchableViewInternal = new UI15.SearchableView.SearchableView(this, this, "sources-view-search-config");
@@ -8624,7 +8628,7 @@ var threadsSidebarPane_css_default = `/*
 // gen/front_end/panels/sources/ThreadsSidebarPane.js
 var UIStrings16 = {
   /**
-   *@description Text in Threads Sidebar Pane of the Sources panel
+   * @description Text in Threads Sidebar Pane of the Sources panel
    */
   paused: "paused"
 };
@@ -8635,9 +8639,11 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
   list;
   selectedModel;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging10.section("sources.threads")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(threadsSidebarPane_css_default);
-    this.contentElement.setAttribute("jslog", `${VisualLogging10.section("sources.threads")}`);
     this.items = new UI16.ListModel.ListModel();
     this.list = new UI16.ListControl.ListControl(this.items, this, UI16.ListControl.ListMode.NonViewport);
     const currentTarget = UI16.Context.Context.instance().flavor(SDK10.Target.Target);
@@ -8746,11 +8752,11 @@ var ThreadsSidebarPane = class extends UI16.Widget.VBox {
 // gen/front_end/panels/sources/SourcesPanel.js
 var UIStrings17 = {
   /**
-   *@description Text that appears when user drag and drop something (for example, a file) in Sources Panel of the Sources panel
+   * @description Text that appears when user drag and drop something (for example, a file) in Sources Panel of the Sources panel
    */
   dropWorkspaceFolderHere: "Drop workspace folder here",
   /**
-   *@description Text to show more options
+   * @description Text to show more options
    */
   moreOptions: "More options",
   /**
@@ -8790,90 +8796,86 @@ var UIStrings17 = {
    */
   hideDebugger: "Hide debugger",
   /**
-   *@description Text in Sources Panel of the Sources panel
+   * @description Text in Sources Panel of the Sources panel
    */
   groupByFolder: "Group by folder",
   /**
-   *@description Text in Sources Panel of the Sources panel
+   * @description Text in Sources Panel of the Sources panel
    */
   groupByAuthored: "Group by Authored/Deployed",
   /**
-   *@description Text in Sources Panel of the Sources panel
+   * @description Text in Sources Panel of the Sources panel
    */
   hideIgnoreListed: "Hide ignore-listed sources",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon play button in the Sources Panel of the Sources panel
+   * @description Tooltip text that appears when hovering over the largeicon play button in the Sources Panel of the Sources panel
    */
   resumeWithAllPausesBlockedForMs: "Resume with all pauses blocked for 500 ms",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon terminate execution button in the Sources Panel of the Sources panel
+   * @description Tooltip text that appears when hovering over the largeicon terminate execution button in the Sources Panel of the Sources panel
    */
   terminateCurrentJavascriptCall: "Terminate current JavaScript call",
   /**
-   *@description Text in Sources Panel of the Sources panel
+   * @description Text in Sources Panel of the Sources panel
    */
   pauseOnCaughtExceptions: "Pause on caught exceptions",
   /**
-   *@description A context menu item in the Sources Panel of the Sources panel
+   * @description A context menu item in the Sources Panel of the Sources panel
    */
   revealInSidebar: "Reveal in navigator sidebar",
   /**
-   *@description A context menu item in the Sources Panel of the Sources panel when debugging JS code.
+   * @description A context menu item in the Sources Panel of the Sources panel when debugging JS code.
    * When clicked, the execution is resumed until it reaches the line specified by the right-click that
    * opened the context menu.
    */
   continueToHere: "Continue to here",
   /**
-   *@description A context menu item in the Console that stores selection as a temporary global variable
+   * @description A context menu item in the Console that stores selection as a temporary global variable
    */
   storeAsGlobalVariable: "Store as global variable",
   /**
-   *@description A context menu item in the Console, Sources, and Network panel
-   *@example {string} PH1
+   * @description A context menu item in the Console, Sources, and Network panel
+   * @example {string} PH1
    */
   copyS: "Copy {PH1}",
   /**
-   *@description A context menu item for strings in the Console, Sources, and Network panel.
+   * @description A context menu item for strings in the Console, Sources, and Network panel.
    * When clicked, the raw contents of the string is copied to the clipboard.
    */
   copyStringContents: "Copy string contents",
   /**
-   *@description A context menu item for strings in the Console, Sources, and Network panel.
+   * @description A context menu item for strings in the Console, Sources, and Network panel.
    * When clicked, the string is copied to the clipboard as a valid JavaScript literal.
    */
   copyStringAsJSLiteral: "Copy string as JavaScript literal",
   /**
-   *@description A context menu item for strings in the Console, Sources, and Network panel.
+   * @description A context menu item for strings in the Console, Sources, and Network panel.
    * When clicked, the string is copied to the clipboard as a valid JSON literal.
    */
   copyStringAsJSONLiteral: "Copy string as JSON literal",
   /**
-   *@description A context menu item in the Sources Panel of the Sources panel
+   * @description A context menu item in the Sources Panel of the Sources panel
    */
   showFunctionDefinition: "Show function definition",
   /**
-   *@description Text in Sources Panel of the Sources panel
+   * @description Text in Sources Panel of the Sources panel
    */
   openInSourcesPanel: "Open in Sources panel",
   /**
-   *@description Context menu text in Sources Panel to that opens a submenu with AI prompts.
-   */
-  debugWithAi: "Debug with AI",
-  /**
-   *@description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
+   * @description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
    */
   startAChat: "Start a chat",
   /**
-   *@description Text of a context menu item to redirect to the AI assistance panel and directly execute
+   * @description Text of a context menu item to redirect to the AI assistance panel and directly execute
    * a prompt to assess the performance of a script.
    */
   assessPerformance: "Assess performance",
   /**
-   *@description Context menu item in Sources panel to explain a script via AI.
+   * @description Context menu item in Sources panel to explain a script via AI.
    */
   explainThisScript: "Explain this script",
   /**
-   *@description Context menu item in Sources panel to explain input handling in a script via AI.
+   * @description Context menu item in Sources panel to explain input handling in a script via AI.
    */
   explainInputHandling: "Explain input handling"
 };
@@ -9477,11 +9479,13 @@ var SourcesPanel = class _SourcesPanel extends UI17.Panel.Panel {
         UI17.Context.Context.instance().setFlavor(Workspace19.UISourceCode.UISourceCode, uiSourceCode);
         if (Root2.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
           const action3 = UI17.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
-          const submenu = contextMenu.footerSection().appendSubMenuItem(i18nString16(UIStrings17.debugWithAi), false, openAiAssistanceId);
+          const submenu = contextMenu.footerSection().appendSubMenuItem(action3.title(), false, openAiAssistanceId, Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.featureName);
           submenu.defaultSection().appendAction("drjones.sources-panel-context", i18nString16(UIStrings17.startAChat));
           appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.assessPerformance), "Is this script optimized for performance?", openAiAssistanceId + ".performance");
           appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainThisScript), "What does this script do?", openAiAssistanceId + ".script");
           appendSubmenuPromptAction(submenu, action3, i18nString16(UIStrings17.explainInputHandling), "Does the script handle user input safely", openAiAssistanceId + ".input");
+        } else if (Root2.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
+          contextMenu.footerSection().appendAction(openAiAssistanceId, void 0, false, void 0, Root2.Runtime.hostConfig.devToolsAiAssistanceFileAgent?.featureName);
         } else {
           contextMenu.footerSection().appendAction(openAiAssistanceId);
         }
@@ -9857,9 +9861,8 @@ var ActionDelegate4 = class {
 var QuickSourceView = class _QuickSourceView extends UI17.Widget.VBox {
   view;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging11.panel("sources.quick").track({ resize: true })}` });
     this.element.classList.add("sources-view-wrapper");
-    this.element.setAttribute("jslog", `${VisualLogging11.panel("sources.quick").track({ resize: true })}`);
     this.view = SourcesPanel.instance().sourcesView();
   }
   wasShown() {
@@ -9889,116 +9892,116 @@ var QuickSourceView = class _QuickSourceView extends UI17.Widget.VBox {
 var { EMPTY_BREAKPOINT_CONDITION, NEVER_PAUSE_HERE_CONDITION } = Breakpoints3.BreakpointManager;
 var UIStrings18 = {
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   thisScriptIsOnTheDebuggersIgnore: "This script is on the debugger's ignore list",
   /**
-   *@description Text to stop preventing the debugger from stepping into library code
+   * @description Text to stop preventing the debugger from stepping into library code
    */
   removeFromIgnoreList: "Remove from ignore list",
   /**
-   *@description Text of a button in the Sources panel Debugger Plugin to configure ignore listing in Settings
+   * @description Text of a button in the Sources panel Debugger Plugin to configure ignore listing in Settings
    */
   configure: "Configure",
   /**
-   *@description Text to add a breakpoint
+   * @description Text to add a breakpoint
    */
   addBreakpoint: "Add breakpoint",
   /**
-   *@description A context menu item in the Debugger Plugin of the Sources panel
+   * @description A context menu item in the Debugger Plugin of the Sources panel
    */
   addConditionalBreakpoint: "Add conditional breakpoint\u2026",
   /**
-   *@description A context menu item in the Debugger Plugin of the Sources panel
+   * @description A context menu item in the Debugger Plugin of the Sources panel
    */
   addLogpoint: "Add logpoint\u2026",
   /**
-   *@description A context menu item in the Debugger Plugin of the Sources panel
+   * @description A context menu item in the Debugger Plugin of the Sources panel
    */
   neverPauseHere: "Never pause here",
   /**
-   *@description Context menu command to delete/remove a breakpoint that the user
+   * @description Context menu command to delete/remove a breakpoint that the user
    *has set. One line of code can have multiple breakpoints. Always >= 1 breakpoint.
    */
   removeBreakpoint: "{n, plural, =1 {Remove breakpoint} other {Remove all breakpoints in line}}",
   /**
-   *@description A context menu item in the Debugger Plugin of the Sources panel
+   * @description A context menu item in the Debugger Plugin of the Sources panel
    */
   editBreakpoint: "Edit breakpoint\u2026",
   /**
-   *@description Context menu command to disable (but not delete) a breakpoint
+   * @description Context menu command to disable (but not delete) a breakpoint
    *that the user has set. One line of code can have multiple breakpoints. Always
    *>= 1 breakpoint.
    */
   disableBreakpoint: "{n, plural, =1 {Disable breakpoint} other {Disable all breakpoints in line}}",
   /**
-   *@description Context menu command to enable a breakpoint that the user has
+   * @description Context menu command to enable a breakpoint that the user has
    *set. One line of code can have multiple breakpoints. Always >= 1 breakpoint.
    */
   enableBreakpoint: "{n, plural, =1 {Enable breakpoint} other {Enable all breakpoints in line}}",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   addSourceMap: "Add source map\u2026",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   addWasmDebugInfo: "Add DWARF debug info\u2026",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   sourceMapLoaded: "Source map loaded",
   /**
-   *@description Title of the Filtered List WidgetProvider of Quick Open
-   *@example {Ctrl+P Ctrl+O} PH1
+   * @description Title of the Filtered List WidgetProvider of Quick Open
+   * @example {Ctrl+P Ctrl+O} PH1
    */
   associatedFilesAreAvailable: "Associated files are available via file tree or {PH1}.",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   associatedFilesShouldBeAdded: "Associated files should be added to the file tree. You can debug these resolved source files as regular JavaScript files.",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   theDebuggerWillSkipStepping: "The debugger will skip stepping through this script, and will not stop on exceptions.",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   sourceMapSkipped: "Source map skipped for this file",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   sourceMapFailed: "Source map failed to load",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   debuggingPowerReduced: "DevTools can't show authored sources, but you can debug the deployed code.",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
+   * @description Text in Debugger Plugin of the Sources panel
    */
   reloadForSourceMap: "To enable again, make sure the file isn't on the ignore list and reload.",
   /**
-   *@description Text in Debugger Plugin of the Sources panel
-   *@example {http://site.com/lib.js.map} PH1
-   *@example {HTTP error: status code 404, net::ERR_UNKNOWN_URL_SCHEME} PH2
+   * @description Text in Debugger Plugin of the Sources panel
+   * @example {http://site.com/lib.js.map} PH1
+   * @example {HTTP error: status code 404, net::ERR_UNKNOWN_URL_SCHEME} PH2
    */
   errorLoading: "Error loading url {PH1}: {PH2}",
   /**
-   *@description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
-   *@example {src/myapp.debug.wasm.dwp} PH1
+   * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
+   * @example {src/myapp.debug.wasm.dwp} PH1
    */
   debugFileNotFound: 'Failed to load debug file "{PH1}".',
   /**
-   *@description Error message that is displayed when no debug info could be loaded
-   *@example {app.wasm} PH1
+   * @description Error message that is displayed when no debug info could be loaded
+   * @example {app.wasm} PH1
    */
   debugInfoNotFound: "Failed to load any debug info for {PH1}",
   /**
-   *@description Text of a button to open up details on a request when no debug info could be loaded
+   * @description Text of a button to open up details on a request when no debug info could be loaded
    */
   showRequest: "Show request",
   /**
-   *@description Tooltip text that shows on hovering over a button to see more details on a request
+   * @description Tooltip text that shows on hovering over a button to see more details on a request
    */
   openDeveloperResources: "Opens the request in the Developer resource panel"
 };
@@ -12108,12 +12111,12 @@ import * as QuickOpen3 from "./../../ui/legacy/components/quick_open/quick_open.
 import * as UI19 from "./../../ui/legacy/legacy.js";
 var UIStrings19 = {
   /**
-   *@description Text in Filtered UISource Code List Provider of the Sources panel
+   * @description Text in Filtered UISource Code List Provider of the Sources panel
    */
   noFilesFound: "No files found",
   /**
-   *@description Name of an item that is on the ignore list
-   *@example {compile.html} PH1
+   * @description Name of an item that is on the ignore list
+   * @example {compile.html} PH1
    */
   sIgnoreListed: "{PH1} (ignore listed)"
 };
@@ -12316,42 +12319,42 @@ import * as QuickOpen4 from "./../../ui/legacy/components/quick_open/quick_open.
 import * as UI20 from "./../../ui/legacy/legacy.js";
 var UIStrings20 = {
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
+   * @description Text in Go To Line Quick Open of the Sources panel
    */
   noFileSelected: "No file selected",
   /**
-   *@description Text to show no results have been found
+   * @description Text to show no results have been found
    */
   noResultsFound: "No results found",
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
+   * @description Text in Go To Line Quick Open of the Sources panel
    */
   typeANumberToGoToThatLine: "Type a number to go to that line",
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
-   *@example {000} PH1
-   *@example {bbb} PH2
+   * @description Text in Go To Line Quick Open of the Sources panel
+   * @example {000} PH1
+   * @example {bbb} PH2
    */
   currentPositionXsTypeAnOffset: "Type an offset between 0x{PH1} and 0x{PH2} to navigate to",
   /**
-   *@description Text in the GoToLine dialog of the Sources pane that describes the current line number, file line number range, and use of the GoToLine dialog
-   *@example {100} PH1
+   * @description Text in the GoToLine dialog of the Sources pane that describes the current line number, file line number range, and use of the GoToLine dialog
+   * @example {100} PH1
    */
   currentLineSTypeALineNumber: "Type a line number between 1 and {PH1} to navigate to",
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
-   *@example {abc} PH1
+   * @description Text in Go To Line Quick Open of the Sources panel
+   * @example {abc} PH1
    */
   goToOffsetXs: "Go to offset 0x{PH1}",
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
-   *@example {2} PH1
-   *@example {2} PH2
+   * @description Text in Go To Line Quick Open of the Sources panel
+   * @example {2} PH1
+   * @example {2} PH2
    */
   goToLineSAndColumnS: "Go to line {PH1} and column {PH2}",
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
-   *@example {2} PH1
+   * @description Text in Go To Line Quick Open of the Sources panel
+   * @example {2} PH1
    */
   goToLineS: "Go to line {PH1}"
 };
@@ -12471,12 +12474,12 @@ import * as Workspace25 from "./../../models/workspace/workspace.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
 var UIStrings21 = {
   /**
-   *@description Title of the format button in the Sources panel
-   *@example {file name} PH1
+   * @description Title of the format button in the Sources panel
+   * @example {file name} PH1
    */
   formatS: "Format {PH1}",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon pretty print button in the Inplace Formatter Editor Action of the Sources panel
+   * @description Tooltip text that appears when hovering over the largeicon pretty print button in the Inplace Formatter Editor Action of the Sources panel
    */
   format: "Format"
 };
@@ -12629,15 +12632,15 @@ import * as QuickOpen5 from "./../../ui/legacy/components/quick_open/quick_open.
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings22 = {
   /**
-   *@description Text in Go To Line Quick Open of the Sources panel
+   * @description Text in Go To Line Quick Open of the Sources panel
    */
   noFileSelected: "No file selected.",
   /**
-   *@description Text in Outline Quick Open of the Sources panel
+   * @description Text in Outline Quick Open of the Sources panel
    */
   openAJavascriptOrCssFileToSee: "Open a JavaScript or CSS file to see symbols",
   /**
-   *@description Text to show no results have been found
+   * @description Text to show no results have been found
    */
   noResultsFound: "No results found"
 };
@@ -13011,24 +13014,24 @@ var scopeChainSidebarPane_css_default = `/*
 // gen/front_end/panels/sources/ScopeChainSidebarPane.js
 var UIStrings23 = {
   /**
-   *@description Loading indicator in Scope Sidebar Pane of the Sources panel
+   * @description Loading indicator in Scope Sidebar Pane of the Sources panel
    */
   loading: "Loading\u2026",
   /**
-   *@description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
+   * @description Not paused message element text content in Call Stack Sidebar Pane of the Sources panel
    */
   notPaused: "Not paused",
   /**
-   *@description Empty placeholder in Scope Chain Sidebar Pane of the Sources panel
+   * @description Empty placeholder in Scope Chain Sidebar Pane of the Sources panel
    */
   noVariables: "No variables",
   /**
-   *@description Text in the Sources panel Scope pane describing a closure scope.
-   *@example {func} PH1
+   * @description Text in the Sources panel Scope pane describing a closure scope.
+   * @example {func} PH1
    */
   closureS: "Closure ({PH1})",
   /**
-   *@description Text that refers to closure as a programming term
+   * @description Text that refers to closure as a programming term
    */
   closure: "Closure"
 };
@@ -13042,9 +13045,11 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI23.Widget.VBo
   infoElement;
   #scopeChainModel = null;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging13.section("sources.scope-chain")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(scopeChainSidebarPane_css_default);
-    this.contentElement.setAttribute("jslog", `${VisualLogging13.section("sources.scope-chain")}`);
     this.treeOutline = new ObjectUI3.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
     this.treeOutline.registerRequiredCSS(scopeChainSidebarPane_css_default);
     this.treeOutline.hideOverflow();
@@ -13207,67 +13212,67 @@ var sourcesNavigator_css_default = `/*
 // gen/front_end/panels/sources/SourcesNavigator.js
 var UIStrings24 = {
   /**
-   *@description Text to show if no workspaces are set up. https://goo.gle/devtools-workspace
+   * @description Text to show if no workspaces are set up. https://goo.gle/devtools-workspace
    */
   noWorkspace: "No workspaces set up",
   /**
-   *@description Text to explain the Workspace feature in the Sources panel. https://goo.gle/devtools-workspace
+   * @description Text to explain the Workspace feature in the Sources panel. https://goo.gle/devtools-workspace
    */
   explainWorkspace: "Set up workspaces to sync edits directly to the sources you develop.",
   /**
-   *@description Text to show if no local overrides are set up. https://goo.gle/devtools-overrides
+   * @description Text to show if no local overrides are set up. https://goo.gle/devtools-overrides
    */
   noLocalOverrides: "No local overrides set up",
   /**
-   *@description Text to explain the Local Overrides feature. https://goo.gle/devtools-overrides
+   * @description Text to explain the Local Overrides feature. https://goo.gle/devtools-overrides
    */
   explainLocalOverrides: "Override network requests and web content locally to mock remote resources.",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon clear button in the Sources Navigator of the Sources panel
+   * @description Tooltip text that appears when hovering over the largeicon clear button in the Sources Navigator of the Sources panel
    */
   clearConfiguration: "Clear configuration",
   /**
-   *@description Text in Sources Navigator of the Sources panel
+   * @description Text in Sources Navigator of the Sources panel
    */
   selectFolderForOverrides: "Select folder for overrides",
   /**
-   *@description Text to show if no content scripts can be found in the Sources panel. https://developer.chrome.com/extensions/content_scripts
+   * @description Text to show if no content scripts can be found in the Sources panel. https://developer.chrome.com/extensions/content_scripts
    */
   noContentScripts: "No content scripts detected",
   /**
-   *@description Text to explain the content scripts pane in the Sources panel
+   * @description Text to explain the content scripts pane in the Sources panel
    */
   explainContentScripts: "View content scripts served by extensions.",
   /**
-   *@description Text to show if no snippets were created and saved in the Sources panel https://goo.gle/devtools-snippets
+   * @description Text to show if no snippets were created and saved in the Sources panel https://goo.gle/devtools-snippets
    */
   noSnippets: "No snippets saved",
   /**
-   *@description Text to explain the Snippets feature in the Sources panel https://goo.gle/devtools-snippets
+   * @description Text to explain the Snippets feature in the Sources panel https://goo.gle/devtools-snippets
    */
   explainSnippets: "Save the JavaScript code you run often in a snippet to run it again anytime.",
   /**
-   *@description Text in Sources Navigator of the Sources panel
+   * @description Text in Sources Navigator of the Sources panel
    */
   newSnippet: "New snippet",
   /**
-   *@description Title of an action in the sources tool to create snippet
+   * @description Title of an action in the sources tool to create snippet
    */
   createNewSnippet: "Create new snippet",
   /**
-   *@description A context menu item in the Sources Navigator of the Sources panel
+   * @description A context menu item in the Sources Navigator of the Sources panel
    */
   run: "Run",
   /**
-   *@description A context menu item in the Navigator View of the Sources panel
+   * @description A context menu item in the Navigator View of the Sources panel
    */
   rename: "Rename\u2026",
   /**
-   *@description Label for an item to remove something
+   * @description Label for an item to remove something
    */
   remove: "Remove",
   /**
-   *@description Text to save content as a specific file type
+   * @description Text to save content as a specific file type
    */
   saveAs: "Save as\u2026",
   /**
@@ -13855,39 +13860,39 @@ li.watch-expression-editing::before {
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 var UIStrings25 = {
   /**
-   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
+   * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
    */
   addWatchExpression: "Add watch expression",
   /**
-   *@description Tooltip/screen reader label of a button in the Sources panel that refreshes all watch expressions.
+   * @description Tooltip/screen reader label of a button in the Sources panel that refreshes all watch expressions.
    */
   refreshWatchExpressions: "Refresh watch expressions",
   /**
-   *@description Empty element text content in Watch Expressions Sidebar Pane of the Sources panel
+   * @description Empty element text content in Watch Expressions Sidebar Pane of the Sources panel
    */
   noWatchExpressions: "No watch expressions",
   /**
-   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
+   * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
    */
   deleteAllWatchExpressions: "Delete all watch expressions",
   /**
-   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
+   * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
    */
   addPropertyPathToWatch: "Add property path to watch",
   /**
-   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
+   * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
    */
   deleteWatchExpression: "Delete watch expression",
   /**
-   *@description Value element text content in Watch Expressions Sidebar Pane of the Sources panel
+   * @description Value element text content in Watch Expressions Sidebar Pane of the Sources panel
    */
   notAvailable: "<not available>",
   /**
-   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel and Network pane request.
+   * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel and Network pane request.
    */
   copyValue: "Copy value",
   /**
-   *@description announcement for when watch expression is deleted
+   * @description announcement for when watch expression is deleted
    */
   watchExpressionDeleted: "Watch expression deleted"
 };

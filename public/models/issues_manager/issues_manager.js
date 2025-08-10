@@ -25,27 +25,27 @@ import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 var UIStrings = {
   /**
-   *@description The kind of an issue (plural) (Issues are categorized into kinds).
+   * @description The kind of an issue (plural) (Issues are categorized into kinds).
    */
   improvements: "Improvements",
   /**
-   *@description The kind of an issue (plural) (Issues are categorized into kinds).
+   * @description The kind of an issue (plural) (Issues are categorized into kinds).
    */
   pageErrors: "Page Errors",
   /**
-   *@description The kind of an issue (plural) (Issues are categorized into kinds).
+   * @description The kind of an issue (plural) (Issues are categorized into kinds).
    */
   breakingChanges: "Breaking Changes",
   /**
-   *@description A description for a kind of issue we display in the issues tab.
+   * @description A description for a kind of issue we display in the issues tab.
    */
   pageErrorIssue: "A page error issue: the page is not working correctly",
   /**
-   *@description A description for a kind of issue we display in the issues tab.
+   * @description A description for a kind of issue we display in the issues tab.
    */
   breakingChangeIssue: "A breaking change issue: the page may stop working in an upcoming version of Chrome",
   /**
-   *@description A description for a kind of issue we display in the issues tab.
+   * @description A description for a kind of issue we display in the issues tab.
    */
   improvementIssue: "An improvement issue: there is an opportunity to improve the page"
 };
@@ -496,7 +496,7 @@ async function getIssueTitleFromMarkdownDescription(description) {
 // gen/front_end/models/issues_manager/ClientHintIssue.js
 var UIStrings2 = {
   /**
-   *@description Title for Client Hint specification url link
+   * @description Title for Client Hint specification url link
    */
   clientHintsInfrastructure: "Client Hints Infrastructure"
 };
@@ -578,23 +578,23 @@ __export(ContentSecurityPolicyIssue_exports, {
 import * as i18n5 from "./../../core/i18n/i18n.js";
 var UIStrings3 = {
   /**
-   *@description Title for CSP url link
+   * @description Title for CSP url link
    */
   contentSecurityPolicySource: "Content Security Policy - Source Allowlists",
   /**
-   *@description Title for CSP inline issue link
+   * @description Title for CSP inline issue link
    */
   contentSecurityPolicyInlineCode: "Content Security Policy - Inline Code",
   /**
-   *@description Title for the CSP eval link
+   * @description Title for the CSP eval link
    */
   contentSecurityPolicyEval: "Content Security Policy - Eval",
   /**
-   *@description Title for Trusted Types policy violation issue link. https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API
+   * @description Title for Trusted Types policy violation issue link. https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API
    */
   trustedTypesFixViolations: "Trusted Types - Fix violations",
   /**
-   *@description Title for Trusted Types policy violation issue link. https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API
+   * @description Title for Trusted Types policy violation issue link. https://developer.mozilla.org/en-US/docs/Web/API/Trusted_Types_API
    */
   trustedTypesPolicyViolation: "Trusted Types - Policy violation"
 };
@@ -845,11 +845,11 @@ import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as ThirdPartyWeb from "./../../third_party/third-party-web/third-party-web.js";
 var UIStrings5 = {
   /**
-   *@description Label for the link for SameSiteCookies Issues
+   * @description Label for the link for SameSiteCookies Issues
    */
   samesiteCookiesExplained: "SameSite cookies explained",
   /**
-   *@description Label for the link for Schemeful Same-Site Issues
+   * @description Label for the link for Schemeful Same-Site Issues
    */
   howSchemefulSamesiteWorks: "How Schemeful Same-Site Works",
   /**
@@ -1343,15 +1343,15 @@ __export(CorsIssue_exports, {
 import * as i18n11 from "./../../core/i18n/i18n.js";
 var UIStrings6 = {
   /**
-   *@description Label for the link for CORS Local Network Access issues
+   * @description Label for the link for CORS Local Network Access issues
    */
   corsLocalNetworkAccess: "Local Network Access",
   /**
-   *@description Label for the link for CORS private network issues
+   * @description Label for the link for CORS private network issues
    */
   corsPrivateNetworkAccess: "Private Network Access",
   /**
-   *@description Label for the link for CORS network issues
+   * @description Label for the link for CORS network issues
    */
   CORS: "Cross-Origin Resource Sharing (`CORS`)"
 };
@@ -1592,11 +1592,11 @@ __export(CrossOriginEmbedderPolicyIssue_exports, {
 import * as i18n13 from "./../../core/i18n/i18n.js";
 var UIStrings7 = {
   /**
-   *@description Link text for a link to external documentation
+   * @description Link text for a link to external documentation
    */
   coopAndCoep: "COOP and COEP",
   /**
-   *@description Title for an external link to more information in the issues view
+   * @description Title for an external link to more information in the issues view
    */
   samesiteAndSameorigin: "Same-Site and Same-Origin"
 };
@@ -2234,7 +2234,7 @@ __export(FederatedAuthUserInfoRequestIssue_exports, {
 import * as i18n17 from "./../../core/i18n/i18n.js";
 var UIStrings10 = {
   /**
-   *@description Title for Client Hint specification url link
+   * @description Title for Client Hint specification url link
    */
   fedCmUserInfo: "Federated Credential Management User Info API"
 };
@@ -2392,19 +2392,19 @@ __export(GenericIssue_exports, {
 import * as i18n19 from "./../../core/i18n/i18n.js";
 var UIStrings11 = {
   /**
-   *@description title for autofill documentation page
+   * @description title for autofill documentation page
    */
   howDoesAutofillWorkPageTitle: "How does autofill work?",
   /**
-   *@description title for label form elements usage example page
+   * @description title for label form elements usage example page
    */
   labelFormlementsPageTitle: "The label elements",
   /**
-   *@description title for input form elements usage example page
+   * @description title for input form elements usage example page
    */
   inputFormElementPageTitle: "The form input element",
   /**
-   *@description title for autocomplete attribute documentation page.
+   * @description title for autocomplete attribute documentation page.
    */
   autocompleteAttributePageTitle: "HTML attribute: autocomplete",
   /**
@@ -2626,7 +2626,7 @@ __export(HeavyAdIssue_exports, {
 import * as i18n21 from "./../../core/i18n/i18n.js";
 var UIStrings12 = {
   /**
-   *@description Title for a learn more link in Heavy Ads issue description
+   * @description Title for a learn more link in Heavy Ads issue description
    */
   handlingHeavyAdInterventions: "Handling Heavy Ad Interventions"
 };
@@ -2700,7 +2700,7 @@ import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 var UIStrings13 = {
   /**
-   *@description Title for Bounce Tracking Mitigation explainer url link.
+   * @description Title for Bounce Tracking Mitigation explainer url link.
    */
   bounceTrackingMitigations: "Bounce tracking mitigations"
 };
@@ -2755,7 +2755,7 @@ var BounceTrackingIssue = class _BounceTrackingIssue extends Issue {
 import * as i18n25 from "./../../core/i18n/i18n.js";
 var UIStrings14 = {
   /**
-   *@description Title for Client Hint specification url link
+   * @description Title for Client Hint specification url link
    */
   fedCm: "Federated Credential Management API"
 };
@@ -2992,7 +2992,7 @@ __export(LowTextContrastIssue_exports, {
 import * as i18n27 from "./../../core/i18n/i18n.js";
 var UIStrings15 = {
   /**
-   *@description Link title for the Low Text Contrast issue in the Issues panel
+   * @description Link title for the Low Text Contrast issue in the Issues panel
    */
   colorAndContrastAccessibility: "Color and contrast accessibility"
 };
@@ -3045,7 +3045,7 @@ __export(MixedContentIssue_exports, {
 import * as i18n29 from "./../../core/i18n/i18n.js";
 var UIStrings16 = {
   /**
-   *@description Label for the link for Mixed Content Issues
+   * @description Label for the link for Mixed Content Issues
    */
   preventingMixedContent: "Preventing mixed content"
 };
@@ -3106,11 +3106,11 @@ __export(PartitioningBlobURLIssue_exports, {
 import * as i18n31 from "./../../core/i18n/i18n.js";
 var UIStrings17 = {
   /**
-   *@description Title for Partitioning BlobURL explainer url link.
+   * @description Title for Partitioning BlobURL explainer url link.
    */
   partitioningBlobURL: "Partitioning BlobURL",
   /**
-   *@description Title for Chrome Status Entry url link.
+   * @description Title for Chrome Status Entry url link.
    */
   chromeStatusEntry: "Chrome Status Entry"
 };
@@ -3233,7 +3233,7 @@ __export(QuirksModeIssue_exports, {
 import * as i18n33 from "./../../core/i18n/i18n.js";
 var UIStrings18 = {
   /**
-   *@description Link title for the Quirks Mode issue in the Issues panel
+   * @description Link title for the Quirks Mode issue in the Issues panel
    */
   documentCompatibilityMode: "Document compatibility mode"
 };
@@ -3288,7 +3288,7 @@ __export(SharedArrayBufferIssue_exports, {
 import * as i18n35 from "./../../core/i18n/i18n.js";
 var UIStrings19 = {
   /**
-   *@description Label for the link for SharedArrayBuffer Issues. The full text reads "Enabling `SharedArrayBuffer`"
+   * @description Label for the link for SharedArrayBuffer Issues. The full text reads "Enabling `SharedArrayBuffer`"
    * and is the title of an article that describes how to enable a JavaScript feature called SharedArrayBuffer.
    */
   enablingSharedArrayBuffer: "Enabling `SharedArrayBuffer`"
@@ -3344,7 +3344,7 @@ __export(SharedDictionaryIssue_exports, {
 import * as i18n37 from "./../../core/i18n/i18n.js";
 var UIStrings20 = {
   /**
-   *@description Title for Compression Dictionary Transport specification url link
+   * @description Title for Compression Dictionary Transport specification url link
    */
   compressionDictionaryTransport: "Compression Dictionary Transport"
 };
@@ -3771,11 +3771,11 @@ __export(SRIMessageSignatureIssue_exports, {
 import * as i18n39 from "./../../core/i18n/i18n.js";
 var UIStrings21 = {
   /**
-   *@description Title for HTTP Message Signatures specification url
+   * @description Title for HTTP Message Signatures specification url
    */
   httpMessageSignatures: "HTTP Message Signatures (RFC9421)",
   /**
-   *@description Title for Signature-based Integrity specification url
+   * @description Title for Signature-based Integrity specification url
    */
   signatureBasedIntegrity: "Signature-based Integrity"
 };
@@ -3849,6 +3849,74 @@ var SRIMessageSignatureIssue = class _SRIMessageSignatureIssue extends Issue {
       return [];
     }
     return [new _SRIMessageSignatureIssue(details, issuesModel)];
+  }
+};
+
+// gen/front_end/models/issues_manager/UnencodedDigestIssue.js
+var UnencodedDigestIssue_exports = {};
+__export(UnencodedDigestIssue_exports, {
+  UnencodedDigestIssue: () => UnencodedDigestIssue
+});
+import * as i18n41 from "./../../core/i18n/i18n.js";
+var UIStrings22 = {
+  /**
+   *@description Title for HTTP Unencoded Digest specification url
+   */
+  unencodedDigestHeader: "HTTP Unencoded Digest specification",
+  /**
+   *@description Title for the URL of the integration of unencoded-digest and SRI.
+   */
+  integrityIntegration: "Server-Initiated Integrity Checks"
+};
+var str_21 = i18n41.i18n.registerUIStrings("models/issues_manager/UnencodedDigestIssue.ts", UIStrings22);
+var i18nLazyString11 = i18n41.i18n.getLazilyComputedLocalizedString.bind(void 0, str_21);
+var UnencodedDigestIssue = class _UnencodedDigestIssue extends Issue {
+  #issueDetails;
+  constructor(issueDetails, issuesModel) {
+    super({
+      code: `${"UnencodedDigestIssue"}::${issueDetails.error}`,
+      umaCode: `${"UnencodedDigestIssue"}::${issueDetails.error}`
+    }, issuesModel);
+    this.#issueDetails = issueDetails;
+  }
+  details() {
+    return this.#issueDetails;
+  }
+  primaryKey() {
+    return JSON.stringify(this.details());
+  }
+  getDescription() {
+    const description = {
+      file: `unencodedDigest${this.details().error}.md`,
+      links: [
+        {
+          link: "https://www.ietf.org/archive/id/draft-ietf-httpbis-unencoded-digest-01.html",
+          linkTitle: i18nLazyString11(UIStrings22.unencodedDigestHeader)
+        },
+        {
+          link: "https://wicg.github.io/signature-based-sri/#unencoded-digest-validation",
+          linkTitle: i18nLazyString11(UIStrings22.integrityIntegration)
+        }
+      ]
+    };
+    return resolveLazyDescription(description);
+  }
+  getCategory() {
+    return "Other";
+  }
+  getKind() {
+    return "PageError";
+  }
+  requests() {
+    return this.details().request ? [this.details().request] : [];
+  }
+  static fromInspectorIssue(issuesModel, inspectorIssue) {
+    const details = inspectorIssue.details.unencodedDigestIssueDetails;
+    if (!details) {
+      console.warn("Unencoded-Digest issue without details received.");
+      return [];
+    }
+    return [new _UnencodedDigestIssue(details, issuesModel)];
   }
 };
 
@@ -3998,6 +4066,10 @@ var issueCodeHandlers = /* @__PURE__ */ new Map([
   [
     "SRIMessageSignatureIssue",
     SRIMessageSignatureIssue.fromInspectorIssue
+  ],
+  [
+    "UnencodedDigestIssue",
+    UnencodedDigestIssue.fromInspectorIssue
   ],
   [
     "UserReidentificationIssue",
@@ -4397,6 +4469,7 @@ export {
   SharedArrayBufferIssue_exports as SharedArrayBufferIssue,
   SharedDictionaryIssue_exports as SharedDictionaryIssue,
   SourceFrameIssuesManager_exports as SourceFrameIssuesManager,
-  StylesheetLoadingIssue_exports as StylesheetLoadingIssue
+  StylesheetLoadingIssue_exports as StylesheetLoadingIssue,
+  UnencodedDigestIssue_exports as UnencodedDigestIssue
 };
 //# sourceMappingURL=issues_manager.js.map

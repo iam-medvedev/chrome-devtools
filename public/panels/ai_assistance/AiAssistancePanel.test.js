@@ -13,6 +13,7 @@ import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { MockStore } from '../../testing/MockSettingStorage.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
@@ -26,6 +27,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
     let viewManagerIsViewVisibleStub;
     beforeEach(() => {
         viewManagerIsViewVisibleStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'isViewVisible');
+        AiAssistanceModel.ConversationHandler.removeInstance();
         registerNoopActions([
             'elements.toggle-element-search', 'timeline.record-reload', 'timeline.toggle-recording', 'timeline.show-history',
             'components.collect-garbage'
@@ -35,6 +37,14 @@ describeWithMockConnection('AI Assistance Panel', () => {
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, null);
         UI.Context.Context.instance().setFlavor(TimelineUtils.AIContext.AgentFocus, null);
         UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, null);
+        const mockStore = new MockStore();
+        const settingsStorage = new Common.Settings.SettingsStorage({}, mockStore);
+        Common.Settings.Settings.instance({
+            forceNew: true,
+            syncedStorage: settingsStorage,
+            globalStorage: settingsStorage,
+            localStorage: settingsStorage,
+        });
     });
     afterEach(() => {
         cleanup();
@@ -593,7 +603,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 },
             });
             const aiHistoryStorage = AiAssistanceModel.AiHistoryStorage.instance({ forceNew: true });
-            const deleteHistoryEntryStub = sinon.stub(aiHistoryStorage, 'deleteHistoryEntry');
+            const deleteHistoryEntrySpy = sinon.spy(aiHistoryStorage, 'deleteHistoryEntry');
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([
                     [{ explanation: 'test' }],
@@ -611,8 +621,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
             await view.nextInput;
             view.input.onDeleteClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            sinon.assert.callCount(deleteHistoryEntryStub, 1);
-            assert.isString(deleteHistoryEntryStub.lastCall.args[0]);
+            sinon.assert.callCount(deleteHistoryEntrySpy, 1);
+            assert.isString(deleteHistoryEntrySpy.lastCall.args[0]);
             const menuAfterDelete = openHistoryContextMenu(view.input, 'User question to Freestyler?');
             assert.isUndefined(menuAfterDelete.id);
         });
@@ -1351,54 +1361,6 @@ describeWithMockConnection('AI Assistance Panel', () => {
             performSearchStub = sinon.stub(target.domAgent(), 'invoke_performSearch')
                 .resolves({ searchId: 'uniqueId', resultCount: 0, getError: () => undefined });
         });
-        describe('can be blocked', () => {
-            it('by a setting', async () => {
-                Common.Settings.moduleSetting('ai-assistance-enabled').set(false);
-                const { panel } = await createAiAssistancePanel({
-                    aidaClient: mockAidaClient([[{ explanation }]]),
-                });
-                const generator = await panel.handleExternalRequest({
-                    prompt: 'Please help me debug this problem',
-                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
-                });
-                const response = await generator.next();
-                assert.strictEqual(response.value.type, 'error');
-                assert.strictEqual(response.value.message, 'For AI features to be available, you need to enable AI assistance in DevTools settings.');
-            });
-            it('by feature availability', async () => {
-                const { panel } = await createAiAssistancePanel({
-                    aidaClient: mockAidaClient([[{ explanation }]]),
-                    aidaAvailability: "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */,
-                });
-                const generator = await panel.handleExternalRequest({
-                    prompt: 'Please help me debug this problem',
-                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
-                });
-                const response = await generator.next();
-                assert.strictEqual(response.value.type, 'error');
-                assert.strictEqual(response.value.message, 'This feature is only available when you sign into Chrome with your Google account.');
-            });
-            it('by user age', async () => {
-                updateHostConfig({
-                    aidaAvailability: {
-                        blockedByAge: true,
-                    },
-                    devToolsFreestyler: {
-                        enabled: true,
-                    },
-                });
-                const { panel } = await createAiAssistancePanel({
-                    aidaClient: mockAidaClient([[{ explanation }]]),
-                });
-                const generator = await panel.handleExternalRequest({
-                    prompt: 'Please help me debug this problem',
-                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
-                });
-                const response = await generator.next();
-                assert.strictEqual(response.value.type, 'error');
-                assert.strictEqual(response.value.message, 'This feature is only available to users who are 18 years of age or older.');
-            });
-        });
         it('returns an explanation for styling assistance requests', async () => {
             const { panel } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation }]]),
@@ -1547,29 +1509,6 @@ STOP`,
                     steps,
                 },
             ]);
-        });
-        it('returns an explanation for network assistance requests', async () => {
-            await createNetworkPanelForMockConnection();
-            Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-            const { panel } = await createAiAssistancePanel({
-                aidaClient: mockAidaClient([[{ explanation }]]),
-            });
-            const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
-            const request = createNetworkRequest();
-            const networkManager = sinon.createStubInstance(SDK.NetworkManager.NetworkManager, {
-                requestForURL: request,
-            });
-            sinon.stub(SDK.TargetManager.TargetManager.instance(), 'models').returns([networkManager]);
-            const generator = await panel.handleExternalRequest({
-                prompt: 'Please help me debug this problem',
-                conversationType: "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */,
-                requestUrl: 'https://localhost:8080/'
-            });
-            let response = await generator.next();
-            assert.strictEqual(response.value.message, 'Analyzing network data');
-            response = await generator.next();
-            assert.strictEqual(response.value.message, explanation);
-            sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
         });
         it('handles performance insight requests with an insight title', async function () {
             const { panel } = await createAiAssistancePanel({

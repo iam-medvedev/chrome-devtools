@@ -15,31 +15,31 @@ import breakpointEditDialogStyles from './breakpointEditDialog.css.js';
 const { Direction } = TextEditor.TextEditorHistory;
 const UIStrings = {
     /**
-     *@description Screen reader label for a select box that chooses the breakpoint type in the Sources panel when editing a breakpoint
+     * @description Screen reader label for a select box that chooses the breakpoint type in the Sources panel when editing a breakpoint
      */
     breakpointType: 'Breakpoint type',
     /**
-     *@description Text in Breakpoint Edit Dialog of the Sources panel
+     * @description Text in Breakpoint Edit Dialog of the Sources panel
      */
     breakpoint: 'Breakpoint',
     /**
-     *@description Tooltip text in Breakpoint Edit Dialog of the Sources panel that shows up when hovering over the close icon
+     * @description Tooltip text in Breakpoint Edit Dialog of the Sources panel that shows up when hovering over the close icon
      */
     closeDialog: 'Close edit dialog and save changes',
     /**
-     *@description Text in Breakpoint Edit Dialog of the Sources panel
+     * @description Text in Breakpoint Edit Dialog of the Sources panel
      */
     conditionalBreakpoint: 'Conditional breakpoint',
     /**
-     *@description Text in Breakpoint Edit Dialog of the Sources panel
+     * @description Text in Breakpoint Edit Dialog of the Sources panel
      */
     logpoint: 'Logpoint',
     /**
-     *@description Text in Breakpoint Edit Dialog of the Sources panel
+     * @description Text in Breakpoint Edit Dialog of the Sources panel
      */
     expressionToCheckBeforePausingEg: 'Expression to check before pausing, e.g. x > 5',
     /**
-     *@description Type selector element title in Breakpoint Edit Dialog of the Sources panel
+     * @description Type selector element title in Breakpoint Edit Dialog of the Sources panel
      */
     pauseOnlyWhenTheConditionIsTrue: 'Pause only when the condition is true',
     /**
@@ -47,14 +47,14 @@ const UIStrings = {
      */
     learnMoreOnBreakpointTypes: 'Learn more: Breakpoint Types',
     /**
-     *@description Text in Breakpoint Edit Dialog of the Sources panel. It is used as
+     * @description Text in Breakpoint Edit Dialog of the Sources panel. It is used as
      *the placeholder for a text input field before the user enters text. Provides the user with
      *an example on how to use Logpoints. 'Log' is a verb and 'message' is a noun.
      *See: https://developer.chrome.com/blog/new-in-devtools-73/#logpoints
      */
     logMessageEgXIsX: 'Log message, e.g. `\'x is\', x`',
     /**
-     *@description Type selector element title in Breakpoint Edit Dialog of the Sources panel
+     * @description Type selector element title in Breakpoint Edit Dialog of the Sources panel
      */
     logAMessageToConsoleDoNotBreak: 'Log a message to Console, do not break',
 };
@@ -69,7 +69,10 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
     #history;
     #editorHistory;
     constructor(editorLineNumber, oldCondition, isLogpoint, onFinish) {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.dialog('edit-breakpoint')}`,
+            useShadowDom: true,
+        });
         this.registerRequiredCSS(breakpointEditDialogStyles);
         const editorConfig = [
             CodeMirror.javascript.javascriptLanguage,
@@ -89,7 +92,6 @@ export class BreakpointEditDialog extends UI.Widget.Widget {
         this.finished = false;
         this.element.tabIndex = -1;
         this.element.classList.add('sources-edit-breakpoint-dialog');
-        this.element.setAttribute('jslog', `${VisualLogging.dialog('edit-breakpoint')}`);
         const header = this.contentElement.createChild('div', 'dialog-header');
         const toolbar = header.createChild('devtools-toolbar', 'source-frame-breakpoint-toolbar');
         toolbar.appendText(`Line ${editorLineNumber + 1}:`);

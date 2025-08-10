@@ -196,261 +196,261 @@ select {
 import * as ApplicationComponents from "./components/components.js";
 var UIStrings = {
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   errorsAndWarnings: "Errors and warnings",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   installability: "Installability",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   identity: "Identity",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   presentation: "Presentation",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   protocolHandlers: "Protocol Handlers",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   icons: "Icons",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   windowControlsOverlay: "Window Controls Overlay",
   /**
-   *@description Label in the App Manifest View for the "name" property of web app or shortcut item
+   * @description Label in the App Manifest View for the "name" property of web app or shortcut item
    */
   name: "Name",
   /**
-   *@description Label in the App Manifest View for the "short_name" property of web app or shortcut item
+   * @description Label in the App Manifest View for the "short_name" property of web app or shortcut item
    */
   shortName: "Short name",
   /**
-   *@description Label in the App Manifest View for the "url" property of shortcut item
+   * @description Label in the App Manifest View for the "url" property of shortcut item
    */
   url: "URL",
   /**
-   *@description Label in the App Manifest View for the Computed App Id
+   * @description Label in the App Manifest View for the Computed App Id
    */
   computedAppId: "Computed App ID",
   /**
-   *@description Popup-text explaining what the App Id is used for.
+   * @description Popup-text explaining what the App Id is used for.
    */
   appIdExplainer: "This is used by the browser to know whether the manifest should be updating an existing application, or whether it refers to a new web app that can be installed.",
   /**
-   *@description Text which is a hyperlink to more documentation
+   * @description Text which is a hyperlink to more documentation
    */
   learnMore: "Learn more",
   /**
-   *@description Explanation why it is advisable to specify an 'id' field in the manifest.
-   *@example {/index.html} PH1
-   *@example {(button for copying suggested value into clipboard)} PH2
+   * @description Explanation why it is advisable to specify an 'id' field in the manifest.
+   * @example {/index.html} PH1
+   * @example {(button for copying suggested value into clipboard)} PH2
    */
   appIdNote: "Note: `id` is not specified in the manifest, `start_url` is used instead. To specify an App ID that matches the current identity, set the `id` field to {PH1} {PH2}.",
   /**
-   *@description Tooltip text that appears when hovering over a button which copies the previous text to the clipboard.
+   * @description Tooltip text that appears when hovering over a button which copies the previous text to the clipboard.
    */
   copyToClipboard: "Copy suggested ID to clipboard",
   /**
-   *@description Screen reader announcement string when the user clicks the copy to clipboard button.
-   *@example {/index.html} PH1
+   * @description Screen reader announcement string when the user clicks the copy to clipboard button.
+   * @example {/index.html} PH1
    */
   copiedToClipboard: "Copied suggested ID {PH1} to clipboard",
   /**
-   *@description Label in the App Manifest View for the "description" property of web app or shortcut item
+   * @description Label in the App Manifest View for the "description" property of web app or shortcut item
    */
   description: "Description",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   startUrl: "Start URL",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   themeColor: "Theme color",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   backgroundColor: "Background color",
   /**
-   *@description Text for the orientation of something
+   * @description Text for the orientation of something
    */
   orientation: "Orientation",
   /**
-   *@description Title of the display attribute in App Manifest View of the Application panel
+   * @description Title of the display attribute in App Manifest View of the Application panel
    * The display attribute defines the preferred display mode for the app such fullscreen or
    * standalone.
    * For more details see https://www.w3.org/TR/appmanifest/#display-member.
    */
   display: "Display",
   /**
-   *@description Title of the new_note_url attribute in the Application panel
+   * @description Title of the new_note_url attribute in the Application panel
    */
   newNoteUrl: "New note URL",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   descriptionMayBeTruncated: "Description may be truncated.",
   /**
-   *@description Warning text about too many shortcuts
+   * @description Warning text about too many shortcuts
    */
   shortcutsMayBeNotAvailable: "The maximum number of shortcuts is platform dependent. Some shortcuts may be not available.",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   showOnlyTheMinimumSafeAreaFor: "Show only the minimum safe area for maskable icons",
   /**
-   *@description Link text for more information on maskable icons in App Manifest view of the Application panel
+   * @description Link text for more information on maskable icons in App Manifest view of the Application panel
    */
   documentationOnMaskableIcons: "documentation on maskable icons",
   /**
-   *@description Text wrapping a link pointing to more information on maskable icons in App Manifest view of the Application panel
-   *@example {https://web.dev/maskable-icon/} PH1
+   * @description Text wrapping a link pointing to more information on maskable icons in App Manifest view of the Application panel
+   * @example {https://web.dev/maskable-icon/} PH1
    */
   needHelpReadOurS: "Need help? Read the {PH1}.",
   /**
-   *@description Text in App Manifest View of the Application panel
-   *@example {1} PH1
+   * @description Text in App Manifest View of the Application panel
+   * @example {1} PH1
    */
   shortcutS: "Shortcut #{PH1}",
   /**
-   *@description Text in App Manifest View of the Application panel
-   *@example {1} PH1
+   * @description Text in App Manifest View of the Application panel
+   * @example {1} PH1
    */
   shortcutSShouldIncludeAXPixel: "Shortcut #{PH1} should include a 96\xD796 pixel icon",
   /**
-   *@description Text in App Manifest View of the Application panel
-   *@example {1} PH1
+   * @description Text in App Manifest View of the Application panel
+   * @example {1} PH1
    */
   screenshotS: "Screenshot #{PH1}",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   pageIsNotLoadedInTheMainFrame: "Page is not loaded in the main frame",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   pageIsNotServedFromASecureOrigin: "Page is not served from a secure origin",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   pageHasNoManifestLinkUrl: "Page has no manifest <link> `URL`",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   manifestCouldNotBeFetchedIsEmpty: "Manifest could not be fetched, is empty, or could not be parsed",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   manifestStartUrlIsNotValid: "Manifest '`start_url`' is not valid",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   manifestDoesNotContainANameOr: "Manifest does not contain a '`name`' or '`short_name`' field",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   manifestDisplayPropertyMustBeOne: "Manifest '`display`' property must be one of '`standalone`', '`fullscreen`', or '`minimal-ui`'",
   /**
-   *@description Manifest installability error in the Application panel
-   *@example {100} PH1
+   * @description Manifest installability error in the Application panel
+   * @example {100} PH1
    */
   manifestDoesNotContainASuitable: "Manifest does not contain a suitable icon\u2014PNG, SVG, or WebP format of at least {PH1}px is required, the '`sizes`' attribute must be set, and the '`purpose`' attribute, if set, must include '`any`'.",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   avoidPurposeAnyAndMaskable: "Declaring an icon with '`purpose`' of '`any maskable`' is discouraged. It is likely to look incorrect on some platforms due to too much or too little padding.",
   /**
-   *@description Manifest installability error in the Application panel
-   *@example {100} PH1
+   * @description Manifest installability error in the Application panel
+   * @example {100} PH1
    */
   noSuppliedIconIsAtLeastSpxSquare: "No supplied icon is at least {PH1} pixels square in `PNG`, `SVG`, or `WebP` format, with the purpose attribute unset or set to '`any`'.",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   couldNotDownloadARequiredIcon: "Could not download a required icon from the manifest",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   downloadedIconWasEmptyOr: "Downloaded icon was empty or corrupted",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   theSpecifiedApplicationPlatform: "The specified application platform is not supported on Android",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   noPlayStoreIdProvided: "No Play store ID provided",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   thePlayStoreAppUrlAndPlayStoreId: "The Play Store app URL and Play Store ID do not match",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   theAppIsAlreadyInstalled: "The app is already installed",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   aUrlInTheManifestContainsA: "A URL in the manifest contains a username, password, or port",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   pageIsLoadedInAnIncognitoWindow: "Page is loaded in an incognito window",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   pageDoesNotWorkOffline: "Page does not work offline",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   couldNotCheckServiceWorker: "Could not check `service worker` without a '`start_url`' field in the manifest",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   manifestSpecifies: "Manifest specifies '`prefer_related_applications`: true'",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   preferrelatedapplicationsIsOnly: "'`prefer_related_applications`' is only supported on `Chrome` Beta and Stable channels on `Android`.",
   /**
-   *@description Manifest installability error in the Application panel
+   * @description Manifest installability error in the Application panel
    */
   manifestContainsDisplayoverride: "Manifest contains '`display_override`' field, and the first supported display mode must be one of '`standalone`', '`fullscreen`', or '`minimal-ui`'",
   /**
-   *@description Warning message for offline capability check
-   *@example {https://developer.chrome.com/blog/improved-pwa-offline-detection} PH1
+   * @description Warning message for offline capability check
+   * @example {https://developer.chrome.com/blog/improved-pwa-offline-detection} PH1
    */
   pageDoesNotWorkOfflineThePage: "Page does not work offline. Starting in Chrome 93, the installability criteria are changing, and this site will not be installable. See {PH1} for more information.",
   /**
-   *@description Text to indicate the source of an image
-   *@example {example.com} PH1
+   * @description Text to indicate the source of an image
+   * @example {example.com} PH1
    */
   imageFromS: "Image from {PH1}",
   /**
-   *@description Text for one or a group of screenshots
+   * @description Text for one or a group of screenshots
    */
   screenshot: "Screenshot",
   /**
-   *@description Label in the App Manifest View for the "form_factor" property of screenshot
+   * @description Label in the App Manifest View for the "form_factor" property of screenshot
    */
   formFactor: "Form factor",
   /**
-   *@description Label in the App Manifest View for the "label" property of screenshot
+   * @description Label in the App Manifest View for the "label" property of screenshot
    */
   label: "Label",
   /**
-   *@description Label in the App Manifest View for the "platform" property of screenshot
+   * @description Label in the App Manifest View for the "platform" property of screenshot
    */
   platform: "Platform",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   icon: "Icon",
   /**
@@ -461,131 +461,131 @@ var UIStrings = {
    */
   sSrcIsNotSet: "{PH1} '`src`' is not set",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Screenshot} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Screenshot} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sUrlSFailedToParse: "{PH1} URL ''{PH2}'' failed to parse",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSFailedToLoad: "{PH1} {PH2} failed to load",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSDoesNotSpecifyItsSizeInThe: "{PH1} {PH2} does not specify its size in the manifest",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSShouldSpecifyItsSizeAs: "{PH1} {PH2} should specify its size as `[width]x[height]`",
   /**
-   *@description Warning message for image resources from the manifest
+   * @description Warning message for image resources from the manifest
    */
   sSShouldHaveSquareIcon: "Most operating systems require square icons. Please include at least one square icon in the array.",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {100} PH1
-   *@example {100} PH2
-   *@example {Image} PH3
-   *@example {https://example.com/image.png} PH4
-   *@example {200} PH5
-   *@example {200} PH6
+   * @description Warning message for image resources from the manifest
+   * @example {100} PH1
+   * @example {100} PH2
+   * @example {Image} PH3
+   * @example {https://example.com/image.png} PH4
+   * @example {200} PH5
+   * @example {200} PH6
    */
   actualSizeSspxOfSSDoesNotMatch: "Actual size ({PH1}\xD7{PH2})px of {PH3} {PH4} does not match specified size ({PH5}\xD7{PH6}px)",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {100} PH1
-   *@example {Image} PH2
-   *@example {https://example.com/image.png} PH3
-   *@example {200} PH4
+   * @description Warning message for image resources from the manifest
+   * @example {100} PH1
+   * @example {Image} PH2
+   * @example {https://example.com/image.png} PH3
+   * @example {200} PH4
    */
   actualWidthSpxOfSSDoesNotMatch: "Actual width ({PH1}px) of {PH2} {PH3} does not match specified width ({PH4}px)",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {100} PH1
-   *@example {Image} PH2
-   *@example {https://example.com/image.png} PH3
-   *@example {100} PH4
+   * @description Warning message for image resources from the manifest
+   * @example {100} PH1
+   * @example {Image} PH2
+   * @example {https://example.com/image.png} PH3
+   * @example {100} PH4
    */
   actualHeightSpxOfSSDoesNotMatch: "Actual height ({PH1}px) of {PH2} {PH3} does not match specified height ({PH4}px)",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSSizeShouldBeAtLeast320: "{PH1} {PH2} size should be at least 320\xD7320",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSSizeShouldBeAtMost3840: "{PH1} {PH2} size should be at most 3840\xD73840",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSWidthDoesNotComplyWithRatioRequirement: "{PH1} {PH2} width can't be more than 2.3 times as long as the height",
   /**
-   *@description Warning message for image resources from the manifest
-   *@example {Image} PH1
-   *@example {https://example.com/image.png} PH2
+   * @description Warning message for image resources from the manifest
+   * @example {Image} PH1
+   * @example {https://example.com/image.png} PH2
    */
   sSHeightDoesNotComplyWithRatioRequirement: "{PH1} {PH2} height can't be more than 2.3 times as long as the width",
   /**
-   *@description Manifest installability error in the Application panel
-   *@example {https://example.com/image.png} url
+   * @description Manifest installability error in the Application panel
+   * @example {https://example.com/image.png} url
    */
   screenshotPixelSize: "Screenshot {url} should specify a pixel size `[width]x[height]` instead of `any` as first size.",
   /**
-   *@description Warning text about screenshots for Richer PWA Install UI on desktop
+   * @description Warning text about screenshots for Richer PWA Install UI on desktop
    */
   noScreenshotsForRicherPWAInstallOnDesktop: "Richer PWA Install UI won\u2019t be available on desktop. Please add at least one screenshot with the `form_factor` set to `wide`.",
   /**
-   *@description Warning text about screenshots for Richer PWA Install UI on mobile
+   * @description Warning text about screenshots for Richer PWA Install UI on mobile
    */
   noScreenshotsForRicherPWAInstallOnMobile: "Richer PWA Install UI won\u2019t be available on mobile. Please add at least one screenshot for which `form_factor` is not set or set to a value other than `wide`.",
   /**
-   *@description Warning text about too many screenshots for desktop
+   * @description Warning text about too many screenshots for desktop
    */
   tooManyScreenshotsForDesktop: "No more than 8 screenshots will be displayed on desktop. The rest will be ignored.",
   /**
-   *@description Warning text about too many screenshots for mobile
+   * @description Warning text about too many screenshots for mobile
    */
   tooManyScreenshotsForMobile: "No more than 5 screenshots will be displayed on mobile. The rest will be ignored.",
   /**
-   *@description Warning text about not all screenshots matching the appropriate form factor have the same aspect ratio
+   * @description Warning text about not all screenshots matching the appropriate form factor have the same aspect ratio
    */
   screenshotsMustHaveSameAspectRatio: "All screenshots with the same `form_factor` must have the same aspect ratio as the first screenshot with that `form_factor`. Some screenshots will be ignored.",
   /**
-   *@description Message for Window Controls Overlay value succsessfully found with links to documnetation
-   *@example {window-controls-overlay} PH1
-   *@example {https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override} PH2
-   *@example {https://developer.mozilla.org/en-US/docs/Web/Manifest} PH3
+   * @description Message for Window Controls Overlay value succsessfully found with links to documnetation
+   * @example {window-controls-overlay} PH1
+   * @example {https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override} PH2
+   * @example {https://developer.mozilla.org/en-US/docs/Web/Manifest} PH3
    */
   wcoFound: "Chrome has successfully found the {PH1} value for the {PH2} field in the {PH3}.",
   /**
-   *@description Message for Windows Control Overlay value not found with link to documentation
-   *@example {https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override} PH1
+   * @description Message for Windows Control Overlay value not found with link to documentation
+   * @example {https://developer.mozilla.org/en-US/docs/Web/Manifest/display_override} PH1
    */
   wcoNotFound: "Define {PH1} in the manifest to use the Window Controls Overlay API and customize your app's title bar.",
   /**
-   *@description Link text for more information on customizing Window Controls Overlay title bar in the Application panel
+   * @description Link text for more information on customizing Window Controls Overlay title bar in the Application panel
    */
   customizePwaTitleBar: "Customize the window controls overlay of your PWA's title bar",
   /**
-   *@description Text wrapping link to documentation on how to customize WCO title bar
-   *@example {https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay} PH1
+   * @description Text wrapping link to documentation on how to customize WCO title bar
+   * @example {https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/how-to/window-controls-overlay} PH1
    */
   wcoNeedHelpReadMore: "Need help? Read {PH1}.",
   /**
-   *@description Text for emulation OS selection dropdown
+   * @description Text for emulation OS selection dropdown
    */
   selectWindowControlsOverlayEmulationOs: "Emulate the Window Controls Overlay on"
 };
@@ -620,10 +620,12 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
   overlayModel;
   protocolHandlersView;
   constructor(emptyView, reportView, throttler) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging.pane("manifest")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(appManifestView_css_default);
     this.contentElement.classList.add("manifest-container");
-    this.contentElement.setAttribute("jslog", `${VisualLogging.pane("manifest")}`);
     this.emptyView = emptyView;
     this.emptyView.link = "https://web.dev/add-manifest/";
     this.emptyView.show(this.contentElement);
@@ -1198,7 +1200,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     }
     return { hasSquareSize };
   }
-  async appendImageResourceToSection(baseUrl, imageResource, section9, isScreenshot) {
+  async appendImageResourceToSection(baseUrl, imageResource, section8, isScreenshot) {
     const imageResourceErrors = [];
     const resourceName = isScreenshot ? i18nString(UIStrings.screenshot) : i18nString(UIStrings.icon);
     if (!imageResource.src) {
@@ -1219,7 +1221,7 @@ var AppManifestView = class extends Common2.ObjectWrapper.eventMixin(UI2.Widget.
     const { naturalWidth, naturalHeight } = image;
     const sizes = this.parseSizes(imageResource["sizes"], resourceName, imageUrl, imageResourceErrors);
     const title = sizes.map((x) => x.formatted).join(" ") + "\n" + (imageResource["type"] || "");
-    const field = section9.appendFlexedField(title);
+    const field = section8.appendFlexedField(title);
     let squareSizedIconAvailable = false;
     if (!imageResource.sizes) {
       imageResourceErrors.push(i18nString(UIStrings.sSDoesNotSpecifyItsSizeInThe, { PH1: resourceName, PH2: imageUrl }));
@@ -1294,7 +1296,7 @@ import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as ApplicationComponents2 from "./components/components.js";
 var UIStrings2 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   backForwardCache: "Back/forward cache"
 };
@@ -1483,118 +1485,117 @@ var backgroundServiceView_css_default = `/*
 // gen/front_end/panels/application/BackgroundServiceView.js
 var UIStrings3 = {
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   backgroundFetch: "Background fetch",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   backgroundSync: "Background sync",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   pushMessaging: "Push messaging",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   notifications: "Notifications",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   paymentHandler: "Payment handler",
   /**
-   *@description Text in the Periodic Background Service View of the Application panel
+   * @description Text in the Periodic Background Service View of the Application panel
    */
   periodicBackgroundSync: "Periodic background sync",
   /**
-   *@description Text to clear content
+   * @description Text to clear content
    */
   clear: "Clear",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon download button in the Background Service View of the Application panel
+   * @description Tooltip text that appears when hovering over the largeicon download button in the Background Service View of the Application panel
    */
   saveEvents: "Save events",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   showEventsFromOtherDomains: "Show events from other domains",
   /**
-   *@description Text of a checkbox to show events for other storage keys
+   * @description Text of a checkbox to show events for other storage keys
    */
   showEventsForOtherStorageKeys: "Show events from other storage partitions",
   /**
-   *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
    */
   stopRecordingEvents: "Stop recording events",
   /**
-   *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
    */
   startRecordingEvents: "Start recording events",
   /**
-   *@description Text for timestamps of items
+   * @description Text for timestamps of items
    */
   timestamp: "Timestamp",
   /**
-   *@description Text that refers to some events
+   * @description Text that refers to some events
    */
   event: "Event",
   /**
-   *@description Text for the origin of something
+   * @description Text for the origin of something
    */
   origin: "Origin",
   /**
-   *@description Text for the storage key of something
+   * @description Text for the storage key of something
    */
   storageKey: "Storage Key",
   /**
-   *@description Text in Background Service View of the Application panel. The Scope is a URL associated with the Service Worker, which limits which pages/sites the Service Worker operates on.
+   * @description Text in Background Service View of the Application panel. The Scope is a URL associated with the Service Worker, which limits which pages/sites the Service Worker operates on.
    */
   swScope: "Service Worker Scope",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   instanceId: "Instance ID",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   backgroundServices: "Background services",
   /**
-   *@description Text in Background Service View of the Application panel.
+   * @description Text in Background Service View of the Application panel.
    *             An event here refers to a background service event that is an entry in a table.
    */
   noEventSelected: "No event selected",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   selectAnEventToViewMetadata: "Select an event to view its metadata",
   /**
-   *@description Text in Background Service View of the Application panel
-   *@example {Background Fetch} PH1
+   * @description Text in Background Service View of the Application panel
+   * @example {Background Fetch} PH1
    */
   recordingSActivity: "Recording {PH1} activity\u2026",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   noRecording: "No recording yet",
   /**
-   *@description Inform users that DevTools are recording/waiting for events in the Periodic Background Sync tool of the Application panel
-   *@example {Background Fetch} PH1
+   * @description Inform users that DevTools are recording/waiting for events in the Periodic Background Sync tool of the Application panel
+   * @example {Background Fetch} PH1
    */
   devtoolsWillRecordAllSActivity: "DevTools will record all {PH1} activity for up to 3 days, even when closed.",
   /**
-   *@description Text in Background Service View of the Application panel to instruct the user on how to start a recording for
+   * @description Text in Background Service View of the Application panel to instruct the user on how to start a recording for
    * background services.
-   *
-   *@example {Start recording events} PH1
-   *@example {Ctrl + E} PH2
+   * @example {Start recording events} PH1
+   * @example {Ctrl + E} PH2
    */
   startRecordingToDebug: 'Start to debug background services by using the "{PH1}" button or by pressing {PH2}.',
   /**
-   *@description Text to show an item is empty
+   * @description Text to show an item is empty
    */
   empty: "empty",
   /**
-   *@description Text in Background Service View of the Application panel
+   * @description Text in Background Service View of the Application panel
    */
   noMetadataForThisEvent: "No metadata for this event"
 };
@@ -1636,11 +1637,12 @@ var BackgroundServiceView = class _BackgroundServiceView extends UI4.Widget.VBox
     }
   }
   constructor(serviceName, model) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging2.pane().context(Platform.StringUtilities.toKebabCase(serviceName))}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(emptyWidget_css_default, backgroundServiceView_css_default);
     this.serviceName = serviceName;
-    const kebabName = Platform.StringUtilities.toKebabCase(serviceName);
-    this.element.setAttribute("jslog", `${VisualLogging2.pane().context(kebabName)}`);
     this.model = model;
     this.model.addEventListener(Events.RecordingStateChanged, this.onRecordingStateChanged, this);
     this.model.addEventListener(Events.BackgroundServiceEventReceived, this.onEventReceived, this);
@@ -2968,28 +2970,28 @@ var indexedDBViews_css_default = `/*
 var { html } = Lit;
 var UIStrings5 = {
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   version: "Version",
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   objectStores: "Object stores",
   /**
-   *@description Text of button in Indexed DBViews of the Application panel
+   * @description Text of button in Indexed DBViews of the Application panel
    */
   deleteDatabase: "Delete database",
   /**
-   *@description Text of button in Indexed DBViews of the Application panel
+   * @description Text of button in Indexed DBViews of the Application panel
    */
   refreshDatabase: "Refresh database",
   /**
-   *@description Text in Application panel IndexedDB delete confirmation dialog
-   *@example {msb} PH1
+   * @description Text in Application panel IndexedDB delete confirmation dialog
+   * @example {msb} PH1
    */
   confirmDeleteDatabase: 'Delete "{PH1}" database?',
   /**
-   *@description Explanation text in Application panel IndexedDB delete confirmation dialog
+   * @description Explanation text in Application panel IndexedDB delete confirmation dialog
    */
   databaseWillBeRemoved: "The selected database and contained data will be removed.",
   /**
@@ -3004,77 +3006,77 @@ var UIStrings5 = {
    */
   objectStoreWillBeCleared: "The data contained in the selected object store will be removed.",
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   idb: "IDB",
   /**
-   *@description Text to refresh the page
+   * @description Text to refresh the page
    */
   refresh: "Refresh",
   /**
-   *@description Tooltip text that appears when hovering over the delete button in the Indexed DBViews of the Application panel
+   * @description Tooltip text that appears when hovering over the delete button in the Indexed DBViews of the Application panel
    */
   deleteSelected: "Delete selected",
   /**
-   *@description Tooltip text that appears when hovering over the clear button in the Indexed DBViews of the Application panel
+   * @description Tooltip text that appears when hovering over the clear button in the Indexed DBViews of the Application panel
    */
   clearObjectStore: "Clear object store",
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   dataMayBeStale: "Data may be stale",
   /**
-   *@description Title of needs refresh in indexed dbviews of the application panel
+   * @description Title of needs refresh in indexed dbviews of the application panel
    */
   someEntriesMayHaveBeenModified: "Some entries may have been modified",
   /**
-   *@description Text in DOMStorage Items View of the Application panel
+   * @description Text in DOMStorage Items View of the Application panel
    */
   keyString: "Key",
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   primaryKey: "Primary key",
   /**
-   *@description Text for the value of something
+   * @description Text for the value of something
    */
   valueString: "Value",
   /**
-   *@description Data grid name for Indexed DB data grids
+   * @description Data grid name for Indexed DB data grids
    */
   indexedDb: "Indexed DB",
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   keyPath: "Key path: ",
   /**
-   *@description Tooltip text that appears when hovering over the triangle left button in the Indexed DBViews of the Application panel
+   * @description Tooltip text that appears when hovering over the triangle left button in the Indexed DBViews of the Application panel
    */
   showPreviousPage: "Show previous page",
   /**
-   *@description Tooltip text that appears when hovering over the triangle right button in the Indexed DBViews of the Application panel
+   * @description Tooltip text that appears when hovering over the triangle right button in the Indexed DBViews of the Application panel
    */
   showNextPage: "Show next page",
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   filterByKey: "Filter by key (show keys greater or equal to)",
   /**
-   *@description Text in Context menu for expanding objects in IndexedDB tables
+   * @description Text in Context menu for expanding objects in IndexedDB tables
    */
   expandRecursively: "Expand Recursively",
   /**
-   *@description Text in Context menu for collapsing objects in IndexedDB tables
+   * @description Text in Context menu for collapsing objects in IndexedDB tables
    */
   collapse: "Collapse",
   /**
-   *@description Span text content in Indexed DBViews of the Application panel
-   *@example {2} PH1
+   * @description Span text content in Indexed DBViews of the Application panel
+   * @example {2} PH1
    */
   totalEntriesS: "Total entries: {PH1}",
   /**
-   *@description Text in Indexed DBViews of the Application panel
-   *@example {2} PH1
+   * @description Text in Indexed DBViews of the Application panel
+   * @example {2} PH1
    */
   keyGeneratorValueS: "Key generator value: {PH1}"
 };
@@ -3179,14 +3181,17 @@ var IDBDataView = class extends UI6.View.SimpleView {
   lastKey;
   summaryBarElement;
   constructor(model, databaseId, objectStore, index, refreshObjectStoreCallback) {
-    super(i18nString5(UIStrings5.idb));
+    super({
+      title: i18nString5(UIStrings5.idb),
+      viewId: "idb",
+      jslog: `${VisualLogging3.pane("indexed-db-data-view")}`
+    });
     this.registerRequiredCSS(indexedDBViews_css_default);
     this.model = model;
     this.databaseId = databaseId;
     this.isIndex = Boolean(index);
     this.refreshObjectStoreCallback = refreshObjectStoreCallback;
     this.element.classList.add("indexed-db-data-view", "storage-view");
-    this.element.setAttribute("jslog", `${VisualLogging3.pane("indexed-db-data-view")}`);
     this.refreshButton = new UI6.Toolbar.ToolbarButton(i18nString5(UIStrings5.refresh), "refresh");
     this.refreshButton.addEventListener("Click", this.refreshButtonClicked, this);
     this.refreshButton.element.setAttribute("jslog", `${VisualLogging3.action("refresh").track({ click: true })}`);
@@ -3650,7 +3655,7 @@ devtools-interest-group-access-grid {
 // gen/front_end/panels/application/InterestGroupStorageView.js
 var UIStrings6 = {
   /**
-   *@description Placeholder text shown when nothing has been selected for display
+   * @description Placeholder text shown when nothing has been selected for display
    *details.
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
@@ -3658,7 +3663,7 @@ var UIStrings6 = {
    */
   noValueSelected: "No interest group selected",
   /**
-   *@description Placeholder text instructing the user how to display interest group
+   * @description Placeholder text instructing the user how to display interest group
    *details.
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
@@ -3666,12 +3671,12 @@ var UIStrings6 = {
    */
   clickToDisplayBody: "Select any interest group event to display the group's current state",
   /**
-   *@description Placeholder text telling the user no details are available for
+   * @description Placeholder text telling the user no details are available for
    *the selected interest group.
    */
   noDataAvailable: "No details available",
   /**
-   *@description Placeholder text explaining to the user a potential reason for not having details on
+   * @description Placeholder text explaining to the user a potential reason for not having details on
    * the interest groups.
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
@@ -3768,7 +3773,7 @@ var InterestGroupStorageView = class extends UI7.SplitWidget.SplitWidget {
 // gen/front_end/panels/application/InterestGroupTreeElement.js
 var UIStrings7 = {
   /**
-   *@description Label for an item in the Application Panel Sidebar of the Application panel
+   * @description Label for an item in the Application Panel Sidebar of the Application panel
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
    * outcome of a FLEDGE auction. (https://developer.chrome.com/blog/fledge-api/)
@@ -3900,75 +3905,75 @@ var openedWindowDetailsView_css_default = `/*
 // gen/front_end/panels/application/OpenedWindowDetailsView.js
 var UIStrings8 = {
   /**
-   *@description Text in Timeline indicating that input has happened recently
+   * @description Text in Timeline indicating that input has happened recently
    */
   yes: "Yes",
   /**
-   *@description Text in Timeline indicating that input has not happened recently
+   * @description Text in Timeline indicating that input has not happened recently
    */
   no: "No",
   /**
-   *@description Title for a link to the Elements panel
+   * @description Title for a link to the Elements panel
    */
   clickToOpenInElementsPanel: "Click to open in Elements panel",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   document: "Document",
   /**
-   *@description Text for web URLs
+   * @description Text for web URLs
    */
   url: "URL",
   /**
-   *@description Title of the 'Security' tool
+   * @description Title of the 'Security' tool
    */
   security: "Security",
   /**
-   *@description Label for link to Opener Frame in Detail View for Opened Window
+   * @description Label for link to Opener Frame in Detail View for Opened Window
    */
   openerFrame: "Opener Frame",
   /**
-   *@description Label in opened window's details view whether window has access to its opener
+   * @description Label in opened window's details view whether window has access to its opener
    */
   accessToOpener: "Access to opener",
   /**
-   *@description Description for the 'Access to Opener' field
+   * @description Description for the 'Access to Opener' field
    */
   showsWhetherTheOpenedWindowIs: "Shows whether the opened window is able to access its opener and vice versa",
   /**
-   *@description Text in Frames View of the Application panel
+   * @description Text in Frames View of the Application panel
    */
   windowWithoutTitle: "Window without title",
   /**
-   *@description Label suffix in the Application Panel Frames section for windows which are already closed
+   * @description Label suffix in the Application Panel Frames section for windows which are already closed
    */
   closed: "closed",
   /**
-   *@description Default name for worker
+   * @description Default name for worker
    */
   worker: "worker",
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Section header in the Frame Details view
+   * @description Section header in the Frame Details view
    */
   securityIsolation: "Security & Isolation",
   /**
-   *@description Row title in the Frame Details view
+   * @description Row title in the Frame Details view
    */
   crossoriginEmbedderPolicy: "Cross-Origin Embedder Policy",
   /**
-   *@description Label for worker type: web worker
+   * @description Label for worker type: web worker
    */
   webWorker: "Web Worker",
   /**
-   *@description Text for an unspecified service worker response source
+   * @description Text for an unspecified service worker response source
    */
   unknown: "Unknown",
   /**
-   *@description This label specifies the server endpoints to which the server is reporting errors
+   * @description This label specifies the server endpoints to which the server is reporting errors
    *and warnings through the Report-to API. Following this label will be the URL of the server.
    */
   reportingTo: "reporting to"
@@ -4184,103 +4189,103 @@ import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 var UIStrings9 = {
   /**
-   *@description  Description text for Prefetch status PrefetchFailedIneligibleRedirect.
+   * @description  Description text for Prefetch status PrefetchFailedIneligibleRedirect.
    */
   PrefetchFailedIneligibleRedirect: "The prefetch was redirected, but the redirect URL is not eligible for prefetch.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedInvalidRedirect.
+   * @description  Description text for Prefetch status PrefetchFailedInvalidRedirect.
    */
   PrefetchFailedInvalidRedirect: "The prefetch was redirected, but there was a problem with the redirect.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedMIMENotSupported.
+   * @description  Description text for Prefetch status PrefetchFailedMIMENotSupported.
    */
   PrefetchFailedMIMENotSupported: "The prefetch failed because the response's Content-Type header was not supported.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedNetError.
+   * @description  Description text for Prefetch status PrefetchFailedNetError.
    */
   PrefetchFailedNetError: "The prefetch failed because of a network error.",
   /**
-   *@description  Description text for Prefetch status PrefetchFailedNon2XX.
+   * @description  Description text for Prefetch status PrefetchFailedNon2XX.
    */
   PrefetchFailedNon2XX: "The prefetch failed because of a non-2xx HTTP response status code.",
   /**
-   *@description  Description text for Prefetch status PrefetchIneligibleRetryAfter.
+   * @description  Description text for Prefetch status PrefetchIneligibleRetryAfter.
    */
   PrefetchIneligibleRetryAfter: "A previous prefetch to the origin got a HTTP 503 response with an Retry-After header that has not elapsed yet.",
   /**
-   *@description  Description text for Prefetch status PrefetchIsPrivacyDecoy.
+   * @description  Description text for Prefetch status PrefetchIsPrivacyDecoy.
    */
   PrefetchIsPrivacyDecoy: "The URL was not eligible to be prefetched because there was a registered service worker or cross-site cookies for that origin, but the prefetch was put on the network anyways and not used, to disguise that the user had some kind of previous relationship with the origin.",
   /**
-   *@description  Description text for Prefetch status PrefetchIsStale.
+   * @description  Description text for Prefetch status PrefetchIsStale.
    */
   PrefetchIsStale: "Too much time elapsed between the prefetch and usage, so the prefetch was discarded.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleBrowserContextOffTheRecord.
+   * @description  Description text for Prefetch status PrefetchNotEligibleBrowserContextOffTheRecord.
    */
   PrefetchNotEligibleBrowserContextOffTheRecord: "The prefetch was not performed because the browser is in Incognito or Guest mode.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleDataSaverEnabled.
+   * @description  Description text for Prefetch status PrefetchNotEligibleDataSaverEnabled.
    */
   PrefetchNotEligibleDataSaverEnabled: "The prefetch was not performed because the operating system is in Data Saver mode.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleExistingProxy.
+   * @description  Description text for Prefetch status PrefetchNotEligibleExistingProxy.
    */
   PrefetchNotEligibleExistingProxy: "The URL is not eligible to be prefetched, because in the default network context it is configured to use a proxy server.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleHostIsNonUnique.
+   * @description  Description text for Prefetch status PrefetchNotEligibleHostIsNonUnique.
    */
   PrefetchNotEligibleHostIsNonUnique: "The URL was not eligible to be prefetched because its host was not unique (e.g., a non publicly routable IP address or a hostname which is not registry-controlled), but the prefetch was required to be proxied.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleNonDefaultStoragePartition.
+   * @description  Description text for Prefetch status PrefetchNotEligibleNonDefaultStoragePartition.
    */
   PrefetchNotEligibleNonDefaultStoragePartition: "The URL was not eligible to be prefetched because it uses a non-default storage partition.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy.
+   * @description  Description text for Prefetch status PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy.
    */
   PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy: "The URL was not eligible to be prefetched because the default network context cannot be configured to use the prefetch proxy for a same-site cross-origin prefetch request.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleSchemeIsNotHttps.
+   * @description  Description text for Prefetch status PrefetchNotEligibleSchemeIsNotHttps.
    */
   PrefetchNotEligibleSchemeIsNotHttps: "The URL was not eligible to be prefetched because its scheme was not https:.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleUserHasCookies.
+   * @description  Description text for Prefetch status PrefetchNotEligibleUserHasCookies.
    */
   PrefetchNotEligibleUserHasCookies: "The URL was not eligible to be prefetched because it was cross-site, but the user had cookies for that origin.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleUserHasServiceWorker.
+   * @description  Description text for Prefetch status PrefetchNotEligibleUserHasServiceWorker.
    */
   PrefetchNotEligibleUserHasServiceWorker: "The URL was not eligible to be prefetched because there was a registered service worker for that origin, which is currently not supported.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotUsedCookiesChanged.
+   * @description  Description text for Prefetch status PrefetchNotUsedCookiesChanged.
    */
   PrefetchNotUsedCookiesChanged: "The prefetch was not used because it was a cross-site prefetch, and cookies were added for that URL while the prefetch was ongoing, so the prefetched response is now out-of-date.",
   /**
-   *@description  Description text for Prefetch status PrefetchProxyNotAvailable.
+   * @description  Description text for Prefetch status PrefetchProxyNotAvailable.
    */
   PrefetchProxyNotAvailable: "A network error was encountered when trying to set up a connection to the prefetching proxy.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotUsedProbeFailed.
+   * @description  Description text for Prefetch status PrefetchNotUsedProbeFailed.
    */
   PrefetchNotUsedProbeFailed: "The prefetch was blocked by your Internet Service Provider or network administrator.",
   /**
-   *@description  Description text for Prefetch status PrefetchEvictedForNewerPrefetch.
+   * @description  Description text for Prefetch status PrefetchEvictedForNewerPrefetch.
    */
   PrefetchEvictedForNewerPrefetch: "The prefetch was discarded because the initiating page has too many prefetches ongoing, and this was one of the oldest.",
   /**
-   *@description Description text for Prefetch status PrefetchEvictedAfterCandidateRemoved.
+   * @description Description text for Prefetch status PrefetchEvictedAfterCandidateRemoved.
    */
   PrefetchEvictedAfterCandidateRemoved: "The prefetch was discarded because no speculation rule in the initating page triggers a prefetch for this URL anymore.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligibleBatterySaverEnabled.
+   * @description  Description text for Prefetch status PrefetchNotEligibleBatterySaverEnabled.
    */
   PrefetchNotEligibleBatterySaverEnabled: "The prefetch was not performed because the Battery Saver setting was enabled.",
   /**
-   *@description  Description text for Prefetch status PrefetchNotEligiblePreloadingDisabled.
+   * @description  Description text for Prefetch status PrefetchNotEligiblePreloadingDisabled.
    */
   PrefetchNotEligiblePreloadingDisabled: "The prefetch was not performed because speculative loading was disabled.",
   /**
-   *@description  Description text for Prefetch status PrefetchEvictedAfterBrowsingDataRemoved.
+   * @description  Description text for Prefetch status PrefetchEvictedAfterBrowsingDataRemoved.
    */
   PrefetchEvictedAfterBrowsingDataRemoved: "The prefetch was discarded because browsing data was removed.",
   /**
@@ -4300,8 +4305,8 @@ var UIStrings9 = {
    */
   prerenderFinalStatusNavigationRequestBlockedByCsp: "The prerendering navigation was blocked by a Content Security Policy.",
   /**
-   *@description Description text for PrerenderFinalStatus::kMojoBinderPolicy.
-   *@example {device.mojom.GamepadMonitor} PH1
+   * @description Description text for PrerenderFinalStatus::kMojoBinderPolicy.
+   * @example {device.mojom.GamepadMonitor} PH1
    */
   prerenderFinalStatusMojoBinderPolicy: "The prerendered page used a forbidden JavaScript API that is currently not supported. (Internal Mojo interface: {PH1})",
   /**
@@ -4497,27 +4502,27 @@ var UIStrings9 = {
    */
   prerenderFinalStatusBrowsingDataRemoved: "The prerendered page was unloaded because browsing data was removed.",
   /**
-   *@description Text in grid and details: Preloading attempt is not yet triggered.
+   * @description Text in grid and details: Preloading attempt is not yet triggered.
    */
   statusNotTriggered: "Not triggered",
   /**
-   *@description Text in grid and details: Preloading attempt is eligible but pending.
+   * @description Text in grid and details: Preloading attempt is eligible but pending.
    */
   statusPending: "Pending",
   /**
-   *@description Text in grid and details: Preloading is running.
+   * @description Text in grid and details: Preloading is running.
    */
   statusRunning: "Running",
   /**
-   *@description Text in grid and details: Preloading finished and the result is ready for the next navigation.
+   * @description Text in grid and details: Preloading finished and the result is ready for the next navigation.
    */
   statusReady: "Ready",
   /**
-   *@description Text in grid and details: Ready, then used.
+   * @description Text in grid and details: Ready, then used.
    */
   statusSuccess: "Success",
   /**
-   *@description Text in grid and details: Preloading failed.
+   * @description Text in grid and details: Preloading failed.
    */
   statusFailure: "Failure"
 };
@@ -4624,76 +4629,76 @@ var preloadingViewDropDown_css_default = `/*
 // gen/front_end/panels/application/preloading/PreloadingView.js
 var UIStrings10 = {
   /**
-   *@description DropDown title for filtering preloading attempts by rule set
+   * @description DropDown title for filtering preloading attempts by rule set
    */
   filterFilterByRuleSet: "Filter by rule set",
   /**
-   *@description DropDown text for filtering preloading attempts by rule set: No filter
+   * @description DropDown text for filtering preloading attempts by rule set: No filter
    */
   filterAllPreloads: "All speculative loads",
   /**
-   *@description Dropdown subtitle for filtering preloading attempts by rule set
+   * @description Dropdown subtitle for filtering preloading attempts by rule set
    *             when there are no rule sets in the page.
    */
   noRuleSets: "no rule sets",
   /**
-   *@description Text in grid: Rule set is valid
+   * @description Text in grid: Rule set is valid
    */
   validityValid: "Valid",
   /**
-   *@description Text in grid: Rule set must be a valid JSON object
+   * @description Text in grid: Rule set must be a valid JSON object
    */
   validityInvalid: "Invalid",
   /**
-   *@description Text in grid: Rule set contains invalid rules and they are ignored
+   * @description Text in grid: Rule set contains invalid rules and they are ignored
    */
   validitySomeRulesInvalid: "Some rules invalid",
   /**
-   *@description Text in grid and details: Preloading attempt is not yet triggered.
+   * @description Text in grid and details: Preloading attempt is not yet triggered.
    */
   statusNotTriggered: "Not triggered",
   /**
-   *@description Text in grid and details: Preloading attempt is eligible but pending.
+   * @description Text in grid and details: Preloading attempt is eligible but pending.
    */
   statusPending: "Pending",
   /**
-   *@description Text in grid and details: Preloading is running.
+   * @description Text in grid and details: Preloading is running.
    */
   statusRunning: "Running",
   /**
-   *@description Text in grid and details: Preloading finished and the result is ready for the next navigation.
+   * @description Text in grid and details: Preloading finished and the result is ready for the next navigation.
    */
   statusReady: "Ready",
   /**
-   *@description Text in grid and details: Ready, then used.
+   * @description Text in grid and details: Ready, then used.
    */
   statusSuccess: "Success",
   /**
-   *@description Text in grid and details: Preloading failed.
+   * @description Text in grid and details: Preloading failed.
    */
   statusFailure: "Failure",
   /**
-   *@description Text to pretty print a file
+   * @description Text to pretty print a file
    */
   prettyPrint: "Pretty print",
   /**
-   *@description Placeholder text if there are no rules to show. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
+   * @description Placeholder text if there are no rules to show. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   noRulesDetected: "No rules detected",
   /**
-   *@description Placeholder text if there are no rules to show. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
+   * @description Placeholder text if there are no rules to show. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   rulesDescription: "On this page you will see the speculation rules used to prefetch and prerender page navigations.",
   /**
-   *@description Placeholder text if there are no speculation attempts for prefetching or prerendering urls. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
+   * @description Placeholder text if there are no speculation attempts for prefetching or prerendering urls. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   noPrefetchAttempts: "No speculation detected",
   /**
-   *@description Placeholder text if there are no speculation attempts for prefetching or prerendering urls. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
+   * @description Placeholder text if there are no speculation attempts for prefetching or prerendering urls. https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
    */
   prefetchDescription: "On this page you will see details on speculative loads.",
   /**
-   *@description Text for a learn more link
+   * @description Text for a learn more link
    */
   learnMore: "Learn more"
 };
@@ -4887,9 +4892,11 @@ var PreloadingAttemptView = class extends UI9.Widget.VBox {
   preloadingDetails = new PreloadingComponents.PreloadingDetailsReportView.PreloadingDetailsReportView();
   ruleSetSelector;
   constructor(model) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging5.pane("preloading-speculations")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(emptyWidget_css_default, preloadingView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging5.pane("preloading-speculations")}`);
     this.model = model;
     SDK12.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
     SDK12.TargetManager.TargetManager.instance().addModelListener(SDK12.PreloadingModel.PreloadingModel, "ModelUpdated", this.render, this, { scoped: true });
@@ -4998,9 +5005,11 @@ var PreloadingSummaryView = class extends UI9.Widget.VBox {
   warningsView = new PreloadingWarningsView();
   usedPreloading = new PreloadingComponents.UsedPreloadingView.UsedPreloadingView();
   constructor(model) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging5.pane("speculative-loads")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(emptyWidget_css_default, preloadingView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging5.pane("speculative-loads")}`);
     this.model = model;
     SDK12.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
     SDK12.TargetManager.TargetManager.instance().addModelListener(SDK12.PreloadingModel.PreloadingModel, "ModelUpdated", this.render, this, { scoped: true });
@@ -5161,15 +5170,15 @@ var PreloadingWarningsView = class extends UI9.Widget.VBox {
 // gen/front_end/panels/application/PreloadingTreeElement.js
 var UIStrings11 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   speculativeLoads: "Speculative loads",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   rules: "Rules",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   speculations: "Speculations"
 };
@@ -5327,12 +5336,12 @@ import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents6 from "./components/components.js";
 var UIStrings12 = {
   /**
-   *@description Placeholder text that shows if no report was selected for viewing
+   * @description Placeholder text that shows if no report was selected for viewing
    *report body (https://developers.google.com/web/updates/2018/09/reportingapi#sending).
    */
   noReportSelected: "No report selected",
   /**
-   *@description Placeholder text instructing the user how to display a Reporting API
+   * @description Placeholder text instructing the user how to display a Reporting API
    *report body (https://developers.google.com/web/updates/2018/09/reportingapi#sending).
    */
   clickToDisplayBody: "Click on any report to display its body"
@@ -5396,14 +5405,14 @@ var ReportingApiReportsView = class extends UI10.SplitWidget.SplitWidget {
 // gen/front_end/panels/application/ReportingApiView.js
 var UIStrings13 = {
   /**
-   *@description Placeholder text that shows if no report or endpoint was detected.
+   * @description Placeholder text that shows if no report or endpoint was detected.
    *             A report contains information on issues or events that were encountered by a web browser.
    *             An endpoint is a URL where the report is sent to.
    *             (https://developer.chrome.com/docs/capabilities/web-apis/reporting-api)
    */
   noReportOrEndpoint: "No report or endpoint",
   /**
-   *@description Placeholder text that shows if no report or endpoint was detected.
+   * @description Placeholder text that shows if no report or endpoint was detected.
    *             A report contains information on issues or events that were encountered by a web browser.
    *             An endpoint is a URL where the report is sent to.
    *             (https://developer.chrome.com/docs/capabilities/web-apis/reporting-api)
@@ -5464,7 +5473,7 @@ var ReportingApiView = class extends UI11.SplitWidget.SplitWidget {
 // gen/front_end/panels/application/ReportingApiTreeElement.js
 var UIStrings14 = {
   /**
-   *@description Label for an item in the Application Panel Sidebar of the Application panel
+   * @description Label for an item in the Application Panel Sidebar of the Application panel
    */
   reportingApi: "Reporting API"
 };
@@ -5657,35 +5666,35 @@ var serviceWorkerCacheViews_css_default = `/*
 // gen/front_end/panels/application/ServiceWorkerCacheViews.js
 var UIStrings15 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   cache: "Cache",
   /**
-   *@description Text to refresh the page
+   * @description Text to refresh the page
    */
   refresh: "Refresh",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon delete button in the Service Worker Cache Views of the Application panel
+   * @description Tooltip text that appears when hovering over the largeicon delete button in the Service Worker Cache Views of the Application panel
    */
   deleteSelected: "Delete Selected",
   /**
-   *@description Text in Service Worker Cache Views of the Application panel
+   * @description Text in Service Worker Cache Views of the Application panel
    */
   filterByPath: "Filter by path",
   /**
-   *@description Text in Service Worker Cache Views of the Application panel that shows if no cache entry is selected for preview
+   * @description Text in Service Worker Cache Views of the Application panel that shows if no cache entry is selected for preview
    */
   noCacheEntrySelected: "No cache entry selected",
   /**
-   *@description Text in Service Worker Cache Views of the Application panel
+   * @description Text in Service Worker Cache Views of the Application panel
    */
   selectACacheEntryAboveToPreview: "Select a cache entry above to preview",
   /**
-   *@description Text for the name of something
+   * @description Text for the name of something
    */
   name: "Name",
   /**
-   *@description Text in Service Worker Cache Views of the Application panel
+   * @description Text in Service Worker Cache Views of the Application panel
    */
   timeCached: "Time Cached",
   /**
@@ -5693,25 +5702,25 @@ var UIStrings15 = {
    */
   varyHeaderWarning: "\u26A0\uFE0F Set ignoreVary to true when matching this entry",
   /**
-   *@description Text used to show that data was retrieved from ServiceWorker Cache
+   * @description Text used to show that data was retrieved from ServiceWorker Cache
    */
   serviceWorkerCache: "`Service Worker` Cache",
   /**
-   *@description Span text content in Service Worker Cache Views of the Application panel
-   *@example {2} PH1
+   * @description Span text content in Service Worker Cache Views of the Application panel
+   * @example {2} PH1
    */
   matchingEntriesS: "Matching entries: {PH1}",
   /**
-   *@description Span text content in Indexed DBViews of the Application panel
-   *@example {2} PH1
+   * @description Span text content in Indexed DBViews of the Application panel
+   * @example {2} PH1
    */
   totalEntriesS: "Total entries: {PH1}",
   /**
-   *@description Text for network request headers
+   * @description Text for network request headers
    */
   headers: "Headers",
   /**
-   *@description Text for previewing items
+   * @description Text for previewing items
    */
   preview: "Preview"
 };
@@ -5734,13 +5743,16 @@ var ServiceWorkerCacheView = class extends UI12.View.SimpleView {
   loadingPromise;
   metadataView = new ApplicationComponents8.StorageMetadataView.StorageMetadataView();
   constructor(model, cache) {
-    super(i18nString15(UIStrings15.cache));
+    super({
+      title: i18nString15(UIStrings15.cache),
+      viewId: "cache",
+      jslog: `${VisualLogging8.pane("cache-storage-data")}`
+    });
     this.registerRequiredCSS(serviceWorkerCacheViews_css_default);
     this.model = model;
     this.entriesForTest = null;
     this.element.classList.add("service-worker-cache-data-view");
     this.element.classList.add("storage-view");
-    this.element.setAttribute("jslog", `${VisualLogging8.pane("cache-storage-data")}`);
     const editorToolbar = this.element.createChild("devtools-toolbar", "data-view-toolbar");
     editorToolbar.setAttribute("jslog", `${VisualLogging8.toolbar()}`);
     this.element.appendChild(this.metadataView);
@@ -6137,23 +6149,23 @@ var RequestView = class extends UI12.Widget.VBox {
 // gen/front_end/panels/application/ServiceWorkerCacheTreeElement.js
 var UIStrings16 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   cacheStorage: "Cache storage",
   /**
-   *@description Text in Application Panel if no cache storage was detected.
+   * @description Text in Application Panel if no cache storage was detected.
    */
   noCacheStorage: "No cache storage detected",
   /**
-   *@description Description text in Application Panel describing the cache storage tab
+   * @description Description text in Application Panel describing the cache storage tab
    */
   cacheStorageDescription: "On this page you can view and delete cache data.",
   /**
-   *@description A context menu item in the Application Panel Sidebar of the Application panel
+   * @description A context menu item in the Application Panel Sidebar of the Application panel
    */
   refreshCaches: "Refresh Caches",
   /**
-   *@description Text to delete something
+   * @description Text to delete something
    */
   delete: "Delete"
 };
@@ -6609,25 +6621,25 @@ import * as UI14 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings17 = {
   /**
-   *@description Text in Indexed DBViews of the Application panel
+   * @description Text in Indexed DBViews of the Application panel
    */
   version: "Version",
   /**
-   *@description Table heading for Service Workers update information. Update is a noun.
+   * @description Table heading for Service Workers update information. Update is a noun.
    */
   updateActivity: "Update Activity",
   /**
-   *@description Title for the timeline tab.
+   * @description Title for the timeline tab.
    */
   timeline: "Timeline",
   /**
-   *@description Text in Service Workers Update Life Cycle
-   *@example {2} PH1
+   * @description Text in Service Workers Update Life Cycle
+   * @example {2} PH1
    */
   startTimeS: "Start time: {PH1}",
   /**
-   *@description Text for end time of an event
-   *@example {2} PH1
+   * @description Text for end time of an event
+   * @example {2} PH1
    */
   endTimeS: "End time: {PH1}"
 };
@@ -6916,36 +6928,36 @@ var ServiceWorkerUpdateCycleView = class {
 // gen/front_end/panels/application/ServiceWorkersView.js
 var UIStrings18 = {
   /**
-   *@description Text for linking to other Service Worker registrations
+   * @description Text for linking to other Service Worker registrations
    */
   serviceWorkersFromOtherOrigins: "Service workers from other origins",
   /**
-   *@description Title of update on reload setting in service workers view of the application panel
+   * @description Title of update on reload setting in service workers view of the application panel
    */
   updateOnReload: "Update on reload",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Service Workers View of the Application panel
+   * @description Tooltip text that appears on the setting when hovering over it in Service Workers View of the Application panel
    */
   onPageReloadForceTheService: "On page reload, force the `service worker` to update, and activate it",
   /**
-   *@description Title of bypass service worker setting in service workers view of the application panel
+   * @description Title of bypass service worker setting in service workers view of the application panel
    */
   bypassForNetwork: "Bypass for network",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Service Workers View of the Application panel
+   * @description Tooltip text that appears on the setting when hovering over it in Service Workers View of the Application panel
    */
   bypassTheServiceWorkerAndLoad: "Bypass the `service worker` and load resources from the network",
   /**
-   *@description Screen reader title for a section of the Service Workers view of the Application panel
-   *@example {https://example.com} PH1
+   * @description Screen reader title for a section of the Service Workers view of the Application panel
+   * @example {https://example.com} PH1
    */
   serviceWorkerForS: "`Service worker` for {PH1}",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   testPushMessageFromDevtools: "Test push message from DevTools.",
   /**
-   *@description Button label for service worker network requests
+   * @description Button label for service worker network requests
    */
   networkRequests: "Network requests",
   /**
@@ -6954,23 +6966,23 @@ var UIStrings18 = {
    */
   update: "Update",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   unregisterServiceWorker: "Unregister service worker",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   unregister: "Unregister",
   /**
-   *@description Text for the source of something
+   * @description Text for the source of something
    */
   source: "Source",
   /**
-   *@description Text for the status of something
+   * @description Text for the status of something
    */
   status: "Status",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   clients: "Clients",
   /**
@@ -6985,24 +6997,24 @@ var UIStrings18 = {
    */
   pushData: "Push data",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   syncString: "Sync",
   /**
-   *@description Placeholder text for the input box where a user is asked for a test tag to sync. This is used as a compound noun, not as a verb.
+   * @description Placeholder text for the input box where a user is asked for a test tag to sync. This is used as a compound noun, not as a verb.
    */
   syncTag: "Sync tag",
   /**
-   *@description Text for button in Service Workers View of the Application panel that dispatches a periodicsync event
+   * @description Text for button in Service Workers View of the Application panel that dispatches a periodicsync event
    */
   periodicSync: "Periodic sync",
   /**
-   *@description Default tag for a periodicsync event in Service Workers View of the Application panel
+   * @description Default tag for a periodicsync event in Service Workers View of the Application panel
    */
   periodicSyncTag: "Periodic sync tag",
   /**
-   *@description Aria accessible name in Service Workers View of the Application panel
-   *@example {3} PH1
+   * @description Aria accessible name in Service Workers View of the Application panel
+   * @example {3} PH1
    */
   sRegistrationErrors: "{PH1} registration errors",
   /**
@@ -7016,22 +7028,22 @@ var UIStrings18 = {
    */
   routers: "Routers",
   /**
-   *@description Text in Service Workers View of the Application panel
-   *@example {example.com} PH1
+   * @description Text in Service Workers View of the Application panel
+   * @example {example.com} PH1
    */
   sDeleted: "{PH1} - deleted",
   /**
-   *@description Text in Service Workers View of the Application panel
-   *@example {1} PH1
-   *@example {stopped} PH2
+   * @description Text in Service Workers View of the Application panel
+   * @example {1} PH1
+   * @example {stopped} PH2
    */
   sActivatedAndIsS: "#{PH1} activated and is {PH2}",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   stopString: "Stop",
   /**
-   *@description Text in Service Workers View of the Application panel
+   * @description Text in Service Workers View of the Application panel
    */
   startString: "Start",
   /**
@@ -7042,31 +7054,31 @@ var UIStrings18 = {
    */
   sIsRedundant: "#{PH1} is redundant",
   /**
-   *@description Text in Service Workers View of the Application panel
-   *@example {2} PH1
+   * @description Text in Service Workers View of the Application panel
+   * @example {2} PH1
    */
   sWaitingToActivate: "#{PH1} waiting to activate",
   /**
-   *@description Text in Service Workers View of the Application panel
-   *@example {2} PH1
+   * @description Text in Service Workers View of the Application panel
+   * @example {2} PH1
    */
   sTryingToInstall: "#{PH1} trying to install",
   /**
-   *@description Text in Service Workers Update Timeline. Update is a noun.
+   * @description Text in Service Workers Update Timeline. Update is a noun.
    */
   updateCycle: "Update Cycle",
   /**
-   *@description Text of a DOM element in Service Workers View of the Application panel
-   *@example {example.com} PH1
+   * @description Text of a DOM element in Service Workers View of the Application panel
+   * @example {example.com} PH1
    */
   workerS: "Worker: {PH1}",
   /**
-   *@description Link text in Service Workers View of the Application panel. When the link is clicked,
+   * @description Link text in Service Workers View of the Application panel. When the link is clicked,
    * the focus is moved to the service worker's client page.
    */
   focus: "focus",
   /**
-   *@description Link to view all the Service Workers that have been registered.
+   * @description Link to view all the Service Workers that have been registered.
    */
   seeAllRegistrations: "See all registrations"
 };
@@ -7085,12 +7097,14 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
   sectionToRegistration;
   eventListeners;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging10.pane("service-workers")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(serviceWorkersView_css_default);
     this.currentWorkersView = new UI15.ReportView.ReportView(i18n35.i18n.lockedString("Service workers"));
     this.currentWorkersView.setBodyScrollable(false);
     this.contentElement.classList.add("service-worker-list");
-    this.contentElement.setAttribute("jslog", `${VisualLogging10.pane("service-workers")}`);
     this.currentWorkersView.show(this.contentElement);
     this.currentWorkersView.element.classList.add("service-workers-this-origin");
     this.currentWorkersView.element.setAttribute("jslog", `${VisualLogging10.section("this-origin")}`);
@@ -7206,15 +7220,15 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
   updateSectionVisibility() {
     let hasThis = false;
     const movedSections = [];
-    for (const section9 of this.sections.values()) {
-      const expectedView = this.getReportViewForOrigin(section9.registration.securityOrigin);
+    for (const section8 of this.sections.values()) {
+      const expectedView = this.getReportViewForOrigin(section8.registration.securityOrigin);
       hasThis = hasThis || expectedView === this.currentWorkersView;
-      if (section9.section.parentWidget() !== expectedView) {
-        movedSections.push(section9);
+      if (section8.section.parentWidget() !== expectedView) {
+        movedSections.push(section8);
       }
     }
-    for (const section9 of movedSections) {
-      const registration = section9.registration;
+    for (const section8 of movedSections) {
+      const registration = section8.registration;
       this.removeRegistrationFromList(registration);
       this.updateRegistration(registration, true);
     }
@@ -7225,11 +7239,11 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
       const bTimestamp = bRegistration ? this.getTimeStamp(bRegistration) : 0;
       return bTimestamp - aTimestamp;
     });
-    for (const section9 of this.sections.values()) {
-      if (section9.section.parentWidget() === this.currentWorkersView || this.isRegistrationVisible(section9.registration)) {
-        section9.section.showWidget();
+    for (const section8 of this.sections.values()) {
+      if (section8.section.parentWidget() === this.currentWorkersView || this.isRegistrationVisible(section8.registration)) {
+        section8.section.showWidget();
       } else {
-        section9.section.hideWidget();
+        section8.section.hideWidget();
       }
     }
     this.contentElement.classList.toggle("service-worker-has-current", Boolean(hasThis));
@@ -7271,8 +7285,8 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
     return null;
   }
   updateRegistration(registration, skipUpdate) {
-    let section9 = this.sections.get(registration);
-    if (!section9) {
+    let section8 = this.sections.get(registration);
+    if (!section8) {
       const title = registration.scopeURL;
       const reportView = this.getReportViewForOrigin(registration.securityOrigin);
       if (!reportView) {
@@ -7281,22 +7295,22 @@ var ServiceWorkersView = class extends UI15.Widget.VBox {
       const uiSection = reportView.appendSection(title);
       uiSection.setUiGroupTitle(i18nString18(UIStrings18.serviceWorkerForS, { PH1: title }));
       this.sectionToRegistration.set(uiSection, registration);
-      section9 = new Section(this.manager, uiSection, registration);
-      this.sections.set(registration, section9);
+      section8 = new Section(this.manager, uiSection, registration);
+      this.sections.set(registration, section8);
     }
     if (skipUpdate) {
       return;
     }
     this.updateSectionVisibility();
-    section9.scheduleUpdate();
+    section8.scheduleUpdate();
   }
   registrationDeleted(event) {
     this.removeRegistrationFromList(event.data);
   }
   removeRegistrationFromList(registration) {
-    const section9 = this.sections.get(registration);
-    if (section9) {
-      section9.section.detach();
+    const section8 = this.sections.get(registration);
+    if (section8) {
+      section8.section.detach();
     }
     this.sections.delete(registration);
     this.updateSectionVisibility();
@@ -7331,9 +7345,9 @@ var Section = class {
   throttler;
   updateCycleField;
   routerField;
-  constructor(manager, section9, registration) {
+  constructor(manager, section8, registration) {
     this.manager = manager;
-    this.section = section9;
+    this.section = section8;
     this.registration = registration;
     this.fingerprint = null;
     this.pushNotificationDataSetting = Common9.Settings.Settings.instance().createLocalSetting("push-data", i18nString18(UIStrings18.testPushMessageFromDevtools));
@@ -7674,13 +7688,13 @@ devtools-shared-storage-access-grid {
 // gen/front_end/panels/application/SharedStorageEventsView.js
 var UIStrings19 = {
   /**
-   *@description Placeholder text if no shared storage event has been selected.
+   * @description Placeholder text if no shared storage event has been selected.
    * Shared storage allows to store and access data that can be shared across different sites.
    * A shared storage event is for example an access from a site to that storage.
    */
   noEventSelected: "No shared storage event selected",
   /**
-   *@description Placeholder text instructing the user how to display shared
+   * @description Placeholder text instructing the user how to display shared
    * storage event details.
    * Shared storage allows to store and access data that can be shared across different sites.
    * A shared storage event is for example an access from a site to that storage.
@@ -7705,16 +7719,13 @@ var SharedStorageEventsView = class extends UI16.SplitWidget.SplitWidget {
       true
     );
     this.element.setAttribute("jslog", `${VisualLogging11.pane("shared-storage-events")}`);
-    const topPanel = new UI16.Widget.VBox();
     this.#noDisplayView = new UI16.EmptyWidget.EmptyWidget(i18nString19(UIStrings19.noEventSelected), i18nString19(UIStrings19.clickToDisplayBody));
-    topPanel.setMinimumSize(0, 80);
-    this.setMainWidget(topPanel);
     this.#noDisplayView.setMinimumSize(0, 40);
+    this.#sharedStorageEventGrid.setMinimumSize(0, 80);
+    this.#sharedStorageEventGrid.onSelect = this.#onFocus.bind(this);
+    this.setMainWidget(this.#sharedStorageEventGrid);
     this.setSidebarWidget(this.#noDisplayView);
     this.hideSidebar();
-    topPanel.contentElement.appendChild(this.#sharedStorageEventGrid);
-    this.#sharedStorageEventGrid.addEventListener("select", this.#onFocus.bind(this));
-    this.#sharedStorageEventGrid.setAttribute("jslog", `${VisualLogging11.section("events-table")}`);
     this.#getMainFrameResourceTreeModel()?.addEventListener(SDK19.ResourceTreeModel.Events.PrimaryPageChanged, this.clearEvents, this);
   }
   #getMainFrameResourceTreeModel() {
@@ -7745,21 +7756,16 @@ var SharedStorageEventsView = class extends UI16.SplitWidget.SplitWidget {
       this.showBoth();
     }
     this.#events.push(event);
-    this.#sharedStorageEventGrid.data = this.#events;
+    this.#sharedStorageEventGrid.events = this.#events;
   }
   clearEvents() {
     this.#events = [];
-    this.#sharedStorageEventGrid.data = this.#events;
+    this.#sharedStorageEventGrid.events = this.#events;
     this.setSidebarWidget(this.#noDisplayView);
     this.hideSidebar();
   }
-  async #onFocus(event) {
-    const focusedEvent = event;
-    const datastore = focusedEvent.detail;
-    if (!datastore) {
-      return;
-    }
-    const jsonView = SourceFrame3.JSONView.JSONView.createViewSync(datastore);
+  #onFocus(event) {
+    const jsonView = SourceFrame3.JSONView.JSONView.createViewSync(event);
     jsonView.setMinimumSize(0, 40);
     this.setSidebarWidget(jsonView);
   }
@@ -7777,7 +7783,7 @@ var SharedStorageEventsView = class extends UI16.SplitWidget.SplitWidget {
 // gen/front_end/panels/application/SharedStorageListTreeElement.js
 var UIStrings20 = {
   /**
-   *@description Text in SharedStorage Category View of the Application panel
+   * @description Text in SharedStorage Category View of the Application panel
    */
   sharedStorage: "Shared storage"
 };
@@ -8041,19 +8047,19 @@ import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 import * as ApplicationComponents11 from "./components/components.js";
 var UIStrings21 = {
   /**
-   *@description Text to refresh the page
+   * @description Text to refresh the page
    */
   refresh: "Refresh",
   /**
-   *@description Text to clear everything
+   * @description Text to clear everything
    */
   clearAll: "Clear All",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon delete button in the Service Worker Cache Views of the Application panel
+   * @description Tooltip text that appears when hovering over the largeicon delete button in the Service Worker Cache Views of the Application panel
    */
   deleteSelected: "Delete Selected",
   /**
-   *@description Text that informs screen reader users that the storage table has been refreshed
+   * @description Text that informs screen reader users that the storage table has been refreshed
    */
   refreshedStatus: "Table refreshed"
 };
@@ -8099,8 +8105,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
       </devtools-toolbar>
       ${input.metadataView}`,
     // clang-format on
-    target,
-    { host: input }
+    target
   );
 };
 var StorageItemsToolbar = class extends Common12.ObjectWrapper.eventMixin(UI17.Widget.VBox) {
@@ -8202,24 +8207,24 @@ var { Size } = UI18.Geometry;
 var { repeat } = LitDirectives;
 var UIStrings22 = {
   /**
-   *@description Text that shows in the Application Panel if no value is selected for preview
+   * @description Text that shows in the Application Panel if no value is selected for preview
    */
   noPreviewSelected: "No value selected",
   /**
-   *@description Preview text when viewing storage in Application panel
+   * @description Preview text when viewing storage in Application panel
    */
   selectAValueToPreview: "Select a value to preview",
   /**
-   *@description Text for announcing number of entries after filtering
-   *@example {5} PH1
+   * @description Text for announcing number of entries after filtering
+   * @example {5} PH1
    */
   numberEntries: "Number of entries shown in table: {PH1}",
   /**
-   *@description Text in DOMStorage Items View of the Application panel
+   * @description Text in DOMStorage Items View of the Application panel
    */
   key: "Key",
   /**
-   *@description Text for the value of something
+   * @description Text for the value of something
    */
   value: "Value"
 };
@@ -8291,8 +8296,7 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
               </devtools-widget>
             </devtools-split-view>`,
           // clang-format on
-          target,
-          { host: input }
+          target
         );
       };
     }
@@ -8491,29 +8495,29 @@ var KeyValueStorageItemsView = class extends UI18.Widget.VBox {
 // gen/front_end/panels/application/SharedStorageItemsView.js
 var UIStrings23 = {
   /**
-   *@description Text in SharedStorage Items View of the Application panel
+   * @description Text in SharedStorage Items View of the Application panel
    */
   sharedStorage: "Shared storage",
   /**
-   *@description Text for announcing that the "Shared Storage Items" table was cleared, that is, all
+   * @description Text for announcing that the "Shared Storage Items" table was cleared, that is, all
    * entries were deleted.
    */
   sharedStorageItemsCleared: "Shared Storage items cleared",
   /**
-   *@description Text for announcing that the filtered "Shared Storage Items" table was cleared, that is,
+   * @description Text for announcing that the filtered "Shared Storage Items" table was cleared, that is,
    * all filtered entries were deleted.
    */
   sharedStorageFilteredItemsCleared: "Shared Storage filtered items cleared",
   /**
-   *@description Text for announcing a Shared Storage key/value item has been deleted
+   * @description Text for announcing a Shared Storage key/value item has been deleted
    */
   sharedStorageItemDeleted: "The storage item was deleted.",
   /**
-   *@description Text for announcing a Shared Storage key/value item has been edited
+   * @description Text for announcing a Shared Storage key/value item has been edited
    */
   sharedStorageItemEdited: "The storage item was edited.",
   /**
-   *@description Text for announcing a Shared Storage key/value item edit request has been canceled
+   * @description Text for announcing a Shared Storage key/value item edit request has been canceled
    */
   sharedStorageItemEditCanceled: "The storage item edit was canceled."
 };
@@ -8651,20 +8655,20 @@ import * as UI20 from "./../../ui/legacy/legacy.js";
 import { StorageMetadataView as StorageMetadataView5 } from "./components/components.js";
 var UIStrings24 = {
   /**
-   *@description Label for an item in the Application Panel Sidebar of the Application panel
+   * @description Label for an item in the Application Panel Sidebar of the Application panel
    * Storage Buckets allow developers to separate site data into buckets so that they can be
    * deleted independently.
    */
   storageBuckets: "Storage buckets",
   /**
-   *@description Text for an item in the Application Panel
+   * @description Text for an item in the Application Panel
    * if no storage buckets are available to show. Storage Buckets allow developers to separate
    * site data into buckets so that they can be
    * deleted independently. https://developer.chrome.com/docs/web-platform/storage-buckets.
    */
   noStorageBuckets: "No storage buckets detected",
   /**
-   *@description Description text in the Application Panel describing the storage buckets tab.
+   * @description Description text in the Application Panel describing the storage buckets tab.
    * Storage Buckets allow developers to separate site data into buckets so that they can be
    * deleted independently. https://developer.chrome.com/docs/web-platform/storage-buckets.
    */
@@ -9146,8 +9150,8 @@ var StorageView = class _StorageView extends UI21.ThrottledWidget.ThrottledWidge
     storage.markFieldListAsGroup();
     SDK22.TargetManager.TargetManager.instance().observeTargets(this);
   }
-  appendItem(section9, title, settingName) {
-    const row = section9.appendRow();
+  appendItem(section8, title, settingName) {
+    const row = section8.appendRow();
     const setting = this.settings.get(settingName);
     if (setting) {
       row.appendChild(UI21.SettingsUI.createSettingCheckbox(title, setting));
@@ -9487,176 +9491,176 @@ var TrustTokensTreeElement = class extends ApplicationPanelTreeElement {
 // gen/front_end/panels/application/ApplicationPanelSidebar.js
 var UIStrings27 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   application: "Application",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   storage: "Storage",
   /**
-   *@description Text in Application Panelthat shows if no local storage
+   * @description Text in Application Panelthat shows if no local storage
    *             can be shown.
    */
   noLocalStorage: "No local storage detected",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   localStorage: "Local storage",
   /**
-   *@description Text in the Application panel describing the local storage tab.
+   * @description Text in the Application panel describing the local storage tab.
    */
   localStorageDescription: "On this page you can view, add, edit, and delete local storage key-value pairs.",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   sessionStorage: "Session storage",
   /**
-   *@description Text in Application Panel if no session storage can be shown.
+   * @description Text in Application Panel if no session storage can be shown.
    */
   noSessionStorage: "No session storage detected",
   /**
-   *@description Text in the Application panel describing the session storage tab.
+   * @description Text in the Application panel describing the session storage tab.
    */
   sessionStorageDescription: "On this page you can view, add, edit, and delete session storage key-value pairs.",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   extensionStorage: "Extension storage",
   /**
-   *@description Text in Application Panel if no extension storage can be shown
+   * @description Text in Application Panel if no extension storage can be shown
    */
   noExtensionStorage: "No extension storage detected",
   /**
-   *@description Text in the Application panel describing the extension storage tab.
+   * @description Text in the Application panel describing the extension storage tab.
    */
   extensionStorageDescription: "On this page you can view, add, edit, and delete extension storage key-value pairs.",
   /**
-   *@description Text for extension session storage in Application panel
+   * @description Text for extension session storage in Application panel
    */
   extensionSessionStorage: "Session",
   /**
-   *@description Text for extension local storage in Application panel
+   * @description Text for extension local storage in Application panel
    */
   extensionLocalStorage: "Local",
   /**
-   *@description Text for extension sync storage in Application panel
+   * @description Text for extension sync storage in Application panel
    */
   extensionSyncStorage: "Sync",
   /**
-   *@description Text for extension managed storage in Application panel
+   * @description Text for extension managed storage in Application panel
    */
   extensionManagedStorage: "Managed",
   /**
-   *@description Text for web cookies
+   * @description Text for web cookies
    */
   cookies: "Cookies",
   /**
-   *@description Text in the Application Panel if no cookies are set
+   * @description Text in the Application Panel if no cookies are set
    */
   noCookies: "No cookies set",
   /**
-   *@description Text for web cookies
+   * @description Text for web cookies
    */
   cookiesDescription: "On this page you can view, add, edit, and delete cookies.",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   backgroundServices: "Background services",
   /**
-   *@description Text for rendering frames
+   * @description Text for rendering frames
    */
   frames: "Frames",
   /**
-   *@description Text that appears on a button for the manifest resource type filter.
+   * @description Text that appears on a button for the manifest resource type filter.
    */
   manifest: "Manifest",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   noManifestDetected: "No manifest detected",
   /**
-   *@description Description text on manifests in App Manifest View of the Application panel which describes the app manifest view tab
+   * @description Description text on manifests in App Manifest View of the Application panel which describes the app manifest view tab
    */
   manifestDescription: "A manifest defines how your app appears on phone\u2019s home screens and what the app looks like on launch.",
   /**
-   *@description Text in App Manifest View of the Application panel
+   * @description Text in App Manifest View of the Application panel
    */
   appManifest: "Manifest",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   indexeddb: "IndexedDB",
   /**
-   *@description Text in Application Panel if no indexedDB is detected
+   * @description Text in Application Panel if no indexedDB is detected
    */
   noIndexeddb: "No indexedDB detected",
   /**
-   *@description Text in the Application panel describing the extension storage tab.
+   * @description Text in the Application panel describing the extension storage tab.
    */
   indexeddbDescription: "On this page you can view and delete indexedDB key-value pairs and databases.",
   /**
-   *@description A context menu item in the Application Panel Sidebar of the Application panel
+   * @description A context menu item in the Application Panel Sidebar of the Application panel
    */
   refreshIndexeddb: "Refresh IndexedDB",
   /**
-   *@description Tooltip in Application Panel Sidebar of the Application panel
-   *@example {1.0} PH1
+   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @example {1.0} PH1
    */
   versionSEmpty: "Version: {PH1} (empty)",
   /**
-   *@description Tooltip in Application Panel Sidebar of the Application panel
-   *@example {1.0} PH1
+   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @example {1.0} PH1
    */
   versionS: "Version: {PH1}",
   /**
-   *@description Text to clear content
+   * @description Text to clear content
    */
   clear: "Clear",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
-   *@example {"key path"} PH1
+   * @description Text in Application Panel Sidebar of the Application panel
+   * @example {"key path"} PH1
    */
   keyPathS: "Key path: {PH1}",
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   localFiles: "Local Files",
   /**
-   *@description Tooltip in Application Panel Sidebar of the Application panel
-   *@example {https://example.com} PH1
+   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @example {https://example.com} PH1
    */
   cookiesUsedByFramesFromS: "Cookies used by frames from {PH1}",
   /**
-   *@description Text in Frames View of the Application panel
+   * @description Text in Frames View of the Application panel
    */
   openedWindows: "Opened Windows",
   /**
-   *@description Text in Frames View of the Application panel
+   * @description Text in Frames View of the Application panel
    */
   openedWindowsDescription: "On this page you can view windows opened via window.open().",
   /**
-   *@description Label for plural of worker type: web workers
+   * @description Label for plural of worker type: web workers
    */
   webWorkers: "Web Workers",
   /**
-   *@description Label in frame tree for unavailable document
+   * @description Label in frame tree for unavailable document
    */
   documentNotAvailable: "No document detected",
   /**
-   *@description Description of content of unavailable document in Application panel
+   * @description Description of content of unavailable document in Application panel
    */
   theContentOfThisDocumentHasBeen: "The content of this document has been generated dynamically via 'document.write()'.",
   /**
-   *@description Text in Frames View of the Application panel
+   * @description Text in Frames View of the Application panel
    */
   windowWithoutTitle: "Window without title",
   /**
-   *@description Default name for worker
+   * @description Default name for worker
    */
   worker: "worker",
   /**
-   *@description Description text for describing the dedicated worker tab.
+   * @description Description text for describing the dedicated worker tab.
    */
   workerDescription: "On this page you can view dedicated workers that are created by the parent frame.",
   /**
@@ -9678,8 +9682,8 @@ var UIStrings27 = {
    */
   applicationSidebarPanel: "Application panel sidebar",
   /**
-   *@description Tooltip in Application Panel Sidebar of the Application panel
-   *@example {https://example.com} PH1
+   * @description Tooltip in Application Panel Sidebar of the Application panel
+   * @example {https://example.com} PH1
    */
   thirdPartyPhaseout: "Cookies from {PH1} may have been blocked due to third-party cookie phaseout.",
   /**
@@ -10382,11 +10386,11 @@ var AppManifestTreeElement = class extends ApplicationPanelTreeElement {
   }
   generateChildren() {
     const staticSections = this.view.getStaticSections();
-    for (const section9 of staticSections) {
-      const sectionElement = section9.getTitleElement();
-      const childTitle = section9.title();
-      const sectionFieldElement = section9.getFieldElement();
-      const child = new ManifestChildTreeElement(this.resourcesPanel, sectionElement, childTitle, sectionFieldElement, section9.jslogContext || "");
+    for (const section8 of staticSections) {
+      const sectionElement = section8.getTitleElement();
+      const childTitle = section8.title();
+      const sectionFieldElement = section8.getFieldElement();
+      const child = new ManifestChildTreeElement(this.resourcesPanel, sectionElement, childTitle, sectionFieldElement, section8.jslogContext || "");
       this.appendChild(child);
     }
   }
@@ -11160,9 +11164,9 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
   treeElementForWindow;
   treeElementForWorker;
   view;
-  constructor(section9, frame) {
-    super(section9.panel, "", false, "frame");
-    this.section = section9;
+  constructor(section8, frame) {
+    super(section8.panel, "", false, "frame");
+    this.section = section8;
     this.frame = frame;
     this.categoryElements = /* @__PURE__ */ new Map();
     this.treeElementForResource = /* @__PURE__ */ new Map();
@@ -11534,36 +11538,36 @@ var cookieItemsView_css_default = `/*
 // gen/front_end/panels/application/CookieItemsView.js
 var UIStrings28 = {
   /**
-   *@description Label for checkbox to show URL-decoded cookie values
+   * @description Label for checkbox to show URL-decoded cookie values
    */
   showUrlDecoded: "Show URL-decoded",
   /**
-   *@description Text in Cookie Items View of the Application panel to indicate that no cookie has been selected for preview
+   * @description Text in Cookie Items View of the Application panel to indicate that no cookie has been selected for preview
    */
   noCookieSelected: "No cookie selected",
   /**
-   *@description Text in Cookie Items View of the Application panel
+   * @description Text in Cookie Items View of the Application panel
    */
   selectACookieToPreviewItsValue: "Select a cookie to preview its value",
   /**
-   *@description Text for filter in Cookies View of the Application panel
+   * @description Text for filter in Cookies View of the Application panel
    */
   onlyShowCookiesWithAnIssue: "Only show cookies with an issue",
   /**
-   *@description Title for filter in the Cookies View of the Application panel
+   * @description Title for filter in the Cookies View of the Application panel
    */
   onlyShowCookiesWhichHaveAn: "Only show cookies that have an associated issue",
   /**
-   *@description Label to only delete the cookies that are visible after filtering
+   * @description Label to only delete the cookies that are visible after filtering
    */
   clearFilteredCookies: "Clear filtered cookies",
   /**
-   *@description Label to delete all cookies
+   * @description Label to delete all cookies
    */
   clearAllCookies: "Clear all cookies",
   /**
-   *@description Alert message for screen reader to announce # of cookies in the table
-   *@example {5} PH1
+   * @description Alert message for screen reader to announce # of cookies in the table
+   * @example {5} PH1
    */
   numberOfCookiesShownInTableS: "Number of cookies shown in table: {PH1}"
 };
@@ -11575,7 +11579,7 @@ var CookiePreviewWidget = class extends UI24.Widget.VBox {
   toggle;
   value;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging16.section("cookie-preview")}` });
     this.setMinimumSize(230, 45);
     this.cookie = null;
     this.showDecodedSetting = Common16.Settings.Settings.instance().createSetting("cookie-view-show-decoded", false);
@@ -11598,7 +11602,6 @@ var CookiePreviewWidget = class extends UI24.Widget.VBox {
     value.addEventListener("dblclick", this.handleDblClickOnCookieValue.bind(this));
     this.value = value;
     this.contentElement.classList.add("cookie-preview-widget");
-    this.contentElement.setAttribute("jslog", `${VisualLogging16.section("cookie-preview")}`);
     this.contentElement.appendChild(value);
   }
   showDecoded(decoded) {
@@ -11649,10 +11652,9 @@ var CookieItemsView = class extends UI24.Widget.VBox {
   selectedCookie;
   #toolbar;
   constructor(model, cookieDomain) {
-    super();
+    super({ jslog: `${VisualLogging16.pane("cookies-data")}` });
     this.registerRequiredCSS(cookieItemsView_css_default);
     this.element.classList.add("storage-view");
-    this.element.setAttribute("jslog", `${VisualLogging16.pane("cookies-data")}`);
     this.model = model;
     this.cookieDomain = cookieDomain;
     this.#toolbar = new StorageItemsToolbar();
@@ -11803,16 +11805,16 @@ import * as UI25 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings29 = {
   /**
-   *@description Name for the "DOM Storage Items" table that shows the content of the DOM Storage.
+   * @description Name for the "DOM Storage Items" table that shows the content of the DOM Storage.
    */
   domStorageItems: "DOM Storage Items",
   /**
-   *@description Text for announcing that the "DOM Storage Items" table was cleared, that is, all
+   * @description Text for announcing that the "DOM Storage Items" table was cleared, that is, all
    * entries were deleted.
    */
   domStorageItemsCleared: "DOM Storage Items cleared",
   /**
-   *@description Text for announcing a DOM Storage key/value item has been deleted
+   * @description Text for announcing a DOM Storage key/value item has been deleted
    */
   domStorageItemDeleted: "The storage item was deleted."
 };
@@ -11924,11 +11926,11 @@ import * as UI26 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging18 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings30 = {
   /**
-   *@description Name for the "Extension Storage Items" table that shows the content of the extension Storage.
+   * @description Name for the "Extension Storage Items" table that shows the content of the extension Storage.
    */
   extensionStorageItems: "Extension Storage Items",
   /**
-   *@description Text for announcing that the "Extension Storage Items" table was cleared, that is, all
+   * @description Text for announcing that the "Extension Storage Items" table was cleared, that is, all
    * entries were deleted.
    */
   extensionStorageItemsCleared: "Extension Storage Items cleared"

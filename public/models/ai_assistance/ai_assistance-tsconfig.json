@@ -34,6 +34,7 @@
     "../../../../../../front_end/models/ai_assistance/AiHistoryStorage.ts",
     "../../../../../../front_end/models/ai_assistance/AiUtils.ts",
     "../../../../../../front_end/models/ai_assistance/ChangeManager.ts",
+    "../../../../../../front_end/models/ai_assistance/ConversationHandler.ts",
     "../../../../../../front_end/models/ai_assistance/EvaluateAction.ts",
     "../../../../../../front_end/models/ai_assistance/ExtensionScope.ts",
     "../../../../../../front_end/models/ai_assistance/agents/AiAgent.ts",

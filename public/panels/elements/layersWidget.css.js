@@ -9,7 +9,7 @@ export default `/**
  * found in the LICENSE file.
  */
 
-.styles-layers-pane {
+.layers-widget {
   overflow: hidden;
   padding-left: 2px;
   background-color: var(--sys-color-cdt-base-container);
@@ -18,18 +18,9 @@ export default `/**
   padding-bottom: 2px;
 }
 
-.styles-layers-pane > div {
+.layers-widget > .layers-widget-title {
   font-weight: bold;
   margin: 8px 4px 6px;
-}
-
-.styles-layers-pane > table {
-  width: 100%;
-  border-spacing: 0;
-}
-
-.styles-layers-pane td {
-  padding: 0;
 }
 
 /*# sourceURL=${import.meta.resolve('./layersWidget.css')} */`;

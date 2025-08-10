@@ -384,13 +384,11 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (!scriptUrl || !ranges?.length) {
             return this.status.E_BADARG('command', 'expected valid scriptUrl and non-empty NamedFunctionRanges');
         }
-        if (!this.extensionAllowedOnURL(scriptUrl, port)) {
-            return this.status.E_FAILED('Permission denied');
+        const resource = this.lookupAllowedUISourceCode(scriptUrl, port);
+        if ('error' in resource) {
+            return resource.error;
         }
-        const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptUrl);
-        if (!uiSourceCode) {
-            return this.status.E_NOTFOUND(scriptUrl);
-        }
+        const { uiSourceCode } = resource;
         if (!uiSourceCode.contentType().isScript() || !uiSourceCode.contentType().isFromSourceMap()) {
             return this.status.E_BADARG('command', `expected a source map script resource for url: ${scriptUrl}`);
         }
@@ -746,17 +744,18 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         return undefined;
     }
     handleOpenURL(port, contentProviderOrUrl, lineNumber, columnNumber) {
-        let url;
         let resource;
+        let isAllowed;
         if (typeof contentProviderOrUrl !== 'string') {
-            url = contentProviderOrUrl.contentURL();
             resource = this.makeResource(contentProviderOrUrl);
+            isAllowed = this.extensionAllowedOnContentProvider(contentProviderOrUrl, port);
         }
         else {
-            url = contentProviderOrUrl;
+            const url = contentProviderOrUrl;
             resource = { url, type: Common.ResourceType.resourceTypes.Other.name() };
+            isAllowed = this.extensionAllowedOnURL(url, port);
         }
-        if (this.extensionAllowedOnURL(url, port)) {
+        if (isAllowed) {
             port.postMessage({
                 command: 'open-resource',
                 resource,
@@ -769,6 +768,47 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         const origin = extensionOrigins.get(port);
         const extension = origin && this.registeredExtensions.get(origin);
         return Boolean(extension?.isAllowedOnTarget(url));
+    }
+    /**
+     * Slightly more permissive as {@link extensionAllowedOnURL}: This method also permits
+     * UISourceCodes that originate from a {@link SDK.Script.Script} with a sourceURL magic comment as
+     * long as the corresponding target is permitted.
+     */
+    extensionAllowedOnContentProvider(contentProvider, port) {
+        if (!(contentProvider instanceof Workspace.UISourceCode.UISourceCode)) {
+            return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+        }
+        if (contentProvider.contentType() !== Common.ResourceType.resourceTypes.Script) {
+            // We only check sourceURL magic comments for scripts (excluding ones coming from source maps).
+            return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+        }
+        const scripts = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider);
+        if (scripts.length === 0) {
+            return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+        }
+        return scripts.every(script => {
+            if (script.hasSourceURL) {
+                return this.extensionAllowedOnTarget(script.target(), port);
+            }
+            return this.extensionAllowedOnURL(script.contentURL(), port);
+        });
+    }
+    /**
+     * This method prefers returning 'Permission denied' errors if restricted resources are not found,
+     * rather then NOTFOUND. This prevents extensions from being able to fish for restricted resources.
+     */
+    lookupAllowedUISourceCode(url, port) {
+        const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+        if (!uiSourceCode && !this.extensionAllowedOnURL(url, port)) {
+            return { error: this.status.E_FAILED('Permission denied') };
+        }
+        if (!uiSourceCode) {
+            return { error: this.status.E_NOTFOUND(url) };
+        }
+        if (!this.extensionAllowedOnContentProvider(uiSourceCode, port)) {
+            return { error: this.status.E_FAILED('Permission denied') };
+        }
+        return { uiSourceCode };
     }
     extensionAllowedOnTarget(target, port) {
         return this.extensionAllowedOnURL(target.inspectedURL(), port);
@@ -842,7 +882,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         const resources = new Map();
         function pushResourceData(contentProvider) {
             if (!resources.has(contentProvider.contentURL()) &&
-                this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
+                this.extensionAllowedOnContentProvider(contentProvider, port)) {
                 resources.set(contentProvider.contentURL(), this.makeResource(contentProvider));
             }
             return false;
@@ -858,7 +898,7 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         return [...resources.values()];
     }
     async getResourceContent(contentProvider, message, port) {
-        if (!this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
+        if (!this.extensionAllowedOnContentProvider(contentProvider, port)) {
             this.dispatchCallback(message.requestId, port, this.status.E_FAILED('Permission denied'));
             return undefined;
         }
@@ -902,19 +942,15 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
         if (!message.sourceMapURL) {
             return this.status.E_FAILED('Expected a source map URL but got null');
         }
-        const url = message.contentUrl;
-        if (!this.extensionAllowedOnURL(url, port)) {
-            return this.status.E_FAILED('Permission denied');
-        }
-        const contentProvider = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-        if (!contentProvider) {
-            return this.status.E_NOTFOUND(url);
+        const resource = this.lookupAllowedUISourceCode(message.contentUrl, port);
+        if ('error' in resource) {
+            return resource.error;
         }
         const debuggerBindingsInstance = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-        const scriptFiles = debuggerBindingsInstance.scriptsForUISourceCode(contentProvider);
+        const scriptFiles = debuggerBindingsInstance.scriptsForUISourceCode(resource.uiSourceCode);
         if (scriptFiles.length > 0) {
             for (const script of scriptFiles) {
-                const resourceFile = debuggerBindingsInstance.scriptFile(contentProvider, script.debuggerModel);
+                const resourceFile = debuggerBindingsInstance.scriptFile(resource.uiSourceCode, script.debuggerModel);
                 resourceFile?.addSourceMapURL(message.sourceMapURL);
             }
         }
@@ -929,11 +965,12 @@ export class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper {
             const response = error ? this.status.E_FAILED(error) : this.status.OK();
             this.dispatchCallback(requestId, port, response);
         }
-        if (!this.extensionAllowedOnURL(url, port)) {
-            return this.status.E_FAILED('Permission denied');
+        const resource = this.lookupAllowedUISourceCode(url, port);
+        if ('error' in resource) {
+            return resource.error;
         }
-        const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-        if (!uiSourceCode?.contentType().isDocumentOrScriptOrStyleSheet()) {
+        const { uiSourceCode } = resource;
+        if (!uiSourceCode.contentType().isDocumentOrScriptOrStyleSheet()) {
             const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
             if (!resource) {
                 return this.status.E_NOTFOUND(url);
@@ -1317,7 +1354,12 @@ class ExtensionServerPanelView extends UI.View.SimpleView {
     name;
     panel;
     constructor(name, title, panel) {
-        super(title);
+        // The `viewId` here is to satisfy the `SimpleView` constructor needs, but isn't actually
+        // used anywhere, since we override the `viewId()` method below.  Ideally we'd pass the
+        // `name` as `viewId` to the constructor, but that doesn't work, since the `name` is not
+        // necessarily in Kebab case.
+        const viewId = Platform.StringUtilities.toKebabCase(title);
+        super({ title, viewId });
         this.name = name;
         this.panel = panel;
     }

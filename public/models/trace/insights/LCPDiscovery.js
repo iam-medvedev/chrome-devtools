@@ -8,11 +8,11 @@ import * as Types from '../types/types.js';
 import { InsightCategory, InsightWarning, } from './types.js';
 export const UIStrings = {
     /**
-     *@description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
+     * @description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
      */
     title: 'LCP request discovery',
     /**
-     *@description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
+     * @description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
      */
     description: 'Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)',
     /**

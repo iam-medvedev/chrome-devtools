@@ -2611,7 +2611,13 @@ var NativeFunctions = [
   },
   {
     name: "readAsText",
-    signatures: [["blob", "?encoding"], ["blob", "?label"]]
+    signatures: [["blob", "?encoding"]],
+    receivers: ["FileReader"]
+  },
+  {
+    name: "readAsText",
+    signatures: [["blob", "?encoding"], ["blob", "?label"]],
+    receivers: ["FileReaderSync"]
   },
   {
     name: "getDirectory",
@@ -3819,6 +3825,11 @@ var NativeFunctions = [
     name: "initialize",
     signatures: [["newItem"]],
     receivers: ["SVGLengthList", "SVGNumberList", "SVGPointList", "SVGStringList", "SVGTransformList"]
+  },
+  {
+    name: "initialize",
+    signatures: [["length"]],
+    receivers: ["CrashReportStorage"]
   },
   {
     name: "initialize",
@@ -7315,6 +7326,10 @@ var NativeFunctions = [
   {
     name: "Origin",
     signatures: [["?serializedOrigin"]]
+  },
+  {
+    name: "fromURL",
+    signatures: [["serializedURL"]]
   },
   {
     name: "isSameOrigin",

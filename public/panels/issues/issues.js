@@ -359,7 +359,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                      @click=${input.onUnhideAllIssues}
                      @keydown=${stopPropagationForEnter}
                      .variant=${"outlined"}>${i18nString(UIStrings.unhideAll)}</devtools-button>
-  </div>`, target, { host: input });
+  </div>`, target);
 };
 var HiddenIssuesRow = class extends UI.TreeOutline.TreeElement {
   #view;
@@ -1049,15 +1049,15 @@ import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings3 = {
   /**
-   *@description Text in Object Properties Section
+   * @description Text in Object Properties Section
    */
   unknown: "unknown",
   /**
-   *@description Tooltip for button linking to the Elements panel
+   * @description Tooltip for button linking to the Elements panel
    */
   clickToRevealTheFramesDomNodeIn: "Click to reveal the frame's DOM node in the Elements panel",
   /**
-   *@description Replacement text for a link to an HTML element which is not available (anymore).
+   * @description Replacement text for a link to an HTML element which is not available (anymore).
    */
   unavailable: "unavailable"
 };
@@ -1277,19 +1277,19 @@ var AffectedResourcesView = class extends UI3.TreeOutline.TreeElement {
 // gen/front_end/panels/issues/AffectedBlockedByResponseView.js
 var UIStrings4 = {
   /**
-   *@description Noun for singular or plural network requests. Label for the affected resources section in the issue view.
+   * @description Noun for singular or plural network requests. Label for the affected resources section in the issue view.
    */
   nRequests: "{n, plural, =1 {# request} other {# requests}}",
   /**
-   *@description Noun for a singular network request. Label for a column in the affected resources table in the issue view.
+   * @description Noun for a singular network request. Label for a column in the affected resources table in the issue view.
    */
   requestC: "Request",
   /**
-   *@description Noun for a singular parent frame. Label for a column in the affected resources table in the issue view.
+   * @description Noun for a singular parent frame. Label for a column in the affected resources table in the issue view.
    */
   parentFrame: "Parent Frame",
   /**
-   *@description Noun for a singular resource that was blocked (an example for a blocked resource would be a frame). Label for a column in the affected resources table in the issue view.
+   * @description Noun for a singular resource that was blocked (an example for a blocked resource would be a frame). Label for a column in the affected resources table in the issue view.
    */
   blockedResource: "Blocked Resource"
 };
@@ -1353,27 +1353,27 @@ import * as NetworkForward from "./../network/forward/forward.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
-   *@description Noun, singular or plural. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
+   * @description Noun, singular or plural. Label for the kind and number of affected resources associated with a DevTools issue. A cookie is a small piece of data that a server sends to the user's web browser. See https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.
    */
   nCookies: "{n, plural, =1 {# cookie} other {# cookies}}",
   /**
-   *@description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Each cookie has a name.
+   * @description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Each cookie has a name.
    */
   name: "Name",
   /**
-   *@description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Cookies may have a 'Domain' attribute: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.#define_where_cookies_are_sent
+   * @description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Cookies may have a 'Domain' attribute: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.#define_where_cookies_are_sent
    */
   domain: "Domain",
   /**
-   *@description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Cookies may have a 'Path' attribute: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.#define_where_cookies_are_sent
+   * @description Noun, singular. Label for a column in a table which lists cookies in the affected resources section of a DevTools issue. Cookies may have a 'Path' attribute: https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies.#define_where_cookies_are_sent
    */
   path: "Path",
   /**
-   *@description Label for the the number of affected `Set-Cookie` lines associated with a DevTools issue. `Set-Cookie` is a specific header line in an HTTP network request and consists of a single line of text.
+   * @description Label for the the number of affected `Set-Cookie` lines associated with a DevTools issue. `Set-Cookie` is a specific header line in an HTTP network request and consists of a single line of text.
    */
   nRawCookieLines: "{n, plural, =1 {1 Raw `Set-Cookie` header} other {# Raw `Set-Cookie` headers}}",
   /**
-   *@description Title for text button in the Issues panel. Clicking the button navigates the user to the Network Panel. `Set-Cookie` is a specific header line in an HTTP network request and consists of a single line of text.
+   * @description Title for text button in the Issues panel. Clicking the button navigates the user to the Network Panel. `Set-Cookie` is a specific header line in an HTTP network request and consists of a single line of text.
    */
   filterSetCookieTitle: "Show network requests that include this `Set-Cookie` header in the network panel"
 };
@@ -1485,7 +1485,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 var UIStrings6 = {
   /**
-   *@description Noun for singular or plural number of affected element resource indication in issue view.
+   * @description Noun for singular or plural number of affected element resource indication in issue view.
    */
   nElements: "{n, plural, =1 {# element} other {# elements}}"
 };
@@ -1518,11 +1518,11 @@ var AffectedElementsView = class extends AffectedResourcesView {
 // gen/front_end/panels/issues/AffectedDescendantsWithinSelectElementView.js
 var UIStrings7 = {
   /**
-   *@description Noun for singular or plural number of affected descendant nodes indication in issue view.
+   * @description Noun for singular or plural number of affected descendant nodes indication in issue view.
    */
   nDescendants: "{n, plural, =1 { descendant} other { descendants}}",
   /**
-   *@description Label for the disallowed node link in the issue view.
+   * @description Label for the disallowed node link in the issue view.
    */
   disallowedNode: "Disallowed descendant"
 };
@@ -1568,40 +1568,40 @@ import * as IssuesManager7 from "./../../models/issues_manager/issues_manager.js
 import * as IssuesComponents from "./components/components.js";
 var UIStrings8 = {
   /**
-   *@description Singular or plural label for number of affected CSP (content security policy,
+   * @description Singular or plural label for number of affected CSP (content security policy,
    * see https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP) directives in issue view.
    */
   nDirectives: "{n, plural, =1 {# directive} other {# directives}}",
   /**
-   *@description Indicates that a CSP error should be treated as a warning
+   * @description Indicates that a CSP error should be treated as a warning
    */
   reportonly: "report-only",
   /**
-   *@description The kind of resolution for a mixed content issue
+   * @description The kind of resolution for a mixed content issue
    */
   blocked: "blocked",
   /**
-   *@description Tooltip for button linking to the Elements panel
+   * @description Tooltip for button linking to the Elements panel
    */
   clickToRevealTheViolatingDomNode: "Click to reveal the violating DOM node in the Elements panel",
   /**
-   *@description Header for the section listing affected directives
+   * @description Header for the section listing affected directives
    */
   directiveC: "Directive",
   /**
-   *@description Label for the column in the element list in the CSS overview report
+   * @description Label for the column in the element list in the CSS overview report
    */
   element: "Element",
   /**
-   *@description Header for the source location column
+   * @description Header for the source location column
    */
   sourceLocation: "Source location",
   /**
-   *@description Text for the status of something
+   * @description Text for the status of something
    */
   status: "Status",
   /**
-   *@description Text that refers to the resources of the web page
+   * @description Text that refers to the resources of the web page
    */
   resourceC: "Resource"
 };
@@ -1749,19 +1749,19 @@ import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 var UIStrings9 = {
   /**
-   *@description Noun for singular or plural number of affected document nodes indication in issue view.
+   * @description Noun for singular or plural number of affected document nodes indication in issue view.
    */
   nDocuments: "{n, plural, =1 { document} other { documents}}",
   /**
-   *@description Column title for the Document in the DOM tree column in the quirks mode issue view
+   * @description Column title for the Document in the DOM tree column in the quirks mode issue view
    */
   documentInTheDOMTree: "Document in the DOM tree",
   /**
-   *@description Column title for the url column in the quirks mode issue view
+   * @description Column title for the url column in the quirks mode issue view
    */
   url: "URL",
   /**
-   *@description Column title for the Mode column in the quirks mode issue view
+   * @description Column title for the Mode column in the quirks mode issue view
    */
   mode: "Mode"
 };
@@ -1848,27 +1848,27 @@ var AffectedElementsWithLowContrastView = class extends AffectedElementsView {
 };
 var UIStrings10 = {
   /**
-   *@description Column title for the element column in the low contrast issue view
+   * @description Column title for the element column in the low contrast issue view
    */
   element: "Element",
   /**
-   *@description Column title for the contrast ratio column in the low contrast issue view
+   * @description Column title for the contrast ratio column in the low contrast issue view
    */
   contrastRatio: "Contrast ratio",
   /**
-   *@description Column title for the minimum AA contrast ratio column in the low contrast issue view
+   * @description Column title for the minimum AA contrast ratio column in the low contrast issue view
    */
   minimumAA: "Minimum AA ratio",
   /**
-   *@description Column title for the minimum AAA contrast ratio column in the low contrast issue view
+   * @description Column title for the minimum AAA contrast ratio column in the low contrast issue view
    */
   minimumAAA: "Minimum AAA ratio",
   /**
-   *@description Column title for the text size column in the low contrast issue view
+   * @description Column title for the text size column in the low contrast issue view
    */
   textSize: "Text size",
   /**
-   *@description Column title for the text weight column in the low contrast issue view
+   * @description Column title for the text weight column in the low contrast issue view
    */
   textWeight: "Text weight"
 };
@@ -1879,19 +1879,19 @@ var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
 import * as i18n21 from "./../../core/i18n/i18n.js";
 var UIStrings11 = {
   /**
-   *@description Label for number of affected resources indication in issue view
+   * @description Label for number of affected resources indication in issue view
    */
   nResources: "{n, plural, =1 {# resource} other {# resources}}",
   /**
-   *@description Title for a column in an Heavy Ads issue view
+   * @description Title for a column in an Heavy Ads issue view
    */
   limitExceeded: "Limit exceeded",
   /**
-   *@description Title for a column in an Heavy Ads issue view
+   * @description Title for a column in an Heavy Ads issue view
    */
   resolutionStatus: "Resolution Status",
   /**
-   *@description Title for a column in an Heavy Ads issue view
+   * @description Title for a column in an Heavy Ads issue view
    */
   frameUrl: "Frame URL",
   /**
@@ -1905,17 +1905,17 @@ var UIStrings11 = {
    */
   warned: "Warned",
   /**
-   *@description Reason for a Heavy Ad being flagged in issue view. The Ad has been flagged as a
+   * @description Reason for a Heavy Ad being flagged in issue view. The Ad has been flagged as a
    *Heavy Ad because it exceeded the set limit for peak CPU usage, e.g. it blocked the main thread
    *for more than 15 seconds in any 30-second window.
    */
   cpuPeakLimit: "CPU peak limit",
   /**
-   *@description Reason for a Heavy Ad being flagged in issue view
+   * @description Reason for a Heavy Ad being flagged in issue view
    */
   cpuTotalLimit: "CPU total limit",
   /**
-   *@description Reason for a Heavy Ad being flagged in issue view
+   * @description Reason for a Heavy Ad being flagged in issue view
    */
   networkLimit: "Network limit"
 };
@@ -1985,7 +1985,7 @@ import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
-   *@description Label for the the number of affected `Allowed Sites` associated with a
+   * @description Label for the the number of affected `Allowed Sites` associated with a
    *DevTools issue. In this context, `Allowed` refers to permission to access cookies
    *via the third-party cookie deprecation global metadata, and `Site` is equivalent
    *to eTLD+1.
@@ -2093,43 +2093,43 @@ import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as IssuesManager8 from "./../../models/issues_manager/issues_manager.js";
 var UIStrings14 = {
   /**
-   *@description Label for number of affected resources indication in issue view
+   * @description Label for number of affected resources indication in issue view
    */
   nViolations: "{n, plural, =1 {# violation} other {# violations}}",
   /**
-   *@description Value for the status column in SharedArrayBuffer issues
+   * @description Value for the status column in SharedArrayBuffer issues
    */
   warning: "warning",
   /**
-   *@description The kind of resolution for a mixed content issue
+   * @description The kind of resolution for a mixed content issue
    */
   blocked: "blocked",
   /**
-   *@description Value for the 'Trigger' column in the SAB affected resources list
+   * @description Value for the 'Trigger' column in the SAB affected resources list
    */
   instantiation: "Instantiation",
   /**
-   *@description Tooltip for the 'Trigger' column in the SAB affected resources list
+   * @description Tooltip for the 'Trigger' column in the SAB affected resources list
    */
   aSharedarraybufferWas: "A `SharedArrayBuffer` was instantiated in a context that is not cross-origin isolated",
   /**
-   *@description Value for the 'Trigger' column in the SAB affected resources list
+   * @description Value for the 'Trigger' column in the SAB affected resources list
    */
   transfer: "Transfer",
   /**
-   *@description Tooltip for the 'Trigger' column in the SAB affected resources list
+   * @description Tooltip for the 'Trigger' column in the SAB affected resources list
    */
   sharedarraybufferWasTransferedTo: "`SharedArrayBuffer` was transfered to a context that is not cross-origin isolated",
   /**
-   *@description Header for the source location column
+   * @description Header for the source location column
    */
   sourceLocation: "Source Location",
   /**
-   *@description Title for the 'Trigger' column in the SAB affected resources list
+   * @description Title for the 'Trigger' column in the SAB affected resources list
    */
   trigger: "Trigger",
   /**
-   *@description Title for the status column in the SAB affected resources list
+   * @description Title for the status column in the SAB affected resources list
    */
   status: "Status"
 };
@@ -2199,7 +2199,7 @@ import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings15 = {
   /**
-   *@description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
+   * @description Singular or Plural label for number of affected sources (consisting of (source) file name + line number) in issue view
    */
   nSources: "{n, plural, =1 {# source} other {# sources}}"
 };
@@ -2238,7 +2238,7 @@ var AffectedSourcesView = class extends AffectedResourcesView {
 import * as i18n31 from "./../../core/i18n/i18n.js";
 var UIStrings16 = {
   /**
-   *@description Label for the the number of affected `Potentially-tracking Sites` associated with a
+   * @description Label for the the number of affected `Potentially-tracking Sites` associated with a
    *DevTools issue. In this context, `tracking` refers to bounce tracking and `Site` is equivalent
    *to eTLD+1.
    *See https://github.com/privacycg/nav-tracking-mitigations/blob/main/bounce-tracking-explainer.md
@@ -2438,111 +2438,111 @@ import * as IssuesManager10 from "./../../models/issues_manager/issues_manager.j
 import * as NetworkForward2 from "./../network/forward/forward.js";
 var UIStrings18 = {
   /**
-   *@description Label for number of affected resources indication in issue view
+   * @description Label for number of affected resources indication in issue view
    */
   nRequests: "{n, plural, =1 {# request} other {# requests}}",
   /**
-   *@description Value for the status column in SharedArrayBuffer issues
+   * @description Value for the status column in SharedArrayBuffer issues
    */
   warning: "warning",
   /**
-   *@description The kind of resolution for a mixed content issue
+   * @description The kind of resolution for a mixed content issue
    */
   blocked: "blocked",
   /**
-   *@description Text for the status column in the item list in the CORS issue details view
+   * @description Text for the status column in the item list in the CORS issue details view
    */
   status: "Status",
   /**
-   *@description Text for the column showing the associated network request in the item list in the CORS issue details view
+   * @description Text for the column showing the associated network request in the item list in the CORS issue details view
    */
   request: "Request",
   /**
-   *@description Text for the column showing the resource's address in the item list in the CORS issue details view
+   * @description Text for the column showing the resource's address in the item list in the CORS issue details view
    */
   resourceAddressSpace: "Resource Address",
   /**
-   *@description Text for the column showing the address of the resource load initiator in the item list in the CORS issue details view
+   * @description Text for the column showing the address of the resource load initiator in the item list in the CORS issue details view
    */
   initiatorAddressSpace: "Initiator Address",
   /**
-   *@description Text for the status of the initiator context
+   * @description Text for the status of the initiator context
    */
   secure: "secure",
   /**
-   *@description Text for the status of the initiator context
+   * @description Text for the status of the initiator context
    */
   insecure: "insecure",
   /**
-   *@description Title for a column showing the status of the initiator context. The initiator context is either secure or insecure depending on whether it was loaded via HTTP or HTTPS.
+   * @description Title for a column showing the status of the initiator context. The initiator context is either secure or insecure depending on whether it was loaded via HTTP or HTTPS.
    */
   initiatorContext: "Initiator Context",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing a link to the associated preflight request in case the preflight request caused the issue.
+   * @description Title for a column in the affected resources for a CORS issue showing a link to the associated preflight request in case the preflight request caused the issue.
    */
   preflightRequestIfProblematic: "Preflight Request (if problematic)",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing a link to the associated preflight request.
+   * @description Title for a column in the affected resources for a CORS issue showing a link to the associated preflight request.
    */
   preflightRequest: "Preflight Request",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the name of the problematic HTTP response header.
+   * @description Title for a column in the affected resources for a CORS issue showing the name of the problematic HTTP response header.
    */
   header: "Header",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the problem associated with the resource.
+   * @description Title for a column in the affected resources for a CORS issue showing the problem associated with the resource.
    */
   problem: "Problem",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the value that was invalid and caused the problem if it is available.
+   * @description Title for a column in the affected resources for a CORS issue showing the value that was invalid and caused the problem if it is available.
    */
   invalidValue: "Invalid Value (if available)",
   /**
-   *@description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header was missing.
+   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header was missing.
    */
   problemMissingHeader: "Missing Header",
   /**
-   *@description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header contained multiple values.
+   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header contained multiple values.
    */
   problemMultipleValues: "Multiple Values",
   /**
-   *@description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header contained an invalid value.
+   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that a response header contained an invalid value.
    */
   problemInvalidValue: "Invalid Value",
   /**
-   *@description Content for the problem column in the affected resources table for a CORS issue that indicates that the response to the preflight request was a redirect.
+   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that the response to the preflight request was a redirect.
    */
   preflightDisallowedRedirect: "Response to preflight was a redirect",
   /**
-   *@description Content for the problem column in the affected resources table for a CORS issue that indicates that the HTTP status the preflight request was not successful.
+   * @description Content for the problem column in the affected resources table for a CORS issue that indicates that the HTTP status the preflight request was not successful.
    */
   preflightInvalidStatus: "HTTP status of preflight request didn't indicate success",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the origin that was allowed according to CORS headers.
+   * @description Title for a column in the affected resources for a CORS issue showing the origin that was allowed according to CORS headers.
    */
   allowedOrigin: "Allowed Origin (from header)",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the value of the Access-Control-Allow-Credentials response header.
+   * @description Title for a column in the affected resources for a CORS issue showing the value of the Access-Control-Allow-Credentials response header.
    */
   allowCredentialsValueFromHeader: "`Access-Control-Allow-Credentials` Header Value",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the request method that was disallowed.
+   * @description Title for a column in the affected resources for a CORS issue showing the request method that was disallowed.
    */
   disallowedRequestMethod: "Disallowed Request Method",
   /**
-   *@description Title for a column in the affected resources for a CORS issue showing the request header that was disallowed.
+   * @description Title for a column in the affected resources for a CORS issue showing the request header that was disallowed.
    */
   disallowedRequestHeader: "Disallowed Request Header",
   /**
-   *@description Header for the source location column
+   * @description Header for the source location column
    */
   sourceLocation: "Source Location",
   /**
-   *@description Header for the column with the URL scheme that is not supported by fetch
+   * @description Header for the column with the URL scheme that is not supported by fetch
    */
   unsupportedScheme: "Unsupported Scheme",
   /**
-   *@description A failed network request.
+   * @description A failed network request.
    */
   failedRequest: "Failed Request"
 };
@@ -2893,15 +2893,15 @@ var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResources
 import * as i18n37 from "./../../core/i18n/i18n.js";
 var UIStrings19 = {
   /**
-   *@description Label for number of affected resources indication in issue view
+   * @description Label for number of affected resources indication in issue view
    */
   nResources: "{n, plural, =1 {# resource} other {# resources}}",
   /**
-   *@description Title for the 'Frame' column.
+   * @description Title for the 'Frame' column.
    */
   frameId: "Frame",
   /**
-   *@description Label for the violating node link in the issue view.
+   * @description Label for the violating node link in the issue view.
    */
   violatingNode: "Violating node"
 };
@@ -2963,23 +2963,23 @@ var GenericIssueDetailsView = class extends AffectedResourcesView {
 // gen/front_end/panels/issues/IssueView.js
 var UIStrings20 = {
   /**
-   *@description Noun, singular. Label for a column or field containing the name of an entity.
+   * @description Noun, singular. Label for a column or field containing the name of an entity.
    */
   name: "Name",
   /**
-   *@description The kind of resolution for a mixed content issue
+   * @description The kind of resolution for a mixed content issue
    */
   blocked: "blocked",
   /**
-   *@description Label for a type of issue that can appear in the Issues view. Noun for singular or plural number of network requests.
+   * @description Label for a type of issue that can appear in the Issues view. Noun for singular or plural number of network requests.
    */
   nRequests: "{n, plural, =1 {# request} other {# requests}}",
   /**
-   *@description Label for singular or plural number of affected resources in issue view
+   * @description Label for singular or plural number of affected resources in issue view
    */
   nResources: "{n, plural, =1 {# resource} other {# resources}}",
   /**
-   *@description Label for mixed content issue's restriction status
+   * @description Label for mixed content issue's restriction status
    */
   restrictionStatus: "Restriction Status",
   /**
@@ -2988,24 +2988,24 @@ var UIStrings20 = {
    */
   warned: "Warned",
   /**
-   *@description Header for the section listing affected resources
+   * @description Header for the section listing affected resources
    */
   affectedResources: "Affected Resources",
   /**
-   *@description Title for a link to further information in issue view
-   *@example {SameSite Cookies Explained} PH1
+   * @description Title for a link to further information in issue view
+   * @example {SameSite Cookies Explained} PH1
    */
   learnMoreS: "Learn more: {PH1}",
   /**
-   *@description The kind of resolution for a mixed content issue
+   * @description The kind of resolution for a mixed content issue
    */
   automaticallyUpgraded: "automatically upgraded",
   /**
-   *@description Menu entry for hiding a particular issue, in the Hide Issues context menu.
+   * @description Menu entry for hiding a particular issue, in the Hide Issues context menu.
    */
   hideIssuesLikeThis: "Hide issues like this",
   /**
-   *@description Menu entry for unhiding a particular issue, in the Hide Issues context menu.
+   * @description Menu entry for unhiding a particular issue, in the Hide Issues context menu.
    */
   unhideIssuesLikeThis: "Unhide issues like this"
 };
@@ -3521,9 +3521,11 @@ var IssuesPane = class extends UI6.Widget.VBox {
   #aggregator;
   #issueViewUpdatePromise = Promise.resolve();
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging6.panel("issues")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(issuesPane_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging6.panel("issues")}`);
     this.contentElement.classList.add("issues-pane");
     this.#categoryViews = /* @__PURE__ */ new Map();
     this.#kindViews = /* @__PURE__ */ new Map();

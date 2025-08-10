@@ -83,12 +83,12 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private insertInLastAttributePosition;
     private startEditingTarget;
     private showContextMenu;
-    populateTagContextMenu(contextMenu: UI.ContextMenu.ContextMenu, event: Event): void;
+    populateTagContextMenu(contextMenu: UI.ContextMenu.ContextMenu, event: Event): Promise<void>;
     populatePseudoElementContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
     private populateExpandRecursively;
     private populateScrollIntoView;
-    populateTextContextMenu(contextMenu: UI.ContextMenu.ContextMenu, textNode: Element): void;
-    populateNodeContextMenu(contextMenu: UI.ContextMenu.ContextMenu): void;
+    populateTextContextMenu(contextMenu: UI.ContextMenu.ContextMenu, textNode: Element): Promise<void>;
+    populateNodeContextMenu(contextMenu: UI.ContextMenu.ContextMenu): Promise<void>;
     private startEditing;
     private addNewAttribute;
     private triggerEditAttribute;

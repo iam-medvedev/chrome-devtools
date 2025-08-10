@@ -3,7 +3,7 @@ import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 var UIStrings = {
   /**
-   *@description Text to preserve the log after refreshing
+   * @description Text to preserve the log after refreshing
    */
   preserveLog: "Preserve log",
   /**
@@ -25,15 +25,15 @@ var UIStrings = {
    */
   reset: "reset",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   preserveLogOnPageReload: "Preserve log on page reload / navigation",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   doNotPreserveLogOnPageReload: "Do not preserve log on page reload / navigation",
   /**
-   *@description Title of an action in the network tool to toggle recording
+   * @description Title of an action in the network tool to toggle recording
    */
   recordNetworkLog: "Record network log"
 };

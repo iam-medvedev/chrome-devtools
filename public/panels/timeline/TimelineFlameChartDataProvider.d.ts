@@ -115,11 +115,16 @@ export declare class TimelineFlameChartDataProvider extends Common.ObjectWrapper
 export declare const InstantEventVisibleDurationMs: Trace.Types.Timing.Milli;
 export declare const enum Events {
     DATA_CHANGED = "DataChanged",
-    FLAME_CHART_ITEM_HOVERED = "FlameChartItemHovered"
+    FLAME_CHART_ITEM_HOVERED = "FlameChartItemHovered",
+    ENTRY_LABEL_ANNOTATION_ADDED = "EntryLabelAnnotationAdded"
 }
 export interface EventTypes {
     [Events.DATA_CHANGED]: void;
     [Events.FLAME_CHART_ITEM_HOVERED]: Trace.Types.Events.Event | null;
+    [Events.ENTRY_LABEL_ANNOTATION_ADDED]: {
+        entryIndex: number;
+        withLinkCreationButton: boolean;
+    };
 }
 export declare const enum EntryType {
     FRAME = "Frame",

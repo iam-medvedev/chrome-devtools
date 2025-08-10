@@ -46,19 +46,19 @@ import { Tooltip } from './Tooltip.js';
 import { CheckboxLabel, LongClickController } from './UIUtils.js';
 const UIStrings = {
     /**
-     *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
+     * @description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
      */
     pressed: 'pressed',
     /**
-     *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled off.
+     * @description Announced screen reader message for ToolbarSettingToggle when the setting is toggled off.
      */
     notPressed: 'not pressed',
     /**
-     *@description Tooltip shown when the user hovers over the clear icon to empty the text input.
+     * @description Tooltip shown when the user hovers over the clear icon to empty the text input.
      */
     clearInput: 'Clear',
     /**
-     *@description Placeholder for filter bars that shows before the user types in a filter keyword.
+     * @description Placeholder for filter bars that shows before the user types in a filter keyword.
      */
     filter: 'Filter',
 };
@@ -67,14 +67,14 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
  * Custom element for toolbars.
  *
- * @attr floating - If present the toolbar is rendered in columns, with a border
+ * @property floating - The `"floating"` attribute is reflected as property.
+ * @property wrappable - The `"wrappable"` attribute is reflected as property.
+ * @attribute floating - If present the toolbar is rendered in columns, with a border
  *                  around it, and a non-transparent background. This is used to
  *                  build vertical toolbars that open with long-click. Defaults
  *                  to `false`.
- * @attr wrappable - If present the toolbar items will wrap to a new row and the
+ * @attribute wrappable - If present the toolbar items will wrap to a new row and the
  *                   toolbar height increases.
- * @prop {boolean} floating - The `"floating"` attribute is reflected as property.
- * @prop {boolean} wrappable - The `"wrappable"` attribute is reflected as property.
  */
 export class Toolbar extends HTMLElement {
     #shadowRoot = this.attachShadow({ mode: 'open' });
@@ -133,7 +133,7 @@ export class Toolbar extends HTMLElement {
     /**
      * Returns whether this toolbar is floating.
      *
-     * @return `true` if the `"floating"` attribute is present on this toolbar,
+     * @returns `true` if the `"floating"` attribute is present on this toolbar,
      *         otherwise `false`.
      */
     get floating() {
@@ -150,7 +150,7 @@ export class Toolbar extends HTMLElement {
     /**
      * Returns whether this toolbar is wrappable.
      *
-     * @return `true` if the `"wrappable"` attribute is present on this toolbar,
+     * @returns `true` if the `"wrappable"` attribute is present on this toolbar,
      *         otherwise `false`.
      */
     get wrappable() {
@@ -481,6 +481,12 @@ export class ToolbarItem extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     setCompactLayout(_enable) {
+    }
+    setMaxWidth(width) {
+        this.element.style.maxWidth = width + 'px';
+    }
+    setMinWidth(width) {
+        this.element.style.minWidth = width + 'px';
     }
 }
 export class ToolbarItemWithCompactLayout extends ToolbarItem {
@@ -1005,12 +1011,6 @@ export class ToolbarComboBox extends ToolbarItem {
     }
     selectedIndex() {
         return this.element.selectedIndex;
-    }
-    setMaxWidth(width) {
-        this.element.style.maxWidth = width + 'px';
-    }
-    setMinWidth(width) {
-        this.element.style.minWidth = width + 'px';
     }
 }
 export class ToolbarSettingComboBox extends ToolbarComboBox {

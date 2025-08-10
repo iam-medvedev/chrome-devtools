@@ -16,11 +16,11 @@ import { AiAgent, ConversationContext, } from './AiAgent.js';
 const UIStringsNotTranslated = {
     analyzingCallTree: 'Analyzing call tree',
     /**
-     *@description Shown when the agent is investigating network activity
+     * @description Shown when the agent is investigating network activity
      */
     networkActivitySummary: 'Investigating network activity…',
     /**
-     *@description Shown when the agent is investigating main thread activity
+     * @description Shown when the agent is investigating main thread activity
      */
     mainThreadActivity: 'Investigating main thread activity…',
 };

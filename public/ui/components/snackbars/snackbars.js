@@ -177,7 +177,7 @@ var Snackbar = class _Snackbar extends HTMLElement {
   }
   /**
    * Sets the function to be triggered when the action button is clicked.
-   * @param {Function} actionButtonClickHandler
+   * @param actionButtonClickHandler
    */
   set actionButtonClickHandler(actionButtonClickHandler) {
     this.#actionButtonClickHandler = actionButtonClickHandler;

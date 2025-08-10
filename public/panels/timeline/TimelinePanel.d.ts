@@ -59,7 +59,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     constructor(traceModel?: Trace.TraceModel.Model);
     /**
      * This disables the 3P checkbox in the toolbar.
-     * If the checkbox was checked, we flip it to indeterminiate to communicate it doesn't currently apply. */
+     * If the checkbox was checked, we flip it to indeterminiate to communicate it doesn't currently apply.
+     */
     set3PCheckboxDisabled(disabled: boolean): void;
     static instance(opts?: {
         forceNew: boolean | null;
@@ -101,7 +102,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * not possible, like an enhanced trace (which opens a new devtools window) or
      * trace.cafe.
      */
-    private hasPrimaryTarget;
+    private canRecord;
     private populateToolbar;
     private createSettingsPane;
     private createNetworkConditionsSelectToolbarItem;

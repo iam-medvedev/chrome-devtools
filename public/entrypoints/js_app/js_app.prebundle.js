@@ -14,15 +14,15 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Main from '../main/main.js';
 const UIStrings = {
     /**
-     *@description Text that refers to the main target.
+     * @description Text that refers to the main target.
      */
     main: 'Main',
     /**
-     *@description Title of the 'Scripts' tool in the Network Navigator View, which is part of the Sources tool
+     * @description Title of the 'Scripts' tool in the Network Navigator View, which is part of the Sources tool
      */
     networkTitle: 'Scripts',
     /**
-     *@description Command for showing the 'Scripts' tool in the Network Navigator View, which is part of the Sources tool
+     * @description Command for showing the 'Scripts' tool in the Network Navigator View, which is part of the Sources tool
      */
     showNode: 'Show Scripts',
 };

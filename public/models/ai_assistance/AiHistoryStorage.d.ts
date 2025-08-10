@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import { type ResponseData } from './agents/AiAgent.js';
+import { type ResponseData, type SerializedResponseData } from './agents/AiAgent.js';
 export declare const enum ConversationType {
     STYLING = "freestyler",
     FILE = "drjones-file",
@@ -11,7 +11,7 @@ export declare const NOT_FOUND_IMAGE_DATA = "";
 export interface SerializedConversation {
     id: string;
     type: ConversationType;
-    history: ResponseData[];
+    history: SerializedResponseData[];
     isExternal: boolean;
 }
 export interface SerializedImage {
@@ -31,6 +31,7 @@ export declare class Conversation {
     archiveConversation(): void;
     addHistoryItem(item: ResponseData): Promise<void>;
     serialize(): SerializedConversation;
+    static fromSerializedConversation(serializedConversation: SerializedConversation): Conversation;
 }
 export declare const enum Events {
     HISTORY_DELETED = "AiHistoryDeleted"

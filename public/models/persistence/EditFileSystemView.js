@@ -36,19 +36,19 @@ import editFileSystemViewStyles from './editFileSystemView.css.js';
 const { styleMap } = Directives;
 const UIStrings = {
     /**
-     *@description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
+     * @description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
      */
     url: 'URL',
     /**
-     *@description Text in Edit File System View of the Workspace settings in Settings
+     * @description Text in Edit File System View of the Workspace settings in Settings
      */
     excludedFolders: 'Excluded sub-folders',
     /**
-     *@description Error message when a file system path is an empty string.
+     * @description Error message when a file system path is an empty string.
      */
     enterAPath: 'Enter a path',
     /**
-     *@description Error message when a file system path is identical to an existing path.
+     * @description Error message when a file system path is identical to an existing path.
      */
     enterAUniquePath: 'Enter a unique path',
 };
@@ -67,7 +67,7 @@ function statusString(status) {
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-      <style>${editFileSystemViewStyles}</style>
+      <style>${UI.Widget.widgetScoped(editFileSystemViewStyles)}</style>
       <div class="excluded-folder-header">
         <span>${i18nString(UIStrings.url)}</span>
         <span class="excluded-folder-url">${input.fileSystemPath}</span>
@@ -95,7 +95,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           </table>
         </devtools-data-grid>
         ${input.excludedFolderPaths.filter(({ status }) => status !== 1 /* ExcludedFolderStatus.VALID */).map(({ status }) => html `<span class="excluded-folder-error">${statusString(status)}</span>`)}
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class EditFileSystemView extends UI.Widget.VBox {

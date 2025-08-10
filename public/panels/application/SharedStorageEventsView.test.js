@@ -179,7 +179,7 @@ describeWithMockConnection('SharedStorageEventsView', () => {
         // Use a spy to assert that the sidebar preview pane gets updated when expected.
         const spy = sinon.spy(view, 'setSidebarWidget');
         sinon.assert.notCalled(spy);
-        grid.dispatchEvent(new CustomEvent('select', { detail: EVENTS[0] }));
+        grid.onSelect(EVENTS[0]);
         await raf();
         sinon.assert.calledOnce(spy);
         assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');
@@ -194,7 +194,7 @@ describeWithMockConnection('SharedStorageEventsView', () => {
         // Use a spy to assert that the sidebar preview pane gets updated when expected.
         const spy = sinon.spy(view, 'setSidebarWidget');
         sinon.assert.notCalled(spy);
-        grid.dispatchEvent(new CustomEvent('select', { detail: EVENTS[0] }));
+        grid.onSelect(EVENTS[0]);
         await raf();
         sinon.assert.calledOnce(spy);
         assert.deepEqual(view.sidebarWidget()?.constructor.name, 'SearchableView');

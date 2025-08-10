@@ -18,19 +18,19 @@ const { html, render, Directives, nothing } = Lit;
 const { live, classMap, repeat } = Directives;
 const UIStrings = {
     /**
-     *@description The title of a button that deletes a parameter.
+     * @description The title of a button that deletes a parameter.
      */
     deleteParameter: 'Delete parameter',
     /**
-     *@description The title of a button that adds a parameter.
+     * @description The title of a button that adds a parameter.
      */
     addParameter: 'Add a parameter',
     /**
-     *@description The title of a button that reset the value of a parameters to its default value.
+     * @description The title of a button that reset the value of a parameters to its default value.
      */
     resetDefaultValue: 'Reset to default value',
     /**
-     *@description The title of a button to add custom key/value pairs to object parameters with no keys defined
+     * @description The title of a button to add custom key/value pairs to object parameters with no keys defined
      */
     addCustomProperty: 'Add custom property',
     /**
@@ -1078,7 +1078,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                         .variant=${"primary_toolbar" /* Buttons.Button.Variant.PRIMARY_TOOLBAR */}
                         @click=${input.onCommandSend}></devtools-button>
       </devtools-toolbar>
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 //# sourceMappingURL=JSONEditor.js.map

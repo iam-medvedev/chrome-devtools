@@ -102,7 +102,7 @@ const DEFAULT_VIEW = (input, output, target) => {
             <devtools-icon name="cross"></devtools-icon>
         </button>
     </div>
-  `, target, { host: input });
+  `, target);
     // clang-format on
 };
 export class AnimationGroupPreviewUI extends UI.Widget.Widget {

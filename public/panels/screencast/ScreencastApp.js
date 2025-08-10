@@ -9,7 +9,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { ScreencastView } from './ScreencastView.js';
 const UIStrings = {
     /**
-     *@description Tooltip text that appears when hovering over largeicon phone button in Screencast App of the Remote Devices tab when toggling screencast
+     * @description Tooltip text that appears when hovering over largeicon phone button in Screencast App of the Remote Devices tab when toggling screencast
      */
     toggleScreencast: 'Toggle screencast',
 };

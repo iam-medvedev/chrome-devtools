@@ -15,7 +15,7 @@ export declare const UIStrings: {
      */
     readonly renderBlockingRequest: "Request";
     /**
-     *@description Label used for a time duration.
+     * @description Label used for a time duration.
      */
     readonly duration: "Duration";
     /**

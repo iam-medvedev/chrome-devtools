@@ -8,7 +8,7 @@ import { ApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import { SharedStorageEventsView } from './SharedStorageEventsView.js';
 const UIStrings = {
     /**
-     *@description Text in SharedStorage Category View of the Application panel
+     * @description Text in SharedStorage Category View of the Application panel
      */
     sharedStorage: 'Shared storage',
 };

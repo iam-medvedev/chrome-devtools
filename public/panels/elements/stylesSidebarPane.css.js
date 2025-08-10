@@ -213,6 +213,7 @@ export default `/**
 
   &.layer-separator {
     display: flex;
+    align-items: baseline;
   }
 
   &.empty-section {

@@ -85,8 +85,8 @@ devtools-icon {
 // gen/front_end/panels/changes/ChangesSidebar.js
 var UIStrings = {
   /**
-   *@description Name of an item from source map
-   *@example {compile.html} PH1
+   * @description Name of an item from source map
+   * @example {compile.html} PH1
    */
   sFromSourceMap: "{PH1} (from source map)"
 };
@@ -97,7 +97,7 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
   treeElements;
   workspaceDiff;
   constructor(workspaceDiff) {
-    super();
+    super({ jslog: `${VisualLogging.pane("sidebar").track({ resize: true })}` });
     this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow(
       "NavigationTree"
       /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */
@@ -108,7 +108,6 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     this.treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged, this);
     UI.ARIAUtils.markAsTablist(this.treeoutline.contentElement);
     this.element.appendChild(this.treeoutline.element);
-    this.element.setAttribute("jslog", `${VisualLogging.pane("sidebar").track({ resize: true })}`);
     this.treeElements = /* @__PURE__ */ new Map();
     this.workspaceDiff = workspaceDiff;
     this.workspaceDiff.modifiedUISourceCodes().forEach(this.addUISourceCode.bind(this));
@@ -549,11 +548,11 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
 var CHANGES_VIEW_URL = "https://developer.chrome.com/docs/devtools/changes";
 var UIStrings3 = {
   /**
-   *@description Text in Changes View of the Changes tab if no change has been made so far.
+   * @description Text in Changes View of the Changes tab if no change has been made so far.
    */
   noChanges: "No changes yet",
   /**
-   *@description Text in Changes View of the Changes tab to explain the Changes panel.
+   * @description Text in Changes View of the Changes tab to explain the Changes panel.
    */
   changesViewDescription: "On this page you can track code changes made within DevTools."
 };
@@ -567,9 +566,11 @@ var ChangesView = class _ChangesView extends UI3.Widget.VBox {
   diffContainer;
   combinedDiffView;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging3.panel("changes").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(changesView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging3.panel("changes").track({ resize: true })}`);
     const splitWidget = new UI3.SplitWidget.SplitWidget(
       true,
       false

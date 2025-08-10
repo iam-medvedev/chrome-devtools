@@ -58,124 +58,124 @@ import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { getRegisteredDecorators } from './MarkerDecorator.js';
 const UIStrings = {
     /**
-     *@description Title for Ad adorner. This iframe is marked as advertisement frame.
+     * @description Title for Ad adorner. This iframe is marked as advertisement frame.
      */
     thisFrameWasIdentifiedAsAnAd: 'This frame was identified as an ad frame',
     /**
-     *@description A context menu item in the Elements panel. Force is used as a verb, indicating intention to make the state change.
+     * @description A context menu item in the Elements panel. Force is used as a verb, indicating intention to make the state change.
      */
     forceState: 'Force state',
     /**
-     *@description Hint element title in Elements Tree Element of the Elements panel
-     *@example {0} PH1
+     * @description Hint element title in Elements Tree Element of the Elements panel
+     * @example {0} PH1
      */
     useSInTheConsoleToReferToThis: 'Use {PH1} in the console to refer to this element.',
     /**
-     *@description A context menu item in the Elements Tree Element of the Elements panel
+     * @description A context menu item in the Elements Tree Element of the Elements panel
      */
     addAttribute: 'Add attribute',
     /**
-     *@description Text to modify the attribute of an item
+     * @description Text to modify the attribute of an item
      */
     editAttribute: 'Edit attribute',
     /**
-     *@description Text to focus on something
+     * @description Text to focus on something
      */
     focus: 'Focus',
     /**
-     *@description Text to scroll the displayed content into view
+     * @description Text to scroll the displayed content into view
      */
     scrollIntoView: 'Scroll into view',
     /**
-     *@description A context menu item in the Elements Tree Element of the Elements panel
+     * @description A context menu item in the Elements Tree Element of the Elements panel
      */
     editText: 'Edit text',
     /**
-     *@description A context menu item in the Elements Tree Element of the Elements panel
+     * @description A context menu item in the Elements Tree Element of the Elements panel
      */
     editAsHtml: 'Edit as HTML',
     /**
-     *@description Text to cut an element, cut should be used as a verb
+     * @description Text to cut an element, cut should be used as a verb
      */
     cut: 'Cut',
     /**
-     *@description Text for copying, copy should be used as a verb
+     * @description Text for copying, copy should be used as a verb
      */
     copy: 'Copy',
     /**
-     *@description Text to paste an element, paste should be used as a verb
+     * @description Text to paste an element, paste should be used as a verb
      */
     paste: 'Paste',
     /**
-     *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+     * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
     copyOuterhtml: 'Copy outerHTML',
     /**
-     *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+     * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
     copySelector: 'Copy `selector`',
     /**
-     *@description Text in Elements Tree Element of the Elements panel
+     * @description Text in Elements Tree Element of the Elements panel
      */
     copyJsPath: 'Copy JS path',
     /**
-     *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+     * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
     copyStyles: 'Copy styles',
     /**
-     *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+     * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
     copyXpath: 'Copy XPath',
     /**
-     *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+     * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
     copyFullXpath: 'Copy full XPath',
     /**
-     *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+     * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
      */
     copyElement: 'Copy element',
     /**
-     *@description A context menu item in the Elements Tree Element of the Elements panel
+     * @description A context menu item in the Elements Tree Element of the Elements panel
      */
     duplicateElement: 'Duplicate element',
     /**
-     *@description Text to hide an element
+     * @description Text to hide an element
      */
     hideElement: 'Hide element',
     /**
-     *@description A context menu item in the Elements Tree Element of the Elements panel
+     * @description A context menu item in the Elements Tree Element of the Elements panel
      */
     deleteElement: 'Delete element',
     /**
-     *@description Text to expand something recursively
+     * @description Text to expand something recursively
      */
     expandRecursively: 'Expand recursively',
     /**
-     *@description Text to collapse children of a parent group
+     * @description Text to collapse children of a parent group
      */
     collapseChildren: 'Collapse children',
     /**
-     *@description Title of an action in the emulation tool to capture node screenshot
+     * @description Title of an action in the emulation tool to capture node screenshot
      */
     captureNodeScreenshot: 'Capture node screenshot',
     /**
-     *@description Title of a context menu item. When clicked DevTools goes to the Application panel and shows this specific iframe's details
+     * @description Title of a context menu item. When clicked DevTools goes to the Application panel and shows this specific iframe's details
      */
     showFrameDetails: 'Show `iframe` details',
     /**
-     *@description Text in Elements Tree Element of the Elements panel
+     * @description Text in Elements Tree Element of the Elements panel
      */
     valueIsTooLargeToEdit: '<value is too large to edit>',
     /**
-     *@description Element text content in Elements Tree Element of the Elements panel
+     * @description Element text content in Elements Tree Element of the Elements panel
      */
     children: 'Children:',
     /**
-     *@description ARIA label for Elements Tree adorners
+     * @description ARIA label for Elements Tree adorners
      */
     enableGridMode: 'Enable grid mode',
     /**
-     *@description ARIA label for Elements Tree adorners
+     * @description ARIA label for Elements Tree adorners
      */
     disableGridMode: 'Disable grid mode',
     /**
@@ -187,44 +187,116 @@ const UIStrings = {
      */
     stopForceOpenPopover: 'Stop keeping this popover open',
     /**
-     *@description Label of the adorner for flex elements in the Elements panel
+     * @description Label of the adorner for flex elements in the Elements panel
      */
     enableFlexMode: 'Enable flex mode',
     /**
-     *@description Label of the adorner for flex elements in the Elements panel
+     * @description Label of the adorner for flex elements in the Elements panel
      */
     disableFlexMode: 'Disable flex mode',
     /**
-     *@description Label of an adorner in the Elements panel. When clicked, it enables
+     * @description Label of an adorner in the Elements panel. When clicked, it enables
      * the overlay showing CSS scroll snapping for the current element.
      */
     enableScrollSnap: 'Enable scroll-snap overlay',
     /**
-     *@description Label of an adorner in the Elements panel. When clicked, it disables
+     * @description Label of an adorner in the Elements panel. When clicked, it disables
      * the overlay showing CSS scroll snapping for the current element.
      */
     disableScrollSnap: 'Disable scroll-snap overlay',
     /**
-     *@description Label of an adorner in the Elements panel. When clicked, it redirects
+     * @description Label of an adorner in the Elements panel. When clicked, it redirects
      * to the Media Panel.
      */
     openMediaPanel: 'Jump to Media panel',
     /**
-     *@description Text of a tooltip to redirect to another element in the Elements panel
+     * @description Text of a tooltip to redirect to another element in the Elements panel
      */
     showPopoverTarget: 'Show element associated with the `popovertarget` attribute',
     /**
-     *@description Text of a tooltip to redirect to another element in the Elements panel, associated with the `interesttarget` attribute
+     * @description Text of a tooltip to redirect to another element in the Elements panel, associated with the `interesttarget` attribute
      */
     showInterestTarget: 'Show element associated with the `interesttarget` attribute',
     /**
-     *@description Text of a tooltip to redirect to another element in the Elements panel, associated with the `commandfor` attribute
+     * @description Text of a tooltip to redirect to another element in the Elements panel, associated with the `commandfor` attribute
      */
     showCommandForTarget: 'Show element associated with the `commandfor` attribute',
     /**
-     *@description Text of the tooltip for scroll adorner.
+     * @description Text of the tooltip for scroll adorner.
      */
     elementHasScrollableOverflow: 'This element has a scrollable overflow',
+    /**
+     * @description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
+     */
+    startAChat: 'Start a chat',
+    /**
+     * @description Context menu item in Elements panel to assess visibility of an element via AI.
+     */
+    assessVisibility: 'Assess visibility',
+    /**
+     * @description Context menu item in Elements panel to center an element via AI.
+     */
+    centerElement: 'Center element',
+    /**
+     * @description Context menu item in Elements panel to wrap flex items via AI.
+     */
+    wrapTheseItems: 'Wrap these items',
+    /**
+     * @description Context menu item in Elements panel to distribute flex items evenly via AI.
+     */
+    distributeItemsEvenly: 'Distribute items evenly',
+    /**
+     * @description Context menu item in Elements panel to explain flexbox via AI.
+     */
+    explainFlexbox: 'Explain flexbox',
+    /**
+     * @description Context menu item in Elements panel to align grid items via AI.
+     */
+    alignItems: 'Align items',
+    /**
+     * @description Context menu item in Elements panel to add padding/gap to grid via AI.
+     */
+    addPadding: 'Add padding',
+    /**
+     * @description Context menu item in Elements panel to explain grid layout via AI.
+     */
+    explainGridLayout: 'Explain grid layout',
+    /**
+     * @description Context menu item in Elements panel to find grid definition for a subgrid item via AI.
+     */
+    findGridDefinition: 'Find grid definition',
+    /**
+     * @description Context menu item in Elements panel to change parent grid properties for a subgrid item via AI.
+     */
+    changeParentProperties: 'Change parent properties',
+    /**
+     * @description Context menu item in Elements panel to explain subgrids via AI.
+     */
+    explainSubgrids: 'Explain subgrids',
+    /**
+     * @description Context menu item in Elements panel to remove scrollbars via AI.
+     */
+    removeScrollbars: 'Remove scrollbars',
+    /**
+     * @description Context menu item in Elements panel to style scrollbars via AI.
+     */
+    styleScrollbars: 'Style scrollbars',
+    /**
+     * @description Context menu item in Elements panel to explain scrollbars via AI.
+     */
+    explainScrollbars: 'Explain scrollbars',
+    /**
+     * @description Context menu item in Elements panel to explain container queries via AI.
+     */
+    explainContainerQueries: 'Explain container queries',
+    /**
+     * @description Context menu item in Elements panel to explain container types via AI.
+     */
+    explainContainerTypes: 'Explain container types',
+    /**
+     * @description Context menu item in Elements panel to explain container context via AI.
+     */
+    explainContainerContext: 'Explain container context',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/ElementsTreeElement.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -650,9 +722,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         return false;
     }
     showContextMenu(event) {
-        this.treeOutline && this.treeOutline.showContextMenu(this, event);
+        this.treeOutline && void this.treeOutline.showContextMenu(this, event);
     }
-    populateTagContextMenu(contextMenu, event) {
+    async populateTagContextMenu(contextMenu, event) {
         // Add attribute-related actions.
         const treeElement = this.isClosingTag() && this.treeOutline ? this.treeOutline.findTreeElement(this.nodeInternal) : this;
         if (!treeElement) {
@@ -665,7 +737,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (attribute && !newAttribute) {
             contextMenu.editSection().appendItem(i18nString(UIStrings.editAttribute), this.startEditingAttribute.bind(this, attribute, target), { jslogContext: 'edit-attribute' });
         }
-        this.populateNodeContextMenu(contextMenu);
+        await this.populateNodeContextMenu(contextMenu);
         ElementsTreeElement.populateForcedPseudoStateItems(contextMenu, treeElement.node());
         this.populateScrollIntoView(contextMenu);
         contextMenu.viewSection().appendItem(i18nString(UIStrings.focus), async () => {
@@ -684,13 +756,13 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     populateScrollIntoView(contextMenu) {
         contextMenu.viewSection().appendItem(i18nString(UIStrings.scrollIntoView), () => this.nodeInternal.scrollIntoView(), { jslogContext: 'scroll-into-view' });
     }
-    populateTextContextMenu(contextMenu, textNode) {
+    async populateTextContextMenu(contextMenu, textNode) {
         if (!this.editing) {
             contextMenu.editSection().appendItem(i18nString(UIStrings.editText), this.startEditingTextNode.bind(this, textNode), { jslogContext: 'edit-text' });
         }
-        this.populateNodeContextMenu(contextMenu);
+        return await this.populateNodeContextMenu(contextMenu);
     }
-    populateNodeContextMenu(contextMenu) {
+    async populateNodeContextMenu(contextMenu) {
         // Add free-form node-related actions.
         const isEditable = this.hasEditableNode();
         // clang-format off
@@ -706,8 +778,150 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         let menuItem;
-        if (UI.ActionRegistry.ActionRegistry.instance().hasAction('freestyler.element-panel-context')) {
-            contextMenu.footerSection().appendAction('freestyler.element-panel-context');
+        const openAiAssistanceId = 'freestyler.element-panel-context';
+        if (UI.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+            function appendSubmenuPromptAction(submenu, action, label, prompt, jslogContext) {
+                submenu.defaultSection().appendItem(label, () => action.execute({ prompt }), { disabled: !action.enabled(), jslogContext });
+            }
+            UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, this.nodeInternal);
+            if (Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+                // Register new badge under the `devToolsAiSubmenuPrompts` feature, as the freestyler one is already used in ViewManager.
+                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.featureName);
+                submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
+                const submenuConfigs = [
+                    {
+                        condition: (props) => Boolean(props?.isFlex),
+                        items: [
+                            {
+                                label: i18nString(UIStrings.wrapTheseItems),
+                                prompt: 'How can I make flex items wrap?',
+                                jslogContextSuffix: '.flex-wrap',
+                            },
+                            {
+                                label: i18nString(UIStrings.distributeItemsEvenly),
+                                prompt: 'How do I distribute flex items evenly?',
+                                jslogContextSuffix: '.flex-distribute',
+                            },
+                            {
+                                label: i18nString(UIStrings.explainFlexbox),
+                                prompt: 'What is flexbox?',
+                                jslogContextSuffix: '.flex-what',
+                            },
+                        ],
+                    },
+                    {
+                        condition: (props) => Boolean(props?.isGrid),
+                        items: [
+                            {
+                                label: i18nString(UIStrings.alignItems),
+                                prompt: 'How do I align items in a grid?',
+                                jslogContextSuffix: '.grid-align',
+                            },
+                            {
+                                label: i18nString(UIStrings.addPadding),
+                                prompt: 'How to add spacing between grid items?',
+                                jslogContextSuffix: '.grid-gap',
+                            },
+                            {
+                                label: i18nString(UIStrings.explainGridLayout),
+                                prompt: 'How does grid layout work?',
+                                jslogContextSuffix: '.grid-how',
+                            },
+                        ],
+                    },
+                    {
+                        condition: (props) => Boolean(props?.isSubgrid),
+                        items: [
+                            {
+                                label: i18nString(UIStrings.findGridDefinition),
+                                prompt: 'Where is this grid defined?',
+                                jslogContextSuffix: '.subgrid-where',
+                            },
+                            {
+                                label: i18nString(UIStrings.changeParentProperties),
+                                prompt: 'How to overwrite parent grid properties?',
+                                jslogContextSuffix: '.subgrid-override',
+                            },
+                            {
+                                label: i18nString(UIStrings.explainSubgrids),
+                                prompt: 'How do subgrids work?',
+                                jslogContextSuffix: '.subgrid-how',
+                            },
+                        ],
+                    },
+                    {
+                        condition: (props) => Boolean(props?.hasScroll),
+                        items: [
+                            {
+                                label: i18nString(UIStrings.removeScrollbars),
+                                prompt: 'How do I remove scrollbars for this element?',
+                                jslogContextSuffix: '.scroll-remove',
+                            },
+                            {
+                                label: i18nString(UIStrings.styleScrollbars),
+                                prompt: 'How can I style a scrollbar?',
+                                jslogContextSuffix: '.scroll-style',
+                            },
+                            {
+                                label: i18nString(UIStrings.explainScrollbars),
+                                prompt: 'Why does this element scroll?',
+                                jslogContextSuffix: '.scroll-why',
+                            },
+                        ],
+                    },
+                    {
+                        condition: (props) => Boolean(props?.isContainer),
+                        items: [
+                            {
+                                label: i18nString(UIStrings.explainContainerQueries),
+                                prompt: 'What are container queries?',
+                                jslogContextSuffix: '.container-what',
+                            },
+                            {
+                                label: i18nString(UIStrings.explainContainerTypes),
+                                prompt: 'How do I use container-type?',
+                                jslogContextSuffix: '.container-how',
+                            },
+                            {
+                                label: i18nString(UIStrings.explainContainerContext),
+                                prompt: 'What\'s the container context for this element?',
+                                jslogContextSuffix: '.container-context',
+                            },
+                        ],
+                    },
+                    {
+                        // Default items
+                        condition: () => true,
+                        items: [
+                            {
+                                label: i18nString(UIStrings.assessVisibility),
+                                prompt: 'Why isn’t this element visible?',
+                                jslogContextSuffix: '.visibility',
+                            },
+                            {
+                                label: i18nString(UIStrings.centerElement),
+                                prompt: 'How do I center this element?',
+                                jslogContextSuffix: '.center',
+                            },
+                        ],
+                    },
+                ];
+                const layoutProps = await this.nodeInternal.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.nodeInternal.id);
+                const config = submenuConfigs.find(c => c.condition(layoutProps));
+                if (config) {
+                    for (const item of config.items) {
+                        appendSubmenuPromptAction(submenu, action, item.label, item.prompt, openAiAssistanceId + item.jslogContextSuffix);
+                    }
+                }
+            }
+            else if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
+                // Register new badge under the `devToolsAiDebugWithAi` feature, as the freestyler one is already used in ViewManager.
+                contextMenu.footerSection().appendAction(openAiAssistanceId, undefined, false, undefined, Root.Runtime.hostConfig.devToolsAiDebugWithAi?.featureName);
+            }
+            else {
+                contextMenu.footerSection().appendAction(openAiAssistanceId);
+            }
         }
         menuItem = contextMenu.clipboardSection().appendItem(i18nString(UIStrings.cut), treeOutline.performCopyOrCut.bind(treeOutline, true, this.nodeInternal), { disabled: !this.hasEditableNode(), jslogContext: 'cut' });
         menuItem.setShortcut(createShortcut('X', modifier));

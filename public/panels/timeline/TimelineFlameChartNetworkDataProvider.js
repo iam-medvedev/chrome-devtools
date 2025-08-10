@@ -254,7 +254,7 @@ export class TimelineFlameChartNetworkDataProvider {
         context.fillRect(finish, barY - 0.5, barX + barWidth - finish, barHeight);
         // Draws left and right whiskers
         function drawTick(begin, end, y) {
-            const /** @const */ tickHeightPx = 6;
+            const /** @constant */ tickHeightPx = 6;
             context.moveTo(begin, y - tickHeightPx / 2);
             context.lineTo(begin, y + tickHeightPx / 2);
             context.moveTo(begin, y);
@@ -272,15 +272,15 @@ export class TimelineFlameChartNetworkDataProvider {
         // Draw request URL as text
         const textStart = Math.max(sendStart, 0);
         const textWidth = finish - textStart;
-        const /** @const */ minTextWidthPx = 20;
+        const /** @constant */ minTextWidthPx = 20;
         if (textWidth >= minTextWidthPx) {
             let title = this.entryTitle(index) || '';
             if (event.args.data.fromServiceWorker) {
                 title = '⚙ ' + title;
             }
             if (title) {
-                const /** @const */ textPadding = 4;
-                const /** @const */ textBaseline = 5;
+                const /** @constant */ textPadding = 4;
+                const /** @constant */ textBaseline = 5;
                 const textBaseHeight = barHeight - textBaseline;
                 const trimmedText = UI.UIUtils.trimTextEnd(context, title, textWidth - 2 * textPadding);
                 context.fillStyle = '#333';

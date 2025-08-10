@@ -167,33 +167,33 @@ var PlatformFileSystem = class extends Common.ObjectWrapper.ObjectWrapper {
 // gen/front_end/models/persistence/IsolatedFileSystem.js
 var UIStrings2 = {
   /**
-   *@description Text in Isolated File System of the Workspace settings in Settings
-   *@example {folder does not exist} PH1
+   * @description Text in Isolated File System of the Workspace settings in Settings
+   * @example {folder does not exist} PH1
    */
   fileSystemErrorS: "File system error: {PH1}",
   /**
-   *@description Error message when reading a remote blob
+   * @description Error message when reading a remote blob
    */
   blobCouldNotBeLoaded: "Blob could not be loaded.",
   /**
-   *@description Error message when reading a file.
-   *@example {c:\dir\file.js} PH1
-   *@example {Underlying error} PH2
+   * @description Error message when reading a file.
+   * @example {c:\dir\file.js} PH1
+   * @example {Underlying error} PH2
    */
   cantReadFileSS: "Can't read file: {PH1}: {PH2}",
   /**
-   *@description Text to show something is linked to another
-   *@example {example.url} PH1
+   * @description Text to show something is linked to another
+   * @example {example.url} PH1
    */
   linkedToS: "Linked to {PH1}",
   /**
-   *@description Error message shown when devtools failed to create a file system directory.
-   *@example {path/} PH1
+   * @description Error message shown when devtools failed to create a file system directory.
+   * @example {path/} PH1
    */
   createDirFailedBecausePathIsFile: "Overrides: Failed to create directory {PH1} because the path exists and is a file.",
   /**
-   *@description Error message shown when devtools failed to create a file system directory.
-   *@example {path/} PH1
+   * @description Error message shown when devtools failed to create a file system directory.
+   * @example {path/} PH1
    */
   createDirFailed: "Overrides: Failed to create directory {PH1}. Are the workspace or overrides configured correctly?"
 };
@@ -708,8 +708,8 @@ var BinaryExtensions = /* @__PURE__ */ new Set([
 // gen/front_end/models/persistence/IsolatedFileSystemManager.js
 var UIStrings3 = {
   /**
-   *@description Text in Isolated File System Manager of the Workspace settings in Settings
-   *@example {folder does not exist} PH1
+   * @description Text in Isolated File System Manager of the Workspace settings in Settings
+   * @example {folder does not exist} PH1
    */
   unableToAddFilesystemS: "Unable to add filesystem: {PH1}"
 };
@@ -2154,13 +2154,13 @@ function extractDirectoryIndex(pattern) {
 // gen/front_end/models/persistence/PersistenceUtils.js
 var UIStrings4 = {
   /**
-   *@description Text in Persistence Utils of the Workspace settings in Settings
-   *@example {example.url} PH1
+   * @description Text in Persistence Utils of the Workspace settings in Settings
+   * @example {example.url} PH1
    */
   linkedToSourceMapS: "Linked to source map: {PH1}",
   /**
-   *@description Text to show something is linked to another
-   *@example {example.url} PH1
+   * @description Text to show something is linked to another
+   * @example {example.url} PH1
    */
   linkedToS: "Linked to {PH1}"
 };
@@ -2923,7 +2923,7 @@ var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Commo
   /**
    * Yields the current `AutomaticFileSystem` (if any).
    *
-   * @return the current automatic file system or `null`.
+   * @returns the current automatic file system or `null`.
    */
   get automaticFileSystem() {
     return this.#automaticFileSystem;
@@ -2936,7 +2936,7 @@ var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Commo
    * providing a `com.chrome.devtools.json` or not, and whether or not that file
    * (if it exists) provides workspace information.
    *
-   * @return `'available'` if the feature is available and the project settings
+   * @returns `'available'` if the feature is available and the project settings
    *         feature is also available, otherwise `'unavailable'`.
    */
   get availability() {
@@ -3284,19 +3284,19 @@ var editFileSystemView_css_default = `/*
 var { styleMap } = Directives;
 var UIStrings5 = {
   /**
-   *@description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
+   * @description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
    */
   url: "URL",
   /**
-   *@description Text in Edit File System View of the Workspace settings in Settings
+   * @description Text in Edit File System View of the Workspace settings in Settings
    */
   excludedFolders: "Excluded sub-folders",
   /**
-   *@description Error message when a file system path is an empty string.
+   * @description Error message when a file system path is an empty string.
    */
   enterAPath: "Enter a path",
   /**
-   *@description Error message when a file system path is identical to an existing path.
+   * @description Error message when a file system path is identical to an existing path.
    */
   enterAUniquePath: "Enter a unique path"
 };
@@ -3314,7 +3314,7 @@ function statusString(status) {
 }
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
-      <style>${editFileSystemView_css_default}</style>
+      <style>${UI3.Widget.widgetScoped(editFileSystemView_css_default)}</style>
       <div class="excluded-folder-header">
         <span>${i18nString5(UIStrings5.url)}</span>
         <span class="excluded-folder-url">${input.fileSystemPath}</span>
@@ -3345,7 +3345,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     ({ status }) => status !== 1
     /* ExcludedFolderStatus.VALID */
   ).map(({ status }) => html`<span class="excluded-folder-error">${statusString(status)}</span>`)}
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
   #fileSystem;
@@ -3462,32 +3462,32 @@ import * as TextUtils7 from "./../text_utils/text_utils.js";
 import * as Workspace13 from "./../workspace/workspace.js";
 var UIStrings6 = {
   /**
-   *@description Text to save content as a specific file type
+   * @description Text to save content as a specific file type
    */
   saveAs: "Save as\u2026",
   /**
-   *@description Context menu item for saving an image
+   * @description Context menu item for saving an image
    */
   saveImage: "Save image",
   /**
-   *@description Context menu item for showing all overridden files
+   * @description Context menu item for showing all overridden files
    */
   showOverrides: "Show all overrides",
   /**
-   *@description A context menu item in the Persistence Actions of the Workspace settings in Settings
+   * @description A context menu item in the Persistence Actions of the Workspace settings in Settings
    */
   overrideContent: "Override content",
   /**
-   *@description A context menu item in the Persistence Actions of the Workspace settings in Settings
+   * @description A context menu item in the Persistence Actions of the Workspace settings in Settings
    */
   openInContainingFolder: "Open in containing folder",
   /**
-   *@description A message in a confirmation dialog in the Persistence Actions
+   * @description A message in a confirmation dialog in the Persistence Actions
    * @example {bundle.min.js} PH1
    */
   overrideSourceMappedFileWarning: "Override \u2018{PH1}\u2019 instead?",
   /**
-   *@description A message in a confirmation dialog to explain why the action is failed in the Persistence Actions
+   * @description A message in a confirmation dialog to explain why the action is failed in the Persistence Actions
    * @example {index.ts} PH1
    */
   overrideSourceMappedFileExplanation: "\u2018{PH1}\u2019 is a source mapped file and cannot be overridden.",
@@ -3734,23 +3734,23 @@ label {
 // gen/front_end/models/persistence/WorkspaceSettingsTab.js
 var UIStrings7 = {
   /**
-   *@description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
    */
   workspace: "Workspace",
   /**
-   *@description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
    */
   mappingsAreInferredAutomatically: "Mappings are inferred automatically.",
   /**
-   *@description Text of the add button in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of the add button in Workspace Settings Tab of the Workspace settings in Settings
    */
   addFolder: "Add folder",
   /**
-   *@description Label element text content in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Label element text content in Workspace Settings Tab of the Workspace settings in Settings
    */
   folderExcludePattern: "Exclude from workspace",
   /**
-   *@description Label for an item to remove something
+   * @description Label for an item to remove something
    */
   remove: "Remove"
 };
@@ -3758,7 +3758,7 @@ var str_7 = i18n13.i18n.registerUIStrings("models/persistence/WorkspaceSettingsT
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render2(html2`
-    <style>${workspaceSettingsTab_css_default}</style>
+    <style>${UI5.Widget.widgetScoped(workspaceSettingsTab_css_default)}</style>
     <div class="settings-card-container-wrapper" jslog=${VisualLogging.pane("workspace")}>
       <div class="settings-card-container">
         <devtools-card heading=${i18nString7(UIStrings7.workspace)}>
@@ -3794,7 +3794,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             @click=${input.onAddClicked}>${i18nString7(UIStrings7.addFolder)}</devtools-button>
         </div>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
   #view;

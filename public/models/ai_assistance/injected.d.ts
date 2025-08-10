@@ -1,5 +1,5 @@
 /**
- * @fileoverview This files include scripts that are executed not in
+ * @file This files include scripts that are executed not in
  * the DevTools target but the page one.
  * They need remain isolated for importing other function so
  * bundling them for production does not create issues.

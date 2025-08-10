@@ -1,6 +1,6 @@
 import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
-import type * as Root from '../../core/root/root.js';
+import * as Root from '../../core/root/root.js';
 import { type ToolbarItem } from './Toolbar.js';
 import type { TabbedViewLocation, View, ViewLocation } from './View.js';
 import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensionForID, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, type ViewRegistration } from './ViewRegistration.js';

@@ -25,6 +25,7 @@ let entityMappings = {
     eventsByEntity: new Map(),
     entityByEvent: new Map(),
     createdEntityCache: new Map(),
+    entityByUrlCache: new Map(),
 };
 // We track the compositor tile worker thread name events so that at the end we
 // can return these keyed by the process ID. These are used in the frontend to
@@ -61,6 +62,7 @@ export function reset() {
     entityMappings.eventsByEntity.clear();
     entityMappings.entityByEvent.clear();
     entityMappings.createdEntityCache.clear();
+    entityMappings.entityByUrlCache.clear();
     allTraceEntries.length = 0;
     completeEventStack.length = 0;
     compositorTileWorkers.length = 0;
@@ -119,6 +121,7 @@ export function data() {
             entityByEvent: new Map(entityMappings.entityByEvent),
             eventsByEntity: new Map(entityMappings.eventsByEntity),
             createdEntityCache: new Map(entityMappings.createdEntityCache),
+            entityByUrlCache: new Map(entityMappings.entityByUrlCache),
         },
     };
 }
@@ -293,12 +296,12 @@ export function buildHierarchy(processes, options) {
                     new Helpers.SamplesIntegrator.SamplesIntegrator(cpuProfile, samplesDataForThread.profileId, pid, tid, config);
                 const profileCalls = samplesIntegrator?.buildProfileCalls(thread.entries);
                 if (samplesIntegrator && profileCalls) {
-                    allTraceEntries = [...allTraceEntries, ...profileCalls];
+                    allTraceEntries = allTraceEntries.concat(profileCalls);
                     thread.entries = Helpers.Trace.mergeEventsInOrder(thread.entries, profileCalls);
                     thread.profileCalls = profileCalls;
                     // We'll also inject the instant JSSample events (in debug mode only)
                     const jsSamples = samplesIntegrator.jsSampleEvents;
-                    if (jsSamples) {
+                    if (jsSamples.length) {
                         allTraceEntries = [...allTraceEntries, ...jsSamples];
                         thread.entries = Helpers.Trace.mergeEventsInOrder(thread.entries, jsSamples);
                     }

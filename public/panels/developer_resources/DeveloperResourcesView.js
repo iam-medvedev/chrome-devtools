@@ -14,7 +14,7 @@ const { widgetConfig } = UI.Widget;
 const { bindToSetting } = UI.SettingsUI;
 const UIStrings = {
     /**
-     *@description Placeholder for a search field in a toolbar
+     * @description Placeholder for a search field in a toolbar
      */
     filterByText: 'Filter by URL and error',
     /**
@@ -30,9 +30,9 @@ const UIStrings = {
      */
     enableLoadingThroughTarget: 'Load through website',
     /**
-     *@description Text for resources load status
-     *@example {1} PH1
-     *@example {1} PH2
+     * @description Text for resources load status
+     * @example {1} PH1
+     * @example {1} PH2
      */
     resourcesCurrentlyLoading: '{PH1} resources, {PH2} currently loading',
     /**
@@ -58,7 +58,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
     <style>
-      ${developerResourcesViewStyles}
+      ${UI.Widget.widgetScoped(developerResourcesViewStyles)}
     </style>
     <div class="vbox flex-auto" jslog=${VisualLogging.panel('developer-resources').track({ resize: true })}>
       <div class="developer-resource-view-toolbar-container" jslog=${VisualLogging.toolbar()}
@@ -91,7 +91,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         i18nString(UIStrings.resources, { n: input.numResources })}
          </div>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class DeveloperResourcesView extends UI.ThrottledWidget.ThrottledWidget {

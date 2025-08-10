@@ -1,56 +1,44 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { dispatchClickEvent, dispatchKeyDownEvent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithEnvironment, setupActionRegistry, } from '../../../testing/EnvironmentHelpers.js';
-import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
+import { createViewFunctionStub, } from '../../../testing/ViewFunctionHelpers.js';
 import * as Components from './components.js';
 describeWithEnvironment('RecordingListView', () => {
     setupActionRegistry();
+    const views = [];
+    afterEach(() => {
+        // Unregister global listeners in willHide to prevent leaks.
+        for (const view of views) {
+            view.willHide();
+        }
+    });
+    async function createView(output) {
+        const view = createViewFunctionStub(Components.RecordingListView.RecordingListView, output);
+        const component = new Components.RecordingListView.RecordingListView(undefined, view);
+        component.recordings = [{ storageName: 'storage-test', name: 'test' }];
+        component.replayAllowed = true;
+        component.wasShown();
+        views.push(component);
+        return [view, component];
+    }
     it('should open a recording on Enter', async () => {
-        const view = new Components.RecordingListView.RecordingListView();
-        renderElementIntoDOM(view);
-        view.recordings = [{ storageName: 'storage-test', name: 'test' }];
-        await RenderCoordinator.done();
-        const recording = view.shadowRoot?.querySelector('.row');
-        assert.isOk(recording);
-        const eventSent = new Promise(resolve => {
-            view.addEventListener('openrecording', resolve, { once: true });
-        });
-        dispatchKeyDownEvent(recording, { key: 'Enter' });
-        const event = await eventSent;
+        const [view, component] = await createView();
+        const dispatchEventSpy = sinon.spy(component.contentElement, 'dispatchEvent');
+        view.input.onKeyDown('storage-test', new KeyboardEvent('keydown', { key: 'Enter' }));
+        sinon.assert.calledOnce(dispatchEventSpy);
+        const event = dispatchEventSpy.firstCall.args[0];
+        assert.instanceOf(event, Components.RecordingListView.OpenRecordingEvent);
         assert.strictEqual(event.storageName, 'storage-test');
     });
     it('should delete a recording', async () => {
-        const view = new Components.RecordingListView.RecordingListView();
-        renderElementIntoDOM(view);
-        view.recordings = [{ storageName: 'storage-test', name: 'test' }];
-        await RenderCoordinator.done();
-        const deleteButton = view.shadowRoot?.querySelector('.delete-recording-button');
-        assert.isOk(deleteButton);
-        const eventSent = new Promise(resolve => {
-            view.addEventListener('deleterecording', resolve, { once: true });
-        });
-        dispatchClickEvent(deleteButton);
-        const event = await eventSent;
+        const [view, component] = await createView();
+        const dispatchEventSpy = sinon.spy(component.contentElement, 'dispatchEvent');
+        view.input.onDeleteClick('storage-test', new MouseEvent('click'));
+        sinon.assert.calledOnce(dispatchEventSpy);
+        const event = dispatchEventSpy.firstCall.args[0];
+        assert.instanceOf(event, Components.RecordingListView.DeleteRecordingEvent);
         assert.strictEqual(event.storageName, 'storage-test');
-    });
-    it('should not open a recording on Enter on the delete button', async () => {
-        const view = new Components.RecordingListView.RecordingListView();
-        renderElementIntoDOM(view);
-        view.recordings = [{ storageName: 'storage-test', name: 'test' }];
-        await RenderCoordinator.done();
-        const deleteButton = view.shadowRoot?.querySelector('.delete-recording-button');
-        assert.isOk(deleteButton);
-        const { resolve: forceResolve, promise: eventSent } = Promise.withResolvers();
-        view.addEventListener('openrecording', forceResolve, { once: true });
-        dispatchKeyDownEvent(deleteButton, { key: 'Enter', bubbles: true });
-        const maybeEvent = await Promise.race([
-            eventSent,
-            new Promise(resolve => queueMicrotask(() => resolve('timeout'))),
-        ]);
-        assert.strictEqual(maybeEvent, 'timeout');
-        forceResolve();
     });
 });
 //# sourceMappingURL=RecordingListView.test.js.map

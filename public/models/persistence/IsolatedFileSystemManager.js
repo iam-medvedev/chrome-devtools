@@ -35,8 +35,8 @@ import { IsolatedFileSystem } from './IsolatedFileSystem.js';
 import { PlatformFileSystemType } from './PlatformFileSystem.js';
 const UIStrings = {
     /**
-     *@description Text in Isolated File System Manager of the Workspace settings in Settings
-     *@example {folder does not exist} PH1
+     * @description Text in Isolated File System Manager of the Workspace settings in Settings
+     * @example {folder does not exist} PH1
      */
     unableToAddFilesystemS: 'Unable to add filesystem: {PH1}',
 };

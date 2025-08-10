@@ -36,27 +36,27 @@ import { IsolateSelector } from './IsolateSelector.js';
 import profileLauncherViewStyles from './profileLauncherView.css.js';
 const UIStrings = {
     /**
-     *@description Text in Profile Launcher View of a profiler tool
+     * @description Text in Profile Launcher View of a profiler tool
      */
     selectJavascriptVmInstance: 'Select JavaScript VM instance',
     /**
-     *@description Text to load something
+     * @description Text to load something
      */
     load: 'Load profile',
     /**
-     *@description Control button text content in Profile Launcher View of a profiler tool
+     * @description Control button text content in Profile Launcher View of a profiler tool
      */
     takeSnapshot: 'Take snapshot',
     /**
-     *@description Text of an item that stops the running task
+     * @description Text of an item that stops the running task
      */
     stop: 'Stop',
     /**
-     *@description Control button text content in Profile Launcher View of a profiler tool
+     * @description Control button text content in Profile Launcher View of a profiler tool
      */
     start: 'Start',
     /**
-     *@description Profile type header element text content in Profile Launcher View of a profiler tool
+     * @description Profile type header element text content in Profile Launcher View of a profiler tool
      */
     selectProfilingType: 'Select profiling type',
 };

@@ -8,7 +8,8 @@ export declare class TargetDetachedDialog extends SDK.SDKModel.SDKModel<void> im
     detached({ reason }: Protocol.Inspector.DetachedEvent): void;
     static connectionLost(message: Platform.UIString.LocalizedString): void;
     targetCrashed(): void;
-    /** ;
+    /**
+     * ;
      */
     targetReloadedAfterCrash(): void;
 }

@@ -272,39 +272,39 @@ var screencastView_css_default = `/*
 // gen/front_end/panels/screencast/ScreencastView.js
 var UIStrings = {
   /**
-   *@description Accessible alt text for the screencast canvas rendering of the debug target webpage
+   * @description Accessible alt text for the screencast canvas rendering of the debug target webpage
    */
   screencastViewOfDebugTarget: "Screencast view of debug target",
   /**
-   *@description Glass pane element text content in Screencast View of the Remote Devices tab when toggling screencast
+   * @description Glass pane element text content in Screencast View of the Remote Devices tab when toggling screencast
    */
   theTabIsInactive: "The tab is inactive",
   /**
-   *@description Glass pane element text content in Screencast View of the Remote Devices tab when toggling screencast
+   * @description Glass pane element text content in Screencast View of the Remote Devices tab when toggling screencast
    */
   profilingInProgress: "Profiling in progress",
   /**
-   *@description Accessible text for the screencast back button
+   * @description Accessible text for the screencast back button
    */
   back: "back",
   /**
-   *@description Accessible text for the screencast forward button
+   * @description Accessible text for the screencast forward button
    */
   forward: "forward",
   /**
-   *@description Accessible text for the screencast reload button
+   * @description Accessible text for the screencast reload button
    */
   reload: "reload",
   /**
-   *@description Accessible text for the address bar in screencast view
+   * @description Accessible text for the address bar in screencast view
    */
   addressBar: "Address bar",
   /**
-   *@description Accessible text for the touch emulation button.
+   * @description Accessible text for the touch emulation button.
    */
   touchInput: "Use touch",
   /**
-   *@description Accessible text for the mouse emulation button.
+   * @description Accessible text for the mouse emulation button.
    */
   mouseInput: "Use mouse"
 };
@@ -1022,7 +1022,7 @@ function getAttributesForElementTitle(node) {
 // gen/front_end/panels/screencast/ScreencastApp.js
 var UIStrings2 = {
   /**
-   *@description Tooltip text that appears when hovering over largeicon phone button in Screencast App of the Remote Devices tab when toggling screencast
+   * @description Tooltip text that appears when hovering over largeicon phone button in Screencast App of the Remote Devices tab when toggling screencast
    */
   toggleScreencast: "Toggle screencast"
 };

@@ -14,33 +14,40 @@ export declare class LanguageExtensionEndpoint implements Bindings.DebuggerLangu
     canAccessURL(url: string): boolean;
     handleScript(script: SDK.Script.Script): boolean;
     createPageResourceLoadInitiator(): SDK.PageResourceLoader.PageResourceLoadInitiator;
-    /** Notify the plugin about a new script
+    /**
+     * Notify the plugin about a new script
      */
     addRawModule(rawModuleId: string, symbolsURL: string, rawModule: Chrome.DevTools.RawModule): Promise<string[]>;
     /**
      * Notifies the plugin that a script is removed.
      */
     removeRawModule(rawModuleId: string): Promise<void>;
-    /** Find locations in raw modules from a location in a source file
+    /**
+     * Find locations in raw modules from a location in a source file
      */
     sourceLocationToRawLocation(sourceLocation: Chrome.DevTools.SourceLocation): Promise<Chrome.DevTools.RawLocationRange[]>;
-    /** Find locations in source files from a location in a raw module
+    /**
+     * Find locations in source files from a location in a raw module
      */
     rawLocationToSourceLocation(rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.SourceLocation[]>;
     getScopeInfo(type: string): Promise<Chrome.DevTools.ScopeInfo>;
-    /** List all variables in lexical scope at a given location in a raw module
+    /**
+     * List all variables in lexical scope at a given location in a raw module
      */
     listVariablesInScope(rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.Variable[]>;
-    /** List all function names (including inlined frames) at location
+    /**
+     * List all function names (including inlined frames) at location
      */
     getFunctionInfo(rawLocation: Chrome.DevTools.RawLocation): Promise<{
         frames: Chrome.DevTools.FunctionInfo[];
     }>;
-    /** Find locations in raw modules corresponding to the inline function
+    /**
+     * Find locations in raw modules corresponding to the inline function
      *  that rawLocation is in.
      */
     getInlinedFunctionRanges(rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.RawLocationRange[]>;
-    /** Find locations in raw modules corresponding to inline functions
+    /**
+     * Find locations in raw modules corresponding to inline functions
      *  called by the function or inline frame that rawLocation is in.
      */
     getInlinedCalleesRanges(rawLocation: Chrome.DevTools.RawLocation): Promise<Chrome.DevTools.RawLocationRange[]>;

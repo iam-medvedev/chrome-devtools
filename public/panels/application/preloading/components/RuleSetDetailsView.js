@@ -17,13 +17,13 @@ import ruleSetDetailsViewStyles from './RuleSetDetailsView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
-     *@description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
+     * @description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
      *             table of speculation rules. Speculation rules define the rules when and which urls should be prefetched.
      *             https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
      */
     noElementSelected: 'No element selected',
     /**
-     *@description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
+     * @description Text in RuleSetDetailsView of the Application panel if no element is selected. An element here is an item in a
      *             table of speculation rules. Speculation rules define the rules when and which urls should be prefetched.
      *             https://developer.chrome.com/docs/devtools/application/debugging-speculation-rules
      */

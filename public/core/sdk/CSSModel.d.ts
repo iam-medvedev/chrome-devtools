@@ -17,6 +17,13 @@ export declare const enum ColorScheme {
     LIGHT = "light",
     DARK = "dark"
 }
+export interface LayoutProperties {
+    isFlex: boolean;
+    isGrid: boolean;
+    isSubgrid: boolean;
+    isContainer: boolean;
+    hasScroll: boolean;
+}
 export declare class CSSModel extends SDKModel<EventTypes> {
     #private;
     readonly agent: ProtocolProxyApi.CSSApi;
@@ -49,13 +56,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     getMatchedStyles(nodeId: Protocol.DOM.NodeId): Promise<CSSMatchedStyles | null>;
     getClassNames(styleSheetId: Protocol.CSS.StyleSheetId): Promise<string[]>;
     getComputedStyle(nodeId: Protocol.DOM.NodeId): Promise<Map<string, string> | null>;
-    getLayoutPropertiesFromComputedStyle(nodeId: Protocol.DOM.NodeId): Promise<{
-        isFlex: boolean;
-        isGrid: boolean;
-        isSubgrid: boolean;
-        isContainer: boolean;
-        hasScroll: boolean;
-    } | null>;
+    getLayoutPropertiesFromComputedStyle(nodeId: Protocol.DOM.NodeId): Promise<LayoutProperties | null>;
     getEnvironmentVariales(): Promise<Record<string, string>>;
     getBackgroundColors(nodeId: Protocol.DOM.NodeId): Promise<ContrastInfo | null>;
     getPlatformFonts(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.PlatformFontUsage[] | null>;

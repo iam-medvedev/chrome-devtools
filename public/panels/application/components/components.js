@@ -866,8 +866,8 @@ var UIStrings2 = {
    */
   framesPerIssue: "{n, plural, =1 {# frame} other {# frames}}",
   /**
-   *@description Title for a frame in the frame tree that doesn't have a URL. Placeholder indicates which number frame with a blank URL it is.
-   *@example {3} PH1
+   * @description Title for a frame in the frame tree that doesn't have a URL. Placeholder indicates which number frame with a blank URL it is.
+   * @example {3} PH1
    */
   blankURLTitle: "Blank URL [{PH1}]",
   /**
@@ -1524,12 +1524,12 @@ devtools-data-grid {
 // gen/front_end/panels/application/components/EndpointsGrid.js
 var UIStrings4 = {
   /**
-   *@description Placeholder text when there are no Reporting API endpoints.
+   * @description Placeholder text when there are no Reporting API endpoints.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#tldr)
    */
   noEndpointsToDisplay: "No endpoints to display",
   /**
-   *@description Placeholder text when there are no Reporting API endpoints.
+   * @description Placeholder text when there are no Reporting API endpoints.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#tldr)
    */
   endpointsDescription: "Here you will find the list of endpoints that receive the reports"
@@ -1679,19 +1679,19 @@ var stackTraceRow_css_default = `/*
 var { html: html4 } = Lit4;
 var UIStrings5 = {
   /**
-   *@description Error message stating that something went wrong when trying to render stack trace
+   * @description Error message stating that something went wrong when trying to render stack trace
    */
   cannotRenderStackTrace: "Cannot render stack trace",
   /**
-   *@description A link to show more frames in the stack trace if more are available. Never 0.
+   * @description A link to show more frames in the stack trace if more are available. Never 0.
    */
   showSMoreFrames: "{n, plural, =1 {Show # more frame} other {Show # more frames}}",
   /**
-   *@description A link to rehide frames that are by default hidden.
+   * @description A link to rehide frames that are by default hidden.
    */
   showLess: "Show less",
   /**
-   *@description Label for a stack trace. If a frame is created programmatically (i.e. via JavaScript), there is a
+   * @description Label for a stack trace. If a frame is created programmatically (i.e. via JavaScript), there is a
    * stack trace for the line of code which caused the creation of the iframe. This is the stack trace we are showing here.
    */
   creationStackTrace: "Frame Creation `Stack Trace`"
@@ -2054,53 +2054,53 @@ var originTrialTreeView_css_default = `/*
 var { html: html5, Directives: { ifDefined } } = Lit5;
 var UIStrings6 = {
   /**
-   *@description Label for the 'origin' field in a parsed Origin Trial Token.
+   * @description Label for the 'origin' field in a parsed Origin Trial Token.
    */
   origin: "Origin",
   /**
-   *@description Label for `trialName` field in a parsed Origin Trial Token.
+   * @description Label for `trialName` field in a parsed Origin Trial Token.
    * This field is only shown when token has unknown trial name as the token
    * will be put into 'UNKNOWN' group.
    */
   trialName: "Trial Name",
   /**
-   *@description Label for `expiryTime` field in a parsed Origin Trial Token.
+   * @description Label for `expiryTime` field in a parsed Origin Trial Token.
    */
   expiryTime: "Expiry Time",
   /**
-   *@description Label for `usageRestriction` field in a parsed Origin Trial Token.
+   * @description Label for `usageRestriction` field in a parsed Origin Trial Token.
    */
   usageRestriction: "Usage Restriction",
   /**
-   *@description Label for `isThirdParty` field in a parsed Origin Trial Token.
+   * @description Label for `isThirdParty` field in a parsed Origin Trial Token.
    */
   isThirdParty: "Third Party",
   /**
-   *@description Label for a field containing info about an Origin Trial Token's `matchSubDomains` field.
+   * @description Label for a field containing info about an Origin Trial Token's `matchSubDomains` field.
    *An Origin Trial Token contains an origin URL. The `matchSubDomains` field describes whether the token
    *only applies to the origin URL or to all subdomains of the origin URL as well.
    *The field contains either 'true' or 'false'.
    */
   matchSubDomains: "Subdomain Matching",
   /**
-   *@description Label for the raw(= encoded / not human-readable) Origin Trial Token.
+   * @description Label for the raw(= encoded / not human-readable) Origin Trial Token.
    */
   rawTokenText: "Raw Token",
   /**
-   *@description Label for `status` field in an Origin Trial Token.
+   * @description Label for `status` field in an Origin Trial Token.
    */
   status: "Token Status",
   /**
-   *@description Label for tokenWithStatus node.
+   * @description Label for tokenWithStatus node.
    */
   token: "Token",
   /**
-   *@description Label for a badge showing the number of Origin Trial Tokens. This number is always greater than 1.
-   *@example {2} PH1
+   * @description Label for a badge showing the number of Origin Trial Tokens. This number is always greater than 1.
+   * @example {2} PH1
    */
   tokens: "{PH1} tokens",
   /**
-   *@description Label shown when there are no Origin Trial Tokens in the Frame view of the Application panel.
+   * @description Label shown when there are no Origin Trial Tokens in the Frame view of the Application panel.
    */
   noTrialTokens: "No trial tokens"
 };
@@ -2409,42 +2409,42 @@ button.link {
 var { html: html6 } = Lit6;
 var UIStrings7 = {
   /**
-   *@description Label for a button. When clicked more details (for the content this button refers to) will be shown.
+   * @description Label for a button. When clicked more details (for the content this button refers to) will be shown.
    */
   showDetails: "Show details",
   /**
-   *@description Label for a button. When clicked some details (for the content this button refers to) will be hidden.
+   * @description Label for a button. When clicked some details (for the content this button refers to) will be hidden.
    */
   hideDetails: "Hide details",
   /**
-   *@description Label for a list of features which are allowed according to the current Permissions policy
+   * @description Label for a list of features which are allowed according to the current Permissions policy
    *(a mechanism that allows developers to enable/disable browser features and APIs (e.g. camera, geolocation, autoplay))
    */
   allowedFeatures: "Allowed Features",
   /**
-   *@description Label for a list of features which are disabled according to the current Permissions policy
+   * @description Label for a list of features which are disabled according to the current Permissions policy
    *(a mechanism that allows developers to enable/disable browser features and APIs (e.g. camera, geolocation, autoplay))
    */
   disabledFeatures: "Disabled Features",
   /**
-   *@description Tooltip text for a link to a specific request's headers in the Network panel.
+   * @description Tooltip text for a link to a specific request's headers in the Network panel.
    */
   clickToShowHeader: 'Click to reveal the request whose "`Permissions-Policy`" HTTP header disables this feature.',
   /**
-   *@description Tooltip text for a link to a specific iframe in the Elements panel (Iframes can be nested, the link goes
+   * @description Tooltip text for a link to a specific iframe in the Elements panel (Iframes can be nested, the link goes
    *  to the outer-most iframe which blocks a certain feature).
    */
   clickToShowIframe: "Click to reveal the top-most iframe which does not allow this feature in the elements panel.",
   /**
-   *@description Text describing that a specific feature is blocked by not being included in the iframe's "allow" attribute.
+   * @description Text describing that a specific feature is blocked by not being included in the iframe's "allow" attribute.
    */
   disabledByIframe: 'missing in iframe "`allow`" attribute',
   /**
-   *@description Text describing that a specific feature is blocked by a Permissions Policy specified in a request header.
+   * @description Text describing that a specific feature is blocked by a Permissions Policy specified in a request header.
    */
   disabledByHeader: 'disabled by "`Permissions-Policy`" header',
   /**
-   *@description Text describing that a specific feature is blocked by virtue of being inside a fenced frame tree.
+   * @description Text describing that a specific feature is blocked by virtue of being inside a fenced frame tree.
    */
   disabledByFencedFrame: "disabled inside a `fencedframe`"
 };
@@ -2590,222 +2590,222 @@ customElements.define("devtools-resources-permissions-policy-section", Permissio
 var { html: html7 } = Lit7;
 var UIStrings8 = {
   /**
-   *@description Section header in the Frame Details view
+   * @description Section header in the Frame Details view
    */
   additionalInformation: "Additional Information",
   /**
-   *@description Explanation for why the additional information section is being shown
+   * @description Explanation for why the additional information section is being shown
    */
   thisAdditionalDebugging: "This additional (debugging) information is shown because the 'Protocol Monitor' experiment is enabled.",
   /**
-   *@description Label for subtitle of frame details view
+   * @description Label for subtitle of frame details view
    */
   frameId: "Frame ID",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   document: "Document",
   /**
-   *@description A web URL (for a lot of languages this does not need to be translated, please translate only where necessary)
+   * @description A web URL (for a lot of languages this does not need to be translated, please translate only where necessary)
    */
   url: "URL",
   /**
-  /**
-   *@description Title for a link to the Sources panel
+   * /**
+   * @description Title for a link to the Sources panel
    */
   clickToOpenInSourcesPanel: "Click to open in Sources panel",
   /**
-   *@description Title for a link to the Network panel
+   * @description Title for a link to the Network panel
    */
   clickToOpenInNetworkPanel: "Click to open in Network panel",
   /**
-   *@description Title for unreachable URL field
+   * @description Title for unreachable URL field
    */
   unreachableUrl: "Unreachable URL",
   /**
-   *@description Title for a link that applies a filter to the network panel
+   * @description Title for a link that applies a filter to the network panel
    */
   clickToOpenInNetworkPanelMight: "Click to open in Network panel (might require page reload)",
   /**
-   *@description The origin of a URL (https://web.dev/same-site-same-origin/#origin)
+   * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin)
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
    */
   origin: "Origin",
   /**
-  /**
-   *@description Related node label in Timeline UIUtils of the Performance panel
+   * /**
+   * @description Related node label in Timeline UIUtils of the Performance panel
    */
   ownerElement: "Owner Element",
   /**
-   *@description Title for a link to the Elements panel
+   * @description Title for a link to the Elements panel
    */
   clickToOpenInElementsPanel: "Click to open in Elements panel",
   /**
-   *@description Title for ad frame type field
+   * @description Title for ad frame type field
    */
   adStatus: "Ad Status",
   /**
-   *@description Description for ad frame type
+   * @description Description for ad frame type
    */
   rootDescription: "This frame has been identified as the root frame of an ad",
   /**
-   *@description Value for ad frame type
+   * @description Value for ad frame type
    */
   root: "root",
   /**
-   *@description Description for ad frame type
+   * @description Description for ad frame type
    */
   childDescription: "This frame has been identified as a child frame of an ad",
   /**
-   *@description Value for ad frame type
+   * @description Value for ad frame type
    */
   child: "child",
   /**
-   *@description Section header in the Frame Details view
+   * @description Section header in the Frame Details view
    */
   securityIsolation: "Security & Isolation",
   /**
-   *@description Section header in the Frame Details view
+   * @description Section header in the Frame Details view
    */
   contentSecurityPolicy: "Content Security Policy (CSP)",
   /**
-   *@description Row title for in the Frame Details view
+   * @description Row title for in the Frame Details view
    */
   secureContext: "Secure Context",
   /**
-   *@description Text in Timeline indicating that input has happened recently
+   * @description Text in Timeline indicating that input has happened recently
    */
   yes: "Yes",
   /**
-   *@description Text in Timeline indicating that input has not happened recently
+   * @description Text in Timeline indicating that input has not happened recently
    */
   no: "No",
   /**
-   *@description Label for whether a frame is cross-origin isolated
+   * @description Label for whether a frame is cross-origin isolated
    *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
    */
   crossoriginIsolated: "Cross-Origin Isolated",
   /**
-   *@description Explanatory text in the Frame Details view
+   * @description Explanatory text in the Frame Details view
    */
   localhostIsAlwaysASecureContext: "`Localhost` is always a secure context",
   /**
-   *@description Explanatory text in the Frame Details view
+   * @description Explanatory text in the Frame Details view
    */
   aFrameAncestorIsAnInsecure: "A frame ancestor is an insecure context",
   /**
-   *@description Explanatory text in the Frame Details view
+   * @description Explanatory text in the Frame Details view
    */
   theFramesSchemeIsInsecure: "The frame's scheme is insecure",
   /**
-   *@description This label specifies the server endpoints to which the server is reporting errors
+   * @description This label specifies the server endpoints to which the server is reporting errors
    *and warnings through the Report-to API. Following this label will be the URL of the server.
    */
   reportingTo: "reporting to",
   /**
-   *@description Section header in the Frame Details view
+   * @description Section header in the Frame Details view
    */
   apiAvailability: "API availability",
   /**
-   *@description Explanation of why cross-origin isolation is important
+   * @description Explanation of why cross-origin isolation is important
    *(https://web.dev/why-coop-coep/)
    *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary)
    */
   availabilityOfCertainApisDepends: "Availability of certain APIs depends on the document being cross-origin isolated.",
   /**
-   *@description Description of the SharedArrayBuffer status
+   * @description Description of the SharedArrayBuffer status
    */
   availableTransferable: "available, transferable",
   /**
-   *@description Description of the SharedArrayBuffer status
+   * @description Description of the SharedArrayBuffer status
    */
   availableNotTransferable: "available, not transferable",
   /**
-   *@description Explanation for the SharedArrayBuffer availability status
+   * @description Explanation for the SharedArrayBuffer availability status
    */
   unavailable: "unavailable",
   /**
-   *@description Tooltip for the SharedArrayBuffer availability status
+   * @description Tooltip for the SharedArrayBuffer availability status
    */
   sharedarraybufferConstructorIs: "`SharedArrayBuffer` constructor is available and `SABs` can be transferred via `postMessage`",
   /**
-   *@description Tooltip for the SharedArrayBuffer availability status
+   * @description Tooltip for the SharedArrayBuffer availability status
    */
   sharedarraybufferConstructorIsAvailable: "`SharedArrayBuffer` constructor is available but `SABs` cannot be transferred via `postMessage`",
   /**
-   *@description Explanation why SharedArrayBuffer will not be available in the future
+   * @description Explanation why SharedArrayBuffer will not be available in the future
    *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
    *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary)
    */
   willRequireCrossoriginIsolated: "\u26A0\uFE0F will require cross-origin isolated context in the future",
   /**
-   *@description Explanation why SharedArrayBuffer is not available
+   * @description Explanation why SharedArrayBuffer is not available
    *(https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/)
    *(for a lot of languages 'cross-origin isolation' does not need to be translated, please translate only where necessary).
    */
   requiresCrossoriginIsolated: "requires cross-origin isolated context",
   /**
-   *@description Explanation for the SharedArrayBuffer availability status in case the transfer of a SAB requires the
+   * @description Explanation for the SharedArrayBuffer availability status in case the transfer of a SAB requires the
    * permission policy `cross-origin-isolated` to be enabled (e.g. because the message refers to the situation in an iframe).
    */
   transferRequiresCrossoriginIsolatedPermission: "`SharedArrayBuffer` transfer requires enabling the permission policy:",
   /**
-   *@description Explanation for the Measure Memory availability status
+   * @description Explanation for the Measure Memory availability status
    */
   available: "available",
   /**
-   *@description Tooltip for the Measure Memory availability status
+   * @description Tooltip for the Measure Memory availability status
    */
   thePerformanceAPI: "The `performance.measureUserAgentSpecificMemory()` API is available",
   /**
-   *@description Tooltip for the Measure Memory availability status
+   * @description Tooltip for the Measure Memory availability status
    */
   thePerformancemeasureuseragentspecificmemory: "The `performance.measureUserAgentSpecificMemory()` API is not available",
   /**
-   *@description Entry in the API availability section of the frame details view
+   * @description Entry in the API availability section of the frame details view
    */
   measureMemory: "Measure Memory",
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more",
   /**
-   *@description Label for a stack trace. If a frame is created programmatically (i.e. via JavaScript), there is a
+   * @description Label for a stack trace. If a frame is created programmatically (i.e. via JavaScript), there is a
    * stack trace for the line of code which caused the creation of the iframe. This is the stack trace we are showing here.
    */
   creationStackTrace: "Frame Creation `Stack Trace`",
   /**
-   *@description Tooltip for 'Frame Creation Stack Trace' explaining that the stack
+   * @description Tooltip for 'Frame Creation Stack Trace' explaining that the stack
    *trace shows where in the code the frame has been created programmatically
    */
   creationStackTraceExplanation: "This frame was created programmatically. The `stack trace` shows where this happened.",
   /**
-   *@description Text descripting why a frame has been indentified as an advertisement.
+   * @description Text descripting why a frame has been indentified as an advertisement.
    */
   parentIsAdExplanation: "This frame is considered an ad frame because its parent frame is an ad frame.",
   /**
-   *@description Text descripting why a frame has been indentified as an advertisement.
+   * @description Text descripting why a frame has been indentified as an advertisement.
    */
   matchedBlockingRuleExplanation: "This frame is considered an ad frame because its current (or previous) main document is an ad resource.",
   /**
-   *@description Text descripting why a frame has been indentified as an advertisement.
+   * @description Text descripting why a frame has been indentified as an advertisement.
    */
   createdByAdScriptExplanation: "There was an ad script in the `(async) stack` when this frame was created. Examining the creation `stack trace` of this frame might provide more insight.",
   /**
-   *@description Label for the link(s) to the ad script(s) that led to this frame's creation.
+   * @description Label for the link(s) to the ad script(s) that led to this frame's creation.
    */
   creatorAdScriptAncestry: "Creator Ad Script Ancestry",
   /**
-   *@description Label for the filterlist rule that identified the root script in 'Creator Ad Script Ancestry' as an ad.
+   * @description Label for the filterlist rule that identified the root script in 'Creator Ad Script Ancestry' as an ad.
    */
   rootScriptFilterlistRule: "Root Script Filterlist Rule",
   /**
-   *@description Text describing the absence of a value.
+   * @description Text describing the absence of a value.
    */
   none: "None",
   /**
-   *@description Explanation of what origin trials are
+   * @description Explanation of what origin trials are
    *(https://developer.chrome.com/docs/web-platform/origin-trials/)
    *(please don't translate 'origin trials').
    */
@@ -3411,45 +3411,45 @@ devtools-data-grid {
 var { html: html8 } = Lit8;
 var UIStrings9 = {
   /**
-   *@description Hover text for an info icon in the Interest Group Event panel
+   * @description Hover text for an info icon in the Interest Group Event panel
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
    * outcome of a FLEDGE auction.
    */
   allInterestGroupStorageEvents: "All interest group storage events.",
   /**
-   *@description Text in InterestGroupStorage Items View of the Application panel
+   * @description Text in InterestGroupStorage Items View of the Application panel
    * Date and time of an Interest Group storage event in a locale-
    * dependent format.
    */
   eventTime: "Event Time",
   /**
-   *@description Text in InterestGroupStorage Items View of the Application panel
+   * @description Text in InterestGroupStorage Items View of the Application panel
    * Type of interest group event such as 'join', 'bid', 'win', or 'leave'.
    */
   eventType: "Access Type",
   /**
-   *@description Text in InterestGroupStorage Items View of the Application panel
+   * @description Text in InterestGroupStorage Items View of the Application panel
    * Owner of the interest group. The origin that controls the
    * content of information associated with the interest group such as which
    * ads get displayed.
    */
   groupOwner: "Owner",
   /**
-   *@description Text in InterestGroupStorage Items View of the Application panel
+   * @description Text in InterestGroupStorage Items View of the Application panel
    * Name of the interest group. The name is unique per-owner and identifies the
    * interest group.
    */
   groupName: "Name",
   /**
-   *@description Text shown when no interest groups are detected.
+   * @description Text shown when no interest groups are detected.
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
    * outcome of a FLEDGE auction.
    */
   noEvents: "No interest group events detected",
   /**
-   *@description Text shown when no interest groups are detected and explains what this page is about.
+   * @description Text shown when no interest groups are detected and explains what this page is about.
    * An interest group is an ad targeting group stored on the browser that can
    * be used to show a certain set of advertisements in the future as the
    * outcome of a FLEDGE auction.
@@ -3599,30 +3599,30 @@ var { html: html9 } = Lit9;
 var PROTOCOL_DOCUMENT_URL = "https://web.dev/url-protocol-handler/";
 var UIStrings10 = {
   /**
-   *@description Status message for when protocol handlers are detected in the manifest
-   *@example {protocolhandler/manifest.json} PH1
+   * @description Status message for when protocol handlers are detected in the manifest
+   * @example {protocolhandler/manifest.json} PH1
    */
   protocolDetected: "Found valid protocol handler registration in the {PH1}. With the app installed, test the registered protocols.",
   /**
-   *@description Status message for when protocol handlers are not detected in the manifest
-   *@example {protocolhandler/manifest.json} PH1
+   * @description Status message for when protocol handlers are not detected in the manifest
+   * @example {protocolhandler/manifest.json} PH1
    */
   protocolNotDetected: "Define protocol handlers in the {PH1} to register your app as a handler for custom protocols when your app is installed.",
   /**
-   *@description Text wrapping a link pointing to more information on handling protocol handlers
-   *@example {https://example.com/} PH1
+   * @description Text wrapping a link pointing to more information on handling protocol handlers
+   * @example {https://example.com/} PH1
    */
   needHelpReadOur: "Need help? Read {PH1}.",
   /**
-   *@description Link text for more information on URL protocol handler registrations for PWAs
+   * @description Link text for more information on URL protocol handler registrations for PWAs
    */
   protocolHandlerRegistrations: "URL protocol handler registration for PWAs",
   /**
-   *@description In text hyperlink to the PWA manifest
+   * @description In text hyperlink to the PWA manifest
    */
   manifest: "manifest",
   /**
-   *@description Text for test protocol button
+   * @description Text for test protocol button
    */
   testProtocol: "Test protocol",
   /**
@@ -5034,12 +5034,12 @@ import * as Lit10 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 var UIStrings11 = {
   /**
-   *@description Placeholder text when there are no Reporting API reports.
+   * @description Placeholder text when there are no Reporting API reports.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#sending)
    */
   noReportsToDisplay: "No reports to display",
   /**
-   *@description Placeholder text that explains Reporting API reports.
+   * @description Placeholder text that explains Reporting API reports.
    *(https://developers.google.com/web/updates/2018/09/reportingapi#sending)
    */
   reportingApiDescription: "Here you will find reporting api reports that are generated by the page.",
@@ -5048,17 +5048,17 @@ var UIStrings11 = {
    */
   learnMore: "Learn more",
   /**
-   *@description Column header for a table displaying Reporting API reports.
+   * @description Column header for a table displaying Reporting API reports.
    *Status is one of 'Queued', 'Pending', 'MarkedForRemoval' or 'Success'.
    */
   status: "Status",
   /**
-   *@description Column header for a table displaying Reporting API reports.
+   * @description Column header for a table displaying Reporting API reports.
    *Destination is the name of the endpoint the report is being sent to.
    */
   destination: "Destination",
   /**
-   *@description Column header for a table displaying Reporting API reports.
+   * @description Column header for a table displaying Reporting API reports.
    *The column contains the timestamp of when a report was generated.
    */
   generatedAt: "Generated at"
@@ -5265,6 +5265,7 @@ customElements.define("devtools-service-worker-router-view", ServiceWorkerRouter
 // gen/front_end/panels/application/components/SharedStorageAccessGrid.js
 var SharedStorageAccessGrid_exports = {};
 __export(SharedStorageAccessGrid_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   SharedStorageAccessGrid: () => SharedStorageAccessGrid,
   i18nString: () => i18nString11
 });
@@ -5280,7 +5281,7 @@ var sharedStorageAccessGrid_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-:host {
+:scope {
   padding: 20px;
   height: 100%;
   display: flex;
@@ -5310,54 +5311,54 @@ var SHARED_STORAGE_EXPLANATION_URL = "https://developers.google.com/privacy-sand
 var { render: render12, html: html12 } = Lit12;
 var UIStrings12 = {
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    */
   sharedStorage: "Shared storage",
   /**
-   *@description Hover text for an info icon in the Shared Storage Events panel
+   * @description Hover text for an info icon in the Shared Storage Events panel
    */
   allSharedStorageEvents: "All shared storage events for this page.",
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    * Date and time of an Shared Storage event in a locale-
    * dependent format.
    */
   eventTime: "Event Time",
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    * Scope of shared storage event such as 'window', 'sharedStorageWorklet',
    * 'protectedAudienceWorklet', or 'header'.
    */
   eventScope: "Access Scope",
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    * Method of shared storage event such as 'addModule', 'run', 'set', 'delete',
    * or 'get'.
    */
   eventMethod: "Access Method",
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    * Owner origin of the shared storage for this access event.
    */
   ownerOrigin: "Owner Origin",
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    * Owner site of the shared storage for this access event.
    */
   ownerSite: "Owner Site",
   /**
-   *@description Text in Shared Storage Events View of the Application panel
+   * @description Text in Shared Storage Events View of the Application panel
    * Event parameters whose presence/absence depend on the access type.
    */
   eventParams: "Optional Event Params",
   /**
-   *@description Text shown when no shared storage event is shown.
+   * @description Text shown when no shared storage event is shown.
    * Shared storage allows to store and access data that can be shared across different sites.
    * A shared storage event is for example an access from a site to that storage.
    */
   noEvents: "No shared storage events detected",
   /**
-   *@description Text shown when no shared storage event is shown. It explains the shared storage event page.
+   * @description Text shown when no shared storage event is shown. It explains the shared storage event page.
    * Shared storage allows to store and access data that can be shared across different sites.
    * A shared storage event is for example an access from a site to that storage.
    */
@@ -5369,90 +5370,100 @@ var UIStrings12 = {
 };
 var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings12);
 var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
-var SharedStorageAccessGrid = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #datastores = [];
-  connectedCallback() {
-    this.#render();
-  }
-  // eslint-disable-next-line rulesdir/set-data-type-reference
-  set data(data) {
-    this.#datastores = data.sort((a, b) => a.accessTime - b.accessTime);
-    this.#render();
-  }
-  #render() {
-    render12(html12`
-      <style>${sharedStorageAccessGrid_css_default}</style>
-      <style>${UI5.inspectorCommonStyles}</style>
-      ${this.#renderGridOrNoDataMessage()}`, this.#shadow, { host: this });
-  }
-  #renderGridOrNoDataMessage() {
-    if (this.#datastores.length === 0) {
-      return html12`
+var DEFAULT_VIEW = (input, _output, target) => {
+  render12(html12`
+    <style>${UI5.Widget.widgetScoped(sharedStorageAccessGrid_css_default)}</style>
+    ${input.events.length === 0 ? html12`
         <div class="empty-state" jslog=${VisualLogging9.section().context("empty-view")}>
           <div class="empty-state-header">${i18nString11(UIStrings12.noEvents)}</div>
           <div class="empty-state-description">
             <span>${i18nString11(UIStrings12.sharedStorageDescription)}</span>
             ${UI5.XLink.XLink.create(SHARED_STORAGE_EXPLANATION_URL, i18nString11(UIStrings12.learnMore), "x-link", void 0, "learn-more")}
           </div>
-        </div>
-      `;
-    }
-    return html12`
-      <div>
-        <span class="heading">${i18nString11(UIStrings12.sharedStorage)}</span>
-        <devtools-icon class="info-icon"
-                        title=${i18nString11(UIStrings12.allSharedStorageEvents)}
-                        .data=${{ iconName: "info", color: "var(--icon-default)", width: "16px" }}>
-        </devtools-icon>
-        <devtools-data-grid striped inline @select=${this.#onSelect}>
-          <table>
-            <tr>
-              <th id="event-time" weight="10" sortable>
-                ${i18nString11(UIStrings12.eventTime)}
-              </th>
-              <th id="event-scope" weight="10" sortable>
-                ${i18nString11(UIStrings12.eventScope)}
-              </th>
-              <th id="event-method" weight="10" sortable>
-                ${i18nString11(UIStrings12.eventMethod)}
-              </th>
-              <th id="event-owner-origin" weight="10" sortable>
-                ${i18nString11(UIStrings12.ownerOrigin)}
-              </th>
-              <th id="event-owner-site" weight="10" sortable>
-                ${i18nString11(UIStrings12.ownerSite)}
-              </th>
-              <th id="event-params" weight="10" sortable>
-                ${i18nString11(UIStrings12.eventParams)}
-              </th>
-            </tr>
-            ${this.#datastores.map((event, index) => html12`
-              <tr data-index=${index}>
-                <td data-value=${event.accessTime}>
-                  ${new Date(1e3 * event.accessTime).toLocaleString()}
-                </td>
-                <td>${event.scope}</td>
-                <td>${event.method}</td>
-                <td>${event.ownerOrigin}</td>
-                <td>${event.ownerSite}</td>
-                <td>${JSON.stringify(event.params)}</td>
-              </tr>
-            `)}
-          </table>
-        </devtools-data-grid>
-      </div>
-    `;
+        </div>` : html12`
+        <div jslog=${VisualLogging9.section("events-table")}>
+          <span class="heading">${i18nString11(UIStrings12.sharedStorage)}</span>
+          <devtools-icon class="info-icon"
+                          title=${i18nString11(UIStrings12.allSharedStorageEvents)}
+                          .data=${{ iconName: "info", color: "var(--icon-default)", width: "16px" }}>
+          </devtools-icon>
+          <devtools-data-grid striped inline @select=${input.onSelect}>
+            <table>
+              <thead>
+                <tr>
+                  <th id="event-time" weight="10" sortable>
+                    ${i18nString11(UIStrings12.eventTime)}
+                  </th>
+                  <th id="event-scope" weight="10" sortable>
+                    ${i18nString11(UIStrings12.eventScope)}
+                  </th>
+                  <th id="event-method" weight="10" sortable>
+                    ${i18nString11(UIStrings12.eventMethod)}
+                  </th>
+                  <th id="event-owner-origin" weight="10" sortable>
+                    ${i18nString11(UIStrings12.ownerOrigin)}
+                  </th>
+                  <th id="event-owner-site" weight="10" sortable>
+                    ${i18nString11(UIStrings12.ownerSite)}
+                  </th>
+                  <th id="event-params" weight="10" sortable>
+                    ${i18nString11(UIStrings12.eventParams)}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                ${input.events.map((event, index) => html12`
+                  <tr data-index=${index}>
+                    <td data-value=${event.accessTime}>
+                      ${new Date(1e3 * event.accessTime).toLocaleString()}
+                    </td>
+                    <td>${event.scope}</td>
+                    <td>${event.method}</td>
+                    <td>${event.ownerOrigin}</td>
+                    <td>${event.ownerSite}</td>
+                    <td>${JSON.stringify(event.params)}</td>
+                  </tr>
+                `)}
+              </tbody>
+            </table>
+          </devtools-data-grid>
+        </div>`}`, target);
+};
+var SharedStorageAccessGrid = class extends UI5.Widget.Widget {
+  #view;
+  #events = [];
+  #onSelect = () => {
+  };
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
+    this.performUpdate();
   }
-  #onSelect(event) {
-    const index = parseInt(event.detail.dataset.index || "", 10);
-    const datastore = isNaN(index) ? void 0 : this.#datastores[index];
+  set events(events) {
+    this.#events = events;
+    this.performUpdate();
+  }
+  set onSelect(onSelect) {
+    this.#onSelect = onSelect;
+    this.performUpdate();
+  }
+  get onSelect() {
+    return this.#onSelect;
+  }
+  performUpdate() {
+    this.#view({
+      events: this.#events,
+      onSelect: this.#onSelectEvent.bind(this)
+    }, {}, this.contentElement);
+  }
+  #onSelectEvent(event) {
+    const index = parseInt(event.detail?.dataset.index || "", 10);
+    const datastore = isNaN(index) ? void 0 : this.#events[index];
     if (datastore) {
-      this.dispatchEvent(new CustomEvent("select", { detail: datastore }));
+      this.#onSelect(datastore);
     }
   }
 };
-customElements.define("devtools-shared-storage-access-grid", SharedStorageAccessGrid);
 
 // gen/front_end/panels/application/components/SharedStorageMetadataView.js
 var SharedStorageMetadataView_exports = {};
@@ -5513,81 +5524,81 @@ import * as Lit13 from "./../../../ui/lit/lit.js";
 var { html: html13 } = Lit13;
 var UIStrings13 = {
   /**
-   *@description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
+   * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
    */
   origin: "Origin",
   /**
-   *@description Site (https://web.dev/same-site-same-origin/#site) for the URL the user sees in the omnibox.
+   * @description Site (https://web.dev/same-site-same-origin/#site) for the URL the user sees in the omnibox.
    */
   topLevelSite: "Top-level site",
   /**
-   *@description Text to show in the top-level site row, in case the value is opaque (https://html.spec.whatwg.org/#concept-origin-opaque).
+   * @description Text to show in the top-level site row, in case the value is opaque (https://html.spec.whatwg.org/#concept-origin-opaque).
    */
   opaque: "(opaque)",
   /**
-   *@description Whether the storage corresponds to an opaque key (similar to https://html.spec.whatwg.org/#concept-origin-opaque).
+   * @description Whether the storage corresponds to an opaque key (similar to https://html.spec.whatwg.org/#concept-origin-opaque).
    */
   isOpaque: "Is opaque",
   /**
-   *@description Whether the storage corresponds to a third-party origin (https://web.dev/learn/privacy/third-parties/).
+   * @description Whether the storage corresponds to a third-party origin (https://web.dev/learn/privacy/third-parties/).
    */
   isThirdParty: "Is third-party",
   /**
-   *@description Text indicating that the condition holds.
+   * @description Text indicating that the condition holds.
    */
   yes: "Yes",
   /**
-   *@description Text indicating that the condition does not hold.
+   * @description Text indicating that the condition does not hold.
    */
   no: "No",
   /**
-   *@description Text indicating that the storage corresponds to a third-party origin because top-level site is opaque.
+   * @description Text indicating that the storage corresponds to a third-party origin because top-level site is opaque.
    */
   yesBecauseTopLevelIsOpaque: "Yes, because the top-level site is opaque",
   /**
-   *@description Text indicating that the storage corresponds to a third-party origin because the storage key is opaque.
+   * @description Text indicating that the storage corresponds to a third-party origin because the storage key is opaque.
    */
   yesBecauseKeyIsOpaque: "Yes, because the storage key is opaque",
   /**
-   *@description Text indicating that the storage corresponds to a third-party origin because the origin doesn't match the top-level site.
+   * @description Text indicating that the storage corresponds to a third-party origin because the origin doesn't match the top-level site.
    */
   yesBecauseOriginNotInTopLevelSite: "Yes, because the origin is outside of the top-level site",
   /**
-   *@description Text indicating that the storage corresponds to a third-party origin because the was a third-party origin in the ancestry chain.
+   * @description Text indicating that the storage corresponds to a third-party origin because the was a third-party origin in the ancestry chain.
    */
   yesBecauseAncestorChainHasCrossSite: "Yes, because the ancestry chain contains a third-party origin",
   /**
-   *@description Text when something is loading.
+   * @description Text when something is loading.
    */
   loading: "Loading\u2026",
   /**
-   *@description The storage bucket name (https://wicg.github.io/storage-buckets/explainer#bucket-names)
+   * @description The storage bucket name (https://wicg.github.io/storage-buckets/explainer#bucket-names)
    */
   bucketName: "Bucket name",
   /**
-   *@description The name of the default bucket (https://wicg.github.io/storage-buckets/explainer#the-default-bucket)
+   * @description The name of the default bucket (https://wicg.github.io/storage-buckets/explainer#the-default-bucket)
    *(This should not be a valid bucket name (https://wicg.github.io/storage-buckets/explainer#bucket-names))
    */
   defaultBucket: "Default bucket",
   /**
-   *@description Text indicating that the storage is persistent (https://wicg.github.io/storage-buckets/explainer#storage-policy-persistence)
+   * @description Text indicating that the storage is persistent (https://wicg.github.io/storage-buckets/explainer#storage-policy-persistence)
    */
   persistent: "Is persistent",
   /**
-   *@description The storage durability policy (https://wicg.github.io/storage-buckets/explainer#storage-policy-durability)
+   * @description The storage durability policy (https://wicg.github.io/storage-buckets/explainer#storage-policy-durability)
    */
   durability: "Durability",
   /**
-   *@description The storage quota (https://wicg.github.io/storage-buckets/explainer#storage-policy-quota)
+   * @description The storage quota (https://wicg.github.io/storage-buckets/explainer#storage-policy-quota)
    */
   quota: "Quota",
   /**
-   *@description The storage expiration (https://wicg.github.io/storage-buckets/explainer#storage-policy-expiration)
+   * @description The storage expiration (https://wicg.github.io/storage-buckets/explainer#storage-policy-expiration)
    */
   expiration: "Expiration",
   /**
-   *@description Text indicating that no value is set
+   * @description Text indicating that no value is set
    */
   none: "None",
   /**
@@ -5595,12 +5606,12 @@ var UIStrings13 = {
    */
   deleteBucket: "Delete bucket",
   /**
-   *@description Text shown in the confirmation dialogue that displays before deleting the bucket.
-   *@example {bucket} PH1
+   * @description Text shown in the confirmation dialogue that displays before deleting the bucket.
+   * @example {bucket} PH1
    */
   confirmBucketDeletion: 'Delete the "{PH1}" bucket?',
   /**
-   *@description Explanation text shown in the confirmation dialogue that displays before deleting the bucket.
+   * @description Explanation text shown in the confirmation dialogue that displays before deleting the bucket.
    */
   bucketWillBeRemoved: "The selected storage bucket and contained data will be removed."
 };
@@ -5737,35 +5748,35 @@ customElements.define("devtools-storage-metadata-view", StorageMetadataView);
 var { html: html14 } = Lit14;
 var UIStrings14 = {
   /**
-   *@description Text in SharedStorage Metadata View of the Application panel
+   * @description Text in SharedStorage Metadata View of the Application panel
    */
   sharedStorage: "Shared storage",
   /**
-   *@description The time when the origin most recently created its shared storage database
+   * @description The time when the origin most recently created its shared storage database
    */
   creation: "Creation Time",
   /**
-   *@description The placeholder text if there is no creation time because the origin is not yet using shared storage.
+   * @description The placeholder text if there is no creation time because the origin is not yet using shared storage.
    */
   notYetCreated: "Not yet created",
   /**
-   *@description The number of entries currently in the origin's database
+   * @description The number of entries currently in the origin's database
    */
   numEntries: "Number of Entries",
   /**
-   *@description The number of bits remaining in the origin's shared storage privacy budget
+   * @description The number of bits remaining in the origin's shared storage privacy budget
    */
   entropyBudget: "Entropy Budget for Fenced Frames",
   /**
-   *@description Hover text for `entropyBudget` giving a more detailed explanation
+   * @description Hover text for `entropyBudget` giving a more detailed explanation
    */
   budgetExplanation: "Remaining data leakage allowed within a 24-hour period for this origin in bits of entropy",
   /**
-   *@description Label for a button which when clicked causes the budget to be reset to the max.
+   * @description Label for a button which when clicked causes the budget to be reset to the max.
    */
   resetBudget: "Reset Budget",
   /**
-   *@description The number of bytes used by entries currently in the origin's database
+   * @description The number of bytes used by entries currently in the origin's database
    */
   numBytesUsed: "Number of Bytes Used"
 };
@@ -5887,15 +5898,15 @@ var PRIVATE_STATE_TOKENS_EXPLANATION_URL = "https://developers.google.com/privac
 var { html: html15 } = Lit15;
 var UIStrings15 = {
   /**
-   *@description Text for the issuer of an item
+   * @description Text for the issuer of an item
    */
   issuer: "Issuer",
   /**
-   *@description Column header for Trust Token table
+   * @description Column header for Trust Token table
    */
   storedTokenCount: "Stored token count",
   /**
-   *@description Hover text for an info icon in the Private State Token panel
+   * @description Hover text for an info icon in the Private State Token panel
    */
   allStoredTrustTokensAvailableIn: "All stored private state tokens available in this browser instance.",
   /**

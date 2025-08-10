@@ -161,87 +161,87 @@ input[type="checkbox"] {
 var { render, html } = Lit;
 var UIStrings = {
   /**
-   *@description Title in the view's header for the controls tool in the Privacy & Security panel
+   * @description Title in the view's header for the controls tool in the Privacy & Security panel
    */
   viewTitle: "Controls",
   /**
-   *@description Explanation in the view's header about the purpose of this controls tool
+   * @description Explanation in the view's header about the purpose of this controls tool
    */
   viewExplanation: "Test how this site will perform if third-party cookies are limited in Chrome",
   /**
-   *@description Title in the card within the controls tool
+   * @description Title in the card within the controls tool
    */
   cardTitle: "Temporarily limit third-party cookies",
   /**
-   *@description Disclaimer beneath the card title to tell the user that the controls will only persist while devtools is open
+   * @description Disclaimer beneath the card title to tell the user that the controls will only persist while devtools is open
    */
   cardDisclaimer: "Only when DevTools is open",
   /**
-   *@description Message as part of the banner that prompts the user to reload the page to see the changes take effect. This appears when the user makes any change within the tool
+   * @description Message as part of the banner that prompts the user to reload the page to see the changes take effect. This appears when the user makes any change within the tool
    */
   siteReloadMessage: "To apply your updated controls, reload the page",
   /**
-   *@description Title of controls section. These are exceptions that the user will be able to override to test their site
+   * @description Title of controls section. These are exceptions that the user will be able to override to test their site
    */
   exceptions: "Exceptions",
   /**
-   *@description Explanation of what exceptions are in this context
+   * @description Explanation of what exceptions are in this context
    */
   exceptionsExplanation: "Scenarios that grant access to third-party cookies",
   /**
-   *@description Title for the grace period exception control
+   * @description Title for the grace period exception control
    */
   gracePeriodTitle: "Third-party cookie grace period",
   /**
-   *@description Explanation of the grace period and a link to learn more
-   *@example {grace period} PH1
+   * @description Explanation of the grace period and a link to learn more
+   * @example {grace period} PH1
    */
   gracePeriodExplanation: "If this site or a site embedded on it is enrolled in the {PH1}, then the site can access third-party cookies",
   /**
-   *@description Text shown when a site and its embedded resources are not enrolled in a grace period.
-   *@example {grace period} PH1
+   * @description Text shown when a site and its embedded resources are not enrolled in a grace period.
+   * @example {grace period} PH1
    */
   enrollGracePeriod: "To use this, enroll this site or sites embedded on it in the {PH1}",
   /**
-   *@description Text used for link within gracePeriodExplanation and enrollGracePeriod to let the user learn more about the grace period
+   * @description Text used for link within gracePeriodExplanation and enrollGracePeriod to let the user learn more about the grace period
    */
   gracePeriod: "grace period",
   /**
-   *@description Title for the heuristic exception control
+   * @description Title for the heuristic exception control
    */
   heuristicTitle: "Heuristics based exception",
   /**
-   *@description Explanation of the heuristics with a link to learn more about the scenarios in which they apply
-   *@example {predefined scenarios} PH1
+   * @description Explanation of the heuristics with a link to learn more about the scenarios in which they apply
+   * @example {predefined scenarios} PH1
    */
   heuristicExplanation: "In {PH1} like pop-ups or redirects, a site embedded on this site can access third-party cookies",
   /**
-   *@description Text used for link within the heuristicExplanation to let the user learn more about the heuristic exception
+   * @description Text used for link within the heuristicExplanation to let the user learn more about the heuristic exception
    */
   scenarios: "predefined scenarios",
   /**
-   *@description Note at the bottom of the controls tool telling the user that their organization has an enterprise policy that controls cookies. This may disable the tool
+   * @description Note at the bottom of the controls tool telling the user that their organization has an enterprise policy that controls cookies. This may disable the tool
    */
   enterpriseDisclaimer: "Your organization manages third-party cookie access for this site",
   /**
-   *@description Tooltip that appears when the user hovers over the card's enterprise icon
+   * @description Tooltip that appears when the user hovers over the card's enterprise icon
    */
   enterpriseTooltip: "This setting is managed by your organization",
   /**
-    +*@description Button with the enterpise disclaimer that takes the user to the relevant enterprise cookie chrome setting
+   * +*@description Button with the enterpise disclaimer that takes the user to the relevant enterprise cookie chrome setting
    */
   viewDetails: "View details",
   /**
-   *@description Text shown when the Third-party Cookie Metadata Grants flag or Third-party Cookie Heuristics Grants flag is disabled with a link to the flag in chrome://flags/.
-   *@example {#tpcd-heuristics-grants} PH1
+   * @description Text shown when the Third-party Cookie Metadata Grants flag or Third-party Cookie Heuristics Grants flag is disabled with a link to the flag in chrome://flags/.
+   * @example {#tpcd-heuristics-grants} PH1
    */
   enableFlag: "To use this, set {PH1} to Default",
   /**
-   *@description Text used for link within the enableFlag to show users where they can enable the Third-party Cookie Metadata Grants flag.
+   * @description Text used for link within the enableFlag to show users where they can enable the Third-party Cookie Metadata Grants flag.
    */
   tpcdMetadataGrants: "#tpcd-metadata-grants",
   /**
-   *@description Text used for link within the enableFlag to show users where they can enable the Third-party Cookie Heuristics Grants flag.
+   * @description Text used for link within the enableFlag to show users where they can enable the Third-party Cookie Heuristics Grants flag.
    */
   tpcdHeuristicsGrants: "#tpcd-heuristics-grants"
 };
@@ -581,149 +581,149 @@ devtools-data-grid {
 var { render: render2, html: html2, Directives: { ref } } = Lit2;
 var UIStrings2 = {
   /**
-   *@description Title in the header for the third-party cookie report in the Security & Privacy Panel
+   * @description Title in the header for the third-party cookie report in the Security & Privacy Panel
    */
   title: "Third-party cookies",
   /**
-   *@description Explanation in the header about the cookies listed in the report
+   * @description Explanation in the header about the cookies listed in the report
    */
   body: "This site might not work if third-party cookies and other cookies are limited in Chrome.",
   /**
-   *@description A link the user can follow to learn more about third party cookie usage
+   * @description A link the user can follow to learn more about third party cookie usage
    */
   learnMoreLink: "Learn more about how third-party cookies are used",
   /**
-   *@description Column header for Cookie Report table. This column will contain the name of the cookie
+   * @description Column header for Cookie Report table. This column will contain the name of the cookie
    */
   name: "Name",
   /**
-   *@description Column header for Cookie Report table. This column will contain the domain of the cookie
+   * @description Column header for Cookie Report table. This column will contain the domain of the cookie
    */
   domain: "Domain",
   /**
-   *@description Column header for Cookie Report table. This column will contain the type of the cookie. E.g. Advertisement, Marketing, etc.
+   * @description Column header for Cookie Report table. This column will contain the type of the cookie. E.g. Advertisement, Marketing, etc.
    */
   type: "Type",
   /**
-   *@description Column header for Cookie Report table. This column will contain the third-party of the cookie. E.g. Amazon Analytics, etc.
+   * @description Column header for Cookie Report table. This column will contain the third-party of the cookie. E.g. Amazon Analytics, etc.
    */
   platform: "Platform",
   /**
-   *@description Column header for Cookie Report table, This column will contain the actionable step the user can take (if any) for the cookie
+   * @description Column header for Cookie Report table, This column will contain the actionable step the user can take (if any) for the cookie
    */
   recommendation: "Recommendation",
   /**
-   *@description Column header for Cookie Report table. This column will contain the blocked or allowed status of the cookie. See status strings below for more information on the different statuses
+   * @description Column header for Cookie Report table. This column will contain the blocked or allowed status of the cookie. See status strings below for more information on the different statuses
    */
   status: "Status",
   /**
-   *@description Status string in the cookie report for a third-party cookie that is allowed without any sort of exception. This is also used as filter chip text to allow the user to filter the table based on cookie status
+   * @description Status string in the cookie report for a third-party cookie that is allowed without any sort of exception. This is also used as filter chip text to allow the user to filter the table based on cookie status
    */
   allowed: "Allowed",
   /**
-   *@description Status string in the cookie report for a third-party cookie that is allowed due to a grace period or heuristic exception. Otherwise, this would have been blocked. This is also used as filter chip text to allow the user to filter the table based on cookie status
+   * @description Status string in the cookie report for a third-party cookie that is allowed due to a grace period or heuristic exception. Otherwise, this would have been blocked. This is also used as filter chip text to allow the user to filter the table based on cookie status
    */
   allowedByException: "Allowed by exception",
   /**
-   *@description Status string in the cookie report for a third-party cookie that was blocked. This is also used as filter chip text to allow the user to filter the table based on cookie status
+   * @description Status string in the cookie report for a third-party cookie that was blocked. This is also used as filter chip text to allow the user to filter the table based on cookie status
    */
   blocked: "Blocked",
   /**
-   *@description String in the Cookie Report table. This is used when any data could not be fetched and that cell is unknown
+   * @description String in the Cookie Report table. This is used when any data could not be fetched and that cell is unknown
    */
   unknown: "Unknown",
   /**
-   *@description Display name for the Cookie Report table. This string is used by the data grid for accessibility.
+   * @description Display name for the Cookie Report table. This string is used by the data grid for accessibility.
    */
   report: "Third-Party Cookie Report",
   /**
-   *@description The main string the user sees when there are no cookie issues to show. This will take place of the table
+   * @description The main string the user sees when there are no cookie issues to show. This will take place of the table
    */
   emptyReport: "Not a crumb left",
   /**
-   *@description Explanation to the user that there were no third-party cookie related issues found which is why they are not seeing the table/report
+   * @description Explanation to the user that there were no third-party cookie related issues found which is why they are not seeing the table/report
    */
   emptyReportExplanation: "No issues with third-party cookies found",
   /**
-   *@description String in Cookie Report table. This is used when a cookie's domain has an entry in the third-party cookie migration readiness list GitHub.
-   *@example {guidance} PH1
+   * @description String in Cookie Report table. This is used when a cookie's domain has an entry in the third-party cookie migration readiness list GitHub.
+   * @example {guidance} PH1
    */
   gitHubResource: "Review {PH1} from third-party site",
   /**
-   *@description Label for a link to an entry in the third-party cookie migration readiness list GitHub.
+   * @description Label for a link to an entry in the third-party cookie migration readiness list GitHub.
    */
   guidance: "guidance",
   /**
-   *@description String in Cookie Report table. This is used when a cookie has a grace period exception.
-   *@example {reported issues} PH1
+   * @description String in Cookie Report table. This is used when a cookie has a grace period exception.
+   * @example {reported issues} PH1
    */
   gracePeriod: "Review {PH1}. Grace period exception is active.",
   /**
-   *@description Label for a link to third-party cookie site compatibility look-up.
+   * @description Label for a link to third-party cookie site compatibility look-up.
    */
   reportedIssues: "reported issues",
   /**
-   *@description String in Cookie Report table. This is used when a cookie has a heuristics exception.
+   * @description String in Cookie Report table. This is used when a cookie has a heuristics exception.
    */
   heuristics: "Action needed later. Heuristics based exception is active.",
   /**
-   *@description String in Cookie Report table. This is used when a cookie's domain does not have an entry in the third-party cookie migration readiness list Github nor a grace period nor heuristics exception.
+   * @description String in Cookie Report table. This is used when a cookie's domain does not have an entry in the third-party cookie migration readiness list Github nor a grace period nor heuristics exception.
    */
   other: "Contact third-party site for more info",
   /**
-   *@description String representing the Advertising cookie type. Used to format 'ad' category from the Third Party Web dataset.
+   * @description String representing the Advertising cookie type. Used to format 'ad' category from the Third Party Web dataset.
    */
   adCookieTypeString: "Advertising",
   /**
-   *@description String representing the Analytics cookie type. Used to format 'analytics' category from the Third Party Web dataset.
+   * @description String representing the Analytics cookie type. Used to format 'analytics' category from the Third Party Web dataset.
    */
   analyticsCookieTypeString: "Analytics",
   /**
-   *@description String representing the Social cookie type. Used to format 'social' category from the Third Party Web dataset.
+   * @description String representing the Social cookie type. Used to format 'social' category from the Third Party Web dataset.
    */
   socialCookieTypeString: "Social",
   /**
-   *@description String representing the Video cookie type. Used to format 'video' category from the Third Party Web dataset.
+   * @description String representing the Video cookie type. Used to format 'video' category from the Third Party Web dataset.
    */
   videoCookieTypeString: "Video",
   /**
-   *@description String representing the Utility cookie type. Used to format 'utility' category from the Third Party Web dataset.
+   * @description String representing the Utility cookie type. Used to format 'utility' category from the Third Party Web dataset.
    */
   utilityCookieTypeString: "Utility",
   /**
-   *@description String representing the Hosting cookie type. Used to format 'hosting' category from the Third Party Web dataset.
+   * @description String representing the Hosting cookie type. Used to format 'hosting' category from the Third Party Web dataset.
    */
   hostingCookieTypeString: "Hosting",
   /**
-   *@description String representing the Marketing cookie type. Used to format 'marketing' category from the Third Party Web dataset.
+   * @description String representing the Marketing cookie type. Used to format 'marketing' category from the Third Party Web dataset.
    */
   marketingCookieTypeString: "Marketing",
   /**
-   *@description String representing the Customer Success cookie type. Used to format 'customer-success' category from the Third Party Web dataset.
+   * @description String representing the Customer Success cookie type. Used to format 'customer-success' category from the Third Party Web dataset.
    */
   customerSuccessCookieTypeString: "Customer Success",
   /**
-   *@description String representing the Content cookie type. Used to format 'content' category from the Third Party Web dataset.
+   * @description String representing the Content cookie type. Used to format 'content' category from the Third Party Web dataset.
    */
   contentCookieTypeString: "Content",
   /**
-   *@description String representing the CDN cookie type. Used to format 'cdn' category from the Third Party Web dataset.
+   * @description String representing the CDN cookie type. Used to format 'cdn' category from the Third Party Web dataset.
    */
   cdnCookieTypeString: "CDN",
   /**
-   *@description String representing the Tag Manager cookie type. Used to format 'tag-manager' category from the Third Party Web dataset.
+   * @description String representing the Tag Manager cookie type. Used to format 'tag-manager' category from the Third Party Web dataset.
    */
   tagManagerCookieTypeString: "Tag Manager",
   /**
-   *@description String representing the Consent Provider cookie type. Used to format 'consent-provider' category from the Third Party Web dataset.
+   * @description String representing the Consent Provider cookie type. Used to format 'consent-provider' category from the Third Party Web dataset.
    */
   consentProviderCookieTypeString: "Consent Provider",
   /**
-   *@description String representing the Other cookie type. Used to format 'other' category from the Third Party Web dataset.
+   * @description String representing the Other cookie type. Used to format 'other' category from the Third Party Web dataset.
    */
   otherCookieTypeString: "Other",
   /**
-   *@description String that shows up in the context menu when right clicking one of the entries in the cookie report.
+   * @description String that shows up in the context menu when right clicking one of the entries in the cookie report.
    */
   showRequestsWithThisCookie: "Show requests with this cookie"
 };
@@ -1022,31 +1022,31 @@ import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 var UIStrings3 = {
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   theSecurityOfThisPageIsUnknown: "The security of this page is unknown.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   thisPageIsNotSecure: "This page is not secure.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   thisPageIsSecureValidHttps: "This page is secure (valid HTTPS).",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   thisPageIsNotSecureBrokenHttps: "This page is not secure (broken HTTPS).",
   /**
-   *@description Description of an SSL cipher that contains a separate (bulk) cipher and MAC.
-   *@example {AES_256_CBC} PH1
-   *@example {HMAC-SHA1} PH2
+   * @description Description of an SSL cipher that contains a separate (bulk) cipher and MAC.
+   * @example {AES_256_CBC} PH1
+   * @example {HMAC-SHA1} PH2
    */
   cipherWithMAC: "{PH1} with {PH2}",
   /**
-   *@description Description of an SSL Key and its Key Exchange Group.
-   *@example {ECDHE_RSA} PH1
-   *@example {X25519} PH2
+   * @description Description of an SSL Key and its Key Exchange Group.
+   * @example {ECDHE_RSA} PH1
+   * @example {X25519} PH2
    */
   keyExchangeWithGroup: "{PH1} with {PH2}"
 };
@@ -1790,43 +1790,43 @@ var sidebar_css_default = `/*
 // gen/front_end/panels/security/SecurityPanelSidebar.js
 var UIStrings4 = {
   /**
-   *@description Section title for the the Security Panel's sidebar
+   * @description Section title for the the Security Panel's sidebar
    */
   security: "Security",
   /**
-   *@description Section title for the the Security Panel's sidebar
+   * @description Section title for the the Security Panel's sidebar
    */
   privacy: "Privacy",
   /**
-   *@description Sidebar element text in the Security panel
+   * @description Sidebar element text in the Security panel
    */
   cookieReport: "Third-party cookies",
   /**
-   *@description Sidebar element text in the Security panel
+   * @description Sidebar element text in the Security panel
    */
   flagControls: "Controls",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   mainOrigin: "Main origin",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   nonsecureOrigins: "Non-secure origins",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   secureOrigins: "Secure origins",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   unknownCanceled: "Unknown / canceled",
   /**
-   *@description Title text content in Security Panel of the Security panel
+   * @description Title text content in Security Panel of the Security panel
    */
   overview: "Overview",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   reloadToViewDetails: "Reload to view details"
 };
@@ -2056,235 +2056,235 @@ var SecurityPanelSidebar = class extends UI4.Widget.VBox {
 var { widgetConfig } = UI5.Widget;
 var UIStrings5 = {
   /**
-   *@description Summary div text content in Security Panel of the Security panel
+   * @description Summary div text content in Security Panel of the Security panel
    */
   securityOverview: "Security overview",
   /**
-   *@description Text to show something is secure
+   * @description Text to show something is secure
    */
   secure: "Secure",
   /**
-   *@description Sdk console message message level info of level Labels in Console View of the Console panel
+   * @description Sdk console message message level info of level Labels in Console View of the Console panel
    */
   info: "Info",
   /**
-   *@description Not secure div text content in Security Panel of the Security panel
+   * @description Not secure div text content in Security Panel of the Security panel
    */
   notSecure: "Not secure",
   /**
-   *@description Text to view a security certificate
+   * @description Text to view a security certificate
    */
   viewCertificate: "View certificate",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   notSecureBroken: "Not secure (broken)",
   /**
-   *@description Main summary for page when it has been deemed unsafe by the SafeBrowsing service.
+   * @description Main summary for page when it has been deemed unsafe by the SafeBrowsing service.
    */
   thisPageIsDangerousFlaggedBy: "This page is dangerous (flagged by Google Safe Browsing).",
   /**
-   *@description Summary phrase for a security problem where the site is deemed unsafe by the SafeBrowsing service.
+   * @description Summary phrase for a security problem where the site is deemed unsafe by the SafeBrowsing service.
    */
   flaggedByGoogleSafeBrowsing: "Flagged by Google Safe Browsing",
   /**
-   *@description Description of a security problem where the site is deemed unsafe by the SafeBrowsing service.
+   * @description Description of a security problem where the site is deemed unsafe by the SafeBrowsing service.
    */
   toCheckThisPagesStatusVisit: "To check this page's status, visit g.co/safebrowsingstatus.",
   /**
-   *@description Main summary for a non cert error page.
+   * @description Main summary for a non cert error page.
    */
   thisIsAnErrorPage: "This is an error page.",
   /**
-   *@description Main summary for where the site is non-secure HTTP.
+   * @description Main summary for where the site is non-secure HTTP.
    */
   thisPageIsInsecureUnencrypted: "This page is insecure (unencrypted HTTP).",
   /**
-   *@description Main summary for where the site has a non-cryptographic secure origin.
+   * @description Main summary for where the site has a non-cryptographic secure origin.
    */
   thisPageHasANonhttpsSecureOrigin: "This page has a non-HTTPS secure origin.",
   /**
-   *@description Message to display in devtools security tab when the page you are on triggered a safety tip.
+   * @description Message to display in devtools security tab when the page you are on triggered a safety tip.
    */
   thisPageIsSuspicious: "This page is suspicious",
   /**
-   *@description Body of message to display in devtools security tab when you are viewing a page that triggered a safety tip.
+   * @description Body of message to display in devtools security tab when you are viewing a page that triggered a safety tip.
    */
   chromeHasDeterminedThatThisSiteS: "Chrome has determined that this site could be fake or fraudulent.",
   /**
-   *@description Second part of the body of message to display in devtools security tab when you are viewing a page that triggered a safety tip.
+   * @description Second part of the body of message to display in devtools security tab when you are viewing a page that triggered a safety tip.
    */
   ifYouBelieveThisIsShownIn: "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings.",
   /**
-   *@description Summary of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
+   * @description Summary of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
    */
   possibleSpoofingUrl: "Possible spoofing URL",
   /**
-   *@description Body of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
-   *@example {wikipedia.org} PH1
+   * @description Body of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
+   * @example {wikipedia.org} PH1
    */
   thisSitesHostnameLooksSimilarToP: "This site's hostname looks similar to {PH1}. Attackers sometimes mimic sites by making small, hard-to-see changes to the domain name.",
   /**
-   *@description second part of body of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
+   * @description second part of body of a warning when the user visits a page that triggered a Safety Tip because the domain looked like another domain.
    */
   ifYouBelieveThisIsShownInErrorSafety: "If you believe this is shown in error please visit https://g.co/chrome/lookalike-warnings.",
   /**
-   *@description Title of the devtools security tab when the page you are on triggered a safety tip.
+   * @description Title of the devtools security tab when the page you are on triggered a safety tip.
    */
   thisPageIsSuspiciousFlaggedBy: "This page is suspicious (flagged by Chrome).",
   /**
-   *@description Text for a security certificate
+   * @description Text for a security certificate
    */
   certificate: "Certificate",
   /**
-   *@description Summary phrase for a security problem where the site's certificate chain contains a SHA1 signature.
+   * @description Summary phrase for a security problem where the site's certificate chain contains a SHA1 signature.
    */
   insecureSha: "insecure (SHA-1)",
   /**
-   *@description Description of a security problem where the site's certificate chain contains a SHA1 signature.
+   * @description Description of a security problem where the site's certificate chain contains a SHA1 signature.
    */
   theCertificateChainForThisSite: "The certificate chain for this site contains a certificate signed using SHA-1.",
   /**
-   *@description Summary phrase for a security problem where the site's certificate is missing a subjectAltName extension.
+   * @description Summary phrase for a security problem where the site's certificate is missing a subjectAltName extension.
    */
   subjectAlternativeNameMissing: "`Subject Alternative Name` missing",
   /**
-   *@description Description of a security problem where the site's certificate is missing a subjectAltName extension.
+   * @description Description of a security problem where the site's certificate is missing a subjectAltName extension.
    */
   theCertificateForThisSiteDoesNot: "The certificate for this site does not contain a `Subject Alternative Name` extension containing a domain name or IP address.",
   /**
-   *@description Summary phrase for a security problem with the site's certificate.
+   * @description Summary phrase for a security problem with the site's certificate.
    */
   missing: "missing",
   /**
-   *@description Description of a security problem with the site's certificate.
-   *@example {net::ERR_CERT_AUTHORITY_INVALID} PH1
+   * @description Description of a security problem with the site's certificate.
+   * @example {net::ERR_CERT_AUTHORITY_INVALID} PH1
    */
   thisSiteIsMissingAValidTrusted: "This site is missing a valid, trusted certificate ({PH1}).",
   /**
-   *@description Summary phrase for a site that has a valid server certificate.
+   * @description Summary phrase for a site that has a valid server certificate.
    */
   validAndTrusted: "valid and trusted",
   /**
-   *@description Description of a site that has a valid server certificate.
-   *@example {Let's Encrypt Authority X3} PH1
+   * @description Description of a site that has a valid server certificate.
+   * @example {Let's Encrypt Authority X3} PH1
    */
   theConnectionToThisSiteIsUsingA: "The connection to this site is using a valid, trusted server certificate issued by {PH1}.",
   /**
-   *@description Summary phrase for a security state where Private Key Pinning is ignored because the certificate chains to a locally-trusted root.
+   * @description Summary phrase for a security state where Private Key Pinning is ignored because the certificate chains to a locally-trusted root.
    */
   publickeypinningBypassed: "Public-Key-Pinning bypassed",
   /**
-   *@description Description of a security state where Private Key Pinning is ignored because the certificate chains to a locally-trusted root.
+   * @description Description of a security state where Private Key Pinning is ignored because the certificate chains to a locally-trusted root.
    */
   publickeypinningWasBypassedByA: "Public-Key-Pinning was bypassed by a local root certificate.",
   /**
-   *@description Summary phrase for a site with a certificate that is expiring soon.
+   * @description Summary phrase for a site with a certificate that is expiring soon.
    */
   certificateExpiresSoon: "Certificate expires soon",
   /**
-   *@description Description for a site with a certificate that is expiring soon.
+   * @description Description for a site with a certificate that is expiring soon.
    */
   theCertificateForThisSiteExpires: "The certificate for this site expires in less than 48 hours and needs to be renewed.",
   /**
-   *@description Text that refers to the network connection
+   * @description Text that refers to the network connection
    */
   connection: "Connection",
   /**
-   *@description Summary phrase for a site that uses a modern, secure TLS protocol and cipher.
+   * @description Summary phrase for a site that uses a modern, secure TLS protocol and cipher.
    */
   secureConnectionSettings: "secure connection settings",
   /**
-   *@description Description of a site's TLS settings.
-   *@example {TLS 1.2} PH1
-   *@example {ECDHE_RSA} PH2
-   *@example {AES_128_GCM} PH3
+   * @description Description of a site's TLS settings.
+   * @example {TLS 1.2} PH1
+   * @example {ECDHE_RSA} PH2
+   * @example {AES_128_GCM} PH3
    */
   theConnectionToThisSiteIs: "The connection to this site is encrypted and authenticated using {PH1}, {PH2}, and {PH3}.",
   /**
-   *@description A recommendation to the site owner to use a modern TLS protocol
-   *@example {TLS 1.0} PH1
+   * @description A recommendation to the site owner to use a modern TLS protocol
+   * @example {TLS 1.0} PH1
    */
   sIsObsoleteEnableTlsOrLater: "{PH1} is obsolete. Enable TLS 1.2 or later.",
   /**
-   *@description A recommendation to the site owner to use a modern TLS key exchange
+   * @description A recommendation to the site owner to use a modern TLS key exchange
    */
   rsaKeyExchangeIsObsoleteEnableAn: "RSA key exchange is obsolete. Enable an ECDHE-based cipher suite.",
   /**
-   *@description A recommendation to the site owner to use a modern TLS cipher
-   *@example {3DES_EDE_CBC} PH1
+   * @description A recommendation to the site owner to use a modern TLS cipher
+   * @example {3DES_EDE_CBC} PH1
    */
   sIsObsoleteEnableAnAesgcmbased: "{PH1} is obsolete. Enable an AES-GCM-based cipher suite.",
   /**
-   *@description A recommendation to the site owner to use a modern TLS server signature
+   * @description A recommendation to the site owner to use a modern TLS server signature
    */
   theServerSignatureUsesShaWhichIs: "The server signature uses SHA-1, which is obsolete. Enable a SHA-2 signature algorithm instead. (Note this is different from the signature in the certificate.)",
   /**
-   *@description Summary phrase for a site that uses an outdated SSL settings (protocol, key exchange, or cipher).
+   * @description Summary phrase for a site that uses an outdated SSL settings (protocol, key exchange, or cipher).
    */
   obsoleteConnectionSettings: "obsolete connection settings",
   /**
-   *@description A title of the 'Resources' action category
+   * @description A title of the 'Resources' action category
    */
   resources: "Resources",
   /**
-   *@description Summary for page when there is active mixed content
+   * @description Summary for page when there is active mixed content
    */
   activeMixedContent: "active mixed content",
   /**
-   *@description Description for page when there is active mixed content
+   * @description Description for page when there is active mixed content
    */
   youHaveRecentlyAllowedNonsecure: "You have recently allowed non-secure content (such as scripts or iframes) to run on this site.",
   /**
-   *@description Summary for page when there is mixed content
+   * @description Summary for page when there is mixed content
    */
   mixedContent: "mixed content",
   /**
-   *@description Description for page when there is mixed content
+   * @description Description for page when there is mixed content
    */
   thisPageIncludesHttpResources: "This page includes HTTP resources.",
   /**
-   *@description Summary for page when there is a non-secure form
+   * @description Summary for page when there is a non-secure form
    */
   nonsecureForm: "non-secure form",
   /**
-   *@description Description for page when there is a non-secure form
+   * @description Description for page when there is a non-secure form
    */
   thisPageIncludesAFormWithA: 'This page includes a form with a non-secure "action" attribute.',
   /**
-   *@description Summary for the page when it contains active content with certificate error
+   * @description Summary for the page when it contains active content with certificate error
    */
   activeContentWithCertificate: "active content with certificate errors",
   /**
-   *@description Description for the page when it contains active content with certificate error
+   * @description Description for the page when it contains active content with certificate error
    */
   youHaveRecentlyAllowedContent: "You have recently allowed content loaded with certificate errors (such as scripts or iframes) to run on this site.",
   /**
-   *@description Summary for page when there is active content with certificate errors
+   * @description Summary for page when there is active content with certificate errors
    */
   contentWithCertificateErrors: "content with certificate errors",
   /**
-   *@description Description for page when there is content with certificate errors
+   * @description Description for page when there is content with certificate errors
    */
   thisPageIncludesResourcesThat: "This page includes resources that were loaded with certificate errors.",
   /**
-   *@description Summary for page when all resources are served securely
+   * @description Summary for page when all resources are served securely
    */
   allServedSecurely: "all served securely",
   /**
-   *@description Description for page when all resources are served securely
+   * @description Description for page when all resources are served securely
    */
   allResourcesOnThisPageAreServed: "All resources on this page are served securely.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   blockedMixedContent: "Blocked mixed content",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   yourPageRequestedNonsecure: "Your page requested non-secure resources that were blocked.",
   /**
-   *@description Refresh prompt text content in Security Panel of the Security panel
+   * @description Refresh prompt text content in Security Panel of the Security panel
    */
   reloadThePageToRecordRequestsFor: "Reload the page to record requests for HTTP resources.",
   /**
@@ -2294,79 +2294,79 @@ var UIStrings5 = {
    */
   viewDRequestsInNetworkPanel: "{n, plural, =1 {View # request in Network Panel} other {View # requests in Network Panel}}",
   /**
-   *@description Text for the origin of something
+   * @description Text for the origin of something
    */
   origin: "Origin",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   viewRequestsInNetworkPanel: "View requests in Network Panel",
   /**
-   *@description Text for security or network protocol
+   * @description Text for security or network protocol
    */
   protocol: "Protocol",
   /**
-   *@description Text in the Security panel that refers to how the TLS handshake
+   * @description Text in the Security panel that refers to how the TLS handshake
    *established encryption keys.
    */
   keyExchange: "Key exchange",
   /**
-   *@description Text in Security Panel that refers to how the TLS handshake
+   * @description Text in Security Panel that refers to how the TLS handshake
    *encrypted data.
    */
   cipher: "Cipher",
   /**
-   *@description Text in Security Panel that refers to the signature algorithm
+   * @description Text in Security Panel that refers to the signature algorithm
    *used by the server for authenticate in the TLS handshake.
    */
   serverSignature: "Server signature",
   /**
-   *@description Text in Security Panel that refers to whether the ClientHello
+   * @description Text in Security Panel that refers to whether the ClientHello
    *message in the TLS handshake was encrypted.
    */
   encryptedClientHello: "Encrypted ClientHello",
   /**
-   *@description Sct div text content in Security Panel of the Security panel
+   * @description Sct div text content in Security Panel of the Security panel
    */
   certificateTransparency: "Certificate Transparency",
   /**
-   *@description Text that refers to the subject of a security certificate
+   * @description Text that refers to the subject of a security certificate
    */
   subject: "Subject",
   /**
-   *@description Text to show since when an item is valid
+   * @description Text to show since when an item is valid
    */
   validFrom: "Valid from",
   /**
-   *@description Text to indicate the expiry date
+   * @description Text to indicate the expiry date
    */
   validUntil: "Valid until",
   /**
-   *@description Text for the issuer of an item
+   * @description Text for the issuer of an item
    */
   issuer: "Issuer",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   openFullCertificateDetails: "Open full certificate details",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   sct: "SCT",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   logName: "Log name",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   logId: "Log ID",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   validationStatus: "Validation status",
   /**
-   *@description Text for the source of something
+   * @description Text for the source of something
    */
   source: "Source",
   /**
@@ -2375,76 +2375,76 @@ var UIStrings5 = {
    */
   issuedAt: "Issued at",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   hashAlgorithm: "Hash algorithm",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   signatureAlgorithm: "Signature algorithm",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   signatureData: "Signature data",
   /**
-   *@description Toggle scts details link text content in Security Panel of the Security panel
+   * @description Toggle scts details link text content in Security Panel of the Security panel
    */
   showFullDetails: "Show full details",
   /**
-   *@description Toggle scts details link text content in Security Panel of the Security panel
+   * @description Toggle scts details link text content in Security Panel of the Security panel
    */
   hideFullDetails: "Hide full details",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   thisRequestCompliesWithChromes: "This request complies with `Chrome`'s Certificate Transparency policy.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   thisRequestDoesNotComplyWith: "This request does not comply with `Chrome`'s Certificate Transparency policy.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   thisResponseWasLoadedFromCache: "This response was loaded from cache. Some security details might be missing.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   theSecurityDetailsAboveAreFrom: "The security details above are from the first inspected response.",
   /**
-   *@description Main summary for where the site has a non-cryptographic secure origin.
+   * @description Main summary for where the site has a non-cryptographic secure origin.
    */
   thisOriginIsANonhttpsSecure: "This origin is a non-HTTPS secure origin.",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   yourConnectionToThisOriginIsNot: "Your connection to this origin is not secure.",
   /**
-   *@description No info div text content in Security Panel of the Security panel
+   * @description No info div text content in Security Panel of the Security panel
    */
   noSecurityInformation: "No security information",
   /**
-   *@description Text in Security Panel of the Security panel
+   * @description Text in Security Panel of the Security panel
    */
   noSecurityDetailsAreAvailableFor: "No security details are available for this origin.",
   /**
-   *@description San div text content in Security Panel of the Security panel
+   * @description San div text content in Security Panel of the Security panel
    */
   na: "(n/a)",
   /**
-   *@description Text to show less content
+   * @description Text to show less content
    */
   showLess: "Show less",
   /**
-   *@description Truncated santoggle text content in Security Panel of the Security panel
-   *@example {2} PH1
+   * @description Truncated santoggle text content in Security Panel of the Security panel
+   * @example {2} PH1
    */
   showMoreSTotal: "Show more ({PH1} total)",
   /**
-   *@description Shown when a field refers to an option that is unknown to the frontend.
+   * @description Shown when a field refers to an option that is unknown to the frontend.
    */
   unknownField: "unknown",
   /**
-   *@description Shown when a field refers to a TLS feature which was enabled.
+   * @description Shown when a field refers to a TLS feature which was enabled.
    */
   enabled: "enabled"
 };
@@ -2791,9 +2791,8 @@ var SecurityMainView = class extends UI5.Widget.VBox {
   explanations;
   securityState;
   constructor(element) {
-    super(element);
+    super(element, { jslog: `${VisualLogging3.pane("security.main-view")}` });
     this.registerRequiredCSS(lockIcon_css_default, mainView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging3.pane("security.main-view")}`);
     this.setMinimumSize(200, 100);
     this.contentElement.classList.add("security-main-view");
     this.summarySection = this.contentElement.createChild("div", "security-summary");
@@ -3192,9 +3191,8 @@ ${i18nString5(UIStrings5.ifYouBelieveThisIsShownInErrorSafety)}`;
 var SecurityOriginView = class extends UI5.Widget.VBox {
   originLockIcon;
   constructor(origin, originState) {
-    super();
+    super({ jslog: `${VisualLogging3.pane("security.origin-view")}` });
     this.registerRequiredCSS(originView_css_default, lockIcon_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging3.pane("security.origin-view")}`);
     this.setMinimumSize(200, 100);
     this.element.classList.add("security-origin-view");
     const titleSection = this.element.createChild("div", "title-section");

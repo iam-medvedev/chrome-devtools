@@ -24,6 +24,7 @@ const entityMappings = {
     eventsByEntity: new Map(),
     entityByEvent: new Map(),
     createdEntityCache: new Map(),
+    entityByUrlCache: new Map(),
 };
 function storeTraceEventWithRequestId(requestId, key, value) {
     if (!requestMap.has(requestId)) {
@@ -477,6 +478,7 @@ export function data() {
             entityByEvent: new Map(entityMappings.entityByEvent),
             eventsByEntity: new Map(entityMappings.eventsByEntity),
             createdEntityCache: new Map(entityMappings.createdEntityCache),
+            entityByUrlCache: new Map(entityMappings.entityByUrlCache),
         },
         linkPreconnectEvents,
     };
